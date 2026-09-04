@@ -2,6 +2,7 @@ import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 import {
   bboxOfGeometry,
   DRAWN_PLACE_SOURCE,
+  UPLOADED_PLACE_SOURCE,
   type PlaceOfRecord,
 } from "@/lib/geographies/place-of-record";
 import { subdivisionCodeFromTigerwebGeoid, TIGERWEB_GEOGRAPHY_SOURCE } from "@/lib/workspaces/home-geography";
@@ -129,15 +130,16 @@ export function projectPlaceFromPlaceBoundary(
  * Downstream modules that need a jurisdiction must say "area known, identity
  * unknown" rather than guess which county contains the shape.
  */
-export function projectPlaceFromDrawnArea(
+function projectPlaceFromUnresolvedArea(
   geometry: unknown,
+  source: typeof DRAWN_PLACE_SOURCE | typeof UPLOADED_PLACE_SOURCE,
   options?: { label?: string | null; setAt?: Date }
 ): ProjectPlaceRow | null {
   const bbox = bboxOfGeometry(geometry);
   if (!bbox) return null;
 
   return {
-    place_source: DRAWN_PLACE_SOURCE,
+    place_source: source,
     place_kind: null,
     place_ref: null,
     place_label: options?.label?.trim() || null,
@@ -150,6 +152,27 @@ export function projectPlaceFromDrawnArea(
     place_geometry_geojson: geometry,
     place_set_at: (options?.setAt ?? new Date()).toISOString(),
   };
+}
+
+export function projectPlaceFromDrawnArea(
+  geometry: unknown,
+  options?: { label?: string | null; setAt?: Date }
+): ProjectPlaceRow | null {
+  return projectPlaceFromUnresolvedArea(geometry, DRAWN_PLACE_SOURCE, options);
+}
+
+/**
+ * An area read from a planner-supplied file.
+ *
+ * The file proves where the coordinates came from, but not which jurisdiction
+ * they represent. Keep that provenance distinct from hand drawing while
+ * preserving the same null identity fields and downstream limitations.
+ */
+export function projectPlaceFromUploadedArea(
+  geometry: unknown,
+  options?: { label?: string | null; setAt?: Date }
+): ProjectPlaceRow | null {
+  return projectPlaceFromUnresolvedArea(geometry, UPLOADED_PLACE_SOURCE, options);
 }
 
 /** Every place column blanked — what clearing a project's area writes. */

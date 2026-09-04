@@ -6,7 +6,11 @@ import {
 } from "./helpers/confirm-dialog";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ProjectIdentityEditor } from "@/components/projects/project-identity-editor";
-import { DRAWN_PLACE_SOURCE, EMPTY_PLACE_OF_RECORD } from "@/lib/geographies/place-of-record";
+import {
+  DRAWN_PLACE_SOURCE,
+  EMPTY_PLACE_OF_RECORD,
+  UPLOADED_PLACE_SOURCE,
+} from "@/lib/geographies/place-of-record";
 
 const pushMock = vi.fn();
 const refreshMock = vi.fn();
@@ -138,9 +142,8 @@ describe("ProjectIdentityEditor", () => {
    * was mounted by exactly one caller.
    *
    * What is asserted is that a boundary arriving from the file reader reaches
-   * the SAVE, as `drawn` — a shape from a file carries no place identity, so it
-   * earns the same caveat a hand-drawn one does and must not be dressed up as a
-   * resolved place.
+   * the save with its uploaded provenance intact. It still carries no place
+   * identity and must not be dressed up as a resolved place.
    */
   it("saves a boundary read from a file, without pretending it is a resolved place", async () => {
     // Typed arguments, so the call inspection below is checked rather than
@@ -183,11 +186,32 @@ describe("ProjectIdentityEditor", () => {
       });
       expect(placeCall).toBeTruthy();
       const body = JSON.parse(placeCall![1]!.body as string);
-      expect(body.place.mode).toBe("drawn");
+      expect(body.place.mode).toBe("uploaded");
       expect(body.place.geometry).toBeTruthy();
       // Never a searched place — a file cannot supply a place identity.
       expect(body.place.geoid).toBeUndefined();
     });
+  });
+
+  it("shows an uploaded boundary as uploaded while withholding place identity", () => {
+    render(
+      <ProjectIdentityEditor
+        project={{
+          ...PROJECT,
+          place: {
+            ...EMPTY_PLACE_OF_RECORD,
+            source: UPLOADED_PLACE_SOURCE,
+            geometry: { type: "Polygon", coordinates: [] },
+          },
+        }}
+        canWrite
+      />
+    );
+
+    expect(screen.queryByText(/no study area set/i)).toBeNull();
+    expect(screen.getByText("Uploaded area")).toBeTruthy();
+    expect(screen.getByText(/Uploaded file.*cannot derive a county filter/i)).toBeTruthy();
+    expect(screen.queryByText(/drawn area/i)).toBeNull();
   });
 
   it("points a planner with a corridor file to this project's existing map upload", () => {

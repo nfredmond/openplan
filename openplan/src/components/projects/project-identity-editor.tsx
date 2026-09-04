@@ -22,7 +22,11 @@ import { StudyAreaPicker } from "@/components/models/study-area-picker";
 import { CorridorUpload } from "@/components/corridor/CorridorUpload";
 import { parseCorridorText } from "@/lib/models/study-area";
 import { CensusTractCoverageControl } from "@/components/geographies/census-tract-coverage-control";
-import { DRAWN_PLACE_SOURCE, type PlaceOfRecord } from "@/lib/geographies/place-of-record";
+import {
+  DRAWN_PLACE_SOURCE,
+  UPLOADED_PLACE_SOURCE,
+  type PlaceOfRecord,
+} from "@/lib/geographies/place-of-record";
 import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 
 /**
@@ -113,6 +117,8 @@ export function ProjectIdentityEditor({
   const { confirm, confirmDialog } = useConfirmDialog();
   // "Drawn" is decided by the shared constant rather than re-derived here.
   const placeIsDrawn = project.place.source === DRAWN_PLACE_SOURCE;
+  const placeIsUploaded = project.place.source === UPLOADED_PLACE_SOURCE;
+  const placeIsUnresolvedShape = placeIsDrawn || placeIsUploaded;
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(project.name);
   const [summary, setSummary] = useState(project.summary ?? "");
@@ -218,16 +224,14 @@ export function ProjectIdentityEditor({
       return;
     }
 
-    // A boundary from a file is saved as `drawn`, and that is the honest
-    // classification rather than a shortcut: a shape read out of a file carries
-    // no resolvable place identity either, so it earns the same caveat about
-    // county filters and jurisdiction rules that a hand-drawn one does.
+    // A boundary from a file has no resolvable place identity, but its capture
+    // path is still evidence. Preserve "uploaded" rather than calling it drawn.
     const geometry = uploadedBoundary ?? parseCorridorText(placeText);
     if (!geometry) {
       setError("Search for a place, upload a boundary file, or draw an area before saving.");
       return;
     }
-    await savePlace({ mode: "drawn", geometry });
+    await savePlace({ mode: uploadedBoundary ? "uploaded" : "drawn", geometry });
   }
 
   async function handleClearPlace() {
@@ -516,15 +520,16 @@ export function ProjectIdentityEditor({
               area exists; this now agrees with it, and falls back to naming the
               shape rather than denying it.
             */}
-            {project.place.label || placeIsDrawn ? (
+            {project.place.label || placeIsUnresolvedShape ? (
               <div className="flex flex-wrap items-center gap-2">
-                <StatusBadge tone={placeIsDrawn ? "warning" : "success"}>
-                  {project.place.label || "Drawn area"}
+                <StatusBadge tone={placeIsUnresolvedShape ? "warning" : "success"}>
+                  {project.place.label || (placeIsUploaded ? "Uploaded area" : "Drawn area")}
                 </StatusBadge>
-                {placeIsDrawn ? (
+                {placeIsUnresolvedShape ? (
                   <span className="text-sm text-muted-foreground">
-                    Drawn area — modules can inherit its shape, but cannot derive a county filter,
-                    crash-data scope, or jurisdiction rule from it.
+                    {placeIsUploaded ? "Uploaded file" : "Drawn area"} — modules can inherit its
+                    shape, but cannot derive a county filter, crash-data scope, or jurisdiction rule
+                    from it.
                   </span>
                 ) : null}
               </div>

@@ -24,6 +24,7 @@ import {
   PROJECT_PLACE_COLUMNS,
   projectPlaceFromDrawnArea,
   projectPlaceFromPlaceBoundary,
+  projectPlaceFromUploadedArea,
 } from "@/lib/projects/project-place";
 
 /**
@@ -97,6 +98,11 @@ const patchProjectSchema = z
         }),
         z.object({
           mode: z.literal("drawn"),
+          geometry: corridorGeojsonSchema,
+          label: z.string().trim().min(1).max(200).optional(),
+        }),
+        z.object({
+          mode: z.literal("uploaded"),
           geometry: corridorGeojsonSchema,
           label: z.string().trim().min(1).max(200).optional(),
         }),
@@ -247,16 +253,21 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ p
           projectPlaceFromPlaceBoundary(boundary, { label: payload.data.place.label ?? null })
         );
       } else {
-        const drawn = projectPlaceFromDrawnArea(payload.data.place.geometry, {
-          label: payload.data.place.label ?? null,
-        });
-        if (!drawn) {
+        const unresolvedArea = payload.data.place.mode === "uploaded"
+          ? projectPlaceFromUploadedArea(payload.data.place.geometry, {
+              label: payload.data.place.label ?? null,
+            })
+          : projectPlaceFromDrawnArea(payload.data.place.geometry, {
+              label: payload.data.place.label ?? null,
+            });
+        if (!unresolvedArea) {
+          const sourceLabel = payload.data.place.mode === "uploaded" ? "uploaded" : "drawn";
           return NextResponse.json(
-            { error: "That drawn area has no usable coordinates." },
+            { error: `That ${sourceLabel} area has no usable coordinates.` },
             { status: 400 }
           );
         }
-        Object.assign(updates, drawn);
+        Object.assign(updates, unresolvedArea);
       }
     }
 

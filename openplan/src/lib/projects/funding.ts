@@ -622,7 +622,6 @@ export function buildProjectFundingSnapshot(input: {
     capturedAt: input.capturedAt ?? null,
     projectUpdatedAt: input.projectUpdatedAt ?? null,
     latestSourceUpdatedAt: maxTimestamp([
-      input.projectUpdatedAt ?? null,
       input.profile?.updated_at ?? null,
       ...input.awards.map((award) => award.updated_at ?? award.created_at ?? null),
       ...opportunities.map((opportunity) => opportunity.updated_at ?? opportunity.created_at ?? null),

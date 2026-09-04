@@ -14,6 +14,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   DRAWN_PLACE_SOURCE,
+  UPLOADED_PLACE_SOURCE,
   type PlaceOfRecord,
 } from "@/lib/geographies/place-of-record";
 import {
@@ -357,6 +358,23 @@ describe("packet geography figure — the caveat travels with the drawing", () =
     expect(figure.caveats.join(" ")).toMatch(
       /is the name the drawn shape was given on the project record, not a place this packet resolved/
     );
+  });
+
+  it("names an uploaded boundary without calling it hand drawn or inferring a jurisdiction", () => {
+    const figure = buildPacketGeographyFigure(
+      input({
+        studyArea: {
+          ...drawnPlace(GRASS_VALLEY_RING),
+          source: UPLOADED_PLACE_SOURCE,
+        },
+      })
+    );
+
+    expect(figure.legend[0].label).toBe("Uploaded study-area boundary");
+    expect(figure.legend[0].detail).toMatch(/boundary read from a file supplied to this project/i);
+    expect(figure.caveats.join(" ")).toMatch(/uploaded file/i);
+    expect(figure.caveats.join(" ")).toMatch(/no resolved place identity/i);
+    expect(figure.legend[0].detail).not.toMatch(/drawn by hand/i);
   });
 
   it("does not attach the no-identity caveat to a place that actually resolves", () => {
