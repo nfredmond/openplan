@@ -52,7 +52,9 @@ export function validateCapabilityEvidence(registry, repoRoot, today) {
         if (!/^[0-9a-f]{64}$/.test(evidence.sha256 ?? "")) {
           throw new Error(`${label} evidence needs a lowercase SHA-256: ${evidence.path}`);
         }
-        const actual = createHash("sha256").update(readFileSync(source)).digest("hex");
+        const bytes = readFileSync(source);
+        if (bytes.length === 0) throw new Error(`${label} evidence file is empty: ${evidence.path}`);
+        const actual = createHash("sha256").update(bytes).digest("hex");
         if (actual !== evidence.sha256) {
           throw new Error(`${label} evidence hash changed: ${evidence.path}`);
         }

@@ -64,6 +64,16 @@ describe("evidence behind proven capability cells", () => {
     expect(() => validateCapabilityEvidence(duplicate, root, today)).toThrow(/repeats evidence/);
   });
 
+  it("refuses an empty record even when its digest matches", () => {
+    const registry = record();
+    writeFileSync(join(root, "docs/empty.md"), "");
+    registry.dimensions.planner[0].evidence[0] = {
+      path: "docs/empty.md",
+      sha256: createHash("sha256").update("").digest("hex"),
+    };
+    expect(() => validateCapabilityEvidence(registry, root, today)).toThrow(/file is empty/);
+  });
+
   it("refuses absolute paths instead of binding evidence to one developer's computer", () => {
     const registry = record();
     registry.dimensions.planner[0].evidence[0].path = join(root, "docs/proof.md");

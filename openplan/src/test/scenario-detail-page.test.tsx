@@ -2,6 +2,9 @@ import { cleanup, render, screen } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+// These tests render server components in jsdom; keep their server loaders real.
+vi.mock("server-only", () => ({}));
+
 const createClientMock = vi.fn();
 const notFoundMock = vi.fn(() => {
   throw new Error("notFound");

@@ -260,6 +260,37 @@ check('an unexpected browser console error fails an otherwise reached journey', 
   assert.match(fs.readFileSync(result.summaryPath, 'utf8'), /1 unexpected console error/);
 });
 
+for (const capture of ['directory', 'page', 'console', 'dangling console']) {
+  check(`verification rejects a symbolic-link ${capture} capture and resume retries it`, () => {
+    const runRoot = jobDir();
+    const dir = path.join(runRoot, '01-first-day-setup');
+    writeCompletedJob(dir, { browserRecords: capture !== 'directory' });
+    const donor = jobDir();
+    writeCompletedJob(donor);
+    if (capture === 'directory') {
+      fs.symlinkSync(path.join(donor, 'browser'), path.join(dir, 'browser'), 'dir');
+    } else {
+      const filename = capture === 'page' ? 'page-borrowed.yml' : 'console-borrowed.log';
+      const target = path.join(donor, 'browser', filename);
+      if (capture !== 'dangling console') {
+        fs.writeFileSync(target, capture === 'page'
+          ? '- heading "Another journey" [level=1]\n'
+          : '[ERROR] Cannot update a component while rendering a different component\n');
+      }
+      // Retain the normal page and empty console too: a linked extra record
+      // must be rejected, not silently skipped in favor of those clean files.
+      fs.symlinkSync(target, path.join(dir, 'browser', filename));
+    }
+    const result = verifyRun(runRoot, 'http://localhost:3200');
+    assert.strictEqual(result.reached, 0);
+    assert.strictEqual(result.inconclusive, 1);
+    assert.strictEqual(result.outcomeGatePassed, false);
+    assert.strictEqual(shouldResumeJob(dir), true);
+    const verdict = JSON.parse(fs.readFileSync(path.join(dir, 'verdict.json'), 'utf8'));
+    assert.match(verdict.outcome.reason, /symbolic link/i);
+  });
+}
+
 for (const [name, files, expectedReason] of [
   ['missing browser folder', null, /browser capture directory/i],
   ['empty browser folder', {}, /page snapshot/i],

@@ -597,8 +597,22 @@ function inspectBrowserConsole(browserDir) {
  * Presence alone does not prove the page content, screenshots or user outcome. */
 function inspectBrowserCapture(browserDir) {
   try {
-    const files = fs.readdirSync(browserDir, { withFileTypes: true })
-      .filter((entry) => entry.isFile()).map((entry) => entry.name);
+    if (fs.lstatSync(browserDir).isSymbolicLink()) {
+      return {
+        problem: 'The browser capture directory is a symbolic link, not retained journey records.',
+        console: { fatal: [], allowed: [] },
+      };
+    }
+    const entries = fs.readdirSync(browserDir, { withFileTypes: true });
+    const linkedRecord = entries.find((entry) => entry.isSymbolicLink()
+      && (/^page-.*\.ya?ml$/i.test(entry.name) || /^console-.*\.log$/i.test(entry.name)));
+    if (linkedRecord) {
+      return {
+        problem: `The browser capture record ${linkedRecord.name} is a symbolic link, not a retained regular file.`,
+        console: { fatal: [], allowed: [] },
+      };
+    }
+    const files = entries.filter((entry) => entry.isFile()).map((entry) => entry.name);
     const hasSnapshot = files.some((name) => /^page-.*\.ya?ml$/i.test(name)
       && fs.readFileSync(path.join(browserDir, name), 'utf8').trim().length > 0);
     const hasConsole = files.some((name) => /^console-.*\.log$/i.test(name));

@@ -2,6 +2,9 @@ import { cleanup, render, screen } from "@testing-library/react";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+// These tests render server components in jsdom; keep their server loaders real.
+vi.mock("server-only", () => ({}));
+
 /**
  * THE PANELS THE SCENARIO PAGES RENDER MAY NOT RESTATE A FAILED READ AS AN ABSENCE.
  *
