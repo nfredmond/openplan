@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
@@ -46,11 +46,12 @@ export function LandUsePlanCreator({
   if (!recommendedDescriptor) {
     throw new Error("Land Use Plans has no neutral legal workflow registered");
   }
-  const [descriptorId, setDescriptorId] = useState(recommendedDescriptor.id);
-  const descriptor = useMemo(
-    () => SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS.find((item) => item.id === descriptorId)!,
-    [descriptorId]
+  // A sourced legal checklist is selectable only where its registered jurisdiction matches.
+  const allowedDescriptors = SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS.filter(
+    (item) => !item.configured || item.id === recommendedDescriptor.id
   );
+  const [descriptorId, setDescriptorId] = useState(recommendedDescriptor.id);
+  const descriptor = allowedDescriptors.find((item) => item.id === descriptorId)!;
   const [planKindKey, setPlanKindKey] = useState(descriptor.planKinds[0].key);
   const [title, setTitle] = useState("");
   const [authorityLabel, setAuthorityLabel] = useState("");
@@ -111,7 +112,7 @@ export function LandUsePlanCreator({
               setPlanKindKey(next.planKinds[0].key);
             }}
           >
-            {SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS.map((item) => <option key={item.id} value={item.id}>{item.jurisdictionLabel}</option>)}
+            {allowedDescriptors.map((item) => <option key={item.id} value={item.id}>{item.jurisdictionLabel}</option>)}
           </select>
         </label>
         <label className="space-y-1 text-sm font-medium">

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -124,6 +124,7 @@ describe("Land Use Plans first-run legal bundle", () => {
 
     expect(screen.getByLabelText("Legal bundle")).toHaveValue("local-unconfigured");
     expect(screen.getByText(/No jurisdiction-specific legal bundle is configured/i)).toBeVisible();
+    expect(screen.queryByRole("option", { name: "California" })).toBeNull();
   });
 
   it("does not turn a failed jurisdiction read into a claim that no law exists", async () => {
@@ -144,13 +145,10 @@ describe("Land Use Plans first-run legal bundle", () => {
     expect(screen.queryByText(/No jurisdiction-specific legal bundle is configured/i)).toBeNull();
   });
 
-  it("keeps a deliberate planner override available", async () => {
+  it("does not offer another jurisdiction's configured legal bundle as an override", async () => {
     await renderPage();
-    fireEvent.change(screen.getByLabelText("Legal bundle"), {
-      target: { value: "us-ca-general-plan" },
-    });
 
-    expect(screen.getByLabelText("Legal bundle")).toHaveValue("us-ca-general-plan");
-    expect(screen.getByText(/You selected California instead/i)).toBeVisible();
+    expect(screen.getByLabelText("Legal bundle")).toHaveValue("local-unconfigured");
+    expect(screen.queryByRole("option", { name: "California" })).toBeNull();
   });
 });

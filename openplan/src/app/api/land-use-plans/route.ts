@@ -5,12 +5,18 @@ import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import {
   getJurisdictionPlanDescriptor,
+  recommendJurisdictionPlanDescriptor,
   SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS,
 } from "@/lib/land-use-plans/registry";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
+import {
+  HOME_JURISDICTION_COLUMNS,
+  parseWorkspaceHomeGeography,
+  resolveJurisdiction,
+} from "@/lib/workspaces/home-geography";
 
 const selectableIds = SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS.map((item) => item.id) as [string, ...string[]];
 const createSchema = z.object({
@@ -63,6 +69,29 @@ export async function POST(request: NextRequest) {
   const { membership } = await loadCurrentWorkspaceMembership(supabase, auth.user.id);
   if (!membership || !canAccessWorkspaceAction("plans.write", membership.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const jurisdictionResult = await supabase
+    .from("workspaces")
+    .select(HOME_JURISDICTION_COLUMNS)
+    .eq("id", membership.workspace_id)
+    .maybeSingle();
+  if (jurisdictionResult.error) {
+    return NextResponse.json(
+      { error: "The workspace jurisdiction could not be verified; no legal bundle was attached" },
+      { status: 503 }
+    );
+  }
+  const recommendation = recommendJurisdictionPlanDescriptor(
+    resolveJurisdiction(parseWorkspaceHomeGeography(jurisdictionResult.data))
+  );
+  if (descriptor.configured && recommendation.descriptor.id !== descriptor.id) {
+    return NextResponse.json(
+      {
+        error: `${descriptor.jurisdictionLabel} does not match this workspace's home jurisdiction. Use the neutral workflow instead.`,
+      },
+      { status: 409 }
+    );
   }
 
   const localNotice = descriptor.configured ? null : descriptor.disclosure;

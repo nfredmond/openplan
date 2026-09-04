@@ -11,6 +11,15 @@ const WRITE_ROUTES = [
 ];
 
 describe("Land Use Plans route boundaries", () => {
+  it("verifies the workspace jurisdiction before attaching a configured legal bundle", () => {
+    const route = readFileSync(path.resolve(__dirname, "../app/api/land-use-plans/route.ts"), "utf8");
+
+    expect(route).toContain("HOME_JURISDICTION_COLUMNS");
+    expect(route).toContain("recommendJurisdictionPlanDescriptor");
+    expect(route).toContain("recommendation.descriptor.id !== descriptor.id");
+    expect(route).toContain("does not match this workspace's home jurisdiction");
+  });
+
   it("qualifies the plan-version relationship on both registry reads", () => {
     const relationship = "land_use_plan_versions!land_use_plan_versions_plan_id_workspace_id_fkey";
     expect(readFileSync(path.resolve(__dirname, "../app/(app)/land-use-plans/page.tsx"), "utf8")).toContain(relationship);
