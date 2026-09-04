@@ -287,6 +287,34 @@ describe("crash disclosure reaches the existing Explore seam", () => {
     expect(line).toContain("not available");
     expect(line).not.toMatch(/\b0 fatal crashes\b/);
   });
+
+  it("withholds partial severity totals when the record extract reached its cap", () => {
+    const capped = {
+      ...unobserved,
+      observed: true as const,
+      source: "ccrs-ca",
+      sourceLabel: "California Crash Reporting System (CCRS)",
+      severityCompleteness: "fatal_injury_only" as const,
+      yearsQueried: [2022, 2023, 2024, 2025],
+      totalFatalCrashes: 71,
+      totalFatalities: 77,
+      totalInjuryCrashes: 1603,
+      unclassifiedCrashes: 122,
+      reportedTotal: 5432,
+      mappedTotal: 5432,
+      truncated: true,
+    };
+
+    const line = describeCrashSafety(capped);
+    const snapshot = buildCrashSourceSnapshot(capped, "2026-09-04T21:22:40.507Z");
+
+    expect(line).toContain("5,432 crashes matched");
+    expect(line).toContain("safety score are withheld");
+    expect(line).not.toContain("1,603");
+    expect(line).not.toContain("71 fatal");
+    expect(String(snapshot.note)).toContain("partial extract are incomplete");
+    expect(String(snapshot.note)).not.toContain("122 of the mapped crashes");
+  });
 });
 
 /**

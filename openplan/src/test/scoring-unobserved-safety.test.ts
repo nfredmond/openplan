@@ -98,6 +98,24 @@ describe("safety scoring with no crash source", () => {
     expect(score(crashSummary()).dataQuality.crashDataAvailable).toBe(true);
   });
 
+  it("withholds safety when the source answered but the record extract was capped", () => {
+    const capped = score(
+      crashSummary({
+        truncated: true,
+        reportedTotal: 5432,
+        mappedTotal: 5432,
+        totalFatalCrashes: 71,
+        totalFatalities: 77,
+        totalInjuryCrashes: 1603,
+      })
+    );
+
+    expect(capped.safetyScore).toBeNull();
+    expect(capped.dataQuality.crashDataAvailable).toBe(true);
+    expect(capped.dataQuality.crashDataComplete).toBe(false);
+    expect(capped.confidence).not.toBe("high");
+  });
+
   it("still deducts for a genuinely dangerous observed corridor", () => {
     const dangerous = score(
       crashSummary({ crashesPerSquareMile: 6, pedestrianFatalities: 4, totalFatalities: 4, totalFatalCrashes: 4 })

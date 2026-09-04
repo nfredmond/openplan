@@ -16,6 +16,7 @@ function scores(overrides: Partial<CorridorScores["dataQuality"]> = {}): Corrido
     dataQuality: {
       censusAvailable: true,
       crashDataAvailable: true,
+      crashDataComplete: true,
       transitDataAvailable: true,
       lodesSource: "test",
       equitySource: "test",
@@ -47,6 +48,13 @@ describe("corridor score presentation eligibility", () => {
   it("withholds safety and the composite without crash evidence", () => {
     const presentation = resolveScorePresentation(scores({ crashDataAvailable: false }));
     expect(presentation.safety.value).toBeNull();
+    expect(presentation.overall.value).toBeNull();
+  });
+
+  it("withholds safety and the composite when the crash extract is incomplete", () => {
+    const presentation = resolveScorePresentation(scores({ crashDataComplete: false }));
+    expect(presentation.safety.value).toBeNull();
+    expect(presentation.safety.withheldReason).toMatch(/extract is incomplete/i);
     expect(presentation.overall.value).toBeNull();
   });
 

@@ -27,6 +27,8 @@ export interface CorridorScores {
   dataQuality: {
     censusAvailable: boolean;
     crashDataAvailable: boolean;
+    /** False when a source answered but its record extract hit the analysis cap. */
+    crashDataComplete: boolean;
     /**
      * False when no transit source answered, so the accessibility score carries
      * no stop-density term. Recorded because the score alone cannot say which
@@ -236,7 +238,9 @@ function computeAccessibility(
  * safety, so it must not produce a score at all.
  */
 function computeSafety(crashes: CrashSummary): number | null {
-  if (!crashes.observed) return null;
+  // Counts derived from a capped record extract are lower bounds, not corridor
+  // totals. They must not drive a score as though the missing records were safe.
+  if (!crashes.observed || crashes.truncated) return null;
 
   // Base: start at 85 (most corridors are reasonably safe)
   let score = 85;
@@ -303,12 +307,13 @@ export function computeCorridorScores(
   // a tier that no longer exists — so it silently reported every study area as
   // having crash data, including areas where no source covers them at all.
   const crashDataAvailable = crashes.observed;
+  const crashDataComplete = crashes.observed && !crashes.truncated;
   const transitDataAvailable = transit.observed;
 
   // A missing transit inventory cannot leave confidence at "high": the
   // accessibility score was built from fewer inputs than it normally is.
   const confidence =
-    censusAvailable && crashDataAvailable && transitDataAvailable
+    censusAvailable && crashDataComplete && transitDataAvailable
       ? "high"
       : censusAvailable || crashDataAvailable
         ? "medium"
@@ -323,6 +328,7 @@ export function computeCorridorScores(
     dataQuality: {
       censusAvailable,
       crashDataAvailable,
+      crashDataComplete,
       transitDataAvailable,
       lodesSource: lodes.source,
       equitySource: equity.source,

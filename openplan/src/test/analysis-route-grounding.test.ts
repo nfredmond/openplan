@@ -457,6 +457,54 @@ describe("/api/analysis records the transit measurement on the run", () => {
     return (runsInsertMock.mock.calls[0][0] as { metrics: Record<string, unknown> }).metrics;
   }
 
+  it("keeps capped crash severity counts out of the AI fact list and score", async () => {
+    fetchTransitAccessForBboxMock.mockResolvedValue(TRANSIT_FIXTURE);
+    fetchCrashesForBboxMock.mockResolvedValue({
+      ...CRASHES_FIXTURE,
+      observed: true,
+      truncated: true,
+      reportedTotal: 5432,
+      mappedTotal: 5432,
+      totalFatalCrashes: 71,
+      totalFatalities: 77,
+      totalInjuryCrashes: 1603,
+      sourceSnapshot: { source: "ccrs-ca", truncated: true },
+      narrativeLine:
+        "**Safety (2022, 2023, 2024, 2025, CCRS):** 5,432 crashes matched the study area, but the record extract reached OpenPlan's analysis cap. Severity totals, crash density, and the safety score are withheld because the extract is incomplete.",
+    });
+    computeCorridorScoresMock.mockReturnValue({
+      ...SCORES_FIXTURE,
+      safetyScore: null,
+      dataQuality: {
+        censusAvailable: true,
+        crashDataAvailable: true,
+        crashDataComplete: false,
+        transitDataAvailable: true,
+        lodesSource: "acs-estimate",
+        equitySource: "proxy-census",
+      },
+    });
+
+    const response = await postAnalysis(analysisRequest(VALID_BODY));
+    expect(response.status).toBe(200);
+
+    const [metrics, summary] = generateGrantInterpretationMock.mock.calls[0] as [
+      Record<string, unknown>,
+      string,
+    ];
+    expect(metrics.totalFatalCrashes).toBeNull();
+    expect(metrics.totalFatalities).toBeNull();
+    expect(metrics.totalInjuryCrashes).toBeNull();
+    expect(metrics.crashesPerSquareMile).toBeNull();
+    expect(metrics.crashReportedTotal).toBe(5432);
+    expect(metrics.safetyScore).toBeNull();
+    expect((metrics.dataQuality as Record<string, unknown>).crashDataComplete).toBe(false);
+    expect(summary).toContain("5,432 crashes matched");
+    expect(summary).toContain("safety score are withheld");
+    expect(summary).not.toContain("1,603");
+    expect(summary).not.toContain("71 fatal");
+  });
+
   it("hands the transit registry the workspace, which is the tenant boundary", async () => {
     await persistedMetrics(GTFS_TRANSIT_FIXTURE);
 

@@ -574,9 +574,13 @@ export function buildCrashSourceSnapshot(
   // Say the number, or the severity counts quietly fail to add up to the total
   // and a reader fills the gap in with "property damage".
   const unclassifiedNote =
-    crashes.unclassifiedCrashes > 0
+    !crashes.truncated && crashes.unclassifiedCrashes > 0
       ? ` ${crashes.unclassifiedCrashes.toLocaleString()} of the mapped crashes carry no casualty count from the source and are not classified by severity — they are counted in the total and in no severity band.`
       : "";
+
+  const truncationNote = crashes.truncated
+    ? ` The record extract reached OpenPlan's analysis cap. Severity totals and density derived from that partial extract are incomplete and are withheld from the narrative and safety score.`
+    : "";
 
   const merged = crashes.contributingSources ?? [];
   const mergeNote =
@@ -603,7 +607,7 @@ export function buildCrashSourceSnapshot(
     ...(merged.length >= 2 ? { contributingSources: merged } : {}),
     ...(unavailable.length > 0 ? { unavailableBackstops: unavailable } : {}),
     unclassifiedCrashes: crashes.unclassifiedCrashes,
-    note: `Observed crash records from ${crashes.sourceLabel}.${cutoffNote}${severityNote}${mappingNote}${unclassifiedNote}${mergeNote}${backstopGapNote}`,
+    note: `Observed crash records from ${crashes.sourceLabel}.${cutoffNote}${severityNote}${mappingNote}${unclassifiedNote}${truncationNote}${mergeNote}${backstopGapNote}`,
   };
 }
 
@@ -615,6 +619,14 @@ export function describeCrashSafety(crashes: CrashSummaryCore): string {
         ? "no crash source covers this study area"
         : `${crashes.sourceLabel} could not be reached`;
     return `**Safety:** Crash data is not available for this study area (${reason}). No crash figures were estimated, and the safety score below is therefore not supported by observed crash data.`;
+  }
+
+  if (crashes.truncated) {
+    return (
+      `**Safety (${crashes.yearsQueried.length > 0 ? crashes.yearsQueried.join(", ") : "requested years"}, ${crashes.sourceLabel}):** ` +
+      `${crashes.reportedTotal.toLocaleString()} crashes matched the study area, but the record extract reached OpenPlan's analysis cap. ` +
+      "Severity totals, crash density, and the safety score are withheld because the extract is incomplete."
+    );
   }
 
   const yearsStr =

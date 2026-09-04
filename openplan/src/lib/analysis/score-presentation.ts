@@ -31,15 +31,18 @@ export function resolveScorePresentation(scores: CorridorScores): ScorePresentat
   const censusAvailable = scores.dataQuality.censusAvailable;
   const transitAvailable = scores.dataQuality.transitDataAvailable;
   const crashAvailable = scores.dataQuality.crashDataAvailable;
+  const crashComplete = scores.dataQuality.crashDataComplete;
 
   const accessibility = !censusAvailable
     ? withheld("Accessibility is withheld because required Census inputs are unavailable.")
     : !transitAvailable
       ? withheld("Accessibility is withheld because transit inputs are unavailable.")
       : shown(scores.accessibilityScore);
-  const safety = !crashAvailable || scores.safetyScore === null
+  const safety = !crashAvailable
     ? withheld("Safety is withheld because crash evidence is unavailable.")
-    : shown(scores.safetyScore);
+    : !crashComplete || scores.safetyScore === null
+      ? withheld("Safety is withheld because the crash record extract is incomplete.")
+      : shown(scores.safetyScore);
   const equity = !censusAvailable
     ? withheld("Equity is withheld because required demographic inputs are unavailable.")
     : shown(scores.equityScore);

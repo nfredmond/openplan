@@ -501,6 +501,7 @@ export async function POST(request: NextRequest) {
       // which no longer describes anything now that the registry supplies real
       // adapter ids — the summary's own `observed` flag is the fact.
       const crashDataAvailable = crashes.observed === true;
+      const crashDataComplete = crashDataAvailable && crashes.truncated !== true;
       // A run that could not observe any crash history cannot be a high-confidence
       // run, whatever the rest of the inputs looked like.
       const confidence =
@@ -560,16 +561,17 @@ export async function POST(request: NextRequest) {
         walkBikeAccessScoreBoost: walkBikeAccess.scoreBoost,
         walkBikeAccessRationale: walkBikeAccess.rationale,
 
-        // Safety. null (not 0) whenever no source answered: consumers render null
-        // as "N/A", and `buildInterpretationFacts` drops null metrics, so the AI
-        // narrative physically cannot cite a crash figure that was never measured.
-        totalFatalCrashes: crashDataAvailable ? crashes.totalFatalCrashes : null,
-        totalFatalities: crashDataAvailable ? crashes.totalFatalities : null,
-        pedestrianFatalities: crashDataAvailable ? crashes.pedestrianFatalities : null,
-        bicyclistFatalities: crashDataAvailable ? crashes.bicyclistFatalities : null,
-        severeInjuryCrashes: crashDataAvailable ? crashes.severeInjuryCrashes : null,
-        totalInjuryCrashes: crashDataAvailable ? crashes.totalInjuryCrashes : null,
-        crashesPerSquareMile: crashDataAvailable ? crashes.crashesPerSquareMile : null,
+        // Safety. null (not 0) whenever no source answered OR the source hit the
+        // record cap: consumers render null as "N/A", and
+        // `buildInterpretationFacts` drops null metrics, so the AI narrative
+        // cannot promote a missing or partial severity figure to a corridor total.
+        totalFatalCrashes: crashDataComplete ? crashes.totalFatalCrashes : null,
+        totalFatalities: crashDataComplete ? crashes.totalFatalities : null,
+        pedestrianFatalities: crashDataComplete ? crashes.pedestrianFatalities : null,
+        bicyclistFatalities: crashDataComplete ? crashes.bicyclistFatalities : null,
+        severeInjuryCrashes: crashDataComplete ? crashes.severeInjuryCrashes : null,
+        totalInjuryCrashes: crashDataComplete ? crashes.totalInjuryCrashes : null,
+        crashesPerSquareMile: crashDataComplete ? crashes.crashesPerSquareMile : null,
         crashReportedTotal: crashDataAvailable ? crashes.reportedTotal : null,
         crashMappedTotal: crashDataAvailable ? crashes.mappedTotal : null,
         crashPointCount: crashPointFeatures.length,
@@ -605,6 +607,7 @@ export async function POST(request: NextRequest) {
         dataQuality: {
           ...scores.dataQuality,
           crashDataAvailable,
+          crashDataComplete,
         },
 
         // Traceability metadata
