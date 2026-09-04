@@ -2,7 +2,7 @@
 
 These are preserved review findings and proposals, not adopted product authorities
 or a release declaration. The active development checkout remains untouched by
-this review. It is collecting additional acceptance evidence after 55cf4d98.
+this review. It is collecting additional acceptance evidence; source was most recently observed at d2ce5c0f during this priority review.
 The current contract and sole active roadmap remain at their existing paths until
 the development session reaches a safe handoff and the consolidation is reviewed.
 
@@ -16,7 +16,7 @@ be reconciled during integration.
 The review branch contains three guard-maintenance commits on source 55cf4d98:
 58fba23b, f2713892 and 5ef27310. These require captured browser records, attributable
 capability proof, normal-QA execution of the existing evidence suites and working
-scenario test collection.38 focused assertions pass on this newer source; nine
+scenario test collection. 38 focused assertions pass on this newer source; nine
 live-RLS assertions are skipped deliberately. Type checking also passes. This is
 not full QA, CI, current browser acceptance or scientific validation.
 
@@ -32,3 +32,15 @@ kinds, job liveness/late writes, complete recovery, exported context/layers, GTF
 request-bound ingestion, the moderate xmldom dependency advisory, and private
 security reporting. Full v1 ambition is preserved. Territory depth remains an
 explicit product question; no required cell or scientific threshold was removed.
+
+## Early priorities added by Nathaniel
+
+The updated [roadmap draft](ROADMAP_DRAFT.md) makes these early work, with shared authority, evidence, roles and recovery prerequisites:
+
+- [Engagement mapping](ENGAGEMENT_PRIORITY_RESEARCH.md): documented Social Pinpoint benchmark, present OpenPlan gaps, measurable contribution-to-decision outcomes and human comparison protocol.
+- [Planner Agent provider choice](PLANNER_AGENT_PROVIDER_RESEARCH.md): direct APIs and installed Codex/Claude Code/OpenCode with native login and scoped OpenPlan actions; [T3 Code source reuse review](T3_CODE_REUSE_RESEARCH.md) pins Theo's actual implementation.
+- [Capital delivery](CAPITAL_DELIVERY_PRIORITY_RESEARCH.md): existing project/invoicing foundations, applicability and full phase matrix, Caltrans current sources, financial reconciliation, construction and closeout.
+
+The [capability draft](CAPABILITY_MATRIX_DRAFT.md), [known-limit draft](KNOWN_LIMITATIONS_DRAFT.md) and [human observation draft](PLANNER_OBSERVATION_PROTOCOL_DRAFT.md) incorporate these priorities without promoting any unproved capability. Their eventual canonical destinations are the product matrix, known-issues guide and observation protocol; canonical-relative links inside these drafts are reconciled during consolidation.
+
+This checkpoint adds research and documentation only. No new product feature, provider login/model invocation, browser journey, human study or construction-compliance certification was performed. Current source findings include silent public-feed and budget-input caps, lost receipt metadata and incomplete capital closeout meaning; the reports distinguish these from untested risks. The four research reports record current sources and coverage limits. T3 source was inspected in an external scratch clone; no upstream code or dependencies were added to OpenPlan.

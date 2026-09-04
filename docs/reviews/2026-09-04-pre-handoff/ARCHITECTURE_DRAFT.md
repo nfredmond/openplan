@@ -27,7 +27,7 @@ flowchart LR
     App --> DB[Postgres and PostGIS with RLS]
     App --> Storage[Supabase Storage]
     App --> Sources[Configured external data and map providers]
-    App --> AI[Optional cloud AI]
+    App --> AI[Current optional Anthropic API]
     Workers[Modeling, county, OCR and imagery workers] --> DB
     Workers --> Storage
     Workers --> Local[Local model and imagery files]
@@ -97,3 +97,11 @@ Existing restore/upgrade drills cover representative records, not the complete d
 Use focused behavior tests for observed defects, live database probes for permissions/custody, browser journeys for actual reachability, and independent people for usefulness and operations. Source-string guards protect narrow mechanical relationships and cannot certify workflow behavior. Each changed consequential guard needs a no-op survivor and a targeted failing mutation.
 
 Read ADR-002 for the multi-engine choice, ADR-003 for crash-source acquisition and ADR-004 for agent-server intent. They preserve dated reasoning; verify current third-party APIs, licenses and protocol details before implementing from them. The roadmap owns future work. An architecture diagram or capability label never overrides measured failure.
+
+## Proposed early extensions: participation, agent connections and capital delivery
+
+These are roadmap designs, not implemented architecture. Nathaniel's September 4 priorities deepen three existing owners. Engagement retains campaign/question versions, source geometry and moderated public derivatives, then links responses and commitments to project/plan decisions. Projects retains the capital case through environmental, ROW/utilities, PS&E, procurement, construction and closeout; Documents, stage gates and Invoicing supply versioned evidence and separately reconciled payments/reimbursements. Rule applicability depends on actual authority, funding, agreement and effective date rather than workspace home.
+
+The Planner Agent currently uses Anthropic API access. Proposed direct API adapters and a paired local connector expose installed Codex/Claude Code/OpenCode through one capability contract. T3 Code is the concrete reuse reference for native runtime control. The CLI owns its provider login; OpenPlan controls allowed case reads, proposed actions and exact human approval. A provider process has a separate lifecycle from a browser request. Personal device/account connections are distinct from deployment connections serving unattended jobs or public engagement. See the dated priority research and roadmap A0/M9/M10 for definitions of done.
+
+Changing the model transport does not transfer legal, financial or scientific authority to the model. A CLI shell permission is not approval to publish a response, certify PS&E, accept construction, spend money or submit reimbursement. Those remain recorded domain decisions by authorized people.
