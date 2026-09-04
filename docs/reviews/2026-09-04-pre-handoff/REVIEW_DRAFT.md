@@ -1,0 +1,192 @@
+# OpenPlan product and engineering review
+
+Review opened 2026-09-04 against `ad640ce7164cbea55bddd30341748e5f48639410`.
+This is an external working draft. The active development checkout remains owned by its release session. Final release state, later corrections, and the transition to repository documentation must be recorded before this becomes the current review.
+
+OpenPlan has substantial working infrastructure for planning records, analysis, public engagement, funding, and governed evidence. Its main weakness is that the meaning of a planning job is not yet preserved through every handoff. A workspace's location can determine a client's legal checklist; a workbook round trip creates records rather than updating them; a successful export can omit linked map layers; and a live worker can be mistaken for an abandoned run. More pages will not resolve these problems.
+
+The route to v1 is to finish real planning cases across the existing product, establish free and recoverable agency operation, and deepen geographic and scientific support alongside those cases. Both demand methods still need independent, use-specific nationwide validation. That program is mandatory, but it does not replace statutory planning, public participation, multimodal work, implementation, or usable operations.
+
+## Evidence and review limits
+
+This review separates inspected source, reproduced behavior, documentary claims, and engineering recommendations. A code path does not establish visible usability. A browser agent's completed task does not establish professional usefulness. A scientific artifact's valid hash does not establish model accuracy.
+
+Initial inventory comprised 4,467 tracked files, 339 Markdown documents, 61 page files, 270 API routes, 242 migrations, 1,169 Vitest files, 51 worker test files, and 2,508 commits reachable from main. The page count includes redirects and public/authentication pages; it is not a count of distinct working planner capabilities. Inventory numbers are dated observations, not quality scores.
+
+| Record set | Review performed | Limits |
+|---|---|---|
+| Product authorities | Read operating manual, v1 contract, complete roadmap, capability matrix/registry, direction protocol and latest direction record | Later development changes require reconciliation |
+| Application and database | Inventoried all tracked pages/routes/migrations; traced representative geography, plan creation, export, permissions, evidence, worker lifecycle and public-data paths | Did not audit every route, SQL policy or migration for every role |
+| Tests and operations | Read important CI/gate/worker/restore definitions; executed focused isolated guard tests and mutations; inspected remote CI and RLS results | No shared database fault injection, production restore, exhaustive mutation campaign or new browser journey during active acceptance |
+| GitHub | Queried releases, tags, main Actions, all available PR metadata, open/closed issue lists, and review discussion on PRs 94, 98 and 99 | Those sampled PRs have no substantive review approvals; automated comments report review quota exhaustion. Classic protection requires strict `verify (qa gate)` checks; administrator enforcement is disabled and no PR review is required. Shuffled/RLS checks are not required merge contexts |
+| Codex history | Inspected 100 session headers; 86 identified OpenPlan working directories. Read selected user/assistant records from the August 25 review and current development session, plus targeted contamination/transition records | Did not read every token, tool result or conversation in all sessions |
+| Claude history | Inventoried 80 OpenPlan-related project directories containing 782 JSONL records, about 750 MB; sampled the August 25 independent review and retained browser evidence | Metadata inventory is not full content review; no unrelated personal history was reviewed |
+| Acceptance records | Inventoried 50 first-week run manifests; sampled execution/outcome/build records, current-session explanations and retained screenshots | Did not rewrite original evidence or count partial/incomplete/contaminated runs as acceptance |
+| Existing tools/repos | Inspected relevant OpenGeo, Aerial Intel Platform and City_Sim README/package/license records; checked established GIS/model/container/documentation sources | No wholesale audit or source-code transfer from another project |
+| Independent reviews | Two fresh-context reviewers reconstructed source independently before seeing each other's conclusions | Both were agents; neither is a practicing-user study or an independent human installation |
+
+Raw session histories, credentials and unrelated personal records stay outside the repository. A manifest-inspection mistake exposed a disposable test-account credential in tool output; it was reported immediately and was not copied into review artifacts. The active account was not changed.
+
+## Release and acceptance truth
+
+At opening, main was clean at `ad640ce7`. The package and several current documents said 0.44.0, but the latest remote release tag was v0.43.0. GitHub's Releases endpoint returned no releases. Tags and GitHub Release objects are distinct records.
+
+At `ad640ce7`, [CI run 33918931332](https://github.com/nfredmond/openplan/actions/runs/33918931332) failed while [RLS run 33918931224](https://github.com/nfredmond/openplan/actions/runs/33918931224) succeeded. The local direction check failed because the latest direction review still named v0.43.0. The shuffled suite also failed the copy/jargon ratchet and two scenario suites could not import a `server-only` dependency. A metadata fix alone is insufficient. A push is not a release or CI result.
+
+| Acceptance record | Usable interpretation |
+|---|---|
+| `2026-09-01T03-36-34-705Z`, v0.43 source | Nine yes and three partly outcomes. Useful dated discovery; fails full outcome acceptance |
+| `2026-09-01T11-06-18-597Z`, `b0e3efe1` | Records twelve yes outcomes, but predates stronger runtime-identity checks and subsequent consequential defects. Historical result, not current-candidate proof |
+| Later September 1/2 runs | Include partial outcomes, turn limits, quota stops and missing terminal records. Preserve individual supported findings; do not combine them into one passing run |
+| `2026-09-04T20-31-19-906Z`, `f0582670` | Development session explicitly reported that orphan job 02 continued after the checkout changed. That job cannot support acceptance |
+| `2026-09-04T21-00-45-902Z`, `ad640ce7` | Single neutral-geography job records completion; retained desktop screenshots show the neutral legal disclaimer. It cannot establish all twelve jobs |
+| `2026-09-04T21-16-15-287Z`, `ad640ce7` | Began as the current twelve-job run. It later exposed a crash-extract/scoring problem and the development session resumed corrections. Final disposition must come from its handoff |
+
+The review did not touch development processes, worker jobs, browser sessions or test accounts. Source conclusions are bound to the inspected commit; fixes made later by the development session must be identified separately.
+
+## Findings and consequences
+
+### R1. Plan authority must belong to the plan
+
+**Source-proven semantic defect, High.** `openplan/src/app/api/land-use-plans/route.ts` checks the selected legal descriptor against workspace home jurisdiction, then stores independently supplied authority text and geometry. A California client plan in an Oregon consultancy workspace is refused. Conversely, the same check does not establish that a plan drawn elsewhere inside a California workspace is governed by California law.
+
+Keep workspace home as a convenient starting suggestion. Extend existing `PlaceOfRecord` and plan records to represent exact study geometry, sourced jurisdiction identities, adopting/reviewing authorities, applicable rule versions and the responsible human's applicability decision. A polygon alone cannot establish sovereign or statutory authority. Regional bodies, tribes and overlapping jurisdictions must not collapse into a single enclosing state.
+
+Do not revert to offering every configured legal bundle without qualification. Prove both valid cross-client work and refusal of unsupported applicability. The current restriction prevents one misleading choice but uses the wrong authority boundary.
+
+### R2. California general and specific plans require different rules
+
+**Source and primary-law finding, High.** `openplan/src/lib/land-use-plans/registry.ts` offers general and specific plan kinds but shares the general-plan element checklist and amendment-frequency notice. The create route seeds descriptor requirements without plan-kind filtering. Government Code sections 65451 and 65453 establish distinct specific-plan content and amendment treatment. [California Legislature, specific plans](https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?article=8.&chapter=3.&division=1.&lawCode=GOV&part=&title=7.)
+
+Separate rules by plan kind, jurisdiction, effective version and applicability. Review amendments and early public drafts as real jobs: a universally mandatory mapped designation may be a product choice, not a statutory prerequisite. A disclaimer cannot repair a wrong checklist. This review is evidence of the mismatch, not a legal-sufficiency certification of the replacement.
+
+### R3. Free agency operation is not established by the setup guides
+
+**Documentation contradiction, High.** README describes Docker Desktop as a free prerequisite for Windows/macOS users. Docker requires paid subscriptions for government entities. Vercel Hobby is restricted to non-commercial personal use and its once-daily cron limit cannot implement the repository's subdaily schedules. [Docker licensing](https://docs.docker.com/subscription/desktop-license/), [Vercel Hobby](https://vercel.com/docs/plans/hobby), [Vercel cron limits](https://vercel.com/docs/cron-jobs/usage-and-pricing).
+
+Linux Docker Engine, Node and self-hosted Supabase provide an existing engineering path. Do not claim that the current CLI stack is an agency production deployment: Supabase expressly describes it as development/testing infrastructure that must not be exposed externally. [Supabase self-hosting](https://supabase.com/docs/guides/self-hosting).
+
+Correct the guides now; complete the production reference deployment as roadmap work. Prove an independent operator, real authentication/email, scheduling, workers, upgrades and recovery. No paid service is authorized. Free software still consumes storage, electricity, bandwidth and operator time.
+
+### R4. Local records still have external data flows
+
+**Source-proven disclosure mismatch, High.** README's assertion that nothing is sent anywhere conflicts with maps, data retrieval and optional cloud AI. `workspace-gis/layer-placement-preview.tsx` puts an imported extent into a Mapbox Static Images URL. That sends the extent, not the entire imported file. No live confidential-data leak was reproduced by this review.
+
+Document each outbound service, transmitted information, credentials, terms and failure behavior. Make agency-controlled egress and a local-capable cartography path a milestone. OpenGeo already uses MapLibre and PMTiles; inspect its approach without transferring AGPL code into Apache-licensed OpenPlan without license review. MapLibre does not by itself supply licensed offline tiles.
+
+### R5. Long-running model work has an unresolved lifecycle mismatch
+
+**Source-supported failure path, High; fault reproduction pending.** `run-liveness.ts`, `run-reconcile.ts`, `run-reaper.ts` and the reaping RPC use run/stage timestamps with a 45-minute silence threshold. ActivitySim can execute a long stage while a separate worker heartbeat remains fresh. The reaper does not consult that heartbeat. ActivitySim's status/artifact HTTP writes also need response checking and attempt-bound protection against late writes.
+
+Distinguish healthy computation, progress, lost contact, cancellation and terminal failure. Prove long silence, process death, database outage, duplicate claims, restart and late completion in an isolated stack. Preserve exact input and output custody. Extending a timeout alone would leave the ownership problem unresolved.
+
+### R6. Some handoffs preserve less than their names suggest
+
+**Source-proven limits, Medium.** Portfolio import is deliberately create-only and does not restore all exported structured place fields. Direct project GeoPackage exports include project/corridors; governed bundles include additional approved evidence, but neither production builder call passes optional model-link or designation layers. The library support exists.
+
+Retain conservative create-only behavior until reviewed reconciliation is designed. State the contract before download/import. Connect existing geometry support through one shared selected-evidence assembly path. Prove reuse in QGIS, an agency spreadsheet tool and a second OpenPlan context, including stable IDs, counts, CRS/axis order, units, source vintage, privacy and missing-layer states.
+
+### R7. Acceptance gates protect important failures but leave evidence gaps
+
+**Reproduced in isolated fixtures, High for release claims.** The first-week verifier accepted a synthetic completed/yes report with no browser directory. The direction checker accepted a cell promoted to proven without a dated evidence reference. Missing required states and expired registry reviews correctly failed. These are bounded weaknesses in otherwise useful checks, not grounds to discard the suite.
+
+Maintenance in the isolated review copy adds browser-record completeness and dated, exact-byte evidence for proven cells. Neither mechanism can judge professional usefulness or prove that a report genuinely covers a state, role and practice. The final review must distinguish those implemented guards from the future relational coverage/acceptance system.
+
+### R8. CI and recovery evidence do not cover every advertised layer
+
+**Source-proven coverage gaps, High.** Main CI executes AequilibraE and modeling-script suites, but not the other four worker families' behavioral suites. Local import probes skip absent worker environments. `qa:gate` can skip live RLS when the local stack is unavailable, so the separate RLS workflow must be joined explicitly to release evidence.
+
+The restore drill exercises selected database records and one storage object. It does not execute the documented full backup/archive mechanism or establish recovery of every `local://` model artifact. The walkthrough updater can warn and continue on unverifiable migration/build state. Preserve the useful existing drills while adding whole-record restore, complete worker execution and fail-closed deployment acceptance.
+
+### R9. Diagnosed model defects must remain open
+
+**Documentation status error.** KNOWN_ISSUES places unknown demand provenance and disconnected/unloaded network defects under closed items while its text says only diagnosis/disclosure shipped. Record disclosure fixed and diagnosis completed separately from corrected behavior and independent validation. Do not edit frozen studies to make their findings match a newer implementation.
+
+The v0.44 published candidate remains `inconclusive`, did not advance overall, changed no default and opened no acceptance holdout. The published audit and comparison records for all fourteen county-method cases matched their declared bindings and summary fields in the scientific reviewer's checks. The independent verifier accepted the recorded source SHA and rejected an all-zero wrong SHA. That proves the checked custody relationships, not accuracy. Display-loader hash/summary enforcement still has latent gaps described in the scientific appendix.
+
+### R10. Workspace isolation is not the whole agency information model
+
+**Unproven workflow coverage.** RLS, restrictive grants, roles, public-data filtering and exact approvals are substantial foundations. This limited review found no new demonstrated cross-tenant exploit. It did not establish case-level confidentiality, tribal data sovereignty, records holds/disposition, outside-consultant access, or a complete records-request workflow.
+
+Define and observe those actual jobs before adding a broad permission subsystem. Test confidential originals, approved public derivatives, revocation, staff turnover, attachments, exports, backups and service-role work. A public participant's receipt must identify what was actually stored and what remains pending moderation.
+
+### R11. Accessibility and usefulness need evidence beyond agent success
+
+**Unproven cross-cutting requirements.** Three retained desktop screenshots were inspected for legal disclosure, GeoPackage handoff and workbook review. They show a coherent navigation rail, explicit caveats and dense muted content; they do not prove measured contrast, keyboard completion, mobile reachability, screen-reader quality or external artifact usability. An older image named handoff-success still shows an unlocated project, illustrating why filenames and screenshots alone cannot certify the saved output.
+
+Require complete desktop and 390px jobs, keyboard-only navigation, screen-reader tasks, zoom/reflow, non-map alternatives, printed/exported documents and slow-network recovery. Current DOJ guidance identifies WCAG 2.1 AA for state/local government web/mobile services; maintain a dated source instead of copying old compliance deadlines. [DOJ guidance](https://www.ada.gov/resources/small-entity-compliance-guide/).
+
+Recruit practicing planners and public participants through Nathaniel. Observe their own real jobs and records with permission. Measure completion, errors, understanding and assistance. Simulated users remain regression/discovery tools.
+
+### R12. Security maintenance and reporting need an owner
+
+**Observed configuration/dependency gap, Moderate.** On September 4, the production dependency audit returned one moderate advisory for `@xmldom/xmldom@0.8.13`, reached through `mammoth@1.12.0`. GHSA-6gmq-8vp8-gcm6 concerns attacker-controlled entity-reference names during XML serialization; maintained 0.8.15 and 0.9.12 releases contain fixes. OpenPlan source and Mammoth's XML adapter use parsing; the sampled code has no affected `createEntityReference`/serializer call. Exploitability through OpenPlan was not established. The audit still fails and needs a reviewed lockfile update, not `npm audit fix` without inspection. [Upstream advisory](https://github.com/advisories/GHSA-6gmq-8vp8-gcm6).
+
+GitHub API checks show secret scanning and push protection enabled, Dependabot security updates disabled, and private vulnerability reporting disabled. The security policy offers a public contact-only fallback, but the advertised private-report path is unavailable. Classic main protection requires only the strict QA check and permits administrator bypass; no PR review is required. Enable a working private reporting route, establish dependency/release ownership and require the consequential CI contexts. These repository settings were inspected, not changed by this review.
+
+### R13. Large transit ingestion remains tied to a web request
+
+**Source-established resilience/performance risk, Medium; no new timeout reproduction.** GTFS catalog/URL, upload and refresh routes declare a 300-second ceiling and await the complete ingest. The shared pipeline retains version state and input custody, bounds retrieval, checks SSRF and reaps abandoned attempts; those are useful existing protections. It still parses and persists the feed inside the request rather than a resumable compute job. Source: `openplan/src/app/api/gtfs/feeds/route.ts:24-36,398`, upload route `54,217`, and `openplan/src/lib/gtfs/ingest.ts:392-562`.
+
+Profile small/rural and large-agency feeds on the free reference installation, then move work that can exceed a minute into a durable worker using the existing version/adoption/custody sequence. Keep the currently adopted feed available until the replacement is accepted. Test interruption between object storage, parsing, partial row writes and promotion. A higher provider timeout is not durable resumption.
+
+Other intake already has meaningful bounds: portfolio workbooks are limited to 10 MiB, 2,000 rows, 256 columns and bounded archive expansion. Those limits were inspected, not load-tested during this review. Document measured limits and rejection/recovery behavior, rather than promising unlimited agency scale from local unit tests.
+
+## Whole-product capability assessment
+
+No state or overall capability cell was promoted to proven. The current registry has 99 cells: 37 partial and 62 not-assessed. These dimensions are independent lists, not a complete practice-by-role-by-geography coverage model.
+
+| Planning job and existing home | Present foundation | Required next proof |
+|---|---|---|
+| Onboarding, Workspace, Overview, My Work | Account/workspace creation, home geography, readiness and assignment links | Stranger setup, explicit map/data requirements, ordinary staff handoff, recoverable errors |
+| Projects and work plans | Milestones, decisions, issues, risks, meetings, delivery/funding links | One durable case through multiple departments and staff changes |
+| GIS and Data Hub | Spatial import, CRS handling, source records and layer versions | Complete selected-layer export, edited-layer version workflow, geography/units retention, large/invalid input recovery |
+| Documents and Knowledge Base | Source documents, citations, extraction and OCR integration | Version identity, rights/retention, source reuse, accessible extracted/public documents |
+| Corridor Analysis | Place selection, open-data metrics, explanations, GeoJSON | Source completeness, score meaning/normalization, reproducible comparisons and clear capped-data states |
+| Models, county runs, Scenarios | Separate demand methods, assignment, run artifacts, saved comparisons, frozen diagnoses | Healthy long jobs; no mislabeled KPIs; validated uses, observations, behavior and network coverage |
+| Safety | National fatality and selected deeper source adapters, screening, report linkage | Full injury coverage required by claimed use, consistent spatial scope, defensible denominators, safety-to-program decision |
+| Generic Plans, Land Use Plans and RTP | Linked plan records; versioned statutory authoring/review/adoption; regional cycles | Clear ownership between three homes, correct plan-kind law, amendments, full plan production and implementation |
+| Engagement and public portals | Maps, surveys, moderation, comments, public links and response records | Accessible resident receipt through response/disposition and an actual decision; representation and outreach limits |
+| Transit, active transportation and freight | GTFS/accessibility, freight and multimodal model/data foundations | Service-day alternatives, operations/capital effects, network coverage and usable decision artifacts |
+| Environmental, climate, resilience and equity | Templates, source/equity indicators and plan/project evidence | Alternatives, distributional effects, mitigation commitments, hazard baseline and monitoring through implementation |
+| Grants, Programs, measures and Invoicing | Opportunity discovery, pursue/pass, awards, programming and reimbursement | Cost/price-year basis, authorization/obligation, amendment, delivery, claim and closeout without repeated entry |
+| Reports and evidence packages | Grounded content, exports, immutable hashes, submit/return/approve | Recipient reuse, complete layer/document selection, accessible public derivative, semantic freshness |
+| Development review | Existing project/plan/review primitives | Intake/completeness, parcel/policy applicability, findings, conditions, appeals and compliance. Establish product home before a new module |
+| Aerial | Mission and processing/evidence interfaces | Reliable processing/recovery and interpretation in an actual planning job; use existing ODM integration |
+| Assistant and agent controls | Grounding, action registry, named proposals, approval and refusal tests | Verify every consequential action and payload; complete ordinary non-agent workflows before extending MCP |
+| Operations and contributor experience | Local scripts, migrations, CI, monitoring, partial restore/upgrade drills | Supported free agency deployment, full recovery, all workers, incident ownership and independent contributor onboarding |
+
+Compatibility redirects for Billing and Command Center already consolidate old navigation into Invoicing and Overview. Preserve them. Generated CRS registries are not refactoring targets merely because they are large. Concentrate maintainability work on defect-prone orchestration and duplicated evidence translation, particularly report generation, assistant context and the project/plan handoffs.
+
+## Test and gate assessment
+
+| Check | Classification and protection | Blind category / action |
+|---|---|---|
+| First-week execution/outcome/resume | Useful; partial, quota, timeout, missing selected jobs and fatal console errors fail | Missing positive browser records reproduced; narrow maintenance prepared. Human usefulness remains outside it |
+| First-week finding corroboration | Useful but format-sensitive; rejects contradictions and unsupported screenshots/snapshots | Desktop minimum width excludes 390px findings from this format; pixel/semantic correctness needs direct review |
+| Direction freshness/membership | Useful; missing state and expired registry mutants killed | Unsupported proven-cell promotion survived; exact evidence maintenance prepared. Metadata cannot establish independent thought |
+| Live RLS catalog and cross-tenant/role probes | Useful and consequential | Hosted deployment, service-role side effects and case-level confidentiality need separate probes |
+| Offline policy-source guard | Brittle; exact source strings can detect removal of known assertions | Contains a redundant Boolean tautology. Retire that assertion when maintaining the suite, preserving real catalog and migration tests |
+| Copy/jargon ledger | Useful editorial budget, brittle exact counts | Current CI failure deserves judgment about actual user-facing wording, not automatic baseline inflation |
+| Worker import check | Useful import smoke check | Missing venv means skip; does not execute worker behavior. Never label it all-worker coverage |
+| Shuffled app suite | Useful for shared-state/order defects | Retain failing seed, distinguish compile/import errors and environmental failures from outcome tests |
+| Published model verifier | Useful custody and conservation check; wrong source SHA fails | Does not prove accuracy; strengthen consistency with fields displayed by loaders |
+| SQL custody and immutable approvals | Useful and necessary | Exercise omitted/NULL fields and service-role RPCs in isolated live tests; string presence is insufficient |
+| Restore and upgrade drills | Useful representative regressions | Whole authoritative record, storage bytes, local model artifacts, concurrent work and actual documented procedure remain incomplete |
+| Lint, types, build and dependency audit | Useful mechanical checks | No claim of workflow reachability, licensing eligibility, science or accessibility follows |
+
+No failing test was removed to obtain green. No sealed scientific artifact, consumed holdout, model default or acceptance threshold was changed by this review.
+
+## Decisions, sequencing and adoption
+
+The independent product reviewer prioritizes correct plan authority and a reusable decision record. The engineering reviewer prioritizes free/private/recoverable agency operation. Both identify existing modules as the starting point and reject a model-only roadmap. The synthesis begins with truthful candidate/review evidence, then treats plan meaning, durable jobs and free operations as prerequisites to a complete agency case. Scientific development and nationwide source coverage continue as separate mandatory programs.
+
+The detailed roadmap specifies outcomes, gaps, dependencies, definitions of done, verification, risk and cost. Its milestones are not a promised release count or a smaller destination. Environmental, development, transit, freight, housing and records work remain explicit pre-v1 obligations even where current implementation is unassessed.
+
+Product decisions for Nathaniel concern territory depth, representative real planning cases, acceptable confidentiality/public-record policies, and which practitioners/public participants can be observed. Engineering choices such as schema shape, provider adapter, job fencing, test organization and installation topology remain the technical lead's responsibility.
+
+Other adoption barriers to handle before v1 include maintainers and release signing, a private security-reporting path, source/license ownership and update cadences, public-record retention and portability, agency authentication and staff exit, accessibility procurement evidence, translation quality, low-connectivity operation, disaster recovery on a second physical device, and a support burden that a single founder or volunteer maintainer cannot carry indefinitely. Each needs an owner and executable evidence where possible. None is solved by another optimistic README claim.
+
+## Changes versus future work
+
+Review findings and recommendations above are not implemented product repairs. Only documentation consolidation and narrowly justified evidence-guard maintenance are authorized in this assignment. Active-development crash/scoring changes belong to that session. Before landing, list the exact guard changes, mutation results, documentation authorities, final HEAD/CI, and any pending human or operational proof here.
