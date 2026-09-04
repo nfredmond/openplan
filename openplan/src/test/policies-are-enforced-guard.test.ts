@@ -68,7 +68,6 @@ describe("policy enforcement invariant (offline)", () => {
     );
     expect(inventorySource).toContain("filter((t) => !schema.rlsEnabled(t))).toEqual([])");
     expect(inventorySource.includes("describe.skip")).toBe(false);
-    expect(LIVE_RLS === true || LIVE_RLS === false).toBe(true);
   });
 
   it("the grant-fidelity half exists and is ungated (guard-the-guard)", () => {

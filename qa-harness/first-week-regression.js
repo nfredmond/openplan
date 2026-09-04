@@ -67,7 +67,6 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { chromium } = require('playwright');
 
 const { assertLocalTargetUrl, buildBrowserContextOptions } = require('./harness-env');
 
@@ -193,6 +192,7 @@ async function signIn(page, { baseUrl, email, password }) {
 }
 
 async function main() {
+  const { chromium } = require('playwright');
   const only = (() => {
     const idx = process.argv.indexOf('--only');
     return idx === -1 ? null : process.argv[idx + 1];
