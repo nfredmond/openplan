@@ -21,6 +21,11 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## 0.44.0 — 2026-09-05
 
+- Project evidence archives no longer require a linked plan or exactly one report
+  PDF. Missing prerequisites remain explicit. Submitting an archive for governed
+  approval still requires the exact linked plan, one current PDF, and the existing
+  evidence, freshness, and authorization checks. No migration is needed.
+
 - Printable Safety street context now preserves geographic proportions instead
   of stretching each axis to fill the page. Screen and report drawings disclose
   their approximate local projection and omit unsuitable scale bars. Existing

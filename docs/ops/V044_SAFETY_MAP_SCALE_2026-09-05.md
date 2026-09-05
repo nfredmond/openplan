@@ -111,3 +111,42 @@ significant-digit labels so a small nonzero distance is not printed as zero.
 Two sub-meter fixtures reject the old minimum; a separate formatter mutation
 rejects loss of label precision. Both mutations are restored. The complete
 focused suite now passes 52 tests. Survey-grade precision is still not claimed.
+
+## Rebuilt map verification on 820da584
+
+Full local QA passed 12,929 app tests, 135 live isolation tests, the production
+build, and a production dependency audit with zero advisories. Main CI
+33982786798, RLS 33982786903, Upgrade 33982805130, and browser workflow
+33982806460 all passed this exact commit.
+
+The identified production build was reached from the public landing page.
+Desktop and 390px Safety screenshots show the corrected shape and the ordinary
+text explaining its approximate scale. Console errors and page overflow were
+zero. The first helper used the wrong accessible selector; the second matched
+both the SVG description and the visible paragraph. Neither created a report.
+Both failed attempts remain separate from the successful visible journey.
+
+A new QA report was created through Reports, without rewriting the before-fix
+report. Its explicit crash acquisition selection was saved and reloaded before
+generation. Report `b4de808a-4fd0-4498-9254-0ba91bb8e929` produced artifact
+`228146fe-26d4-4793-9286-d04d740ade2f`. Both desktop and mobile PDF downloads
+match the independently read stored object: 473,101 bytes, SHA-256
+`d8c2534e7cdc02977793e6adf0fe02aa83f04bd80158ead4843a3b36c49c0635`.
+An unchanged copy passed; altered and truncated copies failed. This verifies
+stored bytes, not a preregistered report hash.
+
+All twelve PDF pages were inspected. Page 11 preserves the county proportions,
+20 km scale bar, and visible limitation. Crash totals and source limitations
+remain intact. Existing card/page breaks remain queued. The mobile report
+preview was blank in its capture although the native download succeeded.
+Reload after generation was used for existing issue 040; preview freshness is
+not claimed fixed. Evidence is in `safety-scale-after-visible/` under the local
+evidence root above.
+
+The first fresh run reached setup but recorded two Mapbox telemetry network-change
+errors. A same-account retry then attempted duplicate signup. Neither is a
+clean first-user pass. A genuinely fresh run, `2026-09-05T18-21-04-045Z`, reached
+setup in 199 seconds with no findings or console errors. It was interrupted
+during the non-California journey to correct the ordinary archive boundary
+described in `V044_ARCHIVE_APPROVAL_BOUNDARY_2026-09-05.md`. No full outcome pass
+or release tag is implied.

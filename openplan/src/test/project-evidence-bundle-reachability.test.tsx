@@ -233,5 +233,10 @@ describe("project evidence bundle reachability", () => {
       "href",
       `/reports?projectId=${PROJECT_ID}`,
     );
+    expect(screen.getByText(/A linked plan is optional for an archive/)).toBeVisible();
+    expect(screen.getByText(/Governed submission still requires exactly one current report PDF/)).toBeVisible();
+    expect(screen.getByRole("button", { name: "Freeze evidence bundle" })).toBeDisabled();
+    fireEvent.click(screen.getByText(/I reviewed this exact selection/));
+    expect(screen.getByRole("button", { name: "Freeze evidence bundle" })).toBeEnabled();
   });
 });

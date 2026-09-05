@@ -104,10 +104,6 @@ function BundleReviewDialog({
   ).length;
   const knownSelectedBytes = selectedCandidates.reduce((sum, candidate) => sum + (candidate.byteSize ?? 0), 0);
   const blockingReasons = [
-    ...(!selectedPlan ? ["Select the linked plan this handoff is for."] : []),
-    ...(selectedReportPdfCount !== 1
-      ? [`Select exactly one current report PDF; ${selectedReportPdfCount} ${selectedReportPdfCount === 1 ? "is" : "are"} selected.`]
-      : []),
     ...(unsupportedSelectedCount > 0
       ? [`Remove or correct ${unsupportedSelectedCount} selected item${unsupportedSelectedCount === 1 ? "" : "s"} with unsupported numeric evidence.`]
       : []),
@@ -123,8 +119,6 @@ function BundleReviewDialog({
   const canSubmit =
     canGenerate &&
     confirmed &&
-    Boolean(selectedPlan) &&
-    selectedReportPdfCount === 1 &&
     unsupportedSelectedCount === 0 &&
     !inventory.readFailed &&
     selectedFileCount <= inventory.limits.selectedFileLimit &&
@@ -223,14 +217,14 @@ function BundleReviewDialog({
               }}
               className="mt-1 block w-full rounded-[0.4rem] border border-border bg-background px-3 py-2"
             >
-              <option value="">Select the exact plan for this handoff</option>
+              <option value="">No linked plan in this archive</option>
               {linkedPlans.map((plan) => (
                 <option key={plan.id} value={plan.id}>{plan.title} · {plan.status}</option>
               ))}
             </select>
-            {linkedPlans.length === 0 ? (
+            {!selectedPlan ? (
               <span className="mt-1 block text-xs text-amber-700 dark:text-amber-200">
-                This project has no linked plan. Link one before freezing a governed package.{" "}
+                A linked plan is optional for an archive. Governed submission still requires one.{" "}
                 <Link className="font-medium underline underline-offset-2" href={`/plans?projectId=${projectId}`}>
                   Open Plans for this project.
                 </Link>
@@ -240,7 +234,7 @@ function BundleReviewDialog({
 
           {selectedReportPdfCount !== 1 ? (
             <p role="status" className="mb-4 rounded-[0.4rem] border border-amber-400/50 bg-amber-400/10 p-3 text-sm">
-              Select exactly one current PDF from Reports. Selected now: {selectedReportPdfCount}.{" "}
+              This archive has {selectedReportPdfCount} report PDFs selected. Governed submission still requires exactly one current report PDF.{" "}
               <Link className="font-medium underline underline-offset-2" href={`/reports?projectId=${projectId}`}>
                 Open Reports for this project.
               </Link>

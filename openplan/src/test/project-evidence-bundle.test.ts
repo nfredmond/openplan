@@ -13,6 +13,7 @@ import {
   projectEvidenceRevisionToken,
   type ProjectEvidenceCandidate,
 } from "@/lib/project-evidence-bundles/contracts";
+import { decisionPackageReadiness } from "@/lib/project-evidence-bundles/decision-package-readiness";
 
 const PROJECT_ID = "11111111-1111-4111-8111-111111111111";
 const WORKSPACE_ID = "22222222-2222-4222-8222-222222222222";
@@ -126,6 +127,42 @@ function input(overrides: Partial<BuildProjectEvidenceBundleInput> = {}): BuildP
 }
 
 describe("project evidence archive", () => {
+  it.each([0, 1, 2])("archives %s selected report PDFs without inventing a plan or governed readiness", async (pdfCount) => {
+    const reports = Array.from({ length: pdfCount }, (_, index) => {
+      const bytes = Buffer.from(`pdf-${index}`);
+      return {
+        candidate: candidate({
+          id: `report_artifacts:report-${index}`, sourceId: "report_artifacts", sourceLabel: "Reports",
+          owningModule: "reports", recordId: `report-${index}`, title: `Report ${index}`,
+          originalFilename: `report-${index}.pdf`, byteSize: bytes.length, recordedChecksumSha256: sha256(bytes),
+        }),
+        bytes, filename: `report-${index}.pdf`, contentType: "application/pdf",
+      };
+    });
+    const built = await buildProjectEvidenceBundle(input({
+      candidates: reports.map((report) => report.candidate), selectedFiles: reports, selectedLinkedPlan: null,
+    }));
+    const zip = await JSZip.loadAsync(built.bytes);
+    const manifest = JSON.parse(await zip.file("manifest.json")!.async("string")) as typeof built.manifest;
+    expect(manifest.selectedLinkedPlan).toBeNull();
+    expect(manifest.approvalOrPublication).toBe(false);
+    expect(zip.file("project/linked-plan.json")).toBeNull();
+    expect(decisionPackageReadiness(manifest)).toMatch(/linked plan/i);
+    const included = manifest.entries.filter((entry) => entry.originalRecord.sourceId === "report_artifacts");
+    expect(included).toHaveLength(pdfCount);
+    for (const entry of included) {
+      const bytes = await zip.file(entry.path!)!.async("nodebuffer");
+      expect(sha256(bytes)).toBe(entry.checksumSha256);
+    }
+    if (pdfCount === 1) {
+      expect(manifest.currentBoardOrReportPdf).toEqual({ recordId: "report-0", checksumSha256: sha256(reports[0].bytes) });
+    } else {
+      expect(manifest.currentBoardOrReportPdf).toBeNull();
+      expect(decisionPackageReadiness({ ...manifest, selectedLinkedPlan: { id: "plan", revisionToken: "a".repeat(64) } }))
+        .toMatch(/report PDF/i);
+    }
+  });
+
   it("is deterministic and carries canonical provenance, exclusions, and usable checksums", async () => {
     const first = await buildProjectEvidenceBundle(input());
     const second = await buildProjectEvidenceBundle(input());
