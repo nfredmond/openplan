@@ -209,3 +209,18 @@ CORE-AGENTIC-01 / A1a–d now explicitly tracks substantial delegated planning a
 ## Aerial benchmark clarification at e6900750
 
 The earlier aerial row records an unexamined live outcome; the subsequent [current aerial code review](AERIAL_CURRENT_CAPABILITY_REVIEW.md) now traces mission/export and photo-to-frozen-report paths. It establishes real foundations and source defects, not current browser/physical acceptance. [The 21-family benchmark](ODM_WEBODM_FEATURE_BENCHMARK.md) is the maintained minimum comparison inventory for M5b.1–6: capture/input/control, full reconstruction, 2D/3D/measurements/contours/change, spectral/video/splats handoffs, export, sharing and local/large-job operations. CORE-AERIAL-02 and CORE-DJI-01 separately retain superiority evidence and actual controller USB/import. Every family needs visible entry, input/output identity, supported engine/device profile, meaningful test and recipient proof. All full outcomes remain open; upstream feature lists and generated files are not closure evidence.
+
+
+## Full LAPM chapter assessment, September 4
+
+The entire manual review adds detail without promoting any capability to complete. Source/coverage: `LAPM_SOURCE_AND_REVIEW_COVERAGE.md`; gaps: `LAPM_FEATURE_GAP_ANALYSIS.md`.
+
+| Practice | Assessment and required proof |
+|---|---|
+| Local-assistance authority, agreements, funding and forms | Partial foundations; M10a.1 and M11 require source/phase/trigger specificity, NI/FTA branches, exact packets and outside authorization. |
+| Environmental/design/ROW/utility readiness | Templates/records exist; M8a/M10b.1–2 require actual specialist cases, signed versions and commitments carried to field evidence. |
+| Agency civil rights and hearings | Transit-equity/campaign foundations are narrower; M8b/M9d require full agency cycle, confidential complaints and authoritative hearing record. |
+| Consultant competition and construction administration | Pursuits/time/invoice/control descriptions are partial; M14/M11/M10c.1 need sealed methods/on-call caps, approved rates and independently checked field-to-payment lineage. |
+| Closure, maintenance and entity oversight | Not established end to end; M10d.1–2/M13f require valid underspend, final-voucher evidence, continuing obligations, county certification and audit/CAP final disposition. |
+
+Current DBE and future Buy America/bidder-list transitions differ; retain dated application, suspended/unknown states and historical evidence. Full source reading is not proof of runtime compliance or professional usefulness.

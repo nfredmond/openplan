@@ -113,3 +113,17 @@ The history and scope reconciliation records distinguish direct recovered instru
 | CORE-DJI-01 | Produce KML and support transfer from the computer over USB to the DJI controller, with useful import and recovery. | Current KML is review geometry; WPML/KMZ downloads exist but profile/settings integrity and hardware import remain unproved. Exact equipment requested, still unknown. | M5b.1. Separate boundary KML/review KML/full mission packages; supported profile, actual USB copy and controller import/reopen; no universal compatibility or flight-validated claim from file generation. |
 
 CORE-AERIAL-01 remains active. The [aerial reuse decision](AERIAL_REUSE_AND_IMPLEMENTATION_DECISION.md) and its three supporting reports map current code, older repositories, current upstream features and physical acceptance. This is mandatory scope restoration/clarification, not implemented capability. Preserve all other practice-family and organization outcomes above.
+
+
+## Entire LAPM: source-derived completion detail
+
+Nathaniel requested the entire latest manual as another gap analysis. The team read all 492 pages and four current bulletins; linked exhibits were sampled, not all read. These entries refine already binding full capital/planning administration, rather than assert newly recovered historical wording. See `LAPM_FEATURE_GAP_ANALYSIS.md` and `LAPM_SOURCE_AND_REVIEW_COVERAGE.md`.
+
+| Stable requirement | Required outcome and evidence | Existing home / roadmap completion |
+|---|---|---|
+| CORE-LAPM-01 | Applicable current local-assistance lifecycle, including NI/FTA branches, actual authority/agreement/funding events, environmental/ROW/utility/design/competition, field-to-payment evidence and final records. | CORE-CAPITAL-01, M10a.1–d.1/M11/M14. Actual agency-reviewed case and current prescribed packet; dated rules and independent clocks; template presence cannot close it. |
+| CORE-AGENCY-CIVILRIGHTS-01 | Agency FHWA Title VI/LEP/ADA programs, complaint/assistance response, recurring certifications/training/review and barrier correction. | M8b/M9/M4. Small/large agency year with real approval/submission and confidential complaint; service-equity calculations alone insufficient. |
+| CORE-MAINTENANCE-01 | Continuing maintenance/asset custody/property/mitigation duties and applicable county road-mileage certification. | M10d.2/M5/M13. Reconciled resolution/map/table, external disposition, ownership transfer and unclosed deficiencies. |
+| CORE-AGENCY-AUDIT-01 | Entity/project audit, applicable annual reporting/exemption, corrective action, disputed/repaid costs and authoritative final determination. | M13f/M4/M11. Complete agency denominator, exact support/response and external acceptance; preserve holds. |
+
+M8a/M9d and M10b/c make hearing records, separate environmental pathways, design commitments, parcel/utility rights, measured quantities and responsible checking explicit. Software permissions never manufacture public employment, licensure, government consultation authority, an official signature or external acceptance. California depth remains a dated profile within the all-50-states-and-DC product.

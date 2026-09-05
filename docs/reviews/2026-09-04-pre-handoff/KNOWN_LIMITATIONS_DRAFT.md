@@ -185,3 +185,16 @@ These findings come from source and primary-document research. No active runtime
 | KL-2026-09-04-053 | Full feature/accuracy/superiority; unproved | Substantial control/3D/measurement/spectral/change/operational workflows are not established; older viewer code assumes metre display and subsamples whole-loaded clouds. | M5b.3–6: retain all comparator families, validate reuse and actual analytical units/coverage, independent accuracy and practicing-planner comparisons. |
 
 See [current source findings](AERIAL_CURRENT_CAPABILITY_REVIEW.md), [DJI research](DJI_MISSION_EXPORT_USB_RESEARCH.md) and [reuse decision](AERIAL_REUSE_AND_IMPLEMENTATION_DECISION.md). No old custody record or scientific artifact was changed. A stored result is not automatically suitable for survey, payment or structural inspection.
+
+
+## Full LAPM review: source e6900750, no live reproduction
+
+| ID | Classification | Finding | Required resolution |
+|---|---|---|---|
+| KL-2026-09-04-054 | Guard/claim limitation, source-established | LAPM readiness helpers have only definition/test references; descriptor tests do not enforce live payment, quantity or qualified-approval requirements. “Works today” disclosure limited to deferred exhibit numbers understates substantive gaps. | M0/M10: correct capability claims, implement actual relevant boundaries and test targeted failures plus harmless survivor; preserve useful bounded helper tests. |
+| KL-2026-09-04-055 | Authority and rule currency gap | Current templates/profiles do not establish phase/fund/project applicability, outside authority, official forms, overlapping clocks or bulletin/form transitions. Grant-template award-date generalization is overbroad. | M10a.1/M1: dated sources, independent trigger clocks, actual agency/DLAE routing, historical agreement binding and unresolved-state handling. |
+| KL-2026-09-04-056 | Capital operational completeness gap | Generic milestone/submittal/invoice rows do not establish parcel/utility rights, commitment-to-sheet trace, checked quantities, field/payroll/material/change evidence or correct closure. | M10b.1–d.1/M11/M14: complete permitted package/pay-period/correction/underspend cases with specialists, actual artifacts and guarded financial lineage. |
+| KL-2026-09-04-057 | Agency and post-project scope/proof gap | Agency civil-rights year, complaint/ADA obligations, maintenance/mileage certification and entity-wide audit/CAP workflow were not established by bounded code review. | M8b/M10d.2/M13f: distinct observed cases and recurring obligations; project completion does not close agency or property duties. |
+| KL-2026-09-04-058 | Source/artifact access and ambiguity | Some manual wording conflicts; linked exhibits/external manuals not all read. Pilot PES XFA exposed only an Adobe placeholder. | Preserve explicit source conflicts and unreadable status, obtain authoritative resolution, inspect actual current forms/agreements before claiming operational compliance. |
+
+See `LAPM_FEATURE_GAP_ANALYSIS.md` and `LAPM_SOURCE_AND_REVIEW_COVERAGE.md`. Full chapter reading is complete; statutory completeness, current all-state law, live filing and agency acceptance are not established.

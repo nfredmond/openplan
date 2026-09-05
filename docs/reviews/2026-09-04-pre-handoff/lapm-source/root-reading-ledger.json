@@ -1,0 +1,140 @@
+{
+  "chapters": {
+    "06": {
+      "pdf_pages_read": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76
+      ],
+      "figures_visually_read": [
+        38,
+        45,
+        56,
+        66,
+        67
+      ]
+    },
+    "07": {
+      "pdf_pages_read": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "figures_visually_read": [
+        2
+      ]
+    },
+    "08": {
+      "pdf_pages_read": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    "17": {
+      "pdf_pages_read": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    }
+  },
+  "full_manual_frontmatter": [
+    1,
+    2
+  ],
+  "bulletins_read": [
+    "ob26-01r1.pdf",
+    "ob26-02.pdf",
+    "ob26-03.pdf",
+    "ob26-04.pdf"
+  ],
+  "notes": "Text read in bounded chunks; truncated chunks revisited. Chapter6 figures read visually; page67 figure continuation included. OB redlines require product reviewer visual interpretation before operative-rule claims."
+}

@@ -1,0 +1,158 @@
+[
+  {
+    "chapter": "ch01.pdf",
+    "combined_pdf_pages": [
+      3,
+      6
+    ],
+    "text_differences": []
+  },
+  {
+    "chapter": "ch02.pdf",
+    "combined_pdf_pages": [
+      7,
+      22
+    ],
+    "text_differences": []
+  },
+  {
+    "chapter": "ch03.pdf",
+    "combined_pdf_pages": [
+      23,
+      46
+    ],
+    "text_differences": []
+  },
+  {
+    "chapter": "ch04.pdf",
+    "combined_pdf_pages": [
+      47,
+      51
+    ],
+    "text_differences": []
+  },
+  {
+    "chapter": "ch05.pdf",
+    "combined_pdf_pages": [
+      52,
+      68
+    ],
+    "text_differences": []
+  },
+  {
+    "chapter": "ch06.pdf",
+    "combined_pdf_pages": [
+      69,
+      144
+    ],
+    "text_differences": []
+  },
+  {
+    "chapter": "ch07.pdf",
+    "combined_pdf_pages": [
+      145,
+      153
+    ],
+    "text_differences": []
+  },
+  {
+    "chapter": "ch08.pdf",
+    "combined_pdf_pages": [
+      154,
+      161
+    ],
+    "text_differences": []
+  },
+  {
+    "chapter": "ch09.pdf",
+    "combined_pdf_pages": [
+      162,
+      205
+    ],
+    "text_differences": []
+  },
+  {
+    "chapter": "ch10.pdf",
+    "combined_pdf_pages": [
+      206,
+      275
+    ],
+    "text_differences": [
+      2
+    ]
+  },
+  {
+    "chapter": "ch11.pdf",
+    "combined_pdf_pages": [
+      276,
+      286
+    ],
+    "text_differences": []
+  },
+  {
+    "chapter": "ch12.pdf",
+    "combined_pdf_pages": [
+      287,
+      330
+    ],
+    "text_differences": [
+      1
+    ]
+  },
+  {
+    "chapter": "ch13.pdf",
+    "combined_pdf_pages": [
+      331,
+      377
+    ],
+    "text_differences": []
+  },
+  {
+    "chapter": "ch14.pdf",
+    "combined_pdf_pages": [
+      378,
+      390
+    ],
+    "text_differences": []
+  },
+  {
+    "chapter": "ch15.pdf",
+    "combined_pdf_pages": [
+      391,
+      403
+    ],
+    "text_differences": []
+  },
+  {
+    "chapter": "ch16.pdf",
+    "combined_pdf_pages": [
+      404,
+      470
+    ],
+    "text_differences": []
+  },
+  {
+    "chapter": "ch17.pdf",
+    "combined_pdf_pages": [
+      471,
+      476
+    ],
+    "text_differences": []
+  },
+  {
+    "chapter": "ch18.pdf",
+    "combined_pdf_pages": [
+      477,
+      484
+    ],
+    "text_differences": []
+  },
+  {
+    "chapter": "ch20.pdf",
+    "combined_pdf_pages": [
+      485,
+      492
+    ],
+    "text_differences": []
+  }
+]

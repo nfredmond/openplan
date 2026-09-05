@@ -123,3 +123,12 @@ Main remained clean at e6900750 when last checked; its CI [33932542101](https://
 - [DJI mission and USB research](DJI_MISSION_EXPORT_USB_RESEARCH.md) separates survey KML, review KML and complete profiled mission packages; computer copying, controller import and flight validation require different proof. Exact user equipment remains unknown. No USB device or aircraft was accessed.
 
 M5b.1–6, CORE-AERIAL-02/CORE-DJI-01 and KL049–053 own completion and identified gaps. The proposed canonical contract is aligned in isolated scratch for later consolidation. Human comparison and independent analytical/device evidence are required; a first demo does not close full scope. This checkpoint changes documentation only. Main remains developer-owned at the last observed clean e6900750; no safe handoff, release, new app acceptance or CI result is inferred.
+
+
+## Entire 2026 Caltrans LAPM gap analysis
+
+[Feature-gap analysis](LAPM_FEATURE_GAP_ANALYSIS.md) connects all chapters to the existing product and roadmap. [Source currency and reading coverage](LAPM_SOURCE_AND_REVIEW_COVERAGE.md) records full team reading of 492 manual pages, Chapter 19 reserved, all four current bulletins, selected exhibit reading and inaccessible XFA/external-authority limits. Public [source metadata](LAPM_SOURCE_MANIFEST.json) and [page coverage](LAPM_READING_COVERAGE.json) preserve provenance and bounded bookkeeping checks; original source PDFs remain outside Git.
+
+Detailed reports: [1–5/18/20](LAPM_CHAPTERS_01_05_18_20_REVIEW.md), [6–8/17](LAPM_CHAPTERS_06_08_17_REVIEW.md), [9–12](LAPM_CHAPTERS_09_12_REVIEW.md), [13–16](LAPM_CHAPTERS_13_16_REVIEW.md). M10a.1–d.2 refine capital administration; M8a/b, M9d and M13f make environmental/civil-rights, hearing, maintenance/certification and agency-audit work explicit. M11/M14 retain approved cost bases, sealed/on-call procurement and distinct payment/claim events. No new chapter-specific modules or product implementation were launched.
+
+Source findings retain e6900750 attribution. Main advanced to clean 01f0fd03 during this review; root repeated the detached-readiness-helper search there. Main CI33935279096 was in progress, RLS33935279333 passed, and no safe handoff/release was established. The active checkout and its runtime were untouched. The review branch preserves documentation only for this extension; push success and CI status are separate. Canonical contract/docs consolidation still awaits the owner handoff.

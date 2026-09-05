@@ -1,0 +1,1205 @@
+{
+  "status": "complete for assigned chapter and bulletin reading",
+  "method": "Full sequential reading of every extracted assigned page, including contents, tables, captions and references; listed tables, diagrams and redlines additionally rendered and visually inspected. This is source review, not implementation acceptance.",
+  "documents": {
+    "ch09": {
+      "pages": [
+        {
+          "pdf_page": 1,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 2,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 3,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 4,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 5,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 6,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 7,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 8,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 9,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 10,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 11,
+          "text_read": true,
+          "visual": "rendered and visually inspected",
+          "render_file": "product-ch09-p011.png"
+        },
+        {
+          "pdf_page": 12,
+          "text_read": true,
+          "visual": "rendered and visually inspected",
+          "render_file": "product-ch09-p012.png"
+        },
+        {
+          "pdf_page": 13,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 14,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 15,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 16,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 17,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 18,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 19,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 20,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 21,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 22,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 23,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 24,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 25,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 26,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 27,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 28,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 29,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 30,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 31,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 32,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 33,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 34,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 35,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 36,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 37,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 38,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 39,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 40,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 41,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 42,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 43,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 44,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        }
+      ],
+      "source": {
+        "title": "Chapter 9: Civil Rights and Disadvantaged Business Enterprises (PDF)",
+        "url": "https://dot.ca.gov/-/media/dot-media/programs/local-assistance/documents/lapm/ch09.pdf",
+        "file": "ch09.pdf",
+        "final_url": "https://dot.ca.gov/-/media/dot-media/programs/local-assistance/documents/lapm/ch09.pdf",
+        "bytes": 500357,
+        "sha256": "4431583326518f8d23399afc86e7b90e01b7313f82f3bd2b4077ce97669f4399",
+        "pdf_pages": 44,
+        "text_pages": 44,
+        "retrieved_at": "2026-09-05T00:51:23.749745+00:00"
+      },
+      "coverage": "entire assigned chapter"
+    },
+    "ch10": {
+      "pages": [
+        {
+          "pdf_page": 1,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 2,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 3,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 4,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 5,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 6,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 7,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 8,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 9,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 10,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 11,
+          "text_read": true,
+          "visual": "rendered and visually inspected",
+          "render_file": "product-ch10-p011.png"
+        },
+        {
+          "pdf_page": 12,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 13,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 14,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 15,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 16,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 17,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 18,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 19,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 20,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 21,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 22,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 23,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 24,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 25,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 26,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 27,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 28,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 29,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 30,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 31,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 32,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 33,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 34,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 35,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 36,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 37,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 38,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 39,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 40,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 41,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 42,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 43,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 44,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 45,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 46,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 47,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 48,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 49,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 50,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 51,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 52,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 53,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 54,
+          "text_read": true,
+          "visual": "rendered and visually inspected",
+          "render_file": "product-ch10-p054.png"
+        },
+        {
+          "pdf_page": 55,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 56,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 57,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 58,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 59,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 60,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 61,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 62,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 63,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 64,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 65,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 66,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 67,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 68,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 69,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 70,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        }
+      ],
+      "source": {
+        "title": "Chapter 10: Consultant Selection (PDF)",
+        "url": "https://dot.ca.gov/-/media/dot-media/programs/local-assistance/documents/lapm/ch10.pdf",
+        "file": "ch10.pdf",
+        "final_url": "https://dot.ca.gov/-/media/dot-media/programs/local-assistance/documents/lapm/ch10.pdf",
+        "bytes": 864341,
+        "sha256": "0472df398ce55f76e2751155089f7e06587d16a618d3523d221929c38bcc0e00",
+        "pdf_pages": 70,
+        "text_pages": 70,
+        "retrieved_at": "2026-09-05T00:51:26.239817+00:00"
+      },
+      "coverage": "entire assigned chapter"
+    },
+    "ch11": {
+      "pages": [
+        {
+          "pdf_page": 1,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 2,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 3,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 4,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 5,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 6,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 7,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 8,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 9,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 10,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 11,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        }
+      ],
+      "source": {
+        "title": "Chapter 11: Design Guidance (PDF)",
+        "url": "https://dot.ca.gov/-/media/dot-media/programs/local-assistance/documents/lapm/ch11.pdf",
+        "file": "ch11.pdf",
+        "final_url": "https://dot.ca.gov/-/media/dot-media/programs/local-assistance/documents/lapm/ch11.pdf",
+        "bytes": 297004,
+        "sha256": "bb096d948fc9756ab6e08e0db0e2d55dc9cad70069826ccce8ca787e503bbb76",
+        "pdf_pages": 11,
+        "text_pages": 11,
+        "retrieved_at": "2026-09-05T00:51:25.065834+00:00"
+      },
+      "coverage": "entire assigned chapter"
+    },
+    "ch12": {
+      "pages": [
+        {
+          "pdf_page": 1,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 2,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 3,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 4,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 5,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 6,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 7,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 8,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 9,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 10,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 11,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 12,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 13,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 14,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 15,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 16,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 17,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 18,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 19,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 20,
+          "text_read": true,
+          "visual": "rendered and visually inspected",
+          "render_file": "product-ch12-p020.png"
+        },
+        {
+          "pdf_page": 21,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 22,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 23,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 24,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 25,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 26,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 27,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 28,
+          "text_read": true,
+          "visual": "rendered and visually inspected",
+          "render_file": "product-ch12-p028.png"
+        },
+        {
+          "pdf_page": 29,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 30,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 31,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 32,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 33,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 34,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 35,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 36,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 37,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 38,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 39,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 40,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 41,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 42,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 43,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 44,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        }
+      ],
+      "source": {
+        "title": "Chapter 12: Plans, Specifications & Estimate (PDF)",
+        "url": "https://dot.ca.gov/-/media/dot-media/programs/local-assistance/documents/lapm/ch12.pdf",
+        "file": "ch12.pdf",
+        "final_url": "https://dot.ca.gov/-/media/dot-media/programs/local-assistance/documents/lapm/ch12.pdf",
+        "bytes": 517181,
+        "sha256": "949be6845223f43dca53fc1263470a338d013aabc614d82ad5b39339a607405f",
+        "pdf_pages": 44,
+        "text_pages": 44,
+        "retrieved_at": "2026-09-05T00:51:27.699521+00:00"
+      },
+      "coverage": "entire assigned chapter"
+    },
+    "ob26-02": {
+      "pages": [
+        {
+          "pdf_page": 1,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 2,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 3,
+          "text_read": true,
+          "visual": "rendered and visually inspected",
+          "render_file": "product-ob26-02-p003.png"
+        },
+        {
+          "pdf_page": 4,
+          "text_read": true,
+          "visual": "rendered and visually inspected",
+          "render_file": "product-ob26-02-p004.png"
+        },
+        {
+          "pdf_page": 5,
+          "text_read": true,
+          "visual": "rendered and visually inspected",
+          "render_file": "product-ob26-02-p005.png"
+        }
+      ],
+      "source": {
+        "title": "#26-02: Bidder\u2019s/Proposer\u2019s List Data Collection & Submission",
+        "url": "https://dot.ca.gov/-/media/dot-media/programs/local-assistance/documents/ob/2026/ob26-02.pdf",
+        "file": "ob26-02.pdf",
+        "final_url": "https://dot.ca.gov/-/media/dot-media/programs/local-assistance/documents/ob/2026/ob26-02.pdf",
+        "bytes": 186472,
+        "sha256": "038be0426e70ac5a4b31af3cf64fb6d78228d84a747f97e96cff828e12169f97",
+        "pdf_pages": 5,
+        "text_pages": 5,
+        "retrieved_at": "2026-09-05T00:51:30.936689+00:00"
+      },
+      "coverage": "entire assigned bulletin including attachments"
+    },
+    "ob26-02-old": {
+      "pages": [
+        {
+          "pdf_page": 1,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 2,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 3,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 4,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 5,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        }
+      ],
+      "comparison_note": "Parent reports exact extracted-text equality with current; not independently full-read or visually inspected yet.",
+      "source": {
+        "title": "OB #26-02(PDF)",
+        "url": "https://dot.ca.gov/-/media/dot-media/programs/local-assistance/documents/ob/2026/ob26-02-old.pdf",
+        "file": "ob26-02-old.pdf",
+        "final_url": "https://dot.ca.gov/-/media/dot-media/programs/local-assistance/documents/ob/2026/ob26-02-old.pdf",
+        "bytes": 168722,
+        "sha256": "beceb2fdfc5e810c72615bd2e1e9e6ee15b2d5289f207c91c349a92fd279501d",
+        "pdf_pages": 5,
+        "text_pages": 5,
+        "retrieved_at": "2026-09-05T00:51:23.522030+00:00"
+      },
+      "coverage": "entire assigned bulletin including attachments"
+    },
+    "ob26-03": {
+      "pages": [
+        {
+          "pdf_page": 1,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 2,
+          "text_read": true,
+          "visual": "rendered and visually inspected",
+          "render_file": "product-ob26-03-p002.png"
+        },
+        {
+          "pdf_page": 3,
+          "text_read": true,
+          "visual": "rendered and visually inspected",
+          "render_file": "product-ob26-03-p003.png"
+        },
+        {
+          "pdf_page": 4,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 5,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 6,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 7,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 8,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 9,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 10,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 11,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 12,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 13,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 14,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        }
+      ],
+      "source": {
+        "title": "OB #26-03(PDF)",
+        "url": "https://dot.ca.gov/-/media/dot-media/programs/local-assistance/documents/ob/2026/ob26-03.pdf",
+        "file": "ob26-03.pdf",
+        "final_url": "https://dot.ca.gov/-/media/dot-media/programs/local-assistance/documents/ob/2026/ob26-03.pdf",
+        "bytes": 416310,
+        "sha256": "2d494814b4f6ce12cfb24fb9e9595efa8587a888947a3f10940512cd630c88de",
+        "pdf_pages": 14,
+        "text_pages": 14,
+        "retrieved_at": "2026-09-05T00:51:23.408034+00:00"
+      },
+      "coverage": "entire assigned bulletin including attachments"
+    },
+    "ob26-04": {
+      "pages": [
+        {
+          "pdf_page": 1,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 2,
+          "text_read": true,
+          "visual": "rendered and visually inspected",
+          "render_file": "product-ob26-04-p002.png"
+        },
+        {
+          "pdf_page": 3,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 4,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 5,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 6,
+          "text_read": true,
+          "visual": "rendered and visually inspected",
+          "render_file": "product-ob26-04-p006.png"
+        },
+        {
+          "pdf_page": 7,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        }
+      ],
+      "source": {
+        "title": "OB #26-04(PDF)",
+        "url": "https://dot.ca.gov/-/media/dot-media/programs/local-assistance/documents/ob/2026/ob26-04.pdf",
+        "file": "ob26-04.pdf",
+        "final_url": "https://dot.ca.gov/-/media/dot-media/programs/local-assistance/documents/ob/2026/ob26-04.pdf",
+        "bytes": 219761,
+        "sha256": "590413b90d37dea68a6f88b79cb1493f2f199574b9045e30be0011ef35ed937c",
+        "pdf_pages": 7,
+        "text_pages": 7,
+        "retrieved_at": "2026-09-05T00:51:25.242671+00:00"
+      },
+      "coverage": "entire assigned bulletin including attachments"
+    },
+    "09l": {
+      "scope": "Selected linked exhibit, all four extracted pages read; not a full linked-exhibit inventory",
+      "pages": [
+        {
+          "pdf_page": 1,
+          "text_read": true,
+          "visual": "rendered and visually inspected",
+          "render_file": "product-09l-p001.png"
+        },
+        {
+          "pdf_page": 2,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 3,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        },
+        {
+          "pdf_page": 4,
+          "text_read": true,
+          "visual": "not separately rendered/visually inspected; full extracted text read"
+        }
+      ],
+      "source": {
+        "title": "Exhibit 9-L",
+        "url": "https://dot.ca.gov/-/media/dot-media/programs/local-assistance/documents/lapm/c09/09l.pdf",
+        "file": "09l.pdf",
+        "final_url": "https://dot.ca.gov/-/media/dot-media/programs/local-assistance/documents/lapm/c09/09l.pdf",
+        "bytes": 834522,
+        "sha256": "4d2cdc588afbc35ab171b75fd0092edab181d085a26c82f07dd367338a584fb9",
+        "pdf_pages": 4,
+        "text_pages": 4,
+        "retrieved_at": "2026-09-05T00:51:32.560487+00:00"
+      },
+      "coverage": "entire selected linked exhibit"
+    }
+  },
+  "inspected_openplan_commit": "e6900750e0472260b9a7ce774609ade774659f58",
+  "limitations": [
+    "No browser, database, model, app, tests, services or external submission.",
+    "Only Exhibit 9-L was selected for full linked-exhibit reading. Other referenced manuals, statutes and forms were not all read.",
+    "OB26-02 alternate-old full text read; visual comparison owned by parent. Parent reports identical extracted text, not all-page pixel identity.",
+    "Chapter 11 has no additional selected diagram/table render; all 11 extracted pages were read."
+  ],
+  "counts": {
+    "chapter_pages_fully_text_read": 169,
+    "bulletin_pages_fully_text_read_including_alternate": 31,
+    "selected_exhibit_pages_fully_text_read": 4,
+    "pages_additionally_visually_inspected": 14,
+    "unread_assigned_pages": 0
+  },
+  "final_checkout_observation": {
+    "head": "01f0fd0390b578de282802deb53b33cf98208047",
+    "git_status_short": "",
+    "scope": "time-specific status check, not code reread or acceptance"
+  }
+}
