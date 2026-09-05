@@ -19,6 +19,12 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Migration required.** `20260905000001_portfolio_unknown_price_year.sql`
+(`portfolio_unknown_price_year`) lets reviewed CSV and workbook imports retain
+an unknown cost price year. The importer no longer supplies the current year
+when the source has none. Blank years remain unknown, with a visible warning;
+amounts and source links are preserved. Existing estimates are not rewritten.
+
 **Migration required.** `20260904000001_persist_fars_crashes.sql`,
 `persist_fars_crashes`, allows
 national FARS fatal-crash acquisitions to be saved and attached to project
