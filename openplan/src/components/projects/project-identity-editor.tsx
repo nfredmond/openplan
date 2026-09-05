@@ -546,19 +546,26 @@ export function ProjectIdentityEditor({
           <div className="mt-3 space-y-3">
             <StudyAreaPicker
               corridorText={placeText}
-              onCorridorChange={setPlaceText}
+              onCorridorChange={(text) => {
+                setPlaceText(text);
+                setUploadedBoundary(null);
+              }}
               onPlaceResolved={setPickedPlace}
               // Setting a project's area launches no run, so the engine-routing
               // hint would be advice about something that is not going to happen.
               showRunEngineHint={false}
-              externalLabel={project.place.label}
+              externalLabel={uploadedBoundary ? "Uploaded area" : project.place.label}
             />
             <p className="text-sm text-muted-foreground">
               Searching gives this project a place identity, which is what lets county onboarding,
               stage-gate templates, and grant eligibility resolve. A drawn area sets the shape only.
             </p>
             <CorridorUpload
-              onUpload={(geojson) => setUploadedBoundary(geojson)}
+              onUpload={(geojson) => {
+                setUploadedBoundary(geojson);
+                setPickedPlace(null);
+                setPlaceText(JSON.stringify(geojson));
+              }}
               isCurrentBoundary={uploadedBoundary !== null}
             />
             <p className="text-sm text-muted-foreground">

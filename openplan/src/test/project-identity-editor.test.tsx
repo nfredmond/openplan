@@ -27,24 +27,42 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-// The picker owns place search and a Mapbox surface and has its own tests; here
-// it only needs to be able to report a resolved place.
+// Keep the real picker's callback order: geometry, then resolved identity.
+// This checks the editor wiring; browser proof still exercises the real picker.
 vi.mock("@/components/models/study-area-picker", () => ({
-  StudyAreaPicker: ({ onPlaceResolved }: { onPlaceResolved?: (place: unknown) => void }) => (
-    <button
-      type="button"
-      onClick={() =>
-        onPlaceResolved?.({
-          kind: "county",
-          geoid: "39049",
-          label: "Franklin County, Ohio",
-          geojson: { type: "Polygon", coordinates: [] },
-          bbox: { minLon: -83.2, minLat: 39.7, maxLon: -82.7, maxLat: 40.1 },
-        })
-      }
-    >
-      resolve place
-    </button>
+  StudyAreaPicker: ({ onPlaceResolved, onCorridorChange, externalLabel, corridorText }: {
+    onPlaceResolved?: (place: unknown) => void;
+    onCorridorChange: (text: string) => void;
+    externalLabel?: string | null;
+    corridorText: string;
+  }) => (
+    <div>
+      <span data-testid="picker-external-label">{externalLabel}</span>
+      <span data-testid="picker-current-geometry">{corridorText}</span>
+      <button
+        type="button"
+        onClick={() => {
+          onCorridorChange(JSON.stringify(DRAWN_BOUNDARY));
+          onPlaceResolved?.({
+            kind: "county",
+            geoid: "39049",
+            label: "Franklin County, Ohio",
+            geojson: { type: "Polygon", coordinates: [] },
+            bbox: { minLon: -83.2, minLat: 39.7, maxLon: -82.7, maxLat: 40.1 },
+          });
+        }}
+      >
+        resolve place
+      </button>
+      <button type="button" onClick={() => {
+        onCorridorChange(JSON.stringify(DRAWN_BOUNDARY));
+        onPlaceResolved?.(null);
+      }}>draw replacement area</button>
+      <button type="button" onClick={() => {
+        onCorridorChange("");
+        onPlaceResolved?.(null);
+      }}>clear picked area</button>
+    </div>
   ),
 }));
 
@@ -57,6 +75,18 @@ const PROJECT = {
   deliveryPhase: "scoping",
   place: EMPTY_PLACE_OF_RECORD,
 };
+
+const DRAWN_BOUNDARY = { type: "Polygon", coordinates: [[[-83, 40], [-82.9, 40], [-82.9, 40.1], [-83, 40]]] };
+const UPLOADED_BOUNDARY = { type: "Polygon", coordinates: [[[-84, 41], [-83.9, 41], [-83.9, 41.1], [-84, 41]]] };
+
+async function uploadReplacementBoundary() {
+  const json = JSON.stringify(UPLOADED_BOUNDARY);
+  const file = new File([json], "replacement-area.geojson", { type: "application/geo+json" });
+  Object.defineProperty(file, "arrayBuffer", { value: async () => new TextEncoder().encode(json).buffer });
+  const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+  fireEvent.change(input, { target: { files: [file] } });
+  await screen.findByText("replacement-area.geojson");
+}
 
 describe("ProjectIdentityEditor", () => {
   beforeEach(() => {
@@ -191,6 +221,43 @@ describe("ProjectIdentityEditor", () => {
       // Never a searched place — a file cannot supply a place identity.
       expect(body.place.geoid).toBeUndefined();
     });
+  });
+
+  it.each(["resolve place", "draw replacement area"])("saves the newer upload after %s without borrowing its identity", async (firstInput) => {
+    render(<ProjectIdentityEditor project={PROJECT} canWrite />);
+    fireEvent.click(screen.getByRole("button", { name: /set study area/i }));
+    fireEvent.click(screen.getByRole("button", { name: firstInput }));
+    await uploadReplacementBoundary();
+    const externalLabel = screen.getByTestId("picker-external-label").textContent;
+    const displayedGeometry = screen.getByTestId("picker-current-geometry").textContent;
+    fireEvent.click(screen.getByRole("button", { name: /save study area/i }));
+    await waitFor(() => expect(globalThis.fetch).toHaveBeenCalled());
+    const [url, init] = vi.mocked(globalThis.fetch).mock.calls.at(-1)!;
+    expect(url).toBe(`/api/projects/${PROJECT.id}`);
+    expect(JSON.parse(init!.body as string)).toEqual({ place: { mode: "uploaded", geometry: UPLOADED_BOUNDARY } });
+    expect(externalLabel).toBe("Uploaded area");
+    expect(JSON.parse(displayedGeometry!)).toEqual(UPLOADED_BOUNDARY);
+  });
+
+  it.each(["resolve place", "draw replacement area", "clear picked area"])("replaces an older upload when the picker emits %s", async (lastInput) => {
+    render(<ProjectIdentityEditor project={PROJECT} canWrite />);
+    fireEvent.click(screen.getByRole("button", { name: /set study area/i }));
+    await uploadReplacementBoundary();
+    fireEvent.click(screen.getByRole("button", { name: lastInput }));
+    const claimedLoadedFile = screen.queryByText("Loaded file");
+    fireEvent.click(screen.getByRole("button", { name: /save study area/i }));
+    if (lastInput === "clear picked area") {
+      expect(await screen.findByText("Search for a place, upload a boundary file, or draw an area before saving.")).toBeTruthy();
+      expect(globalThis.fetch).not.toHaveBeenCalled();
+      expect(claimedLoadedFile).toBeNull();
+      return;
+    }
+    await waitFor(() => expect(globalThis.fetch).toHaveBeenCalled());
+    const [, init] = vi.mocked(globalThis.fetch).mock.calls.at(-1)!;
+    expect(JSON.parse(init!.body as string)).toEqual({ place: lastInput === "resolve place"
+      ? { mode: "place", kind: "county", geoid: "39049" }
+      : { mode: "drawn", geometry: DRAWN_BOUNDARY } });
+    expect(claimedLoadedFile).toBeNull();
   });
 
   it("shows an uploaded boundary as uploaded while withholding place identity", () => {
