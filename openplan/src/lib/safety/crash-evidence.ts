@@ -53,6 +53,7 @@ import { readEveryPage } from "@/lib/supabase/paged-read";
 import {
   SAFETY_CRASH_DATA_CAVEAT,
   SAFETY_CRASH_DATA_NARRATIVE_CAVEAT,
+  SAFETY_FATAL_ONLY_CAVEAT,
   SAFETY_SCREENING_NARRATIVE_CAVEAT,
   SAFETY_SEVERITY_COMPLETENESS_CAVEAT,
   SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT,
@@ -254,6 +255,9 @@ export function buildSafetyCrashEvidence(
 
   if (!separatesSeriousInjuries(ingest.severityCompleteness)) {
     caveats.push(SAFETY_SEVERITY_COMPLETENESS_CAVEAT);
+  }
+  if (ingest.severityCompleteness === "fatal_only") {
+    caveats.push(SAFETY_FATAL_ONLY_CAVEAT);
   }
 
   if (ingest.truncated) {

@@ -113,6 +113,18 @@ describe("the grouped-count fold", () => {
 });
 
 describe("a count that could not be read is not zero", () => {
+  it.each(["fatal_only", "fatal_injury_only", "", "unknown"])("does not invent source coverage when completeness is %s", (severityCompleteness) => {
+    const evidence = buildSafetyCrashEvidenceMap([ingest({ severityCompleteness })], null).get("ingest-a")!;
+    const caveats = evidence.caveats.join(" ");
+    expect(caveats).not.toMatch(/distinguishes fatal, injury, and property-damage-only/i);
+    expect(caveats).toMatch(/serious injur.*cannot be derived/i);
+    if (severityCompleteness === "fatal_only") {
+      expect(caveats).toMatch(/records only crashes in which someone was killed/i);
+    } else {
+      expect(caveats).not.toMatch(/records only crashes in which someone was killed/i);
+    }
+  });
+
   it("yields null counts for every acquisition when the count read failed", () => {
     const evidence = buildSafetyCrashEvidenceMap([ingest()], null).get("ingest-a")!;
     expect(evidence.severityCounts).toBeNull();
