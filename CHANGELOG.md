@@ -21,6 +21,11 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## 0.44.0 — 2026-09-05
 
+- Reports retain overlong draft text and explain the existing title and summary
+  limits before saving. Packet generation now waits for a successful save of
+  edits and evidence choices instead of producing the older version after a
+  failed save. Existing artifacts are unchanged; no migration is needed.
+
 - Project study-area changes now use the latest successful input. Uploading a
   boundary after choosing a county no longer silently saves the county instead,
   and a later drawing or clear replaces an older upload. No migration is needed.

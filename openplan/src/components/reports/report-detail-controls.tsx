@@ -18,6 +18,7 @@ import type { AgreementCorridorSelection, ReportAgreementEvidence } from "@/lib/
 import type { AerialOrthoCatalog } from "@/lib/aerial/ortho-map-layers";
 import type { ReportAerialOrthoSelection } from "@/lib/reports/aerial-ortho-evidence";
 import type { ReportSafetyIngestSelection } from "@/lib/reports/safety-evidence-selection";
+import { reportTextErrors, REPORT_SUMMARY_MAX_LENGTH, REPORT_TITLE_MAX_LENGTH } from "@/lib/reports/text-limits";
 
 /** A succeeded worker model run the report may cite as typed evidence. */
 export type ReportModelRunOption = {
@@ -33,6 +34,16 @@ export type ReportSafetyIngestOption = {
   createdAt: string;
   crashCount: number;
   geocodedCount: number;
+};
+
+type ReportDraft = {
+  title: string;
+  summary: string;
+  status: string;
+  modelRunIds: string[];
+  agreementCorridors: AgreementCorridorSelection[];
+  aerialCustodyId: string | null;
+  safetyIngestId: string | null;
 };
 
 function sameSelections(left: AgreementCorridorSelection[], right: AgreementCorridorSelection[]) {
@@ -136,6 +147,36 @@ export function ReportDetailControls({
   const [selectedSafetyIngestId, setSelectedSafetyIngestId] = useState<string | null>(
     requestedSafetyIngestId ?? safetyIngestSelections[0]?.ingestId ?? null,
   );
+  // A carried selection is a draft, not saved evidence. Only a successful save
+  // advances this baseline; later edits stay pending even if a save is in flight.
+  const [savedDraft, setSavedDraft] = useState<ReportDraft>(() => ({
+    title: report.title.trim(),
+    summary: (report.summary ?? "").trim(),
+    status: report.status,
+    modelRunIds: citedModelRunIds,
+    agreementCorridors: agreementCorridorSelections,
+    aerialCustodyId: aerialOrthoSelections[0]?.custodyId ?? null,
+    safetyIngestId: safetyIngestSelections[0]?.ingestId ?? null,
+  }));
+  const draft = {
+    title: title.trim(),
+    summary: summary.trim(),
+    status,
+    modelRunIds: selectedModelRunIds,
+    agreementCorridors: selectedAgreementCorridors.filter((selection) =>
+      selectedModelRunIds.includes(selection.modelRunId)),
+    aerialCustodyId: selectedAerialCustodyId,
+    safetyIngestId: selectedSafetyIngestId,
+  };
+  const hasUnsavedChanges = draft.title !== savedDraft.title
+    || draft.summary !== savedDraft.summary
+    || draft.status !== savedDraft.status
+    || !sameIdSet(draft.modelRunIds, savedDraft.modelRunIds)
+    || !sameSelections(draft.agreementCorridors, savedDraft.agreementCorridors)
+    || draft.aerialCustodyId !== savedDraft.aerialCustodyId
+    || draft.safetyIngestId !== savedDraft.safetyIngestId;
+  const textErrors = reportTextErrors(title, summary);
+  const hasTextError = Boolean(textErrors.title || textErrors.summary);
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   // The generate route has accepted "pdf" since the module shipped; the UI
@@ -153,6 +194,11 @@ export function ReportDetailControls({
 
   async function handleSave(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSaving || isGenerating) return;
+    if (hasTextError) {
+      setError(textErrors.title || textErrors.summary);
+      return;
+    }
     setError(null);
     setIsSaving(true);
 
@@ -160,18 +206,16 @@ export function ReportDetailControls({
       // Only send modelRunIds when the citation set actually changed, so a
       // deployment without the typed-evidence migration keeps saving metadata
       // exactly as before.
-      const modelRunSelectionChanged = !sameIdSet(selectedModelRunIds, citedModelRunIds);
-      const finalAgreementSelections = selectedAgreementCorridors.filter((selection) =>
-        selectedModelRunIds.includes(selection.modelRunId)
-      );
+      const modelRunSelectionChanged = !sameIdSet(draft.modelRunIds, savedDraft.modelRunIds);
+      const finalAgreementSelections = draft.agreementCorridors;
       const agreementSelectionChanged = !sameSelections(
         finalAgreementSelections,
-        agreementCorridorSelections,
+        savedDraft.agreementCorridors,
       );
       const aerialOrthoSelectionChanged =
-        selectedAerialCustodyId !== (aerialOrthoSelections[0]?.custodyId ?? null);
+        draft.aerialCustodyId !== savedDraft.aerialCustodyId;
       const safetySelectionChanged =
-        selectedSafetyIngestId !== (safetyIngestSelections[0]?.ingestId ?? null);
+        draft.safetyIngestId !== savedDraft.safetyIngestId;
 
       const response = await fetch(`/api/reports/${report.id}`, {
         method: "PATCH",
@@ -179,8 +223,8 @@ export function ReportDetailControls({
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          title,
-          summary: summary.trim() ? summary : null,
+          title: draft.title,
+          summary: draft.summary || null,
           status,
           ...(modelRunSelectionChanged ? { modelRunIds: selectedModelRunIds } : {}),
           ...(agreementSelectionChanged || modelRunSelectionChanged
@@ -200,6 +244,7 @@ export function ReportDetailControls({
         throw new Error(payload.error || "Failed to update report");
       }
 
+      setSavedDraft(draft);
       router.refresh();
     } catch (submitError) {
       setError(
@@ -213,6 +258,7 @@ export function ReportDetailControls({
   }
 
   async function handleGenerate() {
+    if (isSaving || isGenerating || hasUnsavedChanges || hasTextError) return;
     setError(null);
     setIsGenerating(true);
 
@@ -238,6 +284,8 @@ export function ReportDetailControls({
       }
 
       setWarningCount(payload.warnings?.length ?? 0);
+      setStatus("generated");
+      setSavedDraft((saved) => ({ ...saved, status: "generated" }));
       router.refresh();
     } catch (submitError) {
       setError(
@@ -267,6 +315,7 @@ export function ReportDetailControls({
       </div>
 
       <form className="mt-5 space-y-4" onSubmit={handleSave}>
+        <fieldset disabled={isGenerating} className="space-y-4">
         {/* Title */}
         <div className="space-y-1.5">
           <label
@@ -279,8 +328,13 @@ export function ReportDetailControls({
             id="detail-title"
             value={title}
             onChange={(event) => setTitle(event.target.value)}
+            aria-invalid={Boolean(textErrors.title)}
+            aria-describedby="detail-title-limit"
             required
           />
+          <p id="detail-title-limit" className="text-xs text-muted-foreground">
+            {textErrors.title || `Title limit: ${REPORT_TITLE_MAX_LENGTH} characters.`}
+          </p>
         </div>
 
         {/* Summary */}
@@ -297,7 +351,13 @@ export function ReportDetailControls({
             placeholder="Describe the purpose and scope of this report."
             value={summary}
             onChange={(event) => setSummary(event.target.value)}
+            aria-invalid={Boolean(textErrors.summary)}
+            aria-describedby="detail-summary-limit"
           />
+          <p id="detail-summary-limit" className="text-xs text-muted-foreground">
+            {textErrors.summary || `Summary limit: ${REPORT_SUMMARY_MAX_LENGTH.toLocaleString("en-US")} characters.`}
+            {" "}{summary.trim().length.toLocaleString("en-US")} / {REPORT_SUMMARY_MAX_LENGTH.toLocaleString("en-US")} characters after trimming surrounding spaces.
+          </p>
         </div>
 
         {/* Status */}
@@ -643,8 +703,13 @@ export function ReportDetailControls({
         ) : null}
 
         {/* Actions */}
+        {hasUnsavedChanges ? (
+          <p role="status" className="text-sm text-amber-800 dark:text-amber-200">
+            Unsaved report edits or evidence choices. Save metadata before generating. Existing downloads still contain the previously saved version.
+          </p>
+        ) : null}
         <div className="flex flex-wrap gap-3 border-t border-border/50 pt-4">
-          <Button type="submit" disabled={isSaving}>
+          <Button type="submit" disabled={isSaving || isGenerating}>
             {isSaving ? (
               <span className="inline-flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -675,7 +740,7 @@ export function ReportDetailControls({
           <Button
             type="button"
             variant="secondary"
-            disabled={isGenerating}
+            disabled={isGenerating || isSaving || hasUnsavedChanges || hasTextError}
             onClick={handleGenerate}
           >
             {isGenerating ? (
@@ -692,6 +757,7 @@ export function ReportDetailControls({
             )}
           </Button>
         </div>
+        </fieldset>
       </form>
     </article>
   );

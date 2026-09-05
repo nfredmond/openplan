@@ -6,6 +6,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { loadReportAccess as sharedLoadReportAccess } from "@/lib/reports/api";
+import { REPORT_SUMMARY_MAX_LENGTH, REPORT_TITLE_MAX_LENGTH } from "@/lib/reports/text-limits";
 import {
   loadReportDualDemandAgreements,
   readAgreementCorridorSelections,
@@ -29,8 +30,8 @@ const paramsSchema = z.object({
 
 const patchReportSchema = z
   .object({
-    title: z.string().trim().min(1).max(160).optional(),
-    summary: z.union([z.string().trim().max(2000), z.null()]).optional(),
+    title: z.string().trim().min(1).max(REPORT_TITLE_MAX_LENGTH).optional(),
+    summary: z.union([z.string().trim().max(REPORT_SUMMARY_MAX_LENGTH), z.null()]).optional(),
     status: z.enum(["draft", "generated", "archived"]).optional(),
     runIds: z.array(z.string().uuid()).max(20).optional(),
     // Typed evidence citations (report_runs.model_run_id / county_run_id);

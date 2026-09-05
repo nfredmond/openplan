@@ -388,8 +388,12 @@ describe("a safety project's packet carries its crashes", () => {
       expect(html).toMatch(/does not separate crashes involving suspected serious injuries/i);
     });
 
-    it("tells a project with no crash data apart from a failed read", () => {
-      expect(buildReportHtml(packetData([]))).toMatch(/no crash data is attached/i);
+    it("distinguishes an empty packet selection from a failed read without denying project evidence", () => {
+      const html = buildReportHtml(packetData([]));
+      expect(html).toContain("No crash acquisition is included in this packet.");
+      expect(html).toContain("This does not establish whether the project has crash data or whether collisions occurred.");
+      expect(html).not.toContain("No crash data is attached to this project.");
+      expect(html).not.toContain("none have been retrieved");
       expect(buildReportHtml(packetData(null))).toMatch(/could not be read/i);
     });
 

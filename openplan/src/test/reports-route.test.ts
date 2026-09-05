@@ -255,6 +255,22 @@ describe("/api/reports", () => {
     expect(await response.json()).toMatchObject({ error: "Invalid input" });
   });
 
+  it.each([
+    [160, 2000, 201], [161, 2000, 400], [160, 2001, 400],
+  ])("POST preserves title %i and summary %i limits", async (titleLength, summaryLength, expectedStatus) => {
+    const response = await postReports(jsonRequest({
+      projectId: "33333333-3333-4333-8333-333333333333",
+      reportType: "project_status",
+      title: ` ${"t".repeat(titleLength)} `,
+      summary: ` ${"s".repeat(summaryLength)} `,
+    }));
+    expect(response.status).toBe(expectedStatus);
+    if (expectedStatus === 400) expect(reportsInsertMock).not.toHaveBeenCalled();
+    else expect(reportsInsertMock).toHaveBeenCalledWith(expect.objectContaining({
+      title: "t".repeat(titleLength), summary: "s".repeat(summaryLength),
+    }));
+  });
+
   it("POST returns 403 when workspace role is unsupported", async () => {
     membershipMaybeSingleMock.mockResolvedValueOnce({
       data: {

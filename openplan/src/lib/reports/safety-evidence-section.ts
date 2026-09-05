@@ -65,8 +65,8 @@ function figure(label: string, value: number | null, absentBecause: string): Pac
  * Turn what the safety module knows into what the packet prints.
  *
  * Pure, so the decisions above can be tested without a database or a PDF. Pass
- * `null` for a read that FAILED — distinct from an empty list, which means the
- * project genuinely has no crash data attached.
+ * `null` for a read that FAILED. An empty list means this packet includes no
+ * acquisitions; it cannot establish whether the project has crash data.
  */
 export function buildPacketSafetyEvidence(
   evidence: readonly SafetyCrashEvidence[] | null

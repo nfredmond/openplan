@@ -44,11 +44,13 @@ describe("ReportDetailControls", () => {
     expect(screen.getByRole("radio", { name: /River crossing flight/i })).not.toBeChecked();
     expect(fetchMock).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("radio", { name: /River crossing flight/i }));
+    expect(screen.getByRole("button", { name: /Generate PDF packet/i })).toBeDisabled();
     fireEvent.click(screen.getByRole("button", { name: /Save metadata/i }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toMatchObject({
       aerialOrthoSelections: [{ custodyId: "55555555-5555-4555-8555-555555555555" }],
     });
+    await waitFor(() => expect(screen.getByRole("button", { name: /Generate PDF packet/i })).toBeEnabled());
     vi.unstubAllGlobals();
   });
 
@@ -123,6 +125,8 @@ describe("ReportDetailControls", () => {
     expect(screen.getByText(/Trip-based 1,200 · Activity-based 1,050 · GEH 4.47/i)).toBeInTheDocument();
     expect(screen.getByRole("checkbox", { name: /Central Avenue/i })).not.toBeChecked();
     expect(screen.getByText(/methodological sensitivity, not accuracy/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("checkbox", { name: /Central Avenue/i }));
+    expect(screen.getByRole("button", { name: /Generate PDF packet/i })).toBeDisabled();
   });
 
   it("distinguishes ready, changed, and missing source-review posture", () => {

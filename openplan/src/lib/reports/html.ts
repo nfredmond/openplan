@@ -1073,7 +1073,7 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
   }
 
   if (built.kind === "none") {
-    return `<p>No crash data is attached to this project. That is not a statement that no collisions happened here — it is a statement that none have been retrieved into OpenPlan for this project.</p>`;
+    return `<p>No crash acquisition is included in this packet. This does not establish whether the project has crash data or whether collisions occurred. Review the project's Safety acquisitions, select the evidence to cite, save the report, and generate it again.</p>`;
   }
 
   const acquisitionMarkup = built.acquisitions

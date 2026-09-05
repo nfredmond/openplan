@@ -12,6 +12,7 @@ import {
 } from "@/lib/reports/catalog";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { REPORT_SUMMARY_MAX_LENGTH, REPORT_TITLE_MAX_LENGTH } from "@/lib/reports/text-limits";
 
 const reportsFilterSchema = z.object({
   projectId: z.string().uuid().optional(),
@@ -25,9 +26,9 @@ const createReportSchema = z
     projectId: z.string().uuid().optional(),
     rtpCycleId: z.string().uuid().optional(),
     engagementCampaignId: z.string().uuid().optional(),
-    title: z.string().trim().min(1).max(160).optional(),
+    title: z.string().trim().min(1).max(REPORT_TITLE_MAX_LENGTH).optional(),
     reportType: z.enum(["project_status", "analysis_summary", "board_packet"]),
-    summary: z.string().trim().max(2000).optional(),
+    summary: z.string().trim().max(REPORT_SUMMARY_MAX_LENGTH).optional(),
     modelingCountyRunId: z.string().uuid().optional(),
     runIds: z.array(z.string().uuid()).max(20).optional(),
     // Typed evidence citations: worker model runs and county validation runs
