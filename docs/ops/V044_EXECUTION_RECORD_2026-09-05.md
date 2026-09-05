@@ -39,3 +39,20 @@ authenticity of manually fabricated execution records. Build identity, browser
 evidence, console review, artifact hashes, and independent finding review still
 matter. It changes no planner task, exercise fixture, or scientific acceptance
 rule, and does not relabel partial outcomes as reached.
+
+## Combined-check follow-up
+
+The first regression-suite attempt also lacked the worktree's Playwright
+dependency link. After linking the existing qa-harness/node_modules, all four
+commands passed together: discovery, evidence, regression outcomes, and model
+download verification. No package was newly installed.
+
+A read-only application of the new verifier to the actual ongoing run found
+three passing completed jobs and one failed completed job. The project job
+reported yes, but its console contains a 400 from /api/projects/import when
+clearing the price year became zero. It does not pass the full outcome gate.
+The active Safety job, which has an early report but no exit record, is correctly
+inconclusive under the new guard. Earlier progress wording that treated all four
+yes reports as passing was too broad; I disclosed the correction. The console
+failure remains recorded and is not allowlisted away. The prepared nullable-year
+fix addresses the invalid request; a fresh full run is still required.
