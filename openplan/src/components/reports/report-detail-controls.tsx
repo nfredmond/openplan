@@ -347,6 +347,7 @@ export function ReportDetailControls({
           </label>
           <Textarea
             id="detail-summary"
+            className="field-sizing-fixed"
             rows={3}
             placeholder="Describe the purpose and scope of this report."
             value={summary}

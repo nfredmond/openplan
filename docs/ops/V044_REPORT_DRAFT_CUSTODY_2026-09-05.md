@@ -91,3 +91,29 @@ is restored. Logs are `report-empty-selection-{before,noop,mutation}.log`.
 
 Rebuilt desktop/390px proof, the full QA gate, current CI and a fresh complete
 twelve-journey outcome gate remain required before release.
+
+## First rebuilt attempt and layout correction
+
+On `f5ee2ef0`, full QA passed 12,968 app tests, 135 live isolation checks,
+the production dependency audit and build. The browser proof created a separate
+QA report `fcf256aa-91a6-44fa-b483-a0b22ec6aa49`. It retained the full invalid
+draft and made no invalid save or generation request at desktop or 390px.
+The valid shortened narrative and selected acquisition saved and survived reload.
+The proof then stopped at a duplicate hidden format selector. No passing browser
+claim is made for this attempt; its initial PDF and screenshots are retained.
+
+Visual review also found an introduced layout regression. Content-sized text
+expanded the new form group's grid beyond the clipped workspace panel. The page's
+document width stayed normal, so that check alone missed it. Minimum widths on
+the group and its article did not fix the containing grid. Giving this summary
+fixed field sizing reduced the measured input from 17,464 to 458 pixels at desktop,
+and from 19,955 to 242 pixels at 390px. Full draft text remains scrollable and
+manually resizable. Switching back to content sizing reproduced the overflow.
+These were temporary browser-style diagnostics, not edits to saved report data.
+
+The first diagnostic assertion also compared two equally oversized elements,
+and was corrected to compare the panel against the viewport. Failed diagnostics
+are retained alongside the successful sizing experiment. The tracked
+`report-draft-stays-readable` regression measures actual controls at both widths,
+requires the full draft, and refuses to count a missing report as passing.
+Rebuilt proof of the correction and the complete release gate remain pending.
