@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { reviewPortfolioWorkbook } from "@/lib/projects/portfolio-import";
 
 const createClientMock = vi.fn();
 const loadCurrentWorkspaceMembershipMock = vi.fn();
@@ -93,18 +94,29 @@ describe("GET /api/projects/export/workbook", () => {
     expect(buildPortfolioRoundTripWorkbookMock).not.toHaveBeenCalled();
   });
 
-  it("refuses to invent a missing price year for a recorded cost", async () => {
+  it("exports and reimports a recorded cost with an unknown price year", async () => {
+    const real = await vi.importActual<typeof import("@/lib/projects/portfolio-export")>("@/lib/projects/portfolio-export");
+    buildPortfolioRoundTripWorkbookMock.mockImplementation(real.buildPortfolioRoundTripWorkbook);
     const fake = fakeClient({
-      data: [{ id: "project-1", estimated_cost_amount: "100", estimated_cost_basis_year: null }],
+      data: [{ id: "project-1", name: "Synthetic cost regression", estimated_cost_amount: "100",
+        estimated_cost_currency: "USD", estimated_cost_basis_year: null,
+        status: "draft", plan_type: "capital_program", delivery_phase: "programming" }],
       error: null,
     });
     createClientMock.mockResolvedValue(fake.client);
 
     const response = await GET(new NextRequest("http://localhost/api/projects/export/workbook"));
 
-    expect(response.status).toBe(409);
-    await expect(response.json()).resolves.toMatchObject({ code: "cost_price_year_missing" });
-    expect(buildPortfolioRoundTripWorkbookMock).not.toHaveBeenCalled();
+    expect(response.status).toBe(200);
+    const review = await reviewPortfolioWorkbook({
+      bytes: new Uint8Array(await response.arrayBuffer()), filename: "projects.xlsx",
+      contentType: real.PORTFOLIO_ROUND_TRIP_CONTENT_TYPE,
+      configurations: [{ worksheetIndex: 0, headerRow: 1, mapping: real.PORTFOLIO_ROUND_TRIP_MAPPING,
+        defaults: { planType: "capital_program", status: "draft", deliveryPhase: "programming",
+          cost: { currency: "USD", scale: "ones", priceYear: 2026 } } }],
+    });
+    expect(review.rows[0]).toMatchObject({ estimatedCost: { amount: "100", currency: "USD", priceYear: null },
+      canCreate: true, warnings: [{ code: "unknown_price_year" }], errors: [] });
   });
 
   it("fails closed when the workspace-scoped read fails", async () => {

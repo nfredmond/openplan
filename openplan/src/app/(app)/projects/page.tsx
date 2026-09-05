@@ -605,14 +605,14 @@ export default async function ProjectsPage({
             >
               Import project list
             </a>
-            <Link
+            <a
               className="inline-flex min-h-11 items-center gap-2 rounded-md border border-border bg-background/70 px-4 py-2 text-sm font-semibold text-foreground no-underline transition-colors hover:bg-muted"
               href="/api/projects/export/workbook"
-              prefetch={false}
+              download
             >
               <Download className="h-4 w-4" />
               Download project workbook
-            </Link>
+            </a>
           </div>
 
           <div className="module-summary-grid cols-3">

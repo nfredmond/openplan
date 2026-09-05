@@ -386,6 +386,7 @@ describe("ProjectsPage", () => {
       "href",
       "/api/projects/export/workbook"
     );
+    expect(screen.getByRole("link", { name: "Download project workbook" })).toHaveAttribute("download");
     expect(screen.getByRole("heading", { name: "Import project list" })).toBeInTheDocument();
     expect(screen.getByText(/up to 2,000 rows and 10 MiB/i)).toBeInTheDocument();
     expect(screen.getByText(/Every row starts as skip/i)).toBeInTheDocument();
