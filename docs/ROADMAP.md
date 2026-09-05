@@ -10,7 +10,7 @@ paths:
 - docs/product/V1_PRODUCT_CONTRACT.md
 - docs/product/AGENT_OPERATING_RULES.md
 - docs/product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md
-- docs/reviews/product-direction/2026-09-05-worker-rounding-correction.md
+- docs/reviews/product-direction/2026-09-05-worker-storage-download-correction.md
 - openplan/scripts/ops/product-direction-review.mjs
 - openplan/src/test/product-direction-review-guard.test.ts
 - openplan/src/lib/safety/sources/registry.ts
