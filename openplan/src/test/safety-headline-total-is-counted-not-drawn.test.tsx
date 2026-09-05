@@ -472,8 +472,17 @@ function crashResponse(over: Record<string, unknown> = {}) {
 
 function renderSafety(response = crashResponse(), ingest = readyIngest()) {
   vi.stubGlobal("fetch", vi.fn(async () => response) as unknown as typeof fetch);
-  render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest} />);
-  screen.getByText("pick-area").click();
+  // Start with the saved acquisition's area. Choosing a new area clears it.
+  render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest} studyArea={{
+    corridorText: JSON.stringify({
+      type: "Polygon",
+      coordinates: [[[-121.3, 39.1], [-120.3, 39.1], [-120.3, 39.6], [-121.3, 39.6], [-121.3, 39.1]]],
+    }),
+    place: null,
+    label: "Saved study area",
+    origin: "project",
+    originLabel: "Saved project",
+  }} />);
 }
 
 describe("the KSI headline is the study-area total", () => {

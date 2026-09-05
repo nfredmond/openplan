@@ -28,7 +28,7 @@ describe("JurisdictionReadinessPanel", () => {
 
     expect(screen.getByText("Unavailable here")).toBeInTheDocument();
     expect(screen.getByText(/no configured Oregon statutory plan bundle/i)).toBeInTheDocument();
-    const evidenceHash = screen.getByText(/sha256:283f9f53/i);
+    const evidenceHash = screen.getByText(/sha256:f63f563d/i);
     expect(evidenceHash).toBeInTheDocument();
     expect(evidenceHash.previousElementSibling).toHaveClass("break-all");
     expect(screen.getByRole("link", { name: /download exact local support json/i })).toHaveAttribute(
