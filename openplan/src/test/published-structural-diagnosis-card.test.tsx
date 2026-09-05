@@ -1,5 +1,10 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import type { AnchorHTMLAttributes } from "react";
+
+vi.mock("next/link", () => ({
+  default: (props: AnchorHTMLAttributes<HTMLAnchorElement>) => <a {...props} data-page-navigation />,
+}));
 
 import { PublishedStructuralDiagnosisCard } from "@/components/models/published-structural-diagnosis-card";
 
@@ -43,5 +48,9 @@ describe("published structural diagnosis Models card", () => {
       "/api/models/validation-structural-diagnosis/study-result.json",
     );
     expect(card.querySelector("div.sm\\:grid-cols-2")).toHaveClass("grid-cols-1", "lg:grid-cols-3");
+    for (const link of screen.getAllByRole("link")) {
+      expect(link).toHaveAttribute("download");
+      expect(link).not.toHaveAttribute("data-page-navigation");
+    }
   });
 });

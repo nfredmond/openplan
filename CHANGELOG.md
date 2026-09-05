@@ -21,6 +21,12 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## 0.44.0 — 2026-09-05
 
+- Older model-evidence panels now save attachments without disrupting subsequent
+  downloads or model navigation. Comparable-observation files show their exact
+  filenames and frozen hashes beside the controls. Existing scientific records
+  are unchanged. Acceptance runs no longer treat a stopped agent's early report
+  and zero exit code as proof of completion.
+
 - Reports retain overlong draft text and explain the existing title and summary
   limits before saving. Packet generation now waits for a successful save of
   edits and evidence choices instead of producing the older version after a

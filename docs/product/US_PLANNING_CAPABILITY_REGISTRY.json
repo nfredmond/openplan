@@ -149,7 +149,7 @@
     {
       "issueId": "KI-2026-09-05-051",
       "capability": "capital-programming-prioritization-grants-delivery-and-reimbursement",
-      "gap": "Export known workbook cost amounts as numeric cells while preserving unknowns",
+      "gap": "Make known workbook costs convenient for calculations without losing the decimal precision currently preserved by text cells, and retain unknown price years",
       "evidence": "docs/ops/KNOWN_ISSUES.md"
     },
     {
@@ -227,8 +227,26 @@
     {
       "issueId": "KI-2026-09-05-062",
       "capability": "gis-data-stewardship-documents-reports-and-public-records",
-      "gap": "Keep disabled report-generation button text readable in the dark theme while preserving the save-before-generation refusal",
+      "gap": "Keep enabled and disabled report-generation button text readable in the dark theme while preserving the save-before-generation refusal",
       "evidence": "docs/ops/V044_REPORT_DRAFT_CUSTODY_2026-09-05.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-063",
+      "capability": "travel-demand-corridor-scenario-and-performance-analysis",
+      "gap": "Fit saved comparisons and their scientific caveats within the narrow module, not only the outer document",
+      "evidence": "docs/ops/V044_REPORT_CORRECTED_OUTCOMES_2026-09-05.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-066",
+      "capability": "community-engagement-title-vi-and-public-decisions",
+      "gap": "Preserve the review collection mode and online intake state without assuming staff-entered or imported feedback is invalid",
+      "evidence": "docs/ops/V044_REPORT_CORRECTED_OUTCOMES_2026-09-05.md"
+    },
+    {
+      "issueId": "KI-2026-09-04-022",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Retain county kind in saved geography labels as well as underlying identifiers",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
     }
   ]
 }

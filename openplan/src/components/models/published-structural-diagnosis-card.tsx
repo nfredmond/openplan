@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import type { PublishedStructuralDiagnosisStudy } from "@/lib/models/published-structural-diagnosis";
 import { StatusBadge } from "@/components/ui/status-badge";
 
@@ -47,25 +45,25 @@ export function PublishedStructuralDiagnosisCard({
         <li>Model year, day represented, coefficients, and population vintage remain unknown where the exact evidence does not prove them.</li>
       </ul>
       <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
-        <Link className="underline underline-offset-2" href="/api/models/validation-structural-diagnosis/study-result.json">
+        <a download className="underline underline-offset-2" href="/api/models/validation-structural-diagnosis/study-result.json">
           Download exact study result
-        </Link>
-        <Link className="underline underline-offset-2" href="/api/models/validation-structural-diagnosis/study-report.md">
+        </a>
+        <a download className="underline underline-offset-2" href="/api/models/validation-structural-diagnosis/study-report.md">
           Download study report
-        </Link>
+        </a>
       </div>
       <details className="mt-4">
         <summary className="cursor-pointer text-sm font-semibold">County and method diagnosis files</summary>
         <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {study.records.map((record) => (
-            <Link
+            <a download
               key={`${record.geographyId}-${record.method}`}
               className="min-w-0 rounded border border-border/70 px-3 py-2 text-xs hover:bg-muted/40"
               href={`/api/models/validation-structural-diagnosis/${record.geographyId}/${record.method}/structural-diagnosis.json`}
             >
               <span className="font-semibold">{record.geographyId} · {record.method}</span>
               <span className="mt-1 block break-all font-mono text-[10px] text-muted-foreground">{record.diagnosisSha256}</span>
-            </Link>
+            </a>
           ))}
         </div>
       </details>

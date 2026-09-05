@@ -674,6 +674,23 @@ function codexAgentMessageText(stdout) {
   return messages.join('\n');
 }
 
+/** An early report and exit zero do not prove a JSONL agent finished its turn. */
+function codexTurnCompletion(processResult) {
+  let isCodex = processResult.backend === 'codex';
+  let lastType = null;
+  for (const line of String(processResult.stdout || '').split(/\r?\n/)) {
+    if (!line.trim()) continue;
+    try {
+      const event = JSON.parse(line);
+      if (typeof event?.type === 'string' && /^(thread\.|turn\.|item\.)/.test(event.type)) isCodex = true;
+      lastType = event?.type ?? null;
+    } catch {
+      lastType = null;
+    }
+  }
+  return { isCodex, completed: lastType === 'turn.completed' };
+}
+
 /**
  * Classify how a job ended separately from what the planner found. Claude can
  * return exit 0 and subtype "success" for a subscription limit, so process
@@ -707,6 +724,10 @@ function classifyJobExecution({ processResult = {}, session = null, reportPresen
   if (session?.subtype === 'error_max_turns') {
     return { status: 'blocked_turn_limit', reason: 'The agent used every allowed step before the journey finished.' };
   }
+  const turn = codexTurnCompletion(processResult);
+  if (turn.isCodex && !turn.completed) {
+    return { status: 'blocked_execution_record', reason: 'The Codex JSONL stream has no final completed turn, so an early report cannot prove completion.' };
+  }
   if (!reportPresent && processResult.code === 0 && !session?.is_error) {
     return { status: 'blocked_unfinished_report', reason: 'The agent stopped without leaving a findings report.' };
   }
@@ -727,7 +748,7 @@ function readJobExecution(jobDir) {
   const session = parseAgentSession(stdout);
   const reportPresent = readFindings(path.join(jobDir, 'agent')) !== null;
   const inferred = classifyJobExecution({
-    processResult: { code: recorded?.exitCode, signal: recorded?.signal ?? null, stdout },
+    processResult: { code: recorded?.exitCode, signal: recorded?.signal ?? null, backend: recorded?.backend, stdout },
     session,
     reportPresent,
   });
@@ -735,7 +756,7 @@ function readJobExecution(jobDir) {
     !recorded?.status ||
     (recorded.status === 'failed' && inferred.status !== 'failed') ||
     (recorded.status === 'blocked_quota' && inferred.status === 'completed') ||
-    (recorded.status === 'completed' && inferred.status === 'blocked_browser_tools')
+    (recorded.status === 'completed' && ['blocked_browser_tools', 'blocked_execution_record'].includes(inferred.status))
   ) ? { ...recorded, ...inferred } : recorded;
   // An early findings report is not evidence that its process finished.
   if (!recorded?.status || (resolved.status === 'completed' && (recorded.exitCode !== 0 || recorded.signal))) {

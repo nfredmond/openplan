@@ -1,7 +1,16 @@
-import Link from "next/link";
-
 import type { PublishedComparableObservationStudy } from "@/lib/models/published-comparable-observation-study";
 import { StatusBadge } from "@/components/ui/status-badge";
+
+// Keep the exact file and its frozen custody together without routing an attachment as a page.
+function ArtifactDownload({ href, label, filename, sha256 }: {
+  href: string; label: string; filename: string; sha256: string | undefined;
+}) {
+  return <div className="min-w-0">
+    <a download className="underline" href={href}>{label}</a>
+    <p className="mt-1 break-all font-mono">{filename}</p>
+    <p className="mt-1 break-all font-mono text-muted-foreground">{sha256 ? `SHA-256 ${sha256}` : "SHA-256 unavailable"}</p>
+  </div>;
+}
 
 export function PublishedComparableObservationCard({
   study,
@@ -29,27 +38,32 @@ export function PublishedComparableObservationCard({
         <div><span className="font-semibold">Release SHA</span><span className="mt-1 block break-all font-mono text-xs text-muted-foreground">{study.releaseSha}</span></div>
       </div>
       <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
-        <Link className="underline underline-offset-2" href="/api/models/comparable-observation-study/study-result.json">Download exact study result</Link>
-        <Link className="underline underline-offset-2" href="/api/models/comparable-observation-study/study-report.md">Download study report</Link>
+        <a download className="underline underline-offset-2" href="/api/models/comparable-observation-study/study-result.json">Download exact study result</a>
+        <a download className="underline underline-offset-2" href="/api/models/comparable-observation-study/study-report.md">Download study report</a>
       </div>
       <details className="mt-4">
         <summary className="cursor-pointer text-sm font-semibold">Observation, match, basis, assessment, and diagnosis downloads</summary>
         <div className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-2">
-          {geographyIds.map((geographyId) => (
+          {geographyIds.map((geographyId) => {
+            const records = study.diagnoses.filter((record) => record.geographyId === geographyId);
+            const instrument = records[0];
+            return (
             <div key={geographyId} className="min-w-0 rounded border border-border/70 p-3 text-xs">
               <p className="font-semibold">{geographyId}</p>
-              <div className="mt-2 flex flex-wrap gap-x-3 gap-y-2">
-                <Link className="underline" href={`/api/models/comparable-observation-study/${geographyId}/instrument/observation-package-v2.json`}>observations</Link>
-                <Link className="underline" href={`/api/models/comparable-observation-study/${geographyId}/instrument/pre-volume-match-audit-v2.json`}>match audit</Link>
-                {(["aequilibrae", "activitysim"] as const).flatMap((method) => [
-                  <Link key={`${method}-input-bundle`} className="underline" href={`/api/models/comparable-observation-study/${geographyId}/${method}/validation-input-bundle-v2.json`}>{method} input bundle</Link>,
-                  <Link key={`${method}-basis`} className="underline" href={`/api/models/comparable-observation-study/${geographyId}/${method}/comparison-basis-v2.json`}>{method} basis</Link>,
-                  <Link key={`${method}-assessment`} className="underline" href={`/api/models/comparable-observation-study/${geographyId}/${method}/assessment-v2.json`}>{method} assessment</Link>,
-                  <Link key={`${method}-diagnosis`} className="underline" href={`/api/models/comparable-observation-study/${geographyId}/${method}/structural-diagnosis-v2.json`}>{method} diagnosis</Link>,
-                ])}
+              <div className="mt-2 grid min-w-0 grid-cols-1 gap-4">
+                <ArtifactDownload label="observations" filename="observation-package-v2.json" href={`/api/models/comparable-observation-study/${geographyId}/instrument/observation-package-v2.json`} sha256={instrument?.bindings.observation_package_sha256} />
+                <ArtifactDownload label="match audit" filename="pre-volume-match-audit-v2.json" href={`/api/models/comparable-observation-study/${geographyId}/instrument/pre-volume-match-audit-v2.json`} sha256={instrument?.bindings.match_audit_sha256} />
+                {records.flatMap((record) => [
+                  ["input bundle", "validation-input-bundle-v2.json", record.bindings.input_bundle_sha256],
+                  ["basis", "comparison-basis-v2.json", record.bindings.comparison_basis_sha256],
+                  ["assessment", "assessment-v2.json", record.bindings.assessment_sha256],
+                  ["diagnosis", "structural-diagnosis-v2.json", record.sha256],
+                ].map(([label, filename, sha256]) => (
+                  <ArtifactDownload key={`${record.method}-${filename}`} label={`${record.method} ${label}`} filename={`${geographyId}-${record.method}-${filename}`} href={`/api/models/comparable-observation-study/${geographyId}/${record.method}/${filename}`} sha256={sha256} />
+                )))}
               </div>
             </div>
-          ))}
+          ); })}
         </div>
       </details>
     </section>

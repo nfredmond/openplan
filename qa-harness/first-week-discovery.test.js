@@ -94,7 +94,7 @@ check('product page text that mentions a rate limit is not agent quota evidence'
     item: { type: 'mcp_tool_call', result: { text: 'Workspace AI rate limit protects operator spend.' } },
   });
   const result = classifyJobExecution({
-    processResult: { code: 0, stdout },
+    processResult: { code: 0, stdout: `${stdout}\n${JSON.stringify({ type: 'turn.completed' })}` },
     session: null,
     reportPresent: true,
   });
@@ -395,7 +395,7 @@ check('verification repairs a false recorded quota when only browser page text c
   );
   fs.writeFileSync(
     path.join(dir, 'agent-stdout.json'),
-    `${JSON.stringify({ type: 'item.completed', item: { type: 'mcp_tool_call', result: 'AI rate limit' } })}\n`,
+    `${JSON.stringify({ type: 'item.completed', item: { type: 'mcp_tool_call', result: 'AI rate limit' } })}\n${JSON.stringify({ type: 'turn.completed' })}\n`,
   );
   const result = verifyRun(runRoot, 'http://localhost:3200');
   assert.strictEqual(result.completed, 1);
@@ -598,11 +598,41 @@ check('unavailable or uninitialized browser tools cannot count as completed exec
     assert.strictEqual(classifyJobOutcome({ execution, report: { outcomeReached: 'yes' } }).status, 'inconclusive');
   }
   const browserPage = JSON.stringify({ type: 'item.completed', item: { type: 'mcp_tool_call', result: 'browser MCP tools are unavailable' } });
-  assert.strictEqual(classifyJobExecution({ processResult: { code: 0, stdout: browserPage }, reportPresent: true }).status, 'completed');
+  assert.strictEqual(classifyJobExecution({ processResult: { code: 0, stdout: `${browserPage}\n${JSON.stringify({ type: 'turn.completed' })}` }, reportPresent: true }).status, 'completed');
   assert.strictEqual(classifyJobExecution({ processResult: {
     code: 1,
     stderr: 'Error: thread/start failed: required MCP servers failed to initialize: browser: No such file or directory (os error 2)',
   }, reportPresent: false }).status, 'blocked_browser_tools');
+});
+
+check('a zero-exit Codex interruption cannot bless its early yes report', () => {
+  const event = (type) => JSON.stringify({ type });
+  const completed = [event('thread.started'), event('turn.started'), event('turn.completed')].join('\n');
+  const good = classifyJobExecution({ processResult: { code: 0, backend: 'codex', stdout: completed }, reportPresent: true });
+  assert.strictEqual(good.status, 'completed');
+  for (const stdout of [
+    '', event('turn.started'),
+    JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: 'turn.completed' } }),
+    `${completed}\n${event('turn.started')}`,
+    `${completed}\n${event('turn.failed')}`,
+    `${completed}\n{"type":"turn.comp`,
+  ]) {
+    const execution = classifyJobExecution({ processResult: { code: 0, backend: 'codex', stdout }, reportPresent: true });
+    assert.strictEqual(execution.status, 'blocked_execution_record', stdout);
+    assert.strictEqual(classifyJobOutcome({ execution, report: { outcomeReached: 'yes' } }).status, 'inconclusive');
+  }
+});
+
+check('saved completion is rechecked against the actual Codex stream without rewriting evidence', () => {
+  const dir = jobDir();
+  writeCompletedJob(dir);
+  const stdout = JSON.stringify({ type: 'turn.started' });
+  fs.writeFileSync(path.join(dir, 'agent-stdout.json'), stdout);
+  const original = fs.readFileSync(path.join(dir, 'execution.json'), 'utf8');
+  assert.strictEqual(readJobExecution(dir).status, 'blocked_execution_record');
+  assert.strictEqual(fs.readFileSync(path.join(dir, 'execution.json'), 'utf8'), original);
+  fs.writeFileSync(path.join(dir, 'agent-stdout.json'), `${stdout}\n${JSON.stringify({ type: 'turn.completed' })}`);
+  assert.strictEqual(readJobExecution(dir).status, 'completed');
 });
 
 check('fresh-agent prompts direct browser actions to tools instead of unsupported resource discovery', () => {
