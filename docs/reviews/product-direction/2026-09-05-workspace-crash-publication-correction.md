@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-05
 review_by: 2026-10-05
-reviewed_commit: d505efb5
+reviewed_commit: dddf4b0a
 current_release: v0.44.0
 independent_contexts: 2
 trigger: crash-publication-false-output-correction
@@ -31,6 +31,8 @@ decisions:
 - complete-first-week-outcomes-before-release
 - test-shared-evidence-continuity-next
 paths:
+- docs/ops/V044_LEGACY_MODEL_DOWNLOAD_2026-09-05.md
+- docs/ops/V044_REPORT_CORRECTED_OUTCOMES_2026-09-05.md
 - docs/ops/V044_REPORT_DRAFT_CUSTODY_2026-09-05.md
 - docs/ops/V044_PROJECT_BOUNDARY_SELECTION_2026-09-05.md
 - docs/ops/V044_ARCHIVE_APPROVAL_BOUNDARY_2026-09-05.md
@@ -48,6 +50,24 @@ paths:
 - docs/product/US_PLANNING_CAPABILITY_REGISTRY.json
 - docs/ROADMAP.md
 -->
+
+## Older-model download and interruption correction addendum
+
+The complete run on `b46f0a61` reached ten outcomes. The model-evidence journey
+failed after older-study attachment links disrupted downloads and navigation.
+The land-use first-attempt finding was contradicted by its own snapshot and the
+stored action/report. Its retry was intentionally interrupted, not accepted.
+`dddf4b0a` changes the three older download panels to native anchors, shows the
+existing v0.41 exact hashes, and rejects stopped Codex streams without a final
+completed-turn event. Frozen source bytes, scientific outcomes and defaults
+are unchanged. Supplemental desktop/390px downloads match all twelve selected
+legacy artifacts, but do not substitute for a new full outcome gate.
+
+The lesser enabled-button contrast, mobile-comparison layout and review
+collection-mode gaps remain queued. This is a bounded blocker correction and
+evidence rebinding, not a new independent review. The two original reviews,
+their disagreement and the selected engagement-continuity next lane remain.
+Full QA, clean-build first-week acceptance and final remote CI are still required.
 
 ## Report draft correction addendum
 

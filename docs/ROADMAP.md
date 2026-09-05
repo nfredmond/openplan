@@ -100,6 +100,9 @@ The v1 contract is not yet true:
 - the first-week harness defines twelve required outcomes. The pre-v0.44
   all-journey run completed every job but reached nine outcomes fully and three
   partly; its evidence-complete lesser findings remain in `KNOWN_ISSUES.md`;
+- the later report-corrected run on `b46f0a61` reached ten outcomes but failed
+  model-evidence downloads. The bounded native-download and interruption-custody
+  correction is implemented; complete clean-build acceptance is still required;
 - the proof registry exposes many `partial`, `missing`, and `not-assessed`
   cells; those open cells block v1 even though they do not block this interim
   release;
