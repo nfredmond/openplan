@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { PublishedDistributedWorkLoadingStudy } from "@/lib/models/published-distributed-work-loading";
 
+// Browser attachment downloads leave this comparison page in place.
 export function PublishedDistributedWorkLoadingCard({ study }: { study: PublishedDistributedWorkLoadingStudy | null }) {
   const records = study?.records ?? [];
   const geographies = [...new Map(records.map((record) => [record.geographyId, record.geographyName])).entries()];
@@ -31,8 +31,8 @@ export function PublishedDistributedWorkLoadingCard({ study }: { study: Publishe
         <div><span className="font-semibold">Rollout</span><span className="mt-1 block text-muted-foreground">{study.candidateAdvanced ? "Development gate met; defaults still unchanged" : "Candidate retained and retired"}</span></div>
       </div>
       <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
-        <Link className="underline underline-offset-2" href="/api/models/distributed-work-loading/study-result.json">Download exact study result</Link>
-        <Link className="underline underline-offset-2" href="/api/models/distributed-work-loading/study-report.md">Download study report</Link>
+        <a download className="underline underline-offset-2" href="/api/models/distributed-work-loading/study-result.json">Download exact study result</a>
+        <a download className="underline underline-offset-2" href="/api/models/distributed-work-loading/study-report.md">Download study report</a>
       </div>
       <div className="mt-4 min-w-0 rounded border border-border/70 p-3">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
@@ -60,9 +60,9 @@ export function PublishedDistributedWorkLoadingCard({ study }: { study: Publishe
             <div><dt className="font-semibold">Development comparison SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.comparisonSha256}</dd></div>
           </dl>
           <div className="mt-3 flex flex-wrap gap-3 text-xs font-semibold">
-            <Link className="underline" href={`/api/models/distributed-work-loading/${selected.geographyId}/${selected.method}/distributed-work-loading-input-v1.json`}>Download selected loading file</Link>
-            <Link className="underline" href={`/api/models/distributed-work-loading/${selected.geographyId}/${selected.method}/pre-output-audit-v1.json`}>Download selected before-output audit</Link>
-            <Link className="underline" href={`/api/models/distributed-work-loading/${selected.geographyId}/${selected.method}/development-comparison-v1.json`}>Download selected comparison</Link>
+            <a download className="underline" href={`/api/models/distributed-work-loading/${selected.geographyId}/${selected.method}/distributed-work-loading-input-v1.json`}>Download selected loading file</a>
+            <a download className="underline" href={`/api/models/distributed-work-loading/${selected.geographyId}/${selected.method}/pre-output-audit-v1.json`}>Download selected before-output audit</a>
+            <a download className="underline" href={`/api/models/distributed-work-loading/${selected.geographyId}/${selected.method}/development-comparison-v1.json`}>Download selected comparison</a>
           </div>
         </div> : null}
       </div>

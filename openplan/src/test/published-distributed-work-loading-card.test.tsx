@@ -25,5 +25,9 @@ describe("PublishedDistributedWorkLoadingCard", () => {
     fireEvent.click(screen.getByRole("button", { name: "ActivitySim" }));
     expect(screen.getByTestId("selected-distributed-work-loading")).toHaveTextContent("activitysim");
     expect(screen.getByText("c".repeat(64))).toHaveClass("break-all");
+    // Downloads must not enter Next's page-navigation state after an attachment.
+    for (const link of screen.getAllByRole("link", { name: /^Download / })) {
+      expect(link).toHaveAttribute("download");
+    }
   });
 });
