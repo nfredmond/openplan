@@ -3,7 +3,7 @@
 <!-- openplan-v1-product-contract
 decided: 2026-08-25
 current_release: v0.44.0
-direction_review: docs/reviews/product-direction/2026-09-05-distributed-loading-and-first-week.md
+direction_review: docs/reviews/product-direction/2026-09-05-release-download-correction.md
 review_protocol: docs/product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md
 capability_matrix: docs/product/US_PLANNING_CAPABILITY_MATRIX.md
 validation_research: docs/modeling/VALIDATION_OBSERVATION_UNCERTAINTY_RESEARCH_2026-08-25.md
