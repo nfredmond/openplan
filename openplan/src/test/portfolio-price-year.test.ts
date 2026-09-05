@@ -17,6 +17,14 @@ function review(csv: string, config = configuration) {
 }
 
 describe("portfolio cost price-year evidence", () => {
+  it.each([0, 3001, 2022.5])("does not turn an invalid explicit default %s into an unknown year", (priceYear) => {
+    expect(() => reviewPortfolioImport({
+      bytes: new TextEncoder().encode("Name,Cost\nBridge,4200000"),
+      mapping: configuration.mapping,
+      defaults: { ...configuration.defaults, cost: { ...configuration.defaults.cost!, priceYear } },
+    })).toThrowError(expect.objectContaining({ code: "missing_cost_defaults" }));
+  });
+
   it("preserves unknown price-year evidence in the legacy CSV reviewer too", () => {
     const result = reviewPortfolioImport({
       bytes: new TextEncoder().encode("Name,Cost\nBridge,4200000"),

@@ -77,3 +77,34 @@ explains that the source supplied no year. The original negative evidence is
 retained. The upgrade note now tells operators to review older import defaults;
 the stored metadata cannot establish whether an earlier default was verified.
 The application migration and fresh full outcome run remain outstanding.
+
+## Isolated production preview and recorder correction
+
+The clean worktree at `1adf575d2b9525fb13df92d9fc0e039fa0946e76` built successfully.
+An owned server on port 3201 served that exact build; the canonical first-week
+server on 3200 was unchanged. Starting from sign-in and visible Projects
+navigation, the browser uploaded the supplied exercise CSV and previewed its
+three costs. Clearing the year kept the field blank. The response retained all
+three amounts, USD, and null years, with unknown-year warnings. Desktop and
+390px screenshots show the unknown-year labels. Main inspected both screenshots;
+there was no document-width overflow or console error. This was preview only,
+not a project-creation or successful database-transaction claim. The temporary
+server was stopped after the check.
+
+I initially typed an incorrect full commit hash into the evidence recorder.
+The independent server identity check had matched the correct worktree, but the
+record itself was mis-stamped. It is retained under `price-year-preview/` and is
+not the accepted record. My first recorder correction also used the wrong
+health-response field and failed before sign-in. It remains under
+`price-year-preview-verified/`. After reading the actual response contract, the
+recorder reads Git's exact hash and compares it with `deployment.commit` from
+the server. A deliberately wrong identity failed before sign-in. The successful
+record is under `price-year-preview-bound/` in the September 5 release-checks
+directory. None of these attempts created a project or changed the database
+functions. The errors are preserved, not presented as an uninterrupted pass.
+
+Additional mutation checks covered invalid explicit default years and the XLSX
+round trip itself. Bypassing the default-year validator failed all three invalid
+year cases. Replacing a blank mapped year with 2026 failed the unknown-year,
+mapped-cell, and exported-XLSX cases. The no-op survived; all mutations were
+restored, and the final seven-file focused suite passed 60 tests.
