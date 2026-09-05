@@ -168,3 +168,8 @@ The [observation protocol](PLANNER_OBSERVATION_PROTOCOL_DRAFT.md) follows planne
 - Signal is a planned additive yellow, two-gray and black palette in the current upper-right selector. All five existing choices, default and stored preferences remain required. No product palette change was made.
 
 This checkpoint preserves documentation and public source metadata only. Source PDFs, workbooks, image and HTML remain outside Git. No active checkout edit, browser acceptance, application test, agency filing or human research was performed for this extension. Canonical documentation consolidation still awaits the active owner's handoff.
+
+
+## Optional square corners
+
+CORE-APPEARANCE-02 adds a compact Rounded/Square choice beside or within the theme chooser. M2c specifies the current rounded default, a polished 90-degree alternative, independence from palette and light/dark mode, saved preference and actual accessibility/layout checks after handoff. This update records the request only; the active development checkout remains untouched.
