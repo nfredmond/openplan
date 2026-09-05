@@ -98,6 +98,7 @@
     ]
   },
   "evidence": [
+    "docs/ops/V044_AGREEMENT_ROUNDING_2026-09-05.md",
     "docs/reviews/product-direction/2026-09-05-distributed-loading-and-first-week.md",
     "docs/product/US_PLANNING_CAPABILITY_MATRIX.md",
     "docs/product/V1_PRODUCT_CONTRACT.md",
@@ -141,6 +142,30 @@
       "issueId": "KI-2026-09-05-041",
       "capability": "gis-data-stewardship-documents-reports-and-public-records",
       "gap": "Expose bundle prerequisites earlier and distinguish artifact formats",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-042",
+      "capability": "capital-programming-prioritization-grants-delivery-and-reimbursement",
+      "gap": "Allow invalid source phases to be corrected in the import preview row",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-043",
+      "capability": "travel-demand-corridor-scenario-and-performance-analysis",
+      "gap": "Do not count placeholder model descriptions as completed evidence metadata",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-044",
+      "capability": "travel-demand-corridor-scenario-and-performance-analysis",
+      "gap": "Refresh screening diagnostics and waiting messages when runs complete",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-047",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Measure and investigate report Evidence-tab navigation delays",
       "evidence": "docs/ops/KNOWN_ISSUES.md"
     },
     {

@@ -49,6 +49,37 @@ function verify(payload = cloneFixture(), overrides: Record<string, unknown> = {
 }
 
 describe("verified dual-demand agreement", () => {
+  it("accepts the Python producer's even-sized median without widening summary tolerances", () => {
+    const payload = cloneFixture();
+    const features = payload.features as Array<{ properties: Record<string, unknown> }>;
+    // Synthetic link values with the same two central GEHs as the live failure.
+    // Expected median was independently computed by corridor_agreement._median.
+    Object.assign(features[0].properties, {
+      first_volume: 10000, second_volume: 10523.73, difference: 523.73,
+      percent_difference: 5.24, geh: 5.17, agreement: "marginal",
+    });
+    Object.assign(features[1].properties, {
+      first_volume: 10000, second_volume: 10525.06, difference: 525.06,
+      percent_difference: 5.25, geh: 5.183, agreement: "marginal",
+    });
+    Object.assign(features[2].properties, {
+      first_volume: 0, second_volume: 0, difference: 0,
+      percent_difference: null, geh: 0, agreement: "agree", carries_meaningful_traffic: false,
+    });
+    const summary = (payload.metadata as Record<string, unknown>).summary as Record<string, unknown>;
+    Object.assign(summary, {
+      links_carrying_meaningful_traffic: 2, agree_share_all_links: 0.3333,
+      agree_share_meaningful_links: 0, diverge_share_meaningful_links: 0,
+      agree_share_by_volume: 0, median_geh_meaningful_links: 5.176,
+    });
+    const result = verify(payload);
+    expect(result.status).toBe("verified");
+    if (result.status !== "verified") throw new Error(result.reason);
+    expect(result.agreement.aggregate.medianGehMeaningfulLinks).toBe(5.176);
+    summary.median_geh_meaningful_links = 5.177;
+    expect(verify(payload)).toMatchObject({ status: "invalid", reason: expect.stringContaining("summary") });
+  });
+
   it("verifies the registered JSON artifact used by reports, not only the map GeoJSON", () => {
     const geo = cloneFixture();
     const metadata = geo.metadata as Record<string, unknown>;
