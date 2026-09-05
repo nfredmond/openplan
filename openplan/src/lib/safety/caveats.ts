@@ -95,10 +95,10 @@ export const SAFETY_PDO_COMPARABILITY_CAVEAT =
 /**
  * CCRS `Crashes_*` cannot separate suspected-serious-injury (KABCO A) from
  * other injuries. Until the ExtentOfInjuryCode join lands, nothing in this
- * module may present a KSI ("killed or seriously injured") figure.
+ * module may present a fatal-or-serious-injury crash count.
  */
 export const SAFETY_SEVERITY_COMPLETENESS_CAVEAT =
-  "This source distinguishes fatal, injury, and property-damage-only crashes but does not separate suspected serious injuries, so a killed-or-seriously-injured (KSI) total cannot be derived from it.";
+  "This source distinguishes fatal, injury, and property-damage-only crashes but does not separate crashes involving suspected serious injuries, so a fatal-or-serious-injury crash count cannot be derived from it.";
 
 /**
  * A fatality census records nothing else. Where the covering source is one

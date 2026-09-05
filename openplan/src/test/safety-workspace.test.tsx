@@ -461,7 +461,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
     });
   });
 
-  it("shows a KSI total only when the source could separate serious injury", async () => {
+  it("shows a severe-crash total only when the source could separate serious injury", async () => {
     const features = [
       { type: "Feature", geometry: { type: "Point", coordinates: [-121, 39.2] }, properties: { severity: "fatal" } },
       { type: "Feature", geometry: { type: "Point", coordinates: [-121, 39.2] }, properties: { severity: "severe_injury" } },
@@ -482,7 +482,10 @@ describe("SafetyWorkspace coverage disclosure", () => {
 
     await waitFor(() => {
       // fatal (1) + serious injury (1) = 2; the plain injury crash is excluded.
-      expect(screen.getByText(/2 killed or seriously injured/)).toBeInTheDocument();
+      const headline = screen.getByTestId("safety-ksi-headline");
+      expect(headline).toHaveTextContent(/2 fatal or serious-injury crashes/);
+      expect(headline).toHaveTextContent(/crash records.*not people killed or injured/i);
+      expect(headline).not.toHaveTextContent(/^2 killed or seriously injured/);
     });
   });
 
@@ -535,7 +538,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
     fireEvent.click(screen.getByRole("button", { name: /Retrieve crash data/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/2 killed or seriously injured/)).toBeInTheDocument();
+      expect(screen.getByText(/2 fatal or serious-injury crashes/)).toBeInTheDocument();
     });
   });
 

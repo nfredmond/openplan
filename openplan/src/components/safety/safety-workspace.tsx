@@ -833,8 +833,9 @@ export function SafetyWorkspace({
    * added up from `visibleFeatures` — the crashes the query route RETURNED. That
    * query is capped (PostgREST `max_rows`), and a real run drew 1,000 crashes
    * against 11,870 matching the study area, so the headline understated by
-   * roughly an order of magnitude. KSI is the measure SS4A and HSIP score a
-   * project on; a planner glancing at this copies it into a grant application.
+   * roughly an order of magnitude. A planner glancing at this can copy it into
+   * a grant application, so its unit must be explicit: these are CRASH RECORDS,
+   * not a count of people killed or injured.
    *
    * WHAT IT IS NOW. `severityTotals` from the route: one exact count per band
    * over every crash the current filters match, counted in Postgres through the
@@ -846,8 +847,9 @@ export function SafetyWorkspace({
    *
    * `null` NEVER BECOMES A ZERO. Three separate things make it null, and each
    * one produces a sentence instead of a figure: a source that cannot separate
-   * suspected serious injury (a KSI of `fatal + 0` reads as "no serious injuries
-   * occurred"), a band the database could not count, and a live read — whose
+   * suspected serious injury (fatal crashes plus a fabricated zero for serious-
+   * injury crashes reads as "none occurred"), a band the database could not
+   * count, and a live read — whose
    * crashes are in this browser and were never counted by anything.
    */
   const studyAreaSeverityTotals = liveRead ? null : (response?.severityTotals ?? null);
@@ -868,10 +870,10 @@ export function SafetyWorkspace({
   /**
    * Collisions in the WHOLE study area the source never classified.
    *
-   * This travels with the KSI figure and is rendered in the same block, never in
+   * This travels with the severe-crash figure and is rendered in the same block, never in
    * a paragraph further down. It is the qualification that makes the figure
    * defensible: a collision whose casualty counts the source never supplied may
-   * or may not have been a KSI, so the total is a floor rather than a count. A
+   * or may not have been a severe crash, so the total is a floor rather than a count. A
    * number separated from that sentence is a claim nobody can defend, and this
    * one feeds RTP chapters and grant narratives.
    */
@@ -881,7 +883,7 @@ export function SafetyWorkspace({
       : null;
 
   // True when the route counted the study area and the source simply cannot
-  // express KSI — distinct from "the counts could not be read", which gets its
+  // separate serious-injury crashes — distinct from "the counts could not be read", which gets its
   // own sentence rather than silence.
   const severityTotalsUnavailable =
     !liveRead && Boolean(response) && studyAreaSeverityTotals === null;
@@ -1367,11 +1369,11 @@ export function SafetyWorkspace({
               <div data-testid="safety-ksi-headline" className="flex flex-col gap-1">
                 <p>
                   <span className="font-medium">
-                    {ksiTotal.toLocaleString()} killed or seriously injured
+                    {ksiTotal.toLocaleString()} fatal or serious-injury crashes
                   </span>{" "}
                   <span className="text-muted-foreground">
-                    (KSI) across the whole area you picked, with these filters — the measure
-                    SS4A and HSIP are scored on.
+                    across the whole area you picked, with these filters. This counts crash
+                    records by their most severe reported outcome, not people killed or injured.
                   </span>
                 </p>
                 {response && (
@@ -1517,14 +1519,14 @@ export function SafetyWorkspace({
               </section>
             ) : null}
             {/* Counted and failed, which is not the same as a source that cannot
-                express KSI (that gets the completeness caveat below). Said out
+                separate serious-injury crashes (that gets the completeness caveat below). Said out
                 loud rather than left as a missing figure, because a missing
                 figure on this page reads as a zero. */}
             {severityTotalsUnavailable && (
               <p className="text-muted-foreground">
                 The crashes on the map loaded, but OpenPlan could not count how many were fatal
-                or serious across the whole area you picked, so no killed-or-seriously-injured
-                figure is shown. That is a failed count, not a finding — try loading the area
+                or serious across the whole area you picked, so no severe-crash figure is shown.
+                That is a failed count, not a finding — try loading the area
                 again.
               </p>
             )}
@@ -1586,7 +1588,7 @@ export function SafetyWorkspace({
       {/* The severity bands never account for these, so the count is stated
           rather than left as the difference between two numbers.
 
-          ONLY WHEN THERE IS NO KSI FIGURE. When there is one, this same
+          ONLY WHEN THERE IS NO SEVERE-CRASH FIGURE. When there is one, this same
           disclosure is rendered inside the headline block instead, against the
           study-area total rather than against the dots — a caveat has to sit
           with the number it qualifies, and two near-identical sentences on

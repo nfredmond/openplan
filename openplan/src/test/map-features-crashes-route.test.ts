@@ -650,7 +650,7 @@ describe("GET /api/map-features/crashes", () => {
     // The KSI firewall: no orange dots is not evidence of no serious injuries
     // when the source cannot separate them.
     expect(
-      payload.coverageNotes.some((note) => note.includes("killed-or-seriously-injured (KSI)"))
+      payload.coverageNotes.some((note) => note.includes("fatal-or-serious-injury crash count"))
     ).toBe(true);
   });
 

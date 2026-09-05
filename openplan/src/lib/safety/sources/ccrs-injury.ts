@@ -3,9 +3,8 @@
  *
  * WHY THIS EXISTS. `Crashes_*` carries only NumberKilled and NumberInjured, so
  * the base adapter can separate fatal / injury / PDO but not suspected serious
- * injury (KABCO A). That matters because SS4A and HSIP are built on KSI —
- * "killed or seriously injured" — and a safety module that cannot express KSI
- * cannot support the deliverable it exists for.
+ * injury (KABCO A). The join lets OpenPlan classify a crash as involving a
+ * suspected serious injury; it does not turn crash rows into a casualty count.
  *
  * The severity lives one table over, on `InjuredWitnessPassengers_YYYY`, one row
  * per injured person, joined to a crash by `CollisionId`. Verified value

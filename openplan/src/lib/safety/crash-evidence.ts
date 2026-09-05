@@ -104,9 +104,9 @@ export type SafetyCrashEvidenceIngest = {
  * Read the three nullable count fields as three different statements:
  *   `severityCounts: null` — the counting query failed. Nothing may be rendered.
  *   `roleCounts: null`     — person rows were not retrieved for this acquisition.
- *   `ksi: null`            — the source cannot separate suspected serious
- *                            injuries, so a killed-or-seriously-injured figure
- *                            cannot be derived from it AT ALL. Not zero.
+ *   `ksi: null`            — the source cannot separate suspected serious-
+ *                            injury crashes, so a severe-crash count cannot be
+ *                            derived from it AT ALL. Not zero.
  */
 export type SafetyCrashEvidence = {
   ingestId: string;
@@ -130,7 +130,7 @@ export type SafetyCrashEvidence = {
   severityCounts: SafetyCrashSeverityCounts | null;
   /** People by role, or null when person rows were not retrieved for this acquisition. */
   roleCounts: SafetyCrashRoleCounts | null;
-  /** fatal + severe_injury, or null when the source cannot separate serious injuries. */
+  /** Fatal-crash rows plus severe-injury-crash rows, or null when the source cannot separate them. */
   ksi: number | null;
   /** Collisions the source reported no casualty count for. Null when counts are unreadable. */
   unclassifiedCount: number | null;
@@ -203,9 +203,9 @@ export function totalCountedParties(counts: SafetyCrashRoleCounts | null): numbe
  *
  * The severity-completeness marker is the ingest's own record of what its source
  * could express, and `severe_injury` is only reachable when it says `kabco_full`.
- * A KSI figure derived without it would be `fatal + 0`, which reads as "no
- * serious injuries occurred" — the single most damaging wrong number this
- * module could publish, because KSI is what a safety grant is scored on.
+ * A severe-crash figure derived without it would be `fatal + 0`, which reads as
+ * "no serious-injury crashes occurred" — an unsupported claim this module must
+ * not publish.
  */
 export function separatesSeriousInjuries(severityCompleteness: string): boolean {
   return severityCompleteness === "kabco_full";

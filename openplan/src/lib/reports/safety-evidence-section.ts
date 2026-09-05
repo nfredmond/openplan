@@ -18,8 +18,8 @@ import type { SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
  *      separated from its caveat is the one that gets quoted.
  *   2. NULL IS NOT ZERO. A source that cannot separate serious injuries reports
  *      `ksi: null`, and unreadable counts report `severityCounts: null`. Both
- *      say so. Printing 0 killed or seriously injured because nobody could
- *      count is the most flattering possible reading and the least defensible.
+ *      say so. Printing 0 severe crashes because nobody could count is the most
+ *      flattering possible reading and the least defensible.
  *   3. NO SILENT TRUNCATION. A retrieval that stopped at the record cap makes
  *      every figure a floor, and the section says the word "floor".
  *   4. THE UNGEOCODED GAP IS STATED. Reported and mapped are different numbers;
@@ -82,17 +82,17 @@ export function buildPacketSafetyEvidence(
         "No collisions carried coordinates, so none could be placed."
       ),
       figure(
-        "Killed or seriously injured",
+        "Fatal or serious-injury crashes",
         item.ksi,
-        "This source does not separate suspected serious injuries, so a KSI figure cannot be formed from it."
+        "This source does not separate crashes involving suspected serious injuries, so a severe-crash count cannot be formed from it."
       ),
       figure(
-        "Fatal",
+        "Fatal crashes",
         counts ? (counts.fatal ?? null) : null,
         "The severity breakdown could not be read."
       ),
       figure(
-        "Serious injury",
+        "Serious-injury crashes",
         counts ? (counts.severe_injury ?? null) : null,
         "The severity breakdown could not be read."
       ),

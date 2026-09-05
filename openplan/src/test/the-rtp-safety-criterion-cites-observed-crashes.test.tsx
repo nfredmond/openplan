@@ -125,10 +125,11 @@ describe("the RTP safety criterion cites observed crashes", () => {
     );
   });
 
-  it("shows the observed killed-or-seriously-injured figure beside the rating", () => {
+  it("shows the observed severe-crash figure beside the rating without calling crashes people", () => {
     renderEditor(evidenceFor());
     // 12 fatal + 40 severe injury, from a source that separates serious injuries.
-    expect(screen.getByText(/52 killed or seriously injured/)).toBeTruthy();
+    expect(screen.getByText(/52 fatal or serious-injury crashes/)).toBeTruthy();
+    expect(screen.queryByText(/52 killed or seriously injured/)).toBeNull();
     expect(screen.getByText(/1,089 collisions mapped/)).toBeTruthy();
     // People, from the person rows — the count no crash-level flag can produce.
     expect(screen.getByText(/145 people walking, cycling or riding a motorcycle/)).toBeTruthy();

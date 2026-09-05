@@ -42,9 +42,9 @@ import { loadUsTigerRoadContext } from "@/lib/safety/us-road-context-adapter";
  * ═══ WHY THIS ROUTE ALSO COUNTS SEVERITY BANDS ═══
  *
  * The rows are capped and always will be — a map cannot draw 10^5 points. The
- * page's headline, however, is KSI — killed or seriously injured — which is the
- * measure SS4A and HSIP score a project on, so it is what a planner copies into
- * a funding application. Adding it up from the rows this route
+ * page's headline, however, is a count of crash records in the fatal and
+ * suspected-serious-injury bands, which a planner may copy into a funding
+ * application. It is not a casualty count. Adding it up from the rows this route
  * returned understated it by roughly an order of magnitude on a real run: 1,000
  * crashes drawn against 11,870 matching the study area.
  *

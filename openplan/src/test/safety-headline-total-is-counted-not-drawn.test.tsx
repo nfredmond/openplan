@@ -18,7 +18,7 @@ import type { SafetyIngestSummary } from "@/lib/safety/client-types";
  * THE SAFETY HEADLINE COUNTS THE STUDY AREA, NOT THE DOTS ON THE MAP
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * WHAT WENT WRONG. `/safety` shows "N killed or seriously injured" — KSI, the
+ * WHAT WENT WRONG. `/safety` shows the severe-crash total used for KSI screening,
  * measure SS4A and HSIP score a project on. It was computed by adding up the
  * severity of the crash FEATURES the query route returned, and that query is
  * capped: PostgREST enforces `max_rows`, so a real run against the local
@@ -482,11 +482,11 @@ describe("the KSI headline is the study-area total", () => {
 
     const headline = await screen.findByTestId("safety-ksi-headline");
     expect(headline).toHaveTextContent(
-      new RegExp(`${TRUE_KSI.toLocaleString()} killed or seriously injured`)
+      new RegExp(`${TRUE_KSI.toLocaleString()} fatal or serious-injury crashes`)
     );
     // The drawn slice carries exactly one fatal crash and no serious injuries.
-    // "1 killed or seriously injured" is precisely what the page said before.
-    expect(headline).not.toHaveTextContent(/\b1 killed or seriously injured/);
+    expect(headline).not.toHaveTextContent(/\b1 fatal or serious-injury crash/);
+    expect(headline).toHaveTextContent(/crash records.*not people killed or injured/i);
     expect(headline.textContent).toMatch(/whole area you picked/i);
   });
 

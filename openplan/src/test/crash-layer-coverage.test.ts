@@ -310,7 +310,7 @@ describe("describeCrashLayerCoverage", () => {
   it("states that serious injuries are not separable when a contributing source cannot separate them", () => {
     const notes = describeCrashLayerCoverage(input({ anySeverityIncomplete: true }));
 
-    expect(notes.some((note) => note.includes("killed-or-seriously-injured (KSI)"))).toBe(true);
+    expect(notes.some((note) => note.includes("fatal-or-serious-injury crash count"))).toBe(true);
   });
 
   it("omits the severity caveat when nothing is drawn for it to explain", () => {
@@ -318,7 +318,7 @@ describe("describeCrashLayerCoverage", () => {
       input({ anySeverityIncomplete: true, returnedCount: 0, matchedCount: 0 })
     );
 
-    expect(notes.some((note) => note.includes("killed-or-seriously-injured (KSI)"))).toBe(false);
+    expect(notes.some((note) => note.includes("fatal-or-serious-injury crash count"))).toBe(false);
   });
 
   it("stops at one sentence when there is no workspace to scope anything to", () => {

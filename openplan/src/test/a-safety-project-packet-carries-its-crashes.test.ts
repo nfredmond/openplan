@@ -83,8 +83,9 @@ describe("a safety project's packet carries its crashes", () => {
     if (built.kind !== "present") return;
     const [acquisition] = built.acquisitions;
 
-    const ksi = acquisition.figures.find((f) => /killed or seriously/i.test(f.label));
+    const ksi = acquisition.figures.find((f) => /fatal or serious-injury crashes/i.test(f.label));
     expect(ksi?.value).toBe(15);
+    expect(acquisition.figures.some((f) => /killed or seriously injured/i.test(f.label))).toBe(false);
     expect(acquisition.caveats.length).toBeGreaterThan(0);
     expect(acquisition.citation).toContain("Example crash source");
   });
@@ -109,7 +110,7 @@ describe("a safety project's packet carries its crashes", () => {
   it("prints no KSI figure when the source cannot separate serious injuries", () => {
     const built = buildPacketSafetyEvidence([evidence({ ksi: null })]);
     if (built.kind !== "present") throw new Error("expected present");
-    const ksi = built.acquisitions[0].figures.find((f) => /killed or seriously/i.test(f.label));
+    const ksi = built.acquisitions[0].figures.find((f) => /fatal or serious-injury crashes/i.test(f.label));
     expect(ksi?.value).toBeNull();
     // The reason travels with the absence — a blank cell teaches nobody.
     expect(ksi?.absentBecause).toMatch(/does not separate/i);
@@ -118,7 +119,7 @@ describe("a safety project's packet carries its crashes", () => {
   it("prints no severity numbers when the counts could not be read", () => {
     const built = buildPacketSafetyEvidence([evidence({ severityCounts: null, unclassifiedCount: null })]);
     if (built.kind !== "present") throw new Error("expected present");
-    const fatal = built.acquisitions[0].figures.find((f) => f.label === "Fatal");
+    const fatal = built.acquisitions[0].figures.find((f) => f.label === "Fatal crashes");
     expect(fatal?.value).toBeNull();
     expect(fatal?.absentBecause).toMatch(/could not be read/i);
   });
@@ -336,7 +337,7 @@ describe("a safety project's packet carries its crashes", () => {
 
     it("says why a figure is absent instead of printing a zero", () => {
       const html = buildReportHtml(packetData([evidence({ ksi: null })]));
-      expect(html).toMatch(/does not separate suspected serious injuries/i);
+      expect(html).toMatch(/does not separate crashes involving suspected serious injuries/i);
     });
 
     it("tells a project with no crash data apart from a failed read", () => {

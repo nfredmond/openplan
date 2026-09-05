@@ -402,12 +402,13 @@ export const CRASH_SEVERITY_BANDS: readonly string[] = SEVERITY_FACET.values;
  *
  * ═══ WHY THIS IS ONE MORE PREDICATE AND NOT A SECOND FILTER BUILDER ═══
  *
- * The Safety page's headline is a KSI total — killed or seriously injured — and
- * it used to be added up from the crash rows the query route returned. That
+ * The Safety page's headline is a count of fatal and serious-injury crash rows,
+ * and it used to be added up from the crash rows the query route returned. That
  * query is capped (PostgREST `max_rows`), so a real run drew 1,000 crashes
  * against 11,870 matching the study area and the headline understated by roughly
- * an order of magnitude. A planner copies that number into a funding
- * application; it has to be the study-area total, counted in the database.
+ * an order of magnitude. A planner may copy that number into a funding
+ * application; it has to name its crash-record unit and be counted across the
+ * whole study area in the database.
  *
  * The hazard in fixing it is that the total and the map start disagreeing. So
  * this does NOT build a query of its own: the caller applies
