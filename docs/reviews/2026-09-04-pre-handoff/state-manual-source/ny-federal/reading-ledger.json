@@ -1,0 +1,101 @@
+{
+  "read_date": "2026-09-05T01:23:50.608383+00:00",
+  "scope": "Selected reconnaissance, NOT full manuals",
+  "fully_text_read_pdf_pages": {
+    "ny-ch01": [
+      2,
+      3,
+      4,
+      5
+    ],
+    "ny-ch02": [
+      2,
+      3,
+      4,
+      5,
+      10,
+      14,
+      15,
+      16
+    ],
+    "ny-ch03": [
+      2,
+      3,
+      10,
+      11
+    ],
+    "ny-ch05": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "ny-ch09": [
+      2,
+      3,
+      4
+    ],
+    "ny-ch15": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      17,
+      18,
+      19,
+      20,
+      33,
+      34,
+      35,
+      36,
+      37
+    ],
+    "ny-stewardship": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "territorial-2026": [
+      5,
+      6,
+      7,
+      8
+    ]
+  },
+  "additional_partial_reading": [
+    "NY chapter2 pp6,11,12 from truncated outputs; not counted full",
+    "NY chapter1 start of definitions p6; not counted full",
+    "Current roadmap targeted search excerpts only"
+  ],
+  "visual_review": [],
+  "limits": [
+    "No standalone forms or external referenced manuals read",
+    "No actual submissions or software acceptance",
+    "Current directory root returned no data; related chapter current links and EB registry used instead",
+    "NY chapter1 is old orientation, not proof all legacy chapter titles or laws remain current"
+  ]
+}

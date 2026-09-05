@@ -1,0 +1,30 @@
+[
+  {
+    "file": "tx-policy.pdf",
+    "url": "https://www.txdot.gov/content/dam/txdotoms/tpd/lgp/lgp.pdf",
+    "sha256": "d9a60641b2996577458fec9ca46a4ded855354683bad0fc451bc32d3d3187323",
+    "bytes": 1832638,
+    "retrieved_date": "2026-09-05 UTC / September 4 Pacific"
+  },
+  {
+    "file": "tx-guide.pdf",
+    "url": "https://www.txdot.gov/content/dam/docs/division/tpd/lgp/guide.pdf",
+    "sha256": "38cc534a0e94011b164e40813ec4de56fb8d691ea0513e208c9c02b868e863f8",
+    "bytes": 2548299,
+    "retrieved_date": "2026-09-05 UTC / September 4 Pacific"
+  },
+  {
+    "file": "fl-manual.pdf",
+    "url": "https://fdotwww.blob.core.windows.net/sitefinity/docs/default-source/fpo/lp/manual/local-programs-manual-2025.pdf?sfvrsn=92e7c249_1",
+    "sha256": "cfd077fa424b7940a47cadeb4933044250af86078bb1ae3ce809315e264b8eeb",
+    "bytes": 9681296,
+    "retrieved_date": "2026-09-05 UTC / September 4 Pacific"
+  },
+  {
+    "file": "fl-ch14.pdf",
+    "url": "https://fdotwww.blob.core.windows.net/sitefinity/docs/default-source/fpo/lp/manual/local-programs-manual-2025---chapter-14.pdf?sfvrsn=4ec2bf0d_1",
+    "sha256": "5228bd544e336ea5061317af8c4f845724c478dd285c390daa6b65821b694d70",
+    "bytes": 1084212,
+    "retrieved_date": "2026-09-05 UTC / September 4 Pacific"
+  }
+]

@@ -1,0 +1,74 @@
+[
+  {
+    "name": "ny-ch01",
+    "url": "https://www.dot.ny.gov/portal/pls/portal/MEXIS_APP.PA_PLAFAP_ADMIN.show_file?id=2375",
+    "final_url": "https://www.dot.ny.gov/portal/pls/portal/MEXIS_APP.PA_PLAFAP_ADMIN.show_file?id=2375",
+    "bytes": 86894,
+    "sha256": "75ec481b193eaf08054857e27e9a8fca6445786178fb33fd4f8d4cb4fea4f7cf",
+    "pages": 19,
+    "retrieved_utc": "2026-09-05T01:21:35.719259+00:00"
+  },
+  {
+    "name": "ny-ch02",
+    "url": "https://www.dot.ny.gov/portal/pls/portal/MEXIS_APP.PA_PLAFAP_ADMIN.show_file?id=3681",
+    "final_url": "https://www.dot.ny.gov/portal/pls/portal/MEXIS_APP.PA_PLAFAP_ADMIN.show_file?id=3681",
+    "bytes": 861234,
+    "sha256": "a7afa11d832d4035f452567486ac6513c56edbe7cf2a30a3f2ffcc13084e99ed",
+    "pages": 32,
+    "retrieved_utc": "2026-09-05T01:21:37.618964+00:00"
+  },
+  {
+    "name": "ny-ch03",
+    "url": "https://www.dot.ny.gov/portal/pls/portal/MEXIS_APP.PA_PLAFAP_ADMIN.show_file?id=5425",
+    "final_url": "https://www.dot.ny.gov/portal/pls/portal/MEXIS_APP.PA_PLAFAP_ADMIN.show_file?id=5425",
+    "bytes": 509737,
+    "sha256": "1439ebe3dd8867fa0a65178f038e51810ec453f32699966cc41dd34b59ec8584",
+    "pages": 32,
+    "retrieved_utc": "2026-09-05T01:21:39.971273+00:00"
+  },
+  {
+    "name": "ny-ch05",
+    "url": "https://www.dot.ny.gov/portal/pls/portal/MEXIS_APP.PA_PLAFAP_ADMIN.show_file?id=5365",
+    "final_url": "https://www.dot.ny.gov/portal/pls/portal/MEXIS_APP.PA_PLAFAP_ADMIN.show_file?id=5365",
+    "bytes": 322793,
+    "sha256": "2c710a263b39337bbb91606d6071317e5d018bb87666436490731147cddd5e0a",
+    "pages": 21,
+    "retrieved_utc": "2026-09-05T01:21:41.905083+00:00"
+  },
+  {
+    "name": "ny-ch09",
+    "url": "https://www.dot.ny.gov/portal/pls/portal/MEXIS_APP.PA_PLAFAP_ADMIN.show_file?id=2890",
+    "final_url": "https://www.dot.ny.gov/portal/pls/portal/MEXIS_APP.PA_PLAFAP_ADMIN.show_file?id=2890",
+    "bytes": 66352,
+    "sha256": "f066723b236aa2da516f5dc9de103ced3b1811c011319cc4fcd5135a5ab02d64",
+    "pages": 15,
+    "retrieved_utc": "2026-09-05T01:21:42.731391+00:00"
+  },
+  {
+    "name": "ny-ch15",
+    "url": "https://www.dot.ny.gov/portal/pls/portal/MEXIS_APP.PA_PLAFAP_ADMIN.show_file?id=5430",
+    "final_url": "https://www.dot.ny.gov/portal/pls/portal/MEXIS_APP.PA_PLAFAP_ADMIN.show_file?id=5430",
+    "bytes": 620491,
+    "sha256": "ecb6b0ea4266a75df7bd836cb6d5958d7cd0a63a63bfc2919b41f360d83a6ec4",
+    "pages": 45,
+    "retrieved_utc": "2026-09-05T01:21:44.317964+00:00"
+  },
+  {
+    "name": "ny-stewardship",
+    "url": "https://www.fhwa.dot.gov/federalaid/stewardship/agreements/ny.pdf",
+    "final_url": "https://www.fhwa.dot.gov/federalaid/stewardship/agreements/ny.pdf",
+    "bytes": 652884,
+    "sha256": "577e5de59bd47b529911eb510837ad1b7abd292d0834c09aed331f6b1002d1ac",
+    "pages": 17,
+    "retrieved_utc": "2026-09-05T01:21:47.718807+00:00"
+  },
+  {
+    "name": "territorial-2026",
+    "url": "https://www.fhwa.dot.gov/specialfunding/thp/260330.pdf",
+    "final_url": "https://www.fhwa.dot.gov/specialfunding/thp/260330.pdf",
+    "bytes": 299913,
+    "sha256": "b6f81da326470f7f89b3fd0add87a57ccf9baf3214cb495877e84bac63868ab6",
+    "pages": 8,
+    "retrieved_utc": "2026-09-05T01:21:50.905715+00:00"
+  }
+]

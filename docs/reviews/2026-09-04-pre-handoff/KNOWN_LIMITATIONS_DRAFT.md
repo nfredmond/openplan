@@ -198,3 +198,13 @@ See [current source findings](AERIAL_CURRENT_CAPABILITY_REVIEW.md), [DJI researc
 | KL-2026-09-04-058 | Source/artifact access and ambiguity | Some manual wording conflicts; linked exhibits/external manuals not all read. Pilot PES XFA exposed only an Adobe placeholder. | Preserve explicit source conflicts and unreadable status, obtain authoritative resolution, inspect actual current forms/agreements before claiming operational compliance. |
 
 See `LAPM_FEATURE_GAP_ANALYSIS.md` and `LAPM_SOURCE_AND_REVIEW_COVERAGE.md`. Full chapter reading is complete; statutory completeness, current all-state law, live filing and agency acceptance are not established.
+
+
+## National procedural reconnaissance, source 01f0fd03
+
+| ID | Classification | Finding | Required resolution |
+|---|---|---|---|
+| KL-2026-09-04-059 | National procedural support unproved | The inspected reimbursement descriptor/query layer provides country/subdivision vocabulary and guidance. Seven-state primary sources require additional agency/program/project authority, different financial treatments and independent rule/form/retention versions. Nevada current supersession remains unresolved. | G1a/M1/M10/M11: source and actual-outcome coverage, currentness/access register and contrasting practitioner cases. Preserve generic-profile disclosures; do not copy California rules into new state labels. |
+| KL-2026-09-04-060 | Aerial funded-use eligibility unproved | WSDOT LPB-2026-02 R2 restricts specified UAS/components and processing on covered federally funded projects. Mission/USB compatibility does not establish eligible project use. | M5b/G1a: verify actual federal/state/contract scope and exceptions, capture equipment/component and funding evidence, and test appropriate disclosure/control. No universal DJI prohibition or private-use restriction is inferred. |
+
+See `STATE_MANUALS_WA_MN_RECONNAISSANCE.md` for the full two-page bulletin reading. This extension did not run application tests or establish an actual prohibited flight/use.

@@ -132,3 +132,12 @@ M5b.1–6, CORE-AERIAL-02/CORE-DJI-01 and KL049–053 own completion and identif
 Detailed reports: [1–5/18/20](LAPM_CHAPTERS_01_05_18_20_REVIEW.md), [6–8/17](LAPM_CHAPTERS_06_08_17_REVIEW.md), [9–12](LAPM_CHAPTERS_09_12_REVIEW.md), [13–16](LAPM_CHAPTERS_13_16_REVIEW.md). M10a.1–d.2 refine capital administration; M8a/b, M9d and M13f make environmental/civil-rights, hearing, maintenance/certification and agency-audit work explicit. M11/M14 retain approved cost bases, sealed/on-call procurement and distinct payment/claim events. No new chapter-specific modules or product implementation were launched.
 
 Source findings retain e6900750 attribution. Main advanced to clean 01f0fd03 during this review; root repeated the detached-readiness-helper search there. Main CI33935279096 was in progress, RLS33935279333 passed, and no safe handoff/release was established. The active checkout and its runtime were untouched. The review branch preserves documentation only for this extension; push success and CI status are separate. Canonical contract/docs consolidation still awaits the owner handoff.
+
+
+## Neighboring states and national procedural comparison
+
+[Selection and design implications](NATIONAL_LOCAL_ASSISTANCE_COMPARISON.md) prioritizes Oregon, Washington and Nevada at Nathaniel's request, with New York/Minnesota contrasting cases and Florida/Texas also inventoried. [Oregon/Nevada](STATE_MANUALS_OR_NV_RECONNAISSANCE.md), [Washington/Minnesota](STATE_MANUALS_WA_MN_RECONNAISSANCE.md), [Texas/Florida](STATE_MANUALS_TX_FL_RECONNAISSANCE.md) and [New York/federal](STATE_MANUALS_NY_FEDERAL_RECONNAISSANCE.md) preserve primary sources and exact selected reading limits. This is not full reading or implemented support for seven states.
+
+G1a supplies the national source/reading/outcome sequence; no state-specific module was added. M5b includes Washington's funded-drone eligibility research case. Public metadata is retained under state-manual-source; no raw PDFs, authenticated portal content or histories are committed. Main was clean01f0fd03 during this research, still developer-owned. No safe handoff, runtime test, official filing or release acceptance is inferred.
+
+At the final monitoring check, main remained01f0fd03 with active owner safety/FARS source edits and a new migration. Main CI33935279096 failed, RLS33935279333 passed and Production Health33935806887 was skipped. Those are development-session results, separate from this documentation-only checkpoint; all owner files and processes remain untouched.

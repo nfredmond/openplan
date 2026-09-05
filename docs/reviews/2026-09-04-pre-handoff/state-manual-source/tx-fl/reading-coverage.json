@@ -1,0 +1,24 @@
+{
+  "review": "bounded reconnaissance, not full manuals",
+  "completed_at": "2026-09-05T01:25:44.498700+00:00",
+  "coverage": {
+    "tx-policy": "Notice, complete table of contents, introduction sections 1-4; online Chapter 2 AFA and Chapter 3 professional services sections. Other chapter contents inventoried only.",
+    "tx-guide": "Introduction 1.1-1.4 text and accounting 2.6, printed 2-36 through 2-38. Guide contents sampled. Embedded introductory flowchart not visually reviewed.",
+    "tx-risk-guidance": "Full extracted text of December 2025 13-page guidance, not visual table validation.",
+    "fl-manual": "Complete manual contents and Chapter 1 text. Selected Chapter 5 overview/risk/cost passages, Chapter 6 invoice passages and Chapter 7 delegation/responsible-charge/certification passages. Sampled change summary.",
+    "fl-ch14": "Contents plus opening 14.1-14.3 passages; not full 31 pages.",
+    "fl-bulletins": "Full extracted text 26-02,26-01,25-01. Index and forms inventory, no full form reading."
+  },
+  "limitations": [
+    "No full manual reading claim.",
+    "No browser/application/accounts or portal activity.",
+    "No implementation reread or newly proved code defect.",
+    "Underlying statutes, all bulletin families and current DBE implementation not comprehensively reconciled.",
+    "FDOT individual chapter 1/5/6/7 requests returned 404 through research web retrieval; consolidated PDF was accessible. Initial direct FDOT index request returned 403; research web retrieval succeeded. Older professional-services page returned 404."
+  ],
+  "final_checkout_observation": {
+    "head": "01f0fd0390b578de282802deb53b33cf98208047",
+    "git_status_short": "",
+    "writes_to_checkout": false
+  }
+}

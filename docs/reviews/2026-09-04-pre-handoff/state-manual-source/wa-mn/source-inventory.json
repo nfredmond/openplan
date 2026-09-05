@@ -1,0 +1,96 @@
+[
+  {
+    "name": "wa-contents",
+    "url": "https://wsdot.wa.gov/publications/manuals/fulltext/M36-63/contents.pdf",
+    "pdf": true,
+    "bytes": 228787,
+    "sha256": "bf9e15c6fc5ae875df45ad48db88dd84f1f6371aa904e97d7adc6c8fde856a33",
+    "retrieved_date_pacific": "2026-09-04"
+  },
+  {
+    "name": "wa-Lag11",
+    "url": "https://wsdot.wa.gov/publications/manuals/fulltext/M36-63/Lag11.pdf",
+    "pdf": true,
+    "bytes": 190546,
+    "sha256": "d4272dd946045a28a0aa245f6f5e2b42fd608d25b38133e2c98aa1f742f8e4ec",
+    "retrieved_date_pacific": "2026-09-04"
+  },
+  {
+    "name": "wa-Lag13",
+    "url": "https://wsdot.wa.gov/publications/manuals/fulltext/M36-63/Lag13.pdf",
+    "pdf": true,
+    "bytes": 204204,
+    "sha256": "10330f0d2b9a88257c67568bd3394ce5e2abf172f8b1c28ae37a57e6ebd74fb6",
+    "retrieved_date_pacific": "2026-09-04"
+  },
+  {
+    "name": "wa-Lag23",
+    "url": "https://wsdot.wa.gov/publications/manuals/fulltext/M36-63/Lag23.pdf",
+    "pdf": true,
+    "bytes": 531515,
+    "sha256": "cde1f38fdd0a878085eb9b7d99de3dcc52b4a22a3f81ea71c15b5fc0dc269a2c",
+    "retrieved_date_pacific": "2026-09-04"
+  },
+  {
+    "name": "wa-Lag15",
+    "url": "https://wsdot.wa.gov/publications/manuals/fulltext/M36-63/Lag15.pdf",
+    "pdf": true,
+    "bytes": 391090,
+    "sha256": "89e89d38501eeeb47559996bf72b7d29504a764e3b9e3fc4604b46e380eda325",
+    "retrieved_date_pacific": "2026-09-04"
+  },
+  {
+    "name": "wa-foreword",
+    "url": "https://wsdot.wa.gov/publications/manuals/fulltext/m36-63/foreword.pdf",
+    "pdf": true,
+    "bytes": 159945,
+    "sha256": "7048de746e0f4be36790e2d23cab4f79c8e6cbc3e9139b214371989e368da924",
+    "retrieved_date_pacific": "2026-09-04"
+  },
+  {
+    "name": "mn-manual",
+    "url": "https://edocs-public.dot.state.mn.us/edocs_public/DMResultSet/download?docId=25636424",
+    "pdf": true,
+    "bytes": 1644807,
+    "sha256": "830c4c87f8b64c905a0cdf6b58e7326f1c4009e7e1ae906c51ccd1cb41c1547a",
+    "retrieved_date_pacific": "2026-09-04"
+  },
+  {
+    "name": "mn-dcp-checklist",
+    "url": "https://edocs-public.dot.state.mn.us/edocs_public/DMResultSet/download?docId=36671935",
+    "pdf": true,
+    "bytes": 363289,
+    "sha256": "750203b20d78a4ce5b13d46ad671d7f1c03d7f8f852abb1649589543d2b85525",
+    "retrieved_date_pacific": "2026-09-04"
+  },
+  {
+    "name": "mn-accounting",
+    "url": "https://edocs-public.dot.state.mn.us/edocs_public/DMResultSet/download?docId=2961608",
+    "pdf": true,
+    "bytes": 10135780,
+    "sha256": "6bb719478344c1f3905527ea609da3ac440f93a61332612d045fb4cad2bf37e9",
+    "retrieved_date_pacific": "2026-09-04"
+  },
+  {
+    "name": "mn-dcp-pay",
+    "url": "https://edocs-public.dot.state.mn.us/edocs_public/DMResultSet/download?docId=16747092",
+    "pdf": true,
+    "bytes": 2375214,
+    "sha256": "4099ac86431bf631ef87aa7035f70681cfd21c34279c7fc3b7c87651319479b4",
+    "retrieved_date_pacific": "2026-09-04"
+  },
+  {
+    "name": "wa-drone-bulletin-2026-02-r2",
+    "url": "https://wsdot.wa.gov/sites/default/files/2026-03/wsdot-lpb-2026-02-r2-federal-restrictions-on-foreign-drones.pdf",
+    "pdf": true,
+    "bytes": 135847,
+    "sha256": "3768ce9ae8d3158203ea325b8c7a5579b7f6abb4c780231a5bbd2869e38c5ba5",
+    "retrieved_date_pacific": "2026-09-04",
+    "read_scope": "Complete extracted text, all pages",
+    "pages_read": [
+      1,
+      2
+    ],
+    "page_count": 2
+  }
+]

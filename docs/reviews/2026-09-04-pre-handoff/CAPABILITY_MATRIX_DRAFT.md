@@ -224,3 +224,8 @@ The entire manual review adds detail without promoting any capability to complet
 | Closure, maintenance and entity oversight | Not established end to end; M10d.1–2/M13f require valid underspend, final-voucher evidence, continuing obligations, county certification and audit/CAP final disposition. |
 
 Current DBE and future Buy America/bidder-list transitions differ; retain dated application, suspended/unknown states and historical evidence. Full source reading is not proof of runtime compliance or professional usefulness.
+
+
+## Seven-state manual reconnaissance
+
+Oregon, Washington, Nevada, New York, Minnesota, Florida and Texas now have source inventories and selected procedural comparisons in `NATIONAL_LOCAL_ASSISTANCE_COMPARISON.md`. Nathaniel's neighboring-state priority is explicit in G1a. This does not promote any capability/geography cell: full manuals, current forms/overlays and real workflow acceptance remain separate work. Nevada's discovered 2017 manual and inaccessible live hub require currentness resolution. Agency delegation, sponsorship, approved payment paths, identifier hierarchy and record retention are named cross-state cases. DC, tribes, direct grants and territories retain distinct coverage requirements.

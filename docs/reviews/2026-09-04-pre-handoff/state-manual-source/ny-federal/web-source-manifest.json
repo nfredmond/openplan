@@ -1,0 +1,48 @@
+[
+  {
+    "name": "ny-directory",
+    "url": "https://www.dot.ny.gov/plafap",
+    "error": "HTTP Error 406: Not Acceptable",
+    "web_tool_read": true
+  },
+  {
+    "name": "ny-current-crosslinks",
+    "url": "https://www.dot.ny.gov/portal/page/portal/plafap/view-document?id=1435",
+    "error": "HTTP Error 406: Not Acceptable",
+    "web_tool_read": true
+  },
+  {
+    "name": "ny-eb26033",
+    "url": "https://eieb.dot.ny.gov/publiceiebdocuments/Details/15714",
+    "final_url": "https://eieb.dot.ny.gov/publiceiebdocuments/Details/15714",
+    "bytes": 21160,
+    "sha256": "7b8d6e64861521c08631724bd92c763119e31a7d4e11a2388223f018f650a1a1"
+  },
+  {
+    "name": "fhwa-stewardship-directory",
+    "url": "https://www.fhwa.dot.gov/federalaid/stewardship/index.cfm",
+    "final_url": "https://www.fhwa.dot.gov/federalaid/stewardship/index.cfm",
+    "bytes": 15312,
+    "sha256": "569d07178b9dfc78d4062a5c0d9041134e6bed4cf92ac01a879c6331c94385ec"
+  },
+  {
+    "name": "fhwa-order50202",
+    "url": "https://www.fhwa.dot.gov/legsregs/directives/orders/50202.cfm",
+    "final_url": "https://www.fhwa.dot.gov/legsregs/directives/orders/50202.cfm",
+    "bytes": 39222,
+    "sha256": "a210402935670be13e89015a7c504790989b0e5863643ea64ac7d7862f41021e"
+  },
+  {
+    "name": "fhwa-tribal-finance",
+    "url": "https://highways.fhwa.dot.gov/federal-lands/tribal/finance",
+    "error": "HTTP Error 403: Forbidden",
+    "web_tool_read": true
+  },
+  {
+    "name": "fhwa-thp-directory",
+    "url": "https://www.fhwa.dot.gov/specialfunding/thp/",
+    "final_url": "https://www.fhwa.dot.gov/specialfunding/thp/",
+    "bytes": 8429,
+    "sha256": "77d29117ee6ddc7d5b5c11c5881401bd9fb3369ac9f98ede92578f1bd167d347"
+  }
+]

@@ -1,0 +1,57 @@
+# Which state manuals to review next, and why
+
+September 4, 2026 Pacific. **Yes: prioritize Oregon, Washington and Nevada next, with New York and Minnesota as deliberate checks of whether the shared design works outside the West.** Florida and Texas add useful funding, qualification and contracting cases. Nathaniel specifically requested the neighboring states after the initial five-state comparison began.
+
+This checkpoint inventories current publication families and reads selected contrasting sections across seven states. It does not claim seven full manual readings, current legal completeness or operational state support. California's prior full LAPM review remains separately documented. The active developer still owns main; this extension is research and roadmap detail only.
+
+## Recommended sequence
+
+| Review priority | Why it earns the reading time | Source and present reading depth |
+|---|---|---|
+| Oregon | Separate certified-agency delivery, delivery by another agency, state-fund exchange and ODOT delivery. MPO certification can cover consultant administration without construction. | [Current LAG chapters](https://www.oregon.gov/ODOT/LocalGov/Pages/LAG-Manual.aspx). Selected Section A and billing C3 reading; current chapters have different dates, including July 2026 environmental update. Full current set and bulletin reconciliation next. |
+| Washington | Certification Acceptance can change with capability, staffing, review or probation; state-only planning/TDM and billing differ from federal capital work. | [WSDOT LAG](https://wsdot.wa.gov/engineering-standards/all-manuals-and-standards/manuals/local-agency-guidelines-lag). Foreword, contents, Chapters 11/13 and selected 15/23 sections read. Full chapters and current bulletins next. |
+| Nevada | Neighboring-state delivery, ROW certification and invoice-routing cases can expose misleading reuse of California names. | [Published LPA PDF](https://www.dot.nv.gov/home/showpublisheddocument/1541/636349322493730000). Selected passages from a 2017 manual. Current hub/download access failed, and superseding authority remains unresolved. Resolve currency before activating rules; do not omit Nevada because access is harder. |
+| New York | Agreement/phase structure, exact forms, approvals and unusually long applicable retention test core assumptions. | [LPM directory](https://www.dot.ny.gov/plafap). Selected current/older chapters and 2025 stewardship agreement read; July 2026 construction chapter included. Full review is a strong next contrast after the neighboring states. |
+| Minnesota | Project-specific sponsorship, state-aid network/Needs allocations and state-account transfers challenge a simple grant-reimbursement ledger. | [State Aid Manual](https://www.dot.state.mn.us/stateaid/manual.html) and [DCP](https://www.dot.state.mn.us/stateaid/dcp.html). Selected chapters/finance guidance and 2026 checklist read. Investigate the index/PDF edition mismatch before operative use. |
+| Florida | Agency certification, dated local contingency requirements and old-versus-new contract limits test source-trigger handling. | [Local Programs Manual](https://www.fdot.gov/fpo/lp/manual) and [bulletins](https://www.fdot.gov/fpo/bulletins). Selected manual sections and three complete bulletins read; title says 2025 but some chapters are June 2026. |
+| Texas | Funding agreements and delivery contracts are different instruments; qualified staff, agency risk and cash paid to/from the state require separate records. | [Local Government Projects toolkit](https://www.txdot.gov/government/processes-procedures/lgp-toolkit.html). Selected policy/guide sections and full December 2025 risk guidance read. Read policy and operating guide together in the full review. |
+
+Detailed evidence and coverage: [Oregon/Nevada](STATE_MANUALS_OR_NV_RECONNAISSANCE.md), [Washington/Minnesota](STATE_MANUALS_WA_MN_RECONNAISSANCE.md), [Texas/Florida](STATE_MANUALS_TX_FL_RECONNAISSANCE.md), [New York/federal](STATE_MANUALS_NY_FEDERAL_RECONNAISSANCE.md). Their chapter/page references, source hashes and retrieval failures control the precision of these summaries.
+
+## What this has already changed in the proposed design
+
+**A state is not an approval workflow.** Represent project sponsor, recipient, pass-through body, delivery agent, asset owner, payer, responsible official and specialist as explicit relationships. Qualification may concern an agency, discipline, person or individual project, with restrictions and reassessment. A certified agency working for another agency is not simply a second workspace administrator.
+
+**One manual version is insufficient.** Chapters, forms, bulletins, funding agreements, stewardship agreements and contract specifications change independently. Keep each document's revision and retrieval dates separately, plus the actual event that makes a rule apply. Source conflicts need attributed resolution. Preserve read/inventoried/unavailable/superseded states, and never treat discovery of a PDF as substantive support for a state.
+
+**California's paid-cost rule cannot become a universal financial prerequisite.** Minnesota and Florida selected guidance permits specified alternative reimbursement/payment arrangements under approved processes. Texas can require local advances to TxDOT; Minnesota may transfer money between state accounts without county cash receipt. Preserve approved payment conditions, payment direction, separate advances/transfers, funding ceilings and retained local contingency. Independently reconcile actual transactions to the applicable agreement.
+
+**Names and numbers must retain their source meanings.** Nevada's dated ROW levels cannot be translated by matching California's certification numbers. New York's PIN/SLA grouping is not interchangeable with a Caltrans phase identifier. A universal final-invoice button must not accidentally close several authorizations. Keep original identifiers and typed relationships, then map to common presentation only where semantics match.
+
+**Retention depends on record class, program and trigger.** The selected New York sources specify 36-year retention for particular financed-asset/Marchiselli records, alongside other federal records periods and holds. This is not a universal 36-year rule for everything in New York. Store record class, governing source and triggering event; unresolved retention prevents automatic disposition. These findings strengthen the existing M4/M10d requirements and long-term restore planning.
+
+Washington's [March 2026 foreign-UAS bulletin](https://wsdot.wa.gov/sites/default/files/2026-03/wsdot-lpb-2026-02-r2-federal-restrictions-on-foreign-drones.pdf) also affects the aerial lane. Root and the state reviewer read both pages. It covers specified equipment/components and processing on Title 23-funded projects. M5b now carries project funding/equipment eligibility and current-exception review independently of DJI export compatibility. This does not establish a universal restriction on private/local uses.
+
+These are engineering inferences from the cited reconnaissance. They belong in existing G1/M1/M4/M10/M11/M13/M14 work. They do not justify seven separate applications or promote any jurisdiction to “complete.”
+
+## What the current OpenPlan source can and cannot express
+
+Root inspected both files in `openplan/src/lib/invoicing/profiles/` and the first 235 lines of `reimbursement-profiles.ts` at `01f0fd03`. The built-in descriptors are California and generic US federal aid. They provide vocabulary, geographic matching, form/framing disclosures, currency and guidance. The documentation-checklist type expressly describes guidance rather than validated evidence.
+
+The geographic query has country/subdivision, not recipient/funder/agency agreement or phase authority. This is a useful presentation registry to extend, but adding state-named copies will not implement the relationships and rules found above. Generic federal guidance is expressly interim and subject to the agreement. Keep those honest disclosures while adding verified applicability and actual transaction/approval controls. This bounded source inspection does not establish live routing defects or that no other module contains relevant records.
+
+## Include DC and distinct sovereign/federal programs
+
+A list of state highway manuals cannot close the national product. DC remains binding and needs its own agency/program and federal-land coordination cases. Root read DDOT's [public-involvement landing page](https://ddot.dc.gov/page/public-involvement-plan), which links a May 2019 plan, not its whole plan/appendices. This is an adjacent source lead and explicitly not a current comprehensive DDOT manual review. Include planning, engagement, development review and public decisions, not only capital delivery.
+
+Tribal governments require their actual agreement/program relationship. USDOT describes negotiated self-governance compacts and funding agreements under TTSGP, with different governing terms from ordinary state pass-through administration. A Tribe's location inside a state does not select state authority. [USDOT program explanation](https://www.transportation.gov/office-tribal-government-affairs/tribal-transportation-self-governance-program).
+
+Territorial coverage remains explicitly assessed under the existing contract discussion. April 2026 THP guidance uses territory-specific agreements; Puerto Rico is a separate program branch. The report records selected guidance reading, not implementation or a new territorial completeness claim. [FHWA THP](https://www.fhwa.dot.gov/specialfunding/thp/).
+
+## Concrete next review and acceptance work
+
+G1a in the roadmap now owns a maintained source/coverage register and cross-state procedural proof. For each required state/DC, inventory the actual publication family, funded-program scope, updates, delegated authority, applicable forms and outstanding access/interpretation issues. Complete full reading of the priority manuals with explicit page coverage, then use real permitted cases to determine which procedures OpenPlan actually supports. Keep the rest of the country visible in the register; a seven-state sample does not close all-state support.
+
+Compare the same kinds of job across different authorities: an ordinary planning contract; a project delivered by another agency; a construction pay period; a returned claim; and closeout with unresolved obligations. Add state-specific exceptions that would falsify a California-only implementation. A practitioner must reconstruct exact amounts, dates, authorities and exported records. Agency acceptance of electronic records must be established, not inferred from the existence of an export button.
+
+Source maintenance, confidential record storage over long periods, external-review time and specialist observation are recurring costs. Begin with local document preparation, reviewed import/export and actual receipt records; no paid portal or live filing integration is needed merely to conduct the review. Once the developer hands over safely, the review feeds concrete implementation alongside engagement, RTPs, planning contracts, aerial operations, agentic work and separate model validation. Capital manuals cannot establish the whole planning product by themselves.

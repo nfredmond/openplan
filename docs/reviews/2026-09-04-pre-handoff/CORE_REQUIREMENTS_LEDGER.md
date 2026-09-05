@@ -127,3 +127,12 @@ Nathaniel requested the entire latest manual as another gap analysis. The team r
 | CORE-AGENCY-AUDIT-01 | Entity/project audit, applicable annual reporting/exemption, corrective action, disputed/repaid costs and authoritative final determination. | M13f/M4/M11. Complete agency denominator, exact support/response and external acceptance; preserve holds. |
 
 M8a/M9d and M10b/c make hearing records, separate environmental pathways, design commitments, parcel/utility rights, measured quantities and responsible checking explicit. Software permissions never manufacture public employment, licensure, government consultation authority, an official signature or external acceptance. California depth remains a dated profile within the all-50-states-and-DC product.
+
+
+## National procedural comparison, including the neighboring states
+
+| Stable requirement | Outcome and evidence | Roadmap and proof |
+|---|---|---|
+| CORE-US-PROCEDURES-01 | Correct procedures across all 50 states/DC, with California depth and explicit sovereign/program distinctions. Nathaniel added Oregon, Washington and Nevada to the immediate manual comparison. Seven-state reconnaissance exposes changing agency delegation, sponsorship, program-specific money flows, document revisions and retention. | G1a/M1/M4/M10/M11/M13/M14: maintained source/reading/support register, full priority-manual review and practitioner-validated cases. A state descriptor or sampled manual is not support. |
+
+This refines existing national scope. `NATIONAL_LOCAL_ASSISTANCE_COMPARISON.md` preserves the selected reading and source limits. M5b also records the Washington foreign-UAS bulletin as a funding/equipment eligibility research case; exact hardware compatibility and project eligibility remain separate facts.
