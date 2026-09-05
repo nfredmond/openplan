@@ -286,3 +286,10 @@ Shared gaps concern changing qualification/delegation, different sponsor/deliver
 Alaska and Hawaii reconnaissance found a draft local manual, later delegation agreements, title-only promised appendices and stale MPO wording. Award-specific responsibility and county/island/MPO boundaries refine G1a/M1/M10/M12. The federal report identifies a source family rather than one universal manual, including retired FAPG category, older training, current regulatory/delegation sources, FTA-specific agreements and direct-award branches. Root also read current DOT award-transition guidance and FHWA grant-cost Q&A, strengthening M11/M13e/M14 cost-basis and authorization distinctions. These are documented source findings and design recommendations; they establish no live product defect or new operational support by themselves.
 
 During this extension, main advanced to clean 9ec13026, with RLS and Upgrade Path successful and CI still running at the latest interim check. The developer owns release/acceptance work. All research and proposed documentation remain isolated pending a safe handoff.
+
+
+## Explicit engagement setup, moderation and export clarification
+
+Nathaniel specifies tailored project input maps, a good planner response UI with review before public publication, and polished PDF/XLSX reports. CORE-ENG-02–04 and M9a–b now make these a connected workflow with complete-streets and countywide-wayfinding observation cases. Existing template/project/category and moderation source paths at dd7b4f4d provide reuse candidates; this bounded search does not prove a complete or easy-to-use interface. No browser or application test was run.
+
+The proposed workflow preserves published question/category versions, separates receipt/publication/response status and public/internal exports, and requires actual recipient-ready files with reconciled counts and protected private records. Defaults use human prepublication review; AI assistance cannot independently publish/reject. These are requirements and proposed verification, not product changes. Active main remained developer-owned with no safe handoff.
