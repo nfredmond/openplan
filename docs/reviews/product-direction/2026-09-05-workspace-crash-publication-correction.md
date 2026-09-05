@@ -1,0 +1,75 @@
+# Crash publication evidence correction
+
+<!-- openplan-product-direction-review
+review_date: 2026-09-05
+review_by: 2026-10-05
+reviewed_commit: f01ced15
+current_release: v0.44.0
+independent_contexts: 2
+trigger: crash-publication-false-output-correction
+perspectives:
+- transportation-and-travel-model-science
+- land-use-statutory-and-development-planning
+- environmental-climate-resilience-and-equity
+- community-engagement-title-vi-and-public-decisions
+- capital-programming-grants-delivery-and-reimbursement
+- rural-tribal-small-and-capacity-constrained-agencies
+- gis-data-evidence-and-public-records
+- agency-operations-accessibility-and-recovery
+- adversarial-product-strategy
+decisions:
+- ultimate-us-planning-operating-system
+- all-planner-types
+- all-fifty-states-and-dc
+- california-gold-standard
+- nationwide-validated-dual-demand-model
+- no-calendar-or-runtime-scope-reduction
+- preserve-independent-disagreement
+- recheck-old-agent-decisions
+- self-service-free-open-source
+- human-control-and-evidence
+- complete-first-week-outcomes-before-release
+- test-shared-evidence-continuity-next
+paths:
+- docs/ops/V044_CRASH_PUBLICATION_METADATA_2026-09-05.md
+- docs/ops/V044_MODEL_ARTIFACT_DOWNLOAD_2026-09-05.md
+- docs/reviews/product-direction/2026-09-05-worker-storage-download-correction.md
+- docs/reviews/product-direction/2026-09-05-distributed-loading-and-first-week.md
+- docs/reviews/product-direction/independent/2026-09-05-a.md
+- docs/reviews/product-direction/independent/2026-09-05-b.md
+- docs/reviews/product-direction/independent/2026-09-05-packet.txt
+- docs/ops/KNOWN_ISSUES.md
+- docs/product/V1_PRODUCT_CONTRACT.md
+- docs/product/US_PLANNING_CAPABILITY_MATRIX.md
+- docs/product/US_PLANNING_CAPABILITY_REGISTRY.json
+- docs/ROADMAP.md
+-->
+
+The Safety journey found a new false-output blocker on `ac333fa2`: file-update
+metadata was presented as crash coverage. The complete twelve-job run was
+interrupted after four completed yes outcomes. The Safety result and remaining
+jobs do not pass by implication.
+
+`f01ced15` distinguishes file updates from coverage across ingestion, history,
+analysis, and reports. Existing records are interpreted without rewriting them.
+Each contributor retains separate metadata, and no common cutoff is invented
+for a merged analysis. The 140 focused tests and TypeScript pass. A no-op
+survived and 18 semantic mutations failed. Full QA, current browser/report
+proof, and a new complete outcome gate remain required before tagging.
+
+The two independent milestone reviews remain the retained reviews linked
+above. This is a synthesizer's correction addendum, not two new independent
+reviews. Their disagreement and the selected next investigation, shared
+engagement-evidence continuity, are preserved. The latest journey adds concrete
+evidence for that investigation: sentence citation counts without inspectable
+links. It does not establish that stored grounding was lost.
+
+The broader capability map remains partial or unassessed as recorded. This
+repair makes no new statutory, geographic, safety-benefit, or scientific
+validation claim. It adds no module or write path and changes no default,
+acceptance rule, frozen study, or holdout. The distributed-loading candidate
+remains retired and inconclusive. The ultimate v1 scope is unchanged.
+
+CI, RLS, and the exact-commit upgrade rehearsal passed on `ac333fa2`; those
+results do not verify the new repair. The full development dependency audit's
+ten advisories remain recorded separately from the clean production audit.
