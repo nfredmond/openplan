@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-05
 review_by: 2026-10-05
-reviewed_commit: 7b0f0d9c
+reviewed_commit: ffc060e6
 current_release: v0.44.0
 independent_contexts: 2
 trigger: crash-publication-false-output-correction
@@ -79,3 +79,20 @@ remains retired and inconclusive. The ultimate v1 scope is unchanged.
 CI, RLS, and the exact-commit upgrade rehearsal passed on `ac333fa2`; those
 results do not verify the new repair. The full development dependency audit's
 ten advisories remain recorded separately from the clean production audit.
+
+## Database correction supersedes the no-migration assumption
+
+After full local QA passed, the real browser acquisition on `eb2f385b` exposed
+a missed database pairing constraint. This was an implementation regression;
+the mocked test and metadata-free live fixture could not detect it. The fresh
+twelve-job run was stopped after first-day setup. Its partial execution is not
+a release pass.
+
+`ffc060e6` adds migration `20260905000003_crash_resource_update_provenance.sql`
+and a real producer/Postgres regression. The test reproduced the exact failure
+before migration and now verifies both acquisitions, metadata readback,
+cross-workspace denial, and malformed-pair refusals. Surviving no-op and
+targeted mutation evidence is retained. No historical row was rewritten.
+Release inventory is 246 migrations. Full QA, real source/report browser proof,
+and all twelve outcomes must run again. This correction does not alter the
+scientific result, next capability investigation, or v1 scope.
