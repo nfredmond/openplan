@@ -26,6 +26,7 @@ const {
   parseAgentSession,
   parseArgs,
   readFindings,
+  readJobExecution,
   RUNS_DIR,
   shouldResumeJob,
   verifyRun,
@@ -56,7 +57,7 @@ function writeCompletedJob(dir) {
   );
   fs.writeFileSync(
     path.join(dir, 'execution.json'),
-    JSON.stringify({ status: 'completed', reason: 'The agent completed and left a findings report.' }),
+    JSON.stringify({ status: 'completed', reason: 'The agent completed and left a findings report.', exitCode: 0, signal: null }),
   );
 }
 
@@ -165,6 +166,36 @@ check('resume skips a reached outcome and retries blocked or partly reached jobs
   );
   assert.strictEqual(shouldResumeJob(partly), true);
 });
+
+for (const [label, record] of [
+  ['missing', null],
+  ['malformed', '{'],
+  ['empty', '{}'],
+  ['missing exit code', JSON.stringify({ status: 'completed' })],
+  ['null exit code', JSON.stringify({ status: 'completed', exitCode: null })],
+  ['nonzero exit code', JSON.stringify({ status: 'completed', exitCode: 1 })],
+  ['termination signal', JSON.stringify({ status: 'completed', exitCode: 0, signal: 'SIGTERM' })],
+  ['stale failure with termination signal', JSON.stringify({ status: 'failed', exitCode: 0, signal: 'SIGTERM' })],
+  ['stale quota with termination signal', JSON.stringify({ status: 'blocked_quota', exitCode: 0, signal: 'SIGTERM' })],
+]) {
+  check(`an early yes report with ${label} execution custody cannot pass or be skipped`, () => {
+    const root = jobDir();
+    const dir = path.join(root, '01-first-day-setup');
+    fs.mkdirSync(path.join(dir, 'agent'), { recursive: true });
+    fs.writeFileSync(path.join(dir, 'agent', 'findings.json'), JSON.stringify({ outcomeReached: 'yes', findings: [] }));
+    if (record !== null) fs.writeFileSync(path.join(dir, 'execution.json'), record);
+    const execution = readJobExecution(dir);
+    assert.strictEqual(execution.status, 'blocked_execution_record');
+    assert.match(execution.reason, /recorded clean process exit/);
+    assert.strictEqual(classifyJobOutcome({ execution, report: { outcomeReached: 'yes' } }).status, 'inconclusive');
+    assert.strictEqual(shouldResumeJob(dir), true);
+    const result = verifyRun(root, 'http://localhost:3200');
+    assert.strictEqual(result.completed, 0);
+    assert.strictEqual(result.blocked, 1);
+    assert.strictEqual(result.inconclusive, 1);
+    assert.strictEqual(result.outcomeGatePassed, false);
+  });
+}
 
 check('resuming archives the old attempt without deleting any evidence', () => {
   const dir = jobDir();

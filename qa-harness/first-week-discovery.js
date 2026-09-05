@@ -96,6 +96,7 @@ const BLOCKED_STATUSES = new Set([
   'blocked_turn_limit',
   'blocked_unfinished_report',
   'blocked_browser_tools',
+  'blocked_execution_record',
 ]);
 
 function parseArgs(argv) {
@@ -726,19 +727,29 @@ function readJobExecution(jobDir) {
   const session = parseAgentSession(stdout);
   const reportPresent = readFindings(path.join(jobDir, 'agent')) !== null;
   const inferred = classifyJobExecution({
-    processResult: { code: recorded?.exitCode ?? 0, signal: recorded?.signal ?? null, stdout },
+    processResult: { code: recorded?.exitCode, signal: recorded?.signal ?? null, stdout },
     session,
     reportPresent,
   });
-  if (
+  const resolved = (
     !recorded?.status ||
     (recorded.status === 'failed' && inferred.status !== 'failed') ||
     (recorded.status === 'blocked_quota' && inferred.status === 'completed') ||
     (recorded.status === 'completed' && inferred.status === 'blocked_browser_tools')
-  ) {
-    return { ...recorded, ...inferred };
+  ) ? { ...recorded, ...inferred } : recorded;
+  // An early findings report is not evidence that its process finished.
+  if (!recorded?.status || (resolved.status === 'completed' && (recorded.exitCode !== 0 || recorded.signal))) {
+    return {
+      ...resolved,
+      ...(BLOCKED_STATUSES.has(inferred.status)
+        ? inferred
+        : {
+            status: 'blocked_execution_record',
+            reason: 'The journey has no recorded clean process exit, so its report cannot prove completion.',
+          }),
+    };
   }
-  return recorded;
+  return resolved;
 }
 
 function classifyJobOutcome({ execution, report, fatalConsoleErrors = 0 }) {
