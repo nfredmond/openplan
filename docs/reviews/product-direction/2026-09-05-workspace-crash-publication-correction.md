@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-05
 review_by: 2026-10-05
-reviewed_commit: 412ddf59
+reviewed_commit: d505efb5
 current_release: v0.44.0
 independent_contexts: 2
 trigger: crash-publication-false-output-correction
@@ -68,6 +68,15 @@ The new visible-browser regression failed against the old build for oversized
 controls; it measures the panel itself because the outer page clips overflow.
 The failed proof, failed width-only experiments and exact measurements remain
 in the report correction record. Rebuilt acceptance is still required.
+
+Rebuilt proof on `49b72040` now completes from the visible front door at desktop
+and 390px. The invalid draft remains intact; saved text and selected crash
+evidence agree with stored metadata and native PDF bytes. All 21 PDF pages were
+inspected. Full QA passes and the layout mutation check rejects the original
+clipping behavior. Failed diagnostic attempts remain disclosed. The disabled
+button's dark-theme text is queued as a lesser visual issue, not a reason to
+relax the generation refusal. Complete first-week acceptance is still required.
+No scientific outcome, holdout, default or next-lane decision changed.
 
 ## Earlier correction record
 
