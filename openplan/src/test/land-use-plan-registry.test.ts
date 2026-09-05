@@ -3,6 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
+  defaultApplicableRequirementKeys,
   descriptorIsOverdue,
   getJurisdictionPlanDescriptor,
   JURISDICTION_PLAN_DESCRIPTORS,
@@ -11,6 +12,18 @@ import {
 } from "@/lib/land-use-plans/registry";
 
 describe("Land Use Plans jurisdiction registry", () => {
+  it("starts required and locally defined sections applicable while leaving conditional ones for a planner", () => {
+    const neutral = getJurisdictionPlanDescriptor("local-unconfigured");
+    const california = getJurisdictionPlanDescriptor("us-ca-general-plan");
+    if (!neutral || !california) throw new Error("Expected installed descriptors");
+
+    expect(defaultApplicableRequirementKeys(neutral)).toEqual(["locally_defined"]);
+    expect(defaultApplicableRequirementKeys(california)).toEqual([
+      "land_use", "circulation", "housing", "conservation", "open_space", "noise", "safety",
+    ]);
+    expect(defaultApplicableRequirementKeys(california)).not.toContain("environmental_justice");
+  });
+
   it("keeps jurisdiction terms out of shared contracts", () => {
     const contracts = readFileSync(path.resolve(__dirname, "../lib/land-use-plans/contracts.ts"), "utf8");
     for (const jurisdictionTerm of ["California", "Washington", "Texas", "Navajo", "general plan", "specific plan", "element", "resolution", "FIPS", "county"]) {

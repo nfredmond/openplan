@@ -8,13 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { buildAdoptionBlockers, buildLandUsePlanWorkflow, buildPublicDraftBlockers, percentComplete } from "@/lib/land-use-plans/workflow";
+import { defaultApplicableRequirementKeys } from "@/lib/land-use-plans/registry";
 
 type WorkbenchData = {
   plan: { id: string; title: string; authority_label: string; geography_label: string; geography_geojson: Record<string, unknown> | null; current_working_version_id: string | null; current_adopted_version_id: string | null };
   descriptor: {
     id: string; configured: boolean; disclosure: string; verifiedAt: string; reviewDueAt: string;
     terminology: { plan: string; section: string; adoptionInstrument: string; implementationReport: string };
-    requirements: Array<{ key: string; label: string; applicability: string; condition?: string; sourceUrls: string[] }>;
+    requirements: Array<{ key: string; label: string; applicability: "required" | "conditional" | "locally_defined"; condition?: string; sourceUrls: string[] }>;
     processSteps: Array<{ key: string; label: string; required: boolean; reviewPrerequisite?: boolean; adoptionPrerequisite?: boolean; deadline?: string; sourceUrls: string[] }>;
     sourceUrls: string[];
   };
@@ -62,6 +63,7 @@ export function LandUsePlanWorkbench({ planId }: { planId: string }) {
   const [sectionDrafts, setSectionDrafts] = useState<Record<string, string>>({});
   const [sectionEvidenceDocuments, setSectionEvidenceDocuments] = useState<Record<string, string>>({});
   const [sectionEvidenceUrls, setSectionEvidenceUrls] = useState<Record<string, string>>({});
+  const [contentDrafts, setContentDrafts] = useState<Record<string, { title: string; body: string }>>({});
   const [designationLayerId, setDesignationLayerId] = useState("");
 
   const load = useCallback(async () => {
@@ -72,6 +74,7 @@ export function LandUsePlanWorkbench({ planId }: { planId: string }) {
     setSectionDrafts(Object.fromEntries(payload.nodes.filter((node) => node.node_kind === "section").map((node) => [node.id, node.body ?? ""])));
     setSectionEvidenceDocuments(Object.fromEntries(payload.nodes.filter((node) => node.node_kind === "section").map((node) => [node.id, node.evidence_document_id ?? ""])));
     setSectionEvidenceUrls(Object.fromEntries(payload.nodes.filter((node) => node.node_kind === "section").map((node) => [node.id, node.evidence_url ?? ""])));
+    setContentDrafts(Object.fromEntries(payload.nodes.filter((node) => node.node_kind !== "section").map((node) => [node.id, { title: node.title, body: node.body ?? "" }])));
   }, [planId]);
 
   useEffect(() => { void load().catch((error) => setLoadingError(error instanceof Error ? error.message : "Failed to load plan")); }, [load]);
@@ -88,7 +91,10 @@ export function LandUsePlanWorkbench({ planId }: { planId: string }) {
     const completed = data.nodes.filter((node) => node.node_kind === "section" && node.body?.trim()).map((node) => node.requirement_key).filter((key): key is string => Boolean(key));
     return buildLandUsePlanWorkflow({
       descriptor: data.descriptor as Parameters<typeof buildLandUsePlanWorkflow>[0]["descriptor"],
-      applicableRequirementKeys: data.activeVersion.applicable_requirement_keys,
+      applicableRequirementKeys: [...new Set([
+        ...data.activeVersion.applicable_requirement_keys,
+        ...defaultApplicableRequirementKeys(data.descriptor),
+      ])],
       completedRequirementKeys: completed,
       hasDesignation: data.designations.length > 0,
       hasImplementationAction: data.actions.length > 0,
@@ -108,7 +114,10 @@ export function LandUsePlanWorkbench({ planId }: { planId: string }) {
     const requiredReviewPrerequisiteKeys = data.descriptor.processSteps.filter((step) => step.required && step.reviewPrerequisite).map((step) => step.key);
     const completedProcessKeys = data.processRecords.filter((record) => record.status === "complete").map((record) => record.process_key);
     return buildPublicDraftBlockers({
-      applicableRequirementKeys: data.activeVersion.applicable_requirement_keys,
+      applicableRequirementKeys: [...new Set([
+        ...data.activeVersion.applicable_requirement_keys,
+        ...defaultApplicableRequirementKeys(data.descriptor),
+      ])],
       completedRequirementKeys,
       hasDesignation: data.designations.length > 0,
       hasImplementationAction: data.actions.length > 0,
@@ -141,6 +150,17 @@ export function LandUsePlanWorkbench({ planId }: { planId: string }) {
   const currentVersionReleases = data.reviewReleases.filter((release) => release.version_id === data.activeVersion.id);
   async function saveSection(nodeId: string) {
     await postJson(`/api/land-use-plans/${planId}/content`, { operation: "update", nodeId, body: sectionDrafts[nodeId] ?? "", evidenceDocumentId: sectionEvidenceDocuments[nodeId] || null, evidenceUrl: sectionEvidenceUrls[nodeId] || null });
+  }
+
+  async function saveContentNode(nodeId: string) {
+    const draft = contentDrafts[nodeId];
+    if (!draft) throw new Error("That content node is unavailable");
+    await postJson(`/api/land-use-plans/${planId}/content`, {
+      operation: "update",
+      nodeId,
+      title: draft.title,
+      body: draft.body || null,
+    });
   }
 
   async function setRequirementApplicability(requirementKey: string, applicable: boolean) {
@@ -224,7 +244,8 @@ export function LandUsePlanWorkbench({ planId }: { planId: string }) {
       {actionError ? <div className="rounded-lg border border-destructive p-3 text-sm text-destructive">{actionError}</div> : null}
       <section className="rounded-xl border border-border bg-card p-5"><h2 className="text-lg font-semibold">Workflow</h2><div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{workflow.map((step) => <div key={step.key} className={`rounded-lg border p-3 text-sm ${step.complete ? "border-emerald-300 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/20" : "border-border"}`}><span className="font-medium">{step.complete ? "Complete" : "Open"}</span> · {step.label}{step.humanOnly ? <span className="ml-1 text-xs text-muted-foreground">human only</span> : null}</div>)}</div></section>
 
-      <section className="rounded-xl border border-border bg-card p-5"><h2 className="text-lg font-semibold">Applicable {data.descriptor.terminology.section}s</h2><p className="mt-1 text-sm text-muted-foreground">Conditional requirements stay visible with their trigger. The planner decides applicability.</p><div className="mt-4 space-y-4">{data.nodes.filter((node) => node.node_kind === "section").map((node) => { const requirement = data.descriptor.requirements.find((item) => item.key === node.requirement_key); const applicable = Boolean(node.requirement_key && data.activeVersion.applicable_requirement_keys.includes(node.requirement_key)); return <div key={node.id} className="rounded-lg border border-border p-4"><div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold">{node.title}</h3>{requirement?.applicability === "conditional" && node.requirement_key ? <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={applicable} disabled={!working || busy || !data.canWrite} onChange={(event) => void run(() => setRequirementApplicability(node.requirement_key!, event.target.checked))}/>Applicable to this version</label> : <span className="text-xs text-muted-foreground">{requirement?.applicability.replaceAll("_", " ")}</span>}</div>{requirement?.condition ? <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">{requirement.condition}</p> : null}<Textarea className="mt-3 min-h-36" value={sectionDrafts[node.id] ?? ""} onChange={(event) => setSectionDrafts((current) => ({ ...current, [node.id]: event.target.value }))} disabled={!working || !data.canWrite || !applicable} placeholder="Author the plan text, with evidence links and policy details."/><div className="mt-3 grid gap-2 md:grid-cols-2"><select className="module-select" value={sectionEvidenceDocuments[node.id] ?? ""} disabled={!working || !data.canWrite || !applicable} onChange={(event) => setSectionEvidenceDocuments((current) => ({ ...current, [node.id]: event.target.value }))}><option value="">No evidence document</option>{data.documents.map((document) => <option key={document.id} value={document.id}>{document.title}</option>)}</select><Input value={sectionEvidenceUrls[node.id] ?? ""} disabled={!working || !data.canWrite || !applicable} onChange={(event) => setSectionEvidenceUrls((current) => ({ ...current, [node.id]: event.target.value }))} placeholder="Official evidence URL"/></div><Button className="mt-2" size="sm" disabled={!working || busy || !data.canWrite || !applicable} onClick={() => void run(() => saveSection(node.id))}>Save section</Button></div>; })}</div>
+      <section className="rounded-xl border border-border bg-card p-5"><h2 className="text-lg font-semibold">Applicable {data.descriptor.terminology.section}s</h2><p className="mt-1 text-sm text-muted-foreground">Conditional requirements stay visible with their trigger. The planner decides applicability.</p><div className="mt-4 space-y-4">{data.nodes.filter((node) => node.node_kind === "section").map((node) => { const requirement = data.descriptor.requirements.find((item) => item.key === node.requirement_key); const applicable = Boolean(node.requirement_key && (requirement?.applicability !== "conditional" || data.activeVersion.applicable_requirement_keys.includes(node.requirement_key))); return <div key={node.id} className="rounded-lg border border-border p-4"><div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold">{node.title}</h3>{requirement?.applicability === "conditional" && node.requirement_key ? <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={applicable} disabled={!working || busy || !data.canWrite} onChange={(event) => void run(() => setRequirementApplicability(node.requirement_key!, event.target.checked))}/>Applicable to this version</label> : <span className="text-xs text-muted-foreground">{requirement?.applicability.replaceAll("_", " ")}</span>}</div>{requirement?.condition ? <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">{requirement.condition}</p> : null}<Textarea className="mt-3 min-h-36" value={sectionDrafts[node.id] ?? ""} onChange={(event) => setSectionDrafts((current) => ({ ...current, [node.id]: event.target.value }))} disabled={!working || !data.canWrite || !applicable} placeholder="Author the plan text, with evidence links and policy details."/><div className="mt-3 grid gap-2 md:grid-cols-2"><select className="module-select" value={sectionEvidenceDocuments[node.id] ?? ""} disabled={!working || !data.canWrite || !applicable} onChange={(event) => setSectionEvidenceDocuments((current) => ({ ...current, [node.id]: event.target.value }))}><option value="">No evidence document</option>{data.documents.map((document) => <option key={document.id} value={document.id}>{document.title}</option>)}</select><Input value={sectionEvidenceUrls[node.id] ?? ""} disabled={!working || !data.canWrite || !applicable} onChange={(event) => setSectionEvidenceUrls((current) => ({ ...current, [node.id]: event.target.value }))} placeholder="Official evidence URL"/></div><Button className="mt-2" size="sm" disabled={!working || busy || !data.canWrite || !applicable} onClick={() => void run(() => saveSection(node.id))}>Save section</Button></div>; })}</div>
+        {data.nodes.some((node) => node.node_kind !== "section") ? <div className="mt-5 space-y-3"><h3 className="font-semibold">Plan content</h3>{data.nodes.filter((node) => node.node_kind !== "section").map((node) => <article key={node.id} className="rounded-lg border border-border p-4"><p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Edit content node · {node.node_kind.replaceAll("_", " ")}</p><label className="mt-3 block text-sm">Title<Input className="mt-1" value={contentDrafts[node.id]?.title ?? node.title} disabled={!working || busy || !data.canWrite} onChange={(event) => setContentDrafts((current) => ({ ...current, [node.id]: { title: event.target.value, body: current[node.id]?.body ?? node.body ?? "" } }))}/></label><label className="mt-3 block text-sm">Draft text<Textarea className="mt-1 min-h-28" value={contentDrafts[node.id]?.body ?? node.body ?? ""} disabled={!working || busy || !data.canWrite} onChange={(event) => setContentDrafts((current) => ({ ...current, [node.id]: { title: current[node.id]?.title ?? node.title, body: event.target.value } }))}/></label><Button className="mt-3" size="sm" disabled={!working || busy || !data.canWrite || !(contentDrafts[node.id]?.title ?? node.title).trim()} onClick={() => void run(() => saveContentNode(node.id))}>Save content node</Button></article>)}</div> : null}
         {working ? <form className="mt-5 grid gap-3 rounded-lg border border-dashed border-border p-4 md:grid-cols-2" onSubmit={(event) => void run(() => submitNode(event))}><h3 className="md:col-span-2 font-semibold">Add a goal, objective, policy, standard, program, or action node</h3><select className="module-select" name="parentNodeId" defaultValue=""><option value="">Top level</option>{data.nodes.filter((node) => node.node_kind === "section").map((node) => <option key={node.id} value={node.id}>{node.title}</option>)}</select><select className="module-select" name="nodeKind" defaultValue="policy">{["goal","objective","policy","standard","program","implementation_action"].map((kind) => <option key={kind} value={kind}>{kind.replaceAll("_", " ")}</option>)}</select><Input name="title" required placeholder="Node title"/><Textarea name="body" placeholder="Draft text"/><Button disabled={busy}>Add content node</Button></form> : null}
       </section>
 

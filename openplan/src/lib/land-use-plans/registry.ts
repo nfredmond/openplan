@@ -1,6 +1,15 @@
 import type { JurisdictionPlanDescriptor } from "./contracts";
 import type { HomeJurisdiction } from "@/lib/workspaces/home-geography";
 
+/** Required and planner-defined sections start applicable; only conditional sections await a choice. */
+export function defaultApplicableRequirementKeys(
+  descriptor: Pick<JurisdictionPlanDescriptor, "requirements">
+): string[] {
+  return descriptor.requirements
+    .filter((requirement) => requirement.applicability !== "conditional")
+    .map((requirement) => requirement.key);
+}
+
 const CA_ARTICLE_5 =
   "https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?article=5.&chapter=3.&division=1.&lawCode=GOV&part=&title=7.";
 const CA_ARTICLE_6 =

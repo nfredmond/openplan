@@ -80,6 +80,11 @@ describe("Land Use Plans route boundaries", () => {
     expect(detailRoute).toContain("Required descriptor content cannot be marked inapplicable");
   });
 
+  it("creates locally defined sections as applicable instead of disabling their editor", () => {
+    const createRoute = readFileSync(path.resolve(__dirname, "../app/api/land-use-plans/route.ts"), "utf8");
+    expect(createRoute).toContain("defaultApplicableRequirementKeys(descriptor)");
+  });
+
   it("keeps conditional applicability, evidence, and policy-map links reachable in the workbench", () => {
     const workbench = readFileSync(path.resolve(__dirname, "../components/land-use-plans/land-use-plan-workbench.tsx"), "utf8");
     expect(workbench).toContain("Applicable to this version");
