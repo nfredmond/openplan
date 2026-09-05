@@ -549,7 +549,29 @@ check('the Codex fallback isolates user context and exposes the browser MCP', ()
   assert.ok(args.includes('--approve-for-me'));
   assert.ok(!args.includes('--sandbox'), '--approve-for-me and --sandbox are mutually exclusive in this Codex CLI');
   assert.ok(args.some((arg) => arg === 'mcp_servers.browser.command="npx"'));
+  assert.ok(args.includes('mcp_servers.browser.required=true'), 'a browser journey must wait for browser tools or fail startup');
   assert.ok(args.some((arg) => arg.includes('@playwright/mcp@0.0.79')));
+});
+
+check('unavailable or uninitialized browser tools cannot count as completed execution', () => {
+  for (const message of [
+    'The required browser MCP tools are unavailable, so I could not open OpenPlan.',
+    'The available tools do not include the browser MCP server or its browser actions.',
+    'Error: required MCP servers failed to initialize: browser',
+  ]) {
+    const execution = classifyJobExecution({
+      processResult: { code: 0, stdout: JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: message } }) },
+      reportPresent: true,
+    });
+    assert.strictEqual(execution.status, 'blocked_browser_tools', message);
+    assert.strictEqual(classifyJobOutcome({ execution, report: { outcomeReached: 'yes' } }).status, 'inconclusive');
+  }
+  const browserPage = JSON.stringify({ type: 'item.completed', item: { type: 'mcp_tool_call', result: 'browser MCP tools are unavailable' } });
+  assert.strictEqual(classifyJobExecution({ processResult: { code: 0, stdout: browserPage }, reportPresent: true }).status, 'completed');
+  assert.strictEqual(classifyJobExecution({ processResult: {
+    code: 1,
+    stderr: 'Error: thread/start failed: required MCP servers failed to initialize: browser: No such file or directory (os error 2)',
+  }, reportPresent: false }).status, 'blocked_browser_tools');
 });
 
 check('fresh-agent prompts direct browser actions to tools instead of unsupported resource discovery', () => {
@@ -568,6 +590,9 @@ check('fresh-agent prompts direct browser actions to tools instead of unsupporte
   assert.match(prompt, /Browser actions are MCP tools, not MCP resources/);
   assert.match(prompt, /browser_navigate/);
   assert.match(prompt, /do not call resources\/list or resources\/templates\/list/);
+  assert.match(prompt, /Discover deferred browser tools/);
+  assert.match(prompt, /ALL_TOOLS/);
+  assert.match(prompt, /tool discovery and browser calls only/);
 });
 
 check('a Codex journey that uses shell or web search violates the fresh-browser contract', () => {
