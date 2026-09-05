@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-05
 review_by: 2026-10-05
-reviewed_commit: 8876f814
+reviewed_commit: 9ae8f7ab
 current_release: v0.44.0
 independent_contexts: 2
 trigger: crash-publication-false-output-correction
@@ -164,3 +164,9 @@ This restores the intended project handoff within the existing module. It
 does not broaden agent authority or weaken approval, source custody, model
 acceptance, or the full v1 scope. The two retained independent reviews and their
 disagreement remain the direction evidence; this addendum is not a third review.
+
+Freshness follow-up `9ae8f7ab` keeps an intentionally unselected plan from being
+called changed evidence. Missing bindings and changed selected plans still
+fail, and no-plan archives remain ineligible for governed submission. Both
+new mutation cases fail as intended. The interrupted earlier QA is not a pass;
+verification restarts on this corrected boundary.
