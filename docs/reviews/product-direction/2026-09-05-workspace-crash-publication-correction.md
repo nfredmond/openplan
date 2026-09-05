@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-05
 review_by: 2026-10-05
-reviewed_commit: 8f6f4544
+reviewed_commit: 200f202e
 current_release: v0.44.0
 independent_contexts: 2
 trigger: crash-publication-false-output-correction
@@ -31,6 +31,7 @@ decisions:
 - complete-first-week-outcomes-before-release
 - test-shared-evidence-continuity-next
 paths:
+- docs/ops/V044_PROJECT_BOUNDARY_SELECTION_2026-09-05.md
 - docs/ops/V044_ARCHIVE_APPROVAL_BOUNDARY_2026-09-05.md
 - docs/ops/V044_SAFETY_MAP_SCALE_2026-09-05.md
 - docs/ops/V044_CRASH_PUBLICATION_METADATA_2026-09-05.md
@@ -178,3 +179,21 @@ verify. Readiness content agrees across screen, report, JSON, and archive.
 Both actual manifests remain ineligible for governed submission without being
 falsely labeled stale. `8f6f4544` records that evidence and the remaining full
 twelve-journey requirement. No runtime code changed in that evidence checkpoint.
+
+## Project boundary replacement follow-up
+
+All four remote workflows passed on `f80c2cbd`, and both setup journeys reached
+yes outcomes with clean consoles. During project handoff, the planner selected
+a county and then uploaded a smaller boundary. Save silently retained the older
+county. The complete run was interrupted, with its incomplete outcome retained.
+
+`200f202e` corrects the existing editor's input precedence and source display.
+Five new regressions reproduce the defect, a no-op survived, and five semantic
+mutations failed. The 34 focused tests and TypeScript pass. Rebuilt browser,
+stored-geometry comparison, full QA, current CI, and a fresh complete outcome
+gate remain required. The broader agent claim that nothing saved was not
+supported by its screenshot and is not adopted as fact.
+
+This input-loss correction stays within the current release. No new module,
+write path, migration, scientific change, or direction decision is introduced.
+The two independent reviews and their disagreement remain the retained evidence.
