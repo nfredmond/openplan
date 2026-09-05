@@ -55,3 +55,48 @@ complete twelve-job gate remain required.
 
 The scientific candidate remains retired and inconclusive. This correction
 changes no model demand, default, acceptance rule, frozen study, or holdout.
+
+## Rebuilt evidence on c1052851
+
+Full local QA exited zero: 12,946 app tests, 135 live isolation tests, production
+dependency audit with zero advisories, and production build. The full development
+dependency audit's previously recorded advisories are not cleared by this result.
+Exact-commit RLS 33986720366 and upgrade 33986750531 passed. Main CI 33986720381
+and browser CI 33986751871 were still running at this checkpoint.
+
+The identified rebuilt app was reached through the public landing page, sign-in,
+Projects, and Start a project. The new record is explicitly named QA boundary
+replacement verification, `bfdc3fa3-37e1-4689-a834-4359d8fc4237`. The interrupted
+project was not changed. The check selected Franklin County, Ohio, then uploaded
+the original handover boundary. The actual PATCH and independently read database
+geometry match that file exactly, with uploaded provenance and null jurisdiction
+identity. The display says Uploaded area before Save and after reload.
+
+The reverse sequence selected Franklin County after the upload. The file card
+then said Not the area in use, and Save recorded the server-resolved county
+reference and polygon. A subsequent upload followed by Clear produced the
+visible validation error without a PATCH. A final independent read confirms that
+this refusal and Cancel left the last saved county and its timestamp unchanged.
+
+All ten desktop/390px captures were inspected, with no horizontal overflow or
+console errors. The surviving no-op geometry copy and rejected altered/missing
+coordinate controls establish that the comparison can fail. A wrong-build
+control refused to start before navigation. These checks establish exact input
+retention and visible provenance, not geographic truth or legal applicability.
+
+The geometry hashes below identify `JSON.stringify` of the stored GeoJSON,
+not the original file's serialization:
+
+- Uploaded geometry: `3a2d9d63e7799e98d93108fdb6075dd887267d049b1eede25379267e0109fe44`.
+- Resolved county geometry: `a46c73d304e878ebfc49d2365213e9b10822b01f4914bf78b1d277351f958d0e`.
+
+Two helper failures are retained. The first used the wrong wizard dialog name
+and created nothing. The second completed the upload save but matched a hidden
+duplicate editor after reload. The helper was scoped to the visible editor and
+resumed only unfinished checks on the same QA record. Raw outputs are in
+`project-boundary-after`, `project-boundary-after-corrected`, and
+`project-boundary-after-corrected-resumed` under the local v044 release-checks
+directory. No failed report was rewritten or counted as a completed run.
+
+The correction is verified; the fresh complete twelve-job release gate remains
+required. This supplemental proof is not a substitute for that outcome gate.
