@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-05
 review_by: 2026-10-05
-reviewed_commit: c7a35fc3
+reviewed_commit: c37a0c7c
 current_release: v0.44.0
 independent_contexts: 2
 trigger: crash-publication-false-output-correction
@@ -137,3 +137,10 @@ This is another evidence-correctness repair within the current release, not a
 new direction review or a change to the retained independent recommendations.
 The original modeling result, defaults, holdouts, and full v1 scope remain
 unchanged. The project journey's partial outcome also remains unresolved.
+
+Boundary follow-up `c37a0c7c` also removes a one-meter minimum that could push
+the scale bar outside sub-meter frames, and preserves nonzero label precision.
+The focused suite is now 52 tests, with the two additional semantic mutations
+rejected. Full QA on the earlier correction passed tests, isolation, and audit
+but failed its build at Node's two-gigabyte heap limit. A bounded rerun with an
+explicit build heap and current rendered evidence remain required.
