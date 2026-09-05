@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-05
 review_by: 2026-10-05
-reviewed_commit: c37a0c7c
+reviewed_commit: 8876f814
 current_release: v0.44.0
 independent_contexts: 2
 trigger: crash-publication-false-output-correction
@@ -31,6 +31,7 @@ decisions:
 - complete-first-week-outcomes-before-release
 - test-shared-evidence-continuity-next
 paths:
+- docs/ops/V044_ARCHIVE_APPROVAL_BOUNDARY_2026-09-05.md
 - docs/ops/V044_SAFETY_MAP_SCALE_2026-09-05.md
 - docs/ops/V044_CRASH_PUBLICATION_METADATA_2026-09-05.md
 - docs/ops/V044_MODEL_ARTIFACT_DOWNLOAD_2026-09-05.md
@@ -144,3 +145,22 @@ The focused suite is now 52 tests, with the two additional semantic mutations
 rejected. Full QA on the earlier correction passed tests, isolation, and audit
 but failed its build at Node's two-gigabyte heap limit. A bounded rerun with an
 explicit build heap and current rendered evidence remain required.
+
+## Ordinary archive boundary follow-up
+
+The map correction passed full QA, all four remote workflows, desktop/390px
+inspection, and independent PDF byte checks on `820da584`. Its complete
+twelve-journey outcome gate remained unfinished.
+
+The repeated project handoff failure exposed an older boundary error: governed
+submission prerequisites had been imposed on every project evidence archive.
+`8876f814` allows the existing snapshot workflow to retain evidence without
+inventing a linked plan or forcing a single PDF. Missing prerequisites remain
+explicit; route and database checks still refuse governed submission without
+them. Sixteen mutations failed, a no-op survived, and 52 focused tests pass.
+Rebuilt archive/GIS evidence and complete release verification remain pending.
+
+This restores the intended project handoff within the existing module. It
+does not broaden agent authority or weaken approval, source custody, model
+acceptance, or the full v1 scope. The two retained independent reviews and their
+disagreement remain the direction evidence; this addendum is not a third review.
