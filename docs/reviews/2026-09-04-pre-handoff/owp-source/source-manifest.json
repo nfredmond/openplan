@@ -1,0 +1,58 @@
+[
+  {
+    "title": "2017 Regional Planning Handbook",
+    "url": "https://dot.ca.gov/-/media/dot-media/programs/transportation-planning/documents/final-2017-rph-11-9-17.pdf",
+    "file": "final-2017-rph-11-9-17.pdf",
+    "sha256": "55fba8cc21a66bf5da3f9ecbd2793f382803fcb6ad5daa07e9c50d6887e27d40",
+    "bytes": 4189115,
+    "retrieved_at": "2026-09-05T02:34:20.116586+00:00"
+  },
+  {
+    "title": "MPO/RTPA OWP Amendment and Grant Guidance (PDF)",
+    "url": "https://dot.ca.gov/-/media/dot-media/programs/transportation-planning/documents/division-transportation-planning/regional-and-community-planning/regional-coordination-fiscal-mgmt-oversight/mpo-rtpa-amendment-and-grant-guidance-v2-a11y.pdf",
+    "file": "mpo-rtpa-amendment-and-grant-guidance-v2-a11y.pdf",
+    "sha256": "e068494c2d081fb5da217853687b07029466eef3b51914f231d3c9c196d623fc",
+    "bytes": 203000,
+    "retrieved_at": "2026-09-05T02:34:21.238254+00:00"
+  },
+  {
+    "title": "FY 2026-27 RTPA OWP Guidance Document (PDF)",
+    "url": "https://dot.ca.gov/-/media/dot-media/programs/transportation-planning/documents/division-transportation-planning/regional-and-community-planning/regional-coordination-fiscal-mgmt-oversight/fy-2026-27-rtpa-owp-guidance-document-final-a11y.pdf",
+    "file": "fy-2026-27-rtpa-owp-guidance-document-final-a11y.pdf",
+    "sha256": "bd5e44b4c18b3d2c6ce5b92115b05c64e4bc2309e876d4664bb49cf76bb15b2a",
+    "bytes": 915403,
+    "retrieved_at": "2026-09-05T02:34:23.250830+00:00"
+  },
+  {
+    "title": "FY 2026-27 MPO OWP Guidance Document (PDF)",
+    "url": "https://dot.ca.gov/-/media/dot-media/programs/transportation-planning/documents/division-transportation-planning/regional-and-community-planning/regional-coordination-fiscal-mgmt-oversight/fy-2026-27-mpo-owp-guidance-document-a11y.pdf",
+    "file": "fy-2026-27-mpo-owp-guidance-document-a11y.pdf",
+    "sha256": "0eccfc7a1251e1ce13cb85a39477705c8c7a30fbe4b4e43b09f8a4726733bcf0",
+    "bytes": 1034903,
+    "retrieved_at": "2026-09-05T02:34:25.209112+00:00"
+  },
+  {
+    "title": "FY 2026-27 MPO Invoice and Details (XLSX)",
+    "url": "https://dot.ca.gov/-/media/dot-media/programs/transportation-planning/documents/division-transportation-planning/regional-and-community-planning/regional-coordination-fiscal-mgmt-oversight/fy-2026-27-mpo-inv-and-details-a11y.xlsx",
+    "file": "fy-2026-27-mpo-inv-and-details-a11y.xlsx",
+    "sha256": "f82be1e631bac9f55e591ba1c1b0cd006dcf8f549d5e080ec98e206c5473ec20",
+    "bytes": 63760,
+    "retrieved_at": "2026-09-05T02:34:25.974380+00:00"
+  },
+  {
+    "title": "FY 2026-27 RTPA RFR Details State (XLSX)",
+    "url": "https://dot.ca.gov/-/media/dot-media/programs/transportation-planning/documents/division-transportation-planning/regional-and-community-planning/regional-coordination-fiscal-mgmt-oversight/fy-2026-27-rtpa-rfr-details-state-a11y.xlsx",
+    "file": "fy-2026-27-rtpa-rfr-details-state-a11y.xlsx",
+    "sha256": "77c5ff7c92c5ee0e2d05a1035003e761cd7d5559bff1f4dbb5f9998363c6dfea",
+    "bytes": 48644,
+    "retrieved_at": "2026-09-05T02:34:26.543167+00:00"
+  },
+  {
+    "title": "FY 2025-26 MPO Certification of Expenditures (XLSX)",
+    "url": "https://dot.ca.gov/-/media/dot-media/programs/transportation-planning/documents/division-transportation-planning/regional-and-community-planning/regional-coordination-fiscal-mgmt-oversight/fy-2025-26-mpo-coe-a11y.xlsx",
+    "file": "fy-2025-26-mpo-coe-a11y.xlsx",
+    "sha256": "52659882787d4e65b21f4844d21f4091554c8ff28085031e7d1daf6b9ebabd16",
+    "bytes": 18414,
+    "retrieved_at": "2026-09-05T02:34:28.444425+00:00"
+  }
+]

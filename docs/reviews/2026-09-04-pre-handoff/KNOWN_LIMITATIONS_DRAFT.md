@@ -209,3 +209,12 @@ See `LAPM_FEATURE_GAP_ANALYSIS.md` and `LAPM_SOURCE_AND_REVIEW_COVERAGE.md`. Ful
 | KL-2026-09-04-061 | Draft, incomplete and federal-source applicability unresolved | Alaska's local manual is draft; Hawaii's 2020 manual has obsolete MPO wording and title-only agreement appendices. FAPG is a retired directive category; linked CACC is 2014 training. FTA catalog/PDF dates conflict, and actual county/award terms and some federal matrices/manuals remain unread. | G1a/M1/M4/M10/M13/M14: reconcile actual current authority and incorporated versions, require substantive source completeness, and preserve unresolved status. Selected reconnaissance does not establish state/federal operational readiness. |
 
 See `STATE_MANUALS_WA_MN_RECONNAISSANCE.md` for the full two-page bulletin reading. This extension did not run application tests or establish an actual prohibited flight/use.
+
+
+## OWP administration clarification, source dd7b4f4d
+
+| ID | Classification | Finding | Required resolution |
+|---|---|---|---|
+| KL-2026-09-04-062 | Complete agency-program outcome unproved | Existing program/work-plan/financial primitives do not establish the complete OWP/UPWP cycle. Bounded source-name searches found no named workflow; no browser or accounting-cycle acceptance was performed. | CORE-OWP-01/M2d.1–4/M11/M13: visible prior-program intake through adoption, amendments, quarterly reports/claims, certification and reconciled carryover; observed rural California, MPO and non-California two-year cases. |
+
+[Current OWP research](OWP_ADMINISTRATION_REQUIREMENTS_RESEARCH.md) records source inconsistencies: old-year labels in the current MPO invoice workbook, conflicting amendment wording and historical versus current agreement dates. These are source findings, not reproduced OpenPlan defects; actual agency agreements and clarified procedures must govern. No current form was submitted or validated in a spreadsheet application.

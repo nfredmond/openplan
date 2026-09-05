@@ -2,7 +2,7 @@
 
 These are preserved review findings and proposals, not adopted product authorities
 or a release declaration. The active development checkout remains untouched by
-this review. It is collecting additional acceptance evidence. The latest scope-review checkpoint observed clean e6900750, after six developer-owned land-use edits were committed. Earlier source and hosting findings retain their own dated snapshots and require reconciliation with these later repairs. This is not a safe-handoff or release declaration.
+this review. It is collecting additional acceptance evidence. The latest read-only observation is dd7b4f4d with developer-owned changes, including ongoing report, safety and disclosure repairs. Earlier findings retain their dated source snapshots and require reconciliation at handoff. No safe handoff or completed release is established.
 The current contract and sole active roadmap remain at their existing paths until
 the development session reaches a safe handoff and the consolidation is reviewed.
 
@@ -157,3 +157,14 @@ Main advanced during this research to clean `9ec13026`. RLS run 33936721630 and 
 Nathaniel's additional clarification is captured as CORE-ENG-02–04 in the [requirements ledger](CORE_REQUIREMENTS_LEDGER.md), with concrete M9a–b completion criteria in the [roadmap](ROADMAP_DRAFT.md). A planner starts from a project, customizes an editable starter or blank map, previews and publishes, reviews responses in linked map/list/detail views, moderates before public release, and exports polished PDF and useful XLSX reports. Complete-streets and countywide-wayfinding examples test contextual fit.
 
 The [observation protocol](PLANNER_OBSERVATION_PROTOCOL_DRAFT.md) follows planner setup through participant input, staff review and independent use of the actual files. Published question/category meaning, campaign isolation, accurate counts and public/internal permissions remain explicit. Current-source template and moderation foundations were located at dd7b4f4d; no new product functionality, browser acceptance or tests are claimed. The canonical contract proposal remains in scratch for safe-handoff consolidation.
+
+
+## OWP administration priority and DOT Dashboard reference
+
+**OWP administration is now explicitly high-priority core scope.** The renewed draft had under-specified the full program cycle. CORE-OWP-01 and M2d.1–4 now cover prior-program intake, work elements and resources, review/adoption and outside authorization, connected daily delivery, quarterly progress/reimbursement, amendments, expenditure certification and reconciled carryover/closeout. The architecture, capability and human-observation proposals reflect the same outcome; detailed requirements remain in the ledger and roadmap.
+
+- [Current OWP requirements research](OWP_ADMINISTRATION_REQUIREMENTS_RESEARCH.md) records selected current Caltrans MPO/RTPA, federal and Oahu sources, source conflicts and reading limits. This is not a full Regional Planning Handbook audit or a tested official invoice export.
+- [DOT Dashboard comparison](DOT_DASHBOARD_COMPARISON.md) uses public vendor information and a screenshot, with [agency evidence](DOT_DASHBOARD_AGENCY_EVIDENCE.md) distinguishing staff-reported functions from proposals. The comparison remains background work; OWP priority comes directly from Nathaniel.
+- Signal is a planned additive yellow, two-gray and black palette in the current upper-right selector. All five existing choices, default and stored preferences remain required. No product palette change was made.
+
+This checkpoint preserves documentation and public source metadata only. Source PDFs, workbooks, image and HTML remain outside Git. No active checkout edit, browser acceptance, application test, agency filing or human research was performed for this extension. Canonical documentation consolidation still awaits the active owner's handoff.

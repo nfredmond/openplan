@@ -1,0 +1,26 @@
+[
+  {
+    "file": "lake-tac-2019-09-19.pdf",
+    "url": "https://www.lakeapc.org/wp-content/uploads/2019/09/Lake-TAC-Packet-9-19-19.pdf",
+    "final_url": "https://www.lakeapc.org/wp-content/uploads/2019/09/Lake-TAC-Packet-9-19-19.pdf",
+    "sha256": "1e45b35e909b52f04f8683ab923dcd18fbdf6babe4e2975c2a67737f1920f65b",
+    "bytes": 3974341,
+    "retrieved_at": "2026-09-05T02:29:14.416116+00:00"
+  },
+  {
+    "file": "nvta-2025-06-18.pdf",
+    "url": "https://nvta.ca.gov/wp-content/uploads/2025/06/NVTA-Agenda-Packet-06-18-25.pdf",
+    "final_url": "https://nvta.ca.gov/wp-content/uploads/2025/06/NVTA-Agenda-Packet-06-18-25.pdf",
+    "sha256": "2bf9b415a13c7acbb920e0c8e902a147aa4f09f8e78bd5a249fecfaa8858aa75",
+    "bytes": 4523725,
+    "retrieved_at": "2026-09-05T02:29:16.625524+00:00"
+  },
+  {
+    "file": "dnltc-tac-2024-01-30.pdf",
+    "url": "https://static1.squarespace.com/static/57f8232ce58c6208092f73fa/t/65b80824705ceb4c6df7186d/1706559524905/TAC%2BPacket%2B013024.pdf",
+    "final_url": "https://static1.squarespace.com/static/57f8232ce58c6208092f73fa/t/65b80824705ceb4c6df7186d/1706559524905/TAC%2BPacket%2B013024.pdf",
+    "sha256": "70b42cfad97c74ca35986be57e08482cff7be5197103efa8d7ce2c72b7370fcb",
+    "bytes": 529161,
+    "retrieved_at": "2026-09-05T02:29:17.510032+00:00"
+  }
+]

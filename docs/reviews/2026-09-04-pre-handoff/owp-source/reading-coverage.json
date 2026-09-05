@@ -1,0 +1,65 @@
+{
+  "date_pacific": "2026-09-04",
+  "scope": "Bounded core OWP administration research; not full handbook or application audit",
+  "reading": [
+    {
+      "file": "final-2017-rph-11-9-17.pdf",
+      "pages": 130,
+      "coverage": "Contents; PDF20-22 (printed15-17); PDF59-60 (printed54-55); PDF64-66 (printed59-61)",
+      "not_read": "Other sections not fully reviewed; no complete grant-law/circular audit"
+    },
+    {
+      "file": "mpo-rtpa-amendment-and-grant-guidance-v2-a11y.pdf",
+      "pages": 7,
+      "coverage": "All seven pages extracted text; no visual table audit"
+    },
+    {
+      "file": "fy-2026-27-mpo-owp-guidance-document-a11y.pdf",
+      "pages": 55,
+      "coverage": "Selected focus/fiscal text PDF12-13,17-18; checklist PDF33-36; amendment template text sampled47-51; other search-context excerpts",
+      "not_read": "Not complete55pages; forms not filled/tested"
+    },
+    {
+      "file": "fy-2026-27-rtpa-owp-guidance-document-final-a11y.pdf",
+      "pages": 43,
+      "coverage": "Selected focus/fiscal/reporting PDF10-11,14-15,18; contents/inventory and search-context excerpts",
+      "not_read": "Not complete43pages"
+    },
+    {
+      "files": [
+        "fy-2026-27-mpo-inv-and-details-a11y.xlsx",
+        "fy-2026-27-rtpa-rfr-details-state-a11y.xlsx",
+        "fy-2025-26-mpo-coe-a11y.xlsx"
+      ],
+      "coverage": "Worksheet names/shared text; selected PL sheet cell references and visibility flags inspected",
+      "not_read": "No workbook rendering, formula execution or submission validation",
+      "specific_finding": "MPO PL G33:G38 reference old-year labels; sheet and rows/columns have no hidden flags"
+    },
+    {
+      "url": "https://www.ecfr.gov/current/title-23/chapter-I/subchapter-E/part-450/subpart-C/section-450.308",
+      "coverage": "Full section text; displayed title current through2026-09-01"
+    },
+    {
+      "url": "https://www.ecfr.gov/current/title-23/chapter-I/subchapter-E/part-420/subpart-A/section-420.115",
+      "coverage": "Full section text; displayed title current through2026-09-03"
+    },
+    {
+      "url": "https://www.ecfr.gov/current/title-23/chapter-I/subchapter-E/part-420/subpart-A/section-420.117",
+      "coverage": "Full section text; displayed title current through2026-09-02"
+    },
+    {
+      "url": "https://oahumpo.org/unified-work-program-upwp/",
+      "coverage": "Current introductory scope,2026change,revisionapproval and programperiod text; not linked fullplan"
+    }
+  ],
+  "retrieval_limits": [
+    "Short ecfr section URLs failed; full canonical paths succeeded",
+    "Web workbook retrieval failed; official linked direct downloads succeeded",
+    "One combined extraction was truncated; key handbook and MPO focus sections were re-read with bounded output"
+  ],
+  "checkout_writes": false,
+  "tests_apps_browser_accounts_contact": false,
+  "observed_at_utc": "2026-09-05T02:37:50.558979+00:00",
+  "head": "dd7b4f4d6293417844788c19e6d0fb9572f7a029",
+  "report_word_count": 1177
+}

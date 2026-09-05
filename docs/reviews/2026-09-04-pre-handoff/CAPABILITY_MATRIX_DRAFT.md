@@ -240,3 +240,10 @@ CORE-ENG-02/M9a explicitly covers creating a map from a project and tailoring it
 CORE-ENG-03 adds a linked response dashboard and human review before public release, including accurate queues, scoped map/list filters, response detail, approve/redact/withhold history and distinct follow-up status. Existing moderation components do not prove usable staff administration or leak-free public paths. M9a must include the basic review/publication loop; M9b completes interpretation and responses.
 
 CORE-ENG-04 requires polished PDF and typed/filterable XLSX engagement exports, with public/internal disclosure controls, declared snapshot/scope, consistent totals, historical response meaning and open data companions. Existing CSV/report foundations do not close this requirement. M9a–b requires actual file inspection and independent recipient use; no export capability is promoted by documenting the request.
+
+
+## Explicit OWP administration priority
+
+CORE-OWP-01/M2d requires a discoverable agency program workflow spanning preparation from the prior adopted program, work elements and resources, adoption/approval, amendments, actual delivery, progress reports and claims, expenditure certification and carryover/closeout. Existing Programs, work plans, project controls and finance records are foundations; the complete OWP/UPWP outcome is **not assessed**, not proven. Bounded source-name searches at dd7b4f4d found no named OWP/UPWP workflow; that does not establish every underlying operation absent. California MPO/RTPA and a two-year non-California program need separate observed cases. Details and current-source caveats: [OWP research](OWP_ADMINISTRATION_REQUIREMENTS_RESEARCH.md).
+
+The low-priority [DOT Dashboard comparison](DOT_DASHBOARD_COMPARISON.md) adds an eventual coverage check without claiming live parity. Signal is an additive appearance option in M2c, not an implemented theme or a substitute for accessibility evidence. Existing palettes and default remain required.

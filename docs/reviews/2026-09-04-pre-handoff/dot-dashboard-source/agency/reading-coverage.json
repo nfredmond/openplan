@@ -1,0 +1,42 @@
+{
+  "date_pacific": "2026-09-04",
+  "scope": "Three agency cases, selected pages only; no application inspection",
+  "sources": [
+    {
+      "file": "lake-tac-2019-09-19.pdf",
+      "pages": 33,
+      "read": "Agenda identification; PDF pages 8-9",
+      "status": "OWP proposal; no later acceptance reviewed"
+    },
+    {
+      "file": "nvta-2025-06-18.pdf",
+      "pages": 92,
+      "read": "Item 10.2 narrative, amendment and scope PDF pages 32-40; O&M letter page43 sampled",
+      "visual": "PDF page38, nvta-p38.png",
+      "status": "Staff-reported prior operation plus proposed Phase3; no execution/acceptance check"
+    },
+    {
+      "file": "dnltc-tac-2024-01-30.pdf",
+      "pages": 13,
+      "read": "Agenda identification; PDF pages5-8 amendment and outreach scope",
+      "official_index": "https://www.dnltc.org/dnltcmeetings",
+      "official_redirect": "https://www.dnltc.org/s/TAC-Packet-013024.pdf",
+      "status": "Proposed amendment; no delivered-enhancement claim"
+    },
+    {
+      "url": "https://www.dnltc.org/",
+      "read": "Public map-link and introductory planning text",
+      "status": "Agency entry-point reference only; map application not opened"
+    }
+  ],
+  "retrieval_limits": [
+    "Official DNLTC redirect web tool failed; equivalent encoded CDN URL succeeded",
+    "Web NVTA screenshot timed out; local PDF page38 rendered and visually read",
+    "Web Lake/DNLTC screenshot results did not expose image content to reviewer; no visual-inspection claim for those pages"
+  ],
+  "checkout_writes": false,
+  "tests_browser_apps_accounts_contact": false,
+  "final_observed_at_utc": "2026-09-05T02:31:20.065829+00:00",
+  "final_head": "dd7b4f4d6293417844788c19e6d0fb9572f7a029",
+  "report_word_count": 1057
+}
