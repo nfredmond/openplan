@@ -2,7 +2,7 @@
 
 These are preserved review findings and proposals, not adopted product authorities
 or a release declaration. The active development checkout remains untouched by
-this review. It is collecting additional acceptance evidence; source was most recently observed clean at c64b70b6 during the hosted-preview review. Hosting source findings were inspected at 27c22b68; the subsequent commit changes only the acceptance harness. This is not a safe-handoff or release declaration.
+this review. It is collecting additional acceptance evidence. The latest scope-review checkpoint observed clean e6900750, after six developer-owned land-use edits were committed. Earlier source and hosting findings retain their own dated snapshots and require reconciliation with these later repairs. This is not a safe-handoff or release declaration.
 The current contract and sole active roadmap remain at their existing paths until
 the development session reaches a safe handoff and the consolidation is reviewed.
 
@@ -93,3 +93,11 @@ The active developer advanced main to c64b70b6 to classify missing browser tools
 ## Nat Ford Planning website
 
 [Website refresh brief](NAT_FORD_WEBSITE_REFRESH_BRIEF.md) records W1 and ADOPTION-WEB-01 in the existing `nfredmond/nat-ford-website` repository: OpenPlan as the main product, clear source/install access, current demonstration links and optional services in a fast, attractive, accessible design. Current source already has useful OpenPlan content to extend. The sampled website source is pinned; cached web content was older and is not live visual proof. No website edits, form submissions, account changes or deployment occurred.
+
+## Historical scope and omissions in this draft
+
+[Scope reconciliation](SCOPE_RECONCILIATION.md) candidly records omissions found in the renewed draft itself and the corrections now preserved here. [Historical requirements](HISTORICAL_SCOPE_OMISSIONS_AUDIT.md), [engineering coverage](ENGINEERING_SCOPE_COVERAGE_AUDIT.md) and [product coverage](PRODUCT_SCOPE_COVERAGE_AUDIT.md) distinguish direct user instructions, existing implementation, contract obligations and proposed acceptance detail. The earlier reports' draft snapshots remain dated evidence, not claims that subsequent corrections are absent.
+
+The ledger and roadmap now explicitly own comprehensive work plans, the full aerial/ODM lane, shared documents and daily work, named legacy-format/OCR intake, pre-award grant pursuit/alerts, transit service planning, BCA/TDM and governed prioritization, full land-use/development and environmental/climate/Title VI cases. A named practice/organization mapping prevents broad headings from closing unexamined jobs. Small/rural and tribal observations are separate; shared proof includes localization, print and constrained-network use. This inventory is an initial floor and the history review remains sampled.
+
+This extension is documentation only. It does not establish live capability or complete history recovery. Canonical contract proposals were aligned outside the active checkout for later integration. At the latest read, main e6900750 CI and RLS were in progress, the preceding main CI had failed and its RLS passed, and the review branch had no triggered CI. Push success is separate from those facts. Safe handoff and final main consolidation remain pending.
