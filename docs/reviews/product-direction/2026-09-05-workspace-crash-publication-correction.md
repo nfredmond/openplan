@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-05
 review_by: 2026-10-05
-reviewed_commit: a26da924
+reviewed_commit: 412ddf59
 current_release: v0.44.0
 independent_contexts: 2
 trigger: crash-publication-false-output-correction
@@ -61,6 +61,13 @@ failures are retained, including an initially ineffective handler test.
 Full QA, rebuilt browser/PDF proof and a fresh complete outcome gate are pending.
 This correction does not change the selected next lane or constitute a new
 independent review. The two original reviews and their disagreement remain.
+
+The first rebuilt draft proof exposed a layout regression from content-sized
+summary text. `412ddf59` constrains that field while retaining the full draft.
+The new visible-browser regression failed against the old build for oversized
+controls; it measures the panel itself because the outer page clips overflow.
+The failed proof, failed width-only experiments and exact measurements remain
+in the report correction record. Rebuilt acceptance is still required.
 
 ## Earlier correction record
 
