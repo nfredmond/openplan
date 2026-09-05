@@ -1,7 +1,7 @@
 # OpenPlan development roadmap
 
 <!-- openplan-active-roadmap
-reviewed_commit: 8559bbf2
+reviewed_commit: b430ee96
 current_release: v0.44.0
 review_by: 2026-10-05
 paths:
@@ -10,7 +10,7 @@ paths:
 - docs/product/V1_PRODUCT_CONTRACT.md
 - docs/product/AGENT_OPERATING_RULES.md
 - docs/product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md
-- docs/reviews/product-direction/2026-09-05-release-download-correction.md
+- docs/reviews/product-direction/2026-09-05-severity-coverage-correction.md
 - openplan/scripts/ops/product-direction-review.mjs
 - openplan/src/test/product-direction-review-guard.test.ts
 - openplan/src/lib/safety/sources/registry.ts
