@@ -117,6 +117,12 @@
   ],
   "queuedFirstWeekFindings": [
     {
+      "issueId": "KI-2026-09-05-058",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Determine the cause of the intermittent browser resource failure without suppressing console evidence",
+      "evidence": "docs/ops/V044_CRASH_PUBLICATION_METADATA_2026-09-05.md"
+    },
+    {
       "issueId": "KI-2026-09-05-054",
       "capability": "travel-demand-corridor-scenario-and-performance-analysis",
       "gap": "Use desktop width for model artifacts without compressing the download controls",

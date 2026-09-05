@@ -1,5 +1,62 @@
 # Crash file updates are not coverage cutoffs
 
+## Latest checkpoint at 12:11 UTC
+
+On `708a5d43`, all 12,908 app tests, 135 live-isolation tests, the production
+dependency audit and build passed. Remote CI `33963980561`, RLS `33963980554`,
+and upgrade rehearsals `33963980587` and `33964001646` passed. These results
+precede the failed-pull wording correction below. Remote browser smoke run
+`33965099305` is still running on that earlier commit.
+
+An actual new source acquisition, `0537dacf-a923-4c77-9460-9f184f4c19d1`,
+completed with 4,781 reported and 4,123 mappable crashes. Its response has
+2,050 bytes, SHA-256 `f7750d20bece2515cd5c297379255fef0854e42b0a3e4b4203b8d1ba2dcc532b`.
+All four resource IDs and exact timestamps match the retained public manifest.
+A no-op comparison survived; an altered timestamp failed. Desktop and 390px
+screenshots after reloading showed the correct update disclosure with no
+console errors or overflow. Their map queries had not settled, so they prove
+publication metadata, not map totals. Evidence is in `safety-cutoff-migrated/`.
+
+The complete run at `2026-09-05T11-48-41-463Z` did not pass. Its first-day job
+finished partly after browser crashes and 39 console error lines, including
+Chrome insufficient-resources failures. Neutral setup was interrupted. A new
+browser reached the same account through sign-in, with its setup dashboard
+intact and no console errors. Two stopped test copies were moved from `/tmp`
+to `release-checks/v044-2026-09-05/retained-scratch/`, preserving their bytes
+and reducing temporary-storage use from 13 GB to 9.1 GB. This is not proof of
+the browser failure's cause. The original evidence remains unchanged.
+
+The fresh complete run at `2026-09-05T12-01-16-054Z` finished first-day setup
+with outcome yes, no findings, and no console errors. Neutral setup was
+interrupted when the following false-output statement was confirmed during
+supplemental report inspection. Neither run is a complete release pass.
+
+### Failed pulls do not establish absent evidence
+
+The Reports work queue on `708a5d43` said failed crash-data pulls meant the
+affected areas had no observed crash records. The same workspace's Safety
+history showed two completed and two failed acquisitions for the same county
+and requested years. This is an unsupported absence claim, not deleted data.
+Desktop and 390px report screenshots were inspected; Safety's completed
+acquisition and retained records were also captured. Console errors were zero.
+Evidence is in `failed-pull-claim-before/`.
+
+Both shared queue producers now retain the failure counts and ask the planner
+to inspect completed acquisitions. They make no inference about evidence
+availability from failure status alone. No geography logic, database record,
+write path, source claim, frozen report, model result, default or holdout changed.
+
+The singular/plural regression failed twice on the original copy. Three focused
+suites passed 45 tests after correction. A comment-only no-op survived nine
+tests; restoring the false absence claim separately in each producer failed
+both regression cases. Every mutation was restored. These tests verify the
+summary text built from observed acquisition states; their stub cannot prove
+database projection, actual geography overlap, or browser visibility. The
+real same-area history supplies the counterexample, not a seeded fixture.
+
+Fresh browser/report checks and a complete twelve-job gate are still required.
+The scientific candidate remains retired and inconclusive. No release tag.
+
 Current correction requires migration `20260905000003_crash_resource_update_provenance.sql`.
 The initial no-migration design below was insufficient. The live acquisition
 failure and corrective proof are recorded in the final section.

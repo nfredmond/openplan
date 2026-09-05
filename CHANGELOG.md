@@ -21,6 +21,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## 0.44.0 — 2026-09-05
 
+- Work-queue warnings no longer infer that a failed crash-data pull means no
+  evidence exists for its study area. They preserve failed-pull counts and
+  direct users to review completed acquisitions in Safety.
+
 - Safety and report displays no longer treat crash-file update timestamps as
   coverage cutoffs. Apply `20260905000003_crash_resource_update_provenance.sql`
   (`crash_resource_update_provenance`) before deploying. It allows file-update

@@ -2466,7 +2466,7 @@ export function buildWorkspaceOperationsSummary({
       key: "resolve-safety-crash-data-pulls",
       title: hasFailures ? "Retry failed crash data pulls" : "Disclose uncovered crash data areas",
       detail: hasFailures
-        ? `${failedCrashIngests} crash data pull${failedCrashIngests === 1 ? "" : "s"} did not complete, so the safety screening for ${failedCrashIngests === 1 ? "that study area" : "those study areas"} has no observed crash record behind it. ${SAFETY_SCREENING_NARRATIVE_CAVEAT}`
+        ? `${failedCrashIngests} crash data pull${failedCrashIngests === 1 ? "" : "s"} did not complete. A failed pull does not establish whether other crash evidence exists for the same area. Review completed acquisitions in Safety before relying on a screening output. ${SAFETY_SCREENING_NARRATIVE_CAVEAT}`
         : `${uncoveredCrashIngests} crash data pull${uncoveredCrashIngests === 1 ? " found no" : "s found no"} registered source covering the requested area. Say that limit in any safety framing for ${uncoveredCrashIngests === 1 ? "that area" : "those areas"} — an empty result there is a coverage gap, not a finding about collisions. ${SAFETY_SCREENING_NARRATIVE_CAVEAT}`,
       href: "/safety",
       tone: hasFailures ? "warning" : "info",

@@ -91,6 +91,25 @@ function command(overrides: Partial<WorkspaceCommandQueueItem>): WorkspaceComman
 }
 
 describe("workspace lane counts", () => {
+  it.each([1, 2])("does not infer absent crash evidence from %i failed acquisitions", async (failed) => {
+    const summary = await loadWorkspaceOperationsSummaryForWorkspace(createSupabaseStub({
+      safety_crash_ingests: [
+        { id: "completed-acquisition", status: "ready" },
+        ...Array.from({ length: failed }, (_, index) => ({ id: `failed-${index}`, status: "failed" })),
+      ],
+    }), "workspace-with-retained-evidence");
+    const queue = summary.fullCommandQueue.find(item => item.key === "resolve-safety-crash-data-pulls");
+    const readiness = buildWorkflowNextActionGroups(summary).find(group => group.key === "safety")?.readiness;
+    expect(summary.moduleObservations?.safety?.readyCrashIngests).toBe(1);
+    expect(summary.moduleObservations?.safety?.failedCrashIngests).toBe(failed);
+    for (const detail of [queue?.detail, readiness?.detail]) {
+      expect(detail).toContain("did not complete");
+      expect(detail).toContain("does not establish whether other crash evidence exists for the same area");
+      expect(detail).toContain("Review completed acquisitions in Safety");
+      expect(detail).not.toContain("no observed crash record");
+    }
+  });
+
   it("carries engagement, safety and model-run state from the database into the queue", async () => {
     const supabase = createSupabaseStub({
       engagement_campaigns: [
