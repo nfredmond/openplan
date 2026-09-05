@@ -86,4 +86,11 @@ describe("LandUsePlanWorkbench content editing", () => {
       body: "Revised policy text",
     }));
   });
+
+  it("does not turn an unsourced descriptor date into a legal-source review claim", async () => {
+    render(<LandUsePlanWorkbench planId={WORKBENCH.plan.id} />);
+    await screen.findByText("Local legal requirements are not configured.");
+    expect(screen.queryByText(/Sources reviewed/)).not.toBeInTheDocument();
+    expect(screen.getByText(/source review is not established/i)).toBeVisible();
+  });
 });

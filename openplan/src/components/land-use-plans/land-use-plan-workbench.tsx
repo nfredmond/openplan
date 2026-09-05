@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { buildAdoptionBlockers, buildLandUsePlanWorkflow, buildPublicDraftBlockers, percentComplete } from "@/lib/land-use-plans/workflow";
 import { defaultApplicableRequirementKeys } from "@/lib/land-use-plans/registry";
+import { describePlanSourceReview } from "@/lib/land-use-plans/source-review";
 
 type WorkbenchData = {
   plan: { id: string; title: string; authority_label: string; geography_label: string; geography_geojson: Record<string, unknown> | null; current_working_version_id: string | null; current_adopted_version_id: string | null };
@@ -238,7 +239,7 @@ export function LandUsePlanWorkbench({ planId }: { planId: string }) {
           <div className="rounded-lg bg-muted px-4 py-3 text-right"><p className="text-2xl font-bold">{percentComplete(workflow)}%</p><p className="text-xs text-muted-foreground">workflow complete</p></div>
         </div>
         <p className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100">{data.descriptor.disclosure}</p>
-        <p className="mt-2 text-xs text-muted-foreground">Sources reviewed {data.descriptor.verifiedAt}; review due {data.descriptor.reviewDueAt}. OpenPlan does not certify legal sufficiency.</p>
+        <p className="mt-2 text-xs text-muted-foreground">{describePlanSourceReview(data.descriptor)} OpenPlan does not certify legal sufficiency.</p>
       </header>
 
       {actionError ? <div className="rounded-lg border border-destructive p-3 text-sm text-destructive">{actionError}</div> : null}
