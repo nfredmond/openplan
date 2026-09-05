@@ -1,4 +1,4 @@
-import type { SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
+import { separatesSeriousInjuries, type SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
 
 /**
  * The packet's safety section — the crash evidence a board is entitled to see.
@@ -74,6 +74,7 @@ export function buildPacketSafetyEvidence(
 
   const acquisitions = evidence.map((item): PacketSafetyAcquisition => {
     const counts = item.severityCounts;
+    const seriousInjuriesCovered = separatesSeriousInjuries(item.severityCompleteness);
     const figures: PacketSafetyFigure[] = [
       figure("Reported collisions", item.reportedTotal, "The source returned no count."),
       figure(
@@ -83,7 +84,7 @@ export function buildPacketSafetyEvidence(
       ),
       figure(
         "Fatal or serious-injury crashes",
-        item.ksi,
+        seriousInjuriesCovered ? item.ksi : null,
         "This source does not separate crashes involving suspected serious injuries, so a severe-crash count cannot be formed from it."
       ),
       figure(
@@ -93,8 +94,10 @@ export function buildPacketSafetyEvidence(
       ),
       figure(
         "Serious-injury crashes",
-        counts ? (counts.severe_injury ?? null) : null,
-        "The severity breakdown could not be read."
+        seriousInjuriesCovered && counts ? (counts.severe_injury ?? null) : null,
+        seriousInjuriesCovered
+          ? "The severity breakdown could not be read."
+          : "This source does not separate suspected serious injuries, or its severity coverage was not recorded. Missing coverage is not zero."
       ),
       figure(
         "No casualty detail recorded",

@@ -28,7 +28,7 @@ import { recentCrashYears } from "@/lib/safety/crash-years";
 // their single declarations. Writing `fatal + severe_injury` here again is how a
 // measure ends up defined in three files and changed in one.
 import { CRASH_KSI_SEVERITIES } from "@/lib/safety/vocabulary";
-import { separatesSeriousInjuries } from "@/lib/safety/crash-evidence";
+import { SAFETY_KSI_COVERAGE_UNAVAILABLE, separatesSeriousInjuries } from "@/lib/safety/crash-evidence";
 import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 import { SafetyCrashMap, safetyWorkspaceGisAnchorLayerId } from "./safety-crash-map";
 import { SafetyWorkspaceLayersPanel } from "./safety-workspace-layers-panel";
@@ -1400,6 +1400,9 @@ export function SafetyWorkspace({
                 )}
               </div>
             )}
+            {response && !separatesSeriousInjuries(activeCompleteness ?? "") ? (
+              <p className="text-muted-foreground">{SAFETY_KSI_COVERAGE_UNAVAILABLE}</p>
+            ) : <>
             {Array.isArray(response?.ksiConcentrations) && response.ksiConcentrations.length > 0 ? (
               <section className="rounded-lg border border-border/70 bg-muted/20 p-3">
                 <h2 className="text-sm font-semibold">Highest observed KSI concentrations</h2>
@@ -1494,6 +1497,7 @@ export function SafetyWorkspace({
                 community burden is not determined here. The crash workflow remains available.
               </p>
             ) : null}
+            </>}
             {response ? (
               <SafetyPrintableStreetContext
                 projectName={openedForProject?.name ?? null}

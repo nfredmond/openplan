@@ -381,6 +381,29 @@ describe("SafetyWorkspace coverage disclosure", () => {
     });
   });
 
+  it.each(["fatal_only", "fatal_injury_only", "", "unknown"])("withholds combined KSI rankings when coverage is %s", async (severityCompleteness) => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({
+      ...mockCrashResponse(),
+      json: async () => ({
+        ...(await mockCrashResponse().json()),
+        ksiConcentrations: [{ rank: 1, longitude: -123.21, latitude: 39.15,
+          crashCount: 7, fatalCrashCount: 7, seriousInjuryCrashCount: 0, radiusMeters: 150 }],
+        ksiEquityTracts: [{ rank: 1, geoid: "fixture", tractName: "Fixture tract",
+          ksiCrashCount: 7, fatalCrashCount: 7, seriousInjuryCrashCount: 0,
+          population: 3500, ksiPer100k: 200, pctPoverty: 24, pctNonwhite: 61,
+          pctZeroVehicle: 9, areaMedianPctPoverty: 16, areaMedianPctNonwhite: 48,
+          areaMedianPctZeroVehicle: 7 }],
+        ksiEquityDemographicSource: { label: "Fixture demographics", vintage: "2023" },
+      }),
+    })));
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest({ severityCompleteness })} studyArea={seededStudyArea()} />);
+    expect(await screen.findByText(/KSI rankings and community burden are withheld/i)).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /Highest observed KSI/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/7 KSI crashes/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/0 serious injury/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/^1,180 reported ·/)).toBeInTheDocument();
+  });
+
   it("asks for a study area instead of assuming one, and fetches nothing until then", async () => {
     // Regression guard: this page previously defaulted to a hardcoded Nevada
     // County bbox, which made it useless to every other agency in the country.

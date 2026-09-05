@@ -211,6 +211,10 @@ export function separatesSeriousInjuries(severityCompleteness: string): boolean 
   return severityCompleteness === "kabco_full";
 }
 
+// Visible rankings and printed packets use the same coverage disclosure.
+export const SAFETY_KSI_COVERAGE_UNAVAILABLE =
+  "KSI rankings and community burden are withheld because the source coverage does not establish separately counted serious-injury crashes. Reported crash points and supported fatal-crash counts remain available. Missing serious-injury coverage is not zero.";
+
 /**
  * Build the evidence for ONE acquisition.
  *

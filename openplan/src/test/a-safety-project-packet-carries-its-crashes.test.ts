@@ -41,7 +41,7 @@ function evidence(overrides: Partial<SafetyCrashEvidence> = {}): SafetyCrashEvid
     ingestId: "ing-1",
     projectId: "p1",
     status: "succeeded",
-    severityCompleteness: "complete",
+    severityCompleteness: "kabco_full",
     truncated: false,
     sourceLabel: "Example crash source",
     attribution: "Example agency",
@@ -122,6 +122,17 @@ describe("a safety project's packet carries its crashes", () => {
     const fatal = built.acquisitions[0].figures.find((f) => f.label === "Fatal crashes");
     expect(fatal?.value).toBeNull();
     expect(fatal?.absentBecause).toMatch(/could not be read/i);
+  });
+
+  it.each(["fatal_only", "fatal_injury_only", "", "unknown"])("does not print unsupported serious-injury figures for %s", (severityCompleteness) => {
+    const built = buildPacketSafetyEvidence([evidence({ severityCompleteness })]);
+    if (built.kind !== "present") throw new Error("expected present");
+    for (const label of ["Serious-injury crashes", "Fatal or serious-injury crashes"]) {
+      const figure = built.acquisitions[0].figures.find(item => item.label === label);
+      expect(figure?.value).toBeNull();
+      expect(figure?.absentBecause).toMatch(/does not separate/i);
+    }
+    expect(built.acquisitions[0].figures.find(item => item.label === "Fatal crashes")?.value).toBe(4);
   });
 
   it("says the figures are a floor when the retrieval was truncated", () => {
@@ -300,6 +311,27 @@ describe("a safety project's packet carries its crashes", () => {
       expect(html).toContain("Printable street context");
       expect(html).toContain("Local street context");
       expect(html).toContain("no paid or live tile service was used");
+    });
+
+    it.each(["fatal_only", "fatal_injury_only", "", "unknown"])("withholds packet rankings if any acquisition has %s coverage", (severityCompleteness) => {
+      const html = buildReportHtml({
+        ...packetData([evidence(), evidence({ ingestId: "partial", severityCompleteness })]),
+        safetyKsiConcentrations: [{ rank: 1, longitude: -123.21, latitude: 39.15,
+          crashCount: 7, fatalCrashCount: 7, seriousInjuryCrashCount: 0, radiusMeters: 150 }],
+        safetyKsiEquityTracts: [{ rank: 1, geoid: "fixture", tractName: "Fixture tract",
+          ksiCrashCount: 7, fatalCrashCount: 7, seriousInjuryCrashCount: 0,
+          population: 3500, ksiPer100k: 200, pctPoverty: 24, pctNonwhite: 61,
+          pctZeroVehicle: 9, areaMedianPctPoverty: 16, areaMedianPctNonwhite: 48,
+          areaMedianPctZeroVehicle: 7 }],
+        safetyRoadContext: [{ id: "road", name: "Fixture Road", geometry: { type: "LineString",
+          coordinates: [[-123.21, 39.14], [-123.21, 39.16]] },
+          sourceId: "fixture", sourceLabel: "Fixture roads", vintage: "2023" }],
+      });
+      expect(html).toContain("KSI rankings and community burden are withheld");
+      expect(html).not.toContain("7 KSI crashes");
+      expect(html).not.toContain("0 serious injury");
+      expect(html).not.toContain("Red points are ranked KSI concentration centers");
+      expect(html).not.toContain("No pair of mapped fatal or serious-injury");
     });
 
     it("uses registered crash-source coverage when an imported project's ISO stamp is absent", () => {

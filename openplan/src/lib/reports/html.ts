@@ -30,7 +30,7 @@ import {
   type PacketGeographyFigure,
   type PacketGeographyInput,
 } from "@/lib/reports/geography-figure";
-import type { SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
+import { SAFETY_KSI_COVERAGE_UNAVAILABLE, separatesSeriousInjuries, type SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
 import type { SafetyKsiConcentration, SafetyKsiEquityTract } from "@/lib/safety/client-types";
 import type { SafetyRoadContextFeature } from "@/lib/safety/road-context";
 import { renderSafetyStreetContextSvg } from "@/lib/safety/street-context-svg";
@@ -1104,8 +1104,13 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
     .join("");
 
   const concentrations = data.safetyKsiConcentrations;
+  const acquisitionCoverage = data.safetyEvidence ?? [];
+  const ksiPresentationSupported = acquisitionCoverage.length > 0
+    && acquisitionCoverage.every(item => separatesSeriousInjuries(item.severityCompleteness));
   const concentrationMarkup = concentrations === undefined
     ? ""
+    : !ksiPresentationSupported
+    ? `<h3>Severe-crash coverage limit</h3><p>${esc(SAFETY_KSI_COVERAGE_UNAVAILABLE)}</p>`
     : concentrations === null
     ? `<h3>Highest observed KSI concentrations</h3><p>The project-linked severe-crash concentration ranking could not be read while this packet was generated. That is a failed calculation, not a finding that no concentration exists.</p>`
     : concentrations.length > 0
@@ -1118,6 +1123,8 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
   const equitySource = data.safetyKsiEquityDemographicSource;
   const equityMarkup = equityTracts === undefined
     ? ""
+    : !ksiPresentationSupported
+      ? `<h3>Community burden screen</h3><p>${esc(SAFETY_KSI_COVERAGE_UNAVAILABLE)}</p>`
     : equityTracts === null
       ? `<h3>Community burden screen</h3><p>The mapped KSI-to-Census-tract comparison could not be read. That is a failed calculation, not a finding that harm is evenly distributed.</p>`
       : equityTracts.length === 0
@@ -1128,7 +1135,7 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
 
   const roadContext = data.safetyRoadContext;
   const parsedProjectGeometry = corridorGeojsonSchema.safeParse(data.geography?.studyArea?.geometry);
-  const streetContextSvg = concentrations && roadContext
+  const streetContextSvg = ksiPresentationSupported && concentrations && roadContext
     ? renderSafetyStreetContextSvg({
         roads: roadContext,
         crashLocations: concentrations.map(
@@ -1140,7 +1147,9 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
   const roadSources = roadContext
     ? Array.from(new Set(roadContext.map((road) => `${road.sourceLabel} ${road.vintage}`)))
     : [];
-  const streetContextMarkup = roadContext === null
+  const streetContextMarkup = !ksiPresentationSupported
+    ? `<h3>Printable street context</h3><p>The combined fatal and serious-injury concentration map is withheld because source severity coverage is incomplete or unknown. This is not a finding that mapped crashes are absent.</p>`
+    : roadContext === null
     ? `<h3>Printable street context</h3><p>Cached road evidence could not be read. Road identity and street context are unavailable, not absent.</p>`
     : streetContextSvg
       ? `<h3>Printable street context</h3>${streetContextSvg}<p><strong>Road source:</strong> ${roadSources.length > 0 ? roadSources.map(esc).join("; ") : "Road identity unavailable"}. Red points are ranked KSI concentration centers; the dashed green line is the project area when available. North arrow and scale are derived from the frozen vector extent. Coverage is limited to cached named TIGER/Line or OpenStreetMap roads attached to this project; no paid or live tile service was used.</p>`
