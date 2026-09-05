@@ -86,3 +86,53 @@ The regression failed before this adjustment. Restoring the old requirement
 or conflating a missing binding with an explicit null each failed the test;
 both mutations were restored. The earlier 7b5a7ffb full QA was deliberately
 interrupted, exit 130, before completing. Its partial output is not a QA pass.
+
+## Rebuilt verification on b96615c1
+
+Full local QA passed 12,941 app tests, all 135 live isolation tests, the
+production build, and the production dependency audit with zero advisories.
+Seven focused suites pass 53 tests, including the freshness follow-up.
+
+The identified build was reached through sign-in, Projects, the existing
+corridor project, and its Evidence tab. No plan was created or selected. Two
+reviewed archives were frozen through the ordinary UI: one with no optional
+files, and one with only the previously inspected QA board PDF. Desktop and
+390px screenshots show optional-plan disclosure, explicit confirmation, ready
+archives, complete hashes, and a not-approvable explanation. Neither newly
+created archive is falsely marked stale. No submission control is offered.
+All eight screenshots were inspected; console errors and page overflow were zero.
+
+Both ZIPs downloaded at both widths and matched independently read private
+Storage bytes, retained database hashes, and their manifests:
+
+| Archive | Bytes | ZIP SHA-256 |
+|---|---:|---|
+| Project-only, `858cb586-ae72-4e5e-ad35-9832f7c069b3` | 93,236 | `143eff7a930122b4f4f71186e3242bbab39f4e097e89a21a312fe63311e87440` |
+| With PDF, `b056bfc8-f616-4c2e-aa46-2ae5b58c218f` | 417,160 | `843f57322504749e0803262c93b1b6c51e8e4c381d8300daf27b72d33f3d182a` |
+
+Their manifest hashes are respectively
+`ed75e2cbc81c1d23b8bf1cd4ada2b1d48adca83b3440c3c13c650c46b6e3125f`
+and `193d703f48a9d45e88daa41c0b4eb2bdc86f45ccd3a3cc5e3d69d7cc2905961f`,
+matching the visible full identities. Unchanged copies pass; changed and
+truncated copies fail. An altered project JSON entry fails the independent
+archive checksum check.
+
+All seven project-only and eight with-PDF checksummed files verify. GDAL opens
+all ten GeoPackage layers. The layer-status table distinguishes unavailable
+model links, land-use designations, and project location from included project
+area, corridor, 361 KSI crash points, and one publishable engagement geometry.
+Unavailable layers have null reported counts, not invented observed zeros.
+
+The included PDF has the unchanged Safety-map hash recorded in that correction's
+proof. The five readiness statuses, applicability statements, limitations,
+registry hash, and evidence hashes agree with the report and downloaded JSON.
+ZIP and downloaded readiness JSON have identical content but different formatting
+and therefore different file hashes. They are not claimed byte-identical.
+The live database readiness function rejects both actual archive manifests;
+neither has a submission row. This is a retained archive, not an approval.
+
+Local raw evidence is in `ordinary-archive-after/`, including browser snapshots,
+four ZIP downloads, byte proofs, and GIS status output. Remote RLS 33984918266
+and Upgrade 33984939578 passed this commit. Main CI 33984918325 and browser
+33984941059 were still running when this checkpoint was written. The fresh
+complete twelve-job outcome gate remains required. No release tag.
