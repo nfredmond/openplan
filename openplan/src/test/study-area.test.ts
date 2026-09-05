@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   LARGE_AREA_KM2,
   parseCorridorText,
+  studyAreaBboxesMatch,
   studyAreaPrefillFromHomeGeography,
   summarizeCorridorText,
 } from "@/lib/models/study-area";
@@ -98,6 +99,20 @@ describe("summarizeCorridorText", () => {
     const summary = summarizeCorridorText(multi);
     expect(summary.bbox).toEqual({ minLon: -122, minLat: 38, maxLon: -119, maxLat: 41 });
     expect(summary.areaKm2).toBeGreaterThan(LARGE_AREA_KM2);
+  });
+});
+
+describe("studyAreaBboxesMatch", () => {
+  const bbox = { minLon: -83.2, minLat: 39.8, maxLon: -82.8, maxLat: 40.1 };
+
+  it("matches a database round-trip within the shared coordinate tolerance", () => {
+    expect(studyAreaBboxesMatch(bbox, { ...bbox, maxLon: bbox.maxLon + 0.0000005 })).toBe(true);
+  });
+
+  it("rejects a different place and any missing or non-finite scope", () => {
+    expect(studyAreaBboxesMatch(bbox, { ...bbox, minLon: -121.3 })).toBe(false);
+    expect(studyAreaBboxesMatch(bbox, null)).toBe(false);
+    expect(studyAreaBboxesMatch(bbox, { ...bbox, minLat: Number.NaN })).toBe(false);
   });
 });
 

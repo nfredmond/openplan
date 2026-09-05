@@ -17,6 +17,12 @@ const sql = readFileSync(
   "utf8"
 );
 
+/** The HEAD source-domain constraint after national FARS persistence. */
+const sourceDomainSql = readFileSync(
+  path.resolve(process.cwd(), "supabase/migrations/20260904000001_persist_fars_crashes.sql"),
+  "utf8"
+);
+
 /** The migration that widened the severity band and added the neutral dimensions. */
 const dimensionsSql = readFileSync(
   path.resolve(process.cwd(), "supabase/migrations/20260812000001_safety_crash_neutral_dimensions.sql"),
@@ -56,7 +62,7 @@ describe("safety_crashes migration", () => {
   });
 
   it("restricts source_id to registered OBSERVED adapters so no estimate can land", () => {
-    const match = /source_id\s+text NOT NULL CHECK \(source_id IN \(([^)]*)\)\)/.exec(sql);
+    const match = /ADD CONSTRAINT safety_crashes_source_id_check\s+CHECK \(source_id IN \(([^)]*)\)\)/.exec(sourceDomainSql);
     expect(match, "source_id CHECK constraint missing").toBeTruthy();
 
     const allowed = (match?.[1] ?? "")
@@ -67,6 +73,7 @@ describe("safety_crashes migration", () => {
     // The DB allowlist and the TS registry must not drift apart.
     expect(allowed.sort()).toEqual([...OBSERVED_CRASH_SOURCE_IDS].sort());
     expect(allowed.some((id) => /estimate/i.test(id))).toBe(false);
+    expect(sourceDomainSql).toMatch(/safety_crash_parties intentionally remains CCRS-only/i);
   });
 
   it("keeps the severity domain aligned with the TypeScript buckets, at HEAD", () => {

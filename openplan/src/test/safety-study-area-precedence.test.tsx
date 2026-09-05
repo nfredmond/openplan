@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -202,7 +202,10 @@ function mountSupabase({
 }
 
 async function renderSafety(searchParams?: { projectId?: string }) {
-  render(await SafetyPage({ searchParams: Promise.resolve(searchParams ?? {}) }));
+  const page = await SafetyPage({ searchParams: Promise.resolve(searchParams ?? {}) });
+  await act(async () => {
+    render(page);
+  });
 }
 
 /** The bbox the crash query was actually issued for, or null if none was. */
@@ -408,5 +411,36 @@ describe("Safety opens on the right study area", () => {
 
     expect(screen.getByText(/No crash data has been retrieved for this study area yet/i)).toBeInTheDocument();
     expect(screen.queryByText(/could not be read/i)).toBeNull();
+  });
+
+  it("does not present an older area's acquisition as the current area's coverage", async () => {
+    mountSupabase({
+      ingests: [{
+        id: "ingest-old-area",
+        project_id: null,
+        source_label: "California Crash Reporting System (CCRS)",
+        attribution: "California Highway Patrol",
+        coverage_state: "ccrs_ca_statewide",
+        severity_completeness: "fatal_injury_only",
+        status: "ready",
+        crash_count: 99,
+        geocoded_count: 99,
+        truncated: false,
+        years_requested: [2024],
+        fetch_error: null,
+        created_at: "2026-09-01T00:00:00.000Z",
+        min_lon: -83.2,
+        min_lat: 39.8,
+        max_lon: -82.8,
+        max_lat: 40.1,
+        county_code: null,
+      }],
+    });
+
+    await renderSafety();
+
+    const coverage = screen.getByLabelText("Crash data coverage");
+    expect(within(coverage).queryAllByText(/California Crash Reporting System/i)).toHaveLength(0);
+    expect(within(coverage).getByText(/No crash data has been retrieved for this study area yet/i)).toBeInTheDocument();
   });
 });

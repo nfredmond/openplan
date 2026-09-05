@@ -15,7 +15,8 @@
  * migration while read coverage advances by registering an adapter. The
  * `persistable` flag is that boundary, and `resolveCrashSource` defaults to the
  * conservative side so an ingest can never resolve a source the database would
- * reject.
+ * reject. Sources not yet admitted remain available through the generic live
+ * read lane without being misrepresented as stored acquisitions.
  */
 
 import { ccrsAdapter } from "./ccrs";

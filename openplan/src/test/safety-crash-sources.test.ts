@@ -129,14 +129,12 @@ describe("crash source registry", () => {
     }
   });
 
-  it("keeps a non-persistable source out of the ingest lane, because the DB CHECK would reject it", () => {
-    // FARS covers Detroit for reads, but `safety_crashes.source_id` does not
-    // list it yet. Resolving it for an ingest would surface as a constraint
-    // violation mid-write; resolving it out is the fail-closed behaviour.
+  it("resolves the national observed source through the ordinary ingest lane", () => {
     const resolution = resolveCrashSource(DETROIT_BBOX);
-    expect(resolution.kind).toBe("out_of_coverage");
-    if (resolution.kind === "out_of_coverage") {
-      expect(resolution.checked.map((c) => c.id)).toEqual([CCRS_SOURCE_ID]);
+    expect(resolution.kind).toBe("resolved");
+    if (resolution.kind === "resolved") {
+      expect(resolution.adapter.id).toBe(FARS_SOURCE_ID);
+      expect(resolution.adapter.persistable).toBe(true);
     }
   });
 
@@ -176,7 +174,7 @@ describe("crash source registry", () => {
         .map((adapter) => adapter.id)
         .sort()
     );
-    expect(OBSERVED_CRASH_SOURCE_IDS).not.toContain(FARS_SOURCE_ID);
+    expect(OBSERVED_CRASH_SOURCE_IDS).toContain(FARS_SOURCE_ID);
   });
 
   it("requires every registered adapter to carry attribution and a license", () => {
@@ -514,10 +512,10 @@ describe("FARS national adapter", () => {
     expect(coversFarsGeography({ minLon: -99.2, minLat: 19.3, maxLon: -99.0, maxLat: 19.5 })).toBe(false);
   });
 
-  it("advertises fatal_only completeness and stays out of the persisted allowlist", () => {
+  it("advertises fatal_only completeness and is admitted to the persisted allowlist", () => {
     expect(farsAdapter.severityCompleteness).toBe("fatal_only");
     expect(farsAdapter.coverageState).toBe("fars_fatal_only");
-    expect(farsAdapter.persistable).toBe(false);
+    expect(farsAdapter.persistable).toBe(true);
   });
 
   it("uses NHTSA's final annual FARS release as the exact publication cutoff", () => {

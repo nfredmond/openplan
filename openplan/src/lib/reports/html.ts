@@ -47,6 +47,7 @@ import {
 import type { AcceptedSectionNarrative } from "@/lib/reports/narrative-drafts";
 import { formatMoney } from "@/lib/money/format";
 import { scoreValueForPresentation } from "@/lib/analysis/score-presentation";
+import { resolveEstimatedDomains } from "@/lib/analysis/estimated-source";
 import type { FrozenReportAerialOrthoSnapshotV1 } from "@/lib/reports/aerial-ortho-evidence";
 import { buildEvidenceDescriptor, type EvidenceDescriptorV1 } from "@/lib/evidence/evidence-descriptor";
 import type { JurisdictionReadinessPayload } from "@/lib/jurisdiction-readiness/payload";
@@ -430,6 +431,29 @@ function runMarkup(run: RunRecord): string {
   const presentedOverall = scoreValueForPresentation(metrics, "overallScore");
   const score = presentedOverall === null ? "Withheld" : `${presentedOverall}/100`;
   const confidence = typeof metrics.confidence === "string" ? titleize(metrics.confidence) : "Unknown";
+  const summaryConflicts: string[] = [];
+  for (const [key, label] of [
+    ["overallScore", "Overall"],
+    ["safetyScore", "Safety"],
+    ["accessibilityScore", "Accessibility"],
+    ["equityScore", "Equity"],
+  ] as const) {
+    if (
+      scoreValueForPresentation(metrics, key) === null
+      && new RegExp(`\\b${label}(?: score)?\\s*:?\\s*\\d+(?:\\.\\d+)?(?:\\s*\\/\\s*100|\\s+of\\s+100)`, "i").test(run.summary_text ?? "")
+    ) {
+      summaryConflicts.push(`${label.toLowerCase()} score is not eligible for presentation`);
+    }
+  }
+  if (
+    resolveEstimatedDomains(metrics).crashes
+    && /no crash figures were estimated/i.test(run.summary_text ?? "")
+  ) {
+    summaryConflicts.push("the saved crash narrative contradicts the run's recorded estimated-source metadata");
+  }
+  const summaryMarkup = summaryConflicts.length > 0
+    ? `<div class="warning-box"><strong>Saved run summary withheld.</strong><p>This linked run's saved prose conflicts with current evidence-presentation rules: ${esc(summaryConflicts.join("; "))}. The stored run is unchanged; inspect or regenerate it before citing its narrative.</p></div>`
+    : `<p>${esc(run.summary_text || "No run summary is saved yet.")}</p>`;
 
   return `<article class="run-card">
     <div class="run-head">
@@ -439,11 +463,12 @@ function runMarkup(run: RunRecord): string {
       </div>
       <span class="pill ${gate.decision === "PASS" ? "pill-pass" : "pill-hold"}">${gate.decision}</span>
     </div>
-    <p>${esc(run.summary_text || "No run summary is saved yet.")}</p>
+    ${summaryMarkup}
     <div class="metrics-grid">
       <div><span class="metric-label">Overall score</span><strong>${esc(score)}</strong></div>
-      <div><span class="metric-label">Confidence</span><strong>${esc(confidence)}</strong></div>
+      <div><span class="metric-label">Recorded run confidence (not validation)</span><strong>${esc(confidence)}</strong></div>
     </div>
+    <p class="meta">The source status below belongs to this linked analysis run. It does not describe the separately selected project collision acquisition in the Reported collisions section.</p>
     <div class="transparency-grid">
       ${transparency
         .map(

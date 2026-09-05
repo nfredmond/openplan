@@ -1,11 +1,22 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { SafetyWorkspace } from "@/components/safety/safety-workspace";
 import { ingestCrashesForStudyArea } from "@/lib/safety/ingest";
 import type { SafetyIngestSummary } from "@/lib/safety/client-types";
 import { CRASH_SEVERITY_BANDS } from "@/lib/safety/crash-filters";
 import type { CrashRecord } from "@/lib/safety/sources/types";
 import { findReadOnlyOnlyStudyArea } from "./helpers/crash-coverage-probe";
+import { farsAdapter } from "@/lib/safety/sources/fars";
+
+// Exercise the generic pending-migration fallback even though every production
+// adapter at HEAD is now persistable.
+beforeAll(() => {
+  farsAdapter.persistable = false;
+});
+
+afterAll(() => {
+  farsAdapter.persistable = true;
+});
 
 // The map is Mapbox-backed; this suite is about the honesty copy around it.
 vi.mock("@/components/safety/safety-crash-map", () => ({
@@ -82,6 +93,26 @@ function ingest(over: Partial<SafetyIngestSummary> = {}): SafetyIngestSummary {
     fetchError: null,
     createdAt: "2026-07-23T00:00:00.000Z",
     ...over,
+  };
+}
+
+/** The same neutral boundary emitted by the default picker button. */
+function seededStudyArea() {
+  return {
+    corridorText: JSON.stringify({
+      type: "Polygon",
+      coordinates: [[
+        [-121.3, 39.1],
+        [-120.3, 39.1],
+        [-120.3, 39.6],
+        [-121.3, 39.6],
+        [-121.3, 39.1],
+      ]],
+    }),
+    place: null,
+    label: null,
+    origin: "project" as const,
+    originLabel: "the saved test area",
   };
 }
 
@@ -167,8 +198,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
   });
 
   it("shows reported AND mappable counts, never just the smaller one", async () => {
-    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest()} />);
-    selectStudyArea();
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest()} studyArea={seededStudyArea()} />);
 
     await waitFor(() => {
       // Scoped to the header pairing. The geocoding disclosure below also names
@@ -316,8 +346,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
       })) as unknown as typeof fetch,
     );
 
-    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest({ severityCompleteness: "kabco_full" })} />);
-    selectStudyArea();
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest({ severityCompleteness: "kabco_full" })} studyArea={seededStudyArea()} />);
 
     expect(await screen.findByRole("heading", { name: /Highest observed KSI concentrations/i })).toBeInTheDocument();
     expect(screen.getAllByText(/7 KSI crashes/i)).toHaveLength(2);
@@ -476,9 +505,9 @@ describe("SafetyWorkspace coverage disclosure", () => {
       <SafetyWorkspace
         workspaceId="ws-1"
         latestIngest={ingest({ severityCompleteness: "kabco_full" })}
+        studyArea={seededStudyArea()}
       />
     );
-    selectStudyArea();
 
     await waitFor(() => {
       // fatal (1) + serious injury (1) = 2; the plain injury crash is excluded.
@@ -740,6 +769,18 @@ describe("SafetyWorkspace coverage disclosure", () => {
     selectStudyArea("far-county");
 
     await waitFor(() => expect(screen.queryByText(/Live read — not saved/i)).not.toBeInTheDocument());
+  });
+
+  it("drops a saved acquisition banner when the study area changes", async () => {
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest()} />);
+    expect(screen.getByLabelText("Crash data coverage")).toHaveTextContent(/California Crash Reporting System/i);
+
+    selectStudyArea("far-county");
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Crash data coverage")).not.toHaveTextContent(/California Crash Reporting System/i)
+    );
+    expect(screen.getByLabelText("Crash data coverage")).toHaveTextContent(/No crash data has been retrieved for this study area yet/i);
   });
 
   it("names the sources it checked when a real coverage gap comes back from the lane", async () => {

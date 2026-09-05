@@ -374,6 +374,7 @@ export function SafetyWorkspace({
     return "";
   });
   const [response, setResponse] = useState<SafetyCrashQueryResponse | null>(null);
+  const previousCorridorTextRef = useRef(corridorText);
   /**
    * Crashes read live from a source this workspace may not store.
    *
@@ -740,12 +741,17 @@ export function SafetyWorkspace({
     }
   }, [workspaceId, loadCrashes, bbox, countyCode, projectId, years]);
 
-  // A live read belongs to the area it was retrieved for and to no other.
-  // Leaving it on screen after the planner moves the study area would plot one
-  // place's fatalities over another's boundary — the most consequential thing
-  // this page could get wrong.
+  // Every acquisition and response belongs to the area it was retrieved for
+  // and to no other. Keep the matching server-provided acquisition on initial
+  // render, then clear all area-bound evidence whenever the picker moves.
+  // Otherwise a California banner can sit above an Ohio boundary until the new
+  // request finishes — a false current-geography claim even if no point moves.
   useEffect(() => {
+    if (previousCorridorTextRef.current === corridorText) return;
+    previousCorridorTextRef.current = corridorText;
     setLiveRead(null);
+    setIngest(null);
+    setResponse(null);
   }, [corridorText]);
 
   // The points actually on screen. A live read supplies its own, filtered here

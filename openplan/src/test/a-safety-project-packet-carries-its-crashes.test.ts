@@ -344,5 +344,42 @@ describe("a safety project's packet carries its crashes", () => {
       expect(buildReportHtml(packetData([]))).toMatch(/no crash data is attached/i);
       expect(buildReportHtml(packetData(null))).toMatch(/could not be read/i);
     });
+
+    it("withholds a contradictory legacy run summary while preserving its separate source record", () => {
+      const base = packetData([evidence()]);
+      const html = buildReportHtml({
+        ...base,
+        sections: [{
+          id: "run-section",
+          section_key: "run_summaries",
+          title: "Run summaries",
+          enabled: true,
+          sort_order: 0,
+          config_json: {},
+        }],
+        runs: [{
+          id: "legacy-run",
+          title: "Earlier corridor screen",
+          query_text: "Screen the corridor",
+          summary_text: "No crash figures were estimated. Overall: 32/100 (confidence: medium).",
+          ai_interpretation: null,
+          metrics: {
+            overallScore: 32,
+            safetyScore: 40,
+            confidence: "medium",
+            dataQuality: { censusAvailable: true, transitDataAvailable: true, crashDataAvailable: false },
+            sourceSnapshots: { crashes: { source: "fars-estimate" } },
+          },
+          created_at: "2026-01-01T00:00:00.000Z",
+        }],
+      });
+
+      expect(html).toContain("Saved run summary withheld");
+      expect(html).not.toContain("Overall: 32/100");
+      expect(html).not.toContain("No crash figures were estimated");
+      expect(html).toContain("Crash Safety Data");
+      expect(html).toContain("belongs to this linked analysis run");
+      expect(html).toContain("Reported collisions");
+    });
   });
 });

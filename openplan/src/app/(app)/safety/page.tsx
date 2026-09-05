@@ -8,7 +8,11 @@ import {
   placeOfRecordFromHomeGeography,
 } from "@/lib/workspaces/home-geography";
 import { placeOfRecordFromProject } from "@/lib/projects/project-place";
-import { resolveStudyArea } from "@/lib/models/study-area";
+import {
+  resolveStudyArea,
+  studyAreaBboxesMatch,
+  summarizeCorridorText,
+} from "@/lib/models/study-area";
 import { resolvePublicBasemapConfig } from "@/lib/cartographic/basemaps";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
@@ -226,15 +230,29 @@ export default async function SafetyPage({
   const ingestRows = ingestsResult.data;
   const projectRows = projectsResult.data;
 
-  // The banner and map both describe ONE acquisition. Pick the newest row in
-  // the current context rather than the newest row anywhere in the workspace:
-  // a project pull must not label a county map, and an unattached county pull
-  // must not label a project map.
-  const ingestRow = ((ingestRows ?? []) as Array<Record<string, unknown>>).find((row) =>
-    requestedProjectId
+  /** Read the recorded extent, or null when the row has none. */
+  function readIngestScope(row: Record<string, unknown>) {
+    const numbers = [row.min_lon, row.min_lat, row.max_lon, row.max_lat].map((value) => {
+      if (value === null || value === undefined || value === "") return Number.NaN;
+      return typeof value === "number" ? value : Number(value);
+    });
+    if (!numbers.every((value) => Number.isFinite(value))) return null;
+    const [minLon, minLat, maxLon, maxLat] = numbers;
+    const countyCode = typeof row.county_code === "number" ? row.county_code : null;
+    return { minLon, minLat, maxLon, maxLat, countyCode };
+  }
+
+  // The banner and map both describe ONE acquisition. Project attachment alone
+  // is not enough: a project's area can change, and an unattached acquisition
+  // can belong to an older workspace home. Only an acquisition whose recorded
+  // extent matches the area currently on screen may become the banner.
+  const currentStudyAreaBbox = summarizeCorridorText(studyArea.corridorText).bbox;
+  const ingestRow = ((ingestRows ?? []) as Array<Record<string, unknown>>).find((row) => {
+    const contextMatches = requestedProjectId
       ? row.project_id === requestedProjectId
-      : row.project_id === null
-  ) ?? null;
+      : row.project_id === null;
+    return contextMatches && studyAreaBboxesMatch(readIngestScope(row), currentStudyAreaBbox);
+  }) ?? null;
   const latestIngest: SafetyIngestSummary | null = ingestRow
     ? {
         id: ingestRow.id as string,
@@ -256,17 +274,6 @@ export default async function SafetyPage({
         createdAt: ingestRow.created_at as string,
       }
     : null;
-
-  /** Read the recorded extent, or null when the row has none. */
-  function readIngestScope(row: Record<string, unknown>) {
-    const numbers = [row.min_lon, row.min_lat, row.max_lon, row.max_lat].map((value) =>
-      typeof value === "number" ? value : Number(value)
-    );
-    if (!numbers.every((value) => Number.isFinite(value))) return null;
-    const [minLon, minLat, maxLon, maxLat] = numbers;
-    const countyCode = typeof row.county_code === "number" ? row.county_code : null;
-    return { minLon, minLat, maxLon, maxLat, countyCode };
-  }
 
   const ingestHistory: SafetyIngestHistoryEntry[] = ((ingestRows ?? []) as Array<
     Record<string, unknown>

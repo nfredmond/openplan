@@ -14,6 +14,28 @@ import type { PlaceOfRecord } from "@/lib/geographies/place-of-record";
 
 export type StudyAreaBbox = { minLon: number; minLat: number; maxLon: number; maxLat: number };
 
+/** Coordinate tolerance used when matching a recorded acquisition to its area of record. */
+export const STUDY_AREA_BBOX_TOLERANCE = 1e-6;
+
+/**
+ * Whether two study-area bounds describe the same recorded extent.
+ *
+ * Database round-trips can introduce tiny floating-point differences, so
+ * equality uses one shared coordinate tolerance. A missing or non-finite bound
+ * is never treated as a match: unknown scope is not the current study area.
+ */
+export function studyAreaBboxesMatch(
+  left: StudyAreaBbox | null | undefined,
+  right: StudyAreaBbox | null | undefined,
+): boolean {
+  if (!left || !right) return false;
+  return (["minLon", "minLat", "maxLon", "maxLat"] as const).every((key) =>
+    Number.isFinite(left[key])
+    && Number.isFinite(right[key])
+    && Math.abs(left[key] - right[key]) <= STUDY_AREA_BBOX_TOLERANCE
+  );
+}
+
 export type CorridorSummary = {
   valid: boolean;
   bbox: StudyAreaBbox | null;
