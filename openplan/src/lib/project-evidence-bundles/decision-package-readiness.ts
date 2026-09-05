@@ -132,7 +132,7 @@ export function decisionPackageFreshness(
 
   const frozenPlan = value.selectedLinkedPlan;
   const currentPlan = inventory.linkedPlans.find((plan) => plan.id === frozenPlan?.id);
-  if (!frozenPlan?.revisionToken || currentPlan?.revisionToken !== frozenPlan.revisionToken) {
+  if (frozenPlan !== null && (!frozenPlan?.revisionToken || currentPlan?.revisionToken !== frozenPlan.revisionToken)) {
     return "The selected linked plan changed or is no longer linked.";
   }
 

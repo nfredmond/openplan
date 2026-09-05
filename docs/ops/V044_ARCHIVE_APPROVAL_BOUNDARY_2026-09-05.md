@@ -73,3 +73,16 @@ Local evidence root:
 `/home/nathaniel/.local/state/openplan/release-checks/v044-2026-09-05/`.
 Logs use the prefix `archive-boundary-`. The distributed-loading candidate
 remains retired and inconclusive. No v0.44 tag has been created.
+
+## Freshness follow-up before browser verification
+
+Review found one related false status: the approval panel treated an explicitly
+unselected plan as a changed plan and would call a new ordinary archive stale.
+The freshness comparison now skips only an explicit null plan selection.
+A missing binding or changed selected revision still fails. Governed readiness
+continues to reject the no-plan archive as not approvable.
+
+The regression failed before this adjustment. Restoring the old requirement
+or conflating a missing binding with an explicit null each failed the test;
+both mutations were restored. The earlier 7b5a7ffb full QA was deliberately
+interrupted, exit 130, before completing. Its partial output is not a QA pass.
