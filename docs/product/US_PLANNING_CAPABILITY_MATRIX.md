@@ -1,8 +1,8 @@
 # US planning capability matrix
 
 <!-- openplan-planning-capability-matrix
-review_date: 2026-08-28
-review_by: 2026-09-28
+review_date: 2026-09-05
+review_by: 2026-10-05
 current_release: v0.44.0
 capabilities:
 - long-range-transportation-and-regional-planning

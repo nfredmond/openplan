@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "currentRelease": "v0.44.0",
-  "reviewedAt": "2026-08-28",
-  "reviewBy": "2026-09-28",
+  "reviewedAt": "2026-09-05",
+  "reviewBy": "2026-10-05",
   "statuses": ["proven", "partial", "missing", "not-assessed"],
   "interimReleasePolicy": "Open cells block v1.0.0 but remain visible without blocking honest pre-v1 releases.",
   "readinessRegistry": {
@@ -98,6 +98,7 @@
     ]
   },
   "evidence": [
+    "docs/reviews/product-direction/2026-09-05-distributed-loading-and-first-week.md",
     "docs/product/US_PLANNING_CAPABILITY_MATRIX.md",
     "docs/product/V1_PRODUCT_CONTRACT.md",
     "docs/reviews/product-direction/2026-08-25-v1-direction.md",

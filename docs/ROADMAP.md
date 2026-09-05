@@ -1,16 +1,16 @@
 # OpenPlan development roadmap
 
 <!-- openplan-active-roadmap
-reviewed_commit: 350b945ff79a0cc52c6ec9cbcce5bc6b0412aa53
+reviewed_commit: 23bc1952b3ea56e53a30266f7942ee9e0f11163d
 current_release: v0.44.0
-review_by: 2026-09-28
+review_by: 2026-10-05
 paths:
 - AGENTS.md
 - CLAUDE.md
 - docs/product/V1_PRODUCT_CONTRACT.md
 - docs/product/AGENT_OPERATING_RULES.md
 - docs/product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md
-- docs/reviews/product-direction/2026-08-28-jurisdiction-readiness.md
+- docs/reviews/product-direction/2026-09-05-distributed-loading-and-first-week.md
 - openplan/scripts/ops/product-direction-review.mjs
 - openplan/src/test/product-direction-review-guard.test.ts
 - openplan/src/lib/safety/sources/registry.ts
@@ -232,10 +232,19 @@ The v1 contract is not yet true:
   outcome remains `inconclusive`; California and nationwide capability remain
   `partial`.
 
-The next major lane is selected from the fresh post-checkpoint product-direction
-packet and recorded in the v0.44 release evidence. Any future model acceptance
-rule must be frozen from primary, use-specific evidence before a genuinely
-untouched geographic holdout is opened.
+The immediate lane is the remaining first-week corrections and a clean-checkout
+release gate. The September 5 direction review preserves two independent
+recommendations. After those gates pass, test whether one shared engagement
+record reaches every covered project's report and evidence bundle. Repair a
+confirmed omission through the existing project and engagement code. If the
+visible handoff already works, investigate the alternate plan-to-assigned-work
+journey before building anything. Nationwide jurisdiction depth and both
+methods' scientific validation remain binding v1 work.
+
+The distributed-loading candidate did not advance and is retired unchanged.
+Do not fit a replacement from its failure. Any future model acceptance rule
+must be frozen from independent primary, use-specific evidence before a
+genuinely untouched geographic holdout is opened.
 
 That last point is a model-science question, not permission to fit observations
 exactly. Traffic counts contain sampling, equipment, adjustment, temporal, and
