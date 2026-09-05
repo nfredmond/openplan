@@ -344,8 +344,8 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
   // First-week corrections retain FARS, unknown price years, and acquisition custody.
   {
     tag: "0.44.0",
-    lastMigration: "20260905000002_safety_acquisition_custody.sql",
-    migrationsAtRelease: 245,
+    lastMigration: "20260905000003_crash_resource_update_provenance.sql",
+    migrationsAtRelease: 246,
   },
 ];
 

@@ -22,8 +22,11 @@ stable enough to promise smooth upgrades indefinitely.
 ## 0.44.0 — 2026-09-05
 
 - Safety and report displays no longer treat crash-file update timestamps as
-  coverage cutoffs. File identities and update dates remain source metadata;
-  older acquisitions are interpreted without rewriting stored evidence.
+  coverage cutoffs. Apply `20260905000003_crash_resource_update_provenance.sql`
+  (`crash_resource_update_provenance`) before deploying. It allows file-update
+  metadata without a coverage date while preserving genuine date/provenance
+  pairs. File identities and update dates remain source metadata; older
+  acquisitions are interpreted without rewriting stored evidence.
 
 - Safety repeat acquisitions now retain separate crash and person records. Apply
   `20260905000002_safety_acquisition_custody.sql` (`safety_acquisition_custody`)

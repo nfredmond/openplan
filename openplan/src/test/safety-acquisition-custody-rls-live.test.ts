@@ -49,13 +49,23 @@ import { globalProbeGrid } from "./helpers/crash-coverage-probe";
   it("retains each source version and the person's original crash link", async () => {
     const bbox = globalProbeGrid().find((area) => ccrsAdapter.covers(area));
     expect(bbox).toBeDefined();
+    const resourceUpdates = {
+      basis: "resource_updates" as const,
+      sourceUrl: "https://example.test/synthetic-crash-source",
+      label: "Synthetic file metadata, not coverage",
+      retrievedAt: "2026-09-05T00:00:00Z",
+      resources: [
+        { resourceId: "synthetic-annual", year: 2024, lastModified: "2026-09-05T00:00:00Z" },
+        { resourceId: "synthetic-older", year: 2023, lastModified: null },
+      ],
+    };
     vi.spyOn(ccrsAdapter, "fetch").mockResolvedValue({
       records: [{ externalId: "synthetic-repeat", collisionDate: "2024-01-01", collisionYear: 2024,
         severity: "fatal", killedCount: 1, injuredCount: 0, pedestrianInvolved: false,
         bicyclistInvolved: false, motorcyclistInvolved: false, collisionType: null,
         lighting: null, weather: null, sourceAttributes: {},
         latitude: bbox!.minLat, longitude: bbox!.minLon }],
-      matchedTotal: 1, geocodedTotal: 1, yearsCovered: [2024], truncated: false,
+      matchedTotal: 1, geocodedTotal: 1, yearsCovered: [2024], truncated: false, resourceUpdates,
     });
     vi.spyOn(ccrsAdapter, "fetchParties").mockResolvedValue([{ crashExternalId: "synthetic-repeat",
       externalPartyId: "synthetic-person", role: "driver", ageBand: "unknown",
@@ -71,6 +81,28 @@ import { globalProbeGrid } from "./helpers/crash-coverage-probe";
     const second = await run();
     expect(second.status, second.error ?? "second acquisition").toBe("ready");
     expect(second.ingestId).not.toBe(first.ingestId);
+    const metadata = await owner.from("safety_crash_ingests")
+      .select("id,published_through,published_through_provenance")
+      .eq("workspace_id", workspaceId).in("id", [first.ingestId, second.ingestId]);
+    expect(metadata.error).toBeNull();
+    expect(metadata.data).toHaveLength(2);
+    for (const row of metadata.data ?? []) {
+      expect(row.published_through).toBeNull();
+      expect(row.published_through_provenance).toEqual(resourceUpdates);
+    }
+    const hiddenMetadata = await stranger.from("safety_crash_ingests")
+      .select("id,published_through_provenance").eq("workspace_id", workspaceId);
+    expect(hiddenMetadata.error).toBeNull();
+    expect(hiddenMetadata.data).toEqual([]);
+    for (const invalid of [
+      { published_through: "2026-09-05", published_through_provenance: resourceUpdates },
+      { published_through: null, published_through_provenance: { basis: "source_metadata" } },
+      { published_through: null, published_through_provenance: { basis: "resource_updates" } },
+      { published_through: "2026-09-05", published_through_provenance: null },
+    ]) {
+      const refused = await service.from("safety_crash_ingests").update(invalid).eq("id", first.ingestId);
+      expect(refused.error?.code, JSON.stringify(invalid)).toBe("23514");
+    }
     const after = await service.from("safety_crashes").select("id,ingest_id,external_id")
       .eq("workspace_id", workspaceId).eq("ingest_id", first.ingestId);
     expect(after.error).toBeNull();

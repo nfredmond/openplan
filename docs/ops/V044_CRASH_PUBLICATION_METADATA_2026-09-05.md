@@ -1,5 +1,9 @@
 # Crash file updates are not coverage cutoffs
 
+Current correction requires migration `20260905000003_crash_resource_update_provenance.sql`.
+The initial no-migration design below was insufficient. The live acquisition
+failure and corrective proof are recorded in the final section.
+
 ## Confirmed blocker and interrupted run
 
 On `ac333fa2`, first-week run `2026-09-05T09-57-34-607Z` completed its first
@@ -121,3 +125,52 @@ cancelled. A comment-only mutation survived all four bundle tests; removing
 cleanup failed the same timer assertion. This changes neither bundle bytes
 nor publication behavior. The full QA attempt's log is
 `/tmp/openplan-v044-crash-publication-qa.log`. A complete new QA run is required.
+
+## Live acquisition caught an omitted database constraint
+
+Full local QA on `eb2f385b` passed 12,908 app tests, 135 live isolation tests,
+production audit, and build. The fresh source acquisition nevertheless failed.
+This was our implementation regression, not an upstream outage. The existing
+`safety_crash_ingests_cutoff_provenance_pair` constraint required a date whenever
+provenance was present. The mocked producer test missed that database rule,
+and the existing live fixture did not include publication metadata.
+
+The fresh twelve-job run `2026-09-05T11-28-04-139Z` was stopped. Its first job
+completed; neutral setup was interrupted. No complete outcome pass is claimed.
+The two failed acquisitions in the separate, earlier test workspace remain
+intact. The second response and failure screenshot are in
+`safety-cutoff-fresh-retry/`. The first supplemental helper also watched the
+wrong response URL; its failed proof was retained and the helper corrected.
+
+Migration `20260905000003_crash_resource_update_provenance.sql` permits explicit
+resource-update metadata with no coverage date. It refuses resource updates
+paired with a date, incomplete resource-update records, and unsupported
+unpaired provenance. Existing null pairs and genuine coverage/provenance pairs
+remain valid. It changes the constraint transactionally without deleting or
+updating stored acquisitions. Operators must apply it before the corrected app.
+The release inventory now records 246 migrations.
+
+The existing live repeat-acquisition test now sends explicitly synthetic
+resource metadata through the real producer and Postgres. Before migration it
+failed with the exact observed constraint error. After migration it retained
+both acquisitions' dates and resource identities, protected the prior crash
+and person memberships, and withheld metadata from another workspace. Four
+invalid provenance/date combinations were refused with check violations.
+A comment-only no-op survived; dropping metadata during persistence failed
+the live readback assertion. No application records were changed by this test;
+its own synthetic fixture is cleaned up.
+
+`prove-publication-constraint.cjs` copies the actual database check definition
+into transaction-local test tables. A no-op survived. Requiring a date,
+allowing an update to masquerade as coverage, allowing missing resources, and
+removing pairing enforcement each failed its stated probe. These are mutations
+of the copied expression, not changes to the application's live constraint.
+Every probe rolls back. Actual enforcement is covered by the producer/live
+test above. The release inventory no-op survived five checks; a stale count
+failed two, and a stale migration high-water mark failed three.
+
+The earlier remote `eb2f385b` isolation run initially failed before testing
+because the temporary stack could not bind port 54324. Its retry and the
+upgrade rehearsal passed. A new full QA, exact-commit upgrade, fresh source
+acquisition, report, and complete twelve-job run are still required after the
+database correction. Frozen modeling evidence and defaults remain unchanged.
