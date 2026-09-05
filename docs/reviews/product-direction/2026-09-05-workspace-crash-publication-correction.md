@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-05
 review_by: 2026-10-05
-reviewed_commit: 9ae8f7ab
+reviewed_commit: 8f6f4544
 current_release: v0.44.0
 independent_contexts: 2
 trigger: crash-publication-false-output-correction
@@ -170,3 +170,11 @@ called changed evidence. Missing bindings and changed selected plans still
 fail, and no-plan archives remain ineligible for governed submission. Both
 new mutation cases fail as intended. The interrupted earlier QA is not a pass;
 verification restarts on this corrected boundary.
+
+The corrected archive boundary subsequently passed full local QA, live RLS,
+and rebuilt desktop/390px inspection on `b96615c1`. Project-only and with-PDF
+ZIPs match stored hashes; all checksummed entries and ten GeoPackage layers
+verify. Readiness content agrees across screen, report, JSON, and archive.
+Both actual manifests remain ineligible for governed submission without being
+falsely labeled stale. `8f6f4544` records that evidence and the remaining full
+twelve-journey requirement. No runtime code changed in that evidence checkpoint.
