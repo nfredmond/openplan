@@ -1081,7 +1081,7 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
       (acquisition) => `<div class="packet-safety-acquisition">
       <h3>${esc(acquisition.sourceLabel)}</h3>
       <p>Years requested: ${esc(acquisition.years)}</p>
-      <p>${acquisition.publishedThrough
+      <p>${acquisition.resourceUpdateNote ? `${esc(acquisition.resourceUpdateNote)}${acquisition.publishedThroughSourceUrl ? ` <a href="${esc(acquisition.publishedThroughSourceUrl)}">${esc(acquisition.publishedThroughSourceLabel ?? "source file metadata")}</a>` : ""}` : acquisition.publishedThrough
         ? `Source publication cutoff: ${esc(acquisition.publishedThrough)}${acquisition.publishedThroughSourceUrl ? ` — <a href="${esc(acquisition.publishedThroughSourceUrl)}">${esc(acquisition.publishedThroughSourceLabel ?? "source publication metadata")}</a>` : ""}.`
         : "The source supplied no exact publication cutoff; requested and returned years are not substitutes."}</p>
       <dl class="detail-grid">

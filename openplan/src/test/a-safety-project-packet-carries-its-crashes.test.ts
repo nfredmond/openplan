@@ -239,6 +239,21 @@ describe("a safety project's packet carries its crashes", () => {
       expect(html).toContain("https://www.nhtsa.gov/final-annual-file");
     });
 
+    it("prints a legacy resource update as metadata, never as coverage", () => {
+      const html = buildReportHtml(packetData([evidence({
+        publishedThrough: "2026-09-05",
+        publishedThroughProvenance: {
+          basis: "source_metadata",
+          label: "Yearly resource last-modified metadata",
+          sourceUrl: "https://example.org/crash-files",
+        },
+      })]));
+      expect(html).toContain("Recorded file update: 2026-09-05");
+      expect(html).toContain("not a crash-coverage cutoff");
+      expect(html).toContain("https://example.org/crash-files");
+      expect(html).not.toContain("Source publication cutoff: 2026-09-05");
+    });
+
     it("prints the sourced project estimate without calling it the management budget", () => {
       const base = packetData([evidence()]);
       const html = buildReportHtml({

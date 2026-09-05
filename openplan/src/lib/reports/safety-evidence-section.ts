@@ -1,4 +1,5 @@
 import { separatesSeriousInjuries, type SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
+import { readCrashPublicationEvidence } from "@/lib/safety/publication-evidence";
 
 /**
  * The packet's safety section — the crash evidence a board is entitled to see.
@@ -46,6 +47,7 @@ export type PacketSafetyAcquisition = {
   caveats: string[];
   citation: string;
   publishedThrough: string | null;
+  resourceUpdateNote: string | null;
   publishedThroughSourceUrl: string | null;
   publishedThroughSourceLabel: string | null;
 };
@@ -73,6 +75,7 @@ export function buildPacketSafetyEvidence(
   if (evidence.length === 0) return { kind: "none" };
 
   const acquisitions = evidence.map((item): PacketSafetyAcquisition => {
+    const publication = readCrashPublicationEvidence(item.publishedThrough, item.publishedThroughProvenance);
     const counts = item.severityCounts;
     const seriousInjuriesCovered = separatesSeriousInjuries(item.severityCompleteness);
     const figures: PacketSafetyFigure[] = [
@@ -127,7 +130,8 @@ export function buildPacketSafetyEvidence(
       figures,
       caveats,
       citation: item.citationText,
-      publishedThrough: item.publishedThrough,
+      publishedThrough: publication.publishedThrough,
+      resourceUpdateNote: publication.resourceUpdateNote,
       publishedThroughSourceUrl:
         typeof item.publishedThroughProvenance?.sourceUrl === "string" &&
         /^https?:\/\//i.test(item.publishedThroughProvenance.sourceUrl)

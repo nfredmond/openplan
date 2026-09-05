@@ -526,7 +526,7 @@ export async function ingestCrashesForStudyArea(
         truncated: live.fetched.truncated,
         yearsCovered: live.fetched.yearsCovered,
         publishedThrough: live.fetched.publishedCutoff?.publishedThrough,
-        publishedThroughProvenance: live.fetched.publishedCutoff?.provenance,
+        publishedThroughProvenance: live.fetched.publishedCutoff?.provenance ?? live.fetched.resourceUpdates,
         severityCompleteness: live.adapter.severityCompleteness,
         seriousInjuryUpgrades: 0,
         // A live read stores nothing, so it stores no people either — and it
@@ -796,7 +796,7 @@ export async function ingestCrashesForStudyArea(
         party_count: partyCount,
         involvement_basis: involvementBasis,
         published_through: fetched.publishedCutoff?.publishedThrough ?? null,
-        published_through_provenance: fetched.publishedCutoff?.provenance ?? null,
+        published_through_provenance: fetched.publishedCutoff?.provenance ?? fetched.resourceUpdates ?? null,
       })
       .eq("id", ingestId);
 
@@ -816,7 +816,7 @@ export async function ingestCrashesForStudyArea(
       truncated: fetched.truncated,
       yearsCovered: fetched.yearsCovered,
       publishedThrough: fetched.publishedCutoff?.publishedThrough,
-      publishedThroughProvenance: fetched.publishedCutoff?.provenance,
+      publishedThroughProvenance: fetched.publishedCutoff?.provenance ?? fetched.resourceUpdates,
       severityCompleteness,
       seriousInjuryUpgrades,
       partyCompleteness,

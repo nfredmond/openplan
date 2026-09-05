@@ -24,6 +24,7 @@ import {
 import { summarizeCorridorText, type StudyAreaOrigin } from "@/lib/models/study-area";
 import { ccrsCountyCodeFromGeoid } from "@/lib/safety/county-code";
 import { recentCrashYears } from "@/lib/safety/crash-years";
+import { describeCrashPublicationEvidence } from "@/lib/safety/publication-evidence";
 // The KSI composition and the "can this source express it" test, both from
 // their single declarations. Writing `fatal + severe_injury` here again is how a
 // measure ends up defined in three files and changed in one.
@@ -1306,9 +1307,7 @@ export function SafetyWorkspace({
             </p>
             <p className="text-muted-foreground">{SAFETY_LIVE_READ_CAVEAT}</p>
             <p className="text-muted-foreground">
-              {liveRead.publishedThrough
-                ? `The source states that its published data runs through ${liveRead.publishedThrough}.`
-                : "The source supplied no exact publication cutoff; requested and returned years are not substitutes."}
+              {describeCrashPublicationEvidence(liveRead.publishedThrough, liveRead.publishedThroughProvenance)}
               <CutoffProvenanceLink provenance={liveRead.publishedThroughProvenance} />
             </p>
             {liveRead.severityCompleteness === "fatal_only" && (
@@ -1350,9 +1349,7 @@ export function SafetyWorkspace({
               {COVERAGE_STATE_COPY[ingest.coverageState] ?? ingest.coverageState}
             </p>
             <p className="text-muted-foreground">
-              {ingest.publishedThrough
-                ? `The source states that its published data runs through ${ingest.publishedThrough}.`
-                : "The source supplied no exact publication cutoff; requested and returned years are not substitutes."}
+              {describeCrashPublicationEvidence(ingest.publishedThrough, ingest.publishedThroughProvenance)}
               <CutoffProvenanceLink provenance={ingest.publishedThroughProvenance} />
             </p>
             {/* Name what was consulted. A coverage gap that can list the sources
@@ -1635,9 +1632,7 @@ export function SafetyWorkspace({
                   {entry.geocodedCount.toLocaleString()} geocoded
                 </span>
                 <span className="text-muted-foreground">
-                  {entry.publishedThrough
-                    ? `source published through ${entry.publishedThrough}`
-                    : "source supplied no exact publication cutoff"}
+                  {describeCrashPublicationEvidence(entry.publishedThrough, entry.publishedThroughProvenance)}
                   <CutoffProvenanceLink provenance={entry.publishedThroughProvenance} short />
                 </span>
                 <span className="text-muted-foreground">

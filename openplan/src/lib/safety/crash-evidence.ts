@@ -50,6 +50,7 @@ import {
   type CrashSeverity,
 } from "./vocabulary";
 import { readEveryPage } from "@/lib/supabase/paged-read";
+import { readCrashPublicationEvidence } from "./publication-evidence";
 import {
   SAFETY_CRASH_DATA_CAVEAT,
   SAFETY_CRASH_DATA_NARRATIVE_CAVEAT,
@@ -245,6 +246,7 @@ export function buildSafetyCrashEvidence(
   }
 ): SafetyCrashEvidence {
   const years = distinctYears(ingest.yearsRequested);
+  const publication = readCrashPublicationEvidence(ingest.publishedThrough, ingest.publishedThroughProvenance);
   const severityCounts = counts.severity;
   const roleCounts = counts.role;
 
@@ -281,9 +283,9 @@ export function buildSafetyCrashEvidence(
   }
 
   caveats.push(
-    ingest.publishedThrough
-      ? `The source states that this dataset is published through ${ingest.publishedThrough}.`
-      : "The source supplied no exact publication cutoff. The requested years and latest returned crash are not used as substitutes."
+    publication.resourceUpdateNote ?? (publication.publishedThrough
+      ? `The source states that this dataset is published through ${publication.publishedThrough}.`
+      : "The source supplied no exact publication cutoff. The requested years and latest returned crash are not used as substitutes.")
   );
 
   if (roleCounts === null) {
@@ -327,8 +329,8 @@ export function buildSafetyCrashEvidence(
     reportedTotal: ingest.crashCount,
     mappedTotal: ingest.geocodedCount,
     dimensionCoverage: ingest.dimensionCoverage,
-    publishedThrough: ingest.publishedThrough ?? null,
-    publishedThroughProvenance: ingest.publishedThroughProvenance ?? null,
+    publishedThrough: publication.publishedThrough,
+    publishedThroughProvenance: publication.provenance,
     citationText,
     caveats,
     narrativeCaveat: narrativeCaveats[0],

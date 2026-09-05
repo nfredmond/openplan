@@ -213,7 +213,8 @@ async function fetchCcrsManifest(signal?: AbortSignal): Promise<{
       const year = Number.parseInt(match[1], 10);
       byYear.set(year, id);
       const lastModified = typeof resource.last_modified === "string"
-        ? /^(\d{4}-\d{2}-\d{2})/.exec(resource.last_modified.trim())?.[1] ?? null
+        && /^\d{4}-\d{2}-\d{2}/.test(resource.last_modified.trim())
+        ? resource.last_modified.trim()
         : null;
       if (lastModified) updatedByYear.set(year, lastModified);
     }
@@ -498,25 +499,17 @@ export async function fetchCcrsCrashes(params: CrashFetchParams): Promise<CrashF
     ).sort((a, b) => a - b),
     truncated,
     unmappedByDimension,
-    // Every requested yearly crash table is refreshed independently. The
-    // oldest exact `last_modified` date is the common publication cutoff we
-    // can defend across the combined extract; a newer package timestamp would
-    // overstate the older table. If even one selected table omits metadata, the
-    // cutoff stays unavailable rather than being inferred from another year.
-    publishedCutoff:
-      years.length > 0 && years.every((year) => manifest.updatedByYear.has(year))
-        ? {
-            publishedThrough: years
-              .map((year) => manifest.updatedByYear.get(year) as string)
-              .sort()[0],
-            provenance: {
-              basis: "source_metadata",
-              sourceUrl: CCRS_DATASET_URL,
-              label: "CCRS yearly crash-resource last-modified metadata",
-              retrievedAt: new Date().toISOString(),
-            },
-          }
-        : undefined,
+    resourceUpdates: {
+      basis: "resource_updates",
+      sourceUrl: CCRS_DATASET_URL,
+      label: "CCRS yearly crash-resource last-modified metadata",
+      retrievedAt: new Date().toISOString(),
+      resources: years.map((year) => ({
+        resourceId: manifest.byYear.get(year)!,
+        year,
+        lastModified: manifest.updatedByYear.get(year) ?? null,
+      })),
+    },
   };
 }
 

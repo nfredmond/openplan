@@ -8,7 +8,7 @@
   "readinessRegistry": {
     "schema": "openplan.jurisdiction-readiness.v1",
     "path": "openplan/src/lib/jurisdiction-readiness/registry.v1.json",
-    "sha256": "ba3a8a2216c18bbf96d8a195467c6c8d6ee5f4d5cbc730511394a4ae5e908c11"
+    "sha256": "3c3922d82dbaee1f0166fa4054118b6b167ecc2b6f3ab9ea4b513522b448cd73"
   },
   "dimensions": {
     "planner": [
@@ -98,6 +98,7 @@
     ]
   },
   "evidence": [
+    "docs/ops/V044_CRASH_PUBLICATION_METADATA_2026-09-05.md",
     "docs/ops/V044_MODEL_ARTIFACT_DOWNLOAD_2026-09-05.md",
     "docs/ops/V044_AGREEMENT_ROUNDING_2026-09-05.md",
     "docs/reviews/product-direction/2026-09-05-distributed-loading-and-first-week.md",
@@ -204,6 +205,12 @@
       "capability": "gis-data-stewardship-documents-reports-and-public-records",
       "gap": "Measure and investigate report Evidence-tab navigation delays",
       "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-055",
+      "capability": "community-engagement-title-vi-and-public-decisions",
+      "gap": "Expose inspectable source citations beside engagement summaries",
+      "evidence": "docs/ops/V044_CRASH_PUBLICATION_METADATA_2026-09-05.md"
     },
     {
       "issueId": "KI-2026-09-05-027",

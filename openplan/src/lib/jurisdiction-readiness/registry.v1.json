@@ -1,7 +1,7 @@
 {
   "schema": "openplan.jurisdiction-readiness.v1",
-  "registryVersion": "2026-08-28.3",
-  "releaseVersion": "0.42.0",
+  "registryVersion": "2026-09-05.1",
+  "releaseVersion": "0.44.0",
   "reviewedAt": "2026-08-28",
   "reviewBy": "2026-09-28",
   "statuses": ["supported", "partial", "unavailable", "unassessed"],
@@ -94,7 +94,7 @@
     {
       "id": "ccrs-source-adapter",
       "path": "openplan/src/lib/safety/sources/ccrs.ts",
-      "sha256": "c34761e5e16420edd53f9e7e43538f57d6a4664226fa2a09d7e689575319a45e"
+      "sha256": "74628191b723273ca34b88c42e1a11bc45497fbeb7b10319b32f808cdaf6e610"
     },
     {
       "id": "grant-program-registry",

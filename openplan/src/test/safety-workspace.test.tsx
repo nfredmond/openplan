@@ -307,6 +307,31 @@ describe("SafetyWorkspace coverage disclosure", () => {
     expect(screen.queryByText(/published data runs through 2025/)).not.toBeInTheDocument();
   });
 
+  it("labels a historical resource update without claiming crash coverage", () => {
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest({
+      publishedThrough: "2026-09-05",
+      publishedThroughProvenance: {
+        basis: "source_metadata",
+        label: "Yearly resource last-modified metadata",
+        sourceUrl: "https://example.org/resource",
+      },
+    })} />);
+    expect(screen.getByText(/Recorded file update: 2026-09-05/)).toHaveTextContent("not a crash-coverage cutoff");
+    expect(screen.queryByText(/published data runs through 2026-09-05/)).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Yearly resource last-modified metadata" })).toHaveAttribute("href", "https://example.org/resource");
+  });
+
+  it("keeps update metadata distinct from coverage in import history", () => {
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={null} ingestHistory={[{
+      ...ingest(), projectId: null, scope: null,
+      publishedThrough: "2026-09-05",
+      publishedThroughProvenance: { label: "Resource last-modified metadata" },
+    }]} />);
+    expect(screen.getByLabelText("Import history")).toHaveTextContent("Recorded file update: 2026-09-05");
+    expect(screen.getByLabelText("Import history")).toHaveTextContent("not a crash-coverage cutoff");
+    expect(screen.queryByText(/published data runs through 2026-09-05/)).not.toBeInTheDocument();
+  });
+
   it("computes the geocoded share from THIS extract, not from a constant", async () => {
     // The geocoded share is wildly local — 77.7% statewide and 99.6% in one
     // rural county of the same state, probed the same day — so a constant in
@@ -641,7 +666,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
    * fixture would only prove the renderer; this proves the shape the server
    * actually emits arrives on screen.
    */
-  async function realReadOnlyResponse(records: CrashRecord[]) {
+  async function realReadOnlyResponse(records: CrashRecord[], resourceUpdates?: import("@/lib/safety/sources/types").CrashResourceUpdates) {
     const probe = findReadOnlyOnlyStudyArea();
     expect(probe, "no read-only crash source covers anywhere — the lane is unreachable").not.toBeNull();
 
@@ -651,6 +676,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
       geocodedTotal: records.length,
       yearsCovered: [2024],
       truncated: false,
+      resourceUpdates,
     });
 
     const service = {
@@ -714,6 +740,20 @@ describe("SafetyWorkspace coverage disclosure", () => {
     // …and the page says what they are NOT.
     expect(screen.getByText(/Live read — not saved/i)).toBeInTheDocument();
     expect(screen.getByText(/were not saved into this workspace/i)).toBeInTheDocument();
+  });
+
+  it("carries file updates through the real live-read producer without claiming coverage", async () => {
+    const response = await realReadOnlyResponse([liveRecord()], {
+      basis: "resource_updates", sourceUrl: "https://example.org/files", label: "Source file updates",
+      retrievedAt: "2026-09-05T00:00:00Z",
+      resources: [{ resourceId: "annual", year: 2024, lastModified: null }],
+    });
+    vi.stubGlobal("fetch", routedFetch(mockCrashResponse(), response));
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={null} />);
+    selectStudyArea("tx-county");
+    fireEvent.click(screen.getByRole("button", { name: /Retrieve crash data/i }));
+    await waitFor(() => expect(screen.getByText(/2024: update date unavailable/)).toHaveTextContent("not a crash-coverage cutoff"));
+    expect(screen.queryByText(/published data runs through/)).not.toBeInTheDocument();
   });
 
   it("does not claim an acquisition happened when nothing was stored", async () => {

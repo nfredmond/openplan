@@ -54,6 +54,28 @@ function recordingService() {
 }
 
 describe("national observed crashes use the existing persisted ingest", () => {
+  it("retains update metadata on the existing ingest without writing a coverage date", async () => {
+    const service = recordingService();
+    const updates = {
+      basis: "resource_updates" as const,
+      sourceUrl: "https://example.org/crash-files",
+      label: "Source file updates",
+      retrievedAt: "2026-09-05T00:00:00Z",
+      resources: [{ resourceId: "annual", year: 2024, lastModified: null }],
+    };
+    const spy = vi.spyOn(farsAdapter, "fetch").mockResolvedValue({
+      records: [], matchedTotal: 0, geocodedTotal: 0, yearsCovered: [], truncated: false, resourceUpdates: updates,
+    });
+    try {
+      const result = await ingestCrashesForStudyArea({ service: service as never, workspaceId: "workspace-1", bbox: farsPrimaryStudyArea(), years: [2024], includeParties: false });
+      expect(result.publishedThrough).toBeUndefined();
+      expect(result.publishedThroughProvenance).toEqual(updates);
+      expect(service.updates).toContainEqual(expect.objectContaining({ published_through: null, published_through_provenance: updates }));
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
   it("stores FARS crashes, exact source custody, and the requested project link", async () => {
     const service = recordingService();
     const bbox = farsPrimaryStudyArea();

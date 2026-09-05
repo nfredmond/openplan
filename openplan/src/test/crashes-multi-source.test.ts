@@ -88,6 +88,11 @@ describe("fetchCrashesForBbox — multi-source merge", () => {
     expect(result.totalFatalCrashes).toBe(2);
     expect(result.totalFatalities).toBe(2);
     expect(result.contributingSources?.map((s) => s.id)).toEqual(["ccrs-ca", "fars-national"]);
+    expect(result.sourceSnapshot.publishedThrough).toBeUndefined();
+    expect(result.sourceSnapshot.contributingSources).toMatchObject([
+      { id: "ccrs-ca", resourceUpdates: { basis: "resource_updates", resources: [{ resourceId: "res-2025", year: 2025, lastModified: null }] } },
+      { id: "fars-national", publishedCutoff: { publishedThrough: "2024-12-31" } },
+    ]);
     // Fatal-basis density and an explicit merge disclosure.
     expect(result.crashDensityBasis).toBe("fatal_only");
     expect(result.narrativeLine).toMatch(/Fatal crashes cover the full study area/i);

@@ -277,16 +277,15 @@ describe("CCRS fetch", () => {
       longitude: -121.061591,
     });
     expect(result.yearsCovered).toEqual([2025]);
-    expect(result.publishedCutoff).toMatchObject({
-      publishedThrough: "2026-08-26",
-      provenance: {
-        basis: "source_metadata",
-        sourceUrl: "https://lab.data.ca.gov/dataset/ccrs",
-      },
+    expect(result.publishedCutoff).toBeUndefined();
+    expect(result.resourceUpdates).toMatchObject({
+      basis: "resource_updates",
+      sourceUrl: "https://lab.data.ca.gov/dataset/ccrs",
+      resources: [{ resourceId: "res-2025", year: 2025, lastModified: "2026-08-26T02:05:52.118229" }],
     });
   });
 
-  it("uses the oldest exact yearly resource update as a combined publication cutoff", async () => {
+  it("retains each resource update without inventing a combined coverage cutoff", async () => {
     const fetchMock = vi.fn(async (input: unknown) => {
       const url = String(input);
       if (url.includes("package_show")) return jsonResponse(PACKAGE_BODY);
@@ -296,7 +295,11 @@ describe("CCRS fetch", () => {
     vi.stubGlobal("fetch", fetchMock as unknown as typeof fetch);
 
     const result = await fetchCcrsCrashes({ bbox: NEVADA_COUNTY_BBOX, years: [2024, 2025] });
-    expect(result.publishedCutoff?.publishedThrough).toBe("2026-08-25");
+    expect(result.publishedCutoff).toBeUndefined();
+    expect(result.resourceUpdates?.resources).toEqual([
+      { resourceId: "res-2025", year: 2025, lastModified: "2026-08-26T02:05:52.118229" },
+      { resourceId: "res-2024", year: 2024, lastModified: "2026-08-25T02:10:36.031508" },
+    ]);
   });
 
   it("leaves the cutoff unavailable when any requested yearly table lacks source metadata", async () => {
@@ -319,6 +322,10 @@ describe("CCRS fetch", () => {
 
     const result = await fetchCcrsCrashes({ bbox: NEVADA_COUNTY_BBOX, years: [2024, 2025] });
     expect(result.publishedCutoff).toBeUndefined();
+    expect(result.resourceUpdates?.resources).toEqual([
+      { resourceId: "res-2025", year: 2025, lastModified: "2026-08-26T02:05:52.118229" },
+      { resourceId: "res-2024", year: 2024, lastModified: null },
+    ]);
   });
 
   it("drops rows without usable coordinates rather than storing them half-formed", async () => {
