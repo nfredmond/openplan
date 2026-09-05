@@ -250,7 +250,7 @@ function writeHandoverFiles(dir) {
   ].join('\n');
   const adoptionInstrument = [
     'EXERCISE-ONLY ADOPTION INSTRUMENT — NOT AN AGENCY RECORD',
-    'Discover deferred browser tools in the available tool catalog before concluding they are unavailable. If functions.exec exposes ALL_TOOLS, inspect that catalog for browser tools and invoke them through its tools object. This permits tool discovery and browser calls only, not shell commands, web search, or source-file access.',
+    '',
     'Purpose: test OpenPlan first-week document custody and adoption workflow state transitions.',
     'Status: synthetic QA fixture; not adopted, approved, signed, voted on, or legally effective.',
     'This file does not establish legal compliance, environmental review, consultation, adoption, or agency action.',
@@ -285,7 +285,7 @@ function buildPrompt(job, { baseUrl, email, password, approverEmail, approverPas
     'You have never seen this software before and there is no documentation. That is intentional.',
     'Use the browser MCP server named browser for the product. Do not use web search, shell commands, or inspect source files.',
     'Browser actions are MCP tools, not MCP resources. Call browser_navigate, browser_snapshot, browser_click, browser_type, and browser_take_screenshot directly; do not call resources/list or resources/templates/list.',
-    '',
+    'Discover deferred browser tools in the available tool catalog before concluding they are unavailable. If functions.exec exposes ALL_TOOLS, inspect that catalog for browser tools and invoke them through its tools object. This permits tool discovery and browser calls only, not shell commands, web search, or source-file access.',
     '',
     `Your working directory is ${agentDir}. Write your evidence and your report there and nowhere else.`,
     `The job id you were given is: ${job.id}`,

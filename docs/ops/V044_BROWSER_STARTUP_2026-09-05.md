@@ -78,3 +78,16 @@ discovery may finish the twelve jobs before non-destructive findings are fixed.
 A confirmed blocker still prevents release. Data-loss or isolation risks still
 require immediate interruption. No result is relabeled from partial or missing
 to reached. Scientific defaults, frozen studies, and holdouts remain unchanged.
+
+## Correction to mutation restoration
+
+After this record was first committed, the final test exposed a restoration
+error. The mutation replaced the discovery instruction with an empty string;
+its reverse patch matched an earlier empty string in the exercise-only adoption
+fixture. The final test correctly failed because the actual prompt still lacked
+the instruction. My command sequence nevertheless made local commit `f1cf0148`.
+Nothing was pushed and no journey consumed those bytes. I disclosed the error,
+restored both exact locations using surrounding context, and reran the checks
+before continuing. The earlier statement that every mutation was restored was
+premature. Future mutations use a unique replacement marker, not an ambiguous
+empty line. No generated or stored adoption record changed.
