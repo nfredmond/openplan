@@ -98,6 +98,7 @@
     ]
   },
   "evidence": [
+    "docs/ops/V044_MODEL_ARTIFACT_DOWNLOAD_2026-09-05.md",
     "docs/ops/V044_AGREEMENT_ROUNDING_2026-09-05.md",
     "docs/reviews/product-direction/2026-09-05-distributed-loading-and-first-week.md",
     "docs/product/US_PLANNING_CAPABILITY_MATRIX.md",
@@ -114,6 +115,36 @@
     "docs/ops/KNOWN_ISSUES.md"
   ],
   "queuedFirstWeekFindings": [
+    {
+      "issueId": "KI-2026-09-05-048",
+      "capability": "travel-demand-corridor-scenario-and-performance-analysis",
+      "gap": "Render saved comparison assumptions and their retained source basis readably",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-049",
+      "capability": "travel-demand-corridor-scenario-and-performance-analysis",
+      "gap": "Keep narrow-screen agreement-map callouts clear of map controls",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-050",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Serialize GeoPackage timestamps without GDAL compatibility warnings",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-051",
+      "capability": "capital-programming-prioritization-grants-delivery-and-reimbursement",
+      "gap": "Export known workbook cost amounts as numeric cells while preserving unknowns",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-053",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Reproduce intermittent project Evidence-tab activation before assigning a cause",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
     {
       "issueId": "KI-2026-09-05-037",
       "capability": "development-review-implementation-and-interdepartmental-handoff",
