@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-05
 review_by: 2026-10-05
-reviewed_commit: 2415e709
+reviewed_commit: c7a35fc3
 current_release: v0.44.0
 independent_contexts: 2
 trigger: crash-publication-false-output-correction
@@ -31,6 +31,7 @@ decisions:
 - complete-first-week-outcomes-before-release
 - test-shared-evidence-continuity-next
 paths:
+- docs/ops/V044_SAFETY_MAP_SCALE_2026-09-05.md
 - docs/ops/V044_CRASH_PUBLICATION_METADATA_2026-09-05.md
 - docs/ops/V044_MODEL_ARTIFACT_DOWNLOAD_2026-09-05.md
 - docs/reviews/product-direction/2026-09-05-worker-storage-download-correction.md
@@ -117,3 +118,22 @@ This remains a false-output repair within the existing release, not a change
 in product direction. Retained independent reviews and their disagreement
 still apply. Full QA, rendered report proof, and a fresh complete twelve-job
 run are required before tagging. No completed subset substitutes for that gate.
+
+## Printed Safety map follow-up
+
+The resumed acceptance run on `ca3acf18` reached the Safety outcome, including
+the corrected source-publication disclosure and a byte-verified report. Main
+agent inspection of that PDF then found a separate false-output defect: the
+street-context renderer stretched geographic axes independently while drawing
+one scale bar. The run was interrupted during the corridor journey.
+
+`c7a35fc3` corrects the shared screen/report projection, preserves geographic
+proportions, handles local date-line crossings, and discloses when a single
+local scale is unsuitable. Fifty focused tests pass; a no-op survived and ten
+semantic mutations failed. Real after-output inspection and full release
+verification remain pending, as recorded in the linked correction proof.
+
+This is another evidence-correctness repair within the current release, not a
+new direction review or a change to the retained independent recommendations.
+The original modeling result, defaults, holdouts, and full v1 scope remain
+unchanged. The project journey's partial outcome also remains unresolved.
