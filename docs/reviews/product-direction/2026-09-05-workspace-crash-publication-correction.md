@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-05
 review_by: 2026-10-05
-reviewed_commit: 200f202e
+reviewed_commit: b3bd18cd
 current_release: v0.44.0
 independent_contexts: 2
 trigger: crash-publication-false-output-correction
@@ -197,3 +197,9 @@ supported by its screenshot and is not adopted as fact.
 This input-loss correction stays within the current release. No new module,
 write path, migration, scientific change, or direction decision is introduced.
 The two independent reviews and their disagreement remain the retained evidence.
+
+`b3bd18cd` records the rebuilt boundary proof on `c1052851`: full local QA,
+exact saved-geometry comparison, both replacement orders, a no-write empty-area
+refusal, and ten inspected desktop/390px captures with clean consoles. The
+original interrupted journey and the two helper failures remain retained.
+The correction is verified, while all twelve release outcomes remain required.
