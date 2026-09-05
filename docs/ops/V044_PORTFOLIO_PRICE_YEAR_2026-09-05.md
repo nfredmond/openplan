@@ -54,3 +54,26 @@ live transactions and their negative cases, repeat the visible import at desktop
 and 390px, verify its stored and exported unknown-year state, rerun the complete
 twelve-job outcome gate, and watch final QA, live RLS, upgrade rehearsal, and CI.
 Do not claim the correction is released or browser-verified from these tests.
+
+## Follow-up before integration
+
+The standalone TypeScript error was corrected by giving the synthetic Safety
+road fixture a valid `osm-network-cache` identifier while retaining its explicit
+Fixture roads label. No application or geographic behavior changed. Full
+`tsc --noEmit` then passed. A comment-only control passed; restoring the invalid
+`fixture` identifier failed with the original TS2322 error; the corrected type
+check and all 27 tests in that Safety packet file passed after restoration.
+
+The first-week project job eventually reported its outcome reached. Independent
+byte verification matched all nine ZIP checksum entries, its contained PDF to
+the separate download, and its readiness JSON to the exact project download.
+ZIP SHA-256 is `c506daeabcf06a937af191fe6fa0b74f8eb6152ea05842d97c255c4bb19932be`;
+PDF SHA-256 is `5f14ef17e0a3052d5804a8cb0668f542bb94dfe7bd70e67efc1e04095900f0ce`.
+The manifest hash also appears in the recorded browser snapshots.
+
+That successful handoff does not clear the defect. The downloaded PDF states
+Price year 2026 beside the source-file attribution, while the tester's narrative
+explains that the source supplied no year. The original negative evidence is
+retained. The upgrade note now tells operators to review older import defaults;
+the stored metadata cannot establish whether an earlier default was verified.
+The application migration and fresh full outcome run remain outstanding.

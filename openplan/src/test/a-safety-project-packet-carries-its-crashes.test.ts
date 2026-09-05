@@ -325,7 +325,7 @@ describe("a safety project's packet carries its crashes", () => {
           areaMedianPctZeroVehicle: 7 }],
         safetyRoadContext: [{ id: "road", name: "Fixture Road", geometry: { type: "LineString",
           coordinates: [[-123.21, 39.14], [-123.21, 39.16]] },
-          sourceId: "fixture", sourceLabel: "Fixture roads", vintage: "2023" }],
+          sourceId: "osm-network-cache", sourceLabel: "Fixture roads", vintage: "2023" }],
       });
       expect(html).toContain("KSI rankings and community burden are withheld");
       expect(html).not.toContain("7 KSI crashes");

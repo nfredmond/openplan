@@ -24,6 +24,8 @@ stable enough to promise smooth upgrades indefinitely.
 an unknown cost price year. The importer no longer supplies the current year
 when the source has none. Blank years remain unknown, with a visible warning;
 amounts and source links are preserved. Existing estimates are not rewritten.
+Review price-year defaults from earlier imports before relying on those costs;
+stored metadata cannot establish whether an older default was verified.
 
 **Migration required.** `20260904000001_persist_fars_crashes.sql`,
 `persist_fars_crashes`, allows
