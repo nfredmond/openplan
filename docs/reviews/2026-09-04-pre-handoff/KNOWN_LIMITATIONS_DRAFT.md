@@ -218,3 +218,13 @@ See `STATE_MANUALS_WA_MN_RECONNAISSANCE.md` for the full two-page bulletin readi
 | KL-2026-09-04-062 | Complete agency-program outcome unproved | Existing program/work-plan/financial primitives do not establish the complete OWP/UPWP cycle. Bounded source-name searches found no named workflow; no browser or accounting-cycle acceptance was performed. | CORE-OWP-01/M2d.1–4/M11/M13: visible prior-program intake through adoption, amendments, quarterly reports/claims, certification and reconciled carryover; observed rural California, MPO and non-California two-year cases. |
 
 [Current OWP research](OWP_ADMINISTRATION_REQUIREMENTS_RESEARCH.md) records source inconsistencies: old-year labels in the current MPO invoice workbook, conflicting amendment wording and historical versus current agreement dates. These are source findings, not reproduced OpenPlan defects; actual agency agreements and clarified procedures must govern. No current form was submitted or validated in a spreadsheet application.
+
+
+## Desktop control, source b2248315
+
+| ID | Classification | Finding | Required resolution |
+|---|---|---|---|
+| KL-2026-09-04-063 | Process-ownership defect, isolated reproduction | Stop and close-window paths can signal a process group based only on port3200, even when the panel owns no process. | M3a: verified owned-process identity, foreign-session protection, port/PID reuse and close-action regressions in an isolated process environment. |
+| KL-2026-09-04-064 | Readiness/status defects | New running CI is discarded in favor of older completed results; update can exit successfully with unreadable schema or mismatched running identity. Demo readiness and guided recovery remain incomplete. | M3a/M0: target-bound dated checks, fail-closed readiness, accepted demo selection, recoverable update and useful diagnostics. No current GUI acceptance claim. |
+
+See [desktop review](DESKTOP_CONTROL_REVIEW.md) for reproducible scope, existing-test limitations and live reported-version observations. No live process was stopped or updated.

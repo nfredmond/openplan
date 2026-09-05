@@ -1,0 +1,4 @@
+{"case": "new CI running, older CI succeeded", "observed": "all 1 checks passing", "green": true}
+{"case": "no CI records", "observed": "cannot check \u2014 no finished runs reported yet", "green": false}
+{"case": "panel has no owned process; foreign listener occupies port", "observed_signal_requests": [["group", 818181, "SIMULATED_SIGTERM"]], "messages": ["Test site stopped."]}
+{"case": "no listener", "observed_signal_requests": []}

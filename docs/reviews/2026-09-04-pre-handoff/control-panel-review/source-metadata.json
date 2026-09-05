@@ -1,0 +1,32 @@
+{
+  "source_commit": "b2248315b96a31ff1c8ad91947e91cd35d897dbd",
+  "date_pacific": "2026-09-04",
+  "mode": "read-only audit; isolated fake-I/O reproduction; no deployment",
+  "sources": [
+    {
+      "path": "openplan/scripts/ops/openplan-control-panel.py",
+      "sha256": "f45e7a26186fee7d4687737a45d2f155377c0e5f7391adf975a8fb12ddc703d1",
+      "bytes": 31811
+    },
+    {
+      "path": "openplan/scripts/ops/check_status.py",
+      "sha256": "46f4526a43e3c9386854bf86f66258757ab0ac1214f635504183a7b16c99221b",
+      "bytes": 3991
+    },
+    {
+      "path": "openplan/scripts/ops/refresh-walkthrough-instance.sh",
+      "sha256": "10e8e32d6caf97bb50c35ce9061172876e22a71f729adc4603580b6a8ae6b62d",
+      "bytes": 7686
+    },
+    {
+      "path": "openplan/scripts/ops/install-desktop-shortcut.sh",
+      "sha256": "3b62ade4ab6f6fc03f4aa7f6178ccba460529b8ac89ee09ab7948e3b74fb95ff",
+      "bytes": 3208
+    },
+    {
+      "path": "openplan/scripts/ops/tests/test_automated_checks.py",
+      "sha256": "aad0ec992896c9d39bda7a460d18f1ad1a9e8def55d401d9a9886b4d4ce430ee",
+      "bytes": 4571
+    }
+  ]
+}

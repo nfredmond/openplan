@@ -173,3 +173,8 @@ This checkpoint preserves documentation and public source metadata only. Source 
 ## Optional square corners
 
 CORE-APPEARANCE-02 adds a compact Rounded/Square choice beside or within the theme chooser. M2c specifies the current rounded default, a polished 90-degree alternative, independence from palette and light/dark mode, saved preference and actual accessibility/layout checks after handoff. This update records the request only; the active development checkout remains untouched.
+
+
+## Desktop OpenPlan Control
+
+[Desktop control review](DESKTOP_CONTROL_REVIEW.md) locates the installed shortcuts and tracked implementation, inspects current demo/development identity, and records concrete process-ownership and readiness defects. CORE-OPS-CONTROL-01/M3a adds safety/status repairs followed by guided demo recovery without terminal work. Only source inspection and fake-I/O reproductions occurred; no live controls, application state or installed shortcuts changed. Implementation and demo refresh remain pending safe handoff.
