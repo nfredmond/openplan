@@ -325,6 +325,7 @@ describe("a safety project's packet carries its crashes", () => {
       expect(html).toContain("Nearest named road: <strong>State Route 49</strong>");
       expect(html).toContain("Printable street context");
       expect(html).toContain("Local street context");
+      expect(html).toContain("<p>Local latitude-adjusted drawing; distances are approximate, not survey-grade.");
       expect(html).toContain("no paid or live tile service was used");
     });
 

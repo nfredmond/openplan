@@ -21,6 +21,11 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## 0.44.0 — 2026-09-05
 
+- Printable Safety street context now preserves geographic proportions instead
+  of stretching each axis to fill the page. Screen and report drawings disclose
+  their approximate local projection and omit unsuitable scale bars. Existing
+  report artifacts are unchanged.
+
 - Work-queue warnings no longer infer that a failed crash-data pull means no
   evidence exists for its study area. They preserve failed-pull counts and
   direct users to review completed acquisitions in Safety.

@@ -5,7 +5,7 @@ import type { SafetyCrashFeature } from "@/lib/safety/client-types";
 import type { SafetyRoadContextFeature } from "@/lib/safety/road-context";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
-import { renderSafetyStreetContextSvg } from "@/lib/safety/street-context-svg";
+import { renderSafetyStreetContextSvg, SAFETY_STREET_CONTEXT_PROJECTION_NOTE } from "@/lib/safety/street-context-svg";
 
 export function SafetyPrintableStreetContext({
   projectName,
@@ -56,6 +56,7 @@ export function SafetyPrintableStreetContext({
         <p><strong className="text-foreground">Crash locations:</strong> {crashes.length.toLocaleString()} mapped crashes in this view.</p>
         <p><strong className="text-foreground">Road source:</strong> {sources.length > 0 ? sources.join("; ") : "Road identity unavailable"}</p>
         <p><strong className="text-foreground">Coverage limit:</strong> {coverageLimit}</p>
+        <p>{SAFETY_STREET_CONTEXT_PROJECTION_NOTE}</p>
       </div>
     </section>
   );

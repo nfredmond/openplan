@@ -33,7 +33,7 @@ import {
 import { SAFETY_KSI_COVERAGE_UNAVAILABLE, separatesSeriousInjuries, type SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
 import type { SafetyKsiConcentration, SafetyKsiEquityTract } from "@/lib/safety/client-types";
 import type { SafetyRoadContextFeature } from "@/lib/safety/road-context";
-import { renderSafetyStreetContextSvg } from "@/lib/safety/street-context-svg";
+import { renderSafetyStreetContextSvg, SAFETY_STREET_CONTEXT_PROJECTION_NOTE } from "@/lib/safety/street-context-svg";
 import { corridorGeojsonSchema } from "@/lib/models/run-launch";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 import { modelingClaimStatusLabel, type ModelingClaimStatus } from "@/lib/models/evidence-backbone";
@@ -1152,7 +1152,7 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
     : roadContext === null
     ? `<h3>Printable street context</h3><p>Cached road evidence could not be read. Road identity and street context are unavailable, not absent.</p>`
     : streetContextSvg
-      ? `<h3>Printable street context</h3>${streetContextSvg}<p><strong>Road source:</strong> ${roadSources.length > 0 ? roadSources.map(esc).join("; ") : "Road identity unavailable"}. Red points are ranked KSI concentration centers; the dashed green line is the project area when available. North arrow and scale are derived from the frozen vector extent. Coverage is limited to cached named TIGER/Line or OpenStreetMap roads attached to this project; no paid or live tile service was used.</p>`
+      ? `<h3>Printable street context</h3>${streetContextSvg}<p>${esc(SAFETY_STREET_CONTEXT_PROJECTION_NOTE)}</p><p><strong>Road source:</strong> ${roadSources.length > 0 ? roadSources.map(esc).join("; ") : "Road identity unavailable"}. Red points are ranked KSI concentration centers; the dashed green line is the project area when available. North arrow and any scale bar are derived from the frozen vector extent. Coverage is limited to cached named TIGER/Line or OpenStreetMap roads attached to this project; no paid or live tile service was used.</p>`
       : `<h3>Printable street context</h3><p>No project-linked crash location and registered cached road geometry were available to draw. Road identity is unavailable; coordinates above remain the source locations.</p>`;
 
   return acquisitionMarkup + concentrationMarkup + streetContextMarkup + equityMarkup;
