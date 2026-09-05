@@ -25,6 +25,8 @@ The next work, in order of dependency:
 
 Primary-source detail and source-code boundaries are preserved in the dated pre-handoff review's `ENGAGEMENT_PRIORITY_RESEARCH.md`, `PLANNER_AGENT_PROVIDER_RESEARCH.md`, `T3_CODE_REUSE_RESEARCH.md` and `CAPITAL_DELIVERY_PRIORITY_RESEARCH.md`. The contract/RTP reports, `REQUIREMENTS_HISTORY_RECOVERY.md` and `CORE_REQUIREMENTS_LEDGER.md` preserve restored scope and its evidence. Their source dates and explicit unknowns matter; competitor claims and regulatory templates need refresh when implementation begins.
 
+W1 updates the existing Nat Ford Planning website as a companion adoption deliverable: OpenPlan first, clear source/install access and optional services, with hosted trial links gated by actual M15 readiness.
+
 These are outcomes, not automatic release numbers. An implementation may take several releases. Product redesign and new modules below require their own scoped implementation decision; this review does not launch them.
 
 ## Shared definition of done
@@ -303,6 +305,16 @@ A0a proves one direct API choice and one local CLI backend on the same existing 
 - **Done:** every required core job works across the stated geographic/organization scope; both models pass their published uses; independent humans install/operate/recover and complete/reuse representative work; public artifacts are accessible and approved; governance, security reporting, licensing and source maintenance have owners.
 - **Verification:** release evidence manifest rejects missing/skipped/expired/wrong-commit/failed checks; clean installs and upgrades from supported releases; full recovery on separate hardware/storage; actual user observation; independent adversarial reviews; all scientific custody and use gates; no harmless-mutation false kill.
 - **Risks/questions/cost:** the final campaign will discover defects and reopen cells. Fix them and repeat the affected evidence; do not rename them polish. Publish measured operating costs and limits. Tag v1 only when the binding contract is true.
+
+## W1. Nat Ford Planning website presents OpenPlan as the main product
+
+This is a companion adoption task in `nfredmond/nat-ford-website`, not a new OpenPlan module or a paid-access requirement. It can begin before M15's hosted trials; enable trial links only when their actual destination is accepted.
+
+- **Outcome:** an agency/consultant visitor quickly understands OpenPlan, finds how to get/install it, and sees optional implementation, annual administration and customization. Independent free use needs no sales contact.
+- **Gap/evidence:** `NAT_FORD_WEBSITE_REFRESH_BRIEF.md` identifies website main 08348b08 and the sampled homepage, OpenPlan page, navigation and instruction/test mismatch. OpenPlan already has prominent content; the refresh should sharpen that existing work and provide a direct installation route. Current live visual/deployment identity remains unverified.
+- **Scope/dependencies:** reuse the website's design and brand; lead with OpenPlan and current real product imagery, concise workflow value, GitHub/releases, canonical installation instructions and service explanation. Link documentation after M0 reconciliation and trial access after M15. Preserve useful planning credentials/other work without competing homepage priorities; maintain old URLs where practical. Website account/provider eligibility and actual canonical domain need verification before publication.
+- **Done/verification:** an unfamiliar visitor finds source and installation without assistance, distinguishes free software from services and follows functioning access/contact links. Check desktop/390px, keyboard/focus, contrast/reduced motion, screenshots/console, constrained-network performance, metadata and privacy; validate installation instructions against actual supported setup. A beautiful mockup or green build is not completion.
+- **Risk/cost:** avoid stale duplicated setup instructions, premature fully-working claims, oversized media, unproved model claims and a dependency on paid help. No new stack or paid provider is assumed. Check website ownership/active work before implementation; prepare a reviewable preview before publication. The current task preserves this todo, not a deployed redesign.
 
 ## Human observation and product decisions
 

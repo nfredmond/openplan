@@ -89,3 +89,7 @@ M15 and CORE-HOST-01/CORE-SERVICES-01 preserve Nathaniel's mid-term browser-acce
 The current source notice already allows optional commercial services. The categorical future shared-worker ban and broad commercial-vocabulary guards need alignment with Nathaniel's new direction while preserving actual free-software protections. Canonical operating/contract/contributor/self-hosting proposals were updated outside the active checkout for later consolidation. No paid infrastructure, DNS, public access, accounts or services changed.
 
 The active developer advanced main to c64b70b6 to classify missing browser tools as resumable infrastructure failure, with an inconclusive outcome. Root read the change; it does not establish planner success. The owner began a new full acceptance run on that commit. CI and RLS were in progress when inspected; the review branch has no triggered CI run. Safe handoff and main consolidation remain pending.
+
+## Nat Ford Planning website
+
+[Website refresh brief](NAT_FORD_WEBSITE_REFRESH_BRIEF.md) records W1 and ADOPTION-WEB-01 in the existing `nfredmond/nat-ford-website` repository: OpenPlan as the main product, clear source/install access, current demonstration links and optional services in a fast, attractive, accessible design. Current source already has useful OpenPlan content to extend. The sampled website source is pinned; cached web content was older and is not live visual proof. No website edits, form submissions, account changes or deployment occurred.
