@@ -173,3 +173,15 @@ No public infrastructure or paid service was provisioned during this review. Cur
 | KL-2026-09-04-048 | Agent status/consent integrity defects; source-established | A successful effect followed by preview-refresh failure can become a failed chat proposal. Success copy promises a recorded audit row despite warning-only audit persistence. Explicit chat approval for safe/review tiers can be minted but not verified or retained as consent. | A1a: separate effect, refresh and audit states; retain supplied verified approval consistently; prove failure after commit cannot invite a duplicate retry or invent a missing receipt. |
 
 These findings come from source and primary-document research. No active runtime, account, model or browser was exercised. Buzz framework claims and source presence do not close OpenPlan outcome gaps.
+
+## Aerial source review, e6900750; no runtime or hardware reproduction
+
+| ID | Classification | Finding | Required resolution |
+| --- | --- | --- | --- |
+| KL-2026-09-04-049 | Mission integrity; source-established | Arbitrary saved grid can receive fingerprint of unrelated parameters; exporter uses snapshot height/speed. Stored return-home altitude is not passed into export. | M5b.1: server consistency validation, exact reviewed snapshot and exported-setting tests, targeted mutations. |
+| KL-2026-09-04-050 | DJI compatibility/USB; unproved with source concerns | Omitted aircraft/payload and template content rely on unverified importer behavior; no actual controller USB/import evidence. Generic KML is review geometry. | M5b.1: profile-aware survey KML/full mission files, independent schema/semantics checks and exact hardware copy/import/reopen proof. |
+| KL-2026-09-04-051 | Recovery; source-established | Worker jobs/queue/artifact registry are in memory. Callback ledger precedes application; a retry after downstream failure can be deduplicated without finishing the work. | M5b.2: durable engine task/receipt/application identities, restart reconciliation and fault-injection proof. |
+| KL-2026-09-04-052 | Input/output completeness and scale; source-established | DNG accepted by UI is not selected by worker intake; mesh is not delivered; current custody uses limited HTTP/memory transfer. | M5b.2: exact consumed-input/required-output manifests, format consistency, durable large transfers and measured resource admission. |
+| KL-2026-09-04-053 | Full feature/accuracy/superiority; unproved | Substantial control/3D/measurement/spectral/change/operational workflows are not established; older viewer code assumes metre display and subsamples whole-loaded clouds. | M5b.3–6: retain all comparator families, validate reuse and actual analytical units/coverage, independent accuracy and practicing-planner comparisons. |
+
+See [current source findings](AERIAL_CURRENT_CAPABILITY_REVIEW.md), [DJI research](DJI_MISSION_EXPORT_USB_RESEARCH.md) and [reuse decision](AERIAL_REUSE_AND_IMPLEMENTATION_DECISION.md). No old custody record or scientific artifact was changed. A stored result is not automatically suitable for survey, payment or structural inspection.
