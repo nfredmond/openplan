@@ -71,6 +71,16 @@ describe("Safety vector drawings retain geographic proportions", () => {
     expect(svg).not.toMatch(/NaN|Infinity|<line x1="0" y1="0"/);
   });
 
+  it.each([[0.000001, "0.02 m"], [0.000000001, "0.00002 m"]] as const)("keeps the scale within the frame at %s degrees and labels %s", (span, label) => {
+    const svg = renderSafetyStreetContextSvg({
+      roads: [], projectGeometry: null, crashLocations: [[0, 0], [span, span]],
+    })!;
+    const bar = Number(svg.match(/<line x1="0" y1="0" x2="([\d.]+)"/)![1]);
+    expect(bar).toBeGreaterThan(0);
+    expect(bar).toBeLessThan(176);
+    expect(svg).toContain(`${label}</text>`);
+  });
+
   it.each([[NaN, 0], [0, Infinity], [0, 91], [181, 0]])("does not draw invalid coordinates %s %s", (lon, lat) => {
     expect(renderSafetyStreetContextSvg({roads: [], projectGeometry: null, crashLocations: [[lon, lat]]})).toBeNull();
   });

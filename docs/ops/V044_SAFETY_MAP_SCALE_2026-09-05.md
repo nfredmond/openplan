@@ -95,3 +95,19 @@ Local evidence root:
 Full QA, current-commit remote checks, rendered after evidence, and a complete
 fresh twelve-journey outcome gate remain pending. The distributed-loading
 candidate remains retired and inconclusive.
+
+## Boundary and build follow-up
+
+The first full QA attempt on `4ea45648` passed app tests, all 135 live isolation
+tests, and the zero-vulnerability production dependency audit. The build failed
+at Node's 2 GiB heap limit, before an after-build browser check. This was not a
+new computer crash. The next run explicitly gives Node an 8 GiB heap within
+the QA scope's 12 GiB process-tree ceiling.
+
+A final boundary review also found the old scale helper forced a minimum
+one-meter bar. On a sub-meter extent, that bar extended beyond the frame.
+The helper now supports fractional distances and explicit-locale,
+significant-digit labels so a small nonzero distance is not printed as zero.
+Two sub-meter fixtures reject the old minimum; a separate formatter mutation
+rejects loss of label precision. Both mutations are restored. The complete
+focused suite now passes 52 tests. Survey-grade precision is still not claimed.

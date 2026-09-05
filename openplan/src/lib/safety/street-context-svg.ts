@@ -12,7 +12,7 @@ function projectRings(geometry: CorridorGeojson | null): Position[][] {
 }
 
 function pleasantDistance(meters: number): number {
-  const magnitude = 10 ** Math.floor(Math.log10(Math.max(1, meters)));
+  const magnitude = 10 ** Math.floor(Math.log10(meters));
   const normalized = meters / magnitude;
   return (normalized >= 5 ? 5 : normalized >= 2 ? 2 : 1) * magnitude;
 }
@@ -88,8 +88,8 @@ const offsetX = (width - spanX * pixelsPerMeter) / 2;
     : 0;
 const scalePixels = scaleMeters * pixelsPerMeter;
   const scaleLabel = scaleMeters >= 1000
-    ? `${(scaleMeters / 1000).toLocaleString()} km`
-    : `${scaleMeters.toLocaleString()} m`;
+    ? `${(scaleMeters / 1000).toLocaleString("en-US", { maximumSignificantDigits: 3 })} km`
+    : `${scaleMeters.toLocaleString("en-US", { maximumSignificantDigits: 3 })} m`;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Local street context" style="display:block;width:100%;height:auto;background:#fffdf8;border:1px solid #d5d7da">
     <desc>${SAFETY_STREET_CONTEXT_PROJECTION_NOTE}</desc>
