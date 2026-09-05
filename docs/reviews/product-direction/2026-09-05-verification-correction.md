@@ -76,3 +76,9 @@ The development loading candidate remains retired and inconclusive. No default,
 acceptance rule, frozen study, or holdout was changed. The full US planning
 contract, all planner roles, California gold standard, and separate scientifically
 validated nationwide demand methods remain the destination.
+
+Bookkeeping correction after `642382b8`: the first push omitted the contract and
+roadmap pointers to this review. The direction guard failed before that push,
+but the shell sequence continued. This was an execution error, not a passed
+gate. The pointers were corrected and the direction check then passed before
+the follow-up push. Final QA remains the release gate.
