@@ -48,7 +48,7 @@ describe("the recurring product-direction review", () => {
     const frozenReadiness = JSON.parse(
       readFileSync(resolve(APP_ROOT, "src/lib/jurisdiction-readiness/registry.v1.json"), "utf8"),
     );
-    expect(frozenReadiness.releaseVersion).toBe("0.42.0");
+    expect(frozenReadiness.releaseVersion).toBe("0.44.0");
     expect(registry.currentRelease).toBe("v0.44.0");
     expect(source).toContain("Product direction is current");
   });
