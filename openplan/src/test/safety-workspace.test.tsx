@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { SafetyWorkspace } from "@/components/safety/safety-workspace";
 import { ingestCrashesForStudyArea } from "@/lib/safety/ingest";
@@ -188,6 +188,30 @@ function countDrawnSeverities(features: unknown[]): Record<string, number> {
 }
 
 describe("SafetyWorkspace coverage disclosure", () => {
+  it("keeps a late response for an older acquisition from replacing the new count", async () => {
+    let resolveOld: (value: Response) => void = () => { throw new Error("old request not started"); };
+    let oldSignal: AbortSignal | undefined;
+    const urls: string[] = [];
+    vi.stubGlobal("fetch", vi.fn((input: string, options?: RequestInit) => {
+      const url = String(input);
+      urls.push(url);
+      if (url.includes("/ingest")) return Promise.resolve(mockIngestResponse());
+      if (url.includes("ingestId=ingest-1")) {
+        oldSignal = options?.signal ?? undefined;
+        return new Promise<Response>((resolve) => { resolveOld = resolve; });
+      }
+      return Promise.resolve(mockCrashResponse([], 9, 0, { ...countDrawnSeverities([]), fatal: 9 }));
+    }));
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest({ severityCompleteness: "kabco_full" })} studyArea={seededStudyArea()} />);
+    await waitFor(() => expect(oldSignal).toBeDefined());
+    fireEvent.click(screen.getByRole("button", { name: /Retrieve crash data/i }));
+    expect(await screen.findByText("9 fatal or serious-injury crashes")).toBeInTheDocument();
+    expect(oldSignal?.aborted).toBe(true);
+    await act(async () => { resolveOld(mockCrashResponse()); });
+    expect(screen.getByText("9 fatal or serious-injury crashes")).toBeInTheDocument();
+    expect(urls.filter((url) => url.includes("ingestId=ingest-1"))).toHaveLength(1);
+    expect(urls.some((url) => url.includes("ingestId=ingest-9"))).toBe(true);
+  });
   beforeEach(() => {
     vi.stubGlobal("fetch", vi.fn(async () => mockCrashResponse()) as unknown as typeof fetch);
   });

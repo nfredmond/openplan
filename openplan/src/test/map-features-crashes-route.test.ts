@@ -68,7 +68,7 @@ const mockAudit = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 
 const fromMock = vi.fn((table: string) => {
   if (table === "workspaces") return { select: workspaceSelectMock };
-  if (table === "safety_crashes") return { select: crashSelectMock };
+  if (table === "safety_crashes_latest") return { select: crashSelectMock };
   if (table === "safety_crash_ingests") return { select: ingestSelectMock };
   throw new Error(`Unexpected table: ${table}`);
 });

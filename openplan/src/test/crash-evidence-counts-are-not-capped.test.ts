@@ -142,7 +142,7 @@ describe("crash evidence counts are not capped at one page", () => {
       { data: [] },
     ]);
 
-    const evidence = await loadSafetyCrashEvidence(paged.client, "w1", [INGEST]);
+    const evidence = await loadSafetyCrashEvidence(paged.client, "w1", [{ ...INGEST, storedCount: pageSize + 42 }]);
 
     // THREE requests: the full page, the short page, and the EMPTY page that is
     // the only thing proving there was nothing more.
@@ -189,7 +189,7 @@ describe("crash evidence counts are not capped at one page", () => {
       { data: [] },
     ]);
 
-    const evidence = await loadSafetyCrashEvidence(capped.client, "w1", [INGEST]);
+    const evidence = await loadSafetyCrashEvidence(capped.client, "w1", [{ ...INGEST, storedCount: serverCap * 2 + 42 }]);
 
     expect(capped.callCount()).toBe(4);
     // Every request advanced by the SHORT length actually returned.
@@ -229,7 +229,7 @@ describe("crash evidence counts are not capped at one page", () => {
         }) as unknown as ReturnType<SafetyCrashEvidenceSupabaseLike["rpc"]>,
     } as unknown as SafetyCrashEvidenceSupabaseLike;
 
-    const evidence = await loadSafetyCrashEvidence(client, "w1", [INGEST]);
+    const evidence = await loadSafetyCrashEvidence(client, "w1", [{ ...INGEST, storedCount: 42 }]);
     const counts = evidence.get(INGEST.id)?.severityCounts as Record<string, number>;
     expect(counts.fatal).toBe(42);
   });

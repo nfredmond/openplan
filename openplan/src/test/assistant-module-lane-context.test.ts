@@ -350,7 +350,7 @@ describe("module lane loaders", () => {
           data: [
             {
               id: "ingest-2", project_id: null, source_label: "CCRS", coverage_state: "ccrs_ca_statewide",
-              severity_completeness: "kabco_full", status: "ready", crash_count: 17, geocoded_count: 15,
+              severity_completeness: "kabco_full", status: "ready", crash_count: 17, geocoded_count: 17,
               truncated: false, years_requested: [2021, 2022], fetch_error: null, created_at: iso(-1),
             },
             {
@@ -366,6 +366,7 @@ describe("module lane loaders", () => {
           { data: null, error: null, count: 3 },
           { data: null, error: null, count: 6 },
           { data: null, error: null, count: 7 },
+          { data: null, error: null, count: 17 },
         ],
       },
     });
@@ -390,13 +391,13 @@ describe("module lane loaders", () => {
     expect(ingestQuery.limitValue).toBe(8);
 
     const crashQueries = supabase.queries.filter((query) => query.table === "safety_crashes");
-    expect(crashQueries).toHaveLength(4);
+    expect(crashQueries).toHaveLength(5);
     for (const crashQuery of crashQueries) {
       expect(crashQuery.head).toBe(true);
       expect(crashQuery.filters).toContainEqual(["workspace_id", "ws-safe-1"]);
       expect(crashQuery.filters).toContainEqual(["ingest_id", "ingest-2"]);
     }
-    expect(crashQueries.map((query) => query.filters.find(([column]) => column === "severity")?.[1])).toEqual([
+    expect(crashQueries.slice(0, 4).map((query) => query.filters.find(([column]) => column === "severity")?.[1])).toEqual([
       "fatal",
       "severe_injury",
       "injury",

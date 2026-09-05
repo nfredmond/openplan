@@ -27,6 +27,12 @@ import {
   readCachedUsRoadContext,
 } from "@/lib/safety/road-context";
 import { loadUsTigerRoadContext } from "@/lib/safety/us-road-context-adapter";
+import {
+  hasCompleteCrashCustody,
+  readSafetyCrashEvidenceIngest,
+  SAFETY_ACQUISITION_CUSTODY_UNAVAILABLE,
+  SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION,
+} from "@/lib/safety/crash-evidence";
 
 /**
  * Crash query for the Safety map and list.
@@ -178,7 +184,7 @@ export async function GET(request: NextRequest) {
     // fall back to the newest acquisition in the current context.
     let ingestLookup = supabase
         .from("safety_crash_ingests")
-        .select("id, project_id")
+        .select(SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION)
         .eq("workspace_id", query.workspaceId)
         .order("created_at", { ascending: false })
         .limit(1);
@@ -199,7 +205,9 @@ export async function GET(request: NextRequest) {
           { status: 500 }
         );
     }
-    const activeIngestId = (ingestRows ?? [])[0]?.id as string | undefined;
+    const acquisitionRow = (ingestRows as unknown as Record<string, unknown>[] | null)?.[0];
+    const acquisition = acquisitionRow ? readSafetyCrashEvidenceIngest(acquisitionRow) : null;
+    const activeIngestId = acquisition?.id;
     if (!activeIngestId) {
         return NextResponse.json(
           {
@@ -208,22 +216,33 @@ export async function GET(request: NextRequest) {
             returnedCount: 0,
             matchedCount: 0,
             undrawableCount: 0,
-            // Every band is a TRUE zero here: the project has no acquisitions,
-            // so no crash of any band is in scope. That is a different statement
-            // from `null` below, which means the counts could not be read.
-            severityTotals: Object.fromEntries(
-              CRASH_SEVERITY_BANDS.map((band) => [band, 0])
-            ),
-            ksiConcentrations: [],
+            severityTotals: null,
+            custodyWarning: "No crash acquisition is available in this context. No crash count has been established.",
+            ksiConcentrations: null,
             roadContext: [],
             roadContextCoverageLimit: "No crash acquisition is attached to this project, so no concentration can be matched to a road.",
-            ksiEquityTracts: [],
+            ksiEquityTracts: null,
             ksiEquityDemographicSource: { label: "U.S. Census ACS 5-year", vintage: ACS_YEAR },
             truncated: false,
             limit,
           },
           { status: 200 }
         );
+    }
+
+    const retained = await supabase.from("safety_crashes")
+      .select("id", { count: "exact", head: true })
+      .eq("workspace_id", query.workspaceId).eq("ingest_id", activeIngestId);
+    if (!acquisition || acquisition.status !== "ready"
+      || !hasCompleteCrashCustody(acquisition, retained.error ? null : retained.count)) {
+      return NextResponse.json({
+        type: "FeatureCollection", features: [], returnedCount: 0, matchedCount: 0,
+        matchedCountIsExact: false, undrawableCount: 0, severityTotals: null,
+        ksiConcentrations: null, ksiEquityTracts: null, roadContext: null,
+        roadContextCoverageLimit: SAFETY_ACQUISITION_CUSTODY_UNAVAILABLE,
+        custodyWarning: SAFETY_ACQUISITION_CUSTODY_UNAVAILABLE,
+        truncated: false, limit,
+      });
     }
 
     // RLS scopes reads to workspace members; the explicit workspace filter keeps

@@ -108,12 +108,13 @@ function makeRecordingClient() {
     const result = () => {
       if (entry.table === "safety_crash_ingests") {
         return {
-          data: [{ id: "11111111-1111-4111-8111-111111111111", project_id: null }],
+          data: [{ id: "11111111-1111-4111-8111-111111111111", project_id: null, status: "ready", stored_count: 7 }],
           count: null,
           error: null,
         };
       }
       if (!entry.head) return { data: [], count: null, error: null };
+      if (!entry.calls.some((call) => call.op === "gte")) return { data: null, count: 7, error: null };
       const selectsFailingBand =
         failingBand !== null &&
         entry.calls.some(
@@ -129,7 +130,7 @@ function makeRecordingClient() {
       // `in` predicate a band count has, and a shape-based test would then fail
       // the wrong query.
       const isMatchedCount =
-        recorded.filter((other) => other.table === entry.table && other.head)[0] === entry;
+        recorded.filter((other) => other.table === entry.table && other.head && other.calls.some((call) => call.op === "gte"))[0] === entry;
       if (failMatchedCount && isMatchedCount) {
         return { data: null, count: null, error: { message: "count boom" } };
       }
@@ -204,7 +205,7 @@ function crashRequest(selection: CrashFilterSelection): NextRequest {
 }
 
 function crashQueries(): RecordedQuery[] {
-  return recorded.filter((entry) => entry.table === "safety_crashes");
+  return recorded.filter((entry) => entry.table === "safety_crashes" && entry.calls.some((call) => call.op === "gte"));
 }
 
 function serialize(calls: RecordedCall[]): string {

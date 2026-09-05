@@ -741,7 +741,7 @@ export async function ingestCrashesForStudyArea(
       const batch = rows.slice(offset, offset + UPSERT_BATCH_SIZE);
       const { data: written, error: upsertError } = await params.service
         .from("safety_crashes")
-        .upsert(batch, { onConflict: "workspace_id,source_id,external_id" })
+.upsert(batch, { onConflict: "workspace_id,ingest_id,source_id,external_id" })
         .select("id,external_id");
       if (upsertError) throw new Error(`Failed to persist crashes: ${upsertError.message}`);
       for (const row of (written ?? []) as Array<{ id?: unknown; external_id?: unknown }>) {
@@ -763,7 +763,7 @@ export async function ingestCrashesForStudyArea(
         const batch = partyRows.slice(offset, offset + UPSERT_BATCH_SIZE);
         const { error: partyError } = await params.service
           .from("safety_crash_parties")
-          .upsert(batch, { onConflict: "workspace_id,source_id,external_party_id" });
+.upsert(batch, { onConflict: "workspace_id,ingest_id,source_id,external_party_id" });
         // A person-row failure does NOT fail the acquisition — the crashes are
         // already stored and are worth keeping — but it must not leave the run
         // claiming people were retrieved when some were not.
@@ -780,12 +780,13 @@ export async function ingestCrashesForStudyArea(
 
     const dimensionCoverage = buildDimensionCoverage(adapter.dimensions, fetched.unmappedByDimension);
 
-    await params.service
+    const { error: finalizeError } = await params.service
       .from("safety_crash_ingests")
       .update({
         status: "ready",
         crash_count: fetched.matchedTotal,
         geocoded_count: fetched.geocodedTotal,
+        stored_count: records.length,
         truncated: fetched.truncated,
         severity_completeness: severityCompleteness,
         dimension_coverage: dimensionCoverage,
@@ -798,6 +799,8 @@ export async function ingestCrashesForStudyArea(
         published_through_provenance: fetched.publishedCutoff?.provenance ?? null,
       })
       .eq("id", ingestId);
+
+    if (finalizeError) throw new Error(`Failed to finalize crash acquisition: ${finalizeError.message}`);
 
     return {
       ingestId,

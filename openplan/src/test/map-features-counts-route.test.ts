@@ -79,7 +79,7 @@ const fromMock = vi.fn((table: string) => {
   if (table === "rtp_cycles") return { select: rtpSelectMock };
   if (table === "census_tracts_map") return { select: equitySelectMock };
   if (table === "engagement_items") return { select: engagementSelectMock };
-  if (table === "safety_crashes") return { select: crashesSelectMock };
+  if (table === "safety_crashes_latest") return { select: crashesSelectMock };
   if (table === "safety_crash_ingests") return { select: crashIngestsSelectMock };
   throw new Error(`Unexpected table: ${table}`);
 });

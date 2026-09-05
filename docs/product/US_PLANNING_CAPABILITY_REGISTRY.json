@@ -114,6 +114,36 @@
   ],
   "queuedFirstWeekFindings": [
     {
+      "issueId": "KI-2026-09-05-037",
+      "capability": "development-review-implementation-and-interdepartmental-handoff",
+      "gap": "Distinguish saved reminder preferences from operating delivery",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-038",
+      "capability": "land-use-comprehensive-and-community-planning",
+      "gap": "Label review dates and link public plan review to its feedback campaign",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-039",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Carry the same resolved geography status across project and campaign summaries",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-040",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Refresh generated PDF status without navigation",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-041",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Expose bundle prerequisites earlier and distinguish artifact formats",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
       "issueId": "KI-2026-09-05-027",
       "capability": "transit-active-transportation-freight-and-safety-planning",
       "gap": "Retry a failed crash-location ranking without another acquisition",

@@ -546,12 +546,13 @@ export function SafetyWorkspace({
     [place]
   );
 
-  const loadCrashes = useCallback(async () => {
+  const loadCrashes = useCallback(async (signal: AbortSignal) => {
     if (!bbox) {
       setResponse(null);
       return;
     }
     setLoading(true);
+    setResponse(null);
     setError(null);
     try {
       const params = new URLSearchParams({
@@ -575,21 +576,24 @@ export function SafetyWorkspace({
       // cannot be sent under a name the route does not read.
       for (const [key, value] of crashFilterSearchParams(filters)) params.set(key, value);
 
-      const res = await fetch(`/api/safety/crashes?${params.toString()}`);
+      const res = await fetch(`/api/safety/crashes?${params.toString()}`, { signal });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error ?? "Failed to load crash data");
       }
-      setResponse((await res.json()) as SafetyCrashQueryResponse);
+      const body = await res.json() as SafetyCrashQueryResponse;
+      if (!signal.aborted) setResponse(body);
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Failed to load crash data");
+      if (!signal.aborted) setError(loadError instanceof Error ? loadError.message : "Failed to load crash data");
     } finally {
-      setLoading(false);
+      if (!signal.aborted) setLoading(false);
     }
   }, [workspaceId, filters, bbox, projectId, place, ingest?.id]);
 
   useEffect(() => {
-    void loadCrashes();
+    const controller = new AbortController();
+    void loadCrashes(controller.signal);
+    return () => controller.abort();
   }, [loadCrashes]);
 
   // The rolling window every crash lane asks for, from the one shared helper.
@@ -733,13 +737,14 @@ export function SafetyWorkspace({
         },
         ...current.filter((entry) => entry.id !== summary.id),
       ]);
-      await loadCrashes();
+      // Changing the acquisition triggers the read effect with its new id.
+      // Calling loadCrashes here would query the previous acquisition.
     } catch (ingestError) {
       setError(ingestError instanceof Error ? ingestError.message : "Crash ingest failed");
     } finally {
       setIngesting(false);
     }
-  }, [workspaceId, loadCrashes, bbox, countyCode, projectId, years]);
+  }, [workspaceId, bbox, countyCode, projectId, years]);
 
   // Every acquisition and response belongs to the area it was retrieved for
   // and to no other. Keep the matching server-provided acquisition on initial
@@ -1613,6 +1618,7 @@ export function SafetyWorkspace({
       )}
 
       {error && <p className="text-sm text-destructive">{error}</p>}
+      {response?.custodyWarning && <p role="alert" className="text-sm text-destructive">{response.custodyWarning}</p>}
 
       {history.length > 0 && (
         <section className="rounded-lg border p-4" aria-label="Import history">
@@ -1727,6 +1733,7 @@ export function SafetyWorkspace({
             <CrashExportButton
               workspaceId={workspaceId}
               projectId={projectId || null}
+              ingestId={ingest?.id ?? null}
               bbox={bbox}
               filters={filters}
               studyAreaLabel={place?.label ?? (corridorText.trim() || null)}
@@ -1734,6 +1741,7 @@ export function SafetyWorkspace({
               liveSourceLabel={liveRead?.sourceLabel ?? null}
               liveAttribution={liveRead?.attribution ?? null}
               disabledReason={
+                !liveRead && response?.custodyWarning ? response.custodyWarning :
                 !liveRead && (response?.matchedCount ?? 0) === 0
                   ? "Nothing matches these filters in this extent yet, so there is nothing to export."
                   : null

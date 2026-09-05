@@ -19,6 +19,12 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- Safety repeat acquisitions now retain separate crash and person records. Apply
+  `20260905000002_safety_acquisition_custody.sql` (`safety_acquisition_custody`)
+  before deploying. Existing rows
+  remain intact; missing historical membership is not reconstructed from newer
+  pulls. Unreconciled acquisition counts and exports are withheld.
+
 **Migration required.** `20260905000001_portfolio_unknown_price_year.sql`
 (`portfolio_unknown_price_year`) lets reviewed CSV and workbook imports retain
 an unknown cost price year. The importer no longer supplies the current year

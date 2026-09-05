@@ -5,6 +5,7 @@ import {
   type StageGateDecisionQuerySupabaseLike,
 } from "@/lib/stage-gates/decision-queries";
 import { STAGE_GATE_BINDING_WORKSPACE_COLUMNS } from "@/lib/stage-gates/rebind";
+import { hasCompleteCrashCustody } from "@/lib/safety/crash-evidence";
 import { resolveBoundStageGateTemplate } from "@/lib/stage-gates/bound-template";
 import { stageGateTemplateRegistry } from "@/lib/stage-gates/template-registry";
 import {
@@ -507,7 +508,7 @@ export const MODULE_LANE_CLIENT_INVOICE_COLUMNS = "id, status, total_amount, due
 export const MODULE_LANE_ENGAGEMENT_CAMPAIGN_COLUMNS =
   "id, title, status, allow_public_submissions, submissions_closed_at, updated_at";
 export const MODULE_LANE_CRASH_INGEST_COLUMNS =
-  "id, project_id, source_label, coverage_state, severity_completeness, status, crash_count, geocoded_count, truncated, years_requested, fetch_error, created_at";
+  "id, project_id, source_label, coverage_state, severity_completeness, status, crash_count, geocoded_count, stored_count, truncated, years_requested, fetch_error, created_at";
 export const MODULE_LANE_AERIAL_MISSION_COLUMNS = "id, status, mission_type";
 export const MODULE_LANE_AERIAL_JOB_COLUMNS = "id, status, artifact_custody_state";
 export const MODULE_LANE_AERIAL_PACKAGE_COLUMNS = "id, status, verification_readiness";
@@ -1775,6 +1776,7 @@ async function loadSafetyLaneSummary(
     status: string;
     crash_count: number | null;
     geocoded_count: number | null;
+    stored_count?: number | null;
     truncated: boolean | null;
     years_requested: number[] | null;
     fetch_error: string | null;
@@ -1795,11 +1797,13 @@ async function loadSafetyLaneSummary(
         .eq("workspace_id", workspaceId)
         .eq("ingest_id", latestReady.id)
         .eq("severity", severity);
-    const [fatalResult, severeResult, injuryResult, pdoResult] = await Promise.all([
+    const [fatalResult, severeResult, injuryResult, pdoResult, retained] = await Promise.all([
       severityCount("fatal"),
       severityCount("severe_injury"),
       severityCount("injury"),
       severityCount("pdo"),
+      supabase.from("safety_crashes").select("id", { count: "exact", head: true })
+        .eq("workspace_id", workspaceId).eq("ingest_id", latestReady.id),
     ]);
     const anyFailed = [fatalResult, severeResult, injuryResult, pdoResult].some((result) =>
       Boolean((result as ReadResultLike)?.error)
@@ -1809,7 +1813,11 @@ async function loadSafetyLaneSummary(
         Boolean((result as ReadResultLike)?.error)
       );
       laneReadFailed(reads, ASSISTANT_READ_SUBJECTS.crashSeverityMix, firstError as ReadResultLike);
-    } else {
+    } else if (!retained.error && hasCompleteCrashCustody({
+      geocodedCount: latestReady.geocoded_count ?? Number.NaN,
+      storedCount: latestReady.stored_count,
+      truncated: Boolean(latestReady.truncated),
+    }, retained.count ?? null)) {
       severityMix = {
         ingestId: latestReady.id,
         fatal: (fatalResult as { count?: number | null })?.count ?? 0,

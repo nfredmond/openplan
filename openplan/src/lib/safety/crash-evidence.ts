@@ -84,6 +84,7 @@ export type SafetyCrashEvidenceIngest = {
   crashCount: number;
   /** Of those, how many carried coordinates and are stored as points. */
   geocodedCount: number;
+  storedCount?: number | null;
   truncated: boolean;
   yearsRequested: number[];
   createdAt: string;
@@ -193,6 +194,19 @@ export function totalCountedCrashes(counts: SafetyCrashSeverityCounts | null): n
   return CRASH_SEVERITIES.reduce((sum, band) => sum + counts[band], 0);
 }
 
+export const SAFETY_ACQUISITION_CUSTODY_UNAVAILABLE =
+  "This acquisition's stored records cannot be reconciled with its recorded total. Crash counts, rankings, and exports are withheld. Missing records are not zero; retrieve a new acquisition without replacing this historical record.";
+
+/** Compare unfiltered stored rows to the acquisition's own recorded denominator. */
+export function hasCompleteCrashCustody(
+  ingest: { storedCount?: number | null; geocodedCount: number; truncated: boolean },
+  retainedCount: number | null
+): boolean {
+  const expected = ingest.storedCount ?? (ingest.truncated ? null : ingest.geocodedCount);
+  return expected !== null && Number.isSafeInteger(expected) && expected >= 0
+    && retainedCount !== null && retainedCount === expected;
+}
+
 /** People counted across every role, or null when person rows were not retrieved. */
 export function totalCountedParties(counts: SafetyCrashRoleCounts | null): number | null {
   if (!counts) return null;
@@ -278,6 +292,8 @@ export function buildSafetyCrashEvidence(
       // rests on: an unretrieved count is not a zero.
       ingest.partyCompleteness === "not_supported"
         ? "This source records no person-level detail, so who was involved cannot be counted from it — only whether a collision was flagged as involving a pedestrian, bicyclist or motorcyclist."
+        : ingest.partyCompleteness === "retrieved"
+          ? "Person-level counts could not be reconciled with this acquisition's stored records. Missing people are not zero."
         : "Person-level records were not retrieved for this acquisition, so nobody is counted by role here. That is missing information, not an absence of people."
     );
   } else if (ingest.involvementBasis === "crash_flags") {
@@ -346,6 +362,7 @@ export const SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION = [
   "severity_completeness",
   "crash_count",
   "geocoded_count",
+  "stored_count",
   "truncated",
   "years_requested",
   "created_at",
@@ -386,6 +403,7 @@ export function readSafetyCrashEvidenceIngest(
     severityCompleteness: typeof row.severity_completeness === "string" ? row.severity_completeness : "",
     crashCount: typeof row.crash_count === "number" ? row.crash_count : 0,
     geocodedCount: typeof row.geocoded_count === "number" ? row.geocoded_count : 0,
+    storedCount: typeof row.stored_count === "number" ? row.stored_count : null,
     truncated: row.truncated === true,
     yearsRequested: years,
     createdAt: typeof row.created_at === "string" ? row.created_at : "",
@@ -639,17 +657,25 @@ export function buildSafetyCrashEvidenceMap(
     // The count read failed as a whole → nothing may be rendered as a number.
     // Distinct from "this acquisition stored no crashes", which is a real zero
     // and arrives as an ingest with no counted entry.
-    const severity = countsByIngest === null ? null : (counted?.severity ?? zeroSeverityCounts());
+    const rawSeverity = countsByIngest === null ? null : (counted?.severity ?? zeroSeverityCounts());
+    const custodyComplete = hasCompleteCrashCustody(ingest, totalCountedCrashes(rawSeverity));
+    const severity = custodyComplete ? rawSeverity : null;
 
     // Role counts exist only when person rows were actually retrieved. An
     // acquisition that never fetched people has no zero to report — see the
     // caveat this drives in `buildSafetyCrashEvidence`.
+    const rawRole = counted?.role ?? zeroRoleCounts();
     const role =
-      countsByIngest === null || ingest.partyCompleteness !== "retrieved"
+      !custodyComplete || countsByIngest === null || ingest.partyCompleteness !== "retrieved"
+        || ingest.partyCount === null || totalCountedParties(rawRole) !== ingest.partyCount
         ? null
-        : (counted?.role ?? zeroRoleCounts());
+        : rawRole;
 
-    evidence.set(ingest.id, buildSafetyCrashEvidence(ingest, { severity, role }));
+    const item = buildSafetyCrashEvidence(ingest, { severity, role });
+    if (!custodyComplete) {
+      item.caveats.push(SAFETY_ACQUISITION_CUSTODY_UNAVAILABLE);
+    }
+    evidence.set(ingest.id, item);
   }
 
   return evidence;

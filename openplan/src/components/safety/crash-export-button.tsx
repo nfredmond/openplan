@@ -42,6 +42,7 @@ import type { SafetyCrashFeature } from "@/lib/safety/client-types";
 export function CrashExportButton({
   workspaceId,
   projectId,
+  ingestId,
   bbox,
   filters,
   studyAreaLabel,
@@ -53,6 +54,7 @@ export function CrashExportButton({
   workspaceId: string;
   /** Narrow the export to one project's acquisitions, when the workbench is scoped to one. */
   projectId: string | null;
+  ingestId?: string | null;
   bbox: { minLon: number; minLat: number; maxLon: number; maxLat: number } | null;
   filters: CrashFilterSelection;
   studyAreaLabel: string | null;
@@ -121,6 +123,7 @@ export function CrashExportButton({
       format,
     });
     if (projectId) params.set("projectId", projectId);
+    if (ingestId) params.set("ingestId", ingestId);
     if (studyAreaLabel) params.set("studyArea", studyAreaLabel);
     // Serialized from the same declaration the route parses back, so the file's
     // stated filters and the query that produced it cannot diverge.
