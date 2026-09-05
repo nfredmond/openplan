@@ -145,6 +145,19 @@ beforeEach(() => {
 });
 
 describe("project evidence bundle reachability", () => {
+  it("cancels the copy confirmation timer when leaving the evidence panel", async () => {
+    const setTimer = vi.spyOn(window, "setTimeout");
+    const clearTimer = vi.spyOn(window, "clearTimeout");
+    const view = render(<ProjectEvidenceBundlePanel projectId={PROJECT_ID} canGenerate />);
+    fireEvent.click(await screen.findByRole("button", { name: "Copy manifest SHA-256" }));
+    await screen.findByText("Copied");
+    const timerIndex = setTimer.mock.calls.findIndex((call) => call[1] === 1_500);
+    expect(timerIndex).toBeGreaterThanOrEqual(0);
+    const timerId = setTimer.mock.results[timerIndex].value;
+    view.unmount();
+    expect(clearTimer).toHaveBeenCalledWith(timerId);
+  });
+
   it("loads prior bundles and opens the reviewed, grouped selection from Documents", async () => {
     render(<ProjectEvidenceBundlePanel projectId={PROJECT_ID} canGenerate />);
     const prepare = await screen.findByRole("button", { name: "Prepare evidence bundle" });

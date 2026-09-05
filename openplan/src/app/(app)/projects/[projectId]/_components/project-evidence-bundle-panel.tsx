@@ -30,6 +30,11 @@ function formatDate(value: string): string {
 
 function ManifestHash({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    if (!copied) return;
+    const timer = window.setTimeout(() => setCopied(false), 1_500);
+    return () => window.clearTimeout(timer);
+  }, [copied]);
   return (
     <div className="mt-2 grid min-w-0 gap-2 text-xs text-muted-foreground sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-start">
       <span className="shrink-0 font-medium text-foreground">Manifest SHA-256</span>
@@ -41,7 +46,6 @@ function ManifestHash({ value }: { value: string }) {
         onClick={async () => {
           await navigator.clipboard.writeText(value);
           setCopied(true);
-          window.setTimeout(() => setCopied(false), 1_500);
         }}
       >
         {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}

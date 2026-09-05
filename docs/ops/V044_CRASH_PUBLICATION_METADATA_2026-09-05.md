@@ -105,3 +105,19 @@ when legal sources are absent. Both widths were inspected; no console errors
 or overflow appeared. The public-text check's no-op survived, while missing
 warning and false-date inputs failed. This proves disclosure, not legal
 completeness, and does not substitute for the interrupted full release gate.
+
+## Full-QA findings at 11:20 UTC
+
+The first full QA attempt failed, with 12,906 tests passing and one stale
+release assertion expecting readiness version 0.42.0. That expectation now
+names 0.44.0. A whitespace-only registry mutation survived all three direction
+tests. Reverting the registry release while recomputing its integrity hash
+failed the intended release assertion, not an unrelated hash check.
+
+The same run reported an unhandled copy-confirmation timer after the project
+evidence panel was unmounted. The timer now belongs to a React effect with
+cleanup. A new test failed before the repair because the exact timer was not
+cancelled. A comment-only mutation survived all four bundle tests; removing
+cleanup failed the same timer assertion. This changes neither bundle bytes
+nor publication behavior. The full QA attempt's log is
+`/tmp/openplan-v044-crash-publication-qa.log`. A complete new QA run is required.
