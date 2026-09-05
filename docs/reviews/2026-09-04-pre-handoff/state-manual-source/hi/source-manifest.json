@@ -1,0 +1,26 @@
+[
+  {
+    "url": "https://hidot.hawaii.gov/highways/files/2021/11/LPA-Manual-Rev_20201013.pdf",
+    "final_url": "https://hidot.hawaii.gov/highways/files/2021/11/LPA-Manual-Rev_20201013.pdf",
+    "file": "lpa-manual-20201013.pdf",
+    "sha256": "09e200931ef0491892338b77338c4142efa4d15f1bf1db0f74af20340ddd68d1",
+    "bytes": 2018769,
+    "retrieved_at": "2026-09-05T01:36:58.597463+00:00"
+  },
+  {
+    "url": "https://www.fhwa.dot.gov/federalaid/stewardship/agreements/hi.pdf",
+    "final_url": "https://www.fhwa.dot.gov/federalaid/stewardship/agreements/hi.pdf",
+    "file": "stewardship-2024.pdf",
+    "sha256": "44e3bb6d0365b70684f91f9ede25d684841dd5e32930df69614b30c701e95f6d",
+    "bytes": 637388,
+    "retrieved_at": "2026-09-05T01:38:45.185453+00:00"
+  },
+  {
+    "url": "https://hidot.hawaii.gov/highways/files/2022/04/HDOT-Engineering-and-Design-Related-Services-Procedures-5-19-16_rev-09-09-2016.pdf",
+    "final_url": "https://hidot.hawaii.gov/highways/files/2022/04/HDOT-Engineering-and-Design-Related-Services-Procedures-5-19-16_rev-09-09-2016.pdf",
+    "file": "consultant-procedures-2016.pdf",
+    "sha256": "d864c9eca67c2e15196a42d8b4b401ed7b96a813ca6c1f9e8eec8412ec291383",
+    "bytes": 170452,
+    "retrieved_at": "2026-09-05T01:38:45.532332+00:00"
+  }
+]

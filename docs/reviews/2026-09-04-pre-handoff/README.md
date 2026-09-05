@@ -141,3 +141,12 @@ Source findings retain e6900750 attribution. Main advanced to clean 01f0fd03 dur
 G1a supplies the national source/reading/outcome sequence; no state-specific module was added. M5b includes Washington's funded-drone eligibility research case. Public metadata is retained under state-manual-source; no raw PDFs, authenticated portal content or histories are committed. Main was clean01f0fd03 during this research, still developer-owned. No safe handoff, runtime test, official filing or release acceptance is inferred.
 
 At the final monitoring check, main remained01f0fd03 with active owner safety/FARS source edits and a new migration. Main CI33935279096 failed, RLS33935279333 passed and Production Health33935806887 was skipped. Those are development-session results, separate from this documentation-only checkpoint; all owner files and processes remain untouched.
+
+
+## Alaska, Hawaii and federal-source extension
+
+[Alaska reconnaissance](STATE_MANUALS_AK_RECONNAISSANCE.md), [Hawaii reconnaissance](STATE_MANUALS_HI_RECONNAISSANCE.md) and the [federal framework](FEDERAL_LOCAL_ASSISTANCE_FRAMEWORK_RECONNAISSANCE.md) extend the [national comparison](NATIONAL_LOCAL_ASSISTANCE_COMPARISON.md) to nine states and selected federal sources. They preserve exact reading/access limits and public metadata. This is not full reading of nine manuals or the entire federal framework, and it promotes no operational capability.
+
+G1a retains the requested Oregon/Washington/Nevada priority and adds Alaska/Hawaii/federal coverage. Existing M1/M10/M11/M12/M13/M14 carry award-specific responsibilities, seasonal custody, island/county/MPO boundaries, actual written approvals, financial cost basis and incorporated source versions. KL061 records draft, incomplete and inconsistent sources. FAPG's retired directive category and older construction training cannot substitute for current applicable authority. The canonical contract proposal remains outside the active checkout for later consolidation.
+
+Main advanced during this research to clean `9ec13026`. RLS run 33936721630 and Upgrade Path run 33936721573 succeeded; CI run 33936721673 was still running at the interim check. No safe handoff or release acceptance is established. This checkpoint changes research/drafts only, in the isolated review branch. No application tests, browser/account/device actions or runtime interference occurred. Review-branch push and CI are checked separately when preserving the checkpoint.

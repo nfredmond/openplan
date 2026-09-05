@@ -1,0 +1,184 @@
+{
+  "review_date_local": "2026-09-04",
+  "retrieval_date_utc": "2026-09-05",
+  "scope": "Selected-source federal framework reconnaissance only",
+  "sources": [
+    {
+      "id": "cacc2014",
+      "url": "https://rosap.ntl.bts.gov/view/dot/53664/dot_53664_DS1.pdf",
+      "edition": "October 2014; PDF footer 10/2/2014",
+      "total_pdf_pages": 334,
+      "read_full_pdf_pages_1_based": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "printed_pages": "contents i\u2013iv; introduction 1\u20132",
+      "method": "local pdftotext; page 4 reread after initial truncated display",
+      "visual_review": false,
+      "local_bytes": "cacc2014.pdf",
+      "limitations": "No substantive chapters read in this task."
+    },
+    {
+      "id": "fta5010f",
+      "url": "https://www.transit.dot.gov/sites/fta.dot.gov/files/2024-10/C5010.1F-Circular-11-01-2024_0.pdf",
+      "total_pdf_pages": 269,
+      "read_full_pdf_pages_1_based": [
+        1,
+        2,
+        3,
+        36,
+        41,
+        42
+      ],
+      "read_partial_pdf_pages_1_based": [
+        4,
+        43
+      ],
+      "sections": "Cover; contents; II-1 hierarchy, II-6 and II-7 recipient responsibilities",
+      "method": "web text extraction",
+      "local_download": "HTTP403; original PDF not captured",
+      "limitations": "Not a full circular review; residual when-final wording and inconsistent catalog effective date retained as unresolved source observations."
+    },
+    {
+      "id": "fta-ma34",
+      "url": "https://www.transit.dot.gov/sites/fta.dot.gov/files/2025-11/FTA-Master-Agreement-v34-2025-11-26.pdf",
+      "total_pdf_pages": 106,
+      "read_full_pdf_pages_1_based": [
+        1,
+        106
+      ],
+      "read_selected_sections": "Contents excerpts; preface excerpt; section 2 definitions including approval, award, recipient/subrecipient, third-party contract; Appendix A printed 103",
+      "method": "web text extraction",
+      "local_download": "HTTP403; original PDF not captured",
+      "limitations": "Do not count selected definition passages as a full page run. Combined tool output truncated parts of preface. No full agreement or payment-section review."
+    },
+    {
+      "id": "dot1201",
+      "url": "https://www.ecfr.gov/current/title-2/subtitle-B/chapter-XII/part-1201",
+      "read": "Complete regulation text \u00a7\u00a71201.1 through1201.328",
+      "observed_currency": "eCFR up to date September3,2026; Title2 last amended August17,2026; no claim each section amended then",
+      "method": "web text"
+    },
+    {
+      "id": "financial-management",
+      "url": "https://www.ecfr.gov/current/title-2/subtitle-A/chapter-II/part-200/subpart-D/section-200.302",
+      "read": "Complete \u00a7200.302",
+      "method": "web text"
+    },
+    {
+      "id": "fapg-retirement",
+      "url": "https://highways.fhwa.dot.gov/laws-regulations/directives/orders/13211c",
+      "edition": "January6,2010",
+      "read": "Purpose, background, definitions in official source/search extract",
+      "limitations": "Not a full directives-system audit"
+    },
+    {
+      "id": "fhwa-construction-directory",
+      "url": "https://www.fhwa.dot.gov/programadmin/contracts/index.cfm",
+      "observed_update": "August26,2026",
+      "read": "Current directory and manual links"
+    },
+    {
+      "id": "cqit",
+      "url": "https://www.fhwa.dot.gov/construction/cqit/",
+      "read": "Purpose and topic inventory"
+    },
+    {
+      "id": "contract-methods",
+      "url": "https://www.fhwa.dot.gov/construction/cqit/contract.cfm",
+      "observed_update": "November19,2025",
+      "read": "Regulation, current policy, training and archive listing, including5060.2/5060.1 distinction",
+      "limitations": "Not fulltext of5060.2"
+    },
+    {
+      "id": "fapg630-retired",
+      "url": "https://www.fhwa.dot.gov/federalaid/0630asup.cfm",
+      "read": "Cancellation notice January17,2014",
+      "limitations": "No entire obsolete supplement review"
+    },
+    {
+      "id": "fta-circular-catalog",
+      "url": "https://www.transit.dot.gov/regulations-and-programs/fta-circulars/award-management-requirements-circular",
+      "read": "Current listing, dates and linked circular"
+    },
+    {
+      "id": "fta-agreements-catalog",
+      "url": "https://www.transit.dot.gov/funding/grantee-resources/sample-fta-agreements/fta-grant-agreements",
+      "read": "Current version and historical-version listings"
+    },
+    {
+      "id": "fta-procurement-matrix-entry",
+      "url": "https://www.transit.dot.gov/funding/procurement/third-party-procurement/third-party-contract-provisions-matrix",
+      "observed_update": "August26,2026",
+      "read": "Landing page and stated nonmandatory status, March2026 file, award-version instruction",
+      "limitations": "Linked matrix not read"
+    },
+    {
+      "id": "infra-implementation",
+      "url": "https://www.transportation.gov/policy-initiatives/infra/infra-grant-implementation",
+      "observed_update": "November21,2025",
+      "read": "Directory, FY2025\u20132026 FHWA/FRA/MARAD terms inventory and earlier-year archives",
+      "limitations": "Follow-up click failed; linked terms not read"
+    },
+    {
+      "id": "nonstate-title23-dashboard",
+      "url": "https://www.fhwa.dot.gov/federalaid/stewardship/Title23Applicability.cfm",
+      "observed_update": "May13,2024",
+      "read": "Landing page only",
+      "limitations": "Embedded dashboard contents inaccessible to text tool; no matrix applicability reviewed"
+    },
+    {
+      "id": "flh-oversight",
+      "url": "https://highways.dot.gov/federal-lands/programs/stewardship-oversight",
+      "observed_update": "August25,2025",
+      "read": "Complete substantive landing-page text; FLTP/FLAP manual and working-instruction inventory",
+      "limitations": "Linked manuals not read"
+    },
+    {
+      "id": "lpa-order-reused",
+      "url": "https://www.fhwa.dot.gov/legsregs/directives/orders/50202.cfm",
+      "read": "Paragraphs4\u20138",
+      "status": "Reused from STATE_MANUALS_NY_FEDERAL_RECONNAISSANCE.md; see ny-federal ledger"
+    },
+    {
+      "id": "stewardship-reused",
+      "url": "https://www.fhwa.dot.gov/federalaid/stewardship/index.cfm",
+      "read": "Directory and NewYork2025 agreement main PDFpages1\u20136",
+      "status": "Reused previous reconnaissance; agreement attachment matrix not fully read"
+    },
+    {
+      "id": "tribal-finance-reused",
+      "url": "https://highways.fhwa.dot.gov/federal-lands/tribal/finance",
+      "read": "Direct-agreement/transfer stewardship description",
+      "status": "Reused previous reconnaissance; full TTP guide not read"
+    },
+    {
+      "id": "thp-reused",
+      "url": "https://www.fhwa.dot.gov/specialfunding/thp/260330.pdf",
+      "edition": "April1,2026",
+      "read_full_pdf_pages_1_based": [
+        5,
+        6,
+        7,
+        8
+      ],
+      "status": "Reused previous reconnaissance; ny-federal source/reading ledger holds original download and coverage"
+    }
+  ],
+  "excluded_or_failed": [
+    "2CFR200.332 request returned internal error; not read",
+    "No full federal statutes/regulations/manuals review",
+    "No local FTA original PDF capture after HTTP403",
+    "No application acceptance, test run or runtime validation",
+    "No linked INFRA agreement, embedded applicability matrix or FTA procurement matrix review"
+  ],
+  "root_owned_sources": [
+    "DOT current Uniform Guidance adoption page",
+    "FHWA competitive-grant administrative-cost Q&A"
+  ],
+  "memory": "A bounded MEMORY.md keyword pass returned no federal-manual source used in this report."
+}

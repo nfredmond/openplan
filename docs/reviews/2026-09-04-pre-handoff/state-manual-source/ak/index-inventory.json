@@ -1,0 +1,27 @@
+[
+  {
+    "name": "local-index",
+    "url": "https://dot.alaska.gov/stwddes/dcslocalagency/pop_localagencyman.shtml",
+    "bytes": 9015
+  },
+  {
+    "name": "construction-index",
+    "url": "https://dot.alaska.gov/stwddes/dcsconst/index.shtml",
+    "bytes": 115926
+  },
+  {
+    "name": "preconstruction-index",
+    "url": "https://dot.alaska.gov/stwddes/dcsprecon/index.shtml",
+    "bytes": 39390
+  },
+  {
+    "name": "tribal-tools",
+    "url": "https://dot.alaska.gov/tribalrelations/tools.shtml",
+    "bytes": 25071
+  },
+  {
+    "name": "tribal-index",
+    "url": "https://dot.alaska.gov/tribalrelations/",
+    "bytes": 26995
+  }
+]

@@ -1,0 +1,176 @@
+[
+  {
+    "name": "local-ch01",
+    "url": "https://dot.alaska.gov/stwddes/dcslocalagency/assets/pdf/manual/ch01_introduction_sw.pdf",
+    "bytes": 18881,
+    "sha256": "357158307413a1711c2032255830596b8d844bcd17ffef6884536ed7bf377750",
+    "pages": 1,
+    "retrieved_date_pacific": "2026-09-04",
+    "read_pdf_pages": [
+      1
+    ]
+  },
+  {
+    "name": "local-ch02",
+    "url": "https://dot.alaska.gov/stwddes/dcslocalagency/assets/pdf/manual/ch02_overview_sw.pdf",
+    "bytes": 32849,
+    "sha256": "a5a36a50efc0a348e3dd7d7307a3622bf81177ff9fd17323f388cb1991ad9ea0",
+    "pages": 5,
+    "retrieved_date_pacific": "2026-09-04",
+    "read_pdf_pages": [
+      1,
+      2,
+      3
+    ],
+    "other": "Flowchart text sampled; no complete visual inspection"
+  },
+  {
+    "name": "local-ch04",
+    "url": "https://dot.alaska.gov/stwddes/dcslocalagency/assets/pdf/manual/ch04_agreement.pdf",
+    "bytes": 16965,
+    "sha256": "85ce2bf84b99913d0c55b819344f31d88b4e26b2c743648ea4e71e228f633d9b",
+    "pages": 1,
+    "retrieved_date_pacific": "2026-09-04",
+    "read_pdf_pages": [
+      1
+    ]
+  },
+  {
+    "name": "local-ch06",
+    "url": "https://dot.alaska.gov/stwddes/dcslocalagency/assets/pdf/manual/ch06_progressbilling.pdf",
+    "bytes": 95852,
+    "sha256": "907f060d950237289923decb8b2a654c01f88661a2b57bb3199d107ec9023f4f",
+    "pages": 24,
+    "retrieved_date_pacific": "2026-09-04",
+    "read_pdf_pages": [
+      1,
+      2
+    ]
+  },
+  {
+    "name": "local-ch15",
+    "url": "https://dot.alaska.gov/stwddes/dcslocalagency/assets/pdf/manual/ch15_projectcloseouts.pdf",
+    "bytes": 16687,
+    "sha256": "477a67018f01fedfbfbfd031a2a9c3bf5ae5780506c456603ae8e530b23c1a13",
+    "pages": 1,
+    "retrieved_date_pacific": "2026-09-04",
+    "read_pdf_pages": [
+      1
+    ]
+  },
+  {
+    "name": "hpcm-toc",
+    "url": "https://dot.alaska.gov/stwddes/dcsprecon/assets/pdf/preconhwy/maintoc.pdf",
+    "bytes": 162526,
+    "sha256": "732f47ab682b8c991dbdb0f5c8b12e379b9d45d0a0b8b9b99bb435c3f5471625",
+    "pages": 2,
+    "retrieved_date_pacific": "2026-09-04",
+    "read_pdf_pages": [
+      1,
+      2
+    ]
+  },
+  {
+    "name": "hpcm-ch04",
+    "url": "https://dot.alaska.gov/stwddes/dcsprecon/assets/pdf/preconhwy/chapters/chapter4.pdf",
+    "bytes": 2310437,
+    "sha256": "eb20c14260f84f976b8107cc79d8c6e572057e061ac120c712202e9e682b09bb",
+    "pages": 83,
+    "retrieved_date_pacific": "2026-09-04",
+    "read_pdf_pages": [
+      5,
+      16,
+      17,
+      74,
+      78,
+      79,
+      80
+    ],
+    "sampled_pdf_pages": [
+      1,
+      2,
+      3,
+      6
+    ],
+    "other": "No full chapter or flowchart reading; page 4 chapter contents not read"
+  },
+  {
+    "name": "acm-toc",
+    "url": "https://dot.alaska.gov/stwddes/dcsconst/assets/pdf/constman/2023/toc.pdf",
+    "bytes": 108801,
+    "sha256": "2ee84bc1061c2ebf3ce40a4eca06d068dddf646b6f642aa9465fdaba1152dcfa",
+    "pages": 6,
+    "retrieved_date_pacific": "2026-09-04",
+    "read_pdf_pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ]
+  },
+  {
+    "name": "acm-ch02",
+    "url": "https://dot.alaska.gov/stwddes/dcsconst/assets/pdf/constman/2022/ch2.pdf",
+    "bytes": 218088,
+    "sha256": "bf98978ff72c8c4d8a32bb7ad1dc1436a9064580ba7955a0e3ea9aa00a6dbdda",
+    "pages": 4,
+    "retrieved_date_pacific": "2026-09-04",
+    "read_pdf_pages": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "name": "acm-ch16",
+    "url": "https://dot.alaska.gov/stwddes/dcsconst/assets/pdf/constman/2022/ch16.pdf",
+    "bytes": 793689,
+    "sha256": "fcd0372741f18f50e7a5e85cac55b34d9a8090a11f9883eb98bc88dafc964656",
+    "pages": 10,
+    "retrieved_date_pacific": "2026-09-04",
+    "read_pdf_pages": [
+      1,
+      2,
+      3,
+      6,
+      7,
+      8
+    ]
+  },
+  {
+    "name": "stewardship-2024",
+    "url": "https://dot.alaska.gov/stwddes/dcspubs/assets/pdf/082124_fhwa_stewardship_oversight.pdf",
+    "bytes": 416578,
+    "sha256": "57851e20142e7ca24e5ff06f61311df21085c335443e01bc643f098be7c33f93",
+    "pages": 17,
+    "retrieved_date_pacific": "2026-09-04",
+    "read_scope": "Cover letter; sections I-II; selected V-VI text. Attachment A not substantively read."
+  },
+  {
+    "name": "acm-ch6",
+    "url": "https://dot.alaska.gov/stwddes/dcsconst/assets/pdf/constman/2022/ch6.pdf",
+    "bytes": 229422,
+    "sha256": "1da041fe085a8ee9859cb261edbd258261d4e95c36d1e312cdefed88a34f9eba",
+    "pages": 4,
+    "read_pdf_pages": [
+      1
+    ],
+    "retrieved_date_pacific": "2026-09-04",
+    "read_scope": "Selected page1 staff administration/logistics text; not full chapter"
+  },
+  {
+    "name": "acm-ch14",
+    "url": "https://dot.alaska.gov/stwddes/dcsconst/assets/pdf/constman/2022/ch14.pdf",
+    "bytes": 162489,
+    "sha256": "d37487a3dd5ee21a4bc8cf7322d897c0693e9243b0d42b55742efaba2a63986d",
+    "pages": 2,
+    "read_pdf_pages": [
+      1
+    ],
+    "retrieved_date_pacific": "2026-09-04",
+    "read_scope": "Page1 substantive contract-time/suspension text; not full chapter"
+  }
+]

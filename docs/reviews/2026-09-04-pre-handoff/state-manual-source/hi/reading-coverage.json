@@ -1,0 +1,137 @@
+{
+  "review_date_pacific": "2026-09-04",
+  "scope": "Bounded Hawaii reconnaissance; not complete manual reading or application acceptance",
+  "source_manifest": "source-manifest.json",
+  "reading": [
+    {
+      "file": "lpa-manual-20201013.pdf",
+      "pages": 79,
+      "edition": "2020-10-13",
+      "complete_text_sections": [
+        {
+          "pdf_pages": "2-5",
+          "section": "contents"
+        },
+        {
+          "pdf_pages": "6",
+          "section": "introduction"
+        },
+        {
+          "pdf_pages": "7-8",
+          "section": "chapter 1"
+        },
+        {
+          "pdf_pages": "41-44",
+          "section": "chapter 4"
+        },
+        {
+          "pdf_pages": "57-58",
+          "section": "chapter 7"
+        }
+      ],
+      "selected_text_sections": [
+        {
+          "pdf_pages": "9-12",
+          "section": "roles and agreements"
+        },
+        {
+          "pdf_pages": "17",
+          "section": "updates/resources"
+        },
+        {
+          "pdf_pages": "19-22,25-26",
+          "section": "programming and funding"
+        },
+        {
+          "pdf_pages": "65-73",
+          "section": "construction and closeout text; page 69 flowchart not visually reviewed"
+        },
+        {
+          "pdf_pages": "75",
+          "section": "form text sample only"
+        }
+      ],
+      "visually_read": [
+        {
+          "pdf_page": 78,
+          "artifact": "appendix-a.png",
+          "finding": "Title page only; no agreement content"
+        },
+        {
+          "pdf_page": 79,
+          "artifact": "appendix-b.png",
+          "finding": "Title page only; no MOA content"
+        }
+      ],
+      "embedded_files": 0,
+      "not_claimed": "Other chapters and all linked exhibits not fully read; construction flowchart unreviewed; no complete operational agreement inspected"
+    },
+    {
+      "file": "stewardship-2024.pdf",
+      "pages": 15,
+      "effective_date": "2024-08-06",
+      "coverage": "Agreement sections I-VIII text, selected Attachment A delegation rows, Attachment B inventory",
+      "not_claimed": "No full visual table-cell verification; no project-specific agreements reviewed"
+    },
+    {
+      "file": "consultant-procedures-2016.pdf",
+      "pages": 11,
+      "edition": "2016-09-09 revision of 2016-05-19",
+      "coverage": "Selected scope, procurement, negotiation, conflicts and management text PDF pages 1-9",
+      "not_claimed": "Not complete 11-page reading; linked selection guidelines/forms not read"
+    },
+    {
+      "url": "https://hidot.hawaii.gov/highways/library/",
+      "coverage": "Relevant current publication index"
+    },
+    {
+      "url": "https://www.fhwa.dot.gov/federalaid/stewardship/index.cfm",
+      "coverage": "Hawaii current agreement listing and update date"
+    },
+    {
+      "url": "https://hidot.hawaii.gov/highways/23-cfr-172-procedures/",
+      "coverage": "Procedure and linked form inventory"
+    },
+    {
+      "url": "https://hidot.hawaii.gov/administration/ocr/dbe/",
+      "coverage": "Full current page text including transition/2026 notices; rechecked before report preservation"
+    },
+    {
+      "url": "https://www.mauimpo.org/",
+      "coverage": "Current introductory about/scope text; rechecked before report preservation; linked boundary not reviewed"
+    },
+    {
+      "url": "https://hidot.hawaii.gov/highways/other/other-related-links/stip/",
+      "coverage": "Program introductory/scope text; no full TIP/STIP review"
+    },
+    {
+      "url": "https://hidot.hawaii.gov/highways/other/federal-aid-highways-and-state-highway-system-update/",
+      "coverage": "2025 update dates and introduction; linked full reports not read"
+    },
+    {
+      "url": "https://hidot.hawaii.gov/administration/stp-2/state-management-plan/",
+      "coverage": "Introductory program scope only; not full plan"
+    },
+    {
+      "url": "https://hidot.hawaii.gov/administration/fta-grant-programs/",
+      "coverage": "Introductory program/administrator inventory only"
+    }
+  ],
+  "source_limits": [
+    "Current executed county MOAs absent from retrieved appendices; existence elsewhere unresolved",
+    "Published old manual does not establish current thresholds/timers/retention",
+    "Exact current adopted MPO boundary geometry not reviewed",
+    "No statewide DBE process completion established"
+  ],
+  "checkout": {
+    "path": "/home/nathaniel/code/openplan",
+    "initial_head": "01f0fd0390b578de282802deb53b33cf98208047",
+    "initial_status_change_count": 18,
+    "final_head": "9ec130264da3ad0c6d9a56fdbf39de979a251685",
+    "final_status_short": "",
+    "observed_at_utc": "2026-09-05T01:43:39.843064+00:00",
+    "research_checkout_writes": false,
+    "tests_or_apps_run": false
+  },
+  "report_word_count": 1475
+}

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "dot-uniform-guidance",
+    "url": "https://www.transportation.gov/mission/administrations/office-grants-and-financial-assistance/federal-grant-regulations-and",
+    "page_last_updated": "2026-01-28",
+    "retrieved_at": "2026-09-05T01:38:23.825715+00:00",
+    "reading_coverage": "Full substantive HTML text read via web extraction; linked regulations and OMB memorandum not read.",
+    "visual_inspection": false,
+    "retrieval_error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "id": "fhwa-competitive-grant-costs",
+    "url": "https://highways.fhwa.dot.gov/iija/allowable-use-fhwa-financial-assistance-activities-related-competitive-grants",
+    "page_last_updated": "2025-01-31",
+    "retrieved_at": "2026-09-05T01:38:24.051439+00:00",
+    "reading_coverage": "Full substantive HTML Q&A and footnotes read via web extraction; linked PDF and cited regulations not separately read.",
+    "visual_inspection": false,
+    "retrieval_error": "HTTP Error 403: Forbidden"
+  }
+]
