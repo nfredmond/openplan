@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-05
 review_by: 2026-10-05
-reviewed_commit: b3bd18cd
+reviewed_commit: a26da924
 current_release: v0.44.0
 independent_contexts: 2
 trigger: crash-publication-false-output-correction
@@ -31,6 +31,7 @@ decisions:
 - complete-first-week-outcomes-before-release
 - test-shared-evidence-continuity-next
 paths:
+- docs/ops/V044_REPORT_DRAFT_CUSTODY_2026-09-05.md
 - docs/ops/V044_PROJECT_BOUNDARY_SELECTION_2026-09-05.md
 - docs/ops/V044_ARCHIVE_APPROVAL_BOUNDARY_2026-09-05.md
 - docs/ops/V044_SAFETY_MAP_SCALE_2026-09-05.md
@@ -47,6 +48,21 @@ paths:
 - docs/product/US_PLANNING_CAPABILITY_REGISTRY.json
 - docs/ROADMAP.md
 -->
+
+## Report draft correction addendum
+
+The next complete run on `a985cc8f` exposed generation from older saved content
+after rejected summary saves. Its Safety result is not accepted despite the
+agent's yes response. `a26da924` retains drafts, shows the unchanged field limits
+and requires saved metadata and evidence choices before generation. Empty crash
+selection now describes packet contents, not project-wide data absence.
+The 132 focused tests and TypeScript pass; a surviving no-op and targeted
+failures are retained, including an initially ineffective handler test.
+Full QA, rebuilt browser/PDF proof and a fresh complete outcome gate are pending.
+This correction does not change the selected next lane or constitute a new
+independent review. The two original reviews and their disagreement remain.
+
+## Earlier correction record
 
 The Safety journey found a new false-output blocker on `ac333fa2`: file-update
 metadata was presented as crash coverage. The complete twelve-job run was
