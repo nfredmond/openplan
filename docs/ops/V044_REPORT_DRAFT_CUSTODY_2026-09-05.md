@@ -117,3 +117,56 @@ are retained alongside the successful sizing experiment. The tracked
 `report-draft-stays-readable` regression measures actual controls at both widths,
 requires the full draft, and refuses to count a missing report as passing.
 Rebuilt proof of the correction and the complete release gate remain pending.
+
+## Rebuilt correction proof
+
+On clean `49b72040`, full QA again passed 12,968 app tests, 135 live isolation
+checks, the production dependency audit and build. The broader audit retains
+10 development advisories, two high, six moderate and two low. It is not clean.
+
+The visible front-door journey created QA report
+`f31c01a3-7b7a-4897-9c41-66534350450d` in workspace
+`5922324f-ef76-448e-aeb4-3c3f268807ea`. At desktop and 390px, all 2,152 draft
+characters remained, field limits were visible, no invalid PATCH or generation
+request occurred, and a valid edit still required saving. Reload retained the
+new narrative and acquisition `d56d06e6-38c9-4490-9aa3-848db65cca9b`.
+Generation then completed and actual PDF downloads succeeded at both widths.
+Six screenshots were inspected. Console and page errors were empty.
+
+Independent scoped database reads confirm the saved narrative and selection.
+Private-storage retrieval matches the native browser downloads exactly:
+
+| Packet | Artifact | Bytes | SHA-256 |
+| --- | --- | ---: | --- |
+| No selected acquisition | `519e48b5-0df7-497c-a77b-eb8117988e60` | 327246 | `15219f4adfb43344a1c0d117e520913788f8f5c099b29509d5ef483f2b5946e7` |
+| Saved narrative and selected acquisition | `7f67062d-1e27-4cf4-aeb8-f5afd9313d77` | 466639 | `43f09f686b52128a6c9f126de3c66573348e964680a0f8cc96528f1ff5306c4c` |
+
+All nine empty-selection and twelve selected-evidence PDF pages were rendered
+and inspected. The first packet describes missing packet selection, not absent
+project crash data. The second includes the saved narrative and exact acquisition,
+4,781 reported collisions, 4,123 mapped records and the missing-coordinate and
+publication-cutoff limits. The map and source disclosures remain legible.
+Existing split-card pagination is retained as layout debt, not lost content.
+Disabled Generate text is hard to read in the dark theme and is queued as 062;
+the adjacent save instruction is visible and the workflow completes.
+
+The actual tracked layout regression passes at both widths. A harmless CSS
+property survives; restoring content sizing fails on a 17,514-pixel panel in a
+1,440-pixel viewport. The first wrapper injected into the sandboxed preview and
+caused console errors; the next rejected an empty style. Both failed attempts are
+retained. The final main-page-only wrapper completes with no errors or writes.
+The report preview sandbox was not relaxed. Restoring the original draft before
+the regression runner takes its final screenshot means the mutation's failure
+measurement, not that cleanup screenshot, is the clipping evidence.
+
+Byte-verifier no-ops survive; changed or missing bytes fail. Old saved narrative,
+missing selection and changed PDF text fail their named checks. An initial PDF
+text mutation replaced only one of two narrative copies and survived; replacing
+both exposed the intended missing-narrative failure. This tests content presence
+and stored-byte concordance, not upstream accuracy or every possible contradiction.
+
+Raw evidence is in `report-draft-after-corrected/`,
+`report-layout-regression-proof-final/`, `report-draft-storage-proof-final.json`
+and the corresponding logs under the local release-check directory. Earlier
+reports and artifacts remain unchanged. Full twelve-journey acceptance and exact
+final-checkout CI remain required before tagging.

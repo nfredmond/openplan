@@ -225,9 +225,9 @@
       "evidence": "docs/ops/KNOWN_ISSUES.md"
     },
     {
-      "issueId": "KI-2026-09-05-028",
+      "issueId": "KI-2026-09-05-062",
       "capability": "gis-data-stewardship-documents-reports-and-public-records",
-      "gap": "Verify report field limits, preservation of unsaved drafts, and refusal to generate older saved content while edits remain pending",
+      "gap": "Keep disabled report-generation button text readable in the dark theme while preserving the save-before-generation refusal",
       "evidence": "docs/ops/V044_REPORT_DRAFT_CUSTODY_2026-09-05.md"
     }
   ]
