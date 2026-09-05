@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-05
 review_by: 2026-10-05
-reviewed_commit: ffc060e6
+reviewed_commit: 2415e709
 current_release: v0.44.0
 independent_contexts: 2
 trigger: crash-publication-false-output-correction
@@ -96,3 +96,24 @@ targeted mutation evidence is retained. No historical row was rewritten.
 Release inventory is 246 migrations. Full QA, real source/report browser proof,
 and all twelve outcomes must run again. This correction does not alter the
 scientific result, next capability investigation, or v1 scope.
+
+## Failed-acquisition follow-up
+
+`708a5d43` passed local full QA, remote CI, isolation, and both upgrade runs.
+Actual source retrieval and reloaded publication disclosures passed. One
+first-day browser session failed with resource errors; its cause is unknown.
+A fresh browser recovered the same account, and a new first-day journey
+completed without findings or console errors. The failed evidence is retained,
+and the reliability investigation is queued in the capability registry.
+
+Supplemental Reports inspection then found that the shared work queue falsely
+inferred absent observed records from failed acquisition counts. Safety showed
+completed acquisitions for the same area and years. `2415e709` corrects both
+summary producers without changing counts, records, geography or model logic.
+The regression failed before correction. A no-op survived; each producer's
+false-absence mutation failed separately. All 45 focused tests passed restored.
+
+This remains a false-output repair within the existing release, not a change
+in product direction. Retained independent reviews and their disagreement
+still apply. Full QA, rendered report proof, and a fresh complete twelve-job
+run are required before tagging. No completed subset substitutes for that gate.
