@@ -208,6 +208,19 @@ describe("SafetyWorkspace coverage disclosure", () => {
     expect(screen.getByText(/1,089 mappable/)).toBeInTheDocument();
   });
 
+  it.each(["Serious injury", "Injury", "Property damage only"])("does not show %s as zero when the source is fatal-only", async (label) => {
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest({ severityCompleteness: "fatal_only" })} studyArea={seededStudyArea()} />);
+    const choice = await screen.findByRole("button", { name: `${label} (not covered)` });
+    expect(choice).toBeDisabled();
+    expect(screen.queryByRole("button", { name: `${label} (0)` })).not.toBeInTheDocument();
+  });
+
+  it("does not offer a serious-injury zero when the source cannot separate injury severity", async () => {
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest()} studyArea={seededStudyArea()} />);
+    expect(await screen.findByRole("button", { name: "Serious injury (not covered)" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /^Injury \(/ })).toBeEnabled();
+  });
+
   it("shows that a long retrieval is still active instead of looking hung", async () => {
     const neverFinishes = new Promise<Response>(() => undefined);
     vi.stubGlobal("fetch", vi.fn((url: unknown, init?: RequestInit) =>
@@ -730,7 +743,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
     // about a road built on a missing column.
     const response = await realReadOnlyResponse([
       liveRecord({ externalId: "a", severity: "fatal" }),
-      liveRecord({ externalId: "b", severity: "injury" }),
+      liveRecord({ externalId: "b", severity: "fatal" }),
     ]);
     vi.stubGlobal("fetch", routedFetch(mockCrashResponse(), response) as unknown as typeof fetch);
 
@@ -751,8 +764,8 @@ describe("SafetyWorkspace coverage disclosure", () => {
     // A facet the source CAN answer stays live on the same screen, so the
     // disabled state above is a statement about that dimension and not an
     // outage of the whole panel.
-    fireEvent.click(screen.getByRole("button", { name: /^Injury/ }));
-    await waitFor(() => expect(screen.getByText(/Showing 1 of 2 mappable/i)).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: /^Fatal/ }));
+    await waitFor(() => expect(screen.getByText(/Showing 0 of 2 mappable/i)).toBeInTheDocument());
   });
 
   it("drops a live read when the study area changes, so one place's fatalities never plot on another", async () => {

@@ -73,12 +73,14 @@ describe("an import says what area it covered", () => {
     expect(list.textContent).toMatch(/km²/);
     // The county code is shown AS a code, not dressed up as a place.
     expect(list.textContent).toMatch(/county code 6067/i);
-    expect(list.textContent).toMatch(/crash year 2023/i);
+    expect(list.textContent).toMatch(/requested crash years: 2023/i);
   });
 
-  it("states the complete requested year span", () => {
+  it("states exact requested years without implying continuous observed coverage", () => {
     const list = renderHistory([{ ...BASE, yearsRequested: [2025, 2022, 2024] }]);
-    expect(list.textContent).toMatch(/crash years 2022–2025/i);
+    expect(list.textContent).toMatch(/requested crash years: 2022, 2024, 2025/i);
+    expect(list.textContent).not.toMatch(/2022–2025/);
+    expect(list.textContent).toMatch(/requested years do not establish source coverage/i);
   });
 
   it("tells a corridor-sized pull apart from a county-sized one", () => {

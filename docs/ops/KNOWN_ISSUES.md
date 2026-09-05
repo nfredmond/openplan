@@ -1,6 +1,6 @@
 # OpenPlan known issues
 
-**Reviewed:** 2026-09-04 against the v0.44.0 candidate.
+**Reviewed:** 2026-09-05 against the v0.44.0 candidate.
 This is a quality-boundary register, not a development queue. Scheduling lives
 only in `docs/ROADMAP.md`.
 
@@ -8,6 +8,10 @@ only in `docs/ROADMAP.md`.
 
 | ID | Severity | Boundary | Current disposition | Evidence |
 |---|---|---|---|---|
+| KI-2026-09-05-025 | High | Fatal-only acquisition filters displayed injury categories as zero, and import history described requested years as crash years. | Corrected in code and focused tests; clean-checkout browser verification remains required. Missing national injury coverage remains a capability gap, not zero. | Diagnostic first-week run `2026-09-05T02-17-34-837Z`, job 04, f1; `safety-workspace.test.tsx`; `an-import-says-what-area-it-covered.test.tsx` |
+| KI-2026-09-05-026 | High | A report's Evidence tab exposed legacy run prose and scores that its PDF correctly withheld. | Both consumers now share the same disclosure function, and the page reads the source metrics. Clean-checkout browser verification remains required. | Same diagnostic run, f3; `report-saved-summary-disclosure.test.tsx`; `report-detail-page.test.tsx` |
+| KI-2026-09-05-027 | Medium | A transient upstream response prevented crash-location ranking while totals loaded. Retrieving again restored it. | Queue a ranking-specific retry that does not require another acquisition; retain the explicit failure state. | Same diagnostic run, f2; server event `safety_ksi_concentrations_unavailable` at 02:22:26 UTC |
+| KI-2026-09-05-028 | Medium | A report summary over its accepted length receives a generic invalid-payload error without identifying the field or limit. A shorter summary saved. | Queue field-specific validation and a visible length limit; do not discard the draft. | Same diagnostic run, f4; 2,190 characters rejected, 1,499 saved |
 | KI-2026-08-24-001 | High | County and dual-demand outputs remain screening evidence. v0.41 repairs stable observation identity, signed TMAS coordinates, complete HPMS section geometry, full-geometry matching, and direction aggregation, but the result is synthetic expanded daily traffic rather than AADT. The model base year remains unknown and no use-specific acceptance rule was frozen. No untouched evidence supports a corridor, California, or nationwide accuracy claim. | Keep caveats, claim tiers, both model values, and negative studies intact. Treat the repaired coverage as an instrument result, not improved accuracy. Address demand and loading defects, then freeze a use-specific rule before opening an untouched holdout; do not average methods or change defaults from these diagnostics. | `data/modeling/comparable-observation-study-2026-08-28/study-report.md`; `docs/modeling/MODEL_VALIDATION_STRUCTURAL_DIAGNOSIS_RESULT_2026-08-28.md`; `docs/modeling/ACTIVITYSIM_RUNTIME_GAP.md` |
 | KI-2026-08-24-002 | High | ActivitySim can execute, but the available stock behavioral coefficients were estimated for another region. A locally fitted population does not make those choices locally calibrated. | Name coefficient provenance and keep output below locally validated claim tiers. | `docs/modeling/ACTIVITYSIM_RUNTIME_GAP.md` |
 | KI-2026-08-24-003 | Medium | Crash rates per modeled VMT lack a defensible denominator where the modeled road network does not cover the observed crash network. | Keep rates deferred; disclose source and road-coverage limits instead of treating unsupported roads as zero. | `docs/ROADMAP.md` |

@@ -305,15 +305,15 @@ export function LandUsePlanWorkbench({ planId }: { planId: string }) {
                     <Textarea id={`disposition-${release.id}`} placeholder="Disposition summary for external review"/>
                   ) : (
                     <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100">
-                      <p>Close the linked Engagement campaign and clear its moderation queue before freezing this review outcome.</p>
+                      <p>Close the linked public review and finish reviewing its comments before freezing this review outcome.</p>
                       <p className="mt-1">Campaign status: {linkedCampaign?.status ?? "unavailable"}.</p>
                       {release.engagement_campaign_id ? (
                         <div className="mt-2 flex flex-wrap gap-3">
                           <Link className="font-medium underline" href={`/engagement/${release.engagement_campaign_id}?tab=responses`}>
-                            Review moderation queue
+                            Review pending comments
                           </Link>
                           <Link className="font-medium underline" href={`/engagement/${release.engagement_campaign_id}?tab=setup`}>
-                            Open linked Engagement campaign
+                            Open linked public review
                           </Link>
                         </div>
                       ) : null}

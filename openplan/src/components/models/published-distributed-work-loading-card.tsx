@@ -26,7 +26,7 @@ export function PublishedDistributedWorkLoadingCard({ study }: { study: Publishe
         Census LODES8 places covered work-trip endpoints at block-supported road access points. Non-work trips keep their prior centroid loading. Missing, zero, unavailable, suppressed, unmapped, and unroutable states stay separate. This checkpoint does not change model defaults or claim calibration or validation.
       </p>
       <div className="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
-        <div><span className="font-semibold">Coverage</span><span className="mt-1 block text-muted-foreground">{geographies.length} counties · {records.length} separate method records</span></div>
+        <div><span className="font-semibold">Coverage</span><span className="mt-1 block text-muted-foreground">{geographies.length} counties · {records.length} separate method results</span></div>
         <div><span className="font-semibold">Method treatment</span><span className="mt-1 block text-muted-foreground">AequilibraE and ActivitySim stay separate. No average or national rescue.</span></div>
         <div><span className="font-semibold">Rollout</span><span className="mt-1 block text-muted-foreground">{study.candidateAdvanced ? "Development gate met; defaults still unchanged" : "Candidate retained and retired"}</span></div>
       </div>

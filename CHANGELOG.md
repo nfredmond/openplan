@@ -19,6 +19,16 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Migration required.** `20260904000001_persist_fars_crashes.sql`,
+`persist_fars_crashes`, allows
+national FARS fatal-crash acquisitions to be saved and attached to project
+reports. It changes the source constraint without deleting crash records.
+FARS does not establish all-severity or serious-injury totals. Safety clears
+previous-area evidence when the study area changes, and reports withhold
+legacy summary prose that contradicts their recorded source limitations.
+
+Saved land-use plan content can now be edited from the plan workbench.
+
 ## 0.44.0 — 2026-09-01
 
 **Migration required.** Run `npm exec -- supabase migration up --linked`

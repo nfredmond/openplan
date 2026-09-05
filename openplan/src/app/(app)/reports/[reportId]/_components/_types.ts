@@ -51,6 +51,7 @@ export type LinkedRunRow = {
   id: string;
   title: string;
   summary_text: string | null;
+  metrics?: Record<string, unknown> | null;
   created_at: string;
 };
 

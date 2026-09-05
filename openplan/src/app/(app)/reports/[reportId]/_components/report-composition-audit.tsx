@@ -2,6 +2,7 @@ import { Clock3, Hash, Sparkles } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { formatDateTime, titleize } from "@/lib/reports/catalog";
+import { presentRunSummary } from "@/lib/analysis/run-summary-presentation";
 import type { LinkedRunRow, ReportArtifact, ReportSectionRow, TypedRunCitation } from "./_types";
 
 type Props = {
@@ -92,7 +93,9 @@ export function ReportCompositionAudit({
             />
           ) : (
             <>
-              {runs.map((run) => (
+              {runs.map((run) => {
+                const summary = presentRunSummary(run.summary_text, run.metrics);
+                return (
                 <div
                   key={run.id}
                   className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3"
@@ -100,14 +103,15 @@ export function ReportCompositionAudit({
                   <h4 className="text-sm font-semibold tracking-tight">
                     {run.title}
                   </h4>
-                  <p className="mt-1 line-clamp-2 text-[0.82rem] leading-relaxed text-muted-foreground">
-                    {run.summary_text || "No run summary available."}
+                  <p className={`mt-1 text-[0.82rem] leading-relaxed text-muted-foreground${summary.withheld ? "" : " line-clamp-2"}`}>
+                    {summary.text}
                   </p>
                   <p className="mt-2 text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">
                     Created {formatDateTime(run.created_at)}
                   </p>
                 </div>
-              ))}
+                );
+              })}
               {typedCitations.map((citation) => (
                 <div
                   key={citation.id}

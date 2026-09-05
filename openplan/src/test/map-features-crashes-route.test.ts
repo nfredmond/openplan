@@ -316,15 +316,27 @@ describe("GET /api/map-features/crashes", () => {
     }
   });
 
-  /**
-   * The heart of this lane. Crash coverage is state-scoped for anything the
-   * database will store, so a workspace outside that footprint must be TOLD it
-   * has no acquirable source — an empty layer there would otherwise read as
-   * "no crashes here", which is the opposite of what is known.
-   */
-  it("states the coverage gap, and names the source it checked, outside the storable footprint", async () => {
+  // FARS now makes the non-California fixture persistable, but it still needs
+  // an acquisition. A configured source alone is not observed crash data.
+  it("recognizes national FARS coverage outside California without inventing acquired data", async () => {
     asMember();
     workspaceMaybeSingleMock.mockResolvedValue({ data: UNCOVERED_WORKSPACE_ROW, error: null });
+    const payload = (await (await getCrashes(bareRequest())).json()) as CrashPayload;
+    expect(payload.scopeState).toBe("covered");
+    expect(payload.features).toEqual([]);
+    expect(payload.acquisitionState).toBe("none");
+  });
+
+  it("states the coverage gap, and names the source it checked, outside the storable footprint", async () => {
+    asMember();
+    workspaceMaybeSingleMock.mockResolvedValue({ data: {
+      home_geography_source: "manual",
+      home_geography_label: "Wellington, New Zealand",
+      home_min_lon: 174.7,
+      home_min_lat: -41.4,
+      home_max_lon: 174.9,
+      home_max_lat: -41.2,
+    }, error: null });
 
     const response = await getCrashes(bareRequest());
 
@@ -332,8 +344,9 @@ describe("GET /api/map-features/crashes", () => {
     expect(payload.scopeState).toBe("out_of_coverage");
     expect(payload.features).toEqual([]);
     const gap = payload.coverageNotes[0];
-    expect(gap).toContain("Franklin County, OH");
+    expect(gap).toContain("Wellington, New Zealand");
     expect(gap).toContain("California Crash Reporting System (CCRS)");
+    expect(gap).toContain("Fatality Analysis Reporting System");
     expect(gap).toContain("This is not evidence that no crashes occurred.");
   });
 

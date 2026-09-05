@@ -106,9 +106,9 @@ describe("Land Use Plans route boundaries", () => {
     const detailRoute = readFileSync(path.join(API_ROOT, "route.ts"), "utf8");
     const workbench = readFileSync(path.resolve(__dirname, "../components/land-use-plans/land-use-plan-workbench.tsx"), "utf8");
     expect(detailRoute).toContain("engagement_campaign_id");
-    expect(workbench).toContain("Close the linked Engagement campaign and clear its moderation queue before freezing this review outcome.");
-    expect(workbench).toContain("Review moderation queue");
-    expect(workbench).toContain("Open linked Engagement campaign");
+    expect(workbench).toContain("Close the linked public review and finish reviewing its comments before freezing this review outcome.");
+    expect(workbench).toContain("Review pending comments");
+    expect(workbench).toContain("Open linked public review");
     expect(workbench).toContain('release.review_method === "external_process"');
     expect(workbench).toContain("review-close-error");
   });

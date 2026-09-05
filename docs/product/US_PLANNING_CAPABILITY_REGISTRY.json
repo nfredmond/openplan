@@ -8,7 +8,7 @@
   "readinessRegistry": {
     "schema": "openplan.jurisdiction-readiness.v1",
     "path": "openplan/src/lib/jurisdiction-readiness/registry.v1.json",
-    "sha256": "5e60afc325d8650a4d418e3e79b951ab0579b29115557e28f2f0bd3b9e560759"
+    "sha256": "ba3a8a2216c18bbf96d8a195467c6c8d6ee5f4d5cbc730511394a4ae5e908c11"
   },
   "dimensions": {
     "planner": [
@@ -110,5 +110,19 @@
     "docs/modeling/STRUCTURAL_DEMAND_DIAGNOSIS_RESULT_2026-08-28.md",
     "docs/ops/V044_DISTRIBUTED_WORK_LOADING_PROOF_2026-09-01.md",
     "docs/ops/KNOWN_ISSUES.md"
+  ],
+  "queuedFirstWeekFindings": [
+    {
+      "issueId": "KI-2026-09-05-027",
+      "capability": "transit-active-transportation-freight-and-safety-planning",
+      "gap": "Retry a failed crash-location ranking without another acquisition",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-028",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Identify the field and length limit when report metadata validation fails",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    }
   ]
 }
