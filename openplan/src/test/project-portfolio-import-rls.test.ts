@@ -402,6 +402,32 @@ liveDescribe("reviewed portfolio import live authorization and transaction", () 
     expect(reconsidered.data).toMatchObject({ created: 1 });
   });
 
+  it.each([1, 2])("retains an unknown price year through the v%s transaction without losing cost provenance", async (version) => {
+    const sourceHash = randomUUID().replaceAll("-", "").repeat(2);
+    const source = await insertCsvSource(service, fixture.workspaceA, sourceHash);
+    const baseRow = version === 1
+      ? reviewedRow({ name: `Unknown year v${version}` })
+      : workbookRow({ worksheetIndex: 0, fingerprint: "b".repeat(64), name: `Unknown year v${version}`, sourceId: "UNKNOWN-YEAR" });
+    const row = {
+      ...baseRow,
+      estimatedCost: { amount: "4200000", currency: "USD", priceYear: null },
+      state: "warning", warnings: [{ code: "unknown_price_year", message: "Price year is unknown." }],
+    };
+    const committed = await service.rpc(
+      version === 1 ? "commit_project_portfolio_import" : "commit_project_portfolio_import_v2",
+      version === 1 ? rpcArgs(fixture, source, sourceHash, [row]) : workbookRpcArgs(fixture, source, sourceHash, [row])
+    );
+    expect(committed.error).toBeNull();
+    expect(committed.data).toMatchObject({ created: 1 });
+    const projectId = (committed.data as { projectIds: string[] }).projectIds[0];
+    const project = await owner.from("projects")
+      .select("estimated_cost_amount,estimated_cost_currency,estimated_cost_basis_year,estimated_cost_source_document_id")
+      .eq("id", projectId).single();
+    expect(project.error).toBeNull();
+    expect(Number(project.data?.estimated_cost_amount)).toBe(4_200_000);
+    expect(project.data).toMatchObject({ estimated_cost_currency: "USD", estimated_cost_basis_year: null, estimated_cost_source_document_id: source });
+  });
+
   it("rolls back the whole batch on malformed row data and on a concurrent identity race", async () => {
     const rollbackHash = "2".repeat(64);
     const rollbackSource = await insertCsvSource(service, fixture.workspaceA, rollbackHash);

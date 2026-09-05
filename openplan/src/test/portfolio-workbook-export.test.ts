@@ -57,6 +57,24 @@ const projects = [
 ];
 
 describe("portfolio XLSX round-trip", () => {
+  it("round-trips an estimated cost whose price year is unknown without inventing a default", async () => {
+    const bytes = buildPortfolioRoundTripWorkbook({
+      workspaceId: "44444444-4444-4444-8444-444444444444", workspaceName: "OpenPlan QA",
+      projects: [{ ...projects[0], estimated_cost_basis_year: null }], generatedAt,
+    });
+    const review = await reviewPortfolioWorkbook({
+      bytes, filename: "portfolio.xlsx", contentType: PORTFOLIO_ROUND_TRIP_CONTENT_TYPE,
+      configurations: [{
+        worksheetIndex: 0, headerRow: 1, mapping: PORTFOLIO_ROUND_TRIP_MAPPING,
+        defaults: { planType: "capital_program", status: "draft", deliveryPhase: "programming", cost: { currency: "USD", scale: "ones", priceYear: 2026 } },
+      }],
+    });
+    expect(review.rows[0]).toMatchObject({
+      estimatedCost: { amount: "12500000.25", currency: "CAD", priceYear: null },
+      canCreate: true, errors: [], warnings: [{ code: "unknown_price_year" }],
+    });
+  });
+
   it("re-enters the reviewed importer with exact row-level project fields and no formulas", async () => {
     const bytes = buildPortfolioRoundTripWorkbook({
       workspaceId: "44444444-4444-4444-8444-444444444444",

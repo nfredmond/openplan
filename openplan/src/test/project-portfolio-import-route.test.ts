@@ -157,6 +157,24 @@ describe("POST /api/projects/import", () => {
     expect(rpcMock).not.toHaveBeenCalled();
   });
 
+  it("carries an unknown cost year through exact-byte preview and the existing atomic commit", async () => {
+    const unknownYear = configurations.map((config) => ({
+      ...config, defaults: { ...config.defaults, cost: { ...config.defaults.cost, priceYear: null } },
+    }));
+    const response = await POST(request({ ...basePayload, configurations: unknownYear, mode: "preview" }));
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.review.rows[0]).toMatchObject({
+      estimatedCost: { amount: "12500000", currency: "CAD", priceYear: null },
+      warnings: [{ code: "unknown_price_year" }],
+    });
+    const committed = await POST(request({ ...basePayload, configurations: unknownYear, mode: "commit", approvedPreviewHash: body.review.previewHash }));
+    expect(committed.status).toBe(201);
+    expect(rpcMock).toHaveBeenCalledWith("commit_project_portfolio_import_v2", expect.objectContaining({
+      p_rows: [expect.objectContaining({ estimatedCost: { amount: "12500000", currency: "CAD", priceYear: null } })],
+    }));
+  });
+
   it("returns payload-too-large for a stored source above 10 MiB", async () => {
     storageBytes = new Uint8Array(10 * 1024 * 1024 + 1);
     sourceRows[0].checksum = createHash("sha256").update(storageBytes).digest("hex");
