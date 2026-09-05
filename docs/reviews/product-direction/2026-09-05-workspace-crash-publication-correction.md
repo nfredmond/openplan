@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-05
 review_by: 2026-10-05
-reviewed_commit: f01ced15
+reviewed_commit: 7b0f0d9c
 current_release: v0.44.0
 independent_contexts: 2
 trigger: crash-publication-false-output-correction
@@ -56,6 +56,12 @@ Each contributor retains separate metadata, and no common cutoff is invented
 for a merged analysis. The 140 focused tests and TypeScript pass. A no-op
 survived and 18 semantic mutations failed. Full QA, current browser/report
 proof, and a new complete outcome gate remain required before tagging.
+
+The first full QA attempt then exposed a stale 0.42 readiness-version assertion
+and an unhandled copy-confirmation timer after leaving the evidence panel.
+The assertion is updated and the timer now has unmount cleanup. Both have
+surviving no-op and targeted failure evidence. These are verification repairs,
+not a new product lane. Full QA must run again; its earlier failure is retained.
 
 The two independent milestone reviews remain the retained reviews linked
 above. This is a synthesizer's correction addendum, not two new independent
