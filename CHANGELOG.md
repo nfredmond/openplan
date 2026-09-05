@@ -19,6 +19,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.44.0 — 2026-09-05
+
 - Safety repeat acquisitions now retain separate crash and person records. Apply
   `20260905000002_safety_acquisition_custody.sql` (`safety_acquisition_custody`)
   before deploying. Existing rows
@@ -43,7 +45,10 @@ legacy summary prose that contradicts their recorded source limitations.
 
 Saved land-use plan content can now be edited from the plan workbench.
 
-## 0.44.0 — 2026-09-01
+Unsourced land-use legal descriptors no longer show a source-review date.
+Model agreement maps now use the worker's exact rounding without widening the
+validation tolerance. Stored model artifacts download as files rather than
+opening raw JSON in a separate browser tab.
 
 **Migration required.** Run `npm exec -- supabase migration up --linked`
 before deploying. Migrations

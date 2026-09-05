@@ -116,6 +116,12 @@
   ],
   "queuedFirstWeekFindings": [
     {
+      "issueId": "KI-2026-09-05-054",
+      "capability": "travel-demand-corridor-scenario-and-performance-analysis",
+      "gap": "Use desktop width for model artifacts without compressing the download controls",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
       "issueId": "KI-2026-09-05-048",
       "capability": "travel-demand-corridor-scenario-and-performance-analysis",
       "gap": "Render saved comparison assumptions and their retained source basis readably",

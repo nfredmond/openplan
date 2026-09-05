@@ -113,3 +113,45 @@ Supplemental proofs and continuation notes are under
 The published distributed-loading candidate remains retired and inconclusive.
 Frozen studies, untouched holdouts, separate methods, and production defaults
 remain unchanged.
+
+## Rebuilt proof on 8a7faf99
+
+The rebuilt production server identified itself as commit
+`8a7faf9941aa74a7d56090103ca1bc7c24ff8d38`. A wrong-commit control refused
+to begin the browser journey. From the public landing page, the test signed
+in, opened Travel modeling through visible navigation, and opened the existing
+AequilibraE model. It clicked the actual artifact controls and saved browser
+download events, not authenticated API responses substituted for downloads.
+
+For baseline run `fccfaceb-c52a-4636-881e-9742f284fefb`, all three files downloaded
+at both desktop and 390px. Each copy matches its registered content hash and
+the independently checked worker file:
+
+| File | Bytes | SHA-256 |
+|---|---:|---|
+| Assessment | 3,127 | `9f475ffdba413657d2b1ac63d6d6a612008803030f85327dbf72c122cfeefb59` |
+| Comparison basis | 1,905 | `482bd0d4b071761cfc09781d22e7f2cfee568a3c3a95ddeed399ab53345b7fac` |
+| Input bundle | 5,433 | `6ac174cee5b5c4223975e806f38ccac88908ab1b88292f007cd1e6e1e44eaabc` |
+
+Both screenshots were inspected. The artifact column wastes desktop space,
+now issue 054, but the controls are readable. Document width matched both
+viewports. Console and page errors across the primary page and popups were zero.
+The six saved files are under the local `native-downloads-proof/` directory.
+
+Full local QA exited zero: 12,897 app tests, 135 live isolation tests, production
+dependency audit with zero advisories, and production build. RLS 33958561776
+succeeded. CI 33958561817 was still running when this addendum was written.
+The full development-dependency audit is still not clean.
+
+The v0.44 changelog and release-ordering record now account for all 245
+migrations, ending at `20260905000002_safety_acquisition_custody.sql`. This
+prepares the candidate for the final fixed-checkout journey; it does not create
+a release tag or waive any outcome. The earlier Safety partial and land-use
+timeout remain preserved. No runtime code changed in this bookkeeping step.
+
+The migration record passed all five focused tests. A comment-only mutation
+survived. Moving the recorded high-water mark back one migration failed the
+245-versus-244 check and two related checks. Removing the actual custody
+migration name from the release section failed the missing-migration assertion.
+Both were restored and all five tests passed again. These checks establish
+metadata consistency, not successful application of the migrations.
