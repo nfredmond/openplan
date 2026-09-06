@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-05
 review_by: 2026-10-05
-reviewed_commit: baf2b110
+reviewed_commit: 05a80a87
 current_release: v0.44.0
 independent_contexts: 2
 trigger: crash-publication-false-output-correction
@@ -31,6 +31,7 @@ decisions:
 - complete-first-week-outcomes-before-release
 - test-shared-evidence-continuity-next
 paths:
+- docs/ops/V044_BROWSER_REFERENCE_CUSTODY_2026-09-05.md
 - docs/ops/V044_REPORT_PREVIEW_NAVIGATION_2026-09-05.md
 - docs/ops/V044_SCREENING_SHARE_CORRECTION_2026-09-05.md
 - docs/ops/V044_LEGACY_MODEL_DOWNLOAD_2026-09-05.md
@@ -52,6 +53,16 @@ paths:
 - docs/product/US_PLANNING_CAPABILITY_REGISTRY.json
 - docs/ROADMAP.md
 -->
+
+## Browser acceptance instrument addendum
+
+`05a80a87` corrects the pinned MCP's iframe-reference normalization, which caused
+six script errors after otherwise correct report navigation. The original failed
+run remains failed. A comment no-op survives and thirteen targeted mutations
+fail. Both runners use the same locked launcher; console rules and application
+permissions are unchanged. Final-launcher proof, exact-commit QA and another
+complete run remain required. This instrument repair does not change scientific
+acceptance, independent-review disagreement or the next engagement-evidence lane.
 
 ## Report preview navigation addendum
 
