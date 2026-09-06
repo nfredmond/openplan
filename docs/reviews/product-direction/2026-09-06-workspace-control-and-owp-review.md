@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-06
 review_by: 2026-10-05
-reviewed_commit: 4635f39d
+reviewed_commit: e6d25edd
 current_release: v0.44.0
 independent_contexts: 2
 trigger: independent-maintenance-review-before-owp-preparation
@@ -77,3 +77,9 @@ Current v0.44 remains unreleased. Its dated twelve-journey result remains nine p
 The implementation record names the independent reports, exact source hashes, surviving harmless mutations and targeted failures, native layout/keyboard evidence, retained local archives and uncertainty. Direction-guard and document checks are run after binding this synthesis to the actual completed source checkpoint. Remote CI is read separately after push; it is not implied by this review. No new human usefulness observation or full application/database acceptance is claimed.
 
 The source binding is 4635f39d. The direction check accepted a harmless comment and rejected reducing independent_contexts to one. The baseline was restored. Local document checks passed all six cases; final direction-wrapper checks are run on this binding. Remote CI remains a separate post-push check. The first proof attempt expected the field name in the error instead of its actual sentence; attribution was corrected and both controls rerun. Two commands were also initially dispatched with the wrong package-relative path and did not run; the corrected package-root invocations supersede them.
+
+## Bounded reassessment after the undated handoff
+
+Source checkpoint e6d25edd implements the independently identified missing-date handoff. The review above remains the preserved independent baseline, including its disagreements and open operational boundaries. Root re-read the affected reader, board and tests, reproduced the original omission in the actual browser, checked stored null-date custody, and exercised reassignment/completion plus outsider denial with caller-authorized clients. The [dated verification](../2026-09-06-handoffs/VERIFICATION.md) binds actual desktop/390px keyboard captures to source hashes and records a surviving comment plus eight rejected mutations. Focused lint and 61 behavioral tests passed. This is new bounded implementation evidence, not a new independent whole-product review or release campaign.
+
+The source change extends existing queue mapping; it adds no store, geography assumption, authority or agent write. It does not resolve amendment copying, queue truncation, whole-app usefulness, shared campaigns or OWP preparation. The canonical queue now starts with the remaining shared-campaign handoff and then the same M2d.1 OWP outcome. All contract perspectives, scientific boundaries, complete state/DC and organizational scope, acceptance failures and independent reports remain applicable without promotion. The review source binding advances to this inspected checkpoint; review date, review deadline and independent-context count do not change. CI remains separately checked after push.
