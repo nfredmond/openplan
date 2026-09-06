@@ -150,3 +150,10 @@ Nightly34025548482 succeeded; CI34025511248 is still running its full gate.
 Eight full-run journeys pass, Safety04 and Model05 are PARTLY, and the final two
 journeys are unfinished. Neither this focused correction nor remote CI changes
 those outcomes or authorizes a release.
+
+The completed run subsequently finished with nine passes and three partial
+outcomes. Exact a80be8db remote checks all succeeded. See the superseding
+[final outcome record](V044_FINAL_FIRST_WEEK_OUTCOMES_2026-09-06.md) for the
+additional model-evidence clarity gap, 123-file audit and unchanged release
+boundary. The technical correction is verified; complete release acceptance
+is not.
