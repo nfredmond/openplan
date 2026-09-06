@@ -1,0 +1,169 @@
+{
+  "reviewed": "2026-09-05",
+  "upstream_sha": "0df95ae62085a6ac0d0afd1ad40dee2e6c1356ab",
+  "hf25_sha": "1d952420fba87f3c6dee4f240de0f1a0fbc790e3",
+  "hf30_sha": "43046b85ec22d584a13f8098c2ed39c889e129c2",
+  "read": {
+    "upstream_README": "Full substantive rendered README; GitHub web source",
+    "src/timesfm/configs.py": "Full",
+    "pyproject.toml": "Full",
+    "LICENSE": "Header/license identification; standard Apache text not individually audited",
+    "src/timesfm/timesfm_2p5/timesfm_2p5_base.py": [
+      [
+        20,
+        96
+      ],
+      [
+        112,
+        233
+      ],
+      [
+        267,
+        299
+      ]
+    ],
+    "src/timesfm/timesfm_2p5/timesfm_2p5_torch.py": [
+      [
+        65,
+        92
+      ],
+      [
+        375,
+        420
+      ],
+      [
+        455,
+        515
+      ]
+    ],
+    "src/timesfm3/evaluator.py": [
+      [
+        20,
+        70
+      ],
+      [
+        135,
+        176
+      ]
+    ],
+    "tests/test_base_utils.py": [
+      [
+        1,
+        160
+      ]
+    ],
+    "model_cards_configs": "Full both HF README/config.json and3.0 LICENSE",
+    "paper": "arxiv2310.10688v4; abstract/introduction, sections3\u20134 and beginning5, AppendixA.1; incidental excerpts not counted full paper",
+    "gift-eval-pretrain-README.md": "Full short card; live main captured hash, no dataset rows downloaded"
+  },
+  "downloaded_not_substantively_read": [
+    "src/timesfm/utils/xreg_lib.py",
+    "src/timesfm3/configs.py"
+  ],
+  "not_performed": [
+    "weights downloads",
+    "installs",
+    "runtime inference",
+    "tests",
+    "benchmark replication",
+    "complete code/paper audit",
+    "training-membership verification"
+  ],
+  "files": [
+    {
+      "path": "LICENSE",
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "gift-eval-pretrain-README.md",
+      "bytes": 2069,
+      "sha256": "0a62c3bcab467c8f31ea790b03029d9e5ec6df20d2cb1a49f7e6e7a84bf4d04d"
+    },
+    {
+      "path": "head.json",
+      "bytes": 6640,
+      "sha256": "48b8c4bc3a287d55abd919970e85761e679759d2b8331251af2c384d89942338"
+    },
+    {
+      "path": "model25.json",
+      "bytes": 2648,
+      "sha256": "61b8dac6fc37b6d8073ac140f13ffecae08ceff3c046e8191b963ed26ce48d92"
+    },
+    {
+      "path": "model30.json",
+      "bytes": 1744,
+      "sha256": "9ca147f3d5390c66519629806fa4240798f90044694493215fe02e9fcdf1eb46"
+    },
+    {
+      "path": "pyproject.toml",
+      "bytes": 1052,
+      "sha256": "bdb1259b29f6e36a1aa3a86b1c0e9840907d40dd4e7d08402df38cb764fb3441"
+    },
+    {
+      "path": "src/timesfm/configs.py",
+      "bytes": 3617,
+      "sha256": "0bb2d1fb8f4980bb2f731dd980fc1fd8d0be291b235d3d3e642618052155035e"
+    },
+    {
+      "path": "src/timesfm/timesfm_2p5/timesfm_2p5_base.py",
+      "bytes": 15237,
+      "sha256": "35a9f096cf676b2d4c84b0bc6f66a756bea4c91e7e7da27d0b165ba95875bf57"
+    },
+    {
+      "path": "src/timesfm/timesfm_2p5/timesfm_2p5_torch.py",
+      "bytes": 18239,
+      "sha256": "3a84b663db6dc163fe30370181397c6752b952d071811643e1bc06c423ab7b7a"
+    },
+    {
+      "path": "src/timesfm/utils/xreg_lib.py",
+      "bytes": 20721,
+      "sha256": "4609b3c11aa1744db365c8a1f707f72a49b68948bc5d6b1e0ebd886772a3f4d2"
+    },
+    {
+      "path": "src/timesfm3/configs.py",
+      "bytes": 1933,
+      "sha256": "911e29ab7aa54b34dfa3ca5fe89b2564055b20da87ad490d2c63d64fa4fd3739"
+    },
+    {
+      "path": "src/timesfm3/evaluator.py",
+      "bytes": 9155,
+      "sha256": "4ad0ddc5e264206cf6db706b493c2b4f20bf6698e89b990a4c37c15089971af2"
+    },
+    {
+      "path": "tests/test_base_utils.py",
+      "bytes": 6692,
+      "sha256": "e95b29e9af4959e4485d495f64db025e395b26e98f6924e023a25d4ece806caf"
+    },
+    {
+      "path": "timesfm-2.5-200m-pytorch-README.md",
+      "bytes": 2496,
+      "sha256": "4c3f16633a3d8b9324904bf004429aced2ee009b84e64effb59a902520cc7f2e"
+    },
+    {
+      "path": "timesfm-2.5-200m-pytorch-config.json",
+      "bytes": 475,
+      "sha256": "cd3315b760d5cc7e278d7afdf41b897031ced888fc6c115bd9b3ac0ea2c47408"
+    },
+    {
+      "path": "timesfm-3.0-pytorch-LICENSE",
+      "bytes": 7270,
+      "sha256": "3e36db7240d23adb6ac6d7d931892dcc5706a14a7d31581f08c35d2f25736dfd"
+    },
+    {
+      "path": "timesfm-3.0-pytorch-README.md",
+      "bytes": 1436,
+      "sha256": "eb66e35dd67cc44dc711b18bc2b833d8f0fcd48892b7341042a5b4a36fc37228"
+    },
+    {
+      "path": "timesfm-3.0-pytorch-config.json",
+      "bytes": 1273,
+      "sha256": "ff17bbc07b792c5a904cca265b8468579d736a4fe84981da25eb871b0a125bc6"
+    },
+    {
+      "path": "tree.json",
+      "bytes": 52517,
+      "sha256": "1e96e8883557622b368d303045cdfa8cf3382fe988aeb4a8d366e241fe92cbe3"
+    }
+  ]
+}
