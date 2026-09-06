@@ -103,6 +103,10 @@ The v1 contract is not yet true:
 - the later report-corrected run on `b46f0a61` reached ten outcomes but failed
   model-evidence downloads. The bounded native-download and interruption-custody
   correction is implemented; complete clean-build acceptance is still required;
+- the next run on `2a547887` reached four outcomes, retained Safety as partly,
+  and was stopped for a false screening-note percentage and opposite advice.
+  `986ab86c` shares the existing zone-panel interpretation and corrects units.
+  This bounded repair still requires rebuilt proof and complete fresh outcomes;
 - the proof registry exposes many `partial`, `missing`, and `not-assessed`
   cells; those open cells block v1 even though they do not block this interim
   release;

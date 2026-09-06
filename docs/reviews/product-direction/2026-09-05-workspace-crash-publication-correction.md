@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-05
 review_by: 2026-10-05
-reviewed_commit: dddf4b0a
+reviewed_commit: 986ab86c
 current_release: v0.44.0
 independent_contexts: 2
 trigger: crash-publication-false-output-correction
@@ -31,6 +31,7 @@ decisions:
 - complete-first-week-outcomes-before-release
 - test-shared-evidence-continuity-next
 paths:
+- docs/ops/V044_SCREENING_SHARE_CORRECTION_2026-09-05.md
 - docs/ops/V044_LEGACY_MODEL_DOWNLOAD_2026-09-05.md
 - docs/ops/V044_REPORT_CORRECTED_OUTCOMES_2026-09-05.md
 - docs/ops/V044_REPORT_DRAFT_CUSTODY_2026-09-05.md
@@ -50,6 +51,18 @@ paths:
 - docs/product/US_PLANNING_CAPABILITY_REGISTRY.json
 - docs/ROADMAP.md
 -->
+
+## Screening-note correction addendum
+
+The fresh complete run on `2a547887` reached four outcomes and retained a partly
+Safety result before model job 05 exposed contradictory percentage and advice.
+`986ab86c` corrects the note's fraction conversion and uses the zone panel's
+existing interpretation. Nine new tests admit a harmless control and reject
+the original units, optimistic missing advice, stale text and false zero.
+This is a bounded false-output correction, not a changed scientific threshold
+or a new independent review. Both original reviews and their disagreement remain;
+engagement evidence continuity remains the selected next lane. Full QA, rebuilt
+browser proof, complete first-week outcomes and exact-commit CI are required.
 
 ## Older-model download and interruption correction addendum
 
