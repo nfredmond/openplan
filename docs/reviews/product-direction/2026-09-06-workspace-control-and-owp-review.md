@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-06
 review_by: 2026-10-05
-reviewed_commit: 2684d449
+reviewed_commit: 8c3ff6e2
 current_release: v0.44.0
 independent_contexts: 2
 trigger: independent-maintenance-review-before-owp-preparation
@@ -113,3 +113,9 @@ All practice families and agency types, every state/DC with California deepest, 
 Root inspected checkpoints `369c63c3` and `2684d449`: they add actual existing foreign-document/project and other-program-source refusal tests, their three failed predicate mutations and harmless control, final identified production/browser/HTTP evidence, KI-088's incomplete preparation boundary, and the completed local checkout archive. They change no production application code after the successful `11ecd1667aa5` build. All 54 mutation attempts remain attributed: six harmless survivors and 48 meaningful failures. The full application suite passed 13,171 tests with 118 skips; the final full live suite passed 141, followed by the seven-case focused suite containing the new foreign-object case. The dependency audit found no vulnerabilities; lint, TypeScript and the corrected focused integration guards passed. The interrupted parallel build, recovered dev-service failure, early source/HTTP mistakes and viewport misdiagnosis remain disclosed.
 
 The canonical main is the only active Git checkout and branch. The entire stopped development copy and registration metadata are retained locally as described in the implementation note; the :3000 and :3200 services were not updated or restarted. Their older running builds remain distinct from the tested source. The reviewer rechecked that the new operational note does not claim backup/restore, deployment, full preparation, v0.44 release or any broader contract milestone. The source binding advances to `2684d449` to include those inspected substantive evidence notes. Original independent reviews, dates, scope and unresolved outcomes remain unchanged. The direction guard is run against this binding before push; remote CI is checked separately on the resulting main commit.
+
+## CI shutdown timing correction
+
+Remote RLS Isolation `34066056817` and Upgrade Path `34066056943` passed for `51f11d25`. CI `34066056883` exposed a race in the disposable-process test: the HTTP child released its port before the npm session leader exited after TERM. Checkpoint `8c3ff6e2` waits, within the existing five-second bound, for both conditions. It changes no controller behavior or stopping authority. The actual isolated start/stop/restart and foreign-service refusal case passed locally; a comment mutation survived, while omitting TERM failed at the bounded shutdown assertion. Private logs and mutation output remain in the housekeeping archive. This check does not establish actual installed OpenPlan service recovery or power-loss durability.
+
+Root initially misread the expected hidden-focus mutation failures in the CI log as a second failure, then corrected that report: the native layout baseline and its harmless mutation passed, and the three consequential layout mutations failed as intended. The only genuine failure in that operations job was the shutdown timing assertion. This bounded test correction preserves the preparation priority and all remaining requirements above; it introduces no fresh independent review or release claim. The source binding includes the inspected test change. The replacement remote run must still finish before reporting CI success.
