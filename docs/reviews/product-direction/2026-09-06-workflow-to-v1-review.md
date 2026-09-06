@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-06
 review_by: 2026-10-05
-reviewed_commit: 42515335
+reviewed_commit: 0d2063c0
 current_release: v0.44.0
 independent_contexts: 2
 trigger: user-authorized-whole-product-consolidation-after-final-handoff
@@ -63,3 +63,7 @@ A contrary live reproduction can retire either suspected handoff defect. A real 
 ## Verification boundary
 
 Final first-week acceptance remains failed. The correction build has separate evidence, and the consolidation does not tag a release. The guard must reject an invalid independent-context count and accept a harmless metadata change. Consolidated-source test, mutation and CI results are recorded in `docs/reviews/2026-09-06-consolidation/VERIFICATION.md`; this record is bound to the final reviewed consolidation checkpoint before those checks are reported as current. Source bindings preserve the original independent contexts rather than claiming new reviews by changing metadata.
+
+The synthesizer reviewed consolidation checkpoints eebed768 and 0d2063c0, including the independently reviewed control corrections, source-only operational limits, preserved archive bytes and guard proof. These are reconciled changes, not a claim that the original independent contexts re-reviewed the implementation. Final verification and CI remain separate.
+
+Consolidation direction control: the restored check passes; changing only the trigger description survives; reducing independent_contexts to one fails with the expected two-context requirement. The roadmap initially lacked its required metadata block; that integration omission was corrected without changing the checker.

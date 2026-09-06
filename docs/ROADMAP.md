@@ -1,5 +1,37 @@
 # OpenPlan roadmap to v1
 
+<!-- openplan-active-roadmap
+reviewed_commit: 0d2063c0
+current_release: v0.44.0
+review_by: 2026-10-05
+paths:
+- AGENTS.md
+- CLAUDE.md
+- docs/product/V1_PRODUCT_CONTRACT.md
+- docs/product/AGENT_OPERATING_RULES.md
+- docs/product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md
+- docs/reviews/product-direction/2026-09-06-workflow-to-v1-review.md
+- openplan/scripts/ops/product-direction-review.mjs
+- openplan/src/test/product-direction-review-guard.test.ts
+- openplan/src/lib/safety/sources/registry.ts
+- openplan/src/lib/auth/role-matrix.ts
+- openplan/src/lib/runtime/action-metadata.ts
+- docs/ops/KNOWN_ISSUES.md
+- docs/modeling/WHERE_THE_NUMBER_STANDS_2026-08-20.md
+- docs/modeling/VALIDATION_OBSERVATION_UNCERTAINTY_RESEARCH_2026-08-25.md
+- docs/modeling/OPEN_SOURCE_MODEL_LANDSCAPE.md
+- openplan/docs/ops/BACKUP_AND_RESTORE.md
+- docs/ADRs/ADR-004-mcp-server-surface.md
+- qa-harness/FIRST-WEEK-HARNESS.md
+npm_commands:
+- product:direction:check
+- product:direction:packet
+- ops:restore-drill
+- test:workers
+- test:rls-live
+- qa:gate
+-->
+
 Current queue, consolidated September 6, 2026 after the development handoff at `cc6c3feb`. Findings R1-R13 refer to the [comprehensive review](reviews/TECHNICAL_PRODUCT_REVIEW_2026-09-06.md). Historical releases and scientific outcomes remain in their dated records. The latest twelve-journey run finished nine passes and three partial outcomes; v0.44 is not released. Its later report correction has separate verification, not a complete passing rerun.
 
 ## Destination and sequencing
