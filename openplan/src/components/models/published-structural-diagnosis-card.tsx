@@ -1,11 +1,18 @@
+"use client";
+
+import { useState } from "react";
 import type { PublishedStructuralDiagnosisStudy } from "@/lib/models/published-structural-diagnosis";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { StructuralDiagnosisExplanation } from "@/components/models/structural-diagnosis-explanation";
 
 export function PublishedStructuralDiagnosisCard({
   study,
 }: {
   study: PublishedStructuralDiagnosisStudy | null;
 }) {
+  const [selectedKey, setSelectedKey] = useState("");
+  const selected = study?.records.find((record) => `${record.geographyId}-${record.method}` === selectedKey)
+    ?? study?.records[0];
   if (!study) {
     return (
       <section aria-label="Frozen structural diagnosis" className="module-section-surface mb-6">
@@ -52,6 +59,23 @@ export function PublishedStructuralDiagnosisCard({
           Download study report
         </a>
       </div>
+      {selected ? <div className="mt-4 min-w-0 rounded border border-border/70 p-3">
+        <label className="block text-sm font-semibold">Frozen county and method
+          <select className="mt-1 block w-full min-w-0 rounded border border-border bg-background px-3 py-2 font-normal" value={`${selected.geographyId}-${selected.method}`} onChange={(event) => setSelectedKey(event.target.value)}>
+            {study.records.map((record) => <option key={`${record.geographyId}-${record.method}`} value={`${record.geographyId}-${record.method}`}>{record.geographyId} · {record.method}</option>)}
+          </select>
+        </label>
+        <p className="mt-2 text-xs text-muted-foreground">This is the published v{study.appVersion} diagnosis for {selected.geographyId} · {selected.method}, not a diagnosis of a current workspace run.</p>
+        <details className="mt-3 min-w-0">
+          <summary className="cursor-pointer text-sm font-semibold">Why this is inconclusive</summary>
+          <StructuralDiagnosisExplanation
+            diagnosis={selected.diagnosis}
+            sha256={selected.diagnosisSha256}
+            downloadHref={`/api/models/validation-structural-diagnosis/${selected.geographyId}/${selected.method}/structural-diagnosis.json`}
+            label={`Frozen diagnosis ${selected.geographyId} ${selected.method}`}
+          />
+        </details>
+      </div> : null}
       <details className="mt-4">
         <summary className="cursor-pointer text-sm font-semibold">County and method diagnosis files</summary>
         <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">

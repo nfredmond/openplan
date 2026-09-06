@@ -453,7 +453,7 @@ function geoPackageCandidate(project: ProjectIdentity): ProjectEvidenceCandidate
     custodyState: "rendered_on_freeze",
     uncertainty: [],
     knownLimits: [
-      "The GeoPackage contains the stored project area, location, and cartographic corridors. Other geographic layers remain outside this release.",
+      "This required GeoPackage includes available project area, site location, and corridors. It also automatically includes fatal and serious-injury crash locations from the latest ready project acquisition and approved public engagement locations that are eligible for export. Optional-file checkboxes do not exclude these geographic records. Inspect openplan_layer_status in the download for the exact included layers, counts, and unavailable coverage.",
     ],
     defaultSelected: true,
     required: true,

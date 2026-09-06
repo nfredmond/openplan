@@ -55,9 +55,9 @@ export function PublishedDistributedWorkLoadingCard({ study }: { study: Publishe
           </dl>
           <p className="mt-3 text-xs text-muted-foreground">Observed links loaded: {selected.baselineCoverage.loaded ?? 0} before, {selected.candidateCoverage.loaded ?? 0} after. {selected.advanced ? "Development gate met; no default changed." : "County-method candidate failed and was retired."}</p>
           <dl className="mt-3 min-w-0 space-y-2 text-xs">
-            <div><dt className="font-semibold">Work-loading file SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.inputSha256}</dd></div>
-            <div><dt className="font-semibold">Before-output audit SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.auditSha256}</dd></div>
-            <div><dt className="font-semibold">Development comparison SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.comparisonSha256}</dd></div>
+            <div><dt className="font-semibold">Work-loading file</dt><dd className="break-all font-mono text-muted-foreground">{selected.geographyId}-{selected.method}-distributed-work-loading-input-v1.json</dd><dt className="font-semibold">Work-loading file SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.inputSha256}</dd></div>
+            <div><dt className="font-semibold">Before-output audit file</dt><dd className="break-all font-mono text-muted-foreground">{selected.geographyId}-{selected.method}-pre-output-audit-v1.json</dd><dt className="font-semibold">Before-output audit SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.auditSha256}</dd></div>
+            <div><dt className="font-semibold">Development comparison file</dt><dd className="break-all font-mono text-muted-foreground">{selected.geographyId}-{selected.method}-development-comparison-v1.json</dd><dt className="font-semibold">Development comparison SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.comparisonSha256}</dd></div>
           </dl>
           <div className="mt-3 flex flex-wrap gap-3 text-xs font-semibold">
             <a download className="underline" href={`/api/models/distributed-work-loading/${selected.geographyId}/${selected.method}/distributed-work-loading-input-v1.json`}>Download selected loading file</a>

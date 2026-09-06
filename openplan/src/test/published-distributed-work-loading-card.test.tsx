@@ -20,10 +20,17 @@ describe("PublishedDistributedWorkLoadingCard", () => {
     expect(screen.getByText(/does not change model defaults/i)).toBeInTheDocument();
     expect(screen.getByText(/No average or national rescue/i)).toBeInTheDocument();
     expect(screen.getByTestId("selected-distributed-work-loading")).toHaveTextContent("aequilibrae");
+    for (const name of ["distributed-work-loading-input-v1.json", "pre-output-audit-v1.json", "development-comparison-v1.json"]) {
+      expect(screen.getByText(`fixture-aequilibrae-${name}`)).toBeVisible();
+    }
     expect(screen.getByText("b".repeat(64))).toHaveClass("break-all");
     expect(screen.getByRole("link", { name: "Download selected before-output audit" })).toHaveAttribute("href", expect.stringContaining("fixture/aequilibrae/"));
     fireEvent.click(screen.getByRole("button", { name: "ActivitySim" }));
     expect(screen.getByTestId("selected-distributed-work-loading")).toHaveTextContent("activitysim");
+    for (const name of ["distributed-work-loading-input-v1.json", "pre-output-audit-v1.json", "development-comparison-v1.json"]) {
+      expect(screen.getByText(`fixture-activitysim-${name}`)).toBeVisible();
+      expect(screen.queryByText(`fixture-aequilibrae-${name}`)).not.toBeInTheDocument();
+    }
     expect(screen.getByText("c".repeat(64))).toHaveClass("break-all");
     // Downloads must not enter Next's page-navigation state after an attachment.
     for (const link of screen.getAllByRole("link", { name: /^Download / })) {

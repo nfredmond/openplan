@@ -32,7 +32,7 @@ const INVENTORY = {
       claimTier: null,
       custodyState: "rendered_on_freeze",
       uncertainty: [],
-      knownLimits: ["Other geographic layers remain outside this release."],
+      knownLimits: ["Inspect openplan_layer_status for the exact included layers and unavailable coverage."],
       defaultSelected: true,
       required: true,
       selectable: true,

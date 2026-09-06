@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import dynamic from "next/dynamic";
 import { ModelRunEvidencePanel } from "@/components/models/model-run-evidence-panel";
+import { StructuralDiagnosisExplanation } from "@/components/models/structural-diagnosis-explanation";
 import { ModelRunHeadlineAnswer } from "@/components/models/model-run-headline-answer";
 import { ModelRunCeqaVmtScreen } from "@/components/models/model-run-ceqa-vmt-screen";
 import { ModelRunTripGenScreen } from "@/components/models/model-run-trip-gen-screen";
@@ -1755,21 +1756,6 @@ function ModelRunStagingAndArtifacts({
       ? (exactInputs.network_state_hashes as Record<string, unknown>)
       : null;
   const evidenceWriteFailed = run.claimDecision?.reason?.toLowerCase().includes("validation evidence write failed") ?? false;
-  const diagnosisFindings = Array.isArray(diagnosis?.findings)
-    ? diagnosis.findings.flatMap((value) => {
-        if (!value || typeof value !== "object" || Array.isArray(value)) return [];
-        const finding = value as Record<string, unknown>;
-        if (typeof finding.statement !== "string" || !finding.statement.trim()) return [];
-        return [{
-          category: typeof finding.category === "string" ? finding.category : "finding",
-          statement: finding.statement,
-          count: typeof finding.count === "number" && Number.isFinite(finding.count) ? finding.count : null,
-        }];
-      })
-    : [];
-  const diagnosisUnknownFacts = Array.isArray(diagnosis?.unknown_facts)
-    ? diagnosis.unknown_facts.filter((value): value is string => typeof value === "string")
-    : [];
 
   return (
     <div className="mt-4 min-w-0 max-w-full border-t pt-4">
@@ -1825,12 +1811,12 @@ function ModelRunStagingAndArtifacts({
             <div>
               <dt className="font-semibold text-foreground">Exact hashes</dt>
               <dd className="mt-1 break-all text-muted-foreground">
-                Basis {String(exactInputs?.comparison_basis_sha256 ?? "unknown").slice(0, 12)}… · model {String(exactInputs?.model_output_sha256 ?? "unknown").slice(0, 12)}…
+                Basis {String(exactInputs?.comparison_basis_sha256 ?? "unknown")} · model {String(exactInputs?.model_output_sha256 ?? "unknown")}
                 {networkStateHashes ? (
                   <>
-                    {" · network "}{String(networkStateHashes.network ?? "unknown").slice(0, 12)}…
-                    {" · observations "}{String(networkStateHashes.observation_package ?? "unknown").slice(0, 12)}…
-                    {" · pre-volume audit "}{String(networkStateHashes.pre_volume_match_audit ?? "unknown").slice(0, 12)}…
+                    {" · network "}{String(networkStateHashes.network ?? "unknown")}
+                    {" · observations "}{String(networkStateHashes.observation_package ?? "unknown")}
+                    {" · pre-volume audit "}{String(networkStateHashes.pre_volume_match_audit ?? "unknown")}
                   </>
                 ) : null}
               </dd>
@@ -1842,50 +1828,11 @@ function ModelRunStagingAndArtifacts({
             </p>
           ) : null}
           {scientificOutcome === "inconclusive" && diagnosisArtifact && diagnosis ? (
-            <section
-              aria-label="Why this model validation is inconclusive"
-              className="mt-4 rounded-[0.5rem] border border-amber-300/60 bg-amber-50/70 p-3 text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200"
-              data-testid="model-validation-structural-diagnosis"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <h5 className="font-semibold">Why this is inconclusive</h5>
-                  <p className="mt-1 text-xs">
-                    This diagnosis explains the frozen evidence. It does not repair matches, average methods,
-                    calibrate a model, or change the scientific outcome.
-                  </p>
-                </div>
-                <StatusBadge tone="warning">diagnosis only</StatusBadge>
-              </div>
-              {diagnosisFindings.length > 0 ? (
-                <ul className="mt-3 list-disc space-y-1 pl-5 text-xs">
-                  {diagnosisFindings.map((finding, index) => (
-                    <li key={`${finding.category}-${finding.statement}-${index}`}>
-                      {finding.count === null ? "" : `${finding.count.toLocaleString()} · `}
-                      {finding.statement}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="mt-3 text-xs">The exact diagnosis is available for review below.</p>
-              )}
-              {diagnosisUnknownFacts.length > 0 ? (
-                <p className="mt-3 text-xs">
-                  Evidence ledger still unknown: {diagnosisUnknownFacts.join(", ")}.
-                </p>
-              ) : null}
-              <p className="mt-3 break-all font-mono text-[11px]" data-testid="diagnosis-sha256">
-                SHA-256 {diagnosisArtifact.content_hash ?? String(diagnosis.diagnosis_sha256 ?? "unknown")}
-              </p>
-              <a
-                href={`/api/models/${modelId}/runs/${run.id}/artifacts/${diagnosisArtifact.id}/download`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 inline-flex text-xs font-semibold underline hover:text-foreground"
-              >
-                Download exact structural diagnosis
-              </a>
-            </section>
+            <StructuralDiagnosisExplanation
+              diagnosis={diagnosis}
+              sha256={diagnosisArtifact.content_hash ?? null}
+              downloadHref={`/api/models/${modelId}/runs/${run.id}/artifacts/${diagnosisArtifact.id}/download`}
+            />
           ) : null}
         </section>
       ) : evidenceWriteFailed ? (
