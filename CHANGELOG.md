@@ -21,6 +21,11 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## 0.44.0 — 2026-09-05
 
+- The run's screening explanation now converts stored trip shares to percentages
+  and uses the same interpretation as the adjacent zone-resolution panel. It no
+  longer displays 29.7% as 0.3% or assumes missing advice supports link comparison.
+  Stored results and scientific thresholds are unchanged; no migration is needed.
+
 - Older model-evidence panels now save attachments without disrupting subsequent
   downloads or model navigation. Comparable-observation files show their exact
   filenames and frozen hashes beside the controls. Existing scientific records
