@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-06
 review_by: 2026-10-05
-reviewed_commit: 8e860ca8
+reviewed_commit: e54b6e36
 current_release: v0.44.0
 independent_contexts: 2
 trigger: completed-distributed-loading-checkpoint-and-failed-first-week-outcomes
@@ -36,6 +36,7 @@ paths:
 - docs/reviews/product-direction/independent/2026-09-06-a.md
 - docs/reviews/product-direction/independent/2026-09-06-b.md
 - docs/ops/V044_DRAFT_AND_DIAGNOSIS_CORRECTION_2026-09-06.md
+- docs/ops/V044_EMPTY_REPORT_EVIDENCE_2026-09-06.md
 - docs/ops/KNOWN_ISSUES.md
 - docs/product/V1_PRODUCT_CONTRACT.md
 - docs/product/US_PLANNING_CAPABILITY_MATRIX.md
@@ -52,6 +53,29 @@ reviewed `e709e2ff`, which simplifies fallback wording and fixes a test's timer
 observation without changing production timer behavior or any acceptance rule.
 
 ## Agreement and release boundary
+
+### September6 report-evidence follow-up
+
+The synthesizer reviewed `e54b6e36`, superseding this record's earlier
+`8e860ca8` binding. The two independent reports remain unchanged and did not
+review this later correction. No new independent review is claimed.
+
+The new full run on `648504cf` found that Projects and related filters counted
+an empty report's metadata as evidence. The correction uses the existing
+nonempty-evidence definition and retains model-only counts and their original
+claim label. It introduces no new module, write path or scientific rule. The
+original browser behavior and targeted regression mutations are documented in
+`docs/ops/V044_EMPTY_REPORT_EVIDENCE_2026-09-06.md`. Corrected-build QA is still
+pending at this checkpoint. Main remains unchanged while the full run finishes.
+
+The new run has already recorded partial Safety and model05 outcomes. Neither
+the report-label fix nor green technical tests supplies construction benefits,
+local forecast validity or a value-for-money case. Release remains withheld;
+the direction and full v1 scope below are unchanged. Complete the false-evidence
+correction and preserve all remaining journey outcomes before selecting the
+next queued product work.
+
+### Earlier independent review
 
 Both reviewers withhold release. The complete twelve-job attempt on `bd865625`
 had ten yes outcomes, a completed partial corridor job and a timed-out evidence
