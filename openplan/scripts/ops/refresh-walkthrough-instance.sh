@@ -166,6 +166,13 @@ npm ci
 step "Building"
 npm run build
 
+# The safe controller builds a disposable candidate, then promotes it while
+# retaining the previous directory for recovery. Never restart from preparation.
+if [ "${OPENPLAN_REFRESH_PREPARE_ONLY:-0}" = "1" ]; then
+  step "Candidate prepared; no service restarted"
+  exit 0
+fi
+
 step "Restarting $SERVICE"
 systemctl --user restart "$SERVICE"
 sleep 3

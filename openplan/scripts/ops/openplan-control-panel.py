@@ -317,18 +317,34 @@ class ControlPanel:
 
         LOG_DIR.mkdir(parents=True, exist_ok=True)
 
-        # Sized so the output pane still has room after everything above it.
-        # At 880x680 the panes above claimed the space and the output area
-        # collapsed to a single line — which is where every long-running job
-        # reports its progress, so it cannot be the part that gets squeezed.
         root.title("OpenPlan Control")
         # Offset from the corner rather than centred: centred, it opens directly
         # underneath whatever terminal or editor is already there.
         root.geometry("980x1000+60+60")
         root.minsize(860, 720)
 
-        self._build_status(root)
-        self._build_actions(root)
+        # Keep output available while status and actions scroll at smaller sizes
+        # or larger desktop font scales. Keyboard focus reveals hidden actions.
+        root.columnconfigure(0, weight=1)
+        root.rowconfigure(0, weight=3)
+        root.rowconfigure(1, weight=2, minsize=220)
+        upper = ttk.Frame(root)
+        upper.grid(row=0, column=0, sticky="nsew")
+        self.controls_canvas = tk.Canvas(upper, highlightthickness=0, takefocus=0)
+        scrollbar = ttk.Scrollbar(upper, orient="vertical", command=self.controls_canvas.yview)
+        scrollbar.pack(side="right", fill="y")
+        self.controls_canvas.pack(side="left", fill="both", expand=True)
+        self.controls_canvas.configure(yscrollcommand=scrollbar.set)
+        self.controls = ttk.Frame(self.controls_canvas)
+        content = self.controls_canvas.create_window((0, 0), window=self.controls, anchor="nw")
+        self.controls_canvas.bind("<Configure>", lambda event: self.controls_canvas.itemconfigure(content, width=event.width))
+        self.controls.bind("<Configure>", lambda event: self.controls_canvas.configure(scrollregion=self.controls_canvas.bbox("all")))
+        root.bind("<FocusIn>", self._reveal_control, add="+")
+        root.bind("<Button-4>", self._scroll_controls, add="+")
+        root.bind("<Button-5>", self._scroll_controls, add="+")
+        root.bind("<MouseWheel>", self._scroll_controls, add="+")
+        self._build_status(self.controls)
+        self._build_actions(self.controls)
         self._build_output(root)
 
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
@@ -340,6 +356,34 @@ class ControlPanel:
         self.say("")
 
     # -- layout ------------------------------------------------------------
+
+    def _in_controls(self, widget) -> bool:
+        while widget is not None:
+            if widget in (self.controls, self.controls_canvas):
+                return True
+            widget = getattr(widget, "master", None)
+        return False
+
+    def _scroll_controls(self, event) -> None:
+        if self._in_controls(event.widget):
+            direction = -1 if event.num == 4 or getattr(event, "delta", 0) > 0 else 1
+            self.controls_canvas.yview_scroll(direction * 3, "units")
+
+    def _reveal_control(self, event) -> None:
+        if not self._in_controls(event.widget):
+            return
+        self.root.update_idletasks()
+        canvas = self.controls_canvas
+        top = event.widget.winfo_rooty() - self.controls.winfo_rooty()
+        bottom = top + event.widget.winfo_height()
+        visible_top = canvas.canvasy(0)
+        height = canvas.winfo_height()
+        if top < visible_top or bottom > visible_top + height:
+            target = top - 8 if top < visible_top else bottom - height + 8
+            canvas.yview_moveto(max(0, target) / max(1, self.controls.winfo_height()))
+
+    def _wrap_to_width(self, label: tk.Label) -> None:
+        label.bind("<Configure>", lambda event: label.configure(wraplength=max(40, event.width - 4)))
 
     def _build_status(self, root: tk.Tk) -> None:
         box = ttk.LabelFrame(root, text="  What's running right now  ", padding=12)
@@ -364,16 +408,17 @@ class ControlPanel:
             row = ttk.Frame(box)
             row.pack(fill="x", pady=4)
             dot = tk.Label(row, text="●", fg=IDLE, font=("", 15))
-            dot.grid(row=0, column=0, rowspan=2, padx=(0, 10), sticky="n")
-            tk.Label(row, text=title, font=("", 11, "bold"), anchor="w", width=28).grid(
+            dot.grid(row=0, column=0, rowspan=3, padx=(0, 10), sticky="n")
+            tk.Label(row, text=title, font=("", 11, "bold"), anchor="w").grid(
                 row=0, column=1, sticky="w"
             )
-            tk.Label(row, text=hint, fg=IDLE, anchor="w", width=28).grid(
+            tk.Label(row, text=hint, fg=IDLE, anchor="w").grid(
                 row=1, column=1, sticky="w"
             )
-            lab = tk.Label(row, text="checking…", anchor="w", justify="left", wraplength=560)
-            lab.grid(row=0, column=2, rowspan=2, sticky="w", padx=(14, 0))
-            row.columnconfigure(2, weight=1)
+            lab = tk.Label(row, text="checking…", anchor="w", justify="left", wraplength=100)
+            lab.grid(row=2, column=1, sticky="ew", pady=(2, 0))
+            row.columnconfigure(1, weight=1)
+            self._wrap_to_width(lab)
             self.status_dots[key] = dot
             self.status_labels[key] = lab
 
@@ -391,6 +436,10 @@ class ControlPanel:
             demo, "Update the demo to the latest", self.refresh_demo,
             "Builds current main, which may still be under review.\n"
             "An update does not establish demo acceptance.",
+        )
+        self._button(
+            demo, "Recover the previous demo", self.recover_demo,
+            "Restores the retained demo after a failed or interrupted update.",
         )
 
         dev = ttk.LabelFrame(wrap, text="  Testing the current work  ", padding=10)
@@ -418,41 +467,46 @@ class ControlPanel:
         ]):
             b = ttk.Button(strip, text=label, command=cmd)
             b.grid(row=0, column=col, sticky="ew", padx=(0, 10))
-            tk.Label(strip, text=hint, fg=IDLE, anchor="w").grid(
-                row=1, column=col, sticky="w", padx=(0, 10)
-            )
-            strip.columnconfigure(col, weight=1)
+            hint_label = tk.Label(strip, text=hint, fg=IDLE, anchor="w", justify="left", wraplength=100)
+            hint_label.grid(row=1, column=col, sticky="ew", padx=(0, 10))
+            self._wrap_to_width(hint_label)
+            strip.columnconfigure(col, weight=1, uniform="checks")
             self._track(b)
 
     def _build_output(self, root: tk.Tk) -> None:
         box = ttk.LabelFrame(root, text="  What's happening  ", padding=8)
-        box.pack(fill="both", expand=True, padx=14, pady=(6, 14))
+        box.grid(row=1, column=0, sticky="nsew", padx=14, pady=(6, 14))
         self.out = scrolledtext.ScrolledText(
             box, wrap="word", height=14, font=("monospace", 10),
             background="#111418", foreground="#e6e6e6", insertbackground="#e6e6e6",
             relief="flat", padx=10, pady=8,
         )
-        self.out.pack(fill="both", expand=True)
         self.out.configure(state="disabled")
 
         bar = ttk.Frame(box)
-        bar.pack(fill="x", pady=(6, 0))
-        self.spinner = tk.Label(bar, text="", fg=IDLE)
-        self.spinner.pack(side="left")
-        ttk.Button(bar, text="Clear", command=self.clear_output).pack(side="right")
-        self.copy_btn = ttk.Button(bar, text="Copy all text", command=self.copy_output)
+        bar.pack(side="bottom", fill="x", pady=(6, 0))
+        self.out.pack(fill="both", expand=True)
+        bar.columnconfigure(0, weight=1)
+        self.spinner = tk.Label(bar, text="", fg=IDLE, anchor="w", justify="left", wraplength=100)
+        self.spinner.grid(row=0, column=0, sticky="ew")
+        self._wrap_to_width(self.spinner)
+        buttons = ttk.Frame(bar)
+        buttons.grid(row=0, column=1, rowspan=2, sticky="e")
+        ttk.Button(buttons, text="Clear", command=self.clear_output).pack(side="right")
+        self.copy_btn = ttk.Button(buttons, text="Copy all text", command=self.copy_output)
         self.copy_btn.pack(side="right", padx=(0, 8))
-        self.copy_note = tk.Label(bar, text="", fg=OK)
-        self.copy_note.pack(side="right", padx=(0, 10))
+        self.copy_note = tk.Label(bar, text="", fg=OK, anchor="w", justify="left", wraplength=100)
+        self.copy_note.grid(row=1, column=0, sticky="ew")
+        self._wrap_to_width(self.copy_note)
 
     def _button(self, parent, label, cmd, hint) -> ttk.Button:
         b = ttk.Button(parent, text=label, command=cmd)
         b.pack(fill="x", pady=(2, 0))
         # wraplength, because the two action columns are each about half the
         # window and a hint written as one line ran off the right edge.
-        tk.Label(
-            parent, text=hint, fg=IDLE, justify="left", anchor="w", wraplength=400
-        ).pack(fill="x", pady=(1, 9))
+        hint_label = tk.Label(parent, text=hint, fg=IDLE, justify="left", anchor="w", wraplength=100)
+        hint_label.pack(fill="x", pady=(1, 9))
+        self._wrap_to_width(hint_label)
         self._track(b)
         return b
 
@@ -669,7 +723,7 @@ class ControlPanel:
         self._open_in_chrome(DEV_URL)
 
     def refresh_demo(self) -> None:
-        script = APP_DIR / "scripts" / "ops" / "refresh-walkthrough-instance.sh"
+        script = APP_DIR / "scripts" / "ops" / "safe-refresh-walkthrough.py"
         if not script.exists():
             self.say(f"Could not find {script}.")
             return
@@ -677,10 +731,10 @@ class ControlPanel:
         def job() -> None:
             self.say("=" * 66)
             self.say("UPDATING THE DEMO. This rebuilds it and restarts it — a few minutes.")
-            self.say("The update script checks for unsaved work. A failed build or restart")
-            self.say("can require recovery; this panel does not verify database readiness.")
+            self.say("A separate candidate is built and the previous demo is retained.")
+            self.say("A failed promotion triggers recovery. Database readiness is checked separately.")
             self.say("=" * 66)
-            code = self._stream(["bash", str(script)], cwd=APP_DIR)
+            code = self._stream([sys.executable, str(script)], cwd=APP_DIR)
             self.say("")
             if code == 0:
                 self.say("Update command finished. Checking the reported build separately.")
@@ -699,6 +753,16 @@ class ControlPanel:
                 self.say("The demo may need recovery. Check what's running and check the setup.")
 
         self._work("updating the demo", job)
+
+    def recover_demo(self) -> None:
+        script = APP_DIR / "scripts" / "ops" / "safe-refresh-walkthrough.py"
+
+        def job() -> None:
+            self.say("RECOVERING THE PREVIOUS DEMO. The service target is checked first.")
+            code = self._stream([sys.executable, str(script), "--recover"], cwd=APP_DIR)
+            self.say("Recovery command finished." if code == 0 else f"RECOVERY STOPPED (exit {code}). Review the reason above.")
+
+        self._work("recovering the previous demo", job)
 
     def toggle_dev(self) -> None:
         if owned_session_alive(self.dev_proc, self.dev_owner):

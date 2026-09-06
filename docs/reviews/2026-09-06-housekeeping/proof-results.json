@@ -1,0 +1,68 @@
+{
+  "controller": {
+    "survivors": 1,
+    "rejected": 17,
+    "outcomes": [
+      "SURVIVED: harmless comment",
+      "KILLED: preparation restarted service",
+      "KILLED: update bypassed coordinator",
+      "KILLED: foreign session included",
+      "KILLED: PID reuse ignored",
+      "KILLED: leader identity ignored",
+      "KILLED: port conflict allowed",
+      "KILLED: CI wrong commit accepted",
+      "KILLED: CI running ignored",
+      "KILLED: duplicate polling allowed",
+      "KILLED: refresh mismatch promoted",
+      "KILLED: unreadable schema continued",
+      "KILLED: failed schema query continued",
+      "KILLED: wrong build continued",
+      "KILLED: leader required after requested termination",
+      "KILLED: handle cleanup omitted",
+      "KILLED: failed checkout inspection continued",
+      "KILLED: file migration inventory ignored"
+    ]
+  },
+  "recovery": {
+    "survivors": 1,
+    "rejected": 8,
+    "outcomes": [
+      "comment: SURVIVED",
+      "foreign target: KILLED",
+      "unverified predecessor: KILLED",
+      "failed build promoted: KILLED",
+      "rollback omitted: KILLED",
+      "backup identity ignored: KILLED",
+      "settings conflict ignored: KILLED",
+      "interruption ignored: KILLED",
+      "lock omitted: KILLED"
+    ]
+  },
+  "layout": {
+    "survivors": 1,
+    "rejected": 3,
+    "outcomes": [
+      "comment: SURVIVED",
+      "collapsed output: KILLED",
+      "overflowing status: KILLED",
+      "hidden keyboard focus: KILLED"
+    ]
+  },
+  "process": [
+    {
+      "mutation": "comment",
+      "survived": true,
+      "stderr": ".\n----------------------------------------------------------------------\nRan 1 test in 2.325s\n\nOK\n"
+    },
+    {
+      "mutation": "stop omitted",
+      "survived": false,
+      "stderr": "F\n======================================================================\nFAIL: test_owned_start_stop_restart_and_foreign_refusal (__main__.ProcessTests.test_owned_start_stop_restart_and_foreign_refusal)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/Computer Use Projects/openplan/openplan/scripts/ops/tests/test_control_processes.py\", line 75, in test_owned_start_stop_restart_and_foreign_refusal\n    self.wait_for(lambda: panel.port_in_use(port) is False)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/Computer Use Projects/openplan/openplan/scripts/ops/tests/test_control_processes.py\", line 98, in wait_for\n    self.fail(\"isolated service did not reach the requested state\")\n    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: isolated service did not reach the requested state\n\n----------------------------------------------------------------------\nRan 1 test in 6.602s\n\nFAILED (failures=1)\n"
+    }
+  ],
+  "source_sha256": {
+    "openplan/scripts/ops/openplan-control-panel.py": "70336e12c0362a0cc0a90cde7764e9572b04d5e4bf53bf2dde6bceb59833701d",
+    "openplan/scripts/ops/safe-refresh-walkthrough.py": "6f4dfb8da4b5a43833908e3776f44f91cc182448a1ec763b42f77d8b0ef9a2f6",
+    "openplan/scripts/ops/refresh-walkthrough-instance.sh": "5b1eedfdddb9a2dcf090f1261049e7522e567d14b97696c9d07c6470a39297ce"
+  }
+}

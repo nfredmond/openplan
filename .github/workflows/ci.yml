@@ -158,21 +158,30 @@ jobs:
         with:
           python-version: "3.11"
 
-      # STDLIB ONLY, deliberately. The control panel itself imports tkinter,
-      # which is why the rule these suites exercise was moved into
-      # `scripts/ops/check_status.py` — a module with no GUI import. A test that
-      # needed a display would be a test that never ran here.
+      - name: Native control display dependencies
+        run: sudo apt-get update -qq && sudo apt-get install -y python3-tk xvfb xauth
+
       - name: Unit tests
         run: |
           set -u
           count=0
           for f in test_*.py; do
             echo "=== $f"
-            python "$f" || exit 1
+            if [ "$f" = "test_control_layout.py" ]; then
+              xvfb-run -a /usr/bin/python3 "$f" || exit 1
+              xvfb-run -a /usr/bin/python3 "$f" --prove-mutations || exit 1
+            else
+              python "$f" || exit 1
+            fi
             count=$((count + 1))
           done
           echo "ran $count suites"
           test "$count" -ge 1 || { echo "expected at least 1 suite, found $count — the glob broke"; exit 1; }
+
+      - name: Control and recovery guard mutations
+        run: |
+          python -B test_control_panel.py --prove-mutations
+          python -B test_safe_refresh.py --prove-mutations
 
   worker-tests:
     name: worker (python unit tests)

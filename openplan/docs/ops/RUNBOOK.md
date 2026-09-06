@@ -60,6 +60,37 @@ The [health workflow](../../../.github/workflows/production-health.yml) runs onl
 when the repository's health-URL variable is configured; a skipped workflow
 provides no monitoring. Its current remote runs are separate evidence to inspect.
 
+## Local demo update and recovery
+
+OpenPlan Control now builds updates separately and offers **Recover the previous
+demo**. It checks the configured service directory before changing that service.
+Use the same coordinator from the nested app directory when diagnosing the tool:
+
+```bash
+python3 scripts/ops/safe-refresh-walkthrough.py
+python3 scripts/ops/safe-refresh-walkthrough.py --recover
+```
+
+Defaults target `~/apps/openplan`, `openplan-web.service` and port 3000. Separate
+installations must pass their own instance path, `--service` and `--url`. The
+instance must be an independent clone. This tool does not install or configure
+services. A mismatched or unavailable predecessor identity blocks an update.
+
+Candidates, predecessors, displaced failed builds and the recovery journal stay
+in a private sibling directory, normally `~/apps/.openplan-updates`. These may
+contain secrets. Keep them local. The tool retains them until an operator reviews
+their disposition; allow disk space for dependencies and builds on each update.
+An interrupted update blocks another update until recovery is resolved. A failed
+preparation leaves the original directory in place. A failed promotion attempts
+to restore it; retry the recovery action if restart itself failed.
+
+The shell builder checks the local migration inventory, not the application's
+actual runtime database identity. No database migration or rollback runs here.
+Current main may be an unreleased candidate. A matching reported commit does not
+establish browser acceptance or a dependable agency deployment. The September 6
+[exercise record](../../../docs/reviews/2026-09-06-housekeeping/VERIFICATION.md)
+separates real file/process checks from simulated builds and service management.
+
 ## Decide severity and containment
 
 | Severity | Examples | Immediate owner action |

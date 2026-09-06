@@ -1,0 +1,34 @@
+# Workspace and desktop-control checkpoint
+
+September 6, 2026. Started from clean main `8203a92c`, after confirming current direction and successful CI/isolation for that commit. Only the existing Codex process was found in this checkout; modeling workers remained running and were not changed. This checkpoint implements the first maintenance portion of the requested sequence. v0.44 remains unreleased, with the earlier nine-pass/three-partial acceptance result intact.
+
+## Changes and retained boundaries
+
+The native window now scrolls its status/actions independently of output. Status text wraps to its actual available width. Keyboard focus reveals scrolled actions. Output and its copy/clear controls remain visible at the tested sizes and font scales, including long progress and copy-result text. The desktop update action now calls `safe-refresh-walkthrough.py`, and a recovery action calls the same coordinator.
+
+The coordinator checks service working directory, current reported commit and clean source, takes a local operation lock, copies a separate candidate, builds it with the shell helper's prepare-only mode, and retains the predecessor before promotion. Failed preparation leaves the live directory untouched. Failed promotion attempts to restore the predecessor. A private durable journal supports interrupted promotion and duplicate recovery. Settings/source changes during preparation refuse promotion. No database migration or rollback runs. Retained candidates and displaced builds are not automatically deleted.
+
+The underlying shell helper still supports direct in-place operation and is not the operator entry point. Actual runtime database identity, accepted-release selection, a complete real Next/Supabase update, power-loss durability and observed operator usefulness remain unproved. The selected default service was read for its configuration but was not restarted or updated. No existing listener, browser, database or model worker was used as a failure target.
+
+## Workspace housekeeping
+
+One registered worktree remains, on main. The merged `fix/report-evidence-presence` branch was removed locally and remotely after ancestry and cleanliness checks. Two missing temporary worktree registrations were pruned.
+
+Four inactive local checkouts remain as archives in place. Their source, ignored configuration/build files and existing audit drafts were retained, and their `.git` entries were renamed `.retired-git`. The audit checkout's 194 differing/new files were preserved rather than merged wholesale. The guard fixture's synthetic history stays outside production. The T3 Code reference clone remains an intentionally retained upstream reference. The production demo is a separate operational clone, not another development worktree.
+
+Private inventory, comparisons, binary patches, exact retained history and test logs are under `~/.local/state/openplan/housekeeping-2026-09-06/`. `inventory.json` names every archive, its prior commit and differing files. `retained-history.git` retains main at the opening checkpoint, the retired report worktree and both detached evidence commits. Its object integrity was checked. The old audit and landing clone object stores remain in their renamed metadata directories. No secret values or private acceptance captures were copied into this repository.
+
+**Archive error:** the registered report worktree's administrative registration and clean index were pruned before being copied. Its saved `.retired-git` file is consequently a historical pointer, not a working repository. This was reported to Nathaniel. All source, ignored configuration and build files remain; its exact commit and reachable history were recovered into the separate archive repository. To reconstruct that checkout, clone the archive repository on `retired-worktree` into a new directory and copy the retained local configuration there. Do not copy the old pointer back. No uncommitted source was present in that worktree.
+
+## Verification and limits
+
+All five ops suites executed locally. The controller suite has 28 tests; the new recovery suite has 10 tests; the process exercise and native layout suite each contain one test covering multiple stages/cases. The existing check-status suite also passed. Bash syntax and whitespace checks passed. The [proof results](proof-results.json) bind the three implementation files by SHA-256 and summarize mutations.
+
+- Native Tk rendered at 980 by 1000 and 860 by 720, with scales 1.33 and 2.0. Every action and Copy was reached with Tab; geometry assertions require focused actions to be visible. Long status, progress and copy-result text were exercised. A harmless comment survived; collapsed output, excessive wrapping and hidden keyboard focus each failed. Screenshots use explicitly labelled layout-exercise text. They are visual evidence, not service-status claims. See the [minimum-size larger-font view](control-860-720-scale-2.0.png) and [larger view](control-980-1000-scale-1.33.png).
+- A real disposable HTTP service was started, stopped and restarted through the controller. Another disposable service, external to the controller's recorded ownership, remained answering after refused start/stop attempts. A no-op survived and omitting Stop failed the state transition. The exercise's own processes were cleaned up. Its first test counter mistakenly included a socket-inspection subprocess; that counter was corrected to count created sessions only, then rerun.
+- Recovery tests use real local Git repositories, real file moves and ephemeral HTTP services. npm build/migration output and systemctl are fixtures. Successful promotion/manual recovery, failed build, failed restart, missing instance path during interrupted promotion, duplicate recovery, wrong target, unverified starting identity, changed settings, changed backup identity and competing operation refusal were checked. A no-op survived; eight targeted recovery mutations failed for their expected assertions.
+- The controller/shell suite accepted a harmless comment and rejected seventeen targeted mutations, including bypassing the coordinator and restarting a service during candidate preparation. These tests use inert widgets and fake subprocess effects. They do not establish native rendering or runtime database correctness.
+
+CI now installs native Tk/display dependencies for the ops job and runs the native test on a private virtual display. Controller, layout and recovery mutation proofs run there as well. Remote CI for the implementation checkpoint must be checked separately after push. No app authorization or scientific behavior changed; there was no new browser acceptance campaign or live database exercise in this checkpoint.
+
+The roadmap remains the sole queue. Its next product work is the undated-assignment and shared-campaign reproductions, followed by OWP preparation. Full operational and release acceptance remain open as described above.

@@ -174,13 +174,15 @@ an automatic deployment. Forward migrations are not an automatic rollback path;
 old-code compatibility must be established for the particular release. Keep the
 previous instance and recovery point until the new one is accepted.
 
-The [walkthrough refresh helper](../scripts/ops/refresh-walkthrough-instance.sh)
-is maintenance for an already configured local service, not an installer. It
-assumes a particular checkout, service and port. It now stops before building
-when migration state cannot be verified, and reports failure if the restarted
-service does not return the expected commit. A failure after restart can still
-require recovery. See the [consolidation verification record](../../docs/reviews/2026-09-06-consolidation/VERIFICATION.md)
-for check scope. Its final message alone is insufficient acceptance evidence. Use
+The [safe walkthrough updater](../scripts/ops/safe-refresh-walkthrough.py)
+maintains an already configured local service. The desktop control uses this
+entry point. It checks the service directory and reported predecessor commit,
+builds a separate candidate, retains the previous directory and recovers after
+a failed promotion. Its local journal supports interrupted-update recovery.
+The underlying shell builder remains a low-level tool; direct invocation does
+not provide these recovery protections. See the [operator instructions](ops/RUNBOOK.md#local-demo-update-and-recovery)
+and [isolated exercise record](../../docs/reviews/2026-09-06-housekeeping/VERIFICATION.md).
+Runtime database identity and accepted-release selection remain unproved. Use
 [which-openplan.sh](../scripts/ops/which-openplan.sh) and recorded build identity
 alongside actual saved-work checks.
 

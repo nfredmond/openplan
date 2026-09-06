@@ -210,6 +210,16 @@ class ControllerTests(unittest.TestCase):
         self.assertIn("recovery", obj.say.call_args.args[0])
         panel.http_health.assert_not_called()
 
+    def test_update_and_recovery_use_the_safe_coordinator(self):
+        obj = self.controller()
+        obj._stream = Mock(return_value=1)
+        with patch.object(panel.Path, "exists", return_value=True):
+            obj.refresh_demo()
+            obj.recover_demo()
+        calls = [call.args[0] for call in obj._stream.call_args_list]
+        script = str(panel.APP_DIR / "scripts/ops/safe-refresh-walkthrough.py")
+        self.assertEqual(calls, [[sys.executable, script], [sys.executable, script, "--recover"]])
+
     def test_diverged_demo_not_called_current(self):
         with patch.object(panel, "run_quiet", side_effect=[(0, ""), (1, "")]):
             self.assertIsNone(panel.commits_behind("a" * 12))
@@ -250,7 +260,7 @@ class ControllerTests(unittest.TestCase):
 
 
 class RefreshScriptTests(unittest.TestCase):
-    def refresh(self, migrations='{"migrations":[{"local":"20260101000000","remote":"20260101000000"}]}', reported="a" * 12, migration_exit=0, status_exit=0):
+    def refresh(self, migrations='{"migrations":[{"local":"20260101000000","remote":"20260101000000"}]}', reported="a" * 12, migration_exit=0, status_exit=0, prepare_only=False):
         with tempfile.TemporaryDirectory(prefix="openplan-refresh-test-") as temp:
             base = Path(temp)
             app = base / "instance" / "openplan"
@@ -283,6 +293,7 @@ elif name == "curl": print(json.dumps({"deployment":{"commit":os.environ["FAKE_R
                 tool.write_text(fake)
                 tool.chmod(0o700)
             env = {**os.environ, "PATH": str(bindir) + os.pathsep + os.environ["PATH"], "PYTHONDONTWRITEBYTECODE": "1", "FAKE_CALL_LOG": str(base / "calls"), "FAKE_MIGRATIONS": migrations, "FAKE_REPORTED": reported, "FAKE_MIGRATION_EXIT": str(migration_exit), "FAKE_STATUS_EXIT": str(status_exit)}
+            env["OPENPLAN_REFRESH_PREPARE_ONLY"] = "1" if prepare_only else "0"
             result = subprocess.run(["bash", str(script), str(app.parent)], env=env, capture_output=True, text=True, timeout=15)
             return result, (base / "calls").read_text()
 
@@ -334,6 +345,13 @@ elif name == "curl": print(json.dumps({"deployment":{"commit":os.environ["FAKE_R
         self.assertIn("systemctl --user restart", calls)
         self.assertIn("matches the checkout", result.stdout)
 
+    def test_candidate_preparation_never_restarts_a_service(self):
+        result, calls = self.refresh(prepare_only=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("npm run build", calls)
+        self.assertNotIn("systemctl", calls)
+        self.assertNotIn("curl", calls)
+
 
 def prove_mutations():
     """Mutate disposable source copies, never a shared checkout or live service."""
@@ -342,6 +360,13 @@ def prove_mutations():
     mutations = [
         ("harmless comment", "CONTROL_PANEL_TEST_SOURCE", controller,
          "# Small helpers.", "# Plain-data helpers.", None, True),
+        ("preparation restarted service", "REFRESH_TEST_SOURCE", refresh,
+         'if [ "${OPENPLAN_REFRESH_PREPARE_ONLY:-0}" = "1" ]; then', 'if false; then',
+         "RefreshScriptTests.test_candidate_preparation_never_restarts_a_service", False),
+        ("update bypassed coordinator", "CONTROL_PANEL_TEST_SOURCE", controller,
+         'script = APP_DIR / "scripts" / "ops" / "safe-refresh-walkthrough.py"\n        if not script.exists():',
+         'script = APP_DIR / "scripts" / "ops" / "refresh-walkthrough-instance.sh"\n        if not script.exists():',
+         "ControllerTests.test_update_and_recovery_use_the_safe_coordinator", False),
         ("foreign session included", "CONTROL_PANEL_TEST_SOURCE", controller,
          "identity is not None and identity.session == owner.pid", "identity is not None",
          "ControllerTests.test_owned_children_only_and_stable_handles", False),

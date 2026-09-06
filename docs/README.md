@@ -29,6 +29,7 @@ pointer to AGENTS.md, not a second rulebook.
 - [Team commissioning](../openplan/docs/FIRST_DEPLOYMENT.md): what an independent
   operator must establish before real team use.
 - [Runbook](../openplan/docs/ops/RUNBOOK.md): diagnosis and recovery boundaries.
+- [September 6 workspace/control checkpoint](reviews/2026-09-06-housekeeping/VERIFICATION.md): retained local archives, native layout and isolated update/recovery evidence.
 - [Backup and restore](../openplan/docs/ops/BACKUP_AND_RESTORE.md): durable state,
   existing mechanisms, representative drills and missing full-recovery proof.
 - [Security](../SECURITY.md) and [license notice](../LICENSE-NOTICE.md).

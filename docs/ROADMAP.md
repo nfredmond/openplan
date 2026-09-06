@@ -77,6 +77,8 @@ Use existing local computers and free resources. Measure compute time, peak RAM,
 
 ## M0. Trustworthy candidate, review and documentation
 
+September 6 implementation checkpoint: [workspace and control maintenance](reviews/2026-09-06-housekeeping/VERIFICATION.md) retires inactive checkouts without deleting their source/configuration, repairs native layout and adds separately prepared demo updates with retained-directory recovery. Isolated process/file/HTTP exercises and native keyboard/scale checks are separate from actual demo acceptance. Runtime database identity, accepted-demo selection and the failed twelve-journey release boundary remain open. Continue the two handoff reproductions, then OWP preparation in the dependency order above.
+
 - **Planning outcome:** a planner or contributor can tell what is released, what can be relied on, and where the next work is recorded.
 - **Gap/evidence:** review R7-R9/R12; version 0.44 metadata preceded its tag; opening CI and dependency failures were repaired by the development session, but final first-week acceptance remains unmet; old browser-success wording outlived stronger checks and later defects; current instructions split authority between two entry files and a manual.
 - **Dependencies/scope:** reconcile the completed September 6 handoff, final commits and acceptance attempts. Make repository AGENTS.md canonical, CLAUDE.md a pointer, and the old manual a compatibility link. Keep global configuration untouched. Consolidate current documentation while retaining dated studies/releases/decisions.
