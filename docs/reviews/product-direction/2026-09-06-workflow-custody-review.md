@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-06
 review_by: 2026-10-05
-reviewed_commit: e709e2ff
+reviewed_commit: 8e860ca8
 current_release: v0.44.0
 independent_contexts: 2
 trigger: completed-distributed-loading-checkpoint-and-failed-first-week-outcomes
@@ -135,3 +135,25 @@ trigger description survived; setting independent contexts to one failed with
 the expected requirement for two fresh contexts. The focused review, copy,
 clipboard and explanation suites passed after restoration. Both preserved
 independent files compare byte-for-byte with their authors' scratch reports.
+
+## Verification addendum
+
+The synthesizer reviewed `8e860ca8`, a documentation-only record of the
+identified `c4f76eb0` build. It changes no application, worker, study, test,
+acceptance rule or capability status. The two independent contexts above remain
+the original reviews, not newly claimed reviews of this verification addendum.
+
+The full local gate passed with 13,039 app checks and 135 live-RLS checks.
+All 51 worker suites passed. Corrected desktop/390px browser work preserved
+in-flight drafts, displayed every selected frozen explanation and full hash,
+and disclosed actual export inclusion before confirmation. All 114 native
+downloads matched expected source hashes; the read-only evidence journey had
+zero errors and writes. Twenty-eight final screenshots were inspected. The
+existing cramped run column remains an open layout issue. Proof paths, hashes,
+negative controls and failed helper attempts are in the linked correction record.
+
+Remote isolation, upgrade and nightly checks succeeded on c4f76eb0; its full CI
+was still running when the record was written. Final push checks must be read
+separately. No replacement full12 has run on the corrected build. Its previous
+failed outcome and the unsupported forecast remain release blockers. This
+addendum closes technical correction work, not the release gate or v1 scope.
