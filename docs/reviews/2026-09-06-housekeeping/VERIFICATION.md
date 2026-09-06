@@ -2,7 +2,9 @@
 
 September 6, 2026. Started from clean main `8203a92c`, after confirming current direction and successful CI/isolation for that commit. Only the existing Codex process was found in this checkout; modeling workers remained running and were not changed. This checkpoint implements the first maintenance portion of the requested sequence. v0.44 remains unreleased, with the earlier nine-pass/three-partial acceptance result intact.
 
-## Changes and retained boundaries
+## Opening changes and retained boundaries
+
+The initial coordinator described below was superseded by the independent-review correction at the end of this record. Its failing artifact-custody behavior is retained there.
 
 The native window now scrolls its status/actions independently of output. Status text wraps to its actual available width. Keyboard focus reveals scrolled actions. Output and its copy/clear controls remain visible at the tested sizes and font scales, including long progress and copy-result text. The desktop update action now calls `safe-refresh-walkthrough.py`, and a recovery action calls the same coordinator.
 
@@ -32,3 +34,17 @@ All five ops suites executed locally. The controller suite has 28 tests; the new
 CI now installs native Tk/display dependencies for the ops job and runs the native test on a private virtual display. Controller, layout and recovery mutation proofs run there as well. Remote CI for the implementation checkpoint must be checked separately after push. No app authorization or scientific behavior changed; there was no new browser acceptance campaign or live database exercise in this checkpoint.
 
 The roadmap remains the sole queue. Its next product work is the undated-assignment and shared-campaign reproductions, followed by OWP preparation. Full operational and release acceptance remain open as described above.
+
+## Independent-review correction
+
+Two fresh-context reviewers received the f563d40c packet independently under the product-direction protocol. Their [operations report](../product-direction/independent/2026-09-06-housekeeping-operations.md) and [product report](../product-direction/independent/2026-09-06-housekeeping-product.md) remain unchanged. Both retain OWP preparation as the next substantial product outcome and reject a complete operational or v0.44 release claim.
+
+The operations reviewer reproduced a High defect in my initial coordinator: swapping the entire instance could detach an artifact written during preparation from its active path, despite preserving the bytes in the old directory. I reported it before pushing and replaced that design. The instance root and local untracked/ignored data now stay in place. Promotion snapshots only changed tracked files, settings and the two built runtime directories. It stops the identified demo service during installation, checks each changed path, installs source/runtime, updates Git metadata after content, verifies source and restarts. Recovery follows the same bounded path inventory. New local artifacts written during and after preparation remain accessible at the same paths after promotion and recovery.
+
+The follow-up review found two further defects in the first correction: a changed retained source file could be restored under an old Git SHA, and a managed settings symlink could be flattened. Both were corrected. Recovery checks retained file fingerprints before stopping or writing, then verifies installed source and Git state. Managed settings symlinks are refused before preparation. Newer settings, ignored-file collisions and symlink ancestors also refuse unsafe changes. The [independent follow-up](../product-direction/independent/2026-09-06-housekeeping-operations-followup.md) verifies the corrected source hash, three historical-bug regression controls and five interrupted-recovery rename positions.
+
+Root's final recovery suite has 17 tests, including tracked additions/deletions, executable mode and symlink changes, preserved original runtime bytes, partial promotion recovery and duplicate recovery. Its harmless mutation survived and fourteen targeted changes failed. The [follow-up proof](followup-proof-results.json) identifies exact implementation hashes and outcomes. A CI required-suite inventory accepted the baseline/comment control and rejected a missing process suite. The final shell message now identifies only the queried local Supabase stack, addressing the product review's overstated database claim.
+
+The earlier proof-results.json and layout captures remain evidence for the unchanged control window. The initial coordinator's test count and proofs are historical, superseded by this follow-up. These exercises use real Git/files/HTTP and fixture npm/systemctl. They do not prove an actual Next/Supabase deployment, power-loss durability, managed-settings support, accepted-demo selection, full shutdown under uncooperative children, or practicing-operator usefulness. No installed service was changed.
+
+The product review also identifies action-version/amendment continuity and lead-only campaign consumers beyond the original two reproductions. These remain explicit findings for the existing M1/M2 work, with source evidence rather than claims of completed live reproduction. They do not create a competing queue or displace OWP preparation.

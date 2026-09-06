@@ -11,7 +11,7 @@ evidence. The application is in `openplan/` beneath the repository root.
 | What must v1 deliver? | [V1 product contract](product/V1_PRODUCT_CONTRACT.md) |
 | What is next, and what establishes completion? | [Roadmap](ROADMAP.md), the sole active queue |
 | What works, and what remains unproved? | [Capability matrix](product/US_PLANNING_CAPABILITY_MATRIX.md) and [known limitations](ops/KNOWN_ISSUES.md) |
-| Why this direction? | [September 6 direction review](reviews/product-direction/2026-09-06-workflow-to-v1-review.md), [comprehensive review](reviews/TECHNICAL_PRODUCT_REVIEW_2026-09-06.md), and preserved independent reports linked there |
+| Why this direction? | [September 6 direction review](reviews/product-direction/2026-09-06-workspace-control-and-owp-review.md), [comprehensive review](reviews/TECHNICAL_PRODUCT_REVIEW_2026-09-06.md), and preserved independent reports linked there |
 | How is it implemented? | [Architecture](ARCHITECTURE.md) and current source |
 | What shipped? | [Changelog](../CHANGELOG.md), Git tags and the release's actual CI/acceptance evidence |
 

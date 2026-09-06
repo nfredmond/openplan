@@ -1,0 +1,41 @@
+{
+  "source_sha256": {
+    "openplan/scripts/ops/safe-refresh-walkthrough.py": "194cc05b53eff5557b713db9e1ba97f8ad1a5b56d7612704ba62d9bbca0f503e",
+    "openplan/scripts/ops/refresh-walkthrough-instance.sh": "9663547c0cdd4e22ec51924db1182da4ae43961d4d2966a1e702f15276b10a2b"
+  },
+  "recovery_tests": 17,
+  "mutation_outcomes": [
+    "comment: SURVIVED",
+    "foreign target: KILLED",
+    "unverified predecessor: KILLED",
+    "failed build promoted: KILLED",
+    "rollback omitted: KILLED",
+    "backup identity ignored: KILLED",
+    "settings conflict ignored: KILLED",
+    "local artifact detached: KILLED",
+    "local file collision ignored: KILLED",
+    "managed settings flattened: KILLED",
+    "retained file corruption ignored: KILLED",
+    "newer settings overwritten: KILLED",
+    "symlink ancestor followed: KILLED",
+    "interruption ignored: KILLED",
+    "lock omitted: KILLED"
+  ],
+  "ci_inventory": [
+    {
+      "case": "baseline",
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "case": "comment survivor",
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "case": "required suite missing",
+      "exit": 1,
+      "output": "missing required ops suite: test_control_processes.py\n"
+    }
+  ]
+}

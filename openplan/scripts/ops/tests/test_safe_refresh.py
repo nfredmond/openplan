@@ -44,6 +44,7 @@ class SafeRefreshTests(unittest.TestCase):
         migrations.mkdir(parents=True)
         (migrations / "20260101000000_fixture.sql").write_text("-- never applied\n")
         (app / "version.txt").write_text("predecessor\n")
+        (app / "retired.txt").write_text("removed by the next version\n")
         (self.origin / ".gitignore").write_text(".env.local\n.next/\nnode_modules/\n")
         self.git(self.origin, "add", ".")
         self.git(self.origin, "commit", "-qm", "Fixture predecessor")
@@ -51,7 +52,14 @@ class SafeRefreshTests(unittest.TestCase):
         self.instance = self.base / "instance"
         self.git(self.base, "clone", "--quiet", str(self.origin), str(self.instance))
         (self.instance / "openplan/.env.local").write_text(f"OPENPLAN_COMMIT_SHA={self.old_sha}\nEXERCISE_SETTING=retained\n")
+        for name in (".next", "node_modules"):
+            retained_runtime = self.instance / "openplan" / name
+            retained_runtime.mkdir()
+            (retained_runtime / "predecessor").write_text("original runtime bytes\n")
         (app / "version.txt").write_text("candidate\n")
+        (app / "retired.txt").unlink()
+        (app / "added.txt").write_text("new source\n")
+        self.git(self.origin, "add", "openplan/added.txt")
         self.git(self.origin, "commit", "-qam", "Fixture candidate")
         self.new_sha = self.git(self.origin, "rev-parse", "HEAD")
         bindir = self.base / "bin"
@@ -65,6 +73,7 @@ if "build" in sys.argv:
  if pathlib.Path(os.environ["EXERCISE_BUILD_FAILURE"]).exists(): sys.exit(7)
  pathlib.Path(".next").mkdir(exist_ok=True)
  pathlib.Path(".next/fixture").write_text("built")
+if "ci" in sys.argv: pathlib.Path("node_modules").mkdir(exist_ok=True)
 ''')
         npm.chmod(0o700)
         self.enterContext(patch.dict(os.environ, {"PATH": str(bindir) + os.pathsep + os.environ["PATH"], "EXERCISE_BUILD_FAILURE": str(self.base / "fail-build")}))
@@ -94,6 +103,10 @@ Server(("127.0.0.1",int(sys.argv[1])),Handler).serve_forever()
                 return real_command(args, cwd)
             if "show" in args:
                 return str(self.base / "foreign" if self.wrong_target else self.instance / "openplan")
+            if "stop" in args:
+                self.assertEqual(args, ["systemctl", "--user", "stop", "isolated-test.service"])
+                self.stop_server()
+                return ""
             self.assertEqual(args, ["systemctl", "--user", "restart", "isolated-test.service"])
             self.restart_count += 1
             if self.fail_restart:
@@ -131,6 +144,9 @@ Server(("127.0.0.1",int(sys.argv[1])),Handler).serve_forever()
     def test_prepare_promote_and_manual_recover(self):
         self.updater.update()
         self.assertEqual(self.record()["phase"], "ready")
+        self.assertEqual(self.git(self.instance, "status", "--porcelain", "--untracked-files=no"), "")
+        self.assertFalse((self.instance / "openplan/retired.txt").exists())
+        self.assertEqual((self.instance / "openplan/added.txt").read_text(), "new source\n")
         self.assertTrue(self.updater.health_matches(self.new_sha))
         backup = Path(self.record()["backup"])
         self.assertEqual(self.git(backup, "rev-parse", "HEAD"), self.old_sha)
@@ -139,6 +155,11 @@ Server(("127.0.0.1",int(sys.argv[1])),Handler).serve_forever()
         self.assertTrue(self.updater.health_matches(self.old_sha))
         self.assertEqual(self.git(self.instance, "rev-parse", "HEAD"), self.old_sha)
         self.assertEqual(self.record()["phase"], "recovered")
+        self.assertEqual(self.git(self.instance, "status", "--porcelain", "--untracked-files=no"), "")
+        self.assertTrue((self.instance / "openplan/retired.txt").exists())
+        self.assertFalse((self.instance / "openplan/added.txt").exists())
+        for name in (".next", "node_modules"):
+            self.assertEqual((self.instance / "openplan" / name / "predecessor").read_text(), "original runtime bytes\n")
 
     def test_failed_build_keeps_running_predecessor(self):
         (self.base / "fail-build").touch()
@@ -208,31 +229,124 @@ Server(("127.0.0.1",int(sys.argv[1])),Handler).serve_forever()
         self.assertIn("Resource temporarily unavailable", result.stderr)
         self.assertFalse(self.updater.receipt.exists())
 
-    def test_interrupted_promotion_recovers_when_instance_path_is_absent(self):
-        transaction = self.updater.state / "interrupted"
-        transaction.mkdir()
-        backup = transaction / "previous"
-        self.instance.rename(backup)
-        record = {"instance": str(self.instance), "service": self.updater.service, "url": self.updater.url,
-                  "backup": str(backup), "previous_sha": self.old_sha, "phase": "promoting"}
-        self.updater.save(record)
-        self.updater.recover(record)
+    def test_interrupted_partial_promotion_recovers_and_retry_is_idempotent(self):
+        def partial_install(record):
+            first = "openplan/version.txt"
+            self.updater.copy_file(Path(record["candidate"]) / first, self.instance / first)
+            raise self.module.UpdateError("injected interruption after first source file")
+
+        with patch.object(self.updater, "install", side_effect=partial_install), patch.object(self.updater, "recover", side_effect=SystemExit("simulate interrupted recovery")):
+            with self.assertRaises(SystemExit):
+                self.updater.update()
+        self.assertEqual(self.record()["phase"], "promoting")
+        self.updater.recover(self.record())
         self.assertTrue(self.updater.health_matches(self.old_sha))
         self.assertTrue(self.instance.is_dir())
+        self.assertEqual((self.instance / "openplan/version.txt").read_text(), "predecessor\n")
         self.updater.recover(self.record())
         self.assertEqual(self.restart_count, 1, "duplicate recovery restarted an already recovered demo")
+
+    def test_local_artifacts_written_during_and_after_build_stay_at_active_paths(self):
+        original = self.module.shutil.copytree
+        artifact = self.instance / "data/screening-runs/exercise/new-output.bin"
+        inode = self.instance.stat().st_ino
+
+        def copy(*args, **kwargs):
+            result = original(*args, **kwargs)
+            artifact.parent.mkdir(parents=True, exist_ok=True)
+            artifact.write_bytes(b"written during candidate preparation")
+            return result
+
+        with patch.object(self.module.shutil, "copytree", side_effect=copy):
+            self.updater.update()
+        self.assertEqual(self.instance.stat().st_ino, inode, "active root was replaced")
+        self.assertTrue(artifact.exists(), "a concurrent local artifact left the active path")
+        self.assertEqual(artifact.read_bytes(), b"written during candidate preparation")
+        artifact.write_bytes(b"updated after promotion")
+        self.updater.recover(self.record())
+        self.assertEqual(artifact.read_bytes(), b"updated after promotion")
+        self.assertEqual(self.instance.stat().st_ino, inode)
+
+    def test_new_tracked_source_cannot_replace_an_existing_local_file(self):
+        local = self.instance / "openplan/added.txt"
+        local.write_text("local work must remain\n")
+        with (self.instance / ".git/info/exclude").open("a") as stream:
+            stream.write("\nopenplan/added.txt\n")
+        with self.assertRaisesRegex(self.module.UpdateError, "overwrite an existing local file"):
+            self.updater.update()
+        self.assertEqual(local.read_text(), "local work must remain\n")
+        self.assertEqual(self.restart_count, 0)
+        self.assertTrue(self.updater.health_matches(self.old_sha))
+
+    def test_recovery_refuses_newer_settings_without_overwriting_them(self):
+        self.updater.update()
+        settings = self.instance / "openplan/.env.local"
+        settings.write_text("EXERCISE_SETTING=newer local configuration\n")
+        with self.assertRaisesRegex(self.module.UpdateError, "settings changed after preparation"):
+            self.updater.recover(self.record())
+        self.assertEqual(settings.read_text(), "EXERCISE_SETTING=newer local configuration\n")
+        self.assertTrue(self.updater.health_matches(self.new_sha))
+
+    def test_changed_recovery_source_refuses_before_stopping_the_demo(self):
+        self.updater.update()
+        backup = Path(self.record()["backup"])
+        (backup / "openplan/version.txt").write_text("corrupted recovery source\n")
+        with self.assertRaisesRegex(self.module.UpdateError, "Retained recovery source"):
+            self.updater.recover(self.record())
+        self.assertTrue(self.updater.health_matches(self.new_sha))
+        self.assertEqual(self.restart_count, 1)
+
+    def test_managed_settings_symlink_is_preserved_and_update_refused(self):
+        settings = self.instance / "openplan/.env.local"
+        managed = self.base / "managed-settings"
+        settings.rename(managed)
+        settings.symlink_to(managed)
+        with self.assertRaisesRegex(self.module.UpdateError, "Managed settings symlinks"):
+            self.updater.update()
+        self.assertTrue(settings.is_symlink())
+        self.assertEqual(settings.resolve(), managed)
+        self.assertEqual(self.restart_count, 0)
+
+    def test_file_mode_and_symlink_changes_restore_the_predecessor(self):
+        version = self.origin / "openplan/version.txt"
+        version.unlink()
+        version.symlink_to("added.txt")
+        (self.origin / "openplan/added.txt").chmod(0o755)
+        self.git(self.origin, "commit", "-qam", "Fixture symlink and executable mode")
+        self.new_sha = self.git(self.origin, "rev-parse", "HEAD")
+        self.updater.update()
+        installed = self.instance / "openplan/version.txt"
+        self.assertTrue(installed.is_symlink())
+        self.assertEqual(os.readlink(installed), "added.txt")
+        self.assertTrue((self.instance / "openplan/added.txt").stat().st_mode & 0o111)
+        self.updater.recover(self.record())
+        self.assertFalse(installed.is_symlink())
+        self.assertEqual(installed.read_text(), "predecessor\n")
+
+    def test_source_paths_reject_escape_and_symlink_ancestors(self):
+        alias = self.instance / "alias"
+        alias.symlink_to(self.base, target_is_directory=True)
+        for relative in ("../outside", "/tmp/outside", "alias/outside"):
+            with self.subTest(relative=relative), self.assertRaises(self.module.UpdateError):
+                self.updater.source_path(self.instance, relative)
 
 
 def prove_mutations():
     source = SOURCE.read_text()
     cases = [
-        ("comment", "# Persist the recovery paths", "# Retain the recovery paths", None, True),
+        ("comment", "# Persist all owned paths", "# Retain all owned paths", None, True),
         ("foreign target", 'if Path(configured).absolute() != self.instance / "openplan":', 'if False:', "test_foreign_service_target_refuses_before_preparation", False),
         ("unverified predecessor", 'if not self.health_matches(previous):', 'if False:', "test_unverified_current_identity_refuses_before_preparation", False),
         ("failed build promoted", 'if result.returncode:\n                raise UpdateError(f"Candidate preparation', 'if False:\n                raise UpdateError(f"Candidate preparation', "test_failed_build_keeps_running_predecessor", False),
-        ("rollback omitted", 'if backup.exists():\n                self.recover(record)', 'if False:\n                self.recover(record)', "test_failed_restart_restores_previous_and_preserves_failed_candidate", False),
+        ("rollback omitted", 'except BaseException:\n            self.recover(record)\n            raise', 'except BaseException:\n            pass\n            raise', "test_failed_restart_restores_previous_and_preserves_failed_candidate", False),
         ("backup identity ignored", 'if command(["git", "rev-parse", "HEAD"], backup) != record["previous_sha"]:', 'if False:', "test_retained_predecessor_identity_must_match", False),
         ("settings conflict ignored", 'or current_settings_hash != settings_hash', 'or False', "test_changed_settings_during_build_refuse_promotion", False),
+        ("local artifact detached", 'backup = Path(record["backup"])\n        command(["systemctl", "--user", "stop", self.service])', 'backup = Path(record["backup"])\n        if (self.instance / "data").exists():\n            (self.instance / "data").rename(backup / "detached-data")\n        command(["systemctl", "--user", "stop", self.service])', "test_local_artifacts_written_during_and_after_build_stay_at_active_paths", False),
+        ("local file collision ignored", 'if relative != "openplan/.env.local" and relative not in old_paths and before is not None:', 'if False:', "test_new_tracked_source_cannot_replace_an_existing_local_file", False),
+        ("managed settings flattened", 'if settings.is_symlink():', 'if False:', "test_managed_settings_symlink_is_preserved_and_update_refused", False),
+        ("retained file corruption ignored", 'if self.fingerprint(self.source_path(backup, entry["path"])) != entry["before"]:', 'if False:', "test_changed_recovery_source_refuses_before_stopping_the_demo", False),
+        ("newer settings overwritten", 'if self.fingerprint(current) not in (entry["before"], entry["after"]):', 'if False:', "test_recovery_refuses_newer_settings_without_overwriting_them", False),
+        ("symlink ancestor followed", 'if parent.is_symlink() or (parent.exists() and not parent.is_dir()):', 'if False:', "test_source_paths_reject_escape_and_symlink_ancestors", False),
         ("interruption ignored", 'if prior["phase"] not in ("ready", "recovered", "preparation_failed"):', 'if False:', "test_interrupted_update_blocks_another_update", False),
         ("lock omitted", 'fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)', 'pass  # lock removed', "test_concurrent_command_refuses_under_held_lock", False),
     ]

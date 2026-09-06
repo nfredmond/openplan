@@ -177,7 +177,7 @@ previous instance and recovery point until the new one is accepted.
 The [safe walkthrough updater](../scripts/ops/safe-refresh-walkthrough.py)
 maintains an already configured local service. The desktop control uses this
 entry point. It checks the service directory and reported predecessor commit,
-builds a separate candidate, retains the previous directory and recovers after
+builds a separate candidate, retains changed source/runtime and recovers after
 a failed promotion. Its local journal supports interrupted-update recovery.
 The underlying shell builder remains a low-level tool; direct invocation does
 not provide these recovery protections. See the [operator instructions](ops/RUNBOOK.md#local-demo-update-and-recovery)

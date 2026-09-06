@@ -63,7 +63,7 @@ else
   git merge --ff-only origin/main
 fi
 
-step "Checking the instance database has every migration this build expects"
+step "Checking the local Supabase migration inventory for this build"
 # WHY. This script refreshes CODE and nothing else. The database it talks to is
 # refreshed by nobody, so a fast-forward carrying a migration leaves the new
 # build running against the old schema — and that failure is silent in the worst
@@ -112,7 +112,8 @@ process.stdin.on("end", () => {
 
 case "$MIGRATION_VERDICT" in
   CURRENT)
-    echo "Every migration in this checkout is applied to the instance database."
+    echo "Every migration in this checkout is recorded in the queried local Supabase stack."
+    echo "This does not identify the application's configured runtime database."
     ;;
   PENDING*)
     printf 'These migrations exist in the code but NOT in the instance database:\n'

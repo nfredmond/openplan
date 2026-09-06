@@ -76,13 +76,16 @@ installations must pass their own instance path, `--service` and `--url`. The
 instance must be an independent clone. This tool does not install or configure
 services. A mismatched or unavailable predecessor identity blocks an update.
 
-Candidates, predecessors, displaced failed builds and the recovery journal stay
+Candidates, changed-source snapshots, retained runtime directories, displaced failed builds and the recovery journal stay
 in a private sibling directory, normally `~/apps/.openplan-updates`. These may
 contain secrets. Keep them local. The tool retains them until an operator reviews
 their disposition; allow disk space for dependencies and builds on each update.
 An interrupted update blocks another update until recovery is resolved. A failed
 preparation leaves the original directory in place. A failed promotion attempts
-to restore it; retry the recovery action if restart itself failed.
+to restore the changed source and runtime; retry recovery if restart itself failed.
+The instance root and local artifact paths stay in place. Managed settings
+symlinks and source/settings changed outside the recorded transaction require
+review before this coordinator can proceed. It preserves those edits.
 
 The shell builder checks the local migration inventory, not the application's
 actual runtime database identity. No database migration or rollback runs here.
