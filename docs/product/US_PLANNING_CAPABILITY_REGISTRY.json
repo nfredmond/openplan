@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "currentRelease": "v0.44.0",
-  "reviewedAt": "2026-09-05",
+  "reviewedAt": "2026-09-06",
   "reviewBy": "2026-10-05",
   "statuses": ["proven", "partial", "missing", "not-assessed"],
   "interimReleasePolicy": "Open cells block v1.0.0 but remain visible without blocking honest pre-v1 releases.",
@@ -98,6 +98,8 @@
     ]
   },
   "evidence": [
+    "docs/reviews/product-direction/2026-09-06-workflow-custody-review.md",
+    "docs/ops/V044_DRAFT_AND_DIAGNOSIS_CORRECTION_2026-09-06.md",
     "docs/ops/V044_CRASH_PUBLICATION_METADATA_2026-09-05.md",
     "docs/ops/V044_MODEL_ARTIFACT_DOWNLOAD_2026-09-05.md",
     "docs/ops/V044_AGREEMENT_ROUNDING_2026-09-05.md",
@@ -116,6 +118,12 @@
     "docs/ops/KNOWN_ISSUES.md"
   ],
   "queuedFirstWeekFindings": [
+    {
+      "issueId": "KI-2026-09-06-081",
+      "capability": "travel-demand-corridor-scenario-and-performance-analysis",
+      "gap": "Verify exact displayed artifact filenames and full hashes at desktop and 390px against native downloads; correction under verification",
+      "evidence": "docs/ops/V044_DRAFT_AND_DIAGNOSIS_CORRECTION_2026-09-06.md"
+    },
     {
       "issueId": "KI-2026-09-05-073",
       "capability": "transit-active-transportation-freight-and-safety-planning",

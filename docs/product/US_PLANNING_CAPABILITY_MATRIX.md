@@ -1,7 +1,7 @@
 # US planning capability matrix
 
 <!-- openplan-planning-capability-matrix
-review_date: 2026-09-05
+review_date: 2026-09-06
 review_by: 2026-10-05
 current_release: v0.44.0
 capabilities:
@@ -72,11 +72,16 @@ cell changes to `proven`; prose confidence is not evidence.
 | Transit, active transportation, freight, and safety planning | Partial | GTFS, accessibility, freight, project and safety foundations | End-to-end multimodal journeys; complete injury coverage and state-specific source proof |
 | Environmental review, climate, resilience, and equity | Not assessed | Environmental and equity-adjacent evidence exists | Coherent statutory workflows, nationwide applicability, public artifacts, and validation by use |
 | Community engagement, Title VI, and public decisions | Partial | Public maps, surveys, comments, translation boundaries, exact-hash agency package review | Campaign-to-decision journey, response record, statutory decision proof, accessibility and multi-project proof |
-| Capital programming, prioritization, grants, delivery, and reimbursement | Partial | Portfolio, grants, LAPM reimbursement, reports | One traceable project/funding spine through authorization, obligation, delivery, amendment, and closeout |
+| Capital programming, prioritization, grants, delivery, and reimbursement | Partial | Portfolio, grants, LAPM reimbursement, reports | Complete agency OWP/UPWP administration, including authorization, amendments, work products, reimbursement, certification, closeout and next-cycle mapping; keep costs, billings, cash, funding vintages and authority periods separate |
 | GIS, data stewardship, documents, reports, and public records | Partial | Imports, v2 project GeoPackage handoff, literal-value XLSX portfolio round-trip, frozen governed evidence bundles, evidence custody, reports, provenance | Broader designation/model-link GIS geometry, records lifecycle, and complete cross-module source reuse |
 | Development review, implementation, and interdepartmental handoff | Not assessed | Project/land-use primitives and immutable submit/return/approve custody | Product home, full development-review workflow, statutory responsibility, and jurisdiction proof |
 
 ## Organization coverage at v0.44.0
+
+The September 6 review also identifies source-level exclusions requiring visible
+handoff tests: assigned plan actions without deadlines in My Work, and shared
+campaign evidence in non-lead project exports. No capability cell is promoted
+by those source inspections or by the current draft/disclosure corrections.
 
 | Organization context | Current status | Principal proof gap |
 |---|---|---|
