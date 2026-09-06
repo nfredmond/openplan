@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-06
 review_by: 2026-10-05
-reviewed_commit: c86e76dd
+reviewed_commit: 7e3a98e6
 current_release: v0.44.0
 independent_contexts: 2
 trigger: independent-maintenance-review-before-owp-preparation
@@ -95,3 +95,15 @@ The current contract, sole roadmap and core ledger still require full agency pra
 The review date, deadline and independent-context count remain unchanged. The source binding advances to the inspected checkpoint on this new implementation evidence; it does not invent fresh independent reviewers or a new release campaign. Direction/document checks and remote CI are recorded separately after this reassessment.
 
 The final landing-note checkpoint c86e76dd was also inspected: its only additional evidence is the successful production build, 135 live RLS cases, zero-vulnerability dependency audit and rerun focused checks. It introduces no application change or wider outcome claim. The direction guard classifies this evidence note as substantive, so the source binding includes it. The first push exposed that missing final binding; its CI must not be represented as a successful landing. This reassessment retains the same dates, independent reports and all limits above.
+
+## Bounded reassessment after the preparation foundation
+
+Root inspected source checkpoint `7e3a98e6` against the preserved independent reviews, current v1 contract, roadmap, core requirements, architecture and known limitations. Programs now supplies a reachable preparation editor through existing Documents, source/checksum/page references, explicit predecessor decisions and proposed financial lines. It creates no live task system, ledger, adoption or approval service. The manual path remains independent of an AI account. The EDCTC recognizer is a bounded source-layout adapter with manual handling for other sources; it is not a California-only core program schema or a claim that every agency's legal/funding requirements are implemented.
+
+The [implementation evidence](../2026-09-06-handoffs/OWP_PREPARATION_IMPLEMENTATION.md) preserves the actual source-extraction defects, legacy revision limitation, Chrome download refusal, unexpectedly stopped development service and corrected PostgREST conflict handling. Its [mutation results](../2026-09-06-handoffs/owp-proof-results.json) contain harmless survivors and consequential assertion failures for source/currency/authorization/export and live SQL custody boundaries. The reviewer did not infer client recovery from direct database tests: actual page recovery and a distinct authenticated HTTP retry/stale-save exercise supplied that evidence. A premature HTTP-pass report and an incorrectly compared historical hash are disclosed. Workbook formulas were recalculated in LibreOffice after the cached-value-only method was rejected.
+
+This is progress within M2d.1, not completion of preparation or an OWP lifecycle milestone. Whole-program staffing/fund allocation reconciliation, all predecessor/amendment mappings, durable long/scanned intake, download reachability and an independent planner/finance review remain required. The source inventory is append-only and missing figures remain unresolved. The next primary outcome remains completion of M2d.1; daily-work/engagement handoff limits remain visible. No capability matrix or release outcome is promoted. The nine complete and three partial v0.44 journeys still stand, and v0.44 stays unreleased.
+
+Nathaniel's [ODX and WaypointMap request](../2026-09-06-handoffs/ODX_TRANSITION_RESEARCH.md) refines M5b rather than starting another queue or displacing OWP. ODX has newer source changes and specific upstream stage-level performance claims, but no measured OpenPlan whole-job speed/quality result. Trial the existing worker adapter, retain engine identity and recovery/output gates, and evaluate independent checkpoints, units, sensor/3D improvements and external splat workflows separately. WaypointMap is the user's mission workflow reference; DJI Mini 4 Pro is confirmed, while controller/app/firmware/USB evidence remains open. No paid dependency, device modification, aircraft flight, universal DJI support or wholesale processing migration is authorized by a research conclusion.
+
+All practice families and agency types, every state/DC with California deepest, territory/tribal/overlapping-authority cases, separate scientific methods and untouched use-specific validation remain binding. Engagement, provider choice with action integrity, contracts/capital/tax/grants/procurement, RTP updates, everyday planning and sustainable self-hosting retain the original dependency sequence. No scientific study, model default or consumed holdout changed. This reassessment adds bounded engineering evidence; it does not invent independent reviewers. Original review dates, deadline, context count and dissenting reports are preserved. Full checks and remote CI must be read after this source binding.
