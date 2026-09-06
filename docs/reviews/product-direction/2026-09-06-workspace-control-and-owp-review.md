@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-06
 review_by: 2026-10-05
-reviewed_commit: 7e3a98e6
+reviewed_commit: 2684d449
 current_release: v0.44.0
 independent_contexts: 2
 trigger: independent-maintenance-review-before-owp-preparation
@@ -107,3 +107,9 @@ This is progress within M2d.1, not completion of preparation or an OWP lifecycle
 Nathaniel's [ODX and WaypointMap request](../2026-09-06-handoffs/ODX_TRANSITION_RESEARCH.md) refines M5b rather than starting another queue or displacing OWP. ODX has newer source changes and specific upstream stage-level performance claims, but no measured OpenPlan whole-job speed/quality result. Trial the existing worker adapter, retain engine identity and recovery/output gates, and evaluate independent checkpoints, units, sensor/3D improvements and external splat workflows separately. WaypointMap is the user's mission workflow reference; DJI Mini 4 Pro is confirmed, while controller/app/firmware/USB evidence remains open. No paid dependency, device modification, aircraft flight, universal DJI support or wholesale processing migration is authorized by a research conclusion.
 
 All practice families and agency types, every state/DC with California deepest, territory/tribal/overlapping-authority cases, separate scientific methods and untouched use-specific validation remain binding. Engagement, provider choice with action integrity, contracts/capital/tax/grants/procurement, RTP updates, everyday planning and sustainable self-hosting retain the original dependency sequence. No scientific study, model default or consumed holdout changed. This reassessment adds bounded engineering evidence; it does not invent independent reviewers. Original review dates, deadline, context count and dissenting reports are preserved. Full checks and remote CI must be read after this source binding.
+
+## Final foundation landing reassessment
+
+Root inspected checkpoints `369c63c3` and `2684d449`: they add actual existing foreign-document/project and other-program-source refusal tests, their three failed predicate mutations and harmless control, final identified production/browser/HTTP evidence, KI-088's incomplete preparation boundary, and the completed local checkout archive. They change no production application code after the successful `11ecd1667aa5` build. All 54 mutation attempts remain attributed: six harmless survivors and 48 meaningful failures. The full application suite passed 13,171 tests with 118 skips; the final full live suite passed 141, followed by the seven-case focused suite containing the new foreign-object case. The dependency audit found no vulnerabilities; lint, TypeScript and the corrected focused integration guards passed. The interrupted parallel build, recovered dev-service failure, early source/HTTP mistakes and viewport misdiagnosis remain disclosed.
+
+The canonical main is the only active Git checkout and branch. The entire stopped development copy and registration metadata are retained locally as described in the implementation note; the :3000 and :3200 services were not updated or restarted. Their older running builds remain distinct from the tested source. The reviewer rechecked that the new operational note does not claim backup/restore, deployment, full preparation, v0.44 release or any broader contract milestone. The source binding advances to `2684d449` to include those inspected substantive evidence notes. Original independent reviews, dates, scope and unresolved outcomes remain unchanged. The direction guard is run against this binding before push; remote CI is checked separately on the resulting main commit.
