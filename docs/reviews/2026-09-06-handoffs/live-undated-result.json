@@ -1,0 +1,36 @@
+{
+  "passed": true,
+  "initial": [
+    {
+      "sourceId": "land_use_plan_actions",
+      "block": "undated",
+      "id": "5cbb2dff-16ea-4ddf-b2e1-dbc24a4cd137",
+      "title": "Exercise only — review undated implementation action",
+      "projectId": null,
+      "projectName": "Exercise only — undated implementation handoff",
+      "dueOn": null,
+      "isOverdue": false,
+      "assigneeUserId": "5ca61d3e-5900-4501-b804-6acec745fcec",
+      "ownerLabel": null,
+      "badge": {
+        "label": "Plan action",
+        "tone": "neutral"
+      },
+      "detail": "Not started · No due date",
+      "href": "/land-use-plans/f99e224e-d9cb-42eb-9fc0-dc74837b8c80",
+      "dedupKey": null
+    }
+  ],
+  "stored": {
+    "id": "5cbb2dff-16ea-4ddf-b2e1-dbc24a4cd137",
+    "title": "Exercise only — review undated implementation action",
+    "due_on": null,
+    "status": "not_started",
+    "assignee_user_id": "5ca61d3e-5900-4501-b804-6acec745fcec"
+  },
+  "outsiderReadDenied": true,
+  "outsiderWriteDenied": true,
+  "reassignment": true,
+  "completion": true,
+  "fixtureRestored": true
+}

@@ -1,0 +1,227 @@
+- region "Workspace map":
+  - region "Map"
+  - link "Mapbox homepage":
+    - /url: https://www.mapbox.com/
+- complementary "Primary navigation":
+  - navigation:
+    - paragraph: Workspace
+    - link "Overview":
+      - /url: /dashboard
+      - generic: Overview
+    - link "Workspace setup & health":
+      - /url: /workspace
+      - generic: Workspace setup & health
+    - link "My Work":
+      - /url: /my-work
+      - generic: My Work
+    - link "Projects":
+      - /url: /projects
+      - generic: Projects
+    - link "Reports":
+      - /url: /reports
+      - generic: Reports
+    - link "Planner Agent Activity":
+      - /url: /assistant-activity
+      - generic: Planner Agent Activity
+    - paragraph: Plans & Programming
+    - link "Regional Plan (RTP)":
+      - /url: /rtp
+      - generic: Regional Plan (RTP)
+    - link "Land Use Plans":
+      - /url: /land-use-plans
+      - generic: Land Use Plans
+    - link "Plans":
+      - /url: /plans
+      - generic: Plans
+    - link "Programming Cycles":
+      - /url: /programs
+      - generic: Programming Cycles
+    - paragraph: Funding
+    - link "Grants":
+      - /url: /grants
+      - generic: Grants
+    - link "Invoices & Reimbursements":
+      - /url: /invoicing
+      - generic: Invoices & Reimbursements
+    - paragraph: Analysis & Modeling
+    - link "Travel modeling":
+      - /url: /models
+      - generic: Travel modeling
+    - link "Corridor Analysis":
+      - /url: /explore
+      - generic: Corridor Analysis
+    - link "Safety":
+      - /url: /safety
+      - generic: Safety
+    - paragraph: Community
+    - link "Engagement":
+      - /url: /engagement
+      - generic: Engagement
+    - paragraph: Library
+    - link "Data Hub":
+      - /url: /data-hub
+      - generic: Data Hub
+    - link "Documents":
+      - /url: /knowledge-base
+      - generic: Documents
+    - link "Aerial Imagery":
+      - /url: /aerial
+      - generic: Aerial Imagery
+    - link "Help":
+      - /url: /help
+      - generic: Help
+  - button "Switch to light mode":
+  - generic: Theme
+- banner:
+  - button "Jump to a module (Command-K)":
+  - group "Colour mode":
+    - button "Light mode":
+    - button "Dark mode" [pressed]:
+  - 'button "Colour palette: Cartographic"':
+- main:
+  - paragraph: land use plan · version 1
+  - heading "Exercise only — undated implementation handoff" [level=1]
+  - paragraph: Exercise only, no agency authority · No adopted geography — software test
+  - paragraph: 13%
+  - paragraph: workflow complete
+  - paragraph: Local legal requirements are not configured. This workflow keeps versions, evidence, review records, decisions, maps, and implementation history, but its checklist is not a statement of applicable law.
+  - paragraph: No legal sources are configured; source review is not established. OpenPlan does not certify legal sufficiency.
+  - status: All section and content-node changes are saved.
+  - heading "Workflow" [level=2]
+  - generic: Open · Locally defined review and adoption process
+  - generic: Open · Applicable sections
+  - generic: Open · Mapped designationshuman only
+  - generic: Complete · Implementation program
+  - generic: Open · Public review releasehuman only
+  - generic: Open · Frozen comment dispositionhuman only
+  - generic: Open · Published frozen packethuman only
+  - generic: Open · implementation report
+  - heading "Applicable sections" [level=2]
+  - paragraph: Conditional requirements stay visible with their trigger. The planner decides applicability.
+  - heading "Add a goal, objective, policy, standard, program, or action node" [level=3]
+  - combobox:
+    - option "Top level" [selected]
+  - combobox:
+    - option "goal"
+    - option "objective"
+    - option "policy" [selected]
+    - option "standard"
+    - option "program"
+    - option "implementation action"
+  - textbox "Node title"
+  - textbox "Draft text"
+  - button "Add content node"
+  - heading "Mapped designations" [level=2]
+  - paragraph: Future land-use designations express plan policy. They are not zoning and do not change parcel entitlements.
+  - combobox:
+    - option "Choose an agency GIS layer" [selected]
+  - textbox "Designation set label"
+  - text: Public map fields
+  - listbox "Public map fields Only selected fields can be made public. Select none to show shapes only."
+  - generic: Only selected fields can be made public. Select none to show shapes only.
+  - text: Legend field
+  - combobox "Legend field":
+    - option "No feature labels" [selected]
+  - text: Linked policies
+  - listbox "Linked policies"
+  - button "Attach exact finalized layer version" [disabled]
+  - paragraph:
+    - text: Need a layer?
+    - link "Open Data Hub":
+      - /url: /data-hub
+    - text: .
+  - heading "Implementation program" [level=2]
+  - paragraph: Exercise only — review undated implementation action
+  - paragraph: No responsible party recorded · No due date
+  - combobox:
+    - option "not started" [selected]
+    - option "in progress"
+    - option "completed"
+    - option "deferred"
+  - textbox "Implementation action"
+  - textbox "Responsible party"
+  - textbox
+  - combobox:
+    - option "No linked project" [selected]
+  - combobox:
+    - option "No linked program" [selected]
+  - button "Add implementation action"
+  - heading "Related plans" [level=2]
+  - paragraph: Record parent, subordinate, overlapping, superseding, and implementation relationships without forcing another plan type into this plan's legal model.
+  - textbox "Related plan label"
+  - combobox:
+    - option "parent"
+    - option "child"
+    - option "overlapping"
+    - option "supersedes"
+    - option "implements" [selected]
+  - textbox "Relationship and consistency notes"
+  - button "Add relationship"
+  - heading "Required process steps" [level=2]
+  - paragraph: OpenPlan saves the dates you enter. It does not calculate a legal deadline from incomplete facts.
+  - strong: Locally defined review and adoption process
+  - text: · no status
+  - combobox:
+    - option "Choose descriptor step" [selected]
+    - option "Locally defined review and adoption process"
+  - combobox:
+    - option "not started" [selected]
+    - option "in progress"
+    - option "complete"
+    - option "not applicable"
+  - text: Actual due date
+  - textbox "Actual due date"
+  - text: Actual completion date
+  - textbox "Actual completion date"
+  - combobox:
+    - option "No evidence document" [selected]
+  - textbox "Process note"
+  - button "Save process step"
+  - heading "Private tribal consultation" [level=2]
+  - paragraph: Status and evidence remain signed-in only. Confidential material and sensitive locations never enter the published plan.
+  - combobox:
+    - option "not started" [selected]
+    - option "initiated"
+    - option "in progress"
+    - option "complete"
+    - option "not applicable"
+  - combobox:
+    - option "No evidence document selected" [selected]
+  - textbox "Confidential consultation notes"
+  - checkbox "Contains sensitive-location information"
+  - text: Contains sensitive-location information
+  - button "Save private information"
+  - heading "Review history" [level=2]
+  - combobox:
+    - option "internal consistency" [selected]
+    - option "environmental review"
+    - option "hearing"
+    - option "recommendation"
+    - option "comment response"
+  - textbox
+  - textbox "Reviewing or hearing body"
+  - combobox:
+    - option "No linked public engagement" [selected]
+  - combobox:
+    - option "No evidence document" [selected]
+  - textbox "What was reviewed, heard, recommended, or resolved"
+  - button "Save review event"
+  - paragraph:
+    - text: Public comments and responses stay in
+    - link "Engagement":
+      - /url: /engagement
+    - text: ; link that public engagement here.
+  - heading "Freeze, adopt, and publish" [level=2]
+  - paragraph: Freezing captures plan content, exact GIS versions, policy links, and the implementation program under one SHA-256 hash. It cannot be edited afterward.
+  - paragraph: "Before freezing, complete:"
+  - list:
+    - listitem: "Complete applicable sections: locally_defined"
+    - listitem: Attach a versioned mapped-designation layer
+  - button "Freeze public draft" [disabled]
+  - heading "Descriptor duties and sources" [level=2]
+  - strong: Locally defined review and adoption process
+- region
+- button "Planner Agent":
+  - generic: Planner Agent
+- button "Open Next.js Dev Tools":
+- alert: Land Use Plan · OpenPlan

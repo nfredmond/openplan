@@ -1,0 +1,56 @@
+[
+  {
+    "case": "harmless-comment",
+    "exitCode": 0,
+    "expectedPass": true,
+    "matched": true
+  },
+  {
+    "case": "old-date-filter",
+    "exitCode": 1,
+    "expectedPass": false,
+    "matched": true
+  },
+  {
+    "case": "invent-date",
+    "exitCode": 1,
+    "expectedPass": false,
+    "matched": true
+  },
+  {
+    "case": "ignore-assignee",
+    "exitCode": 1,
+    "expectedPass": false,
+    "matched": true
+  },
+  {
+    "case": "drop-inner-join",
+    "exitCode": 1,
+    "expectedPass": false,
+    "matched": true
+  },
+  {
+    "case": "include-completed",
+    "exitCode": 1,
+    "expectedPass": false,
+    "matched": true
+  },
+  {
+    "case": "omit-date-projection",
+    "exitCode": 1,
+    "expectedPass": false,
+    "matched": true
+  },
+  {
+    "case": "hide-unreadable-undated",
+    "exitCode": 1,
+    "expectedPass": false,
+    "matched": true
+  },
+  {
+    "case": "broken-fk-projection",
+    "exitCode": 1,
+    "expectedPass": false,
+    "matched": true
+  }
+]

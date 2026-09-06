@@ -737,7 +737,6 @@ const landUsePlanActionsSource: MyWorkSource = {
   orderColumn: "due_on",
   orderAscending: true,
   staticFilters: [
-    { kind: "notNull", column: "due_on" },
     { kind: "notIn", column: "status", values: ["completed", "deferred"] },
   ],
   toItems: (rows, { now }) => rows.map((row) => {
@@ -748,7 +747,7 @@ const landUsePlanActionsSource: MyWorkSource = {
     const planId = asString(plan?.id);
     return {
       sourceId: "land_use_plan_actions",
-      block: "deadlines",
+      block: dueOn ? "deadlines" : "undated",
       id: String(row.id),
       title: asString(row.title) ?? "(untitled plan action)",
       projectId: null,
@@ -757,8 +756,8 @@ const landUsePlanActionsSource: MyWorkSource = {
       isOverdue: overdue,
       ...assigneeKey(row),
       ownerLabel: asString(row.responsible_party),
-      badge: deadlineBadge("Plan action", overdue),
-      detail: `${humanizeStatus(asString(row.status)) ?? "Open"} · due ${formatWorkDeadlineDate(dueOn)}`,
+      badge: dueOn ? deadlineBadge("Plan action", overdue) : { label: "Plan action", tone: "neutral" },
+      detail: `${humanizeStatus(asString(row.status)) ?? "Open"} · ${dueOn ? `due ${formatWorkDeadlineDate(dueOn)}` : "No due date"}`,
       href: planId ? `/land-use-plans/${planId}` : "/land-use-plans",
       dedupKey: null,
     } satisfies MyWorkItem;

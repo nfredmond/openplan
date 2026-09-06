@@ -1,0 +1,149 @@
+- region "Workspace map":
+  - region "Map"
+  - link "Mapbox homepage":
+    - /url: https://www.mapbox.com/
+- complementary "Primary navigation":
+  - navigation:
+    - paragraph: Workspace
+    - link "Overview":
+      - /url: /dashboard
+      - generic: Overview
+    - link "Workspace setup & health":
+      - /url: /workspace
+      - generic: Workspace setup & health
+    - link "My Work":
+      - /url: /my-work
+      - generic: My Work
+    - link "Projects":
+      - /url: /projects
+      - generic: Projects
+    - link "Reports":
+      - /url: /reports
+      - generic: Reports
+    - link "Planner Agent Activity":
+      - /url: /assistant-activity
+      - generic: Planner Agent Activity
+    - paragraph: Plans & Programming
+    - link "Regional Plan (RTP)":
+      - /url: /rtp
+      - generic: Regional Plan (RTP)
+    - link "Land Use Plans":
+      - /url: /land-use-plans
+      - generic: Land Use Plans
+    - link "Plans":
+      - /url: /plans
+      - generic: Plans
+    - link "Programming Cycles":
+      - /url: /programs
+      - generic: Programming Cycles
+    - paragraph: Funding
+    - link "Grants":
+      - /url: /grants
+      - generic: Grants
+    - link "Invoices & Reimbursements":
+      - /url: /invoicing
+      - generic: Invoices & Reimbursements
+    - paragraph: Analysis & Modeling
+    - link "Travel modeling":
+      - /url: /models
+      - generic: Travel modeling
+    - link "Corridor Analysis":
+      - /url: /explore
+      - generic: Corridor Analysis
+    - link "Safety":
+      - /url: /safety
+      - generic: Safety
+    - paragraph: Community
+    - link "Engagement":
+      - /url: /engagement
+      - generic: Engagement
+    - paragraph: Library
+    - link "Data Hub":
+      - /url: /data-hub
+      - generic: Data Hub
+    - link "Documents":
+      - /url: /knowledge-base
+      - generic: Documents
+    - link "Aerial Imagery":
+      - /url: /aerial
+      - generic: Aerial Imagery
+    - link "Help":
+      - /url: /help
+      - generic: Help
+  - button "Switch to light mode":
+  - generic: Theme
+- banner:
+  - button "Jump to a module (Command-K)":
+  - group "Colour mode":
+    - button "Light mode":
+    - button "Dark mode" [pressed]:
+  - 'button "Colour palette: Cartographic"':
+- article:
+  - heading "Reminders" [level=2]
+  - paragraph: Daily deadline reminders are not running on this deployment, so nothing arrives here on its own. Whoever runs this OpenPlan can switch them on. The deadlines themselves are listed below either way.
+  - generic "Technical detail for whoever runs this deployment"
+- article:
+  - heading "Reminder preferences" [level=2]
+  - paragraph: In-app reminders always stay on. Choose how far ahead they appear and whether OpenPlan also prepares an email digest.
+  - generic: Advance window
+  - spinbutton "Advance window 1 to 30 days; overdue work is always included.": "7"
+  - generic: 1 to 30 days; overdue work is always included.
+  - checkbox "Prepare email digests when email transport exists" [checked]
+  - text: Prepare email digests when email transport exists
+  - button "Save preferences"
+- article:
+  - generic: Workspace
+  - heading "My work" [level=1]
+  - paragraph: Assignments and deadlines across this workspace, including plan actions without a due date, unassigned work, held stage gates, and shared grant and invoice deadlines.
+  - paragraph: Showing up to the 20 soonest items from each source — overdue first, then by date.
+- navigation "Which work to show":
+  - link "Assigned to me":
+    - /url: /my-work?scope=assigned
+    - generic: Assigned to me
+  - link "Unassigned":
+    - /url: /my-work?scope=unassigned
+    - generic: Unassigned
+  - link "All my projects":
+    - /url: /my-work?scope=all_projects
+    - generic: All my projects
+- article:
+  - heading "Dated work" [level=2]
+  - paragraph: Overdue first, then soonest.
+  - paragraph: Nothing dated is assigned to you right now.
+  - paragraph: Try another view — unassigned work and other people's deadlines are one click away, and work is assigned from its own project page.
+  - navigation "Which work to show":
+    - link "Assigned to me":
+      - /url: /my-work?scope=assigned
+      - generic: Assigned to me
+    - link "Unassigned":
+      - /url: /my-work?scope=unassigned
+      - generic: Unassigned
+    - link "All my projects":
+      - /url: /my-work?scope=all_projects
+      - generic: All my projects
+- article:
+  - heading "Work without a due date" [level=2]
+  - paragraph: Project issues and plan actions without a due date. Set a date in the original record when one is known.
+  - link "Exercise only — review undated implementation action" [active]:
+    - /url: /land-use-plans/f99e224e-d9cb-42eb-9fc0-dc74837b8c80
+  - generic: Plan action
+  - paragraph: Not started · No due date
+  - generic: Workspace record
+  - generic: handoff-20260906@openplan.test
+- article:
+  - heading "Blocked projects" [level=2]
+  - paragraph: Stage gates whose latest decision was a hold. A hold is a fact about the project, not an item on one person's list — so this block reads the same for everyone here.
+  - paragraph: No stage gate is currently held. A gate with no recorded decision is not a hold, and is not counted here.
+- article:
+  - heading "Waiting on a person" [level=2]
+  - paragraph: Work in other modules that has stopped and needs someone here to act. Nobody is assigned to these — the queue reads the same for everyone in the workspace.
+  - paragraph: "Nothing is waiting on a person: no comment is pending moderation, no model run failed in the last 30 days, and no drafted narrative is awaiting a decision."
+- article:
+  - heading "Shared deadlines" [level=2]
+  - paragraph: Grant decisions, award obligations and invoice windows. Nobody is assigned to these, so nothing here is shown as belonging to anyone.
+  - paragraph: No grant decision, award obligation or invoice window has a date pending.
+- region
+- button "Planner Agent":
+  - generic: Planner Agent
+- button "Open Next.js Dev Tools":
+- alert

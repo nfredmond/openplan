@@ -87,6 +87,11 @@ function blockNamed(heading: string) {
 }
 
 describe("my work — the board", () => {
+  it("discloses unreadable plan actions in both dated and undated blocks", async () => {
+    await renderBoard({ empty: true, failures: { land_use_plan_implementation_actions: "permission denied" } });
+    expect(blockNamed("Work without a due date").getByText(/Undated work could not be fully read/)).toBeVisible();
+    expect(blockNamed("Dated work").queryByText("Nothing dated is assigned to you right now.")).toBeNull();
+  });
   it("names and links directly to decision-package work in another workspace", async () => {
     await renderBoard({
       otherWorkspaceDecisionPackageWork: [{

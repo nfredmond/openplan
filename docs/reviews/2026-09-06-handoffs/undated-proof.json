@@ -1,0 +1,19 @@
+{
+  "baselineCommit": "8958985c0970771c67120c3fbf17f36f9e692b7a",
+  "servedCheckout": "/home/nathaniel/.local/state/openplan/handoff-development-2026-09-06",
+  "url": "http://127.0.0.1:3215",
+  "sourceSha256": {
+    "openplan/src/lib/my-work/sources.ts": "0d04b6b70b81f3293415be3299a8f9ef770ecb7dd558304b56165f380e91c699",
+    "openplan/src/components/my-work/my-work-board.tsx": "8d9fbe93795a9dbb46793b8a45e12b92079cf0800e16b30729c93816140af90a"
+  },
+  "desktop": {
+    "width": 2648,
+    "height": 1324
+  },
+  "mobile": {
+    "width": 390,
+    "height": 844
+  },
+  "keyboard": "Tab to action, Enter to original plan",
+  "console": "Inspected returned log entries; React development/HMR messages only after reload. Earlier overview disclosed an unrelated unreadable project-submittal source."
+}

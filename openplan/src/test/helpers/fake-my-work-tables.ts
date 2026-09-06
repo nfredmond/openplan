@@ -41,6 +41,10 @@ export type Db = Record<string, Row[]>;
 
 /** FK graph the embeds resolve through — child table → embed name → relation. */
 const RELATIONS: Record<string, Record<string, { fk: string; parent: string }>> = {
+  land_use_plan_implementation_actions: {
+    land_use_plan_versions: { fk: "version_id", parent: "land_use_plan_versions" },
+  },
+  land_use_plan_versions: { land_use_plans: { fk: "plan_id", parent: "land_use_plans" } },
   project_deliverables: { projects: { fk: "project_id", parent: "projects" } },
   project_milestones: { projects: { fk: "project_id", parent: "projects" } },
   project_submittals: { projects: { fk: "project_id", parent: "projects" } },
@@ -89,7 +93,7 @@ function parseSelect(select: string): SelectNode[] {
     const inner = head.endsWith("!inner");
     return {
       kind: "embed",
-      name: inner ? head.slice(0, -"!inner".length) : head,
+      name: head.split("!")[0],
       inner,
       children: parseSelect(part.slice(parenIndex + 1, part.lastIndexOf(")"))),
     };

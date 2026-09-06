@@ -65,7 +65,7 @@ export type MyWorkBoardProps = {
 
 const BLOCK_HEADINGS: Record<MyWorkBlockId, string> = {
   deadlines: "Dated work",
-  undated: "Issues (no due date)",
+  undated: "Work without a due date",
   blocked_projects: "Blocked projects",
   needs_review: "Waiting on a person",
   workspace_deadlines: "Shared deadlines",
@@ -73,7 +73,7 @@ const BLOCK_HEADINGS: Record<MyWorkBlockId, string> = {
 
 const BLOCK_NOTES: Record<MyWorkBlockId, string> = {
   deadlines: "Overdue first, then soonest.",
-  undated: "Project issues carry no due date, so they are listed separately rather than sorted in as if they were due today.",
+  undated: "Project issues and plan actions without a due date. Set a date in the original record when one is known.",
   blocked_projects:
     "Stage gates whose latest decision was a hold. A hold is a fact about the project, not an item on one person's list — so this block reads the same for everyone here.",
   needs_review:
@@ -84,8 +84,8 @@ const BLOCK_NOTES: Record<MyWorkBlockId, string> = {
 
 /** Which sources feed which block — used to answer "empty, or unreadable?". */
 const BLOCK_SOURCES: Record<MyWorkBlockId, readonly MyWorkSourceId[]> = {
-  deadlines: ["deliverables", "milestones", "submittals"],
-  undated: ["issues"],
+  deadlines: ["deliverables", "milestones", "submittals", "land_use_plan_actions"],
+  undated: ["issues", "land_use_plan_actions"],
   blocked_projects: ["stage_gate_holds"],
   needs_review: ["engagement_moderation", "failed_model_runs", "narrative_drafts", "decision_package_reviews"],
   workspace_deadlines: ["grant_decisions", "award_obligations", "invoice_windows"],
@@ -184,9 +184,8 @@ export function MyWorkBoard({
         <div className="module-intro-body">
           <h1 className="module-intro-title">My work</h1>
           <p className="module-intro-description">
-            Everything with a date on it, across every project in this workspace: what you are
-            assigned, what nobody has picked up, which projects are held at a stage gate, and the
-            grant, obligation and invoice deadlines the workspace is carrying.
+            Assignments and deadlines across this workspace, including plan actions without a
+            due date, unassigned work, held stage gates, and shared grant and invoice deadlines.
           </p>
         </div>
         <p className="module-note">{describeMyWorkOrdering(limitPerSource)}</p>
@@ -290,10 +289,10 @@ export function MyWorkBoard({
             </div>
           ) : blockHasUnreadableSource("undated") ? (
             <p className="module-empty-state">
-              Project issues could not be read, so this block is unavailable rather than empty.
+              Undated work could not be fully read, so this block is unavailable rather than empty.
             </p>
           ) : (
-            <p className="module-empty-state">No open issue is on this list.</p>
+            <p className="module-empty-state">No undated work is on this list.</p>
           )}
         </article>
       ) : null}

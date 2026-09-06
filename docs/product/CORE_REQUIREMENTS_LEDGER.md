@@ -213,3 +213,7 @@ Current guidance and explicit reading limits are preserved in `OWP_ADMINISTRATIO
 | ID | User direction | Scope and evidence boundary |
 |---|---|---|
 | CORE-FORECAST-01 | Evaluate TimesFM 3.0 only; do not substitute 2.5. | Optional supporting forecast research under S2a. The September 5 review identifies noncommercial/nonproduction restrictions on current weights. Headcount, payment and local hosting are not permission. Deployment requires applicable rights; no forecast becomes observed demand-model validation evidence. |
+
+## September 6 undated implementation handoff
+
+The existing M1/M2 land-use implementation and daily-work requirements now have a bounded [verified handoff](../reviews/2026-09-06-handoffs/VERIFICATION.md): open assigned actions with no date reach My Work without a fabricated deadline. Reassignment/completion and outsider denial were exercised against local Supabase. The per-source cap remains disclosed; amendment-version continuity, shared campaign export/report coverage and OWP preparation remain open. This does not complete any whole practice-family or organization outcome.
