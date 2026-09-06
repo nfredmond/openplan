@@ -89,3 +89,16 @@ columns, missing-area summaries, and PDF pagination.
 
 The failed distributed-loading candidate remains retired and inconclusive.
 Frozen studies, sources, networks, defaults, and untouched holdouts are unchanged.
+
+## Worker test portability follow-up
+
+The broader worker run completed 50 suites and failed the ActivitySim runtime
+suite. The checkout now resolves through a directory containing spaces. One
+test assembled an unquoted interpreter and fake-CLI path, so capability detection
+correctly refused it before reaching the CLI. The test now quotes those paths
+and creates its temporary workspace with spaces on every checkout. No runtime
+implementation changed. All fourteen runtime tests pass; a comment-only control
+survives and restoring the unquoted template reproduces the expected
+`preflight_only` versus `activitysim_cli` failure. The initial failure is retained.
+The complete worker suite is being rerun. This fake CLI test establishes command
+execution and output collection, not a real ActivitySim model result.

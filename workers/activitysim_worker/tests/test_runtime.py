@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shlex
 import sys
 import tempfile
 import unittest
@@ -49,7 +50,7 @@ def build_bundle(root: Path) -> Path:
 
 class ActivitySimRuntimeTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.temp_dir = tempfile.TemporaryDirectory()
+        self.temp_dir = tempfile.TemporaryDirectory(prefix="openplan runtime ")
         self.root = Path(self.temp_dir.name)
 
     def tearDown(self) -> None:
@@ -140,7 +141,7 @@ class ActivitySimRuntimeTests(unittest.TestCase):
         summary = run_activitysim_runtime(
             bundle_path=str(bundle_dir),
             cli_template=(
-                f"{sys.executable} {fake_cli} "
+                f"{shlex.quote(sys.executable)} {shlex.quote(str(fake_cli))} "
                 "--config-dir {config_dir} --data-dir {data_dir} "
                 "--output-dir {output_dir} --working-dir {working_dir}"
             ),
