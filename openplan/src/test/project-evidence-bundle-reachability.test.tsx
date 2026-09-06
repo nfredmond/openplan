@@ -151,6 +151,7 @@ describe("project evidence bundle reachability", () => {
     const view = render(<ProjectEvidenceBundlePanel projectId={PROJECT_ID} canGenerate />);
     fireEvent.click(await screen.findByRole("button", { name: "Copy manifest SHA-256" }));
     await screen.findByText("Copied");
+    await waitFor(() => expect(setTimer.mock.calls.some((call) => call[1] === 1_500)).toBe(true));
     const timerIndex = setTimer.mock.calls.findIndex((call) => call[1] === 1_500);
     expect(timerIndex).toBeGreaterThanOrEqual(0);
     const timerId = setTimer.mock.results[timerIndex].value;

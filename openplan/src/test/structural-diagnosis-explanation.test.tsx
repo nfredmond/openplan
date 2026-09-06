@@ -44,7 +44,7 @@ describe("shared structural diagnosis explanation", () => {
     render(<StructuralDiagnosisExplanation diagnosis={{ unknown_facts: ["model_year", "day_basis"], findings: [{ category: "matching", statement: "No measured count was supplied." }] }} sha256={null} downloadHref="/legacy.json" />);
     expect(screen.getByText(/Evidence ledger still unknown/)).toHaveTextContent("model_year, day_basis");
     expect(screen.getByText(/Count unavailable/)).toHaveTextContent("Count unavailable · No measured count was supplied.");
-    expect(screen.getByText(/A detailed comparison-basis ledger was not recorded here/)).toBeVisible();
+    expect(screen.getByText(/Detailed comparison facts were not supplied here/)).toBeVisible();
     expect(screen.getByTestId("diagnosis-sha256")).toHaveTextContent("SHA-256 unknown");
   });
 

@@ -92,3 +92,31 @@ may avoid its observed timeout, but does not convert the old timeout into a pass
 The current product-direction review is not replaced by this corrective work.
 A fresh direction packet and the complete first-week outcome gate remain
 required before release advancement.
+
+## Broader-check follow-up
+
+The pushed correction is `2d90a31d`. Its local and remote direction gates
+correctly reject the older review. Fresh independent reviews were requested
+under the existing protocol, with separate read-only ownership and scratch
+reports. No review date or independent-context count was fabricated.
+
+All 51 worker suites and 135 local live-RLS tests passed. Remote RLS also
+passed on 2d90a31d. The broader app suite found two follow-ups besides the stale
+direction review: the new fallback sentence increased the existing jargon
+counts, and a clipboard cleanup test observed rendered state before its React
+effect scheduled the timer. The sentence now uses plain language without
+changing the ledger baseline. The test waits for actual timer creation before
+checking unmount cleanup. Removing scheduling or cleanup fails the respective
+assertion; a harmless control passes. Twelve focused follow-up tests pass.
+
+An accidentally duplicated full test invocation wrote to the same log as the
+first. The duplicate's explicitly identified process group was stopped. That
+mixed log is retained as an execution error, not final full-suite evidence.
+A fresh single-run log remains required. The first production build completed,
+but it predates final review binding and is not corrected-browser acceptance.
+
+Reviewer B reported accidentally printing the synthetic first-week account
+credentials while reading the raw manifest. They are not copied into repository
+records. Subsequent reads project non-sensitive fields only. No credential or
+external-service state was changed. This was a review-tool handling error,
+not an application isolation finding.
