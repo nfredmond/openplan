@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-06
 review_by: 2026-10-05
-reviewed_commit: f563d40c
+reviewed_commit: 4635f39d
 current_release: v0.44.0
 independent_contexts: 2
 trigger: independent-maintenance-review-before-owp-preparation
@@ -75,3 +75,5 @@ Current v0.44 remains unreleased. Its dated twelve-journey result remains nine p
 ## Review verification
 
 The implementation record names the independent reports, exact source hashes, surviving harmless mutations and targeted failures, native layout/keyboard evidence, retained local archives and uncertainty. Direction-guard and document checks are run after binding this synthesis to the actual completed source checkpoint. Remote CI is read separately after push; it is not implied by this review. No new human usefulness observation or full application/database acceptance is claimed.
+
+The source binding is 4635f39d. The direction check accepted a harmless comment and rejected reducing independent_contexts to one. The baseline was restored. Local document checks passed all six cases; final direction-wrapper checks are run on this binding. Remote CI remains a separate post-push check. The first proof attempt expected the field name in the error instead of its actual sentence; attribution was corrected and both controls rerun. Two commands were also initially dispatched with the wrong package-relative path and did not run; the corrected package-root invocations supersede them.
