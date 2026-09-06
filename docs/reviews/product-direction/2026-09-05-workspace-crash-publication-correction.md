@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-05
 review_by: 2026-10-05
-reviewed_commit: 986ab86c
+reviewed_commit: baf2b110
 current_release: v0.44.0
 independent_contexts: 2
 trigger: crash-publication-false-output-correction
@@ -31,6 +31,7 @@ decisions:
 - complete-first-week-outcomes-before-release
 - test-shared-evidence-continuity-next
 paths:
+- docs/ops/V044_REPORT_PREVIEW_NAVIGATION_2026-09-05.md
 - docs/ops/V044_SCREENING_SHARE_CORRECTION_2026-09-05.md
 - docs/ops/V044_LEGACY_MODEL_DOWNLOAD_2026-09-05.md
 - docs/ops/V044_REPORT_CORRECTED_OUTCOMES_2026-09-05.md
@@ -51,6 +52,16 @@ paths:
 - docs/product/US_PLANNING_CAPABILITY_REGISTRY.json
 - docs/ROADMAP.md
 -->
+
+## Report preview navigation addendum
+
+The next complete run on `b51c4361` stopped after a confirmed report-link failure.
+`baf2b110` routes user clicks through the host page while retaining the scriptless
+sandbox and frozen artifacts. Sixteen targeted mutations fail and the no-op
+survives. This bounded workflow repair does not change scientific acceptance or
+the selected engagement-evidence lane. The independent reviews and disagreement
+remain. Rebuilt browser proof, complete fresh outcomes and exact-commit checks
+are still required.
 
 ## Screening-note correction addendum
 
