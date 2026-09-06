@@ -1,11 +1,22 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { SafetyWorkspace } from "@/components/safety/safety-workspace";
 import { ingestCrashesForStudyArea } from "@/lib/safety/ingest";
 import type { SafetyIngestSummary } from "@/lib/safety/client-types";
 import { CRASH_SEVERITY_BANDS } from "@/lib/safety/crash-filters";
 import type { CrashRecord } from "@/lib/safety/sources/types";
 import { findReadOnlyOnlyStudyArea } from "./helpers/crash-coverage-probe";
+import { farsAdapter } from "@/lib/safety/sources/fars";
+
+// Exercise the generic pending-migration fallback even though every production
+// adapter at HEAD is now persistable.
+beforeAll(() => {
+  farsAdapter.persistable = false;
+});
+
+afterAll(() => {
+  farsAdapter.persistable = true;
+});
 
 // The map is Mapbox-backed; this suite is about the honesty copy around it.
 vi.mock("@/components/safety/safety-crash-map", () => ({
@@ -85,6 +96,26 @@ function ingest(over: Partial<SafetyIngestSummary> = {}): SafetyIngestSummary {
   };
 }
 
+/** The same neutral boundary emitted by the default picker button. */
+function seededStudyArea() {
+  return {
+    corridorText: JSON.stringify({
+      type: "Polygon",
+      coordinates: [[
+        [-121.3, 39.1],
+        [-120.3, 39.1],
+        [-120.3, 39.6],
+        [-121.3, 39.6],
+        [-121.3, 39.1],
+      ]],
+    }),
+    place: null,
+    label: null,
+    origin: "project" as const,
+    originLabel: "the saved test area",
+  };
+}
+
 /** A realistic POST /ingest response. */
 function mockIngestResponse(over: Record<string, unknown> = {}) {
   return {
@@ -157,6 +188,30 @@ function countDrawnSeverities(features: unknown[]): Record<string, number> {
 }
 
 describe("SafetyWorkspace coverage disclosure", () => {
+  it("keeps a late response for an older acquisition from replacing the new count", async () => {
+    let resolveOld: (value: Response) => void = () => { throw new Error("old request not started"); };
+    let oldSignal: AbortSignal | undefined;
+    const urls: string[] = [];
+    vi.stubGlobal("fetch", vi.fn((input: string, options?: RequestInit) => {
+      const url = String(input);
+      urls.push(url);
+      if (url.includes("/ingest")) return Promise.resolve(mockIngestResponse());
+      if (url.includes("ingestId=ingest-1")) {
+        oldSignal = options?.signal ?? undefined;
+        return new Promise<Response>((resolve) => { resolveOld = resolve; });
+      }
+      return Promise.resolve(mockCrashResponse([], 9, 0, { ...countDrawnSeverities([]), fatal: 9 }));
+    }));
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest({ severityCompleteness: "kabco_full" })} studyArea={seededStudyArea()} />);
+    await waitFor(() => expect(oldSignal).toBeDefined());
+    fireEvent.click(screen.getByRole("button", { name: /Retrieve crash data/i }));
+    expect(await screen.findByText("9 fatal or serious-injury crashes")).toBeInTheDocument();
+    expect(oldSignal?.aborted).toBe(true);
+    await act(async () => { resolveOld(mockCrashResponse()); });
+    expect(screen.getByText("9 fatal or serious-injury crashes")).toBeInTheDocument();
+    expect(urls.filter((url) => url.includes("ingestId=ingest-1"))).toHaveLength(1);
+    expect(urls.some((url) => url.includes("ingestId=ingest-9"))).toBe(true);
+  });
   beforeEach(() => {
     vi.stubGlobal("fetch", vi.fn(async () => mockCrashResponse()) as unknown as typeof fetch);
   });
@@ -167,8 +222,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
   });
 
   it("shows reported AND mappable counts, never just the smaller one", async () => {
-    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest()} />);
-    selectStudyArea();
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest()} studyArea={seededStudyArea()} />);
 
     await waitFor(() => {
       // Scoped to the header pairing. The geocoding disclosure below also names
@@ -176,6 +230,19 @@ describe("SafetyWorkspace coverage disclosure", () => {
       expect(screen.getByText(/1,180 reported ·/)).toBeInTheDocument();
     });
     expect(screen.getByText(/1,089 mappable/)).toBeInTheDocument();
+  });
+
+  it.each(["Serious injury", "Injury", "Property damage only"])("does not show %s as zero when the source is fatal-only", async (label) => {
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest({ severityCompleteness: "fatal_only" })} studyArea={seededStudyArea()} />);
+    const choice = await screen.findByRole("button", { name: `${label} (not covered)` });
+    expect(choice).toBeDisabled();
+    expect(screen.queryByRole("button", { name: `${label} (0)` })).not.toBeInTheDocument();
+  });
+
+  it("does not offer a serious-injury zero when the source cannot separate injury severity", async () => {
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest()} studyArea={seededStudyArea()} />);
+    expect(await screen.findByRole("button", { name: "Serious injury (not covered)" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /^Injury \(/ })).toBeEnabled();
   });
 
   it("shows that a long retrieval is still active instead of looking hung", async () => {
@@ -238,6 +305,31 @@ describe("SafetyWorkspace coverage disclosure", () => {
     render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest({ yearsRequested: [2025] })} />);
     expect(screen.getByText(/source supplied no exact publication cutoff/i)).toBeInTheDocument();
     expect(screen.queryByText(/published data runs through 2025/)).not.toBeInTheDocument();
+  });
+
+  it("labels a historical resource update without claiming crash coverage", () => {
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest({
+      publishedThrough: "2026-09-05",
+      publishedThroughProvenance: {
+        basis: "source_metadata",
+        label: "Yearly resource last-modified metadata",
+        sourceUrl: "https://example.org/resource",
+      },
+    })} />);
+    expect(screen.getByText(/Recorded file update: 2026-09-05/)).toHaveTextContent("not a crash-coverage cutoff");
+    expect(screen.queryByText(/published data runs through 2026-09-05/)).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Yearly resource last-modified metadata" })).toHaveAttribute("href", "https://example.org/resource");
+  });
+
+  it("keeps update metadata distinct from coverage in import history", () => {
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={null} ingestHistory={[{
+      ...ingest(), projectId: null, scope: null,
+      publishedThrough: "2026-09-05",
+      publishedThroughProvenance: { label: "Resource last-modified metadata" },
+    }]} />);
+    expect(screen.getByLabelText("Import history")).toHaveTextContent("Recorded file update: 2026-09-05");
+    expect(screen.getByLabelText("Import history")).toHaveTextContent("not a crash-coverage cutoff");
+    expect(screen.queryByText(/published data runs through 2026-09-05/)).not.toBeInTheDocument();
   });
 
   it("computes the geocoded share from THIS extract, not from a constant", async () => {
@@ -316,8 +408,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
       })) as unknown as typeof fetch,
     );
 
-    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest({ severityCompleteness: "kabco_full" })} />);
-    selectStudyArea();
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest({ severityCompleteness: "kabco_full" })} studyArea={seededStudyArea()} />);
 
     expect(await screen.findByRole("heading", { name: /Highest observed KSI concentrations/i })).toBeInTheDocument();
     expect(screen.getAllByText(/7 KSI crashes/i)).toHaveLength(2);
@@ -337,6 +428,29 @@ describe("SafetyWorkspace coverage disclosure", () => {
         screen.getByText(/not evidence that no crashes occurred/i)
       ).toBeInTheDocument();
     });
+  });
+
+  it.each(["fatal_only", "fatal_injury_only", "", "unknown"])("withholds combined KSI rankings when coverage is %s", async (severityCompleteness) => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({
+      ...mockCrashResponse(),
+      json: async () => ({
+        ...(await mockCrashResponse().json()),
+        ksiConcentrations: [{ rank: 1, longitude: -123.21, latitude: 39.15,
+          crashCount: 7, fatalCrashCount: 7, seriousInjuryCrashCount: 0, radiusMeters: 150 }],
+        ksiEquityTracts: [{ rank: 1, geoid: "fixture", tractName: "Fixture tract",
+          ksiCrashCount: 7, fatalCrashCount: 7, seriousInjuryCrashCount: 0,
+          population: 3500, ksiPer100k: 200, pctPoverty: 24, pctNonwhite: 61,
+          pctZeroVehicle: 9, areaMedianPctPoverty: 16, areaMedianPctNonwhite: 48,
+          areaMedianPctZeroVehicle: 7 }],
+        ksiEquityDemographicSource: { label: "Fixture demographics", vintage: "2023" },
+      }),
+    })));
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest({ severityCompleteness })} studyArea={seededStudyArea()} />);
+    expect(await screen.findByText(/KSI rankings and community burden are withheld/i)).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /Highest observed KSI/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/7 KSI crashes/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/0 serious injury/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/^1,180 reported ·/)).toBeInTheDocument();
   });
 
   it("asks for a study area instead of assuming one, and fetches nothing until then", async () => {
@@ -461,7 +575,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
     });
   });
 
-  it("shows a KSI total only when the source could separate serious injury", async () => {
+  it("shows a severe-crash total only when the source could separate serious injury", async () => {
     const features = [
       { type: "Feature", geometry: { type: "Point", coordinates: [-121, 39.2] }, properties: { severity: "fatal" } },
       { type: "Feature", geometry: { type: "Point", coordinates: [-121, 39.2] }, properties: { severity: "severe_injury" } },
@@ -476,13 +590,16 @@ describe("SafetyWorkspace coverage disclosure", () => {
       <SafetyWorkspace
         workspaceId="ws-1"
         latestIngest={ingest({ severityCompleteness: "kabco_full" })}
+        studyArea={seededStudyArea()}
       />
     );
-    selectStudyArea();
 
     await waitFor(() => {
       // fatal (1) + serious injury (1) = 2; the plain injury crash is excluded.
-      expect(screen.getByText(/2 killed or seriously injured/)).toBeInTheDocument();
+      const headline = screen.getByTestId("safety-ksi-headline");
+      expect(headline).toHaveTextContent(/2 fatal or serious-injury crashes/);
+      expect(headline).toHaveTextContent(/crash records.*not people killed or injured/i);
+      expect(headline).not.toHaveTextContent(/^2 killed or seriously injured/);
     });
   });
 
@@ -535,7 +652,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
     fireEvent.click(screen.getByRole("button", { name: /Retrieve crash data/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/2 killed or seriously injured/)).toBeInTheDocument();
+      expect(screen.getByText(/2 fatal or serious-injury crashes/)).toBeInTheDocument();
     });
   });
 
@@ -549,7 +666,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
    * fixture would only prove the renderer; this proves the shape the server
    * actually emits arrives on screen.
    */
-  async function realReadOnlyResponse(records: CrashRecord[]) {
+  async function realReadOnlyResponse(records: CrashRecord[], resourceUpdates?: import("@/lib/safety/sources/types").CrashResourceUpdates) {
     const probe = findReadOnlyOnlyStudyArea();
     expect(probe, "no read-only crash source covers anywhere — the lane is unreachable").not.toBeNull();
 
@@ -559,6 +676,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
       geocodedTotal: records.length,
       yearsCovered: [2024],
       truncated: false,
+      resourceUpdates,
     });
 
     const service = {
@@ -622,6 +740,20 @@ describe("SafetyWorkspace coverage disclosure", () => {
     // …and the page says what they are NOT.
     expect(screen.getByText(/Live read — not saved/i)).toBeInTheDocument();
     expect(screen.getByText(/were not saved into this workspace/i)).toBeInTheDocument();
+  });
+
+  it("carries file updates through the real live-read producer without claiming coverage", async () => {
+    const response = await realReadOnlyResponse([liveRecord()], {
+      basis: "resource_updates", sourceUrl: "https://example.org/files", label: "Source file updates",
+      retrievedAt: "2026-09-05T00:00:00Z",
+      resources: [{ resourceId: "annual", year: 2024, lastModified: null }],
+    });
+    vi.stubGlobal("fetch", routedFetch(mockCrashResponse(), response));
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={null} />);
+    selectStudyArea("tx-county");
+    fireEvent.click(screen.getByRole("button", { name: /Retrieve crash data/i }));
+    await waitFor(() => expect(screen.getByText(/2024: update date unavailable/)).toHaveTextContent("not a crash-coverage cutoff"));
+    expect(screen.queryByText(/published data runs through/)).not.toBeInTheDocument();
   });
 
   it("does not claim an acquisition happened when nothing was stored", async () => {
@@ -698,7 +830,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
     // about a road built on a missing column.
     const response = await realReadOnlyResponse([
       liveRecord({ externalId: "a", severity: "fatal" }),
-      liveRecord({ externalId: "b", severity: "injury" }),
+      liveRecord({ externalId: "b", severity: "fatal" }),
     ]);
     vi.stubGlobal("fetch", routedFetch(mockCrashResponse(), response) as unknown as typeof fetch);
 
@@ -719,8 +851,8 @@ describe("SafetyWorkspace coverage disclosure", () => {
     // A facet the source CAN answer stays live on the same screen, so the
     // disabled state above is a statement about that dimension and not an
     // outage of the whole panel.
-    fireEvent.click(screen.getByRole("button", { name: /^Injury/ }));
-    await waitFor(() => expect(screen.getByText(/Showing 1 of 2 mappable/i)).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: /^Fatal/ }));
+    await waitFor(() => expect(screen.getByText(/Showing 0 of 2 mappable/i)).toBeInTheDocument());
   });
 
   it("drops a live read when the study area changes, so one place's fatalities never plot on another", async () => {
@@ -737,6 +869,18 @@ describe("SafetyWorkspace coverage disclosure", () => {
     selectStudyArea("far-county");
 
     await waitFor(() => expect(screen.queryByText(/Live read — not saved/i)).not.toBeInTheDocument());
+  });
+
+  it("drops a saved acquisition banner when the study area changes", async () => {
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest()} />);
+    expect(screen.getByLabelText("Crash data coverage")).toHaveTextContent(/California Crash Reporting System/i);
+
+    selectStudyArea("far-county");
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Crash data coverage")).not.toHaveTextContent(/California Crash Reporting System/i)
+    );
+    expect(screen.getByLabelText("Crash data coverage")).toHaveTextContent(/No crash data has been retrieved for this study area yet/i);
   });
 
   it("names the sources it checked when a real coverage gap comes back from the lane", async () => {

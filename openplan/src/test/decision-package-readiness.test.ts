@@ -68,6 +68,18 @@ function inventory(overrides: Record<string, unknown> = {}) {
 }
 
 describe("decision package approval readiness", () => {
+  it("keeps an explicitly unselected plan distinct from a changed or missing plan binding", () => {
+    const ordinary = manifest({
+      selectedLinkedPlan: null,
+      entries: manifest().entries.filter((entry) => entry.path !== "project/linked-plan.json"),
+    });
+    expect(decisionPackageFreshness(ordinary, ordinary.projectRevision, inventory())).toBeNull();
+    expect(decisionPackageReadiness(ordinary)).toMatch(/linked plan/i);
+    expect(decisionPackageFreshness(
+      manifest({ selectedLinkedPlan: undefined }), ordinary.projectRevision, inventory(),
+    )).toMatch(/linked plan changed/i);
+  });
+
   it("requires the v2 manifest, selected plan, and exact current PDF checksum", () => {
     expect(decisionPackageReadiness(manifest())).toBeNull();
     expect(decisionPackageReadiness(manifest({ schemaVersion: "project_evidence_manifest.v1" }))).toMatch(/current v2/i);

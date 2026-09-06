@@ -53,6 +53,8 @@ type CrashFilterPanelProps = {
    * "unknown" for anything it cannot parse rather than assuming the best.
    */
   dimensionCoverage?: unknown;
+  /** Whether this source can distinguish each normalized severity band. */
+  severityCompleteness?: string;
   /**
    * False when no crash source covers this study area, or none has been
    * consulted yet. The controls are then replaced by a sentence.
@@ -75,12 +77,14 @@ function FacetControl({
   onChange,
   counts,
   dimensionCoverage,
+  severityCompleteness,
 }: {
   facet: CrashFacetDefinition;
   selection: CrashFilterSelection;
   onChange: (next: CrashFilterSelection) => void;
   counts?: Record<string, number>;
   dimensionCoverage?: unknown;
+  severityCompleteness?: string;
 }) {
   const availability = facetAvailability(facet, dimensionCoverage);
   const chosen = selection[facet.id] ?? [];
@@ -96,11 +100,15 @@ function FacetControl({
         {facetValues(facet).map((value) => {
           const active = chosen.includes(value);
           const count = counts?.[value];
+          const notCovered = facet.id === "severity" && (
+            (severityCompleteness === "fatal_only" && ["severe_injury", "injury", "pdo"].includes(value))
+            || (severityCompleteness === "fatal_injury_only" && ["severe_injury", "pdo"].includes(value))
+          );
           return (
             <button
               key={value}
               type="button"
-              disabled={availability.disabled}
+              disabled={availability.disabled || notCovered}
               aria-pressed={active}
               onClick={() => onChange({ ...selection, [facet.id]: toggleValue(chosen, value) })}
               className={`rounded-full border px-3 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-50 ${
@@ -111,7 +119,7 @@ function FacetControl({
               {/* The count is only ever appended when it exists. A "(0)" on a
                   value the current view has none of is fine; a "(0)" on a value
                   nothing was counted for would be a fabricated zero. */}
-              {typeof count === "number" ? ` (${count.toLocaleString()})` : ""}
+              {notCovered ? " (not covered)" : typeof count === "number" ? ` (${count.toLocaleString()})` : ""}
             </button>
           );
         })}
@@ -130,6 +138,7 @@ export function CrashFilterPanel({
   onChange,
   counts,
   dimensionCoverage,
+  severityCompleteness,
   sourceConfigured,
   noSourceMessage,
 }: CrashFilterPanelProps) {
@@ -162,6 +171,7 @@ export function CrashFilterPanel({
             onChange={onChange}
             counts={counts?.[facet.id]}
             dimensionCoverage={dimensionCoverage}
+            severityCompleteness={severityCompleteness}
           />
         ))}
       </div>

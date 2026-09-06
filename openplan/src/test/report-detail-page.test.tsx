@@ -909,6 +909,12 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     }
   });
 
+  it("reads source metrics with linked summaries so the evidence view can enforce disclosure", async () => {
+    reportRunsOrderMock.mockResolvedValue({ data: [{ run_id: "run-1", sort_order: 0 }], error: null });
+    await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) });
+    expect(runsSelectMock).toHaveBeenCalledWith("id, title, summary_text, metrics, created_at");
+  });
+
   it("shows the engagement source, its public page access, and why the report exists", async () => {
     render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
 

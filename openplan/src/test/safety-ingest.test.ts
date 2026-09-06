@@ -44,6 +44,7 @@ function fakeService(
     updates?: Record<string, unknown>[];
     /** Make the person-row write fail, to prove the acquisition survives it. */
     partyError?: boolean;
+    finalizeError?: boolean;
   } = {}
 ) {
   const upserts = options.captureUpserts ?? [];
@@ -66,7 +67,7 @@ function fakeService(
           update: (patch: Record<string, unknown>) => ({
             eq: async () => {
               updates.push(patch);
-              return { error: null };
+              return { error: options.finalizeError && patch.status === "ready" ? { message: "custody receipt write failed" } : null };
             },
           }),
         };
@@ -152,6 +153,18 @@ describe("toCrashRows", () => {
 });
 
 describe("ingestCrashesForStudyArea", () => {
+  it("never reports ready when the acquisition receipt failed to persist", async () => {
+    const service = fakeService({ finalizeError: true });
+    const { ccrsAdapter } = await import("@/lib/safety/sources/ccrs");
+    const spy = vi.spyOn(ccrsAdapter, "fetch").mockResolvedValue({ records: [record()],
+      matchedTotal: 1, geocodedTotal: 1, yearsCovered: [2025], truncated: false });
+    try {
+      const result = await ingestCrashesForStudyArea({ service: service as never, workspaceId: "ws-1",
+        bbox: CA_BBOX, years: [2025], enrichSeriousInjury: false, includeParties: false });
+      expect(result.status).toBe("failed");
+      expect(result.error).toContain("custody receipt write failed");
+    } finally { spy.mockRestore(); }
+  });
   it("records no_coverage instead of returning an unexplained empty result", async () => {
     // A GENUINE gap — nothing registered covers it, storable or not.
     expect(UNCOVERED_BBOX).toBeDefined();
@@ -331,7 +344,8 @@ describe("ingestCrashesForStudyArea", () => {
       includeParties: false,
     });
 
-    expect(service.upsertOptions[0]).toMatchObject({ onConflict: "workspace_id,source_id,external_id" });
+    expect(service.upsertOptions[0]).toMatchObject({ onConflict: "workspace_id,ingest_id,source_id,external_id" });
+    expect(service.updates).toContainEqual(expect.objectContaining({ stored_count: 1 }));
     fetchSpy.mockRestore();
   });
 });

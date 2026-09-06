@@ -410,6 +410,18 @@ describe("/api/reports/[reportId]", () => {
     expect(await response.json()).toMatchObject({ error: "Workspace access denied" });
   });
 
+  it.each([
+    [160, 2000, 200], [161, 2000, 400], [160, 2001, 400],
+  ])("PATCH preserves title %i and summary %i limits", async (titleLength, summaryLength, expectedStatus) => {
+    const response = await patchReportDetail(new NextRequest("http://localhost/api/reports/11111111-1111-4111-8111-111111111111", {
+      method: "PATCH", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ title: ` ${"t".repeat(titleLength)} `, summary: ` ${"s".repeat(summaryLength)} ` }),
+    }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(response.status).toBe(expectedStatus);
+    if (expectedStatus === 400) expect(reportUpdateMock).not.toHaveBeenCalled();
+    else expect(reportUpdateMock).toHaveBeenCalledWith(expect.objectContaining({ title: "t".repeat(titleLength), summary: "s".repeat(summaryLength) }));
+  });
+
   it("PATCH updates report metadata", async () => {
     const response = await patchReportDetail(
       new NextRequest("http://localhost/api/reports/1", {

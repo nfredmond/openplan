@@ -14,6 +14,7 @@ export type PublishedDiagnosisRecord = {
   method: PublishedDiagnosisMethod;
   diagnosisPath: string;
   diagnosisSha256: string;
+  diagnosis: Record<string, unknown>;
   findingCounts: Record<string, number>;
 };
 
@@ -64,6 +65,26 @@ export async function loadPublishedStructuralDiagnosisStudy(): Promise<Published
       if (!isObject(methodValue) || typeof methodValue.diagnosis_path !== "string" || typeof methodValue.diagnosis_sha256 !== "string") {
         throw new Error(`Published structural diagnosis omitted ${countyValue.geography_id}/${method}.`);
       }
+      const diagnosisRoot = path.resolve(repositoryRoot(), STUDY_DIRECTORY, "results");
+      const diagnosisPath = path.resolve(repositoryRoot(), methodValue.diagnosis_path);
+      if (!diagnosisPath.startsWith(diagnosisRoot + path.sep)) {
+        throw new Error("Published structural diagnosis is outside the frozen results directory.");
+      }
+      const bytes = await readFile(diagnosisPath);
+      if (sha256(bytes) !== methodValue.diagnosis_sha256) {
+        throw new Error("Published structural diagnosis bytes do not match the study result.");
+      }
+      const diagnosis = JSON.parse(bytes.toString("utf8")) as unknown;
+      if (!isObject(diagnosis)
+        || diagnosis.schema !== "openplan.model-validation-structural-diagnosis.v1"
+        || diagnosis.geography_id !== countyValue.geography_id
+        || diagnosis.method !== method
+        || diagnosis.scientific_outcome !== "inconclusive"
+        || diagnosis.method_aggregation !== "separate"
+        || diagnosis.match_changes !== 0
+        || ["calibrated", "candidate_selected", "claim_tier_changed", "acceptance_rule_created", "acceptance_holdout_opened"].some((flag) => diagnosis[flag] !== false)) {
+        throw new Error("Published structural diagnosis does not match its frozen county, method, and scientific boundaries.");
+      }
       const findingCounts = isObject(methodValue.finding_counts)
         ? Object.fromEntries(
             Object.entries(methodValue.finding_counts).filter(
@@ -76,6 +97,7 @@ export async function loadPublishedStructuralDiagnosisStudy(): Promise<Published
         method,
         diagnosisPath: methodValue.diagnosis_path,
         diagnosisSha256: methodValue.diagnosis_sha256,
+        diagnosis,
         findingCounts,
       });
     }

@@ -926,7 +926,7 @@ export default async function ProjectDetailPage({
     (report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET
   ).length;
   const evidenceBackedReportCount = projectReports.filter(
-    (report) => Boolean(report.evidenceChainDigest)
+    (report) => report.evidenceChainDigest?.hasEvidence === true
   ).length;
   const comparisonBackedReportCount = projectReports.filter(
     (report) => Boolean(report.comparisonDigest)

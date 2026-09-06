@@ -45,7 +45,7 @@ function reviewed(rows: Array<Record<string, unknown>>) {
       {
         worksheetIndex: 1, worksheetName: "South", headerRow: 1, rowNumber: 2, fingerprint: "d".repeat(64),
         name: "Formula project", sourceId: "S-1", description: null, sourceLocationText: null,
-        estimatedCost: { amount: "20", currency: "USD", priceYear: 2026 }, planType: "capital_program",
+        estimatedCost: { amount: "20", currency: "USD", priceYear: null }, planType: "capital_program",
         status: "draft", deliveryPhase: "programming", decision: formulaDecision, confirmNameMatch: false,
         confirmFormula: formulaConfirmed, formulaFields: ["estimatedCost"], state: "warning",
         canCreate: formulaDecision === "skip" || formulaConfirmed, errors: [],
@@ -99,10 +99,17 @@ describe("ProjectPortfolioImporter", () => {
     expect(await screen.findByRole("status")).toHaveTextContent("Headers did not match: Notes");
     expect(screen.getByLabelText("Project name for South")).toHaveValue("1");
     fireEvent.change(screen.getByLabelText("Estimated cost for South"), { target: { value: "2" } });
+    const year = screen.getByRole("spinbutton", { name: "Price year (optional)" });
+    expect(year).toHaveValue(null);
+    fireEvent.change(year, { target: { value: "2023" } });
+    expect(year).toHaveValue(2023);
+    fireEvent.change(year, { target: { value: "" } });
+    expect(year).toHaveValue(null);
 
     fireEvent.click(screen.getByRole("button", { name: "Preview selected worksheets" }));
     expect(await screen.findByText("Clean project")).toBeInTheDocument();
     expect(screen.getAllByText("Formula project").length).toBeGreaterThan(0);
+    expect(screen.getByText("20 USD, price year unknown")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Create all clean rows" }));
     fireEvent.change(screen.getByLabelText("Decision for South row 2"), { target: { value: "create" } });
     fireEvent.click(screen.getByLabelText(/Use cached formula values for estimatedCost/i));
@@ -119,7 +126,7 @@ describe("ProjectPortfolioImporter", () => {
     expect(configurations.map((config) => config.worksheetIndex)).toEqual([0, 1, 2]);
     expect(configurations[1]).toMatchObject({
       mapping: { name: 1, sourceId: 0, estimatedCost: 2 },
-      defaults: { cost: { currency: "USD", scale: "ones", priceYear: new Date().getFullYear() } },
+      defaults: { cost: { currency: "USD", scale: "ones", priceYear: null } },
     });
     expect((commit?.rowReviews as Array<Record<string, unknown>>)).toEqual(expect.arrayContaining([
       expect.objectContaining({ worksheetIndex: 0, rowNumber: 2, decision: "create" }),

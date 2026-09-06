@@ -206,6 +206,16 @@ export type CrashFetchResult = {
   unmappedByDimension?: Partial<Record<CrashDimension, number>>;
   /** Exact source-published data cutoff. Never inferred from returned rows or today's date. */
   publishedCutoff?: CrashPublishedCutoff;
+  /** File updates are source metadata, never temporal coverage evidence. */
+  resourceUpdates?: CrashResourceUpdates;
+};
+
+export type CrashResourceUpdates = {
+  basis: "resource_updates";
+  sourceUrl: string;
+  label: string;
+  retrievedAt: string;
+  resources: Array<{ resourceId: string; year: number; lastModified: string | null }>;
 };
 
 export type CrashPublishedCutoff = {

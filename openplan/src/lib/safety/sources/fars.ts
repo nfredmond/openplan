@@ -15,10 +15,11 @@
  * question was never asked. State DOT crash files are the upgrade path; each
  * one becomes another adapter here, exactly like CCRS.
  *
- * PERSISTENCE. `persistable: false` — `safety_crashes.source_id` is a closed
- * CHECK domain that currently lists only 'ccrs-ca'. FARS is read-only until a
- * migration widens it, so the Safety ingest keeps resolving it out rather than
- * discovering the mismatch as a constraint violation mid-write.
+ * PERSISTENCE. `safety_crashes.source_id` explicitly admits this observed
+ * source. The ordinary Safety ingest therefore freezes FARS records, source
+ * attribution, exact publication cutoff, requested years, and project link in
+ * the same tables used by richer regional sources. It remains fatal-only
+ * evidence; persistence does not widen what the source can support.
  *
  * FIELD NOTES — read this before "fixing" the tolerant parsing below.
  *   - The CrashAPI location endpoint accepts state and county, not a bounding
@@ -409,7 +410,7 @@ export const farsAdapter: CrashSourceAdapter = {
   // person rows and no motorcyclist signal.
   dimensions: CRASH_LEVEL_ONLY_DIMENSION_SUPPORT,
   earliestYear: FARS_EARLIEST_YEAR,
-  persistable: false,
+  persistable: true,
   covers: coversFarsGeography,
   fetch: fetchFarsCrashes,
 };

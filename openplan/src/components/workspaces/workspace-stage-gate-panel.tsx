@@ -368,7 +368,7 @@ export function WorkspaceStageGatePanel({
           {matchingOptions.length > 0 ? (
             <fieldset className="space-y-2">
               <legend className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Templates registered for this workspace
+                Templates registered for this jurisdiction
               </legend>
               {matchingOptions.map((option) => (
                 <label key={option.templateId} className="flex items-start gap-2 text-sm">

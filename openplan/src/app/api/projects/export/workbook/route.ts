@@ -72,23 +72,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         { status: 409 }
       );
     }
-    const costsWithoutPriceYear = projects.filter(
-      (project) => project.estimated_cost_amount != null && project.estimated_cost_basis_year == null
-    );
-    if (costsWithoutPriceYear.length > 0) {
-      const count = costsWithoutPriceYear.length;
-      audit.warn("portfolio_workbook_cost_year_missing", {
-        workspaceId: membership.workspace_id,
-        affectedProjects: count,
-      });
-      return NextResponse.json(
-        {
-          error: `${count.toLocaleString("en-US")} project cost estimate${count === 1 ? "" : "s"} ${count === 1 ? "has" : "have"} no price year. The round-trip workbook was not generated because filling that gap would invent evidence. Add the recorded price year or clear the estimate first.`,
-          code: "cost_price_year_missing",
-        },
-        { status: 409 }
-      );
-    }
+    // The workbook leaves an unknown price year blank; the reviewed importer
+    // preserves it as unknown instead of substituting its default year.
 
     const generatedAt = new Date();
     const workspaceName = workspace.name?.trim() || "Workspace";

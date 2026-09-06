@@ -48,7 +48,7 @@ and an unacceptable thing to point anywhere else.
 
 ```bash
 cd qa-harness
-npm install
+npm ci
 
 OPENPLAN_BASE_URL=http://localhost:3200 \
 OPENPLAN_FIRST_WEEK_EMAIL=you@example.test \

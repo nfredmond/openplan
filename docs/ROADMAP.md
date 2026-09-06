@@ -1,16 +1,16 @@
 # OpenPlan development roadmap
 
 <!-- openplan-active-roadmap
-reviewed_commit: 350b945ff79a0cc52c6ec9cbcce5bc6b0412aa53
+reviewed_commit: e709e2ff
 current_release: v0.44.0
-review_by: 2026-09-28
+review_by: 2026-10-05
 paths:
 - AGENTS.md
 - CLAUDE.md
 - docs/product/V1_PRODUCT_CONTRACT.md
 - docs/product/AGENT_OPERATING_RULES.md
 - docs/product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md
-- docs/reviews/product-direction/2026-08-28-jurisdiction-readiness.md
+- docs/reviews/product-direction/2026-09-06-workflow-custody-review.md
 - openplan/scripts/ops/product-direction-review.mjs
 - openplan/src/test/product-direction-review-guard.test.ts
 - openplan/src/lib/safety/sources/registry.ts
@@ -79,6 +79,15 @@ before committing the next major direction. Preserve their disagreements.
 
 ## Current truth at v0.44.0
 
+The complete run `2026-09-06T04-23-28-412Z` on `bd865625` remains failed:
+ten yes outcomes, job 05 completed partly, and job 11 timed out. Console errors
+were zero. The current correction preserves land-use drafts, discloses actual
+GeoPackage contents, and exposes exact frozen diagnoses and hashes. See
+`docs/ops/V044_DRAFT_AND_DIAGNOSIS_CORRECTION_2026-09-06.md`. Corrected browser
+and final technical checks remain required. These repairs do not establish
+job 05's requested forecast. The unchanged twelve-outcome gate still blocks
+release; a larger execution budget cannot turn the old timeout into a pass.
+
 Strong foundations already exist:
 
 - connected planning, engagement, safety, funding, land-use, aerial, document,
@@ -100,6 +109,17 @@ The v1 contract is not yet true:
 - the first-week harness defines twelve required outcomes. The pre-v0.44
   all-journey run completed every job but reached nine outcomes fully and three
   partly; its evidence-complete lesser findings remain in `KNOWN_ISSUES.md`;
+- the later report-corrected run on `b46f0a61` reached ten outcomes but failed
+  model-evidence downloads. The bounded native-download and interruption-custody
+  correction is implemented; complete clean-build acceptance is still required;
+- the next run on `2a547887` reached four outcomes, retained Safety as partly,
+  and was stopped for a false screening-note percentage and opposite advice.
+  `986ab86c` shares the existing zone-panel interpretation and corrects units.
+  This bounded repair still requires rebuilt proof and complete fresh outcomes;
+- the following run on `b51c4361` reached setup and neutral-jurisdiction outcomes
+  but report job 02 produced fatal console errors after an ordinary preview link.
+  The confirmed iframe-navigation failure interrupted acceptance. Parent-owned
+  link handling is under verification; a complete fresh run remains required;
 - the proof registry exposes many `partial`, `missing`, and `not-assessed`
   cells; those open cells block v1 even though they do not block this interim
   release;
@@ -232,10 +252,32 @@ The v1 contract is not yet true:
   outcome remains `inconclusive`; California and nationwide capability remain
   `partial`.
 
-The next major lane is selected from the fresh post-checkpoint product-direction
-packet and recorded in the v0.44 release evidence. Any future model acceptance
-rule must be frozen from primary, use-specific evidence before a genuinely
-untouched geographic holdout is opened.
+The immediate lane is the current first-week correction and clean-checkout
+verification, with release withheld while any intended outcome remains unmet.
+The September 6 independent reviews disagree on the next product outcome:
+reviewer A elevates complete agency OWP/UPWP administration, while reviewer B
+favors an assigned plan action reaching My Work even without a deadline.
+Source inspection supports that undated actions are excluded from its query
+and that shared campaigns have inconsistent project/export coverage. Neither
+finding has a fresh browser reproduction. First test the undated assignment
+handoff, then the shared-campaign handoff, within their existing modules.
+These are bounded engineering checks, not a substitute for the OWP priority.
+
+Explicitly assess full OWP/UPWP administration under Programs and connected
+Projects, funding, people/work plans, Reports and My Work before selecting the
+next implementation lane. The preserved September 4 requirements ledger names
+this as Nathaniel's priority; it is not proof of implementation or permission
+to import that branch's entire roadmap. Cover preparation, authorization,
+amendments, delivery, progress and reimbursement, expenditure certification,
+closeout and next-cycle mapping. Keep proposed and authorized amounts, costs,
+billings, cash, actual products, funding vintages and authority periods distinct.
+Nationwide jurisdiction depth and both methods' scientific validation remain
+binding v1 work. No new module or replacement modeling candidate is selected.
+
+The distributed-loading candidate did not advance and is retired unchanged.
+Do not fit a replacement from its failure. Any future model acceptance rule
+must be frozen from independent primary, use-specific evidence before a
+genuinely untouched geographic holdout is opened.
 
 That last point is a model-science question, not permission to fit observations
 exactly. Traffic counts contain sampling, equipment, adjustment, temporal, and

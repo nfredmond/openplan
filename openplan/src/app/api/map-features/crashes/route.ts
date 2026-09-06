@@ -256,7 +256,7 @@ export async function GET(request: NextRequest) {
     // a silent zero into a stated reason.
     const [crashResult, ingestResult] = await Promise.all([
       supabase
-        .from("safety_crashes")
+        .from("safety_crashes_latest")
         .select(CRASH_LAYER_PROJECTION, { count: "exact" })
         .eq("workspace_id", workspaceId)
         .order("collision_date", { ascending: false, nullsFirst: false })

@@ -193,6 +193,30 @@ describe("project record route", () => {
       expect((await patchProject(patchRequest({ status: null }), params)).status).toBe(400);
     });
 
+    it("preserves uploaded boundary provenance without inventing place identity", async () => {
+      const geometry = {
+        type: "Polygon",
+        coordinates: [[[-121.1, 39.2], [-121, 39.2], [-121, 39.3], [-121.1, 39.2]]],
+      };
+
+      const response = await patchProject(
+        patchRequest({ place: { mode: "uploaded", geometry } }),
+        params
+      );
+
+      expect(response.status).toBe(200);
+      expect(projectUpdateMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          place_source: "uploaded_file",
+          place_ref: null,
+          place_kind: null,
+          place_country_code: null,
+          place_subdivision_code: null,
+          place_geometry_geojson: geometry,
+        })
+      );
+    });
+
     it("names the refused write when the update matched no rows", async () => {
       // PGRST116 is PostgREST reporting that the UPDATE changed nothing, not
       // that the server broke. `loadProjectAccess` read this exact row through

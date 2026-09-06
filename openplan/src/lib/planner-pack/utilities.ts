@@ -67,29 +67,39 @@ export function coerceBool(value: unknown): boolean {
 }
 
 /**
- * Mirror of CPython `round(value, digits)`: round-half-to-even on exact
- * ties.
- *
- * Deliberate divergence: CPython rounds the exact decimal expansion of the
- * binary double (via `_Py_dg_dtoa`), while this rounds `value * 10**digits`
- * in double arithmetic. The two can differ only when that multiplication
- * crosses a rounding boundary — not observed for any value in this
- * library's magnitude range (scores, VMT, shares rounded to <= 4 digits).
+ * Match CPython's rounding of the exact binary double, with ties to even.
+ * Scaling a double first can cross a rounding boundary: 5.1765 * 1000 is
+ * exactly 5176.5, although the original double lies below the decimal tie.
+ * Use its exact integer ratio so artifact verification matches the worker.
  */
 export function pythonRound(value: number, digits = 0): number {
-  const factor = 10 ** digits;
-  const scaled = value * factor;
-  const floor = Math.floor(scaled);
-  const diff = scaled - floor;
-  let rounded: number;
-  if (diff > 0.5) {
-    rounded = floor + 1;
-  } else if (diff < 0.5) {
-    rounded = floor;
-  } else {
-    rounded = floor % 2 === 0 ? floor : floor + 1;
-  }
-  return rounded / factor;
+  if (!Number.isInteger(digits)) throw new RangeError("Rounding digits must be an integer");
+  if (!Number.isFinite(value) || value === 0 || digits >= 324) return value;
+  const sign = value < 0 ? -1 : 1;
+  if (digits <= -309) return sign * 0;
+
+  const view = new DataView(new ArrayBuffer(8));
+  view.setFloat64(0, Math.abs(value));
+  const bits = view.getBigUint64(0);
+  const zero = BigInt(0);
+  const one = BigInt(1);
+  const two = BigInt(2);
+  const mantissaBits = BigInt(52);
+  const storedExponent = Number((bits >> mantissaBits) & BigInt(0x7ff));
+  const fraction = bits & ((one << mantissaBits) - one);
+  const significand = storedExponent === 0 ? fraction : fraction + (one << mantissaBits);
+  const exponent = storedExponent === 0 ? -1074 : storedExponent - 1023 - 52;
+  let numerator = exponent >= 0 ? significand << BigInt(exponent) : significand;
+  let denominator = exponent < 0 ? one << BigInt(-exponent) : one;
+  if (digits >= 0) numerator *= BigInt(10) ** BigInt(digits);
+  else denominator *= BigInt(10) ** BigInt(-digits);
+
+  const quotient = numerator / denominator;
+  const twiceRemainder = two * (numerator % denominator);
+  const roundUp = twiceRemainder > denominator ||
+    (twiceRemainder === denominator && quotient % two !== zero);
+  const rounded = quotient + (roundUp ? one : zero);
+  return sign * Number(`${rounded}e${-digits}`);
 }
 
 /**

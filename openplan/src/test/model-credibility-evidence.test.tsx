@@ -94,6 +94,59 @@ describe("model-run credibility evidence contract", () => {
     expect(evidenceCountSourceStatusLabel("no_traffic_found")).toBe("No traffic found");
   });
 
+  it.each([
+    { stations_matched: 0, median_ape: null },
+    { stations_matched: 0, median_ape: 12 },
+    { stations_matched: 5, median_ape: null },
+    { stations_matched: undefined, median_ape: undefined },
+  ])("does not turn missing comparison evidence into failed validation: %j", (metrics) => {
+    const raw = {
+      ...CREDIBILITY_PACKET,
+      independent_validation: { status: "failed", supports_claim_tier: false, reason: "Old failed-gate summary", ...metrics },
+    };
+    const before = structuredClone(raw);
+    const packet = normalized(raw);
+    const status = metrics.stations_matched === 0 ? "not_run" : "inconclusive";
+    expect(packet.independent_validation).toMatchObject({
+      status, supports_claim_tier: false, recorded_status: "failed",
+      recorded_reason: "Old failed-gate summary",
+    });
+    expect(packet.independent_validation?.reason).toContain("not recorded");
+    expect(raw).toEqual(before);
+    expect(normalized(packet).independent_validation).toEqual(packet.independent_validation);
+    expect(renderModelRunProvenanceMarkdown(packet)).toContain(`- Status: ${status}`);
+    expect(renderModelRunProvenanceMarkdown(packet)).toContain("Supports a count-backed accuracy statement: no");
+  });
+
+  it("retains measured passes and failures but refuses unsupported promotion", () => {
+    for (const status of ["passed", "failed"]) {
+      const packet = normalized({ ...CREDIBILITY_PACKET, independent_validation: {
+        status, supports_claim_tier: status === "passed", stations_matched: 5, median_ape: 12,
+      } });
+      expect(packet.independent_validation?.status).toBe(status);
+      expect(packet.independent_validation?.supports_claim_tier).toBe(status === "passed");
+    }
+    const packet = normalized({ ...CREDIBILITY_PACKET, independent_validation: {
+      status: "passed", supports_claim_tier: true, stations_matched: 0, median_ape: null,
+    } });
+    expect(packet.independent_validation).toMatchObject({ status: "not_run", supports_claim_tier: false });
+  });
+
+  it.each([0, 5])("renders a legacy incomplete failure with %i matches without changing the artifact", async (matches) => {
+    const packet = normalized({ ...CREDIBILITY_PACKET, independent_validation: {
+      status: "failed", supports_claim_tier: false, stations_matched: matches, median_ape: null,
+    } });
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => packet })));
+    render(<ModelRunEvidencePanel modelId={MODEL_ID} modelRunId={MODEL_RUN_ID}
+      runTitle="Unmeasured comparison" runStatus="succeeded" engineKey="aequilibrae"
+      comparisonCandidates={[]} claimStatus="prototype_only" />);
+    fireEvent.click(screen.getByRole("button", { name: /inspect evidence/i }));
+    const block = await screen.findByTestId("model-run-credibility-evidence");
+    expect(block).toHaveTextContent(matches === 0 ? "Not run" : "Inconclusive");
+    expect(block).toHaveTextContent("not recorded");
+    expect(block).not.toHaveTextContent("Failed");
+  });
+
   it("defines the calibrated tier by separate untouched validation", () => {
     const language = modelingClaimReportLanguage({
       track: "assignment",

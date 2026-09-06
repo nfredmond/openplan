@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { REPORT_EVIDENCE_CASES } from "./helpers/report-evidence-cases";
 
 const createClientMock = vi.fn();
 const redirectMock = vi.fn((..._args: unknown[]) => {
@@ -127,6 +128,19 @@ async function renderPage() {
 }
 
 describe("ReportsPage", () => {
+  it.each(REPORT_EVIDENCE_CASES.flatMap((entry) =>
+    ["evidence-backed", "no-evidence"].map((posture) => ({ ...entry, posture }))
+  ))("filters actual report evidence: $label / $posture", async ({ metadata, supported, posture }) => {
+    reportArtifactsOrderMock.mockResolvedValueOnce({
+      data: [{ report_id: "report-1", generated_at: "2026-03-28T20:00:00.000Z", metadata_json: metadata }],
+      error: null,
+    });
+    render(await ReportsPage({ searchParams: Promise.resolve({ posture }) }));
+    const card = screen.queryByRole("heading", { name: "Artifact-backed report" });
+    if (supported === (posture === "evidence-backed")) expect(card).toBeInTheDocument();
+    else expect(card).toBeNull();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     reportCreatorMock.mockReset();

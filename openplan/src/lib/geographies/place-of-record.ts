@@ -25,7 +25,7 @@ export type PlaceOfRecordBbox = {
 };
 
 export type PlaceOfRecord = {
-  /** Resolver that produced this area — 'tigerweb', or 'drawn' for a hand-drawn boundary. */
+  /** Resolver or capture path that produced this area, such as 'tigerweb', 'drawn', or 'uploaded_file'. */
   source: string | null;
   /** The resolver's own kind vocabulary. Opaque to core code. */
   kind: string | null;
@@ -41,6 +41,9 @@ export type PlaceOfRecord = {
 
 /** Source value for an area a planner drew rather than searched for. */
 export const DRAWN_PLACE_SOURCE = "drawn";
+
+/** Source value for an unresolved boundary read from a planner-supplied spatial file. */
+export const UPLOADED_PLACE_SOURCE = "uploaded_file";
 
 export const EMPTY_PLACE_OF_RECORD: PlaceOfRecord = {
   source: null,

@@ -24,11 +24,12 @@ import {
 import { summarizeCorridorText, type StudyAreaOrigin } from "@/lib/models/study-area";
 import { ccrsCountyCodeFromGeoid } from "@/lib/safety/county-code";
 import { recentCrashYears } from "@/lib/safety/crash-years";
+import { describeCrashPublicationEvidence } from "@/lib/safety/publication-evidence";
 // The KSI composition and the "can this source express it" test, both from
 // their single declarations. Writing `fatal + severe_injury` here again is how a
 // measure ends up defined in three files and changed in one.
 import { CRASH_KSI_SEVERITIES } from "@/lib/safety/vocabulary";
-import { separatesSeriousInjuries } from "@/lib/safety/crash-evidence";
+import { SAFETY_KSI_COVERAGE_UNAVAILABLE, separatesSeriousInjuries } from "@/lib/safety/crash-evidence";
 import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 import { SafetyCrashMap, safetyWorkspaceGisAnchorLayerId } from "./safety-crash-map";
 import { SafetyWorkspaceLayersPanel } from "./safety-workspace-layers-panel";
@@ -374,6 +375,7 @@ export function SafetyWorkspace({
     return "";
   });
   const [response, setResponse] = useState<SafetyCrashQueryResponse | null>(null);
+  const previousCorridorTextRef = useRef(corridorText);
   /**
    * Crashes read live from a source this workspace may not store.
    *
@@ -545,12 +547,13 @@ export function SafetyWorkspace({
     [place]
   );
 
-  const loadCrashes = useCallback(async () => {
+  const loadCrashes = useCallback(async (signal: AbortSignal) => {
     if (!bbox) {
       setResponse(null);
       return;
     }
     setLoading(true);
+    setResponse(null);
     setError(null);
     try {
       const params = new URLSearchParams({
@@ -574,21 +577,24 @@ export function SafetyWorkspace({
       // cannot be sent under a name the route does not read.
       for (const [key, value] of crashFilterSearchParams(filters)) params.set(key, value);
 
-      const res = await fetch(`/api/safety/crashes?${params.toString()}`);
+      const res = await fetch(`/api/safety/crashes?${params.toString()}`, { signal });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error ?? "Failed to load crash data");
       }
-      setResponse((await res.json()) as SafetyCrashQueryResponse);
+      const body = await res.json() as SafetyCrashQueryResponse;
+      if (!signal.aborted) setResponse(body);
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Failed to load crash data");
+      if (!signal.aborted) setError(loadError instanceof Error ? loadError.message : "Failed to load crash data");
     } finally {
-      setLoading(false);
+      if (!signal.aborted) setLoading(false);
     }
   }, [workspaceId, filters, bbox, projectId, place, ingest?.id]);
 
   useEffect(() => {
-    void loadCrashes();
+    const controller = new AbortController();
+    void loadCrashes(controller.signal);
+    return () => controller.abort();
   }, [loadCrashes]);
 
   // The rolling window every crash lane asks for, from the one shared helper.
@@ -732,20 +738,26 @@ export function SafetyWorkspace({
         },
         ...current.filter((entry) => entry.id !== summary.id),
       ]);
-      await loadCrashes();
+      // Changing the acquisition triggers the read effect with its new id.
+      // Calling loadCrashes here would query the previous acquisition.
     } catch (ingestError) {
       setError(ingestError instanceof Error ? ingestError.message : "Crash ingest failed");
     } finally {
       setIngesting(false);
     }
-  }, [workspaceId, loadCrashes, bbox, countyCode, projectId, years]);
+  }, [workspaceId, bbox, countyCode, projectId, years]);
 
-  // A live read belongs to the area it was retrieved for and to no other.
-  // Leaving it on screen after the planner moves the study area would plot one
-  // place's fatalities over another's boundary — the most consequential thing
-  // this page could get wrong.
+  // Every acquisition and response belongs to the area it was retrieved for
+  // and to no other. Keep the matching server-provided acquisition on initial
+  // render, then clear all area-bound evidence whenever the picker moves.
+  // Otherwise a California banner can sit above an Ohio boundary until the new
+  // request finishes — a false current-geography claim even if no point moves.
   useEffect(() => {
+    if (previousCorridorTextRef.current === corridorText) return;
+    previousCorridorTextRef.current = corridorText;
     setLiveRead(null);
+    setIngest(null);
+    setResponse(null);
   }, [corridorText]);
 
   // The points actually on screen. A live read supplies its own, filtered here
@@ -833,8 +845,9 @@ export function SafetyWorkspace({
    * added up from `visibleFeatures` — the crashes the query route RETURNED. That
    * query is capped (PostgREST `max_rows`), and a real run drew 1,000 crashes
    * against 11,870 matching the study area, so the headline understated by
-   * roughly an order of magnitude. KSI is the measure SS4A and HSIP score a
-   * project on; a planner glancing at this copies it into a grant application.
+   * roughly an order of magnitude. A planner glancing at this can copy it into
+   * a grant application, so its unit must be explicit: these are CRASH RECORDS,
+   * not a count of people killed or injured.
    *
    * WHAT IT IS NOW. `severityTotals` from the route: one exact count per band
    * over every crash the current filters match, counted in Postgres through the
@@ -846,8 +859,9 @@ export function SafetyWorkspace({
    *
    * `null` NEVER BECOMES A ZERO. Three separate things make it null, and each
    * one produces a sentence instead of a figure: a source that cannot separate
-   * suspected serious injury (a KSI of `fatal + 0` reads as "no serious injuries
-   * occurred"), a band the database could not count, and a live read — whose
+   * suspected serious injury (fatal crashes plus a fabricated zero for serious-
+   * injury crashes reads as "none occurred"), a band the database could not
+   * count, and a live read — whose
    * crashes are in this browser and were never counted by anything.
    */
   const studyAreaSeverityTotals = liveRead ? null : (response?.severityTotals ?? null);
@@ -868,10 +882,10 @@ export function SafetyWorkspace({
   /**
    * Collisions in the WHOLE study area the source never classified.
    *
-   * This travels with the KSI figure and is rendered in the same block, never in
+   * This travels with the severe-crash figure and is rendered in the same block, never in
    * a paragraph further down. It is the qualification that makes the figure
    * defensible: a collision whose casualty counts the source never supplied may
-   * or may not have been a KSI, so the total is a floor rather than a count. A
+   * or may not have been a severe crash, so the total is a floor rather than a count. A
    * number separated from that sentence is a claim nobody can defend, and this
    * one feeds RTP chapters and grant narratives.
    */
@@ -881,7 +895,7 @@ export function SafetyWorkspace({
       : null;
 
   // True when the route counted the study area and the source simply cannot
-  // express KSI — distinct from "the counts could not be read", which gets its
+  // separate serious-injury crashes — distinct from "the counts could not be read", which gets its
   // own sentence rather than silence.
   const severityTotalsUnavailable =
     !liveRead && Boolean(response) && studyAreaSeverityTotals === null;
@@ -1293,9 +1307,7 @@ export function SafetyWorkspace({
             </p>
             <p className="text-muted-foreground">{SAFETY_LIVE_READ_CAVEAT}</p>
             <p className="text-muted-foreground">
-              {liveRead.publishedThrough
-                ? `The source states that its published data runs through ${liveRead.publishedThrough}.`
-                : "The source supplied no exact publication cutoff; requested and returned years are not substitutes."}
+              {describeCrashPublicationEvidence(liveRead.publishedThrough, liveRead.publishedThroughProvenance)}
               <CutoffProvenanceLink provenance={liveRead.publishedThroughProvenance} />
             </p>
             {liveRead.severityCompleteness === "fatal_only" && (
@@ -1337,9 +1349,7 @@ export function SafetyWorkspace({
               {COVERAGE_STATE_COPY[ingest.coverageState] ?? ingest.coverageState}
             </p>
             <p className="text-muted-foreground">
-              {ingest.publishedThrough
-                ? `The source states that its published data runs through ${ingest.publishedThrough}.`
-                : "The source supplied no exact publication cutoff; requested and returned years are not substitutes."}
+              {describeCrashPublicationEvidence(ingest.publishedThrough, ingest.publishedThroughProvenance)}
               <CutoffProvenanceLink provenance={ingest.publishedThroughProvenance} />
             </p>
             {/* Name what was consulted. A coverage gap that can list the sources
@@ -1367,11 +1377,11 @@ export function SafetyWorkspace({
               <div data-testid="safety-ksi-headline" className="flex flex-col gap-1">
                 <p>
                   <span className="font-medium">
-                    {ksiTotal.toLocaleString()} killed or seriously injured
+                    {ksiTotal.toLocaleString()} fatal or serious-injury crashes
                   </span>{" "}
                   <span className="text-muted-foreground">
-                    (KSI) across the whole area you picked, with these filters — the measure
-                    SS4A and HSIP are scored on.
+                    across the whole area you picked, with these filters. This counts crash
+                    records by their most severe reported outcome, not people killed or injured.
                   </span>
                 </p>
                 {response && (
@@ -1392,6 +1402,9 @@ export function SafetyWorkspace({
                 )}
               </div>
             )}
+            {response && !separatesSeriousInjuries(activeCompleteness ?? "") ? (
+              <p className="text-muted-foreground">{SAFETY_KSI_COVERAGE_UNAVAILABLE}</p>
+            ) : <>
             {Array.isArray(response?.ksiConcentrations) && response.ksiConcentrations.length > 0 ? (
               <section className="rounded-lg border border-border/70 bg-muted/20 p-3">
                 <h2 className="text-sm font-semibold">Highest observed KSI concentrations</h2>
@@ -1486,6 +1499,7 @@ export function SafetyWorkspace({
                 community burden is not determined here. The crash workflow remains available.
               </p>
             ) : null}
+            </>}
             {response ? (
               <SafetyPrintableStreetContext
                 projectName={openedForProject?.name ?? null}
@@ -1517,14 +1531,14 @@ export function SafetyWorkspace({
               </section>
             ) : null}
             {/* Counted and failed, which is not the same as a source that cannot
-                express KSI (that gets the completeness caveat below). Said out
+                separate serious-injury crashes (that gets the completeness caveat below). Said out
                 loud rather than left as a missing figure, because a missing
                 figure on this page reads as a zero. */}
             {severityTotalsUnavailable && (
               <p className="text-muted-foreground">
                 The crashes on the map loaded, but OpenPlan could not count how many were fatal
-                or serious across the whole area you picked, so no killed-or-seriously-injured
-                figure is shown. That is a failed count, not a finding — try loading the area
+                or serious across the whole area you picked, so no severe-crash figure is shown.
+                That is a failed count, not a finding — try loading the area
                 again.
               </p>
             )}
@@ -1575,6 +1589,7 @@ export function SafetyWorkspace({
         onChange={setFilters}
         counts={facetCounts}
         dimensionCoverage={activeDimensionCoverage}
+        severityCompleteness={activeCompleteness}
         sourceConfigured={sourceConfigured}
         noSourceMessage={
           bbox
@@ -1586,7 +1601,7 @@ export function SafetyWorkspace({
       {/* The severity bands never account for these, so the count is stated
           rather than left as the difference between two numbers.
 
-          ONLY WHEN THERE IS NO KSI FIGURE. When there is one, this same
+          ONLY WHEN THERE IS NO SEVERE-CRASH FIGURE. When there is one, this same
           disclosure is rendered inside the headline block instead, against the
           study-area total rather than against the dots — a caveat has to sit
           with the number it qualifies, and two near-identical sentences on
@@ -1600,6 +1615,7 @@ export function SafetyWorkspace({
       )}
 
       {error && <p className="text-sm text-destructive">{error}</p>}
+      {response?.custodyWarning && <p role="alert" className="text-sm text-destructive">{response.custodyWarning}</p>}
 
       {history.length > 0 && (
         <section className="rounded-lg border p-4" aria-label="Import history">
@@ -1616,17 +1632,14 @@ export function SafetyWorkspace({
                   {entry.geocodedCount.toLocaleString()} geocoded
                 </span>
                 <span className="text-muted-foreground">
-                  {entry.publishedThrough
-                    ? `source published through ${entry.publishedThrough}`
-                    : "source supplied no exact publication cutoff"}
+                  {describeCrashPublicationEvidence(entry.publishedThrough, entry.publishedThroughProvenance)}
                   <CutoffProvenanceLink provenance={entry.publishedThroughProvenance} short />
                 </span>
                 <span className="text-muted-foreground">
                   {entry.yearsRequested.length === 0
-                    ? "crash years not recorded"
-                    : entry.yearsRequested.length === 1
-                      ? `crash year ${entry.yearsRequested[0]}`
-                      : `crash years ${Math.min(...entry.yearsRequested)}–${Math.max(...entry.yearsRequested)}`}
+                    ? "requested crash years not recorded"
+                    : `Requested crash years: ${[...new Set(entry.yearsRequested)].sort((a, b) => a - b).join(", ")}`}
+                  . Requested years do not establish source coverage.
                 </span>
                 {/*
                   WHERE THIS PULL LOOKED. A crash count with no stated area is a
@@ -1715,6 +1728,7 @@ export function SafetyWorkspace({
             <CrashExportButton
               workspaceId={workspaceId}
               projectId={projectId || null}
+              ingestId={ingest?.id ?? null}
               bbox={bbox}
               filters={filters}
               studyAreaLabel={place?.label ?? (corridorText.trim() || null)}
@@ -1722,6 +1736,7 @@ export function SafetyWorkspace({
               liveSourceLabel={liveRead?.sourceLabel ?? null}
               liveAttribution={liveRead?.attribution ?? null}
               disabledReason={
+                !liveRead && response?.custodyWarning ? response.custodyWarning :
                 !liveRead && (response?.matchedCount ?? 0) === 0
                   ? "Nothing matches these filters in this extent yet, so there is nothing to export."
                   : null

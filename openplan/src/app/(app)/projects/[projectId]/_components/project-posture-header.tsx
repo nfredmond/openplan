@@ -391,7 +391,7 @@ export function ProjectPostureHeader({
           <div className="module-summary-card">
             <p className="module-summary-label">Evidence-backed</p>
             <p className="module-summary-value">{evidenceBackedReportCount}</p>
-            <p className="module-summary-detail">Reports with source-summary details attached.</p>
+            <p className="module-summary-detail">Reports with linked evidence in their saved source summary.</p>
           </div>
           <div className="module-summary-card">
             <p className="module-summary-label">Refresh recommended</p>

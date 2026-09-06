@@ -18,7 +18,7 @@ import type { SafetyIngestSummary } from "@/lib/safety/client-types";
  * THE SAFETY HEADLINE COUNTS THE STUDY AREA, NOT THE DOTS ON THE MAP
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * WHAT WENT WRONG. `/safety` shows "N killed or seriously injured" — KSI, the
+ * WHAT WENT WRONG. `/safety` shows the severe-crash total used for KSI screening,
  * measure SS4A and HSIP score a project on. It was computed by adding up the
  * severity of the crash FEATURES the query route returned, and that query is
  * capped: PostgREST enforces `max_rows`, so a real run against the local
@@ -108,12 +108,13 @@ function makeRecordingClient() {
     const result = () => {
       if (entry.table === "safety_crash_ingests") {
         return {
-          data: [{ id: "11111111-1111-4111-8111-111111111111", project_id: null }],
+          data: [{ id: "11111111-1111-4111-8111-111111111111", project_id: null, status: "ready", stored_count: 7 }],
           count: null,
           error: null,
         };
       }
       if (!entry.head) return { data: [], count: null, error: null };
+      if (!entry.calls.some((call) => call.op === "gte")) return { data: null, count: 7, error: null };
       const selectsFailingBand =
         failingBand !== null &&
         entry.calls.some(
@@ -129,7 +130,7 @@ function makeRecordingClient() {
       // `in` predicate a band count has, and a shape-based test would then fail
       // the wrong query.
       const isMatchedCount =
-        recorded.filter((other) => other.table === entry.table && other.head)[0] === entry;
+        recorded.filter((other) => other.table === entry.table && other.head && other.calls.some((call) => call.op === "gte"))[0] === entry;
       if (failMatchedCount && isMatchedCount) {
         return { data: null, count: null, error: { message: "count boom" } };
       }
@@ -204,7 +205,7 @@ function crashRequest(selection: CrashFilterSelection): NextRequest {
 }
 
 function crashQueries(): RecordedQuery[] {
-  return recorded.filter((entry) => entry.table === "safety_crashes");
+  return recorded.filter((entry) => entry.table === "safety_crashes" && entry.calls.some((call) => call.op === "gte"));
 }
 
 function serialize(calls: RecordedCall[]): string {
@@ -472,8 +473,17 @@ function crashResponse(over: Record<string, unknown> = {}) {
 
 function renderSafety(response = crashResponse(), ingest = readyIngest()) {
   vi.stubGlobal("fetch", vi.fn(async () => response) as unknown as typeof fetch);
-  render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest} />);
-  screen.getByText("pick-area").click();
+  // Start with the saved acquisition's area. Choosing a new area clears it.
+  render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest} studyArea={{
+    corridorText: JSON.stringify({
+      type: "Polygon",
+      coordinates: [[[-121.3, 39.1], [-120.3, 39.1], [-120.3, 39.6], [-121.3, 39.6], [-121.3, 39.1]]],
+    }),
+    place: null,
+    label: "Saved study area",
+    origin: "project",
+    originLabel: "Saved project",
+  }} />);
 }
 
 describe("the KSI headline is the study-area total", () => {
@@ -482,11 +492,11 @@ describe("the KSI headline is the study-area total", () => {
 
     const headline = await screen.findByTestId("safety-ksi-headline");
     expect(headline).toHaveTextContent(
-      new RegExp(`${TRUE_KSI.toLocaleString()} killed or seriously injured`)
+      new RegExp(`${TRUE_KSI.toLocaleString()} fatal or serious-injury crashes`)
     );
     // The drawn slice carries exactly one fatal crash and no serious injuries.
-    // "1 killed or seriously injured" is precisely what the page said before.
-    expect(headline).not.toHaveTextContent(/\b1 killed or seriously injured/);
+    expect(headline).not.toHaveTextContent(/\b1 fatal or serious-injury crash/);
+    expect(headline).toHaveTextContent(/crash records.*not people killed or injured/i);
     expect(headline.textContent).toMatch(/whole area you picked/i);
   });
 

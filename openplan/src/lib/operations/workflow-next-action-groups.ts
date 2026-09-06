@@ -421,7 +421,7 @@ function safetyReadiness(summary: WorkspaceOperationsSummary): WorkflowReadiness
   if (failedCrashIngests !== null && failedCrashIngests > 0) {
     return {
       label: "Crash data pull failed",
-      detail: `${pluralize(failedCrashIngests, "crash data pull")} did not complete, so the study ${failedCrashIngests === 1 ? "area it covered has" : "areas they covered have"} no observed crash record behind any screening output. ${SAFETY_SCREENING_NARRATIVE_CAVEAT}`,
+      detail: `${pluralize(failedCrashIngests, "crash data pull")} did not complete. A failed pull does not establish whether other crash evidence exists for the same area. Review completed acquisitions in Safety before relying on a screening output. ${SAFETY_SCREENING_NARRATIVE_CAVEAT}`,
       tone: "warning",
       metrics: [
         { label: "Failed", value: failedCrashIngests },

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { loadPublishedLandUsePlanPacket } from "@/lib/land-use-plans/public";
 import { PublicDesignationMap } from "@/components/land-use-plans/public-designation-map";
+import { describePlanSourceReview } from "@/lib/land-use-plans/source-review";
 
 export const metadata = {
   title: "Published land use plan",
@@ -69,7 +70,7 @@ export default async function PublishedLandUsePlanPage({ params }: { params: Pro
 
       <section className="mt-10 border-t pt-8"><h2 className="text-3xl font-semibold">Implementation program</h2>{actions.map((action, index) => <article key={action.id ?? index} className="mt-5"><h3 className="text-xl font-semibold">{action.title ?? "Implementation action"}</h3><p className="mt-2 leading-relaxed">{action.description || "No description provided."}</p><p className="mt-2 text-sm text-muted-foreground">{action.responsible_party || "No responsible party"} · {action.due_on || "No due date"} · {(action.status ?? "not_started").replaceAll("_", " ")}</p></article>)}</section>
 
-      <aside className="mt-10 rounded-lg border border-amber-300 bg-amber-50 p-5 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"><p>{packet.descriptor?.disclosure ?? "Local legal requirements were not configured for this plan."}</p><p className="mt-3 text-sm">{packet.privacy}</p>{packet.descriptor ? <p className="mt-3 text-sm">Sources reviewed {packet.descriptor.verifiedAt}; review due {packet.descriptor.reviewDueAt}.</p> : null}</aside>
+      <aside className="mt-10 rounded-lg border border-amber-300 bg-amber-50 p-5 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-100"><p>{packet.descriptor?.disclosure ?? "Local legal requirements were not configured for this plan."}</p><p className="mt-3 text-sm">{packet.privacy}</p>{packet.descriptor ? <p className="mt-3 text-sm">{describePlanSourceReview(packet.descriptor)}</p> : null}</aside>
     </main>
   );
 }

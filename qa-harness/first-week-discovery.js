@@ -84,7 +84,7 @@ const JOBS_DIR = path.join(__dirname, 'first-week-jobs');
 const RUNS_DIR = path.resolve(
   process.env.OPENPLAN_FIRST_WEEK_RUNS_DIR || path.join(os.homedir(), '.local', 'state', 'openplan', 'first-week-runs'),
 );
-const PLAYWRIGHT_MCP = '@playwright/mcp@0.0.79';
+const BROWSER_MCP_LAUNCHER = path.join(__dirname, 'first-week-browser-mcp.js');
 const DEFAULT_MODEL = 'sonnet';
 const DEFAULT_JOB_TIMEOUT_MS = 30 * 60 * 1000;
 const SERVER_PROBE_TIMEOUT_MS = 10 * 1000;
@@ -95,6 +95,8 @@ const BLOCKED_STATUSES = new Set([
   'blocked_timeout',
   'blocked_turn_limit',
   'blocked_unfinished_report',
+  'blocked_browser_tools',
+  'blocked_execution_record',
 ]);
 
 function parseArgs(argv) {
@@ -283,6 +285,8 @@ function buildPrompt(job, { baseUrl, email, password, approverEmail, approverPas
     'You are doing a real job in a real piece of software, using the browser you have been given.',
     'You have never seen this software before and there is no documentation. That is intentional.',
     'Use the browser MCP server named browser for the product. Do not use web search, shell commands, or inspect source files.',
+    'Browser actions are MCP tools, not MCP resources. Call browser_navigate, browser_snapshot, browser_click, browser_type, and browser_take_screenshot directly; do not call resources/list or resources/templates/list.',
+    'Discover deferred browser tools in the available tool catalog before concluding they are unavailable. If functions.exec exposes ALL_TOOLS, inspect that catalog for browser tools and invoke them through its tools object. This permits tool discovery and browser calls only, not shell commands, web search, or source-file access.',
     '',
     `Your working directory is ${agentDir}. Write your evidence and your report there and nowhere else.`,
     `The job id you were given is: ${job.id}`,
@@ -305,10 +309,9 @@ function mcpConfig(browserDir) {
   return {
     mcpServers: {
       browser: {
-        command: 'npx',
+        command: process.execPath,
         args: [
-          '-y',
-          PLAYWRIGHT_MCP,
+          BROWSER_MCP_LAUNCHER,
           '--browser',
           'chrome',
           '--headless',
@@ -392,8 +395,7 @@ function runClaudeAgent({ job, agentDir, browserDir, prompt, model, timeoutMs })
 
 function codexMcpArgs(browserDir) {
   return [
-    '-y',
-    PLAYWRIGHT_MCP,
+    BROWSER_MCP_LAUNCHER,
     '--browser',
     'chrome',
     '--headless',
@@ -421,11 +423,13 @@ function buildCodexArgs({ agentDir, browserDir }) {
     '-c',
     'web_search="disabled"',
     '-c',
-    'mcp_servers.browser.command="npx"',
+    `mcp_servers.browser.command=${JSON.stringify(process.execPath)}`,
     '-c',
     `mcp_servers.browser.args=${JSON.stringify(codexMcpArgs(browserDir))}`,
     '-c',
     'mcp_servers.browser.startup_timeout_sec=120',
+    '-c',
+    'mcp_servers.browser.required=true',
     '-',
   ];
 }
@@ -691,6 +695,40 @@ function terminalAgentText(session, processResult) {
   return terminal.join('\n');
 }
 
+/** Read only Codex's own prose, never browser tool output that happens to quote similar words. */
+function codexAgentMessageText(stdout) {
+  const messages = [];
+  for (const line of String(stdout || '').split(/\r?\n/)) {
+    if (!line.trim()) continue;
+    try {
+      const event = JSON.parse(line);
+      if (event?.item?.type === 'agent_message' && typeof event.item.text === 'string') {
+        messages.push(event.item.text);
+      }
+    } catch {
+      /* A forced stop may leave one truncated JSONL line. */
+    }
+  }
+  return messages.join('\n');
+}
+
+/** An early report and exit zero do not prove a JSONL agent finished its turn. */
+function codexTurnCompletion(processResult) {
+  let isCodex = processResult.backend === 'codex';
+  let lastType = null;
+  for (const line of String(processResult.stdout || '').split(/\r?\n/)) {
+    if (!line.trim()) continue;
+    try {
+      const event = JSON.parse(line);
+      if (typeof event?.type === 'string' && /^(thread\.|turn\.|item\.)/.test(event.type)) isCodex = true;
+      lastType = event?.type ?? null;
+    } catch {
+      lastType = null;
+    }
+  }
+  return { isCodex, completed: lastType === 'turn.completed' };
+}
+
 /**
  * Classify how a job ended separately from what the planner found. Claude can
  * return exit 0 and subtype "success" for a subscription limit, so process
@@ -700,6 +738,17 @@ function classifyJobExecution({ processResult = {}, session = null, reportPresen
   const resultText = terminalAgentText(session, processResult);
   if (session?.api_error_status === 429 || /session limit|weekly limit|usage limit|rate limit|quota/i.test(resultText)) {
     return { status: 'blocked_quota', reason: 'The agent service quota was exhausted before the journey finished.' };
+  }
+  const agentMessageText = codexAgentMessageText(processResult.stdout);
+  if (
+    /no browser MCP tools|browser MCP tools (?:are |were )?unavailable|available tools do not include the browser MCP|no browser tools (?:are |were )?(?:available|exposed)|enable the browser MCP server|required MCP servers failed to initialize:[^\n]*\bbrowser\b/i.test(
+      `${resultText}\n${agentMessageText}`,
+    )
+  ) {
+    return {
+      status: 'blocked_browser_tools',
+      reason: 'The browser MCP tools were not provisioned for the journey, so the product was not exercised.',
+    };
   }
   if (
     !serverAvailableAfter ||
@@ -712,6 +761,10 @@ function classifyJobExecution({ processResult = {}, session = null, reportPresen
   }
   if (session?.subtype === 'error_max_turns') {
     return { status: 'blocked_turn_limit', reason: 'The agent used every allowed step before the journey finished.' };
+  }
+  const turn = codexTurnCompletion(processResult);
+  if (turn.isCodex && !turn.completed) {
+    return { status: 'blocked_execution_record', reason: 'The Codex JSONL stream has no final completed turn, so an early report cannot prove completion.' };
   }
   if (!reportPresent && processResult.code === 0 && !session?.is_error) {
     return { status: 'blocked_unfinished_report', reason: 'The agent stopped without leaving a findings report.' };
@@ -733,18 +786,29 @@ function readJobExecution(jobDir) {
   const session = parseAgentSession(stdout);
   const reportPresent = readFindings(path.join(jobDir, 'agent')) !== null;
   const inferred = classifyJobExecution({
-    processResult: { code: recorded?.exitCode ?? 0, signal: recorded?.signal ?? null, stdout },
+    processResult: { code: recorded?.exitCode, signal: recorded?.signal ?? null, backend: recorded?.backend, stdout },
     session,
     reportPresent,
   });
-  if (
+  const resolved = (
     !recorded?.status ||
     (recorded.status === 'failed' && inferred.status !== 'failed') ||
-    (recorded.status === 'blocked_quota' && inferred.status === 'completed')
-  ) {
-    return { ...recorded, ...inferred };
+    (recorded.status === 'blocked_quota' && inferred.status === 'completed') ||
+    (recorded.status === 'completed' && ['blocked_browser_tools', 'blocked_execution_record'].includes(inferred.status))
+  ) ? { ...recorded, ...inferred } : recorded;
+  // An early findings report is not evidence that its process finished.
+  if (!recorded?.status || (resolved.status === 'completed' && (recorded.exitCode !== 0 || recorded.signal))) {
+    return {
+      ...resolved,
+      ...(BLOCKED_STATUSES.has(inferred.status)
+        ? inferred
+        : {
+            status: 'blocked_execution_record',
+            reason: 'The journey has no recorded clean process exit, so its report cannot prove completion.',
+          }),
+    };
   }
-  return recorded;
+  return resolved;
 }
 
 function classifyJobOutcome({ execution, report, fatalConsoleErrors = 0, browserCaptureProblem = null }) {
@@ -1292,6 +1356,7 @@ async function main() {
 
 module.exports = {
   archiveAttempt,
+  buildPrompt,
   buildCodexArgs,
   buildJobManifest,
   buildNewRunManifest,
@@ -1301,6 +1366,7 @@ module.exports = {
   codexContractViolation,
   currentBuildIdentity,
   inspectBrowserConsole,
+  mcpConfig,
   loadJobs,
   parseAgentSession,
   parseArgs,

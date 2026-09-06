@@ -55,8 +55,8 @@ import {
  *
  * Every count is nullable and each null is a different sentence on screen, never
  * a blank and never a zero. `null` for `ksi` in particular means the source
- * cannot separate suspected serious injuries AT ALL — printing 0 there would
- * report "no serious injuries" on the exact measure a safety grant is scored on.
+ * cannot separate suspected serious-injury crashes AT ALL — printing 0 there
+ * would falsely report that no serious-injury crashes occurred.
  */
 export interface RtpSafetyEvidence {
   ingestId: string;
@@ -66,7 +66,7 @@ export interface RtpSafetyEvidence {
   fatalCount: number | null;
   /** Suspected serious injury collisions, or null when the source cannot separate them. */
   severeInjuryCount: number | null;
-  /** Killed or seriously injured collisions, or null when the source cannot separate them. */
+  /** Fatal or suspected serious-injury crashes, or null when the source cannot separate them. */
   ksi: number | null;
   /** Collisions the source reported no casualty count for. Null when unreadable. */
   unclassifiedCount: number | null;
@@ -123,7 +123,7 @@ function plural(count: number, one: string, many: string): string {
 
 /**
  * One line of observed safety facts, e.g.
- * "4 fatal · 21 serious injury · 25 KSI · 1,089 collisions, 2021–2025 (observed, screening-grade)".
+ * "4 fatal crashes · 21 serious-injury crashes · 25 fatal or serious-injury crashes · 1,089 collisions mapped, 2021–2025 (observed, screening-grade)".
  *
  * ABSENCES ARE STATED, NEVER BLANKED. A source that cannot separate serious
  * injuries says so in this line rather than omitting the term, because a reader
@@ -141,11 +141,11 @@ export function formatRtpSafetyEvidenceLine(evidence: RtpSafetyEvidence): string
   }
 
   const parts: string[] = [];
-  if (evidence.fatalCount !== null) parts.push(`${evidence.fatalCount.toLocaleString("en-US")} fatal`);
+  if (evidence.fatalCount !== null) parts.push(plural(evidence.fatalCount, "fatal crash", "fatal crashes"));
   parts.push(
     evidence.ksi === null
       ? "serious injuries not separated by this source"
-      : `${evidence.ksi.toLocaleString("en-US")} killed or seriously injured`
+      : plural(evidence.ksi, "fatal or serious-injury crash", "fatal or serious-injury crashes")
   );
   parts.push(plural(evidence.countedTotal, "collision mapped", "collisions mapped"));
   if (evidence.vulnerableRoadUsers !== null) {

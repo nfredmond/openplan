@@ -30,6 +30,9 @@ import {
 } from "@/lib/safety/caveats";
 import { getCrashSourceById } from "@/lib/safety/sources/registry";
 import type { SafetyCrashFeature } from "@/lib/safety/client-types";
+import { hasCompleteCrashCustody, readSafetyCrashEvidenceIngest,
+  SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION, SAFETY_ACQUISITION_CUSTODY_UNAVAILABLE,
+} from "@/lib/safety/crash-evidence";
 
 /**
  * Download the collisions the planner is currently looking at.
@@ -68,6 +71,7 @@ const PAGE_SIZE = 1_000;
 const querySchema = z.object({
   workspaceId: z.string().uuid(),
   projectId: z.string().uuid().optional(),
+  ingestId: z.string().uuid().optional(),
   minLon: z.coerce.number().min(-180).max(180),
   minLat: z.coerce.number().min(-90).max(90),
   maxLon: z.coerce.number().min(-180).max(180),
@@ -184,20 +188,24 @@ export async function GET(request: NextRequest) {
     const membership = await checkWorkspaceMembership(supabase, user.id, query.workspaceId);
     if (!membership.ok) return membershipErrorResponse(membership);
 
-    let projectIngestIds: string[] | null = null;
-    if (query.projectId) {
-      const { data: ingestRows, error: ingestError } = await supabase
+    let projectIngestIds: string[] = [];
+    {
+      let lookup = supabase
         .from("safety_crash_ingests")
-        .select("id")
-        .eq("workspace_id", query.workspaceId)
-        .eq("project_id", query.projectId);
+        .select(SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION)
+        .eq("workspace_id", query.workspaceId);
+      lookup = query.projectId ? lookup.eq("project_id", query.projectId) : lookup.is("project_id", null);
+      if (query.ingestId) lookup = lookup.eq("id", query.ingestId);
+      const { data: ingestRows, error: ingestError } = await lookup.order("created_at", { ascending: false }).limit(1);
       if (ingestError) {
         return NextResponse.json(
           { error: "Failed to resolve the project's crash acquisitions" },
           { status: 500 }
         );
       }
-      projectIngestIds = (ingestRows ?? []).map((row) => row.id as string);
+      const acquisitionRow = (ingestRows as unknown as Record<string, unknown>[] | null)?.[0];
+      const acquisition = acquisitionRow ? readSafetyCrashEvidenceIngest(acquisitionRow) : null;
+      projectIngestIds = acquisition ? [acquisition.id] : [];
       if (projectIngestIds.length === 0) {
         // A project with no acquisitions exports an HONEST EMPTY FILE. Falling
         // through with no project predicate — which is what dropping the empty
@@ -209,6 +217,13 @@ export async function GET(request: NextRequest) {
           maxLon: query.maxLon,
           maxLat: query.maxLat,
         });
+      }
+      const retained = await supabase.from("safety_crashes")
+        .select("id", { count: "exact", head: true })
+        .eq("workspace_id", query.workspaceId).eq("ingest_id", projectIngestIds[0]);
+      if (!acquisition || acquisition.status !== "ready"
+        || !hasCompleteCrashCustody(acquisition, retained.error ? null : retained.count)) {
+        return NextResponse.json({ error: SAFETY_ACQUISITION_CUSTODY_UNAVAILABLE }, { status: 409 });
       }
     }
 
@@ -323,7 +338,7 @@ export async function GET(request: NextRequest) {
         sourceLabel: adapters.length > 0 ? adapters.map((adapter) => adapter!.label).join("; ") : null,
         attribution:
           adapters.length > 0 ? adapters.map((adapter) => adapter!.attribution).join(" ") : null,
-        ingestId: null,
+        ingestId: projectIngestIds[0],
         matchedCount: countResult.error ? null : countResult.count ?? null,
         studyAreaLabel: query.studyArea ?? null,
         boundingBox: {

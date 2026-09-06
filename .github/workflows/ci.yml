@@ -30,6 +30,12 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: First-week browser instrument
+        working-directory: ./qa-harness
+        run: |
+          npm ci
+          npm run check:first-week-discovery
+
       - name: QA gate
         run: npm run qa:gate
         env:

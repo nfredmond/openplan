@@ -2,7 +2,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// These tests render server components in jsdom; keep their server loaders real.
+// This suite invokes server pages in jsdom; retain their real data loaders.
 vi.mock("server-only", () => ({}));
 
 /**

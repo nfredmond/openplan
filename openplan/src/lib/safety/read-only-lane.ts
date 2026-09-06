@@ -3,15 +3,15 @@
  * store.
  *
  * THE DEFECT THIS CLOSES. `safety_crashes.source_id` is a closed CHECK domain
- * (`IN ('ccrs-ca')`), so the registry marks every other adapter
- * `persistable: false` and `resolveCrashSource(bbox, "ingest")` filters them
- * out. That is correct — an ingest must never resolve a source the database
- * would reject mid-write. But the Safety module then reported the FILTERED
+ * so the registry marks adapters not yet admitted there `persistable: false`
+ * and `resolveCrashSource(bbox, "ingest")` filters them out. That is correct —
+ * an ingest must never resolve a source the database would reject mid-write.
+ * But the Safety module once reported the FILTERED
  * result as `out_of_coverage`, whose copy told the planner that *no registered
  * crash source covers this study area*. For every US state except California
  * that sentence was false: `farsAdapter` is registered, it covers the whole
- * FARS reporting geography, and the Explore corridor scorecard has been reading
- * it (`fetchCrashesForBbox`, `use: "read_only"`) the entire time. The
+ * source's reporting geography, while the Explore corridor scorecard had been
+ * reading it (`fetchCrashesForBbox`, `use: "read_only"`). The
  * capability was complete, registered, tested — and no planner opening
  * `/safety` could reach it.
  *

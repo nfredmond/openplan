@@ -36,6 +36,7 @@
 import {
   bboxOfGeometry,
   DRAWN_PLACE_SOURCE,
+  UPLOADED_PLACE_SOURCE,
   placeHasResolvableIdentity,
   type PlaceOfRecord,
   type PlaceOfRecordBbox,
@@ -356,6 +357,7 @@ function describeStudyArea(place: PlaceOfRecord): {
 } {
   const resolvable = placeHasResolvableIdentity(place);
   const drawn = place.source === DRAWN_PLACE_SOURCE;
+  const uploaded = place.source === UPLOADED_PLACE_SOURCE;
   const label = place.label?.trim() || null;
 
   if (resolvable) {
@@ -376,6 +378,18 @@ function describeStudyArea(place: PlaceOfRecord): {
         label
           ? `“${label}” is the name the drawn shape was given on the project record, not a place this packet resolved. The area was drawn by hand, so it has an extent but no place identity.`
           : "The study area was drawn by hand, so it has an extent but no place identity. Do not read a city, county or district off this drawing.",
+    };
+  }
+
+  if (uploaded) {
+    return {
+      title: label ? `${label} (uploaded boundary)` : "Uploaded study-area boundary",
+      detail:
+        "A boundary read from a file supplied to this project. It has an extent but no resolved place identity, so nothing in this packet can say which city, county or district it falls in.",
+      caveat:
+        label
+          ? `“${label}” is the name given to the uploaded boundary on the project record, not a place this packet resolved. The file supplies coordinates but no resolved place identity.`
+          : "The study-area boundary came from an uploaded file. The file supplies coordinates but no resolved place identity, so do not infer a city, county or district from it.",
     };
   }
 

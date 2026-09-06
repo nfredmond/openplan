@@ -278,6 +278,7 @@ describe("reference count projections", () => {
       "gtfs_stops_map",
       "project_bca_screenings_latest",
       "project_decision_package_my_work",
+      "safety_crashes_latest",
       "scenario_comparison_summary",
     ]);
 

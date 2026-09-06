@@ -111,23 +111,25 @@ function thenableUpdate(calls: unknown[]) {
   return chain;
 }
 
-function fakeClient() {
+function fakeClient(planRevision = PROJECT_REVISION) {
   const inserts: unknown[] = [];
   const updates: unknown[] = [];
   const filters: unknown[] = [];
+  const planCalls: unknown[] = [];
   return {
     inserts,
     updates,
     filters,
+    planCalls,
     client: {
       auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: USER_ID } } }) },
       from(table: string) {
         if (table === "plans") {
           const chain = {
-            select: () => chain,
-            eq: () => chain,
+            select: (columns: string) => { planCalls.push(["select", columns]); return chain; },
+            eq: (column: string, value: unknown) => { planCalls.push([column, value]); return chain; },
             maybeSingle: async () => ({
-              data: { id: PLAN_ID, workspace_id: WORKSPACE_ID, project_id: PROJECT_ID, title: "Mobility plan", status: "active", updated_at: PROJECT_REVISION },
+              data: { id: PLAN_ID, workspace_id: WORKSPACE_ID, project_id: PROJECT_ID, title: "Mobility plan", status: "active", updated_at: planRevision },
               error: null,
             }),
           };
@@ -195,6 +197,7 @@ const context = { params: Promise.resolve({ projectId: PROJECT_ID }) };
 
 beforeEach(() => {
   vi.clearAllMocks();
+  createServiceRoleClientMock.mockReturnValue(fakeService(vi.fn().mockResolvedValue({ error: null })).client);
   loadProjectAccessMock.mockResolvedValue({
     project: { id: PROJECT_ID, workspace_id: WORKSPACE_ID, name: "Main Street", updated_at: PROJECT_REVISION },
     membership: { workspace_id: WORKSPACE_ID, role: "member" },
@@ -234,6 +237,60 @@ beforeEach(() => {
 });
 
 describe("POST /api/projects/[projectId]/evidence-bundles", () => {
+  it.each([false, true])("freezes a reviewed ordinary archive without a plan, with PDF=%s", async (includePdf) => {
+    const fake = fakeClient();
+    createClientMock.mockResolvedValue(fake.client);
+    const upload = vi.fn().mockResolvedValue({ error: null });
+    createServiceRoleClientMock.mockReturnValue(fakeService(upload).client);
+    loadInventoryMock.mockResolvedValue({ ...(await loadInventoryMock()), linkedPlans: [] });
+    const response = await POST(request({
+      selectedPlanId: undefined,
+      selectedPlanRevisionToken: undefined,
+      selected: [GPKG, ...(includePdf ? [REPORT] : [])].map((item) => ({
+        candidateId: item.id, revisionToken: item.revisionToken,
+      })),
+    }), context);
+    expect(response.status).toBe(201);
+    expect(fake.planCalls).toEqual([]);
+    expect(loadGeneratedMock).toHaveBeenCalledWith(fake.client, expect.any(Object), expect.any(Date), null);
+    expect(buildBundleMock).toHaveBeenCalledWith(expect.objectContaining({ selectedLinkedPlan: null }));
+    const builtInput = buildBundleMock.mock.calls[0][0];
+    expect(builtInput.knownLimits).toContain("No linked plan was selected. This archive cannot be submitted for governed approval.");
+    if (!includePdf) expect(builtInput.knownLimits).toContain("No single current board or report PDF is designated. Governed submission requires exactly one.");
+    expect(upload).toHaveBeenCalledOnce();
+  });
+
+  it.each([
+    { selectedPlanId: PLAN_ID, selectedPlanRevisionToken: undefined },
+    { selectedPlanId: undefined, selectedPlanRevisionToken: PLAN_TOKEN },
+  ])("refuses an incomplete optional plan identity: %j", async (selection) => {
+    const response = await POST(request(selection), context);
+    expect(response.status).toBe(400);
+    expect(createClientMock).not.toHaveBeenCalled();
+  });
+
+  it("does not silently omit a supplied plan missing from the reviewed inventory", async () => {
+    const fake = fakeClient();
+    createClientMock.mockResolvedValue(fake.client);
+    loadInventoryMock.mockResolvedValue({ ...(await loadInventoryMock()), linkedPlans: [] });
+    const response = await POST(request(), context);
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({ error: "The selected linked plan changed after review." });
+    expect(fake.inserts).toEqual([]);
+  });
+
+  it("checks the selected plan's exact workspace, project and revision before freezing", async () => {
+    const fake = fakeClient("2026-08-26T19:00:00.000Z");
+    createClientMock.mockResolvedValue(fake.client);
+    const response = await POST(request(), context);
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({ error: "The selected linked plan changed after review." });
+    expect(fake.planCalls).toEqual([
+      ["select", "*"], ["id", PLAN_ID], ["workspace_id", WORKSPACE_ID], ["project_id", PROJECT_ID],
+    ]);
+    expect(fake.inserts).toEqual([]);
+  });
+
   it("executable-refuses an assistant before opening the database", async () => {
     const response = await POST(
       request(undefined, { "x-openplan-assistant-execution-source": "planner_agent_quick_link" }),

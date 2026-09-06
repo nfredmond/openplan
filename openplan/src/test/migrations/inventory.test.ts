@@ -461,9 +461,9 @@ const EXPECTED = {
   permissiveWrites: 280,
   expanded: 286,
   tablesWithPolicies: 165,
-  relations: 189,
+  relations: 190,
   tables: 181,
-  views: 8,
+  views: 9,
   rlsEnabledTables: 181,
 } as const;
 
@@ -815,6 +815,7 @@ describe("migration schema inventory", () => {
       "lodes_by_tract",
       "project_bca_screenings_latest",
       "project_decision_package_my_work",
+      "safety_crashes_latest",
       "scenario_comparison_summary",
       "vmt_significance_screenings_latest",
     ]);

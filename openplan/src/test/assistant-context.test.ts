@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { REPORT_EVIDENCE_CASES } from "./helpers/report-evidence-cases";
 
 /**
  * A FAILED READ MAY NOT BECOME A SENTENCE THE COPILOT SPEAKS.
@@ -659,6 +660,28 @@ describe("the RTP cycle copilot reads the financial element", () => {
 });
 
 describe("the project copilot over a failed funding read", () => {
+  it.each(REPORT_EVIDENCE_CASES)("grounds actual report evidence: $label", async ({ metadata, supported }) => {
+    const supabase = createSupabase({
+      workspace_members: MEMBERSHIP,
+      projects: PROJECT_ROW,
+      reports: {
+        data: [{ id: "report-1", title: "Recorded report", status: "generated",
+          generated_at: "2026-03-28T20:00:00.000Z", latest_artifact_kind: "html",
+          updated_at: "2026-03-28T20:00:00.000Z", metadata_json: metadata }],
+        error: null,
+      },
+      report_artifacts: {
+        data: [{ report_id: "report-1", generated_at: "2026-03-28T20:00:00.000Z", metadata_json: metadata }],
+        error: null,
+      },
+    }, { projectFixtureColumns: ["reports", "report_artifacts"] });
+    const context = await loadAssistantContext(supabase.client, "user-1", PROJECT_TARGET);
+    if (!context || context.kind !== "project") throw new Error("Expected a project context");
+    expect(context.reportSummary.evidenceBackedCount).toBe(supported ? 1 : 0);
+    expect(supabase.selects.find((read) => read.table === "reports")?.columns).toContain("metadata_json");
+    expect(supabase.selects.find((read) => read.table === "report_artifacts")?.columns).toContain("metadata_json");
+  });
+
   it("reads and carries the project's exact jurisdiction readiness cell", async () => {
     const supabase = createSupabase(
       {

@@ -5,6 +5,7 @@ import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import {
   getJurisdictionPlanDescriptor,
+  defaultApplicableRequirementKeys,
   recommendJurisdictionPlanDescriptor,
   SELECTABLE_JURISDICTION_PLAN_DESCRIPTORS,
 } from "@/lib/land-use-plans/registry";
@@ -114,9 +115,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Failed to create land use plan" }, { status: 500 });
   }
 
-  const applicableKeys = descriptor.requirements
-    .filter((requirement) => requirement.applicability === "required")
-    .map((requirement) => requirement.key);
+  const applicableKeys = defaultApplicableRequirementKeys(descriptor);
   const { data: version, error: versionError } = await supabase
     .from("land_use_plan_versions")
     .insert({

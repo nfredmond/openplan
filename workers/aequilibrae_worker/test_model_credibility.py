@@ -174,6 +174,32 @@ def test_selection_holdout_is_not_independent_accuracy():
     assert "cannot also establish accuracy" in independent["reason"]
 
 
+def test_unevaluated_counts_are_not_a_measured_validation_failure():
+    for changes in (
+        {"stations_matched": 0, "median_ape": None, "screening_gate": None},
+        {"stations_matched": 0},
+        {"median_ape": None},
+        {"median_ape": float("nan")},
+        {"median_ape": float("inf")},
+        {"stations_matched": None},
+    ):
+        result = {**_passing_validation(), **changes}
+        before = json.dumps(result, sort_keys=True)
+        evidence = model_credibility.summarize_independent_validation(result, None)
+        expected = "not_run" if result["stations_matched"] == 0 else "inconclusive"
+        assert evidence["status"] == expected, evidence
+        assert evidence["supports_claim_tier"] is False, evidence
+        assert evidence["stations_matched"] == result["stations_matched"], evidence
+        assert "not recorded" in evidence["reason"], evidence
+        assert json.dumps(result, sort_keys=True) == before
+
+    failed = {**_passing_validation(), "screening_gate": "not ready", "median_ape": 55.0}
+    evidence = model_credibility.summarize_independent_validation(failed, None)
+    assert evidence["status"] == "failed", evidence
+    assert evidence["supports_claim_tier"] is False
+    assert model_credibility.summarize_independent_validation(_passing_validation(), None)["status"] == "passed"
+
+
 def test_gateway_basis_never_infers_measured_from_source_presence():
     summary = model_credibility.summarize_gateway_volume_basis([
         {"label": "i-80-west", "link_type": "motorway", "daily_in": 20_000},
@@ -369,6 +395,7 @@ if __name__ == "__main__":
         test_count_source_records_vintage_classes_and_exclusions,
         test_auto_ingest_records_source_failure_for_the_artifact_stage,
         test_selection_holdout_is_not_independent_accuracy,
+        test_unevaluated_counts_are_not_a_measured_validation_failure,
         test_gateway_basis_never_infers_measured_from_source_presence,
         test_claim_spine_refuses_selection_holdout_promotion,
         test_claim_spine_requires_separate_passing_validation_for_calibrated_tier,

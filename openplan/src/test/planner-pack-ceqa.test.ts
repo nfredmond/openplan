@@ -366,6 +366,23 @@ describe("python parity helpers", () => {
     expect(pythonRound(2.5, 0)).toBe(2);
   });
 
+  it.each([
+    [5.1765, 3, 5.176],
+    [5.1775, 3, 5.178],
+    [1.0625, 3, 1.062],
+    [1.1875, 3, 1.188],
+    [-1.0625, 3, -1.062],
+    [2.675, 2, 2.67],
+    [1.005, 2, 1],
+    [0.00005, 4, 0.0001],
+    [1250, -2, 1200],
+    [1350, -2, 1400],
+    [Number.MIN_VALUE, 4, 0],
+    [Number.MAX_VALUE, 3, Number.MAX_VALUE],
+  ])("matches CPython round(%s, %s), including binary rounding boundaries", (value, digits, expected) => {
+    expect(pythonRound(value, digits)).toBe(expected);
+  });
+
   it("formatFixedPython matches Python fixed-point formatting", () => {
     expect(formatFixedPython(25, 1)).toBe("25.0");
     expect(formatFixedPython(0.15 * 100, 0)).toBe("15");

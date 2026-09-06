@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { REPORT_EVIDENCE_CASES } from "./helpers/report-evidence-cases";
 
 const createClientMock = vi.fn();
 const redirectMock = vi.fn((..._args: unknown[]) => {
@@ -386,6 +387,7 @@ describe("ProjectsPage", () => {
       "href",
       "/api/projects/export/workbook"
     );
+    expect(screen.getByRole("link", { name: "Download project workbook" })).toHaveAttribute("download");
     expect(screen.getByRole("heading", { name: "Import project list" })).toBeInTheDocument();
     expect(screen.getByText(/up to 2,000 rows and 10 MiB/i)).toBeInTheDocument();
     expect(screen.getByText(/Every row starts as skip/i)).toBeInTheDocument();
@@ -444,6 +446,24 @@ describe("ProjectsPage", () => {
       screen.getAllByText(/not proof of award likelihood or a replacement for funding-source review/i).length
     ).toBeGreaterThan(0);
     expect(screen.getAllByText(/No reports linked yet\./i).length).toBeGreaterThan(0);
+  });
+
+  it.each(REPORT_EVIDENCE_CASES)("counts actual report evidence on the project card: $label", async ({ metadata, supported }) => {
+    reportArtifactsOrderMock.mockResolvedValueOnce({
+      data: ["report-1", "report-2"].map((report_id) => ({
+        report_id, generated_at: "2026-03-28T20:00:00.000Z", metadata_json: metadata,
+      })),
+      error: null,
+    });
+    await renderPage();
+    const card = screen.getByRole("heading", { name: "Downtown Mobility Plan" }).closest("a");
+    expect(card).not.toBeNull();
+    const badge = within(card as HTMLElement).queryByText("Evidence-backed");
+    if (supported) {
+      expect(badge?.parentElement).toHaveTextContent("Evidence-backed2");
+    } else {
+      expect(badge).toBeNull();
+    }
   });
 
   /**

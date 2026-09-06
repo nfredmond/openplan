@@ -50,9 +50,11 @@ import {
   type CrashSeverity,
 } from "./vocabulary";
 import { readEveryPage } from "@/lib/supabase/paged-read";
+import { readCrashPublicationEvidence } from "./publication-evidence";
 import {
   SAFETY_CRASH_DATA_CAVEAT,
   SAFETY_CRASH_DATA_NARRATIVE_CAVEAT,
+  SAFETY_FATAL_ONLY_CAVEAT,
   SAFETY_SCREENING_NARRATIVE_CAVEAT,
   SAFETY_SEVERITY_COMPLETENESS_CAVEAT,
   SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT,
@@ -83,6 +85,7 @@ export type SafetyCrashEvidenceIngest = {
   crashCount: number;
   /** Of those, how many carried coordinates and are stored as points. */
   geocodedCount: number;
+  storedCount?: number | null;
   truncated: boolean;
   yearsRequested: number[];
   createdAt: string;
@@ -104,9 +107,9 @@ export type SafetyCrashEvidenceIngest = {
  * Read the three nullable count fields as three different statements:
  *   `severityCounts: null` — the counting query failed. Nothing may be rendered.
  *   `roleCounts: null`     — person rows were not retrieved for this acquisition.
- *   `ksi: null`            — the source cannot separate suspected serious
- *                            injuries, so a killed-or-seriously-injured figure
- *                            cannot be derived from it AT ALL. Not zero.
+ *   `ksi: null`            — the source cannot separate suspected serious-
+ *                            injury crashes, so a severe-crash count cannot be
+ *                            derived from it AT ALL. Not zero.
  */
 export type SafetyCrashEvidence = {
   ingestId: string;
@@ -130,7 +133,7 @@ export type SafetyCrashEvidence = {
   severityCounts: SafetyCrashSeverityCounts | null;
   /** People by role, or null when person rows were not retrieved for this acquisition. */
   roleCounts: SafetyCrashRoleCounts | null;
-  /** fatal + severe_injury, or null when the source cannot separate serious injuries. */
+  /** Fatal-crash rows plus severe-injury-crash rows, or null when the source cannot separate them. */
   ksi: number | null;
   /** Collisions the source reported no casualty count for. Null when counts are unreadable. */
   unclassifiedCount: number | null;
@@ -192,6 +195,19 @@ export function totalCountedCrashes(counts: SafetyCrashSeverityCounts | null): n
   return CRASH_SEVERITIES.reduce((sum, band) => sum + counts[band], 0);
 }
 
+export const SAFETY_ACQUISITION_CUSTODY_UNAVAILABLE =
+  "This acquisition's stored records cannot be reconciled with its recorded total. Crash counts, rankings, and exports are withheld. Missing records are not zero; retrieve a new acquisition without replacing this historical record.";
+
+/** Compare unfiltered stored rows to the acquisition's own recorded denominator. */
+export function hasCompleteCrashCustody(
+  ingest: { storedCount?: number | null; geocodedCount: number; truncated: boolean },
+  retainedCount: number | null
+): boolean {
+  const expected = ingest.storedCount ?? (ingest.truncated ? null : ingest.geocodedCount);
+  return expected !== null && Number.isSafeInteger(expected) && expected >= 0
+    && retainedCount !== null && retainedCount === expected;
+}
+
 /** People counted across every role, or null when person rows were not retrieved. */
 export function totalCountedParties(counts: SafetyCrashRoleCounts | null): number | null {
   if (!counts) return null;
@@ -203,13 +219,17 @@ export function totalCountedParties(counts: SafetyCrashRoleCounts | null): numbe
  *
  * The severity-completeness marker is the ingest's own record of what its source
  * could express, and `severe_injury` is only reachable when it says `kabco_full`.
- * A KSI figure derived without it would be `fatal + 0`, which reads as "no
- * serious injuries occurred" — the single most damaging wrong number this
- * module could publish, because KSI is what a safety grant is scored on.
+ * A severe-crash figure derived without it would be `fatal + 0`, which reads as
+ * "no serious-injury crashes occurred" — an unsupported claim this module must
+ * not publish.
  */
 export function separatesSeriousInjuries(severityCompleteness: string): boolean {
   return severityCompleteness === "kabco_full";
 }
+
+// Visible rankings and printed packets use the same coverage disclosure.
+export const SAFETY_KSI_COVERAGE_UNAVAILABLE =
+  "KSI rankings and community burden are withheld because the source coverage does not establish separately counted serious-injury crashes. Reported crash points and supported fatal-crash counts remain available. Missing serious-injury coverage is not zero.";
 
 /**
  * Build the evidence for ONE acquisition.
@@ -226,6 +246,7 @@ export function buildSafetyCrashEvidence(
   }
 ): SafetyCrashEvidence {
   const years = distinctYears(ingest.yearsRequested);
+  const publication = readCrashPublicationEvidence(ingest.publishedThrough, ingest.publishedThroughProvenance);
   const severityCounts = counts.severity;
   const roleCounts = counts.role;
 
@@ -251,6 +272,9 @@ export function buildSafetyCrashEvidence(
   if (!separatesSeriousInjuries(ingest.severityCompleteness)) {
     caveats.push(SAFETY_SEVERITY_COMPLETENESS_CAVEAT);
   }
+  if (ingest.severityCompleteness === "fatal_only") {
+    caveats.push(SAFETY_FATAL_ONLY_CAVEAT);
+  }
 
   if (ingest.truncated) {
     caveats.push(
@@ -259,9 +283,9 @@ export function buildSafetyCrashEvidence(
   }
 
   caveats.push(
-    ingest.publishedThrough
-      ? `The source states that this dataset is published through ${ingest.publishedThrough}.`
-      : "The source supplied no exact publication cutoff. The requested years and latest returned crash are not used as substitutes."
+    publication.resourceUpdateNote ?? (publication.publishedThrough
+      ? `The source states that this dataset is published through ${publication.publishedThrough}.`
+      : "The source supplied no exact publication cutoff. The requested years and latest returned crash are not used as substitutes.")
   );
 
   if (roleCounts === null) {
@@ -270,6 +294,8 @@ export function buildSafetyCrashEvidence(
       // rests on: an unretrieved count is not a zero.
       ingest.partyCompleteness === "not_supported"
         ? "This source records no person-level detail, so who was involved cannot be counted from it — only whether a collision was flagged as involving a pedestrian, bicyclist or motorcyclist."
+        : ingest.partyCompleteness === "retrieved"
+          ? "Person-level counts could not be reconciled with this acquisition's stored records. Missing people are not zero."
         : "Person-level records were not retrieved for this acquisition, so nobody is counted by role here. That is missing information, not an absence of people."
     );
   } else if (ingest.involvementBasis === "crash_flags") {
@@ -303,8 +329,8 @@ export function buildSafetyCrashEvidence(
     reportedTotal: ingest.crashCount,
     mappedTotal: ingest.geocodedCount,
     dimensionCoverage: ingest.dimensionCoverage,
-    publishedThrough: ingest.publishedThrough ?? null,
-    publishedThroughProvenance: ingest.publishedThroughProvenance ?? null,
+    publishedThrough: publication.publishedThrough,
+    publishedThroughProvenance: publication.provenance,
     citationText,
     caveats,
     narrativeCaveat: narrativeCaveats[0],
@@ -338,6 +364,7 @@ export const SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION = [
   "severity_completeness",
   "crash_count",
   "geocoded_count",
+  "stored_count",
   "truncated",
   "years_requested",
   "created_at",
@@ -378,6 +405,7 @@ export function readSafetyCrashEvidenceIngest(
     severityCompleteness: typeof row.severity_completeness === "string" ? row.severity_completeness : "",
     crashCount: typeof row.crash_count === "number" ? row.crash_count : 0,
     geocodedCount: typeof row.geocoded_count === "number" ? row.geocoded_count : 0,
+    storedCount: typeof row.stored_count === "number" ? row.stored_count : null,
     truncated: row.truncated === true,
     yearsRequested: years,
     createdAt: typeof row.created_at === "string" ? row.created_at : "",
@@ -631,17 +659,25 @@ export function buildSafetyCrashEvidenceMap(
     // The count read failed as a whole → nothing may be rendered as a number.
     // Distinct from "this acquisition stored no crashes", which is a real zero
     // and arrives as an ingest with no counted entry.
-    const severity = countsByIngest === null ? null : (counted?.severity ?? zeroSeverityCounts());
+    const rawSeverity = countsByIngest === null ? null : (counted?.severity ?? zeroSeverityCounts());
+    const custodyComplete = hasCompleteCrashCustody(ingest, totalCountedCrashes(rawSeverity));
+    const severity = custodyComplete ? rawSeverity : null;
 
     // Role counts exist only when person rows were actually retrieved. An
     // acquisition that never fetched people has no zero to report — see the
     // caveat this drives in `buildSafetyCrashEvidence`.
+    const rawRole = counted?.role ?? zeroRoleCounts();
     const role =
-      countsByIngest === null || ingest.partyCompleteness !== "retrieved"
+      !custodyComplete || countsByIngest === null || ingest.partyCompleteness !== "retrieved"
+        || ingest.partyCount === null || totalCountedParties(rawRole) !== ingest.partyCount
         ? null
-        : (counted?.role ?? zeroRoleCounts());
+        : rawRole;
 
-    evidence.set(ingest.id, buildSafetyCrashEvidence(ingest, { severity, role }));
+    const item = buildSafetyCrashEvidence(ingest, { severity, role });
+    if (!custodyComplete) {
+      item.caveats.push(SAFETY_ACQUISITION_CUSTODY_UNAVAILABLE);
+    }
+    evidence.set(ingest.id, item);
   }
 
   return evidence;

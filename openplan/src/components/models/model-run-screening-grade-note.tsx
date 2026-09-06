@@ -9,6 +9,7 @@ import {
   SCREENING_GRADE_TITLE,
 } from "@/lib/help/screening-grade";
 import { normalizeEvidencePacket } from "@/lib/models/evidence-packet";
+import { bandIntrazonalShare } from "@/lib/models/zone-resolution";
 
 /**
  * "SCREENING-GRADE" ON THIS RUN, ANSWERED WITH THIS RUN'S OWN NUMBERS.
@@ -110,12 +111,15 @@ export function ModelRunScreeningGradeNote({
           row.breakdown_json && typeof row.breakdown_json === "object"
             ? (row.breakdown_json as Record<string, unknown>)
             : {};
+        // Both engines store a fraction. Use the same conversion and current
+        // interpretation as the zone-resolution panel, not optional stored advice.
+        const zoneCount = asNumber(breakdown.zone_count);
+        const banded = bandIntrazonalShare(share * 100, zoneCount);
         zones = {
-          sharePct: share,
-          zoneCount: asNumber(breakdown.zone_count),
-          supportsLinkLevelValidation: breakdown.supports_link_level_validation !== false,
-          interpretation:
-            typeof breakdown.interpretation === "string" ? breakdown.interpretation : "",
+          sharePct: banded.intrazonalSharePct ?? share * 100,
+          zoneCount,
+          supportsLinkLevelValidation: banded.supportsLinkLevelValidation,
+          interpretation: banded.summary,
         };
       }
     }

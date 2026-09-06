@@ -108,11 +108,11 @@ describe("rules-v4 assessment surface", () => {
     expect(panel).toHaveTextContent("No validation claim is allowed");
     expect(panel).toHaveTextContent("matched: 3");
     expect(panel).toHaveTextContent("ambiguous: 1");
-    expect(panel).toHaveTextContent("aaaaaaaaaaaa");
-    expect(panel).toHaveTextContent("bbbbbbbbbbbb");
-    expect(panel).toHaveTextContent("network dddddddddddd");
-    expect(panel).toHaveTextContent("observations eeeeeeeeeeee");
-    expect(panel).toHaveTextContent("pre-volume audit ffffffffffff");
+    expect(panel).toHaveTextContent("a".repeat(64));
+    expect(panel).toHaveTextContent("b".repeat(64));
+    expect(panel).toHaveTextContent(`network ${"d".repeat(64)}`);
+    expect(panel).toHaveTextContent(`observations ${"e".repeat(64)}`);
+    expect(panel).toHaveTextContent(`pre-volume audit ${"f".repeat(64)}`);
     expect(panel).toHaveClass("min-w-0", "max-w-full");
     expect(panel.parentElement).toHaveClass("min-w-0", "max-w-full");
     expect(panel.querySelector("dl")).toHaveClass("min-w-0", "grid-cols-1");

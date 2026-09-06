@@ -206,6 +206,29 @@ describe("governed decision package write routes", () => {
     ]);
   });
 
+  it.each(["plan", "PDF"])("refuses an ordinary archive missing its governed %s through the real readiness check", async (missing) => {
+    const actual = await vi.importActual<typeof import("@/lib/project-evidence-bundles/decision-package-readiness")>(
+      "@/lib/project-evidence-bundles/decision-package-readiness",
+    );
+    readinessMock.mockImplementation(actual.decisionPackageReadiness);
+    const fake = fakeClient({ bundle: {
+      id: BUNDLE_ID, bundle_sha256: BUNDLE_HASH, project_revision: PROJECT_REVISION,
+      status: "ready", storage_bucket: "project-evidence-bundles", storage_path: STORAGE_PATH,
+      byte_count: ZIP_BYTES.length,
+      manifest_json: {
+        schemaVersion: "project_evidence_manifest.v2",
+        selectedLinkedPlan: missing === "plan" ? null : { id: "plan-1", revisionToken: "a".repeat(64) },
+        currentBoardOrReportPdf: null,
+      },
+    } });
+    createClientMock.mockResolvedValue(fake.client);
+    const response = requireResponse(await submitPackage(submitRequest(), submitContext));
+    expect(response.status).toBe(409);
+    expect((await response.json()).error).toMatch(missing === "plan" ? /linked plan/i : /report PDF/i);
+    expect(fake.submissionInserts).toEqual([]);
+    expect(storageDownloadMock).not.toHaveBeenCalled();
+  });
+
   it("refuses submission when the stored ZIP bytes do not match the retained hash", async () => {
     const fake = fakeClient();
     createClientMock.mockResolvedValue(fake.client);

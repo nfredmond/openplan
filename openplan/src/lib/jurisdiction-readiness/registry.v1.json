@@ -1,7 +1,7 @@
 {
   "schema": "openplan.jurisdiction-readiness.v1",
-  "registryVersion": "2026-08-28.3",
-  "releaseVersion": "0.42.0",
+  "registryVersion": "2026-09-05.1",
+  "releaseVersion": "0.44.0",
   "reviewedAt": "2026-08-28",
   "reviewBy": "2026-09-28",
   "statuses": ["supported", "partial", "unavailable", "unassessed"],
@@ -79,22 +79,22 @@
     {
       "id": "land-use-plan-registry",
       "path": "openplan/src/lib/land-use-plans/registry.ts",
-      "sha256": "283f9f5388cbe7cc83b9871b23e0f924598cb591cf49c1dc6ed14477763f9cdf"
+      "sha256": "f63f563d8b5813bd3c69124a7e19c2fa77d48aa1b834b0d76b1eeb38a8f071fd"
     },
     {
       "id": "crash-source-registry",
       "path": "openplan/src/lib/safety/sources/registry.ts",
-      "sha256": "3db8b2d1cce0ac7ef42087056fd9995fbf9e1e7667c87d0ea6a12effaf0d646d"
+      "sha256": "32c3689d27c7992399c402bd4d87e69523c929e560a9adefe85d27e330f59d8c"
     },
     {
       "id": "fars-source-adapter",
       "path": "openplan/src/lib/safety/sources/fars.ts",
-      "sha256": "81485a0f391b5ab65412a42ad88c991ea15561a2918849d4b0525ede6b9018d1"
+      "sha256": "73ebf04df4cb3321875561439af79dfedc179c152fbb25515761b27fbd0a3944"
     },
     {
       "id": "ccrs-source-adapter",
       "path": "openplan/src/lib/safety/sources/ccrs.ts",
-      "sha256": "c34761e5e16420edd53f9e7e43538f57d6a4664226fa2a09d7e689575319a45e"
+      "sha256": "74628191b723273ca34b88c42e1a11bc45497fbeb7b10319b32f808cdaf6e610"
     },
     {
       "id": "grant-program-registry",
@@ -255,7 +255,7 @@
           "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
         }
       ],
-      "limitations": ["The available adapter is fatal-only and read-only. A persisted Oregon all-severity crash source is not configured."]
+      "limitations": ["The available adapter is fatal-only and persists retrieved crash records. An Oregon all-severity crash source is not configured."]
     },
     {
       "id": "US-OR/grants-and-reimbursement",
@@ -330,7 +330,7 @@
           "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
         }
       ],
-      "limitations": ["The adapter is fatal-only and read-only. It cannot support an all-severity or serious-injury claim."]
+      "limitations": ["The adapter is fatal-only and persists retrieved crash records. It cannot support an all-severity or serious-injury claim."]
     },
     {
       "id": "US-PR/grants-and-reimbursement",

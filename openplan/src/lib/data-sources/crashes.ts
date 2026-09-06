@@ -35,6 +35,7 @@
  */
 
 import { resolveCrashSources } from "@/lib/safety/sources/registry";
+import { readCrashPublicationEvidence } from "@/lib/safety/publication-evidence";
 import type { StudyAreaBbox } from "@/lib/models/study-area";
 import type {
   CrashFetchResult,
@@ -111,6 +112,7 @@ export interface CrashSummary {
   unavailableReason: string | null;
   /** Exact source-published cutoff, when the adapter supplied one. */
   publishedCutoff?: import("@/lib/safety/sources/types").CrashPublishedCutoff;
+  resourceUpdates?: import("@/lib/safety/sources/types").CrashResourceUpdates;
   /**
    * When more than one source contributed (a regional primary plus a national
    * backstop merged for the out-of-jurisdiction remainder), the sources in
@@ -118,7 +120,7 @@ export interface CrashSummary {
    * it undefined. Fatal counts then cover the full study area while injury/severe
    * counts cover only the primary source's jurisdiction — see `describeCrashSafety`.
    */
-  contributingSources?: Array<{ id: string; label: string }>;
+  contributingSources?: Array<{ id: string; label: string } & Pick<CrashFetchResult, "publishedCutoff" | "resourceUpdates">>;
   /**
    * Covering sources that were UNREACHABLE this run while a jurisdiction-limited
    * primary DID answer. Present so an out-of-jurisdiction study area cannot read
@@ -139,9 +141,10 @@ export interface CrashSummary {
   narrativeLine: string;
 }
 
-function publicationCutoffNote(crashes: Pick<CrashSummaryCore, "publishedCutoff">): string {
-  return crashes.publishedCutoff
-    ? ` Source publication cutoff: ${crashes.publishedCutoff.publishedThrough}; provenance is recorded with this run.`
+function publicationCutoffNote(crashes: Pick<CrashSummaryCore, "publishedCutoff" | "resourceUpdates">): string {
+  const publication = readCrashPublicationEvidence(crashes.publishedCutoff?.publishedThrough, crashes.publishedCutoff?.provenance ?? crashes.resourceUpdates);
+  return publication.resourceUpdateNote ? ` ${publication.resourceUpdateNote}` : publication.publishedThrough
+    ? ` Source publication cutoff: ${publication.publishedThrough}; provenance is recorded with this run.`
     : " The source supplied no exact publication cutoff; requested and returned years are not substitutes.";
 }
 
@@ -336,6 +339,7 @@ export function summarizeCrashFetch(
     checkedSources: [adapter.id],
     unavailableReason: null,
     publishedCutoff: fetched.publishedCutoff,
+    resourceUpdates: fetched.resourceUpdates,
   };
 }
 
@@ -447,6 +451,9 @@ export async function fetchCrashesForBbox(
   ).sort((a, b) => a - b);
 
   const mergedFetch: CrashFetchResult = {
+    // A primary source's annual cutoff cannot describe a multi-source merge.
+    publishedCutoff: contributing.length === 0 ? primary.fetched.publishedCutoff : undefined,
+    resourceUpdates: primary.fetched.resourceUpdates,
     records: mergedRecords,
     matchedTotal: primary.fetched.matchedTotal + backstopMatched,
     geocodedTotal: primary.fetched.geocodedTotal + backstopGeocoded,
@@ -474,7 +481,13 @@ export async function fetchCrashesForBbox(
   if (contributingBackstops.length === 0) {
     return withDisclosure(core);
   }
-  return withDisclosure(mergeBackstopDisclosure(core, primary.adapter, contributingBackstops, bbox));
+  return withDisclosure({
+    ...mergeBackstopDisclosure(core, primary.adapter, contributingBackstops, bbox),
+    contributingSources: [primary, ...contributing].map(({ adapter, fetched }) => ({
+      id: adapter.id, label: adapter.label,
+      publishedCutoff: fetched.publishedCutoff, resourceUpdates: fetched.resourceUpdates,
+    })),
+  });
 }
 
 /**
@@ -525,18 +538,20 @@ export function buildCrashSourceSnapshot(
   fetchedAt: string
 ): Record<string, unknown> {
   const cutoffNote = publicationCutoffNote(crashes);
+  const publication = readCrashPublicationEvidence(crashes.publishedCutoff?.publishedThrough, crashes.publishedCutoff?.provenance ?? crashes.resourceUpdates);
   const shared = {
     state: crashes.source,
     label: crashes.sourceLabel,
     attribution: crashes.attribution,
     yearsQueried: crashes.yearsQueried,
     fetchedAt,
-    ...(crashes.publishedCutoff
+    ...(publication.publishedThrough
       ? {
-          publishedThrough: crashes.publishedCutoff.publishedThrough,
-          publishedThroughProvenance: crashes.publishedCutoff.provenance,
+          publishedThrough: publication.publishedThrough,
+          publishedThroughProvenance: publication.provenance,
         }
       : { publishedThroughNote: "The source supplied no exact publication cutoff." }),
+    ...(publication.resourceUpdateNote ? { resourceUpdateNote: publication.resourceUpdateNote, sourceResourceUpdates: publication.provenance } : {}),
   };
 
   if (!crashes.observed) {

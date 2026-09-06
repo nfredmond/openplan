@@ -13,6 +13,7 @@ import { NextRequest } from "next/server";
 
 const createClientMock = vi.fn();
 const authGetUserMock = vi.fn();
+const loadJsonArtifactMock = vi.fn();
 const mockAudit = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -21,6 +22,12 @@ vi.mock("@/lib/supabase/server", () => ({
 
 vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: () => mockAudit,
+}));
+
+vi.mock("@/lib/models/artifact-source", () => ({
+  loadJsonArtifact: (...args: unknown[]) => loadJsonArtifactMock(...args),
+  workerLocalRoot: () => null,
+  resolveRunWorkDir: vi.fn(),
 }));
 
 import { GET } from "@/app/api/models/[modelId]/runs/[modelRunId]/evidence-packet/route";
@@ -141,6 +148,41 @@ describe("/api/models/[modelId]/runs/[modelRunId]/evidence-packet — failed rea
     const payload = await response.json();
     // Genuinely-empty KPI rows on a SUCCESSFUL read may honestly say so.
     expect(payload.caveats).toContain("No KPIs were extracted for this run.");
+    expect(payload.caveats).toContain("No separate transit skim download was identified in the artifact list. Its absence does not establish whether transit was modeled.");
+    expect(JSON.stringify(payload)).not.toContain("no transit network data or transit mode not configured");
+  });
+
+  it("does not claim a missing transit download when one is listed", async () => {
+    tableResults.model_run_artifacts.data = [{ artifact_type: "skim_matrix", file_url: "storage://run-artifacts/transit-skims.omx" }];
+    const response = await GET(getRequest(), routeContext());
+    expect(response.status).toBe(200);
+    expect((await response.json()).caveats.join(" ")).not.toContain("No separate transit skim download");
+  });
+
+  it("carries modeled transit through JSON and the unevaluated count state through JSON and validation provenance", async () => {
+    const fileUrl = `storage://run-artifacts/model-runs/${MODEL_RUN_ID}/evidence_packet.json`;
+    const stored = {
+      run_id: MODEL_RUN_ID,
+      mode_split: { transit_modeled: true, transit_status: "modeled", transit_available_pairs: 0, transit_total_pairs: 20 },
+      independent_validation: { status: "failed", supports_claim_tier: false, stations_matched: 0, median_ape: null },
+    };
+    const before = structuredClone(stored);
+    loadJsonArtifactMock.mockResolvedValue(stored);
+    tableResults.model_run_artifacts.data = [{ artifact_type: "evidence_packet", file_url: fileUrl }];
+    const response = await GET(getRequest(), routeContext());
+    expect(response.status).toBe(200);
+    const packet = await response.json();
+    expect(loadJsonArtifactMock).toHaveBeenCalledWith(fileUrl, expect.objectContaining({ objectPathPrefix: `model-runs/${MODEL_RUN_ID}/` }));
+    expect(packet.outputs.engine_summary.mode_split).toEqual(stored.mode_split);
+    expect(packet.independent_validation).toMatchObject({ status: "not_run", supports_claim_tier: false, recorded_status: "failed" });
+    expect(packet.caveats.join(" ")).toContain("Its absence does not establish whether transit was modeled");
+    expect(packet.caveats.join(" ")).not.toContain("no transit network data or transit mode not configured");
+    const markdown = await GET(getRequest("markdown"), routeContext());
+    expect(markdown.status).toBe(200);
+    const text = await markdown.text();
+    expect(text).toContain("- Status: not_run");
+    expect(text).toContain("Supports a count-backed accuracy statement: no");
+    expect(stored).toEqual(before);
   });
 
   it("downloads the same normalized evidence as a planner-readable Markdown document", async () => {

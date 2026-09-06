@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 
 import type { PublishedStructuralDemandDiagnosis } from "@/lib/models/published-structural-demand-diagnosis";
@@ -31,8 +30,8 @@ export function PublishedStructuralDemandDiagnosisCard({ study }: { study: Publi
         <div><span className="font-semibold">Release SHA</span><span className="mt-1 block break-all font-mono text-xs text-muted-foreground">{study.releaseSha}</span></div>
       </div>
       <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
-        <Link className="underline underline-offset-2" href="/api/models/structural-demand-diagnosis/study-result.json">Download exact study result</Link>
-        <Link className="underline underline-offset-2" href="/api/models/structural-demand-diagnosis/study-report.md">Download study report</Link>
+        <a download className="underline underline-offset-2" href="/api/models/structural-demand-diagnosis/study-result.json">Download exact study result</a>
+        <a download className="underline underline-offset-2" href="/api/models/structural-demand-diagnosis/study-report.md">Download study report</a>
       </div>
       <div className="mt-4 min-w-0 rounded border border-border/70 p-3">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
@@ -63,8 +62,8 @@ export function PublishedStructuralDemandDiagnosisCard({ study }: { study: Publi
               <div className="min-w-0"><dt className="font-semibold">Diagnosis SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.diagnosisSha256}</dd></div>
             </dl>
             <div className="mt-3 flex flex-wrap gap-3 text-xs font-semibold">
-              <Link className="underline" href={`/api/models/structural-demand-diagnosis/${selected.geographyId}/${selected.method}/model-structural-input-audit-v1.json`}>Download selected before-output check</Link>
-              <Link className="underline" href={`/api/models/structural-demand-diagnosis/${selected.geographyId}/${selected.method}/model-validation-structural-diagnosis-v3.json`}>Download selected diagnosis</Link>
+              <a download className="underline" href={`/api/models/structural-demand-diagnosis/${selected.geographyId}/${selected.method}/model-structural-input-audit-v1.json`}>Download selected before-output check</a>
+              <a download className="underline" href={`/api/models/structural-demand-diagnosis/${selected.geographyId}/${selected.method}/model-validation-structural-diagnosis-v3.json`}>Download selected diagnosis</a>
             </div>
           </div>
         ) : null}
@@ -77,8 +76,8 @@ export function PublishedStructuralDemandDiagnosisCard({ study }: { study: Publi
               <p className="font-semibold">{name}</p>
               <div className="mt-2 flex flex-wrap gap-x-3 gap-y-2">
                 {(["aequilibrae", "activitysim"] as const).flatMap((method) => [
-                  <Link key={`${method}-audit`} className="underline" href={`/api/models/structural-demand-diagnosis/${geographyId}/${method}/model-structural-input-audit-v1.json`}>{method} before-output check</Link>,
-                  <Link key={`${method}-diagnosis`} className="underline" href={`/api/models/structural-demand-diagnosis/${geographyId}/${method}/model-validation-structural-diagnosis-v3.json`}>{method} diagnosis</Link>,
+                  <a download key={`${method}-audit`} className="underline" href={`/api/models/structural-demand-diagnosis/${geographyId}/${method}/model-structural-input-audit-v1.json`}>{method} before-output check</a>,
+                  <a download key={`${method}-diagnosis`} className="underline" href={`/api/models/structural-demand-diagnosis/${geographyId}/${method}/model-validation-structural-diagnosis-v3.json`}>{method} diagnosis</a>,
                 ])}
               </div>
             </div>

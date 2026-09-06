@@ -1,3 +1,4 @@
+import { pythonRound } from "@/lib/planner-pack/utilities";
 import {
   jsonValuesEqual,
   parseDemandAgreementArtifact,
@@ -156,8 +157,7 @@ function sha256(value: unknown): value is string {
 }
 
 function round(value: number, digits: number): number {
-  const factor = 10 ** digits;
-  return Math.round((value + Number.EPSILON) * factor) / factor;
+  return pythonRound(value, digits);
 }
 
 function geh(first: number, second: number): number {

@@ -1,0 +1,844 @@
+
+> openplan@0.44.0 product:direction:packet
+> node scripts/ops/product-direction-review.mjs --packet
+
+
+# Fresh-context OpenPlan product-direction review packet
+
+You are an independent reviewer with no obligation to preserve prior agents' scope or decisions.
+Act as a planner contributing the ultimate free planning operating system to the profession, and
+as the principal engineer responsible for making the recommendation executable and honest.
+
+## Current snapshot
+
+- Generated: 2026-09-05T02:16:56.520Z
+- Release: v0.44.0
+- Commit: dd7b4f4d6293417844788c19e6d0fb9572f7a029
+- Planner pages: 61
+- API routes: 270
+- Migrations: 243
+- Vitest files: 1171
+- Latest direction record: docs/reviews/product-direction/2026-08-28-jurisdiction-readiness.md
+- Direction gate at generation: Product-direction review check failed: jurisdiction readiness registry hash changed: expected 5e60afc325d8650a4d418e3e79b951ab0579b29115557e28f2f0bd3b9e560759, found ba3a8a2216c18bbf96d8a195467c6c8d6ee5f4d5cbc730511394a4ae5e908c11
+- Recent tags: v0.43.0, v0.42.0, v0.41.0, v0.40.0, v0.39.0, v0.38.1, v0.38.0, v0.37.0, v0.36.1, v0.36.0, v0.35.0, v0.34.0
+
+## Recent commits
+
+```text
+dd7b4f4d 2026-09-04 Refresh source custody and saved-area regression fixtures
+9ec13026 2026-09-04 Persist national fatal crash evidence
+01f0fd03 2026-09-04 Label severe crash counts with their true unit
+e6900750 2026-09-04 Make saved plan content editable
+c64b70b6 2026-09-04 Classify missing browser tools as resumable
+27c22b68 2026-09-04 Preserve uploaded boundary provenance
+d2ce5c0f 2026-09-04 Guide first-week agents to browser tools
+fa0fb1c9 2026-09-04 Record v0.44 browser findings
+55cf4d98 2026-09-04 Keep model headlines readable in run cards
+274c95b3 2026-09-04 Show ActivitySim results on ActivitySim run cards
+6f353b0e 2026-09-04 Withhold safety claims from capped crash extracts
+ad640ce7 2026-09-04 Keep legal bundles within their jurisdiction
+```
+
+## Your task
+
+Review the repository, live product, releases, CI, documentation, current and archived plans,
+Claude and Codex histories, and memories. Start at the 30,000-foot destination before choosing a
+module. Explicitly answer all ten questions in
+`docs/product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md` from every required perspective. Identify
+stale rules and simple high-leverage omissions. Preserve disagreement and state what evidence
+would falsify each major recommendation. Do not reduce scope because work or model runtime is
+large. Do not invent coverage, validation, or data.
+
+Produce an independent report before reading another reviewer's conclusion.
+
+## Binding v1 contract
+
+# OpenPlan v1 product contract
+
+<!-- openplan-v1-product-contract
+decided: 2026-08-25
+current_release: v0.44.0
+direction_review: docs/reviews/product-direction/2026-08-28-jurisdiction-readiness.md
+review_protocol: docs/product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md
+capability_matrix: docs/product/US_PLANNING_CAPABILITY_MATRIX.md
+validation_research: docs/modeling/VALIDATION_OBSERVATION_UNCERTAINTY_RESEARCH_2026-08-25.md
+validation_preregistration: docs/modeling/NATIONWIDE_VALIDATION_PREREGISTRATION_V1.json
+roadmap: docs/ROADMAP.md
+-->
+
+This is the durable definition of the product OpenPlan must become before the
+v1.0.0 tag. Nathaniel set this direction after comparing independent Claude and
+Codex full-repository reviews on 2026-08-25. A later product-direction review may
+strengthen or amend it, but a release plan may not quietly narrow it.
+
+## Mission
+
+**OpenPlan v1 is the ultimate free and open-source operating system for planning
+practice in the United States: powerful enough for any type of planner to use
+for their core work, coherent enough to operate as one product, self-service
+without Nathaniel, and defensible enough that its evidence can survive public,
+technical, legal, and funding review.**
+
+Worldwide use remains the architectural destination. US-specific law and data
+must stay behind adapters and registries so national completeness does not bake
+one country into the core.
+
+This is deliberately ambitious. There is no calendar deadline for v1 and no
+maximum number of pre-v1 releases. Work may take the rest of the decade. Runtime
+may be measured in days when accuracy benefits. Time, effort, and the desire for
+a smaller version number are never evidence that the contract is satisfied.
+
+## Who v1 must serve
+
+The product must support the core work of planners in, at minimum:
+
+- cities, towns, counties, regional and metropolitan planning organizations;
+- state transportation and other planning agencies;
+- tribal governments and rural or capacity-constrained agencies;
+- transit providers and multimodal transportation organizations;
+- planning, engineering, and environmental consultancies;
+- non-profits, community organizations, and independent planners.
+
+The capability review must cover, at minimum:
+
+- long-range transportation and regional planning;
+- land-use, comprehensive, and community planning;
+- travel demand, corridor, scenario, and performance analysis;
+- transit, active transportation, freight, and safety planning;
+- environmental review, climate, resilience, and equity work;
+- community engagement, Title VI, and public decision records;
+- capital programming, project prioritization, grants, delivery, and funder
+  reimbursement;
+- GIS, data stewardship, documents, reports, and public records;
+- development review, implementation tracking, and interdepartmental handoff.
+
+This list is a floor, not a ceiling. A periodic product-direction review must add
+a newly identified core planning need. It may conclude that an existing module
+should own it or that a new module is necessary. "Do not add modules" is no
+longer an absolute rule; opportunistic module growth is still refused.
+
+The maintained inventory and proof vocabulary live in the
+[US planning capability matrix](US_PLANNING_CAPABILITY_MATRIX.md). A planning
+practice, organization, geography, or cross-cutting proof dimension cannot
+disappear from v1 merely because a later roadmap stops mentioning it.
+
+## Nationwide completeness
+
+Before v1:
+
+1. Every core journey works in all fifty states and the District of Columbia.
+2. Every state has an explicit, maintained matrix for data sources, statutory
+   rules, responsible agencies, geographic identifiers, and known limitations.
+3. A missing state source or legal rule is a v1 gap, not a permanent excuse.
+   Interim releases continue to degrade honestly while the gap is open.
+4. US territories receive an explicit support matrix and never silently inherit
+   state assumptions. The architecture must permit full territory and later
+   international support without changing core types.
+5. No national aggregate may hide a failing state, rural region, tribal area,
+   border region, island, mountain region, or major metropolitan area.
+
+## California gold standard
+
+California is the deepest v1 proof environment, not a hardcoded product default.
+"Flawless" means:
+
+- every California county and incorporated place resolves from authoritative
+  registry data rather than a literal list in application code;
+- every v1 journey completes with the configured California legal and source
+  depth, including state-specific planning, funding, safety, environmental, and
+  reimbursement requirements that OpenPlan claims to support;
+- statewide, metropolitan, suburban, rural, mountain, coastal, border, and
+  tribal contexts are represented in the evidence;
+- no known Blocker or High defect is open or hidden behind documentation;
+- public artifacts are usable, sourced, accessible, printable, and approved by
+  the responsible human;
+- backup, restore, upgrade, and long worker recovery preserve the work.
+
+It does not mean that every estimate equals an unknowable true value. It means
+every published claim has passed its declared gate and every limitation is
+visible where the claim is used.
+
+## The nationwide validated travel model
+
+A screening-only model is not the v1 destination. Both AequilibraE and
+ActivitySim must be fully operational and scientifically defensible nationwide.
+
+The v1 modeling program must:
+
+1. Run both demand methods on the same selected geography, population, network,
+   assignment settings, and evidence boundary in every state.
+2. Replace unlabelled borrowed behavioral coefficients with locally estimated,
+   hierarchically transferable, or explicitly source-bounded parameters whose
+   provenance and applicability are testable.
+3. Address demand distribution, external and through travel, network loading,
+   unloaded links, road-class coverage, transit, and calibration as measured
+   scientific problems rather than scalar-fitting exercises.
+4. Pre-register validation uses, datasets, metrics, geographic strata, and
+   acceptance gates before opening untouched holdouts. Current gates remain in
+   force until evidence justifies a change.
+5. Pass the applicable untouched holdout gate in every state and required
+   geographic archetype. A national median cannot rescue a failing state.
+6. Give California additional sub-state proof across its full geographic and
+   agency diversity.
+7. Preserve both model outputs and their disagreement. Never average them.
+8. Distinguish measured, modeled, unloaded, unavailable, and out-of-network
+   values on every live and exported surface.
+9. Publish only the use tier the evidence supports. Environmental forecasting,
+   if claimed, requires its own stronger validation; planning-grade validation
+   cannot be relabelled to reach it.
+10. Run in resumable workers with durable custody and no accuracy-driven timeout.
+
+At the decision date, OpenPlan has no independent nationwide accuracy result.
+The often-repeated 43.3% median APE was the model-selection metric from the
+roughly 30% holdout drawn from a 57-station, one-county dataset; a later trial
+worsened the metric and was rejected. It cannot describe the United States or
+independent validation. The absence of valid nationwide evidence is the v1
+blocker. Fitting one scalar per region and reporting a prettier national number
+is explicitly refused.
+
+The observation and acceptance design is grounded in the
+[traffic-count uncertainty research](../modeling/VALIDATION_OBSERVATION_UNCERTAINTY_RESEARCH_2026-08-25.md).
+It requires two separate bands: a source-supported observation interval and a
+preregistered, use-specific model acceptance tolerance. A modeled value inside
+an observation interval is indistinguishable at that observation's precision;
+it is not thereby proven correct.
+
+The first frozen protocol artifact and its detached SHA-256 digest are
+[`NATIONWIDE_VALIDATION_PREREGISTRATION_V1.json`](../modeling/NATIONWIDE_VALIDATION_PREREGISTRATION_V1.json)
+and
+[`NATIONWIDE_VALIDATION_PREREGISTRATION_V1.sha256`](../modeling/NATIONWIDE_VALIDATION_PREREGISTRATION_V1.sha256).
+It blocks new nationwide calibration candidates until decisive datasets,
+dataset hashes, independent geographic partitions, observation intervals, and
+use-specific thresholds are frozen in a successor. The existing 30 percent
+selection holdout remains diagnostic only.
+
+## One coherent operating system
+
+Projects and statutory plans are the durable spine. Data, documents, models,
+safety, engagement, land use, programming, funding, aerial evidence, reports,
+review, and approval reuse that context. Specialist entry points may remain,
+but a planner does not reconstruct the job at every module boundary.
+
+Every top-level surface must participate in at least one proven core journey or
+leave the top level. Every core planning need must have one clear home. Shared
+evidence must have one implementation used by all consumers.
+
+## V1 acceptance evidence
+
+The v1 tag requires all of the following on one candidate commit:
+
+- every required planner-role, organization, geography, and capability cell is
+  `proven`; `partial`, `missing`, and `not assessed` do not pass;
+- every state and required geographic archetype passes the applicable model and
+  workflow gates, with the additional California proof above;
+- all end-to-end planning journeys reach the intended outcome from visible UI
+  entry points and produce usable artifacts;
+- an independent person installs, operates, backs up, restores, and upgrades the
+  product without Nathaniel;
+- accessibility, responsive, keyboard, screen-reader, print, and public-artifact
+  checks pass for every core journey;
+- live RLS, worker suites, mutation samples, restore and upgrade rehearsals,
+  dependency audit, build, and CI pass;
+- the latest product-direction review is current and no unresolved independent
+  review identifies a simple, high-leverage omission from the core product.
+
+"Ultimate" is a direction, not a claim of metaphysical completeness. The v1
+claim is justified when the maintained coverage system finds no unproven core US
+planning need and independent adversarial reviews cannot produce an unresolved
+one. New evidence after v1 may reopen the matrix; v1 does not end development.
+
+## Permanent boundaries
+
+- Free and open source; no paid tier or required paid infrastructure.
+- Self-service; no founder or manual operator dependency.
+- Human control over consequential facts, publication, adoption, and money.
+- No invented data, hidden coverage limit, unsupported zero, or promoted claim
+  tier.
+- No averaged demand-model result.
+- No accuracy sacrifice justified only by runtime.
+- No US-specific concept in core architecture.
+
+## Current roadmap
+
+# OpenPlan development roadmap
+
+<!-- openplan-active-roadmap
+reviewed_commit: 350b945ff79a0cc52c6ec9cbcce5bc6b0412aa53
+current_release: v0.44.0
+review_by: 2026-09-28
+paths:
+- AGENTS.md
+- CLAUDE.md
+- docs/product/V1_PRODUCT_CONTRACT.md
+- docs/product/AGENT_OPERATING_RULES.md
+- docs/product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md
+- docs/reviews/product-direction/2026-08-28-jurisdiction-readiness.md
+- openplan/scripts/ops/product-direction-review.mjs
+- openplan/src/test/product-direction-review-guard.test.ts
+- openplan/src/lib/safety/sources/registry.ts
+- openplan/src/lib/auth/role-matrix.ts
+- openplan/src/lib/runtime/action-metadata.ts
+- docs/ops/KNOWN_ISSUES.md
+- docs/modeling/WHERE_THE_NUMBER_STANDS_2026-08-20.md
+- docs/modeling/VALIDATION_OBSERVATION_UNCERTAINTY_RESEARCH_2026-08-25.md
+- docs/modeling/OPEN_SOURCE_MODEL_LANDSCAPE.md
+- openplan/docs/ops/BACKUP_AND_RESTORE.md
+- docs/ADRs/ADR-004-mcp-server-surface.md
+- qa-harness/FIRST-WEEK-HARNESS.md
+npm_commands:
+- product:direction:check
+- product:direction:packet
+- ops:restore-drill
+- test:workers
+- test:rls-live
+- qa:gate
+-->
+
+This is OpenPlan's only active development queue. The binding destination is
+[`docs/product/V1_PRODUCT_CONTRACT.md`](product/V1_PRODUCT_CONTRACT.md). Dated
+records, research, ADRs, archived plans, and independent reviews are evidence,
+not competing queues. `CHANGELOG.md` records what shipped.
+
+Nathaniel expanded the v1 contract on 2026-08-25 after comparing independent
+Claude and Codex reviews. The four-to-six-release proposals in those reviews are
+superseded. There is no deadline and no promised number of releases before v1.
+
+## Destination
+
+OpenPlan v1 is the ultimate free and open-source operating system for US
+planning practice. It must serve every type of planner's core work, work in all
+fifty states and the District of Columbia, make California the gold-standard
+implementation, operate coherently as one product, and include a fully working,
+scientifically validated nationwide travel demand model.
+
+Worldwide use remains the architectural destination. US data and law stay
+behind adapters and registries.
+
+Runtime and calendar time do not reduce scope. A model run may take days. The
+program may take the rest of the decade. v1 is cut when the evidence says this
+contract is true, not when a version sequence looks long enough.
+
+## How "do what's next" works
+
+Before selecting a major lane, an agent must:
+
+1. Run `npm run product:direction:check` from `openplan/`.
+2. Read the v1 contract, this roadmap, the latest direction review, current
+   release and CI, live product journeys, known issues, and relevant research.
+3. Reassess the product from the full planner and agency coverage map. Past
+   agent decisions and these instructions are evidence, not untouchable law.
+4. Identify the highest-leverage unproven user outcome, including a simple idea
+   outside the current module map that prior agents may have missed.
+5. Check whether the capability already exists here, in Nathaniel's other
+   projects, or in a suitable free/open-source library.
+6. Choose the smallest architectural chunk that materially advances the v1
+   contract, start it, and land it with executable evidence.
+
+If the direction review has expired, a materially stronger model is available,
+or a milestone just closed, generate a fresh packet with
+`npm run product:direction:packet` and obtain independent fresh-context reviews
+before committing the next major direction. Preserve their disagreements.
+
+## Current truth at v0.44.0
+
+Strong foundations already exist:
+
+- connected planning, engagement, safety, funding, land-use, aerial, document,
+  report, and dual-demand-model capabilities;
+- claim tiers, provenance, exact evidence hashes, human approval boundaries,
+  agent refusals, sealed-study custody, and honest negative results;
+- local/self-hosted workers, live RLS proof, backup and restore rehearsal,
+  upgrade CI, interruption recovery, and a large mutation-backed test surface.
+- source-bound distributed work-trip loading with assignment-blind custody,
+  distinct unavailable/unmapped/unroutable states, and no default promotion.
+- one authenticated rail, project-scoped workflow links, a guided
+  baseline-versus-build modeling record, named-road Safety context, and an
+  expiring machine-readable v1 coverage registry.
+
+The v1 contract is not yet true:
+
+- the unified shell and project context do not yet make every cross-module
+  planning job complete or every specialist workflow approachable to a novice;
+- the first-week harness defines twelve required outcomes. The pre-v0.44
+  all-journey run completed every job but reached nine outcomes fully and three
+  partly; its evidence-complete lesser findings remain in `KNOWN_ISSUES.md`;
+- the proof registry exposes many `partial`, `missing`, and `not-assessed`
+  cells; those open cells block v1 even though they do not block this interim
+  release;
+- project GIS, workbook, immutable v2 evidence handoff, and named exact-hash
+  submit/return/approve custody now exist; wider designation/model-link geometry,
+  statutory decision proof, and stranger reuse remain incomplete;
+- no independent stranger has installed and operated the product;
+- the model is screening-grade, not nationwide validated. The often-repeated
+  43.3% figure is the selection metric from the roughly 30% holdout drawn from a
+  57-station, one-county dataset, not national or independent accuracy evidence.
+  Rules-v5 now refuses a claim until observed and modeled quantities are proven
+  comparable, but OpenPlan's true nationwide error is still unknown. Rank agreement in measured
+  examples is weak, and most minor links are unloaded. Observation uncertainty
+  is now represented without invented generic bounds, but has not yet been
+  separated from structural model error with untouched use-specific evidence.
+
+## Completed checkpoint: v0.38 trustworthy observed-count validation
+
+- Added exact observation, comparison-basis, and assessment contracts plus one
+  shared stdlib-only rules-v4 evaluation core.
+- Added complete 2024 FHWA TMAS custody, conservative HPMS enrichment, exact
+  polygon/multistate source resolution, Caltrans adjacent-side preservation,
+  and explicit coverage failure states.
+- Added append-only transactional assessment custody and planner-visible,
+  report, assistant, and project-evidence disclosure with downloadable hashes.
+- Kept legacy rows diagnostic, build forecasts inconclusive, and AequilibraE
+  and ActivitySim separate.
+- Stopped the seven-county development study before model-output reveal because
+  zero method pairs had identical observation packages and pre-volume match
+  audits. The readiness result is in
+  `docs/modeling/OBSERVED_COUNT_INSTRUMENT_READINESS_2026-08-28.md`.
+
+## Completed checkpoint: v0.39 frozen development instrument
+
+- Froze one exact network, observation package, and assignment-blind match
+  audit for each of the seven registered development counties.
+- Required all seven custody gates to pass before opening any assignment
+  output, then ran unchanged AequilibraE and ActivitySim baselines against the
+  same county inputs.
+- Preserved both methods separately and retained every ambiguous, excluded,
+  unresolved, and unloaded observation.
+- Published all fourteen outcomes as `inconclusive`. No fully comparable
+  decisive observation and no use-specific acceptance rule existed, so the
+  run made no validation claim and changed no defaults.
+
+## Completed checkpoint: v0.40 frozen structural diagnosis
+
+- Diagnosed the immutable v0.39 networks, observation packages, pre-volume
+  audits, model outputs, comparison bases, and assessments without changing
+  any frozen byte or match identifier.
+- Completed every assignment-blind county diagnosis before opening any model
+  output, then retained loaded, zero-volume unloaded, and absent output rows
+  separately.
+- Found missing usable coordinates in four counties and centroid-only distance
+  exclusions in all seven. No observation with usable coordinates proved a
+  genuine absence of network geometry within the registered search distance.
+- Kept model year, day basis, coefficients, and population vintage unknown
+  where the exact evidence did not establish them, and kept AequilibraE and
+  ActivitySim raw values separate on identical frozen links.
+- Published fourteen versioned diagnosis artifacts plus a bound study result;
+  the scientific outcome remains `inconclusive` and California and nationwide
+  capability remain `partial`.
+
+## Completed checkpoint: v0.41 comparable observation instrument
+
+- Preserved every v0.39/v0.40 artifact and the frozen v1 matcher while adding
+  versioned observation, package, audit, input, basis, assessment, and diagnosis
+  contracts.
+- Separated physical sites from station/direction/lane/year series, retained
+  complete TMAS days and exact hashes, and kept complete HPMS section shapes and
+  LRS facts.
+- Matched point and section observations against whole network links before
+  output reveal, retained ambiguity and unavailable states, and recorded
+  direction aggregation explicitly.
+- Proved the exact `0.10` assignment expansion and `class_pce = 1` profile, but
+  named the result synthetic expanded daily traffic rather than AADT.
+- Published fourteen separate diagnoses and kept the outcome `inconclusive`.
+  The repaired coverage is not evidence of improved model accuracy.
+
+## Completed checkpoint: v0.42 jurisdiction-aware readiness
+
+- Added one sparse, versioned job-by-jurisdiction registry for California,
+  Oregon, and Puerto Rico, with exact source and adapter hashes, official
+  authorities, applicability, and limitations.
+- Made workspace and project pages answer “Can OpenPlan do this here?” before
+  reliance, while unknown, multistate, unsupported, and unreadable geography
+  states remain distinct and never inherit California behavior.
+- Carried all five planning-job cells and the same full registry hash into exact
+  JSON downloads, generated reports, assistant grounding, and immutable project
+  evidence bundles.
+
+## Completed checkpoint: v0.43 structural demand and loading diagnosis
+
+- Bound the frozen v0.41 packages, full-geometry matches, exact method demand,
+  shared network/external layer, source vintages, settings, and outputs in one
+  registry-driven v4 development study.
+- Completed fourteen assignment-blind input audits before opening any output,
+  retaining productions, attractions, distance shares, crossings before caps,
+  route pairing, external bases, components, connectors, restrictions,
+  unreachable demand, and roadway loading coverage.
+- Joined those audits to unchanged v0.41 records after output access and kept
+  loaded, unloaded, unreachable, excluded, ambiguous, unsupported, and
+  missing-output states visible by method and structural category.
+- Kept unproved LODES facts `unknown`, non-work through travel `unsupported`,
+  and AequilibraE and ActivitySim values separate. No default, match, parameter,
+  threshold, candidate, or holdout changed.
+- Published fourteen exact diagnoses as `inconclusive`; California and
+  nationwide modeling capability remain `partial`.
+- Extended existing first-week jobs rather than adding a module or journey.
+  Desktop and 390px exemplar checks remain release evidence, not a nationwide
+  capability claim.
+
+## Completed checkpoint: v0.44 source-bound distributed work loading
+
+- Bound exact 2023 Census LODES 8.4 main, auxiliary, RAC, WAC, crosswalk,
+  documentation, method work-layer, network, observation, settings, and
+  algorithm inputs before assignment output.
+- Preserved each method's work total, left non-work demand unchanged, and
+  distributed only covered work endpoints to block-supported road access
+  points. Cross-boundary, unavailable, suppressed, explicit-zero, unmapped,
+  unroutable, and missing-pair states remain separate.
+- Added canonical candidate-network custody and a pre-assignment receipt so an
+  interrupted job resumes only when the audit, matrix, network, and completed
+  output hashes still match.
+- Kept seven county gates and both methods separate. No national aggregate,
+  method average, rematched observation, consumed holdout, tuning step, or
+  default promotion can rescue a failed candidate.
+- Carried the exact input, audit, comparison, and hashes through the existing
+  Models, report, assistant, and project-evidence surfaces. The scientific
+  outcome remains `inconclusive`; California and nationwide capability remain
+  `partial`.
+
+The next major lane is selected from the fresh post-checkpoint product-direction
+packet and recorded in the v0.44 release evidence. Any future model acceptance
+rule must be frozen from primary, use-specific evidence before a genuinely
+untouched geographic holdout is opened.
+
+That last point is a model-science question, not permission to fit observations
+exactly. Traffic counts contain sampling, equipment, adjustment, temporal, and
+location-matching uncertainty. v1 needs an uncertainty-aware gate that can
+distinguish bad observations from bad model structure without letting either
+hide the other.
+
+## Completed checkpoint: v0.35 foundation
+
+This release established the machinery the full v1 program depends on. The
+open cells below the checkpoint remain v1 work, not claims that v0.35 solved
+the full contract.
+
+### One product
+
+- Make Projects and Plans the durable context spine across analysis,
+  engagement, safety, funding, documents, aerial evidence, and reports.
+- Remove duplicate authenticated navigation and repeated primary actions.
+- Present Models, Scenarios, and Validation as stages of one guided model job
+  while preserving specialist URLs.
+- Separate operator setup/health from the planner's daily overview.
+- Close first-week continuity defects: active workspace, reminders and tasks,
+  intake handoff, corridor entry, road identity, and printable street context.
+- Keep the first-week outcome gate fail-closed: only a completed journey with
+  `outcomeReached: "yes"` passes; retry and preserve `partly`, `no`, and
+  inconclusive attempts.
+
+### Strategic and validation foundation
+
+- Maintain the v1 planner/organization/state/capability proof matrix and make
+  missing or unassessed core cells fail the direction review.
+- Complete the primary-source study of traffic-count uncertainty and current
+  OpenPlan observation handling.
+- Pre-register the nationwide model-validation program before trying candidates:
+  claimed uses, station quality classes, observation uncertainty, temporal
+  alignment, matching rules, geographic strata, metrics, holdout custody, and
+  acceptance logic.
+- Treat the current 30% screening threshold as provisional. Replace or retain it
+  only from primary-source, use-specific research before the new holdouts are
+  opened. Never change a gate after seeing its holdout outcome.
+- Fix the public `metadataBase` warning and prove configured public URLs.
+
+**Done when:** the project, engagement, safety, and corridor journeys reach
+their actual outcomes without lost context; the strategic review expires and
+fails mechanically; and the nationwide validation design can separate model,
+observation, and matching uncertainty before any calibration candidate is run.
+
+## Mandatory v1 program A: nationwide validated modeling
+
+This program may span many releases. It is a v1 blocker, not post-v1 research.
+
+### Establish trustworthy observations
+
+- Grade count stations by raw versus factored estimate, duration, season,
+  direction, year, equipment, imputation, and location-match confidence.
+- Align model and observation periods or carry the mismatch uncertainty.
+- Use repeated counts to estimate day-to-day and seasonal variability where the
+  source supports it.
+- Keep suspect observations visible as excluded or low-confidence evidence;
+  never silently discard them after seeing model residuals.
+- Report validation with and without low-confidence observations, under a
+  preregistered rule.
+
+### Repair model structure, not appearance
+
+- Diagnose trip generation, distribution, destination and mode choice,
+  external/through travel, network construction, centroid loading, road-class
+  coverage, time-of-day, and transit against independent evidence.
+- Replace unlabelled ActivitySim example coefficients with locally estimated,
+  hierarchically transferable, or explicitly bounded coefficient sets.
+- Route FAF and other defensible external-flow sources over the real network;
+  do not substitute straight lines or one scalar per region.
+- Load areas rather than a few centroid paths where evidence shows the current
+  structure leaves roads unseen.
+- Preserve resumability, evidence custody, and hours-to-days worker execution.
+
+### Validate every place and use
+
+- Pre-register development, selection, and untouched holdout geography before
+  outcome access.
+- Require each state and geographic archetype to pass its applicable use gate.
+  A nationwide median cannot hide a failure.
+- Give California deeper sub-state proof across its full agency and geographic
+  range.
+- Validate planning uses separately: corridor comparison, RTP/scenario work,
+  grants, transit, and any stronger forecast claim. A lower claim tier cannot be
+  relabelled upward.
+- Keep AequilibraE and ActivitySim results separate. Agreement remains
+  sensitivity evidence, not accuracy, unless untouched evidence proves more.
+- Show measured, modeled, unloaded, unavailable, and out-of-network states in
+  every live and exported result.
+
+**Done when:** both methods run nationwide and every state plus required
+archetype passes preregistered untouched holdout gates for every published use;
+California passes its deeper suite; no model value appears without observation,
+coverage, provenance, and uncertainty state.
+
+## Mandatory v1 program B: every state in substance
+
+- Maintain a state-by-state registry of crash and serious-injury data, traffic
+  counts, transit, freight, demographics, equity, hazards, funding programs,
+  statutory planning rules, environmental requirements, and responsible source
+  agencies.
+- Research and connect stable authoritative sources. Missing sources are gaps to
+  solve before v1, while interim releases continue to disclose them honestly.
+- Prove every core journey in every state and DC without changing call sites.
+- Add an explicit US-territory matrix and preserve a route to worldwide bundles.
+- Make California the complete reference bundle and prove every California
+  geography from authoritative registry data.
+
+**Done when:** every state/DC cell required by a core journey is proven and no
+planner learns a coverage limit only after relying on a result.
+
+## Mandatory v1 program C: every planner's core work
+
+- Maintain coverage across transportation, land use, comprehensive planning,
+  transit, active transportation, freight, safety, environmental review,
+  climate and resilience, equity, engagement, capital programming, grants,
+  delivery, reimbursement, development review, GIS/data, documents, reports,
+  implementation, and public records.
+- Evaluate cities, counties, regional agencies, state agencies, tribes, transit
+  providers, consultancies, non-profits, and independent planners.
+- Deepen and connect an existing module when it has a coherent home.
+- Add a new module when the direction review proves a core need has no coherent
+  owner and existing OpenPlan code or a suitable open-source library cannot
+  supply it. Record why before building.
+- Expand end-to-end journeys whenever the capability map finds a core planner
+  job not represented by the current suite.
+
+**Done when:** every core capability and organization cell is proven by a real
+journey and artifact, with no `partial`, `missing`, or `not assessed` result.
+
+## Mandatory v1 program D: interoperability and evidence handoff
+
+- Export GeoPackage for geographic outputs and XLSX for portfolio round-trip.
+- Keep the shipped per-project frozen evidence bundles current, and add per-plan
+  bundles with the same machine-readable source, retrieval, tier, custody,
+  uncertainty, and known-limit manifests.
+- Make source documents and frozen artifacts discoverable from every dependent
+  result.
+- Support public, governing-body, GIS, spreadsheet, document-management, and
+  archival handoffs without losing evidence.
+
+**Done when:** an outside planner can inspect and reuse an artifact in standard
+agency tools without opening OpenPlan or guessing its provenance.
+
+## Mandatory v1 program E: teams, operations, and human control
+
+- Extend roles to every consequential write and record named approval of exact
+  artifacts.
+- Make My Work the common assignment, review, approval, exception, and recovery
+  inbox.
+- Prove analyst, manager, approver, viewer, public participant, and agent
+  principals across the full journey suite.
+- Make local and self-host deployment, source setup, worker operation, backup,
+  restore, upgrade, rollback, and recovery self-service.
+- Complete keyboard, screen-reader, responsive, contrast, localization, print,
+  and low-bandwidth evidence for every core journey.
+
+**Done when:** a real team and an independent operator can run and recover the
+whole system without Nathaniel and without weakening human control.
+
+## Mandatory v1 program F: agentic planning control
+
+The base product must remain fully usable without an agent. Once the underlying
+workflows are proven, the MCP/Buzz direction from ADR-004 returns as pre-v1 work
+because the ultimate planning operating system should be controllable with the
+same discipline as a codebase.
+
+- Build the MCP server as read then propose; do not build a client that bypasses
+  the product's approval boundary.
+- Derive writes from the action registry, exact executed-payload hashes,
+  distinct agent authorship, claim tiers, audit records, and human approval.
+- Let agents inspect the whole planning record, explain gaps, draft grounded
+  work, and propose safe transitions without silently publishing, adopting,
+  spending, or fabricating facts.
+- Preserve full non-agent functionality and free/self-hosted operation.
+
+**Done when:** a planner can direct a grounded agent across proven workflows,
+review every proposed consequence, and reproduce the result without the agent.
+
+## V1 proof campaign
+
+On one candidate commit:
+
+- every capability, planner type, organization type, state/DC, geographic
+  archetype, artifact, accessibility, and operational cell is proven;
+- every nationwide and California model holdout gate passes;
+- every end-to-end journey reaches its intended outcome from visible UI entry;
+- an independent person installs and operates OpenPlan without help;
+- independent fresh-context product reviews find no unresolved core omission;
+- live RLS, all workers, mutation samples, restore, upgrade, dependency audit,
+  build, and CI pass.
+
+Only then tag v1.0.0.
+
+## Permanent refusals
+
+- No paid tier, payment step, or required paid infrastructure.
+- No averaged demand-model result or national average that hides local failure.
+- No exact-fit objective that overfits noisy observations.
+- No invented data, silent coverage limits, unsupported zeros, or promoted claim
+  tiers.
+- No agent-authored consequential facts or direct-to-public agent action.
+- No serverless long-running model execution.
+- No hardcoded place, jurisdiction, country assumption, or literal state/county
+  roster in core code.
+- No scope reduction justified only by time, work size, runtime, or an agent's
+  preference for a nearer v1.
+
+## Current capability matrix
+
+# US planning capability matrix
+
+<!-- openplan-planning-capability-matrix
+review_date: 2026-08-28
+review_by: 2026-09-28
+current_release: v0.44.0
+capabilities:
+- long-range-transportation-and-regional-planning
+- land-use-comprehensive-and-community-planning
+- travel-demand-corridor-scenario-and-performance-analysis
+- transit-active-transportation-freight-and-safety-planning
+- environmental-review-climate-resilience-and-equity
+- community-engagement-title-vi-and-public-decisions
+- capital-programming-prioritization-grants-delivery-and-reimbursement
+- gis-data-stewardship-documents-reports-and-public-records
+- development-review-implementation-and-interdepartmental-handoff
+organizations:
+- local-and-county-government
+- regional-and-metropolitan-organizations
+- state-agencies
+- tribal-governments
+- transit-and-multimodal-providers
+- consultancies
+- nonprofits-community-groups-and-independent-planners
+geographies:
+- all-fifty-states-and-dc
+- us-territories-explicitly-assessed
+- california-gold-standard
+- metropolitan-suburban-rural-and-remote
+- tribal-border-island-mountain-and-coastal
+statuses:
+- proven
+- partial
+- missing
+- not-assessed
+-->
+
+This is the coverage ledger for the [v1 product contract](V1_PRODUCT_CONTRACT.md).
+It prevents a polished national average or one strong module from standing in
+for the whole product. The current inventory is deliberately conservative:
+documentation, code, or a green unit test is not enough to mark a cell
+`proven`.
+
+The executable source of this inventory is
+[`US_PLANNING_CAPABILITY_REGISTRY.json`](US_PLANNING_CAPABILITY_REGISTRY.json).
+This page explains the current gaps; the direction check reads the registry and
+fails when a required planner, organization, state, capability, artifact,
+accessibility, or operations cell disappears or the review expires.
+
+## Status rules
+
+- **Proven:** a representative planner reached the intended outcome from a
+  visible entry point, produced and reused the required artifact, and the
+  applicable evidence, accessibility, permission, geography, recovery, and
+  export checks can fail.
+- **Partial:** real reachable capability exists, but one or more required
+  journeys, geographies, artifacts, roles, or proof dimensions remain open.
+- **Missing:** the required capability or handoff does not exist.
+- **Not assessed:** current evidence is insufficient to distinguish partial
+  from missing. This fails the v1 gate just as `missing` does.
+
+Only `proven` passes v1. An evidence link and review date are required when a
+cell changes to `proven`; prose confidence is not evidence.
+
+## Practice coverage at v0.44.0
+
+| Core planning practice | Current status | Existing foundation | Principal proof gap |
+|---|---|---|---|
+| Long-range transportation and regional planning | Partial | RTP workflow, fiscal and performance surfaces, projects, reports | Full statutory journey, public draft/comment-response, cycle artifacts, nationwide legal/source depth |
+| Land-use, comprehensive, and community planning | Partial | Land Use Plans, exact-hash review/adoption, GIS designations | Nationwide jurisdiction bundles and full plan-production journeys beyond California |
+| Travel demand, corridor, scenario, and performance analysis | Partial | AequilibraE, ActivitySim, common assignment, agreement map, rules-v5 comparable observations, full-geometry pre-volume matching, separate dual-method diagnoses, structural demand/loading audits, source-bound LODES8 work-endpoint distribution, and immutable custody | Untouched use-specific California and nationwide acceptance evidence; exact external and non-work through-trip sources; correction and validation of remaining diagnosed defects |
+| Transit, active transportation, freight, and safety planning | Partial | GTFS, accessibility, freight, project and safety foundations | End-to-end multimodal journeys; complete injury coverage and state-specific source proof |
+| Environmental review, climate, resilience, and equity | Not assessed | Environmental and equity-adjacent evidence exists | Coherent statutory workflows, nationwide applicability, public artifacts, and validation by use |
+| Community engagement, Title VI, and public decisions | Partial | Public maps, surveys, comments, translation boundaries, exact-hash agency package review | Campaign-to-decision journey, response record, statutory decision proof, accessibility and multi-project proof |
+| Capital programming, prioritization, grants, delivery, and reimbursement | Partial | Portfolio, grants, LAPM reimbursement, reports | One traceable project/funding spine through authorization, obligation, delivery, amendment, and closeout |
+| GIS, data stewardship, documents, reports, and public records | Partial | Imports, v2 project GeoPackage handoff, literal-value XLSX portfolio round-trip, frozen governed evidence bundles, evidence custody, reports, provenance | Broader designation/model-link GIS geometry, records lifecycle, and complete cross-module source reuse |
+| Development review, implementation, and interdepartmental handoff | Not assessed | Project/land-use primitives and immutable submit/return/approve custody | Product home, full development-review workflow, statutory responsibility, and jurisdiction proof |
+
+## Organization coverage at v0.44.0
+
+| Organization context | Current status | Principal proof gap |
+|---|---|---|
+| Local and county governments | Partial | Small-town through major-city journeys, departments, statutory variance, deployment |
+| Regional and metropolitan organizations | Partial | Complete RTP/MTP, programming, modeling, public review, and partner handoff |
+| State agencies | Not assessed | Statewide scale, governance, multimodal programs, records, and distributed teams |
+| Tribal governments | Not assessed | Sovereignty-aware sources, boundaries, governance, rural connectivity, and data control |
+| Transit and multimodal providers | Partial | Service planning through capital/operations decision journey and GTFS round-trip |
+| Consultancies | Partial | Multi-client separation, deliverable review, records transfer, and client acceptance |
+| Non-profits, community groups, and independent planners | Not assessed | Accessible self-service workflows, limited-capacity operations, and durable handoff |
+
+## Geography coverage at v0.44.0
+
+No state is yet `proven` against the complete v1 contract. California has the
+deepest configured legal and data support and is still `partial`. The other
+forty-nine states and the District of Columbia have national foundations but
+have not been assessed journey-by-journey, so they are `not assessed` rather
+than optimistically marked partial. Territories are also `not assessed`.
+
+The state ledger is maintained in the machine-readable capability registry,
+not a hardcoded Markdown list. v0.42 adds a second, sparse job-by-jurisdiction
+readiness registry for California, Oregon, and Puerto Rico. It exposes exact
+sources, adapter lineage, authorities, limitations, and honest unavailable or
+unassessed states before reliance. Those three exemplars are release evidence,
+not national completeness. The ledger must still grow to cover state and
+territory sources, laws, agencies, identifiers, model strata, journeys, and
+artifacts; the release gate may not infer the remaining cells from an
+aggregate.
+
+California proof must separately cover statewide, major metropolitan,
+suburban, rural, mountain, coastal, border, and tribal contexts. Nationwide
+proof must add the archetypes that California cannot represent.
+
+## Cross-cutting proof dimensions
+
+Every practice-by-organization-by-geography journey also needs evidence for:
+
+- visible entry and completion without Nathaniel;
+- role and approval boundaries, including adoption and money;
+- source provenance, observation uncertainty, claim tier, and limitations;
+- cross-module context and artifact reuse without re-entry;
+- interoperable import and export with custody preserved;
+- keyboard, screen-reader, responsive, print, and public accessibility;
+- long-job resumption, failure recovery, backup, restore, and upgrade;
+- free, self-hosted operation without required paid infrastructure.
+
+## How this becomes executable
+
+The recurring product-direction check preserves the matrix's required practice,
+organization, geography, and status vocabularies. Program work must replace
+this initial narrative inventory with data-backed cells and evidence references.
+The v1 release gate then requires every applicable cell to be `proven`; it may
+not infer completion from this document or from a national score.

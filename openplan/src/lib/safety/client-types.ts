@@ -89,6 +89,7 @@ export type SafetyKsiEquityTract = {
 
 /** The crash-query response, including the counts that keep the UI honest. */
 export type SafetyCrashQueryResponse = SafetyCrashCollection & {
+  custodyWarning?: string;
   /** How many features this response actually carries. */
   returnedCount: number;
   /** How many crashes matched the filters in the database. */

@@ -19,7 +19,85 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-## 0.44.0 — 2026-09-01
+## 0.44.0 — 2026-09-05
+
+- First-week browser checks use a locked local MCP launcher that avoids script
+  injection from iframe-reference normalization. Console errors still fail the
+  gate. Run `npm ci` in `qa-harness/` before running these checks.
+
+- Links inside report previews now open the actual project or source page instead
+  of trying to load it inside the scriptless preview. Frozen report files and
+  sandbox protections are unchanged; no migration is needed.
+
+- The run's screening explanation now converts stored trip shares to percentages
+  and uses the same interpretation as the adjacent zone-resolution panel. It no
+  longer displays 29.7% as 0.3% or assumes missing advice supports link comparison.
+  Stored results and scientific thresholds are unchanged; no migration is needed.
+
+- Older model-evidence panels now save attachments without disrupting subsequent
+  downloads or model navigation. Comparable-observation files show their exact
+  filenames and frozen hashes beside the controls. Existing scientific records
+  are unchanged. Acceptance runs no longer treat a stopped agent's early report
+  and zero exit code as proof of completion.
+
+- Reports retain overlong draft text and explain the existing title and summary
+  limits before saving. Packet generation now waits for a successful save of
+  edits and evidence choices instead of producing the older version after a
+  failed save. Existing artifacts are unchanged; no migration is needed.
+
+- Project study-area changes now use the latest successful input. Uploading a
+  boundary after choosing a county no longer silently saves the county instead,
+  and a later drawing or clear replaces an older upload. No migration is needed.
+
+- Project evidence archives no longer require a linked plan or exactly one report
+  PDF. Missing prerequisites remain explicit. Submitting an archive for governed
+  approval still requires the exact linked plan, one current PDF, and the existing
+  evidence, freshness, and authorization checks. No migration is needed.
+
+- Printable Safety street context now preserves geographic proportions instead
+  of stretching each axis to fill the page. Screen and report drawings disclose
+  their approximate local projection and omit unsuitable scale bars. Existing
+  report artifacts are unchanged.
+
+- Work-queue warnings no longer infer that a failed crash-data pull means no
+  evidence exists for its study area. They preserve failed-pull counts and
+  direct users to review completed acquisitions in Safety.
+
+- Safety and report displays no longer treat crash-file update timestamps as
+  coverage cutoffs. Apply `20260905000003_crash_resource_update_provenance.sql`
+  (`crash_resource_update_provenance`) before deploying. It allows file-update
+  metadata without a coverage date while preserving genuine date/provenance
+  pairs. File identities and update dates remain source metadata; older
+  acquisitions are interpreted without rewriting stored evidence.
+
+- Safety repeat acquisitions now retain separate crash and person records. Apply
+  `20260905000002_safety_acquisition_custody.sql` (`safety_acquisition_custody`)
+  before deploying. Existing rows
+  remain intact; missing historical membership is not reconstructed from newer
+  pulls. Unreconciled acquisition counts and exports are withheld.
+
+**Migration required.** `20260905000001_portfolio_unknown_price_year.sql`
+(`portfolio_unknown_price_year`) lets reviewed CSV and workbook imports retain
+an unknown cost price year. The importer no longer supplies the current year
+when the source has none. Blank years remain unknown, with a visible warning;
+amounts and source links are preserved. Existing estimates are not rewritten.
+Review price-year defaults from earlier imports before relying on those costs;
+stored metadata cannot establish whether an older default was verified.
+
+**Migration required.** `20260904000001_persist_fars_crashes.sql`,
+`persist_fars_crashes`, allows
+national FARS fatal-crash acquisitions to be saved and attached to project
+reports. It changes the source constraint without deleting crash records.
+FARS does not establish all-severity or serious-injury totals. Safety clears
+previous-area evidence when the study area changes, and reports withhold
+legacy summary prose that contradicts their recorded source limitations.
+
+Saved land-use plan content can now be edited from the plan workbench.
+
+Unsourced land-use legal descriptors no longer show a source-review date.
+Model agreement maps now use the worker's exact rounding without widening the
+validation tolerance. Stored model artifacts download as files rather than
+opening raw JSON in a separate browser tab.
 
 **Migration required.** Run `npm exec -- supabase migration up --linked`
 before deploying. Migrations

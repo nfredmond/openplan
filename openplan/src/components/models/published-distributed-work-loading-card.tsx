@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { PublishedDistributedWorkLoadingStudy } from "@/lib/models/published-distributed-work-loading";
 
+// Browser attachment downloads leave this comparison page in place.
 export function PublishedDistributedWorkLoadingCard({ study }: { study: PublishedDistributedWorkLoadingStudy | null }) {
   const records = study?.records ?? [];
   const geographies = [...new Map(records.map((record) => [record.geographyId, record.geographyName])).entries()];
@@ -26,13 +26,13 @@ export function PublishedDistributedWorkLoadingCard({ study }: { study: Publishe
         Census LODES8 places covered work-trip endpoints at block-supported road access points. Non-work trips keep their prior centroid loading. Missing, zero, unavailable, suppressed, unmapped, and unroutable states stay separate. This checkpoint does not change model defaults or claim calibration or validation.
       </p>
       <div className="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
-        <div><span className="font-semibold">Coverage</span><span className="mt-1 block text-muted-foreground">{geographies.length} counties · {records.length} separate method records</span></div>
+        <div><span className="font-semibold">Coverage</span><span className="mt-1 block text-muted-foreground">{geographies.length} counties · {records.length} separate method results</span></div>
         <div><span className="font-semibold">Method treatment</span><span className="mt-1 block text-muted-foreground">AequilibraE and ActivitySim stay separate. No average or national rescue.</span></div>
         <div><span className="font-semibold">Rollout</span><span className="mt-1 block text-muted-foreground">{study.candidateAdvanced ? "Development gate met; defaults still unchanged" : "Candidate retained and retired"}</span></div>
       </div>
       <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
-        <Link className="underline underline-offset-2" href="/api/models/distributed-work-loading/study-result.json">Download exact study result</Link>
-        <Link className="underline underline-offset-2" href="/api/models/distributed-work-loading/study-report.md">Download study report</Link>
+        <a download className="underline underline-offset-2" href="/api/models/distributed-work-loading/study-result.json">Download exact study result</a>
+        <a download className="underline underline-offset-2" href="/api/models/distributed-work-loading/study-report.md">Download study report</a>
       </div>
       <div className="mt-4 min-w-0 rounded border border-border/70 p-3">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
@@ -55,14 +55,14 @@ export function PublishedDistributedWorkLoadingCard({ study }: { study: Publishe
           </dl>
           <p className="mt-3 text-xs text-muted-foreground">Observed links loaded: {selected.baselineCoverage.loaded ?? 0} before, {selected.candidateCoverage.loaded ?? 0} after. {selected.advanced ? "Development gate met; no default changed." : "County-method candidate failed and was retired."}</p>
           <dl className="mt-3 min-w-0 space-y-2 text-xs">
-            <div><dt className="font-semibold">Work-loading file SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.inputSha256}</dd></div>
-            <div><dt className="font-semibold">Before-output audit SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.auditSha256}</dd></div>
-            <div><dt className="font-semibold">Development comparison SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.comparisonSha256}</dd></div>
+            <div><dt className="font-semibold">Work-loading file</dt><dd className="break-all font-mono text-muted-foreground">{selected.geographyId}-{selected.method}-distributed-work-loading-input-v1.json</dd><dt className="font-semibold">Work-loading file SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.inputSha256}</dd></div>
+            <div><dt className="font-semibold">Before-output audit file</dt><dd className="break-all font-mono text-muted-foreground">{selected.geographyId}-{selected.method}-pre-output-audit-v1.json</dd><dt className="font-semibold">Before-output audit SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.auditSha256}</dd></div>
+            <div><dt className="font-semibold">Development comparison file</dt><dd className="break-all font-mono text-muted-foreground">{selected.geographyId}-{selected.method}-development-comparison-v1.json</dd><dt className="font-semibold">Development comparison SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.comparisonSha256}</dd></div>
           </dl>
           <div className="mt-3 flex flex-wrap gap-3 text-xs font-semibold">
-            <Link className="underline" href={`/api/models/distributed-work-loading/${selected.geographyId}/${selected.method}/distributed-work-loading-input-v1.json`}>Download selected loading file</Link>
-            <Link className="underline" href={`/api/models/distributed-work-loading/${selected.geographyId}/${selected.method}/pre-output-audit-v1.json`}>Download selected before-output audit</Link>
-            <Link className="underline" href={`/api/models/distributed-work-loading/${selected.geographyId}/${selected.method}/development-comparison-v1.json`}>Download selected comparison</Link>
+            <a download className="underline" href={`/api/models/distributed-work-loading/${selected.geographyId}/${selected.method}/distributed-work-loading-input-v1.json`}>Download selected loading file</a>
+            <a download className="underline" href={`/api/models/distributed-work-loading/${selected.geographyId}/${selected.method}/pre-output-audit-v1.json`}>Download selected before-output audit</a>
+            <a download className="underline" href={`/api/models/distributed-work-loading/${selected.geographyId}/${selected.method}/development-comparison-v1.json`}>Download selected comparison</a>
           </div>
         </div> : null}
       </div>

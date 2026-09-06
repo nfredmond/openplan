@@ -3,6 +3,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { canonicalizeActionPayload } from "@/lib/runtime/action-metadata";
+import { loadSafetyCrashEvidence, readSafetyCrashEvidenceIngest, SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION } from "@/lib/safety/crash-evidence";
 import { CORRIDOR_COLUMNS, type ProjectCorridorRow } from "@/lib/cartographic/project-corridor-record";
 import { buildEvidenceDescriptor } from "@/lib/evidence/evidence-descriptor";
 import { buildJurisdictionReadinessEvidenceFile } from "@/lib/jurisdiction-readiness/evidence-bundle";
@@ -263,7 +264,7 @@ export async function loadProjectEvidenceGeneratedFiles(
       .eq("project_id", project.id)
       .order("created_at", { ascending: true }),
     client.from("safety_crash_ingests")
-      .select("id")
+      .select(SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION)
       .eq("workspace_id", project.workspace_id)
       .eq("project_id", project.id)
       .eq("status", "ready")
@@ -343,7 +344,17 @@ export async function loadProjectEvidenceGeneratedFiles(
   }
   const countyRuns = rows(countyRunRead.data);
   const modelingEvidence = await evidenceRows(client, project.workspace_id, ids(modelRuns), ids(countyRuns));
-  const crashIngestIds = ids(rows(crashIngestRead.data));
+  // The packet's geometry comes from the newest project acquisition, not a
+  // union of repeated source pulls. Keep old acquisitions in the evidence record.
+  const newestCrashIngest = rows(crashIngestRead.data).at(-1);
+  const parsedCrashIngest = newestCrashIngest ? readSafetyCrashEvidenceIngest(newestCrashIngest) : null;
+  const crashIngestIds = parsedCrashIngest ? [parsedCrashIngest.id] : [];
+  if (parsedCrashIngest) {
+    const evidence = await loadSafetyCrashEvidence(client, project.workspace_id, [parsedCrashIngest]);
+    if (!evidence.get(parsedCrashIngest.id)?.severityCounts) {
+      throw new ProjectEvidenceBundleError("missing_evidence", "The selected crash acquisition's records cannot be reconciled. Missing records are not zero.");
+    }
+  }
   let crashes: ProjectGeoPackageCrash[] = [];
   if (crashIngestIds.length > 0) {
     const crashRead = await client.from("safety_crashes")

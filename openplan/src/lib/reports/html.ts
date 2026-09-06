@@ -30,10 +30,10 @@ import {
   type PacketGeographyFigure,
   type PacketGeographyInput,
 } from "@/lib/reports/geography-figure";
-import type { SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
+import { SAFETY_KSI_COVERAGE_UNAVAILABLE, separatesSeriousInjuries, type SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
 import type { SafetyKsiConcentration, SafetyKsiEquityTract } from "@/lib/safety/client-types";
 import type { SafetyRoadContextFeature } from "@/lib/safety/road-context";
-import { renderSafetyStreetContextSvg } from "@/lib/safety/street-context-svg";
+import { renderSafetyStreetContextSvg, SAFETY_STREET_CONTEXT_PROJECTION_NOTE } from "@/lib/safety/street-context-svg";
 import { corridorGeojsonSchema } from "@/lib/models/run-launch";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 import { modelingClaimStatusLabel, type ModelingClaimStatus } from "@/lib/models/evidence-backbone";
@@ -47,6 +47,7 @@ import {
 import type { AcceptedSectionNarrative } from "@/lib/reports/narrative-drafts";
 import { formatMoney } from "@/lib/money/format";
 import { scoreValueForPresentation } from "@/lib/analysis/score-presentation";
+import { presentRunSummary } from "@/lib/analysis/run-summary-presentation";
 import type { FrozenReportAerialOrthoSnapshotV1 } from "@/lib/reports/aerial-ortho-evidence";
 import { buildEvidenceDescriptor, type EvidenceDescriptorV1 } from "@/lib/evidence/evidence-descriptor";
 import type { JurisdictionReadinessPayload } from "@/lib/jurisdiction-readiness/payload";
@@ -430,6 +431,10 @@ function runMarkup(run: RunRecord): string {
   const presentedOverall = scoreValueForPresentation(metrics, "overallScore");
   const score = presentedOverall === null ? "Withheld" : `${presentedOverall}/100`;
   const confidence = typeof metrics.confidence === "string" ? titleize(metrics.confidence) : "Unknown";
+  const summary = presentRunSummary(run.summary_text, metrics);
+  const summaryMarkup = summary.withheld
+    ? `<div class="warning-box"><p>${esc(summary.text)}</p></div>`
+    : `<p>${esc(summary.text)}</p>`;
 
   return `<article class="run-card">
     <div class="run-head">
@@ -439,11 +444,12 @@ function runMarkup(run: RunRecord): string {
       </div>
       <span class="pill ${gate.decision === "PASS" ? "pill-pass" : "pill-hold"}">${gate.decision}</span>
     </div>
-    <p>${esc(run.summary_text || "No run summary is saved yet.")}</p>
+    ${summaryMarkup}
     <div class="metrics-grid">
       <div><span class="metric-label">Overall score</span><strong>${esc(score)}</strong></div>
-      <div><span class="metric-label">Confidence</span><strong>${esc(confidence)}</strong></div>
+      <div><span class="metric-label">Recorded run confidence (not validation)</span><strong>${esc(confidence)}</strong></div>
     </div>
+    <p class="meta">The source status below belongs to this linked analysis run. It does not describe the separately selected project collision acquisition in the Reported collisions section.</p>
     <div class="transparency-grid">
       ${transparency
         .map(
@@ -1067,7 +1073,7 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
   }
 
   if (built.kind === "none") {
-    return `<p>No crash data is attached to this project. That is not a statement that no collisions happened here — it is a statement that none have been retrieved into OpenPlan for this project.</p>`;
+    return `<p>No crash acquisition is included in this packet. This does not establish whether the project has crash data or whether collisions occurred. Review the project's Safety acquisitions, select the evidence to cite, save the report, and generate it again.</p>`;
   }
 
   const acquisitionMarkup = built.acquisitions
@@ -1075,7 +1081,7 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
       (acquisition) => `<div class="packet-safety-acquisition">
       <h3>${esc(acquisition.sourceLabel)}</h3>
       <p>Years requested: ${esc(acquisition.years)}</p>
-      <p>${acquisition.publishedThrough
+      <p>${acquisition.resourceUpdateNote ? `${esc(acquisition.resourceUpdateNote)}${acquisition.publishedThroughSourceUrl ? ` <a href="${esc(acquisition.publishedThroughSourceUrl)}">${esc(acquisition.publishedThroughSourceLabel ?? "source file metadata")}</a>` : ""}` : acquisition.publishedThrough
         ? `Source publication cutoff: ${esc(acquisition.publishedThrough)}${acquisition.publishedThroughSourceUrl ? ` — <a href="${esc(acquisition.publishedThroughSourceUrl)}">${esc(acquisition.publishedThroughSourceLabel ?? "source publication metadata")}</a>` : ""}.`
         : "The source supplied no exact publication cutoff; requested and returned years are not substitutes."}</p>
       <dl class="detail-grid">
@@ -1098,8 +1104,13 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
     .join("");
 
   const concentrations = data.safetyKsiConcentrations;
+  const acquisitionCoverage = data.safetyEvidence ?? [];
+  const ksiPresentationSupported = acquisitionCoverage.length > 0
+    && acquisitionCoverage.every(item => separatesSeriousInjuries(item.severityCompleteness));
   const concentrationMarkup = concentrations === undefined
     ? ""
+    : !ksiPresentationSupported
+    ? `<h3>Severe-crash coverage limit</h3><p>${esc(SAFETY_KSI_COVERAGE_UNAVAILABLE)}</p>`
     : concentrations === null
     ? `<h3>Highest observed KSI concentrations</h3><p>The project-linked severe-crash concentration ranking could not be read while this packet was generated. That is a failed calculation, not a finding that no concentration exists.</p>`
     : concentrations.length > 0
@@ -1112,6 +1123,8 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
   const equitySource = data.safetyKsiEquityDemographicSource;
   const equityMarkup = equityTracts === undefined
     ? ""
+    : !ksiPresentationSupported
+      ? `<h3>Community burden screen</h3><p>${esc(SAFETY_KSI_COVERAGE_UNAVAILABLE)}</p>`
     : equityTracts === null
       ? `<h3>Community burden screen</h3><p>The mapped KSI-to-Census-tract comparison could not be read. That is a failed calculation, not a finding that harm is evenly distributed.</p>`
       : equityTracts.length === 0
@@ -1122,7 +1135,7 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
 
   const roadContext = data.safetyRoadContext;
   const parsedProjectGeometry = corridorGeojsonSchema.safeParse(data.geography?.studyArea?.geometry);
-  const streetContextSvg = concentrations && roadContext
+  const streetContextSvg = ksiPresentationSupported && concentrations && roadContext
     ? renderSafetyStreetContextSvg({
         roads: roadContext,
         crashLocations: concentrations.map(
@@ -1134,10 +1147,12 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
   const roadSources = roadContext
     ? Array.from(new Set(roadContext.map((road) => `${road.sourceLabel} ${road.vintage}`)))
     : [];
-  const streetContextMarkup = roadContext === null
+  const streetContextMarkup = !ksiPresentationSupported
+    ? `<h3>Printable street context</h3><p>The combined fatal and serious-injury concentration map is withheld because source severity coverage is incomplete or unknown. This is not a finding that mapped crashes are absent.</p>`
+    : roadContext === null
     ? `<h3>Printable street context</h3><p>Cached road evidence could not be read. Road identity and street context are unavailable, not absent.</p>`
     : streetContextSvg
-      ? `<h3>Printable street context</h3>${streetContextSvg}<p><strong>Road source:</strong> ${roadSources.length > 0 ? roadSources.map(esc).join("; ") : "Road identity unavailable"}. Red points are ranked KSI concentration centers; the dashed green line is the project area when available. North arrow and scale are derived from the frozen vector extent. Coverage is limited to cached named TIGER/Line or OpenStreetMap roads attached to this project; no paid or live tile service was used.</p>`
+      ? `<h3>Printable street context</h3>${streetContextSvg}<p>${esc(SAFETY_STREET_CONTEXT_PROJECTION_NOTE)}</p><p><strong>Road source:</strong> ${roadSources.length > 0 ? roadSources.map(esc).join("; ") : "Road identity unavailable"}. Red points are ranked KSI concentration centers; the dashed green line is the project area when available. North arrow and any scale bar are derived from the frozen vector extent. Coverage is limited to cached named TIGER/Line or OpenStreetMap roads attached to this project; no paid or live tile service was used.</p>`
       : `<h3>Printable street context</h3><p>No project-linked crash location and registered cached road geometry were available to draw. Road identity is unavailable; coordinates above remain the source locations.</p>`;
 
   return acquisitionMarkup + concentrationMarkup + streetContextMarkup + equityMarkup;

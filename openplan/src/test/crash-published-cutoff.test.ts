@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { buildCrashSourceSnapshot, describeCrashSafety } from "@/lib/data-sources/crashes";
+import { buildCrashSourceSnapshot, describeCrashSafety, summarizeCrashFetch } from "@/lib/data-sources/crashes";
+import { farsAdapter } from "@/lib/safety/sources/fars";
 import { buildSafetyCrashEvidence, readSafetyCrashEvidenceIngest } from "@/lib/safety/crash-evidence";
+import { readCrashPublicationEvidence } from "@/lib/safety/publication-evidence";
 
 const observed = {
   observed: true as const,
@@ -27,6 +29,65 @@ const observed = {
 };
 
 describe("exact crash-source publication cutoffs", () => {
+  it("can reread legacy evidence without losing its update date or changing the input", () => {
+    const provenance = { label: "Resource last-modified metadata" };
+    const first = readCrashPublicationEvidence("2026-09-05", provenance);
+    const second = readCrashPublicationEvidence(first.publishedThrough, first.provenance);
+    expect(second).toEqual(first);
+    expect(second.resourceUpdateNote).toContain("Recorded file update: 2026-09-05");
+    expect(provenance).toEqual({ label: "Resource last-modified metadata" });
+  });
+
+  it("retains source resource updates in Explore without presenting a cutoff", () => {
+    const resourceUpdates = {
+      basis: "resource_updates" as const,
+      sourceUrl: "https://example.org/crashes",
+      label: "Resource updates",
+      retrievedAt: "2026-09-05T00:00:00Z",
+      resources: [{ year: 2022, resourceId: "year-2022", lastModified: "2026-09-04T12:00:00Z" }],
+    };
+    const summary = summarizeCrashFetch(farsAdapter, {
+      records: [], matchedTotal: 0, geocodedTotal: 0, yearsCovered: [2022], truncated: false, resourceUpdates,
+    }, { minLon: 1, maxLon: 2, minLat: 1, maxLat: 2 }, [2022]);
+    const snapshot = buildCrashSourceSnapshot(summary, "2026-09-05T00:00:00Z");
+    expect(snapshot.publishedThrough).toBeUndefined();
+    expect(snapshot.sourceResourceUpdates).toEqual(resourceUpdates);
+    expect(snapshot.note).toContain("2022: 2026-09-04T12:00:00Z");
+    expect(snapshot.note).toContain("not a crash-coverage cutoff");
+  });
+
+  it("does not revive a legacy resource update when rebuilding an analysis snapshot", () => {
+    const legacy = { ...observed, publishedCutoff: {
+      publishedThrough: "2026-09-05",
+      provenance: { basis: "source_metadata" as const, label: "Resource last-modified metadata", sourceUrl: "https://example.org/data", retrievedAt: "2026-09-05T00:00:00Z" },
+    } };
+    const snapshot = buildCrashSourceSnapshot(legacy, "2026-09-05T00:00:00Z");
+    expect(snapshot.publishedThrough).toBeUndefined();
+    expect(snapshot.sourceResourceUpdates).toMatchObject({ legacyPublishedThrough: "2026-09-05" });
+    expect(describeCrashSafety(legacy)).not.toContain("Source publication cutoff: 2026-09-05");
+    expect(describeCrashSafety(legacy)).toContain("not a crash-coverage cutoff");
+  });
+
+  it("withholds a legacy last-modified date as coverage while retaining its evidence", () => {
+    const row = {
+      id: "legacy-resource-update",
+      status: "ready",
+      published_through: "2026-09-05",
+      published_through_provenance: {
+        basis: "source_metadata",
+        label: "Yearly crash-resource last-modified metadata",
+        sourceUrl: "https://example.org/crashes",
+      },
+    };
+    const ingest = readSafetyCrashEvidenceIngest(row)!;
+    const evidence = buildSafetyCrashEvidence(ingest, { severity: null, role: null });
+    expect(evidence.publishedThrough).toBeNull();
+    expect(evidence.caveats.join(" ")).toContain("2026-09-05");
+    expect(evidence.caveats.join(" ")).toContain("not a crash-coverage cutoff");
+    expect(evidence.caveats.join(" ")).not.toContain("published through 2026-09-05");
+    expect(row.published_through).toBe("2026-09-05");
+  });
+
   it("carries a source-published cutoff and provenance into the analysis snapshot", () => {
     const snapshot = buildCrashSourceSnapshot({
       ...observed,

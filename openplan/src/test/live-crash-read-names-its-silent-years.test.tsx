@@ -28,12 +28,21 @@
  */
 
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { SafetyWorkspace, splitLiveReadYears } from "@/components/safety/safety-workspace";
 import { ingestCrashesForStudyArea } from "@/lib/safety/ingest";
 import { recentCrashYears } from "@/lib/safety/crash-years";
 import type { CrashRecord } from "@/lib/safety/sources/types";
 import { findReadOnlyOnlyStudyArea } from "./helpers/crash-coverage-probe";
+import { farsAdapter } from "@/lib/safety/sources/fars";
+
+beforeAll(() => {
+  farsAdapter.persistable = false;
+});
+
+afterAll(() => {
+  farsAdapter.persistable = true;
+});
 
 vi.mock("@/components/safety/safety-crash-map", () => ({
   // The real module also exports the z-order anchor the workspace hands to

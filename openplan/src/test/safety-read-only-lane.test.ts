@@ -17,16 +17,28 @@
  * cannot produce.
  */
 
-import { describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { ingestCrashesForStudyArea } from "@/lib/safety/ingest";
 import { readCrashesForStudyArea } from "@/lib/safety/read-only-lane";
 import { CRASH_SOURCE_ADAPTERS, resolveCrashSource } from "@/lib/safety/sources/registry";
 import { CrashSourceUnavailableError, type CrashRecord } from "@/lib/safety/sources/types";
+import { farsAdapter } from "@/lib/safety/sources/fars";
 import {
   findReadOnlyOnlyStudyArea,
   findStorableStudyArea,
   findUncoveredStudyArea,
 } from "./helpers/crash-coverage-probe";
+
+// No production adapter is read-only after FARS persistence. Keep this generic
+// fallback lane fail-capable by simulating the next registered source while its
+// database migration is pending, then restore the production descriptor.
+beforeAll(() => {
+  farsAdapter.persistable = false;
+});
+
+afterAll(() => {
+  farsAdapter.persistable = true;
+});
 
 function record(overrides: Partial<CrashRecord> = {}): CrashRecord {
   return {

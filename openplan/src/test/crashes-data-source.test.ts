@@ -130,6 +130,15 @@ describe("fetchCrashesForBbox — the single crash lane", () => {
 
     expect(result.observed).toBe(true);
     expect(result.source).toBe("ccrs-ca");
+    expect(result.publishedCutoff).toBeUndefined();
+    expect(result.sourceSnapshot.sourceResourceUpdates).toMatchObject({
+      basis: "resource_updates",
+      resources: [
+        { resourceId: "res-2025", year: 2025, lastModified: null },
+        { resourceId: "res-2024", year: 2024, lastModified: null },
+      ],
+    });
+    expect(result.narrativeLine).toContain("not a crash-coverage cutoff");
     expect(result.totalFatalCrashes).toBe(1);
     expect(result.totalFatalities).toBe(1);
     expect(result.pedestrianFatalities).toBe(1);
@@ -179,6 +188,8 @@ describe("fetchCrashesForBbox — the single crash lane", () => {
 
     expect(result.observed).toBe(true);
     expect(result.source).toBe("fars-national");
+    expect(result.sourceSnapshot.publishedThrough).toBe("2024-12-31");
+    expect(result.narrativeLine).toContain("Source publication cutoff: 2024-12-31");
     expect(result.totalFatalCrashes).toBe(1);
     expect(result.totalFatalities).toBe(2);
     expect(result.pedestrianFatalities).toBe(1);

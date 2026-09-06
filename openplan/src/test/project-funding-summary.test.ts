@@ -1,11 +1,44 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildProjectFundingSnapshot,
   buildProjectFundingStackSummary,
   projectFundingReimbursementTone,
   projectFundingStackTone,
 } from "@/lib/projects/funding";
 
 describe("project funding stack summary", () => {
+  it("does not call an unrelated project edit a funding-source update", () => {
+    const snapshot = buildProjectFundingSnapshot({
+      profile: null,
+      awards: [],
+      opportunities: [],
+      invoices: [],
+      capturedAt: "2026-09-04T23:20:38.869Z",
+      projectUpdatedAt: "2026-09-04T23:20:39.661Z",
+    });
+
+    expect(snapshot.projectUpdatedAt).toBe("2026-09-04T23:20:39.661Z");
+    expect(snapshot.latestSourceUpdatedAt).toBeNull();
+  });
+
+  it("still reports the latest actual funding-row update", () => {
+    const snapshot = buildProjectFundingSnapshot({
+      profile: {
+        funding_need_amount: 1_000_000,
+        updated_at: "2026-09-04T22:00:00.000Z",
+      },
+      awards: [
+        {
+          awarded_amount: 250_000,
+          updated_at: "2026-09-04T22:30:00.000Z",
+        },
+      ],
+      projectUpdatedAt: "2026-09-04T23:20:39.661Z",
+    });
+
+    expect(snapshot.latestSourceUpdatedAt).toBe("2026-09-04T22:30:00.000Z");
+  });
+
   it("marks a project funded when awards meet the target need", () => {
     const summary = buildProjectFundingStackSummary(
       { funding_need_amount: 2_000_000, local_match_need_amount: 250_000 },

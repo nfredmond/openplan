@@ -1,5 +1,10 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import type { AnchorHTMLAttributes } from "react";
+
+vi.mock("next/link", () => ({
+  default: (props: AnchorHTMLAttributes<HTMLAnchorElement>) => <a {...props} data-page-navigation />,
+}));
 
 import { PublishedStructuralDemandDiagnosisCard } from "@/components/models/published-structural-demand-diagnosis-card";
 
@@ -24,5 +29,9 @@ describe("PublishedStructuralDemandDiagnosisCard", () => {
     fireEvent.click(screen.getByRole("button", { name: "ActivitySim" }));
     expect(screen.getByTestId("selected-structural-demand-check")).toHaveTextContent("activitysim");
     expect(screen.getByText("b".repeat(64))).toHaveClass("break-all");
+    for (const link of screen.getAllByRole("link")) {
+      expect(link).toHaveAttribute("download");
+      expect(link).not.toHaveAttribute("data-page-navigation");
+    }
   });
 });

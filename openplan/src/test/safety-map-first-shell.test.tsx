@@ -216,8 +216,16 @@ describe("the map-first shell", () => {
 
 describe("every caveat survived the move", () => {
   it("carries the whole disclosure set for a stored fatality-census retrieval", async () => {
-    renderWorkspace({ latestIngest: ingest() });
-    fireEvent.click(screen.getByText("pick-a-county"));
+    renderWorkspace({ latestIngest: ingest(), studyArea: {
+      corridorText: JSON.stringify({
+        type: "Polygon",
+        coordinates: [[[-83.2, 39.8], [-82.8, 39.8], [-82.8, 40.1], [-83.2, 40.1], [-83.2, 39.8]]],
+      }),
+      place: null,
+      label: "Saved study area",
+      origin: "project",
+      originLabel: "Saved project",
+    } });
 
     // The source, and what it covers.
     //

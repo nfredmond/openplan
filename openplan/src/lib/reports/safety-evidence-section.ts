@@ -1,4 +1,5 @@
-import type { SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
+import { separatesSeriousInjuries, type SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
+import { readCrashPublicationEvidence } from "@/lib/safety/publication-evidence";
 
 /**
  * The packet's safety section — the crash evidence a board is entitled to see.
@@ -18,8 +19,8 @@ import type { SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
  *      separated from its caveat is the one that gets quoted.
  *   2. NULL IS NOT ZERO. A source that cannot separate serious injuries reports
  *      `ksi: null`, and unreadable counts report `severityCounts: null`. Both
- *      say so. Printing 0 killed or seriously injured because nobody could
- *      count is the most flattering possible reading and the least defensible.
+ *      say so. Printing 0 severe crashes because nobody could count is the most
+ *      flattering possible reading and the least defensible.
  *   3. NO SILENT TRUNCATION. A retrieval that stopped at the record cap makes
  *      every figure a floor, and the section says the word "floor".
  *   4. THE UNGEOCODED GAP IS STATED. Reported and mapped are different numbers;
@@ -46,6 +47,7 @@ export type PacketSafetyAcquisition = {
   caveats: string[];
   citation: string;
   publishedThrough: string | null;
+  resourceUpdateNote: string | null;
   publishedThroughSourceUrl: string | null;
   publishedThroughSourceLabel: string | null;
 };
@@ -63,8 +65,8 @@ function figure(label: string, value: number | null, absentBecause: string): Pac
  * Turn what the safety module knows into what the packet prints.
  *
  * Pure, so the decisions above can be tested without a database or a PDF. Pass
- * `null` for a read that FAILED — distinct from an empty list, which means the
- * project genuinely has no crash data attached.
+ * `null` for a read that FAILED. An empty list means this packet includes no
+ * acquisitions; it cannot establish whether the project has crash data.
  */
 export function buildPacketSafetyEvidence(
   evidence: readonly SafetyCrashEvidence[] | null
@@ -73,7 +75,9 @@ export function buildPacketSafetyEvidence(
   if (evidence.length === 0) return { kind: "none" };
 
   const acquisitions = evidence.map((item): PacketSafetyAcquisition => {
+    const publication = readCrashPublicationEvidence(item.publishedThrough, item.publishedThroughProvenance);
     const counts = item.severityCounts;
+    const seriousInjuriesCovered = separatesSeriousInjuries(item.severityCompleteness);
     const figures: PacketSafetyFigure[] = [
       figure("Reported collisions", item.reportedTotal, "The source returned no count."),
       figure(
@@ -82,19 +86,21 @@ export function buildPacketSafetyEvidence(
         "No collisions carried coordinates, so none could be placed."
       ),
       figure(
-        "Killed or seriously injured",
-        item.ksi,
-        "This source does not separate suspected serious injuries, so a KSI figure cannot be formed from it."
+        "Fatal or serious-injury crashes",
+        seriousInjuriesCovered ? item.ksi : null,
+        "This source does not separate crashes involving suspected serious injuries, so a severe-crash count cannot be formed from it."
       ),
       figure(
-        "Fatal",
+        "Fatal crashes",
         counts ? (counts.fatal ?? null) : null,
         "The severity breakdown could not be read."
       ),
       figure(
-        "Serious injury",
-        counts ? (counts.severe_injury ?? null) : null,
-        "The severity breakdown could not be read."
+        "Serious-injury crashes",
+        seriousInjuriesCovered && counts ? (counts.severe_injury ?? null) : null,
+        seriousInjuriesCovered
+          ? "The severity breakdown could not be read."
+          : "This source does not separate suspected serious injuries, or its severity coverage was not recorded. Missing coverage is not zero."
       ),
       figure(
         "No casualty detail recorded",
@@ -124,7 +130,8 @@ export function buildPacketSafetyEvidence(
       figures,
       caveats,
       citation: item.citationText,
-      publishedThrough: item.publishedThrough,
+      publishedThrough: publication.publishedThrough,
+      resourceUpdateNote: publication.resourceUpdateNote,
       publishedThroughSourceUrl:
         typeof item.publishedThroughProvenance?.sourceUrl === "string" &&
         /^https?:\/\//i.test(item.publishedThroughProvenance.sourceUrl)

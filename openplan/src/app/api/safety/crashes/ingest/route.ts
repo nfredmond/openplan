@@ -9,6 +9,7 @@ import {
 } from "@/lib/workspaces/membership";
 import { ingestCrashesForStudyArea } from "@/lib/safety/ingest";
 import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
+import { studyAreaBboxesMatch } from "@/lib/models/study-area";
 
 // Paging a county-scale crash extract exceeds the default budget.
 export const runtime = "nodejs";
@@ -16,8 +17,6 @@ export const maxDuration = 60;
 
 /** Hard ceiling regardless of what the caller asks for. */
 const MAX_RECORDS_CEILING = 50_000;
-const PROJECT_BBOX_TOLERANCE = 1e-6;
-
 type ProjectStudyAreaBounds = {
   place_min_lon: number | null;
   place_min_lat: number | null;
@@ -38,9 +37,12 @@ function bboxMatchesProjectStudyArea(
   if (!expected.every((value): value is number => typeof value === "number" && Number.isFinite(value))) {
     return false;
   }
-  return [bbox.minLon, bbox.minLat, bbox.maxLon, bbox.maxLat].every(
-    (value, index) => Math.abs(value - expected[index]) <= PROJECT_BBOX_TOLERANCE,
-  );
+  return studyAreaBboxesMatch(bbox, {
+    minLon: expected[0],
+    minLat: expected[1],
+    maxLon: expected[2],
+    maxLat: expected[3],
+  });
 }
 
 const ingestSchema = z.object({

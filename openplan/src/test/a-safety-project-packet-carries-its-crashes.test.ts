@@ -41,7 +41,7 @@ function evidence(overrides: Partial<SafetyCrashEvidence> = {}): SafetyCrashEvid
     ingestId: "ing-1",
     projectId: "p1",
     status: "succeeded",
-    severityCompleteness: "complete",
+    severityCompleteness: "kabco_full",
     truncated: false,
     sourceLabel: "Example crash source",
     attribution: "Example agency",
@@ -83,8 +83,9 @@ describe("a safety project's packet carries its crashes", () => {
     if (built.kind !== "present") return;
     const [acquisition] = built.acquisitions;
 
-    const ksi = acquisition.figures.find((f) => /killed or seriously/i.test(f.label));
+    const ksi = acquisition.figures.find((f) => /fatal or serious-injury crashes/i.test(f.label));
     expect(ksi?.value).toBe(15);
+    expect(acquisition.figures.some((f) => /killed or seriously injured/i.test(f.label))).toBe(false);
     expect(acquisition.caveats.length).toBeGreaterThan(0);
     expect(acquisition.citation).toContain("Example crash source");
   });
@@ -109,7 +110,7 @@ describe("a safety project's packet carries its crashes", () => {
   it("prints no KSI figure when the source cannot separate serious injuries", () => {
     const built = buildPacketSafetyEvidence([evidence({ ksi: null })]);
     if (built.kind !== "present") throw new Error("expected present");
-    const ksi = built.acquisitions[0].figures.find((f) => /killed or seriously/i.test(f.label));
+    const ksi = built.acquisitions[0].figures.find((f) => /fatal or serious-injury crashes/i.test(f.label));
     expect(ksi?.value).toBeNull();
     // The reason travels with the absence — a blank cell teaches nobody.
     expect(ksi?.absentBecause).toMatch(/does not separate/i);
@@ -118,9 +119,20 @@ describe("a safety project's packet carries its crashes", () => {
   it("prints no severity numbers when the counts could not be read", () => {
     const built = buildPacketSafetyEvidence([evidence({ severityCounts: null, unclassifiedCount: null })]);
     if (built.kind !== "present") throw new Error("expected present");
-    const fatal = built.acquisitions[0].figures.find((f) => f.label === "Fatal");
+    const fatal = built.acquisitions[0].figures.find((f) => f.label === "Fatal crashes");
     expect(fatal?.value).toBeNull();
     expect(fatal?.absentBecause).toMatch(/could not be read/i);
+  });
+
+  it.each(["fatal_only", "fatal_injury_only", "", "unknown"])("does not print unsupported serious-injury figures for %s", (severityCompleteness) => {
+    const built = buildPacketSafetyEvidence([evidence({ severityCompleteness })]);
+    if (built.kind !== "present") throw new Error("expected present");
+    for (const label of ["Serious-injury crashes", "Fatal or serious-injury crashes"]) {
+      const figure = built.acquisitions[0].figures.find(item => item.label === label);
+      expect(figure?.value).toBeNull();
+      expect(figure?.absentBecause).toMatch(/does not separate/i);
+    }
+    expect(built.acquisitions[0].figures.find(item => item.label === "Fatal crashes")?.value).toBe(4);
   });
 
   it("says the figures are a floor when the retrieval was truncated", () => {
@@ -227,6 +239,21 @@ describe("a safety project's packet carries its crashes", () => {
       expect(html).toContain("https://www.nhtsa.gov/final-annual-file");
     });
 
+    it("prints a legacy resource update as metadata, never as coverage", () => {
+      const html = buildReportHtml(packetData([evidence({
+        publishedThrough: "2026-09-05",
+        publishedThroughProvenance: {
+          basis: "source_metadata",
+          label: "Yearly resource last-modified metadata",
+          sourceUrl: "https://example.org/crash-files",
+        },
+      })]));
+      expect(html).toContain("Recorded file update: 2026-09-05");
+      expect(html).toContain("not a crash-coverage cutoff");
+      expect(html).toContain("https://example.org/crash-files");
+      expect(html).not.toContain("Source publication cutoff: 2026-09-05");
+    });
+
     it("prints the sourced project estimate without calling it the management budget", () => {
       const base = packetData([evidence()]);
       const html = buildReportHtml({
@@ -298,7 +325,29 @@ describe("a safety project's packet carries its crashes", () => {
       expect(html).toContain("Nearest named road: <strong>State Route 49</strong>");
       expect(html).toContain("Printable street context");
       expect(html).toContain("Local street context");
+      expect(html).toContain("<p>Local latitude-adjusted drawing; distances are approximate, not survey-grade.");
       expect(html).toContain("no paid or live tile service was used");
+    });
+
+    it.each(["fatal_only", "fatal_injury_only", "", "unknown"])("withholds packet rankings if any acquisition has %s coverage", (severityCompleteness) => {
+      const html = buildReportHtml({
+        ...packetData([evidence(), evidence({ ingestId: "partial", severityCompleteness })]),
+        safetyKsiConcentrations: [{ rank: 1, longitude: -123.21, latitude: 39.15,
+          crashCount: 7, fatalCrashCount: 7, seriousInjuryCrashCount: 0, radiusMeters: 150 }],
+        safetyKsiEquityTracts: [{ rank: 1, geoid: "fixture", tractName: "Fixture tract",
+          ksiCrashCount: 7, fatalCrashCount: 7, seriousInjuryCrashCount: 0,
+          population: 3500, ksiPer100k: 200, pctPoverty: 24, pctNonwhite: 61,
+          pctZeroVehicle: 9, areaMedianPctPoverty: 16, areaMedianPctNonwhite: 48,
+          areaMedianPctZeroVehicle: 7 }],
+        safetyRoadContext: [{ id: "road", name: "Fixture Road", geometry: { type: "LineString",
+          coordinates: [[-123.21, 39.14], [-123.21, 39.16]] },
+          sourceId: "osm-network-cache", sourceLabel: "Fixture roads", vintage: "2023" }],
+      });
+      expect(html).toContain("KSI rankings and community burden are withheld");
+      expect(html).not.toContain("7 KSI crashes");
+      expect(html).not.toContain("0 serious injury");
+      expect(html).not.toContain("Red points are ranked KSI concentration centers");
+      expect(html).not.toContain("No pair of mapped fatal or serious-injury");
     });
 
     it("uses registered crash-source coverage when an imported project's ISO stamp is absent", () => {
@@ -336,12 +385,53 @@ describe("a safety project's packet carries its crashes", () => {
 
     it("says why a figure is absent instead of printing a zero", () => {
       const html = buildReportHtml(packetData([evidence({ ksi: null })]));
-      expect(html).toMatch(/does not separate suspected serious injuries/i);
+      expect(html).toMatch(/does not separate crashes involving suspected serious injuries/i);
     });
 
-    it("tells a project with no crash data apart from a failed read", () => {
-      expect(buildReportHtml(packetData([]))).toMatch(/no crash data is attached/i);
+    it("distinguishes an empty packet selection from a failed read without denying project evidence", () => {
+      const html = buildReportHtml(packetData([]));
+      expect(html).toContain("No crash acquisition is included in this packet.");
+      expect(html).toContain("This does not establish whether the project has crash data or whether collisions occurred.");
+      expect(html).not.toContain("No crash data is attached to this project.");
+      expect(html).not.toContain("none have been retrieved");
       expect(buildReportHtml(packetData(null))).toMatch(/could not be read/i);
+    });
+
+    it("withholds a contradictory legacy run summary while preserving its separate source record", () => {
+      const base = packetData([evidence()]);
+      const html = buildReportHtml({
+        ...base,
+        sections: [{
+          id: "run-section",
+          section_key: "run_summaries",
+          title: "Run summaries",
+          enabled: true,
+          sort_order: 0,
+          config_json: {},
+        }],
+        runs: [{
+          id: "legacy-run",
+          title: "Earlier corridor screen",
+          query_text: "Screen the corridor",
+          summary_text: "No crash figures were estimated. Overall: 32/100 (confidence: medium).",
+          ai_interpretation: null,
+          metrics: {
+            overallScore: 32,
+            safetyScore: 40,
+            confidence: "medium",
+            dataQuality: { censusAvailable: true, transitDataAvailable: true, crashDataAvailable: false },
+            sourceSnapshots: { crashes: { source: "fars-estimate" } },
+          },
+          created_at: "2026-01-01T00:00:00.000Z",
+        }],
+      });
+
+      expect(html).toContain("Saved run summary withheld");
+      expect(html).not.toContain("Overall: 32/100");
+      expect(html).not.toContain("No crash figures were estimated");
+      expect(html).toContain("Crash Safety Data");
+      expect(html).toContain("belongs to this linked analysis run");
+      expect(html).toContain("Reported collisions");
     });
   });
 });

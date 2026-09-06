@@ -59,14 +59,14 @@ export const CRASH_SEVERITIES = ["fatal", "severe_injury", "injury", "pdo", "unk
 export type CrashSeverity = (typeof CRASH_SEVERITIES)[number];
 
 /**
- * The bands that COMPOSE the KSI measure, declared once.
+ * The bands that identify KSI-classified crash records, declared once.
  *
- * KSI — killed or seriously injured — is what SS4A and HSIP score a project on,
- * so it is the number that ends up in a funding application. Its composition was
- * previously written out at each place that computed it (`fatal + severe_injury`
- * in the evidence builder, again in the Safety workbench), which is the shape
- * this file exists to remove: a third band added to the measure would have had
- * to be found by hand in every one of them.
+ * This vocabulary classifies each crash by its most severe reported outcome. It
+ * does not count people killed or injured. The composition was previously
+ * written out at each place that computed it (`fatal + severe_injury` in the
+ * evidence builder, again in the Safety workbench), which is the shape this file
+ * exists to remove: a third band added to the classification would have had to
+ * be found by hand in every one of them.
  *
  * It is deliberately NOT "every band except pdo". `unknown` is a collision the
  * source reported while supplying no casualty count at all — it may or may not

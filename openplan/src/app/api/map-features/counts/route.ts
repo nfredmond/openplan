@@ -139,7 +139,7 @@ export async function GET(request: NextRequest) {
           .not("latitude", "is", null)
           .not("longitude", "is", null),
         supabase
-          .from("safety_crashes")
+          .from("safety_crashes_latest")
           .select("id", { count: "exact", head: true })
           .eq("workspace_id", workspaceId),
         // Counted so the crash chip can tell "none acquired" from "acquired

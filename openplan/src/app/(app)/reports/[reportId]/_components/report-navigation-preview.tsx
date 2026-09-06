@@ -4,6 +4,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { formatDateTime } from "@/lib/reports/catalog";
 import type { EngagementCampaignLinkRow, ReportArtifact } from "./_types";
+import { ReportArtifactPreview } from "./report-artifact-preview";
 
 type Props = {
   reportId: string;
@@ -41,7 +42,10 @@ export function ReportNavigationPreview({
         <MetaList className="mt-4">
           {projectId ? (
             <MetaItem>
-              <Link href={`/projects/${projectId}`} className="inline-flex items-center gap-2 transition hover:text-primary">
+              <Link
+                href={`/projects/${projectId}`}
+                className="inline-flex items-center gap-2 transition hover:text-primary"
+              >
                 <FileOutput className="h-4 w-4" />
                 Open project
               </Link>
@@ -49,7 +53,10 @@ export function ReportNavigationPreview({
           ) : null}
           {projectId ? (
             <MetaItem>
-              <Link href={`/grants?focusProjectId=${projectId}#grants-awards-reimbursement`} className="inline-flex items-center gap-2 transition hover:text-primary">
+              <Link
+                href={`/grants?focusProjectId=${projectId}#grants-awards-reimbursement`}
+                className="inline-flex items-center gap-2 transition hover:text-primary"
+              >
                 <Link2 className="h-4 w-4" />
                 Open grants lane for this project
               </Link>
@@ -57,7 +64,10 @@ export function ReportNavigationPreview({
           ) : null}
           {engagementCampaign ? (
             <MetaItem>
-              <Link href={`/engagement/${engagementCampaign.id}`} className="inline-flex items-center gap-2 transition hover:text-primary">
+              <Link
+                href={`/engagement/${engagementCampaign.id}`}
+                className="inline-flex items-center gap-2 transition hover:text-primary"
+              >
                 <Link2 className="h-4 w-4" />
                 Open engagement campaign
               </Link>
@@ -65,14 +75,20 @@ export function ReportNavigationPreview({
           ) : null}
           {engagementPublicHref ? (
             <MetaItem>
-              <Link href={engagementPublicHref} className="inline-flex items-center gap-2 transition hover:text-primary">
+              <Link
+                href={engagementPublicHref}
+                className="inline-flex items-center gap-2 transition hover:text-primary"
+              >
                 <Link2 className="h-4 w-4" />
                 Open public engagement page
               </Link>
             </MetaItem>
           ) : null}
           <MetaItem>
-            <Link href="/reports" className="inline-flex items-center gap-2 transition hover:text-primary">
+            <Link
+              href="/reports"
+              className="inline-flex items-center gap-2 transition hover:text-primary"
+            >
               <ScrollText className="h-4 w-4" />
               Back to catalog
             </Link>
@@ -101,23 +117,21 @@ export function ReportNavigationPreview({
                   Download {latestArtifact.artifact_kind.toUpperCase()}
                 </a>
               ) : null}
-              {latestArtifact ? <StatusBadge tone="info">{formatDateTime(latestArtifact.generated_at)}</StatusBadge> : null}
+              {latestArtifact ? (
+                <StatusBadge tone="info">
+                  {formatDateTime(latestArtifact.generated_at)}
+                </StatusBadge>
+              ) : null}
             </div>
           </div>
           {latestHtml ? (
             <div className="mt-5 overflow-hidden rounded-[0.5rem] border border-border/70 bg-white shadow-inner">
-              <iframe
-                title="Latest report artifact preview"
-                className="h-[900px] w-full"
-                // Scripts, forms, popups, and top navigation remain disabled.
-                // Same-origin is needed only so private frozen-image requests can
-                // carry the planner's session cookie to their authenticated route.
-                sandbox="allow-same-origin"
-                srcDoc={latestHtml}
-              />
+              <ReportArtifactPreview html={latestHtml} />
             </div>
           ) : (
-            <p className="mt-4 text-sm text-muted-foreground">This file has no in-page preview. Download it to read the report.</p>
+            <p className="mt-4 text-sm text-muted-foreground">
+              This file has no in-page preview. Download it to read the report.
+            </p>
           )}
         </article>
       ) : null}

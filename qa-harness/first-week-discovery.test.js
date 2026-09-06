@@ -12,6 +12,7 @@ const { spawnSync } = require('node:child_process');
 
 const {
   archiveAttempt,
+  buildPrompt,
   buildCodexArgs,
   buildJobManifest,
   buildNewRunManifest,
@@ -21,10 +22,12 @@ const {
   codexContractViolation,
   currentBuildIdentity,
   inspectBrowserConsole,
+  mcpConfig,
   loadJobs,
   parseAgentSession,
   parseArgs,
   readFindings,
+  readJobExecution,
   RUNS_DIR,
   shouldResumeJob,
   verifyRun,
@@ -55,7 +58,7 @@ function writeCompletedJob(dir, { browserRecords = true } = {}) {
   );
   fs.writeFileSync(
     path.join(dir, 'execution.json'),
-    JSON.stringify({ status: 'completed', reason: 'The agent completed and left a findings report.' }),
+    JSON.stringify({ status: 'completed', reason: 'The agent completed and left a findings report.', exitCode: 0, signal: null }),
   );
   if (browserRecords) {
     fs.mkdirSync(path.join(dir, 'browser'), { recursive: true });
@@ -98,7 +101,7 @@ check('product page text that mentions a rate limit is not agent quota evidence'
     item: { type: 'mcp_tool_call', result: { text: 'Workspace AI rate limit protects operator spend.' } },
   });
   const result = classifyJobExecution({
-    processResult: { code: 0, stdout },
+    processResult: { code: 0, stdout: `${stdout}\n${JSON.stringify({ type: 'turn.completed' })}` },
     session: null,
     reportPresent: true,
   });
@@ -170,6 +173,36 @@ check('resume skips a reached outcome and retries blocked or partly reached jobs
   );
   assert.strictEqual(shouldResumeJob(partly), true);
 });
+
+for (const [label, record] of [
+  ['missing', null],
+  ['malformed', '{'],
+  ['empty', '{}'],
+  ['missing exit code', JSON.stringify({ status: 'completed' })],
+  ['null exit code', JSON.stringify({ status: 'completed', exitCode: null })],
+  ['nonzero exit code', JSON.stringify({ status: 'completed', exitCode: 1 })],
+  ['termination signal', JSON.stringify({ status: 'completed', exitCode: 0, signal: 'SIGTERM' })],
+  ['stale failure with termination signal', JSON.stringify({ status: 'failed', exitCode: 0, signal: 'SIGTERM' })],
+  ['stale quota with termination signal', JSON.stringify({ status: 'blocked_quota', exitCode: 0, signal: 'SIGTERM' })],
+]) {
+  check(`an early yes report with ${label} execution custody cannot pass or be skipped`, () => {
+    const root = jobDir();
+    const dir = path.join(root, '01-first-day-setup');
+    fs.mkdirSync(path.join(dir, 'agent'), { recursive: true });
+    fs.writeFileSync(path.join(dir, 'agent', 'findings.json'), JSON.stringify({ outcomeReached: 'yes', findings: [] }));
+    if (record !== null) fs.writeFileSync(path.join(dir, 'execution.json'), record);
+    const execution = readJobExecution(dir);
+    assert.strictEqual(execution.status, 'blocked_execution_record');
+    assert.match(execution.reason, /recorded clean process exit/);
+    assert.strictEqual(classifyJobOutcome({ execution, report: { outcomeReached: 'yes' } }).status, 'inconclusive');
+    assert.strictEqual(shouldResumeJob(dir), true);
+    const result = verifyRun(root, 'http://localhost:3200');
+    assert.strictEqual(result.completed, 0);
+    assert.strictEqual(result.blocked, 1);
+    assert.strictEqual(result.inconclusive, 1);
+    assert.strictEqual(result.outcomeGatePassed, false);
+  });
+}
 
 check('resuming archives the old attempt without deleting any evidence', () => {
   const dir = jobDir();
@@ -390,6 +423,40 @@ check('verification repairs a recorded generic failure when stdout proves the jo
   assert.match(fs.readFileSync(result.summaryPath, 'utf8'), /blocked_quota/);
 });
 
+check('missing browser tools are resumable infrastructure failure, not a product outcome', () => {
+  const stdout = [
+    JSON.stringify({
+      type: 'item.completed',
+      item: {
+        type: 'agent_message',
+        text: 'Blocked: this session exposes no browser MCP tools, so I could not access OpenPlan.',
+      },
+    }),
+  ].join('\n');
+  const execution = classifyJobExecution({
+    processResult: { code: 0, stdout },
+    reportPresent: true,
+  });
+  assert.deepStrictEqual(execution, {
+    status: 'blocked_browser_tools',
+    reason: 'The browser MCP tools were not provisioned for the journey, so the product was not exercised.',
+  });
+
+  const runRoot = jobDir();
+  const dir = path.join(runRoot, '01-first-day-setup');
+  writeCompletedJob(dir);
+  fs.writeFileSync(
+    path.join(dir, 'execution.json'),
+    JSON.stringify({ status: 'completed', reason: 'report present', exitCode: 0, backend: 'codex' }),
+  );
+  fs.writeFileSync(path.join(dir, 'agent-stdout.json'), stdout);
+  const result = verifyRun(runRoot, 'http://localhost:3200');
+  assert.strictEqual(result.blocked, 1);
+  assert.strictEqual(result.failed, 0);
+  assert.strictEqual(result.inconclusive, 1);
+  assert.match(fs.readFileSync(result.summaryPath, 'utf8'), /blocked_browser_tools/);
+});
+
 check('verification repairs a false recorded quota when only browser page text contains the phrase', () => {
   const runRoot = jobDir();
   const dir = path.join(runRoot, '03-public-engagement');
@@ -400,7 +467,7 @@ check('verification repairs a false recorded quota when only browser page text c
   );
   fs.writeFileSync(
     path.join(dir, 'agent-stdout.json'),
-    `${JSON.stringify({ type: 'item.completed', item: { type: 'mcp_tool_call', result: 'AI rate limit' } })}\n`,
+    `${JSON.stringify({ type: 'item.completed', item: { type: 'mcp_tool_call', result: 'AI rate limit' } })}\n${JSON.stringify({ type: 'turn.completed' })}\n`,
   );
   const result = verifyRun(runRoot, 'http://localhost:3200');
   assert.strictEqual(result.completed, 1);
@@ -584,8 +651,84 @@ check('the Codex fallback isolates user context and exposes the browser MCP', ()
   assert.ok(args.includes('--ignore-rules'));
   assert.ok(args.includes('--approve-for-me'));
   assert.ok(!args.includes('--sandbox'), '--approve-for-me and --sandbox are mutually exclusive in this Codex CLI');
-  assert.ok(args.some((arg) => arg === 'mcp_servers.browser.command="npx"'));
-  assert.ok(args.some((arg) => arg.includes('@playwright/mcp@0.0.79')));
+  assert.ok(args.includes(`mcp_servers.browser.command=${JSON.stringify(process.execPath)}`));
+  assert.ok(args.includes('mcp_servers.browser.required=true'), 'a browser journey must wait for browser tools or fail startup');
+  const browserArgs = JSON.parse(args.find((arg) => arg.startsWith('mcp_servers.browser.args=')).split('=').slice(1).join('='));
+  assert.deepEqual(browserArgs, [path.join(__dirname, 'first-week-browser-mcp.js'), '--browser', 'chrome', '--headless', '--isolated', '--viewport-size', '1440x900', '--output-dir', '/tmp/browser']);
+  assert.deepEqual(mcpConfig('/tmp/browser').mcpServers.browser, { command: process.execPath, args: browserArgs });
+  assert.equal(require('./package.json').dependencies['@playwright/mcp'], '0.0.79');
+});
+
+check('unavailable or uninitialized browser tools cannot count as completed execution', () => {
+  for (const message of [
+    'The required browser MCP tools are unavailable, so I could not open OpenPlan.',
+    'The available tools do not include the browser MCP server or its browser actions.',
+    'Error: required MCP servers failed to initialize: browser',
+  ]) {
+    const execution = classifyJobExecution({
+      processResult: { code: 0, stdout: JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: message } }) },
+      reportPresent: true,
+    });
+    assert.strictEqual(execution.status, 'blocked_browser_tools', message);
+    assert.strictEqual(classifyJobOutcome({ execution, report: { outcomeReached: 'yes' } }).status, 'inconclusive');
+  }
+  const browserPage = JSON.stringify({ type: 'item.completed', item: { type: 'mcp_tool_call', result: 'browser MCP tools are unavailable' } });
+  assert.strictEqual(classifyJobExecution({ processResult: { code: 0, stdout: `${browserPage}\n${JSON.stringify({ type: 'turn.completed' })}` }, reportPresent: true }).status, 'completed');
+  assert.strictEqual(classifyJobExecution({ processResult: {
+    code: 1,
+    stderr: 'Error: thread/start failed: required MCP servers failed to initialize: browser: No such file or directory (os error 2)',
+  }, reportPresent: false }).status, 'blocked_browser_tools');
+});
+
+check('a zero-exit Codex interruption cannot bless its early yes report', () => {
+  const event = (type) => JSON.stringify({ type });
+  const completed = [event('thread.started'), event('turn.started'), event('turn.completed')].join('\n');
+  const good = classifyJobExecution({ processResult: { code: 0, backend: 'codex', stdout: completed }, reportPresent: true });
+  assert.strictEqual(good.status, 'completed');
+  for (const stdout of [
+    '', event('turn.started'),
+    JSON.stringify({ type: 'item.completed', item: { type: 'agent_message', text: 'turn.completed' } }),
+    `${completed}\n${event('turn.started')}`,
+    `${completed}\n${event('turn.failed')}`,
+    `${completed}\n{"type":"turn.comp`,
+  ]) {
+    const execution = classifyJobExecution({ processResult: { code: 0, backend: 'codex', stdout }, reportPresent: true });
+    assert.strictEqual(execution.status, 'blocked_execution_record', stdout);
+    assert.strictEqual(classifyJobOutcome({ execution, report: { outcomeReached: 'yes' } }).status, 'inconclusive');
+  }
+});
+
+check('saved completion is rechecked against the actual Codex stream without rewriting evidence', () => {
+  const dir = jobDir();
+  writeCompletedJob(dir);
+  const stdout = JSON.stringify({ type: 'turn.started' });
+  fs.writeFileSync(path.join(dir, 'agent-stdout.json'), stdout);
+  const original = fs.readFileSync(path.join(dir, 'execution.json'), 'utf8');
+  assert.strictEqual(readJobExecution(dir).status, 'blocked_execution_record');
+  assert.strictEqual(fs.readFileSync(path.join(dir, 'execution.json'), 'utf8'), original);
+  fs.writeFileSync(path.join(dir, 'agent-stdout.json'), `${stdout}\n${JSON.stringify({ type: 'turn.completed' })}`);
+  assert.strictEqual(readJobExecution(dir).status, 'completed');
+});
+
+check('fresh-agent prompts direct browser actions to tools instead of unsupported resource discovery', () => {
+  const prompt = buildPrompt(
+    { id: 'neutral-geography', body: 'Use {{BASE_URL}}.', maxTurns: 10 },
+    {
+      baseUrl: 'http://localhost:3200',
+      email: 'planner@example.test',
+      password: 'test-only',
+      approverEmail: '',
+      approverPassword: '',
+      agentDir: '/tmp/agent',
+      contract: 'Report honestly.',
+    },
+  );
+  assert.match(prompt, /Browser actions are MCP tools, not MCP resources/);
+  assert.match(prompt, /browser_navigate/);
+  assert.match(prompt, /do not call resources\/list or resources\/templates\/list/);
+  assert.match(prompt, /Discover deferred browser tools/);
+  assert.match(prompt, /ALL_TOOLS/);
+  assert.match(prompt, /tool discovery and browser calls only/);
 });
 
 check('a Codex journey that uses shell or web search violates the fresh-browser contract', () => {

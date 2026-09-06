@@ -22,14 +22,16 @@ const paramsSchema = z.object({ projectId: z.string().uuid() });
 const bodySchema = z.object({
   projectRevision: z.string().datetime({ offset: true }),
   confirmed: z.literal(true),
-  selectedPlanId: z.string().uuid(),
-  selectedPlanRevisionToken: z.string().regex(/^[0-9a-f]{64}$/),
+  selectedPlanId: z.string().uuid().optional(),
+  selectedPlanRevisionToken: z.string().regex(/^[0-9a-f]{64}$/).optional(),
   selected: z.array(
     z.object({
       candidateId: z.string().min(1).max(200),
       revisionToken: z.string().regex(/^[0-9a-f]{64}$/),
     })
   ).min(1).max(201),
+}).refine((value) => Boolean(value.selectedPlanId) === Boolean(value.selectedPlanRevisionToken), {
+  message: "A selected plan requires its exact revision token.",
 });
 
 function errorStatus(error: ProjectEvidenceBundleError): number {
@@ -126,22 +128,24 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
     const selectedReportPdfs = selectableFiles.filter(
       (candidate) => candidate.sourceId === "report_artifacts" && candidate.contentType === "application/pdf",
     );
-    if (selectedReportPdfs.length !== 1) {
-      return NextResponse.json({ error: "Select exactly one current board or report PDF." }, { status: 400 });
-    }
+    // Archiving is not governed submission. A supplied plan still needs exact custody.
     const selectedPlanInventory = inventory.linkedPlans.find(
       (plan) => plan.id === body.data.selectedPlanId && plan.revisionToken === body.data.selectedPlanRevisionToken,
     );
-    if (!selectedPlanInventory) {
-      return NextResponse.json({ error: "Select one current linked plan record." }, { status: 409 });
-    }
-    const selectedPlanRead = await caller.from("plans").select("*")
-      .eq("id", selectedPlanInventory.id)
-      .eq("workspace_id", access.project.workspace_id)
-      .eq("project_id", access.project.id)
-      .maybeSingle();
-    if (selectedPlanRead.error || !selectedPlanRead.data || selectedPlanRead.data.updated_at !== selectedPlanInventory.updatedAt) {
+    if (body.data.selectedPlanId && !selectedPlanInventory) {
       return NextResponse.json({ error: "The selected linked plan changed after review." }, { status: 409 });
+    }
+    let selectedPlanRecord: Record<string, unknown> | null = null;
+    if (selectedPlanInventory) {
+      const selectedPlanRead = await caller.from("plans").select("*")
+        .eq("id", selectedPlanInventory.id)
+        .eq("workspace_id", access.project.workspace_id)
+        .eq("project_id", access.project.id)
+        .maybeSingle();
+      if (selectedPlanRead.error || !selectedPlanRead.data || selectedPlanRead.data.updated_at !== selectedPlanInventory.updatedAt) {
+        return NextResponse.json({ error: "The selected linked plan changed after review." }, { status: 409 });
+      }
+      selectedPlanRecord = selectedPlanRead.data;
     }
     if (selectableFiles.length > inventory.limits.selectedFileLimit) {
       throw new ProjectEvidenceBundleError("selected_file_limit", "Too many evidence files were selected.");
@@ -171,7 +175,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
     }
 
     const generatedAt = new Date();
-    const generated = await loadProjectEvidenceGeneratedFiles(caller, access.project, generatedAt, selectedPlanRead.data);
+    const generated = await loadProjectEvidenceGeneratedFiles(caller, access.project, generatedAt, selectedPlanRecord);
     const resolved = [];
     let resolvedBytes = 0;
     for (const candidate of selectableFiles) {
@@ -199,12 +203,14 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
       inventoryTruncated: inventory.inventoryTruncated,
       knownLimits: [
         "This bundle is a retained evidence snapshot, not a backup, approval, adoption, or publication.",
+        ...(!selectedPlanInventory ? ["No linked plan was selected. This archive cannot be submitted for governed approval."] : []),
+        ...(selectedReportPdfs.length !== 1 ? ["No single current board or report PDF is designated. Governed submission requires exactly one."] : []),
         "The GeoPackage layer-status table distinguishes included, unavailable, reference-only, and not-selected evidence. Model link files remain separate bundle artifacts rather than inferred GeoPackage geometry.",
       ],
-      selectedLinkedPlan: {
+      selectedLinkedPlan: selectedPlanInventory ? {
         id: selectedPlanInventory.id,
         revisionToken: selectedPlanInventory.revisionToken,
-      },
+      } : null,
     });
 
     const upload = await service.storage.from(BUNDLE_BUCKET).upload(storagePath, built.bytes, {

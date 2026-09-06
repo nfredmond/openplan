@@ -32,7 +32,7 @@ const INVENTORY = {
       claimTier: null,
       custodyState: "rendered_on_freeze",
       uncertainty: [],
-      knownLimits: ["Other geographic layers remain outside this release."],
+      knownLimits: ["Inspect openplan_layer_status for the exact included layers and unavailable coverage."],
       defaultSelected: true,
       required: true,
       selectable: true,
@@ -145,6 +145,20 @@ beforeEach(() => {
 });
 
 describe("project evidence bundle reachability", () => {
+  it("cancels the copy confirmation timer when leaving the evidence panel", async () => {
+    const setTimer = vi.spyOn(window, "setTimeout");
+    const clearTimer = vi.spyOn(window, "clearTimeout");
+    const view = render(<ProjectEvidenceBundlePanel projectId={PROJECT_ID} canGenerate />);
+    fireEvent.click(await screen.findByRole("button", { name: "Copy manifest SHA-256" }));
+    await screen.findByText("Copied");
+    await waitFor(() => expect(setTimer.mock.calls.some((call) => call[1] === 1_500)).toBe(true));
+    const timerIndex = setTimer.mock.calls.findIndex((call) => call[1] === 1_500);
+    expect(timerIndex).toBeGreaterThanOrEqual(0);
+    const timerId = setTimer.mock.results[timerIndex].value;
+    view.unmount();
+    expect(clearTimer).toHaveBeenCalledWith(timerId);
+  });
+
   it("loads prior bundles and opens the reviewed, grouped selection from Documents", async () => {
     render(<ProjectEvidenceBundlePanel projectId={PROJECT_ID} canGenerate />);
     const prepare = await screen.findByRole("button", { name: "Prepare evidence bundle" });
@@ -220,5 +234,10 @@ describe("project evidence bundle reachability", () => {
       "href",
       `/reports?projectId=${PROJECT_ID}`,
     );
+    expect(screen.getByText(/A linked plan is optional for an archive/)).toBeVisible();
+    expect(screen.getByText(/Governed submission still requires exactly one current report PDF/)).toBeVisible();
+    expect(screen.getByRole("button", { name: "Freeze evidence bundle" })).toBeDisabled();
+    fireEvent.click(screen.getByText(/I reviewed this exact selection/));
+    expect(screen.getByRole("button", { name: "Freeze evidence bundle" })).toBeEnabled();
   });
 });

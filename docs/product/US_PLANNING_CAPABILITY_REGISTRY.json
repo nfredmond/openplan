@@ -1,14 +1,14 @@
 {
   "schemaVersion": 2,
   "currentRelease": "v0.44.0",
-  "reviewedAt": "2026-08-28",
-  "reviewBy": "2026-09-28",
+  "reviewedAt": "2026-09-06",
+  "reviewBy": "2026-10-05",
   "statuses": ["proven", "partial", "missing", "not-assessed"],
   "interimReleasePolicy": "Open cells block v1.0.0 but remain visible without blocking honest pre-v1 releases.",
   "readinessRegistry": {
     "schema": "openplan.jurisdiction-readiness.v1",
     "path": "openplan/src/lib/jurisdiction-readiness/registry.v1.json",
-    "sha256": "2a2fe3c38a86eb28daa2a8dbaa4e48f2ead5ffc7460dc6f37bd7a6132d52a7dc"
+    "sha256": "3c3922d82dbaee1f0166fa4054118b6b167ecc2b6f3ab9ea4b513522b448cd73"
   },
   "dimensions": {
     "planner": [
@@ -98,6 +98,12 @@
     ]
   },
   "evidence": [
+    "docs/reviews/product-direction/2026-09-06-workflow-custody-review.md",
+    "docs/ops/V044_DRAFT_AND_DIAGNOSIS_CORRECTION_2026-09-06.md",
+    "docs/ops/V044_CRASH_PUBLICATION_METADATA_2026-09-05.md",
+    "docs/ops/V044_MODEL_ARTIFACT_DOWNLOAD_2026-09-05.md",
+    "docs/ops/V044_AGREEMENT_ROUNDING_2026-09-05.md",
+    "docs/reviews/product-direction/2026-09-05-distributed-loading-and-first-week.md",
     "docs/product/US_PLANNING_CAPABILITY_MATRIX.md",
     "docs/product/V1_PRODUCT_CONTRACT.md",
     "docs/reviews/product-direction/2026-08-25-v1-direction.md",
@@ -110,5 +116,175 @@
     "docs/modeling/STRUCTURAL_DEMAND_DIAGNOSIS_RESULT_2026-08-28.md",
     "docs/ops/V044_DISTRIBUTED_WORK_LOADING_PROOF_2026-09-01.md",
     "docs/ops/KNOWN_ISSUES.md"
+  ],
+  "queuedFirstWeekFindings": [
+    {
+      "issueId": "KI-2026-09-06-081",
+      "capability": "travel-demand-corridor-scenario-and-performance-analysis",
+      "gap": "Exact filenames and full hashes are corrected and checked against native downloads at desktop and 390px; narrow run columns remain open under issues 054 and 069",
+      "evidence": "docs/ops/V044_DRAFT_AND_DIAGNOSIS_CORRECTION_2026-09-06.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-073",
+      "capability": "transit-active-transportation-freight-and-safety-planning",
+      "gap": "Explain the project-area prerequisite before Safety retrieval",
+      "evidence": "docs/ops/V044_MODEL_EVIDENCE_STATE_2026-09-05.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-074",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Make report freshness consistent without hiding genuine source edits during report writeback",
+      "evidence": "docs/ops/V044_MODEL_EVIDENCE_STATE_2026-09-05.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-075",
+      "capability": "capital-programming-prioritization-grants-delivery-and-reimbursement",
+      "gap": "Explain bulk selection of workbook rows with unknown price years",
+      "evidence": "docs/ops/V044_MODEL_EVIDENCE_STATE_2026-09-05.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-076",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Refresh GIS layer inventory after a completed upload",
+      "evidence": "docs/ops/V044_MODEL_EVIDENCE_STATE_2026-09-05.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-077",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Improve narrow report previews and Safety print heading contrast",
+      "evidence": "docs/ops/V044_MODEL_EVIDENCE_STATE_2026-09-05.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-058",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Determine the cause of the intermittent browser resource failure without suppressing console evidence",
+      "evidence": "docs/ops/V044_CRASH_PUBLICATION_METADATA_2026-09-05.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-054",
+      "capability": "travel-demand-corridor-scenario-and-performance-analysis",
+      "gap": "Use desktop width for model artifacts without compressing the download controls",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-048",
+      "capability": "travel-demand-corridor-scenario-and-performance-analysis",
+      "gap": "Render saved comparison assumptions and their retained source basis readably",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-049",
+      "capability": "travel-demand-corridor-scenario-and-performance-analysis",
+      "gap": "Keep narrow-screen agreement-map callouts clear of map controls",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-050",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Serialize GeoPackage timestamps without GDAL compatibility warnings",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-051",
+      "capability": "capital-programming-prioritization-grants-delivery-and-reimbursement",
+      "gap": "Make known workbook costs convenient for calculations without losing the decimal precision currently preserved by text cells, and retain unknown price years",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-053",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Reproduce intermittent project Evidence-tab activation before assigning a cause",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-037",
+      "capability": "development-review-implementation-and-interdepartmental-handoff",
+      "gap": "Distinguish saved reminder preferences from operating delivery",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-038",
+      "capability": "land-use-comprehensive-and-community-planning",
+      "gap": "Label review dates and link public plan review to its feedback campaign",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-039",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Carry the same resolved geography status across project and campaign summaries",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-040",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Refresh generated PDF status without navigation",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-041",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Expose bundle prerequisites earlier and distinguish artifact formats",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-042",
+      "capability": "capital-programming-prioritization-grants-delivery-and-reimbursement",
+      "gap": "Allow invalid source phases to be corrected in the import preview row",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-043",
+      "capability": "travel-demand-corridor-scenario-and-performance-analysis",
+      "gap": "Do not count placeholder model descriptions as completed evidence metadata",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-044",
+      "capability": "travel-demand-corridor-scenario-and-performance-analysis",
+      "gap": "Refresh screening diagnostics and waiting messages when runs complete",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-047",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Measure and investigate report Evidence-tab navigation delays",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-055",
+      "capability": "community-engagement-title-vi-and-public-decisions",
+      "gap": "Expose inspectable source citations beside engagement summaries",
+      "evidence": "docs/ops/V044_CRASH_PUBLICATION_METADATA_2026-09-05.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-027",
+      "capability": "transit-active-transportation-freight-and-safety-planning",
+      "gap": "Retry a failed crash-location ranking without another acquisition",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-062",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Keep enabled and disabled report-generation button text readable in the dark theme while preserving the save-before-generation refusal",
+      "evidence": "docs/ops/V044_REPORT_DRAFT_CUSTODY_2026-09-05.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-063",
+      "capability": "travel-demand-corridor-scenario-and-performance-analysis",
+      "gap": "Fit saved comparisons and their scientific caveats within the narrow module, not only the outer document",
+      "evidence": "docs/ops/V044_REPORT_CORRECTED_OUTCOMES_2026-09-05.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-066",
+      "capability": "community-engagement-title-vi-and-public-decisions",
+      "gap": "Preserve the review collection mode and online intake state without assuming staff-entered or imported feedback is invalid",
+      "evidence": "docs/ops/V044_REPORT_CORRECTED_OUTCOMES_2026-09-05.md"
+    },
+    {
+      "issueId": "KI-2026-09-04-022",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Retain county kind in saved geography labels as well as underlying identifiers",
+      "evidence": "docs/ops/KNOWN_ISSUES.md"
+    }
   ]
 }

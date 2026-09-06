@@ -134,7 +134,7 @@ export async function GET(req: NextRequest, context: RouteContext): Promise<Next
     const service = createServiceRoleClient();
     const { data, error } = await service.storage
       .from(target.bucket)
-      .createSignedUrl(target.objectPath, RUN_ARTIFACT_SIGNED_URL_TTL_SECONDS);
+      .createSignedUrl(target.objectPath, RUN_ARTIFACT_SIGNED_URL_TTL_SECONDS, { download: true });
 
     if (error || !data?.signedUrl) {
       audit.error("model_run_artifact_sign_failed", {

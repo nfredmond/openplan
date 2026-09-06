@@ -48,7 +48,7 @@ export type PortfolioImportDefaults = {
   cost?: {
     currency: string;
     scale: PortfolioCostScale;
-    priceYear: number;
+    priceYear: number | null;
   };
 };
 
@@ -74,6 +74,7 @@ export type PortfolioImportIssue = {
     | "location_too_long"
     | "name_match"
     | "name_match_confirmation_required"
+    | "unknown_price_year"
     | "source_id_too_long";
   message: string;
 };
@@ -88,7 +89,7 @@ export type PortfolioImportRow = {
   estimatedCost: {
     amount: string;
     currency: string;
-    priceYear: number;
+    priceYear: number | null;
   } | null;
   planType: string;
   status: ProjectStatus;
@@ -230,13 +231,13 @@ function validateDefaults(mapping: PortfolioImportMapping, defaults: PortfolioIm
     !cost ||
     !/^[A-Z]{3}$/.test(cost.currency) ||
     !PORTFOLIO_COST_SCALES.includes(cost.scale) ||
-    !Number.isInteger(cost.priceYear) ||
-    cost.priceYear < 1800 ||
-    cost.priceYear > 3000
+    (cost.priceYear !== null && (
+      !Number.isInteger(cost.priceYear) || cost.priceYear < 1800 || cost.priceYear > 3000
+    ))
   ) {
     throw new PortfolioImportError(
       "missing_cost_defaults",
-      "A mapped cost requires an explicit three-letter currency, scale, and price year."
+      "A mapped cost requires an explicit three-letter currency and scale; price year must be a valid year or unknown."
     );
   }
 }
@@ -406,6 +407,9 @@ export function reviewPortfolioImport(input: {
           currency: input.defaults.cost!.currency,
           priceYear: input.defaults.cost!.priceYear,
         };
+        if (estimatedCost.priceYear === null) {
+          warnings.push(issue("unknown_price_year", "Cost price year is unknown; do not treat this estimate as current-year prices."));
+        }
       }
     }
 
@@ -679,7 +683,7 @@ function mappedCost(
     ? defaults.cost!.currency
     : mappedCellText(mappedCurrency, "costCurrency", errors, formulaFields).trim();
   const priceYearText = mappedPriceYear === undefined
-    ? String(defaults.cost!.priceYear)
+    ? (defaults.cost!.priceYear === null ? "" : String(defaults.cost!.priceYear))
     : mappedCellText(mappedPriceYear, "costPriceYear", errors, formulaFields).trim();
 
   if (value.formula) {
@@ -720,6 +724,7 @@ function mappedCost(
     errors.push(workbookIssue("invalid_cost", "Cost currency must be an explicit three-letter uppercase code."));
     return null;
   }
+  if (priceYearText === "") return { amount: scaled, currency: currencyText, priceYear: null };
   if (!/^\d{4}$/.test(priceYearText)) {
     errors.push(workbookIssue("invalid_cost", "Cost price year must be one whole year from 1800 through 3000."));
     return null;
@@ -875,6 +880,9 @@ export async function reviewPortfolioWorkbook(input: {
             get("costCurrency"),
             get("costPriceYear")
           );
+      if (estimatedCost?.priceYear === null) {
+        warnings.push(workbookIssue("unknown_price_year", "Cost price year is unknown; do not treat this estimate as current-year prices."));
+      }
       if (formulaFields.length > 0 && errors.every((entry) => !entry.code.startsWith("formula_"))) {
         warnings.push(workbookIssue("formula_value", `Mapped formula fields use cached workbook values: ${formulaFields.join(", ")}.`));
       }

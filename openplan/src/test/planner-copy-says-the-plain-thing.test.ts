@@ -223,7 +223,8 @@ const BASELINE: Readonly<Record<string, number>> = {
   preset: 13,
   provenance: 12,
   readiness: 33,
-  record: 263,
+  // Safety must distinguish crash records from people killed or injured.
+  record: 264,
   registry: 21,
   resolve: 3,
   scaffold: 3,

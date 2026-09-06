@@ -41,7 +41,7 @@ const defaultsSchema = z.object({
   cost: z.object({
     currency: z.string().regex(/^[A-Z]{3}$/),
     scale: z.enum(PORTFOLIO_COST_SCALES),
-    priceYear: z.number().int().min(1800).max(3000),
+    priceYear: z.number().int().min(1800).max(3000).nullable(),
   }).strict().optional(),
 }).strict();
 const configurationSchema = z.object({

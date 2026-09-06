@@ -126,8 +126,8 @@ describe("/api/models/[modelId]/runs/[modelRunId]/artifacts/[artifactId]/downloa
     createServiceRoleClientMock.mockReturnValue({
       storage: {
         from: (bucket: string) => ({
-          createSignedUrl: (objectPath: string, ttl: number) =>
-            createSignedUrlMock(bucket, objectPath, ttl),
+          createSignedUrl: (objectPath: string, ttl: number, options?: { download?: boolean | string }) =>
+            createSignedUrlMock(bucket, objectPath, ttl, options),
         }),
       },
     });
@@ -160,7 +160,7 @@ describe("/api/models/[modelId]/runs/[modelRunId]/artifacts/[artifactId]/downloa
     expect(res.status).toBe(404);
   });
 
-  it("redirects storage:// references to a short-TTL signed URL", async () => {
+  it("redirects storage:// references to a short-TTL attachment URL", async () => {
     setArtifact(`storage://run-artifacts/model-runs/${MODEL_RUN_ID}/volumes.geojson`);
     createSignedUrlMock.mockResolvedValue({
       data: { signedUrl: "http://localhost:54321/storage/v1/object/sign/run-artifacts/x?token=t" },
@@ -173,11 +173,28 @@ describe("/api/models/[modelId]/runs/[modelRunId]/artifacts/[artifactId]/downloa
       "run-artifacts",
       `model-runs/${MODEL_RUN_ID}/volumes.geojson`,
       15 * 60,
+      { download: true },
     );
     expect(res.status).toBeGreaterThanOrEqual(300);
     expect(res.status).toBeLessThan(400);
     expect(res.headers.get("location")).toContain("/object/sign/run-artifacts/");
   });
+
+  it.each(["model_validation_assessment.json", "model_comparison_basis.json", "validation_input_bundle.json"])(
+    "requests a native download for the stored %s without changing its source path",
+    async (filename) => {
+      const objectPath = `model-runs/${MODEL_RUN_ID}/validation/${filename}`;
+      setArtifact(`storage://run-artifacts/${objectPath}`);
+      createSignedUrlMock.mockResolvedValue({
+        data: { signedUrl: `http://localhost:54321/storage/v1/object/sign/run-artifacts/${objectPath}?token=t&download=` },
+        error: null,
+      });
+      const res = await downloadArtifact(request(), routeContext());
+      expect(createSignedUrlMock).toHaveBeenCalledWith("run-artifacts", objectPath, 15 * 60, { download: true });
+      expect(new URL(res.headers.get("location")!).searchParams.has("download")).toBe(true);
+      expect(readFileMock).not.toHaveBeenCalled();
+    },
+  );
 
   it("500s when signing fails instead of leaking a raw reference", async () => {
     setArtifact(`storage://run-artifacts/model-runs/${MODEL_RUN_ID}/volumes.geojson`);

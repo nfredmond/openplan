@@ -349,7 +349,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
   const runsResult = runIds.length
     ? await supabase
         .from("runs")
-        .select("id, title, summary_text, created_at")
+        .select("id, title, summary_text, metrics, created_at")
         .in("id", runIds)
     : { data: [], error: null };
   const { citedModelRuns, citedCountyRuns } = await resolveCitedRuns(supabase, reportRunLinks);
@@ -376,7 +376,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
 
   const runMap = new Map((runsResult.data ?? []).map((run) => [run.id, run]));
   const runs = reportRunLinks
-    .map((link) => (link.run_id ? runMap.get(link.run_id) ?? null : null))
+    .map((link): LinkedRunRow | null => (link.run_id ? runMap.get(link.run_id) ?? null : null))
     .filter((item): item is LinkedRunRow => Boolean(item));
   // Typed citations resolved for display: kind label + honest title/status.
   const typedRunCitations = buildTypedRunCitations(reportRunLinks, citedModelRuns, citedCountyRuns);
