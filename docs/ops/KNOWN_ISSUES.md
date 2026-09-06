@@ -252,3 +252,5 @@ This consolidation did not run an additional dependency audit.
 ## September 6 control-maintenance disposition
 
 KL-2026-09-04-063/064 retain the opening desktop-control findings. The consolidation repairs owned-session signaling, exact-commit CI status, collector overlap and refresh failure reporting, including failed cleanliness queries and complete local migration inventory. These are source and isolated-test repairs, not native desktop or complete deployment acceptance. Existing log ownership was violated by the initial mutation fixture, which truncated the diagnostic log; the [verification record](../reviews/2026-09-06-consolidation/VERIFICATION.md) preserves the incident and corrected isolation. Actual runtime database identity, atomic update/rollback, accepted-demo selection and end-to-end GUI operation remain open.
+
+September 6 control visual inspection: the native window clips the output footer at 980×1000 and collapses its output at the permitted 860×720 minimum. Long status text can clip horizontally. Preserve this as unresolved control usability work alongside full operational lifecycle acceptance; see the consolidation verification screenshots.

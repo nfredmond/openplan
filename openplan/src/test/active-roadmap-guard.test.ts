@@ -8,6 +8,8 @@ const DOCS_ROOT = resolve(REPO_ROOT, "docs");
 const MARKER = "openplan-active-roadmap";
 
 function markdownFiles(directory: string): string[] {
+  // Archived originals retain their metadata bytes; they are not active queues.
+  if (directory === resolve(DOCS_ROOT, "archive")) return [];
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const path = resolve(directory, entry.name);
     if (entry.isDirectory()) return markdownFiles(path);

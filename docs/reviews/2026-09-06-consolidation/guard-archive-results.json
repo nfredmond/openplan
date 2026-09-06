@@ -1,0 +1,17 @@
+[
+  {
+    "case": "noop",
+    "exit": 0,
+    "expected_result_observed": true
+  },
+  {
+    "case": "include-archived-marker",
+    "exit": 1,
+    "expected_result_observed": true
+  },
+  {
+    "case": "second-current-queue",
+    "exit": 1,
+    "expected_result_observed": true
+  }
+]
