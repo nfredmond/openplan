@@ -84,7 +84,7 @@ const JOBS_DIR = path.join(__dirname, 'first-week-jobs');
 const RUNS_DIR = path.resolve(
   process.env.OPENPLAN_FIRST_WEEK_RUNS_DIR || path.join(os.homedir(), '.local', 'state', 'openplan', 'first-week-runs'),
 );
-const PLAYWRIGHT_MCP = '@playwright/mcp@0.0.79';
+const BROWSER_MCP_LAUNCHER = path.join(__dirname, 'first-week-browser-mcp.js');
 const DEFAULT_MODEL = 'sonnet';
 const DEFAULT_JOB_TIMEOUT_MS = 30 * 60 * 1000;
 const SERVER_PROBE_TIMEOUT_MS = 10 * 1000;
@@ -309,10 +309,9 @@ function mcpConfig(browserDir) {
   return {
     mcpServers: {
       browser: {
-        command: 'npx',
+        command: process.execPath,
         args: [
-          '-y',
-          PLAYWRIGHT_MCP,
+          BROWSER_MCP_LAUNCHER,
           '--browser',
           'chrome',
           '--headless',
@@ -396,8 +395,7 @@ function runClaudeAgent({ job, agentDir, browserDir, prompt, model, timeoutMs })
 
 function codexMcpArgs(browserDir) {
   return [
-    '-y',
-    PLAYWRIGHT_MCP,
+    BROWSER_MCP_LAUNCHER,
     '--browser',
     'chrome',
     '--headless',
@@ -425,7 +423,7 @@ function buildCodexArgs({ agentDir, browserDir }) {
     '-c',
     'web_search="disabled"',
     '-c',
-    'mcp_servers.browser.command="npx"',
+    `mcp_servers.browser.command=${JSON.stringify(process.execPath)}`,
     '-c',
     `mcp_servers.browser.args=${JSON.stringify(codexMcpArgs(browserDir))}`,
     '-c',
@@ -1320,6 +1318,7 @@ module.exports = {
   codexContractViolation,
   currentBuildIdentity,
   inspectBrowserConsole,
+  mcpConfig,
   loadJobs,
   parseAgentSession,
   parseArgs,

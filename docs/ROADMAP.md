@@ -79,6 +79,12 @@ before committing the next major direction. Preserve their disagreements.
 
 ## Current truth at v0.44.0
 
+The latest complete acceptance attempt remains failed, not relabeled. Report
+navigation now works; the browser checker itself causes script errors when it
+normalizes iframe references. A pinned compatibility correction is under
+verification in `docs/ops/V044_BROWSER_REFERENCE_CUSTODY_2026-09-05.md`.
+Finish final-launcher proof and rerun all twelve outcomes before release.
+
 Strong foundations already exist:
 
 - connected planning, engagement, safety, funding, land-use, aerial, document,

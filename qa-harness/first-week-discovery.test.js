@@ -22,6 +22,7 @@ const {
   codexContractViolation,
   currentBuildIdentity,
   inspectBrowserConsole,
+  mcpConfig,
   loadJobs,
   parseAgentSession,
   parseArgs,
@@ -579,9 +580,12 @@ check('the Codex fallback isolates user context and exposes the browser MCP', ()
   assert.ok(args.includes('--ignore-rules'));
   assert.ok(args.includes('--approve-for-me'));
   assert.ok(!args.includes('--sandbox'), '--approve-for-me and --sandbox are mutually exclusive in this Codex CLI');
-  assert.ok(args.some((arg) => arg === 'mcp_servers.browser.command="npx"'));
+  assert.ok(args.includes(`mcp_servers.browser.command=${JSON.stringify(process.execPath)}`));
   assert.ok(args.includes('mcp_servers.browser.required=true'), 'a browser journey must wait for browser tools or fail startup');
-  assert.ok(args.some((arg) => arg.includes('@playwright/mcp@0.0.79')));
+  const browserArgs = JSON.parse(args.find((arg) => arg.startsWith('mcp_servers.browser.args=')).split('=').slice(1).join('='));
+  assert.deepEqual(browserArgs, [path.join(__dirname, 'first-week-browser-mcp.js'), '--browser', 'chrome', '--headless', '--isolated', '--viewport-size', '1440x900', '--output-dir', '/tmp/browser']);
+  assert.deepEqual(mcpConfig('/tmp/browser').mcpServers.browser, { command: process.execPath, args: browserArgs });
+  assert.equal(require('./package.json').dependencies['@playwright/mcp'], '0.0.79');
 });
 
 check('unavailable or uninitialized browser tools cannot count as completed execution', () => {

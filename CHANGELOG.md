@@ -21,6 +21,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## 0.44.0 — 2026-09-05
 
+- First-week browser checks use a locked local MCP launcher that avoids script
+  injection from iframe-reference normalization. Console errors still fail the
+  gate. Run `npm ci` in `qa-harness/` before running these checks.
+
 - Links inside report previews now open the actual project or source page instead
   of trying to load it inside the scriptless preview. Frozen report files and
   sandbox protections are unchanged; no migration is needed.
