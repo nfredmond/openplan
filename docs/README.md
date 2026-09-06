@@ -1,52 +1,82 @@
-# OpenPlan documentation map
+# OpenPlan documentation
 
-OpenPlan is free, open-source, self-serve planning software. The Next.js app lives in `openplan/`;
-this directory holds everything that is not application code. Start here:
+Use this index to distinguish current instructions and priorities from historical
+evidence. The application is in `openplan/` beneath the repository root.
 
-## If you want to know what is being built
+## Current authorities
 
-- **`product/V1_PRODUCT_CONTRACT.md`** — the binding definition of v1: the ultimate free planning
-  operating system for all US planning practice, all states, with California as the gold standard.
-- **`product/AGENT_OPERATING_RULES.md`** — the tracked shared operating manual used by the slim
-  local `AGENTS.md` and `CLAUDE.md` harness shims.
-- **`ROADMAP.md`** — the only active development queue derived from that contract.
-- `product/US_PLANNING_CAPABILITY_MATRIX.md` — the conservative coverage ledger; only `proven`
-  cells pass v1.
-- `product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md` — the recurring fresh-context review and the
-  commands that make an expired strategic review fail the release gate.
-- `reviews/product-direction/2026-08-25-v1-direction.md` — Nathaniel's decision after comparing
-  the independent Claude and Codex reviews.
-- `modeling/VALIDATION_OBSERVATION_UNCERTAINTY_RESEARCH_2026-08-25.md` — why a count is not exact
-  truth, why that cannot excuse model defects, and the proposed nationwide acceptance design.
-- `reviews/OPENPLAN_V1_CODEX_REVIEW_2026-08-25.md` — the independent Codex product and codebase
-  review, with a companion interactive HTML report; its original smaller v1 recommendation is
-  preserved as comparison evidence and explicitly superseded by the product contract.
-- `ops/KNOWN_ISSUES.md` — the active quality register: what OpenPlan does not claim, and why.
-- `../CHANGELOG.md` — what shipped, in operator language, leading with required migrations.
+| Question | Read |
+|---|---|
+| How should contributors and agents work? | [Repository AGENTS.md](../AGENTS.md), then [Contributing](../CONTRIBUTING.md). CLAUDE.md is a pointer to the same entry point |
+| What must v1 deliver? | [V1 product contract](product/V1_PRODUCT_CONTRACT.md) |
+| What is next, and what establishes completion? | [Roadmap](ROADMAP.md), the sole active queue |
+| What works, and what remains unproved? | [Capability matrix](product/US_PLANNING_CAPABILITY_MATRIX.md) and [known limitations](ops/KNOWN_ISSUES.md) |
+| Why this direction? | [September 6 direction review](reviews/product-direction/2026-09-06-workflow-to-v1-review.md), [comprehensive review](reviews/TECHNICAL_PRODUCT_REVIEW_2026-09-06.md), and preserved independent reports linked there |
+| How is it implemented? | [Architecture](ARCHITECTURE.md) and current source |
+| What shipped? | [Changelog](../CHANGELOG.md), Git tags and the release's actual CI/acceptance evidence |
 
-## If you want to run OpenPlan
+The [review protocol](product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md) requires
+periodic independent reassessment. Its check validates required records and
+evidence bindings; it cannot certify professional usefulness or scientific truth.
+The old [shared manual](product/AGENT_OPERATING_RULES.md) is a compatibility
+pointer to AGENTS.md, not a second rulebook.
 
-- **`../openplan/docs/SELF_HOSTING.md`** — the deployment guide: local development and
-  self-hosting on Vercel + Supabase (or any compatible host).
-- `../openplan/docs/ops/RUNBOOK.md` — operating a deployment: health checks, backups, restore.
-- `../workers/aequilibrae_worker/DEPLOY.md` — running the modeling worker.
+## Evaluate and operate
 
-## If you want to understand or extend the code
+- [README](../README.md): local one-computer evaluation.
+- [Self hosting](../openplan/docs/SELF_HOSTING.md): deployment profiles,
+  configuration, external data flows and unfinished agency-operation proof.
+- [Team commissioning](../openplan/docs/FIRST_DEPLOYMENT.md): what an independent
+  operator must establish before real team use.
+- [Runbook](../openplan/docs/ops/RUNBOOK.md): diagnosis and recovery boundaries.
+- [Backup and restore](../openplan/docs/ops/BACKUP_AND_RESTORE.md): durable state,
+  existing mechanisms, representative drills and missing full-recovery proof.
+- [Security](../SECURITY.md) and [license notice](../LICENSE-NOTICE.md).
 
-- `../CLAUDE.md` — binding product constraints and engineering conventions (read first).
-- `../CONTRIBUTING.md` — how to file issues and open pull requests.
-- `ADRs/` — architecture decision records (modeling stack, crash-data acquisition, the MCP server
-  surface and its refusals).
-- `ops/README.md` — index of the technical records in `ops/`: modeling specs and validation
-  evidence, county-onramp contracts, LAPM/stage-gate provenance, and current-era shipped
-  handoffs.
-- `ops/KNOWN_ISSUES.md` — the active quality register.
-- `archive/plans/` — superseded plans retained as dated historical evidence.
+Local Supabase CLI evaluation, a developer's walkthrough instance and a supported
+agency production installation are different environments. Current docs must
+name which they describe. Do not infer free provider eligibility or production
+readiness from an old setup guide.
 
-## What is deliberately NOT here
+## Practice requirements and current limitations
 
-The 2026 commercial-era documentation (sales packets, buyer proofs, supervised-pilot memos,
-billing/pricing records) was deleted on 2026-07-27 by explicit decision: OpenPlan is free and open
-source, and the working tree describes only that product. Git history preserves every deleted
-document. Dated technical records that survive were accurate when written — read them with their
-dates in mind, and never rewrite one to say something it did not say.
+The [core requirements ledger](product/CORE_REQUIREMENTS_LEDGER.md) prevents restored requirements from disappearing. It maps full OWP, contract budgets, prior-RTP updates, capital/tax/grant administration, procurement, engagement, aerial work, agent providers, hosted trials and appearance to the single roadmap. The [workflow handoffs](product/WORKFLOW_HANDOFFS.md) identify the owning record and receiving role. These are requirements and gap assessments, not claims that every workflow exists.
+
+Use the [current modeling status](modeling/STATUS_AND_VALIDATION.md) before interpreting old model metrics. The [September 6 consolidation verification](reviews/2026-09-06-consolidation/VERIFICATION.md) separates implemented maintenance from deferred redesign. The [preserved research packet](reviews/2026-09-04-pre-handoff/README.md) contains the full LAPM chapter review, selected other-state/federal manuals, competitor/reuse research and explicit reading limits.
+
+## Planning and engineering references
+
+- [Reading an adopted plan](../openplan/docs/READING_AN_ADOPTED_PLAN.md): sourced
+  document extraction and human-reviewed use in a plan.
+- [Architecture decisions](ADRs/): dated design rationale, including modeling,
+  crash-source acquisition and the future MCP server boundary.
+- [Operations records index](ops/README.md): source contracts, release evidence,
+  migration proof and historical handoffs.
+- [Human observation protocol](product/PLANNER_OBSERVATION_PROTOCOL.md): actual planner/recipient and public-participant research, separate from simulated users.
+- [First-week harness](../qa-harness/FIRST-WEEK-HARNESS.md): agent discovery,
+  outcome verification, evidence capture and limits.
+- [Model observation/validation research](modeling/VALIDATION_OBSERVATION_UNCERTAINTY_RESEARCH_2026-08-25.md),
+  [frozen nationwide protocol](modeling/NATIONWIDE_VALIDATION_PREREGISTRATION_V1.json)
+  and [engine landscape](modeling/OPEN_SOURCE_MODEL_LANDSCAPE.md).
+
+Workers have different environments and contracts. Start with their current
+instructions under `workers/`, linked from the self-hosting guide. A successful
+one-family suite is not all-worker or full scientific acceptance.
+
+## Historical evidence
+
+[Archived plans](archive/plans/) preserve superseded queues. The [September 6 archive](archive/2026-09-06-consolidation/README.md) retains replaced instructions and guides with original-byte hashes.
+[Dated reviews](reviews/), [modeling studies and research](modeling/)
+and [ADRs](ADRs/) retain what was known and decided at the time. A later review
+may supersede a recommendation without changing the old finding or frozen bytes.
+
+The August 25 independent reviews proposed smaller release sequences; the full
+v1 contract supersedes those scope proposals. The September 6 consolidation
+supersedes earlier active-roadmap and operator-guide wording where identified
+in the review. Historical success claims remain bound to their original source,
+build and evidence quality.
+
+Do not commit raw session histories, credentials or confidential client/acceptance
+records. Record sanitized findings, source paths, dated review coverage and
+appropriate exact evidence hashes. Prior commercial-era deletions remain in Git
+history; this consolidation does not repeat a mass deletion.

@@ -1,0 +1,12 @@
+[
+  {
+    "name": "containment-noop",
+    "returncode": 0,
+    "accepted": true
+  },
+  {
+    "name": "containment-bypass",
+    "returncode": 1,
+    "accepted": true
+  }
+]

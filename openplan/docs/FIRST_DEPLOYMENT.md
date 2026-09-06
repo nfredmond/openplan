@@ -1,206 +1,110 @@
-# Putting your first OpenPlan instance online
+# Commissioning your first OpenPlan installation
 
-A single pass, in order, from nothing to a web address your colleagues can use.
-Roughly **20–30 minutes**, most of it waiting.
+Start with the [README local setup](../../README.md), then use
+[SELF_HOSTING](SELF_HOSTING.md) for configuration, worker choices, external
+connections and production requirements. This checklist owns acceptance, rather
+than a second install recipe. It makes no time-to-install or free-hosting promise.
 
-This is the short version. [`SELF_HOSTING.md`](SELF_HOSTING.md) explains what each
-piece is and why; come here when you just want the sequence, go there when
-something does not behave.
+The local Supabase CLI path is for evaluation. An agency production installation
+requires a separately hardened deployment and evidence for the actual environment.
+No complete stranger-operated production installation has been established by
+this document. Mark each item **passed**, **failed**, **inconclusive** or
+**not exercised**, with the evidence location. A skipped check is not a pass.
+Keep secrets and private records out of shared acceptance logs.
 
-**What you will have created when you finish:** four free accounts (GitHub,
-Supabase, Vercel, Mapbox), a database holding your agency's data, and a URL.
-Nobody else has to install anything — they visit the URL and sign up.
+## 1. Record the installation
 
----
+- [ ] Name the operator, intended users and evaluation or production profile.
+- [ ] Record the release/commit, app build identity, operating system and Node/npm
+      versions. Record database, Storage and worker versions and locations.
+- [ ] Identify who owns the computer, persistent storage, service configuration
+      and recovery copies. Identify which ports/origins belong to this instance.
+- [ ] Record enabled providers, terms, expected costs and information sent outside
+      the agency, using the inventory in SELF_HOSTING. Do not assume a free tier
+      is eligible for government or consultancy use.
+- [ ] For production, record the hardened Supabase topology, TLS, private service
+      access, supervision, monitoring and authenticated schedules. The CLI local
+      stack must not be exposed to external traffic.
 
-## Before you start
+## 2. Establish the database and application
 
-You need a computer with **Node.js** and **git** installed, only for one command
-in step 3. If you have already followed the README's local setup, you have both.
-If not, install Node from [nodejs.org](https://nodejs.org) (the **LTS** button)
-— you do **not** need Docker for a deployment.
+- [ ] Apply the selected release's migrations to the intended target before
+      admitting users. Save the result and resolve unknown migration state.
+      `npm start` does not perform this step.
+- [ ] Configure the Supabase origin and correct public/server keys, canonical
+      site origin, Auth redirects and enabled integrations. Rebuild after public
+      environment changes; restart/recreate affected services as documented.
+- [ ] Run `npm run doctor` from the app directory and resolve relevant findings.
+      Keep its limitations: token shape and health replies do not prove a usable
+      service or correct output.
+- [ ] Open the application and establish that it serves the recorded checkout
+      and build. Use [which-openplan.sh](../scripts/ops/which-openplan.sh) as an
+      identity aid and retain the observed URL and health/build identifiers.
 
-Have somewhere to paste six values as you collect them. A scratch text file is
-fine. Two of them are secrets, so delete it afterwards.
+## 3. Complete real first-use work
 
----
+Use representative, non-sensitive evaluation material first. Browser evidence
+must identify the build, user role and starting entry point. Check desktop,
+a narrow 390px viewport, keyboard navigation and browser console output; inspect
+downloaded artifacts as well as the page.
 
-## 1. Mapbox — the map key  ·  ~2 min
+- [ ] Create the first account and workspace through the public entry point.
+      Set the workspace geography and confirm that maps and applicable planning
+      context correspond to the selected place. Record unavailable sources;
+      setting a geography alone does not establish regulatory or data coverage.
+- [ ] Save a real project or plan, attach evidence, leave the page and reopen it.
+      Sign out and in again, and confirm the same work remains available.
+- [ ] Invite a colleague, accept the invitation, and test the intended role's
+      allowed work and denied actions. Test password reset separately. Record
+      whether application invitations are emailed or passed as copyable links.
+- [ ] Use a separate workspace and unaffiliated account to test private record,
+      attachment and direct-link isolation. For schema/auth changes, run the
+      documented live RLS checks against an explicitly selected disposable test
+      target. Green unit tests alone do not establish deployment isolation.
+- [ ] Publish only approved evaluation content through the engagement workflow.
+      Check the public view, private/public boundaries and submission result.
+- [ ] Produce and reopen an export or decision package. Check source references,
+      selected geography, result states, content and any PDF fallback disclosure.
 
-- [ ] Sign up at [mapbox.com](https://mapbox.com)
-- [ ] Find **Access tokens**, copy the **default public token**
-- [ ] Check it starts with `pk.` — a secret token (`sk.`) will not work in a browser
+## 4. Prove each enabled service
 
-> **Collected:** `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`
+- [ ] Confirm the current Mapbox map surfaces load and review their console/network
+      errors. Confirm actual required Census/source retrieval for your geography.
+- [ ] For each required worker, start a job through its user-facing entry point;
+      observe authenticated dispatch, progress, result delivery, saved output
+      and artifact access after reopening the application. County-onramp and
+      the paired demand-model pollers are separate services.
+- [ ] Keep AequilibraE and ActivitySim execution and validation evidence separate.
+      Record preflight-only ActivitySim as such. A completed job is not proof of
+      scientific validity, and a prepared county job is not an executed model.
+- [ ] For OCR or aerial processing, inspect the returned document/imagery and
+      evidence. Confirm configured language data, callback acceptance and storage.
+      For AI actions, confirm the enabled provider and material transmitted.
+- [ ] In a disposable environment, interrupt a representative long-running job
+      and observe restart/retry/reaper behavior without losing or mislabeling
+      the result. Capture unresolved heartbeat, stale-write or custody failures.
+- [ ] Verify all three authenticated maintenance schedules from SELF_HOSTING,
+      including their effects and failed-delivery reporting.
 
-Without this OpenPlan runs but every map is blank, which is most of the product.
+## 5. Establish recovery and an upgrade path
 
----
+- [ ] Follow [BACKUP_AND_RESTORE](ops/BACKUP_AND_RESTORE.md). Inventory database,
+      Storage bytes, required local artifacts, secrets/configuration and versions.
+      Establish consistency across writers and record the recovery point.
+- [ ] Run the representative disposable restore drill when appropriate. Preserve
+      its exact scope; it does not restore the full database/Storage archives.
+- [ ] Restore the actual deployment backup into an isolated target. Check roles,
+      authentication, tenant boundaries, object and local-artifact hashes, and
+      reopened planner work. Record elapsed recovery time and unresolved gaps.
+- [ ] Rehearse the proposed upgrade on populated data before changing the agency
+      instance. Record migration compatibility and the tested recovery route;
+      replacing app code does not reverse database migrations.
 
-## 2. Supabase — the database  ·  ~5 min
+## Acceptance record
 
-- [ ] Sign up at [supabase.com](https://supabase.com), create a project
-- [ ] Choose a region near your users
-- [ ] Set a database password and **save it** — Supabase shows it once, and step 3 asks for it
-- [ ] Wait for the project to finish provisioning (a minute or two)
-- [ ] Go to **Project Settings → API** and copy three values
-
-> **Collected:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
-> `SUPABASE_SERVICE_ROLE_KEY`
-
-The **service_role** key can read and change every workspace in your
-deployment. Treat it like a root password: it goes in Vercel's settings and
-nowhere else — never in a browser, never in the repository.
-
-Your project address looks like `https://abcdefghijklm.supabase.co`. The
-random-looking middle part is your **project ref**. Note it; step 3 needs it.
-
----
-
-## 3. Build the database tables  ·  ~5 min
-
-A new Supabase project is empty. This creates OpenPlan's ~157 tables.
-
-```bash
-git clone https://github.com/nfredmond/openplan.git
-cd openplan/openplan
-npm install
-npm exec -- supabase link --project-ref <your-project-ref>
-npm exec -- supabase migration up --linked
-```
-
-- [ ] `link` succeeded (it asks for the database password from step 2)
-- [ ] `migration up` printed a long list of migration names and finished without error
-
-> The two dashes in `npm exec -- supabase` are required. Without them you get
-> *"Must specify one of --local, --linked…"*.
-
-**Do this before deploying, not after.** OpenPlan tells a user when something
-could not be read rather than pretending it found nothing — but on the public
-engagement portal, that user is a member of the public. Deploying ahead of the
-tables turns the gap into a window where residents are told the map could not be
-loaded. Doing it in this order closes the window entirely.
-
----
-
-## 4. GitHub — a copy Vercel can watch  ·  ~2 min
-
-- [ ] Sign up at [github.com](https://github.com) if you have not already
-- [ ] Go to [github.com/nfredmond/openplan](https://github.com/nfredmond/openplan) and click **Fork**
-
-A fork is your own copy. Vercel deploys from it, and you can pull in later
-updates from the original.
-
----
-
-## 5. Vercel — put it online  ·  ~10 min
-
-- [ ] Sign up at [vercel.com](https://vercel.com), choosing **Continue with GitHub**
-- [ ] **Add New… → Project**, find your `openplan` fork, **Import**
-- [ ] **Set Root Directory to `openplan`** — click *Edit* beside Root Directory
-
-> This is the step people get wrong. The repository contains a folder of the
-> same name and the app is inside it. Leaving this at the repository root fails
-> the build without explaining why.
-
-- [ ] Leave framework, build command and output directory alone — `vercel.json` sets them
-- [ ] Expand **Environment Variables** and add all four collected values
-- [ ] Add `CRON_SECRET` — any long random string you invent
-- [ ] Click **Deploy**, wait a few minutes
-- [ ] Copy the address Vercel gives you
-
----
-
-## 6. Two settings that need the address  ·  ~5 min
-
-Neither can be done before step 5, because neither exists until Vercel gives you
-a URL.
-
-- [ ] In **Vercel → Settings → Environment Variables**, add `NEXT_PUBLIC_SITE_URL`
-      set to your address (e.g. `https://openplan-yourteam.vercel.app`), then
-      **redeploy** (Deployments → ⋯ → Redeploy)
-- [ ] In **Supabase → Authentication → URL Configuration**, set **Site URL** to
-      your address and add `https://<your-address>/auth/callback` to **Redirect URLs**
-
-Without the second, confirmation and password-reset emails send people to a link
-Supabase rejects.
-
----
-
-## 7. First sign-in  ·  ~3 min
-
-- [ ] Open your address
-- [ ] Click **Create your free workspace** and make the first account
-- [ ] Set your **workspace geography** on the dashboard — your county, city, CDP or metro
-
-Setting the geography is what makes maps open on your area, binds stage-gate
-templates to your state's rules, and populates equity layers. Until it is set
-those surfaces behave neutrally and say so — OpenPlan never substitutes a
-plausible-looking default place.
-
-- [ ] Check the dashboard's readiness panel. It names anything still missing and
-      what each omission costs you. That panel, not this document, is the
-      authoritative answer for a running deployment.
-
----
-
-## Optional, once it is working
-
-| Add | What it turns on |
-|---|---|
-| `CENSUS_API_KEY` | ACS demographics and equity tracts. Free from the Census Bureau. |
-| `ANTHROPIC_API_KEY` | The planning assistant, comment synthesis, moderation, translation. |
-| A custom domain | `openplan.youragency.gov` instead of `*.vercel.app`. Vercel → Settings → Domains. |
-
-Everything else in `.env.example` is for subsystems most agencies will not run —
-the modeling worker, the aerial processing worker, county validation. Each is
-documented in [`SELF_HOSTING.md`](SELF_HOSTING.md), and OpenPlan says plainly
-which feature is unavailable rather than failing quietly.
-
----
-
-## If it does not work
-
-| What you see | What it means |
-|---|---|
-| Build fails immediately on Vercel | Root Directory is not set to `openplan` (step 5) |
-| Site loads, maps blank | Mapbox token missing or not a `pk.` public token |
-| Site loads, everything else errors | The Supabase values are the LOCAL ones (`127.0.0.1`). A deployed site cannot reach your computer — use the hosted project's keys from step 2. |
-| "could not be read" on many surfaces | Step 3 did not finish. Re-run `migration up --linked`. |
-| Confirmation email link is rejected | Step 6's Supabase redirect URL is not set |
-| `Must specify one of --local, --linked` | The two dashes: `npm exec -- supabase …` |
-
----
-
-## Keeping it up to date
-
-Vercel redeploys automatically when your fork changes — so the order below
-matters: it applies the new migrations **before** anything can trigger that
-deploy, instead of racing it. *(An earlier version of this page said to sync
-the fork first and then beat the deploy by hand. That is a race you can lose;
-this order has no race.)*
-
-1. **Read the release notes first.** `CHANGELOG.md` at the top of the
-   repository says what each release changes and whether it added migrations —
-   it is written for you, the operator.
-2. **Capture a complete recovery point.** Follow
-   `docs/ops/BACKUP_AND_RESTORE.md`. The database dump, Storage bytes, and their
-   hashes travel together. OpenPlan migrations are forward-only, so a verified
-   restore is the rollback path.
-3. **Pull the new code into your local clone only** (this does not touch your
-   fork on GitHub, so nothing deploys yet):
-   `git pull https://github.com/nfredmond/openplan.git main`
-4. **Apply the new migrations:**
-   `npm exec -- supabase migration up --linked`
-   Success looks like: each new migration named as "Applying…", then a clean
-   exit. The running app keeps working during this — migrations are written to
-   be safe under the previous version.
-5. **Now update your fork** (this triggers the deploy): `git push`, or the
-   "Sync fork" button on GitHub.
-
-**If a migration fails partway:** everything already applied stays applied;
-nothing is half-applied inside one migration. Running
-`npm exec -- supabase migration up --linked` again resumes from the failed one
-— transient network hiccups usually clear on the second run. If the same
-migration fails the same way twice, stop, do not sync the fork, and follow the
-isolated restore procedure if the app is misbehaving.
+Keep one concise record with the exact version/environment, evidence links,
+results of each relevant item, observed limitations and responsible operator.
+A local evaluation can be useful while production remains unproved. Production
+acceptance requires evidence for its actual topology, permitted data, recovery
+objectives and user workflows. Do not substitute a readiness panel, health check,
+CI badge or this completed checklist for the underlying observations.

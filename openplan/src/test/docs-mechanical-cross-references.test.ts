@@ -20,6 +20,21 @@ const APP_ROOT = process.cwd();
 
 const OPERATOR_DOCS = [
   path.join(REPO_ROOT, "README.md"),
+  path.join(APP_ROOT, "README.md"),
+  path.join(REPO_ROOT, "AGENTS.md"),
+  path.join(REPO_ROOT, "CLAUDE.md"),
+  path.join(REPO_ROOT, "CONTRIBUTING.md"),
+  path.join(REPO_ROOT, "docs", "README.md"),
+  path.join(REPO_ROOT, "docs", "ARCHITECTURE.md"),
+  path.join(REPO_ROOT, "docs", "ROADMAP.md"),
+  path.join(REPO_ROOT, "docs", "product", "V1_PRODUCT_CONTRACT.md"),
+  path.join(REPO_ROOT, "docs", "product", "CORE_REQUIREMENTS_LEDGER.md"),
+  path.join(REPO_ROOT, "docs", "product", "US_PLANNING_CAPABILITY_MATRIX.md"),
+  path.join(REPO_ROOT, "docs", "product", "WORKFLOW_HANDOFFS.md"),
+  path.join(REPO_ROOT, "docs", "product", "PLANNER_OBSERVATION_PROTOCOL.md"),
+  path.join(REPO_ROOT, "docs", "modeling", "STATUS_AND_VALIDATION.md"),
+  path.join(APP_ROOT, "docs", "ops", "RUNBOOK.md"),
+  path.join(APP_ROOT, "docs", "ops", "BACKUP_AND_RESTORE.md"),
   path.join(APP_ROOT, "docs", "FIRST_DEPLOYMENT.md"),
   path.join(APP_ROOT, "docs", "SELF_HOSTING.md"),
   // (2026-08-11) The plan-reading walkthrough. It is the first doc written for

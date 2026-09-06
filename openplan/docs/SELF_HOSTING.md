@@ -1,616 +1,234 @@
-# Self-hosting OpenPlan
+# Operating your own OpenPlan instance
 
-OpenPlan is free and open source. Any agency, MPO/RTPA, city, county, tribe, non-profit, or
-planning/environmental consultancy can run its own copy — your geography, your data, your database,
-no involvement from anyone else.
+OpenPlan is free, open-source software. Running it still requires a computer,
+storage, maintenance and, for some integrations, an external account or paid
+usage. Start with the [local setup](../../README.md). Use
+[FIRST_DEPLOYMENT](FIRST_DEPLOYMENT.md) to record what actually works on your
+chosen installation; use this page for configuration and operating requirements.
 
-**Who this is for.** Whoever is putting OpenPlan on the internet for your team — often a planner
-doing it themselves, sometimes a GIS analyst or whoever handles software at your agency. It assumes
-no prior knowledge of the codebase, or of the services involved, and explains each one before asking
-you to sign up for it. You do not need to be a programmer, but you will be creating accounts and
-copying keys between them, so set aside an uninterrupted hour.
+## Deployment profiles and current evidence
 
-**In a hurry?** [`FIRST_DEPLOYMENT.md`](FIRST_DEPLOYMENT.md) is the same path as a
-20-minute checklist with no explanation. Use that to work through it; use this document when
-something does not behave as expected.
-
-**Do this once, for everybody.** The point of deploying is that nobody else has to install
-anything. When you finish, OpenPlan lives at a web address; every planner at your agency visits it,
-creates an account, and starts working. If you only want to *evaluate* OpenPlan first, the README's
-["Running OpenPlan on one computer"](../../README.md) puts it on a single machine with no accounts
-and no public address — that is the smaller commitment, and a reasonable first step.
-
-**There is currently no hosted OpenPlan instance** — running your own copy is how you use it today.
-There is no waiting list and nobody to ask: the instructions below are the whole path. If a hosted
-deployment exists in the future it will be announced in the README; nothing here changes either way.
-
----
-
-## What you are standing up
-
-| Piece | What it is | Required? |
+| Profile | What exists | What remains unproved |
 |---|---|---|
-| **The web app** | Next.js 16 app in `openplan/`. Runs on Vercel, or any Node host. | Yes |
-| **Supabase project** | Postgres + PostGIS + Auth + Storage. Holds all of your data. | Yes |
-| **Mapbox token** | Renders every map surface. | Yes, in practice |
-| **Census API key** | ACS demographics, equity tracts. Free. | Strongly recommended |
-| **Anthropic API key** | AI drafting, synthesis, translation, the in-app assistant. | Optional |
-| **AequilibraE worker** | Separate Python process for network-assignment model runs — run always-on polling your database, or as a pool OpenPlan pushes to. | Only for modeling |
+| Local evaluation on Linux with Docker Engine | Supabase CLI configuration, app commands, county-worker Compose and local modeling launchers | Installation by someone unfamiliar with the project, on a clean computer, using only the published instructions |
+| Agency-owned production | App build/start commands and separate worker deployment guides | A complete hardened reference installation, unattended recovery and a full restore/cutover of representative agency data |
+| Optional hosted providers | Supabase and Vercel integration plus worker deployment examples | Eligibility, cost, capacity, persistence and operating evidence for the agency's actual workload |
 
-The app tells you, on the dashboard, which of these are missing and what each one costs you. That
-panel is the authoritative answer for a running deployment — this document is the setup path.
+The CLI stack created by `npm exec -- supabase start` is for local development
+and testing. Supabase says it is not hardened for production and must not be
+exposed to external traffic. Agency production needs the separate
+[Supabase self-hosting deployment](https://supabase.com/docs/guides/self-hosting),
+or an appropriately configured managed service. Putting the web app behind a
+public address does not change the CLI stack's status.
 
----
+The free reference path uses an existing Linux computer and
+[Docker Engine](https://docs.docker.com/engine/). Docker Desktop has separate
+terms: [government entities require a paid subscription](https://docs.docker.com/subscription-billing/desktop-license/).
+No paid provider is provisioned by these instructions. Provider-free cartography
+is not implemented: current map surfaces use Mapbox.
 
-## 0. Local development (no cloud accounts needed except Mapbox)
+OpenPlan's target remains core planning work throughout all 50 states and DC,
+with California the deepest implementation and separately validated AequilibraE
+and ActivitySim methods. An installation that omits compute or other services
+has reduced capability; it does not reduce that product commitment. See the
+[v1 contract](../../docs/product/V1_PRODUCT_CONTRACT.md).
 
-To run OpenPlan on one machine with a local database — for development, evaluation, or a
-single-user workstation — follow
-**["Running OpenPlan on one computer"](../../README.md#running-openplan-on-one-computer)** in the
-README. It installs Docker and Node step by step for Windows, macOS and Linux, and needs no cloud
-accounts beyond a free Mapbox token.
+## Application configuration
 
-That path is the right first move even if you intend to deploy: it proves the software runs and
-lets you look around before you create hosted accounts. Nothing you do locally carries over to a
-deployment — the local database is separate — so treat it as a trial, not as step one of the
-production setup.
+Run app commands from the repository's nested `openplan/` directory. The root
+README owns the local install sequence. The reference toolchain is Node 24;
+[package.json](../package.json) declares the npm version and commands. This is
+not a claim that every other Node version has been tested.
 
-Two things about the local instance that the README does not cover, because they only matter once
-you are working in it:
+Copy [the environment template](../.env.example) to a private `.env.local` and
+configure the services you actually run. Do not commit credentials. Public
+browser keys and server secrets have different purposes; the Supabase service
+role bypasses row-level security and belongs only in trusted server/worker
+configuration.
 
-- Signing up provisions your workspace immediately; local email confirmation is disabled, so the
-  account activates without a round-trip. There is no demo dataset to load — you pick your own
-  geography and create your own records, and nothing about the app is fitted to one place.
-- The local Supabase config sets its auth site URL to `http://127.0.0.1:3000`, so the
-  password-reset round-trip (`/forgot-password` → emailed link → `/auth/callback`) works from
-  `127.0.0.1:3000` but not from `localhost:3000`. Ordinary sign-in works from either.
-- `npm run dev` first applies pending local migrations. After a `git pull`, starting OpenPlan is
-  enough to bring the running local database up to the checked-out code without deleting data.
-  A stopped Docker/Supabase stack blocks startup rather than letting the app run against old tables.
+| Setting | Purpose and acceptance check |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | Point all components at the intended database. Confirm a saved project survives sign-out/sign-in and that a second workspace cannot read it. Local credentials belong only to the selected local instance. |
+| `NEXT_PUBLIC_SITE_URL` | Canonical origin. Match Supabase Auth Site URL and allowed callback/reset redirects. The checked-in local Auth configuration uses `http://127.0.0.1:3000`; use one consistent origin and test actual links. |
+| `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` | Public `pk.` token for current map surfaces. The legacy `NEXT_PUBLIC_MAPBOX_TOKEN` alias is accepted. Check the visible map and browser console, not token shape alone. |
+| `CENSUS_API_KEY` | Demographic/source requests and travel-model inputs. Activate the key and confirm the required source data can be retrieved for the selected geography. A configured key does not establish data coverage. |
+| `OPENPLAN_INTEGRATION_KEY_SECRET` | High-entropy secret for stored per-workspace integration keys. Generate securely, preserve with recovery configuration, and restrict access. Changing it invalidates existing encrypted keys. |
+| `ANTHROPIC_API_KEY` | Optional cloud AI requests. Inspect the material being sent and the provider cost before enabling. Model overrides are listed in the environment template. |
+| `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | Optional outbound application email. Without these, teammate invitations use a copyable link. Supabase Auth email delivery is configured separately. Test invitation and password-reset flows independently. |
+| `CHROME_EXECUTABLE_PATH` | Local Chrome/Chromium used for report PDF typesetting. If unavailable, the app uses its disclosed built-in writer tier; inspect the exported document. |
+| `CRON_SECRET` | Shared secret for the authenticated maintenance requests listed below. Configure the scheduler's protected environment as well as the app. |
 
-### Keeping an always-on local instance (optional)
+`NEXT_PUBLIC_*` values are included at build time: rebuild after changing them.
+Restart server processes after changing their private environment. A worker
+container's environment file is read when the container is created; changing
+the file and restarting only the app leaves that worker with old values.
 
-If you want a persistent instance to open in front of someone — rather than starting a dev
-server each time — run it from a **second checkout** and keep that checkout current with
-`scripts/ops/refresh-walkthrough-instance.sh`:
+For local evaluation, these are the existing database and app commands:
 
 ```bash
-scripts/ops/refresh-walkthrough-instance.sh ~/apps/openplan
+npm exec -- supabase migration up --local
+npm run dev
 ```
 
-It fast-forwards the instance to `origin/main`, reinstalls, rebuilds, and restarts the service
-unit that serves it. It **refuses** to run if that checkout has uncommitted changes or commits
-that were never pushed, so refreshing a demo box can't cost you work. It never copies secrets;
-it only reports, by name, variables your canonical `.env.local` defines that the instance is
-missing — worth heeding, because a missing one degrades a feature silently rather than loudly.
-
-Use a separate checkout on purpose: `next dev` in your working copy and `next start` in the
-instance would otherwise contend for the same `.next` directory.
-
-### Which build am I looking at?
-
-Two OpenPlans now answer on localhost, and a port number is not an identity. Ask the instance:
-
-```bash
-scripts/ops/which-openplan.sh http://localhost:3000
-```
-
-It prints the version and commit the instance reports and compares them to your current
-checkout, exiting non-zero on a mismatch — so it can gate a script, not only inform you. **Run it
-before you conclude anything from a browser.** On 2026-08-08 a testing pass spent half an hour
-diagnosing a bug on the walkthrough instance while it sat 174 commits behind `main`; the bug had
-already been fixed in the tree being edited.
-
-An instance answers `commit: unknown` until something stamps `OPENPLAN_COMMIT_SHA` for it. The
-refresh script does this automatically. Deliberately, that variable is **not** in `.env.example`
-and you should not set it by hand: a value copied once and never updated makes the instance
-report a build it is not running, which is worse than admitting it does not know. Let the thing
-that builds the instance set it — Vercel supplies `VERCEL_GIT_COMMIT_SHA` on its own.
-
-Everything below this point is the production/deployment path.
-
----
-
-## 1. Supabase project
-
-**Supabase** is the database. It stores every project, comment, model run and account in your
-deployment, and it handles sign-in. It is a company running Postgres for you, so that you are not
-administering a database server. Its free tier is enough to start.
-
-1. Create a free account and a project at [supabase.com](https://supabase.com). Choose a region near
-   your users and set a strong database password — **save that password**, as Supabase shows it once.
-
-   Your project gets an address like `https://abcdefghijklm.supabase.co`. The random-looking part —
-   `abcdefghijklm` — is your **project ref**, and a later command asks for it. Everything below
-   refers to *your* project, never anyone else's.
-
-2. From *Project Settings → API*, collect:
-   - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
-   - **anon / public key** → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - **service_role key** → `SUPABASE_SERVICE_ROLE_KEY`
-
-   The service-role key bypasses Row Level Security by design. It is used only in server code and in
-   the modeling worker. **Never expose it to a browser and never commit it** — anyone holding it can
-   read and change every workspace in your deployment. The other two keys are safe to publish; the
-   `NEXT_PUBLIC_` prefix means they are sent to browsers on purpose.
-
-3. Create the tables. A new Supabase project is empty; OpenPlan's ~157 tables have to be built in
-   it. Run this on a computer that has the code (see the README's local setup for how to get it),
-   from inside the `openplan` folder:
-
-   ```bash
-   npm exec -- supabase link --project-ref <your-project-ref>
-   npm exec -- supabase migration up --linked
-   ```
-
-   `link` tells the tool which of your Supabase projects to talk to; it will ask for the database
-   password from step 1. `migration up` then builds the tables. Expect a long list of migration
-   names and a minute or two of work.
-
-   `migration up` applies only migrations that have not run yet. Do **not** use `supabase db reset`
-   against a project with real data — it re-applies every migration from scratch and destroys the
-   contents.
-
-   **Apply migrations before you deploy the app, not after.** OpenPlan degrades honestly when a column
-   is missing — it says a thing could not be read rather than reporting an empty result as a finding —
-   but "could not be read" is still what your users see, and on the public engagement portal that
-   audience is members of the public rather than staff. Deploying code ahead of its migrations turns a
-   deploy window into a window where every resident who opens a campaign is told the map could not be
-   framed. Running them in this order costs nothing and closes that window entirely.
-
-Row Level Security is enabled on every tenant table and scopes rows to workspace membership. Nothing
-further is required to isolate one agency's data from another's within a deployment.
-
-### Accounts and workspaces
-
-Sign-up is self-serve and free. A database trigger (`handle_new_user`) provisions a workspace for
-each new account automatically, and the account owner can invite teammates from the dashboard. There
-is no access queue, no approval step, and no payment step to configure.
-
-**Configure Supabase Auth URLs for your domain.** Under *Authentication → URL Configuration* in the
-Supabase dashboard, set the **Site URL** to your deployment's origin and add
-`https://<your-domain>/auth/callback` to the **Redirect URLs** allowlist. This is what makes the
-email-confirmation link and the password-reset link (`/forgot-password` → `/auth/callback`) return to
-your app instead of being rejected. If you leave **Confirm email** enabled (the Supabase default on a
-hosted project), sign-up shows a "confirm your email to finish" step and the account activates when
-the emailed link is clicked; if you disable it, sign-up drops the user straight into their workspace.
-Either way the app handles it — but the redirect URL must be allowlisted first.
-
----
-
-## 2. Environment variables
-
-Copy `.env.example` to `.env.local` for development, or set these in your host's environment for
-production. Grouped by what breaks without each.
-
-### Required — the app will not work
-
-| Variable | Consequence if missing |
-|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | No database, no auth. Nothing works. |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Same. |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server-side writes fail — workspace provisioning, geography, ingestion. |
-| `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` | Every map renders blank: shell backdrop, Explore, Safety, engagement maps. |
-
-**About the Mapbox token.** Get one free at [mapbox.com](https://account.mapbox.com/). It must be a
-**public** token — these begin with `pk.`. A secret token (`sk.`) will not work in a browser and
-must never be published. The legacy name `NEXT_PUBLIC_MAPBOX_TOKEN` is still accepted as an alias,
-but prefer `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`.
-
-`NEXT_PUBLIC_*` variables are inlined at **build** time. Changing one requires a rebuild, not just a
-restart.
-
-### Recommended — features return empty without them
-
-| Variable | Consequence if missing |
-|---|---|
-| `CENSUS_API_KEY` | Equity choropleths stay empty, census-tract ingestion does not populate, ACS-backed corridor demographics are unavailable. These surfaces return *no data* rather than an error — indistinguishable from "there is nothing here for my area" unless you know the key is absent. |
-| `ANTHROPIC_API_KEY` | AI-assisted grant drafting, engagement synthesis, translation, moderation, and the in-app assistant are unavailable. Everything else works. |
-
-A Census API key is **free** and issued instantly at
-[api.census.gov/data/key_signup.html](https://api.census.gov/data/key_signup.html).
-
-### Optional — specific subsystems
-
-| Variable | What it enables |
-|---|---|
-| `NEXT_PUBLIC_SITE_URL` | The canonical public origin of your deployment (e.g. `https://plan.example.gov`) — governs the canonical URL and social-preview origin of every public page. On Vercel it falls back to the deployment URL; on other hosts, set it. |
-| `CHROME_EXECUTABLE_PATH` | Path to a Chrome/Chromium binary for report PDF typesetting on a non-serverless host. Falls back to `/usr/bin/google-chrome`; without any Chrome, PDFs use the built-in writer tier and disclose it in the document. |
-| `OPENPLAN_ASSISTANT_MODEL`, `OPENPLAN_GRANTS_AI_MODEL`, `OPENPLAN_ENGAGEMENT_{SYNTHESIS,TRANSLATION,MODERATION}_MODEL` | Override the Claude model each AI surface uses — cost/quality controls; unset uses the compiled defaults. |
-| `OPENPLAN_EQUITY_INGEST_TOKEN` | Bearer token gating the equity-designation tract ingest endpoint. |
-| `OPENPLAN_INTEGRATION_KEY_SECRET` | Optional. Enables **per-workspace integration keys**: with it set, workspace owners/admins can store their own Anthropic and Census keys from the dashboard — encrypted with this secret, validated live before saving, and billed to their own provider accounts. **Set it to a high-entropy value** — `openssl rand -hex 32` — never a passphrase: the secret is the only thing standing between a database dump and the stored keys, and stored ciphertexts are only as strong as it is (16 characters is the enforced minimum, not a recommendation). **Unset, per-workspace keys are simply disabled** and the panel says so; the deployment env keys above keep working exactly as before. Rotating or changing this secret invalidates every stored workspace key (they fail decryption and fall back to the deployment env keys), so after a rotation teams re-enter their keys. Keys stored before the salted-KDF upgrade (`v1:`-format ciphertexts) remain readable under the same secret — no re-entry is needed for the upgrade itself. |
-| `OPENPLAN_WORKER_LOCAL_ROOT` | Single-machine deployments only: filesystem root where a co-located modeling worker writes artifacts so the app reads them from disk. |
-| `OPENPLAN_MODELING_WORKER` | Declares whether a **polling** AequilibraE worker serves this deployment: `deployed` or `absent`. A poller reads your database, so the app has nothing to probe and cannot find out for itself. **Unset means "not declared"** — nothing changes, and the model launch controls go on inferring a missing worker from runs that were queued and then reaped. Declaring it is what lets the *first* launch be honest instead of the second: with `absent`, worker-backed runs are refused at the launch button naming this deployment; with `deployed`, they launch normally, and a run that is never picked up still refuses the next one, because run history outranks the declaration. Not a plan or a tier — nothing here is for sale. |
-| `OPENPLAN_MODELING_WORKER_URL` / `_TOKEN` | Optional. A worker OpenPlan **pushes** each queued model run to, instead of waiting for one to poll — which is what lets you run a stateless pool rather than an always-on machine, and is the only configuration in which a planner is told *at launch* whether anything took their run. Both are required together: a URL with no token is refused rather than used, because the endpoint starts minutes of compute on request. Give the base URL; the contract path is appended. Run the worker with `AEQ_WORKER_MODE=push` (or `both`) and the same token. It composes with the declaration above rather than replacing it — every stage is claimed atomically, so a poller and a push pool can both serve one deployment with no coordination. |
-| `OPENPLAN_MODELING_QUEUE_DEPTH` | Optional operator bound on how many model runs one workspace may have waiting on the processing worker at once. **Unset means unlimited** and the counting query is never even run — the default, and the right setting for a self-hosted deployment. Set it only to protect compute you pay for; the refusal names you rather than offering anyone an upgrade. |
-| `CRON_SECRET` | Authorizes all three scheduled jobs (see "The scheduled jobs" below): the model-run reaper, the GTFS-ingest reaper, and the daily deadline-reminder sweep. **You must set this yourself, on Vercel too** — Vercel *sends* the header automatically on scheduled invocations once the variable exists, but it does not create the variable, and while it is unset every cron answers 401 on every run. Setting it is necessary but NOT sufficient off Vercel: a scheduler must actually call each path (the model pages' reconcile-on-read is the only rescue for stuck runs meanwhile, and deadline reminders simply do not fire). On another host, set it and send `Authorization: Bearer $CRON_SECRET` from your scheduler. *(Corrected 2026-08-04: this row previously said Vercel "sets" it; 2026-08-17: named all three jobs, not only the reaper.)* |
-| `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | Outbound email. Without them the app does not pretend to send: teammate invitations produce a link the inviter copies and sends themselves. |
-| `OPENPLAN_COUNTY_ONRAMP_WORKER_URL` / `_TOKEN` / `_CALLBACK_BEARER_TOKEN` | Dispatches county-onramp jobs to the worker in `workers/county_onramp_worker/` — the service that actually produces a travel number. Without the URL the app prepares the job and reports `deliveryMode: "prepared"` rather than claiming it was submitted. Both bearer tokens are required once the URL is set: `_TOKEN` authenticates job, status, and cancellation requests; `_CALLBACK_BEARER_TOKEN` authenticates worker callbacks, which must also carry the active job id. Use different random values. On one computer, `npm run modeling:up` starts the worker in Docker and reads the same `.env.local`; `npm run doctor` reports on all settings. See `workers/county_onramp_worker/DEPLOY.md`. |
-| `OPENPLAN_COUNTY_ONRAMP_CALLBACK_ORIGIN` | Optional. The address the WORKER should post a finished run back to, when that differs from the address a browser reaches OpenPlan at. Unset, the request origin is used — correct whenever the worker can use the same address. It cannot from inside a bridge-networked container, where `localhost` is the container: set `http://host.docker.internal:3000` there, or the deployment's public URL on a server. Same posture and same fallback as `OPENPLAN_KB_OCR_CALLBACK_URL`. Resolved once, in the payload builder, so the callback URL shown on a run page is the one the worker was handed. |
-| `OPENPLAN_AERIAL_PROCESSING_*` | Aerial Ops integration with an external processing platform. |
-| `OPENPLAN_RTP_EXTRACTION_MODEL` | Which Claude model transcribes an adopted plan document into staged figures and verbatim chapter text. Unset uses the strong default rather than the cheap one, on purpose: the job is copying figures out of a table, and a model that paraphrases a number is the whole failure mode. Every figure is checked against the words it quoted before it is staged, so a cheaper model does not produce wrong figures — it produces *fewer* figures, each dropped one a planner then types by hand. |
-| `OPENPLAN_KB_OCR_WORKER_URL` / `_TOKEN` | Optional. Turns SCANNED documents into citable, page-anchored text using the OCR worker in `workers/ocr_worker/`. **Required together** — a URL with no token is treated as unconfigured, because the endpoint spends a machine's cores on request. Without them, a scanned PDF is stored and marked unreadable, and the library says *this deployment has no OCR service* rather than saying scans are unsupported. |
-| `OPENPLAN_KB_OCR_CALLBACK_BEARER_TOKEN` / `OPENPLAN_KB_OCR_CALLBACK_URL` | The token the worker presents when it delivers recognised text, and the public origin it delivers to. **Without the token the callback route answers 503 and no recognised text can ever land**, so a job runs to completion and delivers nothing. The URL falls back to the request origin in development; set it in production. |
-| `OPENPLAN_KB_OCR_LANGUAGES` | Tesseract language codes (`eng`, `spa`, `vie`, `chi_sim`…), comma- or plus-separated, in priority order. Unset means `eng`. **Not cosmetic:** a Spanish-language plan recognised with the English model comes back looking exactly like text and saying nothing, and nothing downstream can tell. Install the matching `tesseract-ocr-<lang>` package in the worker image. |
-| `OPENPLAN_KB_OCR_CALLBACK_MAX_BYTES` | Largest OCR delivery this deployment accepts, in bytes. Unset means 4 MiB — deliberately under the 4.5 MB request-body limit a Vercel Function enforces and cannot be raised past. A self-hosted deployment can raise it to whatever its reverse proxy allows. A document whose text exceeds the ceiling FAILS naming both numbers rather than delivering part of itself. |
-| `LODES_YEAR` | Pins the LEHD LODES vintage used for commute flows. |
-| `OPENPLAN_MONTHLY_RUN_CAP` | An optional per-workspace monthly cap on expensive runs. **Unset means unlimited**, which is the default and the right setting for a self-hosted deployment. Set it only if you run a public deployment and need to protect your own compute. It is an operator limit, not a tier — model-run launches count 5×, everything else 1×, and the refusal names you rather than offering an upgrade. |
-
-### Removed
-
-`OPENPLAN_STRIPE_*`, `STRIPE_SECRET_KEY`, `OPENPLAN_BILLING_*` no longer do anything — the
-Stripe/subscription/plan subsystem has been deleted. OpenPlan has no plans, no tiers, no per-plan
-quotas, and no payment step. If these are set in an existing deployment, remove them.
-
-**Nothing in OpenPlan is gated behind payment.** If you find a surface that refuses an action for a
-billing-shaped reason, that is a bug — please report it.
-
----
-
-## 3. Deploy the web app
-
-This is the step that turns OpenPlan from something on your computer into a web address your
-colleagues can use.
-
-**Vercel** is a hosting company. It watches your copy of the OpenPlan code on GitHub and, whenever
-that code changes, rebuilds the site and publishes it. Its free tier is sufficient for a small
-agency. You can use any Node host instead — see the end of this section — but Vercel needs no
-server administration, which is why it is the documented path.
-
-### 3a. Put the code somewhere Vercel can see it
-
-Vercel deploys from a code repository. If you have not already:
-
-1. Create a free account at [github.com](https://github.com).
-2. Go to [github.com/nfredmond/openplan](https://github.com/nfredmond/openplan) and click **Fork**
-   (top right). A fork is your own copy — you can deploy from it and pull in later updates.
-
-**Success looks like:** a repository at `github.com/<your-account>/openplan` with a folder called
-`openplan` inside it. That inner folder matters in the next step.
-
-### 3b. Create the Vercel project
-
-1. Sign up at [vercel.com](https://vercel.com) and choose **Continue with GitHub**, so Vercel can
-   see your fork.
-2. Click **Add New… → Project**. Find your `openplan` fork and click **Import**.
-3. **Set the Root Directory.** Vercel asks which folder holds the app. Click **Edit** next to Root
-   Directory and choose **`openplan`**.
-
-   > This is the one setting people get wrong. The repository contains a folder called `openplan`,
-   > and the app is inside it. Leaving this at the repository root produces a build failure that
-   > does not explain itself.
-
-**Success looks like:** the import screen shows Root Directory as `openplan`, and the framework
-detected as **Next.js**. If it says "Other", the root directory is wrong — go back and fix it now
-rather than after a failed build, because the build error does not name this as the cause.
-
-4. Leave the framework, build command, and output directory alone. The repository's `vercel.json`
-   already sets them, and it also registers the scheduled jobs described below.
-5. **Do not click Deploy yet.** Add the environment variables first — the next step.
-
-### 3c. Add the environment variables
-
-On the same import screen, expand **Environment Variables**. Add each of the four required settings
-from [section 2](#2-environment-variables) — the three Supabase values from your hosted project and
-your Mapbox token. Add `CENSUS_API_KEY` and `ANTHROPIC_API_KEY` too if you have them.
-
-Two that only matter once you are deployed:
-
-| Setting | Value |
-|---|---|
-| `NEXT_PUBLIC_SITE_URL` | your deployment's address, e.g. `https://openplan-yourteam.vercel.app` |
-| `CRON_SECRET` | any long random string you invent — it authorises the three scheduled jobs below |
-
-**Success looks like:** at least the four required settings listed, with no empty values. A missing
-Mapbox token is the one that misleads — the site loads perfectly with blank white maps, which reads
-as broken software rather than one absent line.
-
-You will not know your address until the first deploy finishes. Deploy without
-`NEXT_PUBLIC_SITE_URL`, note the address Vercel gives you, then add it and redeploy. Everything
-works in the meantime except links OpenPlan generates for emails and share links.
-
-> **The Supabase values here must come from your hosted Supabase project, not from
-> `supabase start`.** The local ones point at `127.0.0.1` — your own machine — which a deployed site
-> cannot reach. If maps load but nothing else does, this is why.
-
-### 3d. Deploy, then finish two settings
-
-Click **Deploy**. The first build takes a few minutes. When it finishes, Vercel shows you the
-address.
-
-Two things still need that address:
-
-1. **Add `NEXT_PUBLIC_SITE_URL`** as described above and redeploy.
-2. **Tell Supabase about your domain.** Without this, confirmation and password-reset emails send
-   people to a rejected link. In the Supabase dashboard → *Authentication → URL Configuration*, set
-   **Site URL** to your address and add `https://<your-address>/auth/callback` to **Redirect URLs**.
-   This is the same step described under [Accounts and workspaces](#accounts-and-workspaces).
-
-**Success looks like:** you can open the address, create an account, receive the confirmation email,
-click its link, and land back in OpenPlan with a workspace already created for you. If the email
-link is rejected, step 2 above has not been done — the deployment is fine.
-
-**If pages say "could not be read" instead:** your database is behind the code. That is the
-migrations step, not a bug. See [Upgrading a running deployment](#upgrading-a-running-deployment).
-
-Now open your address, click **Create your free workspace**, and make the first account. Then set
-your workspace geography — [section 4](#4-set-your-workspace-geography).
-
-### The scheduled jobs
-
-`vercel.json` registers **three** cron jobs, all authenticated with the `CRON_SECRET` you set
-above. On Vercel they run automatically. **On any other host you must schedule every one of them
-yourself** — setting `CRON_SECRET` alone does nothing; a scheduler has to call each path on its
-cadence, sending an `Authorization: Bearer <your CRON_SECRET>` header:
-
-| Path | Cadence | What stops working without it |
-| --- | --- | --- |
-| `GET /api/cron/reap-model-runs` | every 5 min | a crashed model run stays marked "running" forever instead of being recorded as failed |
-| `GET /api/cron/reap-gtfs-ingests` | every 15 min | a stalled transit-feed import never resolves |
-| `GET /api/cron/sweep-deadlines` | daily | **deadline reminders never fire** — the My Work panel will say so plainly ("reminders are not running on this deployment") until a scheduler is wired, because it reports the sweep's own last run, not merely that `CRON_SECRET` is set |
-
-A crontab on any Unix host, with `CRON_SECRET` and your base URL exported:
-
-```cron
-*/5  * * * *  curl -fsS -H "Authorization: Bearer $CRON_SECRET" "$OPENPLAN_URL/api/cron/reap-model-runs"    >/dev/null
-*/15 * * * *  curl -fsS -H "Authorization: Bearer $CRON_SECRET" "$OPENPLAN_URL/api/cron/reap-gtfs-ingests"  >/dev/null
-0 13 * * *    curl -fsS -H "Authorization: Bearer $CRON_SECRET" "$OPENPLAN_URL/api/cron/sweep-deadlines"    >/dev/null
-```
-
-The My Work reminder panel reads the sweep's recorded heartbeat, so once your scheduler is calling
-`sweep-deadlines` the panel goes quiet on its own within a day; if the scheduler later stops, the
-panel says the sweep "has not run recently" rather than silently implying nothing is due.
-
-### On a host other than Vercel
-
-Any host that runs Node works. From `openplan/`:
+`npm run dev` also runs `predev`, which synchronizes local migrations. For an
+already provisioned deployment, the app-only build/start sequence is:
 
 ```bash
 npm ci
-npm run build     # webpack builder, not Turbopack
+npm run build
 npm start
 ```
 
-Set the same environment variables in that host's configuration, and schedule all three cron jobs
-described above.
+`npm start` does not apply migrations, configure TLS, supervise services or
+install Supabase. Apply release-appropriate migrations to the intended target
+before admitting traffic. A linked managed project uses
+`npm exec -- supabase migration up --linked` after linking that project; this
+is not the command for an independently self-hosted Supabase deployment.
+The latter's migration/role/extension setup still needs a tested OpenPlan recipe.
 
----
+## Local compute and document processing
 
-## 4. Set your workspace geography
+A shared public worker service has not been commissioned by this review. The planned hosted preview will need the services for its advertised workflows. Independent operators run those services on
+their own infrastructure or arrange a separate provider. Long-running compute
+needs a durable worker process, its inputs and persistent artifact storage.
 
-After the first sign-in, open the dashboard and set the **workspace geography** — the county, city,
-CDP, or metro area where your agency works. This is the one place OpenPlan records "where are we",
-and several surfaces read it:
+**County-onramp worker.** Before creating its container, configure
+`CENSUS_API_KEY`, `OPENPLAN_COUNTY_ONRAMP_WORKER_URL` (the local job endpoint is
+`http://127.0.0.1:8686/jobs`), `OPENPLAN_COUNTY_ONRAMP_WORKER_TOKEN` and a separate
+`OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN` in `.env.local`. Both sides must
+use the matching token for each direction. Set
+`OPENPLAN_COUNTY_ONRAMP_CALLBACK_ORIGIN` when the worker needs a different
+reachable callback origin. Then, from the app directory:
 
-- map cameras open on your area instead of a neutral continental view;
-- stage-gate templates bind to your state's rules rather than staying unbound;
-- census tracts for your county are ingested so equity layers populate;
-- Safety and modeling study areas pre-fill.
+```bash
+npm run modeling:up
+npm run modeling:logs
+```
 
-Until it is set, those surfaces behave neutrally and say so. OpenPlan will never substitute a
-plausible-looking default place.
+The [Compose file](../../workers/county_onramp_worker/docker-compose.yml) uses
+host networking, a loopback listener and a repository bind mount. This is the
+Linux reference topology. Check host/user permissions and callback reachability;
+a Docker Desktop installation needs its own networking review. After changing
+worker environment values, recreate the affected container with the configured
+environment and preserve its mounted data. Restart the app too. An accepted job,
+authenticated callback and inspectable output establish more than a health reply.
 
----
+**General demand-model workers.** `npm run modeling:local` starts the local
+AequilibraE and ActivitySim pollers. It is a separate path from `modeling:up`,
+which starts the county-onramp service. The launchers discover existing Python
+environments; they do not install a complete execution environment. Follow the
+[AequilibraE guide](../../workers/aequilibrae_worker/DEPLOY.md) and
+[ActivitySim guide](../../workers/activitysim_worker/DEPLOY.md).
+ActivitySim explicitly falls back to preflight-only when its execution
+environment is missing. A running poller therefore does not establish that
+ActivitySim executed, and an executed model does not establish scientific validity.
 
-## 5. Modeling worker (only if you want model runs)
+For co-located run artifacts, configure `OPENPLAN_WORKER_LOCAL_ROOT` to the
+persistent filesystem root shared by the app and worker. Include required
+`local://` artifacts in recovery inventory. A remote worker cannot use an
+unshared local path as if it were object storage.
 
-Screening-grade network assignment runs in a separate Python process — the AequilibraE worker in
-`workers/aequilibrae_worker/`. See
-[`workers/aequilibrae_worker/DEPLOY.md`](../../workers/aequilibrae_worker/DEPLOY.md) for the
-deployment commands.
+`OPENPLAN_MODELING_WORKER` declares whether a poller is deployed or absent;
+observed run and heartbeat evidence also matter. The optional push endpoint uses
+`OPENPLAN_MODELING_WORKER_URL` and `OPENPLAN_MODELING_WORKER_TOKEN` together.
+Follow its deployment guide for polling versus push-only configuration. Current
+heartbeat/reaper behavior still needs long-run interruption and recovery proof;
+keep a failed or inconclusive run in that state until its evidence is resolved.
 
-### The short way: one-click deploy
+**Documents and aerial processing.** Local text extraction and OCR are distinct
+from cloud AI extraction of structured material. OCR uses
+`OPENPLAN_KB_OCR_WORKER_URL`, `OPENPLAN_KB_OCR_WORKER_TOKEN`,
+`OPENPLAN_KB_OCR_CALLBACK_BEARER_TOKEN` and `OPENPLAN_KB_OCR_CALLBACK_URL`.
+Install the language data selected by `OPENPLAN_KB_OCR_LANGUAGES`; the callback
+ceiling is configured by `OPENPLAN_KB_OCR_CALLBACK_MAX_BYTES`. Follow the
+[OCR deployment guide](../../workers/ocr_worker/DEPLOY.md). Aerial processing has
+its own [worker deployment guide](../../workers/odm_worker/DEPLOY.md) and
+configuration in the environment template. An external worker receives the
+inputs needed for its job; selecting a remote endpoint changes where those
+inputs are processed.
 
-[`workers/aequilibrae_worker/render.yaml`](../../workers/aequilibrae_worker/render.yaml) is a Render
-Blueprint. It builds the worker's Dockerfile, generates the trigger token for you so it cannot be
-left blank, and health-checks `/healthz` so a worker that cannot start fails the deploy instead of
-going live broken.
+## Services, schedules and upgrades
 
-1. Fork this repository to your own GitHub account.
-2. In Render: **New → Blueprint**, point it at your fork.
-3. Supply the three values it asks for: your Supabase URL, your **service role** key, and
-   (recommended) a Census API key.
-   **Success looks like:** the service reaches *Live*, and its Events tab shows the health check
-   passing. A deploy that fails here has not half-worked — nothing is registered with OpenPlan yet.
-4. Copy the service URL into `OPENPLAN_MODELING_WORKER_URL`, and the token Render generated into
-   `OPENPLAN_MODELING_WORKER_TOKEN`. **The two token values must match exactly**, or every run is
-   rejected with no visible error.
-5. Run `npm run doctor`.
-   **Success looks like:** `[  OK  ] Modeling worker answered at /healthz`. Anything else names what
-   is wrong. This step is the whole point — a wrong URL, a missing token and a sleeping service are
-   *indistinguishable from inside OpenPlan*, where all three look like a run that sits queued.
+A production installation needs named ownership of TLS, firewall rules,
+service supervision, database and storage persistence, secrets, outbound
+connections, monitoring, backups and recovery. No single checked-in command
+currently establishes all of those for a new agency.
 
-A free instance sleeps when idle, so the first run after a quiet period can take up to a minute to
-wake. That is not a failure, and `npm run doctor` says so rather than letting it read as one.
+The schedules in [vercel.json](../vercel.json) are:
 
-### The longer way, and what the modes cost
+| Authenticated GET endpoint | Required schedule |
+|---|---|
+| `/api/cron/reap-model-runs` | Every 5 minutes |
+| `/api/cron/reap-gtfs-ingests` | Every 15 minutes |
+| `/api/cron/sweep-deadlines` | Daily at 13:00 UTC |
 
-**There are two ways to start it, and they cost different amounts.** `AEQ_WORKER_MODE` on the worker
-selects one; both execute runs through exactly the same code, so nothing about a run differs between
-them.
+On a self-hosted installation, arrange a scheduler that sends
+`Authorization: Bearer <CRON_SECRET>` using a protected environment and records
+failures. Merely setting a variable in an interactive shell does not configure
+cron. Confirm the intended cleanup/reminder effects as well as delivery.
 
-| Mode | What it is | What it costs | Deploy with |
-| --- | --- | --- | --- |
-| `poll` (default) | The worker reads queued runs out of your Supabase project. The app never calls it, so there is no URL to configure. | An always-on process. Fly.io is roughly **$3–5/month**; Railway's monthly free credit covers light use. | `workers/aequilibrae_worker/fly.toml` |
-| `push` | The worker serves an HTTP trigger, and the app POSTs each queued run to it. Nothing has to stay running between runs. | Whatever your platform charges for the compute a run actually uses — a scale-to-zero pool idles at nothing. | `workers/aequilibrae_worker/fly.push.toml` |
-| `both` | Both at once, with nothing for you to coordinate. Between processes, every stage is taken with an atomic *queued → running* claim, so whichever reaches a stage first runs it and the other stops — no lock to configure, and no way for a run to execute twice. Inside the one process, the polling thread and the push thread execute stages one at a time rather than side by side. | As `poll`. | either, with `AEQ_WORKER_MODE=both` |
+Before upgrading, read the [release notes](../../CHANGELOG.md), capture the
+[recovery inventory](ops/BACKUP_AND_RESTORE.md), and rehearse the release against
+populated data. Coordinate migrations and app/worker rollout rather than racing
+an automatic deployment. Forward migrations are not an automatic rollback path;
+old-code compatibility must be established for the particular release. Keep the
+previous instance and recovery point until the new one is accepted.
 
-The two Fly configs are separate files because they are opposite configurations: the polling one has
-no HTTP service and is never stopped, the push one serves a port and is allowed to stop when idle.
-`DEPLOY.md` has the commands for both, plus Railway and plain Docker.
+The [walkthrough refresh helper](../scripts/ops/refresh-walkthrough-instance.sh)
+is maintenance for an already configured local service, not an installer. It
+assumes a particular checkout, service and port. It now stops before building
+when migration state cannot be verified, and reports failure if the restarted
+service does not return the expected commit. A failure after restart can still
+require recovery. See the [consolidation verification record](../../docs/reviews/2026-09-06-consolidation/VERIFICATION.md)
+for check scope. Its final message alone is insufficient acceptance evidence. Use
+[which-openplan.sh](../scripts/ops/which-openplan.sh) and recorded build identity
+alongside actual saved-work checks.
 
-**To use the push mode**, set `OPENPLAN_MODELING_WORKER_URL` to the worker's base URL and
-`OPENPLAN_MODELING_WORKER_TOKEN` to a shared secret, and set the same token on the worker (with
-`AEQ_WORKER_MODE=push`). Both are required together — a URL with no token is refused rather than
-used, because that endpoint starts minutes of compute on request. The contract path is appended for
-you, so give the base URL.
+## External connections and optional providers
 
-This is also the only configuration in which OpenPlan can tell a planner **at launch** whether
-anything took their run: the push either is accepted or is not, and either answer is on screen
-immediately instead of arriving fifteen minutes later as a reaper failure.
+Local storage does not mean offline operation. The following is the inspected
+integration inventory; a complete network trace of every reachable workflow has
+not been performed. Record the services enabled for your installation and verify
+sensitive workflows before using private planning material.
 
-**Two things push mode asks of you, and it is not honest to leave them out.**
+| Destination | Information sent or retrieved |
+|---|---|
+| Mapbox | Map styles, tiles and camera/area requests. GIS import static previews send the imported layer's bounding polygon in the image request. See [pricing](https://www.mapbox.com/pricing) and [GL JS license](https://github.com/mapbox/mapbox-gl-js/blob/main/LICENSE.txt). |
+| Configured Supabase origin | Accounts, planning records, files and database queries. Local CLI evaluation keeps this service local; choosing a hosted origin sends this traffic to that provider. See [hosting responsibilities](https://supabase.com/docs/guides/self-hosting) and [managed pricing](https://supabase.com/pricing). |
+| Census, TIGERweb, LEHD, OSM and other source services | Geography/source queries and downloads. Consult [Census](https://www.census.gov/data/developers.html), [TIGERweb](https://tigerweb.geo.census.gov/), [LEHD](https://lehd.ces.census.gov/data/), [OSM terms](https://www.openstreetmap.org/copyright) and [Mobility Database](https://mobilitydatabase.org/). Transit, crash and other integrations add their own source endpoints. |
+| Anthropic | Material selected for enabled AI actions: prompts/context, comments and document text or images. [API usage is priced separately](https://platform.claude.com/docs/en/about-claude/pricing). |
+| Resend | Recipients, message content and relevant invitation/reminder links. [Provider limits and pricing](https://resend.com/pricing) apply. |
+| Configured workers | Job inputs, document/image locators or bytes, configuration, callbacks and outputs. Processing is local only when the configured service and storage are local. |
+| Source/package/image registries and tooling | Installation/update downloads and tool telemetry where enabled. Supabase distinguishes CLI telemetry from its self-hosted service in its [documentation](https://supabase.com/docs/guides/self-hosting). |
 
-1. *The pool must stay alive while a run drains.* The worker answers the push immediately and then
-   executes for minutes, so a platform that reclaims an instance the moment it looks idle can stop
-   one mid-run. The worker treats a stop signal as *stop accepting, then finish* — it drains what it
-   accepted and names in its logs anything it could not — but only if your platform waits: set
-   `kill_timeout` (Fly), `terminationGracePeriodSeconds` (Kubernetes) or `docker stop --timeout` at
-   least as high as your longest stage. `fly.push.toml` sets Fly's maximum of five minutes.
-2. *Schedule the staleness sweep.* `/api/cron/reap-model-runs` with `CRON_SECRET` is what turns an
-   interrupted or abandoned run into an honest failure. Nothing is silently lost without it — the
-   model page reconciles stale runs whenever it loads — but on a push-only deployment there is no
-   poller to rescue anything, so the sweep is the safety net.
+Hosted providers are optional integrations, with separate terms and costs.
+[Vercel Hobby](https://vercel.com/docs/plans/hobby) is for personal,
+non-commercial use; its [once-daily cron limit](https://vercel.com/docs/cron-jobs/usage-and-pricing)
+does not satisfy the two frequent schedules above. It is not the documented
+free agency reference. [Render's free service](https://render.com/docs/free)
+is unsuitable as an assumed durable production worker: its documented limits
+include ephemeral storage and service interruption. [Fly](https://fly.io/docs/about/pricing/)
+and [Railway](https://docs.railway.com/pricing/plans) charge according to their
+current plans and resource usage. No fixed monthly estimate or continuing
+free allowance is promised here. The cited deployment, Docker Desktop, Vercel cron and hosting-plan boundaries
+were rechecked September 6, 2026;
+check them again before choosing a service.
 
-Acceptance is not completion: a worker that answered "I have it" and then went away leaves a run that
-stops progressing, which OpenPlan reports as a stalled run rather than as a success. What it never
-becomes is a run that quietly disappeared.
+## What a successful setup proves
 
-**What this does not do.** It cannot create compute. On a deployment that runs neither a poller nor a
-pool, a worker-backed run still cannot execute; what changed is that the planner is now told so at
-the moment they launch, by name, instead of watching a queued run die. Everything else in OpenPlan —
-every other run mode, every other module — works with no worker at all.
+`npm run doctor` diagnoses selected configuration, local services and shallow
+worker liveness. It does not prove authenticated dispatch, correct output,
+complete schema state, tenant isolation or usability; some unavailable checks
+remain warnings. A readiness panel is also a diagnostic, not independent proof.
+Complete [the commissioning record](FIRST_DEPLOYMENT.md), preserving failed,
+skipped and inconclusive checks. This documentation does not itself establish
+a successful new installation or a production-ready release.
 
-**Tell the app which way you went.** Set `OPENPLAN_MODELING_WORKER` to `deployed` or `absent`. It is
-one variable and it takes ten seconds, and it is the difference between a planner being told *before*
-they launch that this deployment cannot run screening assignment, and finding out fifteen minutes
-later when the reaper fails their run. Because the worker polls, the app has nothing to ping and no
-heartbeat to read: without your answer it can only infer a missing worker from runs that have
-**already** been queued and abandoned, so the first run on every new deployment is spent discovering
-what you could simply have said.
+## Hosted evaluation and optional administration
 
-- `absent` — worker-backed run modes (Fast Screening, the behavioral-demand preflight) are refused at
-  the launch button, naming this deployment as the reason and pointing the planner at the run modes
-  that execute in-process. Every other module is untouched. This is a legitimate configuration, not a
-  reduced tier; OpenPlan is free either way.
-- `deployed` — nothing is refused. If runs are queued and never picked up anyway, the launch control
-  refuses the next one regardless: **what the runs show outranks what the variable says**, in both
-  directions, so a retired worker cannot go on vouching for itself and a stale `absent` cannot block a
-  worker that is demonstrably running.
-- unset — nothing changes from before this existed.
+Nathaniel's mid-term hosted preview is planned under M15. It must run the same software with working background services and persistent trial data, and disclose remaining release limitations. It is not established as commissioned by this guide. Operator-set resource controls protect the shared machine and approved external spend; they do not create paid software features.
 
-The declaration and the push URL answer different questions: the URL says where a run can be pushed,
-the declaration says whether anything is **watching the queue**. With a push endpoint configured, an
-undeclared deployment is no longer reported as a gap — there is nothing left for the declaration to
-close, because the launch itself now gets an answer.
+Customers may self-host independently or pay for installation, annual administration and separately scoped customization. Prefer customer-owned hosting, domain and provider accounts with delegated support access. A service agreement states monitoring, updates, backup checks, recovery, support windows and exclusions. It does not promise unlimited compute or customization. When a trial moves to a separate installation, verify complete isolated record/object/artifact transfer, user access and continued work; report export alone does not establish migration. Ending administration must leave a documented, usable installation and its records under customer control.
 
-**If you run a push pool and nothing polls, leave `OPENPLAN_MODELING_WORKER` unset.** This is the one
-combination worth spelling out, because the truthful-looking answer is the wrong one. `absent` means
-*nothing is watching the queue*, which is literally true of a push-only deployment — and it makes the
-launch button refuse every worker-backed run, including ones your pool would have executed happily.
-`deployed` would claim a poller you do not run. Unset is the only answer that is both true and
-working, and it costs you nothing: the push endpoint answers at launch, which is strictly better than
-what the declaration was ever able to say.
-
-**Optionally, bound the queue.** `OPENPLAN_MODELING_QUEUE_DEPTH` caps how many model runs one
-workspace may have waiting on the worker at once. **Unset means unlimited**, and the counting query
-is skipped entirely — that is what you get by default. Set it only to protect compute you are paying
-for. The refusal names you, the operator, and offers nobody an upgrade, because there is nothing to
-buy.
-
-The dashboard's configuration panel shows what OpenPlan currently believes about your deployment,
-including when the declaration is contradicted by your own runs or by a configured push endpoint, is
-set to a value it does not understand, or when a push endpoint is half-configured and therefore
-unused.
-
-> **Decided, so you can plan around it:** OpenPlan will **not** offer a shared hosted worker.
-> Self-hosting is the posture, and each deployment runs its own worker. That is why the one-click
-> blueprint above exists — the answer to "standing one up is a project" is to make it a button, not
-> to run it for you. Nothing about this is a reduced tier; OpenPlan is free either way.
-
----
-
-## 6. Reading adopted plan documents (optional OCR worker)
-
-OpenPlan can read an adopted RTP PDF and copy figures and verbatim policy text out of it, each
-citing the page it came from. **A PDF with a text layer needs nothing extra** — the document library
-already reads those page by page, and the plan-reading walkthrough in
-[`docs/READING_AN_ADOPTED_PLAN.md`](READING_AN_ADOPTED_PLAN.md) is written for the planner doing it.
-
-**Scans are the gap.** Most adopted plans older than a few years are pictures of pages with no text
-in them. OpenPlan stores them, marks them unreadable and refuses to cite them, which is honest but
-useless. The OCR worker in [`workers/ocr_worker/`](../../workers/ocr_worker/DEPLOY.md) closes it:
-`ocrmypdf` + Tesseract, per page so the page stays the anchor. Its `DEPLOY.md` is a short checklist,
-and the four `OPENPLAN_KB_OCR_*` variables in the optional table above are what wires it up.
-
-**Success looks like:** a scanned document in the library grows a **Read with OCR** button, and after
-the job finishes its status is **Ready** with a page count. A deployment with no worker configured
-says so on that document rather than saying scans are unsupported — the two are different answers,
-and a planner deciding whether to retype three hundred pages is owed the right one.
-
-Transcription itself needs `ANTHROPIC_API_KEY` (or a per-workspace key) like every other AI surface,
-and `OPENPLAN_RTP_EXTRACTION_MODEL` if you want to choose the model. Without a key the reading is
-refused outright rather than degraded — there is no honest offline answer to "what does page 112
-say".
-
----
-
-## Upgrading a running deployment
-
-The one rule: **migrations run before the new code deploys.** OpenPlan is
-written to degrade honestly when the code is newer than the schema for a few
-minutes, but the safe order costs nothing, so use it every time. `CHANGELOG.md`
-at the repository root is the per-release manifest — it leads with whether a
-release added migrations and anything else an operator must do.
-
-1. **Back up first.** Follow `docs/ops/BACKUP_AND_RESTORE.md`. A recovery point
-   includes a custom-format PostgreSQL dump, every Storage object byte, and
-   recorded SHA-256 hashes. A database-only file is not a complete backup.
-2. **Know what "rollback" means here.** Migrations are **forward-only** —
-   Supabase has no down migrations and OpenPlan ships none. Recovering from a
-   bad upgrade means restoring the verified recovery point from step 1 into an
-   isolated stack, not un-running a migration.
-3. **Pull the new code** into the checkout that runs your deployment (for a
-   Vercel fork setup, pull into your local clone first and do not push yet —
-   pushing is what triggers the deploy).
-4. **Apply migrations:** `npm exec -- supabase migration up` (add `--linked`
-   for a hosted project). This applies only versions your database has not
-   seen; it never re-runs old ones and never destroys data — a build guard
-   (`src/test/migrations/no-destructive-migration.test.ts`) refuses
-   destructive statements from entering the migration set at all.
-5. **Deploy the new code** (push the fork / restart the app).
-
-**If a migration fails partway:** applied ones stay applied; re-running
-`migration up` resumes from the failure. A transient error clears on retry; a
-deterministic failure means stop — do not deploy the new code — and either ask
-for help with the exact error text or restore the step-1 backup. The app
-running the OLD code against the partially-upgraded schema keeps working:
-surfaces that need the missing pieces say "could not be read" rather than
-showing wrong numbers.
-
-`npm run doctor` (from `openplan/`) reports whether your database is behind
-the migration files on disk, so "did the migrations actually run?" has a
-one-command answer.
-
----
-
-## Sharing the public engagement portal
-
-Each engagement campaign can publish a public feedback page at
-**`/engage/<shareToken>`** on your deployment's own domain. The share token is minted server-side
-from the campaign console ("Generate link" under Operator Actions — nothing to invent or type), and
-the page only resolves while the campaign status is **Active**; the console's Private / Staged /
-Live chip always shows the current state. Everything submitted through the public page lands in
-that campaign's moderation queue inside the authenticated console — nothing appears publicly until
-a member approves it.
-
-**Regenerating invalidates the old link immediately.** "Regenerate link" mints a fresh token and
-saves it in one step; the previous URL stops resolving the moment it lands, everywhere it was
-already shared. Use it when a link has leaked beyond its intended audience. "Disable link" takes
-the page offline without minting a replacement.
-
----
-
-## Verifying a deployment
-
-1. Sign up. A workspace should be provisioned automatically.
-2. Check the dashboard's configuration panel. It lists anything that is missing and what it costs
-   you; a fully configured deployment shows nothing.
-3. Set the workspace geography and confirm the map reframes to your area.
-4. Invite a teammate from the dashboard and accept the invitation from another account.
-5. If you deployed the worker, launch a screening run and watch its stages advance.
-
-## Where to get help
-
-OpenPlan is open source. Issues and questions belong in the repository. There is no support contract
-and no vendor to call — which is the point: the software, the schema, and the data are yours.
+Public deployment uses production Supabase, real mail/TLS, private admin/worker interfaces, persistent artifacts and tested recovery. Do not expose the local CLI stack. Provider choice, capacity, recurring costs and variable usage require a dated reviewed budget before spending; see the [September 4 hosted-preview research](../../docs/reviews/2026-09-04-pre-handoff/HOSTED_PREVIEW_COST_AND_OPERATIONS_RESEARCH.md)
+and the [roadmap](../../docs/ROADMAP.md) for implementation scope.

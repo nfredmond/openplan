@@ -39,7 +39,10 @@ fail() { printf '\n\033[31mrefresh aborted: %s\033[0m\n' "$1" >&2; exit 1; }
 
 step "Checking the instance checkout is safe to move"
 cd "$INSTANCE_ROOT"
-if [ -n "$(git status --porcelain --untracked-files=no)" ]; then
+if ! INSTANCE_STATUS="$(git status --porcelain --untracked-files=no)"; then
+  fail "could not inspect the instance checkout; no update attempted"
+fi
+if [ -n "$INSTANCE_STATUS" ]; then
   git status --short --untracked-files=no
   fail "the instance checkout has uncommitted changes — resolve them first"
 fi
@@ -69,19 +72,43 @@ step "Checking the instance database has every migration this build expects"
 # `/api/health` reports `database: "not_checked"` precisely because it does not
 # look; the planner finds out when one page returns a missing-column error and
 # the rest look fine. So ask the database directly, before the slow steps.
-MIGRATION_JSON="$(cd "$APP_DIR" && npm exec -- supabase migration list --local --output-format json 2>/dev/null | tail -n 1 || true)"
+if ! MIGRATION_JSON="$(cd "$APP_DIR" && npm exec -- supabase migration list --local --output-format json 2>/dev/null | tail -n 1)"; then
+  fail "could not query migration state; no build or restart attempted"
+fi
 MIGRATION_VERDICT="$(printf '%s' "$MIGRATION_JSON" | node -e '
+const fs = require("node:fs");
 let raw = "";
 process.stdin.on("data", (c) => { raw += c; });
 process.stdin.on("end", () => {
   let parsed;
   try { parsed = JSON.parse(raw); } catch { console.log("UNREADABLE"); return; }
   const rows = parsed && parsed.migrations;
-  if (!Array.isArray(rows)) { console.log("UNREADABLE"); return; }
+  const validVersion = (value) => typeof value === "string" && /^\d{14}$/.test(value);
+  if (!Array.isArray(rows) || !rows.length || rows.some((row) =>
+    !row || typeof row !== "object" || (!row.local && !row.remote) ||
+    (row.local && !validVersion(row.local)) ||
+    (row.remote && !validVersion(row.remote)) ||
+    (row.local && row.remote && row.local !== row.remote)
+  )) { console.log("UNREADABLE"); return; }
+  let expected;
+  try {
+    expected = fs.readdirSync(process.argv[1]).filter((name) => name.endsWith(".sql"))
+      .map((name) => {
+        const match = /^(\d{14})_.+\.sql$/.exec(name);
+        if (!match) throw new Error("unrecognized migration filename");
+        return match[1];
+      });
+  } catch { console.log("UNREADABLE"); return; }
+  const local = rows.map((row) => row.local).filter(Boolean);
+  if (!expected.length || rows.length !== expected.length || new Set(expected).size !== expected.length ||
+      local.length !== expected.length || new Set(local).size !== local.length ||
+      expected.some((version) => !local.includes(version))) {
+    console.log("UNREADABLE"); return;
+  }
   const pending = rows.filter((row) => row && row.local && !row.remote).map((row) => row.local);
   console.log(pending.length ? "PENDING " + pending.join(" ") : "CURRENT");
 });
-' 2>/dev/null || true)"
+' "$APP_DIR/supabase/migrations" 2>/dev/null || true)"
 
 case "$MIGRATION_VERDICT" in
   CURRENT)
@@ -95,10 +122,8 @@ case "$MIGRATION_VERDICT" in
   then re-run this script. Refusing to serve new code against an old schema."
     ;;
   *)
-    printf '\033[31mWARNING: could not read the instance database migration state.\033[0m\n' >&2
-    echo "The local Supabase stack may be down. This script cannot tell whether the" >&2
-    echo "schema matches the code; the instance will build and start either way." >&2
-    echo "Check with: (cd $APP_DIR && npm exec -- supabase status)" >&2
+    fail "could not verify the instance database migration state; no build or restart attempted.
+    Check the local Supabase stack and migration-list output before retrying."
     ;;
 esac
 
@@ -155,9 +180,8 @@ EXPECTED_SHORT="$(git -C "$INSTANCE_ROOT" rev-parse HEAD | cut -c1-12)"
 if [ "$REPORTED" = "$EXPECTED_SHORT" ]; then
   echo "/api/health reports $REPORTED — matches the checkout."
 else
-  printf '\033[31mWARNING: /api/health reports "%s" but the checkout is at "%s".\033[0m\n' \
-    "${REPORTED:-<no answer>}" "$EXPECTED_SHORT" >&2
-  echo "The service may still be serving an older build. Check: journalctl --user -u $SERVICE -n 50" >&2
+  fail "running build identity does not match the checkout ($EXPECTED_SHORT).
+    The service may need recovery. Check: journalctl --user -u $SERVICE -n 50"
 fi
 
 step "Done"

@@ -1,0 +1,35 @@
+# Next OpenPlan implementation session
+
+Read repository AGENTS.md, then docs/product/V1_PRODUCT_CONTRACT.md, docs/ROADMAP.md, docs/product/CORE_REQUIREMENTS_LEDGER.md, docs/product/US_PLANNING_CAPABILITY_MATRIX.md, docs/ops/KNOWN_ISSUES.md and docs/ARCHITECTURE.md. Run `npm run product:direction:check` from the nested `openplan/` package. Read docs/reviews/TECHNICAL_PRODUCT_REVIEW_2026-09-06.md and docs/reviews/2026-09-06-consolidation/VERIFICATION.md for the review's actual changes and limits. Current code wins over stale history; investigate contradictions rather than trusting an agent's closure claim.
+
+## Establish state and ownership
+
+Repository: `/home/nathaniel/code/openplan`, which resolves to the Computer Use Projects checkout on this machine. Confirm the resolved path, branch, working changes, active sessions and actual app identity before editing. The web package is `openplan/`, workers and QA/scientific scripts are siblings. Existing app/worker/browser processes must not be stopped or reused without establishing ownership. Use isolated worktrees and disjoint file ownership. Leave global Codex/Claude configuration alone.
+
+The developer checkpoint `cc6c3feb` ended with nine passes and three partial outcomes in the complete twelve-journey run on `648504cf`. Its later empty-report correction received separate proof. v0.44 is not released; package version 0.44.0 does not establish a tag or acceptance. Recheck current main, remote CI and tags. This handoff's review consolidation has its own commits and tests; use the linked verification record rather than assuming their final status from this prompt.
+
+Keep the exact original acceptance records and frozen scientific artifacts unchanged. Do not concatenate partial/contaminated runs into a pass or relabel synthetic/inconclusive forecasts as validated. The distributed-loading candidate remains retired unchanged. Both AequilibraE and ActivitySim require separate use-specific nationwide validation; no averaging, post-outcome threshold changes, rematching or reopening consumed holdouts.
+
+## Next concrete work
+
+First reproduce the two small source findings from the developer's September 6 independent reviews: an assigned plan action without a deadline reaching the assignee's My Work, and one engagement campaign shared between projects retaining correct project/export coverage. Read the actual queries and related protections, then use identified-build browser evidence. Fix only confirmed defects, with meaningful regression and mutation checks, preserving the source findings if disproven. These investigations are prerequisites, not a replacement roadmap.
+
+Then implement the first bounded agency OWP outcome, M2d.1 in the active roadmap: establish a program from its actual prior adopted work program and carry work elements, products, responsible staff/consultants, periods, funding sources and missing evidence into editable, reviewable records. Inspect current Programs, Projects/work plans, Documents/extraction, budget/contract/funding and My Work implementations first. Reuse them. Do not create another generic module or rewrite a working ledger because a new name is appealing. Read OWP_ADMINISTRATION_REQUIREMENTS_RESEARCH.md, CONTRACT_BUDGET_CORE_REQUIREMENTS_REVIEW.md and the source-reading records under docs/reviews/2026-09-04-pre-handoff.
+
+Specify a small implementation plan from the actual code and evidence before substantial changes. Obtain a permitted real source program when required; meanwhile implement and test source-preserving mechanics without fabricating agency approval, fees, expenditures or statutory completeness. If a human source/case is unavailable, preserve that acceptance gap while completing authorized independent engineering work. Distinguish source extraction from human-reviewed adoption of a work element. Carry source page/table identity, old/new mapping and unknown values. Keep estimates, authorized budgets, costs, fees, invoices, cash, claims and remaining-work forecasts distinct. Schedule/work/budget versions and funding vintages must agree. Test duplicate intake, revisions, missing figures, cross-workspace access, recoverable save/import failure and export reconciliation.
+
+The first outcome does not close full OWP administration. M2d.2–4 retain authorization/amendments, reporting/reimbursement, expenditure certification, closeout and carryover. Contract budget, plan authority and durable-record foundations should be delivered as needed by this case, with explicit boundaries and no hidden source duplication.
+
+## Binding priorities that must survive sequencing
+
+OpenPlan remains free/open source for the full core practice in all fifty states and DC, California deepest, with explicit tribal/territory/overlapping authorities. Full RTP updates begin from the predecessor plan and include all narrative, policy/action and financial elements. Contract management includes drawdown by task, person and deliverable against scope and deadline. Capital delivery, local tax/grant recipient reporting and procurement on both consultant and agency sides remain required complete outcomes.
+
+Engagement must support project-tailored mapping, editable categories/questions, accessible participation, staff moderation before public release, response/disposition and polished PDF/XLSX. Superiority to Social Pinpoint requires comparable observed human evidence. Installed Codex/Claude Code/OpenCode backends and extensible API providers remain early agent priorities; study the pinned T3 reuse assessment and actual provider terms. Full agent control must preserve exact human approvals and ordinary non-agent workflows.
+
+Drone work retains ODM/WebODM capability, exact source/accuracy controls and supported DJI KML/mission export plus USB/controller import proof. Do not claim hardware/flight acceptance without it. Retain hosted editable trials, customer-owned installation and optional paid administration/customization without paid software tiers; no infrastructure spending without authorization. Nat Ford website refresh and additive Signal palette/square-corner choices remain queued. TimesFM is 3.0 only; current weight licensing does not permit arbitrary single-person production use.
+
+## Complete and report
+
+Use meaningful tests, first a surviving harmless mutation and then targeted broken protections. Validate actual desktop/390px/keyboard workflows and stored/exported artifacts. Do not treat agent journeys as practitioner research. Run applicable checks, review failures, commit/push natural checkpoints and inspect CI separately. Keep one dependable main. Preserve all unrelated changes and scientific history; ask before paid or destructive actions. Do not tag a release while its declared acceptance remains unmet.
+
+Nathaniel is a planner who cannot audit code. Make engineering decisions, report your own mistakes promptly, and bring only missing product judgments, real case selection, spending or destructive choices to him. Finish authorized work without repeated permission requests. Preserve expensive findings and the next resumable step in the repository before stopping.

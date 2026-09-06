@@ -32,6 +32,7 @@ from __future__ import annotations
 import json
 import os
 import queue
+import re
 import shutil
 import signal
 import subprocess
@@ -42,6 +43,7 @@ import tkinter as tk
 import urllib.error
 import urllib.request
 from pathlib import Path
+from dataclasses import dataclass
 from tkinter import scrolledtext, ttk
 
 # ---------------------------------------------------------------------------
@@ -64,7 +66,7 @@ CHROME = shutil.which("google-chrome") or shutil.which("google-chrome-stable")
 # Status colours live in `check_status`, beside the rule that chooses between
 # them, so the verdict logic can be tested without importing a GUI.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from check_status import BAD, IDLE, OK, WARN, summarize_check_conclusions  # noqa: E402
+from check_status import BAD, IDLE, OK, WARN  # noqa: E402
 
 _ = (WARN,)  # re-exported for the rest of the panel
 
@@ -154,6 +156,79 @@ def port_pid(port: int) -> int | None:
     return None
 
 
+def port_in_use(port: int) -> bool | None:
+    """Keep an unreadable socket table distinct from an available port."""
+    code, out = run_quiet(["ss", "-H", "-ltn", f"sport = :{port}"])
+    return bool(out.strip()) if code == 0 else None
+
+
+@dataclass(frozen=True)
+class ProcessIdentity:
+    pid: int
+    session: int
+    started: int
+
+
+def process_identity(pid: int) -> ProcessIdentity | None:
+    """Read Linux process identity without logging arguments or environment."""
+    try:
+        # comm may contain spaces or parentheses; fields after its final ')' are fixed.
+        fields = Path(f"/proc/{pid}/stat").read_text().rsplit(")", 1)[1].split()
+        return ProcessIdentity(pid, int(fields[3]), int(fields[19]))
+    except (OSError, ValueError, IndexError):
+        return None
+
+
+def owned_session_alive(proc: subprocess.Popen | None, owner: ProcessIdentity | None) -> bool:
+    return bool(
+        proc is not None and owner is not None and proc.pid == owner.pid
+        and owner.session == owner.pid and proc.poll() is None
+        and process_identity(owner.pid) == owner
+    )
+
+
+def stop_owned_session(proc: subprocess.Popen | None, owner: ProcessIdentity | None) -> bool:
+    """Signal only a session this window created, using PID handles against reuse.
+
+    Never fall back to a port PID or killpg. If the original leader has exited,
+    ownership cannot be revalidated and cleanup must be handled separately.
+    """
+    if not owned_session_alive(proc, owner):
+        return False
+    if not hasattr(os, "pidfd_open") or not hasattr(signal, "pidfd_send_signal"):
+        return False
+    assert owner is not None
+    members = []
+    for entry in Path("/proc").iterdir():
+        if entry.name.isdecimal():
+            identity = process_identity(int(entry.name))
+            if identity is not None and identity.session == owner.pid:
+                members.append(identity)
+    # Pin the complete target set before TERM can make the npm leader exit.
+    members.sort(key=lambda identity: identity.pid == owner.pid)
+    handles: list[int] = []
+    try:
+        for identity in members:
+            try:
+                fd = os.pidfd_open(identity.pid)
+            except ProcessLookupError:
+                continue
+            handles.append(fd)
+            if process_identity(identity.pid) != identity:
+                return False
+        if not owned_session_alive(proc, owner):
+            return False
+        for fd in handles:
+            try:
+                signal.pidfd_send_signal(fd, signal.SIGTERM)
+            except ProcessLookupError:
+                continue
+    finally:
+        for fd in handles:
+            os.close(fd)
+    return True
+
+
 def database_up() -> bool:
     code, out = run_quiet(
         ["docker", "inspect", "-f", "{{.State.Running}}", "supabase_db_openplan"]
@@ -168,6 +243,9 @@ def commits_behind(commit: str) -> int | None:
     code, _ = run_quiet(["git", "cat-file", "-e", f"{commit}^{{commit}}"], cwd=REPO_DIR)
     if code != 0:
         return None
+    code, _ = run_quiet(["git", "merge-base", "--is-ancestor", commit, "HEAD"], cwd=REPO_DIR)
+    if code != 0:
+        return None
     code, out = run_quiet(["git", "rev-list", "--count", f"{commit}..HEAD"], cwd=REPO_DIR)
     if code != 0:
         return None
@@ -178,55 +256,48 @@ def commits_behind(commit: str) -> int | None:
 
 
 def automated_checks() -> tuple[str, str]:
-    """
-    WHETHER THE ROBOTS ON GITHUB ARE HAPPY, in one line.
+    """Report exact-commit CI and a separately dated nightly, never older green CI."""
+    code, target = run_quiet(["git", "rev-parse", "HEAD"], cwd=REPO_DIR)
+    if code or not re.fullmatch(r"[0-9a-f]{40,64}", target):
+        return IDLE, "cannot check: this checkout's commit is unknown"
 
-    WHY THIS ROW EXISTS. On 2026-08-15 two of these had been red for a long time
-    with nobody looking: the tenant-isolation proof for three and a half days
-    and 48 pushes, and the nightly browser walk-through since the day it was
-    created — thirteen runs, never once green. Both were CORRECT. One of them
-    had been trying to say, for ten days, that residents' comments were being
-    posted before anyone could read them back.
+    def latest(workflow: str, exact_commit: bool) -> tuple[str, str]:
+        args = ["gh", "run", "list", "--branch", "main", "--workflow", workflow,
+                "--limit", "1", "--json", "headSha,conclusion,status,url,updatedAt"]
+        if exact_commit:
+            args += ["--commit", target, "--event", "push"]
+        code, out = run_quiet(args, cwd=REPO_DIR, timeout=20)
+        if code:
+            return IDLE, "unavailable (check network and GitHub sign-in)"
+        try:
+            runs = json.loads(out)
+            if not isinstance(runs, list) or not runs:
+                return IDLE, "no run reported"
+            run = runs[0]
+            sha, updated, url = run["headSha"], run["updatedAt"], run["url"]
+            if not all(isinstance(value, str) and value for value in (sha, updated, url)):
+                raise ValueError("missing run identity")
+            if exact_commit and sha != target:
+                return IDLE, "no matching commit evidence"
+            identity = f"{sha[:12]} at {updated}\n{url}"
+            if run["status"] != "completed":
+                return WARN, f"{run['status']} on {identity}"
+            conclusion = run.get("conclusion") or "unknown conclusion"
+            return (OK if conclusion == "success" else BAD), f"{conclusion} on {identity}"
+        except (ValueError, TypeError, KeyError, IndexError):
+            return IDLE, "unreadable run evidence"
 
-    The isolation proof now runs inside `npm run qa:gate`, so that one cannot go
-    unnoticed again. The nightly cannot: it needs a whole stack and eight
-    minutes, which is too much to put in front of every push. So it reports
-    here, on the window Nathaniel opens to start work.
-
-    IT MUST NEVER SHOW GREEN WHEN IT DOES NOT KNOW. No network, no `gh`, not
-    signed in — all of those say so in words and stay grey. A check that reads
-    as fine when it failed to look is the exact thing this row exists to end.
-    """
-    code, out = run_quiet(
-        [
-            "gh", "run", "list", "--branch", "main", "--limit", "40",
-            "--json", "name,conclusion,status",
-        ],
-        cwd=REPO_DIR,
-        timeout=20,
-    )
-    if code != 0:
-        if code == 127:
-            return IDLE, "cannot check — the GitHub command line is not installed"
-        return IDLE, "cannot check right now (no network, or not signed in to GitHub)"
-
-    try:
-        runs = json.loads(out)
-    except (ValueError, TypeError):
-        return IDLE, "cannot check — GitHub answered something unexpected"
-
-    # Newest first, so per workflow the first COMPLETED run is its current
-    # state and the unbroken run of failures above the first success is how
-    # long it has been broken. "3 runs in a row" is the number that turns
-    # "something is red" into "this has been red since Tuesday".
-    by_workflow: dict[str, list[str]] = {}
-    for run in runs:
-        name, conclusion = run.get("name"), run.get("conclusion")
-        if run.get("status") != "completed" or not name or not conclusion:
-            continue  # still running: not an answer yet
-        by_workflow.setdefault(name, []).append(conclusion)
-
-    return summarize_check_conclusions(by_workflow)
+    ci_colour, ci = latest("ci.yml", True)
+    nightly_colour, nightly = latest("qa-harness-nightly.yml", False)
+    colour = ci_colour
+    if nightly_colour == BAD:
+        colour = BAD
+    elif ci_colour == OK and nightly_colour != OK:
+        colour = WARN
+    checked = time.strftime("%H:%M:%S %Z")
+    return colour, (f"CI for {target[:12]}: {ci}\n"
+                    f"Latest nightly (separate evidence): {nightly}\n"
+                    f"Checked {checked}. Other workflows and uncommitted edits are not assessed.")
 
 
 # ---------------------------------------------------------------------------
@@ -240,6 +311,9 @@ class ControlPanel:
         self.output_q: queue.Queue[str] = queue.Queue()
         self.busy = False
         self.dev_proc: subprocess.Popen | None = None
+        self.dev_owner: ProcessIdentity | None = None
+        self._status_timer: str | None = None
+        self._status_running = False
 
         LOG_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -315,8 +389,8 @@ class ControlPanel:
         )
         self._button(
             demo, "Update the demo to the latest", self.refresh_demo,
-            "Takes a few minutes. Do this BEFORE showing anyone —\n"
-            "the demo does not update itself.",
+            "Builds current main, which may still be under review.\n"
+            "An update does not establish demo acceptance.",
         )
 
         dev = ttk.LabelFrame(wrap, text="  Testing the current work  ", padding=10)
@@ -502,8 +576,20 @@ class ControlPanel:
     # -- status ------------------------------------------------------------
 
     def _refresh_status(self) -> None:
-        threading.Thread(target=self._status_worker, daemon=True).start()
-        self.root.after(12000, self._refresh_status)
+        if self._status_timer is not None:
+            self.root.after_cancel(self._status_timer)
+        self._status_timer = self.root.after(12000, self._refresh_status)
+        if self._status_running:
+            return
+        self._status_running = True
+
+        def runner() -> None:
+            try:
+                self._status_worker()
+            finally:
+                self._status_running = False
+
+        threading.Thread(target=runner, daemon=True).start()
 
     def _status_worker(self) -> None:
         demo = http_health(DEMO_URL)
@@ -516,16 +602,18 @@ class ControlPanel:
             if behind is None:
                 d = (WARN, f"running v{version} — cannot tell how current it is")
             elif behind == 0:
-                d = (OK, f"running v{version}, up to date")
+                d = (OK, f"running v{version} at {commit}, matches this commit; acceptance not checked")
             else:
-                d = (WARN, f"running v{version} — {behind} commits behind. "
-                           f"Update it before showing anyone.")
+                d = (WARN, f"running v{version} at {commit}, {behind} commits behind this checkout; "
+                           "newer code may still be under review")
 
         owner = port_owner_dir(DEV_PORT)
+        owned = owned_session_alive(self.dev_proc, self.dev_owner)
         if owner is None:
-            v = (IDLE, "not running — press “Start the test site” when you want it")
+            v = (IDLE, "no readable listener; Start checks whether the port is available")
         elif Path(owner).resolve() == APP_DIR.resolve():
-            v = (OK, "running, serving the code being worked on now")
+            v = (OK if owned else WARN, "listener in this checkout; " +
+                 ("this window owns a test session" if owned else "external session, protected from Stop"))
         else:
             v = (WARN, f"running, but serving a different folder: {owner}")
 
@@ -545,9 +633,8 @@ class ControlPanel:
             for key, (colour, text) in (("demo", d), ("dev", v), ("db", b), ("checks", c)):
                 self.status_dots[key].configure(fg=colour)
                 self.status_labels[key].configure(text=text)
-            running = v[0] in (OK, WARN)
             self.dev_btn.configure(
-                text=("Stop the test site" if running else "Start the test site")
+                text=("Stop this window's test site" if owned else "Start the test site")
             )
 
         self.root.after(0, apply)
@@ -590,44 +677,68 @@ class ControlPanel:
         def job() -> None:
             self.say("=" * 66)
             self.say("UPDATING THE DEMO. This rebuilds it and restarts it — a few minutes.")
-            self.say("It will refuse to run if there is unsaved work in the demo copy,")
-            self.say("so nothing can be lost.")
+            self.say("The update script checks for unsaved work. A failed build or restart")
+            self.say("can require recovery; this panel does not verify database readiness.")
             self.say("=" * 66)
             code = self._stream(["bash", str(script)], cwd=APP_DIR)
             self.say("")
             if code == 0:
-                self.say("DONE — the demo is now on the latest code.")
-                self.say("Press “Open the demo” to look at it.")
+                self.say("Update command finished. Checking the reported build separately.")
+                status, expected = run_quiet(["git", "rev-parse", "HEAD"], cwd=DEMO_DIR)
+                health = http_health(DEMO_URL)
+                reported = (health or {}).get("commit")
+                if (status == 0 and re.fullmatch(r"[0-9a-f]{40,64}", expected)
+                        and isinstance(reported, str) and len(reported) >= 12
+                        and expected.startswith(reported)):
+                    self.say(f"The demo reports checkout commit {reported}.")
+                else:
+                    self.say("BUILD IDENTITY UNVERIFIED: the demo did not report its checkout commit.")
+                self.say("Database readiness and browser acceptance remain unverified here.")
             else:
-                self.say(f"IT STOPPED (exit {code}). Nothing was lost — read the lines above;")
-                self.say("the last few usually say plainly what it wanted.")
+                self.say(f"UPDATE STOPPED (exit {code}). Review the last completed step above.")
+                self.say("The demo may need recovery. Check what's running and check the setup.")
 
         self._work("updating the demo", job)
 
     def toggle_dev(self) -> None:
-        if port_owner_dir(DEV_PORT) is not None:
+        if owned_session_alive(self.dev_proc, self.dev_owner):
             self.stop_dev()
         else:
             self.start_dev()
 
     def start_dev(self) -> None:
         def job() -> None:
+            if owned_session_alive(self.dev_proc, self.dev_owner):
+                self.say("This window already owns a test session.")
+                return
+            if port_in_use(DEV_PORT) is not False:
+                self.say("Start refused: the port is occupied or its availability is unknown.")
+                self.say("An external session must be managed by the window that started it.")
+                return
             self.say("=" * 66)
             self.say(f"STARTING THE TEST SITE on port {DEV_PORT}.")
             self.say("This serves the code exactly as it is right now. It stays running")
             self.say("until you stop it or close this window.")
             self.say("=" * 66)
-            log = DEV_LOG.open("w", encoding="utf-8")
-            self.dev_proc = subprocess.Popen(
-                ["npm", "run", "dev", "--", "-p", str(DEV_PORT)],
-                cwd=APP_DIR, stdout=log, stderr=subprocess.STDOUT,
-                start_new_session=True,
-            )
+            with DEV_LOG.open("w", encoding="utf-8") as log:
+                self.dev_proc = subprocess.Popen(
+                    ["npm", "run", "dev", "--", "-p", str(DEV_PORT)],
+                    cwd=APP_DIR, stdout=log, stderr=subprocess.STDOUT,
+                    start_new_session=True,
+                )
+            self.dev_owner = process_identity(self.dev_proc.pid)
+            if not owned_session_alive(self.dev_proc, self.dev_owner):
+                self.say("Started process ownership could not be verified. Automatic Stop is unavailable.")
+                return
             self.say(f"Started. Waiting for it to answer (usually 10–30 seconds)…")
             for _ in range(90):
                 time.sleep(1)
-                if http_health(DEV_URL, timeout=1.5) is not None:
-                    self.say("It's up.")
+                listener = port_pid(DEV_PORT)
+                identity = process_identity(listener) if listener is not None else None
+                if (owned_session_alive(self.dev_proc, self.dev_owner)
+                        and identity is not None and identity.session == self.dev_owner.pid
+                        and http_health(DEV_URL, timeout=1.5) is not None):
+                    self.say("This window's test site is answering.")
                     self.root.after(0, lambda: self._open_in_chrome(DEV_URL))
                     return
                 if self.dev_proc.poll() is not None:
@@ -640,25 +751,10 @@ class ControlPanel:
 
     def stop_dev(self) -> None:
         def job() -> None:
-            pid = port_pid(DEV_PORT)
-            if pid is None:
-                self.say("Nothing to stop.")
-                return
-            # The dev server spawns children; killing the group stops all of it.
-            try:
-                os.killpg(os.getpgid(pid), signal.SIGTERM)
-            except (ProcessLookupError, PermissionError):
-                try:
-                    os.kill(pid, signal.SIGTERM)
-                except OSError as exc:
-                    self.say(f"Could not stop it: {exc}")
-                    return
-            for _ in range(15):
-                time.sleep(0.4)
-                if port_pid(DEV_PORT) is None:
-                    self.say("Test site stopped.")
-                    return
-            self.say("It is taking a while to stop. Give it a moment.")
+            if stop_owned_session(self.dev_proc, self.dev_owner):
+                self.say("Stop requested for this window's session. Remaining listeners may be external.")
+            else:
+                self.say("Stop refused: no verified live session owned by this window.")
 
         self._work("stopping the test site", job)
 
@@ -728,7 +824,10 @@ class ControlPanel:
         occupied by a server nobody remembers starting, so the question is
         asked explicitly rather than decided silently.
         """
-        if port_owner_dir(DEV_PORT) is not None:
+        if self.busy:
+            self.say("Wait for the current action to finish before closing this window.")
+            return
+        if owned_session_alive(self.dev_proc, self.dev_owner):
             win = tk.Toplevel(self.root)
             win.title("Before you go")
             win.transient(self.root)
@@ -744,12 +843,15 @@ class ControlPanel:
             row.pack(pady=(0, 14))
 
             def stop_and_quit() -> None:
-                pid = port_pid(DEV_PORT)
-                if pid:
-                    try:
-                        os.killpg(os.getpgid(pid), signal.SIGTERM)
-                    except OSError:
-                        pass
+                try:
+                    stopped = stop_owned_session(self.dev_proc, self.dev_owner)
+                except OSError as exc:
+                    self.say(f"Stop failed: {exc}")
+                    return
+                if not stopped:
+                    self.say("Stop refused: process ownership changed. The window remains open.")
+                    win.destroy()
+                    return
                 win.destroy()
                 self.root.destroy()
 

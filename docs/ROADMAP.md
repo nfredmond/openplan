@@ -1,489 +1,571 @@
-# OpenPlan development roadmap
-
-<!-- openplan-active-roadmap
-reviewed_commit: e709e2ff
-current_release: v0.44.0
-review_by: 2026-10-05
-paths:
-- AGENTS.md
-- CLAUDE.md
-- docs/product/V1_PRODUCT_CONTRACT.md
-- docs/product/AGENT_OPERATING_RULES.md
-- docs/product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md
-- docs/reviews/product-direction/2026-09-06-workflow-custody-review.md
-- openplan/scripts/ops/product-direction-review.mjs
-- openplan/src/test/product-direction-review-guard.test.ts
-- openplan/src/lib/safety/sources/registry.ts
-- openplan/src/lib/auth/role-matrix.ts
-- openplan/src/lib/runtime/action-metadata.ts
-- docs/ops/KNOWN_ISSUES.md
-- docs/modeling/WHERE_THE_NUMBER_STANDS_2026-08-20.md
-- docs/modeling/VALIDATION_OBSERVATION_UNCERTAINTY_RESEARCH_2026-08-25.md
-- docs/modeling/OPEN_SOURCE_MODEL_LANDSCAPE.md
-- openplan/docs/ops/BACKUP_AND_RESTORE.md
-- docs/ADRs/ADR-004-mcp-server-surface.md
-- qa-harness/FIRST-WEEK-HARNESS.md
-npm_commands:
-- product:direction:check
-- product:direction:packet
-- ops:restore-drill
-- test:workers
-- test:rls-live
-- qa:gate
--->
-
-This is OpenPlan's only active development queue. The binding destination is
-[`docs/product/V1_PRODUCT_CONTRACT.md`](product/V1_PRODUCT_CONTRACT.md). Dated
-records, research, ADRs, archived plans, and independent reviews are evidence,
-not competing queues. `CHANGELOG.md` records what shipped.
-
-Nathaniel expanded the v1 contract on 2026-08-25 after comparing independent
-Claude and Codex reviews. The four-to-six-release proposals in those reviews are
-superseded. There is no deadline and no promised number of releases before v1.
-
-## Destination
-
-OpenPlan v1 is the ultimate free and open-source operating system for US
-planning practice. It must serve every type of planner's core work, work in all
-fifty states and the District of Columbia, make California the gold-standard
-implementation, operate coherently as one product, and include a fully working,
-scientifically validated nationwide travel demand model.
-
-Worldwide use remains the architectural destination. US data and law stay
-behind adapters and registries.
-
-Runtime and calendar time do not reduce scope. A model run may take days. The
-program may take the rest of the decade. v1 is cut when the evidence says this
-contract is true, not when a version sequence looks long enough.
-
-## How "do what's next" works
-
-Before selecting a major lane, an agent must:
-
-1. Run `npm run product:direction:check` from `openplan/`.
-2. Read the v1 contract, this roadmap, the latest direction review, current
-   release and CI, live product journeys, known issues, and relevant research.
-3. Reassess the product from the full planner and agency coverage map. Past
-   agent decisions and these instructions are evidence, not untouchable law.
-4. Identify the highest-leverage unproven user outcome, including a simple idea
-   outside the current module map that prior agents may have missed.
-5. Check whether the capability already exists here, in Nathaniel's other
-   projects, or in a suitable free/open-source library.
-6. Choose the smallest architectural chunk that materially advances the v1
-   contract, start it, and land it with executable evidence.
-
-If the direction review has expired, a materially stronger model is available,
-or a milestone just closed, generate a fresh packet with
-`npm run product:direction:packet` and obtain independent fresh-context reviews
-before committing the next major direction. Preserve their disagreements.
-
-## Current truth at v0.44.0
-
-The complete run `2026-09-06T04-23-28-412Z` on `bd865625` remains failed:
-ten yes outcomes, job 05 completed partly, and job 11 timed out. Console errors
-were zero. The current correction preserves land-use drafts, discloses actual
-GeoPackage contents, and exposes exact frozen diagnoses and hashes. See
-`docs/ops/V044_DRAFT_AND_DIAGNOSIS_CORRECTION_2026-09-06.md`. Corrected browser
-and final technical checks remain required. These repairs do not establish
-job 05's requested forecast. The unchanged twelve-outcome gate still blocks
-release; a larger execution budget cannot turn the old timeout into a pass.
-
-Strong foundations already exist:
-
-- connected planning, engagement, safety, funding, land-use, aerial, document,
-  report, and dual-demand-model capabilities;
-- claim tiers, provenance, exact evidence hashes, human approval boundaries,
-  agent refusals, sealed-study custody, and honest negative results;
-- local/self-hosted workers, live RLS proof, backup and restore rehearsal,
-  upgrade CI, interruption recovery, and a large mutation-backed test surface.
-- source-bound distributed work-trip loading with assignment-blind custody,
-  distinct unavailable/unmapped/unroutable states, and no default promotion.
-- one authenticated rail, project-scoped workflow links, a guided
-  baseline-versus-build modeling record, named-road Safety context, and an
-  expiring machine-readable v1 coverage registry.
-
-The v1 contract is not yet true:
-
-- the unified shell and project context do not yet make every cross-module
-  planning job complete or every specialist workflow approachable to a novice;
-- the first-week harness defines twelve required outcomes. The pre-v0.44
-  all-journey run completed every job but reached nine outcomes fully and three
-  partly; its evidence-complete lesser findings remain in `KNOWN_ISSUES.md`;
-- the later report-corrected run on `b46f0a61` reached ten outcomes but failed
-  model-evidence downloads. The bounded native-download and interruption-custody
-  correction is implemented; complete clean-build acceptance is still required;
-- the next run on `2a547887` reached four outcomes, retained Safety as partly,
-  and was stopped for a false screening-note percentage and opposite advice.
-  `986ab86c` shares the existing zone-panel interpretation and corrects units.
-  This bounded repair still requires rebuilt proof and complete fresh outcomes;
-- the following run on `b51c4361` reached setup and neutral-jurisdiction outcomes
-  but report job 02 produced fatal console errors after an ordinary preview link.
-  The confirmed iframe-navigation failure interrupted acceptance. Parent-owned
-  link handling is under verification; a complete fresh run remains required;
-- the proof registry exposes many `partial`, `missing`, and `not-assessed`
-  cells; those open cells block v1 even though they do not block this interim
-  release;
-- project GIS, workbook, immutable v2 evidence handoff, and named exact-hash
-  submit/return/approve custody now exist; wider designation/model-link geometry,
-  statutory decision proof, and stranger reuse remain incomplete;
-- no independent stranger has installed and operated the product;
-- the model is screening-grade, not nationwide validated. The often-repeated
-  43.3% figure is the selection metric from the roughly 30% holdout drawn from a
-  57-station, one-county dataset, not national or independent accuracy evidence.
-  Rules-v5 now refuses a claim until observed and modeled quantities are proven
-  comparable, but OpenPlan's true nationwide error is still unknown. Rank agreement in measured
-  examples is weak, and most minor links are unloaded. Observation uncertainty
-  is now represented without invented generic bounds, but has not yet been
-  separated from structural model error with untouched use-specific evidence.
-
-## Completed checkpoint: v0.38 trustworthy observed-count validation
-
-- Added exact observation, comparison-basis, and assessment contracts plus one
-  shared stdlib-only rules-v4 evaluation core.
-- Added complete 2024 FHWA TMAS custody, conservative HPMS enrichment, exact
-  polygon/multistate source resolution, Caltrans adjacent-side preservation,
-  and explicit coverage failure states.
-- Added append-only transactional assessment custody and planner-visible,
-  report, assistant, and project-evidence disclosure with downloadable hashes.
-- Kept legacy rows diagnostic, build forecasts inconclusive, and AequilibraE
-  and ActivitySim separate.
-- Stopped the seven-county development study before model-output reveal because
-  zero method pairs had identical observation packages and pre-volume match
-  audits. The readiness result is in
-  `docs/modeling/OBSERVED_COUNT_INSTRUMENT_READINESS_2026-08-28.md`.
-
-## Completed checkpoint: v0.39 frozen development instrument
-
-- Froze one exact network, observation package, and assignment-blind match
-  audit for each of the seven registered development counties.
-- Required all seven custody gates to pass before opening any assignment
-  output, then ran unchanged AequilibraE and ActivitySim baselines against the
-  same county inputs.
-- Preserved both methods separately and retained every ambiguous, excluded,
-  unresolved, and unloaded observation.
-- Published all fourteen outcomes as `inconclusive`. No fully comparable
-  decisive observation and no use-specific acceptance rule existed, so the
-  run made no validation claim and changed no defaults.
-
-## Completed checkpoint: v0.40 frozen structural diagnosis
-
-- Diagnosed the immutable v0.39 networks, observation packages, pre-volume
-  audits, model outputs, comparison bases, and assessments without changing
-  any frozen byte or match identifier.
-- Completed every assignment-blind county diagnosis before opening any model
-  output, then retained loaded, zero-volume unloaded, and absent output rows
-  separately.
-- Found missing usable coordinates in four counties and centroid-only distance
-  exclusions in all seven. No observation with usable coordinates proved a
-  genuine absence of network geometry within the registered search distance.
-- Kept model year, day basis, coefficients, and population vintage unknown
-  where the exact evidence did not establish them, and kept AequilibraE and
-  ActivitySim raw values separate on identical frozen links.
-- Published fourteen versioned diagnosis artifacts plus a bound study result;
-  the scientific outcome remains `inconclusive` and California and nationwide
-  capability remain `partial`.
-
-## Completed checkpoint: v0.41 comparable observation instrument
-
-- Preserved every v0.39/v0.40 artifact and the frozen v1 matcher while adding
-  versioned observation, package, audit, input, basis, assessment, and diagnosis
-  contracts.
-- Separated physical sites from station/direction/lane/year series, retained
-  complete TMAS days and exact hashes, and kept complete HPMS section shapes and
-  LRS facts.
-- Matched point and section observations against whole network links before
-  output reveal, retained ambiguity and unavailable states, and recorded
-  direction aggregation explicitly.
-- Proved the exact `0.10` assignment expansion and `class_pce = 1` profile, but
-  named the result synthetic expanded daily traffic rather than AADT.
-- Published fourteen separate diagnoses and kept the outcome `inconclusive`.
-  The repaired coverage is not evidence of improved model accuracy.
-
-## Completed checkpoint: v0.42 jurisdiction-aware readiness
-
-- Added one sparse, versioned job-by-jurisdiction registry for California,
-  Oregon, and Puerto Rico, with exact source and adapter hashes, official
-  authorities, applicability, and limitations.
-- Made workspace and project pages answer “Can OpenPlan do this here?” before
-  reliance, while unknown, multistate, unsupported, and unreadable geography
-  states remain distinct and never inherit California behavior.
-- Carried all five planning-job cells and the same full registry hash into exact
-  JSON downloads, generated reports, assistant grounding, and immutable project
-  evidence bundles.
-
-## Completed checkpoint: v0.43 structural demand and loading diagnosis
-
-- Bound the frozen v0.41 packages, full-geometry matches, exact method demand,
-  shared network/external layer, source vintages, settings, and outputs in one
-  registry-driven v4 development study.
-- Completed fourteen assignment-blind input audits before opening any output,
-  retaining productions, attractions, distance shares, crossings before caps,
-  route pairing, external bases, components, connectors, restrictions,
-  unreachable demand, and roadway loading coverage.
-- Joined those audits to unchanged v0.41 records after output access and kept
-  loaded, unloaded, unreachable, excluded, ambiguous, unsupported, and
-  missing-output states visible by method and structural category.
-- Kept unproved LODES facts `unknown`, non-work through travel `unsupported`,
-  and AequilibraE and ActivitySim values separate. No default, match, parameter,
-  threshold, candidate, or holdout changed.
-- Published fourteen exact diagnoses as `inconclusive`; California and
-  nationwide modeling capability remain `partial`.
-- Extended existing first-week jobs rather than adding a module or journey.
-  Desktop and 390px exemplar checks remain release evidence, not a nationwide
-  capability claim.
-
-## Completed checkpoint: v0.44 source-bound distributed work loading
-
-- Bound exact 2023 Census LODES 8.4 main, auxiliary, RAC, WAC, crosswalk,
-  documentation, method work-layer, network, observation, settings, and
-  algorithm inputs before assignment output.
-- Preserved each method's work total, left non-work demand unchanged, and
-  distributed only covered work endpoints to block-supported road access
-  points. Cross-boundary, unavailable, suppressed, explicit-zero, unmapped,
-  unroutable, and missing-pair states remain separate.
-- Added canonical candidate-network custody and a pre-assignment receipt so an
-  interrupted job resumes only when the audit, matrix, network, and completed
-  output hashes still match.
-- Kept seven county gates and both methods separate. No national aggregate,
-  method average, rematched observation, consumed holdout, tuning step, or
-  default promotion can rescue a failed candidate.
-- Carried the exact input, audit, comparison, and hashes through the existing
-  Models, report, assistant, and project-evidence surfaces. The scientific
-  outcome remains `inconclusive`; California and nationwide capability remain
-  `partial`.
-
-The immediate lane is the current first-week correction and clean-checkout
-verification, with release withheld while any intended outcome remains unmet.
-The September 6 independent reviews disagree on the next product outcome:
-reviewer A elevates complete agency OWP/UPWP administration, while reviewer B
-favors an assigned plan action reaching My Work even without a deadline.
-Source inspection supports that undated actions are excluded from its query
-and that shared campaigns have inconsistent project/export coverage. Neither
-finding has a fresh browser reproduction. First test the undated assignment
-handoff, then the shared-campaign handoff, within their existing modules.
-These are bounded engineering checks, not a substitute for the OWP priority.
-
-Explicitly assess full OWP/UPWP administration under Programs and connected
-Projects, funding, people/work plans, Reports and My Work before selecting the
-next implementation lane. The preserved September 4 requirements ledger names
-this as Nathaniel's priority; it is not proof of implementation or permission
-to import that branch's entire roadmap. Cover preparation, authorization,
-amendments, delivery, progress and reimbursement, expenditure certification,
-closeout and next-cycle mapping. Keep proposed and authorized amounts, costs,
-billings, cash, actual products, funding vintages and authority periods distinct.
-Nationwide jurisdiction depth and both methods' scientific validation remain
-binding v1 work. No new module or replacement modeling candidate is selected.
-
-The distributed-loading candidate did not advance and is retired unchanged.
-Do not fit a replacement from its failure. Any future model acceptance rule
-must be frozen from independent primary, use-specific evidence before a
-genuinely untouched geographic holdout is opened.
-
-That last point is a model-science question, not permission to fit observations
-exactly. Traffic counts contain sampling, equipment, adjustment, temporal, and
-location-matching uncertainty. v1 needs an uncertainty-aware gate that can
-distinguish bad observations from bad model structure without letting either
-hide the other.
-
-## Completed checkpoint: v0.35 foundation
-
-This release established the machinery the full v1 program depends on. The
-open cells below the checkpoint remain v1 work, not claims that v0.35 solved
-the full contract.
-
-### One product
-
-- Make Projects and Plans the durable context spine across analysis,
-  engagement, safety, funding, documents, aerial evidence, and reports.
-- Remove duplicate authenticated navigation and repeated primary actions.
-- Present Models, Scenarios, and Validation as stages of one guided model job
-  while preserving specialist URLs.
-- Separate operator setup/health from the planner's daily overview.
-- Close first-week continuity defects: active workspace, reminders and tasks,
-  intake handoff, corridor entry, road identity, and printable street context.
-- Keep the first-week outcome gate fail-closed: only a completed journey with
-  `outcomeReached: "yes"` passes; retry and preserve `partly`, `no`, and
-  inconclusive attempts.
-
-### Strategic and validation foundation
-
-- Maintain the v1 planner/organization/state/capability proof matrix and make
-  missing or unassessed core cells fail the direction review.
-- Complete the primary-source study of traffic-count uncertainty and current
-  OpenPlan observation handling.
-- Pre-register the nationwide model-validation program before trying candidates:
-  claimed uses, station quality classes, observation uncertainty, temporal
-  alignment, matching rules, geographic strata, metrics, holdout custody, and
-  acceptance logic.
-- Treat the current 30% screening threshold as provisional. Replace or retain it
-  only from primary-source, use-specific research before the new holdouts are
-  opened. Never change a gate after seeing its holdout outcome.
-- Fix the public `metadataBase` warning and prove configured public URLs.
-
-**Done when:** the project, engagement, safety, and corridor journeys reach
-their actual outcomes without lost context; the strategic review expires and
-fails mechanically; and the nationwide validation design can separate model,
-observation, and matching uncertainty before any calibration candidate is run.
-
-## Mandatory v1 program A: nationwide validated modeling
-
-This program may span many releases. It is a v1 blocker, not post-v1 research.
-
-### Establish trustworthy observations
-
-- Grade count stations by raw versus factored estimate, duration, season,
-  direction, year, equipment, imputation, and location-match confidence.
-- Align model and observation periods or carry the mismatch uncertainty.
-- Use repeated counts to estimate day-to-day and seasonal variability where the
-  source supports it.
-- Keep suspect observations visible as excluded or low-confidence evidence;
-  never silently discard them after seeing model residuals.
-- Report validation with and without low-confidence observations, under a
-  preregistered rule.
-
-### Repair model structure, not appearance
-
-- Diagnose trip generation, distribution, destination and mode choice,
-  external/through travel, network construction, centroid loading, road-class
-  coverage, time-of-day, and transit against independent evidence.
-- Replace unlabelled ActivitySim example coefficients with locally estimated,
-  hierarchically transferable, or explicitly bounded coefficient sets.
-- Route FAF and other defensible external-flow sources over the real network;
-  do not substitute straight lines or one scalar per region.
-- Load areas rather than a few centroid paths where evidence shows the current
-  structure leaves roads unseen.
-- Preserve resumability, evidence custody, and hours-to-days worker execution.
-
-### Validate every place and use
-
-- Pre-register development, selection, and untouched holdout geography before
-  outcome access.
-- Require each state and geographic archetype to pass its applicable use gate.
-  A nationwide median cannot hide a failure.
-- Give California deeper sub-state proof across its full agency and geographic
-  range.
-- Validate planning uses separately: corridor comparison, RTP/scenario work,
-  grants, transit, and any stronger forecast claim. A lower claim tier cannot be
-  relabelled upward.
-- Keep AequilibraE and ActivitySim results separate. Agreement remains
-  sensitivity evidence, not accuracy, unless untouched evidence proves more.
-- Show measured, modeled, unloaded, unavailable, and out-of-network states in
-  every live and exported result.
-
-**Done when:** both methods run nationwide and every state plus required
-archetype passes preregistered untouched holdout gates for every published use;
-California passes its deeper suite; no model value appears without observation,
-coverage, provenance, and uncertainty state.
-
-## Mandatory v1 program B: every state in substance
-
-- Maintain a state-by-state registry of crash and serious-injury data, traffic
-  counts, transit, freight, demographics, equity, hazards, funding programs,
-  statutory planning rules, environmental requirements, and responsible source
-  agencies.
-- Research and connect stable authoritative sources. Missing sources are gaps to
-  solve before v1, while interim releases continue to disclose them honestly.
-- Prove every core journey in every state and DC without changing call sites.
-- Add an explicit US-territory matrix and preserve a route to worldwide bundles.
-- Make California the complete reference bundle and prove every California
-  geography from authoritative registry data.
-
-**Done when:** every state/DC cell required by a core journey is proven and no
-planner learns a coverage limit only after relying on a result.
-
-## Mandatory v1 program C: every planner's core work
-
-- Maintain coverage across transportation, land use, comprehensive planning,
-  transit, active transportation, freight, safety, environmental review,
-  climate and resilience, equity, engagement, capital programming, grants,
-  delivery, reimbursement, development review, GIS/data, documents, reports,
-  implementation, and public records.
-- Evaluate cities, counties, regional agencies, state agencies, tribes, transit
-  providers, consultancies, non-profits, and independent planners.
-- Deepen and connect an existing module when it has a coherent home.
-- Add a new module when the direction review proves a core need has no coherent
-  owner and existing OpenPlan code or a suitable open-source library cannot
-  supply it. Record why before building.
-- Expand end-to-end journeys whenever the capability map finds a core planner
-  job not represented by the current suite.
-
-**Done when:** every core capability and organization cell is proven by a real
-journey and artifact, with no `partial`, `missing`, or `not assessed` result.
-
-## Mandatory v1 program D: interoperability and evidence handoff
-
-- Export GeoPackage for geographic outputs and XLSX for portfolio round-trip.
-- Keep the shipped per-project frozen evidence bundles current, and add per-plan
-  bundles with the same machine-readable source, retrieval, tier, custody,
-  uncertainty, and known-limit manifests.
-- Make source documents and frozen artifacts discoverable from every dependent
-  result.
-- Support public, governing-body, GIS, spreadsheet, document-management, and
-  archival handoffs without losing evidence.
-
-**Done when:** an outside planner can inspect and reuse an artifact in standard
-agency tools without opening OpenPlan or guessing its provenance.
-
-## Mandatory v1 program E: teams, operations, and human control
-
-- Extend roles to every consequential write and record named approval of exact
-  artifacts.
-- Make My Work the common assignment, review, approval, exception, and recovery
-  inbox.
-- Prove analyst, manager, approver, viewer, public participant, and agent
-  principals across the full journey suite.
-- Make local and self-host deployment, source setup, worker operation, backup,
-  restore, upgrade, rollback, and recovery self-service.
-- Complete keyboard, screen-reader, responsive, contrast, localization, print,
-  and low-bandwidth evidence for every core journey.
-
-**Done when:** a real team and an independent operator can run and recover the
-whole system without Nathaniel and without weakening human control.
-
-## Mandatory v1 program F: agentic planning control
-
-The base product must remain fully usable without an agent. Once the underlying
-workflows are proven, the MCP/Buzz direction from ADR-004 returns as pre-v1 work
-because the ultimate planning operating system should be controllable with the
-same discipline as a codebase.
-
-- Build the MCP server as read then propose; do not build a client that bypasses
-  the product's approval boundary.
-- Derive writes from the action registry, exact executed-payload hashes,
-  distinct agent authorship, claim tiers, audit records, and human approval.
-- Let agents inspect the whole planning record, explain gaps, draft grounded
-  work, and propose safe transitions without silently publishing, adopting,
-  spending, or fabricating facts.
-- Preserve full non-agent functionality and free/self-hosted operation.
-
-**Done when:** a planner can direct a grounded agent across proven workflows,
-review every proposed consequence, and reproduce the result without the agent.
-
-## V1 proof campaign
-
-On one candidate commit:
-
-- every capability, planner type, organization type, state/DC, geographic
-  archetype, artifact, accessibility, and operational cell is proven;
-- every nationwide and California model holdout gate passes;
-- every end-to-end journey reaches its intended outcome from visible UI entry;
-- an independent person installs and operates OpenPlan without help;
-- independent fresh-context product reviews find no unresolved core omission;
-- live RLS, all workers, mutation samples, restore, upgrade, dependency audit,
-  build, and CI pass.
-
-Only then tag v1.0.0.
-
-## Permanent refusals
-
-- No paid tier, payment step, or required paid infrastructure.
-- No averaged demand-model result or national average that hides local failure.
-- No exact-fit objective that overfits noisy observations.
-- No invented data, silent coverage limits, unsupported zeros, or promoted claim
-  tiers.
-- No agent-authored consequential facts or direct-to-public agent action.
-- No serverless long-running model execution.
-- No hardcoded place, jurisdiction, country assumption, or literal state/county
-  roster in core code.
-- No scope reduction justified only by time, work size, runtime, or an agent's
-  preference for a nearer v1.
+# OpenPlan roadmap to v1
+
+Current queue, consolidated September 6, 2026 after the development handoff at `cc6c3feb`. Findings R1-R13 refer to the [comprehensive review](reviews/TECHNICAL_PRODUCT_REVIEW_2026-09-06.md). Historical releases and scientific outcomes remain in their dated records. The latest twelve-journey run finished nine passes and three partial outcomes; v0.44 is not released. Its later report correction has separate verification, not a complete passing rerun.
+
+## Destination and sequencing
+
+The binding destination remains the complete free, open-source operating system for core US planning practice: every planner and organization context, all 50 states and DC, California as the deepest implementation, separate scientifically validated AequilibraE and ActivitySim results for every published use, coherent self-service workflows, human control and durable free operation. There is no deadline or maximum number of interim releases. Days-long modeling is acceptable when needed for accuracy.
+
+Territories need explicit source, authority and workflow coverage. The existing contract promises a support matrix; the current gate also demands proven territory cells. Nathaniel's clarification of that scope is pending. Do not silently skip those cells or claim territory completeness. Tribal governments, sovereign authority, regional agencies and overlapping jurisdictions are required architectural and practical contexts, not a state lookup exception.
+
+The current 0.44 candidate must first obtain an honest disposition. The source-bound work-loading experiment did not advance overall and remains inconclusive. Publishing that result is useful; it is not evidence that the structural modeling gap closed.
+
+Do not complete a long sequence of modeling releases while everyday planning jobs remain stranded. Conversely, a successful planning handoff does not close the scientific program. At each milestone review, assess the whole capability map, newly found consequential defects, current planner observations and the cost of maintaining disconnected implementations.
+
+Nathaniel's September 4 steering makes three upgrades early priorities: engagement mapping that demonstrably exceeds Social Pinpoint for planning work; user-selected API and installed CLI backends for the Planner Agent, using T3 Code as a concrete reuse reference; and capital-project administration through construction and closeout, with deep Caltrans support. These are now explicit sequencing inputs. His subsequent direction restores contract drawdown by task/employee/deliverable and complete RTP updates beginning with the adopted predecessor as core requirements. M11 and M12 make those outcomes explicit. M13 restores local-tax and post-award grant administration with municipalities reporting projects, expenditures and physical outputs on the administrator's instance; they are not add-ons. M14 restores complete consultant and agency procurement, from opportunity discovery and solicitation through proposal receipt, evaluation, award and contracted delivery. M15 adds the mid-term hosted browser demonstration/trial and customer-owned installation path, supported by optional paid implementation, annual administration and customization around the same free software. OWP administration is also an explicit high-priority agency outcome under M2d/CORE-OWP-01, spanning the work program, funding, actual work and reporting cycle. The DOT Dashboard comparison remains background research and Signal is a small additive palette request. Existing milestone IDs remain stable; their numbers do not determine execution order.
+
+The entire 2026 LAPM and current bulletin review now supplies chapter-specific completion evidence in `LAPM_FEATURE_GAP_ANALYSIS.md`. M10a.1–d.2 refine existing capital increments; M8a/b, M9d and M13f preserve environmental/civil-rights, hearing and agency-audit duties. These are shared record workflows, not nineteen new modules. Source dates, actual authority and selected current form verification are mandatory before implementation.
+
+The next work, in order of dependency:
+
+1. **M0:** finish this handoff consolidation, guard and desktop-control safety maintenance. Preserve the three partial outcomes and run a new complete acceptance campaign only when the intended outcomes can be met. The current development checkpoint is not a release.
+2. **First bounded product work:** reproduce the undated plan-action-to-My Work handoff and shared-campaign project/export completeness identified by the September 6 independent reviews. Then complete an agency OWP setup and prior-program intake under M2d.1, supported by the required authority and contract-budget foundations. These small handoff checks do not replace the full OWP priority. **Shared prerequisites from M1/M3/M4/M5:** establish correct case authority, trustworthy job/record recovery, necessary roles/privacy, and reusable evidence for the first cases. Deliver the needed parts without waiting for every national adapter or operations milestone to finish.
+3. **M9a, A0a, M10a and M11a:** prepare the first superior engagement journey, the T3-informed local/API agent connection with A1a integrity/scoped-tool prerequisites, a California local-agency capital-project case, and reliable planning-contract budgets and actuals. Start M2d.1–2 with an agency OWP and prior-work-program intake alongside M11a; complete a first reporting/claim cycle through M2d.3 using the same source records. Start M12a with prior-RTP intake as another everyday planning case. M13a–b supplies the municipality-to-administrator reporting case for the capital/funding work; prove recipient access and one full reporting cycle before extending advanced disbursement features. M14a adds consultant opportunity/response work and agency package preparation to that same contract lifecycle; do not defer procurement until after project delivery has been built. Select an actual permitted project; keep file ownership and implementation seams explicit when parallel work is available. The capital case can supply the public-input-to-decision-to-delivery handoff that M2 needs.
+4. **M9b–c, A0b, M10b–d, M11b–c, M12b–d, M13c–d and M14b–d:** complete the OWP amendment/reporting/closeout cycle under M2d.3–4, public response/accountability, all three requested CLI backends plus extensible API choice, the capital lifecycle through reimbursement and closeout, proactive planning project controls, the complete RTP update, reconciled tax/grant administration with public project statistics, and agency issue/receipt/evaluation/award linked to the winning contract. These are several scoped releases, not one simultaneous feature build. Each release must complete a useful job and preserve the remaining full scope.
+5. **M15a–c, mid-term:** commission a production reference deployment, demonstrate real work from an outside browser, run isolated editable trials and transfer a trial to a customer-owned installation. Prepare the topology and budget alongside M3; commission only after the selected release and operational prerequisites pass and actual spending is approved. Optional implementation/annual administration/customization remains separate from software access.
+6. **S1:** scientific custody/comparability work continues alongside those whole-product priorities; subsequent structural experiments and untouched validation remain mandatory. Neither expensive modeling nor the new priorities displace the other required planning practices.
+
+Primary-source detail and source-code boundaries are preserved in the dated pre-handoff review's `ENGAGEMENT_PRIORITY_RESEARCH.md`, `PLANNER_AGENT_PROVIDER_RESEARCH.md`, `T3_CODE_REUSE_RESEARCH.md` and `CAPITAL_DELIVERY_PRIORITY_RESEARCH.md`. The contract/RTP reports, `REQUIREMENTS_HISTORY_RECOVERY.md` and `CORE_REQUIREMENTS_LEDGER.md` preserve restored scope and its evidence. Their source dates and explicit unknowns matter; competitor claims and regulatory templates need refresh when implementation begins.
+
+The scope reconciliation and core requirements ledger also retain the recovered work-plan library, full aerial/ODM lane, shared files and everyday work, named legacy intake, grant pursuit, and explicit modal/land-use/environmental outcomes. M2a inventories their named practice cases early; link them into the capital/RTP cases where appropriate without making one demonstration close every practice.
+
+W1 updates the existing Nat Ford Planning website as a companion adoption deliverable: OpenPlan first, clear source/install access and optional services, with hosted trial links gated by actual M15 readiness.
+
+These are outcomes, not automatic release numbers. An implementation may take several releases. Product redesign and new modules below require their own scoped implementation decision; this review does not launch them.
+
+## Shared definition of done
+
+Every milestone must name the planner, organization, actual job, geography/authority, evidence sources, roles and artifact recipient. Record the candidate SHA and deployed identity. A definition of done cannot substitute a page, a test count or a prose assertion for a completed job.
+
+For a visible workflow, start at the real navigation entry, reach the intended outcome at desktop and 390px, inspect the console, exercise keyboard use, and inspect the resulting stored/exported data. Apply screen-reader, contrast, localization, public-artifact and print requirements to the actual job. Name supported language scope and manual alternatives; preserve source and reviewed translated versions. Exercise slow/interrupted connections, upload retry and useful non-map access. These requirements apply throughout the product, not only engagement or the website; they do not imply unrequested full offline synchronization. Prove each changed consequential guard with a surviving harmless mutation and targeted failures. Record unknowns and unsupported states instead of forcing a success.
+
+For data, retain exact geometry, CRS/axis order, units, time/cost basis, identifiers, source vintage, license, completeness, transformations and claim limits. For an approval, bind the responsible human to the exact version/payload. For operations, exercise interruption, recovery and the relevant migration/restore path. Human professional usefulness requires direct observation, separately from agent regression testing.
+
+Use existing local computers and free resources. Measure compute time, peak RAM, disk growth, bandwidth and external-service use in milestone evidence. Any proposed paid dependency returns to Nathaniel before provisioning. No model run or inaccessible human study is described as completed because time or credits ran out.
+
+## M0. Trustworthy candidate, review and documentation
+
+- **Planning outcome:** a planner or contributor can tell what is released, what can be relied on, and where the next work is recorded.
+- **Gap/evidence:** review R7-R9/R12; version 0.44 metadata preceded its tag; opening CI and dependency failures were repaired by the development session, but final first-week acceptance remains unmet; old browser-success wording outlived stronger checks and later defects; current instructions split authority between two entry files and a manual.
+- **Dependencies/scope:** reconcile the completed September 6 handoff, final commits and acceptance attempts. Make repository AGENTS.md canonical, CLAUDE.md a pointer, and the old manual a compatibility link. Keep global configuration untouched. Consolidate current documentation while retaining dated studies/releases/decisions.
+- **Done:** one current roadmap, capability ledger, architecture description, setup/operations route and known-limit register. Evidence-guard maintenance refuses missing browser captures and unsupported proven-cell promotion. Current candidate gets a clear released or not-released disposition with reasons.
+- **Verification:** two preserved independent reviews; bad-record/no-op mutations; relevant tests/lint/type checks; docs command/link checks; final main and CI results named separately. Do not re-run or relabel a dated study to repair metadata.
+- **Risks/questions/cost:** coordination with active fixes; stale source citations; isolated disk/test work only. No new hosted spend. Retain the repaired dependency lockfile and confirm a functioning private vulnerability-report path; current repository settings are not proof of dependable release review. A failed candidate remains failed until its actual blocker is corrected.
+
+## M1. Correct plan geography, authority and legal applicability
+
+- **Planning outcome:** a consultant can prepare a plan for a client outside the workspace's home state, and the responsible authority gets the correct plan-type checklist.
+- **Gap/evidence:** R1/R2, land-use create route and descriptor registry. General and specific plans currently share rules; a workspace location gates an independent plan.
+- **Dependencies/scope:** M0. Extend existing PlaceOfRecord, land-use versioning and jurisdiction registries. Distinguish exact study geometry, geography identity, responsible bodies, legal applicability and effective rule version. Preserve neutral/unresolved cases. Specify general/specific/amendment rules from authoritative sources.
+- **Done:** correct California general and specific plans in a cross-client workspace; non-California neutral workflow; multiple/sovereign authorities without inferred state law; saved and exported context agrees. Agency process choices are distinguishable from statutory obligations.
+- **Verification:** CA plan in OR workspace, OR plan in CA workspace, missing home, uploaded boundary, multistate MPO and tribal authority; independently mutate ownership and plan-kind selection. Inspect stored records, public artifacts and applicability decisions. Practitioner/counsel review the claimed legal scope.
+- **Risks/questions/cost:** erroneous legal certainty, historical plan rules changing under adopted versions, incomplete local overlays. Requires source research and qualified review time; no paid runtime required. Nathaniel chooses representative cases, not schema design.
+
+## M2. A complete planning case and recipient handoff
+
+- **Planning outcome:** another authorized planner takes a case from intake to review, requests a change, approves the exact final record, reuses the outputs and carries named actions into implementation.
+- **Gap/evidence:** R6/R10/R11; existing project/plan/report/evidence/My Work foundations, unresolved cross-module context and external reuse.
+- **Dependencies/scope:** M1; M3 lifecycle/recovery controls appropriate to the case; M5 selected data handoff. Use existing Projects, Plans/Land Use Plans/RTP, Documents, Engagement, Reports and My Work. Define one authoritative owner per fact and link it through the case.
+- **Done:** intake, source reuse, alternatives, consultation, public/technical review, exact approval, public derivative, implementation owner/date/status and later amendment remain traceable without repeated entry. Second organization receives a meaningful GeoPackage/workbook/document package.
+- **Verification:** analyst/manager/approver/viewer/public roles; cross-workspace recipient; edit after approval; revoked access; stale source; lost network; return/resubmit; map/table/document counts and hashes. A real planner and recipient complete the case without Nathaniel guiding clicks.
+- **Risks/questions/cost:** a polished generic checklist can hide absent domain analysis; project and three plan concepts can duplicate ownership. Use an actual representative record with permission. Human observation and local compute are the main costs.
+
+The following outcomes have explicit owners within M2; a generic completed case does not close them automatically. The scope-reconciliation audit records why they were previously too easy to lose.
+
+1. **M2a — Work plans across planning practice.** Extend the existing 24 standard-practice templates into a maintained taxonomy covering core transportation and land-use projects, plans and programs. Nathaniel explicitly requested comprehensive coverage on August 11. Link each template to appropriate project/plan types, deliverables, dependencies, review steps and source/scope notes. Separate professional starting points from adopted agency or statutory requirements. Done means a planner can select, inspect, tailor and apply an appropriate work plan, assign actual people and dates, handle an amendment and account for every required practice family. Prove incorrect jurisdiction-specific applicability is disclosed or refused, no hidden default template, duplicate/retry handling and preserved work when a template changes. Template count alone cannot close coverage; practitioner/source review and ongoing maintenance are required.
+2. **M2b — One usable file library and human document workflow.** Extend the existing project/workspace Document Library, Knowledge Base, Reports and versioned plan documents. A planner must find uploaded files and generated reports, application packages, invoices, aerial and model artifacts without knowing their original module. Preserve source identity and permissions, distinguish stored/downloadable/indexed/citable, and reuse the exact version in a new document. Complete human drafting, sections/figures/tables, review comments, competing-edit recovery, approved output and recipient reuse beyond the RTP-only case. Prove search/filter completeness, OCR correction/source-page fidelity, missing bytes, revoked access and stale citations. Reuse the present library and editors; no replacement file manager or word processor is assumed. Storage, indexing and document-rendering cost remain explicit.
+3. **M2c — Daily work and exceptions.** Extend Dashboard/My Work rather than a duplicate dashboard. Preserve Nathaniel's chosen assigned-work, blocked-project and deadline-digest behavior, user-selectable saved dashboard views and plain-language next actions, while showing failed/stalled jobs, stale evidence, awaited approvals and the relevant next action across modules. Public engagement retains his map-first entry intent with a useful accessible non-map path. Done means staff and a supervisor find their actual work and resolve a blocked case without manual data re-entry; unresolved and unreadable sources cannot appear as an empty queue. Verify departed staff, delegation, reminders/timezones, failed reads, large queues and return-to-work after interruption. Notification volume and configured mail need operational limits without suppressing consequential exceptions.
+
+### M2c appearance additions. Signal palette and corner style
+
+Add Signal to the existing upper-right palette pill, preserving Cartographic, Slate, Harbor, Meadow, Plum, the default and saved preferences. Use bright yellow, light/dark gray and black with light/dark variants through existing semantic tokens. Keep status colors fixed. This is small authorized polish after the owner handoff, not a new theme framework. Verify actual selection/persistence, readable text/focus/hover, maps/charts and desktop/390px keyboard use, using the existing theme checks where relevant. See `DOT_DASHBOARD_COMPARISON.md`; no palette is implemented by this plan.
+
+Add a compact **Corners: Rounded / Square** selector beside or within the existing theme chooser. Rounded preserves the current default geometry. Square gives the application a deliberate 90-degree style across cards, panels, buttons, inputs, menus and dialogs. Keep corner style independent of color palette and light/dark mode, including Signal, and retain the preference across navigation and reload without changing existing users' choices. Extend shared appearance/radius tokens and audit component overrides rather than applying an indiscriminate global CSS reset. Semantic circles such as radio indicators and map point symbols retain their meaning.
+
+Done means both styles look intentional across the main workflows and overlays, with aligned borders, focus rings and clipping, no smaller click/touch targets, and no overflow or missing controls at 390px. Verify visible keyboard selection, persistence and representative palette/mode combinations in the actual application after handoff. This is CORE-APPEARANCE-02, a small planned UI preference; no implementation or browser proof is claimed here.
+
+### M2d. Complete agency OWP/UPWP administration
+
+- **Planning outcome:** an agency prepares, adopts, administers, reports and closes its applicable work program using connected project, financial and evidence records. Nathaniel makes this high priority. Staff should not reconstruct the same work-element status and spending in separate spreadsheets every reporting period.
+- **Present gap/evidence:** the roadmap previously named generic work plans but omitted this complete outcome. Current source has work-plan templates, program cycles, project budgets, time/contracts, invoicing and reports; bounded OWP/UPWP source-name searches found no dedicated terms, which is not proof of total code absence. `OWP_ADMINISTRATION_REQUIREMENTS_RESEARCH.md` supplies current primary guidance; `DOT_DASHBOARD_AGENCY_EVIDENCE.md` supplies a dated OWP proposal, not an operational OpenPlan proof.
+- **Dependencies/scope:** extend Programs as the agency/cycle home with work elements and links to Projects/work plans, M11 source costs and staffing, M13 fund/award administration, M2b documents and M12/M9/analysis deliverables. M1 resolves actual agency/funding authority; M3/M4 preserve jobs, permissions and versioned evidence. Work-element budgets, grant task budgets, consultant contract fees and the RTP financial element retain their different meanings. California MPO/RTPA cases and non-California UPWP profiles use actual periods and rules.
+
+| Increment | Scope | Concrete completion evidence |
+|---|---|---|
+| M2d.1: prepare the work program | Intake prior adopted OWP/amendments, open work, funding vintages and balances. Define work elements, purposes/tasks/products, responsible institutions, staffing/consultants, schedule, costs, match and carryover; prepare narrative and required financial tables. | Agency PM and finance reviewer reconstruct proposed versus authorized funding and trace every carried-forward item. Missing balances remain unresolved; old approval cannot authorize new work. |
+| M2d.2: review, adopt and amend | Internal/board/external review, required certifications, agreement/authorization records and scoped amendments. Preserve versioned baseline, pending changes, actual signatures/receipts and affected work. | Actual appropriate reviewers can explain which version and spending authority applies. A changed budget does not silently approve itself; returned changes preserve the submitted original. |
+| M2d.3: administer and report | Connect actual effort, contracts, source costs, work products and progress to work elements/funds/periods. Forecast remaining work, track missing deliverables and prepare applicable progress/RFR/invoice packages, corrections and public/internal reports. | A complete reporting period reconciles narrative, source costs, fund shares and the prescribed packet. One expense cannot be claimed twice. Staff and external reviewer can reuse actual PDF/XLSX outputs. |
+| M2d.4: close and continue | Final products and expenditures, claims/receipts, commitments, approved carryover/refunds, period closure and next-cycle mapping; retained audit record and reopening where authorized. | Independent reviewer reconstructs two overlapping cycles and an unresolved claim without losing the old baseline. Exact records restore; unapproved carryover and outstanding obligations remain visible. |
+
+- **Verification:** observe a rural RTPA, an MPO and a suitable non-California UPWP agency case. Test fiscal/calendar/fund-year differences, missing rates or balances, duplicate allocations, unauthorized amendments, rejected reimbursement, late/missing reports, source-version conflicts, public/internal export isolation and interrupted restore. Targeted changed guards require a harmless survivor and mutations that invalidate actual allocation/authority/closure. No real agency acceptance is claimed during this review.
+- **Risks and product questions:** availability and quality of prior OWP/accounting files, agency-specific interpretation and approval practices, staff effort to maintain meaningful progress, restricted cost/personnel records and source updates. A practitioner validates work-element meaning and usefulness. Do not turn this into a replacement general ledger or make legal-compliance claims from templates.
+- **Operating costs:** ordinary records/decimal calculations plus source intake, rendering, storage and periodic human review. Use shared resumable export/intake workers where needed. A free manual/local route is mandatory; optional agents can draft/explain but cannot authorize, adopt or invent evidence.
+
+**Source-specific limits.** California's covered grants can be managed and invoiced at work-element level while retaining task budgets for internal control; the 2024 guidance replaces a separate CAT amendment after incorporation but contains ambiguous task-budget wording. Do not invent a universal threshold or duplicate filing. Oahu's current eligible UPWP and broader OWP-and-Budget demonstrate separate scope over a two-year period. Resolve actual agreement terms and current workbook labels before promising a filing-compatible export. Source details and bounded reading coverage: [OWP research](reviews/2026-09-04-pre-handoff/OWP_ADMINISTRATION_REQUIREMENTS_RESEARCH.md).
+
+## M3. Free, private and recoverable agency operation
+
+- **Planning outcome:** an agency can run OpenPlan and recover its work without the founder, a paid entitlement or the original computer.
+- **Gap/evidence:** R3-R5/R8/R13; Docker Desktop/Vercel assurances, CLI-versus-production Supabase boundary, external map extent requests, stage reaping, unchecked worker writes and partial recovery drills.
+- **Dependencies/scope:** M0. Extend Node hosting, official self-hosted Supabase, existing worker services and scheduling. Establish a free Linux agency reference with browser clients; document Windows/macOS access separately from unproved native setup. Extend cartography with an open/local-capable provider path, using established libraries and licensed data. Add attempt-bound work ownership, checked writes and recoverable liveness states. Move long GTFS ingestion out of its current 300-second request while preserving existing version/adoption and input custody.
+- **Done:** install, authenticated teammate use, meaningful maps, scheduled jobs, both demand workers, restart/cancel, full authoritative-record backup, restore to separate storage/host, upgrade and recovery all work. Outbound services are explicit and controllable. A no-egress profile produces useful maps/artifacts instead of blank screens.
+- **Verification:** clean-machine commissioning; healthy computation beyond 45 minutes; process/database/network failure; duplicate/late workers; exact storage and local model-byte recovery; nonempty migrations; denied external traffic; correct final deployed identity. Run every worker family, not import-only substitutes.
+- **Risks/questions/cost:** storage grows with models/imagery, tiles have license and update obligations, physical-disk failure defeats same-disk backups, authentication/email and public exposure need operational ownership. Measure resources and recovery objectives. Spending on hardware or a service requires Nathaniel; free software alone does not promise zero operating effort.
+
+### M3a. Dependable desktop control and demo recovery
+
+- **Outcome:** Nathaniel starts from the existing desktop icon and understands which site is running, whether the demonstration target is accepted and ready, what work is underway and how to recover without shell commands. CORE-OPS-CONTROL-01 covers this early operational requirement.
+- **Gap/evidence:** [Desktop control review](reviews/2026-09-04-pre-handoff/DESKTOP_CONTROL_REVIEW.md) identifies source-established and fake-I/O-reproduced ownership/CI problems, permissive update verdicts, terminal-only recovery and incomplete readiness. The shortcut is external but its implementation is tracked; extend it.
+- **Scope/order:** first protect externally owned processes in both Stop and window-close paths, bind CI/status to actual target commits, and reject schema/build uncertainty. Then add guided demo start/update/recovery, selected accepted-build targeting, contextual service logs and redacted diagnostics. Preserve separate demo/development checkouts, required-worker disclosures, existing operation state and a single polling schedule. No silent move to unaccepted main.
+- **Dependencies:** M0 release/evidence disposition, M3 local service/recovery reference, M4 state preservation. Reconcile the active owner's process ownership and final handoff before deploying launcher changes or refreshing the demo.
+- **Done/verification:** observed native-GUI open/status/update/recovery/error-sharing without terminal use; isolated owned/foreign/reused PID and busy-window cases; newest pending versus old success, missing/failed/unknown required check, wrong build/service, unreadable schema, failed build/restart and interrupted update. Keep last usable demo recoverable. Targeted guard mutants must fail for the intended reason and a harmless mutation survive. Actual keyboard, desktop scaling and readable output checks remain necessary.
+- **Risks/cost:** process identity races, multiple panel windows, shared database/workers, unsafe log contents and in-place build interruption. Use current Python/service foundations and free local resources; do not build a second orchestration platform. Final GUI behavior and recovery remain unverified until the controlled implementation work.
+
+## M4. Agency confidentiality, records and responsibility
+
+- **Planning outcome:** staff and outside consultants collaborate on sensitive work, publish an approved derivative and answer a records request without losing the authoritative originals.
+- **Gap/evidence:** R10; workspace roles and public filtering exist, but finer confidentiality, tribal data controls, retention and legal-hold journeys are unproven.
+- **Dependencies/scope:** M0 and case-specific M1/M3 controls, developed with M2/M9/M10 cases rather than waiting for their completion. Define case membership and records responsibilities from observed needs before broad permission redesign. Extend current RLS, role matrix, exact approvals, documents and audit controls. Include staff departure, delegated responsibility and public-link revocation.
+- **Done:** confidential originals, internal analysis, review copies and public artifacts have explicit access and retention rules; records requests and holds are traceable; backups and exports obey the same boundaries.
+- **Verification:** live cross-tenant and same-workspace role/case probes, token revocation, attachment/export access, service-role routes, public leakage tests, restore-preserved permissions and named human review. Observe a records officer and tribal/agency data steward.
+- **Risks/questions/cost:** conflicting public-record, confidentiality and sovereignty obligations cannot be decided by software defaults. Nathaniel/participating authorities supply policy choices; implementation and threat modeling remain engineering work. No new paid identity service is assumed.
+
+## M5. Reusable data, GIS and defensible ordinary analysis
+
+- **Planning outcome:** a planner imports agency data, understands its limits, analyzes it and sends a complete reusable result to another analyst.
+- **Gap/evidence:** R6 and the active crash-cap defect. Existing importers, CRS registry, workbook review, GeoPackage builders and source provenance provide the starting point.
+- **Dependencies/scope:** M0; align context with M1. Connect model/designation export layers already supported by the builder. Share selected-evidence assembly between direct and governed exports. Keep create-only workbook semantics until safe ID-based reconciliation is specified. Define source completeness and analysis score meaning before using derived totals.
+- **Done:** every selected layer/row is exported or explicitly excluded; compatible reimport retains agreed fields; updates show a reviewed diff; unsupported/partial data cannot become total/zero/score. Source changes reopen dependent conclusions while frozen artifacts remain immutable.
+- **Verification:** QGIS and independent spreadsheet reuse; malformed/truncated/large files; geometry collections and non-California CRS; units/price-year changes; unavailable/stale/partial sources; duplicate labels/IDs; layer version changes; exactly one changed source invalidates the right dependent claims.
+- **Risks/questions/cost:** source providers change schemas and cap responses; huge input parsing can exhaust local RAM; formula and document input need safe handling. Measure file-size limits and worker thresholds. Do not build another GIS engine.
+
+Plan-level archives also belong here: independently open chapters, maps, tables, cited source bytes, decisions and adoption/amendment records without the original server. State the exact field/relationship preservation contract for each exchange, exclusions and permissions. Test missing bytes, cross-tenant references, duplicate IDs and partial imports. Reuse evidence bundles and standard formats; an arbitrary vendor document-management connector is not required by this outcome.
+
+M5 also owns two explicit source-to-planning outcomes:
+
+1. **M5a — Agency files and rich map exploration.** Maintain an import/export coverage matrix for the recovered CSV, XLS/XLSX, shapefile, KML/KMZ and geodatabase requirements, along with text/scanned PDFs and imagery. Name geodatabase variants explicitly; one readable variant does not establish all geodatabases. Retain existing GeoJSON, GeoPackage and ODS exchange coverage. Preserve CRS, geometry, field definitions, units, source dates and missing/partial records; unsupported variants get a useful refusal. A planner can inspect source attributes, filter actual fields/categories, follow map/table selections, revisit a saved analytical view and export the exact selected rows/layers. Include general document OCR and reviewed corrections, not only prior-RTP extraction. Reproduce with real permitted files and QGIS/spreadsheet/document recipients; preserve all-field crash/TIMS-like inspection as an explicit safety handoff. File-size/resource limits, format licenses and derivative storage must be measured. A handful of supported extensions is not complete format coverage.
+2. **M5b — Complete drone operations, processing and planning use.** Nathaniel's September 4 clarification requires the substantial capabilities of both current OpenDroneMap and WebODM, better observed planning outcomes, and KML plus actual computer-to-DJI-controller USB transfer. The [21-family benchmark](reviews/2026-09-04-pre-handoff/ODM_WEBODM_FEATURE_BENCHMARK.md), [current code review](reviews/2026-09-04-pre-handoff/AERIAL_CURRENT_CAPABILITY_REVIEW.md), [DJI research](reviews/2026-09-04-pre-handoff/DJI_MISSION_EXPORT_USB_RESEARCH.md) and [reuse decision](reviews/2026-09-04-pre-handoff/AERIAL_REUSE_AND_IMPLEMENTATION_DECISION.md) define the detailed scope. Existing mission/grid/photo/NodeODM/custody/report work is the foundation. WebODM now has its own ODX ecosystem; do not silently substitute engines or rebuild photogrammetry. Every unfinished substantial family stays open across intermediate releases.
+
+### M5b.1. Trustworthy capture planning and DJI handoff
+
+- **Planning outcome:** a qualified operator receives the planner's actual study area, intended output and reviewed collection plan, transfers it by USB from the computer to a supported DJI controller, and imports an understandable mission.
+- **Present gap/evidence:** saved arbitrary snapshots can disagree with fingerprinted parameters; return-home altitude is stored but omitted from export; aircraft/payload auto-binding is assumed; generic KML is review geometry, and no actual USB/controller proof exists. Grid duration omits capture stops/transit and battery counts do not create validated sorties. See the code/DJI reports at e6900750.
+- **Dependencies/scope:** M1/M4/M5 data and access rules. Extend mission, AOI, camera and flight-plan records with supported aircraft/payload/controller/app profiles, accurate camera definitions, server-validated reviewed snapshots, explicit height reference, obstacles/exclusions/holes, corridor and terrain cases, route connectors, camera actions and validated sortie limits. Separate survey-boundary KML, review KML and profile-specific WPML/KMZ. Record crew/equipment readiness, applicable authorizations, checklists, batteries/maintenance and flight logs in the existing mission workflow; do not imply software grants flight authority.
+- **Done:** authored geometry and consequential settings survive save/export/import/reopen on each claimed profile. Direct controller USB copying and app import are independently evidenced; SD-card fallback alone does not close USB. Supported and unsupported combinations are visible before download. Generated, copied, imported, preview-reviewed and flight-validated states remain separate.
+- **Verification:** independent XML/archive/geometry parsers; mutations for mismatched snapshot/parameters, missing profile/template fields, height units, RTH/action loss, unsafe connectors, stale camera definition and count limits, plus a harmless survivor. Bench-test the user's identified hardware/OS and disconnect/full-storage/access/import failures without launching a flight. Later qualified field evidence is separately authorized. Check desktop/390px/keyboard creation and field-readable review.
+- **Risks/questions/cost:** actual equipment is not yet known. Vendor firmware changes, terrain/obstacle completeness and energy estimates require maintenance. Start with tested download plus OS USB copy; add a narrowly paired local helper if needed for the intended ease of use. No universal browser USB access or unknown DJI Fly import support is promised. Measure support effort and adapter packaging across each claimed OS.
+
+M5b.1–2 also require project-specific equipment and processing eligibility. Washington LPB-2026-02 R2 is a concrete source case covering specified foreign UAS/components and data processing on Title 23-funded work. Track funding, equipment/component provenance, applicable contract restrictions and verified compliance/exception evidence. Validate current federal/state implementation before enforcing a rule; do not equate DJI USB compatibility with funded-project eligibility or impose one state's bulletin on every private/local use. Preserve independent original imagery and truthful unsupported/unknown states.
+
+### M5b.2. Durable source intake and complete processing delivery
+
+- **Planning outcome:** an agency can submit a large permitted collection, return after interruption, and receive every requested output with its exact consumed inputs.
+- **Present gap/evidence:** in-memory worker jobs/task identity; callback receipt-before-application can suppress retry after failure; DNG UI/worker mismatch; mesh omitted; short HTTP/memory custody and incomplete archive/resource bounds. These are source findings, not executed failure trials.
+- **Dependencies/scope:** M3/M4, existing NodeODM worker and shared contract. Persist immutable source IDs/hashes, engine version/options, task handles, progress, required/optional output manifests and durable transfer state. Add resumable collection/output transfer, safe format handling or explicit reviewed conversion, disk/RAM admission, cancellation, retry/reconciliation, expiry renewal and cleanup. Trial NodeODX compatibility before choosing a new pinned engine; keep historical provenance unchanged.
+- **Done:** every accepted source and requested deliverable is accounted for. Restart resumes or explicitly reconciles the actual job; no duplicate outputs, lost accepted work or success based only on orthomosaic presence. Full-resolution mesh/cloud/raster artifacts remain retrievable after worker restart and separate-installation restore.
+- **Verification:** real permitted processing plus crash points before/after engine commit, callback receipt/application, custody and publication; duplicate/out-of-order callbacks, failed DB write, corrupt/mixed input, expiring links, oversized archives, exhausted disk and concurrent workloads. Mutate consequential guards and retain no-op survivors. No shared acceptance worker is used for fault injection.
+- **Risks/questions/cost:** source/intermediate/output/backup multiplication, temporary disk, network egress for future hosting, GPU memory and long queues. Measure local workload envelopes before changing limits; protect interactive planning and other workers.
+
+### M5b.3. Full reconstruction, control and analytical products
+
+- **Planning outcome:** a planner/GIS specialist obtains technically reviewed surfaces and imagery suitable for the declared use and can explain their limitations.
+- **Present gap/evidence:** current integration is narrow; no complete GCP/checkpoint, calibration, spectral, 3D or full-output workflow was established. The upstream benchmark retains 21 substantial families, including video-derived inputs and optional external processing handoffs.
+- **Dependencies/scope:** M5b.2 plus correct CRS/vertical reference and source permissions. Deliver supported RGB/nadir/oblique/ground/video-frame workflows; camera/rolling-shutter controls; measured GCP/RTK and appropriate PPK handoff; independently held checkpoints; orthomosaics, classified point clouds, DSM/DTM, textured meshes/3D tiles; calibrated multispectral/thermal outputs. Retain source-video/frame/telemetry linkage and sensor/band/calibration evidence. Where a documented upstream workflow requires preprocessing or alternate software, provide an actual supported handoff and licensing/install guidance rather than a decorative option.
+- **Done:** the capability matrix names supported input/engine/profile, visible workflow, delivered artifacts, QA and independent recipient proof for every substantial family. Missing control heights remain unknown, never synthetic zero. Processing success, custody, positional accuracy and use suitability are distinct. No universal survey-grade badge substitutes for actual evidence.
+- **Verification:** preregistered use-specific criteria and frozen control/check roles on permitted varied datasets; independently calculate residuals and inspect completeness/coverage/surface classification, source imagery and spectral calibration. Preserve failures, consumed checks and engine disagreements. Repeat with non-California CRS, feet/metres, height datums, steep/vegetated terrain and missing metadata. Reopen full outputs in independent GIS/3D tools.
+- **Risks/questions/cost:** input/sensor rights, specialty calibration and reference acquisition, GPU/RAM/storage and external preprocessing maintenance. The responsible practitioner defines actual decision needs and accuracy criteria; engineering implements and falsifies them. Upstream feature presence is not validation.
+
+### M5b.4. Intuitive 2D/3D inspection, measurement and change
+
+- **Planning outcome:** a reviewer inspects a corridor, site or construction change, measures supported quantities and shares a reproducible conclusion.
+- **Present gap/evidence:** OpenPlan primarily shows a held preview and defers measurement to GIS. Aerial Intel already has reusable LAZ/Three.js and measurement code, but it loads whole bytes, subsamples rendering and assumes metre display; that is not validated large-cloud quantity analysis.
+- **Dependencies/scope:** M5b.2–3. Reuse tested viewer/tile components for map/cloud/mesh navigation, source-camera inspection, clipping, profiles, annotations, distances/angles/areas, volumes with explicit base methods, separate cut/fill, contours and GIS/CAD exchange. Include repeat-survey registration/change and documented Gaussian-splat import/display/external-training handoff. Keep visual representations distinct from measurement surfaces. Add reusable review figures and saved analytical views.
+- **Done:** each measurement retains source version, geometry, method, units/datum, resolution/sampling, missing-cell coverage, uncertainty and reviewer. Reopening reproduces the conclusion. Change distinguishes registration error from observed alteration. Every substantial visualization/measurement family has a reachable workflow and valid export; large datasets use appropriate tiling/streaming or explicit supported limits.
+- **Verification:** independently recompute known distances/areas/volumes, compare full-resolution and rendered samples, test base-plane choice and mixed cut/fill, missing cells, unit changes and temporally incompatible data. Use QGIS/CAD/3D recipients, low-memory clients, keyboard/390px and accessible non-3D alternatives. Attractive splats alone cannot establish geometry accuracy.
+- **Risks/questions/cost:** terrain interpolation, non-metre data, decimation, canopy/occlusion and apparent change can mislead. Reuse requires adapting auth and analytical semantics, not copying a viewer wholesale. Measure browser memory, tiling and derivative storage costs.
+
+### M5b.5. Reliable local, offline and agency operation
+
+- **Planning outcome:** individuals and agencies install, operate, share and recover the full aerial workflow with predictable resources and no mandatory paid service.
+- **Present gap/evidence:** no current whole-workflow restart/restore, multi-gigabyte or disconnected acceptance; current engine images and operational limits need commissioning. Upstream split/merge does not merge textured meshes and may change control use in small submodels.
+- **Dependencies/scope:** M3/M4/M15 and M5b.2–4. Pin compatible engine/API/images and audit licenses/notices/source obligations. Complete local/offline setup, team permissions, controlled derivatives/public sharing, localization, diagnostics/notifications and extension capability inventory. Evaluate split/distributed processing, GPU acceleration and resource scheduling with every deliverable accounted for; a merged thumbnail does not close unsupported products.
+- **Done:** fresh documented installation and separate-machine recovery preserve source bytes, jobs, outputs, reviews and access. Disconnected use identifies required preloaded components and external dependencies. Share revocation protects original/private data and public derivatives remain usable. No broad release claims depend on paid optional plugin services.
+- **Verification:** actual install/upgrade/restore/offline journeys; revoked/cross-tenant access, failed node/oversized input, missing submodel and inherited georeferencing changes; measured peak RAM/VRAM/disk/time/queue across declared small/large workloads. Review exact bundled dependency licenses, not just root SPDX metadata.
+- **Risks/questions/cost:** AGPL obligations, component support/fork divergence, backup growth and local GPU variability. API separation alone does not decide legal compatibility. Propose paid capacity only after measured demand and Nathaniel's budget approval.
+
+### M5b.6. Better planning work, demonstrated comparatively
+
+- **Planning outcome:** aerial evidence improves an actual plan, grant exhibit, public explanation or capital-progress review without repeated entry or loss of meaning.
+- **Present gap/evidence:** frozen selected imagery/report custody already exists, but broader full-feature or superiority evidence does not. The current benchmark is documentary, not a live comparison.
+- **Dependencies/scope:** M5b.1–5, M2/M4 and applicable M7/M9/M10/M12/M13 cases. Connect approved surfaces, measurements and images to project documents and decisions. Preserve explicit selection, source/quality caveats and approved public derivatives. Keep computed construction quantities separate from certified work and payment authorization.
+- **Done:** all 21 substantial comparator families have completion evidence or remain visibly open; full v1 cannot close merely on an early RGB demo. Practicing planners/operators/recipients demonstrate predefined improvements in complete work while baseline capabilities are retained. No superiority claim is inferred solely from a new UI or shared engine.
+- **Verification:** matched, version-pinned OpenPlan/ODM/WebODM tasks using frozen permitted inputs and criteria. Separate reconstruction quality, operational reliability and human usefulness. Counterbalance task order; measure errors, correction/review time, context re-entry, completion, uncertainty comprehension and independent artifact reuse. Test desktop/mobile/keyboard/accessibility and constrained connectivity. Agents cannot substitute for these people.
+- **Risks/questions/cost:** participant/reference-dataset access, comparison bias and specialist review effort. Nathaniel identifies the first permitted field/planning case and meaningful outcome; engineering runs the measurement. The complete drone lane proceeds alongside engagement, capital, ordinary planning and modeling credibility rather than consuming their roadmap.
+
+## M6. Multimodal and safety planning through an investment decision
+
+- **Planning outcome:** a transit, walking/cycling, freight or safety proposal is compared with alternatives and becomes a justified project/program decision.
+- **Gap/evidence:** capability matrix and R11; GTFS/accessibility/freight/safety foundations exist, but completed use-specific multimodal journeys and all-state injury coverage do not.
+- **Dependencies/scope:** M2/M5 and applicable S-program evidence. Extend existing GTFS, Safety, Models, Projects and Programs. Treat schedule/service calendars, pedestrian/bicycle connectivity, freight movement and crash exposure as distinct inputs. Acquire serious-injury sources for every claimed KSI use; disclose fatal-only evidence explicitly during interim releases.
+- **Done:** each modal job has an understood baseline, alternatives, costs, distributional/accessibility effects, source coverage and decision artifact. No travel-mode absence is inferred from disabled model inputs. No crash rate uses an incompatible modeled exposure denominator.
+- **Verification:** service-day/calendar exceptions, transfer/walk access, missing injury data, unmatched road coverage, vehicle/person and period units, rural/no-feed cases, freight through-movements, external recipient review and relevant scientific use gate.
+- **Risks/questions/cost:** data rights, feed maintenance, model transferability and sparse observations. Data-source work and local routing compute are required. Use established GTFS/GIS/routing tools rather than a replacement transit stack.
+
+M6 needs separate completion evidence for these decisions:
+
+1. **M6a — Transit, active travel and freight work.** Carry transit feed discovery/URL/ZIP intake and validated versions through service-day/headway/span/coverage/accessibility analysis, alternative service/resource plans, the agency's operations/capital decision and appropriate GTFS/record handoff. A transit provider's operating plan is not complete because a model loaded a feed. Walking/cycling network gaps, safety interventions and freight movements each need their own baseline, alternative, cost, distributional effects and implementation case. Verify missing/no-feed rural service, calendar exceptions, transfers, accessibility, service resources/cost assumptions, source version changes and public/board reuse. Existing GTFS/routing/safety/project tools are the starting point; this does not implicitly launch fare collection, fleet dispatch or an AVL platform.
+2. **M6b — Defensible benefit-cost and demand-management evidence.** Extend existing BCA and TDM engines and their grant/safety/report connections. Complete a source-bound calculation and a reviewable application/decision memo with baseline, price year, discounting, quantities, overlapping benefits/measures, scenario assumptions and sensitivity. Current screening defaults and unverified effect estimates remain screening until their actual use is supported. Distinguish transportation demand management from the separate demand-model engines. Independent recomputation, zero/missing costs, incompatible years/units, double counting, correlated measures and source/version changes must fail or disclose correctly. Research and maintaining current parameter sources cost time; no AI-generated coefficient or generic model agreement establishes application-grade validity.
+3. **M6c — Agency-controlled project prioritization.** Extend current RTP priority framework/scoring and Programs records. An agency adopts or chooses actual criteria/weights and eligibility, reviews candidate evidence, compares sensitivity and budget constraints, records overrides/reasons and approves a traceable program. This is distinct from both BCA and procurement scoring. Done means an independent reviewer reconstructs inclusion, ranking, selection and deferred projects from exact inputs and policy versions. Test changed weights, missing evidence, ties, incompatible scoring units, excluded projects, geographic applicability and selected-program budget reconciliation. A mathematically sorted list is not an agency decision; policy and final approval remain human-owned.
+
+## M7. Land-use, housing and development review in practice
+
+- **Planning outcome:** planners prepare and amend land-use/housing plans, then apply adopted policy to a development case and track its conditions.
+- **Gap/evidence:** R1/R2 and unassessed development-review cells; existing versioned plans, designations, implementation actions and projects do not yet prove complete housing or entitlement work.
+- **Dependencies/scope:** M1/M2/M4/M5. Extend plan/project homes for parcel/site inventory, capacity assumptions, policy/designation relationship, application completeness, interdepartmental requests, findings, conditions, appeals and compliance. California gets deeper source/rule/artifact proof; other jurisdictions use their actual requirements.
+- **Done:** an adopted policy remains identifiable as its effective version when used in a case; a housing/site inventory preserves source vintage and defensible capacity assumptions; amendment and condition changes retain review history and implementation responsibility.
+- **Verification:** real permitted records, general/specific/amendment distinctions, parcel splits/source updates, conflicting overlays, incomplete submissions, multiple authorities, public artifacts, changed effective dates and downstream conditions. Practitioner review must distinguish legal requirements from agency choices.
+- **Risks/questions/cost:** parcel licenses and personal data, local rule diversity, specialized housing evidence and case deadlines. A new module needs a documented failure of existing ownership, not just a new name. Domain research time is substantial and remains pre-v1 work.
+
+M7 closure requires both a complete plan-production case and a complete development-review case. Maintain named coverage for comprehensive/general and community/specific plans, zoning/code changes, housing/site programs and the other land-use families identified in the template/source inventory, with actual jurisdiction applicability. A plan case reaches reviewed narrative/maps/policies, public response, adoption and implementation monitoring. A development case reaches intake/completeness, departmental referral, findings, authorized decision, conditions, appeal/amendment where applicable and monitored follow-through. Verify that a source/policy change does not silently rewrite the adopted basis. A housing inventory alone is not a completed housing plan, and a stored condition is not proof of an entitlement decision. Practice specialists supply the source/application review; software does not certify local legal compliance by template selection.
+
+## M8. Regional, environmental, climate, resilience and equity decisions
+
+- **Planning outcome:** regional and local planners compare alternatives, disclose distributional/environmental effects and carry adopted commitments into programs and monitoring.
+- **Gap/evidence:** RTP and plan/project/report templates exist; the environmental/climate/resilience/equity capability remains unassessed. Template presence is not a statutory workflow or valid impact model.
+- **Dependencies/scope:** M1/M2/M4/M5, applicable M6/S validation and authoritative rules. Extend RTP, Plans, Projects, Scenarios and Reports for environmental alternatives, consultation, mitigation/monitoring commitments, climate/hazard baselines, adaptation measures, equity assumptions and fiscal consistency.
+- **Done:** each claimed workflow produces an inspectable decision record with correct authorities, alternatives, cumulative/time horizon assumptions, public/technical review and monitored commitments. Borrowed coefficients or unavailable impacts cannot be narrated as measured effects.
+- **Verification:** metropolitan/rural/state/tribal/regional cases, nonattainment or other applicable overlays, changed forecast horizon, missing hazard/source data, subgroup effects concealed by averages, scenario consistency and follow-through after adoption. Specialist review and use-specific validation are necessary.
+- **Risks/questions/cost:** substantial research, uncertain forecasts and changing law/data. No invented statutory completeness or general-purpose AI environmental determination. Local batch analysis and expert review are costs to measure, not reasons to exclude the work.
+
+M8's generic heading cannot close the following named cases by implication:
+
+- **Environmental review:** determine the actual applicable process and responsible authorities, assemble alternatives and source-backed effects, manage consultation and review/comment responses, retain the exact decision record and carry commitments into mitigation/monitoring. California and federal pathways require separate current source/applicability research; a VMT screen is only one possible evidence component. Test missing studies, altered alternatives, unresolved consultations and changed commitments.
+- **Climate, resilience and equity:** preserve actual emissions/hazard/exposure baselines, assumptions and affected populations; compare measures and distributional effects, adopt an action with responsibility/funding and monitor it. Verify units, years, missing groups and averages that hide materially different effects. The required source/use matrix remains open until these cases are independently reviewed.
+- **Transit service equity and Title VI:** extend existing adopted-policy/service-equity code and engagement records into a complete responsible-agency review. Keep service absence separate from missing measurements; preserve the exact agency policy, service scenario, population denominator and human decision. A screening disparity or a translated survey does not establish a legal finding or complete program. Connect to M6 service choices, M9 participation and M12 plan evidence; validate the required applicable case with a transit/civil-rights practitioner.
+
+These are contract-derived planning outcomes and engineering closure requirements, not a claim that each detailed workflow was previously specified verbatim by Nathaniel or already implemented. Their resource/source/review costs remain part of M8.
+
+### M8a. Complete environmental review and continuing commitments
+
+- **Outcome/gap:** carry the applicable NEPA/CEQA process from prior evidence and PES/field review through qualified review, public record, determination and continuing obligations. Full LAPM Chapters 6–8/12/16/17 show that current environmental templates and risk text do not establish this chain; see `LAPM_FEATURE_GAP_ANALYSIS.md` and its chapter reports.
+- **Dependencies/scope:** M1/M2/M4/M5 and M10a.1; separate NEPA and CEQA class/authority; study sequence, APE, external consultation, versioned QC/correction cycles and restricted legal comments. A single commitment register connects source/page to permit, plan sheet/specification/pay item, owner, field evidence and post-construction report. Retain federal/state distinctions and recorded tribal consultation authority.
+- **Done/verification:** an authorized specialist reconstructs the actual approval and one later change/reevaluation; a missing mitigation item or stale permit prevents the affected readiness claim. Preserve correct no-study/no-hearing paths, changed footprint, external rejection, seasonal windows, continued monitoring and full original/private versus public derivative records. Desktop/390px and interruption/restore proof apply.
+- **Risks/cost/questions:** evolving law and long external/seasonal review, privileged records and expert labor. Independent scientific and legal determinations are human work. Current linked forms and incorporated authorities need selected artifact review before release; XFA is not silently converted or claimed readable.
+
+### M8b. Agency civil-rights and accessibility program year
+
+- **Outcome/gap:** maintain FHWA Title VI, language access and applicable ADA/504 duties across an agency's operations. Existing transit service-equity methods and campaign contact fields do not establish the recurring program, complaint or transition-plan workflows (LAPM Chapter 9).
+- **Dependencies/scope:** M1/M2/M4/M5/M9, existing Plans/Projects/My Work; import prior program, named coordinator, approved/public versions, language-assistance fulfillment, training, barrier inventory, confidential complaint routing, assessments and corrective action. Agency and project certifications remain separate.
+- **Done/verification:** coordinator completes applicable annual/biennial cycles for a small agency and an agency meeting the formal transition-plan threshold. Prove source-bound dates, receipt/transmission evidence, staff replacement, a late report, a confidential complaint and a corrected physical barrier. An exemption from one formal plan never removes all accessibility duties. Observe coordinator and participant, not just agent personas.
+- **Risks/cost/questions:** sensitive allegations, translations/accommodations, recurring staff work and changing authority. Confirm actual staffing/agency regime, retain appropriate confidentiality, and avoid classifying a transportation-equity calculation as a legal compliance determination.
+
+## M9. Engagement mapping that outperforms Social Pinpoint for planning work
+
+- **Planning outcome:** an agency publishes a clear map-based question; a resident submits a point, route or area with relevant context; staff explain their response and show the resulting decision or commitment.
+- **Gap/evidence:** the existing Engagement/public portal provides substantial maps, surveys, moderation and reporting foundations. The dated competitor/code report distinguishes documented Social Pinpoint capability from observed OpenPlan source; neither is a comparative human trial. Superior interaction, accessibility, response traceability and administrative effort remain unproved. Current-source defects include a newest-200 public feed without continuation, replies hidden when their parent falls outside that set, discarded receipt IDs/status and comment-draft loss risk when opening context.
+- **Dependencies/scope:** M9a needs selected M1/M4/M5 authority, privacy and GIS controls, not completion of every M-program milestone. Extend existing campaigns, submission geometry, surveys, moderation, responses and project links. Support meaningful map layers, point/line/area input, accessible non-map equivalence, multilingual participation, assisted/offline intake with provenance, source-preserving exports and migration from other platforms where lawful exports exist. Maintain the exact campaign question/version shown to each participant.
+- **Done:** the agency can design, preview, publish, moderate, analyze, answer and close a real campaign without developer intervention. Contributions have truthful private/public status and receipt; repeats and retries do not inflate participation. Every summarized finding resolves to source input; human review controls public synthesis and responses. A resident can see what changed or why it did not. Participation counts are not represented as a statistically representative vote.
+- **Verification:** preregister comparable tasks, quality/error criteria and measurement before observing results on current OpenPlan and a lawfully accessible current Social Pinpoint environment. Match data/question complexity and counterbalance task order; observe practicing facilitators and diverse public participants. Require no material regression on core tasks and measured improvement in the selected planning outcomes before claiming superiority. Until competitor access and human evidence exist, report the ambition and unproved comparison honestly. Target WCAG 2.2 AA across public and operator processes, while recording applicable legal requirements separately. Test desktop/390px, keyboard/screen reader, touch geometry, language, low bandwidth, geocoding failure, interrupted/duplicate submission, moderation appeals, private exports and decision linkage.
+- **Risks/questions/cost:** moderation and translation staffing, abuse, privacy of mapped locations, accessibility support, biased outreach and source migration. Measure agency setup/review minutes and public task completion; free software does not eliminate those costs. Nathaniel selects the first engagement context and agency response policy; engineering owns map/editor architecture.
+
+Deliver in these useful increments without reducing the end state:
+
+| Increment | Outcome and scope | Exit evidence and dependencies |
+|---|---|---|
+| M9a: publish and participate | Repair feed/thread completeness, durable receipt and comment-draft continuity first. A planner starts from the project, tailors an editable template or blank map to its planning context, previews and publishes a real campaign, then reviews contributions in a usable queue before public release; participants contribute points/routes/areas or an equivalent non-map response, with understandable receipt and privacy. | Agency setup and public submission observed; captured question/version and geometry survive recovery and export. Selected M1/M4/M5 foundations in place. |
+| M9b: moderate, interpret and respond | Staff use linked response map/list/detail, scoped counts and filters, moderate with reasons and review history, review grounded themes, answer contributions and connect issues to alternative/project decisions. | Trace source-to-theme-to-response-to-decision; conflicting/minority input retained; no unsupported representativeness claim; appropriate recipient approves output. |
+| M9c: demonstrate superiority and repeatability | An agency reuses the workflow with less effort and better public understanding across contexts, with migration/portability. | Comparative human task evidence, accessibility review, independent install/operation and complete export; disclose competitor version/access limits. No marketing claim substitutes for this gate. |
+
+### M9a setup requirement. Project-specific maps without developer help
+
+CORE-ENG-02 explicitly requires distinct complete-streets and countywide-wayfinding cases. Extend the current campaign creator, template registry, categories/questions, project links and map settings. Start with a visible project action, carry project context forward for review, and allow editable starter content or a blank map. Keep title/instructions, comment types, follow-up questions, allowed geometry, study area/layers/legend, language, participation dates and moderation choices coherent in a participant preview. A project can have multiple activities or outreach rounds; templates do not constrain its purpose.
+
+**Done:** a practicing planner independently creates both example maps, customizes a category/question and shares the correct preview/public version. Residents understand what input each map seeks, locate an issue and submit relevant feedback. Staff can filter, respond and export using the exact categories/questions residents saw. Reusing a template changes neither the other campaign nor previously collected evidence. Configuration copying does not copy participant data by default.
+
+**Verification:** observe setup effort and participant comprehension on desktop, 390px and keyboard/non-map paths. Test wrong-project binding, accidental exposure of private layers, template update isolation, retired/renamed categories, historical question versions, interrupted setup and exported meaning. Targeted changed guards need falsifying mutations plus a harmless survivor. These are future acceptance requirements, not checks run during this clarification. Dependencies are M9a's existing project/GIS/privacy services; costs are template maintenance, language review and staff setup time. The two examples are observation cases, not a limit on supported planning contexts.
+
+### M9a–b response requirement. Planner dashboard and review before publication
+
+CORE-ENG-03 makes the planner's response workspace and moderation explicit. M9a includes a usable intake queue and human approval before publication by default; do not wait for advanced analysis before protecting submissions. Extend existing moderation components. Link map/list/detail, coherent counts and filters, location/category/question context, attachments, deliberate bulk selection and next-item review. On small screens and keyboard use, the list and detail remain fully usable.
+
+**Done:** planner receives and finds new input, previews what would be public, approves or creates a reviewed redacted copy, withholds under a documented policy, and can explain who decided what and why. Participants understand that receipt, publication and a staff answer differ. Pending/private material stays out of all public paths. Staff moderation, assignment and response/decision tracking remain separate, with M9b carrying the contribution through follow-up.
+
+**Verification:** real planner/participant observation plus server/storage permission checks for map/feed/replies/search/export/embed/summary/attachment disclosure. Include stale concurrent review, reopened decision, wrong campaign, large queues, misleading counts, bulk-action scope and preserved original/redacted versions. A pending-to-public mutation must fail; harmless text changes must survive. AI may flag or propose, never independently publish/reject. Costs include moderator staffing and queue coverage; no paid model is required to moderate. An unpopular opinion alone is not a moderation violation.
+
+### M9a–b export requirement. Polished PDF and usable Excel
+
+CORE-ENG-04 requires both PDF and XLSX, linked to the same campaign snapshot and declared filters/statuses. M9a provides complete basic exports; M9b adds reviewed synthesis, staff response and decision reporting. Extend existing report and engagement export services. PDF includes readable project context, maps/legends, charts/tables, methodology/limits, reviewed responses and an optional detailed appendix. XLSX includes typed, filterable records, definitions, stable relationships and reconcilable totals; CSV/GeoJSON companions retain open data reuse where appropriate. Preserve historical questions/categories, geometry, source, language and missing values.
+
+**Done/verification:** a planner/client opens the actual rendered PDF and workbook and can use them without repair. Inspect page layout/accessibility and spreadsheet typing/formulas; independently reconcile all scoped records and totals, including older comments, threads and large exports. Test public/internal permissions across every sheet, label, attachment and metadata; pending/private content cannot leak through public exports. Include long/multilingual text, formula-like user input, leading-zero IDs, redactions, interrupted generation and declared format limits without silent truncation. Shared workers/artifacts support long work; no paid export dependency. Report readability and recipient usefulness require human observation as well as automated checks.
+
+### M9d. Statutory hearing and authoritative public record
+
+- **Outcome/gap:** complete an applicable hearing or opportunity-for-hearing process and reproduce its authoritative record. Existing map comments/response matrices and public-only exports cannot establish the complete hearing archive (LAPM Chapter 8).
+- **Dependencies/scope:** M8a/M2/M4; correct procedure, notices/publication proof, document availability, language/access assistance, request/withdrawal decisions, oral/written input and transcript/display/speaker index. Preserve restricted originals and reviewed public derivatives without silently dropping meeting/email input.
+- **Done/verification:** practitioner and participant complete one formal and one open-forum case; inspect exact notice/record, unrecorded-comment synopsis where applicable, full contributions and dispositions. Prove failed publication, conflicted source deadlines, missing transcript, withdrawn request and appropriate privacy. Informal online consultation must not automatically close a required hearing.
+- **Risks/cost/questions:** transcription, accessibility/language services, retention and procedural expertise. A source conflict requires a documented authoritative deadline; neither AI summary nor a universal ten-day timer is sufficient.
+
+## M10. Capital-project administration through construction and closeout
+
+- **Planning outcome:** an RTPA, local agency or consultant carries a funded bridge or other capital project from planning through environmental work, right of way/utilities, PS&E, procurement, construction administration, reimbursement, acceptance and closeout. The same record supports staff handoff and audit.
+- **Gap/evidence:** existing Projects, work plans, stage gates, delivery documents, funding awards and Invoicing are real foundations. The California reimbursement profile defers exact forms and suggests District 3 statewide; the operator control pack is not runtime-enforced. Project-budget queries cap records without a completeness signal; internal-review invoices count as claimed; the existing earned award closeout is a fully-spent check that cannot represent accepted underspend. The dated capital research maps source paths and current LAPM/LAPG/bulletins; a generic phase label or invoice worksheet does not establish compliant delivery.
+- **Dependencies/scope:** M10a starts early on selected M1/M3/M4/M5 controls and provides M2's real delivery case. Extend the project spine with phase/work-package ownership, agreements/authorizations, obligations and revisions, design/environmental/ROW records, contract packages, schedule baselines, bid items/quantities, consultant and contractor administration, inspections/testing, changes, payments, funding draws and final records. Keep contractor payment, consultant billing and agency reimbursement distinct but reconcilable. Reconcile to the agency accounting system of record; show cash needed while reimbursements are pending, eligible funding remaining, and forecast cost to complete with its assumptions. Environmental clearance, ROW certification and funder authorization are separate facts; actual applicability governs each gate.
+- **Done:** a responsible reviewer can trace scope, schedule, budget and each claimed amount to source records, approved changes, eligible phase/funding and dated authority. A project can enter OpenPlan mid-construction with imported legacy evidence and explicit unknowns. No historic approval or cost eligibility is invented. Construction completion, agency acceptance, final payment, funder closeout and asset handover have distinct statuses.
+- **Verification:** use permitted real local-assistance files with a practicing project manager/resident engineer and finance/reimbursement reviewer. Verify correct totals beyond 500 spend records/200 invoice records, source-cost identities preventing duplicate allocation, and financial state migration without invented payment/submission evidence. Exercise authorization boundaries, mixed funding/match, changed scope and form version, rejected/partially paid invoice, duplicate draw, progress quantities, retention, change orders, contractor/consultant separation, missing certifications, environmental commitments, staff exit, interruption and exact archive reuse. Caltrans-specific acceptance requires review of the actual assembled applicable forms and supporting documents, not merely matching a JSON template.
+- **Risks/questions/cost:** maintaining effective requirements, professional responsibility, competing contract/funder rules, sensitive payroll/property records, audit holds and extensive field document storage. Source registry must include current office bulletins and superseded/inactive exhibits; do not hardcode a universal DBE or Buy America checklist. Construction contract administration and reimbursement require accountable humans. Nathaniel selects representative program, administering agency and reviewer roles; engineering designs the ledger and versioning.
+
+| Increment | Outcome and scope | Exit evidence and dependencies |
+|---|---|---|
+| M10a: establish or take over a capital case | Create or import a local-agency bridge case at its actual phase; bind responsible bodies, funding/agreements, baseline cost/schedule, authorizations and missing evidence. Distinguish RTPA coordination from actual contract/fiscal authority. | Mid-project import preserves known history and unknowns; reviewer sees every required authorization and its source. Ledger completeness and the cost/payment/claim distinction are established before headline totals. Selected authority/roles/records foundations are required, not an entire new construction module. |
+| M10b: prepare and procure | Environmental review and commitments, ROW/utilities, PS&E review/approval, consultant selection and construction procurement connect to dated authorization and contract records. | Applicable gates reject missing or superseded evidence; practitioner checks actual package, contract provisions, funding conditions and award sequence. Preserve overlapping work and exceptions with authority; no simplistic linear wizard. |
+| M10c: administer construction and reimburse | Resident-engineer records, daily reports, RFIs/submittals, testing, labor compliance where applicable, changes, measured pay quantities, progress estimates and funder claims connect. | One permitted billing period reconciles source cost/quantity, approved change, contractor or consultant payment, eligible reimbursement, match and remaining balances. Rejection/correction and partial payment retain history. Agency/finance reviewer confirms the applicable Caltrans packet. |
+| M10d: accept, close and hand over | Punch list, completion/acceptance, final estimates, as-builts, unresolved claims, environmental commitments, asset/maintenance handover, final funder reports and retained audit file. | Independent recipient can reopen the full exact record, distinguish remaining obligations and reconcile final amounts for fully spent and valid underspent cases; restore and retention/hold scenarios preserve linked bytes and approvals. |
+
+### M10a.1. Governing authority, agreement and funding-event record
+
+- **Outcome/gap:** a PM knows what work is authorized, what can be claimed and which deadline constrains it. LAPM Chapters 1–5 distinguish facts currently flattened into milestones, awards and internal invoice states.
+- **Dependencies/scope:** selected M1/M3/M4/M5 and M11a; agency/asset ownership, responsible-charge employment, qualified specialists, oversight/SHS/NHS, source/form versions and dated exceptions. Preserve master/PSA covenants, actual signatures/countersignature, E76/fund/phase and programmed/allocated/authorized/obligated/encumbered events. Track independent PED, completion, agreement and lapse clocks with approved extensions. NI, at-risk PE, ITS, FTA transfer, advance construction, noncash match and approved advances are explicit branches.
+- **Done/verification:** import a mid-project file and reconstruct authority for sampled costs. A consultant cannot self-appoint as the public responsible-charge official; an upload cannot become outside approval. Wrong district, stale master, missing countersignature, preauthorization work, NI without PS&E, toll credits as cash and extension of only one clock are tested. Dated source changes flag affected cases while preserving historic accepted packages.
+- **Risks/cost/questions:** version maintenance, outside response times and qualified review. Identify actual agency/program case; unknown applicability remains visible. Do not embed California controls as nationwide defaults.
+
+### M10b.1. Environmental, property, utility and railroad readiness
+
+- **Outcome/gap:** prepare a defensible footprint and rights/clearance record before advertisement or relevant work. Chapters 6–7/13–14 require connected cases that generic ROW/utilities milestone rows do not supply.
+- **Dependencies/scope:** M8a/M10a.1/M5/M4; parcel interests, qualification/valuation independence, owner/occupant notices, relocation assistance/appeals, possession/easement windows, property credits and continuing duties. One utility facility/conflict case carries liability, plan, agreement, authorization, permits, inspection and net costs; railroad/CPUC arrangements remain distinct. Certification 1/2/3/3W and short/full forms need their actual authority and exceptions.
+- **Done/verification:** specialist reconstructs certification from exact source cases; expired easement, changed PS&E, displaced occupant, unknown utility liability, unfinished relocation and missing special authorization cannot become ready. NI, local-funded utilities, emergency exceptions and pre-NEPA preliminary work follow their proper branches. Written confirmation/response timers use the actual event and calendar.
+- **Risks/cost/questions:** sensitive property/household data, external agencies and licensed judgment. Full ROW/exhibit/legal references require targeted current verification. Start with reviewed legacy imports, then direct entry based on observed practice; import cannot create fictitious historic approvals.
+
+### M10b.2. Signed design and construction competition package
+
+- **Outcome/gap:** deliver the actual reviewed PS&E, advertisement and award package. Chapters 10–12/15 require qualified design, commitment-to-sheet trace and agency procurement beyond existing template labels and consultant proposals.
+- **Dependencies/scope:** M10b.1/M8a/M14/M11; design basis and exceptions, signatures/independent checks, plans/specifications/estimate versions, mitigation, TMP/accessible detours, value analysis where applicable, current wage/clauses and unmodified incorporated FHWA-1273. Keep engineer estimate confidential; retain approved bid methods, sealed receipt, opening, itemized analysis, justified award, funding and first-invoice award packet.
+- **Done/verification:** responsible engineer/procurement reviewer opens the exact exported/signed package and traces requirements to pages/items. Omitted clause or commitment, changed approved sheet, wrong wage revision, unauthorized advertisement, early fee/bid access, missing NHS justification or absent award package must fail the actual affected boundary. A no-construction study uses its applicable work plan/consultant agreement.
+- **Risks/cost/questions:** procurement challenges, engineering responsibility, large drawings and changing standards. Caltrans checklist acceptance is not technical approval of every drawing. Preserve formal exceptions, rebid/termination lineage and correct September/October bulletin triggers.
+
+### M10c.1. One defensible construction pay period and correction cycle
+
+- **Outcome/gap:** reconstruct measured work through certified payment and separate reimbursement. Chapter 16 and current Chapter 9 replacement rules need operational records; existing LAPM-ready helpers are called only by tests in the inspected source.
+- **Dependencies/scope:** M10a/b/M11/M14; daily field reports, contract calendar/controlling work, subcontracts, payroll/interviews and applicable EEO/OJT, QAP/material lots/tests/independent assurance, change orders/independent estimates/time impacts, agency Q sheets and independent checking, materials on hand, force accounts, progress estimate, paid cost and current official 5-A/support. Current 9-P/prompt-pay records cover all tiers and no-payment months; retain disputes and lawful withholding separately.
+- **Done/verification:** an RE and finance reviewer reconcile a permitted real period and a returned/revised claim. Prove duplicate quantity/material/cost prevention, unit consistency, payroll/force-account trace, funded executed CO before payment, bid-date test-method version, correct material category and Buy America trigger, and incomplete independent checks. Inspect actual prescribed forms, attachments, certification and transmission/receipt records. Surviving harmless mutation plus targeted transaction/permission failures; field desktop/390px, interrupted capture and restore are required.
+- **Risks/cost/questions:** field connectivity, confidential labor records and large attachments, specialist review, source updates. Establish whether the agency's field/payroll/accounting systems remain authoritative and import reconciled records. Full offline synchronization is a separate design choice; reliable interruption recovery is required. Neither photos nor drone measurements automatically certify pay quantities.
+
+### M10d.1. Closeout with remaining obligations and retained evidence
+
+- **Outcome/gap:** accepted work, financial settlement, final expenditure/voucher and ongoing duties stay distinct. Chapters 5/13/16/17 expose current full-award-paid closure as insufficient.
+- **Dependencies/scope:** M10c.1/M11c/M4; punch list, inspection, authorized acceptance, final material/ECR/as-built records, pending disputes/claims, final invoice/FROE/detail estimate, ROW report, refunds/de-obligation and external acceptance. Include zero-dollar final invoice and valid underspend. Current suspended DBE forms do not block current closure; historical submitted forms remain intact.
+- **Done/verification:** independent recipient reconstructs an underspent project, one unresolved claim and an overpayment/refund. Missing final-voucher date cannot silently start its retention period; property and legal holds preserve longer duties. Complete archive restores exact source bytes, financial position, authority and public/private distinctions.
+- **Risks/cost/questions:** multi-year storage and external settlement delays. Record the actual agency system of record and retention authority; closing an app task cannot settle a claim or approve destruction.
+
+### M10d.2. Maintenance, ownership transfer and county mileage certification
+
+- **Outcome/gap:** carry assets and fiscal reporting beyond construction closeout. Chapter 18's service-life maintenance, deficiency correction and county-maintained mileage certification were under-specified in the draft.
+- **Dependencies/scope:** M5/M10d.1/M13/M4; locate existing asset components before extending Projects/GIS. Track asset custodian, inspection/notice/correction, annexation and maintenance agreements, continuing commitments, road legal/maintenance status and segment changes. Reconcile annual resolution, tabulation and map totals with external review/certification and limited interim corrections. Functional classification approval remains separate.
+- **Done/verification:** county roads/GIS reviewer reconstructs annual certification with additions, boundary shares, annexation and corrections; no double counting or color-only difference. A bridge/maintenance deficiency stays open after project closure; authorized custodian transfer preserves obligations. Use current inspection program schedules, not a universal two-year assumption.
+- **Risks/cost/questions:** continuing staff workload and specialist asset data; source geometry/measurement quality. Bound the first county case without making HUTA rules universal for all assets/agencies. No automatic sanctions or GIS edit masquerading as government certification.
+
+## M11. Planning contract budgets, staff effort and delivery forecasts
+
+- **Planning outcome:** a consulting or agency PM sees work consumed and work remaining by contract/task order, task, employee and deliverable, understands a threatened fee or deadline, and acts before the next invoice reveals the overrun. This is core planning practice independently of Caltrans reimbursement.
+- **Gap/evidence:** `CONTRACT_BUDGET_CORE_REQUIREMENTS_REVIEW.md` traces real engagements, staff/time, rates, project budgets and delivery records. Current project “actuals” combine client billing with direct spend; NTE drawdown uses net retained invoices; time permits another project’s deliverable within the same workspace; invoice grouping drops deliverable allocation; pricing omits rate effective dates. Task/staff budgets, approved baseline history and remaining-work/resource forecasts are absent in the reviewed paths. `REQUIREMENTS_HISTORY_RECOVERY.md` recovers older PM/drawdown instructions; current user direction expressly supplies task/employee detail.
+- **Dependencies/scope:** M11a starts early on selected M1/M3/M4 controls. Extend Projects, engagements, time/rates, Invoicing, delivery records and My Work. Reuse risk/issue/decision records. Separate commercial contract/task order from the task work breakdown and separate internal costs, client fee, cash and funder award. M10 uses these financial foundations; a private planning job does not require all capital controls. M12 uses them to manage an RTP contract while its regional financial element remains a separate public plan ledger.
+- **Done:** original and current approved scope/fee/hours/deadlines, actual effort/cost, commitments, remaining estimates, forecast finish/cost and recorded acceptance reconcile across staff/task/deliverable views. Approved amendments and rate history survive revisions. A PM can explain the cause of a warning and authorize a response with the appropriate human authority. Missing information remains unknown; nonbillable rework and already-incurred overruns stay visible.
+- **Verification:** real permitted weekly PM review and independent finance reconciliation; desktop/390px/keyboard staff and PM journeys; direct/API permissions, historical-rate, allocation and full-ledger tests. Targeted mutations must kill cross-project attribution, double-counting, net-retention ceiling, unauthorized-baseline and missing-data-as-zero regressions while a harmless mutation survives. Exercise partial receipt/credit, concurrent billing, amended scope, departed staff, incomplete historical import and interruption recovery. Observe whether entry/update effort fits a small practice.
+- **Risks/questions:** small firms need useful controls without administrative overload; internal employee costs require narrower access than project fees. The planner/finance reviewer validates agreement meaning, acceptance and vocabulary. Forecasts depend on current remaining-work estimates and real availability, not a formula that equates spending with progress. Billing and management measures do not silently claim formal accounting revenue recognition.
+- **Operating costs:** ordinary database records and decimal arithmetic are inexpensive; imports, reconciliation, approvals and weekly human estimate maintenance cost time. Start with explicit working calendars and dependencies; measure before adding complex resource optimization. No paid PM/accounting service is required.
+
+| Increment | Scope | Completion evidence |
+|---|---|---|
+| M11a: reconcile the agreement and actual work | Source contract/task orders, original/current baselines, task/staff/deliverable allocation, historical rates, complete actuals, opening balances and role boundaries. Repair proven arithmetic/attribution gaps. | PM and finance reviewer reproduce every sampled rollup; historical amounts and unallocated/unknown records remain visible. Staff can record their work under appropriate permissions. |
+| M11b: forecast and manage the work | Remaining effort/cost, working calendars, dependencies, staff capacity, client/agency/public-review periods, approved versus forecast deadlines, risks and proposed changes. | Additional review work or an unavailable reviewer produces a truthful fee/date warning with its cause. A proposed amendment changes the forecast without increasing authorized budget. |
+| M11c: reconcile billing and close the assignment | Invoice presentation retains underlying allocation; partial receipts, retention, credits, disputed amounts, commitments and remaining obligations reconcile; export and accounting handoff. | Gross fee consumption, costs and cash remain distinct. Independent recipient reconstructs the as-of position and legitimately completed underspent cases. Linked reimbursement does not add another cost. |
+
+Federal grant-cost reconnaissance also binds M11/M13e/M14: distinguish proposal preparation, an independently authorized planning study and grant administration. Record approved cost basis, actual beneficiary, authorized period and written pre-award approval where applicable. Test direct/indirect double charging, grant selection without spending authorization and reuse of a study without duplicating its cost. See `NATIONAL_LOCAL_ASSISTANCE_COMPARISON.md`; actual award terms and accounting review control eligibility.
+
+The planning-practice rationale and source guidance are in `CORE_REQUIREMENTS_LEDGER.md`. GAO cost/schedule principles inform proportional controls; a small planning assignment does not require a mandatory enterprise earned-value system.
+
+LAPM Chapters 5/9/10/12/16 refine M11a–c: separate paid eligible agency cost, client fee consumption and cash; preserve fiscal-year accepted indirect rates and negotiated fixed fee; bind source costs to funding/phase/task/staff/deliverable without duplicate claim. On-call task orders share the solicitation maximum and master term, with concurrency-safe authorization. Prompt-pay clocks depend on contract tier, proper/disputed invoice, actual payment and acceptance. Test approved-rate changes, rejected/corrected invoices, partial receipts/retention, no-payment reporting, noncash match and overpayment recovery. Reconcile to the actual agency accounting/payroll system, with no claim that OpenPlan currently replaces it.
+
+## M12. Complete regional transportation plan updates from the adopted predecessor
+
+- **Planning outcome:** a regional planner starts with the previous adopted RTP and its amendments, retains or changes its content deliberately, creates every applicable element and narrative, reconciles the preferred plan, conducts review, records adoption and maintains implementation/amendment history. Financial/policy/action work and prior-plan intake are restored core scope.
+- **Gap/evidence:** `RTP_UPDATE_CORE_REQUIREMENTS_REVIEW.md` maps 27 planning outcomes against current source and primary MPO/RTPA/federal guidance. Existing extraction, chapters, fiscal records, portfolios and public/export machinery are substantial. Ordinary reading excludes chapter text; deterministic bounded extraction does not account for the whole predecessor; policy/action identities and flexible authoring are unestablished. Fiscal arithmetic lacks revenue-availability and expected-O&M evidence, plan-alternative identity and timing assumptions; exported summaries omit other costs included in balances. Status changes do not establish an immutable adopted plan.
+- **Dependencies/scope:** M12a starts early on selected M1/M3/M4/M5 and current Documents/OCR/RTP foundations. M11 manages the consultant/agency work contract separately from the regional financial element. M8 supplies environmental/climate/equity depth, M9 public review and response, and M6/S1–S3 use-specific analysis evidence. A0 can supply appropriate optional extraction backends; usable manual/local intake cannot depend on a paid service. External agency evidence may support interim authoring without promoting OpenPlan's unsupported model claims or closing scientific v1 gates.
+- **Done:** an agency-controlled outline and coverage ledger account for all predecessor sections, tables, maps and appendices, with explicit retained/revised/retired/unresolved decisions. Stable policies/actions/projects/metrics connect to funding, responsibilities and evidence. All applicable elements, financial tables, narrative and selected alternatives remain consistent; source/year/unit/availability limitations survive public output. Exact adopted versions, resolutions and later amendments remain reconstructible.
+- **Verification:** continuous permitted prior-RTP-to-successor workflow, reviewed by rural RTPA and MPO practitioners and a regional finance/programming reviewer. Include PDF and OCR intake, policy outside early selected passages, multi-page tables, conflicting old amendments, duplicate project names, unknown O&M/revenues, funding timing, changed alternatives, inaccessible/missing appendices and adoption-history mutations. Inspect actual detailed editable tables, GIS, HTML/PDF and source manifest; test permissions, desktop/390px/keyboard/screen reader, long-document save/recovery and exact version references. Meaningful guard failures plus surviving harmless mutation are required. Public participants assess the actual identified draft and response record.
+- **Risks/questions:** MPO, RTPA, air-quality, SCS/APS and agency-specific rules differ. Source official checklists and distinguish mandatory requirements from guidance. A numeric surplus does not prove reasonably available revenue or fiscal feasibility. Do not import a universal annual TIP rule or participation-plan notice period into every RTP. A remaining comment is visible work for human disposition, not an invented automatic adoption veto. Nathaniel/practitioners judge first cases, outline usability, policy decisions and publication quality; engineering owns consistency and custody.
+- **Operating costs:** long source documents, OCR, exports, maps and retained versions consume disk/worker time; model-assisted extraction can consume optional provider credit. Support bounded resumable processing with coverage status, reliable manual review and a free local route. Measure extraction completeness and document editing latency before promising full plan conversion. Human source reconciliation, consultation and financial review remain necessary work.
+
+| Increment | Scope | Completion evidence |
+|---|---|---|
+| M12a: inherit and reconcile the prior plan | Set actual authority; retain original/adopted amendments; expose numeric and chapter intake; account for all sections/tables/attachments; stage conflicts and project matches. | Planner can start from an actual predecessor without hidden API calls. Every source section is mapped, retained as an attachment, superseded, irrelevant with reason or unresolved; no repeated extraction is mislabeled complete coverage. |
+| M12b: author every applicable element | Flexible chapters/subsections/appendices; stable policy/action registers; regional conditions, multimodal needs, goals, performance, implementation and statutory crosswalk. | Planner creates/revises complete policy/action/narrative content and knows what remains. Old/new dispositions and responsibility survive edit/export; no template presence substitutes for completeness. |
+| M12c: reconcile alternatives and finances | Preferred alternative links policy/land use/network/project program and full revenue/cost/O&M tables, availability/eligibility assumptions, time/dollar basis, shortfalls and monitoring. | Finance reviewer reconstructs detailed tables and narratives. Costs, other costs, revenues and timing are explicit; missing inputs remain undetermined and changes identify affected claims. |
+| M12d: review, adopt, publish and maintain | Identified public draft/consultation/comment disposition; exact approved package/resolutions; accessible publication, editable tables/maps/evidence; amendments and next-cycle reuse. | Independent recipient retrieves the unchanged adopted record after an amendment, traces input to decisions and begins the next update. Simulated adoption is confined to a labeled test environment and never represented as legal agency adoption. |
+
+All 27 work families in the RTP report feed this milestone; the four increments are sequencing, not a narrower coverage checklist. The applicable agency's real plan and sourced requirements may add further work. Nationwide RTP equivalents and organizational contexts remain required under G1.
+
+## M13. Funding discovery, local tax measures and grant administration
+
+- **Planning outcome:** an administering agency runs a local transportation tax or appropriate grant program on its OpenPlan instance. Municipalities and other recipients report projects, expenditures and required outputs; staff return corrections, accept certified records, administer the applicable disbursement/reimbursement and publish traceable program results. This restores earlier core scope and extends Programs/local_measure, not a separate portal product.
+- **Gap/evidence:** `LOCAL_MEASURE_CODE_REVIEW.md` traces existing receipts, configured allocation rules, recipients, claims, MOE and oversight. Current workspace roles do not isolate recipient organizations; API approval/history restrictions are not fully enforced by database writes. Claim records lack structured project/output/reporting obligations. Form categories bind to the latest period instead of the selected period; staff/public loaders have no complete retrieval beyond the API row limit. Napa and SHCC/SFCTA primary-source reports establish differing rules, reporting, payment methods and successor obligations. The history report recovers Nathaniel's August tax/sub-agency and post-award requirements.
+- **Dependencies/scope:** selected M1 authority/version records, M3 hosting/recovery and M4 confidentiality precede external-city access. M10 provides project delivery evidence; M11 connects source costs/contract work; M12 links adopted projects and implementation. M13a–b starts with a real reporting cycle early. Reuse Programs, measure/funding records, Projects, Documents, financial arithmetic and public oversight; introduce reusable organization participation and versioned report definitions/submissions. Preserve tax-specific ordinance/apportionment and grant-specific agreement rules. The administrator's funding role does not imply general authority over a municipality.
+- **Done:** two recipient organizations can submit and certify their own period work without accessing another's private drafts, administering the whole fund or approving their own payment. Reports account for required fields and missing/no-activity states, preserve revisions and exact rule/evidence versions, and link project/site quantities to actual expenditures. Administrator review, payment eligibility, recorded disbursement and public release are distinct. Complete financial and physical totals reconcile independently; successor measures preserve old obligations and source periods.
+- **Verification:** one authorized municipality-to-administrator cycle, including returned correction, report with no activity, missing report, disbursement/reimbursement, oversight output and independent finance/quantity reconstruction. Use a Napa formula-distribution case and an SFCTA-style allocated grant as distinct controls, verifying actual current documents rather than copying dates or units from a sample. Exercise API/database/storage isolation, claimed decider spoofing, update-to-draft/delete, concurrent submission/edit, revoked membership, historical categories, partial/corrected payments, duplicate costs/outputs, cumulative quantities, mixed units and over-1,000-row totals. Preserve approved snapshots under restore and report resumption. Desktop/390px/keyboard/accessibility and public-artifact inspection are required; every changed consequential guard needs targeted failure and surviving no-op proof.
+- **Risks/questions:** a program can distribute funds by formula and still require spending/output reports; reports need not be invoices. Revenue period, payment date, reporting period, ordinance adoption and collection commencement are different facts. Source-defined eligibility, MOE, equivalent-funds duties, deadlines, retention and exceptions differ. Published agency summaries can lag signed rules. Confirm applicable agreements and authorized interpretations with program/finance staff before promising compliance. Napa's 2022 public report verifies sidewalk linear feet, road mileage and curb-ramp outputs. The current U form's exact mandatory fields remain unestablished; preserve that limit while implementing source-defined quantity reporting.
+- **Operating costs:** ordinary records are modest; photographs, invoices, drawings and retained submissions drive storage/backups. Measure actual annual volume, concurrent reporting peaks and upload recovery. An agency-facing service needs reliable remote access, patching, backups and staff ownership even when software and hosting resources are free. In-app queues and exports must work without an LLM or paid portal; optional mail/integrations disclose costs and egress. Prepare/reconcile accounting handoffs before any separately authorized bank/payment integration.
+
+| Increment | Scope | Completion evidence |
+|---|---|---|
+| M13a: establish the program and participants | Import governing documents, measure/election identity, actual administrator/recipient roles, effective versions, required reports/metrics, agreements and reconciled opening obligations. Repair recipient isolation and decision/history boundaries. | Two cities have correctly scoped access; administrator and signatory authority are explicit. Legacy records and successor liabilities remain attributable without invented approvals. |
+| M13b: complete municipal reporting | Period obligations, project/site/output/cost evidence, saved drafts, certifier submission, locked versions, correction/return, reminders and review. | An actual report can be completed, returned and accepted from visible navigation. No activity differs from missing; quantities retain units/methods and cumulative revisions never double-count. |
+| M13c: administer funds and reconcile | Actual formula/advance/reimbursement basis, eligible expenditures, allocation/cash-flow limits, credits/refunds/partial disbursement, interest/balances where applicable, and accounting reconciliation. | Finance reviewer reconstructs recipient and administrator balances from source events. Reporting does not fabricate an invoice for a formula distribution; one cost cannot be paid twice across grants. |
+| M13d: publish, audit and carry obligations forward | Approved project maps/statistics, fiscal statements, oversight/audit response, closure/de-obligation, retention and successor rule/fund continuity; generalize proven report components to other administered grants. | Public reader understands what was built and what remains unreported, with no private attachments disclosed. Auditor retrieves exact accepted versions; old tax-period obligations retain original rules after successor collections begin. |
+
+Output definitions must distinguish sidewalk length, area, ramps/counts, lane-miles, centerline miles and noncapital services. Total construction and program-attributed output need declared methods. Reporting the same project to two funders does not create two sidewalks or prove a causal safety benefit. The reviewed agency cases are examples, not a nationwide taxonomy ceiling.
+
+**M13e: grant discovery, applications and deadlines.** Preserve the earlier explicit pre-award requirement alongside post-award administration. Extend Grants and existing official-source search, saved opportunities, project evidence, BCA, Documents and My Work. A planner can search maintained sources or import an official notice, check eligibility and fit, retain amendments, organize actual application requirements and collaborators, prepare a source-grounded application with optional AI, receive actionable calendar/reminder alerts and retain authorized submission/receipt and award outcomes. Transfer an actual award and its conditions into M13a–d/M10/M11 without losing the proposed scope, match, commitments or reporting calendar. M13e starts before administration in a grant case; the suffix preserves existing IDs, not chronological order. Done requires one permitted application-to-award handoff, an amended opportunity and an unsuccessful/withdrawn application with its history retained. Verify stale/missing feeds, changed eligibility/deadline/timezone, duplicate opportunities, failed reminders, incomplete attachments and source facts changed after drafting. Human submission authority remains explicit. Source coverage, alert delivery, document processing and any optional AI costs need maintenance and measured limits. This does not equate a grant application with a procurement proposal.
+
+### M13f. Agency audits, corrective actions and final determination
+
+- **Outcome/gap:** a recipient can answer an agency-wide or project audit, correct findings and document authoritative closure. Chapter 20 requires an entity fiscal-year view that individual project issue lists and award balances cannot establish.
+- **Dependencies/scope:** M4/M11/M13d/M10d.1; audit scope/engagement, agency-wide award expenditure import, fiscal-year rules, reporting/exemption package, requests/draft responses/final findings, questioned costs, prior findings, CAP tasks/training/repayment and final determination. Sanctions and holds retain actual external authority and scope.
+- **Done/verification:** audit practitioner completes a permitted case from request through rejected response, correction and final decision; independent recipient reconstructs the denominator and exact submitted support. Test incomplete agency totals, fiscal-year threshold transition, conflicting source deadline, reused old response, pending CAP, and repayment without lifted sanction. Preserve longer holds and private payee/worker/counsel evidence through export/restore.
+- **Risks/cost/questions:** confidentiality, external interpretation, recurring finance effort and retention. Use controlling FAC/funder-year rules and actual engagement letters. App completion is not auditor acceptance; no automatic fund-wide ban from a missing task.
+
+## M14. RFPs, RFQs and proposals from both sides
+
+- **Planning outcome:** a consultant finds appropriate opportunities, makes a go/no-go decision, prepares a truthful response, submits through the specified channel and tracks its actual disposition. An agency/MPO/RTPA defines a need, creates and issues a solicitation, manages questions/amendments, securely receives and retains responses, evaluates using the applicable method, negotiates, completes required decisions/notices and transfers executed work into delivery. Both sides can use OpenPlan independently or on a properly separated shared instance.
+- **Gap/evidence:** `PROCUREMENT_CODE_REVIEW.md` traces current proposal pursuits, sections, exports and their limits at 27c22b68. Questions/format fields, issuer timezone, discoverability, flexible source-specific structure and actual attachment packaging are incomplete. Export/status does not establish agency receipt; agency competition, bidder/evaluator access and award procedures were not established in the inspected implementation. `PROCUREMENT_HISTORY_RECOVERY.md` recovers July consultant implementation and agency planning intent without inventing an older direct user quote. Agency and discovery/reuse reports supply primary-source requirements, official-feed limits and OSS assessment.
+- **Dependencies/scope:** use necessary M1 authority/applicability, M3 durable jobs/hosting and M4 organization/confidentiality/records controls. Reuse consultant pursuit, Documents, firm evidence, Projects and contacts; introduce a distinct agency procurement case where current records do not represent the buyer's job. M13 organization participation is reusable, but procurement has different bidder, evaluator, conflict and price-access rules. M11 receives executed contracts and M10 capital procurements. M14a starts early with those contract cases; receiving real bids requires the stronger M14b operational proof.
+- **Done:** an agency and independent firms complete an amended planning-services RFP and a qualifications RFQ under reviewed rules, including unsuccessful/withdrawn responses. Every issued version, clause-linked requirement, authorized publication, exact submission, receipt, permitted opening, evaluation reason, approval and award/execution state is traceable. Consultant private work stays private; agency estimates, other bids and panel records remain protected as required. An executed award populates approved scope, staff/rates, tasks, deliverables, ceiling, funding and deadlines in M11/M10 without hiding negotiation changes. The retained procurement file and approved public version reconcile to the same history.
+- **Verification:** source-feed pagination/failure/amendment tests; issuer-timezone/DST and client-clock cases; exact file/manifests and actual required forms; database/storage/API/search/OCR/assistant/export isolation; unauthorized opening and conflicting evaluator refusal; atomic receipt, interrupted upload/retry, replacement/withdrawal, outage/late-submission handling under the configured policy; immutable issued criteria, public redaction, protest hold, revoked authority and execution/NTP distinctions. Targeted guard mutations must fail and a harmless mutation survive. Observe agency procurement staff and consultant leads on identified-checkout desktop/390px, keyboard and assistive-technology journeys. One end-to-end case does not certify nationwide procurement law or all portal integrations.
+- **Risks/questions:** service classification, funder/pass-through rules, legal procuring entity and adopted agency procedures determine the method. RFQ can mean qualifications or quotation. Do not universalize Caltrans/FHWA conditions, historic thresholds, forms, DBE goals or protest periods. Scope-authoring consultants who also want to bid require a specific conflict decision. A shared model index can defeat protected-cost handling; reviewed storage/key/access design is prerequisite, not optional UI polish. External publication, attestations, signatures, submission and awards require authorized humans. OpenPlan cannot guarantee external delivery or substitute generated evaluator reasons for human judgment.
+- **Operating cost:** the consultant preparation baseline works locally without paid aggregation or models. Optional official feeds need credentials, scheduled refresh, quota/backoff, document storage and observable completeness; no source completeness or numeric cost promise is supported yet. Agency bid intake needs stable authorized hosting, time, resumable uploads, storage capacity, backups/restore, incident support and retention/disposition controls. Measure these with representative permitted workloads before operational reliance. OCDS can support reviewed public interchange; ERPNext/OpenProcurement are references or separately assessed integrations, not proven drop-in solutions.
+
+Stage this work into useful, independently reviewable increments:
+
+1. **M14a — Find the work and prepare both packages.** Extend the current consultant pursuit with manual official-source intake, one verified optional SAM discovery connector, maintained source coverage, notice/addendum history, requirements, actual issuing timezone, firm/team evidence, task assignments and response readiness. Provide agency need/scope/method/criteria and solicitation authoring linked to a real planning project. Produce source-specific technical/fee packages, editable prescribed structure and actual attachments. Done means both sides can prepare the right documents and explain unresolved requirements; it does not claim publication or receipt. National/state/local source expansion remains on G1, with manual intake available wherever an adapter is absent.
+2. **M14b — Issue, amend and receive reliably.** Authorized agency publication freezes a version and records its destination/evidence. Questions and common answers/addenda have controlled release and acknowledgment. Complete one OpenPlan-hosted intake with separate bidder organizations, exact durable receipts, closing-time enforcement and permitted replacement/withdrawal; test recovery before receipt acknowledgment. Also complete an external-portal/physical-delivery case whose acknowledgment remains explicitly unconfirmed until real evidence is recorded. Email Sent and exported PDF are not successful receipt.
+3. **M14c — Evaluate and negotiate under the right method.** Configure actual authority/funding/service classification, published criteria and roles. Preserve independent evaluator scores/reasons, conflicts/recusals, permitted interviews/reference checks, ranking and negotiation. For qualifications selection, prevent price access/influence before the allowed stage across every derivative; for price-inclusive selection, apply its published price treatment. Handle inadequate competition, cancellation/reissue and justified exceptions without making up automatic legal permission. Prove these separately; an RFQ label is not a method.
+4. **M14d — Award, retain and administer the agreement.** Complete applicable award notices, debrief/protest holds/resolution, signature authority, execution and notice to proceed. Transfer negotiated scope/rates/budgets/deliverables into M11/M10, then review one deliverable, invoice and approved amendment. Preserve unsuccessful proposals, legal holds and approved records disposition according to the governing rules. Produce an independently reconcilable procurement file and reviewed public/OCDS export without private attachments or panel leakage. Cross-installation exchange must identify both parties and reconcile payload/receipt; it must not silently share workspaces.
+
+The full LAPM Chapters 9/10/15 review adds explicit M14 acceptance for A&E versus non-A&E, one/two-step and on-call/task selection; solicitation-wide caps; independent confidential estimates; inaccessible fee proposals until the permitted negotiation stage; conflicts and controlled negotiation termination; execution/NTP/approved rates; and scope-bound amendments before master expiry. Preserve agency/consultant views of the same contract handoff. Verify sealed data through storage/API/search/OCR/agent/export, not merely a hidden field. Current bidder-data 9-L is distinct from statutory subcontractor listing and is not a responsiveness requirement. Actual source-bound exceptions, agency procedures, competition records and professional review govern; dated chapter thresholds are not universal defaults.
+
+## M15. Hosted browser trials and customer-owned adoption
+
+- **Planning outcome:** Nathaniel can open a stable URL in another person's supported browser, log in and demonstrate a fully functioning release through real planning work. Invited agencies/consultants can try it from anywhere, save work and return. They can adopt the same free software on local or independently funded hosting, with optional paid implementation, annual administration and separately scoped customization. A hosted preview is not a paid software tier or a smaller v1 destination.
+- **Gap/evidence:** `HOSTED_PREVIEW_CODE_AND_ARCHITECTURE_REVIEW.md` traces existing app/worker deployment parts, CLI-only local auth/mail configuration, shared county-worker files, AI metering that allows requests on errors, incomplete customer transfer and warning-only deployment identity checks. The cost research provides dated primary prices/requirements, not measured OpenPlan capacity. The services report establishes existing Apache/service permission and the current self-hosting/shared-worker and copy-guard restrictions superseded by Nathaniel's direction. Existing independent full-production operation remains unproved.
+- **Dependencies/scope:** selected M3 production Linux/Supabase, durable worker/artifact/recovery and M4 privacy/access/records controls; M0 candidate truth; working cross-module cases from M2 and the prioritized practice lanes. A0 provides an actual hosted agent path and separately an optional installed-device connection. Reuse one production reference recipe, queues, deployment health, evidence exports and recovery mechanisms. Prepare M15 mid-term without waiting for every v1 module or nationwide study; disclose every remaining release limitation. Later full-v1 hosting must include all claimed v1 workflows.
+- **Done:** a fresh outside-network browser session completes real login/reset/invitation, geography/data intake, useful planning work, an actual background job and reviewed export; saved work survives sign-out, another device and a service restart. Separate trial teams cannot access one another's private records or keys. Measured resource/cost controls keep the host usable. A complete authorized trial transfers to a customer-controlled installation, preserving records/bytes/evidence, roles and the ability to continue work and restore a backup. A second operator can administer it without Nathaniel. The same software remains usable after optional administration ends.
+- **Verification:** exact deployed identity/schema; desktop/390px, keyboard and assistive-technology tasks on a different network; real mail receipt and recovery; worker callback/artifact persistence; concurrent work/memory pressure, metering failure and multi-workspace abuse; job cancellation/restart and missing inputs; full restore to another host, nonempty upgrade/recovery and selective transfer without other tenants or trial credentials. Inspect scientific disclosures and all advertised outputs. Guard changes require a valid optional-service case, rejected paid-core/access cases, targeted failing mutations and a surviving no-op. Repeat a subset before each presentation release; static health is not workflow proof.
+- **Risks/questions:** a public URL exposes capacity, data handling and support obligations. Start with invited editable trials and an optional read-only public tour; do not treat the tour as completion of full trials. Use public/approved data and explicit retention/cleanup, with separate commissioning before confidential agency work. No hidden operator repair during acceptance, silently reset trial work or prerecorded output presented as fresh execution. A normal website cannot use a visitor's native CLI without installed, authorized bridge software. Client/support authority, scientific/professional judgments and publication approvals remain explicit.
+- **Operating cost:** distinguish steady web/database/storage/backup/mail/domain costs, variable compute/maps/API/egress, and human administration. Prefer a single simple Linux reference topology initially, then separate larger workers where measurements and artifact transport justify it. Current source prices are estimates with exclusions and must be refreshed before a reviewed spend ceiling is approved. An inexpensive VM cannot be assumed to run every geography/model or imagery job. Customer-owned provider accounts are the preferred adoption default. Annual service pricing follows measured maintenance/support scope, not an invented unlimited-support promise.
+
+Stage the outcome as follows:
+
+1. **M15a — Production recipe and reviewable budget.** Select a region/topology and source-pinned release, configure production Supabase, app/private workers, mail/TLS, scheduler, persistent artifacts, backups and update/recovery. Prove the recipe on authorized existing/free infrastructure first where practical, without exposing the development stack. Profile representative complete workflows and long jobs, list actual fixed/variable costs, recovery objectives, owner and exit path. Obtain concrete spend approval before provisioning paid resources. Fix declaration/identity and budget-control failures. This establishes deployment readiness, not a live hosted demonstration.
+2. **M15b — Real remote demonstration and editable trials.** Commission the approved deployment and record accepted source identity. Prepare clearly sourced demonstration work, then have two independent teams complete real saved tasks from fresh outside browsers. Configure actual required execution services and a funded agent path for the no-install experience. Preserve job progress/results across devices; reveal queue/cost limits and scientifically unsupported uses. Include collaboration, report/PDF, public engagement where advertised, privacy, mail, restore and access revocation. A public tour can precede editable trials but cannot replace them; expired trial notice/export/cleanup requires explicit handling.
+3. **M15c — Independent customer ownership and sustainable services.** Supply the documented self-host path and an optional accepted implementation engagement. Move one trial with complete authorized records, object/model bytes, identities/roles and evidence into client-owned accounts; verify no cross-tenant spill and continue a planning job. Rebind mail/callbacks/provider access safely, rotate delegated credentials and prove another administrator can restore, upgrade and remove service access. Define annual administration by supported versions, updates, backup verification, monitoring, support hours/response targets, included effort, absence coverage and escalation. Scope customization with acceptance and maintenance responsibility; prefer shared-main improvements/configuration over permanent divergent forks. Ending services never disables licensed software or traps client records.
+
+## S1. Scientific custody and comparable measurement
+
+- **Planning outcome:** a modeler can determine exactly what was compared, what is unsupported, and why no accuracy claim follows yet.
+- **Gap/evidence:** v0.39-v0.44 reports, frozen nationwide preregistration and science appendix. v0.44 did not advance overall; base-period/use acceptance and ingestion/display integrity remain incomplete.
+- **Dependencies/scope:** M3 for durable execution. Preserve every existing frozen byte, consumed partition and negative result. Verify production custody ingestion, SQL omitted/NULL-field behavior, displayed-versus-downloaded hash/summary consistency and explicit loader errors. Align year/day/direction/lane/vehicle units, model quantities and source-supported observation intervals.
+- **Done:** identical observation/network/input boundaries bind both separate methods, every loaded/unloaded/unmatched/unsupported observation remains accountable, and actual UI/report/assistant/evidence handoffs resolve exact records without invented zero or silent missing cards. Independent acceptance evaluator scope is specified; the current always-inconclusive diagnostic evaluator is not misrepresented.
+- **Verification:** isolated service-role RPC malformed metadata probes; removed/swapped artifact and summary mutations; exact consumer agreement; wrong source SHA; no output access before preregistered preparation; hash-preserving replay. Do not open new holdouts for a software integrity test.
+- **Risks/questions/cost:** scarce decisive observations, old artifacts whose unknown facts cannot be reconstructed, ingestion not actually connected. Local storage and computation only; primary-source research is a prerequisite.
+
+## S2. Correct and test model structure on development evidence
+
+- **Planning outcome:** a modeler obtains better-supported demand, distribution, behavior, external travel and network loading for the intended use.
+- **Gap/evidence:** negative gateway/work-loading studies, disconnected/unloaded coverage, unsupported non-work through travel, borrowed behavioral coefficients and limited modal/time-of-day representation.
+- **Dependencies/scope:** S1. Design falsifiable development experiments from diagnosed causes. Investigate generation, distribution/destination/mode choice, external/through travel, connectors/restrictions, network completeness, road classes, time periods and transit. Use existing AequilibraE/ActivitySim/PopulationSim and source adapters; reassess established engines only against a measured need.
+- **Done:** each candidate has preregistered development purpose, source/algorithm/settings custody, conservation and coverage evidence, separate method results and an explicit advance/retire decision. Retired candidates remain available. No diagnostic result silently changes production defaults or acquires a higher tier.
+- **Verification:** development-only splits, held-fixed comparison inputs, uncertainty and stratum reporting, rerun/resume determinism, no model averaging, no cross-county rescue, no hidden demand drop or output-guided rematching. Coefficient applicability needs source/estimation/transfer evidence beyond a local population fit.
+- **Risks/questions/cost:** scientific failure is a legitimate outcome; surveys/observations may be unavailable or costly. Use free/authorized data and days-long local runs when justified. Buying data or commissioning research needs Nathaniel's approval.
+
+### S2a. Evaluate time-series forecasting as a separate supporting method
+
+- **Planning outcome:** staff can forecast near-term traffic counts or transit ridership from measured histories and review unusual observations with a traceable expected range. These are candidate uses, not demonstrated capabilities or causal forecasts of a new road, policy or land-use alternative.
+- **Gap/evidence:** the September 5 [TimesFM source review](reviews/2026-09-04-pre-handoff/TIMESFM_TECHNICAL_RESEARCH.md) identifies a reusable forecasting implementation, but no OpenPlan runtime or accuracy evidence. Existing HPMS count intake supplies annual-average observations and provenance; that alone does not establish a suitable continuous training/evaluation series. Nathaniel selected TimesFM 3.0 only on September 5; 2.5 is excluded from the planned evaluation and integration. Current 3.0 pretrained weights restrict commercial and production use. The license has no exemption for a sole practitioner, a one-user instance or an organization that pays nothing for OpenPlan.
+- **Dependencies/scope:** S1 custody and an isolated development experiment after the active handoff. Evaluate a pinned 3.0 checkpoint against seasonal-naive and an established statistical baseline only within license-permitted noncommercial, nonproduction research. Establish that the actual research purpose qualifies before downloading or running weights; revenue-linked product research is not presumed permitted. Deployment requires a later license that permits the intended use or documented permission from the rights holder. Do not implement payment, headcount or local-installation checks as substitutes for those rights. Carry station/service identity, units, interval, timezone/DST, direction/lanes, quality flags, missingness, source vintage and covariate availability. Keep this optional supporting method distinct from both demand engines; no default change, weight download or integration is authorized merely by this research entry.
+- **Done:** a reproducible research advance/retire report identifies the exact use, horizon, data provenance, model/license versions, resource requirements, meaningful baseline improvement or failure, and explicit unsupported geographies. Research success alone does not authorize product deployment; the deployment decision must document applicable weight, output and redistribution rights. Any later product integration must label measured, imputed and forecast quantities separately. A forecast cannot become independent observed truth for AequilibraE or ActivitySim validation, justify a causal policy claim, or explain away their residuals.
+- **Verification:** freeze rolling temporal and geographic evaluation boundaries before results; investigate pretraining overlap and disclose unknown contamination. Existing consumed/frozen study holdouts remain untouched. Measure bias, peaks, totals, errors appropriate to sparse/zero series and empirical quantile coverage by horizon and geography. Prove missing/all-missing/long-gap rejection, statistic labels, future-covariate leakage prevention, interruption recovery and real CPU/GPU memory/time. Quantile availability is not evidence of calibrated uncertainty.
+- **Risks/questions/cost:** new time-series intake and data QA may cost more than inference; structural breaks and transfer can defeat historical forecasting. Revenue forecasting for RTP/tax programs would require a separate financial-use evaluation and human review. This small research lane does not displace engagement, OWP, capital administration, everyday workflows or nationwide demand-model validation. Nathaniel's eventual product decision is which real forecasting decision merits operational support after the evidence exists.
+
+## S3. Untouched use-specific nationwide validation
+
+- **Planning outcome:** an agency can rely on each model for a clearly named use in its geography, with defensible uncertainty and limits.
+- **Gap/evidence:** no independent nationwide accuracy result; current frozen protocol blocks acceptance and rules-v5 remains diagnostic. The historical 43.3% selection metric is not nationwide truth.
+- **Dependencies/scope:** S1/S2; source-supported decisive observations, real independent geographic partitions, implemented acceptance evaluator and a successor preregistration frozen before outcome access. Set gates from primary evidence for each claimed use, not from observed candidate performance. Cover all states/DC and required archetypes, with deeper California proof.
+- **Done:** each separate demand method passes every applicable untouched state/archetype/use gate; insufficient evidence remains inconclusive and blocks that claim. A national aggregate cannot hide a local failure. Forecast/environmental uses require their own stronger evidence; observed screening validity cannot be relabeled.
+- **Verification:** independent custody/access controls; pre-output matching/quality grades; raw and uncertainty-aware residuals at link/screenline/system/state/archetype levels; road/mode/time coverage; sensitivity and transfer limits; audited final consumer claims. Exposed holdouts are consumed and cannot be reused as independent acceptance.
+- **Risks/questions/cost:** the program is open-ended and may require new observations. Failure can require a new scientifically independent dataset, not a relaxed threshold. Runtime, calendar and release count never reduce the scope.
+
+## G1. Geographic and organization coverage grows with each job
+
+- **Planning outcome:** every state/DC and required organization can complete the core planning jobs in substance, with California deeper across its full diversity.
+- **Gap/evidence:** 99 current capability cells are partial/unassessed; sparse jurisdiction readiness has three exemplars. Flat dimension labels do not establish the interactions.
+- **Dependencies/scope:** continuous across M1-M15/S1-S3. Maintain job-by-authority-by-geography evidence with source/adapter/rule versions, responsible maintainers, refresh dates and limitations. Explicitly include tribes, multi-state/overlapping regional agencies, state agencies, transit operators, consultants, nonprofits, public participants and low-capacity users.
+- **Done:** every required cell and interaction has current outcome/artifact/permission/accessibility/operations evidence. The core requirements ledger names distinct small-office, sovereign tribal, statewide/distributed, consultant multiclient, transit-operator and nonprofit-to-agency cases; one cannot substitute for another. Territory policy is explicit. California includes statewide, metro, suburban, rural, mountain, coastal, border and tribal cases; other states add contexts California cannot represent.
+- **Verification:** remove a source/state/role or expire a rule and the relevant coverage reopens. Test boundary/identity adapters and actual user jobs. No literal jurisdiction default in core logic; maintained country registries may name jurisdictions explicitly.
+- **Risks/questions/cost:** legal/data maintenance outlives initial implementation. Establish named maintainers and upstream provenance; no national median, UI dropdown or source availability replaces a completed job. This is not deferred cleanup after modeling.
+
+### G1a. National local-assistance source coverage and procedural proof
+
+- **Planning outcome:** an agency or consultant uses the correct project/program procedure in each supported geography, with understandable evidence and limits. California detail helps build the system; it never supplies unreviewed law for another state.
+- **Gap/evidence:** `NATIONAL_LOCAL_ASSISTANCE_COMPARISON.md` and the state/federal reconnaissance reports cover selected sections across Oregon, Washington, Nevada, Alaska, Hawaii, New York, Minnesota, Florida and Texas, plus federal source families. This is not full reading of nine state manuals or the federal framework. Built-in reimbursement descriptors remain California and generic US guidance; geographic vocabulary alone does not implement agency/program authority or substantive national workflow coverage.
+- **Dependencies/scope:** M1/M4/M10/M11/M13/M14, shared documents and source maintenance. Inventory all required states/DC with chapter/form/bulletin/stewardship/agreement versions, currentness, actual reading and access limits. Nathaniel prioritizes Oregon/Washington/Nevada and has explicitly added Alaska, Hawaii and the federal equivalents; resolve Nevada's old available PDF and blocked current hub without omitting it. New York/Minnesota provide deliberate nonwestern comparison cases; Florida/Texas follow with current funding/qualification differences. Subsequent reviews follow uncovered procedural/organization differences and actual planner demand while retaining every state/DC requirement. Tribal direct/self-governance, territorial, Federal Lands, FTA and direct discretionary awards are distinct authority branches. The federal foundation is a versioned source family, not one universal manual: distinguish law/regulation, actual award and delegation terms, current guidance, training and superseded material. Preserve obligation dates and the versions incorporated in the award.
+- **Done:** every claimed procedure has the actual recipient/pass-through/delivery relationship, qualified roles and restrictions, funding/phase/program, governing source and event trigger, correct original identifiers/forms, reviewer and dated outcome evidence. Full reading of a priority manual has its own ledger and supersession review. Source found, rule configured and practitioner-validated workflow remain separate statuses. A nine-state sample and selected federal reading do not close G1 or v1.
+- **Verification:** test an Oregon project delivered by another certified agency; Washington reduced delegation and state-only planning; Nevada certification numbering without California semantic substitution; New York multiple PINs under one SLA and applicable long retention; Minnesota project-specific sponsorship, state-account transfer and approved incurred-cost reimbursement; Florida dated local contingency/old contract caps and alternative payment; Texas AFA versus delivery contract and cash in both directions; Alaska Denali/FHWA/Tribal authority and seasonal suspension with maintenance custody; Hawaii island/county/MPO separation and a title-only MOA rejected as incomplete; direct federal versus state pass-through and FTA subaward versus purchased service. Challenge a retired source and a new manual wrongly overwriting existing award terms. Use current permitted files and practitioners, actual rendered packets/receipts, wrong-profile and expired-authority mutations, harmless survivor, tenant separation, interruption and restore. Do not universalize a paid-before-reimbursement gate where the applicable approved process differs.
+- **Risks/questions/operating costs:** maintained source families, inaccessible portals, conflicting revisions, distinct state/local/federal decisions and decades of protected records. Confirm first agency cases and access to practitioner review. Engineering owns shared mechanisms and discrepancy handling. Scope manual work alongside RTP, engagement, contracts, land-use and scientific validation; capital-delivery manuals alone cannot close the whole planning platform.
+
+## A0. Provider choice and installed local agents for the Planner Agent
+
+- **Planning outcome:** a solo planner, student or agency user can use their chosen API model or installed Codex, Claude Code or OpenCode backend inside the existing Planner Agent, including a supported personal subscription connection.
+- **Gap/evidence:** the current chat route is Anthropic API-specific with deployment model selection. Source-grounded tools and exact approval controls already exist. T3 Code implements the requested installed-agent wrapper pattern; Relay Lab already contains local Codex/Claude invocation work. See the dated provider and T3 reuse reports.
+- **Dependencies/scope:** selected existing grounded reads/proposals must be proven; A0 does not wait for all M1–M13. Add per-user/device connections, supported API adapters/custom compatible endpoints, model/capability selection and an optional local connector. Let the installed CLI own authentication. Reuse T3's appropriate adapter/session/event/capability work with its license notices and a bounded integration seam. A remotely hosted page needs a paired executing computer; no implicit access to a browser visitor's CLI.
+- **Done:** every requested CLI backend and the extensible API path complete the same grounded read/draft/approved-proposal task. Users can see the selected backend/model and authentication mode, install/sign in through the provider's supported flow, interrupt/resume, handle limits and revoke the connection. No silent API fallback, account sharing or provider substitution occurs. Account mode and actual usage limits are disclosed; an installed CLI is not claimed to grant every model.
+- **Verification:** real installed-client acceptance separately from deterministic adapter fixtures; missing CLI/auth, incompatible version/model, stream truncation, hostile origin, revoked pairing, local file isolation, cross-workspace calls, malicious source content, stale/excess-payload approval, quota failure, device loss and duplicate retry. Every changed consequential guard has a no-op survivor and a meaningful failing mutation. Observe a solo user and agency user understanding what data left and what actually changed.
+- **Risks/questions/cost:** CLI and protocol churn, local support burden, subscription limits, data-sharing policies and session storage. T3's trusted-computer/code-editor permissions cannot define OpenPlan case access. Personal connections do not automatically run public moderation or unattended agency jobs. No required paid connector/cloud sandbox; users bring optional provider accounts. Engineering owns the adapter and security architecture.
+
+A0a proves one direct API choice and one local CLI backend on the same existing planning task. A0b completes Codex, Claude Code and OpenCode support, extensible API endpoints, recovery and provider switching. Both belong early; the full requested backend scope is not reduced to the first adapter. Other AI surfaces adopt the shared provider abstraction deliberately after their separate workload/privacy tests.
+
+## A1. Platform-wide agentic planning assignments
+
+- **Planning outcome:** a planner delegates substantial work across OpenPlan, inspects sources and exact proposed changes, resumes after interruption and receives usable artifacts and a clear handoff. The Planner Agent combines conversation with assignment/progress/review controls in existing project/plan work and My Work. Optional Buzz or other clients reach the same capabilities; OpenPlan stays complete without an agent.
+- **Gap/evidence:** `AGENTIC_CURRENT_CAPABILITY_REVIEW.md` identifies current grounded reads, twelve registered actions and browser dispatch, with missing durable assignment/external-identity coverage. Root independently traced a stage-gate database failure that can be audited as succeeded, warning-only audit persistence, and approval consumption before the business effect. `BUZZ_HISTORY_AND_AGENTIC_PRODUCT_RESEARCH.md` distinguishes direct historical MCP approval from memory-derived Buzz details. `AGENTIC_OSS_OPTIONS_RESEARCH.md` and `AGENTIC_CONTROL_DECISION.md` preserve current primary sources, version/license boundaries and the build/reuse recommendation.
+- **Dependencies/scope:** each underlying action/workflow must be proven before agents execute it; A1 starts on existing supported work alongside A0, without waiting for every module. Retain installed AI SDK 6 for API models, A0 native CLI adapters/T3 reuse, the existing action registry/approval service and domain workers. Add a bounded Postgres-backed assignment/job lifecycle. Use a thin authenticated MCP server for external clients. LangGraph JS is the preferred alternative only if the first real assignment demonstrates branching/checkpoint needs that are simpler with it; avoid two competing durable state owners. Buzz remains optional, with actual transport/version/authentication compatibility tested.
+- **Done:** every core operation has an explicit supported read, preparation/proposal, bounded execution or human-only/refused disposition with reason; complete delegated jobs work across the required practice/organization/geography cases. Persist scope, source versions, actors/devices, approvals, job handles, actual effects, costs and meaningful failure/recovery. Adoption, publication, spending, certification, factual authority and scientific claim promotion remain responsible human decisions. The normal UI can reproduce and continue the same work.
+- **Verification:** same task via direct API and native CLI backends plus an actual compatible external MCP client; wrong tenant/case/role, omitted actor headers, self-approval, stale/changed payload, source injection/truncation, duplicate delivery and process loss around approval/write/audit/receipt. Inspect actual artifacts and independent recipient reuse; no confident final message or attempted tool call closes a task. Harmless mutations survive while the relevant consequential failures are rejected. Practitioner observation measures task usefulness and time including review/correction, not agent fluency.
+- **Risks/questions/cost:** provider/runtime/protocol churn, approval fatigue, sensitive case memory, stale source summaries, long-job uncertainty and resource usage. Preserve known model limitations and consumed holdouts. Measure token/request use, worker load, storage, retry pressure and maintenance effort; no paid orchestration dependency or silent API fallback. Source-intake provenance is required before allowing external tools to supply planning evidence. The first real assignment and delegation policies need planner judgment; libraries/state/authentication remain engineering decisions.
+
+1. **A1a: truthful, scoped capability service.** Repair false-success, post-commit refresh failure, optional-consent and audit/recovery semantics before expanding execution. Preserve exact approvals and distinguish authenticated external agents from humans server-side. Prove scoped reads/proposals through the current UI and one supported MCP client, including revocation and refusal. Review actual self-host OAuth and current MCP client compatibility; ADR-004's old package examples and eventual Buzz-as-configuration statement are not acceptance proof.
+2. **A1b: one durable assignment.** On a permitted existing project, inspect source/gaps, prepare a work plan and exact drafts, wait for review, dispatch an already-supported report/model operation, survive process/network interruption, inspect the actual result and leave a usable My Work handoff. Keep each real domain job independent of a browser turn. An agent budget ending cannot silently stop a scientific worker or promote an unfinished result. Complete this narrow case with the bounded state machine; only add graph orchestration if the measured case justifies it.
+3. **A1c: complete planning jobs across modules.** Extend alongside M2/M5/M6/M7/M8/M9–M14: prior-RTP updates, engagement synthesis/responses, weekly contract/funding exceptions, capital-period packages, municipal reports and both procurement sides. Source/permissions/authority follow every handoff. Agent preparation cannot replace a missing underlying calculation, reporting workflow or legally responsible decision. Maintain a job-to-context/action/result matrix beyond the initial action list.
+4. **A1d: sustained use and optional external workspaces.** Prove native-backend and external-client parity, including a supported Buzz path, persistent task/context recovery, scoped scheduled internal review where authorized, administrator revocation, retention/export and independent installation. Test transport/schema limits and actual approval interoperability. Measure usefulness with practitioners and public-facing output reviewers before claiming whole-product agentic capability. Batch or delegated routine actions require a comprehensible exact-scope policy and separately verified execution; the initial external default remains proposal-only.
+
+## V1. Independent whole-product proof campaign
+
+- **Planning outcome:** agencies, consultants, individual planners and the public can adopt OpenPlan as a trustworthy, maintainable planning system.
+- **Dependencies/scope:** all required milestones and coverage interactions; no unresolved Blocker/High defect hidden in a dated closed list. One candidate commit binds required CI, worker, RLS, migration, restore, artifact, accessibility, user and scientific evidence.
+- **Done:** every required core job works across the stated geographic/organization scope; both models pass their published uses; independent humans install/operate/recover and complete/reuse representative work; public artifacts are accessible and approved; governance, security reporting, licensing and source maintenance have owners.
+- **Verification:** release evidence manifest rejects missing/skipped/expired/wrong-commit/failed checks; clean installs and upgrades from supported releases; full recovery on separate hardware/storage; actual user observation; independent adversarial reviews; all scientific custody and use gates; no harmless-mutation false kill.
+- **Risks/questions/cost:** the final campaign will discover defects and reopen cells. Fix them and repeat the affected evidence; do not rename them polish. Publish measured operating costs and limits. Tag v1 only when the binding contract is true.
+
+## W1. Nat Ford Planning website presents OpenPlan as the main product
+
+This is a companion adoption task in `nfredmond/nat-ford-website`, not a new OpenPlan module or a paid-access requirement. It can begin before M15's hosted trials; enable trial links only when their actual destination is accepted.
+
+- **Outcome:** an agency/consultant visitor quickly understands OpenPlan, finds how to get/install it, and sees optional implementation, annual administration and customization. Independent free use needs no sales contact.
+- **Gap/evidence:** `NAT_FORD_WEBSITE_REFRESH_BRIEF.md` identifies website main 08348b08 and the sampled homepage, OpenPlan page, navigation and instruction/test mismatch. OpenPlan already has prominent content; the refresh should sharpen that existing work and provide a direct installation route. Current live visual/deployment identity remains unverified.
+- **Scope/dependencies:** reuse the website's design and brand; lead with OpenPlan and current real product imagery, concise workflow value, GitHub/releases, canonical installation instructions and service explanation. Link documentation after M0 reconciliation and trial access after M15. Preserve useful planning credentials/other work without competing homepage priorities; maintain old URLs where practical. Website account/provider eligibility and actual canonical domain need verification before publication.
+- **Done/verification:** an unfamiliar visitor finds source and installation without assistance, distinguishes free software from services and follows functioning access/contact links. Check desktop/390px, keyboard/focus, contrast/reduced motion, screenshots/console, constrained-network performance, metadata and privacy; validate installation instructions against actual supported setup. A beautiful mockup or green build is not completion.
+- **Risk/cost:** avoid stale duplicated setup instructions, premature fully-working claims, oversized media, unproved model claims and a dependency on paid help. No new stack or paid provider is assumed. Check website ownership/active work before implementation; prepare a reviewable preview before publication. The current task preserves this todo, not a deployed redesign.
+
+## Human observation and product decisions
+
+Use the [human observation protocol](product/PLANNER_OBSERVATION_PROTOCOL.md) to prepare research tasks and accessible consent materials before recruitment. Nathaniel owns outreach. Observe an agency planner, a consultant serving multiple clients, a small/rural organization, a tribal government, a state/distributed agency, a nonprofit/community organization, an approver/records steward and public participants. Use their existing work with permission; include failed recovery and external artifact reuse. Agent journeys discover regressions but cannot establish usefulness, trust, language quality or representative participation.
+
+Bring Nathaniel decisions about territory depth, the first engagement/capital case, actual administering and fiscal authority, confidentiality/public-record and personal-AI policies, and meaningful planning outcomes. Do not ask whether the early priorities or restored contract/RTP requirements belong in scope again; he has already decided that. Obtain permitted agreement/prior-plan observation cases and practitioner feedback on actual decisions. Do not ask him to choose libraries, schemas, queue mechanics or test frameworks. When observation changes priority, amend this single queue with evidence while preserving the full v1 destination and previous dated decisions.

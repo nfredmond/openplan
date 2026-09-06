@@ -1,0 +1,12 @@
+[
+  {
+    "name": "roadmap-link-noop",
+    "returncode": 0,
+    "accepted": true
+  },
+  {
+    "name": "roadmap-link-broken",
+    "returncode": 1,
+    "accepted": true
+  }
+]

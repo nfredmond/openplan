@@ -1,0 +1,107 @@
+{
+  "archivedAt": "2026-09-06",
+  "records": [
+    {
+      "path": ".github/PULL_REQUEST_TEMPLATE.md",
+      "sha256": "54eab3c98b7829fdeffaaa5c7ca30468159bbb934346d6207d242347c66a017c",
+      "bytes": 767,
+      "sourceCommit": "cc6c3feb1e58318e36ff5a6be19d2246f2b06f36"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "c3f7530e2576aaa3f98f3f8ae93c2fb27fe6f2602c74233906a6bb634103ffd2",
+      "bytes": 376,
+      "sourceCommit": "cc6c3feb1e58318e36ff5a6be19d2246f2b06f36"
+    },
+    {
+      "path": "CLAUDE.md",
+      "sha256": "d71d957e5167624f9aa3e34d95f7bb8fa13e698a19825edba119c1d1f55b1886",
+      "bytes": 383,
+      "sourceCommit": "cc6c3feb1e58318e36ff5a6be19d2246f2b06f36"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "sha256": "015280a69dae5cc7a6e96a24e6c60b23a8e8dacd3b8ede84ffd54a7199af89ec",
+      "bytes": 4472,
+      "sourceCommit": "cc6c3feb1e58318e36ff5a6be19d2246f2b06f36"
+    },
+    {
+      "path": "LICENSE-NOTICE.md",
+      "sha256": "ba94f369e891abeb0d65b3e8a6a4f289b0670a4c9eda6f2c30bd370de96796fa",
+      "bytes": 1299,
+      "sourceCommit": "cc6c3feb1e58318e36ff5a6be19d2246f2b06f36"
+    },
+    {
+      "path": "SECURITY.md",
+      "sha256": "264dce9b50a2eccc7d31cebb2b4067e293a19b6774cb912953cd91a012f43ca5",
+      "bytes": 1785,
+      "sourceCommit": "cc6c3feb1e58318e36ff5a6be19d2246f2b06f36"
+    },
+    {
+      "path": "docs/README.md",
+      "sha256": "914d2041d1ea079e0aa7ac8df9123094e3209e2a55cbf933179b4a40ef4c6087",
+      "bytes": 3285,
+      "sourceCommit": "cc6c3feb1e58318e36ff5a6be19d2246f2b06f36"
+    },
+    {
+      "path": "docs/ROADMAP.md",
+      "sha256": "b118e774ffed4277bb7bf3c98d078475f3a2449a07e2eae5fbb8bc96bdc59f7e",
+      "bytes": 26452,
+      "sourceCommit": "cc6c3feb1e58318e36ff5a6be19d2246f2b06f36"
+    },
+    {
+      "path": "docs/ops/KNOWN_ISSUES.md",
+      "sha256": "cf111b896d56908a6ee837595c2e6e8bc59b2a2a33a73af921b3cd1997c1bd92",
+      "bytes": 39842,
+      "sourceCommit": "cc6c3feb1e58318e36ff5a6be19d2246f2b06f36"
+    },
+    {
+      "path": "docs/product/AGENT_OPERATING_RULES.md",
+      "sha256": "942d017097449eef4edcca61fb85b1c55e1867181ca413f79ae1d84e923528e5",
+      "bytes": 10947,
+      "sourceCommit": "cc6c3feb1e58318e36ff5a6be19d2246f2b06f36"
+    },
+    {
+      "path": "docs/product/US_PLANNING_CAPABILITY_MATRIX.md",
+      "sha256": "7bada5a763be4dbef316d07ba2b7e72a76c00ca7ccac6c5bc74802384eb6a453",
+      "bytes": 9007,
+      "sourceCommit": "cc6c3feb1e58318e36ff5a6be19d2246f2b06f36"
+    },
+    {
+      "path": "docs/product/V1_PRODUCT_CONTRACT.md",
+      "sha256": "e20ca1a3bddfd2045b8a35d69e084a1df92c6e8a57ce98447b07c3ec1b9460da",
+      "bytes": 10789,
+      "sourceCommit": "cc6c3feb1e58318e36ff5a6be19d2246f2b06f36"
+    },
+    {
+      "path": "openplan/README.md",
+      "sha256": "e16a7dce81083d58570886ee06038153cb5bf6e06d3af11772d367f63bb0f553",
+      "bytes": 3737,
+      "sourceCommit": "cc6c3feb1e58318e36ff5a6be19d2246f2b06f36"
+    },
+    {
+      "path": "openplan/docs/FIRST_DEPLOYMENT.md",
+      "sha256": "dbac2062a105c39bd760e96d290dab86c45c298a92421630ab207e6953be653e",
+      "bytes": 8889,
+      "sourceCommit": "cc6c3feb1e58318e36ff5a6be19d2246f2b06f36"
+    },
+    {
+      "path": "openplan/docs/SELF_HOSTING.md",
+      "sha256": "be9bb98fa01685c39d38488aa0341ca867793302fcd07d384fe5f9de226d95a5",
+      "bytes": 44234,
+      "sourceCommit": "cc6c3feb1e58318e36ff5a6be19d2246f2b06f36"
+    },
+    {
+      "path": "openplan/docs/ops/BACKUP_AND_RESTORE.md",
+      "sha256": "6304d62a68a6090da70dd7a09e4f7b4805cd50df739b54d143fb99e4aa00b6c3",
+      "bytes": 3576,
+      "sourceCommit": "cc6c3feb1e58318e36ff5a6be19d2246f2b06f36"
+    },
+    {
+      "path": "openplan/docs/ops/RUNBOOK.md",
+      "sha256": "42c36299da736416b933f0177ffb0a4389bcceb0c90684d77f4ed202a2e0cb51",
+      "bytes": 9894,
+      "sourceCommit": "cc6c3feb1e58318e36ff5a6be19d2246f2b06f36"
+    }
+  ]
+}

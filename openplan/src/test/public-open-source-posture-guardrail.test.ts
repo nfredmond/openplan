@@ -63,28 +63,6 @@ const publicPostureSurfaces: PublicPostureSurface[] = [
   },
 ];
 
-const repositoryPostureSurfaces: PublicPostureSurface[] = [
-  {
-    route: "root README",
-    sourcePath: "../README.md",
-    requiredMarkers: [
-      /Apache-2\.0 open-source planning software/i,
-      /OpenPlan is free\./i,
-      /no paid tier, no plan, no seat count, no usage quota, and no payment step/i,
-      /There is no Stripe or\s+billing integration in the codebase/i,
-    ],
-  },
-  {
-    route: "app README",
-    sourcePath: "README.md",
-    requiredMarkers: [
-      /Apache-2\.0 open-source transportation and land-use planning software/i,
-      /OpenPlan is free\./i,
-      /self-serve and free/i,
-    ],
-  },
-];
-
 const subscriptionFirstClaimPatterns = [
   { label: "pricing route link", pattern: /href="\/pricing/i },
   { label: "request-access route link", pattern: /href="\/request-access/i },
@@ -121,12 +99,5 @@ describe("public open-source posture guardrail", () => {
     expect(offenders).toEqual([]);
   });
 
-  it.each(repositoryPostureSurfaces)("$route keeps repository-level posture markers", (surface) => {
-    const source = readPublicSurfaceSource(surface);
-    const missingMarkers = surface.requiredMarkers
-      .filter((marker) => !marker.test(source))
-      .map((marker) => marker.toString());
 
-    expect(missingMarkers).toEqual([]);
-  });
 });

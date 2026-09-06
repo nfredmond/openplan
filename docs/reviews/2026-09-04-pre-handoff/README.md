@@ -1,5 +1,7 @@
 # September 4 review checkpoint: awaiting development handoff
 
+> Historical review packet. Current priorities and instructions were consolidated on September 6 in [the documentation index](../../README.md), [roadmap](../../ROADMAP.md) and [handoff review](../TECHNICAL_PRODUCT_REVIEW_2026-09-06.md). Drafts below preserve the preparation history and are no longer an alternate queue.
+
 These are preserved review findings and proposals, not adopted product authorities
 or a release declaration. The active development checkout remains untouched by
 this review. It is collecting additional acceptance evidence. The latest read-only observation is dd7b4f4d with developer-owned changes, including ongoing report, safety and disclosure repairs. Earlier findings retain their dated source snapshots and require reconciliation at handoff. No safe handoff or completed release is established.

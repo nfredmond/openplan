@@ -1,0 +1,45 @@
+{
+  "baseline": {
+    "errors": [
+      "openplan/docs/SELF_HOSTING.md: missing link ../../docs/reviews/2026-09-06-consolidation/VERIFICATION.md"
+    ],
+    "pending_root_files": [],
+    "counts": {
+      "relative_links": 83,
+      "npm_script_references": 30,
+      "environment_references": 31,
+      "bash_blocks": 14
+    }
+  },
+  "controls": [
+    {
+      "control": "noop",
+      "new_errors": []
+    },
+    {
+      "control": "missing_link",
+      "new_errors": [
+        "README.md: missing link missing-ops-control.md"
+      ]
+    },
+    {
+      "control": "missing_script",
+      "new_errors": [
+        "README.md: missing npm script missing:ops:control"
+      ]
+    },
+    {
+      "control": "missing_env",
+      "new_errors": [
+        "README.md: undocumented environment name OPENPLAN_MISSING_OPS_CONTROL"
+      ]
+    },
+    {
+      "control": "broken_bash",
+      "new_errors": [
+        "README.md: invalid Bash syntax: bash: line 1: syntax error near unexpected token `then'\nbash: line 1: `if then'"
+      ]
+    }
+  ],
+  "limits": "No commands executed from docs, no network checks, no anchor validation, no deployment/restore/UI acceptance, no semantic authority proof."
+}

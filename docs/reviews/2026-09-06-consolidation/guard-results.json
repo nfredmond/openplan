@@ -1,0 +1,50 @@
+[
+  {
+    "name": "capability-noop",
+    "returncode": 0,
+    "expected": "survived",
+    "accepted": true
+  },
+  {
+    "name": "capability-empty-proof",
+    "returncode": 1,
+    "expected": "empty",
+    "accepted": true
+  },
+  {
+    "name": "capability-hash-bypass",
+    "returncode": 1,
+    "expected": "refuses missing files and changed evidence bytes",
+    "accepted": true
+  },
+  {
+    "name": "browser-record-noop",
+    "returncode": 0,
+    "expected": "survived",
+    "accepted": true
+  },
+  {
+    "name": "browser-record-bypass",
+    "returncode": 1,
+    "expected": "FAIL verification leaves missing browser folder inconclusive",
+    "accepted": true
+  },
+  {
+    "name": "browser-symlink-bypass",
+    "returncode": 1,
+    "expected": "symbolic",
+    "accepted": true
+  },
+  {
+    "name": "docs-noop",
+    "returncode": 0,
+    "expected": "survived",
+    "accepted": true
+  },
+  {
+    "name": "docs-broken-reference",
+    "returncode": 1,
+    "expected": "missing-operator-review-manual.md",
+    "accepted": true
+  }
+]

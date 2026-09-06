@@ -4,13 +4,9 @@ OpenPlan handles planning records, engagement inputs, workspace membership, and 
 
 ## Reporting a vulnerability
 
-Report suspected vulnerabilities privately via **GitHub Security Advisories** on this repository
-(`Security` tab → `Report a vulnerability`). If private reporting is unavailable to you, open a
-GitHub issue that says only that you have a security report and how to reach you — never publish
-exploitable details, credentials, tenant data, or proof-of-concept payloads in a public issue.
+Use GitHub private vulnerability reporting if the repository offers it. The September 6, 2026 repository-settings check found it disabled; a dependable private intake channel remains an open operations task. Until a private channel is available, open an issue containing only a request for private contact and a safe way to reach you. Do not include exploitable details, credentials, tenant data or proof-of-concept payloads in a public issue. Maintainers must arrange private exchange before collecting the report.
 
-There is no vendor and no support contract behind OpenPlan; reports are handled by the
-maintainers through the repository.
+Repository maintainers handle upstream reports. Optional implementation or administration agreements have their own support scope; installing the free software does not create a response-time or security-service commitment.
 
 Include, when safe:
 

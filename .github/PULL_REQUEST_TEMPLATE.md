@@ -5,8 +5,8 @@
 ## Verification
 
 - [ ] `npm run qa:gate` passes from `openplan/` (lint + tests + audit + build)
-- [ ] Python worker changes: the matching `workers/**/test_*.py` scripts pass (`python3 <file>`)
-- [ ] New/changed behavior has a test
+- [ ] Python worker changes: run the relevant suite in its configured worker environment; use `npm run test:workers` from `openplan/` for the declared worker matrix
+- [ ] Consequential changed behavior has meaningful checks; changed guards have a surviving harmless mutation and a targeted failure
 
 ## Constraint check (see CONTRIBUTING.md — "Product constraints")
 

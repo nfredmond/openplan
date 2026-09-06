@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { createHash } from "node:crypto";
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -78,5 +78,14 @@ describe("evidence behind proven capability cells", () => {
     const registry = record();
     registry.dimensions.planner[0].evidence[0].path = join(root, "docs/proof.md");
     expect(() => validateCapabilityEvidence(registry, root, today)).toThrow(/repository-relative/);
+  });
+
+  it("refuses an outside file reached through a repository symlink", () => {
+    const outside = mkdtempSync(join(tmpdir(), "openplan-outside-evidence-"));
+    writeFileSync(join(outside, "proof.md"), bytes);
+    symlinkSync(join(outside, "proof.md"), join(root, "docs/outside.md"));
+    const registry = record();
+    registry.dimensions.planner[0].evidence[0].path = "docs/outside.md";
+    expect(() => validateCapabilityEvidence(registry, root, today)).toThrow(/stay inside/);
   });
 });
