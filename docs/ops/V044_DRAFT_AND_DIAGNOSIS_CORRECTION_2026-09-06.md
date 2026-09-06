@@ -120,3 +120,74 @@ credentials while reading the raw manifest. They are not copied into repository
 records. Subsequent reads project non-sensitive fields only. No credential or
 external-service state was changed. This was a review-tool handling error,
 not an application isolation finding.
+
+## Corrected-build verification, c4f76eb0
+
+This section supersedes the pending technical/browser status above, not the
+failed first-week outcome. The clean, pushed build
+`c4f76eb02ae88a8977a22012604e8f89980cbbe3` passed the full local `qa:gate`:
+13,039 app checks, 135 live-RLS checks, lint, dead-code gate, production audit
+and production build. The ordinary app invocation skipped 105 checks; they are
+not counted as passes. All 51 worker suites passed. The full dependency audit
+still has ten development-only advisories, including two high and six moderate;
+production has zero. This does not close dependency issue 046.
+
+The frozen-study verifier checked all 42 artifacts, release bindings, demand
+conservation and custody again. A wrong expected release hash fails with
+`study result release binding changed`. No frozen source was edited. Its first
+invocation used an unavailable `python` alias and exited 127; `python3` ran the
+actual checks. That failed invocation is not counted as a rejected mutation.
+
+The identity checker matched the corrected build on port 3200 before browser
+work. From the front door at 1440px and 390px:
+
+- The UI-created, explicitly synthetic draft-retention plan preserved newer
+  section typing and an unsaved policy through a real section save. The status
+  remained unsaved and freezing remained disabled. Reload confirmed that only
+  the submitted section snapshot reached storage, not later typing or the
+  unsaved policy. There were two explicit QA content writes and no errors.
+- All fourteen frozen diagnoses were selected at each width. Their categories,
+  counts, unknown facts and full hashes matched the committed sources. All
+  fourteen distributed county/method selections exposed the exact filenames
+  and hashes. The browser downloaded their 42 files and fourteen diagnoses at
+  each width, plus the current assessment at each width: 114 downloads total,
+  each checked against its expected hash and size where recorded.
+- The current assessment's two available hashes are fully visible and match
+  its immutable download. Three additional network-state hashes do not exist
+  in this actual assessment and were not invented. The existing narrow run
+  column is still cramped; issues 054/069 remain open.
+- The project Evidence tab opens the bundle review with the actual automatic
+  crash/engagement inclusion and checkbox limits disclosed before confirmation.
+  Confirmation stayed unchecked and freezing disabled. No bundle was created.
+
+The evidence journey and four supplemental middle-category views made zero
+writes and had zero console/page errors. The main agent inspected all 28 final
+screenshots: eight draft views, sixteen main evidence views, and four category
+views. These are representative visual checks, not nationwide capability proof.
+
+The first evidence-helper attempt verified 112 files, then stopped because it
+expected the other route's hyphenated current-assessment filename. The actual
+generic artifact route serves `model_validation_assessment.json`. Correcting
+only that helper expectation produced the complete 114-file run. The first
+failed proof remains retained. An intentionally wrong build identity also fails
+before the helper opens the browser. No acceptance result was rewritten.
+
+Final local proof paths, relative to the existing release-check directory:
+
+| Evidence | SHA-256 |
+|---|---|
+| `corrections-bound-qa-gate.log` | `5fc5a7ba13e53c51597e631dadb266e720e1adbde3d2cbfd9790f7f7c127367a` |
+| `draft-retention-corrected-browser/proof.json` | `3652099bfb85c6cb00b779a66b40af412709ae9aede87525d473b4bf7d1ab827` |
+| `corrected-evidence-browser-native-filename/proof.json` | `9cdbbda02e7dfca51ea5674ffa84b7be1abbd4f5bd285323d410d5657bd1519c` |
+| `diagnosis-middle-browser/proof.json` | `c1d81489a549c002f1356d9cfe4aceb2439f4c522a0a65366c76b0c34fe6024c` |
+
+Exact-c4f76eb0 remote RLS `34019632152`, Upgrade Path `34019643618` and
+QA Harness Nightly `34019644839` succeeded. CI `34019632158` was still running
+its full gate and shuffled suite when this section was written. Do not infer
+its outcome from the other checks or the push response.
+
+The original full12 remains failed. No replacement full12 has run on this
+corrected build, no release tag has been created, and job 05's forecast remains
+unsupported. The completed UI correction is not scientific validation or release
+acceptance. The fresh direction review preserves that boundary and both
+independent recommendations for subsequent work.

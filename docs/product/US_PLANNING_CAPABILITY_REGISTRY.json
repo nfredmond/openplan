@@ -121,7 +121,7 @@
     {
       "issueId": "KI-2026-09-06-081",
       "capability": "travel-demand-corridor-scenario-and-performance-analysis",
-      "gap": "Verify exact displayed artifact filenames and full hashes at desktop and 390px against native downloads; correction under verification",
+      "gap": "Exact filenames and full hashes are corrected and checked against native downloads at desktop and 390px; narrow run columns remain open under issues 054 and 069",
       "evidence": "docs/ops/V044_DRAFT_AND_DIAGNOSIS_CORRECTION_2026-09-06.md"
     },
     {
