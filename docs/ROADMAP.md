@@ -107,6 +107,10 @@ The v1 contract is not yet true:
   and was stopped for a false screening-note percentage and opposite advice.
   `986ab86c` shares the existing zone-panel interpretation and corrects units.
   This bounded repair still requires rebuilt proof and complete fresh outcomes;
+- the following run on `b51c4361` reached setup and neutral-jurisdiction outcomes
+  but report job 02 produced fatal console errors after an ordinary preview link.
+  The confirmed iframe-navigation failure interrupted acceptance. Parent-owned
+  link handling is under verification; a complete fresh run remains required;
 - the proof registry exposes many `partial`, `missing`, and `not-assessed`
   cells; those open cells block v1 even though they do not block this interim
   release;
