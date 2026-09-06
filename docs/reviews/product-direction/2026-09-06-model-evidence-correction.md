@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-05
 review_by: 2026-10-05
-reviewed_commit: e973a346
+reviewed_commit: 9fa7b9bb
 current_release: v0.44.0
 independent_contexts: 2
 trigger: first-week-model-evidence-false-output
@@ -59,6 +59,9 @@ Corrected browser proof, broader local checks, remote CI and a new complete
 twelve-job run remain required. Lesser findings are in the capability registry.
 
 The failed distributed-loading candidate remains retired and inconclusive.
+The subsequent `9fa7b9bb` repair quotes the worker test's CLI paths and exercises
+spaces in its temporary directory. Its no-op passes and the unquoted form fails
+before CLI execution. This is test portability, not a runtime or modeling change.
 No model is averaged, promoted, tuned from the failure, or assigned a new default.
 No frozen study or holdout is reopened. Nationwide accuracy remains unknown.
 
