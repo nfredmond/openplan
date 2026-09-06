@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-06
 review_by: 2026-10-05
-reviewed_commit: e6d25edd
+reviewed_commit: 63b8d9b6
 current_release: v0.44.0
 independent_contexts: 2
 trigger: independent-maintenance-review-before-owp-preparation
@@ -83,3 +83,13 @@ The source binding is 4635f39d. The direction check accepted a harmless comment 
 Source checkpoint e6d25edd implements the independently identified missing-date handoff. The review above remains the preserved independent baseline, including its disagreements and open operational boundaries. Root re-read the affected reader, board and tests, reproduced the original omission in the actual browser, checked stored null-date custody, and exercised reassignment/completion plus outsider denial with caller-authorized clients. The [dated verification](../2026-09-06-handoffs/VERIFICATION.md) binds actual desktop/390px keyboard captures to source hashes and records a surviving comment plus eight rejected mutations. Focused lint and 61 behavioral tests passed. This is new bounded implementation evidence, not a new independent whole-product review or release campaign.
 
 The source change extends existing queue mapping; it adds no store, geography assumption, authority or agent write. It does not resolve amendment copying, queue truncation, whole-app usefulness, shared campaigns or OWP preparation. The canonical queue now starts with the remaining shared-campaign handoff and then the same M2d.1 OWP outcome. All contract perspectives, scientific boundaries, complete state/DC and organizational scope, acceptance failures and independent reports remain applicable without promotion. The review source binding advances to this inspected checkpoint; review date, review deadline and independent-context count do not change. CI remains separately checked after push.
+
+## Bounded reassessment after shared-project handoffs
+
+Source checkpoint 63b8d9b6 completes the bounded coverage-reader and report-destination changes identified by the independent product review. Root inspected the campaign/project joins, export privacy predicates, route authorization, report creation provenance and current tests. The live predecessor failure and corrected actual GeoPackages, two project-targeted reports, stored report artifacts, coverage changes/restoration and caller isolation are preserved in [shared-campaign verification](../2026-09-06-handoffs/SHARED_CAMPAIGNS.md). The original project list and explicit-campaign generator already handled shared sources; contrary claims were rejected. One harmless mutation survived and eighteen meaningful defects failed. The earlier remote copy-baseline omission is corrected and disclosed.
+
+This evidence supports landing the repair, with explicit limits: Chrome blocked the actual file-download steps; authenticated server retrieval is separate proof. Existing report-freshness disagreement, broad PDF content/pagination, report-awareness caps, nontransactional paging, report POST retry semantics and grant/assistant coverage remain open. Nothing here establishes full engagement, practitioner usefulness, a complete installation/restore exercise or v0.44 release. The original nine complete and three partial outcomes stand. The capability registry and scientific states are unchanged.
+
+The current contract, sole roadmap and core ledger still require full agency practice across all fifty states/DC with California deepest, explicit territories/tribal/overlapping authority, separate nationwide-validated model paths, and no effort-based scope reduction. The correction adds no new module, task store, financial authority, paid dependency or provider billing path. The sole next primary outcome is M2d.1 preparation in Programs; the public EDCTC predecessor and final PDFs were retained with source hashes. The live source page now lists a later amendment, which is kept distinct rather than silently replacing the requested comparison. Manual correction, page-level traceability, unresolved balances and independent PDF/XLSX reconciliation remain unimplemented requirements. All other contract perspectives and early priorities in this review retain their existing sequence.
+
+The review date, deadline and independent-context count remain unchanged. The source binding advances to the inspected checkpoint on this new implementation evidence; it does not invent fresh independent reviewers or a new release campaign. Direction/document checks and remote CI are recorded separately after this reassessment.
