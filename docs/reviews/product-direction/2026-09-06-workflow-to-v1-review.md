@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-06
 review_by: 2026-10-05
-reviewed_commit: b168199e
+reviewed_commit: 2895d81e
 current_release: v0.44.0
 independent_contexts: 2
 trigger: user-authorized-whole-product-consolidation-after-final-handoff
