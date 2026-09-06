@@ -84,7 +84,7 @@ export function ProgramCreator({ projects }: { projects: ProjectOption[] }) {
       {
         id: "identity",
         title: "What is this program?",
-        hint: "The package name and the funding cycle it belongs to.",
+        hint: "The program name and its agency work cycle or funding cycle.",
         fields: [
           {
             name: "title",
@@ -113,7 +113,7 @@ export function ProgramCreator({ projects }: { projects: ProjectOption[] }) {
               flow={flow}
               name="cycleName"
               label="Which funding cycle?"
-              hint="The cycle this package is being put forward in."
+              hint="The annual work program or funding cycle this record covers."
             >
               <Input {...flow.text("cycleName")} placeholder="2027 RTIP" />
             </GuidedFlowRow>
@@ -145,7 +145,7 @@ export function ProgramCreator({ projects }: { projects: ProjectOption[] }) {
               <select className={selectClassName} {...flow.text("programType")}>
                 {PROGRAM_TYPE_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
-                    {option.label}
+                    {option.value === "other" ? "Other / OWP / UPWP" : option.label}
                   </option>
                 ))}
               </select>
@@ -332,8 +332,8 @@ export function ProgramCreator({ projects }: { projects: ProjectOption[] }) {
           <p className="module-section-label">Create</p>
           <h2 className="module-section-title">New program</h2>
           <p className="module-section-description">
-            A program is a package of projects put forward together in one funding cycle — what is
-            in it, who sponsors it, and when it has to be nominated and adopted.
+            Create an agency work cycle or a package of projects in a funding cycle. For an OWP or
+            UPWP, choose Other / OWP / UPWP, then open work-program preparation on its page.
           </p>
         </div>
         <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">

@@ -19,6 +19,22 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- Programs now has an initial OWP/UPWP preparation editor: retain predecessor PDFs,
+  review page references, propose continuing work and budgets, save revisions and
+  export a draft PDF/XLSX for planner/finance review. This does not complete agency-wide
+  reconciliation, adoption or the full OWP lifecycle. Browser downloads remain
+  blocked in the local acceptance profile; see the September 6 handoff evidence.
+- Before running the preparation editor, apply additive migrations
+  [program_work_program_preparation](openplan/supabase/migrations/20260906000001_program_work_program_preparation.sql) and
+  [program_work_program_source_snapshot](openplan/supabase/migrations/20260906000002_program_work_program_source_snapshot.sql). The second captures
+  each revision's source inventory. Also apply
+  [program_work_program_conflict_response](openplan/supabase/migrations/20260906000003_program_work_program_conflict_response.sql)
+  so stale saves return a conflict instead of triggering PostgREST transaction retries. Early development revisions without that
+  inventory retain readable text; save a new revision for PDF/XLSX export.
+- The aerial roadmap now includes an ODX comparison and WaypointMap mission/controller
+  workflow reference, with DJI Mini 4 Pro identified by Nathaniel. Processing speed,
+  quality and controller transfer are separate tests; no engine replacement is claimed.
+
 ## 0.44.0 — 2026-09-05
 
 - First-week browser checks use a locked local MCP launcher that avoids script

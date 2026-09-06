@@ -504,7 +504,7 @@ export default async function ProgramsPage({
     ? `The workspace has ${allTypedPrograms.length} programming ${
         allTypedPrograms.length === 1 ? "cycle" : "cycles"
       }, but none match ${activeFilterLabels.join(" + ")}. Clear or change the filters to review the full catalog.`
-    : "Create a program to track an RTIP or STIP package — what is still missing, when it is due, and what it links to.";
+    : "Create an agency work program or an RTIP / STIP package. Keep its cycle, responsible agency and linked work together.";
 
   const packetQueuePrograms = typedPrograms
     .filter(
@@ -623,7 +623,7 @@ export default async function ProgramsPage({
           <div className="module-intro-body">
             <h1 className="module-intro-title">Programming Cycles</h1>
             <p className="module-intro-description">
-              Track funding cycles, submissions, and linked planning work in one place.
+              Prepare agency work programs and track funding cycles, submissions and linked projects.
             </p>
           </div>
 

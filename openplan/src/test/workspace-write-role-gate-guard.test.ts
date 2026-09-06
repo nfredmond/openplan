@@ -88,6 +88,7 @@ const RECOGNIZED_GATES = [
   // out of a public fund. The prover below still applies — its defining file
   // calls `canAccessWorkspaceAction` for real.
   "authorizeMeasureWrite",
+  "authorizeWorkProgram",
   "loadModelAccess",
   "loadPlanAccess",
   "loadLandUsePlanAccess",
@@ -225,7 +226,7 @@ describe("every mutating workspace route authorizes by ROLE, not by row visibili
     // `canAccessWorkspaceAction` used to satisfy this assertion even after the
     // helper's actual call was removed.
     const ROLE_CHECK =
-      /(?:canAccessWorkspaceAction|isReadOnlyWorkspaceRole|normalizeWorkspaceRole|requireWorkspaceWriteAccess)\s*\(|role\s*===\s*["']owner["']/;
+      /(?:canAccessWorkspaceAction|isReadOnlyWorkspaceRole|normalizeWorkspaceRole|requireWorkspaceWriteAccess|loadProgramAccess)\s*\(|role\s*===\s*["']owner["']/;
 
     const unproven: string[] = [];
     for (const gate of RECOGNIZED_GATES) {

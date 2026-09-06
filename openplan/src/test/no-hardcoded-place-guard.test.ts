@@ -109,6 +109,7 @@ const NON_PLACE_FIVE_DIGIT_CODES: readonly string[] = [
   "23505", // unique_violation
   "23503", // foreign_key_violation
   "22023", // invalid_parameter_value
+  "42501", // insufficient_privilege — service RPC actor check
 ];
 
 const FIPS_BRANCH =

@@ -455,16 +455,18 @@ const EXPECTED = {
   // same append-only posture: one member SELECT policy, no client write
   // policy, and a service-role-only binding RPC. +1 policy/permissive,
   // policy-bearing relation/table/RLS table, and no permissive write.
-  policies: 691,
-  permissive: 445,
+  // 20260906000001 adds two immutable work-program preparation tables,
+  // each with a member SELECT policy and service-only transactional writes.
+  policies: 693,
+  permissive: 447,
   restrictive: 246,
   permissiveWrites: 280,
   expanded: 286,
-  tablesWithPolicies: 165,
-  relations: 190,
-  tables: 181,
+  tablesWithPolicies: 167,
+  relations: 192,
+  tables: 183,
   views: 9,
-  rlsEnabledTables: 181,
+  rlsEnabledTables: 183,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

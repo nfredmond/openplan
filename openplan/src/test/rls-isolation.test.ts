@@ -197,6 +197,8 @@ const SERVICE_ONLY_TABLES = new Set(["billing_webhook_receipts"]);
 // the same member-visible / outsider-hidden boundary plus their stricter write
 // rules. Keep this list exact so a filename alone cannot silently count.
 const DEDICATED_LIVE_RLS_PROBES = new Set([
+  "program_work_program_sources",
+  "program_work_program_revisions",
   "modeling_distributed_work_loading_custody",
   "modeling_structural_demand_diagnosis_custody",
   "modeling_validation_assessments",
@@ -1644,6 +1646,8 @@ describe("workspace RLS isolation inventory", () => {
     ]);
     expect([...SERVICE_ONLY_TABLES]).toEqual(["billing_webhook_receipts"]);
     expect([...DEDICATED_LIVE_RLS_PROBES]).toEqual([
+      "program_work_program_sources",
+      "program_work_program_revisions",
       "modeling_distributed_work_loading_custody",
       "modeling_structural_demand_diagnosis_custody",
       "modeling_validation_assessments",

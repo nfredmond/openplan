@@ -1,0 +1,411 @@
+{
+  "date": "2026-09-06",
+  "scope": "OWP preparation, HTTP handoffs, live SQL custody, source extraction and workbook output",
+  "mutations": [
+    {
+      "name": "harmless-comment",
+      "status": "survived",
+      "passed": 20,
+      "failed": []
+    },
+    {
+      "name": "round-cents",
+      "status": "killed",
+      "passed": 17,
+      "failed": [
+        "work-program preparation boundaries reconciles proposed figures in cents while retaining an unresolved prior balance",
+        "reviewed source references and financial treatment requires an explanation before excluding an allocated indirect schedule and does not count it twice",
+        "saved proposal exports keeps typed amounts and null cells, carries all source coverage, and writes formulas only in reconciliation cells"
+      ]
+    },
+    {
+      "name": "missing-is-zero",
+      "status": "killed",
+      "passed": 18,
+      "failed": [
+        "work-program preparation boundaries does not turn missing figures or missing work-element budgets into zero",
+        "saved proposal exports keeps typed amounts and null cells, carries all source coverage, and writes formulas only in reconciliation cells"
+      ]
+    },
+    {
+      "name": "include-completed",
+      "status": "killed",
+      "passed": 19,
+      "failed": [
+        "work-program preparation boundaries excludes completed predecessor work without erasing it"
+      ]
+    },
+    {
+      "name": "duplicate-carriage",
+      "status": "killed",
+      "passed": 19,
+      "failed": [
+        "work-program preparation boundaries refuses duplicate predecessor carriage, invented approval fields, invalid dates and unexplained decisions"
+      ]
+    },
+    {
+      "name": "approval-fields",
+      "status": "killed",
+      "passed": 19,
+      "failed": [
+        "work-program preparation boundaries refuses duplicate predecessor carriage, invented approval fields, invalid dates and unexplained decisions"
+      ]
+    },
+    {
+      "name": "plural-objectives",
+      "status": "killed",
+      "passed": 19,
+      "failed": [
+        "source-layout extraction recognizes plural Objectives without copying the paragraph into the title"
+      ]
+    },
+    {
+      "name": "divider-as-element",
+      "status": "killed",
+      "passed": 19,
+      "failed": [
+        "source-layout extraction does not manufacture a work element from the section divider"
+      ]
+    },
+    {
+      "name": "reordered-budget",
+      "status": "killed",
+      "passed": 19,
+      "failed": [
+        "source-layout extraction retains the source page when PDF table text precedes its heading"
+      ]
+    },
+    {
+      "name": "drop-source-text",
+      "status": "killed",
+      "passed": 19,
+      "failed": [
+        "source-layout extraction keeps source text, actual PDF pages and printed figures separate from the proposed program"
+      ]
+    },
+    {
+      "name": "numeric-codes-only",
+      "status": "killed",
+      "passed": 19,
+      "failed": [
+        "source-layout extraction preserves alphanumeric work-element identifiers and multiple source pages"
+      ]
+    },
+    {
+      "name": "reversed-totals",
+      "status": "killed",
+      "passed": 19,
+      "failed": [
+        "source-layout extraction withholds figures from reversed or unreadable tables and keeps unknown formats manual"
+      ]
+    },
+    {
+      "name": "promote-source-schedule",
+      "status": "killed",
+      "passed": 19,
+      "failed": [
+        "reviewed source references and financial treatment copies source narrative without promoting prior figures, schedule or owners"
+      ]
+    },
+    {
+      "name": "skip-page-boundary",
+      "status": "killed",
+      "passed": 19,
+      "failed": [
+        "reviewed source references and financial treatment requires real retained keys and pages, while allowing manual citations in other layouts"
+      ]
+    },
+    {
+      "name": "include-indirect",
+      "status": "killed",
+      "passed": 19,
+      "failed": [
+        "reviewed source references and financial treatment requires an explanation before excluding an allocated indirect schedule and does not count it twice"
+      ]
+    },
+    {
+      "name": "unescaped-html",
+      "status": "killed",
+      "passed": 19,
+      "failed": [
+        "saved proposal exports includes the carried work, original citations, revision custody and unresolved figures in readable HTML"
+      ]
+    },
+    {
+      "name": "drop-line-ids",
+      "status": "killed",
+      "passed": 19,
+      "failed": [
+        "saved proposal exports keeps typed amounts and null cells, carries all source coverage, and writes formulas only in reconciliation cells"
+      ]
+    },
+    {
+      "name": "unlink-budget-decision",
+      "status": "killed",
+      "passed": 19,
+      "failed": [
+        "saved proposal exports keeps typed amounts and null cells, carries all source coverage, and writes formulas only in reconciliation cells"
+      ]
+    },
+    {
+      "name": "no-recalculate",
+      "status": "killed",
+      "passed": 19,
+      "failed": [
+        "saved proposal exports requests automatic recalculation in the delivered XLSX package"
+      ]
+    },
+    {
+      "name": "wrong-action",
+      "status": "killed",
+      "passed": 19,
+      "failed": [
+        "work-program route access boundary uses the read/write action and the authenticated actor, and allows ordinary manual preparation"
+      ]
+    },
+    {
+      "name": "allow-agent",
+      "status": "killed",
+      "passed": 19,
+      "failed": [
+        "work-program route access boundary refuses unregistered agent writes before loading privileged resources"
+      ]
+    },
+    {
+      "name": "allow-viewer",
+      "status": "killed",
+      "passed": 19,
+      "failed": [
+        "work-program route access boundary refuses invalid identifiers, missing sessions, missing membership, viewer writes and failed authorization reads"
+      ]
+    },
+    {
+      "name": "truncate-sources",
+      "status": "killed",
+      "passed": 19,
+      "failed": [
+        "immutable source and revision loading captures the latest revision before paginating sources and binds history to that revision"
+      ]
+    },
+    {
+      "name": "sql-harmless-comment",
+      "status": "survived",
+      "passed": 6,
+      "failed": []
+    },
+    {
+      "name": "sql-allow-viewer",
+      "status": "killed",
+      "passed": 5,
+      "failed": [
+        "work-program preparation live custody rechecks actor membership and source workspace ownership inside service RPCs"
+      ]
+    },
+    {
+      "name": "sql-allow-changed-retry",
+      "status": "killed",
+      "passed": 5,
+      "failed": [
+        "work-program preparation live custody recovers duplicate retries, refuses changed payloads and stale versions, and chains the next revision"
+      ]
+    },
+    {
+      "name": "sql-allow-stale",
+      "status": "killed",
+      "passed": 5,
+      "failed": [
+        "work-program preparation live custody recovers duplicate retries, refuses changed payloads and stale versions, and chains the next revision"
+      ]
+    },
+    {
+      "name": "sql-no-source-snapshot",
+      "status": "killed",
+      "passed": 4,
+      "failed": [
+        "work-program preparation live custody recovers duplicate retries, refuses changed payloads and stale versions, and chains the next revision",
+        "work-program preparation live custody freezes each revision's source inventory even when later attachments share its transaction timestamp"
+      ]
+    },
+    {
+      "name": "sql-no-source-ownership",
+      "status": "killed",
+      "passed": 5,
+      "failed": [
+        "work-program preparation live custody rechecks actor membership and source workspace ownership inside service RPCs"
+      ]
+    },
+    {
+      "name": "more-harmless-comment",
+      "status": "survived",
+      "passed": 64,
+      "failed": []
+    },
+    {
+      "name": "route-ignore-refusal-read",
+      "status": "killed",
+      "passed": 63,
+      "failed": [
+        "work-program HTTP authorization handoff read returns the actual authorization refusal before reading or writing program content"
+      ]
+    },
+    {
+      "name": "route-ignore-refusal-save",
+      "status": "killed",
+      "passed": 63,
+      "failed": [
+        "work-program HTTP authorization handoff save returns the actual authorization refusal before reading or writing program content"
+      ]
+    },
+    {
+      "name": "route-ignore-refusal-attach",
+      "status": "killed",
+      "passed": 63,
+      "failed": [
+        "work-program HTTP authorization handoff attach returns the actual authorization refusal before reading or writing program content"
+      ]
+    },
+    {
+      "name": "route-ignore-refusal-export",
+      "status": "killed",
+      "passed": 63,
+      "failed": [
+        "work-program HTTP authorization handoff export returns the actual authorization refusal before reading or writing program content"
+      ]
+    },
+    {
+      "name": "wrong-conflict-status",
+      "status": "killed",
+      "passed": 62,
+      "failed": [
+        "no hardcoded place in shipped product code branches on no county FIPS literal",
+        "saved work-program HTTP behavior returns application conflicts promptly and passes the authenticated actor with the exact proposal"
+      ]
+    },
+    {
+      "name": "export-source-drift",
+      "status": "killed",
+      "passed": 63,
+      "failed": [
+        "saved work-program HTTP behavior exports only the revision's frozen sources and refuses an unavailable inventory"
+      ]
+    },
+    {
+      "name": "place-branch",
+      "status": "killed",
+      "passed": 62,
+      "failed": [
+        "no hardcoded place in shipped product code branches on no county FIPS literal",
+        "no hardcoded place in shipped product code names no pilot county or agency outside the public evidence catalog"
+      ]
+    },
+    {
+      "name": "role-helper-no-parent",
+      "status": "killed",
+      "passed": 61,
+      "failed": [
+        "work-program route access boundary uses the read/write action and the authenticated actor, and allows ordinary manual preparation",
+        "work-program route access boundary refuses invalid identifiers, missing sessions, missing membership, viewer writes and failed authorization reads",
+        "every mutating workspace route authorizes by ROLE, not by row visibility recognizes only gates that actually consult a role"
+      ]
+    },
+    {
+      "name": "inventory-missing-policy",
+      "status": "killed",
+      "passed": 63,
+      "failed": [
+        "migration policy inventory counts what the database actually has"
+      ]
+    },
+    {
+      "name": "sql-fixed-harmless-comment",
+      "status": "survived",
+      "passed": 6,
+      "failed": []
+    },
+    {
+      "name": "sql-fixed-allow-changed-retry",
+      "status": "killed",
+      "passed": 5,
+      "failed": [
+        "work-program preparation live custody recovers duplicate retries, refuses changed payloads and stale versions, and chains the next revision"
+      ]
+    },
+    {
+      "name": "sql-fixed-allow-stale",
+      "status": "killed",
+      "passed": 5,
+      "failed": [
+        "work-program preparation live custody recovers duplicate retries, refuses changed payloads and stale versions, and chains the next revision"
+      ]
+    },
+    {
+      "name": "sql-fixed-no-snapshot",
+      "status": "killed",
+      "passed": 4,
+      "failed": [
+        "work-program preparation live custody recovers duplicate retries, refuses changed payloads and stale versions, and chains the next revision",
+        "work-program preparation live custody freezes each revision's source inventory even when later attachments share its transaction timestamp"
+      ]
+    },
+    {
+      "name": "sql-overwrite-source-url",
+      "status": "killed",
+      "passed": 5,
+      "failed": [
+        "work-program preparation live custody retains source provenance on retries and prevents deletion of the cited original"
+      ]
+    },
+    {
+      "name": "sql-checksum-ignored",
+      "status": "killed",
+      "passed": 5,
+      "failed": [
+        "work-program preparation live custody rechecks actor membership and source workspace ownership inside service RPCs"
+      ]
+    },
+    {
+      "name": "sql-direct-mutation",
+      "status": "killed",
+      "passed": 5,
+      "failed": [
+        "work-program preparation live custody denies direct mutation and authenticated RPC execution, including actor spoofing"
+      ]
+    },
+    {
+      "name": "sql-public-source-read",
+      "status": "killed",
+      "passed": 5,
+      "failed": [
+        "work-program preparation live custody shows retained rows to a member and viewer while an outsider reads neither table"
+      ]
+    },
+    {
+      "name": "precision-harmless-comment",
+      "status": "survived",
+      "passed": 21,
+      "failed": []
+    },
+    {
+      "name": "precision-schema-disabled",
+      "status": "killed",
+      "passed": 20,
+      "failed": [
+        "work-program preparation boundaries withholds a combined budget beyond exact cent arithmetic"
+      ]
+    },
+    {
+      "name": "precision-total-disabled",
+      "status": "killed",
+      "passed": 20,
+      "failed": [
+        "work-program preparation boundaries withholds a combined budget beyond exact cent arithmetic"
+      ]
+    }
+  ],
+  "blindCategories": [
+    "Static role checks do not prove arbitrary control flow or future helper bodies; actual route refusal tests and live actor checks cover this increment.",
+    "SQL tests use transactional fixtures, not independent hosted instances or arbitrary future RPCs.",
+    "Workbook unit assertions cannot evaluate formulas; eight separate LibreOffice calculation cases cover the exported row set.",
+    "No test establishes practitioner usefulness, legal applicability, controller transfer or full OWP preparation."
+  ]
+}

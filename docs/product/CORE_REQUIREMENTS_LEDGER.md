@@ -221,3 +221,13 @@ The existing M1/M2 land-use implementation and daily-work requirements now have 
 ## September 6 shared engagement handoff
 
 CORE-ENG-01/02 and the existing evidence-handoff requirements have a bounded [shared-project repair](../reviews/2026-09-06-handoffs/SHARED_CAMPAIGNS.md). Report creation offers covered projects; retained and direct geographic exports share complete coverage and privacy filtering. Stored two-project reports, real role isolation, coverage changes, artifact contents and desktop/390px controls were exercised. Browser PDF/ZIP delivery was blocked by Chrome and remains unproved; complete engagement usefulness, report freshness, grant/assistant coverage and M2d.1 OWP preparation remain open. No whole practice or organization outcome is promoted.
+
+### September 6 ODX and WaypointMap refinement
+
+CORE-AERIAL-01/02 and CORE-DJI-01 retain their full scope. Nathaniel's [new processing and mission-planning references](../reviews/2026-09-06-handoffs/ODX_TRANSITION_RESEARCH.md) are now explicit in M5b.1–3/5. ODX is the preferred measured processing trial, with independent checkpoint/unit/sensor improvements to evaluate, not an accepted blanket engine switch. WaypointMap is a named baseline for the variable-rich waypoint workflow and direct DJI controller installation Nathaniel uses. Test the actual profile, supported mission semantics, explicit disposable replacement target, original-byte backup and restoration. No runtime speed, quality, controller compatibility or complete aerial outcome is promoted by this research.
+
+Nathaniel subsequently confirmed DJI Mini 4 Pro as the CORE-DJI-01 reference aircraft. Controller model, app and firmware remain open; no USB or flight compatibility result is implied.
+
+## September 6 OWP preparation foundation
+
+CORE-OWP-01/M2d.1 now has an [initial implementation and retained evidence](../reviews/2026-09-06-handoffs/OWP_PREPARATION_IMPLEMENTATION.md) in Programs: original PDF custody, manual source correction, carry-forward decisions, proposed narrative/staffing/schedule/budget editing, source-bound revisions and PDF/XLSX review exports. Live role/custody checks, source extraction defects and the corrected HTTP conflict behavior are documented. Whole-program fund/staffing reconciliation, complete source mapping, long import recovery, browser file delivery and practitioner acceptance remain open. Approval, actual costs and new spending authority are not created by preparation.
