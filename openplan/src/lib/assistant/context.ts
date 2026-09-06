@@ -40,8 +40,10 @@ import {
 import { compareRtpPacketPostureForCycle } from "@/lib/assistant/rtp-packet-posture";
 import {
   describeComparisonSnapshotAggregate,
+  describeEvidenceChainSummary,
   getReportPacketFreshness,
   parseStoredComparisonSnapshotAggregate,
+  parseStoredEvidenceChainSummary,
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import {
@@ -2450,7 +2452,7 @@ async function loadProjectContext(
         title: report.title,
         status: report.status,
         updatedAt: report.updated_at,
-        hasEvidence: Boolean(asSourceContext(metadata)),
+        hasEvidence: describeEvidenceChainSummary(parseStoredEvidenceChainSummary(metadata))?.hasEvidence === true,
         comparisonDigest: describeComparisonSnapshotAggregate(comparisonAggregate),
         comparisonSnapshotCount: comparisonAggregate?.comparisonSnapshotCount ?? 0,
         packetFreshness: getReportPacketFreshness({

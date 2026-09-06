@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { REPORT_EVIDENCE_CASES } from "./helpers/report-evidence-cases";
 
 const createClientMock = vi.fn();
 const notFoundMock = vi.fn(() => {
@@ -1232,6 +1233,19 @@ describe("ProjectDetailPage", () => {
       "/reports/report-1#drift-since-generation"
     );
     expectLinkByHref(/Downtown Safety Packet/i, "/reports/report-1#drift-since-generation");
+  });
+
+  it.each(REPORT_EVIDENCE_CASES)("counts actual report evidence in project detail: $label", async ({ metadata, supported }) => {
+    reportArtifactsOrderMock.mockResolvedValueOnce({
+      data: ["report-1", "report-2"].map((report_id) => ({
+        report_id, generated_at: "2026-03-28T20:00:00.000Z", metadata_json: metadata,
+      })),
+      error: null,
+    });
+    await renderPage();
+    const summary = screen.getAllByText(/^Evidence-backed$/)[0].closest("div");
+    expect(summary).not.toBeNull();
+    expect(within(summary as HTMLElement).getByText(supported ? "2" : "0")).toBeInTheDocument();
   });
 
   it("prioritizes a governance-only report hold over a newer clean current packet", async () => {

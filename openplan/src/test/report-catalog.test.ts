@@ -16,9 +16,22 @@ import {
   normalizeReportPostureFilter,
   parseStoredFundingSnapshot,
   parseStoredComparisonSnapshotAggregate,
+  parseStoredEvidenceChainSummary,
   resolveReportPacketSourceUpdatedAt,
 } from "@/lib/reports/catalog";
 import { expectProvenanceLanguageOnly } from "./provenance-language-guards";
+
+it("retains the recorded modeling-only evidence and its claim limit", () => {
+  const summary = parseStoredEvidenceChainSummary({
+    sourceContext: {
+      evidenceChainSummary: { modelingEvidenceCount: 1, modelingEvidenceClaimLabel: "Prototype Only" },
+    },
+  });
+  expect(summary).toMatchObject({ modelingEvidenceCount: 1, modelingEvidenceClaimLabel: "Prototype Only" });
+  const digest = describeEvidenceChainSummary(summary);
+  expect(digest?.hasEvidence).toBe(true);
+  expect(digest?.detail).toContain("1 modeling evidence · Prototype Only");
+});
 
 describe("getReportPacketFreshness", () => {
   it("returns no-packet when no artifact exists", () => {

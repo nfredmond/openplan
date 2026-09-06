@@ -419,7 +419,7 @@ export default async function ProjectsPage({
       (report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET
     ).length;
     const evidenceBackedCount = reports.filter((report) =>
-      Boolean(report.evidenceChainDigest)
+      report.evidenceChainDigest?.hasEvidence === true
     ).length;
     const governanceHoldCount = reports.filter((report) =>
       Boolean(report.evidenceChainDigest?.blockedGateDetail)

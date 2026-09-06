@@ -513,7 +513,7 @@ export default async function ReportsPage({
         report.packetFreshness.label
       ) &&
       matchesReportPostureFilter(selectedPostureFilter, {
-        hasEvidenceChain: Boolean(report.evidenceChainDigest),
+        hasEvidenceChain: report.evidenceChainDigest?.hasEvidence === true,
         hasComparisonBacked:
           (report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0,
         hasBlockedGovernance: Boolean(report.evidenceChainDigest?.blockedGateDetail),

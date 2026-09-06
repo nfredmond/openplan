@@ -872,6 +872,8 @@ export function parseStoredEvidenceChainSummary(
     stageGatePassCount: asNullableNumber(summary.stageGatePassCount) ?? 0,
     stageGateHoldCount: asNullableNumber(summary.stageGateHoldCount) ?? 0,
     stageGateBlockedGateLabel: asNullableString(summary.stageGateBlockedGateLabel),
+    modelingEvidenceCount: asNullableNumber(summary.modelingEvidenceCount) ?? 0,
+    modelingEvidenceClaimLabel: asNullableString(summary.modelingEvidenceClaimLabel) ?? undefined,
     safetyAcquisitionCount: asNullableNumber(summary.safetyAcquisitionCount) ?? 0,
   };
 }
