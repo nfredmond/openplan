@@ -62,7 +62,7 @@ export type NormalizedCountSourceEvidence = Record<string, unknown> & {
 };
 
 export type NormalizedIndependentValidationEvidence = Record<string, unknown> & {
-  status: "passed" | "failed" | "not_run";
+  status: "passed" | "failed" | "not_run" | "inconclusive";
   supports_claim_tier: boolean;
 };
 
@@ -322,9 +322,25 @@ function normalizeIndependentValidationEvidence(
   const raw = asRecord(value);
   if (!raw) return null;
   const status = asString(raw.status);
+  // Older workers called an unevaluated count comparison failed. Interpret the
+  // stored record without overwriting it, and retain its original label/reason.
+  if (
+    (status === "passed" || status === "failed") &&
+    ((asNumber(raw.stations_matched) ?? 0) <= 0 || asNumber(raw.median_ape) === null)
+  ) {
+    return {
+      ...raw,
+      recorded_status: status,
+      recorded_reason: asString(raw.reason),
+      status: asNumber(raw.stations_matched) === 0 ? "not_run" : "inconclusive",
+      supports_claim_tier: false,
+      reason:
+        "An evaluated independent observed-count result was not recorded: matched stations and an error metric are required. Missing evidence is not a measured validation failure.",
+    };
+  }
   return {
     ...raw,
-    status: status === "passed" || status === "failed" || status === "not_run" ? status : "not_run",
+    status: status === "passed" || status === "failed" || status === "not_run" || status === "inconclusive" ? status : "not_run",
     supports_claim_tier: asBoolean(raw.supports_claim_tier) ?? false,
   };
 }

@@ -353,7 +353,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
   );
   if (!hasTransitSkims) {
     caveats.push(
-      "Transit skims are not included in this run (no transit network data or transit mode not configured)."
+      "No separate transit skim download was identified in the artifact list. Its absence does not establish whether transit was modeled."
     );
   }
 

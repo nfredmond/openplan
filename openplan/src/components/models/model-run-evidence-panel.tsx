@@ -1319,7 +1319,9 @@ export function ModelRunEvidencePanel({
                         ? "Passed"
                         : independentValidation?.status === "failed"
                           ? "Failed"
-                          : "Not run"}
+                          : independentValidation?.status === "inconclusive"
+                            ? "Inconclusive"
+                            : "Not run"}
                     </StatusBadge>
                   </div>
                   <p className="mt-2 text-sm text-foreground">

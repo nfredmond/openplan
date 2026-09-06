@@ -117,6 +117,36 @@
   ],
   "queuedFirstWeekFindings": [
     {
+      "issueId": "KI-2026-09-05-073",
+      "capability": "transit-active-transportation-freight-and-safety-planning",
+      "gap": "Explain the project-area prerequisite before Safety retrieval",
+      "evidence": "docs/ops/V044_MODEL_EVIDENCE_STATE_2026-09-05.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-074",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Make report freshness consistent without hiding genuine source edits during report writeback",
+      "evidence": "docs/ops/V044_MODEL_EVIDENCE_STATE_2026-09-05.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-075",
+      "capability": "capital-programming-prioritization-grants-delivery-and-reimbursement",
+      "gap": "Explain bulk selection of workbook rows with unknown price years",
+      "evidence": "docs/ops/V044_MODEL_EVIDENCE_STATE_2026-09-05.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-076",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Refresh GIS layer inventory after a completed upload",
+      "evidence": "docs/ops/V044_MODEL_EVIDENCE_STATE_2026-09-05.md"
+    },
+    {
+      "issueId": "KI-2026-09-05-077",
+      "capability": "gis-data-stewardship-documents-reports-and-public-records",
+      "gap": "Improve narrow report previews and Safety print heading contrast",
+      "evidence": "docs/ops/V044_MODEL_EVIDENCE_STATE_2026-09-05.md"
+    },
+    {
       "issueId": "KI-2026-09-05-058",
       "capability": "gis-data-stewardship-documents-reports-and-public-records",
       "gap": "Determine the cause of the intermittent browser resource failure without suppressing console evidence",

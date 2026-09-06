@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import csv
 import json
+import math
 import os
 from collections import Counter
 from typing import Any, Literal, Mapping, Sequence, TypedDict
@@ -25,10 +26,10 @@ CountSourceStatus = Literal[
 
 
 class IndependentValidationEvidence(TypedDict):
-    status: Literal["passed", "failed", "not_run"]
+    status: Literal["passed", "failed", "not_run", "inconclusive"]
     supports_claim_tier: bool
     reason: str
-    stations_matched: int
+    stations_matched: int | None
     median_ape: float | None
 
 
@@ -51,7 +52,7 @@ def _number(value: Any) -> float | None:
         number = float(value)
     except (TypeError, ValueError):
         return None
-    return number
+    return number if math.isfinite(number) else None
 
 
 def summarize_count_source(counts_path: str | None, out_dir: str) -> dict[str, Any]:
@@ -276,8 +277,21 @@ def summarize_independent_validation(
             "stations_matched": 0,
             "median_ape": None,
         }
-    matched = int(result.get("stations_matched") or 0)
+    matched_value = _number(result.get("stations_matched"))
+    matched = int(matched_value) if matched_value is not None else None
     median_ape = _number(result.get("median_ape"))
+    if matched is None or matched <= 0 or median_ape is None:
+        return {
+            "status": "not_run" if matched == 0 else "inconclusive",
+            "supports_claim_tier": False,
+            "reason": (
+                "An evaluated independent observed-count result was not recorded: matched "
+                "stations and an error metric are required. Missing evidence is not a "
+                "measured validation failure."
+            ),
+            "stations_matched": matched,
+            "median_ape": median_ape,
+        }
     zone = result.get("zone_resolution") if isinstance(result.get("zone_resolution"), Mapping) else {}
     zone_supported = zone.get("supports_link_level_validation") is not False
     gate_passed = result.get("screening_gate") == "bounded screening-ready"
