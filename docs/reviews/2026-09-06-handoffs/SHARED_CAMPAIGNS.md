@@ -26,3 +26,7 @@ The earlier My Work checkpoint's remote QA failed because its plainer copy reduc
 ## Remaining scope
 
 Coverage paging fails closed at the existing safety ceiling. Report-awareness summaries retain their existing capped reads; they are not a complete report inventory. A stale target removed from refreshed UI props is refused, but no new server-side transaction, report POST idempotency, or blanket ban on citing other permitted same-workspace evidence is established. Grant and assistant grounding still need their own shared-coverage review. Amendment action identity, complete engagement practice, OWP preparation, operations acceptance and all other v1 obligations remain on the sole roadmap. This checkpoint does not release v0.44 or replace its nine complete and three partial journeys.
+
+## Landing checks
+
+The source checkpoint is `63b8d9b6`, followed by the explicit bounded direction reassessment in `f6547d78`. On that binding, the direction check and nine direction/document cases passed. The production webpack build completed successfully; the agent's own :3215 development process was stopped first. The nineteen live RLS suites passed 135 cases, and the production dependency audit reported zero vulnerabilities. The six focused suites were rerun after restoring all mutations and passed 79 cases. Remote CI is checked separately after push; none of these checks releases v0.44.
