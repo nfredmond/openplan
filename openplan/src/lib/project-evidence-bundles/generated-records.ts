@@ -11,13 +11,11 @@ import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readines
 import {
   buildProjectGeoPackage,
   type ProjectGeoPackageCrash,
-  type ProjectGeoPackageEngagementGeometry,
   type ProjectGeoPackageProject,
 } from "@/lib/projects/project-geopackage";
 import { ProjectEvidenceBundleError, type GeneratedProjectEvidenceFile } from "./archive";
 import {
-  isPublicProjectEngagementCampaign,
-  isPublishableProjectEngagementGeometry,
+  loadPublishableProjectEngagementGeometry,
 } from "./engagement-export-privacy";
 
 type ProjectScope = { id: string; workspace_id: string; updated_at?: string | null };
@@ -269,11 +267,7 @@ export async function loadProjectEvidenceGeneratedFiles(
       .eq("project_id", project.id)
       .eq("status", "ready")
       .order("created_at", { ascending: true }),
-    client.from("engagement_campaigns")
-      .select("id, status, share_token, allow_public_submissions, submissions_closed_at, updated_at")
-      .eq("workspace_id", project.workspace_id)
-      .eq("project_id", project.id)
-      .order("created_at", { ascending: true }),
+    loadPublishableProjectEngagementGeometry(client, project),
   ]);
 
   if (projectRead.error || !projectRead.data) {
@@ -377,26 +371,7 @@ export async function loadProjectEvidenceGeneratedFiles(
         : [],
     );
   }
-  const campaignIds = ids(rows(campaignRead.data).filter(isPublicProjectEngagementCampaign));
-  let engagementGeometries: ProjectGeoPackageEngagementGeometry[] = [];
-  if (campaignIds.length > 0) {
-    const engagementRead = await client.from("engagement_items")
-      .select("id, campaign_id, category_id, title, body, submitted_by, status, source_type, metadata_json, moderation_notes, geometry, longitude, latitude, created_at, updated_at")
-      .in("campaign_id", campaignIds)
-      .eq("status", "approved")
-      .order("created_at", { ascending: true });
-    if (engagementRead.error) throw new ProjectEvidenceBundleError("missing_evidence", "Publishable engagement geometry could not be read.");
-    engagementGeometries = rows(engagementRead.data)
-      .filter(isPublishableProjectEngagementGeometry)
-      .map((row) => ({
-        id: String(row.id),
-        geometry: row.geometry,
-        longitude: typeof row.longitude === "number" ? row.longitude : null,
-        latitude: typeof row.latitude === "number" ? row.latitude : null,
-        sourceType: typeof row.source_type === "string" ? row.source_type : "unknown",
-        createdAt: typeof row.created_at === "string" ? row.created_at : generatedAt.toISOString(),
-      }));
-  }
+  const engagementGeometries = campaignRead.data ?? [];
 
   const projectRecord = withoutPersonalIdentifiers(projectRead.data) as Record<string, unknown>;
   const gpkg = buildProjectGeoPackage({

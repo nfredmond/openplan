@@ -1,0 +1,311 @@
+- region "Workspace map":
+  - region "Map"
+  - link "Mapbox homepage":
+    - /url: https://www.mapbox.com/
+- complementary "Primary navigation":
+  - navigation:
+    - paragraph: Workspace
+    - link "Overview":
+      - /url: /dashboard
+      - generic: Overview
+    - link "Workspace setup & health":
+      - /url: /workspace
+      - generic: Workspace setup & health
+    - link "My Work":
+      - /url: /my-work
+      - generic: My Work
+    - link "Projects":
+      - /url: /projects
+      - generic: Projects
+    - link "Reports":
+      - /url: /reports
+      - generic: Reports
+    - link "Planner Agent Activity":
+      - /url: /assistant-activity
+      - generic: Planner Agent Activity
+    - paragraph: Plans & Programming
+    - link "Regional Plan (RTP)":
+      - /url: /rtp
+      - generic: Regional Plan (RTP)
+    - link "Land Use Plans":
+      - /url: /land-use-plans
+      - generic: Land Use Plans
+    - link "Plans":
+      - /url: /plans
+      - generic: Plans
+    - link "Programming Cycles":
+      - /url: /programs
+      - generic: Programming Cycles
+    - paragraph: Funding
+    - link "Grants":
+      - /url: /grants
+      - generic: Grants
+    - link "Invoices & Reimbursements":
+      - /url: /invoicing
+      - generic: Invoices & Reimbursements
+    - paragraph: Analysis & Modeling
+    - link "Travel modeling":
+      - /url: /models
+      - generic: Travel modeling
+    - link "Corridor Analysis":
+      - /url: /explore
+      - generic: Corridor Analysis
+    - link "Safety":
+      - /url: /safety
+      - generic: Safety
+    - paragraph: Community
+    - link "Engagement":
+      - /url: /engagement
+      - generic: Engagement
+    - paragraph: Library
+    - link "Data Hub":
+      - /url: /data-hub
+      - generic: Data Hub
+    - link "Documents":
+      - /url: /knowledge-base
+      - generic: Documents
+    - link "Aerial Imagery":
+      - /url: /aerial
+      - generic: Aerial Imagery
+    - link "Help":
+      - /url: /help
+      - generic: Help
+  - button "Switch to light mode":
+  - generic: Theme
+- banner:
+  - button "Handoff exercise September 6":
+    - generic: Handoff exercise September 6
+  - time: Sun 2:15 PM
+  - button "Jump to a module (Command-K)":
+    - generic: Jump to a module…
+    - generic: ⌘K
+  - group "Colour mode":
+    - button "Light mode":
+    - button "Dark mode" [pressed]:
+  - 'button "Colour palette: Cartographic"':
+- link "Engagement":
+  - /url: /engagement
+- generic: Exercise only — shared campaign
+- article:
+  - text: Campaign detail
+  - generic: Active
+  - generic: Type
+  - strong: Comment Collection
+  - paragraph: No flagged items
+  - heading "Exercise only — shared campaign" [level=1]
+  - paragraph: This campaign is ready for categories, incoming comments, and moderation.
+  - paragraph: Public link
+  - generic "The public page is reachable, but new submissions are closed for this campaign.":
+    - text: Portal · Live
+  - link "Manage sharing":
+    - /url: "#public-share-controls"
+  - generic: http://127.0.0.1:3215/engage/b502ec25-4a3a-40df-b626-903d17da8b8c
+  - button "Copy":
+    - text: Copy
+  - link "Open":
+    - /url: /engage/b502ec25-4a3a-40df-b626-903d17da8b8c
+    - text: Open
+  - paragraph: Share this URL publicly; every submission lands in this console's moderation queue.
+  - paragraph: Linked project
+  - paragraph: Exercise only — Lead project
+  - paragraph: Project context stays visible so engagement does not float free.
+  - paragraph: Review queue
+  - paragraph: "1"
+  - paragraph: 1 pending, 0 flagged for operator review.
+  - paragraph: Report status
+  - paragraph: 8/9
+  - paragraph: Nearly ready. 2 approved, 0 still need category assignment.
+- article:
+  - paragraph: Moderation Summary
+  - heading "What still needs a moderator's decision" [level=2]
+  - paragraph: Comments waiting on review, and comments someone flagged. Work through these before generating a report — anything still pending is left out of it.
+  - generic: "Pending: 1"
+  - generic: "Flagged: 0"
+  - generic: "Triaged: 2 (67%)"
+  - generic: "Recent activity: 3 items in the last 7 days"
+  - generic: Moderation notes present on 0 items
+  - generic: "Linked reports: 1"
+  - generic: Last updated 9/6/2026, 1:55:54 PM
+- navigation "Campaign console sections":
+  - link "Setup":
+    - /url: /engagement/94a893c9-d11e-4de9-a491-7263faa2da15?tab=setup
+  - link "Responses":
+    - /url: /engagement/94a893c9-d11e-4de9-a491-7263faa2da15?tab=responses
+  - link "Analysis":
+    - /url: /engagement/94a893c9-d11e-4de9-a491-7263faa2da15?tab=analysis
+  - link "Record":
+    - /url: /engagement/94a893c9-d11e-4de9-a491-7263faa2da15?tab=record
+- article:
+  - paragraph: Handoff Readiness
+  - heading "Review posture and planning handoff" [level=2]
+  - paragraph: Campaigns stay explicitly tied to planning context, moderation load, map coverage, and downstream report awareness.
+  - generic: Nearly ready
+  - generic: 8/9 checks complete
+  - heading "Campaign handoff decision" [level=3]
+  - paragraph: Resolve the 1 pending or flagged moderation item before calling this packet ready.
+  - generic: Pass · Linked project
+  - generic: Pass · Categories defined
+  - generic: Pass · Items categorized
+  - generic: Open · Review queue resolved
+  - generic: Pass · Duplicate review resolved
+  - generic: Pass · Approved categorized items present
+  - generic: Pass · Public/private source posture visible
+  - generic: Pass · Report appendix candidates
+  - generic: Pass · Campaign status supports handoff
+  - paragraph: Linked project
+  - paragraph: Ready
+  - paragraph: Campaign is tied to a planning project for traceable downstream reporting.
+  - paragraph: Categories defined
+  - paragraph: Ready
+  - paragraph: 1 category available for classification.
+  - paragraph: Items categorized
+  - paragraph: Ready
+  - paragraph: All submitted items have category assignments for matrix and appendix grouping.
+  - paragraph: Review queue resolved
+  - paragraph: Open
+  - paragraph: 1 pending or flagged item still needs operator review.
+  - paragraph: Duplicate review resolved
+  - paragraph: Ready
+  - paragraph: No duplicate-looking active comments are open for appendix review.
+  - paragraph: Approved categorized items present
+  - paragraph: Ready
+  - paragraph: 2 approved items are ready for report inclusion.
+  - paragraph: Public/private source posture visible
+  - paragraph: Ready
+  - paragraph: 1 public comment and 1 internal/meeting/email item are separated for staff review.
+  - paragraph: Report appendix candidates
+  - paragraph: Ready
+  - paragraph: 1 approved public comment is appendix-ready after category and duplicate checks.
+  - paragraph: Campaign status supports handoff
+  - paragraph: Ready
+  - paragraph: Active campaigns can hand off, though closed is the cleanest final posture.
+  - generic: Linked project
+  - generic: Active
+  - heading "Exercise only — Lead project" [level=3]
+  - paragraph: Project context is present even when campaign reporting stays lightweight.
+  - generic: Campaign status Active
+  - generic: Recent activity 3 items
+  - generic: 3 geolocated
+  - generic: 1 linked reports
+  - paragraph: Actionable review
+  - paragraph: "1"
+  - paragraph: 1 pending and 0 flagged.
+  - paragraph: Categorized coverage
+  - paragraph: "3"
+  - paragraph: 0 items still need classification before reporting is reliable.
+  - paragraph: Map coverage
+  - paragraph: 100%
+  - paragraph: 3 geolocated, 0 non-geolocated.
+  - paragraph: Map export readiness
+  - heading "2 approved items ready for GIS/map export" [level=3]
+  - paragraph: Every handoff-ready item has a location for map display and downstream GIS review.
+  - paragraph: Report appendix readiness
+  - heading "1 approved public comment ready for appendix review" [level=3]
+  - paragraph: This is a staff handoff cue, not a representativeness or legal sufficiency finding. Public comments, internal notes, meeting/email items, and duplicate-looking records stay separated before report use.
+  - generic: 1 approved public comment
+  - generic: 1 internal/meeting/email ready item
+  - generic: 0 duplicate-review items
+  - generic: 0 appendix candidates held for duplicate review
+  - paragraph: Comment matrix export preview
+  - heading "1 included · 0 held · 1 internal/private excluded" [level=4]
+  - generic: Staff cue only
+  - paragraph: "Staff cue only: this preview does not establish representativeness, legal sufficiency, CEQA/NEPA adequacy, or final publication readiness."
+  - generic: Included in matrix preview
+  - generic: Public
+  - generic: Exercise comments
+  - heading "Exercise only — publishable geometry" [level=5]
+  - paragraph: Approved, categorized public comment with no unresolved duplicate hold.
+  - paragraph: Synthetic software exercise only. No participant or agency observation.
+  - generic: Submitter not recorded
+  - generic: Updated 9/6/2026, 1:55:54 PM
+  - generic: Excluded — internal/private note
+  - generic: Internal
+  - generic: Exercise comments
+  - heading "Exercise only — private note" [level=5]
+  - paragraph: Approved categorized item is retained for staff context, but excluded from the public-comment appendix matrix.
+  - paragraph: Synthetic software exercise only. No participant or agency observation.
+  - generic: Submitter not recorded
+  - generic: Updated 9/6/2026, 1:55:54 PM
+  - generic: Excluded — not appendix-ready
+  - generic: Public
+  - generic: Exercise comments
+  - heading "Exercise only — pending public geometry" [level=5]
+  - paragraph: Item is not approved for appendix matrix use.
+  - paragraph: Synthetic software exercise only. No participant or agency observation.
+  - generic: Submitter not recorded
+  - generic: Updated 9/6/2026, 1:55:54 PM
+  - generic: Closeout review
+  - generic: Intake closed
+  - paragraph: Public-review copy guard
+  - heading "Keep handoff language supervised and source-bound" [level=3]
+  - paragraph: The campaign has appendix candidates and a closeout posture, but staff still owns final publication, record, and noticing determinations.
+  - paragraph: Review the appendix-ready comments, duplicate holds, and source split before exporting board-packet or public-review language.
+  - generic: Describe this as a planner review aid, not an official-record certification.
+  - generic: Do not state or imply public-records handling, legal notice, or noticing sufficiency has been automated.
+  - generic: Keep public comments, internal notes, meeting/email items, and duplicate-review holds visibly separated before publication.
+  - generic: A planner or authorized agency reviewer must approve any public-review artifact before release.
+  - article:
+    - generic: 2 handoff-ready
+    - generic: 0 uncategorized
+    - heading "Lightweight planning handoff cue" [level=3]
+    - paragraph: Approved items with category assignment are the cleanest candidates for report inclusion or planning review.
+    - generic: 2 approved total
+    - generic: 2 approved + categorized
+    - generic: 0 with audit notes
+  - article:
+    - generic: Public lead source
+    - generic: 3 recent items
+    - heading "Recent intake signal" [level=3]
+    - paragraph: Public is currently the largest source of input, with 2 items.
+    - generic: 1 pending in window
+    - generic: 0 flagged in window
+    - generic: Last activity 9/6/2026, 1:55:54 PM
+  - article:
+    - generic: Project-linked
+    - generic: 2 handoff-ready
+    - heading "Create an engagement handoff packet" [level=3]
+    - paragraph: Seed a project-linked report with this campaign as an explicit source section so planning review does not rely on manual copy-paste.
+    - generic: 3 total items
+    - generic: 1 actionable review items
+    - generic: 1 existing project reports
+    - generic: 1 packet issue
+    - paragraph: What this creates
+    - paragraph: A project status packet with a frozen engagement handoff snapshot tied to this campaign.
+    - paragraph: 2 ready for handoff • 3 total items • 1 actionable review • 0 uncategorized
+    - text: Project receiving this report
+    - combobox "Project receiving this report":
+      - option "Exercise only — Covered project"
+      - option "Exercise only — Lead project" [selected]
+    - button "Create handoff report" [active]:
+      - text: Create handoff report
+- article:
+  - paragraph: Report Awareness
+  - heading "Project-linked reports" [level=2]
+  - paragraph: Reports from every covered project, with explicit engagement sources identified separately.
+  - generic: 1 explicit campaign-source reports
+  - generic: 0 project-linked only
+  - generic: 1 packet issue
+  - paragraph: Reports built on this campaign
+  - heading "Exercise only — shared campaign Engagement Handoff Packet needs packet attention" [level=3]
+  - paragraph: "Next action: open this report and regenerate the packet."
+  - paragraph: The report or one of its tracked source records changed after the latest packet was generated.
+  - 'link "Generated Refresh recommended Exercise only — shared campaign Engagement Handoff Packet Project: Exercise only — Covered project Project Status Packet · Campaign source linked This report explicitly includes this campaign as an engagement source section. The report or one of its tracked source records changed after the latest packet was generated. Next action: open this report and regenerate the packet. Updated 9/6/2026, 2:12:05 PM • Generated 9/6/2026, 2:12:04 PM"':
+    - /url: /reports/6fd42345-79ab-404e-84c4-172d5cdfa1df
+    - generic: Generated
+    - generic: Refresh recommended
+    - heading "Exercise only — shared campaign Engagement Handoff Packet" [level=3]
+    - paragraph: "Project: Exercise only — Covered project"
+    - paragraph: Project Status Packet · Campaign source linked
+    - paragraph: This report explicitly includes this campaign as an engagement source section.
+    - paragraph: The report or one of its tracked source records changed after the latest packet was generated.
+    - paragraph: "Next action: open this report and regenerate the packet."
+    - paragraph: Updated 9/6/2026, 2:12:05 PM • Generated 9/6/2026, 2:12:04 PM
+- region
+- button "Planner Agent":
+  - generic: Planner Agent
+- generic "Account":
+  - generic: handoff-20260906@openplan.test
+  - generic: owner
+  - button "Sign out"
+- button "Open Next.js Dev Tools":
+- alert: Exercise only — shared campaign · Engagement · OpenPlan

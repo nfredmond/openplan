@@ -1,0 +1,40 @@
+{
+  "baseline": "34e73c7f4f9189dd85931b324d1a058967006e5d",
+  "checkout": "/home/nathaniel/.local/state/openplan/handoff-development-2026-09-06",
+  "server": "127.0.0.1:3215",
+  "serverStamp": "8958985c0970 (baseline stamp only; changed live sources identified below)",
+  "sourceHashes": {
+    "openplan/src/app/(app)/engagement/[campaignId]/page.tsx": "f75edf0d9cc790280450d1f7ab4422a9bd96f126a6b46d7f3fbc1e1d4ac0044e",
+    "openplan/src/app/(app)/projects/[projectId]/_components/project-map-presence-panel.tsx": "bb93e7b74a1df625da50accfd3abe184e102cbab5dfe507f2cfd8b24700134ed",
+    "openplan/src/app/api/projects/[projectId]/export/geopackage/route.ts": "a3a6b32a12c0abe3176ee637705c9e975f907fef9fe7c992d5d6aa3d9af13ab6",
+    "openplan/src/components/engagement/campaign-handoff-readiness-section.tsx": "5fecd74c93f9bd456ae50066f23f9b4e61d845a7b289b5fdc0e85730c58f4ddb",
+    "openplan/src/components/engagement/campaign-linked-reports-section.tsx": "d2935402323ce13d58f3dff43781e1e0d383d46f431dfba2cd6de6bb31e3e77c",
+    "openplan/src/components/engagement/engagement-report-create-button.tsx": "b8131969f957b3b09747c8821a312c1f2a5b2efb84e3f12db0228d289b9661e2",
+    "openplan/src/lib/engagement/campaign-projects.ts": "fd32e65cf0fda53fb4f348b3a5867e4c26d356834e3a9ac41fc0a994fbe86f27",
+    "openplan/src/lib/project-evidence-bundles/engagement-export-privacy.ts": "b25eb96e1c6106463983741a671f303c00b90c5f8ca1e7c7abc0e5ce881def2b",
+    "openplan/src/lib/project-evidence-bundles/generated-records.ts": "b7271acf6a4afc1cc8ff26c0adb2ad363b0b9e527e35df32c843c42876e67ec2",
+    "openplan/src/test/engagement-campaign-detail-page.test.tsx": "0d6ac20e3428ee41ef019ac7afdf0928823ae21bb21203018f93933ce6738c84",
+    "openplan/src/test/engagement-report-create-button.test.tsx": "fee2edc05d125c3d1307b2814dfee1ae8b1f24ee8e01f58e76350bc595fa3a67",
+    "openplan/src/test/planner-copy-says-the-plain-thing.test.ts": "74a0a688fed88ffb69508a025ca6a0a1643ee25e01496b9bc0dc1b2f86bb92f3",
+    "openplan/src/test/project-geopackage-reachability.test.tsx": "bc82b1f62bbbdf0dad4ec5ec45c3006aab3b7221530c43c946bcd75f29cd83f0",
+    "openplan/src/test/project-geopackage-route.test.ts": "309bc1f610776c644ae559a25c990afda30e83e9f1a7734f8cdfc5bab13c6bf0",
+    "openplan/src/test/project-campaign-evidence-coverage.test.ts": "8775b1a637c6a92addf549465c7ddeba1ba8b6985a5f1079dc45eddbaa202b2a"
+  },
+  "artifacts": {
+    "covered-report-ed1d2773-ac37-4f02-a2f7-b36c24e1f2b8.pdf": "b2a5431a4ec600a4353bffe0b48dc208f7074d9c430932443d1a9774c5519f92",
+    "covered-report-eba3c213-7a8a-4ff0-9f8a-0b159f3bdfcf.html": "6704d7a874d5bb0ea94a9b7f1f317e846c367955afc71f46148dff69963324c6"
+  },
+  "frozenBundleSha256": "cec3547bf42f915a72526a86b744dd1e5d4efcdbc7839ac0d2924b86f70914ce",
+  "browserDownloadOutcome": "ERR_BLOCKED_BY_CLIENT for PDF redirect and retained ZIP; not bypassed",
+  "browserFixture": "Synthetic exercise only; no agency or participant data",
+  "screenshots": {
+    "shared-export-mobile.jpg": "04c9d63f14483b9f32fdd713cda39814bae2128b0251bb14789586d1a6603fc9",
+    "shared-mobile.jpg": "ac87b1c762ab350f2c3ef04d3ac6c29d799c3bac421af7d7ec0d9b2f724c4e52",
+    "shared-export-desktop.jpg": "31f08d290b783481c200807112b8556e20b9fca981ea3f58eca2051c11e73e42",
+    "shared-desktop.jpg": "9bc93ee1bfffb5f788d67245c59ea00c18dfeb42f3d7f50d172615aa43c49655"
+  },
+  "viewportRestored": {
+    "width": 2648,
+    "height": 1324
+  }
+}

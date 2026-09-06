@@ -22,6 +22,12 @@ vi.mock("next/link", () => ({
 
 import { EngagementReportCreateButton } from "@/components/engagement/engagement-report-create-button";
 
+const sharedCampaignProps = {
+  campaign: { id: "shared-campaign", title: "Shared listening", summary: null, status: "active", engagement_type: "comment_collection", project_id: "lead", created_at: "2026-09-01", updated_at: "2026-09-06" },
+  counts: { moderationQueue: { actionableCount: 0, readyForHandoffCount: 1 }, uncategorizedItems: 0, totalItems: 1 },
+  coveredProjects: [{ id: "lead", name: "Lead project" }, { id: "covered", name: "Covered project" }],
+};
+
 describe("EngagementReportCreateButton", () => {
   beforeEach(() => {
     pushMock.mockReset();
@@ -30,6 +36,30 @@ describe("EngagementReportCreateButton", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it("creates the report on the selected covered project while retaining the campaign's lead provenance", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ reportId: "report-covered" }), { status: 201 }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<EngagementReportCreateButton {...sharedCampaignProps} />);
+    fireEvent.change(screen.getByRole("combobox", { name: "Project receiving this report" }), { target: { value: "covered" } });
+    fireEvent.click(screen.getByRole("button", { name: "Create handoff report" }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1].body));
+    expect(body.projectId).toBe("covered");
+    expect(body.sections.find((section: { sectionKey: string }) => section.sectionKey === "engagement_summary").configJson).toMatchObject({
+      campaignId: "shared-campaign", provenance: { campaign: { id: "shared-campaign", projectId: "lead" } },
+    });
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith("/reports/report-covered"));
+  });
+
+  it("withholds creation when the selected project leaves the refreshed coverage set", () => {
+    const { rerender } = render(<EngagementReportCreateButton {...sharedCampaignProps} />);
+    fireEvent.change(screen.getByRole("combobox", { name: "Project receiving this report" }), { target: { value: "covered" } });
+    rerender(<EngagementReportCreateButton {...sharedCampaignProps} coveredProjects={[sharedCampaignProps.coveredProjects[0]]} />);
+    expect(screen.getByRole("button", { name: "Create handoff report" })).toBeDisabled();
+    expect(screen.getByRole("status")).toHaveTextContent("no longer covered");
   });
 
   it("shows the frozen handoff snapshot that will be captured", () => {

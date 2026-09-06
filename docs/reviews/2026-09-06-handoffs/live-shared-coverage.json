@@ -1,0 +1,53 @@
+{
+  "before": [
+    {
+      "id": "e59d2080-0228-4e45-b94e-ce86caec33a9",
+      "name": "Exercise only — Covered project"
+    },
+    {
+      "id": "b2dce98e-4d6f-46bd-a51f-d89f3ab626a3",
+      "name": "Exercise only — Lead project"
+    }
+  ],
+  "during": [
+    {
+      "id": "b2dce98e-4d6f-46bd-a51f-d89f3ab626a3",
+      "name": "Exercise only — Lead project"
+    },
+    {
+      "id": "9df97567-7e03-4c9f-af42-e0163e08b1be",
+      "name": "Exercise only — Unrelated project"
+    }
+  ],
+  "after": [
+    {
+      "id": "e59d2080-0228-4e45-b94e-ce86caec33a9",
+      "name": "Exercise only — Covered project"
+    },
+    {
+      "id": "b2dce98e-4d6f-46bd-a51f-d89f3ab626a3",
+      "name": "Exercise only — Lead project"
+    }
+  ],
+  "reports": [
+    {
+      "id": "0ca2cdad-fb96-42ea-82d0-2883f8f469a7",
+      "project_id": "b2dce98e-4d6f-46bd-a51f-d89f3ab626a3"
+    },
+    {
+      "id": "6fd42345-79ab-404e-84c4-172d5cdfa1df",
+      "project_id": "e59d2080-0228-4e45-b94e-ce86caec33a9"
+    }
+  ],
+  "sectionCampaigns": [
+    {
+      "reportId": "0ca2cdad-fb96-42ea-82d0-2883f8f469a7",
+      "campaignId": "94a893c9-d11e-4de9-a491-7263faa2da15"
+    },
+    {
+      "reportId": "6fd42345-79ab-404e-84c4-172d5cdfa1df",
+      "campaignId": "94a893c9-d11e-4de9-a491-7263faa2da15"
+    }
+  ],
+  "duplicateReadRetries": "same counts without duplicate geometry"
+}

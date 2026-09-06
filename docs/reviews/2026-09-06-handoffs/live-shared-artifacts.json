@@ -1,0 +1,127 @@
+[
+  {
+    "role": "owner",
+    "operation": "report-download",
+    "kind": "pdf",
+    "status": 200
+  },
+  {
+    "role": "owner",
+    "operation": "report-download",
+    "kind": "html",
+    "status": 200
+  },
+  {
+    "role": "owner",
+    "operation": "retained-bundle-download",
+    "status": 200
+  },
+  {
+    "role": "owner",
+    "operation": "direct-geopackage",
+    "projectId": "b2dce98e-4d6f-46bd-a51f-d89f3ab626a3",
+    "status": 200,
+    "rows": [
+      {
+        "engagement_item_id": "926146fa-a6b8-402c-bac2-76af1aa9f854",
+        "source_type": "public"
+      }
+    ]
+  },
+  {
+    "role": "owner",
+    "operation": "direct-geopackage",
+    "projectId": "e59d2080-0228-4e45-b94e-ce86caec33a9",
+    "status": 200,
+    "rows": [
+      {
+        "engagement_item_id": "926146fa-a6b8-402c-bac2-76af1aa9f854",
+        "source_type": "public"
+      }
+    ]
+  },
+  {
+    "role": "owner",
+    "operation": "direct-geopackage",
+    "projectId": "9df97567-7e03-4c9f-af42-e0163e08b1be",
+    "status": 200,
+    "rows": []
+  },
+  {
+    "role": "member",
+    "operation": "report-download",
+    "kind": "pdf",
+    "status": 200
+  },
+  {
+    "role": "member",
+    "operation": "report-download",
+    "kind": "html",
+    "status": 200
+  },
+  {
+    "role": "member",
+    "operation": "retained-bundle-download",
+    "status": 200
+  },
+  {
+    "role": "member",
+    "operation": "direct-geopackage",
+    "projectId": "b2dce98e-4d6f-46bd-a51f-d89f3ab626a3",
+    "status": 200,
+    "rows": [
+      {
+        "engagement_item_id": "926146fa-a6b8-402c-bac2-76af1aa9f854",
+        "source_type": "public"
+      }
+    ]
+  },
+  {
+    "role": "member",
+    "operation": "direct-geopackage",
+    "projectId": "e59d2080-0228-4e45-b94e-ce86caec33a9",
+    "status": 200,
+    "rows": [
+      {
+        "engagement_item_id": "926146fa-a6b8-402c-bac2-76af1aa9f854",
+        "source_type": "public"
+      }
+    ]
+  },
+  {
+    "role": "member",
+    "operation": "direct-geopackage",
+    "projectId": "9df97567-7e03-4c9f-af42-e0163e08b1be",
+    "status": 200,
+    "rows": []
+  },
+  {
+    "role": "outsider",
+    "operation": "report-download",
+    "kind": "pdf",
+    "status": 404
+  },
+  {
+    "role": "outsider",
+    "operation": "retained-bundle-download",
+    "status": 404
+  },
+  {
+    "role": "outsider",
+    "operation": "direct-geopackage",
+    "projectId": "b2dce98e-4d6f-46bd-a51f-d89f3ab626a3",
+    "status": 404
+  },
+  {
+    "role": "outsider",
+    "operation": "direct-geopackage",
+    "projectId": "e59d2080-0228-4e45-b94e-ce86caec33a9",
+    "status": 404
+  },
+  {
+    "role": "outsider",
+    "operation": "direct-geopackage",
+    "projectId": "9df97567-7e03-4c9f-af42-e0163e08b1be",
+    "status": 404
+  }
+]

@@ -43,7 +43,7 @@ readiness from an old setup guide.
 
 The [core requirements ledger](product/CORE_REQUIREMENTS_LEDGER.md) prevents restored requirements from disappearing. It maps full OWP, contract budgets, prior-RTP updates, capital/tax/grant administration, procurement, engagement, aerial work, agent providers, hosted trials and appearance to the single roadmap. The [workflow handoffs](product/WORKFLOW_HANDOFFS.md) identify the owning record and receiving role. These are requirements and gap assessments, not claims that every workflow exists.
 
-Use the [current modeling status](modeling/STATUS_AND_VALIDATION.md) before interpreting old model metrics. The [September 6 consolidation verification](reviews/2026-09-06-consolidation/VERIFICATION.md) separates implemented maintenance from deferred redesign. The [preserved research packet](reviews/2026-09-04-pre-handoff/README.md) contains the full LAPM chapter review, selected other-state/federal manuals, competitor/reuse research and explicit reading limits.
+Use the [current modeling status](modeling/STATUS_AND_VALIDATION.md) before interpreting old model metrics. The [September 6 shared-campaign handoff](reviews/2026-09-06-handoffs/SHARED_CAMPAIGNS.md) separates coverage/privacy repairs from incomplete browser file delivery. The [September 6 consolidation verification](reviews/2026-09-06-consolidation/VERIFICATION.md) separates implemented maintenance from deferred redesign. The [preserved research packet](reviews/2026-09-04-pre-handoff/README.md) contains the full LAPM chapter review, selected other-state/federal manuals, competitor/reuse research and explicit reading limits.
 
 ## Planning and engineering references
 

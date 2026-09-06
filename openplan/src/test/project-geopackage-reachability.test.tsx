@@ -40,7 +40,9 @@ describe("project GeoPackage reachability", () => {
     expect(link).toHaveAttribute("href", `/api/projects/${projectId}/export/geopackage`);
     expect(screen.getByText(/names any missing or invalid map shapes/i)).toBeVisible();
     expect(screen.getByText(/analysis evidence are not included yet/i)).toBeVisible();
-    expect(screen.getByRole("heading", { name: "Layers in this package" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Core project layers" })).toBeVisible();
+    expect(screen.getByText(/Approved public engagement locations from every linked outreach effort are included automatically/)).toBeVisible();
+    expect(screen.getByText(/private notes and pending comments are excluded/)).toBeVisible();
     expect(screen.getByText("project_area · Polygon or MultiPolygon · 1 feature included")).toBeVisible();
     expect(screen.getByText("project_location · Point · 1 feature included")).toBeVisible();
     expect(screen.getByText("project_corridors · LineString · 1 feature included")).toBeVisible();

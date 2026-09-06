@@ -89,7 +89,10 @@ const itemsSelectMock = vi.fn(() => ({ eq: itemsEqMock }));
 
 const reportsOrderMock = vi.fn();
 const reportsEqMock = vi.fn(() => ({ order: reportsOrderMock }));
-const reportsSelectMock = vi.fn(() => ({ eq: reportsEqMock }));
+const reportsInMock = vi.fn(() => ({ eq: reportsEqMock }));
+const reportsSelectMock = vi.fn(() => ({ eq: reportsEqMock, in: reportsInMock }));
+let coverageRows: Array<{ project_id: string; projects: { id: string; name: string } }> = [];
+let coverageError: { message: string } | null = null;
 
 const reportSectionsInMock = vi.fn();
 const reportSectionsSelectMock = vi.fn(() => ({ in: reportSectionsInMock }));
@@ -235,6 +238,17 @@ function flexibleChain(result: () => { data: unknown[]; error: { message: string
 }
 
 const fromMock = vi.fn((table: string) => {
+  if (table === "engagement_campaign_projects") {
+    return { select: (columns: string) => {
+      expect(columns).toBe("project_id, projects!inner(id, name)");
+      const chain = {
+        eq: () => chain,
+        order: () => chain,
+        range: async (from: number, to: number) => ({ data: coverageError ? null : coverageRows.slice(from, to + 1), error: coverageError }),
+      };
+      return chain;
+    } };
+  }
   if (table === "workspace_members") {
     return { select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: membershipMaybeSingleMock }) }) }) };
   }
@@ -356,9 +370,10 @@ vi.mock("@/components/engagement/engagement-campaign-controls", () => ({
 }));
 
 vi.mock("@/components/engagement/engagement-report-create-button", () => ({
-  EngagementReportCreateButton: ({ existingReportGuidance }: { existingReportGuidance?: { recommendedReportTitle?: string } | null }) => (
+  EngagementReportCreateButton: ({ existingReportGuidance, coveredProjects }: { existingReportGuidance?: { recommendedReportTitle?: string } | null; coveredProjects?: Array<{ id: string; name: string }> }) => (
     <div data-testid="engagement-report-create-button">
       {existingReportGuidance?.recommendedReportTitle ?? "no-guidance"}
+      <span data-testid="report-targets">{JSON.stringify(coveredProjects)}</span>
     </div>
   ),
 }));
@@ -418,7 +433,7 @@ vi.mock("@/components/engagement/location-display-map", () => ({
 
 import EngagementCampaignDetailPage from "@/app/(app)/engagement/[campaignId]/page";
 
-async function renderPage(searchParams?: { created?: string }) {
+async function renderPage(searchParams?: { created?: string; tab?: string }) {
   render(
     await EngagementCampaignDetailPage({
       params: Promise.resolve({ campaignId: "campaign-1" }),
@@ -428,10 +443,29 @@ async function renderPage(searchParams?: { created?: string }) {
 }
 
 describe("EngagementCampaignDetailPage", () => {
+  it("offers all covered project targets and reads reports across their coverage", async () => {
+    coverageRows.push({ project_id: "project-2", projects: { id: "project-2", name: "Second covered project" } });
+    await renderPage({ tab: "record" });
+    expect(JSON.parse(screen.getByTestId("report-targets").textContent ?? "null")).toEqual([
+      { id: "project-1", name: "Downtown Mobility Plan" },
+      { id: "project-2", name: "Second covered project" },
+    ]);
+    expect(reportsInMock).toHaveBeenCalledWith("project_id", ["project-1", "project-2"]);
+  });
+
+  it("withholds report creation and discloses unreadable coverage", async () => {
+    coverageError = { message: "connection lost" };
+    await renderPage({ tab: "record" });
+    expect(screen.queryByTestId("engagement-report-create-button")).toBeNull();
+    expect(screen.getByText(/Packet creation is unavailable until this campaign's covered projects/)).toBeVisible();
+    expect(reportsInMock).not.toHaveBeenCalled();
+  });
   beforeEach(() => {
     // The paging fake caches its fixture per request; clear it per test.
     itemsPaging.reset();
     vi.clearAllMocks();
+    coverageRows = [{ project_id: "project-1", projects: { id: "project-1", name: "Downtown Mobility Plan" } }];
+    coverageError = null;
 
     contextLayerRows = [];
     contextLayerReadError = null;

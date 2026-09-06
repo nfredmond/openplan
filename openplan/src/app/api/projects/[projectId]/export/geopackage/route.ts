@@ -5,6 +5,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadProjectAccess } from "@/lib/programs/api";
 import { CORRIDOR_COLUMNS, type ProjectCorridorRow } from "@/lib/cartographic/project-corridor-record";
 import { PROJECT_PLACE_COLUMNS } from "@/lib/projects/project-place";
+import { loadPublishableProjectEngagementGeometry } from "@/lib/project-evidence-bundles/engagement-export-privacy";
 import {
   buildProjectGeoPackage,
   projectGeoPackageFilename,
@@ -99,11 +100,14 @@ export async function GET(request: NextRequest, context: { params: Promise<{ pro
     }
 
     const project = projectRead.data as unknown as ProjectGeoPackageProject;
+    const engagement = await loadPublishableProjectEngagementGeometry(supabase, access.project);
+    if (engagement.error) return NextResponse.json({ error: engagement.error.message }, { status: 503 });
     const generatedAt = new Date();
     const artifact = buildProjectGeoPackage({
       project,
       corridors: (corridorRead.data ?? []) as ProjectCorridorRow[],
       generatedAt,
+      engagementGeometries: engagement.data ?? [],
     });
     const filename = projectGeoPackageFilename(project.name, generatedAt);
 

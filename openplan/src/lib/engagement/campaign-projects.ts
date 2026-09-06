@@ -1,4 +1,6 @@
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
+import { readEveryPage } from "@/lib/supabase/paged-read";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
  * One campaign, several projects (migration 20260810000003).
@@ -10,10 +12,9 @@ import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
  * module is the one place the set arithmetic lives, so the route and its tests
  * cannot disagree about what "the full set" means.
  *
- * DELIBERATELY UNCHANGED TONIGHT: RTP comment-response linkage
- * (src/lib/rtp/comment-response.ts) and report linkage keep reading the LEAD
- * column only. Their lead-only reads are a recorded decision, not an
- * oversight; widening them is its own change.
+ * RTP comment-response linkage retains its own lead-project semantics.
+ * Project evidence exports use the full coverage set through the paged reader
+ * below; they refuse incomplete coverage instead of falling back silently.
  */
 
 /** The most projects one campaign may cover in a single request. */
@@ -189,4 +190,92 @@ export async function loadCampaignIdsCoveringProject(
     pendingSchema: false,
     errorMessage: null,
   };
+}
+
+export const PROJECT_CAMPAIGN_EVIDENCE_SELECT =
+  "id, status, share_token, allow_public_submissions, submissions_closed_at, updated_at";
+
+/** Read report awareness only after the campaign's project coverage is known. */
+export async function loadCoveredProjectReports(
+  supabaseValue: unknown,
+  workspaceId: string,
+  coverage: Awaited<ReturnType<typeof loadCampaignReportProjects>>,
+) {
+  if (coverage.error || coverage.data.length === 0) return { data: [], error: coverage.error };
+  return (supabaseValue as SupabaseClient).from("reports")
+    .select("id, project_id, title, report_type, status, generated_at, updated_at, latest_artifact_kind")
+    .in("project_id", coverage.data.map((project) => project.id))
+    .eq("workspace_id", workspaceId).order("updated_at", { ascending: false });
+}
+
+/** Read the full campaign set for a project export, retaining caller RLS. */
+export async function loadProjectCampaignsForEvidence(
+  supabaseValue: unknown,
+  project: { id: string; workspace_id: string },
+): Promise<{ data: Record<string, unknown>[] | null; error: { message: string } | null }> {
+  const client = supabaseValue as SupabaseClient;
+  const [lead, linked] = await Promise.all([
+    readEveryPage<Record<string, unknown>>((from, to) => client
+      .from("engagement_campaigns")
+      .select(PROJECT_CAMPAIGN_EVIDENCE_SELECT)
+      .eq("workspace_id", project.workspace_id)
+      .eq("project_id", project.id)
+      .order("id", { ascending: true }).range(from, to)),
+    readEveryPage<Record<string, unknown>>((from, to) => client
+      .from("engagement_campaign_projects")
+      .select(`campaign_id, engagement_campaigns!inner(${PROJECT_CAMPAIGN_EVIDENCE_SELECT})`)
+      .eq("workspace_id", project.workspace_id)
+      .eq("project_id", project.id)
+      .eq("engagement_campaigns.workspace_id", project.workspace_id)
+      .order("campaign_id", { ascending: true }).range(from, to)),
+  ]);
+  if (!lead.complete || !linked.complete) {
+    return { data: null, error: { message: "The complete project campaign coverage could not be read." } };
+  }
+  const campaigns = new Map<string, Record<string, unknown>>();
+  for (const row of [...lead.rows, ...linked.rows.map((link) => link.engagement_campaigns)]) {
+    if (!row || typeof row !== "object" || Array.isArray(row) || typeof (row as Record<string, unknown>).id !== "string") {
+      return { data: null, error: { message: "A covered campaign record could not be resolved." } };
+    }
+    const campaign = row as Record<string, unknown>;
+    const prior = campaigns.get(campaign.id as string);
+    // A campaign changed between the lead and coverage reads. Do not choose
+    // one publication state arbitrarily for an external export.
+    if (prior && PROJECT_CAMPAIGN_EVIDENCE_SELECT.split(",").some((field) => prior[field.trim()] !== campaign[field.trim()])) {
+      return { data: null, error: { message: "Campaign coverage changed during the read; retry the export." } };
+    }
+    campaigns.set(campaign.id as string, campaign);
+  }
+  return { data: [...campaigns.values()], error: null };
+}
+
+/** Permitted report targets for a campaign, with the complete coverage read. */
+export async function loadCampaignReportProjects(
+  supabaseValue: unknown,
+  campaign: { id: string; workspace_id: string; project_id: string | null },
+): Promise<{ data: Array<{ id: string; name: string }>; error: { message: string } | null }> {
+  const client = supabaseValue as SupabaseClient;
+  const linked = await readEveryPage<Record<string, unknown>>((from, to) => client
+    .from("engagement_campaign_projects")
+    .select("project_id, projects!inner(id, name)")
+    .eq("workspace_id", campaign.workspace_id)
+    .eq("campaign_id", campaign.id)
+    .eq("projects.workspace_id", campaign.workspace_id)
+    .order("project_id", { ascending: true }).range(from, to));
+  if (!linked.complete) return { data: [], error: { message: "The campaign's covered projects could not be read." } };
+  const projects = new Map<string, { id: string; name: string }>();
+  for (const row of linked.rows) {
+    const project = row.projects as { id?: unknown; name?: unknown } | null;
+    if (!project || typeof project.id !== "string" || typeof project.name !== "string") {
+      return { data: [], error: { message: "A covered project could not be resolved." } };
+    }
+    projects.set(project.id, { id: project.id, name: project.name });
+  }
+  if (campaign.project_id && !projects.has(campaign.project_id)) {
+    const lead = await client.from("projects").select("id, name")
+      .eq("id", campaign.project_id).eq("workspace_id", campaign.workspace_id).maybeSingle();
+    if (lead.error || !lead.data) return { data: [], error: { message: "The campaign's lead project could not be read." } };
+    projects.set(lead.data.id, lead.data);
+  }
+  return { data: [...projects.values()].sort((a, b) => a.name.localeCompare(b.name)), error: null };
 }

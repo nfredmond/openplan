@@ -67,6 +67,8 @@ export function ProjectMapPresencePanel({
           Take the stored project area, site marker, and corridors into QGIS or another GIS. The
           package includes an EPSG:4326 manifest that names any missing or invalid map shapes. Linked
           datasets, documents, and analysis evidence are not included yet.
+          {" "}Approved public engagement locations from every linked outreach effort are included automatically;
+          private notes and pending comments are excluded. Inspect the downloaded layer summary for their counts.
         </p>
         <Button asChild variant="outline" size="sm">
           <a href={`/api/projects/${projectId}/export/geopackage`} download>
@@ -77,7 +79,7 @@ export function ProjectMapPresencePanel({
       </div>
 
       <div className="mt-3 rounded-lg border border-border/70 bg-background px-4 py-3">
-        <h3 className="text-sm font-semibold text-foreground">Layers in this package</h3>
+        <h3 className="text-sm font-semibold text-foreground">Core project layers</h3>
         <p className="mt-1 text-xs text-muted-foreground">Coordinate reference system: {packageInventory.crs} (WGS 84 longitude/latitude)</p>
         <ul className="mt-2 space-y-1 text-sm text-foreground">
           {packageInventory.layers.map((layer) => {

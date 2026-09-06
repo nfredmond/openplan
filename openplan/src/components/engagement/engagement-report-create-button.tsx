@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { buildEngagementHandoffProvenance } from "@/lib/reports/engagement";
 
 type EngagementReportCreateButtonProps = {
+  coveredProjects?: Array<{ id: string; name: string }>;
   campaign: {
     id: string;
     title: string;
@@ -80,18 +81,23 @@ function buildSnapshotPreview({
 
 export function EngagementReportCreateButton({
   campaign,
+  coveredProjects,
   counts,
   existingReportGuidance = null,
 }: EngagementReportCreateButtonProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const projects = coveredProjects ?? (campaign.project_id ? [{ id: campaign.project_id, name: "Lead project" }] : []);
+  const [projectId, setProjectId] = useState(campaign.project_id ?? projects[0]?.id ?? "");
+  const invalidTarget = Boolean(projectId) && !projects.some((project) => project.id === projectId);
 
   async function handleCreateReport() {
     setError(null);
     setIsSubmitting(true);
 
     try {
+      if (invalidTarget) throw new Error("Choose a project currently covered by this campaign.");
       const handoffProvenance = buildEngagementHandoffProvenance({
         capturedAt: new Date().toISOString(),
         campaign: {
@@ -115,11 +121,11 @@ export function EngagementReportCreateButton({
       // A campaign linked to a project produces a project-targeted packet;
       // a standalone campaign targets the campaign itself so its comments can
       // still become a packet without a placeholder project.
-      const target = campaign.project_id
-        ? { projectId: campaign.project_id }
+      const target = projectId
+        ? { projectId }
         : { engagementCampaignId: campaign.id };
       const sections = [
-        ...(campaign.project_id
+        ...(projectId
           ? [
               {
                 sectionKey: "project_overview",
@@ -131,7 +137,7 @@ export function EngagementReportCreateButton({
           : []),
         {
           sectionKey: "status_snapshot",
-          title: campaign.project_id ? "Campaign and project snapshot" : "Campaign snapshot",
+          title: projectId ? "Campaign and project snapshot" : "Campaign snapshot",
           enabled: true,
           sortOrder: 1,
           configJson: {
@@ -194,7 +200,7 @@ export function EngagementReportCreateButton({
       <div className="rounded-[0.5rem] border border-border/60 bg-muted/35 p-3 text-xs text-muted-foreground">
         <p className="font-semibold text-foreground">What this creates</p>
         <p className="mt-1">
-          {campaign.project_id
+          {projectId
             ? "A project status packet with a frozen engagement handoff snapshot tied to this campaign."
             : "A campaign-targeted status packet with a frozen engagement handoff snapshot. This campaign has no linked project, so the report targets the campaign directly."}
         </p>
@@ -206,7 +212,7 @@ export function EngagementReportCreateButton({
             uncategorizedItems: counts.uncategorizedItems,
           })}
         </p>
-        {existingReportGuidance ? (
+        {existingReportGuidance && projectId === campaign.project_id ? (
           <div
             className={`mt-3 rounded-xl border px-3 py-2 ${
               existingReportGuidance.packetAttentionCount > 0
@@ -234,7 +240,17 @@ export function EngagementReportCreateButton({
           </div>
         ) : null}
       </div>
-      <Button type="button" variant="outline" onClick={() => void handleCreateReport()} disabled={isSubmitting}>
+      {projects.length > 1 ? (
+        <label className="grid gap-1 text-sm">
+          Project receiving this report
+          <select className="min-w-0 max-w-full rounded-md border border-border bg-background p-2" value={projectId} onChange={(event) => setProjectId(event.target.value)} disabled={isSubmitting}>
+            {invalidTarget ? <option value={projectId}>Previously selected project is no longer covered</option> : null}
+            {projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
+          </select>
+        </label>
+      ) : null}
+      {invalidTarget ? <p role="status">The selected project is no longer covered. Refresh this campaign before creating the report.</p> : null}
+      <Button type="button" variant="outline" onClick={() => void handleCreateReport()} disabled={isSubmitting || invalidTarget}>
         {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileStack className="h-4 w-4" />}
         Create handoff report
       </Button>

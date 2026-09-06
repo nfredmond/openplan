@@ -1,0 +1,22 @@
+[
+  {
+    "projectId": "b2dce98e-4d6f-46bd-a51f-d89f3ab626a3",
+    "name": "Exercise only — Lead project",
+    "rows": [
+      {
+        "engagement_item_id": "926146fa-a6b8-402c-bac2-76af1aa9f854",
+        "source_type": "public"
+      }
+    ]
+  },
+  {
+    "projectId": "e59d2080-0228-4e45-b94e-ce86caec33a9",
+    "name": "Exercise only — Covered project",
+    "rows": []
+  },
+  {
+    "projectId": "9df97567-7e03-4c9f-af42-e0163e08b1be",
+    "name": "Exercise only — Unrelated project",
+    "rows": []
+  }
+]

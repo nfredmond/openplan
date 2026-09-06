@@ -1,0 +1,116 @@
+[
+  {
+    "name": "harmless-comment",
+    "exit": 0,
+    "expected": "survived",
+    "accepted": true
+  },
+  {
+    "name": "drop-shared-coverage",
+    "exit": 1,
+    "expected": "killed by assertion",
+    "accepted": true
+  },
+  {
+    "name": "ignore-coverage-failure",
+    "exit": 1,
+    "expected": "killed by assertion",
+    "accepted": true
+  },
+  {
+    "name": "choose-conflicting-publication",
+    "exit": 1,
+    "expected": "killed by assertion",
+    "accepted": true
+  },
+  {
+    "name": "omit-publication-projection",
+    "exit": 1,
+    "expected": "killed by assertion",
+    "accepted": true
+  },
+  {
+    "name": "drop-workspace-scope",
+    "exit": 1,
+    "expected": "killed by assertion",
+    "accepted": true
+  },
+  {
+    "name": "short-page-ends-read",
+    "exit": 1,
+    "expected": "killed by assertion",
+    "accepted": true
+  },
+  {
+    "name": "include-unpublished-campaign",
+    "exit": 1,
+    "expected": "killed by assertion",
+    "accepted": true
+  },
+  {
+    "name": "include-private-comments",
+    "exit": 1,
+    "expected": "killed by assertion",
+    "accepted": true
+  },
+  {
+    "name": "ignore-partial-comment-read",
+    "exit": 1,
+    "expected": "killed by assertion",
+    "accepted": true
+  },
+  {
+    "name": "invent-missing-date",
+    "exit": 1,
+    "expected": "killed by assertion",
+    "accepted": true
+  },
+  {
+    "name": "drop-report-target-options",
+    "exit": 1,
+    "expected": "killed by assertion",
+    "accepted": true
+  },
+  {
+    "name": "hide-coverage-failure",
+    "exit": 1,
+    "expected": "killed by assertion",
+    "accepted": true
+  },
+  {
+    "name": "report-to-lead-instead",
+    "exit": 1,
+    "expected": "killed by assertion",
+    "accepted": true
+  },
+  {
+    "name": "allow-stale-target",
+    "exit": 1,
+    "expected": "killed by assertion",
+    "accepted": true
+  },
+  {
+    "name": "drop-direct-geometry",
+    "exit": 1,
+    "expected": "killed by assertion",
+    "accepted": true
+  },
+  {
+    "name": "ignore-direct-read-failure",
+    "exit": 1,
+    "expected": "killed by assertion",
+    "accepted": true
+  },
+  {
+    "name": "hide-direct-public-geometry",
+    "exit": 1,
+    "expected": "killed by assertion",
+    "accepted": true
+  },
+  {
+    "name": "restore-old-copy-baseline",
+    "exit": 1,
+    "expected": "killed by assertion",
+    "accepted": true
+  }
+]

@@ -4,9 +4,13 @@ import { NextRequest } from "next/server";
 const createClientMock = vi.fn();
 const loadProjectAccessMock = vi.fn();
 const buildProjectGeoPackageMock = vi.fn();
+const loadEngagementMock = vi.fn();
 const audit = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 
 vi.mock("@/lib/supabase/server", () => ({ createClient: () => createClientMock() }));
+vi.mock("@/lib/project-evidence-bundles/engagement-export-privacy", () => ({
+  loadPublishableProjectEngagementGeometry: (...args: unknown[]) => loadEngagementMock(...args),
+}));
 vi.mock("@/lib/programs/api", () => ({
   loadProjectAccess: (...args: unknown[]) => loadProjectAccessMock(...args),
 }));
@@ -63,6 +67,7 @@ const params = { params: Promise.resolve({ projectId: PROJECT_ID }) };
 
 beforeEach(() => {
   vi.clearAllMocks();
+  loadEngagementMock.mockResolvedValue({ data: [], error: null });
   loadProjectAccessMock.mockResolvedValue({
     project: { id: PROJECT_ID, workspace_id: WORKSPACE_ID, name: "Main Street" },
     membership: { workspace_id: WORKSPACE_ID, role: "member" },
@@ -76,6 +81,22 @@ beforeEach(() => {
 });
 
 describe("GET /api/projects/[projectId]/export/geopackage", () => {
+  it("uses the shared privacy-filtered geometry for the requested project's export", async () => {
+    const fake = fakeClient();
+    createClientMock.mockResolvedValue(fake.client);
+    const geometry = [{ id: "approved-public-item", longitude: 0, latitude: 0, geometry: null, sourceType: "public", createdAt: "2026-09-06" }];
+    loadEngagementMock.mockResolvedValueOnce({ data: geometry, error: null });
+    expect((await GET(request(), params)).status).toBe(200);
+    expect(loadEngagementMock).toHaveBeenCalledWith(fake.client, expect.objectContaining({ id: PROJECT_ID, workspace_id: WORKSPACE_ID }));
+    expect(buildProjectGeoPackageMock).toHaveBeenCalledWith(expect.objectContaining({ engagementGeometries: geometry }));
+  });
+
+  it("refuses a file when campaign coverage or geometry is incomplete", async () => {
+    createClientMock.mockResolvedValue(fakeClient().client);
+    loadEngagementMock.mockResolvedValueOnce({ data: null, error: { message: "Coverage unavailable" } });
+    expect((await GET(request(), params)).status).toBe(503);
+    expect(buildProjectGeoPackageMock).not.toHaveBeenCalled();
+  });
   it("rejects a malformed project id before opening the database", async () => {
     const response = await GET(
       new NextRequest("http://localhost/api/projects/not-a-project/export/geopackage"),

@@ -16,6 +16,7 @@ import { EngagementBulkModeration } from "@/components/engagement/engagement-bul
 import { CampaignTranslationsPanel } from "@/components/engagement/campaign-translations-panel";
 import { CampaignLinkedReportsSection } from "@/components/engagement/campaign-linked-reports-section";
 import { CampaignHandoffReadinessSection } from "@/components/engagement/campaign-handoff-readiness-section";
+import { loadCampaignReportProjects, loadCoveredProjectReports } from "@/lib/engagement/campaign-projects";
 import { CampaignAccessibilityEditor } from "@/components/engagement/campaign-accessibility-editor";
 import { CommentImportPanel } from "@/components/engagement/comment-import-panel";
 import {
@@ -207,6 +208,8 @@ export default async function EngagementCampaignDetailPage({
 
   const reads = new ReadFailureLog();
 
+  const reportProjects = await loadCampaignReportProjects(supabase, campaign);
+  const projectCoverageUnreadable = reads.check("the projects this campaign covers", reportProjects);
   const [projectResult, categoriesResult, itemsResult, projectsResult, reportsResult, rtpCycleResult, rtpChapterResult, publicSlugResult, crashCorroborationResult] = await Promise.all([
     campaign.project_id
       ? supabase
@@ -229,13 +232,7 @@ export default async function EngagementCampaignDetailPage({
       .eq("campaign_id", campaign.id)
       .order("updated_at", { ascending: false }),
     supabase.from("projects").select("id, name").eq("workspace_id", campaign.workspace_id).order("updated_at", { ascending: false }),
-    campaign.project_id
-      ? supabase
-          .from("reports")
-          .select("id, project_id, title, report_type, status, generated_at, updated_at, latest_artifact_kind")
-          .eq("project_id", campaign.project_id)
-          .order("updated_at", { ascending: false })
-      : Promise.resolve({ data: [] as ReportRow[], error: null }),
+    loadCoveredProjectReports(supabase, campaign.workspace_id, reportProjects),
     // The RTP cycle (and chapter, when one is targeted) this campaign feeds.
     // Until the console read these, the attachment was set only from the RTP
     // side and was invisible here — a moderator classifying plan comments had
@@ -365,6 +362,7 @@ export default async function EngagementCampaignDetailPage({
   const campaignLinkedReports = reportRecords
     .map((report) => ({
       ...report,
+      projectName: reportProjects.data.find((project) => project.id === report.project_id)?.name ?? null,
       isExplicitCampaignSource: reportIdsExplicitlyLinkedToCampaign.has(report.id),
       packetFreshness: getReportPacketFreshness({
         latestArtifactKind: report.latest_artifact_kind,
@@ -1401,6 +1399,8 @@ export default async function EngagementCampaignDetailPage({
           commentMatrixPreview={commentMatrixPreview}
           campaign={campaign}
           project={project}
+          coveredProjects={reportProjects.data}
+          projectCoverageUnreadable={projectCoverageUnreadable}
           projectUnreadable={projectUnreadable}
           readsIncomplete={projectUnreadable || categoriesUnreadable || itemsUnreadable}
           itemsUnreadable={itemsUnreadable}
@@ -1413,9 +1413,9 @@ export default async function EngagementCampaignDetailPage({
 
         <CampaignLinkedReportsSection
           projectUnreadable={projectUnreadable}
-          reportsUnreadable={reportsUnreadable}
+          reportsUnreadable={reportsUnreadable || projectCoverageUnreadable}
           reportSectionLinksUnreadable={reportSectionLinksUnreadable}
-          projectLinked={Boolean(project)}
+          projectLinked={reportProjects.data.length > 0}
           reports={campaignLinkedReports}
           explicitlyLinkedReportCount={explicitlyLinkedReportCount}
           projectOnlyReportCount={projectOnlyReportCount}

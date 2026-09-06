@@ -4,6 +4,10 @@ import {
   type EngagementCommentMatrixItemLike,
 } from "@/lib/engagement/comment-matrix";
 import { getPublicPortalState } from "@/lib/engagement/public-portal";
+import { loadProjectCampaignsForEvidence } from "@/lib/engagement/campaign-projects";
+import { readEveryPage } from "@/lib/supabase/paged-read";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { ProjectGeoPackageEngagementGeometry } from "@/lib/projects/project-geopackage";
 
 function engagementItemForPrivacy(row: Record<string, unknown>): EngagementCommentMatrixItemLike {
   const metadata = row.metadata_json;
@@ -40,4 +44,36 @@ export function isPublicProjectEngagementCampaign(row: Record<string, unknown>):
     allow_public_submissions: typeof row.allow_public_submissions === "boolean" ? row.allow_public_submissions : null,
     submissions_closed_at: typeof row.submissions_closed_at === "string" ? row.submissions_closed_at : null,
   }).isPubliclyReachable;
+}
+
+/** Share complete, publication-filtered geometry between direct and retained project exports. */
+export async function loadPublishableProjectEngagementGeometry(
+  supabaseValue: unknown,
+  project: { id: string; workspace_id: string },
+): Promise<{ data: ProjectGeoPackageEngagementGeometry[] | null; error: { message: string } | null }> {
+  const client = supabaseValue as SupabaseClient;
+  const campaigns = await loadProjectCampaignsForEvidence(client, project);
+  if (campaigns.error) return { data: null, error: campaigns.error };
+  const campaignIds = (campaigns.data ?? []).filter(isPublicProjectEngagementCampaign).map((row) => String(row.id));
+  const items = new Map<string, ProjectGeoPackageEngagementGeometry>();
+  for (let start = 0; start < campaignIds.length; start += 200) {
+    const batch = campaignIds.slice(start, start + 200);
+    const read = await readEveryPage<Record<string, unknown>>((from, to) => client
+      .from("engagement_items")
+      .select("id, campaign_id, category_id, title, body, submitted_by, status, source_type, metadata_json, moderation_notes, geometry, longitude, latitude, created_at, updated_at")
+      .in("campaign_id", batch).eq("status", "approved")
+      .order("id", { ascending: true }).range(from, to));
+    if (!read.complete) return { data: null, error: { message: "Publishable engagement geometry could not be fully read." } };
+    for (const row of read.rows.filter(isPublishableProjectEngagementGeometry)) {
+      if (typeof row.created_at !== "string") return { data: null, error: { message: "An engagement record is missing its recorded date." } };
+      items.set(String(row.id), {
+        id: String(row.id), geometry: row.geometry,
+        longitude: typeof row.longitude === "number" ? row.longitude : null,
+        latitude: typeof row.latitude === "number" ? row.latitude : null,
+        sourceType: typeof row.source_type === "string" ? row.source_type : "unknown",
+        createdAt: row.created_at,
+      });
+    }
+  }
+  return { data: [...items.values()], error: null };
 }

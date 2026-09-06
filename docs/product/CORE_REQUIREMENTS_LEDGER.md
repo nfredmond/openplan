@@ -217,3 +217,7 @@ Current guidance and explicit reading limits are preserved in `OWP_ADMINISTRATIO
 ## September 6 undated implementation handoff
 
 The existing M1/M2 land-use implementation and daily-work requirements now have a bounded [verified handoff](../reviews/2026-09-06-handoffs/VERIFICATION.md): open assigned actions with no date reach My Work without a fabricated deadline. Reassignment/completion and outsider denial were exercised against local Supabase. The per-source cap remains disclosed; amendment-version continuity, shared campaign export/report coverage and OWP preparation remain open. This does not complete any whole practice-family or organization outcome.
+
+## September 6 shared engagement handoff
+
+CORE-ENG-01/02 and the existing evidence-handoff requirements have a bounded [shared-project repair](../reviews/2026-09-06-handoffs/SHARED_CAMPAIGNS.md). Report creation offers covered projects; retained and direct geographic exports share complete coverage and privacy filtering. Stored two-project reports, real role isolation, coverage changes, artifact contents and desktop/390px controls were exercised. Browser PDF/ZIP delivery was blocked by Chrome and remains unproved; complete engagement usefulness, report freshness, grant/assistant coverage and M2d.1 OWP preparation remain open. No whole practice or organization outcome is promoted.

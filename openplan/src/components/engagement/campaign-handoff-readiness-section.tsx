@@ -42,6 +42,8 @@ export function CampaignHandoffReadinessSection({
   appendixReadiness,
   commentMatrixPreview,
   campaign,
+  coveredProjects,
+  projectCoverageUnreadable = false,
   project,
   projectUnreadable,
   readsIncomplete,
@@ -69,6 +71,8 @@ export function CampaignHandoffReadinessSection({
     created_at: string;
     updated_at: string;
   };
+  coveredProjects?: Array<{ id: string; name: string }>;
+  projectCoverageUnreadable?: boolean;
   project: { name?: string | null; status?: string | null; summary?: string | null } | null;
   projectUnreadable: boolean;
   readsIncomplete: boolean;
@@ -358,7 +362,9 @@ export function CampaignHandoffReadinessSection({
               the packet can be created the moment the read succeeds, and every
               other route to reporting is untouched.
             */}
-            {itemsUnreadable ? (
+            {projectCoverageUnreadable ? (
+              <p role="status">Packet creation is unavailable until this campaign&apos;s covered projects can be verified. Refresh and try again.</p>
+            ) : itemsUnreadable ? (
               <p className="max-w-md text-sm text-muted-foreground">
                 Packet creation is unavailable until the comments can be read. This button records the
                 campaign&apos;s counts into the packet&apos;s provenance, and seeding it now would write
@@ -367,9 +373,10 @@ export function CampaignHandoffReadinessSection({
             ) : (
               <EngagementReportCreateButton
                 campaign={campaign}
+                coveredProjects={coveredProjects}
                 counts={counts}
                 existingReportGuidance={
-                  recommendedReport
+                  recommendedReport && (coveredProjects?.length ?? 0) <= 1
                     ? {
                         reportCount: linkedReportCount,
                         packetAttentionCount,

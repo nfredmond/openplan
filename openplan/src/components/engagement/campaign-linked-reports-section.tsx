@@ -30,6 +30,7 @@ import {
  */
 
 export type CampaignLinkedReport = {
+  projectName?: string | null;
   id: string;
   title: string;
   report_type: string;
@@ -70,7 +71,7 @@ export function CampaignLinkedReportsSection({
           <p className="module-section-label">Report Awareness</p>
           <h2 className="module-section-title">Project-linked reports</h2>
           <p className="module-section-description">
-            Linked project reports remain visible so campaigns do not sit outside the broader Planning OS record.
+            Reports from every covered project, with explicit engagement sources identified separately.
           </p>
         </div>
         <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-[color:var(--pine)]/10 text-[color:var(--pine)]">
@@ -166,6 +167,7 @@ export function CampaignLinkedReportsSection({
                       <StatusBadge tone={report.packetFreshness.tone}>{report.packetFreshness.label}</StatusBadge>
                     </div>
                     <h3 className="module-record-title text-[1rem] transition group-hover:text-primary">{report.title}</h3>
+                    {report.projectName ? <p className="module-record-summary">Project: {report.projectName}</p> : null}
                     <p className="module-record-summary">{formatReportTypeLabel(report.report_type)} · {report.isExplicitCampaignSource ? "Campaign source linked" : "Project-linked only"}</p>
                     <p className="module-record-summary">
                       {report.isExplicitCampaignSource
