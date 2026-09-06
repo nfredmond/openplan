@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-06
 review_by: 2026-10-05
-reviewed_commit: 6439b084
+reviewed_commit: a0376f76
 current_release: v0.44.0
 independent_contexts: 2
 trigger: completed-distributed-loading-checkpoint-and-failed-first-week-outcomes
@@ -187,3 +187,13 @@ was still running when the record was written. Final push checks must be read
 separately. No replacement full12 has run on the corrected build. Its previous
 failed outcome and the unsupported forecast remain release blockers. This
 addendum closes technical correction work, not the release gate or v1 scope.
+
+The synthesizer reviewed a0376f76 after corrected-build verification of the
+empty-report fix. The new record changes only the issue register and verification
+report. The15a15e30 build passed full local QA and its20desktop/mobile screenshots
+were inspected. Empty reports no longer count as evidence; sourced reports keep
+their evidence and claim labels. Internal mobile card clipping remains open.
+The direction guard rejected the record until this commit binding was updated.
+Its criteria were not relaxed. The original two independent contexts did not
+review this follow-up, and no new independent review is claimed. Full-run partial
+outcomes still prevent release. Next-lane priorities and scientific limits stand.
