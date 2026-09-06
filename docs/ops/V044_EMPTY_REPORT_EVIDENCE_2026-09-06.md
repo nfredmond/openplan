@@ -86,6 +86,26 @@ proof and exact-commit remote CI are pending at this implementation checkpoint.
 
 ## Release boundary
 
+### Verification follow-up
+
+The first full Git-worktree gate passed lint, dead-code checks and13092app
+tests, skipped112 and failed one health-route test. The QA service supplied
+OPENPLAN_COMMIT_SHA, but that test's unknown-identity case did not clear inherited
+identity values. The application correctly returned the supplied commit. This
+was a test-fixture defect, not a wrong application identity or report regression.
+
+The health suite now explicitly clears both supported identity variables before
+each case and supplies the value that case needs. With both operator identity
+variables set, all six tests pass. A comment-only mutation survives; removing
+the Vercel reset exposes the inherited111111111111identity and removing the
+self-hosted reset exposesaba2cf82e6e0, each failing the unknown-identity assertion
+for the expected reason. Restored tests pass. No health-route production code
+or expected result was changed. Logs health-explicit-env-*.log retain the proof.
+
+The implementation and this follow-up live in an isolated Git worktree while
+the unchanged full journey run owns main. Draft PR100 is for CI, not release
+authorization. Corrected-build full QA and browser verification are still pending.
+
 The current full run completed four passing journeys and two partial outcomes
 through job05; later journeys are still running. Safety lacks an established
 construction treatment/cost/benefit case. Model05 retains the manager-supplied

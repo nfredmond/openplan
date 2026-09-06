@@ -1,8 +1,13 @@
 import { GET, HEAD } from "@/app/api/health/route";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { APP_VERSION } from "@/lib/runtime/app-version";
 
 describe("GET /api/health", () => {
+  beforeEach(() => {
+    vi.stubEnv("OPENPLAN_COMMIT_SHA", undefined);
+    vi.stubEnv("VERCEL_GIT_COMMIT_SHA", undefined);
+  });
+
   afterEach(() => {
     vi.unstubAllEnvs();
   });
