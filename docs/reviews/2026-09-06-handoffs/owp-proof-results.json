@@ -400,6 +400,36 @@
       "failed": [
         "work-program preparation boundaries withholds a combined budget beyond exact cent arithmetic"
       ]
+    },
+    {
+      "name": "existing-foreign-harmless-comment",
+      "status": "survived",
+      "passed": 7,
+      "failed": []
+    },
+    {
+      "name": "existing-foreign-source-program",
+      "status": "killed",
+      "passed": 6,
+      "failed": [
+        "work-program preparation live custody rejects existing documents and projects in another workspace and sources in another program"
+      ]
+    },
+    {
+      "name": "existing-foreign-project-workspace",
+      "status": "killed",
+      "passed": 6,
+      "failed": [
+        "work-program preparation live custody rejects existing documents and projects in another workspace and sources in another program"
+      ]
+    },
+    {
+      "name": "existing-foreign-document-workspace",
+      "status": "killed",
+      "passed": 6,
+      "failed": [
+        "work-program preparation live custody rejects existing documents and projects in another workspace and sources in another program"
+      ]
     }
   ],
   "blindCategories": [

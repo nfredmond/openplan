@@ -56,6 +56,18 @@ liveDescribe("work-program preparation live custody", () => {
       BEGIN PERFORM public.save_program_work_program_revision(${quote(program)},${quote(owner)},1,gen_random_uuid(),jsonb_build_object('schemaVersion',1,'elements',jsonb_build_array(jsonb_build_object('source',jsonb_build_object('sourceId',gen_random_uuid()))))); RAISE EXCEPTION 'Unowned source accepted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
       BEGIN PERFORM public.save_program_work_program_revision(${quote(program)},${quote(owner)},1,gen_random_uuid(),jsonb_build_object('schemaVersion',1,'elements',jsonb_build_array(jsonb_build_object('projectId',gen_random_uuid())))); RAISE EXCEPTION 'Unowned project accepted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
     END $$; RESET ROLE;`));
+  it("rejects existing documents and projects in another workspace and sources in another program", () => exercise(({ program, owner, outsider, workspace, document }) => `
+    DO $$ DECLARE foreign_workspace uuid := gen_random_uuid(); foreign_document uuid := gen_random_uuid(); foreign_project uuid := gen_random_uuid(); other_program uuid := gen_random_uuid(); other_source uuid; BEGIN
+      INSERT INTO public.workspaces(id,name,slug) VALUES(foreign_workspace,'Synthetic separate workspace',foreign_workspace::text);
+      INSERT INTO public.workspace_members(workspace_id,user_id,role) VALUES(foreign_workspace,${quote(outsider)},'owner');
+      INSERT INTO public.projects(id,workspace_id,name) VALUES(foreign_project,foreign_workspace,'Synthetic separate project');
+      INSERT INTO public.kb_documents(id,workspace_id,title,source_kind,checksum,page_count,status) VALUES(foreign_document,foreign_workspace,'Synthetic separate document','uploaded_pdf',${quote("a".repeat(64))},2,'ready');
+      INSERT INTO public.programs(id,workspace_id,title,program_type,cycle_name) VALUES(other_program,${quote(workspace)},'Synthetic separate program','other','Exercise');
+      SELECT id INTO other_source FROM public.attach_program_work_program_source(other_program,${quote(owner)},${quote(document)},${quote("a".repeat(64))},'predecessor',NULL,2,'{}');
+      BEGIN PERFORM public.attach_program_work_program_source(${quote(program)},${quote(owner)},foreign_document,${quote("a".repeat(64))},'comparison',NULL,2,'{}'); RAISE EXCEPTION 'Existing foreign document accepted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+      BEGIN PERFORM public.save_program_work_program_revision(${quote(program)},${quote(owner)},1,gen_random_uuid(),jsonb_build_object('schemaVersion',1,'elements',jsonb_build_array(jsonb_build_object('source',jsonb_build_object('sourceId',other_source))))); RAISE EXCEPTION 'Existing other-program source accepted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+      BEGIN PERFORM public.save_program_work_program_revision(${quote(program)},${quote(owner)},1,gen_random_uuid(),jsonb_build_object('schemaVersion',1,'elements',jsonb_build_array(jsonb_build_object('projectId',foreign_project)))); RAISE EXCEPTION 'Existing foreign project accepted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+    END $$;`));
   it("recovers duplicate retries, refuses changed payloads and stale versions, and chains the next revision", () => exercise(({ program, owner, request }) => `
     SET LOCAL ROLE service_role;
     DO $$ DECLARE original public.program_work_program_revisions; retried public.program_work_program_revisions; next_row public.program_work_program_revisions; BEGIN
