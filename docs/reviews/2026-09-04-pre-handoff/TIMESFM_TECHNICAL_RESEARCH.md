@@ -1,6 +1,14 @@
 # TimesFM technical reconnaissance
 
-Reviewed September 5, 2026. Recommendation: evaluate the Apache-licensed TimesFM 2.5 checkpoint as an optional historical-series forecaster. Do not adopt TimesFM 3.0 pretrained weights for deployed OpenPlan under their present license. No models were installed or run; no weights downloaded; no active development checkout, database, browser, worker or test changes. Review documentation is maintained separately.
+Reviewed September 5, 2026. **Original recommendation, superseded by the product decision below:** evaluate the Apache-licensed TimesFM 2.5 checkpoint as an optional historical-series forecaster. Do not adopt TimesFM 3.0 pretrained weights for deployed OpenPlan under their present license. No models were installed or run; no weights downloaded; no active development checkout, database, browser, worker or test changes. Review documentation is maintained separately.
+
+## Current product decision, September 5 follow-up
+
+Nathaniel explicitly chose **TimesFM 3.0 only** and rejected 2.5. This supersedes the earlier 2.5 recommendation below; descriptions of 2.5 remain historical source findings, not a proposed fallback. Draft roadmap S2a now targets 3.0 only.
+
+Nathaniel proposed disabling the option for paying agencies/consultancies or entities with more than one user. Engineering review found that this is not an adequate license boundary. The current license defines permitted purpose by the activity and use of outputs, not headcount or whether OpenPlan is free. A sole consultant's client deliverable remains excluded; a free single-user production installation is not exempt. Qualifying noncommercial, nonproduction research may proceed under its terms, but commercial product research must not be assumed to qualify. Production integration requires an applicable future license or documented permission covering intended use and distribution. No such permission has been obtained, no request sent, and no paid service authorized. [Current license, definitions and restrictions, rechecked September 5](https://huggingface.co/google/timesfm-3.0-pytorch/blob/main/LICENSE).
+
+Keep the original scientific evaluation boundaries. Do not substitute 2.5, silently introduce a paid OpenPlan tier, ship restricted weights, or characterize an experimental result as deployment clearance. No runtime or application change was made for this decision.
 
 ## Versions and licensing
 
@@ -42,4 +50,4 @@ The supplied answer correctly identifies temporal forecasting and covariates as 
 
 The supplied worst-case characterization of the 90th percentile is incorrect: even a well-calibrated marginal forecast would exceed that level about 10% of the time. Separate marginal station/time quantiles also do not define the worst joint network peak. Patching reduces computation but supplies no hardware-fit guarantee. The current evaluator's 32 combined-channel batching limits qualify the whole-network claim. Those limitations and the 3.0 production-license restriction are material to OpenPlan.
 
-Recommendation remains a bounded optional 2.5 experiment, with any operational integration contingent on its measured value and licensed deployability. This could expand OpenPlan's forecasting capabilities while leaving separate demand-model development and validation intact. See draft roadmap S2a.
+The initial recommendation, superseded by the later 3.0-only decision above, was a bounded optional 2.5 experiment, with any operational integration contingent on its measured value and licensed deployability. This could expand OpenPlan's forecasting capabilities while leaving separate demand-model development and validation intact. See draft roadmap S2a.
