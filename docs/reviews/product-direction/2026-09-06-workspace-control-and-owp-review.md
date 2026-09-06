@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-06
 review_by: 2026-10-05
-reviewed_commit: 63b8d9b6
+reviewed_commit: c86e76dd
 current_release: v0.44.0
 independent_contexts: 2
 trigger: independent-maintenance-review-before-owp-preparation
@@ -93,3 +93,5 @@ This evidence supports landing the repair, with explicit limits: Chrome blocked 
 The current contract, sole roadmap and core ledger still require full agency practice across all fifty states/DC with California deepest, explicit territories/tribal/overlapping authority, separate nationwide-validated model paths, and no effort-based scope reduction. The correction adds no new module, task store, financial authority, paid dependency or provider billing path. The sole next primary outcome is M2d.1 preparation in Programs; the public EDCTC predecessor and final PDFs were retained with source hashes. The live source page now lists a later amendment, which is kept distinct rather than silently replacing the requested comparison. Manual correction, page-level traceability, unresolved balances and independent PDF/XLSX reconciliation remain unimplemented requirements. All other contract perspectives and early priorities in this review retain their existing sequence.
 
 The review date, deadline and independent-context count remain unchanged. The source binding advances to the inspected checkpoint on this new implementation evidence; it does not invent fresh independent reviewers or a new release campaign. Direction/document checks and remote CI are recorded separately after this reassessment.
+
+The final landing-note checkpoint c86e76dd was also inspected: its only additional evidence is the successful production build, 135 live RLS cases, zero-vulnerability dependency audit and rerun focused checks. It introduces no application change or wider outcome claim. The direction guard classifies this evidence note as substantive, so the source binding includes it. The first push exposed that missing final binding; its CI must not be represented as a successful landing. This reassessment retains the same dates, independent reports and all limits above.
