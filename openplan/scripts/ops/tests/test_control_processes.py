@@ -72,7 +72,9 @@ http.server.HTTPServer(("127.0.0.1", int(sys.argv[-1])), Handler).serve_forever(
                         self.assertEqual(panel.http_health(panel.DEV_URL)["commit"], "fixture-only")
                         self.assertEqual(Path(panel.port_owner_dir(port)), app)
                         obj.stop_dev()
-                        self.wait_for(lambda: panel.port_in_use(port) is False)
+                        # The HTTP child can close before npm exits after TERM.
+                        self.wait_for(lambda: panel.port_in_use(port) is False
+                                      and not panel.owned_session_alive(obj.dev_proc, obj.dev_owner))
                         self.assertFalse(panel.owned_session_alive(obj.dev_proc, obj.dev_owner))
                     self.assertEqual(obj._open_in_chrome.call_count, 2)
                     foreign = launch([sys.executable, str(app / "server.py"), str(port)], cwd=app, start_new_session=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
