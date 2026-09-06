@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-06
 review_by: 2026-10-05
-reviewed_commit: a0376f76
+reviewed_commit: 2220cc9e
 current_release: v0.44.0
 independent_contexts: 2
 trigger: completed-distributed-loading-checkpoint-and-failed-first-week-outcomes
@@ -197,3 +197,13 @@ The direction guard rejected the record until this commit binding was updated.
 Its criteria were not relaxed. The original two independent contexts did not
 review this follow-up, and no new independent review is claimed. Full-run partial
 outcomes still prevent release. Next-lane priorities and scientific limits stand.
+
+The synthesizer reviewed the final verification record in 2220cc9e. The unchanged
+full run finished with nine passes and three partial outcomes; the runner exited
+1. Its selected 123 downloaded artifacts match their frozen or current custody.
+The model-evidence reviewer still could not confirm two checkpoint assurances
+from the visible prose, and native-run versus legacy-reference counts remain
+confusing. Those gaps are recorded, not removed from the outcome rule. This is
+a documentation follow-up, not another independent review or a new product
+direction. The original two contexts and their disagreement remain intact. No
+release, replacement candidate, changed default or reopened holdout is selected.
