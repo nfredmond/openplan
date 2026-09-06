@@ -65,7 +65,7 @@ one-family suite is not all-worker or full scientific acceptance.
 
 ## Historical evidence
 
-[Archived plans](archive/plans/) preserve superseded queues. The [September 6 archive](archive/2026-09-06-consolidation/README.md) retains replaced instructions and guides with original-byte hashes.
+[Archived plans](archive/plans/) preserve superseded queues. The [September 6 archive](archive/2026-09-06-consolidation/INDEX.md) retains replaced instructions and guides with original-byte hashes.
 [Dated reviews](reviews/), [modeling studies and research](modeling/)
 and [ADRs](ADRs/) retain what was known and decided at the time. A later review
 may supersede a recommendation without changing the old finding or frozen bytes.

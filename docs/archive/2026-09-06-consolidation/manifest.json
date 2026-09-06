@@ -32,6 +32,12 @@
       "sourceCommit": "cc6c3feb1e58318e36ff5a6be19d2246f2b06f36"
     },
     {
+      "path": "README.md",
+      "sha256": "620393de0173fecd0af9b42b3de0c4faa03b2014f7ebd2d86da27be2f456bf63",
+      "bytes": 21106,
+      "sourceCommit": "cc6c3feb1e58318e36ff5a6be19d2246f2b06f36"
+    },
+    {
       "path": "SECURITY.md",
       "sha256": "264dce9b50a2eccc7d31cebb2b4067e293a19b6774cb912953cd91a012f43ca5",
       "bytes": 1785,
