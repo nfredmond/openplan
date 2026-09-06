@@ -117,3 +117,36 @@ network custody; both methods remain Prototype Only. Existing display findings
 The distributed-loading candidate remains failed, retired and scientifically
 inconclusive. This correction does not restart model selection or reopen any
 holdout. Release remains withheld.
+
+### Corrected-build verification on 15a15e30
+
+The complete Git-worktree qa:gate exited0 with13093app tests passing,112skipped,
+135live isolation tests passing, no production dependency vulnerabilities, and
+a successful build. This run retained the explicit operator commit identity.
+The earlier failed health-test run remains recorded above.
+
+A separately owned server on3201 reported15a15e3023a6 and its process directory
+matched the correction worktree. Supplying the old main SHA to the browser
+check failed before login with Unexpected running build. The unchanged main
+server on3200 continued serving the full twelve-journey run.
+
+The corrected front-door journey visited Projects, project details and both
+Reports posture filters at1440and390pixels. Empty reports have no project-index
+evidence badge, detail count0, and appear only under No evidence attached. The
+sourced Safety report retains count1 and appears only under Evidence-backed.
+All20screenshots were inspected. There were zero unexpected console errors and
+zero application writes. Local proof is
+empty-report-corrected-15a15e30-browser/proof.json in the evidence root above.
+
+This is not a responsive-layout pass. The empty report card has534pixels of
+content inside the narrow mobile module, clipping its title and evidence badge.
+The outer document still measures390pixels, exposing a blind category in that
+width assertion. The empty-chain warning remains visible; the layout defect is
+queued separately. Assistant counts are covered by actual-loader regression
+tests, not a claim that an LLM conversation was visually verified.
+
+At this checkpoint, exact-commit remote RLS34025511267, Upgrade34025547283 and
+Nightly34025548482 succeeded; CI34025511248 is still running its full gate.
+Eight full-run journeys pass, Safety04 and Model05 are PARTLY, and the final two
+journeys are unfinished. Neither this focused correction nor remote CI changes
+those outcomes or authorizes a release.
