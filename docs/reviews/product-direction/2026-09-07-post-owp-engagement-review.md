@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-07
 review_by: 2026-10-05
-reviewed_commit: bb55364c8fff0a8c5a18d9d98eac6e5b05149412
+reviewed_commit: b458a491af57236003d881c9b84c6527ae5c8749
 current_release: v0.44.0
 independent_contexts: 2
 trigger: independent-whole-product-review-during-engagement-completion
@@ -77,3 +77,5 @@ Actual browser input exposed two Mapbox integration errors in the preceding corr
 Final evidence throughac9d1449: the d58370b8 source passes the full local QA gate, identified production map/list and narrow-panel journeys, and actual delivery of all twelve byte-identical accepted files. The source and migrations did not change while recording this evidence. The bounded engineering workflow is ready for landing after its required GitHub checks; human usefulness, comparative superiority, M9b/c and the separate v0.44 gate stay open.
 
 The later automatic PR review supplied four further contrary cases: missing new submission versions, cross-campaign/current-pointer drift, offset shifts during moderation and uploads outside participation dates. These are concrete defects within the independent reviews' existing configuration, participation and privacy concerns. The fixes and meaningful unit/SQL/live HTTP/feed failures are preserved throughbb55364c, with an eleventh additive migration. Prior green checks are not claimed for this new source. The same Engagement recommendation and whole-product scope remain; rebuilt acceptance and the populated upgrade must now cover this follow-up.
+
+The populated upgrade now passes all eleven migrations. The one failure in the follow-up app suite was an offset-only page test double; the fixture now executes cursor predicates/order and preserves its501-record/orphan assertions. Harmless and broken cursor/orphan mutations distinguish the behavior. This test/evidence correction throughb458a491 changes no runtime code or product recommendation.
