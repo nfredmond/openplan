@@ -54,6 +54,7 @@
           "minimum": 1024,
           "description": "Optional ceiling on the serialized size of the succeeded callback, as the CONSUMER will enforce it. The worker measures its assembled payload against this before sending; over the ceiling it sends a failed callback naming the measured size and the ceiling, so the operator meets a sentence instead of a stalled job or a 413 retry loop."
         },
+        "mode": { "type": "string", "enum": ["text", "ocr"], "description": "Optional extraction mode. Omitted retains legacy OCR behavior. text reads the embedded text layer and preserves blank pages." },
         "notes": { "type": "string", "maxLength": 2048 }
       }
     },

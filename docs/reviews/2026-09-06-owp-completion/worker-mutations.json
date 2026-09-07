@@ -1,0 +1,62 @@
+[
+  {
+    "mutation": "harmless-comment",
+    "exit": 0,
+    "survived": true,
+    "expected": true,
+    "evidence": "durable acceptance, exact result retry, retained source, identity and cancellation checks passed\n"
+  },
+  {
+    "mutation": "lose-accepted-request",
+    "exit": 1,
+    "survived": false,
+    "expected": false,
+    "evidence": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/owp-preparation-2026-09-06/workers/ocr_worker/test_durable.py\", line 71, in <module>\n    checks()\n    ~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/owp-preparation-2026-09-06/workers/ocr_worker/test_durable.py\", line 27, in checks\n    assert len(jobs) == 1, \"acknowledged request must survive process death\"\n           ^^^^^^^^^^^^^^\nAssertionError: acknowledged request must survive process death\n"
+  },
+  {
+    "mutation": "lose-result-pages",
+    "exit": 1,
+    "survived": false,
+    "expected": false,
+    "evidence": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/owp-preparation-2026-09-06/workers/ocr_worker/test_durable.py\", line 71, in <module>\n    checks()\n    ~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/owp-preparation-2026-09-06/workers/ocr_worker/test_durable.py\", line 47, in checks\n    assert recovered[\"result\"][\"pages\"] == pages, \"complete result including blank pages must survive\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: complete result including blank pages must survive\n"
+  },
+  {
+    "mutation": "expire-cached-original",
+    "exit": 1,
+    "survived": false,
+    "expected": false,
+    "evidence": "line 85, in prepare_source\n    written = fetcher(source[\"url\"], partial, max_bytes)\n  File \"/home/nathaniel/.local/state/openplan/owp-preparation-2026-09-06/workers/ocr_worker/test_durable.py\", line 40, in no_fetch\n    raise AssertionError(\"a retained checksum-bound original must not need an expired URL\")\nAssertionError: a retained checksum-bound original must not need an expired URL\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/owp-preparation-2026-09-06/workers/ocr_worker/test_durable.py\", line 71, in <module>\n    checks()\n    ~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/owp-preparation-2026-09-06/workers/ocr_worker/test_durable.py\", line 41, in checks\n    assert intake.prepare_source(request[\"source\"], str(source_dir), 4096, no_fetch) == str(original)\n           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/owp-preparation-2026-09-06/workers/ocr_worker/intake.py\", line 90, in prepare_source\n    raise IntakeError(f\"{label} could not be downloaded: {exc}\") from exc\nintake.IntakeError: the source document could not be downloaded: a retained checksum-bound original must not need an expired URL\n"
+  },
+  {
+    "mutation": "allow-request-redirection",
+    "exit": 1,
+    "survived": false,
+    "expected": false,
+    "evidence": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/owp-preparation-2026-09-06/workers/ocr_worker/test_durable.py\", line 71, in <module>\n    checks()\n    ~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/owp-preparation-2026-09-06/workers/ocr_worker/test_durable.py\", line 60, in checks\n    assert not durable.same_request(request, refreshed), \"same request ID cannot redirect custody\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: same request ID cannot redirect custody\n"
+  },
+  {
+    "mutation": "ignore-cancellation",
+    "exit": 0,
+    "survived": true,
+    "expected": false,
+    "evidence": "durable acceptance, exact result retry, retained source, identity and cancellation checks passed\n"
+  },
+  {
+    "mutation": "final-harmless-comment",
+    "survived": true,
+    "expected": true,
+    "evidence": "durable acceptance, exact result retry, retained source, identity and cancellation checks passed\n"
+  },
+  {
+    "mutation": "disable-all-cancellation-checks",
+    "survived": false,
+    "expected": false,
+    "evidence": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/owp-preparation-2026-09-06/workers/ocr_worker/test_durable.py\", line 85, in <module>\n    checks()\n    ~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/owp-preparation-2026-09-06/workers/ocr_worker/test_durable.py\", line 80, in checks\n    assert canceled[\"result\"][\"status\"] == \"canceled\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
+  },
+  {
+    "mutation": "overwrite-success-after-disk-failure",
+    "survived": false,
+    "expected": false,
+    "evidence": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/owp-preparation-2026-09-06/workers/ocr_worker/test_durable.py\", line 85, in <module>\n    checks()\n    ~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/owp-preparation-2026-09-06/workers/ocr_worker/test_durable.py\", line 65, in checks\n    assert checkpoint_job[\"state\"] == \"undelivered\"\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
+  }
+]

@@ -20,7 +20,11 @@ services:
     build: .
     restart: unless-stopped
     network_mode: host
+    volumes:
+      - ocr-jobs:/var/lib/openplan-ocr
     environment:
+      OPENPLAN_KB_EXTRACTION_DISPATCH_URL: "${OPENPLAN_KB_EXTRACTION_DISPATCH_URL}"
+      OCR_WORKER_WORK_DIR: "/var/lib/openplan-ocr"
       # The worker listens on this port ON THE HOST (host networking).
       OCR_WORKER_PORT: "8585"
       # Refuse a document with more pages than this rather than reading part of
@@ -50,3 +54,6 @@ services:
 #
 # and make sure the OpenPlan deployment can reach this machine at whatever
 # address you set OPENPLAN_KB_OCR_WORKER_URL to.
+
+volumes:
+  ocr-jobs:

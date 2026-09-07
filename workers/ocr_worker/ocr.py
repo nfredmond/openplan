@@ -123,6 +123,24 @@ def split_pages(raw_text):
     return parts
 
 
+def read_text_layer(source_pdf, work_dir, timeout_seconds=5400, max_pages=None, progress=None, **_options):
+    """Extract all embedded text off the request thread, preserving empty/scanned pages."""
+    count = page_count(source_pdf, timeout=min(timeout_seconds, 300))
+    if count < 1 or (max_pages is not None and count > max_pages):
+        raise OcrError("The full document exceeds the page limit or has no readable page inventory.")
+    if progress:
+        progress(25, f"Reading embedded text from {count} pages")
+    result = _run(["pdftotext", "-layout", "-enc", "UTF-8", source_pdf, "-"], timeout_seconds)
+    if result.returncode != 0:
+        raise OcrError("The PDF text layer could not be read. The original is retained for manual review or OCR.")
+    blocks = split_pages(_decode(result.stdout))
+    if len(blocks) != count:
+        raise OcrError("The extracted page count differs from the original; nothing was delivered.")
+    version = _run(["pdftotext", "-v"], 30)
+    version_line = (_decode(version.stderr) or _decode(version.stdout)).splitlines()
+    return [{"page": index + 1, "text": text} for index, text in enumerate(blocks)], count, version_line[0][:64] if version_line else None
+
+
 def recognize(
     source_pdf,
     work_dir,

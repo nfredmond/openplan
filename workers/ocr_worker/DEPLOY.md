@@ -258,3 +258,13 @@ docker compose exec ocr-worker sh -c 'for f in test_*.py; do python "$f" || brea
 with an "all … checks passed" line; any `SKIPPED` line names what was skipped
 and why. A suite that stops early prints the failing assertion — that is a real
 failure, not noise.
+
+## Durable document intake and recovery
+
+The worker now retains accepted requests, checksum-bound originals and exact terminal callback payloads. Compose mounts `ocr-jobs` at `/var/lib/openplan-ocr`. Standalone operation defaults to `~/.local/state/openplan/ocr-worker`; `OCR_WORKER_WORK_DIR` must be persistent storage. This replaces the earlier temporary-file behavior. Include this private directory in backups. It holds source documents and signed request URLs and is restricted to the worker account.
+
+Set `OPENPLAN_KB_EXTRACTION_DISPATCH_URL` to the app's `/api/knowledge-base/extraction-dispatch` URL. The worker authenticates with its existing callback bearer token and polls the existing Documents job records. The app's `OPENPLAN_KB_OCR_CALLBACK_URL` must identify the same application origin. This recovers accepted work that was committed before an interrupted dispatch and issues fresh source links without introducing another application queue.
+
+Text-layer PDF extraction runs with Poppler in this worker. OCR remains an explicit scanned-page action with its own retained extraction version. Empty pages are retained and never renumbered. Successful extraction does not establish transcription accuracy.
+
+Result delivery retries independently of recognition. A process restart reloads pending jobs and exact undelivered payloads, without loading historical completed page payloads into memory. Completed requests remain on disk for idempotent retries. Retention cleanup is an operator decision; no automatic deletion is introduced by this change.

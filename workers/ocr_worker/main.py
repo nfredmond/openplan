@@ -49,15 +49,15 @@ import hmac
 import json
 import os
 import queue
-import shutil
 import sys
-import tempfile
 import threading
 import uuid
+import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+import durable
 import callbacks as callbacks_module
 import contract
 import intake
@@ -103,7 +103,7 @@ def config():
         ).strip(),
         "port": port,
         "work_dir": os.environ.get("OCR_WORKER_WORK_DIR", "").strip()
-        or os.path.join(tempfile.gettempdir(), "ocr_worker_jobs"),
+        or os.path.expanduser("~/.local/state/openplan/ocr-worker"),
         "max_queued": env_int("OCR_WORKER_MAX_QUEUED", 4),
         "max_source_bytes": env_int("OCR_WORKER_MAX_SOURCE_BYTES", 200 * 1024 * 1024),
         "max_pages": env_int("OCR_WORKER_MAX_PAGES", 2000),
@@ -120,8 +120,9 @@ CONFIG = config()
 # submission (same requestId) gets the SAME answer instead of a second job —
 # the contract's idempotency rule.
 JOBS = {}
-JOBS_LOCK = threading.Lock()
+JOBS_LOCK = threading.RLock()
 JOB_QUEUE = queue.Queue()
+DELIVERY_LOCKS = {}
 
 
 def register_job(request):
@@ -134,6 +135,7 @@ def register_job(request):
         "state": "accepted",
     }
     with JOBS_LOCK:
+        durable.save(CONFIG["work_dir"], job)
         JOBS[request["requestId"]] = job
     return job
 
@@ -141,19 +143,64 @@ def register_job(request):
 # ── The pipeline ─────────────────────────────────────────────────────────────
 
 
+def persist(job):
+    with JOBS_LOCK:
+        durable.save(CONFIG["work_dir"], job)
+
+
+def deliver_result(job):
+    """Commit the exact result before HTTP, serializing concurrent delivery attempts."""
+    with JOBS_LOCK:
+        lock = DELIVERY_LOCKS.setdefault(job["request"]["requestId"], threading.Lock())
+    with lock:
+        with JOBS_LOCK:
+            if job["state"] in ("succeeded", "failed", "canceled"):
+                return True
+            payload = job["result"]
+            # A previous commit may have failed. No delivery is allowed before this succeeds.
+            job["state"] = "undelivered"
+            persist(job)
+        ok, _detail = callbacks_module.post_callback(
+            job["request"]["callbackUrl"], CONFIG["callback_token"], payload
+        )
+        with JOBS_LOCK:
+            job["state"] = payload["status"] if ok else "undelivered"
+            try:
+                persist(job)
+            except Exception:
+                job["state"] = "undelivered"
+                raise
+            if ok:
+                JOBS.pop(job["request"]["requestId"], None)
+        return ok
+
+
 def send_job_callback(job, status, **kwargs):
+    if job.get("cancel_requested") and status == "running":
+        raise OcrCanceled("Canceled by the requester. The original remains retained.")
     payload = contract.build_callback(
         job["request"]["requestId"], job["job_reference"], status, **kwargs
     )
-    ok, detail = callbacks_module.post_callback(
+    job["progress"] = kwargs.get("progress", job.get("progress", 0))
+    job["message"] = kwargs.get("message", "")
+    if status in ("failed", "succeeded", "canceled"):
+        if job.get("result"):
+            return deliver_result(job)
+        with JOBS_LOCK:
+            job["result"] = payload
+            job["state"] = "undelivered"
+            persist(job)
+        return deliver_result(job)
+    job["state"] = status
+    persist(job)
+    ok, _detail = callbacks_module.post_callback(
         job["request"]["callbackUrl"], CONFIG["callback_token"], payload
     )
-    if not ok:
-        print(
-            f"[ocr-worker] callback {status} for {job['request']['requestId']} "
-            f"NOT delivered: {detail}"
-        )
     return ok
+
+
+class OcrCanceled(Exception):
+    """Cancellation is checked between durable processing stages."""
 
 
 def process_job(job, prepare=None, recognize=None, send=None):
@@ -161,8 +208,14 @@ def process_job(job, prepare=None, recognize=None, send=None):
     can drive this with no ocrmypdf, no tesseract, and no network."""
     send = send or send_job_callback
     prepare = prepare or intake.prepare_source
-    recognize = recognize or ocr_module.recognize
+    recognize = recognize or (ocr_module.read_text_layer if job["request"].get("mode") == "text" else ocr_module.recognize)
 
+    if job.get("result"):
+        deliver_result(job)
+        return
+    if job.get("cancel_requested"):
+        send(job, "canceled", message="Canceled by the requester. The original remains retained.")
+        return
     request = job["request"]
     languages = tuple(request.get("languages") or CONFIG["default_languages"])
     work_dir = os.path.join(CONFIG["work_dir"], job["job_reference"])
@@ -197,7 +250,7 @@ def process_job(job, prepare=None, recognize=None, send=None):
 
         pages_with_text = sum(1 for page in pages if page["text"].strip())
         engine = contract.build_engine(
-            "ocrmypdf+tesseract",
+            "poppler-text-layer" if request.get("mode") == "text" else "ocrmypdf+tesseract",
             version=engine_version,
             languages=languages,
             pages_with_text=pages_with_text,
@@ -238,27 +291,27 @@ def process_job(job, prepare=None, recognize=None, send=None):
                     ),
                     page_count=page_count,
                 )
-                job["state"] = "failed"
+                if not job.get("result"):
+                    job["state"] = "failed"
                 return
 
-        ok, detail = callbacks_module.post_callback(
-            request["callbackUrl"], CONFIG["callback_token"], succeeded
-        )
-        if not ok:
-            print(
-                f"[ocr-worker] succeeded callback for {request['requestId']} "
-                f"NOT delivered: {detail}"
-            )
+        if job.get("cancel_requested"):
+            raise OcrCanceled("Canceled by the requester. The original remains retained.")
+        with JOBS_LOCK:
+            job["result"] = succeeded
             job["state"] = "undelivered"
-            return
-
-        job["state"] = "succeeded"
+            persist(job)
+        deliver_result(job)
+    except OcrCanceled as exc:
+        send(job, "canceled", message=str(exc))
     except intake.IntakeError as exc:
         send(job, "failed", message=f"Document intake failed: {exc}"[:2048])
-        job["state"] = "failed"
+        if not job.get("result"):
+            job["state"] = "failed"
     except ocr_module.OcrError as exc:
         send(job, "failed", message=f"Text recognition failed: {exc}"[:2048])
-        job["state"] = "failed"
+        if not job.get("result"):
+            job["state"] = "failed"
     except contract.PageSequenceError as exc:
         # The invariant refused the payload. This is the failure this worker
         # exists to make impossible to ship, so it gets its own branch and its
@@ -271,15 +324,18 @@ def process_job(job, prepare=None, recognize=None, send=None):
                 f"numbering, so nothing was delivered: {exc}"
             )[:2048],
         )
-        job["state"] = "failed"
+        if not job.get("result"):
+            job["state"] = "failed"
     except Exception as exc:  # noqa: BLE001 - the stage name is the honesty
-        send(job, "failed", message=f"Processing failed: {exc}"[:2048])
-        job["state"] = "failed"
+        if job.get("result"):
+            job["state"] = "undelivered"
+        else:
+            send(job, "failed", message="Processing failed. Retry this retained document.")
+            if not job.get("result"):
+                job["state"] = "failed"
     finally:
-        # The source PDF and the recognised copy are both reconstructible from
-        # OpenPlan's own storage; the text has already been delivered or the job
-        # has failed. Nothing here is worth keeping on disk.
-        shutil.rmtree(work_dir, ignore_errors=True)
+        # Originals and exact undelivered results survive process/application restarts.
+        persist(job)
 
 
 # Tests replace this to observe scheduling without running the recogniser.
@@ -288,7 +344,10 @@ PIPELINE = process_job
 
 def worker_loop():
     while True:
-        job = JOB_QUEUE.get()
+        try:
+            job = JOB_QUEUE.get(timeout=5)
+        except queue.Empty:
+            continue
         if job is None:
             return
         try:
@@ -297,6 +356,54 @@ def worker_loop():
             print(f"[ocr-worker] pipeline crashed: {exc}")
         finally:
             JOB_QUEUE.task_done()
+
+
+def result_delivery_loop():
+    """Delivery retries continue even while the recognizer is busy with another PDF."""
+    while True:
+        with JOBS_LOCK:
+            retry = [job for job in JOBS.values() if job["state"] == "undelivered"]
+        for job in retry:
+            try:
+                deliver_result(job)
+            except Exception:
+                job["state"] = "undelivered"
+                print("[ocr-worker] result delivery checkpoint unavailable; will retry")
+        threading.Event().wait(5)
+
+
+def dispatch_loop():
+    """Pull durable app jobs, including submissions interrupted before worker dispatch."""
+    endpoint = os.environ.get("OPENPLAN_KB_EXTRACTION_DISPATCH_URL", "").strip()
+    if not endpoint:
+        return
+    while True:
+        try:
+            request = urllib.request.Request(endpoint, headers={"Authorization": f"Bearer {CONFIG['callback_token']}"})
+            with urllib.request.urlopen(request, timeout=20) as response:
+                payload = json.loads(response.read(1024 * 1024))
+            with JOBS_LOCK:
+                for request_id in payload.get("cancelRequestIds", []):
+                    job = JOBS.get(request_id)
+                    if job and not job.get("result"):
+                        job["cancel_requested"] = True
+                        persist(job)
+            for request in payload.get("requests", []):
+                if contract.validate_ocr_request(request):
+                    continue
+                with JOBS_LOCK:
+                    existing = JOBS.get(request["requestId"]) or durable.get(CONFIG["work_dir"], request["requestId"])
+                    if existing:
+                        if durable.same_request(existing["request"], request):
+                            existing["request"] = request
+                            persist(existing)
+                        continue
+                    if JOB_QUEUE.qsize() >= CONFIG["max_queued"]:
+                        break
+                    JOB_QUEUE.put(register_job(request))
+        except Exception:
+            print("[ocr-worker] document dispatch unavailable; will retry")
+        threading.Event().wait(5)
 
 
 # ── HTTP surface ─────────────────────────────────────────────────────────────
@@ -358,13 +465,29 @@ class WorkerHandler(BaseHTTPRequestHandler):
         self._send_json(404, {"error": "not_found"})
 
     def do_POST(self):  # noqa: N802
+        if not self._authorized():
+            return
+        if self.path.startswith("/api/v1/ocr-requests/") and self.path.endswith("/cancel"):
+            request_id = self.path[len("/api/v1/ocr-requests/"):-len("/cancel")]
+            with JOBS_LOCK:
+                job = JOBS.get(request_id)
+                if not job:
+                    self._send_json(404, {"error": "not_found"})
+                    return
+                if not job.get("result"):
+                    job["cancel_requested"] = True
+                    persist(job)
+            self._send_json(200, {"state": job["state"], "cancelRequested": job.get("cancel_requested", False)})
+            return
         if self.path != "/api/v1/ocr-requests":
             self._send_json(404, {"error": "not_found"})
             return
-        if not self._authorized():
-            return
 
-        length = int(self.headers.get("Content-Length") or 0)
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            self._send_json(400, {"error": "invalid_content_length"})
+            return
         if length <= 0 or length > MAX_REQUEST_BODY_BYTES:
             self._send_json(413, {"error": "request_body_too_large_or_empty"})
             return
@@ -380,29 +503,20 @@ class WorkerHandler(BaseHTTPRequestHandler):
             return
 
         with JOBS_LOCK:
-            existing = JOBS.get(payload["requestId"])
-        if existing:
-            # Idempotency: the same requestId gets the SAME accepted answer,
-            # never a second job.
-            self._send_json(200, existing["accepted_callback"])
-            return
-
-        if JOB_QUEUE.qsize() >= CONFIG["max_queued"]:
-            self._send_json(
-                503,
-                {
-                    "error": "queue_full",
-                    "detail": (
-                        f"This worker already holds {JOB_QUEUE.qsize()} unstarted jobs "
-                        "and refuses to accept more than it may reach. Retry after the "
-                        "queue drains."
-                    ),
-                },
-            )
-            return
-
-        job = register_job(payload)
-        JOB_QUEUE.put(job)
+            existing = JOBS.get(payload["requestId"]) or durable.get(CONFIG["work_dir"], payload["requestId"])
+            if existing:
+                if not durable.same_request(existing["request"], payload):
+                    self._send_json(409, {"error": "request_payload_changed"})
+                    return
+                existing["request"] = payload
+                persist(existing)
+                self._send_json(200, existing["accepted_callback"])
+                return
+            if JOB_QUEUE.qsize() >= CONFIG["max_queued"]:
+                self._send_json(503, {"error": "queue_full", "detail": "The worker refuses to accept more queued jobs. Retry after the queue drains."})
+                return
+            job = register_job(payload)
+            JOB_QUEUE.put(job)
         self._send_json(202, job["accepted_callback"])
 
     def log_message(self, fmt, *args):  # noqa: A003 - quieter default logging
@@ -445,8 +559,15 @@ def main():
             "it too."
         )
 
-    os.makedirs(CONFIG["work_dir"], exist_ok=True)
+    os.makedirs(CONFIG["work_dir"], mode=0o700, exist_ok=True)
+    os.chmod(CONFIG["work_dir"], 0o700)
+    for job in durable.load(CONFIG["work_dir"], active_only=True):
+        JOBS[job["request"]["requestId"]] = job
+        if job["state"] in ("accepted", "running", "undelivered"):
+            JOB_QUEUE.put(job)
     threading.Thread(target=worker_loop, daemon=True, name="ocr-pipeline").start()
+    threading.Thread(target=result_delivery_loop, daemon=True, name="result-delivery").start()
+    threading.Thread(target=dispatch_loop, daemon=True, name="document-dispatch").start()
     print(
         f"[ocr-worker] serving on :{CONFIG['port']} "
         f"(contract {', '.join(contract.SCHEMA_VERSIONS)}; up to "

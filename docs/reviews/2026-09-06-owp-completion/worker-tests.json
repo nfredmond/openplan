@@ -1,0 +1,41 @@
+{
+  "time": "2026-09-07T00:41:13.588981+00:00",
+  "results": [
+    {
+      "test": "workers/ocr_worker/test_callbacks.py",
+      "exitCode": 0,
+      "stdout": "callback checks:\n  a delivered callback carries the bearer token and the exact payload\n  a network error and a 500 are retried; the third attempt lands\n  a 401 stops immediately and says the tokens do not match\n  a 413 stops immediately and points at the size ceiling\n  an exhausted retry budget reports how many attempts were made\n  encode_payload measures the bytes the POST would actually send\nall callback checks passed\n",
+      "stderr": ""
+    },
+    {
+      "test": "workers/ocr_worker/test_contract.py",
+      "exitCode": 0,
+      "stdout": "contract checks:\n  enums, caps and the succeeded-requires-pages rule match the schema file\n  no confidence/certainty/likelihood field in the schema or the worker\n  the full and the minimal request both validate\n  strictness: unknown keys, id length, checksum case, language codes, url scheme, refs\n  page invariant: drops, gaps, duplicates, order, extra fields and caps all refused\n  callback builder: status vocabulary, pages-required, pages-forbidden, invariant\nall contract checks passed\n",
+      "stderr": ""
+    },
+    {
+      "test": "workers/ocr_worker/test_durable.py",
+      "exitCode": 0,
+      "stdout": "durable acceptance, exact result retry, retained source, identity and cancellation checks passed\n",
+      "stderr": ""
+    },
+    {
+      "test": "workers/ocr_worker/test_intake.py",
+      "exitCode": 0,
+      "stdout": "intake checks:\n  a matching document is accepted, and the ceiling reaches the fetcher\n  a checksum mismatch is refused\n  a declared-size mismatch is refused\n  a file that is not a PDF is refused before the recogniser sees it\n  an empty download is refused\n  a document over the ceiling is refused, naming the variable\n  a non-http(s) source URL is refused\n  a request with no declared checksum is still accepted\n  the real fetcher takes a byte ceiling\nall intake checks passed\n",
+      "stderr": ""
+    },
+    {
+      "test": "workers/ocr_worker/test_ocr.py",
+      "exitCode": 0,
+      "stdout": "ocr checks:\n  the page split drops exactly one trailing separator, never a blank page\n  three pages come back numbered 1, 2, 3 with their own text\n  a page that recognised nothing keeps its number and ships empty\n  a disagreement between the three page counts fails the job, naming all three\n  a language with no trained data fails, naming it and what is installed\n  a failed language probe does not masquerade as 'no languages installed'\n  a document over the page ceiling is refused whole, never truncated\n  recogniser failure, missing output, missing binary and timeout each name themselves\n  ocrmypdf keeps existing text and the requested languages; pdftotext keeps the layout\nall ocr checks passed\n",
+      "stderr": ""
+    },
+    {
+      "test": "workers/ocr_worker/test_worker_http.py",
+      "exitCode": 0,
+      "stdout": "worker HTTP + pipeline checks:\n[ocr-worker] 127.0.0.1 \"POST /api/v1/ocr-requests HTTP/1.1\" 401 -\n[ocr-worker] 127.0.0.1 \"POST /api/v1/ocr-requests HTTP/1.1\" 401 -\n  no bearer and a wrong bearer both get 401, and queue nothing\n[ocr-worker] 127.0.0.1 \"POST /api/v1/ocr-requests HTTP/1.1\" 422 -\n  a contract-invalid payload gets 422 with the violations listed\n[ocr-worker] 127.0.0.1 \"POST /api/v1/ocr-requests HTTP/1.1\" 202 -\n[ocr-worker] 127.0.0.1 \"POST /api/v1/ocr-requests HTTP/1.1\" 200 -\n  a valid request is accepted once; the same requestId gets the same answer\n[ocr-worker] 127.0.0.1 \"GET /healthz HTTP/1.1\" 200 -\n  /healthz names the three programs the image needs and the language probe\n[ocr-worker] 127.0.0.1 \"POST /api/v1/nope HTTP/1.1\" 404 -\n  an unknown path is 404\n[ocr-worker] 127.0.0.1 \"POST /api/v1/ocr-requests HTTP/1.1\" 503 -\n  a full queue answers 503 with the reason, never a silent accept\n[ocr-worker] 127.0.0.1 \"POST /api/v1/ocr-requests HTTP/1.1\" 503 -\n  a worker with no token refuses every request instead of serving open\n  the succeeded callback carries every page, blank ones included\n  a payload over the consumer's ceiling fails with both numbers, never a 413 loop\n  a page sequence the invariant rejects fails the job instead of shipping\nall worker HTTP + pipeline checks passed\n",
+      "stderr": ""
+    }
+  ]
+}

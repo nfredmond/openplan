@@ -74,9 +74,16 @@ def prepare_source(source, work_dir, max_bytes, fetcher=default_fetcher):
     os.makedirs(work_dir, exist_ok=True)
     dest = os.path.join(work_dir, "source.pdf")
     label = source.get("filename") or "the source document"
+    checksum = source.get("checksumSha256")
+    if checksum and os.path.isfile(dest) and sha256_of(dest) == checksum:
+        size = os.path.getsize(dest)
+        if 0 < size <= max_bytes and (source.get("sizeBytes") is None or source["sizeBytes"] == size) and looks_like_pdf(dest):
+            return dest
+    partial = dest + ".partial"
 
     try:
-        written = fetcher(source["url"], dest, max_bytes)
+        written = fetcher(source["url"], partial, max_bytes)
+        os.replace(partial, dest)
     except IntakeError:
         raise
     except Exception as exc:  # noqa: BLE001 - the cause goes in the message

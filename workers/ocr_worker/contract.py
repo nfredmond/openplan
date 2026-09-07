@@ -85,8 +85,12 @@ def validate_ocr_request(payload):
         "maxPages",
         "maxCallbackBytes",
         "notes",
+        "mode",
     }
     _check_unknown_keys(payload, allowed, "request", errors)
+
+    if payload.get("mode", "ocr") not in ("text", "ocr"):
+        errors.append("mode: must be text or ocr")
 
     version = payload.get("schemaVersion")
     if version not in SCHEMA_VERSIONS:

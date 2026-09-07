@@ -41,10 +41,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # main.py), and being able to run them inside the image is deliberate.
 COPY *.py ./
 
-# Per-job scratch. Container-local: the source PDF is re-downloadable from
-# OpenPlan's own storage and the recognised text is delivered by callback, so
-# nothing here is worth a volume.
-ENV OCR_WORKER_WORK_DIR=/tmp/ocr_worker_jobs
+# Persistent private requests, source checkpoints and undelivered callback payloads.
+# Compose mounts this path; standalone containers must provide an equivalent volume.
+ENV OCR_WORKER_WORK_DIR=/var/lib/openplan-ocr
 
 EXPOSE 8585
 

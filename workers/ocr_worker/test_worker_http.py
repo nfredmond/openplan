@@ -24,6 +24,7 @@ import json
 import os
 import sys
 import threading
+import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -238,6 +239,7 @@ def check_pipeline_refuses_a_broken_page_sequence():
 
 
 def main_test():
+    main.CONFIG["work_dir"] = tempfile.mkdtemp(prefix="openplan-ocr-http-test-")
     print("worker HTTP + pipeline checks:")
     server, port = start_server()
     try:
