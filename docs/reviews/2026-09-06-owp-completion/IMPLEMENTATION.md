@@ -1,6 +1,6 @@
 # Complete OWP preparation
 
-Status: implementation in progress; no preparation or release pass.
+Status: preparation engineering evidence is consolidated in [VERIFICATION.md](VERIFICATION.md). Earlier checkpoints and failures below remain historical. No v0.44 release pass.
 
 User direction removes mandatory Nathaniel or external finance-review dependency for engineering acceptance. Independent agent reconstruction, implementation review, calculation/recovery/access tests and inspected browser-delivered artifacts are required. Actual agency adoption, spending and submissions remain separate human decisions.
 
@@ -74,3 +74,5 @@ The actual revision4 PDF, HTML and workbook pass the independent bounded artifac
 The complete QA command correctly stopped on one new unlisted dependency: the guarded sync script directly imports @next/env. It was available only transitively through Next. Declare the exact already-installed16.2.11 version directly in package.json/lockfile; no API or package-version upgrade. The hundreds of existing unused-export findings are configured warnings, not failures to suppress. Rerun the unchanged gate after this dependency correction.
 
 The original v0.44 task texts and current relevant source were independently reassessed. Safety still lacks source-supported construction costs/treatment effects; guided model comparison remains a supplied-percent screening exercise, not a forecast; validation checkpoint prose still omits explicit point-cap/holdout disclosures. The underlying frozen facts are not permission to turn the original partial UI outcome into a pass. All three remain partial, and no full12 campaign or tag is attempted. See independent/v044-reassessment.md.
+
+The final operator-doc guard caught missing OPENPLAN_DOCUMENT_EXPORT_WORK_DIR and OPENPLAN_SUPABASE_WORKDIR example entries. Both settings were added with private-cache and explicit-live-test instructions; all six cross-reference tests pass without changing the guard.

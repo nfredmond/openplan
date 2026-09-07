@@ -1,0 +1,137 @@
+[
+  {
+    "case": "fresh-baseline",
+    "exitCode": 0,
+    "sentinels": [
+      "CONTRACT_1_PASSED",
+      "CONTRACT_2_PASSED",
+      "CONTRACT_3_PASSED",
+      "CONTRACT_4_PASSED",
+      "CONTRACT_5_PASSED",
+      "CONTRACT_6_PASSED",
+      "CONTRACT_7_PASSED",
+      "UPGRADE_REPLAY_PASSED:fresh"
+    ],
+    "error": "",
+    "sha256": "d63fac34617ec211187e26cf1aadec0aab0d5fd6ee504af8dc268af2d09cca6a"
+  },
+  {
+    "case": "fresh-noop",
+    "exitCode": 0,
+    "sentinels": [
+      "CONTRACT_1_PASSED",
+      "CONTRACT_2_PASSED",
+      "CONTRACT_3_PASSED",
+      "CONTRACT_4_PASSED",
+      "CONTRACT_5_PASSED",
+      "CONTRACT_6_PASSED",
+      "CONTRACT_7_PASSED",
+      "UPGRADE_REPLAY_PASSED:fresh"
+    ],
+    "error": "",
+    "sha256": "2faeb0cd79917caa8c042dfbb0053846033e31d01b2e7eb106382eb0ed8a0dc5"
+  },
+  {
+    "case": "fresh-history_changed",
+    "exitCode": 3,
+    "sentinels": [],
+    "error": "ERROR:  Forward repair rewrote historical custody\nCONTEXT:  PL/pgSQL function inline_code_block line 1 at RAISE",
+    "sha256": "2a77838ff7d43173b1612a436e9a48605ac6f01d86d0ed9e89fdcfb2eea74135"
+  },
+  {
+    "case": "fresh-rpc_acl_opened",
+    "exitCode": 3,
+    "sentinels": [
+      "CONTRACT_1_PASSED",
+      "CONTRACT_2_PASSED",
+      "CONTRACT_3_PASSED",
+      "CONTRACT_4_PASSED"
+    ],
+    "error": "ERROR:  Actor spoof allowed\nCONTEXT:  PL/pgSQL function inline_code_block line 4 at RAISE",
+    "sha256": "3683cb64f1f3e3e7349146eb1e63505f428583c4fb8d6bd44f4974db6453c3fd"
+  },
+  {
+    "case": "fresh-null_bytes_guard_removed",
+    "exitCode": 3,
+    "sentinels": [
+      "CONTRACT_1_PASSED",
+      "CONTRACT_2_PASSED",
+      "CONTRACT_3_PASSED",
+      "CONTRACT_4_PASSED",
+      "CONTRACT_5_PASSED"
+    ],
+    "error": "ERROR:  Null export bytes accepted\nCONTEXT:  PL/pgSQL function inline_code_block line 12 at RAISE",
+    "sha256": "e49279cad1b775e9b9d61ea74c5123372ab5603d63dbc8b91b654c4f3a27d6ce"
+  },
+  {
+    "case": "early_upgrade-baseline",
+    "exitCode": 0,
+    "sentinels": [
+      "CONTRACT_1_PASSED",
+      "CONTRACT_2_PASSED",
+      "CONTRACT_3_PASSED",
+      "CONTRACT_4_PASSED",
+      "CONTRACT_5_PASSED",
+      "CONTRACT_6_PASSED",
+      "CONTRACT_7_PASSED",
+      "UPGRADE_REPLAY_PASSED:early_upgrade"
+    ],
+    "error": "",
+    "sha256": "787f303c864b8462c7b77ce3f4d16d62fe8ffe471e6201209c126de64cea300f"
+  },
+  {
+    "case": "early_upgrade-noop",
+    "exitCode": 0,
+    "sentinels": [
+      "CONTRACT_1_PASSED",
+      "CONTRACT_2_PASSED",
+      "CONTRACT_3_PASSED",
+      "CONTRACT_4_PASSED",
+      "CONTRACT_5_PASSED",
+      "CONTRACT_6_PASSED",
+      "CONTRACT_7_PASSED",
+      "UPGRADE_REPLAY_PASSED:early_upgrade"
+    ],
+    "error": "",
+    "sha256": "4aede6fdddec1c9793abefb5d6e2e25842108ba4f8c4a4a8021bcb5de31e1af2"
+  },
+  {
+    "case": "early_upgrade-history_changed",
+    "exitCode": 3,
+    "sentinels": [],
+    "error": "ERROR:  Forward repair rewrote historical custody\nCONTEXT:  PL/pgSQL function inline_code_block line 1 at RAISE",
+    "sha256": "f58facd1c09af26c90cbf3e78b5a8b8bd5e640424b7c368caf2fcf7c59edb269"
+  },
+  {
+    "case": "early_upgrade-rpc_acl_opened",
+    "exitCode": 3,
+    "sentinels": [
+      "CONTRACT_1_PASSED",
+      "CONTRACT_2_PASSED",
+      "CONTRACT_3_PASSED",
+      "CONTRACT_4_PASSED"
+    ],
+    "error": "ERROR:  Actor spoof allowed\nCONTEXT:  PL/pgSQL function inline_code_block line 4 at RAISE",
+    "sha256": "2d5f203e924f15179f476cc5f57f50981b4c8ff6d9502882b82207f387dd388d"
+  },
+  {
+    "case": "early_upgrade-omitted_forward_repair",
+    "exitCode": 3,
+    "sentinels": [],
+    "error": "ERROR:  Null lease token accepted\nCONTEXT:  PL/pgSQL function inline_code_block line 1 at RAISE",
+    "sha256": "aa7685cd600caaf3c1fef176db974fe2990459d4e882e79f1e76facefcc6393a"
+  },
+  {
+    "case": "early_upgrade-null_bytes_guard_removed",
+    "exitCode": 3,
+    "sentinels": [
+      "CONTRACT_1_PASSED",
+      "CONTRACT_2_PASSED",
+      "CONTRACT_3_PASSED",
+      "CONTRACT_4_PASSED",
+      "CONTRACT_5_PASSED"
+    ],
+    "error": "ERROR:  Null export bytes accepted\nCONTEXT:  PL/pgSQL function inline_code_block line 12 at RAISE",
+    "sha256": "8b54e9f47bee4871987bceeb982fa8733045dd0e36467235b9266b76fea2f83d"
+  }
+]

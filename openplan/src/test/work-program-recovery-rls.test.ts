@@ -84,12 +84,17 @@ live("Documents and OWP recovery transactions",()=>{
       SELECT * INTO j FROM public.enqueue_work_program_export('@program',1,'pdf','@viewer');
       SELECT * INTO second FROM public.enqueue_work_program_export('@program',1,'pdf','@owner');
       IF j.id<>second.id THEN RAISE EXCEPTION 'Export retry duplicated artifact'; END IF;
+      BEGIN PERFORM public.claim_work_program_export(NULL); RAISE EXCEPTION 'Null lease token accepted'; EXCEPTION WHEN invalid_parameter_value THEN NULL; END;
       SELECT * INTO j FROM public.claim_work_program_export(oldtoken);
       UPDATE public.kb_ocr_jobs SET lease_until=now()-interval '1 second' WHERE id=j.id;
       SELECT * INTO second FROM public.claim_work_program_export(token);
       IF second.id<>j.id THEN RAISE EXCEPTION 'Expired rendering not recovered'; END IF;
       path:='storage://kb-documents/@workspace/'||j.document_id||'/'||repeat('b',64)||'.pdf';
       BEGIN PERFORM public.finish_work_program_export(j.id,oldtoken,repeat('b',64),123,path,'synthetic'); RAISE EXCEPTION 'Expired worker finalized'; EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL; END;
+      BEGIN PERFORM public.finish_work_program_export(j.id,token,NULL,123,path,'synthetic'); RAISE EXCEPTION 'Null export checksum accepted'; EXCEPTION WHEN invalid_parameter_value THEN NULL; END;
+      BEGIN PERFORM public.finish_work_program_export(j.id,token,repeat('b',64),NULL,path,'synthetic'); RAISE EXCEPTION 'Null export bytes accepted'; EXCEPTION WHEN invalid_parameter_value THEN NULL; END;
+      BEGIN PERFORM public.finish_work_program_export(j.id,token,repeat('b',64),123,NULL,'synthetic'); RAISE EXCEPTION 'Null export path accepted'; EXCEPTION WHEN invalid_parameter_value THEN NULL; END;
+      IF (SELECT status FROM public.kb_ocr_jobs WHERE id=j.id)<>'running' OR (SELECT checksum FROM public.kb_documents WHERE id=j.document_id) IS NOT NULL THEN RAISE EXCEPTION 'Rejected completion changed custody'; END IF;
       PERFORM public.finish_work_program_export(j.id,token,repeat('b',64),123,path,'synthetic');
       IF (SELECT checksum FROM public.kb_documents WHERE id=j.document_id)<>repeat('b',64) OR (SELECT status FROM public.kb_ocr_jobs WHERE id=j.id)<>'succeeded' THEN RAISE EXCEPTION 'Artifact not retained'; END IF;
       BEGIN UPDATE public.kb_documents SET checksum=repeat('c',64) WHERE id=j.document_id; RAISE EXCEPTION 'Artifact checksum changed'; EXCEPTION WHEN check_violation THEN NULL; END;
