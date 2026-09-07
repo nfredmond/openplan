@@ -1,0 +1,26 @@
+{
+  "cases": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "output": "BEGIN\nSET\n              set_config              \n--------------------------------------\n 06f33ee6-fae1-47f6-89ff-f24f35ec940a\n(1 row)\n\nDO\nROLLBACK\n"
+    },
+    {
+      "case": "harmless SQL comment",
+      "exitCode": 0,
+      "output": "BEGIN\nSET\n              set_config              \n--------------------------------------\n 06f33ee6-fae1-47f6-89ff-f24f35ec940a\n(1 row)\n\nDO\nROLLBACK\n"
+    },
+    {
+      "case": "foreign configuration FK disabled",
+      "exitCode": 3,
+      "output": "BEGIN\nERROR:  permission denied: \"RI_ConstraintTrigger_c_28034\" is a system trigger\nCONTEXT:  SQL statement \"ALTER TABLE engagement_campaigns DISABLE TRIGGER \"RI_ConstraintTrigger_c_28034\"\"\nPL/pgSQL function inline_code_block line 1 at EXECUTE\n"
+    },
+    {
+      "case": "old current-pointer recursion exemption",
+      "exitCode": 3,
+      "output": "BEGIN\nCREATE FUNCTION\nSET\n              set_config              \n--------------------------------------\n 06f33ee6-fae1-47f6-89ff-f24f35ec940a\n(1 row)\n\nERROR:  Old pointer replaced the current definition\nCONTEXT:  PL/pgSQL function inline_code_block line 13 at RAISE\n"
+    }
+  ],
+  "custody": "Every case uses an uncommitted transaction; normal completion rolls back, failure closes and rolls back the session. Only the isolated stack is addressed.",
+  "blindCategory": "Authenticated writer on synthetic workspace; not a populated previous-release upgrade."
+}

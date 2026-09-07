@@ -1,4 +1,4 @@
-import { readEveryPage } from "@/lib/supabase/paged-read";
+import { readPublicApprovedItems } from "@/lib/engagement/public-approved-items";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
@@ -1016,13 +1016,7 @@ async function buildPublicPortalBundle(
       .eq("campaign_id", campaign.id)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true }),
-    readEveryPage((from, to) => supabase
-      .from("engagement_items")
-      .select("id, configuration_version_id, category_id, title, body, submitted_by, latitude, longitude, geometry, photo_path, votes_count, parent_item_id, created_at")
-      .eq("campaign_id", campaign.id)
-      .eq("status", "approved")
-      .order("created_at", { ascending: false })
-      .order("id", { ascending: true }).range(from, to)).then((result) => ({ data: result.complete ? result.rows : [], error: result.complete ? null : result.error ?? { message: "The complete contribution list could not be loaded." } })),
+    readPublicApprovedItems<ApprovedItemRow>(supabase, campaign.id),
     // Definition tables only; response tables stay confined to survey-responses.ts.
     loadSurveyDefinition(supabase, campaign.id),
     // Published entries only — drafts never leave the operator.

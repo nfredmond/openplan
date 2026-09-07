@@ -1,0 +1,118 @@
+{
+  "fixture": {
+    "campaignId": "146f93d3-800a-4114-afa1-511ef1e12eac",
+    "shareToken": "knjrxevmi8ec0hclvyodx30ew54t",
+    "questionId": "c6c0f684-3269-4e87-9b3c-f37e29c58346"
+  },
+  "checks": [
+    {
+      "path": "/api/engagement/campaigns/146f93d3-800a-4114-afa1-511ef1e12eac",
+      "method": "PATCH",
+      "status": 200
+    },
+    {
+      "path": "/api/engagement/campaigns/146f93d3-800a-4114-afa1-511ef1e12eac",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/engagement/campaigns/146f93d3-800a-4114-afa1-511ef1e12eac/share-token",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "path": "/api/engagement/campaigns/146f93d3-800a-4114-afa1-511ef1e12eac/survey/questions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "path": "/api/engagement/campaigns/146f93d3-800a-4114-afa1-511ef1e12eac",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/engage/knjrxevmi8ec0hclvyodx30ew54t/submit",
+      "method": "POST",
+      "status": 409
+    },
+    {
+      "path": "/api/engage/knjrxevmi8ec0hclvyodx30ew54t/submit",
+      "method": "POST",
+      "status": 409
+    },
+    {
+      "path": "/api/engage/knjrxevmi8ec0hclvyodx30ew54t/survey/submit",
+      "method": "POST",
+      "status": 409
+    },
+    {
+      "path": "/api/engage/knjrxevmi8ec0hclvyodx30ew54t/survey/submit",
+      "method": "POST",
+      "status": 409
+    },
+    {
+      "path": "/api/engagement/campaigns/146f93d3-800a-4114-afa1-511ef1e12eac",
+      "method": "PATCH",
+      "status": 200
+    },
+    {
+      "case": "photo outside dates",
+      "status": 403
+    },
+    {
+      "path": "/api/engagement/campaigns/146f93d3-800a-4114-afa1-511ef1e12eac",
+      "method": "PATCH",
+      "status": 200
+    },
+    {
+      "case": "photo outside dates",
+      "status": 403
+    },
+    {
+      "path": "/api/engagement/campaigns/146f93d3-800a-4114-afa1-511ef1e12eac",
+      "method": "PATCH",
+      "status": 200
+    },
+    {
+      "case": "in-window upload",
+      "status": 201
+    },
+    {
+      "path": "/api/engagement/campaigns/146f93d3-800a-4114-afa1-511ef1e12eac",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/engage/knjrxevmi8ec0hclvyodx30ew54t/submit",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "path": "/api/engage/knjrxevmi8ec0hclvyodx30ew54t/survey/submit",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "path": "/api/engagement/campaigns/146f93d3-800a-4114-afa1-511ef1e12eac",
+      "method": "PATCH",
+      "status": 200
+    },
+    {
+      "path": "/api/engage/knjrxevmi8ec0hclvyodx30ew54t/submit",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "path": "/api/engage/knjrxevmi8ec0hclvyodx30ew54t/survey/submit",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "case": "changed configuration retains both exact received identifiers",
+      "passed": true
+    }
+  ],
+  "received": "1f604374-5dbd-40b7-99c8-53780e4ed22a",
+  "survey": "156d1ab5-20a6-45b5-965c-fb244f61400a",
+  "blindCategory": "Normal setup reuse navigation plus explicit HTTP contract probes. Public user comprehension is not measured."
+}

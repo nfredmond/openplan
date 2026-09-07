@@ -33,7 +33,8 @@ stable enough to promise smooth upgrades indefinitely.
   [engagement_setup_reuse](openplan/supabase/migrations/20260908000007_engagement_setup_reuse.sql),
   [engagement_export_access_paths](openplan/supabase/migrations/20260908000008_engagement_export_access_paths.sql),
   [engagement_bundle_access](openplan/supabase/migrations/20260908000009_engagement_bundle_access.sql),
-  [engagement_review_intent](openplan/supabase/migrations/20260908000010_engagement_review_intent.sql).
+  [engagement_review_intent](openplan/supabase/migrations/20260908000010_engagement_review_intent.sql),
+  [engagement_campaign_configuration_scope](openplan/supabase/migrations/20260908000011_engagement_campaign_configuration_scope.sql).
   Historical contributions without a retained configuration remain explicitly unavailable.
   Campaign PDF rendering uses installed Chrome to preserve multilingual text and maps.
 

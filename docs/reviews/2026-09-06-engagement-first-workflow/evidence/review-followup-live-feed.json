@@ -1,0 +1,22 @@
+{
+  "campaignId": "146f93d3-800a-4114-afa1-511ef1e12eac",
+  "reads": 4,
+  "initialIds": [
+    "21bb0df5-3c42-48b8-9643-e34291d25cb6",
+    "3a7d2c38-9e2f-4cb3-a3e9-48d8cea437d3",
+    "5bc35dfa-dd59-4aee-881e-fa069a361aca",
+    "6600670e-e423-4f81-b51e-8bfd3ff9c0e8",
+    "814a8f8c-7a2f-4c07-9fef-ace1d9ecc542",
+    "c9f722dc-6b9e-49bc-9118-af6bdb74e381"
+  ],
+  "nextRefreshCount": 7,
+  "newApprovalId": "02e941cc-628f-4e5b-8a71-ba2a38a144b7",
+  "checks": [
+    "all six initially published IDs arrived once",
+    "approval occurred after first real database page",
+    "server cap two honored through empty-page exhaustion",
+    "new earlier approval appears on refresh",
+    "private review reason absent"
+  ],
+  "blindCategory": "Cursor reads avoid offset shifts but do not freeze all public record values at one instant; immutable review exports have a separate snapshot."
+}

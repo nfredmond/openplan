@@ -132,7 +132,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
     }
     if(campaign.status!=="active")return NextResponse.json({error:"Campaign not found or not publicly available"},{status:404});
-    if (parsed.data.configurationVersionId && parsed.data.configurationVersionId !== campaign.configuration_version_id) return NextResponse.json({ error: "The survey changed. Your answers are retained. Review the latest questions before sending." }, { status: 409 });
+    if ((parsed.data.configurationVersionId ?? null) !== (campaign.configuration_version_id ?? null)) return NextResponse.json({ error: "The survey changed. Your answers are retained. Review the latest questions before sending." }, { status: 409 });
     if ((campaign.participation_starts_at && Date.parse(campaign.participation_starts_at) > Date.now()) || (campaign.participation_ends_at && Date.parse(campaign.participation_ends_at) <= Date.now())) return NextResponse.json({ error: "This campaign is outside its participation dates." }, { status: 403 });
     if (!campaign.allow_public_submissions || campaign.submissions_closed_at) {
       return NextResponse.json({ error: "This survey is not currently accepting responses" }, { status: 403 });

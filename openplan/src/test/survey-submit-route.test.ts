@@ -144,4 +144,15 @@ describe("POST /api/engage/[shareToken]/survey/submit", () => {
     receiptMock.mockResolvedValue({data:null,error:null});expect((await POST(req(body),params)).status).toBe(404);expect(insertSurveyResponseMock).not.toHaveBeenCalled();
   });
 
+  for (const version of [undefined, "66666666-6666-4666-8666-666666666666", "55555555-5555-4555-8555-555555555555"]) {
+    it(`requires the current published configuration for new survey answers: ${version ?? "missing"}`,async()=>{
+      const select=vi.fn(()=>({eq:()=>({maybeSingle:async()=>({data:{...OK_CAMPAIGN,configuration_version_id:"55555555-5555-4555-8555-555555555555"},error:null})})}));
+      createServiceRoleClientMock.mockReturnValue({from:()=>({select})});
+      const response=await POST(req({configurationVersionId:version,answers:[{questionId:Q_ID,answer:{option_id:OPT_ID}}]}),params);
+      expect(response.status).toBe(version==="55555555-5555-4555-8555-555555555555"?201:409);
+      expect(select).toHaveBeenCalledWith(expect.stringContaining("configuration_version_id"));
+      if(version!=="55555555-5555-4555-8555-555555555555")expect(insertSurveyResponseMock).not.toHaveBeenCalled();
+    });
+  }
+
 });

@@ -197,7 +197,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if ((campaign.participation_starts_at && Date.parse(campaign.participation_starts_at) > Date.now()) || (campaign.participation_ends_at && Date.parse(campaign.participation_ends_at) <= Date.now())) {
       return NextResponse.json({ error: "This campaign is outside its participation dates." }, { status: 403 });
     }
-    if (parsed.data.configurationVersionId && parsed.data.configurationVersionId !== campaign.configuration_version_id) {
+    if ((parsed.data.configurationVersionId ?? null) !== (campaign.configuration_version_id ?? null)) {
       return NextResponse.json({ error: "The campaign questions or instructions changed. Your draft is retained. Reload and review them before sending." }, { status: 409 });
     }
 

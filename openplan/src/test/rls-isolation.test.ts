@@ -2518,6 +2518,34 @@ liveDescribe("workspace RLS live isolation", () => {
     );
   });
 
+  it("keeps current campaign configuration pointers scoped and derived", () => {
+    executeSql(resolveLocalDbContainer(), `BEGIN;
+      SET LOCAL ROLE authenticated;
+      SELECT set_config('request.jwt.claim.sub','${context.userBId}',true);
+      DO $$ DECLARE first_campaign uuid; second_campaign uuid; old_version uuid; current_version uuid; foreign_version uuid; observed uuid;
+      BEGIN
+        INSERT INTO engagement_campaigns(workspace_id,title,engagement_type,status) VALUES('${context.workspaceBId}','Configuration scope first','comment_collection','draft') RETURNING id,configuration_version_id INTO first_campaign,old_version;
+        SELECT configuration_version_id INTO old_version FROM engagement_campaigns WHERE id=first_campaign;
+        INSERT INTO engagement_campaigns(workspace_id,title,engagement_type,status) VALUES('${context.workspaceBId}','Configuration scope second','comment_collection','draft') RETURNING id INTO second_campaign;
+        SELECT configuration_version_id INTO foreign_version FROM engagement_campaigns WHERE id=second_campaign;
+        IF old_version IS NULL OR foreign_version IS NULL THEN RAISE EXCEPTION 'Configuration fixture is missing'; END IF;
+        UPDATE engagement_campaigns SET title='Changed instructions definition' WHERE id=first_campaign;
+        SELECT configuration_version_id INTO current_version FROM engagement_campaigns WHERE id=first_campaign;
+        IF current_version=old_version THEN RAISE EXCEPTION 'Changed definition was not captured'; END IF;
+        UPDATE engagement_campaigns SET configuration_version_id=old_version WHERE id=first_campaign;
+        SELECT configuration_version_id INTO observed FROM engagement_campaigns WHERE id=first_campaign;
+        IF observed IS DISTINCT FROM current_version THEN RAISE EXCEPTION 'Old pointer replaced the current definition'; END IF;
+        BEGIN
+          UPDATE engagement_campaigns SET configuration_version_id=foreign_version WHERE id=first_campaign;
+          RAISE EXCEPTION 'Foreign campaign configuration was not refused';
+        EXCEPTION WHEN foreign_key_violation THEN NULL; END;
+        UPDATE engagement_campaigns SET configuration_version_id=current_version WHERE id=first_campaign;
+        SELECT configuration_version_id INTO observed FROM engagement_campaigns WHERE id=first_campaign;
+        IF observed IS DISTINCT FROM current_version THEN RAISE EXCEPTION 'Own current configuration was not retained'; END IF;
+      END $$;
+      ROLLBACK;`);
+  });
+
   it("does not let anon clients enumerate shared engagement campaigns", async () => {
     const sharedCampaignId = randomUUID();
     const seeded = await service.from("engagement_campaigns").insert({

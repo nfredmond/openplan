@@ -784,4 +784,14 @@ describe("POST /api/engage/[shareToken]/submit", () => {
     receiptMock.mockResolvedValue({data:null,error:null});expect((await POST(jsonRequest("test-share-token-12345",body),{params:Promise.resolve({shareToken:"test-share-token-12345"})})).status).toBe(404);expect(itemInsertMock).not.toHaveBeenCalled();
   });
 
+  for (const version of [undefined, "66666666-6666-4666-8666-666666666666", "55555555-5555-4555-8555-555555555555"]) {
+    it(`requires the current published configuration for a new comment: ${version ?? "missing"}`, async () => {
+      campaignMaybeSingleMock.mockResolvedValue({data:{id:"11111111-1111-4111-8111-111111111111",status:"active",allow_public_submissions:true,configuration_version_id:"55555555-5555-4555-8555-555555555555"},error:null});
+      const response=await POST(jsonRequest("test-share-token-12345",{body:"Version-bound feedback",configurationVersionId:version}),{params:Promise.resolve({shareToken:"test-share-token-12345"})});
+      expect(response.status).toBe(version==="55555555-5555-4555-8555-555555555555"?201:409);
+      expect(campaignSelectMock).toHaveBeenCalledWith(expect.stringContaining("configuration_version_id"));
+      if(version!=="55555555-5555-4555-8555-555555555555")expect(itemInsertMock).not.toHaveBeenCalled();
+    });
+  }
+
 });
