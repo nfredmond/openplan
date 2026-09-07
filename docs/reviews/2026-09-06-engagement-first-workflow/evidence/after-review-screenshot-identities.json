@@ -1,0 +1,96 @@
+{
+  "build": "48b2c5fcb7a78907da963a1b4b80c5218ebfe1b6",
+  "screenshots": [
+    {
+      "file": "followup-participant-receipt-1440.png",
+      "bytes": 591305,
+      "sha256": "8138efb942493a10d1f38a9998ae902fbf04bbc0ed313397bca964229403c6b6"
+    },
+    {
+      "file": "followup-participant-receipt-390.png",
+      "bytes": 110361,
+      "sha256": "693f22113ee0eaa61224fd9cbb96dc31891bf08f006bf4875de6bffaac30f77b"
+    },
+    {
+      "file": "large-public-feed-desktop.png",
+      "bytes": 151940,
+      "sha256": "20e579ba5a307633fcdd5a81a1c3fa6c49c570826afa875da24412d7c7a3d1d0"
+    },
+    {
+      "file": "large-public-feed-390.png",
+      "bytes": 104924,
+      "sha256": "55d1007f3563e4efe3ecb9dc2e15263bb87d58343add42ebf25a4464d80d0a2a"
+    },
+    {
+      "file": "review-panel-final-390.png",
+      "bytes": 90485,
+      "sha256": "c3227f29f2bdaaec922b8d43b135083974c59b2cacbf340d0fe800f48d0e4817"
+    },
+    {
+      "file": "review-history-control-final-390.png",
+      "bytes": 90029,
+      "sha256": "b1a6f0cd99ea31a02c49376007d8d11025bb611cc5f271cd7f5b9b47d065d65f"
+    },
+    {
+      "file": "production-files-0-public-desktop.png",
+      "bytes": 253944,
+      "sha256": "aaeb883ee2c4b5f60e0ea8e40fd4fc3c61317a61b9df8705475b4025a57cda72"
+    },
+    {
+      "file": "production-files-0-public-390.png",
+      "bytes": 88540,
+      "sha256": "8faf4cb3ffb2f61aa47d82daf7bfa17e66c2fe65db59f58e97a36edf3608a405"
+    },
+    {
+      "file": "production-files-0-internal-desktop.png",
+      "bytes": 253468,
+      "sha256": "0a2c483e4753b041bfe5a856627bd9793f3bb963b730951c11f21f48914712ac"
+    },
+    {
+      "file": "production-files-0-internal-390.png",
+      "bytes": 84509,
+      "sha256": "0f35395dfc35258c07695af6b00fc4849ab3cd4a72563b055ff13724fb7cb78b"
+    },
+    {
+      "file": "production-files-1-public-desktop.png",
+      "bytes": 254922,
+      "sha256": "23e75d10ad75e91469c80d15d436a176b45aca62fb0b35bec7fc012bdeb96f3c"
+    },
+    {
+      "file": "production-files-1-public-390.png",
+      "bytes": 88533,
+      "sha256": "c5b6e6363066c1a60874b9214a10bc88e42aafd7397f20dd833093caa030eaf6"
+    },
+    {
+      "file": "production-files-1-internal-desktop.png",
+      "bytes": 254739,
+      "sha256": "b1975dab9d274f75548bf5ca6c233b44cc8014beb5867997eb080d0882a7c53a"
+    },
+    {
+      "file": "production-files-1-internal-390.png",
+      "bytes": 84489,
+      "sha256": "5f5dbfc69bba74cde8dbeec3fe1c15c8d0d07d4a0d507cfaedf6c17b4ce6e73f"
+    },
+    {
+      "file": "linked-review-map-desktop.png",
+      "bytes": 301244,
+      "sha256": "4ffdfdac4ac53f10a56d179700ad82914fc227403f5f1d323fe2d4758ae3d450"
+    },
+    {
+      "file": "linked-review-map-390.png",
+      "bytes": 79957,
+      "sha256": "adac72c3ff5247d6034b66280cb52ef67fad9802b4780824fe952ac658de8a7f"
+    },
+    {
+      "file": "large-review-filter-desktop.png",
+      "bytes": 218552,
+      "sha256": "3c06a92474e7d91763c6dd7836e03f3efe3c9952826cd2c4bdd9a9f7ee87bc2c"
+    },
+    {
+      "file": "large-review-filter-390.png",
+      "bytes": 82531,
+      "sha256": "5972829fb8fbf51ffb6d42caac5921cf45a9b20a1b4aa61e0bdac975467c98c3"
+    }
+  ],
+  "scope": "Synthetic isolated fixture; screenshots retained locally, no credentials committed."
+}

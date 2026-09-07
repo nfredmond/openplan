@@ -1,0 +1,23 @@
+{
+  "build": "48b2c5fcb7a78907da963a1b4b80c5218ebfe1b6",
+  "checks": [
+    "Invalid retained route is omitted from map markers",
+    "Keyboard map marker opens matching review detail",
+    "Linked staff map uses full detail without a duplicate popup",
+    "Pointer map selection retains the matching full review detail at390px",
+    "Linked map and list fit390px",
+    "Large campaign shows25items per page with complete1005count",
+    "Next page contains25distinct contributions",
+    "Review next follows the filtered list",
+    "Search resets pagination and returns the independently known last contribution",
+    "Anonymous complete feed contains the independently reconciled905published records including replies",
+    "Complete public feed fits390px"
+  ],
+  "console": [
+    "[.WebGL-0x2d440013c200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x2d440013c200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x2d440013c200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x2d440013c200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+  ],
+  "filteredText": "Page 1 of 1. 1 matching contributions."
+}
