@@ -147,6 +147,33 @@ configuration in the environment template. An external worker receives the
 inputs needed for its job; selecting a remote endpoint changes where those
 inputs are processed.
 
+**OWP review-file rendering.** After applying the additive migrations, run
+`npm run worker:document-exports` from `openplan/` as a supervised process.
+It uses the same private Documents bucket and database job records as intake;
+there is no additional queue service. Configure the app's Supabase URL and
+service-role key in the private `.env.local` read by this command. Install
+Poppler (`pdftoppm`) and a compatible Chrome/Chromium executable; set
+`CHROME_EXECUTABLE_PATH` if it is not `/usr/bin/google-chrome`. A proposal with
+cited source charts cannot silently fall back to a PDF renderer that omits them.
+No AI provider account is required for manual preparation, text/OCR intake,
+reconciliation or review files.
+
+`OPENPLAN_DOCUMENT_EXPORT_WORK_DIR` selects a private persistent cache directory;
+the default is `~/.local/state/openplan/document-exports`. Back it up with the
+Documents bucket and database. A completed artifact records its revision,
+format, checksum and storage identity. A worker restart can resume an expired
+lease and reuse verified rendered bytes; a failed job offers retry in Programs.
+The cache is retained without automatic cleanup. Treat it as confidential and
+monitor disk use. Print the workbook's selected **Print summary** sheet; use the
+PDF for the complete formatted program. Wide editable workbook tabs are intended
+for on-screen review, not entire-workbook printing.
+
+When working with multiple local stacks, supply `OPENPLAN_SUPABASE_WORKDIR`
+explicitly to **every** live test/QA command. The application `.env.local` is not
+implicitly loaded by Vitest. Example: `OPENPLAN_SUPABASE_WORKDIR=/absolute/stack
+npm run test:rls-live` (one shell command). The guarded `db:sync` additionally
+refuses a stack whose API URL differs from the application's effective URL.
+
 ## Services, schedules and upgrades
 
 A production installation needs named ownership of TLS, firewall rules,

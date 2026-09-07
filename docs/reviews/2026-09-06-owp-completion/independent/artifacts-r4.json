@@ -1,0 +1,93 @@
+{
+  "revision": 4,
+  "status": "bounded_recheck_pass",
+  "reviewed_inputs": "Actual arrived Downloads files copied byte-for-byte under downloaded; all three SHA256 checks match root UI checksums. Root owns browser button journey evidence.",
+  "counts": {
+    "source_cells_xlsx": 831,
+    "source_cells_html": 831,
+    "allocations": 25,
+    "current_cost_rows": 41,
+    "source_person_months": 13,
+    "mapping_rows": 16,
+    "forced_recalculated_formulas": 543,
+    "poisoned_cache_sentinels_survived": 0,
+    "formula_errors": 0,
+    "quantity_mutation_cases": 8,
+    "pdf_pages": 141,
+    "selected_print_pages": 2
+  },
+  "mutations": {
+    "summary_blank": "Unresolved",
+    "summary_negative": "Unresolved",
+    "summary_zero": "0",
+    "summary_positive": "5.4",
+    "calculated_hours_with_hours_unit": "same four expected outputs",
+    "person_months_without_hours_conversion": "Calculated hours correctly Unresolved for all four quantity states.",
+    "pass": true
+  },
+  "r3_failure": "Blank staffing quantity becoming summary zero is corrected in actual R4. Negative guard also exercised independently; true zero preserved.",
+  "source_consistency": {
+    "independent_original_source_comparison": "All831 sourcecells compared again;13 staff quantities and16 mappings checked again.",
+    "unchanged_semantic_sheets": [
+      "Work elements",
+      "Tasks and products",
+      "Funding sources",
+      "Allocations",
+      "Expenditures",
+      "Mappings",
+      "Source sections",
+      "Original budget passages",
+      "Original program passages",
+      "Source figures",
+      "Sources",
+      "Source passages"
+    ],
+    "prior_independent_task_and_whole_dollar_checks_still_applicable": "All183 task/product rows and30 original budget passages with158 printed dollar tokens remain byte-equivalent at cell value/formula level to independently checked R3. Original program passages, materials and source passage rows unchanged.",
+    "scope_note_added": "Actual balances and individual labor-cost assignments remain unresolved pending source evidence."
+  },
+  "layout": {
+    "pdf": "All141 pages rerendered;139 page bodies pixel-identical to previously visually inspected R3, excluding40px footer band. Changed pages1 and141 individually visually inspected and readable.",
+    "pdf_pixel_evidence": "pdf-body-pixel-comparison.json",
+    "print_summary": "Selected A1:D85 via typed UNO FilterData Selection yields2pages. Both pages individually inspected at1500px; readable four-column table, no clipping. Long revisionhash wraps one character onto next line but remains visible.",
+    "active_tab": {
+      "activeTab": "22",
+      "firstSheet": "22"
+    },
+    "summary_sheet_view": {
+      "workbookViewId": "0",
+      "tabSelected": "1"
+    },
+    "print_area": "'Print summary'!$A$1:$D$85",
+    "limitation": "Wide editable input tabs remain designed for on-screen work; full narrative paper artifact is PDF. Selected summary printing proved via native UNO, not GUI print-dialog interaction."
+  },
+  "harness_corrections": [
+    "compare.py initially required metadata files beside download copies; changed checker to use captured UI checksums from browser-arrival-identity.json. No artifact content altered.",
+    "Initial calculated-hours positive/zero expectation was wrong because no person-month hours conversion exists. Preserved in summary-mutation-harness-correction.json; then added four hours-unit mutation cases to actually exercise numeric calculated hours."
+  ],
+  "authority_boundaries": [
+    "WE200EIR and263 remain unresolved; no closeout inferred.",
+    "Prior authority is not available balance; proposed funding is not actual expenditure.",
+    "No agency approval, adoption, submission or individual labor cost determination implied."
+  ],
+  "evidence_files": [
+    "browser-arrival-identity.json",
+    "comparison.json",
+    "forced-recalculation-results.json",
+    "structural-comparison.json",
+    "summary-mutation-results.json",
+    "hours-mutation-results.json",
+    "r3-r4-workbook-changes.json",
+    "pdf-body-pixel-comparison.json",
+    "selected-print/proposal.pdf",
+    "guard-proof-results.json",
+    "guard-proof-mutations.json"
+  ],
+  "changed_guard_proof": {
+    "evidence": "guard-proof-results.json",
+    "mutation_manifest": "guard-proof-mutations.json",
+    "harmless_text_controls": 8,
+    "formula_results_compared_per_control": 543,
+    "targeted_guard_removal_failures": 3,
+    "result": "pass"
+  }
+}

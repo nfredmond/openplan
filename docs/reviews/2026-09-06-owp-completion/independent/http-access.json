@@ -1,0 +1,242 @@
+[
+  {
+    "role": "owner",
+    "operation": "/api/programs/0dacf374-6465-4c58-89a8-23b8b8b88257/work-program",
+    "status": 200
+  },
+  {
+    "role": "owner",
+    "operation": "/api/knowledge-base/documents/1e667643-a9b5-46ba-96d0-84cf59471cd5/ocr",
+    "status": 200
+  },
+  {
+    "role": "owner",
+    "operation": "/api/programs/0dacf374-6465-4c58-89a8-23b8b8b88257/work-program/export?revision=3&format=html",
+    "status": 200
+  },
+  {
+    "role": "owner",
+    "operation": "/api/programs/0dacf374-6465-4c58-89a8-23b8b8b88257/work-program/export?revision=3&format=pdf",
+    "status": 200
+  },
+  {
+    "role": "owner",
+    "operation": "/api/programs/0dacf374-6465-4c58-89a8-23b8b8b88257/work-program/export?revision=3&format=xlsx",
+    "status": 200
+  },
+  {
+    "role": "owner",
+    "operation": "download html",
+    "status": 200,
+    "checksum": "2b84b8197d7fab6d5d731a463edc715ad5afd931080270c37932427d5ee2920c"
+  },
+  {
+    "role": "owner",
+    "operation": "download pdf",
+    "status": 200,
+    "checksum": "d1222bf726c5156dcee19594550ea5b79b3dbd5714a53ba38d7a8a238d2878c3"
+  },
+  {
+    "role": "owner",
+    "operation": "download xlsx",
+    "status": 200,
+    "checksum": "2c502986b728bee1134b023537d90ff306cf6ce06190f5f8787221bf300a3278"
+  },
+  {
+    "role": "owner",
+    "operation": "stale save",
+    "status": 409
+  },
+  {
+    "role": "member",
+    "operation": "/api/programs/0dacf374-6465-4c58-89a8-23b8b8b88257/work-program",
+    "status": 200
+  },
+  {
+    "role": "member",
+    "operation": "/api/knowledge-base/documents/1e667643-a9b5-46ba-96d0-84cf59471cd5/ocr",
+    "status": 200
+  },
+  {
+    "role": "member",
+    "operation": "/api/programs/0dacf374-6465-4c58-89a8-23b8b8b88257/work-program/export?revision=3&format=html",
+    "status": 200
+  },
+  {
+    "role": "member",
+    "operation": "/api/programs/0dacf374-6465-4c58-89a8-23b8b8b88257/work-program/export?revision=3&format=pdf",
+    "status": 200
+  },
+  {
+    "role": "member",
+    "operation": "/api/programs/0dacf374-6465-4c58-89a8-23b8b8b88257/work-program/export?revision=3&format=xlsx",
+    "status": 200
+  },
+  {
+    "role": "member",
+    "operation": "download html",
+    "status": 200,
+    "checksum": "2b84b8197d7fab6d5d731a463edc715ad5afd931080270c37932427d5ee2920c"
+  },
+  {
+    "role": "member",
+    "operation": "download pdf",
+    "status": 200,
+    "checksum": "d1222bf726c5156dcee19594550ea5b79b3dbd5714a53ba38d7a8a238d2878c3"
+  },
+  {
+    "role": "member",
+    "operation": "download xlsx",
+    "status": 200,
+    "checksum": "2c502986b728bee1134b023537d90ff306cf6ce06190f5f8787221bf300a3278"
+  },
+  {
+    "role": "member",
+    "operation": "stale save",
+    "status": 409
+  },
+  {
+    "role": "revoked member",
+    "operation": "/api/programs/0dacf374-6465-4c58-89a8-23b8b8b88257/work-program",
+    "status": 404
+  },
+  {
+    "role": "revoked member",
+    "operation": "/api/knowledge-base/documents/1e667643-a9b5-46ba-96d0-84cf59471cd5/ocr",
+    "status": 404
+  },
+  {
+    "role": "revoked member",
+    "operation": "/api/programs/0dacf374-6465-4c58-89a8-23b8b8b88257/work-program/export?revision=3&format=html",
+    "status": 404
+  },
+  {
+    "role": "revoked member",
+    "operation": "/api/programs/0dacf374-6465-4c58-89a8-23b8b8b88257/work-program/export?revision=3&format=pdf",
+    "status": 404
+  },
+  {
+    "role": "revoked member",
+    "operation": "/api/programs/0dacf374-6465-4c58-89a8-23b8b8b88257/work-program/export?revision=3&format=xlsx",
+    "status": 404
+  },
+  {
+    "role": "revoked member",
+    "operation": "download html",
+    "status": 404,
+    "checksum": null
+  },
+  {
+    "role": "revoked member",
+    "operation": "download pdf",
+    "status": 404,
+    "checksum": null
+  },
+  {
+    "role": "revoked member",
+    "operation": "download xlsx",
+    "status": 404,
+    "checksum": null
+  },
+  {
+    "role": "revoked member",
+    "operation": "stale save",
+    "status": 404
+  },
+  {
+    "role": "viewer",
+    "operation": "/api/programs/0dacf374-6465-4c58-89a8-23b8b8b88257/work-program",
+    "status": 200
+  },
+  {
+    "role": "viewer",
+    "operation": "/api/knowledge-base/documents/1e667643-a9b5-46ba-96d0-84cf59471cd5/ocr",
+    "status": 200
+  },
+  {
+    "role": "viewer",
+    "operation": "/api/programs/0dacf374-6465-4c58-89a8-23b8b8b88257/work-program/export?revision=3&format=html",
+    "status": 200
+  },
+  {
+    "role": "viewer",
+    "operation": "/api/programs/0dacf374-6465-4c58-89a8-23b8b8b88257/work-program/export?revision=3&format=pdf",
+    "status": 200
+  },
+  {
+    "role": "viewer",
+    "operation": "/api/programs/0dacf374-6465-4c58-89a8-23b8b8b88257/work-program/export?revision=3&format=xlsx",
+    "status": 200
+  },
+  {
+    "role": "viewer",
+    "operation": "download html",
+    "status": 200,
+    "checksum": "2b84b8197d7fab6d5d731a463edc715ad5afd931080270c37932427d5ee2920c"
+  },
+  {
+    "role": "viewer",
+    "operation": "download pdf",
+    "status": 200,
+    "checksum": "d1222bf726c5156dcee19594550ea5b79b3dbd5714a53ba38d7a8a238d2878c3"
+  },
+  {
+    "role": "viewer",
+    "operation": "download xlsx",
+    "status": 200,
+    "checksum": "2c502986b728bee1134b023537d90ff306cf6ce06190f5f8787221bf300a3278"
+  },
+  {
+    "role": "viewer",
+    "operation": "stale save",
+    "status": 403
+  },
+  {
+    "role": "outsider",
+    "operation": "/api/programs/0dacf374-6465-4c58-89a8-23b8b8b88257/work-program",
+    "status": 404
+  },
+  {
+    "role": "outsider",
+    "operation": "/api/knowledge-base/documents/1e667643-a9b5-46ba-96d0-84cf59471cd5/ocr",
+    "status": 404
+  },
+  {
+    "role": "outsider",
+    "operation": "/api/programs/0dacf374-6465-4c58-89a8-23b8b8b88257/work-program/export?revision=3&format=html",
+    "status": 404
+  },
+  {
+    "role": "outsider",
+    "operation": "/api/programs/0dacf374-6465-4c58-89a8-23b8b8b88257/work-program/export?revision=3&format=pdf",
+    "status": 404
+  },
+  {
+    "role": "outsider",
+    "operation": "/api/programs/0dacf374-6465-4c58-89a8-23b8b8b88257/work-program/export?revision=3&format=xlsx",
+    "status": 404
+  },
+  {
+    "role": "outsider",
+    "operation": "download html",
+    "status": 404,
+    "checksum": null
+  },
+  {
+    "role": "outsider",
+    "operation": "download pdf",
+    "status": 404,
+    "checksum": null
+  },
+  {
+    "role": "outsider",
+    "operation": "download xlsx",
+    "status": 404,
+    "checksum": null
+  },
+  {
+    "role": "outsider",
+    "operation": "stale save",
+    "status": 404
+  }
+]
