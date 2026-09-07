@@ -25,3 +25,18 @@ describe('photograph choices after an interrupted submission',()=>{
  });
  it('keeps participation available when browser storage cannot be read',async()=>{vi.spyOn(Storage.prototype,'getItem').mockImplementation(()=>{throw new Error('Storage disabled');});setup();await screen.findByText(/Browser storage is unavailable/);next();expect(document.querySelector('#portal-body')).toBeTruthy();});
 });
+
+describe('retained receipt and edited draft have separate meaning',()=>{
+ it('keeps the earlier receipt free of the edited text and uses a new identifier only after the participant chooses it',async()=>{
+  const bodies:Record<string,unknown>[]=[];
+  vi.stubGlobal('fetch',vi.fn(async(_url:string,init:RequestInit)=>{bodies.push(JSON.parse(init.body as string));return new Response(JSON.stringify(bodies.length===1?{error:'Already received',previousReceipt:{submissionId:'earlier-id',receivedAt:'2026-09-01'}}:{success:true,submissionId:'new-id'}),{status:bodies.length===1?409:201});}));
+  setup();await waitFor(()=>expect(localStorage.length).toBeGreaterThan(0));next();fireEvent.change(document.querySelector('#portal-body')!,{target:{value:'Edited and still unsent'}});next();next();next();fireEvent.click(screen.getByRole('button',{name:'Send what I wrote'}));
+  await screen.findByText(/An earlier version was received/);const href=screen.getByRole('link',{name:'Save receipt'}).getAttribute('href')!;expect(decodeURIComponent(href)).toContain('earlier-id');expect(decodeURIComponent(href)).not.toContain('Edited and still unsent');
+  fireEvent.click(screen.getByRole('button',{name:'Keep this edited draft as a new contribution'}));fireEvent.click(screen.getByRole('button',{name:'Send what I wrote'}));await waitFor(()=>expect(bodies).toHaveLength(2));expect(bodies[1].requestId).not.toBe(bodies[0].requestId);expect(bodies[1].body).toBe('Edited and still unsent');await screen.findByTestId('portal-sidebar-received');
+ });
+ it('restores optional participant details and keeps an existing receipt accessible after closing',async()=>{
+  localStorage.setItem('openplan-engagement-draft:retry-photo-test:new',JSON.stringify({version:1,body:'Original',requestId:'11111111-1111-4111-8111-111111111111',ageBand:'35_44',zip5:'95945',primaryLanguage:'en',raceEthnicity:['white'],householdTenure:'rent',receipt:{submissionId:'saved-id',receivedAt:'2026-09-01'}}));
+  render(<PublicMapSidebar shareToken="retry-photo-test" acceptingSubmissions={false} categories={[]} demographicsEnabled translator={translator} geometry={null} onClearGeometry={()=>{}} drawMode="point" onDrawModeChange={()=>{}} mapAvailable={false}/>);
+  await screen.findByTestId('portal-sidebar-received');await waitFor(()=>{const saved=JSON.parse(localStorage.getItem('openplan-engagement-draft:retry-photo-test:new')!);expect(saved).toMatchObject({ageBand:'35_44',zip5:'95945',primaryLanguage:'en',raceEthnicity:['white'],householdTenure:'rent'});});
+ });
+});

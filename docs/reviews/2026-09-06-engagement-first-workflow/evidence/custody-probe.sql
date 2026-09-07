@@ -6,11 +6,12 @@ INSERT INTO workspace_members(workspace_id,user_id,role) VALUES('01000000-0000-4
 SELECT set_config('request.jwt.claim.sub','01000000-0000-4000-8000-000000000001',true);
 INSERT INTO engagement_campaigns(id,workspace_id,title,status,allow_public_submissions) VALUES('01000000-0000-4000-8000-000000000003','01000000-0000-4000-8000-000000000002','Demonstration custody campaign','active',true);
 INSERT INTO engagement_categories(id,campaign_id,label,slug) VALUES('01000000-0000-4000-8000-000000000004','01000000-0000-4000-8000-000000000003','Original category','original-category');
-INSERT INTO engagement_items(id,campaign_id,category_id,body,source_type,configuration_version_id,request_id,request_sha256)
-SELECT '01000000-0000-4000-8000-000000000005',id,'01000000-0000-4000-8000-000000000004','Restricted original','public',configuration_version_id,'01000000-0000-4000-8000-000000000006','original-hash' FROM engagement_campaigns WHERE id='01000000-0000-4000-8000-000000000003';
+INSERT INTO engagement_items(id,campaign_id,category_id,body,source_type,configuration_version_id,request_id,request_sha256,review_reason,review_expected_updated_at)
+SELECT '01000000-0000-4000-8000-000000000005',id,'01000000-0000-4000-8000-000000000004','Restricted original','public',configuration_version_id,'01000000-0000-4000-8000-000000000006','original-hash','PRIVATE INSERTED REVIEW INTENT',clock_timestamp() FROM engagement_campaigns WHERE id='01000000-0000-4000-8000-000000000003';
 DO $$ DECLARE original_version uuid; n integer; job jsonb; payload jsonb; item_timestamp timestamptz; failed boolean; BEGIN
  SELECT configuration_version_id INTO original_version FROM engagement_items WHERE id='01000000-0000-4000-8000-000000000005';
  ASSERT original_version IS NOT NULL, 'new contribution has configuration';
+ ASSERT (SELECT review_reason IS NULL AND review_expected_updated_at IS NULL FROM engagement_items WHERE id='01000000-0000-4000-8000-000000000005'),'insert retained private review intent';
  UPDATE engagement_categories SET label='New category meaning' WHERE id='01000000-0000-4000-8000-000000000004';
  ASSERT (SELECT configuration_version_id<>original_version FROM engagement_campaigns WHERE id='01000000-0000-4000-8000-000000000003'),'configuration did not change';
  ASSERT (SELECT definition_json->'categories'->0->>'label'='Original category' FROM engagement_configuration_versions WHERE id=original_version),'historical meaning overwritten';
@@ -18,10 +19,17 @@ DO $$ DECLARE original_version uuid; n integer; job jsonb; payload jsonb; item_t
  BEGIN UPDATE engagement_configuration_versions SET definition_json='{}' WHERE id=original_version; EXCEPTION WHEN raise_exception THEN failed=true; END;
  ASSERT failed,'immutable configuration accepted overwrite';
  failed=false;
- BEGIN UPDATE engagement_items SET status='approved' WHERE id='01000000-0000-4000-8000-000000000005'; EXCEPTION WHEN raise_exception THEN failed=true; END;
+ BEGIN UPDATE engagement_items SET status='approved',review_expected_updated_at=updated_at WHERE id='01000000-0000-4000-8000-000000000005'; EXCEPTION WHEN raise_exception THEN failed=true; END;
  ASSERT failed,'publication without a reason succeeded';
  SELECT updated_at INTO item_timestamp FROM engagement_items WHERE id='01000000-0000-4000-8000-000000000005';
- UPDATE engagement_items SET status='approved',body='Reviewed public copy',moderation_notes='Remove identifying information' WHERE id='01000000-0000-4000-8000-000000000005';
+ UPDATE engagement_items SET status='approved',body='Reviewed public copy',moderation_notes='Remove identifying information',review_reason='Remove identifying information',review_expected_updated_at=item_timestamp WHERE id='01000000-0000-4000-8000-000000000005';
+ failed=false;
+ BEGIN UPDATE engagement_items SET body='Old reason reused',review_expected_updated_at=updated_at WHERE id='01000000-0000-4000-8000-000000000005'; EXCEPTION WHEN raise_exception THEN failed=true; END;
+ ASSERT failed,'previous reason silently reused';
+ failed=false;
+ BEGIN UPDATE engagement_items SET body='Stale direct overwrite',review_reason='Fresh direct reason',review_expected_updated_at=item_timestamp WHERE id='01000000-0000-4000-8000-000000000005'; EXCEPTION WHEN serialization_failure THEN failed=true; END;
+ ASSERT failed,'stale direct review accepted';
+ ASSERT (SELECT review_reason IS NULL AND review_expected_updated_at IS NULL FROM engagement_items WHERE id='01000000-0000-4000-8000-000000000005'),'transient review intent persisted';
  ASSERT (SELECT updated_at<>item_timestamp FROM engagement_items WHERE id='01000000-0000-4000-8000-000000000005'),'review version did not advance';
  ASSERT (SELECT count(*)=1 FROM engagement_item_history WHERE item_id='01000000-0000-4000-8000-000000000005' AND record_json->>'body'='Restricted original'),'original not retained';
  ASSERT (SELECT count(*)=1 FROM engagement_item_history WHERE item_id='01000000-0000-4000-8000-000000000005' AND record_json->>'body'='Reviewed public copy'),'review not retained';
@@ -33,6 +41,7 @@ DO $$ DECLARE original_version uuid; n integer; job jsonb; payload jsonb; item_t
  SELECT snapshot_text::jsonb INTO payload FROM engagement_report_jobs WHERE id=(job->>'jobId')::uuid;
  ASSERT jsonb_array_length(payload->'items')=1,'public report includes pending content';
  ASSERT payload::text NOT LIKE '%Restricted original%' AND payload::text NOT LIKE '%Private pending%' AND payload::text NOT LIKE '%original-hash%','public snapshot leaks restricted data';
+ ASSERT NOT (payload->'items'->0 ?| ARRAY['review_reason','review_expected_updated_at']),'public snapshot includes transient review fields';
  ASSERT payload->'items'->0->>'body'='Reviewed public copy','public copy missing';
  ASSERT job=queue_engagement_report('01000000-0000-4000-8000-000000000003','01000000-0000-4000-8000-000000000007','public','{}'),'export retry changed identity';
  failed=false;

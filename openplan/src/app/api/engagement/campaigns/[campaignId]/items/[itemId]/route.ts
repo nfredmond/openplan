@@ -91,7 +91,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     const { data: existingItem, error: itemLookupError } = await supabase
       .from("engagement_items")
-      .select("id, campaign_id, category_id, updated_at, status, title, body, submitted_by, photo_path, geometry, latitude, longitude")
+      .select("id, campaign_id, category_id, updated_at, status, source_type, title, body, submitted_by, photo_path, geometry, latitude, longitude")
       .eq("id", parsedParams.data.itemId)
       .eq("campaign_id", access.campaign.id)
       .maybeSingle();
@@ -113,7 +113,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (existingItem.updated_at !== parsed.data.expectedUpdatedAt) {
       return NextResponse.json({ error: "This contribution changed since you opened it. Refresh and review the current version." }, { status: 409 });
     }
-    const changesPublicCopy = (parsed.data.body !== undefined && parsed.data.body !== existingItem.body)
+    const changesPublicCopy = (parsed.data.categoryId !== undefined && parsed.data.categoryId !== existingItem.category_id)
+      || (parsed.data.sourceType !== undefined && parsed.data.sourceType !== existingItem.source_type)
+      || (parsed.data.body !== undefined && parsed.data.body !== existingItem.body)
       || (parsed.data.title !== undefined && parsed.data.title !== existingItem.title)
       || (parsed.data.submittedBy !== undefined && parsed.data.submittedBy !== existingItem.submitted_by)
       || parsed.data.removePhoto || parsed.data.removeGeometry
@@ -145,7 +147,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Engagement category not found for this campaign" }, { status: 400 });
     }
 
-    const updates: Record<string, unknown> = {};
+    const updates: Record<string, unknown> = { review_expected_updated_at: parsed.data.expectedUpdatedAt, review_reason: parsed.data.moderationNotes ?? null };
     if (parsed.data.removePhoto) updates.photo_path = null;
     if (parsed.data.categoryId !== undefined) updates.category_id = parsed.data.categoryId;
     if (parsed.data.title !== undefined) updates.title = parsed.data.title;
@@ -172,6 +174,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     const { data: changed, error: updateError } = await supabase.from("engagement_items").update(updates)
       .eq("id", existingItem.id).eq("campaign_id", access.campaign.id)
       .eq("updated_at", parsed.data.expectedUpdatedAt).select("id, updated_at").maybeSingle();
+
+    if (updateError?.code === "40001") return NextResponse.json({ error: "Another reviewer changed this contribution. Refresh before reviewing again." }, { status: 409 });
 
     if (isWriteFailure(updateError)) {
       audit.error("item_update_failed", {

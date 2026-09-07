@@ -1,0 +1,29 @@
+{
+  "checks": [
+    "Worker claims queued snapshot",
+    "Staff cancels claimed job",
+    "Cancelled lease cannot publish artifacts",
+    "Cancellation preserves snapshot and revokes lease",
+    "Worker refuses requester whose access was revoked",
+    "Revoked requester job remains recoverably cancelled",
+    "Interrupted fixture holds real worker lease",
+    "Live lease cannot be stolen",
+    "Restarted worker reclaims expired lease and completes same snapshot on attempt2",
+    "Previous worker lease cannot publish after recovery"
+  ],
+  "cancelled": {
+    "jobId": "2782eb28-d071-4af3-9a64-3fb3f9ac9f35",
+    "reportId": "16679817-30bd-4ade-832a-81971749cf44",
+    "snapshotSha256": "e439aa1318bf68fd4a41b550d9b19b1c781c107334000fd64e4c6af8a3f06b42"
+  },
+  "revoked": {
+    "jobId": "8785d67d-366c-4848-95bf-8432739f18e4",
+    "reportId": "45c656e1-4c99-48d8-a12d-93febb5d7b17",
+    "snapshotSha256": "29350275b7b0c323f23dedc97339a8897a7477ddf0b0a46ba6d410e04af2a32d"
+  },
+  "interrupted": {
+    "jobId": "f246c922-9d35-477a-9e49-f9cabdb21982",
+    "reportId": "45d24cb1-d16f-4aa9-a0e3-6dd26c880f67",
+    "snapshotSha256": "498af831fb707a20698c997e7eae081de0792cfed925597e0dfdff1c0586b7d8"
+  }
+}

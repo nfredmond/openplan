@@ -54,7 +54,7 @@ export type PortalSubmissionInput = {
 
 export type PortalSubmissionResult =
   | { ok: true; submissionId: string; receivedAt: string | null }
-  | { ok: false; stage: "photo" | "submit" | "network"; serverMessage: string | null };
+  | { ok: false; stage: "photo" | "submit" | "network"; serverMessage: string | null; previousReceipt?: { submissionId: string; receivedAt: string | null } };
 
 /** Drop the empty strings a controlled input produces, so the API sees absent, not blank. */
 function present(value: string | undefined | null): string | undefined {
@@ -128,9 +128,9 @@ export async function submitPortalInput(input: PortalSubmissionInput): Promise<P
       }),
     });
 
-    const payload = (await response.json()) as { error?: string; success?: boolean; submissionId?: string; receivedAt?: string };
+    const payload = (await response.json()) as { error?: string; success?: boolean; submissionId?: string; receivedAt?: string; previousReceipt?: { submissionId: string; receivedAt: string | null } };
     if (!response.ok || payload.success !== true || !payload.submissionId) {
-      return { ok: false, stage: "submit", serverMessage: payload.error ?? null };
+      return { ok: false, stage: "submit", serverMessage: payload.error ?? null, ...(response.status === 409 && payload.previousReceipt ? { previousReceipt: payload.previousReceipt } : {}) };
     }
 
     return { ok: true, submissionId: payload.submissionId, receivedAt: payload.receivedAt ?? null };

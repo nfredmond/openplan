@@ -77,7 +77,7 @@ function campaignClient() {
   return {
     from: (table: string) => {
       if (table === "engagement_campaigns") {
-        return { select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: async () => ({ data: CAMPAIGN, error: null }) }) }) }) };
+        return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: CAMPAIGN, error: null }) }) }) };
       }
       throw new Error(`Unexpected table: ${table}`);
     },

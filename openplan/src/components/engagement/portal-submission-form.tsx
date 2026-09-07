@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "reac
 import { CheckCircle2, Loader2, MapPin, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PortalRecoveryCopy, type RecoveryMessage } from "./portal-recovery-copy";
+import { PortalRecoveryCopy, PortalPriorReceipt, type PriorReceipt, type RecoveryMessage } from "./portal-recovery-copy";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { parseEngagementGeometry } from "@/lib/engagement/geometry";
@@ -232,6 +232,7 @@ export function PortalSubmissionForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requestId, setRequestId] = useState("");
   const [receipt, setReceipt] = useState<{ submissionId: string; receivedAt: string | null } | null>(null);
+  const [priorReceipt, setPriorReceipt] = useState<PriorReceipt | null>(null);
   const [draftReady, setDraftReady] = useState(false);
   const [draftWarning, setDraftWarning] = useState<RecoveryMessage | null>(null);
   const draftKey = `openplan-engagement-draft:${shareToken}:${parentItemId ?? "new"}`;
@@ -271,11 +272,12 @@ export function PortalSubmissionForm({
         try { raw = localStorage.getItem(draftKey); }
         catch { setRequestId(crypto.randomUUID()); setDraftWarning("recovery.storageUnavailable"); setDraftReady(true); return; }
         const saved = raw ? JSON.parse(raw) : null;
-        if (saved && (saved.version !== 1 || typeof saved.body !== "string" || typeof saved.requestId !== "string" || !/^[0-9a-f-]{36}$/i.test(saved.requestId) || [saved.whereWords,saved.categoryId,saved.title,saved.submittedBy].some(value => value != null && typeof value !== "string") || (saved.receipt && typeof saved.receipt.submissionId !== "string"))) throw new Error("Unrecognized draft");
+        if (saved && (saved.version !== 1 || typeof saved.body !== "string" || typeof saved.requestId !== "string" || !/^[0-9a-f-]{36}$/i.test(saved.requestId) || [saved.whereWords,saved.categoryId,saved.title,saved.submittedBy,saved.ageBand,saved.zip5,saved.primaryLanguage,saved.householdTenure].some(value => value != null && typeof value !== "string") || (saved.raceEthnicity && (!Array.isArray(saved.raceEthnicity) || saved.raceEthnicity.some((value: unknown) => typeof value !== "string"))) || (saved.priorReceipt && typeof saved.priorReceipt.submissionId !== "string") || (saved.receipt && typeof saved.receipt.submissionId !== "string"))) throw new Error("Unrecognized draft");
         setRequestId(saved?.requestId || crypto.randomUUID());
         if (saved) {
           setBody(saved.body); setWhereWords(saved.whereWords ?? ""); setCategoryId(saved.categoryId ?? "");
           setTitle(saved.title ?? ""); setSubmittedBy(saved.submittedBy ?? "");
+          setAgeBand(saved.ageBand ?? ""); setZip5(saved.zip5 ?? ""); setPrimaryLanguage(saved.primaryLanguage ?? ""); setRaceEthnicity(saved.raceEthnicity ?? []); setHouseholdTenure(saved.householdTenure ?? ""); setPriorReceipt(saved.priorReceipt ?? null);
           const parsedGeometry = saved.geometry ? parseEngagementGeometry(saved.geometry) : null;
           if (parsedGeometry && !parsedGeometry.ok) throw new Error("Unreadable drawing");
           setInlineGeometry(parsedGeometry?.ok ? parsedGeometry.geometry : null);
@@ -294,10 +296,10 @@ export function PortalSubmissionForm({
   useEffect(() => {
     if (!draftReady || previewMode || !requestId) return;
     try {
-      localStorage.setItem(draftKey, JSON.stringify({ version: 1, configurationVersionId, requestId, body, whereWords, categoryId, title, submittedBy,
+      localStorage.setItem(draftKey, JSON.stringify({ version: 1, configurationVersionId, requestId, body, whereWords, categoryId, title, submittedBy, ageBand, zip5, primaryLanguage, raceEthnicity, householdTenure, priorReceipt,
         geometry: place.source === "stage" ? place.geometry ?? inlineGeometry : inlineGeometry, hadPhoto: Boolean(photoFile), receipt }));
     } catch { setDraftWarning("recovery.storageUnavailable"); }
-  }, [draftReady, previewMode, draftKey, configurationVersionId, requestId, body, whereWords, categoryId, title, submittedBy, place, inlineGeometry, photoFile, receipt]);
+  }, [draftReady, previewMode, draftKey, configurationVersionId, requestId, body, whereWords, categoryId, title, submittedBy, place, inlineGeometry, photoFile, receipt, ageBand, zip5, primaryLanguage, raceEthnicity, householdTenure, priorReceipt]);
 
   const photoLimit = formatPortalMegabytes(ENGAGEMENT_PHOTO_MAX_BYTES, bcp47);
   const optionalHint = t("survey.optional");
@@ -427,6 +429,7 @@ export function PortalSubmissionForm({
     setSubmittedBy("");
     clearPhoto();
     setWebsite("");
+    setPriorReceipt(null);
     setAgeBand("");
     setZip5("");
     setPrimaryLanguage("");
@@ -527,6 +530,7 @@ export function PortalSubmissionForm({
     setError(
       portalMessageView(translator, result.stage === "photo" ? "portal.photoFailed" : "portal.submitFailed")
     );
+    if (result.previousReceipt) setPriorReceipt(result.previousReceipt);
     setOperatorErrorDetail(result.serverMessage);
   }
 
@@ -536,15 +540,6 @@ export function PortalSubmissionForm({
       const link = document.createElement("a"); link.href = `data:application/json;charset=utf-8,${encodeURIComponent(raw)}`;
       link.download = "unreadable-engagement-draft.json"; link.click();
     }}><PortalRecoveryCopy translator={translator} message="recovery.download"/></Button><Button type="button" onClick={resetForm}><PortalRecoveryCopy translator={translator} message="recovery.new"/></Button></div>;
-
-  if (!acceptingSubmissions) {
-    return (
-      <div className={cn("space-y-3 p-5", className)} data-testid="portal-sidebar-closed">
-        <h2 className="text-lg font-semibold text-foreground">{t("portal.submissionsClosedNotice")}</h2>
-        <p className="text-sm text-muted-foreground">{t("page.publishedFeedbackDetail")}</p>
-      </div>
-    );
-  }
 
   if (submitted) {
     return (
@@ -556,7 +551,7 @@ export function PortalSubmissionForm({
         {/* The one promise the agency must not let a resident infer wrongly:
             being read is not the same as being written back to. */}
         <p className="text-sm text-muted-foreground">{t("portal.followUpHint")}</p>
-        {receipt ? <div className="break-all text-sm"><p><PortalRecoveryCopy translator={translator} message="recovery.receipt"/>: {receipt.submissionId}</p><p><PortalRecoveryCopy translator={translator} message="recovery.received"/> {receipt.receivedAt ?? <PortalRecoveryCopy translator={translator} message="recovery.dateUnavailable"/>}. <PortalRecoveryCopy translator={translator} message="recovery.receiptMeaning"/></p>
+        {receipt ? <div className="break-words text-sm"><p><PortalRecoveryCopy translator={translator} message="recovery.receipt"/>: <span className="break-all">{receipt.submissionId}</span></p><p><PortalRecoveryCopy translator={translator} message="recovery.received"/> {receipt.receivedAt ?? <PortalRecoveryCopy translator={translator} message="recovery.dateUnavailable"/>}. <PortalRecoveryCopy translator={translator} message="recovery.receiptMeaning"/></p>
           <a download={`engagement-receipt-${receipt.submissionId}.json`} href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify({ ...receipt, body: composeBody(), title, campaign: shareToken }, null, 2))}`} className="underline"><PortalRecoveryCopy translator={translator} message="recovery.saveReceipt"/></a></div> : null}
         <Button type="button" variant="outline" className="min-h-11" onClick={resetForm}>
           {t("portal.shareAnother")}
@@ -564,6 +559,21 @@ export function PortalSubmissionForm({
       </div>
     );
   }
+
+  if (!acceptingSubmissions) {
+    return (
+      <div className={cn("space-y-3 p-5", className)} data-testid="portal-sidebar-closed">
+        <h2 className="text-lg font-semibold text-foreground">{t("portal.submissionsClosedNotice")}</h2>
+        <p className="text-sm text-muted-foreground">{t("page.publishedFeedbackDetail")}</p>
+      </div>
+    );
+  }
+
+  if (priorReceipt) return <PortalPriorReceipt translator={translator} receipt={priorReceipt} onContinue={() => {
+    const next = crypto.randomUUID();
+    try { const photo = localStorage.getItem(`openplan-engagement-photo:${shareToken}:${requestId}`); if(photo)localStorage.setItem(`openplan-engagement-photo:${shareToken}:${next}`,photo); } catch { /* The selected file can still be uploaded. */ }
+    setRequestId(next); setPriorReceipt(null); setError(null); setStep("send");
+  }}/>;
 
   const stepTitle: Record<StepId, string> = {
     where: t("portal.stepWhereTitle"),

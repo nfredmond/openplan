@@ -2,6 +2,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { loadCampaignAccess } from "@/lib/engagement/api";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 const schema = z.object({ requestId:z.string().uuid(),scope:z.enum(['public','internal']),filters:z.object({categoryIds:z.array(z.string().uuid()).optional(),status:z.enum(['pending','approved','rejected','flagged']).optional(),from:z.string().datetime({offset:true}).optional(),to:z.string().datetime({offset:true}).optional()}).default({}) });
@@ -30,5 +31,5 @@ export async function GET(request:NextRequest,context:{params:Promise<{campaignI
  if(reportId)query=query.eq('report_id',reportId);
  const jobs=await query;
  if(jobs.error)return NextResponse.json({error:'Saved review files could not be loaded'},{status:503});
- return NextResponse.json({jobs:jobs.data,listing:'Latest 50 export jobs. Earlier files remain in Reports.'},{headers:{'Cache-Control':'private, no-store'}});
+ return NextResponse.json({jobs:jobs.data,canWrite:Boolean(access.membership && canAccessWorkspaceAction('engagement.write',access.membership.role)),listing:'Latest 50 export jobs. Earlier files remain in Reports.'},{headers:{'Cache-Control':'private, no-store'}});
 }

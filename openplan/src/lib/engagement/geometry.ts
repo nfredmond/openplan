@@ -172,3 +172,11 @@ export function readStoredEngagementGeometry(value: unknown): EngagementGeometry
   const parsed = parseEngagementGeometry(value);
   return parsed.ok ? parsed.geometry : null;
 }
+
+/** Count a mapped contribution using its stored geometry or valid legacy coordinates. */
+export function hasEngagementLocation(item: { geometry?: unknown; latitude?: number | null; longitude?: number | null }): boolean {
+  return readStoredEngagementGeometry(item.geometry) !== null || (
+    typeof item.latitude === "number" && Number.isFinite(item.latitude) && Math.abs(item.latitude) <= 90 &&
+    typeof item.longitude === "number" && Number.isFinite(item.longitude) && Math.abs(item.longitude) <= 180
+  );
+}

@@ -24,5 +24,5 @@ export async function GET(request: NextRequest, context: { params: Promise<{ cam
   if(version?.error)return NextResponse.json({error:"Historical configuration could not be read"},{status:503});
   const definition=version?.data?{id:version.data.id,sha256:version.data.definition_sha256,campaign:version.data.definition_json.campaign,categories:version.data.definition_json.categories}:null;
   return NextResponse.json({ definition, history: rows.rows.map((row) => ({ id: row.id, actorId: row.actor_id, event: row.event, recorded_at: row.recorded_at, reason: row.reason,
-    record: { title: row.record_json.title, body: row.record_json.body, status: row.record_json.status } })) }, { headers: { "Cache-Control": "private, no-store" } });
+    record: { title: row.record_json.title, body: row.record_json.body, status: row.record_json.status, hasPhoto: Boolean(row.record_json.photo_path) } })) }, { headers: { "Cache-Control": "private, no-store" } });
 }

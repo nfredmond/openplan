@@ -1,3 +1,4 @@
+import { engagementBundleFilesAvailable } from "@/lib/engagement/review-bundle-access";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { loadProjectAccess } from "@/lib/programs/api";
@@ -31,7 +32,7 @@ export async function GET(
 
     const read = await supabase
       .from("project_evidence_bundles")
-      .select("id, workspace_id, project_id, status, storage_bucket, storage_path, bundle_sha256, generated_at")
+      .select("id, workspace_id, project_id, status, storage_bucket, storage_path, bundle_sha256, generated_at, manifest_json")
       .eq("id", parsed.data.bundleId)
       .eq("workspace_id", access.project.workspace_id)
       .eq("project_id", access.project.id)
@@ -44,6 +45,7 @@ export async function GET(
       return NextResponse.json({ error: "Bundle not found" }, { status: 404 });
     }
 
+    if(!await engagementBundleFilesAvailable(supabase,read.data.manifest_json,access.project))return NextResponse.json({error:"A retained report is no longer available at this disclosure scope. Prepare a reviewed replacement bundle."},{status:404,headers:{"Cache-Control":"private, no-store"}});
     const service = createServiceRoleClient();
     const stored = await service.storage.from(BUNDLE_BUCKET).download(expectedPath);
     if (stored.error || !stored.data) {

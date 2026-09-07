@@ -56,10 +56,6 @@ import { getReportPacketFreshness, getReportPacketPriority } from "@/lib/reports
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { collectReportIdsLinkedToEngagementCampaign } from "@/lib/reports/engagement";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
-import {
-  ENGAGEMENT_PHOTO_BUCKET,
-  ENGAGEMENT_PHOTO_SIGNED_URL_TTL_SECONDS,
-} from "@/lib/engagement/photo";
 import { LocationDisplayMap } from "@/components/engagement/location-display-map";
 import { EngagementContextLayersPanel } from "@/components/engagement/engagement-context-layers-panel";
 import { loadCampaignContextLayerSummaries, loadParticipantContextLayers } from "@/lib/engagement/context-layers";
@@ -406,40 +402,10 @@ export default async function EngagementCampaignDetailPage({
     campaignLinkedReports.find((report) => report.isExplicitCampaignSource) ?? campaignLinkedReports[0] ?? null;
   const sourceSummaries = [...counts.sourceSummaries].sort((left, right) => right.count - left.count);
   const primarySource = sourceSummaries.find((source) => source.count > 0) ?? null;
-  const recentItems = (items ?? []).slice(0, 20);
 
-  // Photo thumbnails: the engagement-photos bucket is private with zero
-  // storage policies, so signing requires the service role. This is safe
-  // here because the RLS-scoped campaign read above already proved the
-  // current user's workspace membership — moderators may see photos on
-  // pending/flagged items; the public portal only ever signs approved ones.
-  type ItemPhotoRef = { id: string; photo_path: string | null };
-  const itemsWithPhotos = ((items ?? []) as ItemPhotoRef[]).filter(
-    (item): item is { id: string; photo_path: string } =>
-      typeof item.photo_path === "string" && item.photo_path.length > 0
-  );
-  const photoUrlByItemId = new Map<string, string>();
-  if (itemsWithPhotos.length > 0) {
-    const serviceClient = createServiceRoleClient();
-    // Signing can fail on its own (bucket policy, expired service key) while
-    // every comment loaded fine. A moderator looking at a comment whose photo
-    // is the whole content must be told the photo could not be fetched, not
-    // shown a comment that appears to have none.
-    const signedUrlsResult = await serviceClient.storage
-      .from(ENGAGEMENT_PHOTO_BUCKET)
-      .createSignedUrls(
-        itemsWithPhotos.map((item) => item.photo_path),
-        ENGAGEMENT_PHOTO_SIGNED_URL_TTL_SECONDS
-      );
-    reads.check("photo thumbnails for the comments that have one", signedUrlsResult);
-    const signedUrls = signedUrlsResult.data;
-    for (const item of itemsWithPhotos) {
-      const signed = (signedUrls ?? []).find((entry) => entry.path === item.photo_path);
-      if (signed?.signedUrl) {
-        photoUrlByItemId.set(item.id, signed.signedUrl);
-      }
-    }
-  }
+  // Every image read rechecks current staff access, including after revocation.
+  const photoUrlByItemId = new Map<string,string>();
+  for(const item of items ?? [])if(item.photo_path)photoUrlByItemId.set(item.id,`/api/engagement/campaigns/${campaign.id}/attachments?itemId=${item.id}`);
 
   type ItemGeometryRef = {
     id: string;
@@ -1134,7 +1100,7 @@ export default async function EngagementCampaignDetailPage({
         {items?.length ? (
           <EngagementItemRegistry
             canWrite={canManageContextLayers}
-            items={(recentItems as ItemRecord[]).map((item) => ({
+            items={((items ?? []) as ItemRecord[]).map((item) => ({
               ...item,
               photo_url: photoUrlByItemId.get(item.id) ?? null,
             }))}
@@ -1379,7 +1345,7 @@ export default async function EngagementCampaignDetailPage({
       </PageTabPanel>
 
       <PageTabPanel tabKey="record" active={activeTab === "record"}>
-        <EngagementReviewFiles campaignId={campaign.id} />
+        <EngagementReviewFiles campaignId={campaign.id} categories={categories ?? []} />
         <div className="mt-6 space-y-6">
         <CampaignHandoffReadinessSection
           handoffReadiness={handoffReadiness}

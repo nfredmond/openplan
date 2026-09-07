@@ -6,7 +6,7 @@ import { GuidedFlow, GuidedFlowRow, useGuidedFlow } from '@/components/ui/guided
 export function EngagementSetupReuse({campaignId,configurationVersionId,canWrite}:{campaignId:string;configurationVersionId:string|null;canWrite:boolean}) {
  const router=useRouter(),request=useRef<{title:string;id:string}|null>(null);
  const flow=useGuidedFlow({id:'reuse-engagement-setup',title:'Reuse this setup',submitLabel:'Create private draft',initialValues:{title:''},
-  steps:[{id:'name',title:'What is the new consultation called?',fields:[{name:'title',label:'New consultation title',required:true}],render:state=><GuidedFlowRow flow={state} name="title" label="New consultation title"><input className="block w-full rounded border p-2" maxLength={200} {...state.text('title')}/></GuidedFlowRow>}],
+  steps:[{id:'name',title:'What is the new consultation called?',fields:[{name:'title',label:'New consultation title',required:true}],render:flow=><GuidedFlowRow flow={flow} name="title" label="New consultation title"><input className="block w-full rounded border p-2" maxLength={200} {...flow.text("title")}/></GuidedFlowRow>}],
   onSubmit:async ({title})=>{
    if(!canWrite||!configurationVersionId)throw new Error('Staff access and a retained setup are required');
    if(request.current?.title!==title)request.current={title,id:crypto.randomUUID()};

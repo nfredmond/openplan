@@ -1073,3 +1073,8 @@ export async function publicReviewStillCurrent(service: SupabaseClient, snapshot
   if (!await matches('engagement_survey_answers', snapshot.answers, ['session_id','question_id','question_prompt_snapshot','question_type','answer_text','answer_json'])) return false;
   return matches('engagement_closeloop_entries', snapshot.responses, ['theme_title','you_said','we_did','source_item_ids'], ['status','published']);
 }
+
+/** Staff-authorized callers inspect one attachment-bearing answer, never a campaign-wide raw feed. */
+export async function loadSurveyAttachmentAnswer(service: SupabaseClient, campaignId: string, sessionId: string, answerId: string) {
+ return service.from('engagement_survey_answers').select('answer_json').eq('id',answerId).eq('campaign_id',campaignId).eq('session_id',sessionId).maybeSingle();
+}

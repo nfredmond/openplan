@@ -1,0 +1,11 @@
+{
+  "checks": [
+    "Keyboard map marker opens matching review detail",
+    "Linked map and list fit390px",
+    "Large campaign shows25items per page with complete1005count",
+    "Next page contains25distinct contributions",
+    "Review next follows the filtered list"
+  ],
+  "console": [],
+  "filteredText": "Page 2 of 41. 1005 matching contributions."
+}

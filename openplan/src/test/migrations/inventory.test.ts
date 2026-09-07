@@ -459,9 +459,9 @@ const EXPECTED = {
   // each with a member SELECT policy and service-only transactional writes.
   // 20260907000001/2 add two immutable extraction tables with member SELECT only.
   // Engagement custody adds four SELECT-only relations; all writes use guarded server transactions.
-  policies: 701,
+  policies: 702,
   permissive: 453,
-  restrictive: 248,
+  restrictive: 249,
   permissiveWrites: 280,
   expanded: 286,
   tablesWithPolicies: 173,

@@ -182,7 +182,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
       .from("engagement_campaigns")
       .select("id, workspace_id, title, status, allow_public_submissions, submissions_closed_at, demographics_enabled, configuration_version_id, participation_starts_at, participation_ends_at")
       .eq("share_token", parsedParams.data.shareToken)
-      .eq("status", "active")
       .maybeSingle();
 
     if (campaignError) {
@@ -206,11 +205,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
         .eq("campaign_id", receiptCampaignId).eq("request_id", receiptRequestId).maybeSingle();
       if (saved.error) return NextResponse.json({ error: "Could not verify your previous submission. Keep your draft and retry." }, { status: 503 });
       if (!saved.data) return null;
-      if (saved.data.request_sha256 !== requestHash) return NextResponse.json({ error: "This request identifier already belongs to different feedback. Keep that receipt and start a new contribution." }, { status: 409 });
+      if (saved.data.request_sha256 !== requestHash) return NextResponse.json({ error: "This request identifier already belongs to different feedback. Keep that receipt and start a new contribution.", previousReceipt: { submissionId: saved.data.id, receivedAt: saved.data.created_at } }, { status: 409 });
       return NextResponse.json({ success: true, submissionId: saved.data.id, receivedAt: saved.data.created_at, reviewStatus: "received", replayed: true }, { status: 200 });
     }
     const previousReceipt = await retainedReceipt();
     if (previousReceipt) return previousReceipt;
+    if(campaign.status!=="active")return NextResponse.json({error:"Campaign not found or not publicly available"},{status:404});
+
 
     if (!campaign.allow_public_submissions || campaign.submissions_closed_at) {
       return NextResponse.json({ error: "This campaign is not currently accepting public submissions" }, { status: 403 });

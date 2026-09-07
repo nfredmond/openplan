@@ -52,7 +52,7 @@ const campaignFrom = () => ({
 
     // The public gate: share_token + status. Two filters, then the row.
     if (columns.includes("allow_public_submissions")) {
-      return { eq: () => ({ eq: () => ({ maybeSingle: async () => ({ data: publicCampaignRow, error: null }) }) }) };
+      return { eq: () => ({ maybeSingle: async () => ({ data: publicCampaignRow, error: null }) }) };
     }
 
     // The boundary refinement — deliberately its own query so the polygon is

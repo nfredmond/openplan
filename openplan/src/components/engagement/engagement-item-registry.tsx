@@ -14,6 +14,7 @@ import {
 } from "@/lib/engagement/catalog";
 import {
   engagementGeometryTypeLabel,
+  hasEngagementLocation,
   readStoredEngagementGeometry,
 } from "@/lib/engagement/geometry";
 import { LocationDisplayMap } from "./location-display-map";
@@ -86,7 +87,7 @@ function ItemRow({
   const [latitude, setLatitude] = useState(item.latitude?.toString() ?? "");
   const [longitude, setLongitude] = useState(item.longitude?.toString() ?? "");
   const [definition, setDefinition] = useState<{id:string;campaign:{instructions?:string};categories:Array<{id:string;label:string;description:string|null}>}|null|undefined>(undefined);
-  const [history, setHistory] = useState<Array<{ id: string; event: string; recorded_at: string; reason: string | null; record: { title: string | null; body: string; status: string } }> | null>(null);
+  const [history, setHistory] = useState<Array<{ id: string; event: string; recorded_at: string; reason: string | null; record: { title: string | null; body: string; status: string; hasPhoto?: boolean } }> | null>(null);
   const [removeGeometry, setRemoveGeometry] = useState(false);
   const [removePhoto, setRemovePhoto] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -159,7 +160,7 @@ function ItemRow({
         setHistory(payload.history);setDefinition(payload.definition);
       }}>Read original and review history</Button>
       {definition!==undefined?<p className="text-sm break-words">{definition?`Received under configuration ${definition.id}. Category then: ${definition.categories.find(category=>category.id===item.category_id)?.label??'Not assigned in this definition'}. Instructions then: ${definition.campaign.instructions??'Not supplied'}`:'Historical configuration unavailable. Current wording is not evidence of what this participant saw.'}</p>:null}
-      {history ? <details open><summary>Restricted staff history, {history.length} copies</summary>{history.length === 0 ? <p>Historical copies are unavailable. This item predates retained history and has not been edited since.</p> : history.map((entry) => <article key={entry.id} className="my-3 rounded border p-3"><p>{entry.event} · {fmtDateTime(entry.recorded_at)} · {entry.record.status}</p><p>{entry.reason}</p><h4>{entry.record.title}</h4><p className="whitespace-pre-wrap break-words">{entry.record.body}</p></article>)}</details> : null}
+      {history ? <details open><summary>Restricted staff history, {history.length} copies</summary>{history.length === 0 ? <p>Historical copies are unavailable. This item predates retained history and has not been edited since.</p> : history.map((entry) => <article key={entry.id} className="my-3 rounded border p-3"><p>{entry.event} · {fmtDateTime(entry.recorded_at)} · {entry.record.status}</p><p>{entry.reason}</p>{entry.record.hasPhoto?<a className="underline" href={`/api/engagement/campaigns/${item.campaign_id}/attachments?itemId=${item.id}&historyId=${entry.id}`} target="_blank" rel="noreferrer">Open original photograph</a>:null}<h4>{entry.record.title}</h4><p className="whitespace-pre-wrap break-words">{entry.record.body}</p></article>)}</details> : null}
       {storedGeometry ? <label className="flex gap-2 text-sm"><input type="checkbox" checked={removeGeometry} onChange={(event) => setRemoveGeometry(event.target.checked)} />Withhold the drawing and coordinates from the public copy</label> : null}
       {item.photo_url ? <label className="flex gap-2 text-sm"><input type="checkbox" checked={removePhoto} onChange={(event) => setRemovePhoto(event.target.checked)} />Withhold photograph from the public copy</label> : null}
       <div className="module-record-head">
@@ -389,7 +390,7 @@ export function EngagementItemRegistry({
 
       if (reviewFilter === "needs_review" && !["pending", "flagged"].includes(item.status)) return false;
       if (reviewFilter === "uncategorized" && item.category_id) return false;
-      if (reviewFilter === "geolocated" && !(typeof item.latitude === "number" && typeof item.longitude === "number")) return false;
+      if (reviewFilter === "geolocated" && !hasEngagementLocation(item)) return false;
       if (reviewFilter === "with_notes" && !item.moderation_notes?.trim()) return false;
 
       if (!normalizedQuery) return true;
@@ -442,7 +443,7 @@ export function EngagementItemRegistry({
         <div className="module-summary-card">
           <p className="module-summary-label">Map signal</p>
           <p className="module-summary-value">{counts.geographyCoverage.geolocatedItems}</p>
-          <p className="module-summary-detail">Items with latitude/longitude already attached.</p>
+          <p className="module-summary-detail">Items with a mapped location already attached.</p>
         </div>
       </div>
 

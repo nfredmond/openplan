@@ -116,7 +116,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
       .from("engagement_campaigns")
       .select("id, workspace_id, title, status, allow_public_submissions, submissions_closed_at, survey_one_response_per_fingerprint, configuration_version_id, participation_starts_at, participation_ends_at")
       .eq("share_token", parsedParams.data.shareToken)
-      .eq("status", "active")
       .maybeSingle();
     if (campaignError) {
       audit.error("survey_campaign_lookup_failed", { message: campaignError.message, code: campaignError.code ?? null });
@@ -128,10 +127,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const receipt = await loadSurveyRequestReceipt(supabase, campaign.id, parsed.data.requestId);
       if (receipt.error) return NextResponse.json({ error: "Your previous response could not be checked. Keep your draft and retry." }, { status: 503 });
       if (receipt.data) {
-        if (receipt.data.request_sha256 !== requestHash) return NextResponse.json({ error: "This request identifier already belongs to different answers." }, { status: 409 });
+        if (receipt.data.request_sha256 !== requestHash) return NextResponse.json({ error: "This request identifier already belongs to different answers.", previousReceipt: { submissionId: receipt.data.id, receivedAt: receipt.data.created_at } }, { status: 409 });
         return NextResponse.json({ success: true, sessionId: receipt.data.id, receivedAt: receipt.data.created_at, replayed: true });
       }
     }
+    if(campaign.status!=="active")return NextResponse.json({error:"Campaign not found or not publicly available"},{status:404});
     if (parsed.data.configurationVersionId && parsed.data.configurationVersionId !== campaign.configuration_version_id) return NextResponse.json({ error: "The survey changed. Your answers are retained. Review the latest questions before sending." }, { status: 409 });
     if ((campaign.participation_starts_at && Date.parse(campaign.participation_starts_at) > Date.now()) || (campaign.participation_ends_at && Date.parse(campaign.participation_ends_at) <= Date.now())) return NextResponse.json({ error: "This campaign is outside its participation dates." }, { status: 403 });
     if (!campaign.allow_public_submissions || campaign.submissions_closed_at) {

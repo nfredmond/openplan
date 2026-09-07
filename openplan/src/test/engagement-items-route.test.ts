@@ -257,7 +257,7 @@ describe("engagement category and item routes", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(itemSelectMock).toHaveBeenCalledWith("id, campaign_id, category_id, updated_at, status, title, body, submitted_by, photo_path, geometry, latitude, longitude");
+    expect(itemSelectMock).toHaveBeenCalledWith("id, campaign_id, category_id, updated_at, status, source_type, title, body, submitted_by, photo_path, geometry, latitude, longitude");
     expect(itemUpdateVersionMock).toHaveBeenCalledWith("updated_at", "2026-09-06T12:00:00+00:00");
     expect(itemUpdateProjectionMock).toHaveBeenCalledWith("id, updated_at");
     expect(itemUpdateMock).toHaveBeenCalledWith(
@@ -269,6 +269,8 @@ describe("engagement category and item routes", () => {
         source_type: "public",
         category_id: "55555555-5555-4555-8555-555555555555",
         moderation_notes: "Reviewed against workshop notes.",
+        review_reason: "Reviewed against workshop notes.",
+        review_expected_updated_at: "2026-09-06T12:00:00+00:00",
         latitude: 34.1234,
         longitude: -118.3333,
       })
@@ -285,6 +287,11 @@ describe("engagement category and item routes", () => {
     const response = await patchItem(new NextRequest("http://localhost/api/engagement/campaigns/1/items/1", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ expectedUpdatedAt: "2026-09-06T12:00:00+00:00", status: "approved" }) }), { params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111", itemId: "66666666-6666-4666-8666-666666666666" }) });
     expect(response.status).toBe(400);
     expect(itemUpdateMock).not.toHaveBeenCalled();
+  });
+
+  for(const change of [{categoryId:null},{sourceType:"email"}])it("requires a new explicit reason for category or source changes",async()=>{
+    const response=await patchItem(new NextRequest("http://localhost/api/engagement/campaigns/1/items/1",{method:"PATCH",body:JSON.stringify({expectedUpdatedAt:"2026-09-06T12:00:00+00:00",...change})}),{params:Promise.resolve({campaignId:"11111111-1111-4111-8111-111111111111",itemId:"66666666-6666-4666-8666-666666666666"})});
+    expect(response.status).toBe(400);expect(itemUpdateMock).not.toHaveBeenCalled();expect(itemSelectMock).toHaveBeenCalledWith(expect.stringContaining("source_type"));
   });
 
 });

@@ -387,7 +387,7 @@ vi.mock("@/components/engagement/engagement-item-composer", () => ({
 }));
 
 vi.mock("@/components/engagement/engagement-item-registry", () => ({
-  EngagementItemRegistry: () => <div data-testid="engagement-item-registry" />,
+  EngagementItemRegistry: ({ items }: { items: Array<{ id: string }> }) => <div data-testid="engagement-item-registry">{items.map(item => item.id).join(",")}</div>,
 }));
 
 vi.mock("@/components/engagement/engagement-share-controls", () => ({
@@ -443,6 +443,18 @@ async function renderPage(searchParams?: { created?: string; tab?: string }) {
 }
 
 describe("EngagementCampaignDetailPage", () => {
+  it("passes every contribution to the paginated review workspace", async () => {
+    itemsOrderMock.mockResolvedValue({ data: Array.from({ length: 1005 }, (_, index) => ({
+      id: `full-item-${index + 1}`, campaign_id: "campaign-1", category_id: null,
+      title: "Complete review feed", body: "Demonstration", status: "pending",
+      source_type: "public_comment", updated_at: "2026-03-28T21:30:00.000Z",
+    })), error: null });
+    await renderPage({ tab: "responses" });
+    const ids = screen.getByTestId("engagement-item-registry").textContent?.split(",");
+    expect(ids).toHaveLength(1005);
+    expect(ids?.at(-1)).toBe("full-item-1005");
+  });
+
   it("offers all covered project targets and reads reports across their coverage", async () => {
     coverageRows.push({ project_id: "project-2", projects: { id: "project-2", name: "Second covered project" } });
     await renderPage({ tab: "record" });

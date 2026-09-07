@@ -1,6 +1,6 @@
 "use client";
 
-import { PortalRecoveryCopy } from "./portal-recovery-copy";
+import { PortalPriorReceipt, type PriorReceipt, PortalRecoveryCopy } from "./portal-recovery-copy";
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { CheckCircle2, Loader2, Save, Send, Star, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -1577,6 +1577,7 @@ export function PublicSurveyForm({
   const [submittedBy, setSubmittedBy] = useState("");
   const [website, setWebsite] = useState(""); // honeypot
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [priorReceipt, setPriorReceipt] = useState<PriorReceipt | null>(null);
   const [receiptId, setReceiptId] = useState<string | null>(null);
   const requestId = useRef<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -1626,9 +1627,9 @@ export function PublicSurveyForm({
   const [localProblem, setLocalProblem] = useState<string | null>(null);
   useEffect(() => {
     if (!localReady || previewMode || localProblem) return;
-    try { localStorage.setItem(localAnswerKey, JSON.stringify({ version: 1, configurationVersionId, answers, submittedBy, receiptId, requestId: requestId.current })); }
+    try { localStorage.setItem(localAnswerKey, JSON.stringify({ version: 1, configurationVersionId, answers, submittedBy, receiptId, priorReceipt, requestId: requestId.current })); }
     catch { /* Server-side save remains available when browser storage is unavailable. */ }
-  }, [localReady, localProblem, localAnswerKey, previewMode, configurationVersionId, answers, submittedBy, receiptId]);
+  }, [localReady, localProblem, localAnswerKey, previewMode, configurationVersionId, answers, submittedBy, receiptId, priorReceipt]);
 
   /**
    * Browser storage, defensively.
@@ -1673,6 +1674,7 @@ export function PublicSurveyForm({
           if (saved.version !== 1 || !saved.answers || typeof saved.answers !== 'object' || Array.isArray(saved.answers) || typeof saved.submittedBy !== 'string' || (saved.receiptId && typeof saved.receiptId !== 'string') || (saved.requestId && typeof saved.requestId !== 'string')) throw new Error('Invalid saved answers');
           setRestoredAnswers(saved.answers); setAnswers(saved.answers); setSubmittedBy(saved.submittedBy);
           requestId.current = saved.requestId || null;
+          if(saved.priorReceipt && typeof saved.priorReceipt.submissionId === "string")setPriorReceipt(saved.priorReceipt);
           if (saved.receiptId) { setReceiptId(saved.receiptId); setSubmitted(true); }
           setFormNonce(nonce => nonce + 1); setLocalReady(true);
           if (saved.configurationVersionId && saved.configurationVersionId !== configurationVersionId) setDraftNotice({ kind: 'checkFailed' });
@@ -1920,7 +1922,8 @@ export function PublicSurveyForm({
           website,
         }),
       });
-      const payload = (await response.json()) as { error?: string; questionId?: string; sessionId?: string; success?: boolean };
+      const payload = (await response.json()) as { error?: string; questionId?: string; sessionId?: string; success?: boolean; previousReceipt?: PriorReceipt };
+      if(response.status === 409 && payload.previousReceipt) { setPriorReceipt(payload.previousReceipt); return; }
       if (!response.ok || payload.success !== true || !payload.sessionId) {
         // The route's validation messages are English literals (it returns a
         // `code` beside them, but the catalog has no key per
@@ -2033,6 +2036,8 @@ export function PublicSurveyForm({
   // inherited: this is a client island reached through a tab, and a `dir` that
   // depends on an ancestor another surface owns is a `dir` that goes missing.
   const rootLanguage = { lang: translator.bcp47, dir: translator.direction } as const;
+
+  if (priorReceipt) return <PortalPriorReceipt translator={translator} receipt={priorReceipt} onContinue={() => { requestId.current=crypto.randomUUID();try { localStorage.setItem(`openplan-survey-request:${shareToken}`,requestId.current); } catch { /* The current draft remains usable. */ }setPriorReceipt(null);setError(null); }}/>;
 
   if (submitted) {
     return (

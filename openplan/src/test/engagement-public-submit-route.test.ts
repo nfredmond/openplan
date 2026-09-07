@@ -1,11 +1,11 @@
+import { createHash } from "node:crypto";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 
 const createServiceRoleClientMock = vi.fn();
 
 const campaignMaybeSingleMock = vi.fn();
-const campaignEqStatusMock = vi.fn(() => ({ maybeSingle: campaignMaybeSingleMock }));
-const campaignEqTokenMock = vi.fn(() => ({ eq: campaignEqStatusMock }));
+const campaignEqTokenMock = vi.fn(() => ({ maybeSingle: campaignMaybeSingleMock }));
 
 /**
  * The route reads the campaign a SECOND time when a submission carries a
@@ -42,7 +42,10 @@ const itemRecentEqCampaignMock = vi.fn(() => ({ eq: itemRecentEqSourceMock }));
 // it never collides with the recent-items query on the same table.
 const parentMaybeSingleMock = vi.fn();
 const parentChain = { eq: () => ({ eq: () => ({ eq: () => ({ maybeSingle: parentMaybeSingleMock }) }) }) };
+const receiptMock=vi.fn();
+const receiptChain={eq:()=>({eq:()=>({maybeSingle:receiptMock})})};
 const itemSelectMock = vi.fn((columns?: string) =>
+  columns?.includes("request_sha256") ? receiptChain :
   typeof columns === "string" && columns.includes("parent_item_id")
     ? parentChain
     : { eq: itemRecentEqCampaignMock }
@@ -99,7 +102,7 @@ function jsonRequest(shareToken: string, payload: unknown, headers?: Record<stri
 
 describe("POST /api/engage/[shareToken]/submit", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.clearAllMocks();receiptMock.mockResolvedValue({data:null,error:null});
 
     createServiceRoleClientMock.mockReturnValue({
       from: fromMock,
@@ -760,4 +763,13 @@ describe("POST /api/engage/[shareToken]/submit", () => {
     expect(response.status).toBe(400);
     expect(itemInsertMock).not.toHaveBeenCalled();
   });
+  for(const status of ["closed","archived"])it(`recovers an exact receipt after ${status}, while refusing new writes and identifying edited retries`,async()=>{
+    const body={requestId:"77777777-7777-4777-8777-777777777777",body:"Original received feedback"};
+    campaignMaybeSingleMock.mockResolvedValue({data:{id:"11111111-1111-4111-8111-111111111111",status,allow_public_submissions:false},error:null});
+    receiptMock.mockResolvedValue({data:{id:"saved",request_sha256:createHash("sha256").update(JSON.stringify(body)).digest("hex"),created_at:"2026-09-06"},error:null});
+    const response=await POST(jsonRequest("test-share-token-12345",body),{params:Promise.resolve({shareToken:"test-share-token-12345"})});expect(response.status).toBe(200);expect(await response.json()).toMatchObject({submissionId:"saved",replayed:true});expect(itemInsertMock).not.toHaveBeenCalled();
+    const edited=await POST(jsonRequest("test-share-token-12345",{...body,body:"Edited unsent"}),{params:Promise.resolve({shareToken:"test-share-token-12345"})});expect(edited.status).toBe(409);expect(await edited.json()).toMatchObject({previousReceipt:{submissionId:"saved"}});
+    receiptMock.mockResolvedValue({data:null,error:null});expect((await POST(jsonRequest("test-share-token-12345",body),{params:Promise.resolve({shareToken:"test-share-token-12345"})})).status).toBe(404);expect(itemInsertMock).not.toHaveBeenCalled();
+  });
+
 });

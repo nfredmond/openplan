@@ -51,7 +51,7 @@ function QuestionResult({ q }: { q: SurveyQuestionAggregation }) {
 }
 
 function renderBody(q: SurveyQuestionAggregation) {
-  if (q.interpretationUnavailable) return <p>Recorded answers remain available in the review files. The original scale and choices are unavailable, so no aggregate interpretation is shown.</p>;
+  if (q.interpretationUnavailable) return <p>Saved answers remain available in the review files. The original scale and choices are unavailable, so no aggregate interpretation is shown.</p>;
   switch (q.questionType) {
     case "single_choice":
     case "multiple_choice": {
