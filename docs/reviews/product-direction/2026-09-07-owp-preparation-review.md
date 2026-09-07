@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-07
 review_by: 2026-10-05
-reviewed_commit: 568493b1
+reviewed_commit: 50704acf
 current_release: v0.44.0
 independent_contexts: 2
 trigger: independent-whole-product-review-during-owp-completion
@@ -71,3 +71,5 @@ Review blind categories: the strategic agents did not perform current browser/do
 Bounded follow-up through4b181b1f: independent source reviewer now reconstructed the actual arrived revision4 PDF/HTML/XLSX, checked831 source figures and forced all543 numeric formula caches, and tested blank/negative/zero/positive staffing inputs. The print-summary unknown-to-zero correction is justified by retained R3 failing evidence. Independent live-access review supplied six surviving controls and12 failing guard mutations; root verified149 isolated RLS tests and45 real HTTP role cases. Desktop/390px recovery, keyboard save, source-version difference presentation and actual browser download evidence now exist. These settle specific engineering gaps identified by both fresh direction contexts; they do not change the whole-product priorities or the still-pending upgrade/CI gate. The harmless source-option label and workbook selected-tab changes preserve the same preparation scope.
 
 The immediate documentation-only follow-up expands the browser manifest build abbreviation to the same complete verified SHA; it changes no result or product direction.
+
+Final bounded follow-up records the unchanged direction against independent R4 artifact guard mutations,45 HTTP checks and the source-level reassessment of all three original v0.44 partial outcomes. It adds operational instructions for the already-reviewed worker and declares the existing @next/env16.2.11 runtime import directly; no runtime API or dependency version changes. The dead-code failure before that declaration remains recorded. None changes milestone scope or grants release authority.
