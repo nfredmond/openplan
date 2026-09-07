@@ -1,3 +1,4 @@
+import { EngagementSetupReuse } from "@/components/engagement/engagement-setup-reuse";
 import { EngagementCategoryEditor } from "@/components/engagement/engagement-category-editor";
 import { SurveyReviewQueue } from "@/components/engagement/survey-review-queue";
 import { EngagementReviewFiles } from "@/components/engagement/engagement-review-files";
@@ -11,12 +12,12 @@ import { CampaignPublishFlow } from "@/components/engagement/campaign-publish-fl
 import { EngagementSurveyBuilder } from "@/components/engagement/survey-builder";
 import { EngagementCloseLoopBuilder } from "@/components/engagement/close-loop-builder";
 import { EngagementCategoryCreator } from "@/components/engagement/engagement-category-creator";
-import { EngagementItemRegistry } from "@/components/engagement/engagement-item-registry";
+import { EngagementItemRegistry, type ItemRecord } from "@/components/engagement/engagement-item-registry";
 import { EngagementSurveyResults } from "@/components/engagement/survey-results-panel";
 import { EngagementNotificationsInbox } from "@/components/engagement/notifications-inbox";
 import { EngagementPublicLinkCompact } from "@/components/engagement/engagement-public-link-compact";
 import { EngagementCampaignCreatedNotice } from "@/components/engagement/campaign-created-notice";
-import { EngagementBulkModeration } from "@/components/engagement/engagement-bulk-moderation";
+import { EngagementBulkModeration, type BulkItem } from "@/components/engagement/engagement-bulk-moderation";
 import { CampaignTranslationsPanel } from "@/components/engagement/campaign-translations-panel";
 import { CampaignLinkedReportsSection } from "@/components/engagement/campaign-linked-reports-section";
 import { CampaignHandoffReadinessSection } from "@/components/engagement/campaign-handoff-readiness-section";
@@ -91,6 +92,7 @@ import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 import { PlanningContextStripForProject } from "@/components/projects/planning-context-strip";
 
 type CampaignRow = {
+  configuration_version_id: string | null;
   participation_starts_at: string | null;
   participation_ends_at: string | null;
   id: string;
@@ -166,7 +168,7 @@ export default async function EngagementCampaignDetailPage({
 
   const { data: campaignData, error: campaignError } = await supabase
     .from("engagement_campaigns")
-    .select("id, workspace_id, project_id, rtp_cycle_id, rtp_cycle_chapter_id, title, summary, status, engagement_type, participation_starts_at, participation_ends_at, share_token, public_description, allow_public_submissions, submissions_closed_at, demographics_enabled, representativeness_json, ai_synthesis_json, ai_synthesized_at, created_at, updated_at, accessibility_contact_label, accessibility_contact_email, accessibility_contact_phone, accessibility_alternate_formats")
+    .select("id, workspace_id, project_id, rtp_cycle_id, rtp_cycle_chapter_id, title, summary, status, configuration_version_id, engagement_type, participation_starts_at, participation_ends_at, share_token, public_description, allow_public_submissions, submissions_closed_at, demographics_enabled, representativeness_json, ai_synthesis_json, ai_synthesized_at, created_at, updated_at, accessibility_contact_label, accessibility_contact_email, accessibility_contact_phone, accessibility_alternate_formats")
     .eq("id", campaignId)
     .maybeSingle();
 
@@ -1037,6 +1039,7 @@ export default async function EngagementCampaignDetailPage({
           canWrite={canManageContextLayers}
         />
 
+      <EngagementSetupReuse campaignId={campaign.id} configurationVersionId={campaign.configuration_version_id} canWrite={canManageContextLayers} />
       <EngagementOperatorActions
         campaign={{ ...campaign, public_slug: publicSlug }}
         projects={(projects ?? []) as Array<{ id: string; name: string }>}
@@ -1120,15 +1123,7 @@ export default async function EngagementCampaignDetailPage({
         {canManageContextLayers && (items?.length ?? 0) > 0 && (
           <EngagementBulkModeration
             campaignId={campaign.id}
-            items={(items ?? []) as Array<{
-              id: string;
-              campaign_id: string;
-              category_id: string | null;
-              title: string | null;
-              status: string;
-              source_type: string;
-              updated_at: string;
-            }>}
+            items={(items ?? []) as BulkItem[]}
             categories={((categories ?? []) as Array<{ id: string; label: string }>).map((c) => ({
               id: c.id,
               label: c.label,
@@ -1139,23 +1134,7 @@ export default async function EngagementCampaignDetailPage({
         {items?.length ? (
           <EngagementItemRegistry
             canWrite={canManageContextLayers}
-            items={(recentItems as Array<{
-              id: string;
-              campaign_id: string;
-              category_id: string | null;
-              title: string | null;
-              body: string;
-              submitted_by: string | null;
-              status: string;
-              source_type: string;
-              moderation_notes: string | null;
-              latitude: number | null;
-              longitude: number | null;
-              geometry: unknown;
-              votes_count: number | null;
-              parent_item_id: string | null;
-              updated_at: string;
-            }>).map((item) => ({
+            items={(recentItems as ItemRecord[]).map((item) => ({
               ...item,
               photo_url: photoUrlByItemId.get(item.id) ?? null,
             }))}

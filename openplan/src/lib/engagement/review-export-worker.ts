@@ -2,7 +2,7 @@ import { randomUUID,createHash } from 'node:crypto';
 import { mkdir,readFile,writeFile,rename } from 'node:fs/promises';
 import { join } from 'node:path';
 import { createServiceRoleClient } from '@/lib/supabase/server';
-import { parseReviewSnapshot,renderCampaignReviewFiles,type EngagementReviewFile } from './review-export';
+import { parseReviewSnapshot,renderCampaignReviewFiles,verifyCampaignReviewZip,type EngagementReviewFile } from './review-export';
 import { ENGAGEMENT_PHOTO_BUCKET,isEngagementPhotoPathForCampaign } from './photo';
 
 /** One leased campaign job per poll, sharing the existing Documents export worker process. */
@@ -25,6 +25,7 @@ export async function processNextEngagementReport(root:string):Promise<boolean> 
      if(!['pdf','xlsx','zip'].includes(file.format))throw new Error('Unknown cached format');
      const bytes=await readFile(join(folder,`review.${file.format}`));
      if(createHash('sha256').update(bytes).digest('hex')!==file.checksum)throw new Error('Incomplete cache');
+     if(file.format==='zip')await verifyCampaignReviewZip(bytes,job.snapshot_sha256);
      loaded.push({...file,bytes});
     }
     files=loaded;

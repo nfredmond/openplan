@@ -61,6 +61,8 @@ export type SurveyResponseSessionRow = {
   updated_at: string;
 };
 export type SurveyAnswerRow = {
+  question_prompt_snapshot?: string | null;
+  engagement_survey_response_sessions?: { configuration_version_id?: string | null };
   question_id: string | null;
   question_type: SurveyQuestionType;
   answer_json: unknown;
@@ -68,6 +70,8 @@ export type SurveyAnswerRow = {
 };
 
 export type SurveyQuestionAggregation = {
+  configurationVersionId?: string | null;
+  interpretationUnavailable?: boolean;
   questionId: string;
   questionType: SurveyQuestionType;
   family: SurveyQuestionFamily;
@@ -510,7 +514,7 @@ export async function loadApprovedSurveyAnswers(
       supabase
         .from("engagement_survey_answers")
         .select(
-          "question_id, question_type, answer_json, answer_text, engagement_survey_response_sessions!inner(status)"
+          "question_id, question_type, question_prompt_snapshot, answer_json, answer_text, engagement_survey_response_sessions!inner(status, configuration_version_id)"
         )
         .eq("campaign_id", campaignId)
         .eq("engagement_survey_response_sessions.status", "approved")
@@ -995,28 +999,31 @@ export async function aggregateCampaignSurvey(
   questions: SurveyQuestionAggregation[];
   error: { message: string } | null;
 }> {
-  const definition = await loadSurveyDefinition(supabase, campaignId);
-  const { questions, optionsByQuestion } = definition;
   const answers = await loadApprovedSurveyAnswers(supabase, campaignId);
   const approvedSessions = await loadSurveyResponseSessions(supabase, campaignId, { status: "approved" });
-
-  const answersByQuestion = new Map<string, SurveyAnswerRow[]>();
+  const versions = await readEveryPage((from, to) => supabase.from("engagement_configuration_versions")
+    .select("id, definition_json").eq("campaign_id", campaignId).order("id").range(from, to));
+  if (!versions.complete) return { approvedResponseCount: approvedSessions.rows.length, questions: [], error: versions.error ?? { message: "Historical definitions unavailable" } };
+  type Version = { id: string; definition_json: { questions: Array<SurveyQuestionRow & { options?: SurveyOptionRow[] }> } };
+  const definitions = new Map((versions.rows as Version[]).map(version => [version.id, version.definition_json]));
+  const groups = new Map<string, { version: string | null; question: string | null; answers: SurveyAnswerRow[] }>();
   for (const answer of answers.rows) {
-    if (!answer.question_id) continue;
-    const arr = answersByQuestion.get(answer.question_id) ?? [];
-    arr.push(answer);
-    answersByQuestion.set(answer.question_id, arr);
+    const version = answer.engagement_survey_response_sessions?.configuration_version_id ?? null;
+    const key = JSON.stringify([version, answer.question_id, answer.question_prompt_snapshot ?? null, answer.question_type]);
+    const group = groups.get(key) ?? { version, question: answer.question_id, answers: [] };
+    group.answers.push(answer); groups.set(key, group);
   }
-
-  const aggregated = questions.map((question) => {
-    const options = (optionsByQuestion.get(question.id) ?? []).map((o) => ({ id: o.id, label: o.label }));
-    return aggregateSurveyQuestion(question, options, answersByQuestion.get(question.id) ?? []);
+  const aggregated = [...groups.values()].map(group => {
+    const question = group.version ? definitions.get(group.version)?.questions.find(question => question.id === group.question) : undefined;
+    if (!question) return {
+      questionId: group.question ?? "deleted", configurationVersionId: group.version, interpretationUnavailable: true,
+      questionType: group.answers[0].question_type, family: SURVEY_QUESTION_TYPES[group.answers[0].question_type].family,
+      prompt: group.answers[0].question_prompt_snapshot ?? "Historical question prompt unavailable",
+      answeredCount: group.answers.length, aggregation: null,
+    };
+    return { ...aggregateSurveyQuestion(question, question.options ?? [], group.answers), configurationVersionId: group.version };
   });
-  return {
-    approvedResponseCount: approvedSessions.rows.length,
-    questions: aggregated,
-    error: definition.error ?? answers.error ?? approvedSessions.error ?? null,
-  };
+  return { approvedResponseCount: approvedSessions.rows.length, questions: aggregated, error: answers.error ?? approvedSessions.error ?? null };
 }
 
 /** Idempotent public survey writes commit the session and all answers in one transaction. */

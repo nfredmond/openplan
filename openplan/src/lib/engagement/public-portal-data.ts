@@ -623,6 +623,7 @@ export async function loadPortalPlaceCandidates(
 
 type CategoryRow = { id: string; label: string; slug: string | null; description: string | null; sort_order: number | null; color: string | null };
 type ApprovedItemRow = {
+  configuration_version_id?: string | null;
   id: string;
   category_id: string | null;
   title: string | null;
@@ -695,6 +696,7 @@ export type PublicPortalProps = {
   acceptingSubmissions: boolean;
   categories: PortalCategoryView[];
   approvedItems: {
+    historicalCategoryLabel?: string | null;
     id: string;
     categoryId: string | null;
     title: string | null;
@@ -1016,7 +1018,7 @@ async function buildPublicPortalBundle(
       .order("created_at", { ascending: true }),
     readEveryPage((from, to) => supabase
       .from("engagement_items")
-      .select("id, category_id, title, body, submitted_by, latitude, longitude, geometry, photo_path, votes_count, parent_item_id, created_at")
+      .select("id, configuration_version_id, category_id, title, body, submitted_by, latitude, longitude, geometry, photo_path, votes_count, parent_item_id, created_at")
       .eq("campaign_id", campaign.id)
       .eq("status", "approved")
       .order("created_at", { ascending: false })
@@ -1049,7 +1051,8 @@ async function buildPublicPortalBundle(
   const readApprovedItems = (approvedItemsResult.data ?? []) as ApprovedItemRow[];
   const publicParents = new Set(readApprovedItems.filter((item) => !item.parent_item_id).map((item) => item.id));
   const approvedItems = readApprovedItems.filter((item) => !item.parent_item_id || publicParents.has(item.parent_item_id));
-  const closeLoopRows = closeLoopResult.rows;
+  const publicItemIds = new Set(approvedItems.map(item => item.id));
+  const closeLoopRows = closeLoopResult.rows.filter(row => row.source_item_ids.every(id => publicItemIds.has(id)));
   const acceptingSubmissions = campaign.allow_public_submissions && !campaign.submissions_closed_at
     && (!campaign.participation_starts_at || Date.parse(campaign.participation_starts_at) <= Date.now())
     && (!campaign.participation_ends_at || Date.parse(campaign.participation_ends_at) > Date.now());
@@ -1163,6 +1166,17 @@ async function buildPublicPortalBundle(
     if (item.photo_path) photoUrlByItemId.set(item.id, `/api/engage/${encodeURIComponent(shareToken)}/items/${item.id}/photo`);
   }
 
+  const retainedCategories = new Map<string, Array<{id: string; label: string}>>();
+  const versionIds = [...new Set(approvedItems.flatMap(item => item.configuration_version_id ? [item.configuration_version_id] : []))];
+  for (let at = 0; at < versionIds.length; at += 100) {
+    const retained = await supabase.from("engagement_configuration_versions").select("id, definition_json")
+      .eq("campaign_id", campaign.id).in("id", versionIds.slice(at, at + 100));
+    if (!retained.error) for (const row of retained.data ?? []) retainedCategories.set(row.id, row.definition_json.categories ?? []);
+  }
+  const historicalLabel = (item: ApprovedItemRow) => item.category_id
+    ? retainedCategories.get(item.configuration_version_id ?? "")?.find(category => category.id === item.category_id)?.label ?? "Historical category definition unavailable"
+    : null;
+
   const portalProps: PublicPortalProps = {
     configurationVersionId: campaign.configuration_version_id,
     shareToken,
@@ -1180,6 +1194,7 @@ async function buildPublicPortalBundle(
       ),
     })),
     approvedItems: approvedItems.map((item) => ({
+      historicalCategoryLabel: historicalLabel(item),
       id: item.id,
       categoryId: item.category_id,
       title: item.title,

@@ -623,6 +623,7 @@ export function PublicEngagementPortal({
                   <OperatorText as="span" value={categoryText} translator={translator} compact />
                 </span>
               ) : null}
+              {item.historicalCategoryLabel ? <span lang="en" className="public-inline-label">Category definition when submitted: <span dir="auto">{item.historicalCategoryLabel}</span></span> : null}
               {itemIsLocated(item) ? (
                 <span className="inline-flex items-center gap-1">
                   <MapPinned className="h-3 w-3" aria-hidden="true" />

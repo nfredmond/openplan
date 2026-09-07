@@ -27,7 +27,7 @@ export function EngagementReviewFiles({campaignId,reportId}:{campaignId:string;r
   if(!response.ok)setError((await response.json()).error||'Job could not be changed');
  }
  return <section className="module-section-surface space-y-4" id="campaign-review-files"><h2 className="module-section-title">Engagement review files</h2>
-  <p>Prepare PDF, XLSX and a portable ZIP from one saved campaign snapshot. Internal copies include pending, withheld and flagged contributions and review reasons. Public copies include approved contributions and reviewed responses. Missing historical definitions remain labelled.</p>
+  <p>Prepare PDF, XLSX and a portable ZIP from one saved consultation snapshot. Internal copies include pending, withheld and flagged contributions and review reasons. Public copies include approved contributions and reviewed responses. Missing historical definitions remain labelled.</p>
   {!reportId?<><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
    <label>Disclosure scope<select className="block w-full rounded border p-2" value={scope} onChange={event=>{setScope(event.target.value);if(event.target.value==='public')setStatus('approved');}}><option value="internal">Internal staff review</option><option value="public">Public review copy</option></select></label>
    <label>Review status<select className="block w-full rounded border p-2" value={status} onChange={event=>setStatus(event.target.value)} disabled={scope==='public'}><option value="all">All review states</option><option value="approved">Published</option><option value="pending">Pending</option><option value="flagged">Flagged for review</option><option value="rejected">Withheld</option></select></label>

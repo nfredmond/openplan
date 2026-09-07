@@ -13,7 +13,7 @@ export async function POST(request: NextRequest, context: {params:Promise<{campa
  const body=await readJsonOrNullWithLimit(request,BODY_LIMITS.normalJson);if(!body.ok)return body.response;
  const parsed=schema.safeParse(body.data);if(!parsed.success)return NextResponse.json({error:'Invalid report scope or filters'},{status:400});
  const client=await createClient();const {data:{user}}=await client.auth.getUser();if(!user)return NextResponse.json({error:'Unauthorized'},{status:401});
- const result=await client.rpc('queue_engagement_report',{p_campaign:campaignId,prequest:parsed.data.requestId,p_scope:parsed.data.scope,p_filters:parsed.data.filters});
+ const result=await client.rpc('queue_engagement_report',{p_campaign:campaignId,p_request:parsed.data.requestId,p_scope:parsed.data.scope,p_filters:parsed.data.filters});
  if(result.error){audit.error('queue_failed',{code:result.error.code});return NextResponse.json({error:'Review files could not be queued; check scope, dates and access.'},{status:400});}
  audit.info('queued',{campaignId});
  return NextResponse.json(result.data,{status:202});

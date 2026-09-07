@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
 
-type BulkItem = {
+export type BulkItem = {
   id: string;
   campaign_id: string;
   category_id: string | null;

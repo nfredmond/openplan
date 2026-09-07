@@ -1,0 +1,35 @@
+{
+  "changes": [
+    {
+      "campaign": "c2336c3c-95b1-4afd-a4b8-c13b3b9c098b",
+      "item": "96e7982e-dcef-4d6a-a114-c4cfd77f5e20",
+      "status": "approved",
+      "http": 200,
+      "stale": 409
+    },
+    {
+      "campaign": "c2336c3c-95b1-4afd-a4b8-c13b3b9c098b",
+      "item": "9d91e0c9-fbfb-4679-8da8-f414b1278e76",
+      "status": "approved",
+      "http": 200,
+      "stale": 409
+    },
+    {
+      "campaign": "c2336c3c-95b1-4afd-a4b8-c13b3b9c098b",
+      "item": "ab79ae33-ed03-48cc-ae0b-4c37ce973a85",
+      "status": "approved",
+      "http": 200,
+      "stale": 409
+    },
+    {
+      "campaign": "9e230c66-04ee-4402-b536-6294f93f8233",
+      "item": "856a3e10-ed6e-4566-82b6-2d0c35ea3996",
+      "status": "rejected",
+      "http": 200,
+      "stale": 409
+    }
+  ],
+  "console": [],
+  "overflow0": 0,
+  "overflow1": 0
+}

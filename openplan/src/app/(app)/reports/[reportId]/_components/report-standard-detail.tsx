@@ -1,3 +1,4 @@
+import { EngagementReviewFiles } from "@/components/engagement/engagement-review-files";
 import type { ComponentProps } from "react";
 import Link from "next/link";
 import { ScrollText } from "lucide-react";
@@ -234,6 +235,7 @@ export function ReportStandardDetail({
 
   return (
     <section className="module-page space-y-6">
+      {engagementCampaign ? <EngagementReviewFiles campaignId={engagementCampaign.id} reportId={report.id} /> : null}
       <CartographicSurfaceWide />
       <header className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
         <article className="module-intro-card">

@@ -199,6 +199,7 @@ export function PublicMapStage({
   initialView = null,
   drawEnabled = true,
   drawMode = "point",
+  initialGeometry = null,
   onGeometryChange,
   basemapChoices,
   selectedBasemapId,
@@ -217,6 +218,7 @@ export function PublicMapStage({
   /** False on a closed campaign: the community's input is still shown, drawing is not offered. */
   drawEnabled?: boolean;
   drawMode?: EngagementDrawMode;
+  initialGeometry?: EngagementGeometry | null;
   onGeometryChange?: (geometry: EngagementGeometry | null) => void;
   /**
    * From `resolvePublicBasemapConfig` on the server. EMPTY MEANS NO MAP, not
@@ -241,7 +243,7 @@ export function PublicMapStage({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
-  const [draw, setDraw] = useState<DrawState>({ mode: drawMode, vertices: [], areaClosed: false });
+  const [draw, setDraw] = useState<DrawState>(() => initialGeometry?.type === "Point" ? {mode:"point",vertices:[initialGeometry.coordinates],areaClosed:false} : initialGeometry?.type === "LineString" ? {mode:"line",vertices:initialGeometry.coordinates,areaClosed:false} : initialGeometry?.type === "Polygon" ? {mode:"area",vertices:initialGeometry.coordinates[0].slice(0,-1),areaClosed:true} : { mode: drawMode, vertices: [], areaClosed: false });
   const [announcement, setAnnouncement] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const instructionsId = useId();

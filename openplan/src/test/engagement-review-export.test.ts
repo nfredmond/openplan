@@ -1,7 +1,9 @@
-import { describe,expect,it } from 'vitest';
+import { describe,expect,it,vi } from 'vitest';
+import JSZip from 'jszip';
+vi.mock('@/lib/reports/pdf',()=>({renderReportPdf:async()=>({engine:'chrome',bytes:new Uint8Array([37,80,68,70])})}));
 import { createHash } from 'node:crypto';
 import * as XLSX from 'xlsx';
-import { buildCampaignReviewHtml,buildCampaignReviewWorkbook,parseReviewSnapshot,type EngagementReviewSnapshot } from '@/lib/engagement/review-export';
+import { buildCampaignReviewHtml,buildCampaignReviewWorkbook,parseReviewSnapshot,renderCampaignReviewFiles,campaignQuestionSummary,type EngagementReviewSnapshot } from '@/lib/engagement/review-export';
 const snapshot:EngagementReviewSnapshot={schema:1,capturedAt:'2026-09-06T12:00:00Z',scope:'internal',filters:{},campaign:{id:'demo',title:'Demonstration only',summary:null,configurationVersionId:null},items:[{id:'one',status:'pending',body:'=HYPERLINK("https://invalid.test")',title:'<script>bad()</script>',configuration_version_id:null}],sessions:[{id:'session',status:'pending'}],answers:[{id:'answer1',session_id:'session',answer_text:'Repeated answer'},{id:'answer2',session_id:'session',answer_text:'Repeated answer'}],responses:[],definitions:[]};
 describe('campaign review records',()=>{
  it('refuses corrupt snapshots and private records in public snapshots',()=>{
@@ -31,4 +33,28 @@ describe('campaign review records',()=>{
   expect(html).toContain('&lt;script&gt;');expect(html).not.toContain('<script>bad()');
   expect(html.match(/Repeated answer/g)).toHaveLength(2);
  });
+ it('retains coordinate-only legacy locations in the portable GeoJSON alongside drawn features',async()=>{
+  const source={...snapshot,items:[{id:'legacy',status:'pending',longitude:179.9,latitude:10,body:'Legacy location'},{id:'drawn',status:'pending',geometry:{type:'Point',coordinates:[-179.9,11]},body:'Drawn location'},{id:'words',status:'pending',body:'At the library'}]};
+  const raw=JSON.stringify(source),files=await renderCampaignReviewFiles(raw,createHash('sha256').update(raw).digest('hex'));
+  const zip=await JSZip.loadAsync(files.find(file=>file.format==='zip')!.bytes),geo=JSON.parse(await zip.file('contributions.geojson')!.async('string'));
+  expect(geo.features.map((feature:{id:string})=>feature.id)).toEqual(['legacy','drawn']);
+  expect(geo.features[0].geometry).toEqual({type:'Point',coordinates:[179.9,10]});
+ });
+ it('reconciles repeated, redacted and unanswered sessions using the original definitions',()=>{
+  const source:EngagementReviewSnapshot={...snapshot,definitions:[{id:'v',sha256:'hash',definition:{campaign:{},categories:[],layers:[],questions:[{id:'q',prompt:'Original prompt'}]}}],sessions:['s1','s2','s3','s4'].map(id=>({id,configuration_version_id:'v'})),answers:[{session_id:'s1',question_id:'q',answer_text:'Same'},{session_id:'s2',question_id:'q',answer_text:'Same'},{session_id:'s3',question_id:'q',answer_json:{reviewed_redaction:'Removed'}}]};
+  expect(campaignQuestionSummary(source)).toEqual([{version:'v',question:'q',prompt:'Original prompt',sessions:4,answered:2,redacted:1,unanswered:1,repeated:1}]);
+ });
+ it('labels every long narrative continuation without losing its contents',()=>{
+  const body='Japanese 日本語 and Farsi فارسی\n'.repeat(70),html=buildCampaignReviewHtml({...snapshot,items:[{id:'long-id',status:'pending',body}]},'checksum');
+  expect(html).toContain('Record long-id · part 1 of 4');expect(html).toContain('Record long-id · part 4 of 4');
+  expect(html.match(/Japanese 日本語 and Farsi فارسی/g)).toHaveLength(70);
+ });
+
+ it('keeps the exact UTF-8 snapshot bytes across ZIP chunk boundaries',async()=>{
+  const source={...snapshot,items:[{id:'unicode',status:'pending',body:'日本語 فارسی 🙂\n'.repeat(6000)}]},raw=JSON.stringify(source),hash=createHash('sha256').update(raw).digest('hex');
+  const files=await renderCampaignReviewFiles(raw,hash),zip=await JSZip.loadAsync(files.find(file=>file.format==='zip')!.bytes);
+  const recovered=await zip.file('snapshot.json')!.async('nodebuffer');
+  expect(recovered.equals(Buffer.from(raw,'utf8'))).toBe(true);expect(createHash('sha256').update(recovered).digest('hex')).toBe(hash);
+ });
+
 });

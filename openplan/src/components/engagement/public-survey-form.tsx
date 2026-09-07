@@ -1,5 +1,6 @@
 "use client";
 
+import { PortalRecoveryCopy } from "./portal-recovery-copy";
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { CheckCircle2, Loader2, Save, Send, Star, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -1248,6 +1249,7 @@ function FreeTextWidget({ question, translator, initialAnswer, onChange }: Widge
 type UploadedFile = { path: string; mime: string; size: number; original_name?: string };
 
 function FileUploadWidget({
+  initialAnswer,
   question,
   translator,
   shareToken,
@@ -1255,7 +1257,10 @@ function FileUploadWidget({
   previewMode = false,
 }: WidgetProps & { shareToken: string; previewMode?: boolean }) {
   const cfg = cfgOf<{ max_files: number; max_size_bytes: number; accept: string[] }>(fileUploadConfigSchema, question.config);
-  const [files, setFiles] = useState<UploadedFile[]>([]);
+  const [files, setFiles] = useState<UploadedFile[]>(() => {
+    const saved = asAnswerRecord(initialAnswer)?.files;
+    return Array.isArray(saved) ? saved.filter((file): file is UploadedFile => !!file && typeof file === "object" && typeof file.path === "string" && typeof file.mime === "string" && typeof file.size === "number") : [];
+  });
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<PortalDisclosureView | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -1423,6 +1428,7 @@ function QuestionField({
       case "file_upload":
         return (
           <FileUploadWidget
+            initialAnswer={initialAnswer}
             question={question}
             translator={translator}
             shareToken={shareToken}
@@ -2031,7 +2037,7 @@ export function PublicSurveyForm({
   if (submitted) {
     return (
       <div className="public-success-state" {...rootLanguage}>
-        {receiptId ? <p lang="en" className="break-all">Receipt {receiptId}. <a className="underline" download={`survey-receipt-${receiptId}.json`} href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify({ sessionId: receiptId, answers }, null, 2))}`}>Save receipt</a></p> : null}
+        {receiptId ? <p className="break-all"><PortalRecoveryCopy translator={translator} message="recovery.receipt"/> {receiptId}. <a className="underline" download={`survey-receipt-${receiptId}.json`} href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify({ sessionId: receiptId, answers }, null, 2))}`}><PortalRecoveryCopy translator={translator} message="recovery.saveReceipt"/></a></p> : null}
         <CheckCircle2 className="mx-auto h-9 w-9 text-[color:var(--pine)]" />
         <h3 className="mt-4 text-xl font-semibold text-foreground">
           <Copy of={portalMessageView(translator, "survey.received")} />
@@ -2076,8 +2082,8 @@ export function PublicSurveyForm({
 
   return (
     <form className="public-form-shell" onSubmit={handleSubmit} {...rootLanguage}>
-      <p className="mb-3 text-xs" lang="en">Answers and receipts are saved on this computer for recovery. Use “Save for later” to retain a server draft. On a shared computer, start a new response after saving your receipt.</p>
-      {localProblem ? <div role="alert" lang="en"><p>{localProblem}</p><Button type="button" onClick={() => { const raw=localStorage.getItem(localAnswerKey); if(!raw)return; const url=URL.createObjectURL(new Blob([raw],{type:'application/json'})); const link=document.createElement('a');link.href=url;link.download='unreadable-survey-draft.json';link.click();URL.revokeObjectURL(url); }}>Download saved survey</Button><Button type="button" onClick={() => { localStorage.removeItem(localAnswerKey);setLocalProblem(null);setLocalReady(true);requestId.current=null;setAnswers({});setRestoredAnswers({});setFormNonce(nonce=>nonce+1); }}>Start a new survey response</Button></div> : null}
+      <p className="mb-3 text-xs"><PortalRecoveryCopy translator={translator} message="recovery.surveyLocal"/></p>
+      {localProblem ? <div role="alert"><p><PortalRecoveryCopy translator={translator} message="recovery.unreadable"/></p><Button type="button" onClick={() => { const raw=localStorage.getItem(localAnswerKey); if(!raw)return; const url=URL.createObjectURL(new Blob([raw],{type:'application/json'})); const link=document.createElement('a');link.href=url;link.download='unreadable-survey-draft.json';link.click();URL.revokeObjectURL(url); }}><PortalRecoveryCopy translator={translator} message="recovery.download"/></Button><Button type="button" onClick={() => { localStorage.removeItem(localAnswerKey);setLocalProblem(null);setLocalReady(true);requestId.current=null;setAnswers({});setRestoredAnswers({});setFormNonce(nonce=>nonce+1); }}><PortalRecoveryCopy translator={translator} message="recovery.new"/></Button></div> : null}
       {hasUntranslatedCopy ? (
         <p
           className={cn(

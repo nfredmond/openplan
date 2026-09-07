@@ -14,11 +14,11 @@ BEGIN
     END IF;
     RETURN NEW;
   END IF;
-  IF NEW.campaign_id IS DISTINCT FROM OLD.campaign_id OR NEW.configuration_version_id IS DISTINCT FROM OLD.configuration_version_id
+  IF NEW.parent_item_id IS DISTINCT FROM OLD.parent_item_id OR NEW.campaign_id IS DISTINCT FROM OLD.campaign_id OR NEW.configuration_version_id IS DISTINCT FROM OLD.configuration_version_id
     OR NEW.request_id IS DISTINCT FROM OLD.request_id OR NEW.request_sha256 IS DISTINCT FROM OLD.request_sha256 THEN
     RAISE EXCEPTION 'Contribution identity and historical configuration are immutable';
   END IF;
-  IF ROW(NEW.title,NEW.body,NEW.submitted_by,NEW.status,NEW.photo_path,NEW.geometry) IS DISTINCT FROM ROW(OLD.title,OLD.body,OLD.submitted_by,OLD.status,OLD.photo_path,OLD.geometry) THEN
+  IF ROW(NEW.title,NEW.body,NEW.submitted_by,NEW.status,NEW.photo_path,NEW.geometry,NEW.latitude,NEW.longitude,NEW.category_id,NEW.source_type) IS DISTINCT FROM ROW(OLD.title,OLD.body,OLD.submitted_by,OLD.status,OLD.photo_path,OLD.geometry,OLD.latitude,OLD.longitude,OLD.category_id,OLD.source_type) THEN
     IF NULLIF(btrim(NEW.moderation_notes),'') IS NULL THEN RAISE EXCEPTION 'A human review reason is required'; END IF;
     NEW.updated_at=clock_timestamp();
     NEW.metadata_json=NEW.metadata_json-'ai_translations';
@@ -40,3 +40,15 @@ BEGIN
 END $$;
 REVOKE ALL ON FUNCTION public.engagement_cache_reviewed_translation(uuid,text,text,text,text,text) FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.engagement_cache_reviewed_translation(uuid,text,text,text,text,text) TO service_role;
+
+-- A published response cannot disclose a source that still awaits publication.
+CREATE FUNCTION public.guard_engagement_response_publication() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public,pg_temp AS $$
+BEGIN
+ IF NEW.status='published' AND EXISTS(SELECT 1 FROM unnest(NEW.source_item_ids) source_id WHERE NOT EXISTS(
+  SELECT 1 FROM engagement_items i WHERE i.id=source_id AND i.campaign_id=NEW.campaign_id AND i.status='approved'
+    AND (i.parent_item_id IS NULL OR EXISTS(SELECT 1 FROM engagement_items p WHERE p.id=i.parent_item_id AND p.campaign_id=NEW.campaign_id AND p.status='approved' AND p.parent_item_id IS NULL))
+ )) THEN RAISE EXCEPTION 'Review and publish linked contributions before publishing the staff response'; END IF;
+ RETURN NEW;
+END $$;
+REVOKE ALL ON FUNCTION public.guard_engagement_response_publication() FROM PUBLIC;
+CREATE TRIGGER engagement_response_publication_guard BEFORE INSERT OR UPDATE ON public.engagement_closeloop_entries FOR EACH ROW EXECUTE FUNCTION public.guard_engagement_response_publication();

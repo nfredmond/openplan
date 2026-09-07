@@ -48,6 +48,7 @@ export function PublicMapSidebar({
   translator,
   geometry,
   onClearGeometry,
+  onRestoreGeometry,
   drawMode,
   onDrawModeChange,
   mapAvailable,
@@ -63,6 +64,7 @@ export function PublicMapSidebar({
   /** What the resident drew on the stage, owned by the shell so the map and the rail agree. */
   geometry: EngagementGeometry | null;
   onClearGeometry: () => void;
+  onRestoreGeometry?: (geometry: EngagementGeometry) => void;
   drawMode: EngagementDrawMode;
   onDrawModeChange: (mode: EngagementDrawMode) => void;
   /** Whether there is a map beside this rail at all. See `PortalFormPlace`. */
@@ -81,6 +83,7 @@ export function PublicMapSidebar({
         source: "stage",
         geometry,
         onClearGeometry,
+        onRestoreGeometry,
         drawMode,
         onDrawModeChange,
         mapAvailable,

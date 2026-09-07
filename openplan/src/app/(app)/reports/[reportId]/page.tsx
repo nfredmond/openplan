@@ -1,4 +1,3 @@
-import { EngagementReviewFiles } from "@/components/engagement/engagement-review-files";
 import { notFound, redirect } from "next/navigation";
 import { ReportReadFailureDisclosure, ReportUnreadableShell } from "@/components/reports/report-read-failure-notice";
 import { RtpReportDetail } from "@/components/reports/rtp-report-detail";
@@ -1288,7 +1287,6 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
   return (
     <>
     <PlanningContextStripForProject requestedProjectId={query.projectId} project={project} error={projectResult.error} className="mb-4" /><ReportReadFailureDisclosure reads={reads} />
-    {engagementCampaignId ? <EngagementReviewFiles campaignId={engagementCampaignId} reportId={report.id} /> : null}
     <ReportStandardDetail
       searchParams={query}
       unreadableByTab={buildReportUnreadableByTab({ artifactsUnreadable, sectionsUnreadable, projectRecordsUnreadable: projectRecordReadFailures.size > 0 })}

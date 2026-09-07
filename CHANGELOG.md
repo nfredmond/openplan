@@ -24,12 +24,14 @@ stable enough to promise smooth upgrades indefinitely.
   existing Documents worker and Reports. Acceptance is in progress on an isolated
   development branch; this entry does not declare a release or human usability pass.
 - Engagement requires these additive migrations before application and worker updates:
-  `20260908000001_engagement_record_custody.sql`,
-  `20260908000002_engagement_configuration_versions.sql`,
-  `20260908000003_engagement_public_copy_guards.sql`,
-  `20260908000004_engagement_report_jobs.sql`,
-  `20260908000005_engagement_report_delivery.sql`, and
-  `20260908000006_engagement_survey_receipts.sql`.
+  [engagement_record_custody](openplan/supabase/migrations/20260908000001_engagement_record_custody.sql),
+  [engagement_configuration_versions](openplan/supabase/migrations/20260908000002_engagement_configuration_versions.sql),
+  [engagement_public_copy_guards](openplan/supabase/migrations/20260908000003_engagement_public_copy_guards.sql),
+  [engagement_report_jobs](openplan/supabase/migrations/20260908000004_engagement_report_jobs.sql),
+  [engagement_report_delivery](openplan/supabase/migrations/20260908000005_engagement_report_delivery.sql),
+  [engagement_survey_receipts](openplan/supabase/migrations/20260908000006_engagement_survey_receipts.sql),
+  [engagement_setup_reuse](openplan/supabase/migrations/20260908000007_engagement_setup_reuse.sql),
+  [engagement_export_access_paths](openplan/supabase/migrations/20260908000008_engagement_export_access_paths.sql).
   Historical contributions without a retained configuration remain explicitly unavailable.
   Campaign PDF rendering uses installed Chrome to preserve multilingual text and maps.
 

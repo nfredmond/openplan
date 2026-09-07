@@ -124,8 +124,10 @@ export function LocationDisplayMap({
   hasVoted,
   contextLayers = null,
   privateAerialOrthos = false,
+  onSelectItem,
 }: {
   items: MapItem[];
+  onSelectItem?: (id: string) => void;
   onSupport?: SupportHandler;
   hasVoted?: (itemId: string) => boolean;
   /**
@@ -145,6 +147,7 @@ export function LocationDisplayMap({
   const [mapReady, setMapReady] = useState(false);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const onSupportRef = useRef(onSupport);
+  const onSelectRef = useRef(onSelectItem);
   const hasVotedRef = useRef(hasVoted);
   // Read inside the map-creation effect for the opening frame only; the paint
   // effect below owns keeping the drawn layers in step.
@@ -162,9 +165,10 @@ export function LocationDisplayMap({
 
   useEffect(() => {
     onSupportRef.current = onSupport;
+    onSelectRef.current = onSelectItem;
     hasVotedRef.current = hasVoted;
     contextLayersRef.current = contextLayers;
-  }, [onSupport, hasVoted, contextLayers]);
+  }, [onSupport, hasVoted, contextLayers, onSelectItem]);
 
   useEffect(() => {
     const container = mapContainerRef.current;
@@ -188,6 +192,8 @@ export function LocationDisplayMap({
       const geometry = readStoredEngagementGeometry(item.geometry ?? null);
       if (geometry && geometry.type !== "Point") {
         shapeItems.push({ ...item, parsedGeometry: geometry });
+      } else if (geometry?.type === "Point") {
+        pointItems.push({ ...item, longitude: geometry.coordinates[0], latitude: geometry.coordinates[1] });
       } else if (item.latitude !== null && item.longitude !== null) {
         pointItems.push({ ...item, latitude: item.latitude, longitude: item.longitude });
       }
@@ -279,6 +285,7 @@ export function LocationDisplayMap({
           const itemId = feature?.properties?.itemId as string | undefined;
           const item = itemId ? shapeItemById.get(itemId) : undefined;
           if (!item) return;
+          onSelectRef.current?.(item.id);
 
           new mapboxgl.Popup({ offset: 12, maxWidth: "300px" })
             .setLngLat(event.lngLat)
@@ -303,7 +310,11 @@ export function LocationDisplayMap({
           buildPopupContent(item, popupOptions)
         );
 
-        const el = document.createElement('div');
+        const el = document.createElement(onSelectRef.current ? 'button' : 'div');
+        if (onSelectRef.current) {
+          el.setAttribute('type','button'); el.setAttribute('aria-label',`Review contribution ${item.title || item.id}`);
+          el.addEventListener('click',()=>onSelectRef.current?.(item.id));
+        }
         el.className = 'w-4 h-4 rounded-full border-2 border-background shadow-sm cursor-pointer';
         el.style.backgroundColor = safeHexColor(item.color) ?? DEFAULT_MAP_COLOR;
 

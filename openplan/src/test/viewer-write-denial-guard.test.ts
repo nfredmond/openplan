@@ -76,7 +76,7 @@ const WRITER_GATE_MIGRATIONS = [
 // would have moved neither number and would have made this the one table where
 // a viewer writes.
 const EXPECTED_GATED_TABLES = 82;
-const EXPECTED_RESTRICTIVE_POLICIES = 246;
+const EXPECTED_RESTRICTIVE_POLICIES = 248;
 // 198 rather than 197 since 20260728000012 added `vmt_significance_screenings`.
 // Its INSERT policy is role-AWARE (it calls `workspace_member_can_write`), which
 // is why the gated-table and restrictive-policy counts above did NOT move: a
@@ -367,7 +367,12 @@ describe("viewer write denial", () => {
       .filter((policy) => policy.kind === "RESTRICTIVE" && (policy.command === "ALL" || policy.command === "SELECT"))
       .map((policy) => `${policy.table}.${policy.policy} (${policy.command})`);
 
-    expect(readingGates).toEqual([]);
+    // Internal engagement exports contain restricted participant copies. These
+    // two narrow disclosure policies are intentional; ordinary reports remain readable.
+    expect(readingGates.sort()).toEqual([
+      "report_artifacts.engagement_artifact_scope (SELECT)",
+      "reports.engagement_report_scope (SELECT)",
+    ]);
   });
 
   it("guards the guard", () => {

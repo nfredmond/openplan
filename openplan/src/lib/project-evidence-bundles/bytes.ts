@@ -1,3 +1,4 @@
+import { downloadEngagementReview } from "@/lib/engagement/review-export-download";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -117,6 +118,13 @@ async function reportBytes(
     typeof row.generated_at === "string" ? row.generated_at : null,
     kind
   );
+  const reviewMetadata = row.metadata_json && typeof row.metadata_json === 'object' ? row.metadata_json as Record<string,unknown> : null;
+  if (typeof reviewMetadata?.engagementReviewJobId === 'string') {
+    if (typeof row.storage_path !== 'string' || typeof reviewMetadata.sha256 !== 'string') failMissing(candidate);
+    const delivered = await downloadEngagementReview(caller, reviewMetadata.engagementReviewJobId, 'pdf', {reportId,artifact:{path:row.storage_path as string,checksum:reviewMetadata.sha256 as string}});
+    if (!delivered.ok) failMissing(candidate);
+    return result(candidate, Buffer.from(await delivered.arrayBuffer()), filename, 'application/pdf');
+  }
   const storagePath = typeof row.storage_path === "string" ? row.storage_path.trim() : "";
   if (storagePath) {
     const ref = resolveTenantScopedStorageTarget(storagePath, {
