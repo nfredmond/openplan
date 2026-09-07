@@ -285,7 +285,7 @@ export function LocationDisplayMap({
           const itemId = feature?.properties?.itemId as string | undefined;
           const item = itemId ? shapeItemById.get(itemId) : undefined;
           if (!item) return;
-          onSelectRef.current?.(item.id);
+          if (onSelectRef.current) { onSelectRef.current(item.id); return; }
 
           new mapboxgl.Popup({ offset: 12, maxWidth: "min(300px, calc(100% - 24px))" })
             .setLngLat(event.lngLat)
@@ -320,8 +320,9 @@ export function LocationDisplayMap({
 
         const marker = new mapboxgl.Marker({ element: el })
           .setLngLat([item.longitude, item.latitude])
-          .setPopup(popup)
           .addTo(map);
+        // Staff review opens the full item beside the map. Reading maps retain popups.
+        if (!onSelectRef.current) marker.setPopup(popup);
 
         markersRef.current.push(marker);
       });

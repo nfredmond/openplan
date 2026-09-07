@@ -532,3 +532,22 @@ it("identifies the invalid historical drawing in staff review", async () => {
   render(<EngagementItemRegistry categories={[]} counts={{totalItems:1,uncategorizedItems:1,geographyCoverage:{geolocatedItems:0},moderationQueue:{actionableCount:0,pendingCount:0,flaggedCount:0}}} items={[{id:"invalid",campaign_id:"campaign",category_id:null,submitted_by:null,moderation_notes:null,title:null,body:"Collapsed route",status:"rejected",source_type:"public",latitude:2,longitude:1,geometry:{type:"LineString",coordinates:[[1,2],[1,2]]},updated_at:"2026-09-01"}]}/>);
   expect(screen.getByText("Invalid retained drawing")).toBeInTheDocument();
 });
+
+
+it("opens complete staff detail for point and shape selection without a duplicate popup", async () => {
+  const { LocationDisplayMap } = await import("@/components/engagement/location-display-map");
+  const select=vi.fn();
+  render(<LocationDisplayMap onSelectItem={select} items={[
+    {id:"point",title:null,body:"Point body",latitude:2,longitude:1},
+    {id:"route",title:null,body:"Route body",latitude:null,longitude:null,geometry:{type:"LineString",coordinates:[[1,2],[2,3]]}},
+  ]}/>);
+  const map=mapboxMocks.instances.at(-1) as {on:ReturnType<typeof vi.fn>};
+  act(()=>{const load=map.on.mock.calls.find(call=>call[0]==="load")?.[1] as ()=>void;load();});
+  const marker=mapboxMocks.Marker.mock.results[0].value;
+  expect(marker.setPopup).not.toHaveBeenCalled();
+  const element=(mapboxMocks.Marker.mock.calls[0] as unknown as [{element:HTMLElement}])[0].element;
+  act(()=>element.click()); expect(select).toHaveBeenLastCalledWith("point");
+  const before=mapboxMocks.Popup.mock.calls.length;
+  act(()=>{const clicked=map.on.mock.calls.find(call=>call[0]==="click"&&call[1]==="engagement-shapes-line")?.[2] as (event:unknown)=>void;clicked({features:[{properties:{itemId:"route"}}],lngLat:{lng:1,lat:2}});});
+  expect(select).toHaveBeenLastCalledWith("route"); expect(mapboxMocks.Popup).toHaveBeenCalledTimes(before);
+});

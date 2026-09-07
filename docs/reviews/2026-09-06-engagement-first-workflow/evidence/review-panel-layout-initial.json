@@ -1,0 +1,69 @@
+{
+  "checks": [
+    {
+      "case": "baseline",
+      "passed": true,
+      "measurements": {
+        "bodyWidth": 344,
+        "bodyScroll": 344,
+        "articleRight": 341,
+        "bodyRight": 373,
+        "fieldWidth": 242,
+        "parentWidth": 242,
+        "historyWidth": 206,
+        "historyScroll": 206
+      }
+    },
+    {
+      "case": "harmless border color survives",
+      "passed": true
+    },
+    {
+      "case": "missing fieldset width rule fails",
+      "passed": false,
+      "measurements": {
+        "bodyWidth": 344,
+        "bodyScroll": 344,
+        "articleRight": 341,
+        "bodyRight": 373,
+        "fieldWidth": 242,
+        "parentWidth": 242,
+        "historyWidth": 206,
+        "historyScroll": 206
+      }
+    },
+    {
+      "case": "unwrapped history button fails",
+      "passed": false,
+      "measurements": {
+        "bodyWidth": 344,
+        "bodyScroll": 344,
+        "articleRight": 341,
+        "bodyRight": 373,
+        "fieldWidth": 242,
+        "parentWidth": 242,
+        "historyWidth": 252,
+        "historyScroll": 252
+      }
+    },
+    {
+      "case": "automatic minimum grid width fails",
+      "passed": true,
+      "measurements": {
+        "bodyWidth": 344,
+        "bodyScroll": 368,
+        "articleRight": 391.328125,
+        "bodyRight": 373,
+        "fieldWidth": 292.328125,
+        "parentWidth": 292.328125,
+        "historyWidth": 256,
+        "historyScroll": 256
+      }
+    },
+    {
+      "case": "restored layout",
+      "passed": true
+    }
+  ],
+  "correction": "Initial fit check missed button bounds; fieldset-only rule removal is redundant with remaining layout constraints, so that mutation correctly survives."
+}

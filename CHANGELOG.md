@@ -21,8 +21,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 - Engagement workflow development retains campaign definitions, retry receipts and
   private moderation history, and adds queued PDF/XLSX/ZIP review files through the
-  existing Documents worker and Reports. Acceptance is in progress on an isolated
-  development branch; this entry does not declare a release or human usability pass.
+  existing Documents worker and Reports. Engineering verification is recorded in the dated engagement review; human
+  usability, comparative superiority and the separate release gate remain open.
 - Engagement requires these additive migrations before application and worker updates:
   [engagement_record_custody](openplan/supabase/migrations/20260908000001_engagement_record_custody.sql),
   [engagement_configuration_versions](openplan/supabase/migrations/20260908000002_engagement_configuration_versions.sql),
