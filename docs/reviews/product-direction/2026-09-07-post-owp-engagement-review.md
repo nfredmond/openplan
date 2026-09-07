@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-07
 review_by: 2026-10-05
-reviewed_commit: 314f946fc95fc921bc00cf2c8f6f4ce3d93a82bd
+reviewed_commit: 891d27b0f94a2cb6ffbc64f514374ea29b89d99e
 current_release: v0.44.0
 independent_contexts: 2
 trigger: independent-whole-product-review-during-engagement-completion
@@ -71,3 +71,5 @@ Final artifact follow-up accepts all twelve corrected files,24 demo PDF pages,16
 The final390px screenshot exposed inner-panel overflow that the outer document-width assertion missed. The narrow review grid and fieldset now shrink to their container, history-button text wraps and history controls remain within the panel. These localized layout corrections preserve the reviewed workflow, with actual inner-bound checks recorded separately at landing.
 
 The final linked-map correction uses full staff detail for point and shape selection, with no duplicate popup. Ordinary reading-map popup placement is not covered by this claim. Harmless and consequential source mutations, focused tests and the prior full local/GitHub gates are recorded through314f946f; the final stamped production journey remains a separate acceptance check. This is a local correction within the independent reviews' existing Engagement recommendation, with no change to the whole-product destination or open human/competitive gates.
+
+Actual browser input exposed two Mapbox integration errors in the preceding correction: the library assigned image role to the native button and marker clicks also selected an overlapping route. The corrected button role and stopped click propagation have separate failing mutations and a successful nine-check desktop/390px journey. These factual corrections preserve the existing independent-review recommendation and are recorded through891d27b0. No human accessibility or comparative acceptance is inferred.
