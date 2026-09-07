@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-07
 review_by: 2026-10-05
-reviewed_commit: eccfc826
+reviewed_commit: df3e3a66
 current_release: v0.44.0
 independent_contexts: 2
 trigger: independent-whole-product-review-during-engagement-completion
@@ -65,3 +65,5 @@ Preserve the roadmap's other early priorities: provider choice for proven agent 
 v0.44 remains unreleased. Its nine complete and three partial historical journeys require their own honest outcome disposition; this lane does not close safety, model comparison or validation-evidence gaps. Browser-specific ERR_BLOCKED_BY_CLIENT did not reproduce for the retained campaign PDF/ZIP path in fresh Chrome. That bounded supported-profile delivery does not prove the old profile was repaired.
 
 Blind categories remain explicit: source reviews do not establish live access, artifact reconciliation does not establish readable geometry, sampled boundary containment is not a topology proof, browser automation does not establish human usefulness, native Calc is not Microsoft Excel, scoped review copies are not full archive restoration, and local engineering/CI do not establish production commissioning or nationwide planning/scientific validity. Independent human task failure or contrary comparative evidence can overturn the usability recommendation. Preserve those unresolved tests instead of claiming superiority.
+
+Final artifact follow-up accepts all twelve corrected files,24 demo PDF pages,161 reconciliations and four native recalculations, plus independent GEOS containment of the new county polygon. A later screenshot read found the review/public maps still substituting an invalid historical shape with its legacy center. The df3e3a66 correction aligns markers, badges, counts and report meaning, including geometry-only public points, with harmless and targeted display mutations. This is a bounded correction within the same reviewed workflow; final application/CI results remain separate.
