@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-07
 review_by: 2026-10-05
-reviewed_commit: 891d27b0f94a2cb6ffbc64f514374ea29b89d99e
+reviewed_commit: ac9d14495f6b3ad274a26a68a8452cf7e60bf80e
 current_release: v0.44.0
 independent_contexts: 2
 trigger: independent-whole-product-review-during-engagement-completion
@@ -46,7 +46,7 @@ paths:
 - docs/ROADMAP.md
 -->
 
-Two independent fresh contexts began from the engagement direction packet and reconstructed the current product without receiving each other's conclusions. Their unchanged A/B reports answer all ten protocol questions and all nine perspectives. This synthesis reassesses those reports, independent source follow-ups and the retained artifact failures through eccfc826. Engineering acceptance still requires the pending final artifact, whole-suite, upgrade and CI results. The date records an actual review; it does not waive the stale-review guard.
+Two independent fresh contexts began from the engagement direction packet and reconstructed the current product without receiving each other's conclusions. Their unchanged A/B reports answer all ten protocol questions and all nine perspectives. This synthesis reassesses those reports, independent source follow-ups and the retained artifact failures through eccfc826. The final verification record now supplies independently accepted artifacts, complete local QA, an identified production journey and additive-upgrade evidence. GitHub merge checks remain separately attributable through PR102. The date records an actual review; it does not waive the stale-review guard.
 
 Both reviewers support completing this workflow in Engagement, Projects, Reports and the existing Documents worker. Neither proposes a new module or restarting completed OWP preparation. They agree that a generated file, matching counts, an AI narrative or a green suite is insufficient evidence of a planner receiving usable work. Both require historical question meaning, privacy, retry custody and actual delivery. A emphasizes authority and complete shared-project scope; B emphasizes the work left for a report recipient. These are complementary recommendations, not a vote to reduce scope.
 
@@ -73,3 +73,5 @@ The final390px screenshot exposed inner-panel overflow that the outer document-w
 The final linked-map correction uses full staff detail for point and shape selection, with no duplicate popup. Ordinary reading-map popup placement is not covered by this claim. Harmless and consequential source mutations, focused tests and the prior full local/GitHub gates are recorded through314f946f; the final stamped production journey remains a separate acceptance check. This is a local correction within the independent reviews' existing Engagement recommendation, with no change to the whole-product destination or open human/competitive gates.
 
 Actual browser input exposed two Mapbox integration errors in the preceding correction: the library assigned image role to the native button and marker clicks also selected an overlapping route. The corrected button role and stopped click propagation have separate failing mutations and a successful nine-check desktop/390px journey. These factual corrections preserve the existing independent-review recommendation and are recorded through891d27b0. No human accessibility or comparative acceptance is inferred.
+
+Final evidence throughac9d1449: the d58370b8 source passes the full local QA gate, identified production map/list and narrow-panel journeys, and actual delivery of all twelve byte-identical accepted files. The source and migrations did not change while recording this evidence. The bounded engineering workflow is ready for landing after its required GitHub checks; human usefulness, comparative superiority, M9b/c and the separate v0.44 gate stay open.
