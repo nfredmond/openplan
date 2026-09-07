@@ -19,6 +19,25 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- Engagement workflow development retains campaign definitions, retry receipts and
+  private moderation history, and adds queued PDF/XLSX/ZIP review files through the
+  existing Documents worker and Reports. Engineering verification is recorded in the dated engagement review; human
+  usability, comparative superiority and the separate release gate remain open.
+- Engagement requires these additive migrations before application and worker updates:
+  [engagement_record_custody](openplan/supabase/migrations/20260908000001_engagement_record_custody.sql),
+  [engagement_configuration_versions](openplan/supabase/migrations/20260908000002_engagement_configuration_versions.sql),
+  [engagement_public_copy_guards](openplan/supabase/migrations/20260908000003_engagement_public_copy_guards.sql),
+  [engagement_report_jobs](openplan/supabase/migrations/20260908000004_engagement_report_jobs.sql),
+  [engagement_report_delivery](openplan/supabase/migrations/20260908000005_engagement_report_delivery.sql),
+  [engagement_survey_receipts](openplan/supabase/migrations/20260908000006_engagement_survey_receipts.sql),
+  [engagement_setup_reuse](openplan/supabase/migrations/20260908000007_engagement_setup_reuse.sql),
+  [engagement_export_access_paths](openplan/supabase/migrations/20260908000008_engagement_export_access_paths.sql),
+  [engagement_bundle_access](openplan/supabase/migrations/20260908000009_engagement_bundle_access.sql),
+  [engagement_review_intent](openplan/supabase/migrations/20260908000010_engagement_review_intent.sql),
+  [engagement_campaign_configuration_scope](openplan/supabase/migrations/20260908000011_engagement_campaign_configuration_scope.sql).
+  Historical contributions without a retained configuration remain explicitly unavailable.
+  Campaign PDF rendering uses installed Chrome to preserve multilingual text and maps.
+
 - OWP preparation development adds immutable extraction versions, structured funding,
   staffing and match calculations, draft recovery, and retained revision-specific
   HTML/PDF/XLSX rendering in the Documents worker. Engineering acceptance is still

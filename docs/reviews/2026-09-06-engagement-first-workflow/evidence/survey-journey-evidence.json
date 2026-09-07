@@ -1,0 +1,21 @@
+{
+  "checks": [
+    "Survey text survives reload",
+    "Uploaded photograph survives reload",
+    "First interrupted submit was actually stored",
+    "Lost-success retry returns the same durable receipt",
+    "Retry preserves request identifier",
+    "Staff can inspect uploaded photograph before publication",
+    "Survey review fits390px",
+    "Anonymous access to pending staff photograph refused",
+    "Staff approves explicit reviewed redactions",
+    "Concurrent stale survey review refused",
+    "Removed photograph unavailable through current answer URL",
+    "Immutable original and review history retained",
+    "Restricted original photograph remains available to staff history",
+    "Restricted original photograph denied to public"
+  ],
+  "console": [],
+  "sessionId": "63414a06-83ec-4ff2-a5d5-65076bda69fe",
+  "requestId": "a695d668-a33f-4527-ad74-a95d2aad3144"
+}

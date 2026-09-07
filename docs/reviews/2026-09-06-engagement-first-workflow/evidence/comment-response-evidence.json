@@ -1,0 +1,26 @@
+{
+  "checks": [
+    "Corrupt draft preserved and same receipt recovered in preceding public browser phase",
+    "Manual staff response retains exact contribution link for demo 0",
+    "Reviewed staff response published for demo 0",
+    "Staff response fits390px for demo 0",
+    "County text-only contribution reviewed and published through staff page",
+    "Manual staff response retains exact contribution link for demo 1",
+    "Reviewed staff response published for demo 1",
+    "Staff response fits390px for demo 1"
+  ],
+  "responses": [
+    {
+      "campaignId": "c2336c3c-95b1-4afd-a4b8-c13b3b9c098b",
+      "entryId": "c82e5524-7040-4674-996e-61c0a71d3350",
+      "sourceId": "ab79ae33-ed03-48cc-ae0b-4c37ce973a85"
+    },
+    {
+      "campaignId": "9e230c66-04ee-4402-b536-6294f93f8233",
+      "entryId": "214eafcb-3b25-4460-a5c7-b4ef1f1196ca",
+      "sourceId": "24c110a0-b4ac-4067-ab99-6cc5dcc1e49f"
+    }
+  ],
+  "console": [],
+  "submissionId": "24c110a0-b4ac-4067-ab99-6cc5dcc1e49f"
+}

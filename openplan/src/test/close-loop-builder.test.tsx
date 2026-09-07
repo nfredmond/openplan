@@ -31,6 +31,18 @@ function jsonResponse(body: unknown, ok = true) {
 describe("EngagementCloseLoopBuilder", () => {
   afterEach(() => vi.restoreAllMocks());
 
+  it("links a manual reviewed response to selected contributions without AI",async()=>{
+    const fetchSpy=vi.spyOn(global,"fetch").mockResolvedValue(jsonResponse({entry:entry({id:"manual",source_item_ids:["published-item"]})}));
+    render(<EngagementCloseLoopBuilder campaignId="camp-1" categories={[]} initialEntries={[]} sourceItems={[{id:"published-item",title:"Safer crossing"}]}/>);
+    fireEvent.change(screen.getByPlaceholderText(/Safer crossings downtown/i),{target:{value:"Reviewed crossing response"}});
+    const select=screen.getByLabelText("Contributions addressed") as HTMLSelectElement;
+    select.options[0].selected=true;fireEvent.change(select);
+    fireEvent.click(screen.getByRole("button",{name:/add entry/i}));
+    await waitFor(()=>expect(fetchSpy).toHaveBeenCalledTimes(1));
+    expect(JSON.parse(String(fetchSpy.mock.calls[0][1]?.body))).toMatchObject({sourceItemIds:["published-item"]});
+    expect(fetchSpy.mock.calls[0][0]).toBe("/api/engagement/campaigns/camp-1/closeloop");
+  });
+
   it("posts a new entry and appends it optimistically", async () => {
     const created = entry({ id: "e-new", theme_title: "Transit gaps" });
     const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(jsonResponse({ entryId: "e-new", entry: created }));

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { readStoredEngagementGeometry, type EngagementGeometry } from "@/lib/engagement/geometry";
+import { hasEngagementLocation, readStoredEngagementGeometry, type EngagementGeometry } from "@/lib/engagement/geometry";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
@@ -124,8 +124,10 @@ export function LocationDisplayMap({
   hasVoted,
   contextLayers = null,
   privateAerialOrthos = false,
+  onSelectItem,
 }: {
   items: MapItem[];
+  onSelectItem?: (id: string) => void;
   onSupport?: SupportHandler;
   hasVoted?: (itemId: string) => boolean;
   /**
@@ -145,6 +147,7 @@ export function LocationDisplayMap({
   const [mapReady, setMapReady] = useState(false);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const onSupportRef = useRef(onSupport);
+  const onSelectRef = useRef(onSelectItem);
   const hasVotedRef = useRef(hasVoted);
   // Read inside the map-creation effect for the opening frame only; the paint
   // effect below owns keeping the drawn layers in step.
@@ -162,9 +165,10 @@ export function LocationDisplayMap({
 
   useEffect(() => {
     onSupportRef.current = onSupport;
+    onSelectRef.current = onSelectItem;
     hasVotedRef.current = hasVoted;
     contextLayersRef.current = contextLayers;
-  }, [onSupport, hasVoted, contextLayers]);
+  }, [onSupport, hasVoted, contextLayers, onSelectItem]);
 
   useEffect(() => {
     const container = mapContainerRef.current;
@@ -188,7 +192,9 @@ export function LocationDisplayMap({
       const geometry = readStoredEngagementGeometry(item.geometry ?? null);
       if (geometry && geometry.type !== "Point") {
         shapeItems.push({ ...item, parsedGeometry: geometry });
-      } else if (item.latitude !== null && item.longitude !== null) {
+      } else if (geometry?.type === "Point") {
+        pointItems.push({ ...item, longitude: geometry.coordinates[0], latitude: geometry.coordinates[1] });
+      } else if (item.geometry == null && hasEngagementLocation(item) && item.latitude !== null && item.longitude !== null) {
         pointItems.push({ ...item, latitude: item.latitude, longitude: item.longitude });
       }
     }
@@ -279,8 +285,9 @@ export function LocationDisplayMap({
           const itemId = feature?.properties?.itemId as string | undefined;
           const item = itemId ? shapeItemById.get(itemId) : undefined;
           if (!item) return;
+          if (onSelectRef.current) { onSelectRef.current(item.id); return; }
 
-          new mapboxgl.Popup({ offset: 12, maxWidth: "300px" })
+          new mapboxgl.Popup({ offset: 12, maxWidth: "min(300px, calc(100% - 24px))" })
             .setLngLat(event.lngLat)
             .setDOMContent(buildPopupContent(item, popupOptions))
             .addTo(map);
@@ -297,20 +304,26 @@ export function LocationDisplayMap({
         }
       }
 
-      // Points stay markers with attached popups.
+      // Native review buttons open full detail; reading maps attach popups.
       pointItems.forEach((item) => {
-        const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "300px" }).setDOMContent(
+        const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "min(300px, calc(100% - 24px))" }).setDOMContent(
           buildPopupContent(item, popupOptions)
         );
 
-        const el = document.createElement('div');
+        const el = document.createElement(onSelectRef.current ? 'button' : 'div');
+        if (onSelectRef.current) {
+          el.setAttribute('type','button'); el.setAttribute('aria-label',`Review contribution ${item.title || item.id}`);
+          el.addEventListener('click',(event)=>{event.stopPropagation();onSelectRef.current?.(item.id);});
+        }
         el.className = 'w-4 h-4 rounded-full border-2 border-background shadow-sm cursor-pointer';
         el.style.backgroundColor = safeHexColor(item.color) ?? DEFAULT_MAP_COLOR;
 
         const marker = new mapboxgl.Marker({ element: el })
           .setLngLat([item.longitude, item.latitude])
-          .setPopup(popup)
           .addTo(map);
+        // Staff review opens the full item beside the map. Reading maps retain popups.
+        if (onSelectRef.current) el.setAttribute("role", "button");
+        else marker.setPopup(popup);
 
         markersRef.current.push(marker);
       });
@@ -378,11 +391,7 @@ export function LocationDisplayMap({
     }
   }, [contextLayers, items]);
 
-  const hasMappedItems = items.some(
-    (item) =>
-      (item.latitude !== null && item.longitude !== null) ||
-      readStoredEngagementGeometry(item.geometry ?? null) !== null
-  );
+  const hasMappedItems = items.some(hasEngagementLocation);
   // A campaign that has published context but collected no located input yet
   // still has something a resident needs to see. The old rule — render nothing
   // unless somebody has already commented — hid the project from the very

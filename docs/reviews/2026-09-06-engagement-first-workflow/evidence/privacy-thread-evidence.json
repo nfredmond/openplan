@@ -1,0 +1,34 @@
+{
+  "campaign": {
+    "id": "9ebfd7bb-34fd-44c1-b12c-695c5df4c29e",
+    "workspace_id": "aa7c0891-c29f-4749-a7ed-acba54f369ea",
+    "share_token": "e4196d22eb114be9b3675e77a94e",
+    "configuration_version_id": null
+  },
+  "ids": [
+    "0593f55b-e357-4b0d-bf86-a00022e43d62",
+    "f41ac1ce-379b-437e-a442-b9b4ff074a39",
+    "2e9cd3c5-e71b-42c7-9d3d-154163fd2366",
+    "fc871aa5-c322-4a85-9adf-562bd28b44bb"
+  ],
+  "photoPath": "9ebfd7bb-34fd-44c1-b12c-695c5df4c29e/b592cbba-376c-4796-b6f5-f12c43560bba.jpg",
+  "checks": [
+    "Public feed includes exact reviewed roots and excludes pending-parent replies",
+    "Public JSON excludes originals, pending and orphaned replies",
+    "Public page and serialized map data exclude restricted text",
+    "Private or orphaned photograph denied f41ac1ce-379b-437e-a442-b9b4ff074a39",
+    "Private or orphaned translation refused before AI f41ac1ce-379b-437e-a442-b9b4ff074a39",
+    "Private or orphaned vote denied f41ac1ce-379b-437e-a442-b9b4ff074a39",
+    "Private or orphaned photograph denied 2e9cd3c5-e71b-42c7-9d3d-154163fd2366",
+    "Private or orphaned translation refused before AI 2e9cd3c5-e71b-42c7-9d3d-154163fd2366",
+    "Private or orphaned vote denied 2e9cd3c5-e71b-42c7-9d3d-154163fd2366",
+    "Reviewed photograph positive control",
+    "Anonymous raw photo storage denied",
+    "Staff cannot mint reusable original photo URLs",
+    "Reply to published root is durably received",
+    "Thread retry preserves receipt",
+    "Pending reply is absent from public feed",
+    "Fixture campaign closed",
+    "Closed campaign preserves prior thread receipt"
+  ]
+}

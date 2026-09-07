@@ -1085,6 +1085,12 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
    * product was, until today, the one with the least evidence behind it.
    */
   {
+    table: "engagement_report_jobs",
+    select: "id,workspace_id,scope",
+    expectedMemberReadable: true,
+    build: ({workspaceBId, engagementCampaignBId, reportBId, userBId}) => ({id:randomUUID(),workspace_id:workspaceBId,campaign_id:engagementCampaignBId,report_id:reportBId,requested_by:userBId,request_id:randomUUID(),scope:"internal",filters_json:{},snapshot_text:"RLS fixture only",snapshot_sha256:"f".repeat(64),status:"cancelled"}),
+  },
+  {
     table: "engagement_items",
     select: "id,campaign_id",
     expectedMemberReadable: true,
@@ -1094,6 +1100,23 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
       campaign_id: engagementCampaignBId,
       body: `RLS resident comment ${suffix}`,
     }),
+  },
+  {
+    table:"engagement_configuration_versions",select:"id,campaign_id",expectedMemberReadable:true,
+    scope:{column:"campaign_id",value:context=>context.engagementCampaignBId},
+    build:({engagementCampaignBId})=>({id:randomUUID(),campaign_id:engagementCampaignBId,definition_sha256:"c".repeat(64),definition_json:{fixture:true}}),
+  },
+  {
+    table:"engagement_item_history",select:"id,campaign_id",expectedMemberReadable:true,
+    scope:{column:"campaign_id",value:context=>context.engagementCampaignBId},
+    build:({engagementCampaignBId})=>({campaign_id:engagementCampaignBId}),
+    seedSql:({engagementCampaignBId})=>`INSERT INTO engagement_item_history(campaign_id,item_id,event,record_json) SELECT campaign_id,id,'legacy_before_edit',to_jsonb(i) FROM engagement_items i WHERE campaign_id='${engagementCampaignBId}'`,
+  },
+  {
+    table:"engagement_survey_review_history",select:"id,campaign_id",expectedMemberReadable:true,
+    scope:{column:"campaign_id",value:context=>context.engagementCampaignBId},
+    build:({engagementCampaignBId})=>({campaign_id:engagementCampaignBId}),
+    seedSql:({engagementCampaignBId})=>`WITH session AS (INSERT INTO engagement_survey_response_sessions(campaign_id) VALUES('${engagementCampaignBId}') RETURNING id,campaign_id) INSERT INTO engagement_survey_review_history(campaign_id,session_id,reason,before_json,after_json) SELECT campaign_id,id,'RLS synthetic review','{}','{}' FROM session`,
   },
   {
     table: "engagement_survey_questions",
@@ -1557,7 +1580,7 @@ describe("workspace RLS isolation inventory", () => {
   it("covers every direct workspace-scoped table in the paid-access audit set", () => {
     const tables = WORKSPACE_RLS_PROBES.map((probe) => probe.table).sort();
 
-    expect(tables).toHaveLength(85);
+    expect(tables).toHaveLength(89);
     expect(new Set(tables).size).toBe(tables.length);
     expect(tables).toEqual([
       "aerial_evidence_packages",
@@ -1573,10 +1596,13 @@ describe("workspace RLS isolation inventory", () => {
       "data_datasets",
       "data_refresh_jobs",
       "engagement_campaigns",
+      "engagement_configuration_versions",
+      "engagement_item_history",
       "engagement_items",
+      "engagement_report_jobs",
       "engagement_survey_question_options",
       "engagement_survey_questions",
-      "funding_awards",
+      "engagement_survey_review_history",      "funding_awards",
       "funding_opportunities",
       "gtfs_feed_versions",
       "gtfs_feeds",
@@ -2181,7 +2207,21 @@ liveDescribe("workspace RLS live isolation", () => {
       if (removedObject.error) throw new Error(`Failed to remove the RLS bundle fixture: ${removedObject.error.message}`);
     }
 
-    await service.from("workspaces").delete().in("id", [context.workspaceAId, context.workspaceBId]);
+    const retained = new Set<string>();
+    async function removeFixtureWorkspace(workspaceId: string) {
+      const removed = await service.from("workspaces").delete().eq("id",workspaceId);
+      if (!removed.error) return;
+      // Engagement custody deliberately survives ordinary deletion. Keep only
+      // this suite's immutable fixture, and revoke every membership below.
+      const versions = await service!.from("engagement_campaigns").select("id").eq("workspace_id",workspaceId);
+      if(removed.error.code!=="23503" || versions.error || !versions.data?.length)throw Error(`Fixture workspace cleanup failed: ${removed.error.message}`);
+      retained.add(workspaceId);
+      const revoked=await service!.from("workspace_members").delete().eq("workspace_id",workspaceId);
+      if(revoked.error)throw revoked.error;
+      const remaining=await service!.from("workspace_members").select("user_id").eq("workspace_id",workspaceId);
+      expect(remaining.error).toBeNull();expect(remaining.data).toEqual([]);
+    }
+    for(const workspaceId of [context.workspaceAId,context.workspaceBId])await removeFixtureWorkspace(workspaceId);
     if (safetyEquityTractGeoid) {
       await service.from("census_tracts").delete().eq("geoid", safetyEquityTractGeoid);
     }
@@ -2200,12 +2240,17 @@ liveDescribe("workspace RLS live isolation", () => {
         .select("workspace_id")
         .eq("user_id", userId);
       for (const row of (memberships ?? []) as { workspace_id: string }[]) {
-        await service.from("workspaces").delete().eq("id", row.workspace_id);
+        await removeFixtureWorkspace(row.workspace_id);
       }
-      const removed = await service.auth.admin.deleteUser(userId);
+      const existing=await service.auth.admin.getUserById(userId);
+      const email=existing.data.user?.email;
+      // Soft deletion revokes credentials while retaining actor UUIDs referenced
+      // by immutable audit history. Verify the old password stops working.
+      const removed = await service.auth.admin.deleteUser(userId,retained.size>0);
       if (removed.error) {
         throw new Error(`RLS isolation teardown left user ${userId} behind: ${removed.error.message}`);
       }
+      if(email){const denied=await liveClient(env.API_URL,env.ANON_KEY,"deleted-fixture").auth.signInWithPassword({email,password});expect(denied.error).not.toBeNull();expect(denied.data.session).toBeNull();}
     }
     // The 60s timeout matches beforeAll: this hook makes 10+ live round
     // trips, and vitest's 10s default kills it BEFORE deleteUser on a slow
@@ -2471,6 +2516,34 @@ liveDescribe("workspace RLS live isolation", () => {
     expect(workspaces, "both workspaces must own a feed for the same agency").toEqual(
       [context.workspaceAId, context.workspaceBId].sort()
     );
+  });
+
+  it("keeps current campaign configuration pointers scoped and derived", () => {
+    executeSql(resolveLocalDbContainer(), `BEGIN;
+      SET LOCAL ROLE authenticated;
+      SELECT set_config('request.jwt.claim.sub','${context.userBId}',true);
+      DO $$ DECLARE first_campaign uuid; second_campaign uuid; old_version uuid; current_version uuid; foreign_version uuid; observed uuid;
+      BEGIN
+        INSERT INTO engagement_campaigns(workspace_id,title,engagement_type,status) VALUES('${context.workspaceBId}','Configuration scope first','comment_collection','draft') RETURNING id,configuration_version_id INTO first_campaign,old_version;
+        SELECT configuration_version_id INTO old_version FROM engagement_campaigns WHERE id=first_campaign;
+        INSERT INTO engagement_campaigns(workspace_id,title,engagement_type,status) VALUES('${context.workspaceBId}','Configuration scope second','comment_collection','draft') RETURNING id INTO second_campaign;
+        SELECT configuration_version_id INTO foreign_version FROM engagement_campaigns WHERE id=second_campaign;
+        IF old_version IS NULL OR foreign_version IS NULL THEN RAISE EXCEPTION 'Configuration fixture is missing'; END IF;
+        UPDATE engagement_campaigns SET title='Changed instructions definition' WHERE id=first_campaign;
+        SELECT configuration_version_id INTO current_version FROM engagement_campaigns WHERE id=first_campaign;
+        IF current_version=old_version THEN RAISE EXCEPTION 'Changed definition was not captured'; END IF;
+        UPDATE engagement_campaigns SET configuration_version_id=old_version WHERE id=first_campaign;
+        SELECT configuration_version_id INTO observed FROM engagement_campaigns WHERE id=first_campaign;
+        IF observed IS DISTINCT FROM current_version THEN RAISE EXCEPTION 'Old pointer replaced the current definition'; END IF;
+        BEGIN
+          UPDATE engagement_campaigns SET configuration_version_id=foreign_version WHERE id=first_campaign;
+          RAISE EXCEPTION 'Foreign campaign configuration was not refused';
+        EXCEPTION WHEN foreign_key_violation THEN NULL; END;
+        UPDATE engagement_campaigns SET configuration_version_id=current_version WHERE id=first_campaign;
+        SELECT configuration_version_id INTO observed FROM engagement_campaigns WHERE id=first_campaign;
+        IF observed IS DISTINCT FROM current_version THEN RAISE EXCEPTION 'Own current configuration was not retained'; END IF;
+      END $$;
+      ROLLBACK;`);
   });
 
   it("does not let anon clients enumerate shared engagement campaigns", async () => {

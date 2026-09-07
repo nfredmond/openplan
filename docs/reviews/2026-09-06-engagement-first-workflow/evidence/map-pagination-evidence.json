@@ -1,0 +1,12 @@
+{
+  "checks": [
+    "Keyboard map marker opens matching review detail",
+    "Linked map and list fit390px",
+    "Large campaign shows25items per page with complete1005count",
+    "Next page contains25distinct contributions",
+    "Review next follows the filtered list",
+    "Search resets pagination and returns the independently known last contribution"
+  ],
+  "console": [],
+  "filteredText": "Page 1 of 1. 1 matching contributions."
+}

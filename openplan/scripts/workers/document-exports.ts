@@ -1,3 +1,4 @@
+import { processNextEngagementReport } from "../../src/lib/engagement/review-export-worker";
 /** Run with npm run worker:document-exports. Jobs and completed files remain in Documents. */
 import { randomUUID, createHash } from "node:crypto";
 import { mkdir, readFile, writeFile, rename } from "node:fs/promises";
@@ -19,7 +20,10 @@ while (!stopping) {
   const claimed = await service.rpc("claim_work_program_export", { p_token: token });
   if (claimed.error) { console.error("Document export queue unavailable; retrying."); await delay(5000); continue; }
   const job = claimed.data as { id: string; document_id: string } | null;
-  if (!job?.id) { await delay(2000); continue; }
+  if (!job?.id) {
+    try { if (await processNextEngagementReport(root)) continue; } catch { console.error("Campaign report queue unavailable; retrying."); }
+    await delay(2000); continue;
+  }
   const heartbeat = setInterval(() => { void service.from("kb_ocr_jobs").update({ lease_until: new Date(Date.now()+600_000).toISOString() }).eq("id", job.id).eq("lease_token", token).eq("status", "running").then(({error})=>{if(error) console.error("Export lease renewal unavailable.");}); }, 30_000);
   try {
     const identity = await loadWorkProgramExportIdentity(job.document_id);

@@ -1,0 +1,41 @@
+{
+  "commit": "48b2c5fcb7a78907da963a1b4b80c5218ebfe1b6",
+  "buildId": "70v0m_-8dyJhcPdJjlly_",
+  "port": 3226,
+  "processCwd": "/home/nathaniel/.local/state/openplan/engagement-first-workflow-2026-09-06/openplan",
+  "fullProcessCommitChecked": true,
+  "healthCommit": "48b2c5fcb7a7",
+  "localQa": {
+    "appFilesPassed": 1193,
+    "appFilesSkipped": 14,
+    "appTestsPassed": 13226,
+    "appTestsSkipped": 127,
+    "liveRlsFilesPassed": 21,
+    "liveRlsTestsPassed": 150,
+    "lint": "passed",
+    "productionAuditVulnerabilities": 0,
+    "webpackBuild": "completed",
+    "terminalExitHandle": "unavailable after crash; retained log reaches completed build route table",
+    "retainedLogSha256": "daae35e2c0a631af0f75d549f2d683f35258079021e021754568aedc3a5a6542"
+  },
+  "github": {
+    "ci": {
+      "run": 34160150476,
+      "conclusion": "success"
+    },
+    "liveRls": {
+      "run": 34160150475,
+      "conclusion": "success"
+    },
+    "restore": {
+      "run": 34160150469,
+      "conclusion": "success"
+    },
+    "elevenMigrationUpgrade": {
+      "run": 34159624859,
+      "commit": "c4d7a17c",
+      "conclusion": "success",
+      "migrationFilesUnchanged": true
+    }
+  }
+}

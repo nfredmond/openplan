@@ -24,6 +24,7 @@
 
 /** One approved public comment, as both the feed and the entry page read it. */
 export type ApprovedItem = {
+  historicalCategoryLabel?: string | null;
   id: string;
   categoryId: string | null;
   title: string | null;

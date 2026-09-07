@@ -399,6 +399,7 @@ describe("readSurveyConditionRefs — an unreadable survey is not an empty one",
 
 describe("aggregateCampaignSurvey — a zero is only a count when the reads succeeded", () => {
   const definitionFixtures = {
+    engagement_configuration_versions: { rows: [] },
     engagement_survey_questions: {
       rows: [
         {
@@ -431,6 +432,25 @@ describe("aggregateCampaignSurvey — a zero is only a count when the reads succ
     expect(result.questions[0].answeredCount).toBe(1);
   });
 
+  it("keeps old rating scales separate and refuses to interpret records without their definition", async () => {
+    const result = await aggregateCampaignSurvey(mockReadClient({
+      engagement_configuration_versions: { rows: [
+        { id: "old", definition_json: { questions: [{id:"q",question_type:"rating",prompt:"Original ten point scale",config_json:{max:10},options:[]}] } },
+        { id: "new", definition_json: { questions: [{id:"q",question_type:"rating",prompt:"Revised five point scale",config_json:{max:5},options:[]}] } },
+      ] },
+      engagement_survey_response_sessions: { rows: [SESSION_ROW,SESSION_ROW,SESSION_ROW] },
+      engagement_survey_answers: { rows: [
+        {question_id:"q",question_type:"rating",answer_json:{value:9},question_prompt_snapshot:"Original ten point scale",engagement_survey_response_sessions:{configuration_version_id:"old"}},
+        {question_id:"q",question_type:"rating",answer_json:{value:3},question_prompt_snapshot:"Revised five point scale",engagement_survey_response_sessions:{configuration_version_id:"new"}},
+        {question_id:"q",question_type:"rating",answer_json:{value:8},question_prompt_snapshot:"Older unknown scale"},
+      ] },
+    }), "camp-1");
+    expect(result.error).toBeNull(); expect(result.questions).toHaveLength(3);
+    expect(result.questions.find(q=>q.configurationVersionId==="old")?.aggregation).toMatchObject({mean:9});
+    expect(result.questions.find(q=>q.configurationVersionId==="new")?.aggregation).toMatchObject({mean:3});
+    expect(result.questions.find(q=>q.configurationVersionId===null)).toMatchObject({answeredCount:1,interpretationUnavailable:true,aggregation:null});
+  });
+
   it("surfaces a failed SESSION read behind the zero it would otherwise report", async () => {
     const result = await aggregateCampaignSurvey(
       mockReadClient({
@@ -455,14 +475,14 @@ describe("aggregateCampaignSurvey — a zero is only a count when the reads succ
       "camp-1"
     );
 
-    expect(result.questions[0].answeredCount).toBe(0);
+    expect(result.questions).toEqual([]);
     expect(result.error?.message).toBe("statement timeout");
   });
 
   it("surfaces a failed DEFINITION read, which would otherwise read as 'no survey'", async () => {
     const result = await aggregateCampaignSurvey(
       mockReadClient({
-        engagement_survey_questions: { error: { message: "permission denied for relation" } },
+        engagement_configuration_versions: { error: { message: "permission denied for relation" } },
         engagement_survey_question_options: { rows: [] },
         engagement_survey_answers: { rows: [] },
         engagement_survey_response_sessions: { rows: [] },

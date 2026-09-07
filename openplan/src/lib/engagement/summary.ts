@@ -1,3 +1,4 @@
+import { hasEngagementLocation } from "@/lib/engagement/geometry";
 import {
   ENGAGEMENT_ITEM_ACTIONABLE_STATUSES,
   ENGAGEMENT_ITEM_SOURCE_TYPES,
@@ -23,6 +24,7 @@ type ItemLike = {
   submitted_by?: string | null;
   status?: string | null;
   source_type?: string | null;
+  geometry?: unknown;
   latitude?: number | null;
   longitude?: number | null;
   metadata_json?: Record<string, unknown> | null;
@@ -232,7 +234,7 @@ export function summarizeEngagementItems(
     const sourceType = item.source_type ?? "internal";
     const activityAt = item.updated_at ?? item.created_at ?? null;
     const activityTime = parseTimestamp(activityAt);
-    const isGeolocated = typeof item.latitude === "number" && typeof item.longitude === "number";
+    const isGeolocated = hasEngagementLocation(item);
     const sourceSummary =
       sourceSummaries.get(sourceType) ??
       {
@@ -395,7 +397,7 @@ export function summarizeEngagementItems(
     (item) => isPublicInput(item) && !unresolvedDuplicateIds.has(item.id)
   ).length;
   const mapReadyItems = handoffReadyItems.filter(
-    (item) => typeof item.latitude === "number" && typeof item.longitude === "number"
+    (item) => hasEngagementLocation(item)
   ).length;
   const handoffReadyWithoutLocation = readyForHandoffCount - mapReadyItems;
 

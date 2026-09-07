@@ -131,7 +131,23 @@ const categoriesEqCampaignMock = vi.fn(() => ({ order: categoriesOrderSortMock }
 const categoriesSelectMock = vi.fn(() => ({ eq: categoriesEqCampaignMock }));
 
 const itemsLimitMock = vi.fn();
-const itemsOrderMock = vi.fn(() => ({ limit: itemsLimitMock }));
+const itemsOrderMock = vi.fn(() => ({ limit: itemsLimitMock, order: () => {
+  let cursor: RegExpMatchArray | null = null;
+  const query = {
+    or(value: string) {
+      cursor = value.match(/^created_at\.lt\.(.*),and\(created_at\.eq\.(.*),id\.gt\.(.*)\)$/);
+      expect(cursor).not.toBeNull();
+      return query;
+    },
+    async range(from: number, to: number) {
+      const result = await itemsLimitMock() as { data: Array<{id: string; created_at: string}> | null; error: unknown };
+      const rows = result.data?.filter(row => !cursor || row.created_at < cursor[1] || (row.created_at === cursor[2] && row.id > cursor[3]))
+        .sort((a,b) => b.created_at.localeCompare(a.created_at) || a.id.localeCompare(b.id));
+      return { ...result, data: rows?.slice(from, to + 1) ?? null };
+    },
+  };
+  return query;
+} }));
 const itemsEqStatusMock = vi.fn(() => ({ order: itemsOrderMock }));
 const itemsEqCampaignMock = vi.fn(() => ({ eq: itemsEqStatusMock }));
 const itemsSelectMock = vi.fn(() => ({ eq: itemsEqCampaignMock }));
@@ -1075,4 +1091,14 @@ describe("PublicEngagementPage", () => {
       expect(bundle.portalProps.readFailures.project).toBe(false);
     });
   });
+  it("returns a complete feed beyond the former 200-item cap and hides orphan replies", async () => {
+    const rows = Array.from({ length: 501 }, (_, index) => ({ id: `item-${index}`, body: `Contribution ${index}`, title: null, parent_item_id: null, category_id: null, created_at: "2026-09-06T12:00:00Z" }));
+    itemsLimitMock.mockResolvedValue({ data: [...rows, { ...rows[0], id: "orphan", parent_item_id: "withheld-parent" }], error: null });
+    const result = await loadPublicPortalResult("share-token-12345");
+    expect(result.status).toBe("ok");
+    if (result.status !== "ok") throw new Error("Portal unavailable");
+    expect(result.bundle.portalProps.approvedItems).toHaveLength(501);
+    expect(result.bundle.portalProps.approvedItems.some(item => item.id === "orphan")).toBe(false);
+  });
+
 });

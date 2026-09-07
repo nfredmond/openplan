@@ -266,6 +266,7 @@ function classTokens(container: HTMLElement): string[] {
 
 describe("PublicSurveyForm", () => {
   beforeEach(() => {
+    localStorage.clear();
     vi.restoreAllMocks();
   });
   afterEach(() => {

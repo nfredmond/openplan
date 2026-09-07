@@ -57,6 +57,8 @@ const SHARE_TOKEN_IS_SERVER_MINTED =
 
 const patchCampaignSchema = z
   .object({
+    participationStartsAt: z.string().datetime({ offset: true }).nullable().optional(),
+    participationEndsAt: z.string().datetime({ offset: true }).nullable().optional(),
     title: z.string().trim().min(1).max(160).optional(),
     summary: z.union([z.string().trim().max(2000), z.null()]).optional(),
     status: z.enum(ENGAGEMENT_CAMPAIGN_STATUSES).optional(),
@@ -718,6 +720,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     const updates: Record<string, unknown> = {};
+    if (parsed.data.participationStartsAt !== undefined) updates.participation_starts_at = parsed.data.participationStartsAt;
+    if (parsed.data.participationEndsAt !== undefined) updates.participation_ends_at = parsed.data.participationEndsAt;
     if (parsed.data.title !== undefined) updates.title = parsed.data.title;
     if (parsed.data.summary !== undefined) updates.summary = parsed.data.summary;
     if (parsed.data.status !== undefined) updates.status = parsed.data.status;

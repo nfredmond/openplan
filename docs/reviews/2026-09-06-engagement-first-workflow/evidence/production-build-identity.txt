@@ -1,0 +1,10 @@
+Instance:  http://localhost:3226
+Version:   0.44.0
+Commit:    d58370b846e2
+Checkout:  /home/nathaniel/.local/state/openplan/engagement-first-workflow-2026-09-06 @ d58370b8
+
+Serving from: /home/nathaniel/.local/state/openplan/engagement-first-workflow-2026-09-06/openplan
+MATCH — this instance is serving the checkout you are working in.
+
+Next build ID: qtOzA-W28NCDcnV0wQKIK
+Full process OPENPLAN_COMMIT_SHA matched d58370b846e26b4d727fa9efb4483c8bd7e7ea42. The health API returns twelve characters.

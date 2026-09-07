@@ -1,3 +1,4 @@
+import { readEveryPage } from "@/lib/supabase/paged-read";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createServiceRoleClient } from "@/lib/supabase/server";
@@ -45,7 +46,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     const { data: campaign, error: campaignError } = await supabase
       .from("engagement_campaigns")
-      .select("id, title, summary, public_description, status, engagement_type, allow_public_submissions, submissions_closed_at, created_at, updated_at")
+      .select("id, title, summary, public_description, status, engagement_type, allow_public_submissions, submissions_closed_at, participation_starts_at, participation_ends_at, created_at, updated_at")
       .eq("share_token", parsed.data.shareToken)
       .eq("status", "active")
       .maybeSingle();
@@ -69,13 +70,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
         .eq("campaign_id", campaign.id)
         .order("sort_order", { ascending: true })
         .order("created_at", { ascending: true }),
-      supabase
+      readEveryPage((from, to) => supabase
         .from("engagement_items")
-        .select("id, category_id, title, body, submitted_by, latitude, longitude, created_at")
+        .select("id, category_id, title, body, submitted_by, latitude, longitude, geometry, parent_item_id, created_at")
         .eq("campaign_id", campaign.id)
         .eq("status", "approved")
         .order("created_at", { ascending: false })
-        .limit(100),
+        .order("id", { ascending: true }).range(from, to)).then((result) => ({ data: result.complete ? result.rows : [], error: result.complete ? null : result.error ?? { message: "The full public feed could not be loaded." } })),
     ]);
 
     /*
@@ -110,9 +111,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     // Only past both checks does an empty array mean what it says.
     const categories = categoriesResult.data ?? [];
-    const approvedItems = approvedItemsResult.data ?? [];
+    const readItems = approvedItemsResult.data ?? [];
+    const parents = new Set(readItems.filter((item) => !item.parent_item_id).map((item) => item.id));
+    const approvedItems = readItems.filter((item) => !item.parent_item_id || parents.has(item.parent_item_id));
 
-    const acceptingSubmissions = campaign.allow_public_submissions && !campaign.submissions_closed_at;
+    const acceptingSubmissions = campaign.allow_public_submissions && !campaign.submissions_closed_at
+      && (!campaign.participation_starts_at || Date.parse(campaign.participation_starts_at) <= Date.now())
+      && (!campaign.participation_ends_at || Date.parse(campaign.participation_ends_at) > Date.now());
 
     return NextResponse.json({
       campaign: {
@@ -134,6 +139,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
         title: item.title,
         body: item.body,
         submittedBy: item.submitted_by,
+        parentItemId: item.parent_item_id,
+        geometry: item.geometry,
         latitude: item.latitude,
         longitude: item.longitude,
         createdAt: item.created_at,

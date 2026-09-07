@@ -4,8 +4,10 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "reac
 import { CheckCircle2, Loader2, MapPin, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PortalRecoveryCopy, PortalPriorReceipt, type PriorReceipt, type RecoveryMessage } from "./portal-recovery-copy";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { parseEngagementGeometry } from "@/lib/engagement/geometry";
 import { ENGAGEMENT_PHOTO_MAX_BYTES } from "@/lib/engagement/photo";
 import {
   AGE_BANDS,
@@ -65,6 +67,7 @@ export type PortalFormPlace =
       source: "stage";
       geometry: EngagementGeometry | null;
       onClearGeometry: () => void;
+      onRestoreGeometry?: (geometry: EngagementGeometry) => void;
       drawMode: EngagementDrawMode;
       onDrawModeChange: (mode: EngagementDrawMode) => void;
       /**
@@ -142,6 +145,7 @@ type StepId = "where" | "what" | "extras" | "you" | "send";
  */
 export function PortalSubmissionForm({
   shareToken,
+  configurationVersionId,
   acceptingSubmissions,
   categories,
   demographicsEnabled,
@@ -154,6 +158,7 @@ export function PortalSubmissionForm({
   className,
 }: {
   shareToken: string;
+  configurationVersionId?: string | null;
   acceptingSubmissions: boolean;
   categories: PortalFormCategory[];
   demographicsEnabled: boolean;
@@ -225,6 +230,12 @@ export function PortalSubmissionForm({
   const [raceEthnicity, setRaceEthnicity] = useState<string[]>([]);
   const [householdTenure, setHouseholdTenure] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [requestId, setRequestId] = useState("");
+  const [receipt, setReceipt] = useState<{ submissionId: string; receivedAt: string | null } | null>(null);
+  const [priorReceipt, setPriorReceipt] = useState<PriorReceipt | null>(null);
+  const [draftReady, setDraftReady] = useState(false);
+  const [draftWarning, setDraftWarning] = useState<RecoveryMessage | null>(null);
+  const draftKey = `openplan-engagement-draft:${shareToken}:${parentItemId ?? "new"}`;
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<PortalDisclosureView | null>(null);
   /*
@@ -247,8 +258,48 @@ export function PortalSubmissionForm({
     one pin is a pin that disagrees with itself.
   */
   const [inlineGeometry, setInlineGeometry] = useState<EngagementGeometry | null>(null);
+  const restoreStage = useRef(place.source === "stage" ? place.onRestoreGeometry : undefined);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (previewMode) return;
+    // Browser storage is an external system. Restore once per campaign/thread,
+    // before enabling writes, so an empty hydration state cannot erase a draft.
+    queueMicrotask(() => {
+      try {
+        let raw: string | null;
+        try { raw = localStorage.getItem(draftKey); }
+        catch { setRequestId(crypto.randomUUID()); setDraftWarning("recovery.storageUnavailable"); setDraftReady(true); return; }
+        const saved = raw ? JSON.parse(raw) : null;
+        if (saved && (saved.version !== 1 || typeof saved.body !== "string" || typeof saved.requestId !== "string" || !/^[0-9a-f-]{36}$/i.test(saved.requestId) || [saved.whereWords,saved.categoryId,saved.title,saved.submittedBy,saved.ageBand,saved.zip5,saved.primaryLanguage,saved.householdTenure].some(value => value != null && typeof value !== "string") || (saved.raceEthnicity && (!Array.isArray(saved.raceEthnicity) || saved.raceEthnicity.some((value: unknown) => typeof value !== "string"))) || (saved.priorReceipt && typeof saved.priorReceipt.submissionId !== "string") || (saved.receipt && typeof saved.receipt.submissionId !== "string"))) throw new Error("Unrecognized draft");
+        setRequestId(saved?.requestId || crypto.randomUUID());
+        if (saved) {
+          setBody(saved.body); setWhereWords(saved.whereWords ?? ""); setCategoryId(saved.categoryId ?? "");
+          setTitle(saved.title ?? ""); setSubmittedBy(saved.submittedBy ?? "");
+          setAgeBand(saved.ageBand ?? ""); setZip5(saved.zip5 ?? ""); setPrimaryLanguage(saved.primaryLanguage ?? ""); setRaceEthnicity(saved.raceEthnicity ?? []); setHouseholdTenure(saved.householdTenure ?? ""); setPriorReceipt(saved.priorReceipt ?? null);
+          const parsedGeometry = saved.geometry ? parseEngagementGeometry(saved.geometry) : null;
+          if (parsedGeometry && !parsedGeometry.ok && !saved.receipt) throw new Error("Unreadable drawing");
+          setInlineGeometry(parsedGeometry?.ok ? parsedGeometry.geometry : null);
+          if(parsedGeometry?.ok && parsedGeometry.geometry)restoreStage.current?.(parsedGeometry.geometry);
+          if (saved.receipt) { setReceipt(saved.receipt); setSubmitted(true); }
+          if (saved.configurationVersionId && saved.configurationVersionId !== configurationVersionId && !saved.receipt) setDraftWarning("recovery.changed");
+          else if (saved.hadPhoto && !saved.receipt) setDraftWarning("recovery.photoRestored");
+        }
+        setDraftReady(true);
+      } catch {
+        setDraftWarning("recovery.unreadable");
+      }
+    });
+  }, [draftKey, previewMode, configurationVersionId]);
+
+  useEffect(() => {
+    if (!draftReady || previewMode || !requestId) return;
+    try {
+      localStorage.setItem(draftKey, JSON.stringify({ version: 1, configurationVersionId, requestId, body, whereWords, categoryId, title, submittedBy, ageBand, zip5, primaryLanguage, raceEthnicity, householdTenure, priorReceipt,
+        geometry: place.source === "stage" ? place.geometry ?? inlineGeometry : inlineGeometry, hadPhoto: Boolean(photoFile), receipt }));
+    } catch { setDraftWarning("recovery.storageUnavailable"); }
+  }, [draftReady, previewMode, draftKey, configurationVersionId, requestId, body, whereWords, categoryId, title, submittedBy, place, inlineGeometry, photoFile, receipt, ageBand, zip5, primaryLanguage, raceEthnicity, householdTenure, priorReceipt]);
 
   const photoLimit = formatPortalMegabytes(ENGAGEMENT_PHOTO_MAX_BYTES, bcp47);
   const optionalHint = t("survey.optional");
@@ -261,11 +312,11 @@ export function PortalSubmissionForm({
     "where" step that offers a map that is not there.
   */
   const canDraw = place.source === "stage" ? place.mapAvailable : GEOMETRY_PICKER_CAN_DRAW;
-  const geometry = place.source === "stage" ? place.geometry : inlineGeometry;
+  const geometry = place.source === "stage" ? place.geometry ?? inlineGeometry : inlineGeometry;
 
   const clearGeometry = () => {
     if (place.source === "stage") place.onClearGeometry();
-    else setInlineGeometry(null);
+    setInlineGeometry(null);
   };
 
   /*
@@ -310,7 +361,12 @@ export function PortalSubmissionForm({
     return [...seen.values()];
   }, [categories, translator]);
 
+  function forgetUploadedPhoto() {
+    try { localStorage.removeItem(`openplan-engagement-photo:${shareToken}:${requestId}`); } catch { /* Storage may be disabled. */ }
+  }
+
   function clearPhoto() {
+    forgetUploadedPhoto();
     setPhotoFile(null);
     setPhotoError(null);
     setPhotoPreviewUrl((previous) => {
@@ -336,6 +392,7 @@ export function PortalSubmissionForm({
       setPhotoError(portalMessageView(translator, "portal.photoTooLarge", { limit: photoLimit }));
       return;
     }
+    forgetUploadedPhoto();
     setPhotoFile(file);
     setPhotoPreviewUrl((previous) => {
       if (previous) URL.revokeObjectURL(previous);
@@ -359,6 +416,11 @@ export function PortalSubmissionForm({
   }
 
   function resetForm() {
+    setRequestId(crypto.randomUUID());
+    setReceipt(null);
+    setDraftWarning(null);
+    setDraftReady(true);
+    setInlineGeometry(null);
     setSubmitted(false);
     setBody("");
     setWhereWords("");
@@ -367,6 +429,7 @@ export function PortalSubmissionForm({
     setSubmittedBy("");
     clearPhoto();
     setWebsite("");
+    setPriorReceipt(null);
     setAgeBand("");
     setZip5("");
     setPrimaryLanguage("");
@@ -429,6 +492,8 @@ export function PortalSubmissionForm({
 
     const result = await submitPortalInput({
       shareToken,
+      configurationVersionId,
+      requestId: requestId || undefined,
       body: composeBody(),
       categoryId,
       parentItemId,
@@ -445,6 +510,7 @@ export function PortalSubmissionForm({
     setIsSubmitting(false);
 
     if (result.ok) {
+      setReceipt({ submissionId: result.submissionId, receivedAt: result.receivedAt });
       setSubmitted(true);
       return;
     }
@@ -464,17 +530,16 @@ export function PortalSubmissionForm({
     setError(
       portalMessageView(translator, result.stage === "photo" ? "portal.photoFailed" : "portal.submitFailed")
     );
+    if (result.previousReceipt) setPriorReceipt(result.previousReceipt);
     setOperatorErrorDetail(result.serverMessage);
   }
 
-  if (!acceptingSubmissions) {
-    return (
-      <div className={cn("space-y-3 p-5", className)} data-testid="portal-sidebar-closed">
-        <h2 className="text-lg font-semibold text-foreground">{t("portal.submissionsClosedNotice")}</h2>
-        <p className="text-sm text-muted-foreground">{t("page.publishedFeedbackDetail")}</p>
-      </div>
-    );
-  }
+  if (!previewMode && !draftReady && draftWarning) return <div className="space-y-3 p-5" role="alert">
+    <p><PortalRecoveryCopy translator={translator} message={draftWarning}/></p><Button type="button" onClick={() => {
+      const raw = localStorage.getItem(draftKey) ?? "";
+      const link = document.createElement("a"); link.href = `data:application/json;charset=utf-8,${encodeURIComponent(raw)}`;
+      link.download = "unreadable-engagement-draft.json"; link.click();
+    }}><PortalRecoveryCopy translator={translator} message="recovery.download"/></Button><Button type="button" onClick={resetForm}><PortalRecoveryCopy translator={translator} message="recovery.new"/></Button></div>;
 
   if (submitted) {
     return (
@@ -486,12 +551,29 @@ export function PortalSubmissionForm({
         {/* The one promise the agency must not let a resident infer wrongly:
             being read is not the same as being written back to. */}
         <p className="text-sm text-muted-foreground">{t("portal.followUpHint")}</p>
+        {receipt ? <div className="break-words text-sm"><p><PortalRecoveryCopy translator={translator} message="recovery.receipt"/>: <span className="break-all">{receipt.submissionId}</span></p><p><PortalRecoveryCopy translator={translator} message="recovery.received"/> {receipt.receivedAt ?? <PortalRecoveryCopy translator={translator} message="recovery.dateUnavailable"/>}. <PortalRecoveryCopy translator={translator} message="recovery.receiptMeaning"/></p>
+          <a download={`engagement-receipt-${receipt.submissionId}.json`} href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify({ ...receipt, body: composeBody(), title, campaign: shareToken }, null, 2))}`} className="underline"><PortalRecoveryCopy translator={translator} message="recovery.saveReceipt"/></a></div> : null}
         <Button type="button" variant="outline" className="min-h-11" onClick={resetForm}>
           {t("portal.shareAnother")}
         </Button>
       </div>
     );
   }
+
+  if (!acceptingSubmissions) {
+    return (
+      <div className={cn("space-y-3 p-5", className)} data-testid="portal-sidebar-closed">
+        <h2 className="text-lg font-semibold text-foreground">{t("portal.submissionsClosedNotice")}</h2>
+        <p className="text-sm text-muted-foreground">{t("page.publishedFeedbackDetail")}</p>
+      </div>
+    );
+  }
+
+  if (priorReceipt) return <PortalPriorReceipt translator={translator} receipt={priorReceipt} onContinue={() => {
+    const next = crypto.randomUUID();
+    try { const photo = localStorage.getItem(`openplan-engagement-photo:${shareToken}:${requestId}`); if(photo)localStorage.setItem(`openplan-engagement-photo:${shareToken}:${next}`,photo); } catch { /* The selected file can still be uploaded. */ }
+    setRequestId(next); setPriorReceipt(null); setError(null); setStep("send");
+  }}/>;
 
   const stepTitle: Record<StepId, string> = {
     where: t("portal.stepWhereTitle"),
@@ -617,6 +699,7 @@ export function PortalSubmissionForm({
             </div>
           </fieldset>
           {locationStatus}
+          {wordsField}
         </div>
       );
     }
@@ -682,7 +765,8 @@ export function PortalSubmissionForm({
           />
         </div>
 
-        {canDraw ? locationStatus : wordsField}
+        {canDraw ? locationStatus : null}
+        {wordsField}
       </div>
     );
   };
@@ -693,6 +777,7 @@ export function PortalSubmissionForm({
       onSubmit={handleSubmit}
       data-testid="portal-guided-form"
     >
+      <p className="px-5 text-xs text-muted-foreground"><PortalRecoveryCopy translator={translator} message={draftWarning ?? "recovery.local"}/></p>
       {/*
         WHOSE COMMENT THIS ANSWERS, first in the form. A reply that lost its
         banner is a reply a resident cannot tell from a new comment, and the way

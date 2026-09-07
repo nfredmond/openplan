@@ -1,0 +1,23 @@
+{
+  "checks": [
+    "Staff direct snapshot body denied",
+    "Anonymous job metadata denied",
+    "Staff direct public storage bytes denied",
+    "Staff direct public signed URL denied",
+    "Staff direct internal storage bytes denied",
+    "Staff direct internal signed URL denied",
+    "Viewer job list excludes internal",
+    "Viewer internal Reports metadata denied",
+    "Viewer internal artifact metadata denied",
+    "Setup retry returns one consultation",
+    "Reuse copies no engagement_items",
+    "Reuse copies no engagement_survey_response_sessions",
+    "Reuse copies no engagement_closeloop_entries",
+    "Reuse starts private with dates and project unset",
+    "Authenticated stream positive control",
+    "Public snapshot stream withdrawn after reviewed text change",
+    "Revoked viewer loses retained job access"
+  ],
+  "cloneId": "315eb7d2-8345-46fd-8146-ee02e3a6d31c",
+  "viewerId": "5505c21f-8d7d-4157-9b50-cbe22844f019"
+}

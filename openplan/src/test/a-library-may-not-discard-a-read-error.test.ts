@@ -181,7 +181,6 @@ function libFiles(): string[] {
  */
 const KNOWN_DATA_ONLY: ReadonlyArray<readonly [string, number]> = [
   ["src/lib/engagement/close-loop.ts", 1],
-  ["src/lib/engagement/public-portal-data.ts", 1],
   ["src/lib/models/run-reconcile.ts", 1],
   ["src/lib/notifications/engagement.ts", 5],
 ];

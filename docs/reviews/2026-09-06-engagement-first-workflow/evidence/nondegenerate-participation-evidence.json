@@ -1,0 +1,28 @@
+[
+  {
+    "mode": "line",
+    "status": 201,
+    "response": {
+      "success": true,
+      "message": "Thank you for your feedback. Your submission will be reviewed by the project team.",
+      "submissionId": "a08d7bb0-5027-4159-8ac6-e94c2ac90b0e",
+      "receivedAt": "2026-09-07T18:36:51.237229+00:00",
+      "reviewStatus": "pending"
+    },
+    "errors": [],
+    "overflow": 0
+  },
+  {
+    "mode": "area",
+    "status": 201,
+    "response": {
+      "success": true,
+      "message": "Thank you for your feedback. Your submission will be reviewed by the project team.",
+      "submissionId": "ba2727ff-88e8-4a47-b530-2abf18ada7a0",
+      "receivedAt": "2026-09-07T18:36:55.198261+00:00",
+      "reviewStatus": "pending"
+    },
+    "errors": [],
+    "overflow": 0
+  }
+]

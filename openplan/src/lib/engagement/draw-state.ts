@@ -25,7 +25,7 @@
  * is allowed to.
  */
 
-import { ENGAGEMENT_GEOMETRY_MAX_VERTICES, type EngagementGeometry } from "./geometry";
+import { ENGAGEMENT_GEOMETRY_MAX_VERTICES, readStoredEngagementGeometry, type EngagementGeometry } from "./geometry";
 
 export type EngagementDrawMode = "point" | "line" | "area";
 
@@ -48,11 +48,11 @@ export function deriveGeometry(state: DrawState): EngagementGeometry | null {
   }
 
   if (state.mode === "line") {
-    return state.vertices.length >= 2 ? { type: "LineString", coordinates: [...state.vertices] } : null;
+    return state.vertices.length >= 2 ? readStoredEngagementGeometry({ type: "LineString", coordinates: [...state.vertices] }) : null;
   }
 
   if (state.areaClosed && state.vertices.length >= 3) {
-    return { type: "Polygon", coordinates: [[...state.vertices, state.vertices[0]]] };
+    return readStoredEngagementGeometry({ type: "Polygon", coordinates: [[...state.vertices, state.vertices[0]]] });
   }
 
   return null;

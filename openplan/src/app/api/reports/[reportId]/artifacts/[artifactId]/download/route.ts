@@ -1,3 +1,4 @@
+import { downloadEngagementReview } from "@/lib/engagement/review-export-download";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
@@ -115,6 +116,12 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
   const artifact = (artifactData ?? null) as ArtifactRow | null;
   if (!artifact) {
     return NextResponse.json({ error: "Artifact not found" }, { status: 404 });
+  }
+
+  const engagementJobId = artifact.metadata_json?.engagementReviewJobId;
+  if (typeof engagementJobId === "string") {
+    if (typeof artifact.storage_path !== "string" || typeof artifact.metadata_json?.sha256 !== "string") return NextResponse.json({error:"Retained file identity unavailable"},{status:404});
+    return downloadEngagementReview(supabase, engagementJobId, "pdf", { reportId: report.id, artifact: {path:artifact.storage_path,checksum:artifact.metadata_json.sha256} });
   }
 
   const storagePath = typeof artifact.storage_path === "string" ? artifact.storage_path.trim() : "";

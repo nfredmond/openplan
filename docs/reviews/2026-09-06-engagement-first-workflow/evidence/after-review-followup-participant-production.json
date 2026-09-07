@@ -1,0 +1,21 @@
+{
+  "build": "48b2c5fcb7a78907da963a1b4b80c5218ebfe1b6",
+  "records": [
+    {
+      "width": 1440,
+      "submissionId": "79b735ad-7937-4f31-ae0a-04c9bc5127b1",
+      "configurationVersionId": "58580f9e-4832-41d5-99c7-16bd311be110",
+      "status": 201,
+      "receiptSurvivesReload": true,
+      "errors": []
+    },
+    {
+      "width": 390,
+      "submissionId": "c804dbe5-fcad-4f09-bd0a-1295cb36ab41",
+      "configurationVersionId": "58580f9e-4832-41d5-99c7-16bd311be110",
+      "status": 201,
+      "receiptSurvivesReload": true,
+      "errors": []
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import { isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -13,6 +14,9 @@ const paramsSchema = z.object({
 
 const patchItemSchema = z
   .object({
+    expectedUpdatedAt: z.string().datetime({ offset: true }),
+    removePhoto: z.boolean().optional(),
+    removeGeometry: z.boolean().optional(),
     categoryId: z.union([z.string().uuid(), z.null()]).optional(),
     title: z.union([z.string().trim().max(160), z.null()]).optional(),
     body: z.string().trim().min(1).max(8000).optional(),
@@ -87,7 +91,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     const { data: existingItem, error: itemLookupError } = await supabase
       .from("engagement_items")
-      .select("id, campaign_id, category_id")
+      .select("id, campaign_id, category_id, updated_at, status, source_type, title, body, submitted_by, photo_path, geometry, latitude, longitude")
       .eq("id", parsedParams.data.itemId)
       .eq("campaign_id", access.campaign.id)
       .maybeSingle();
@@ -104,6 +108,21 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     if (!existingItem) {
       return NextResponse.json({ error: "Engagement item not found" }, { status: 404 });
+    }
+
+    if (existingItem.updated_at !== parsed.data.expectedUpdatedAt) {
+      return NextResponse.json({ error: "This contribution changed since you opened it. Refresh and review the current version." }, { status: 409 });
+    }
+    const changesPublicCopy = (parsed.data.categoryId !== undefined && parsed.data.categoryId !== existingItem.category_id)
+      || (parsed.data.sourceType !== undefined && parsed.data.sourceType !== existingItem.source_type)
+      || (parsed.data.body !== undefined && parsed.data.body !== existingItem.body)
+      || (parsed.data.title !== undefined && parsed.data.title !== existingItem.title)
+      || (parsed.data.submittedBy !== undefined && parsed.data.submittedBy !== existingItem.submitted_by)
+      || parsed.data.removePhoto || parsed.data.removeGeometry
+      || (parsed.data.latitude !== undefined && parsed.data.latitude !== existingItem.latitude)
+      || (parsed.data.longitude !== undefined && parsed.data.longitude !== existingItem.longitude);
+    if ((changesPublicCopy || (parsed.data.status !== undefined && parsed.data.status !== existingItem.status)) && !parsed.data.moderationNotes?.trim()) {
+      return NextResponse.json({ error: "Record a review reason before changing the public copy or moderation state." }, { status: 400 });
     }
 
     const nextCategoryId = parsed.data.categoryId === undefined ? existingItem.category_id : parsed.data.categoryId;
@@ -128,7 +147,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Engagement category not found for this campaign" }, { status: 400 });
     }
 
-    const updates: Record<string, unknown> = {};
+    const updates: Record<string, unknown> = { review_expected_updated_at: parsed.data.expectedUpdatedAt, review_reason: parsed.data.moderationNotes ?? null };
+    if (parsed.data.removePhoto) updates.photo_path = null;
     if (parsed.data.categoryId !== undefined) updates.category_id = parsed.data.categoryId;
     if (parsed.data.title !== undefined) updates.title = parsed.data.title;
     if (parsed.data.body !== undefined) updates.body = parsed.data.body;
@@ -137,20 +157,37 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (parsed.data.sourceType !== undefined) updates.source_type = parsed.data.sourceType;
     if (parsed.data.latitude !== undefined) updates.latitude = parsed.data.latitude;
     if (parsed.data.longitude !== undefined) updates.longitude = parsed.data.longitude;
+    if (parsed.data.removeGeometry) { updates.geometry = null; updates.latitude = null; updates.longitude = null; }
+    else if (updates.latitude !== undefined || updates.longitude !== undefined) {
+      const lat = parsed.data.latitude === undefined ? existingItem.latitude : parsed.data.latitude;
+      const lon = parsed.data.longitude === undefined ? existingItem.longitude : parsed.data.longitude;
+      const moved = lat !== existingItem.latitude || lon !== existingItem.longitude;
+      if (moved && existingItem.geometry && existingItem.geometry.type !== "Point") return NextResponse.json({ error: "A route or area cannot be moved by changing its representative point. Withhold its drawing if the location should be removed." }, { status: 400 });
+      if (moved) {
+        if ((lat === null) !== (lon === null)) return NextResponse.json({ error: "Provide both coordinates or withhold the drawing." }, { status: 400 });
+        updates.geometry = lat !== null && lon !== null ? { type: "Point", coordinates: [lon, lat] } : null;
+      }
+    }
     if (parsed.data.metadata !== undefined) updates.metadata_json = parsed.data.metadata ?? {};
     if (parsed.data.moderationNotes !== undefined) updates.moderation_notes = parsed.data.moderationNotes;
 
-    const { error: updateError } = await supabase.from("engagement_items").update(updates).eq("id", existingItem.id);
+    const { data: changed, error: updateError } = await supabase.from("engagement_items").update(updates)
+      .eq("id", existingItem.id).eq("campaign_id", access.campaign.id)
+      .eq("updated_at", parsed.data.expectedUpdatedAt).select("id, updated_at").maybeSingle();
 
-    if (updateError) {
+    if (updateError?.code === "40001") return NextResponse.json({ error: "Another reviewer changed this contribution. Refresh before reviewing again." }, { status: 409 });
+
+    if (isWriteFailure(updateError)) {
       audit.error("item_update_failed", {
         campaignId: access.campaign.id,
         itemId: existingItem.id,
-        message: updateError.message,
-        code: updateError.code ?? null,
+        message: updateError?.message,
+        code: updateError?.code ?? null,
       });
       return NextResponse.json({ error: "Failed to update engagement item" }, { status: 500 });
     }
+
+    if (writeMatchedNoRows({ data: changed, error: updateError })) return NextResponse.json({ error: "Another reviewer changed this contribution. Refresh before reviewing again." }, { status: 409 });
 
     audit.info("item_updated", {
       userId: user.id,
@@ -159,7 +196,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       durationMs: Date.now() - startedAt,
     });
 
-    return NextResponse.json({ success: true, itemId: existingItem.id }, { status: 200 });
+    return NextResponse.json({ success: true, itemId: existingItem.id, updatedAt: changed!.updated_at }, { status: 200 });
   } catch (error) {
     audit.error("item_patch_unhandled_error", { durationMs: Date.now() - startedAt, error });
     return NextResponse.json({ error: "Unexpected error while updating engagement item" }, { status: 500 });

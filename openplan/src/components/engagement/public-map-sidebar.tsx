@@ -41,12 +41,14 @@ export type SidebarCategory = PortalFormCategory;
  */
 export function PublicMapSidebar({
   shareToken,
+  configurationVersionId,
   acceptingSubmissions,
   categories,
   demographicsEnabled,
   translator,
   geometry,
   onClearGeometry,
+  onRestoreGeometry,
   drawMode,
   onDrawModeChange,
   mapAvailable,
@@ -54,6 +56,7 @@ export function PublicMapSidebar({
   className,
 }: {
   shareToken: string;
+  configurationVersionId?: string | null;
   acceptingSubmissions: boolean;
   categories: SidebarCategory[];
   demographicsEnabled: boolean;
@@ -61,6 +64,7 @@ export function PublicMapSidebar({
   /** What the resident drew on the stage, owned by the shell so the map and the rail agree. */
   geometry: EngagementGeometry | null;
   onClearGeometry: () => void;
+  onRestoreGeometry?: (geometry: EngagementGeometry) => void;
   drawMode: EngagementDrawMode;
   onDrawModeChange: (mode: EngagementDrawMode) => void;
   /** Whether there is a map beside this rail at all. See `PortalFormPlace`. */
@@ -70,7 +74,7 @@ export function PublicMapSidebar({
 }) {
   return (
     <PortalSubmissionForm
-      shareToken={shareToken}
+      shareToken={shareToken} configurationVersionId={configurationVersionId}
       acceptingSubmissions={acceptingSubmissions}
       categories={categories}
       demographicsEnabled={demographicsEnabled}
@@ -79,6 +83,7 @@ export function PublicMapSidebar({
         source: "stage",
         geometry,
         onClearGeometry,
+        onRestoreGeometry,
         drawMode,
         onDrawModeChange,
         mapAvailable,

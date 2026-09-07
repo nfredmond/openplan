@@ -1,0 +1,30 @@
+{
+  "id": "e1048444-d42b-4a3a-9f0c-23cc4e2b369b",
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [
+          -120.641778,
+          39.422195
+        ],
+        [
+          -120.540819,
+          39.422195
+        ],
+        [
+          -120.540819,
+          39.344161
+        ],
+        [
+          -120.641778,
+          39.422195
+        ]
+      ]
+    ]
+  },
+  "boundarySource": "Retained county definition from demo-1-public snapshot",
+  "insideBoundarySamples": 303,
+  "allInside": true,
+  "blindCategory": "Vertex and 101 samples per edge, not a general topological containment proof"
+}

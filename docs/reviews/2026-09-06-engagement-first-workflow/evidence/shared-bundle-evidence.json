@@ -1,0 +1,34 @@
+{
+  "bundles": [
+    {
+      "projectId": "77e19961-7edd-40a1-9abe-417913663adf",
+      "scope": "public",
+      "bundleId": "7d0e0c2e-8868-4fde-9f68-c694e5692997",
+      "downloadHref": "/api/projects/77e19961-7edd-40a1-9abe-417913663adf/evidence-bundles/7d0e0c2e-8868-4fde-9f68-c694e5692997/download",
+      "byteLength": 3597312,
+      "sha256": "920333e37b274bd4781b02811179c1b41e583375962a964c88ebdc562cf40248"
+    },
+    {
+      "projectId": "77e19961-7edd-40a1-9abe-417913663adf",
+      "scope": "internal",
+      "bundleId": "904a4d84-aa18-43cc-8ff2-598fe04d4b09",
+      "downloadHref": "/api/projects/77e19961-7edd-40a1-9abe-417913663adf/evidence-bundles/904a4d84-aa18-43cc-8ff2-598fe04d4b09/download",
+      "byteLength": 3600346,
+      "sha256": "c5ad24f8cd42923370555431d7173a47bd9f4a70b6348f388c07b05c86c706ca"
+    },
+    {
+      "projectId": "f56d75a2-d0cb-44f8-97eb-976db97370fe",
+      "scope": "public",
+      "bundleId": "d3b0f515-5d9c-47e0-a258-5c1fd5b4ae2e",
+      "downloadHref": "/api/projects/f56d75a2-d0cb-44f8-97eb-976db97370fe/evidence-bundles/d3b0f515-5d9c-47e0-a258-5c1fd5b4ae2e/download",
+      "byteLength": 3595387,
+      "sha256": "4eb14ce478b621cf3acb4d363270245fa0d6cc7122adb69f9c0f4d2493ad3dd4"
+    }
+  ],
+  "checks": [
+    "Selected public campaign-targeted report through project 0 normal Evidence navigation",
+    "Selected internal campaign-targeted report through project 0 normal Evidence navigation",
+    "Selected public campaign-targeted report through project 1 normal Evidence navigation"
+  ],
+  "console": []
+}

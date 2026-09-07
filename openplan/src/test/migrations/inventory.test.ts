@@ -458,16 +458,17 @@ const EXPECTED = {
   // 20260906000001 adds two immutable work-program preparation tables,
   // each with a member SELECT policy and service-only transactional writes.
   // 20260907000001/2 add two immutable extraction tables with member SELECT only.
-  policies: 695,
-  permissive: 449,
-  restrictive: 246,
+  // Engagement custody adds four SELECT-only relations; all writes use guarded server transactions.
+  policies: 702,
+  permissive: 453,
+  restrictive: 249,
   permissiveWrites: 280,
   expanded: 286,
-  tablesWithPolicies: 169,
-  relations: 194,
-  tables: 185,
+  tablesWithPolicies: 173,
+  relations: 198,
+  tables: 189,
   views: 9,
-  rlsEnabledTables: 185,
+  rlsEnabledTables: 189,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

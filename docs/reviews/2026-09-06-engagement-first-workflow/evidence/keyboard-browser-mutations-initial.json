@@ -1,0 +1,14 @@
+[
+  {
+    "mutation": "harmless keyboard comment",
+    "outcome": "survived",
+    "expected": "survived",
+    "output": "MAP 0\n[{\"mode\":\"line\",\"distinct\":2}]\n"
+  },
+  {
+    "mutation": "animated keyboard pan",
+    "outcome": "survived",
+    "expected": "failed-for-behavior",
+    "output": "MAP 0\n[{\"mode\":\"line\",\"distinct\":2}]\n"
+  }
+]

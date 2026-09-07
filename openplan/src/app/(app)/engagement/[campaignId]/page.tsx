@@ -1,3 +1,8 @@
+import { EngagementSetupReuse } from "@/components/engagement/engagement-setup-reuse";
+import { EngagementCategoryEditor } from "@/components/engagement/engagement-category-editor";
+import { SurveyReviewQueue } from "@/components/engagement/survey-review-queue";
+import { EngagementReviewFiles } from "@/components/engagement/engagement-review-files";
+import { readEveryPage } from "@/lib/supabase/paged-read";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
@@ -7,12 +12,12 @@ import { CampaignPublishFlow } from "@/components/engagement/campaign-publish-fl
 import { EngagementSurveyBuilder } from "@/components/engagement/survey-builder";
 import { EngagementCloseLoopBuilder } from "@/components/engagement/close-loop-builder";
 import { EngagementCategoryCreator } from "@/components/engagement/engagement-category-creator";
-import { EngagementItemRegistry } from "@/components/engagement/engagement-item-registry";
+import { EngagementItemRegistry, type ItemRecord } from "@/components/engagement/engagement-item-registry";
 import { EngagementSurveyResults } from "@/components/engagement/survey-results-panel";
 import { EngagementNotificationsInbox } from "@/components/engagement/notifications-inbox";
 import { EngagementPublicLinkCompact } from "@/components/engagement/engagement-public-link-compact";
 import { EngagementCampaignCreatedNotice } from "@/components/engagement/campaign-created-notice";
-import { EngagementBulkModeration } from "@/components/engagement/engagement-bulk-moderation";
+import { EngagementBulkModeration, type BulkItem } from "@/components/engagement/engagement-bulk-moderation";
 import { CampaignTranslationsPanel } from "@/components/engagement/campaign-translations-panel";
 import { CampaignLinkedReportsSection } from "@/components/engagement/campaign-linked-reports-section";
 import { CampaignHandoffReadinessSection } from "@/components/engagement/campaign-handoff-readiness-section";
@@ -51,10 +56,6 @@ import { getReportPacketFreshness, getReportPacketPriority } from "@/lib/reports
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { collectReportIdsLinkedToEngagementCampaign } from "@/lib/reports/engagement";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
-import {
-  ENGAGEMENT_PHOTO_BUCKET,
-  ENGAGEMENT_PHOTO_SIGNED_URL_TTL_SECONDS,
-} from "@/lib/engagement/photo";
 import { LocationDisplayMap } from "@/components/engagement/location-display-map";
 import { EngagementContextLayersPanel } from "@/components/engagement/engagement-context-layers-panel";
 import { loadCampaignContextLayerSummaries, loadParticipantContextLayers } from "@/lib/engagement/context-layers";
@@ -87,6 +88,9 @@ import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 import { PlanningContextStripForProject } from "@/components/projects/planning-context-strip";
 
 type CampaignRow = {
+  configuration_version_id: string | null;
+  participation_starts_at: string | null;
+  participation_ends_at: string | null;
   id: string;
   workspace_id: string;
   project_id: string | null;
@@ -160,7 +164,7 @@ export default async function EngagementCampaignDetailPage({
 
   const { data: campaignData, error: campaignError } = await supabase
     .from("engagement_campaigns")
-    .select("id, workspace_id, project_id, rtp_cycle_id, rtp_cycle_chapter_id, title, summary, status, engagement_type, share_token, public_description, allow_public_submissions, submissions_closed_at, demographics_enabled, representativeness_json, ai_synthesis_json, ai_synthesized_at, created_at, updated_at, accessibility_contact_label, accessibility_contact_email, accessibility_contact_phone, accessibility_alternate_formats")
+    .select("id, workspace_id, project_id, rtp_cycle_id, rtp_cycle_chapter_id, title, summary, status, configuration_version_id, engagement_type, participation_starts_at, participation_ends_at, share_token, public_description, allow_public_submissions, submissions_closed_at, demographics_enabled, representativeness_json, ai_synthesis_json, ai_synthesized_at, created_at, updated_at, accessibility_contact_label, accessibility_contact_email, accessibility_contact_phone, accessibility_alternate_formats")
     .eq("id", campaignId)
     .maybeSingle();
 
@@ -171,7 +175,7 @@ export default async function EngagementCampaignDetailPage({
   // facts and the page now says whichever is true.
   if (campaignError) {
     return (
-      <section className="module-page">
+      <section className="module-page grid-cols-[minmax(0,1fr)]">
         <div className="mx-auto w-full max-w-2xl">
           <StateBlock
             tone="danger"
@@ -224,13 +228,13 @@ export default async function EngagementCampaignDetailPage({
       .eq("campaign_id", campaign.id)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true }),
-    supabase
+    readEveryPage((from, to) => supabase
       .from("engagement_items")
       .select(
         "id, campaign_id, category_id, title, body, submitted_by, status, source_type, moderation_notes, latitude, longitude, geometry, photo_path, votes_count, parent_item_id, metadata_json, created_at, updated_at"
       )
       .eq("campaign_id", campaign.id)
-      .order("updated_at", { ascending: false }),
+      .order("updated_at", { ascending: false }).order("id", { ascending: true }).range(from, to)).then((result) => ({ data: result.complete ? result.rows : [], error: result.complete ? null : result.error ?? { message: "The complete contribution list could not be loaded." } })),
     supabase.from("projects").select("id, name").eq("workspace_id", campaign.workspace_id).order("updated_at", { ascending: false }),
     loadCoveredProjectReports(supabase, campaign.workspace_id, reportProjects),
     // The RTP cycle (and chapter, when one is targeted) this campaign feeds.
@@ -398,40 +402,10 @@ export default async function EngagementCampaignDetailPage({
     campaignLinkedReports.find((report) => report.isExplicitCampaignSource) ?? campaignLinkedReports[0] ?? null;
   const sourceSummaries = [...counts.sourceSummaries].sort((left, right) => right.count - left.count);
   const primarySource = sourceSummaries.find((source) => source.count > 0) ?? null;
-  const recentItems = (items ?? []).slice(0, 20);
 
-  // Photo thumbnails: the engagement-photos bucket is private with zero
-  // storage policies, so signing requires the service role. This is safe
-  // here because the RLS-scoped campaign read above already proved the
-  // current user's workspace membership — moderators may see photos on
-  // pending/flagged items; the public portal only ever signs approved ones.
-  type ItemPhotoRef = { id: string; photo_path: string | null };
-  const itemsWithPhotos = ((items ?? []) as ItemPhotoRef[]).filter(
-    (item): item is { id: string; photo_path: string } =>
-      typeof item.photo_path === "string" && item.photo_path.length > 0
-  );
-  const photoUrlByItemId = new Map<string, string>();
-  if (itemsWithPhotos.length > 0) {
-    const serviceClient = createServiceRoleClient();
-    // Signing can fail on its own (bucket policy, expired service key) while
-    // every comment loaded fine. A moderator looking at a comment whose photo
-    // is the whole content must be told the photo could not be fetched, not
-    // shown a comment that appears to have none.
-    const signedUrlsResult = await serviceClient.storage
-      .from(ENGAGEMENT_PHOTO_BUCKET)
-      .createSignedUrls(
-        itemsWithPhotos.map((item) => item.photo_path),
-        ENGAGEMENT_PHOTO_SIGNED_URL_TTL_SECONDS
-      );
-    reads.check("photo thumbnails for the comments that have one", signedUrlsResult);
-    const signedUrls = signedUrlsResult.data;
-    for (const item of itemsWithPhotos) {
-      const signed = (signedUrls ?? []).find((entry) => entry.path === item.photo_path);
-      if (signed?.signedUrl) {
-        photoUrlByItemId.set(item.id, signed.signedUrl);
-      }
-    }
-  }
+  // Every image read rechecks current staff access, including after revocation.
+  const photoUrlByItemId = new Map<string,string>();
+  for(const item of items ?? [])if(item.photo_path)photoUrlByItemId.set(item.id,`/api/engagement/campaigns/${campaign.id}/attachments?itemId=${item.id}`);
 
   type ItemGeometryRef = {
     id: string;
@@ -636,7 +610,7 @@ export default async function EngagementCampaignDetailPage({
     campaign.status === "draft" ? "setup" : "responses",
   );
   return (
-    <section className="module-page">
+    <section className="module-page grid-cols-[minmax(0,1fr)]">
       <CartographicSurfaceWide /><PlanningContextStripForProject requestedProjectId={query.projectId} project={project} error={projectResult.error} className="mb-4" />
       <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/engagement" className="transition hover:text-foreground">
@@ -773,7 +747,7 @@ export default async function EngagementCampaignDetailPage({
       />
 
       <PageTabPanel tabKey="setup" active={activeTab === "setup"}>
-        <div className="mt-6 space-y-6">
+        <div className="mt-6 min-w-0 space-y-6">
         {/*
           CONSOLE ORDER IS THE WORKFLOW ORDER. Setting a campaign up — taking
           it public, writing the survey, closing the loop — comes before the
@@ -800,6 +774,7 @@ export default async function EngagementCampaignDetailPage({
           campaignId={campaign.id}
           categories={builderCategories}
           initialEntries={closeLoopEntries}
+          sourceItems={(items ?? []).filter(item => item.status === "approved").map(item => ({id:item.id,title:item.title || item.body.slice(0,120)}))}
         />
 
         {/*
@@ -888,7 +863,7 @@ export default async function EngagementCampaignDetailPage({
           </div>
 
           <div className="mt-5">
-            <EngagementCategoryCreator campaignId={campaign.id} />
+            {canManageContextLayers ? <EngagementCategoryCreator campaignId={campaign.id} /> : null}
           </div>
 
           {categoriesUnreadable ? (
@@ -934,6 +909,7 @@ export default async function EngagementCampaignDetailPage({
                     <MetaItem>{category.approvedCount} approved</MetaItem>
                     <MetaItem>Last activity {fmtDateTime(category.lastActivityAt)}</MetaItem>
                   </MetaList>
+                  {canManageContextLayers && categories?.find(row => row.id === category.categoryId) ? <EngagementCategoryEditor key={categories.find(row => row.id === category.categoryId)!.updated_at} campaignId={campaign.id} category={categories.find(row => row.id === category.categoryId)!} /> : null}
                 </div>
               ))}
 
@@ -1030,6 +1006,7 @@ export default async function EngagementCampaignDetailPage({
           canWrite={canManageContextLayers}
         />
 
+      <EngagementSetupReuse campaignId={campaign.id} configurationVersionId={campaign.configuration_version_id} canWrite={canManageContextLayers} />
       <EngagementOperatorActions
         campaign={{ ...campaign, public_slug: publicSlug }}
         projects={(projects ?? []) as Array<{ id: string; name: string }>}
@@ -1039,7 +1016,8 @@ export default async function EngagementCampaignDetailPage({
       </PageTabPanel>
 
       <PageTabPanel tabKey="responses" active={activeTab === "responses"}>
-        <div className="mt-6 space-y-6">
+        {canManageContextLayers ? <SurveyReviewQueue campaignId={campaign.id} /> : null}
+        <div className="mt-6 min-w-0 space-y-6">
         <EngagementNotificationsInbox campaignId={campaign.id} initialNotifications={notifications} />
 
         {locatedItems.length > 0 ? (
@@ -1109,17 +1087,10 @@ export default async function EngagementCampaignDetailPage({
           </article>
         ) : null}
 
-        {(items?.length ?? 0) > 0 && (
+        {canManageContextLayers && (items?.length ?? 0) > 0 && (
           <EngagementBulkModeration
             campaignId={campaign.id}
-            items={(items ?? []) as Array<{
-              id: string;
-              campaign_id: string;
-              category_id: string | null;
-              title: string | null;
-              status: string;
-              source_type: string;
-            }>}
+            items={(items ?? []) as BulkItem[]}
             categories={((categories ?? []) as Array<{ id: string; label: string }>).map((c) => ({
               id: c.id,
               label: c.label,
@@ -1129,23 +1100,8 @@ export default async function EngagementCampaignDetailPage({
 
         {items?.length ? (
           <EngagementItemRegistry
-            items={(recentItems as Array<{
-              id: string;
-              campaign_id: string;
-              category_id: string | null;
-              title: string | null;
-              body: string;
-              submitted_by: string | null;
-              status: string;
-              source_type: string;
-              moderation_notes: string | null;
-              latitude: number | null;
-              longitude: number | null;
-              geometry: unknown;
-              votes_count: number | null;
-              parent_item_id: string | null;
-              updated_at: string;
-            }>).map((item) => ({
+            canWrite={canManageContextLayers}
+            items={((items ?? []) as ItemRecord[]).map((item) => ({
               ...item,
               photo_url: photoUrlByItemId.get(item.id) ?? null,
             }))}
@@ -1199,7 +1155,7 @@ export default async function EngagementCampaignDetailPage({
       </PageTabPanel>
 
       <PageTabPanel tabKey="analysis" active={activeTab === "analysis"}>
-        <div className="mt-6 space-y-6">
+        <div className="mt-6 min-w-0 space-y-6">
         <CrashCorroborationPanel
           {...crashCorroboration}
           moderationHref={`/engagement/${campaign.id}?tab=responses`}
@@ -1390,7 +1346,8 @@ export default async function EngagementCampaignDetailPage({
       </PageTabPanel>
 
       <PageTabPanel tabKey="record" active={activeTab === "record"}>
-        <div className="mt-6 space-y-6">
+        <EngagementReviewFiles campaignId={campaign.id} categories={categories ?? []} />
+        <div className="mt-6 min-w-0 space-y-6">
         <CampaignHandoffReadinessSection
           handoffReadiness={handoffReadiness}
           publicReviewCopyGuard={publicReviewCopyGuard}

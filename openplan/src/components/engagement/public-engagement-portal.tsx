@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 import {
   groupApprovedItems,
   type ApprovedItem,
@@ -231,6 +231,8 @@ function OperatorText({
   );
 }
 
+const subscribePortalReady = () => () => {};
+
 function PortalTabButton({
   active,
   icon,
@@ -247,10 +249,13 @@ function PortalTabButton({
   bcp47: string;
   onClick: () => void;
 }) {
+  const ready=useSyncExternalStore(subscribePortalReady,()=>true,()=>false);
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={!ready}
+      aria-busy={!ready}
       className={cn(
         "inline-flex min-h-11 items-center gap-2 border-b-2 px-1 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:ring-offset-2",
         active
@@ -269,6 +274,7 @@ function PortalTabButton({
 
 export function PublicEngagementPortal({
   shareToken,
+  configurationVersionId,
   acceptingSubmissions,
   categories,
   approvedItems,
@@ -287,6 +293,7 @@ export function PublicEngagementPortal({
   previewMode = false,
 }: {
   shareToken: string;
+  configurationVersionId?: string | null;
   acceptingSubmissions: boolean;
   categories: CategoryOption[];
   approvedItems: ApprovedItem[];
@@ -621,6 +628,7 @@ export function PublicEngagementPortal({
                   <OperatorText as="span" value={categoryText} translator={translator} compact />
                 </span>
               ) : null}
+              {item.historicalCategoryLabel ? <span lang="en" className="public-inline-label">Category definition in original form: <span dir="auto">{item.historicalCategoryLabel}</span></span> : null}
               {itemIsLocated(item) ? (
                 <span className="inline-flex items-center gap-1">
                   <MapPinned className="h-3 w-3" aria-hidden="true" />
@@ -924,6 +932,7 @@ export function PublicEngagementPortal({
                   component.
                 */}
                 <PortalSubmissionForm
+                  configurationVersionId={configurationVersionId}
                   shareToken={shareToken}
                   acceptingSubmissions={acceptingSubmissions}
                   categories={categories}
@@ -951,6 +960,7 @@ export function PublicEngagementPortal({
             {activeTab === "survey" && hasSurvey ? (
               acceptingSubmissions ? (
                 <PublicSurveyForm
+                  configurationVersionId={configurationVersionId}
                   shareToken={shareToken}
                   questions={surveyQuestions}
                   messages={messages}

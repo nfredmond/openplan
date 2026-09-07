@@ -1,3 +1,5 @@
+import { loadProjectReportArtifact } from "@/lib/engagement/project-report-coverage";
+import { downloadEngagementReview } from "@/lib/engagement/review-export-download";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -99,13 +101,7 @@ async function reportBytes(
   project: ProjectScope,
   candidate: ProjectEvidenceCandidate
 ): Promise<ResolvedProjectEvidenceFile> {
-  const read = await caller
-    .from("report_artifacts")
-    .select("id, report_id, artifact_kind, storage_path, generated_at, metadata_json, reports!inner(workspace_id, project_id, title)")
-    .eq("id", candidate.recordId)
-    .eq("reports.workspace_id", project.workspace_id)
-    .eq("reports.project_id", project.id)
-    .maybeSingle();
+  const read = await loadProjectReportArtifact(caller, project, candidate.recordId);
   if (read.error || !read.data) failMissing(candidate);
   const row = read.data as Record<string, unknown>;
   const reportValue = Array.isArray(row.reports) ? row.reports[0] : row.reports;
@@ -117,6 +113,13 @@ async function reportBytes(
     typeof row.generated_at === "string" ? row.generated_at : null,
     kind
   );
+  const reviewMetadata = row.metadata_json && typeof row.metadata_json === 'object' ? row.metadata_json as Record<string,unknown> : null;
+  if (typeof reviewMetadata?.engagementReviewJobId === 'string') {
+    if (typeof row.storage_path !== 'string' || typeof reviewMetadata.sha256 !== 'string') failMissing(candidate);
+    const delivered = await downloadEngagementReview(caller, reviewMetadata.engagementReviewJobId, 'pdf', {reportId,artifact:{path:row.storage_path as string,checksum:reviewMetadata.sha256 as string}});
+    if (!delivered.ok) failMissing(candidate);
+    return result(candidate, Buffer.from(await delivered.arrayBuffer()), filename, 'application/pdf');
+  }
   const storagePath = typeof row.storage_path === "string" ? row.storage_path.trim() : "";
   if (storagePath) {
     const ref = resolveTenantScopedStorageTarget(storagePath, {

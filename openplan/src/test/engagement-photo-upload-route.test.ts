@@ -185,4 +185,18 @@ describe("POST /api/engage/[shareToken]/photo-upload", () => {
     expect(response.status).toBe(404);
     expect(storageUploadMock).not.toHaveBeenCalled();
   });
+  for(const dates of [{participation_starts_at:"2099-01-01T00:00:00Z"},{participation_ends_at:"2000-01-01T00:00:00Z"},{participation_ends_at:new Date().toISOString()}]) {
+    it(`refuses photo storage outside participation dates: ${JSON.stringify(dates)}`,async()=>{
+      campaignMaybeSingleMock.mockResolvedValue({data:{id:CAMPAIGN_ID,status:"active",allow_public_submissions:true,...dates},error:null});
+      expect((await POST(photoRequest(JPEG_BYTES,"image/jpeg"),routeContext())).status).toBe(403);
+      expect(storageUploadMock).not.toHaveBeenCalled();
+      expect(campaignSelectMock).toHaveBeenCalledWith(expect.stringContaining("participation_starts_at"));
+      expect(campaignSelectMock).toHaveBeenCalledWith(expect.stringContaining("participation_ends_at"));
+    });
+  }
+  it("accepts photos during a configured participation window",async()=>{
+    campaignMaybeSingleMock.mockResolvedValue({data:{id:CAMPAIGN_ID,status:"active",allow_public_submissions:true,participation_starts_at:"2000-01-01T00:00:00Z",participation_ends_at:"2099-01-01T00:00:00Z"},error:null});
+    expect((await POST(photoRequest(JPEG_BYTES,"image/jpeg"),routeContext())).status).toBe(201);
+  });
+
 });

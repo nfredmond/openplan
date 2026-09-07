@@ -1,0 +1,78 @@
+{
+  "checks": [
+    {
+      "case": "baseline",
+      "passed": true,
+      "measurements": {
+        "bodyWidth": 344,
+        "bodyScroll": 344,
+        "articleRight": 341,
+        "bodyRight": 373,
+        "fieldWidth": 242,
+        "parentWidth": 242,
+        "fieldRight": 316,
+        "historyRight": 299,
+        "historyWidth": 206,
+        "historyScroll": 206
+      }
+    },
+    {
+      "case": "harmless border color survives",
+      "passed": true
+    },
+    {
+      "case": "fieldset-only removal survives with other constraints intact",
+      "passed": true,
+      "measurements": {
+        "bodyWidth": 344,
+        "bodyScroll": 344,
+        "articleRight": 341,
+        "bodyRight": 373,
+        "fieldWidth": 242,
+        "parentWidth": 242,
+        "fieldRight": 316,
+        "historyRight": 299,
+        "historyWidth": 206,
+        "historyScroll": 206
+      }
+    },
+    {
+      "case": "unwrapped history button fails",
+      "passed": true,
+      "measurements": {
+        "bodyWidth": 344,
+        "bodyScroll": 344,
+        "articleRight": 341,
+        "bodyRight": 373,
+        "fieldWidth": 242,
+        "parentWidth": 242,
+        "fieldRight": 316,
+        "historyRight": 345.25,
+        "historyWidth": 252,
+        "historyScroll": 252
+      }
+    },
+    {
+      "case": "automatic minimum grid width fails",
+      "passed": true,
+      "measurements": {
+        "bodyWidth": 344,
+        "bodyScroll": 368,
+        "articleRight": 391.328125,
+        "bodyRight": 373,
+        "fieldWidth": 292.328125,
+        "parentWidth": 292.328125,
+        "fieldRight": 366.328125,
+        "historyRight": 349.328125,
+        "historyWidth": 256,
+        "historyScroll": 256
+      }
+    },
+    {
+      "case": "restored layout",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "blindCategory": "DOM layout mutations and one selected record; independent screenshots and application tests cover different boundaries"
+}

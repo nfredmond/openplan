@@ -1,0 +1,146 @@
+[
+  {
+    "mutation": "harmless review comment",
+    "outcome": "survived",
+    "expected": "survived",
+    "evidence": []
+  },
+  {
+    "mutation": "stale review precheck",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-items-route.test.ts > engagement category and item routes > refuses a stale version before writing and a lost concurrent update",
+      "AssertionError: expected 200 to be 409 // Object.is equality"
+    ]
+  },
+  {
+    "mutation": "concurrent review predicate",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-items-route.test.ts > engagement category and item routes > PATCH /items updates moderation fields",
+      "AssertionError: expected \"vi.fn()\" to be called with arguments: [ 'updated_at', \u2026(1) ]"
+    ]
+  },
+  {
+    "mutation": "fresh database review intent",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-items-route.test.ts > engagement category and item routes > PATCH /items updates moderation fields",
+      "AssertionError: expected \"vi.fn()\" to be called with arguments: [ ObjectContaining{\u2026} ]"
+    ]
+  },
+  {
+    "mutation": "public snapshot privacy",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-review-export.test.ts > campaign review records > refuses corrupt snapshots and private records in public snapshots",
+      "AssertionError: expected [Function] to throw an error",
+      "FAIL  src/test/engagement-review-export.test.ts > campaign review records > refuses private review intent embedded in an otherwise public snapshot",
+      "AssertionError: expected [Function] to throw an error"
+    ]
+  },
+  {
+    "mutation": "snapshot checksum",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-review-export.test.ts > campaign review records > refuses corrupt snapshots and private records in public snapshots",
+      "AssertionError: expected [Function] to throw an error"
+    ]
+  },
+  {
+    "mutation": "UTF8 ZIP custody",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-review-export.test.ts > campaign review records > keeps the exact UTF-8 snapshot bytes across ZIP chunk boundaries"
+    ]
+  },
+  {
+    "mutation": "long text parts",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-review-export.test.ts > campaign review records > keeps literal spreadsheet text, repeated answers and complete multilingual long values",
+      "AssertionError: expected '\\nlong narrative\\nlong narrative\\nlon\u2026' to be '\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\u2026' // Object.is equality"
+    ]
+  },
+  {
+    "mutation": "small route detail",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-review-export.test.ts > campaign review records > shows a contribution detail inset when broad study context hides small routes",
+      "AssertionError: expected 0.15999999999985448 to be greater than 100"
+    ]
+  },
+  {
+    "mutation": "full review feed",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-campaign-detail-page.test.tsx > EngagementCampaignDetailPage > passes every contribution to the paginated review workspace",
+      "AssertionError: expected [ 'full-item-1', 'full-item-2', \u2026(18) ] to have a length of 1005 but got 20"
+    ]
+  },
+  {
+    "mutation": "geometry-only map counts",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-summary.test.ts > summarizeEngagementItems > counts valid route and area geometry without legacy coordinates and refuses invalid coordinates",
+      "AssertionError: expected { geolocatedItems: 1, \u2026(2) } to match object { geolocatedItems: 3, \u2026(1) }"
+    ]
+  },
+  {
+    "mutation": "staff original authorization",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-staff-attachments.test.ts > staff attachment access > refuses viewer before reading originals",
+      "FAIL  src/test/engagement-staff-attachments.test.ts > staff attachment access > refuses revoked before reading originals",
+      "FAIL  src/test/engagement-staff-attachments.test.ts > staff attachment access > refuses outside workspace before reading originals",
+      "AssertionError: expected 200 to be 404 // Object.is equality"
+    ]
+  },
+  {
+    "mutation": "containing public withdrawal",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-bundle-access.test.ts > containing project bundle preserves engagement disclosure > refuses a withheld or newly redacted contained report",
+      "AssertionError: expected true to be false // Object.is equality"
+    ]
+  },
+  {
+    "mutation": "shared report coverage",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-bundle-access.test.ts > containing project bundle preserves engagement disclosure > rechecks exact original artifact under caller workspace and project scope",
+      "AssertionError: expected \"vi.fn()\" to be called with arguments: [ \u2026(2) ]"
+    ]
+  },
+  {
+    "mutation": "manual contribution response link",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/close-loop-builder.test.tsx > EngagementCloseLoopBuilder > links a manual reviewed response to selected contributions without AI",
+      "AssertionError: expected { \u2026(2) } to match object { sourceItemIds: [ 'published-item' ] }"
+    ]
+  },
+  {
+    "mutation": "exact export request parameter",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-review-files-route.test.ts > queue engagement review files through the HTTP route > passes the database request parameter by its exact name and returns accepted job custody",
+      "AssertionError: expected \"vi.fn()\" to be called with arguments: [ 'queue_engagement_report', { \u2026(4) } ]"
+    ]
+  }
+]

@@ -99,6 +99,10 @@ export function parseEngagementGeometry(value: unknown): EngagementGeometryParse
 
   const geometry = parsed.data as EngagementGeometry;
 
+  if (geometry.type === "LineString" && geometry.coordinates.every(position => position[0] === geometry.coordinates[0][0] && position[1] === geometry.coordinates[0][1])) {
+    return {ok:false,error:"A route needs at least two different locations. Move along the route before adding the next point."};
+  }
+
   if (geometry.type === "Polygon") {
     const ring = geometry.coordinates[0];
     const first = ring[0];
@@ -109,6 +113,13 @@ export function parseEngagementGeometry(value: unknown): EngagementGeometryParse
         error: "Polygon ring must be closed: the first and last vertex must match.",
       };
     }
+  }
+
+  if (geometry.type === "Polygon") {
+    const ring=geometry.coordinates[0],origin=ring[0];
+    const local=ring.map(([longitude,latitude])=>[((longitude-origin[0]+540)%360)-180,latitude-origin[1]]);
+    const doubledArea=local.slice(0,-1).reduce((area,point,index)=>area+point[0]*local[index+1][1]-local[index+1][0]*point[1],0);
+    if (doubledArea === 0) return {ok:false,error:"An area needs three different corners enclosing space. Move to another corner before closing the area."};
   }
 
   return { ok: true, geometry };
@@ -171,4 +182,13 @@ export function readStoredEngagementGeometry(value: unknown): EngagementGeometry
   if (value === null || value === undefined) return null;
   const parsed = parseEngagementGeometry(value);
   return parsed.ok ? parsed.geometry : null;
+}
+
+/** Count a mapped contribution using its stored geometry or valid legacy coordinates. */
+export function hasEngagementLocation(item: { geometry?: unknown; latitude?: number | null; longitude?: number | null }): boolean {
+  if (item.geometry != null) return readStoredEngagementGeometry(item.geometry) !== null;
+  return (
+    typeof item.latitude === "number" && Number.isFinite(item.latitude) && Math.abs(item.latitude) <= 90 &&
+    typeof item.longitude === "number" && Number.isFinite(item.longitude) && Math.abs(item.longitude) <= 180
+  );
 }

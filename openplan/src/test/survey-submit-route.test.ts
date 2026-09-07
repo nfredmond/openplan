@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
@@ -5,6 +6,7 @@ const createServiceRoleClientMock = vi.fn();
 const loadSurveyDefinitionMock = vi.fn();
 const loadRecentFingerprintSessionsMock = vi.fn();
 const insertSurveyResponseMock = vi.fn();
+const receiptMock=vi.fn();
 
 vi.mock("@/lib/supabase/server", () => ({
   createServiceRoleClient: () => createServiceRoleClientMock(),
@@ -13,9 +15,10 @@ vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() }),
 }));
 vi.mock("@/lib/engagement/survey-responses", () => ({
+  loadSurveyRequestReceipt: (...args: unknown[]) => receiptMock(...args),
   loadSurveyDefinition: (...args: unknown[]) => loadSurveyDefinitionMock(...args),
   loadRecentFingerprintSessions: (...args: unknown[]) => loadRecentFingerprintSessionsMock(...args),
-  insertSurveyResponse: (...args: unknown[]) => insertSurveyResponseMock(...args),
+  insertRetryableSurveyResponse: (...args: unknown[]) => insertSurveyResponseMock(...args),
 }));
 
 import { POST } from "@/app/api/engage/[shareToken]/survey/submit/route";
@@ -31,7 +34,7 @@ function stubCampaign(campaign: Record<string, unknown> | null) {
   return {
     from: (table: string) => {
       if (table === "engagement_campaigns") {
-        return { select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: async () => ({ data: campaign, error: null }) }) }) }) };
+        return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: campaign, error: null }) }) }) };
       }
       throw new Error(`unexpected table ${table}`);
     },
@@ -49,16 +52,17 @@ const OK_CAMPAIGN = { id: "camp-1", status: "active", allow_public_submissions: 
 
 describe("POST /api/engage/[shareToken]/survey/submit", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.clearAllMocks();receiptMock.mockResolvedValue({data:null,error:null});
     createServiceRoleClientMock.mockReturnValue(stubCampaign(OK_CAMPAIGN));
     loadSurveyDefinitionMock.mockResolvedValue({ questions: [question()], optionsByQuestion: new Map([[Q_ID, [{ id: OPT_ID, question_id: Q_ID, label: "A", value: null, sort_order: 0, metadata_json: {} }]]]) });
     loadRecentFingerprintSessionsMock.mockResolvedValue([]);
     insertSurveyResponseMock.mockResolvedValue({ ok: true, sessionId: "sess-1" });
   });
 
-  it("honeypot → 201 without inserting", async () => {
+  it("honeypot cannot manufacture a receipt without valid stored answers", async () => {
     const res = await POST(req({ answers: [], website: "spam" }), params);
-    expect(res.status).toBe(201);
+    expect(res.status).toBe(400);
+    expect(await res.json()).not.toHaveProperty("success", true);
     expect(insertSurveyResponseMock).not.toHaveBeenCalled();
   });
 
@@ -132,4 +136,23 @@ describe("POST /api/engage/[shareToken]/survey/submit", () => {
     const res = await POST(req({ answers: [{ questionId: Q_ID, answer: { option_id: OPT_ID } }, { questionId: Q_ID, answer: { option_id: OPT_ID } }] }), params);
     expect(res.status).toBe(400);
   });
+  for(const status of ["closed","archived"])it(`recovers the saved survey receipt after ${status} without accepting new answers`,async()=>{
+    createServiceRoleClientMock.mockReturnValue(stubCampaign({...OK_CAMPAIGN,status,allow_public_submissions:false}));
+    const body={requestId:"77777777-7777-4777-8777-777777777777",answers:[{questionId:Q_ID,answer:{option_id:OPT_ID}}]};receiptMock.mockResolvedValue({data:{id:"saved-survey",created_at:"2026-09-06",request_sha256:createHash("sha256").update(JSON.stringify(body)).digest("hex")},error:null});
+    const response=await POST(req(body),params);expect(response.status).toBe(200);expect(await response.json()).toMatchObject({sessionId:"saved-survey",replayed:true});expect(insertSurveyResponseMock).not.toHaveBeenCalled();
+    const edited=await POST(req({...body,answers:[]}),params);expect(edited.status).toBe(409);expect(await edited.json()).toMatchObject({previousReceipt:{submissionId:"saved-survey"}});
+    receiptMock.mockResolvedValue({data:null,error:null});expect((await POST(req(body),params)).status).toBe(404);expect(insertSurveyResponseMock).not.toHaveBeenCalled();
+  });
+
+  for (const version of [undefined, "66666666-6666-4666-8666-666666666666", "55555555-5555-4555-8555-555555555555"]) {
+    it(`requires the current published configuration for new survey answers: ${version ?? "missing"}`,async()=>{
+      const select=vi.fn(()=>({eq:()=>({maybeSingle:async()=>({data:{...OK_CAMPAIGN,configuration_version_id:"55555555-5555-4555-8555-555555555555"},error:null})})}));
+      createServiceRoleClientMock.mockReturnValue({from:()=>({select})});
+      const response=await POST(req({configurationVersionId:version,answers:[{questionId:Q_ID,answer:{option_id:OPT_ID}}]}),params);
+      expect(response.status).toBe(version==="55555555-5555-4555-8555-555555555555"?201:409);
+      expect(select).toHaveBeenCalledWith(expect.stringContaining("configuration_version_id"));
+      if(version!=="55555555-5555-4555-8555-555555555555")expect(insertSurveyResponseMock).not.toHaveBeenCalled();
+    });
+  }
+
 });

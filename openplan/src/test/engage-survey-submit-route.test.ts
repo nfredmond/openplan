@@ -37,7 +37,7 @@ vi.mock("@/lib/observability/audit", () => ({
 vi.mock("@/lib/engagement/survey-responses", () => ({
   loadSurveyDefinition: (...args: unknown[]) => loadSurveyDefinitionMock(...args),
   loadRecentFingerprintSessions: (...args: unknown[]) => loadRecentFingerprintSessionsMock(...args),
-  insertSurveyResponse: (...args: unknown[]) => insertSurveyResponseMock(...args),
+  insertRetryableSurveyResponse: (...args: unknown[]) => insertSurveyResponseMock(...args),
   deleteSurveyDraftByTokenHash: vi.fn(async () => ({ ok: true, removed: false })),
 }));
 
@@ -77,7 +77,7 @@ function campaignClient() {
   return {
     from: (table: string) => {
       if (table === "engagement_campaigns") {
-        return { select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: async () => ({ data: CAMPAIGN, error: null }) }) }) }) };
+        return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: CAMPAIGN, error: null }) }) }) };
       }
       throw new Error(`Unexpected table: ${table}`);
     },

@@ -1,0 +1,34 @@
+[
+  {
+    "scope": "public",
+    "snapshotSha256": "892fc80b64b5b9fcbb2fd672bc19b609750302e23baa86eb6d078391d19878b3",
+    "counts": {
+      "items": 905,
+      "sessions": 11,
+      "answers": 10,
+      "responses": 1
+    },
+    "mapped": 304,
+    "photos": 1,
+    "exactTextFields": true,
+    "pdfAllContributionIds": true,
+    "libreofficeRecalculatedTotals": true,
+    "literalFormulaText": true
+  },
+  {
+    "scope": "internal",
+    "snapshotSha256": "a896848a627a2c1bbd9d903ce53f67facd366670faf19ff86e91964d74533c6b",
+    "counts": {
+      "items": 1005,
+      "sessions": 12,
+      "answers": 11,
+      "responses": 1
+    },
+    "mapped": 337,
+    "photos": 1,
+    "exactTextFields": true,
+    "pdfAllContributionIds": true,
+    "libreofficeRecalculatedTotals": true,
+    "literalFormulaText": true
+  }
+]

@@ -65,6 +65,7 @@ export type PublicMapShellItem = ParticipantMapItem & { parentItemId?: string | 
  */
 export function PublicMapShell({
   shareToken,
+  configurationVersionId,
   acceptingSubmissions,
   categories,
   items,
@@ -85,6 +86,7 @@ export function PublicMapShell({
   previewMode = false,
 }: {
   shareToken: string;
+  configurationVersionId?: string | null;
   acceptingSubmissions: boolean;
   categories: SidebarCategory[];
   /** Approved TOP-LEVEL items only; replies have no place on a map. */
@@ -240,6 +242,7 @@ export function PublicMapShell({
     [publishedLayerIds]
   );
 
+  const [restoredGeometry, setRestoredGeometry] = useState<EngagementGeometry | null>(null);
   const [geometry, setGeometry] = useState<EngagementGeometry | null>(null);
   const [drawMode, setDrawMode] = useState<EngagementDrawMode>("point");
   // A counter, not a boolean: clearing twice in a row has to reach the stage
@@ -247,8 +250,12 @@ export function PublicMapShell({
   const [clearToken, setClearToken] = useState(0);
 
   const clearGeometry = useCallback(() => {
-    setGeometry(null);
+    setGeometry(null);setRestoredGeometry(null);
     setClearToken((previous) => previous + 1);
+  }, []);
+
+  const restoreGeometry = useCallback((value: EngagementGeometry) => {
+    setRestoredGeometry(value);setGeometry(value);setDrawMode(value.type === 'Point' ? 'point' : value.type === 'LineString' ? 'line' : 'area');setClearToken(previous => previous + 1);
   }, []);
 
   // Memoised because the stage takes it as an effect dependency; an object
@@ -433,13 +440,14 @@ export function PublicMapShell({
         ) : null}
 
         <PublicMapSidebar
-          shareToken={shareToken}
+          shareToken={shareToken} configurationVersionId={configurationVersionId}
           acceptingSubmissions={acceptingSubmissions}
           categories={categories}
           demographicsEnabled={demographicsEnabled}
           translator={translator}
           geometry={geometry}
           onClearGeometry={clearGeometry}
+          onRestoreGeometry={restoreGeometry}
           drawMode={drawMode}
           onDrawModeChange={setDrawMode}
           mapAvailable={canShowMap}
@@ -530,6 +538,7 @@ export function PublicMapShell({
           initialView={initialView}
           drawEnabled={acceptingSubmissions && !previewMode}
           drawMode={drawMode}
+          initialGeometry={restoredGeometry}
           onGeometryChange={setGeometry}
           basemapChoices={basemapChoices}
           selectedBasemapId={selectedBasemapId}

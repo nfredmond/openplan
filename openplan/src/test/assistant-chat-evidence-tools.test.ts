@@ -884,7 +884,7 @@ describe("get_engagement_responses", () => {
     expect(survey.status).toBe("ok");
     expect(survey.approvedResponseCount).toBe(1);
     expect(survey.questions).toEqual([
-      { prompt: "Which improvement matters most?", questionType: "single_choice", answeredCount: 1 },
+      { prompt: "Historical question prompt unavailable", questionType: "single_choice", answeredCount: 1 },
     ]);
     // Counts only: the resident's own words never appear anywhere in the payload.
     expect(JSON.stringify(result)).not.toContain(RESIDENT_ANSWER_TEXT);

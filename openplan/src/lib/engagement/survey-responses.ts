@@ -1,3 +1,4 @@
+import type { EngagementReviewSnapshot } from "./review-export";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { readEveryPage } from "@/lib/supabase/paged-read";
 import { isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
@@ -60,6 +61,8 @@ export type SurveyResponseSessionRow = {
   updated_at: string;
 };
 export type SurveyAnswerRow = {
+  question_prompt_snapshot?: string | null;
+  engagement_survey_response_sessions?: { configuration_version_id?: string | null };
   question_id: string | null;
   question_type: SurveyQuestionType;
   answer_json: unknown;
@@ -67,6 +70,8 @@ export type SurveyAnswerRow = {
 };
 
 export type SurveyQuestionAggregation = {
+  configurationVersionId?: string | null;
+  interpretationUnavailable?: boolean;
   questionId: string;
   questionType: SurveyQuestionType;
   family: SurveyQuestionFamily;
@@ -509,7 +514,7 @@ export async function loadApprovedSurveyAnswers(
       supabase
         .from("engagement_survey_answers")
         .select(
-          "question_id, question_type, answer_json, answer_text, engagement_survey_response_sessions!inner(status)"
+          "question_id, question_type, question_prompt_snapshot, answer_json, answer_text, engagement_survey_response_sessions!inner(status, configuration_version_id)"
         )
         .eq("campaign_id", campaignId)
         .eq("engagement_survey_response_sessions.status", "approved")
@@ -522,7 +527,7 @@ export async function loadApprovedSurveyAnswers(
         data: SurveyAnswerRow[] | null;
         error: { message: string } | null;
       }>
-  );
+  ).then((result) => ({ ...result, rows: result.rows.filter((row) => !(row.answer_json && typeof row.answer_json === "object" && "reviewed_redaction" in row.answer_json)) }));
 }
 
 // ── Full answer export (SENSITIVE; the door answer CONTENT leaves through) ──
@@ -994,26 +999,82 @@ export async function aggregateCampaignSurvey(
   questions: SurveyQuestionAggregation[];
   error: { message: string } | null;
 }> {
-  const definition = await loadSurveyDefinition(supabase, campaignId);
-  const { questions, optionsByQuestion } = definition;
   const answers = await loadApprovedSurveyAnswers(supabase, campaignId);
   const approvedSessions = await loadSurveyResponseSessions(supabase, campaignId, { status: "approved" });
-
-  const answersByQuestion = new Map<string, SurveyAnswerRow[]>();
+  const versions = await readEveryPage((from, to) => supabase.from("engagement_configuration_versions")
+    .select("id, definition_json").eq("campaign_id", campaignId).order("id").range(from, to));
+  if (!versions.complete) return { approvedResponseCount: approvedSessions.rows.length, questions: [], error: versions.error ?? { message: "Historical definitions unavailable" } };
+  type Version = { id: string; definition_json: { questions: Array<SurveyQuestionRow & { options?: SurveyOptionRow[] }> } };
+  const definitions = new Map((versions.rows as Version[]).map(version => [version.id, version.definition_json]));
+  const groups = new Map<string, { version: string | null; question: string | null; answers: SurveyAnswerRow[] }>();
   for (const answer of answers.rows) {
-    if (!answer.question_id) continue;
-    const arr = answersByQuestion.get(answer.question_id) ?? [];
-    arr.push(answer);
-    answersByQuestion.set(answer.question_id, arr);
+    const version = answer.engagement_survey_response_sessions?.configuration_version_id ?? null;
+    const key = JSON.stringify([version, answer.question_id, answer.question_prompt_snapshot ?? null, answer.question_type]);
+    const group = groups.get(key) ?? { version, question: answer.question_id, answers: [] };
+    group.answers.push(answer); groups.set(key, group);
   }
-
-  const aggregated = questions.map((question) => {
-    const options = (optionsByQuestion.get(question.id) ?? []).map((o) => ({ id: o.id, label: o.label }));
-    return aggregateSurveyQuestion(question, options, answersByQuestion.get(question.id) ?? []);
+  const aggregated = [...groups.values()].map(group => {
+    const question = group.version ? definitions.get(group.version)?.questions.find(question => question.id === group.question) : undefined;
+    if (!question) return {
+      questionId: group.question ?? "deleted", configurationVersionId: group.version, interpretationUnavailable: true,
+      questionType: group.answers[0].question_type, family: SURVEY_QUESTION_TYPES[group.answers[0].question_type].family,
+      prompt: group.answers[0].question_prompt_snapshot ?? "Historical question prompt unavailable",
+      answeredCount: group.answers.length, aggregation: null,
+    };
+    return { ...aggregateSurveyQuestion(question, question.options ?? [], group.answers), configurationVersionId: group.version };
   });
-  return {
-    approvedResponseCount: approvedSessions.rows.length,
-    questions: aggregated,
-    error: definition.error ?? answers.error ?? approvedSessions.error ?? null,
-  };
+  return { approvedResponseCount: approvedSessions.rows.length, questions: aggregated, error: answers.error ?? approvedSessions.error ?? null };
+}
+
+/** Idempotent public survey writes commit the session and all answers in one transaction. */
+export async function insertRetryableSurveyResponse(supabase: SupabaseClient, input: Parameters<typeof insertSurveyResponse>[1] & { requestId?: string; requestHash: string; configurationVersionId?: string }) {
+  const result = await supabase.rpc("submit_engagement_survey", {
+    p_campaign: input.campaignId, p_request: input.requestId ?? null, p_hash: input.requestHash, p_version: input.configurationVersionId ?? null,
+    p_session: { respondent_fingerprint: input.respondentFingerprint, submitted_by: input.submittedBy, status: input.status, metadata_json: input.metadata }, p_answers: input.answers,
+  });
+  return result.error || !result.data ? { ok: false as const, error: result.error?.message ?? "Survey could not be saved" } : { ok: true as const, sessionId: result.data as string };
+}
+
+/** Capability lookup returns a receipt only, never answers or private moderation. */
+export async function loadSurveyRequestReceipt(supabase: QueryClient, campaignId: string, requestId: string) {
+  return supabase.from("engagement_survey_response_sessions").select("id, request_sha256, created_at").eq("campaign_id", campaignId).eq("request_id", requestId).maybeSingle();
+}
+
+/** Staff caller must establish engagement.write before passing the privileged client. */
+export async function loadSurveyReviewPage(supabase: QueryClient, campaignId: string, page: number) {
+  const sessions = await supabase.from("engagement_survey_response_sessions").select("id, status, submitted_by, moderation_notes, configuration_version_id, created_at, updated_at", { count: "exact" })
+    .eq("campaign_id", campaignId).order("created_at", { ascending: true }).order("id").range(page * 20, page * 20 + 19);
+  if (sessions.error || !sessions.data) return { error: sessions.error?.message ?? "Response list unavailable" };
+  const ids = sessions.data.map((row) => row.id as string);
+  const answers = ids.length ? await pageSurveyRows<Record<string, unknown>>((from, to) => supabase.from("engagement_survey_answers").select("id, session_id, question_prompt_snapshot, question_type, answer_text, answer_json").eq("campaign_id", campaignId).in("session_id", ids).order("session_id").order("id").range(from, to)) : { rows: [], error: null };
+  if (answers.error) return { error: answers.error.message };
+  return { sessions: sessions.data, answers: answers.rows, total: sessions.count ?? 0, page };
+}
+
+type CampaignPublicCopyRow = Record<string, unknown>;
+
+/** Withdraw a public review file when any included public copy or thread parent is no longer publishable. */
+export async function publicReviewStillCurrent(service: SupabaseClient, snapshot: EngagementReviewSnapshot): Promise<boolean> {
+  async function matches(table: string, saved: CampaignPublicCopyRow[], fields: string[], state?: [string, string]): Promise<boolean> {
+    for (let offset = 0; offset < saved.length; offset += 100) {
+      const batch = saved.slice(offset, offset + 100);
+      const projection = [...new Set(['id', ...fields, ...(state ? [state[0]] : [])])].join(',');
+      const current = await (table === 'engagement_survey_response_sessions' ? service.from('engagement_survey_response_sessions').select(projection).eq('campaign_id', snapshot.campaign.id).in('id', batch.map(row => String(row.id))) : table === 'engagement_survey_answers' ? service.from('engagement_survey_answers').select(projection).eq('campaign_id', snapshot.campaign.id).in('id', batch.map(row => String(row.id))) : service.from(table).select(projection).eq('campaign_id', snapshot.campaign.id).in('id', batch.map(row => String(row.id))));
+      if (current.error || !current.data || current.data.length !== batch.length) return false;
+      const rows = current.data as unknown as CampaignPublicCopyRow[];
+      if (batch.some(row => !rows.some(now => now.id === row.id && (!state || now[state[0]] === state[1]) && fields.every(field => JSON.stringify(now[field]) === JSON.stringify(row[field]))))) return false;
+    }
+    return true;
+  }
+  if (!await matches('engagement_items', snapshot.items, ['title','body','submitted_by','photo_path','parent_item_id','geometry','latitude','longitude','category_id'], ['status','approved'])) return false;
+  const parents = [...new Set(snapshot.items.map(item => item.parent_item_id).filter(Boolean))].map(id => ({ id, parent_item_id: null }));
+  if (!await matches('engagement_items', parents, ['parent_item_id'], ['status','approved'])) return false;
+  if (!await matches('engagement_survey_response_sessions', snapshot.sessions, [], ['status','approved'])) return false;
+  if (!await matches('engagement_survey_answers', snapshot.answers, ['session_id','question_id','question_prompt_snapshot','question_type','answer_text','answer_json'])) return false;
+  return matches('engagement_closeloop_entries', snapshot.responses, ['theme_title','you_said','we_did','source_item_ids'], ['status','published']);
+}
+
+/** Staff-authorized callers inspect one attachment-bearing answer, never a campaign-wide raw feed. */
+export async function loadSurveyAttachmentAnswer(service: SupabaseClient, campaignId: string, sessionId: string, answerId: string) {
+ return service.from('engagement_survey_answers').select('answer_json').eq('id',answerId).eq('campaign_id',campaignId).eq('session_id',sessionId).maybeSingle();
 }

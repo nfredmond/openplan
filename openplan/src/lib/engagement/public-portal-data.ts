@@ -1,9 +1,9 @@
+import { readPublicApprovedItems } from "@/lib/engagement/public-approved-items";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { normalizeShareToken } from "@/lib/engagement/public-portal";
 import { isPublicSlugCandidate, normalizePublicSlugInput } from "@/lib/engagement/campaign-slugs";
-import { ENGAGEMENT_PHOTO_BUCKET, ENGAGEMENT_PHOTO_SIGNED_URL_TTL_SECONDS } from "@/lib/engagement/photo";
 import { loadSurveyDefinition } from "@/lib/engagement/survey-responses";
 import { loadPublishedCloseLoopEntries } from "@/lib/engagement/close-loop";
 import { isEmailTransportConfigured } from "@/lib/notifications/email";
@@ -63,6 +63,9 @@ export type PublicPortalCampaign = {
   public_description: string | null;
   status: string;
   engagement_type: string;
+  configuration_version_id?: string | null;
+  participation_starts_at?: string | null;
+  participation_ends_at?: string | null;
   allow_public_submissions: boolean;
   submissions_closed_at: string | null;
   demographics_enabled: boolean;
@@ -620,6 +623,7 @@ export async function loadPortalPlaceCandidates(
 
 type CategoryRow = { id: string; label: string; slug: string | null; description: string | null; sort_order: number | null; color: string | null };
 type ApprovedItemRow = {
+  configuration_version_id?: string | null;
   id: string;
   category_id: string | null;
   title: string | null;
@@ -687,10 +691,12 @@ export type PortalCampaignText = {
 // The prop object PublicEngagementPortal consumes (kept structural so both pages
 // pass it through with a spread).
 export type PublicPortalProps = {
+  configurationVersionId?: string | null;
   shareToken: string;
   acceptingSubmissions: boolean;
   categories: PortalCategoryView[];
   approvedItems: {
+    historicalCategoryLabel?: string | null;
     id: string;
     categoryId: string | null;
     title: string | null;
@@ -928,7 +934,7 @@ export async function loadPublicPortalResult(
  * column present in one copy of a select string and missing from another.
  */
 const PUBLIC_PORTAL_CAMPAIGN_COLUMNS =
-  "id, workspace_id, project_id, title, summary, public_description, status, engagement_type, allow_public_submissions, submissions_closed_at, demographics_enabled, updated_at, accessibility_contact_label, accessibility_contact_email, accessibility_contact_phone, accessibility_alternate_formats";
+  "id, workspace_id, project_id, title, summary, public_description, status, engagement_type, configuration_version_id, participation_starts_at, participation_ends_at, allow_public_submissions, submissions_closed_at, demographics_enabled, updated_at, accessibility_contact_label, accessibility_contact_email, accessibility_contact_phone, accessibility_alternate_formats";
 
 /** The participant's language, resolved once per request — see `PublicPortalLocaleRequest`. */
 async function resolvePortalLanguage(localeRequest?: PublicPortalLocaleRequest): Promise<{
@@ -1010,13 +1016,7 @@ async function buildPublicPortalBundle(
       .eq("campaign_id", campaign.id)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true }),
-    supabase
-      .from("engagement_items")
-      .select("id, category_id, title, body, submitted_by, latitude, longitude, geometry, photo_path, votes_count, parent_item_id, created_at")
-      .eq("campaign_id", campaign.id)
-      .eq("status", "approved")
-      .order("created_at", { ascending: false })
-      .limit(200),
+    readPublicApprovedItems<ApprovedItemRow>(supabase, campaign.id),
     // Definition tables only; response tables stay confined to survey-responses.ts.
     loadSurveyDefinition(supabase, campaign.id),
     // Published entries only — drafts never leave the operator.
@@ -1042,9 +1042,14 @@ async function buildPublicPortalBundle(
   const closeLoopReadFailed = Boolean(closeLoopResult.error);
   const projectReadFailed = Boolean(projectResult.error);
   const categories = (categoriesResult.data ?? []) as CategoryRow[];
-  const approvedItems = (approvedItemsResult.data ?? []) as ApprovedItemRow[];
-  const closeLoopRows = closeLoopResult.rows;
-  const acceptingSubmissions = campaign.allow_public_submissions && !campaign.submissions_closed_at;
+  const readApprovedItems = (approvedItemsResult.data ?? []) as ApprovedItemRow[];
+  const publicParents = new Set(readApprovedItems.filter((item) => !item.parent_item_id).map((item) => item.id));
+  const approvedItems = readApprovedItems.filter((item) => !item.parent_item_id || publicParents.has(item.parent_item_id));
+  const publicItemIds = new Set(approvedItems.map(item => item.id));
+  const closeLoopRows = closeLoopResult.rows.filter(row => row.source_item_ids.every(id => publicItemIds.has(id)));
+  const acceptingSubmissions = campaign.allow_public_submissions && !campaign.submissions_closed_at
+    && (!campaign.participation_starts_at || Date.parse(campaign.participation_starts_at) <= Date.now())
+    && (!campaign.participation_ends_at || Date.parse(campaign.participation_ends_at) > Date.now());
 
   const mapFraming = resolvePortalMapFraming({
     campaignPlace: placeCandidates.campaign,
@@ -1151,23 +1156,23 @@ async function buildPublicPortalBundle(
   // minted here for APPROVED items only (the query filters status) — pending or
   // rejected photos are never reachable from the public portal or an embed.
   const photoUrlByItemId = new Map<string, string>();
-  const photoPaths = approvedItems
-    .filter((item) => typeof item.photo_path === "string" && item.photo_path.length > 0)
-    .map((item) => item.photo_path as string);
-
-  if (photoPaths.length > 0) {
-    const { data: signedUrls } = await supabase.storage
-      .from(ENGAGEMENT_PHOTO_BUCKET)
-      .createSignedUrls(photoPaths, ENGAGEMENT_PHOTO_SIGNED_URL_TTL_SECONDS);
-
-    for (const item of approvedItems) {
-      if (!item.photo_path) continue;
-      const signed = (signedUrls ?? []).find((entry) => entry.path === item.photo_path);
-      if (signed?.signedUrl) photoUrlByItemId.set(item.id, signed.signedUrl);
-    }
+  for (const item of approvedItems) {
+    if (item.photo_path) photoUrlByItemId.set(item.id, `/api/engage/${encodeURIComponent(shareToken)}/items/${item.id}/photo`);
   }
 
+  const retainedCategories = new Map<string, Array<{id: string; label: string}>>();
+  const versionIds = [...new Set(approvedItems.flatMap(item => item.configuration_version_id ? [item.configuration_version_id] : []))];
+  for (let at = 0; at < versionIds.length; at += 100) {
+    const retained = await supabase.from("engagement_configuration_versions").select("id, definition_json")
+      .eq("campaign_id", campaign.id).in("id", versionIds.slice(at, at + 100));
+    if (!retained.error) for (const row of retained.data ?? []) retainedCategories.set(row.id, row.definition_json.categories ?? []);
+  }
+  const historicalLabel = (item: ApprovedItemRow) => item.category_id
+    ? retainedCategories.get(item.configuration_version_id ?? "")?.find(category => category.id === item.category_id)?.label ?? "Historical category definition unavailable"
+    : null;
+
   const portalProps: PublicPortalProps = {
+    configurationVersionId: campaign.configuration_version_id,
     shareToken,
     acceptingSubmissions,
     categories: categories.map((c) => ({
@@ -1183,6 +1188,7 @@ async function buildPublicPortalBundle(
       ),
     })),
     approvedItems: approvedItems.map((item) => ({
+      historicalCategoryLabel: historicalLabel(item),
       id: item.id,
       categoryId: item.category_id,
       title: item.title,

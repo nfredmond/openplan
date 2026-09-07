@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createServiceRoleClient } from "@/lib/supabase/server";
@@ -31,7 +32,8 @@ import { recordOperatorNotification } from "@/lib/notifications/engagement";
 import {
   loadSurveyDefinition,
   loadRecentFingerprintSessions,
-  insertSurveyResponse,
+  insertRetryableSurveyResponse,
+  loadSurveyRequestReceipt,
   deleteSurveyDraftByTokenHash,
   type SurveyAnswerInsert,
 } from "@/lib/engagement/survey-responses";
@@ -39,6 +41,8 @@ import {
 const paramsSchema = z.object({ shareToken: z.string().min(8).max(64) });
 
 const submitSchema = z.object({
+  requestId: z.string().uuid().optional(),
+  configurationVersionId: z.string().uuid().optional(),
   answers: z
     .array(z.object({ questionId: z.string().uuid(), answer: z.unknown() }))
     .max(300),
@@ -100,11 +104,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const parsed = submitSchema.safeParse(bodyRead.data);
     if (!parsed.success) return NextResponse.json({ error: "Invalid survey submission", details: parsed.error.issues }, { status: 400 });
 
-    // Honeypot: silently accept + discard.
-    if (parsed.data.website && parsed.data.website.length > 0) {
-      return NextResponse.json({ success: true, message: "Thank you for your response." }, { status: 201 });
-    }
-
     // Reject duplicate answers for the same question up front.
     const submittedIds = parsed.data.answers.map((a) => a.questionId);
     if (new Set(submittedIds).size !== submittedIds.length) {
@@ -115,15 +114,26 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const { data: campaign, error: campaignError } = await supabase
       .from("engagement_campaigns")
-      .select("id, workspace_id, title, status, allow_public_submissions, submissions_closed_at, survey_one_response_per_fingerprint")
+      .select("id, workspace_id, title, status, allow_public_submissions, submissions_closed_at, survey_one_response_per_fingerprint, configuration_version_id, participation_starts_at, participation_ends_at")
       .eq("share_token", parsedParams.data.shareToken)
-      .eq("status", "active")
       .maybeSingle();
     if (campaignError) {
       audit.error("survey_campaign_lookup_failed", { message: campaignError.message, code: campaignError.code ?? null });
       return NextResponse.json({ error: "Failed to verify campaign" }, { status: 500 });
     }
     if (!campaign) return NextResponse.json({ error: "Campaign not found or not publicly available" }, { status: 404 });
+    const requestHash = createHash("sha256").update(JSON.stringify(parsed.data)).digest("hex");
+    if (parsed.data.requestId) {
+      const receipt = await loadSurveyRequestReceipt(supabase, campaign.id, parsed.data.requestId);
+      if (receipt.error) return NextResponse.json({ error: "Your previous response could not be checked. Keep your draft and retry." }, { status: 503 });
+      if (receipt.data) {
+        if (receipt.data.request_sha256 !== requestHash) return NextResponse.json({ error: "This request identifier already belongs to different answers.", previousReceipt: { submissionId: receipt.data.id, receivedAt: receipt.data.created_at } }, { status: 409 });
+        return NextResponse.json({ success: true, sessionId: receipt.data.id, receivedAt: receipt.data.created_at, replayed: true });
+      }
+    }
+    if(campaign.status!=="active")return NextResponse.json({error:"Campaign not found or not publicly available"},{status:404});
+    if ((parsed.data.configurationVersionId ?? null) !== (campaign.configuration_version_id ?? null)) return NextResponse.json({ error: "The survey changed. Your answers are retained. Review the latest questions before sending." }, { status: 409 });
+    if ((campaign.participation_starts_at && Date.parse(campaign.participation_starts_at) > Date.now()) || (campaign.participation_ends_at && Date.parse(campaign.participation_ends_at) <= Date.now())) return NextResponse.json({ error: "This campaign is outside its participation dates." }, { status: 403 });
     if (!campaign.allow_public_submissions || campaign.submissions_closed_at) {
       return NextResponse.json({ error: "This survey is not currently accepting responses" }, { status: 403 });
     }
@@ -318,7 +328,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // One-response-per-fingerprint is a soft FLAG (never a hard reject — the
     // IP-only fingerprint is shared across NAT/office/library networks).
     const isRepeatFingerprint = campaign.survey_one_response_per_fingerprint && recentSessions.length > 0;
-    const autoFlagReason = isRepeatFingerprint ? "repeat_fingerprint" : null;
+    const autoFlagReason = parsed.data.website ? "hidden_field_completed" : isRepeatFingerprint ? "repeat_fingerprint" : null;
     const status = autoFlagReason ? "flagged" : "pending";
 
     const metadata = {
@@ -334,7 +344,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       inapplicable_answers_discarded: visibility.discarded.length,
     };
 
-    const inserted = await insertSurveyResponse(supabase, {
+    const inserted = await insertRetryableSurveyResponse(supabase, {
+      requestId: parsed.data.requestId, requestHash, configurationVersionId: parsed.data.configurationVersionId,
       campaignId: campaign.id,
       submittedBy: parsed.data.submittedBy?.trim() || null,
       sourceType: "public",

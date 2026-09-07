@@ -1,0 +1,63 @@
+[
+  {
+    "mutation": "harmless geometry comment",
+    "outcome": "survived",
+    "expected": "survived",
+    "evidence": []
+  },
+  {
+    "mutation": "collapsed route rejected",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-geometry.test.ts > parseEngagementGeometry > refuses zero-length routes and zero-area polygons while accepting small and date-line shapes",
+      "AssertionError: expected true to be false // Object.is equality"
+    ]
+  },
+  {
+    "mutation": "zero area rejected",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-geometry.test.ts > parseEngagementGeometry > refuses zero-length routes and zero-area polygons while accepting small and date-line shapes",
+      "AssertionError: expected true to be false // Object.is equality"
+    ]
+  },
+  {
+    "mutation": "keyboard immediate center",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/geometry-picker-keyboard.test.tsx > GeometryPickerMap keyboard accessibility (WCAG 2.1.1) > pans with arrow keys and zooms with +/-",
+      "AssertionError: expected \"vi.fn()\" to be called with arguments: [ [ 64, +0 ], { duration: +0 } ]",
+      "FAIL  src/test/geometry-picker-keyboard.test.tsx > GeometryPickerMap keyboard accessibility (WCAG 2.1.1) > builds a line over successive Enters and removes the last vertex on Backspace",
+      "AssertionError: expected last \"vi.fn()\" call to have been called with [ { type: 'LineString', \u2026(1) } ]"
+    ]
+  },
+  {
+    "mutation": "historical geometry receipt",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-public-submit-route.test.ts > POST /api/engage/[shareToken]/submit > recovers an accepted legacy collapsed route before applying current geometry validation",
+      "AssertionError: expected 400 to be 200 // Object.is equality"
+    ]
+  },
+  {
+    "mutation": "numbered map register",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-review-export.test.ts > campaign review records > shows a contribution detail inset when broad study context hides small routes",
+      "AssertionError: expected '<figure><svg xmlns=\"http://www.w3.org\u2026' to contain 'paint-order=\"stroke\">1</text>'"
+    ]
+  },
+  {
+    "mutation": "bulk unchanged selected version",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-bulk-selection.test.tsx > bulk review selects exact visible versions > refuses a selected item after the input list refreshes to a newer version"
+    ]
+  }
+]

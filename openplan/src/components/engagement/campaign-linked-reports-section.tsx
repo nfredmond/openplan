@@ -178,7 +178,7 @@ export function CampaignLinkedReportsSection({
                     <p className="module-record-summary">{getReportPacketActionLabel(report.packetFreshness.label)}</p>
                     <p className="module-record-summary">
                       Updated {formatDateTime(report.updated_at)}
-                      {generatedAt ? ` • Generated ${formatDateTime(generatedAt)}` : " • Draft report record"}
+                      {generatedAt ? ` • Generated ${formatDateTime(generatedAt)}` : " • Draft report"}
                     </p>
                   </div>
                   <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />

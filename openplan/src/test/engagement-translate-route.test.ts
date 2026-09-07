@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -88,7 +89,7 @@ describe("POST /api/engage/[shareToken]/items/[itemId]/translate", () => {
   });
 
   it("returns a cached translation without a model call or rate-limit charge", async () => {
-    itemMaybeSingle.mockResolvedValue({ data: approvedItem({ ai_translations: { es: "cacheada" }, other: 1 }), error: null });
+    itemMaybeSingle.mockResolvedValue({ data: approvedItem({ ai_translations: { es: { text: "cacheada", sourceHash: createHash("sha256").update(JSON.stringify([null, approvedItem(null).body])).digest("hex") } }, other: 1 }), error: null });
     const res = await POST(req("es"), ctx);
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -107,7 +108,8 @@ describe("POST /api/engage/[shareToken]/items/[itemId]/translate", () => {
 
     // Cache write is a single atomic jsonb-merge RPC (no client read-modify-write),
     // so concurrent per-language translations can't clobber each other.
-    expect(rpcMock).toHaveBeenCalledWith("engagement_cache_item_translation", {
+    expect(rpcMock).toHaveBeenCalledWith("engagement_cache_reviewed_translation", {
+      p_title: null, p_body: approvedItem(null).body, p_source_hash: createHash("sha256").update(JSON.stringify([null, approvedItem(null).body])).digest("hex"),
       p_item_id: ITEM,
       p_language: "es",
       p_translation: "Necesita una señal.",
@@ -166,4 +168,17 @@ describe("POST /api/engage/[shareToken]/items/[itemId]/translate", () => {
     // No model call happened, so nothing is metered.
     expect(recordAiUsageEvent).not.toHaveBeenCalled();
   });
+  it("refuses a translation of text redacted while the model was running", async () => {
+    itemMaybeSingle.mockResolvedValueOnce({ data: approvedItem(null), error: null }).mockResolvedValueOnce({ data: { ...approvedItem(null), body: "Redacted public copy" }, error: null });
+    const response = await POST(req("es"), ctx);
+    expect(response.status).toBe(409);
+    expect(await response.json()).not.toHaveProperty("translated");
+  });
+  it("does not reuse cached wording from an earlier public copy", async () => {
+    itemMaybeSingle.mockResolvedValue({ data: approvedItem({ ai_translations: { es: { text: "RESTRICTED", sourceHash: "old-body-hash" } } }), error: null });
+    const response = await POST(req("es"), ctx);
+    expect((await response.json()).translated).not.toBe("RESTRICTED");
+    expect(translateEngagementTextMock).toHaveBeenCalledTimes(1);
+  });
+
 });

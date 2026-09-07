@@ -37,6 +37,7 @@ function QuestionResult({ q }: { q: SurveyQuestionAggregation }) {
         <StatusBadge tone="neutral">{q.answeredCount} response{q.answeredCount === 1 ? "" : "s"}</StatusBadge>
       </div>
       <p className="mt-1 font-medium text-foreground">{q.prompt}</p>
+      <p className="mt-1 break-all text-xs text-muted-foreground">{q.configurationVersionId ? `Questions when submitted: ${q.configurationVersionId}` : "Historical definition unavailable"}</p>
 
       {lowN ? (
         <p className="mt-2 rounded-[0.5rem] border border-amber-300/70 bg-amber-50/70 px-3 py-2 text-xs text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
@@ -50,6 +51,7 @@ function QuestionResult({ q }: { q: SurveyQuestionAggregation }) {
 }
 
 function renderBody(q: SurveyQuestionAggregation) {
+  if (q.interpretationUnavailable) return <p>Saved answers remain available in the review files. The original scale and choices are unavailable, so no aggregate interpretation is shown.</p>;
   switch (q.questionType) {
     case "single_choice":
     case "multiple_choice": {
@@ -143,7 +145,7 @@ export function EngagementSurveyResults({
         {questions.length === 0 ? (
           <p className="text-sm text-muted-foreground">No active survey questions.</p>
         ) : (
-          questions.map((q) => <QuestionResult key={q.questionId} q={q} />)
+          questions.map((q) => <QuestionResult key={`${q.configurationVersionId ?? "unavailable"}:${q.questionId}:${q.prompt}`} q={q} />)
         )}
       </div>
     </article>

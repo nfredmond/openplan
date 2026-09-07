@@ -19,6 +19,8 @@ async function openActualInventory() {
       const chain = {
         select() { return chain; },
         eq() { return chain; },
+        or() { return chain; },
+        range() { return chain; },
         order() { return chain; },
         limit() { return chain; },
         then(resolve: (result: { data: Record<string, unknown>[]; error: null }) => void) {

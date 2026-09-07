@@ -10,6 +10,14 @@ import {
 } from "@/lib/engagement/geometry";
 
 describe("parseEngagementGeometry", () => {
+  it("refuses zero-length routes and zero-area polygons while accepting small and date-line shapes",()=>{
+    expect(parseEngagementGeometry({type:"LineString",coordinates:[[1,2],[1,2]]}).ok).toBe(false);
+    expect(parseEngagementGeometry({type:"Polygon",coordinates:[[[1,2],[1,2],[1,2],[1,2]]]}).ok).toBe(false);
+    expect(parseEngagementGeometry({type:"Polygon",coordinates:[[[0,0],[1,1],[2,2],[0,0]]]}).ok).toBe(false);
+    expect(parseEngagementGeometry({type:"LineString",coordinates:[[1,2],[1.000001,2]]}).ok).toBe(true);
+    expect(parseEngagementGeometry({type:"Polygon",coordinates:[[[179.99,1],[-179.99,1],[-179.99,1.01],[179.99,1]]]}).ok).toBe(true);
+  });
+
   it("accepts a valid Point", () => {
     const result = parseEngagementGeometry({ type: "Point", coordinates: [-121.06, 39.22] });
     expect(result.ok).toBe(true);

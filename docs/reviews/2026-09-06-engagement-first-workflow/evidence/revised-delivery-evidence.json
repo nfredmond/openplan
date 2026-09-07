@@ -1,0 +1,45 @@
+{
+  "downloads": [
+    {
+      "scope": "public",
+      "format": "PDF",
+      "bytes": 5411573,
+      "sha256": "abb7768cc5ca62d544a043fd9f74aa44b1f20a255b09d595c7d757a9c99729c0"
+    },
+    {
+      "scope": "public",
+      "format": "XLSX",
+      "bytes": 93747,
+      "sha256": "558f0642a2db646085c787852521226f33e06ef54d72b8402779414d317c1db7"
+    },
+    {
+      "scope": "public",
+      "format": "ZIP",
+      "bytes": 11736320,
+      "sha256": "559b572295f3469dd401e4e82ab7a31c04da4fffd962a4576b6f06721e86f417"
+    },
+    {
+      "scope": "internal",
+      "format": "PDF",
+      "bytes": 5581889,
+      "sha256": "65d510a3a6e510d30c6940e4d4cf2684d27e00648171c598f13893041bf6c3e8"
+    },
+    {
+      "scope": "internal",
+      "format": "XLSX",
+      "bytes": 104544,
+      "sha256": "2087813f6c69c10d6a7c6373fac91cc90e404f97042f305ad1af14853d64af8c"
+    },
+    {
+      "scope": "internal",
+      "format": "ZIP",
+      "bytes": 11839861,
+      "sha256": "1ddc7f8a0a1304f0d1e48f77422c5c89b80c4c1f6814e0796605770a2b869044"
+    }
+  ],
+  "console": [],
+  "overflow": {
+    "viewport": 390,
+    "scroll": 390
+  }
+}

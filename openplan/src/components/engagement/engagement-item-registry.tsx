@@ -14,8 +14,10 @@ import {
 } from "@/lib/engagement/catalog";
 import {
   engagementGeometryTypeLabel,
+  hasEngagementLocation,
   readStoredEngagementGeometry,
 } from "@/lib/engagement/geometry";
+import { LocationDisplayMap } from "./location-display-map";
 import { StatusBadge } from "@/components/ui/status-badge";
 
 type CategoryOption = {
@@ -23,7 +25,7 @@ type CategoryOption = {
   label: string;
 };
 
-type ItemRecord = {
+export type ItemRecord = {
   id: string;
   campaign_id: string;
   category_id: string | null;
@@ -81,9 +83,13 @@ function ItemRow({
   const [sourceType, setSourceType] = useState(item.source_type);
   const [status, setStatus] = useState(item.status);
   const [categoryId, setCategoryId] = useState(item.category_id ?? "");
-  const [moderationNotes, setModerationNotes] = useState(item.moderation_notes ?? "");
+  const [moderationNotes, setModerationNotes] = useState("");
   const [latitude, setLatitude] = useState(item.latitude?.toString() ?? "");
   const [longitude, setLongitude] = useState(item.longitude?.toString() ?? "");
+  const [definition, setDefinition] = useState<{id:string;campaign:{instructions?:string};categories:Array<{id:string;label:string;description:string|null}>}|null|undefined>(undefined);
+  const [history, setHistory] = useState<Array<{ id: string; event: string; recorded_at: string; reason: string | null; record: { title: string | null; body: string; status: string; hasPhoto?: boolean } }> | null>(null);
+  const [removeGeometry, setRemoveGeometry] = useState(false);
+  const [removePhoto, setRemovePhoto] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const storedGeometry = readStoredEngagementGeometry(item.geometry ?? null);
@@ -105,6 +111,9 @@ function ItemRow({
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
+          expectedUpdatedAt: item.updated_at,
+          removePhoto,
+          removeGeometry,
           title: title || null,
           body,
           submittedBy: submittedBy || null,
@@ -142,7 +151,18 @@ function ItemRow({
   }
 
   return (
-    <div className="module-record-row">
+    <div className="module-record-row" id={`contribution-${item.id}`}>
+      <p className="text-xs text-muted-foreground">Contribution {item.id}. Earlier copies and review history are retained privately.</p>
+      <Button type="button" variant="outline" className="h-auto w-full whitespace-normal" onClick={async () => {
+        const response = await fetch(`/api/engagement/campaigns/${item.campaign_id}/items/${item.id}/history`);
+        const payload = await response.json();
+        if (!response.ok) { setError(payload.error || "History could not be loaded."); return; }
+        setHistory(payload.history);setDefinition(payload.definition);
+      }}>Read original and review history</Button>
+      {definition!==undefined?<p className="text-sm break-words">{definition?`Received under configuration ${definition.id}. Category then: ${definition.categories.find(category=>category.id===item.category_id)?.label??'Not assigned in this definition'}. Instructions then: ${definition.campaign.instructions??'Not supplied'}`:'Historical configuration unavailable. Current wording is not evidence of what this participant saw.'}</p>:null}
+      {history ? <details open><summary>Restricted staff history, {history.length} copies</summary>{history.length === 0 ? <p>Historical copies are unavailable. This item predates retained history and has not been edited since.</p> : history.map((entry) => <article key={entry.id} className="my-3 rounded border p-3"><p>{entry.event} · {fmtDateTime(entry.recorded_at)} · {entry.record.status}</p><p>{entry.reason}</p>{entry.record.hasPhoto?<a className="underline" href={`/api/engagement/campaigns/${item.campaign_id}/attachments?itemId=${item.id}&historyId=${entry.id}`} target="_blank" rel="noreferrer">Open original photograph</a>:null}<h4>{entry.record.title}</h4><p className="whitespace-pre-wrap break-words">{entry.record.body}</p></article>)}</details> : null}
+      {storedGeometry ? <label className="flex gap-2 text-sm"><input type="checkbox" checked={removeGeometry} onChange={(event) => setRemoveGeometry(event.target.checked)} />Withhold the drawing and coordinates from the public copy</label> : null}
+      {item.photo_url ? <label className="flex gap-2 text-sm"><input type="checkbox" checked={removePhoto} onChange={(event) => setRemovePhoto(event.target.checked)} />Withhold photograph from the public copy</label> : null}
       <div className="module-record-head">
         <div className="module-record-main">
           <div className="module-record-kicker">
@@ -156,7 +176,9 @@ function ItemRow({
             )}
             {storedGeometry ? (
               <StatusBadge tone="neutral">{engagementGeometryTypeLabel(storedGeometry.type)} geometry</StatusBadge>
-            ) : (latitude || longitude) ? (
+            ) : item.geometry != null ? (
+              <StatusBadge tone="warning">Invalid retained drawing</StatusBadge>
+            ) : hasEngagementLocation(item) ? (
               <StatusBadge tone="neutral">Geolocated</StatusBadge>
             ) : null}
             {votesCount > 0 ? <StatusBadge tone="info">▲ {votesCount} support</StatusBadge> : null}
@@ -343,11 +365,15 @@ export function EngagementItemRegistry({
   items,
   categories,
   counts,
+  canWrite = true,
 }: {
   items: ItemRecord[];
   categories: CategoryOption[];
   counts: RegistryCounts;
+  canWrite?: boolean;
 }) {
+  const [page, setPage] = useState(0);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sourceFilter, setSourceFilter] = useState("all");
@@ -366,7 +392,7 @@ export function EngagementItemRegistry({
 
       if (reviewFilter === "needs_review" && !["pending", "flagged"].includes(item.status)) return false;
       if (reviewFilter === "uncategorized" && item.category_id) return false;
-      if (reviewFilter === "geolocated" && !(typeof item.latitude === "number" && typeof item.longitude === "number")) return false;
+      if (reviewFilter === "geolocated" && !hasEngagementLocation(item)) return false;
       if (reviewFilter === "with_notes" && !item.moderation_notes?.trim()) return false;
 
       if (!normalizedQuery) return true;
@@ -380,14 +406,20 @@ export function EngagementItemRegistry({
     });
   }, [categoryFilter, deferredQuery, items, reviewFilter, sourceFilter, statusFilter]);
 
+  const pageCount = Math.max(1, Math.ceil(filteredItems.length / 25));
+  const activePage = Math.min(page, pageCount - 1);
+  const pageItems = useMemo(() => filteredItems.slice(activePage * 25, (activePage + 1) * 25), [filteredItems, activePage]);
+  const mapItems = useMemo(() => pageItems.map(item => ({...item,latitude:item.latitude ?? null,longitude:item.longitude ?? null})), [pageItems]);
+  const selected = pageItems.find((item) => item.id === selectedId) ?? pageItems[0];
+
   return (
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
           <p className="module-section-label">Moderation</p>
-          <h2 className="module-section-title">Recent intake registry</h2>
+          <h2 className="module-section-title">Response review queue</h2>
           <p className="module-section-description">
-            Operators can update classification, moderation state, source metadata, and geolocation from the same review surface.
+            Review each contribution before publishing it. Give a reason for approval, withholding or a redacted public copy. Publishing does not mean the agency has answered.
           </p>
         </div>
       </div>
@@ -413,7 +445,7 @@ export function EngagementItemRegistry({
         <div className="module-summary-card">
           <p className="module-summary-label">Map signal</p>
           <p className="module-summary-value">{counts.geographyCoverage.geolocatedItems}</p>
-          <p className="module-summary-detail">Items with latitude/longitude already attached.</p>
+          <p className="module-summary-detail">Items with a mapped location already attached.</p>
         </div>
       </div>
 
@@ -502,9 +534,25 @@ export function EngagementItemRegistry({
       </div>
 
       <div className="mt-5 space-y-4">
-        {filteredItems.map((item) => (
-          <ItemRow key={item.id} item={item} categories={categories} />
-        ))}
+        <div className="flex flex-wrap items-center gap-3">
+          <Button type="button" variant="outline" disabled={activePage === 0} onClick={() => { setPage(activePage - 1); setSelectedId(null); }}>Previous page</Button>
+          <span>Page {activePage + 1} of {pageCount}. {filteredItems.length} matching contributions.</span>
+          <Button type="button" variant="outline" disabled={activePage + 1 >= pageCount} onClick={() => { setPage(activePage + 1); setSelectedId(null); }}>Next page</Button>
+        </div>
+        <p className="text-sm text-muted-foreground">The map shows located contributions on this page. Select a map marker or a list entry to review it.</p>
+        <LocationDisplayMap items={mapItems} onSelectItem={setSelectedId}/>
+        <div className="grid gap-4 lg:grid-cols-[minmax(12rem,1fr)_minmax(0,3fr)]">
+          <nav aria-label="Contributions on this page" className="space-y-2">{pageItems.map((item) => <button type="button" key={item.id} onClick={() => setSelectedId(item.id)} aria-current={selected?.id === item.id ? "true" : undefined} className={`block w-full rounded border p-3 text-left text-sm ${selected?.id === item.id ? "border-primary bg-muted" : ""}`}>
+            <span className="block font-medium">{item.title || item.body.slice(0,90)}</span><span>{titleizeEngagementValue(item.status)} · {item.parent_item_id ? "Reply" : "Contribution"}</span>
+          </button>)}</nav>
+          {selected ? <div className="min-w-0 space-y-3">
+            {!hasEngagementLocation(selected) ? <p>This contribution describes its location in words or has no mapped location.</p> : null}
+            <fieldset className="min-w-0" disabled={!canWrite}><ItemRow key={`${selected.id}:${selected.updated_at}`} item={selected} categories={categories} /></fieldset>
+            <Button type="button" variant="outline" disabled={filteredItems.indexOf(selected) === filteredItems.length - 1} onClick={() => {
+              const next = filteredItems.indexOf(selected) + 1; setPage(Math.floor(next / 25)); setSelectedId(filteredItems[next]?.id ?? null);
+            }}>Review next contribution</Button>
+          </div> : null}
+        </div>
         {filteredItems.length === 0 ? (
           <div className="rounded-[0.5rem] border border-dashed border-border/80 bg-background/70 px-5 py-6 text-sm text-muted-foreground">
             No items match the current moderation filters.

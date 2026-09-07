@@ -131,7 +131,7 @@ function submitClient() {
     },
   });
 
-  return { supabase: { from } as unknown as SupabaseClient, ops };
+  return { supabase: { from, rpc: async (name: string, payload: unknown) => { ops.push({table:name,kind:"rpc",payload,filters:[]}); return {data:"session-1",error:null}; } } as unknown as SupabaseClient, ops };
 }
 
 function submitRequest(payload: unknown) {
@@ -191,15 +191,12 @@ describe("a question that did not apply", () => {
     );
     expect(response.status).toBe(201);
 
-    const answerInsert = ops.find((op) => op.table === "engagement_survey_answers" && op.kind === "insert");
-    const rows = answerInsert?.payload as { question_id: string }[];
-    expect(rows.map((row) => row.question_id)).toEqual([Q_MODE]);
+    const transaction = ops.find((op) => op.table === "submit_engagement_survey" && op.kind === "rpc");
+    const sent = transaction?.payload as { p_answers: { questionId: string }[]; p_session: {metadata_json: Record<string, unknown>} };
+    expect(sent.p_answers.map((row) => row.questionId)).toEqual([Q_MODE]);
 
     // And the reviewer can tell the gap was the survey's own logic.
-    const sessionInsert = ops.find(
-      (op) => op.table === "engagement_survey_response_sessions" && op.kind === "insert"
-    );
-    const metadata = (sessionInsert?.payload as { metadata_json: Record<string, unknown> }).metadata_json;
+    const metadata = sent.p_session.metadata_json;
     expect(metadata.inapplicable_answers_discarded).toBe(1);
   });
 

@@ -1,0 +1,14 @@
+[
+  {
+    "mutation": "harmless review prose",
+    "exit": 0,
+    "expected": 0,
+    "output": "\n> openplan@0.44.0 product:direction:check\n> node scripts/ops/product-direction-review.mjs --check\n\nProduct direction is current through 2026-10-05: docs/reviews/product-direction/2026-09-07-post-owp-engagement-review.md (2 independent contexts, v0.44.0).\n"
+  },
+  {
+    "mutation": "insufficient independent review",
+    "exit": 1,
+    "expected": 1,
+    "output": "\n> openplan@0.44.0 product:direction:check\n> node scripts/ops/product-direction-review.mjs --check\n\nfile:///home/nathaniel/.local/state/openplan/engagement-first-workflow-2026-09-06/openplan/scripts/ops/product-direction-review.mjs:145\n  throw new Error(`Product-direction review check failed: ${message}`);\n        ^\n\nError: Product-direction review check failed: latest review requires at least two independent fresh contexts\n    at fail (file:///home/nathaniel/.local/state/openplan/engagement-first-workflow-2026-09-06/openplan/scripts/ops/product-direction-review.mjs:145:9)\n    at runCheck (file:///home/nathaniel/.local/state/openplan/engagement-first-workflow-2026-09-06/openplan/scripts/ops/product-direction-review.mjs:523:5)\n    at file:///home/nathaniel/.local/state/openplan/engagement-first-workflow-2026-09-06/openplan/scripts/ops/product-direction-review.mjs:701:29\n    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)\n    at async node:internal/modules/esm/loader:647:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)\n\nNode.js v24.20.0\n"
+  }
+]

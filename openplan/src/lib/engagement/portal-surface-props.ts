@@ -48,6 +48,7 @@ import { groupApprovedItems } from "@/lib/engagement/approved-item-grouping";
 
 export type PortalMapShellProps = {
   shareToken: string;
+  configurationVersionId?: string | null;
   acceptingSubmissions: boolean;
   categories: SidebarCategory[];
   items: PublicMapShellItem[];
@@ -116,6 +117,7 @@ export function buildPortalMapShellProps(
 
   return {
     shareToken: portalProps.shareToken,
+    configurationVersionId: portalProps.configurationVersionId,
     acceptingSubmissions,
     categories: portalProps.categories,
     items: topLevel,

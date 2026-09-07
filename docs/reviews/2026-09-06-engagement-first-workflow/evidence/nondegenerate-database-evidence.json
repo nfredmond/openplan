@@ -1,0 +1,15 @@
+{
+  "checks": [
+    {
+      "id": "a08d7bb0-5027-4159-8ac6-e94c2ac90b0e",
+      "type": "LineString",
+      "distinctVertices": 2
+    },
+    {
+      "id": "ba2727ff-88e8-4a47-b530-2abf18ada7a0",
+      "type": "Polygon",
+      "distinctVertices": 3,
+      "doubledAreaDegrees": -0.007895801471999891
+    }
+  ]
+}

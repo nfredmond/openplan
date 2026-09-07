@@ -89,6 +89,39 @@ export type CampaignTemplate = {
 
 export const CAMPAIGN_TEMPLATES: readonly CampaignTemplate[] = [
   {
+    id: "complete-streets", label: "Complete streets demonstration", engagementType: "map_feedback",
+    description: "Editable demonstration setup for walking, cycling, transit, accessibility and street access. Select the actual project area before publishing.",
+    suggestedSummary: "Demonstration campaign for a complete streets project. Contributions are exercise material, not observed public opinion.",
+    suggestedPublicDescription: "This is a demonstration. Mark a point, route or area where street travel could be improved, or describe the location in words. Tell us who is affected and what would help. Staff review contributions before publication.",
+    categories: [
+      { label: "Walking and crossings", description: "Sidewalks, crossing locations and waiting space.", sortOrder: 10 },
+      { label: "Cycling", description: "Routes, intersections and bicycle parking.", sortOrder: 20 },
+      { label: "Transit and accessibility", description: "Reaching stops and travelling with mobility or sensory needs.", sortOrder: 30 },
+      { label: "Street access", description: "Deliveries, driveways, parking and other street uses.", sortOrder: 40 },
+    ],
+    questions: [
+      { questionType: "free_text", prompt: "Describe a journey you would like to make more safely or comfortably.", required: true, sortOrder: 10, config: { max_length: 4000 } },
+      { questionType: "free_text", prompt: "What change would help, and who would benefit?", sortOrder: 20, config: { max_length: 4000 } },
+    ],
+  },
+  {
+    id: "countywide-wayfinding", label: "Countywide wayfinding demonstration", engagementType: "map_feedback",
+    description: "Editable demonstration setup for destinations, confusing junctions, route continuity and accessible signs. The planner supplies the county study area.",
+    suggestedSummary: "Demonstration campaign for countywide wayfinding. Contributions are exercise material, not observed public opinion.",
+    suggestedPublicDescription: "This is a demonstration. Show us a destination, route or area where finding your way is difficult. You can describe it in words without using the map. Explain what information is missing and which languages or accessible formats would help.",
+    categories: [
+      { label: "Destinations", description: "Places people need to find.", sortOrder: 10 },
+      { label: "Confusing junctions", description: "Places where directions are unclear.", sortOrder: 20 },
+      { label: "Route continuity", description: "Missing signs or route connections.", sortOrder: 30 },
+      { label: "Accessible information", description: "Language, legibility and accessible formats.", sortOrder: 40 },
+    ],
+    questions: [
+      { questionType: "free_text", prompt: "Where were you trying to go, and where did you lose your way?", required: true, sortOrder: 10, config: { max_length: 4000 } },
+      { questionType: "free_text", prompt: "What would make the directions easier to use?", sortOrder: 20, config: { max_length: 4000 } },
+    ],
+  },
+
+  {
     id: "corridor-safety-study",
     label: "Corridor safety study",
     description:

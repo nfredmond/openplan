@@ -48,6 +48,22 @@ import type { PortalMessageBundle } from "./translator";
  * literal braces to a member of the public.
  */
 export const EN_PORTAL_MESSAGES = {
+  "recovery.changed": "The questions or categories changed since this draft. Review the current form and your answers before sending.",
+  "recovery.photoRestored": "Your text and drawing were restored. Reattach any photograph before sending unless it was already uploaded.",
+  "recovery.unreadable": "The saved draft on this computer could not be read. It has been kept. Download it before starting a new draft.",
+  "recovery.download": "Download saved draft",
+  "recovery.new": "Start a new draft",
+  "recovery.conflict": "An earlier version was received. This edited draft has not been sent. Save the earlier receipt, then review and send this draft as a new contribution.",
+  "recovery.continueEdited": "Keep this edited draft as a new contribution",
+  "recovery.saveReceipt": "Save receipt",
+  "recovery.receipt": "Receipt",
+  "recovery.received": "Received",
+  "recovery.dateUnavailable": "Date unavailable",
+  "recovery.receiptMeaning": "This receipt confirms storage. Awaiting review, published and answered are separate states.",
+  "recovery.local": "Text and drawings are saved on this computer for recovery when browser storage is available. Photos may need to be reattached.",
+  "recovery.storageUnavailable": "Browser storage is unavailable. You can still send this response, but this computer cannot retain a recovery copy.",
+  "recovery.surveyLocal": "Answers and receipts are saved on this computer when browser storage is available. Use Save for later to retain a server draft. On a shared computer, start a new response after saving your receipt.",
+
   // ---------------------------------------------------------------- language
   "language.pickerLabel": "Language",
   "language.pickerHint": "Choose the language for this page.",
@@ -524,6 +540,22 @@ export type PortalMessageCatalog = Partial<Record<PortalMessageKey, string>>;
  * by somebody who reads it.
  */
 const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
+  "recovery.changed": "Las preguntas o categorías cambiaron desde este borrador. Revise el formulario actual y sus respuestas antes de enviarlas.",
+  "recovery.photoRestored": "Se restauraron su texto y dibujo. Vuelva a adjuntar la fotografía antes de enviar, salvo que ya se haya cargado.",
+  "recovery.unreadable": "No se pudo leer el borrador guardado en esta computadora. Se ha conservado. Descárguelo antes de comenzar uno nuevo.",
+  "recovery.download": "Descargar borrador guardado",
+  "recovery.new": "Comenzar un borrador nuevo",
+  "recovery.conflict": "Se recibió una versión anterior. Este borrador editado no se ha enviado. Guarde el comprobante anterior; después revise y envíe este borrador como una contribución nueva.",
+  "recovery.continueEdited": "Conservar este borrador como una contribución nueva",
+  "recovery.saveReceipt": "Guardar comprobante",
+  "recovery.receipt": "Comprobante",
+  "recovery.received": "Recibido",
+  "recovery.dateUnavailable": "Fecha no disponible",
+  "recovery.receiptMeaning": "Este comprobante confirma que se guardó su respuesta. Pendiente de revisión, publicado y respondido son estados distintos.",
+  "recovery.local": "El texto y los dibujos se guardan en esta computadora cuando el almacenamiento del navegador está disponible. Puede ser necesario adjuntar las fotos otra vez.",
+  "recovery.storageUnavailable": "El almacenamiento del navegador no está disponible. Puede enviar su respuesta, pero esta computadora no puede guardar una copia de recuperación.",
+  "recovery.surveyLocal": "Las respuestas y los comprobantes se guardan en esta computadora cuando el almacenamiento del navegador está disponible. Use Guardar para después para conservar un borrador en el servidor. En una computadora compartida, comience una respuesta nueva después de guardar el comprobante.",
+
   "language.pickerLabel": "Idioma",
   "language.pickerHint": "Elija el idioma de esta página.",
   "language.current": "Mostrando actualmente en {language}",

@@ -2,6 +2,23 @@ import { describe, expect, it } from "vitest";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 
 describe("summarizeEngagementItems", () => {
+  it("counts valid route and area geometry without legacy coordinates and refuses invalid coordinates", () => {
+    const shapes = [
+      { geometry: { type: "LineString", coordinates: [[1, 2], [3, 4]] } },
+      { geometry: { type: "Polygon", coordinates: [[[1, 2], [3, 4], [5, 2], [1, 2]]] } },
+      { latitude: 0, longitude: 0 }, { latitude: NaN, longitude: 0 },
+      { latitude: 91, longitude: 0 }, { geometry: { type: "Point", coordinates: [1, 100] } },
+      { geometry: { type: "LineString", coordinates: [[1, 2], [1, 2]] }, latitude: 2, longitude: 1 },
+      {},
+    ];
+    const summary = summarizeEngagementItems([{ id: "category", label: "Travel" }], shapes.map((shape, index) => ({
+      ...shape, id: String(index), campaign_id: "campaign", category_id: "category", status: "approved", source_type: "public",
+    })));
+    expect(summary.geographyCoverage).toMatchObject({ geolocatedItems: 3, nonGeolocatedItems: 5 });
+    expect(summary.exportCoverage.mapReadyItems).toBe(3);
+    expect(summary.sourceSummaries.find(source => source.sourceType === "public")).toMatchObject({ geolocatedCount: 3, nonGeolocatedCount: 5 });
+  });
+
   it("computes source, moderation, geography, and recent activity analytics", () => {
     const summary = summarizeEngagementItems(
       [

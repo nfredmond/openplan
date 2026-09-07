@@ -93,7 +93,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const { data: campaign, error: campaignError } = await supabase
       .from("engagement_campaigns")
-      .select("id, status, allow_public_submissions, submissions_closed_at")
+      .select("id, status, allow_public_submissions, submissions_closed_at, participation_starts_at, participation_ends_at")
       .eq("share_token", parsedParams.data.shareToken)
       .eq("status", "active")
       .maybeSingle();
@@ -112,6 +112,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     if (!campaign.allow_public_submissions || campaign.submissions_closed_at) {
       return NextResponse.json({ error: "This campaign is not currently accepting public submissions" }, { status: 403 });
+    }
+
+    if ((campaign.participation_starts_at && Date.parse(campaign.participation_starts_at) > Date.now()) || (campaign.participation_ends_at && Date.parse(campaign.participation_ends_at) <= Date.now())) {
+      return NextResponse.json({ error: "This campaign is outside its participation dates." }, { status: 403 });
     }
 
     // Server-generated path — the client never influences it beyond the

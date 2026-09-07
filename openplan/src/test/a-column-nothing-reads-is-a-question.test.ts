@@ -131,7 +131,6 @@ const UNREAD_COLUMNS: ReadonlyArray<{
     "project_portfolio_import_batches.imported_by",
     "project_portfolio_import_batches.mapping_json",
     "project_portfolio_import_batches.preview_sha256",
-    "project_portfolio_import_rows.actor_id",
     "project_portfolio_import_rows.errors_json",
     "project_portfolio_import_rows.formula_warning_fields",
     "project_portfolio_import_rows.header_row",
@@ -169,7 +168,7 @@ const UNREAD_COLUMNS: ReadonlyArray<{
 
   ...[
     "kb_ocr_job_callbacks.applied_payload_sha256", "kb_ocr_job_callbacks.ocr_job_id", "kb_ocr_job_callbacks.payload_bytes",
-    "kb_ocr_jobs.lease_token", "kb_ocr_jobs.lease_until",
+    "engagement_campaigns.setup_request_id", "engagement_campaigns.setup_source_configuration_id",
   ].map((column) => ({column, category: "READ_IN_SQL" as const, reason: "Transactional callback deduplication and export-lease RPCs read these fields; the Documents worker also renews and verifies leases outside src/. Live recovery tests exercise the stored values."})),
   // ---- READ_IN_SQL: the database reads these; TypeScript never names them --
   ...[

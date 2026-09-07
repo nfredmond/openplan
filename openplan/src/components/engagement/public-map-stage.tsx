@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
-import { readStoredEngagementGeometry, type EngagementGeometry } from "@/lib/engagement/geometry";
+import { hasEngagementLocation, readStoredEngagementGeometry, type EngagementGeometry } from "@/lib/engagement/geometry";
 import {
   appendVertex,
   buildPreviewFeatureCollection,
@@ -199,6 +199,7 @@ export function PublicMapStage({
   initialView = null,
   drawEnabled = true,
   drawMode = "point",
+  initialGeometry = null,
   onGeometryChange,
   basemapChoices,
   selectedBasemapId,
@@ -217,6 +218,7 @@ export function PublicMapStage({
   /** False on a closed campaign: the community's input is still shown, drawing is not offered. */
   drawEnabled?: boolean;
   drawMode?: EngagementDrawMode;
+  initialGeometry?: EngagementGeometry | null;
   onGeometryChange?: (geometry: EngagementGeometry | null) => void;
   /**
    * From `resolvePublicBasemapConfig` on the server. EMPTY MEANS NO MAP, not
@@ -241,7 +243,7 @@ export function PublicMapStage({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
-  const [draw, setDraw] = useState<DrawState>({ mode: drawMode, vertices: [], areaClosed: false });
+  const [draw, setDraw] = useState<DrawState>(() => initialGeometry?.type === "Point" ? {mode:"point",vertices:[initialGeometry.coordinates],areaClosed:false} : initialGeometry?.type === "LineString" ? {mode:"line",vertices:initialGeometry.coordinates,areaClosed:false} : initialGeometry?.type === "Polygon" ? {mode:"area",vertices:initialGeometry.coordinates[0].slice(0,-1),areaClosed:true} : { mode: drawMode, vertices: [], areaClosed: false });
   const [announcement, setAnnouncement] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const instructionsId = useId();
@@ -544,7 +546,9 @@ export function PublicMapStage({
     for (const item of items) {
       const geometry = readStoredEngagementGeometry(item.geometry ?? null);
       if (geometry && geometry.type !== "Point") shapeItems.push({ ...item, parsedGeometry: geometry });
-      else if (item.latitude !== null && item.longitude !== null) {
+      else if (geometry?.type === "Point") {
+        pointItems.push({ ...item, longitude: geometry.coordinates[0], latitude: geometry.coordinates[1] });
+      } else if (item.geometry == null && hasEngagementLocation(item) && item.latitude !== null && item.longitude !== null) {
         pointItems.push({ ...item, latitude: item.latitude, longitude: item.longitude });
       }
     }
@@ -608,7 +612,7 @@ export function PublicMapStage({
           const itemId = event.features?.[0]?.properties?.itemId as string | undefined;
           const item = itemId ? shapeItemById.get(itemId) : undefined;
           if (!item) return;
-          new mapboxgl.Popup({ offset: 12, maxWidth: "300px" })
+          new mapboxgl.Popup({ offset: 12, maxWidth: "min(300px, calc(100% - 24px))" })
             .setLngLat(event.lngLat)
             .setDOMContent(buildParticipantPopupContent(item, popupOptions))
             .addTo(map);
@@ -671,7 +675,7 @@ export function PublicMapStage({
       for (const marker of markersRef.current) marker.remove();
       markersRef.current = [];
       for (const item of pointItems) {
-        const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "300px" }).setDOMContent(
+        const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "min(300px, calc(100% - 24px))" }).setDOMContent(
           buildParticipantPopupContent(item, popupOptions)
         );
         const element = document.createElement("div");
@@ -750,19 +754,19 @@ export function PublicMapStage({
     if (!map) return;
     switch (event.key) {
       case "ArrowUp":
-        map.panBy([0, -KEYBOARD_PAN_STEP_PX]);
+        map.panBy([0, -KEYBOARD_PAN_STEP_PX], { duration: 0 });
         event.preventDefault();
         break;
       case "ArrowDown":
-        map.panBy([0, KEYBOARD_PAN_STEP_PX]);
+        map.panBy([0, KEYBOARD_PAN_STEP_PX], { duration: 0 });
         event.preventDefault();
         break;
       case "ArrowLeft":
-        map.panBy([-KEYBOARD_PAN_STEP_PX, 0]);
+        map.panBy([-KEYBOARD_PAN_STEP_PX, 0], { duration: 0 });
         event.preventDefault();
         break;
       case "ArrowRight":
-        map.panBy([KEYBOARD_PAN_STEP_PX, 0]);
+        map.panBy([KEYBOARD_PAN_STEP_PX, 0], { duration: 0 });
         event.preventDefault();
         break;
       case "+":
@@ -839,11 +843,7 @@ export function PublicMapStage({
   */
   const hasSomethingToShow =
     Boolean(initialView) ||
-    items.some(
-      (item) =>
-        (item.latitude !== null && item.longitude !== null) ||
-        readStoredEngagementGeometry(item.geometry ?? null) !== null
-    ) ||
+    items.some(hasEngagementLocation) ||
     (contextLayers?.layers ?? []).some((layer) => Boolean(layer.bbox));
 
   const showUnframedNotice = !mapUnavailable && !hasSomethingToShow && !unframedNoticeDismissed;
