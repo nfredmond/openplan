@@ -1,0 +1,32 @@
+{
+  "container": "supabase_db_owp-review-verification",
+  "program": "a866af3b-1fcb-4d50-9485-257a1099787f",
+  "cases": [
+    {
+      "case": "simultaneous preparation edits",
+      "firstExit": 0,
+      "secondExit": 3,
+      "secondSQLSTATE": "PT409",
+      "secondWaitSeconds": 2.03
+    },
+    {
+      "case": "simultaneous review decisions",
+      "firstExit": 0,
+      "secondExit": 3,
+      "secondSQLSTATE": "PT409",
+      "secondWaitSeconds": 2.01
+    },
+    {
+      "case": "simultaneous exact request retry",
+      "firstExit": 0,
+      "secondExit": 0,
+      "secondSQLSTATE": null,
+      "secondWaitSeconds": 2.01
+    }
+  ],
+  "finalCounts": {
+    "revisions": 2,
+    "events": 2
+  },
+  "blindCategory": "Two-session serialization and exact retry, not load testing. SQL guard mutation proof is independently retained in A final evidence."
+}

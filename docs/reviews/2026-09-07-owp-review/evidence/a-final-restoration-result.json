@@ -1,0 +1,15 @@
+{
+  "snapshot_noop_survived": true,
+  "altered_document_title_detected": true,
+  "all_predecessor_rows_restored": true,
+  "workflow_events_after_probes": 0,
+  "functions_restored": [
+    "guard_work_program_packet_document",
+    "enqueue_work_program_packet",
+    "finish_work_program_export",
+    "work_program_revision_review_boundary",
+    "record_work_program_event",
+    "guard_work_program_review_evidence"
+  ],
+  "current_migrations_match_capture": true
+}

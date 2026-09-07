@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createClient as createSupabaseClient, type User } from "@supabase/supabase-js";
 import { NextRequest } from "next/server";
 
 /**
@@ -40,7 +41,14 @@ let recordedFilters: Array<[string, unknown]>;
 /** Every `.select()` projection asked of kb_documents. */
 let recordedSelects: string[];
 
+let evidenceReadError: {message:string}|null = null;
+let evidenceRows: {id:string}[] = [];
+let evidenceCalls: unknown[][] = [];
 const fromMock = vi.fn((table: string) => {
+  if (table === "program_work_program_events") {
+    const builder={select:(value:string)=>{evidenceCalls.push(['select',value]);return builder;},eq:(field:string,value:unknown)=>{evidenceCalls.push(['eq',field,value]);return builder;},contains:(field:string,value:unknown)=>{evidenceCalls.push(['contains',field,value]);return builder;},limit:async(value:number)=>{evidenceCalls.push(['limit',value]);return {data:evidenceRows,error:evidenceReadError};}};
+    return builder;
+  }
   if (table !== "kb_documents") throw new Error(`Unexpected table: ${table}`);
   return {
     select: (columns: string) => {
@@ -80,11 +88,13 @@ function ctx(documentId: string = DOCUMENT_ID) {
 }
 
 describe("GET /api/knowledge-base/documents/[documentId]/download", () => {
+  afterEach(()=>vi.unstubAllGlobals());
   beforeEach(() => {
     vi.clearAllMocks();
     recordedFilters = [];
     recordedSelects = [];
-    documentReadError = null;
+    documentReadError = null; evidenceReadError=null; evidenceRows=[]; evidenceCalls=[];
+    vi.stubGlobal("fetch",vi.fn(async()=>new Response("retained bytes",{headers:{"Content-Type":"text/plain"}})));
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
     authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
     createClientMock.mockResolvedValue({ auth: { getUser: authGetUserMock }, from: fromMock });
@@ -124,6 +134,39 @@ describe("GET /api/knowledge-base/documents/[documentId]/download", () => {
     );
   });
 
+  it.each(['packet','evidence'])('streams a review %s from the ordinary library link without exposing a bearer URL',async kind=>{
+    if(kind==='packet')documentRow={...documentRow,work_program_packet_id:DOCUMENT_ID};
+    else evidenceRows=[{id:'event'}];
+    const response=await downloadDocument(request(),ctx());
+    expect(response.status).toBe(200);expect(response.headers.get('location')).toBeNull();
+    expect(response.headers.get('cache-control')).toBe('private, no-store');
+    expect(await response.text()).toBe('retained bytes');
+    if(kind==='evidence')expect(evidenceCalls).toEqual([['select','id'],['eq','workspace_id',WORKSPACE_ID],['contains','evidence',JSON.stringify([{id:DOCUMENT_ID}])],['limit',1]]);
+  });
+  it('uses valid JSON containment through the real PostgREST query builder',async()=>{
+    let parsedEvidence:unknown;
+    const client=createSupabaseClient('https://database.example.test','synthetic-public-key',{auth:{persistSession:false},global:{fetch:async input=>{
+      const url=new URL(String(input));
+      if(url.pathname.endsWith('/kb_documents'))return new Response(JSON.stringify([documentRow]),{headers:{'Content-Type':'application/json'}});
+      if(url.pathname.endsWith('/program_work_program_events')){
+        try{parsedEvidence=JSON.parse(url.searchParams.get('evidence')!.slice(3));}
+        catch{return new Response(JSON.stringify({code:'22P02',message:'invalid input syntax for type json'}),{status:400,headers:{'Content-Type':'application/json'}});}
+        return new Response(JSON.stringify([{id:'event'}]),{headers:{'Content-Type':'application/json'}});
+      }
+      throw new Error('Unexpected test request');
+    }}});
+    vi.spyOn(client.auth,'getUser').mockResolvedValue({data:{user:{id:USER_ID} as User},error:null});
+    createClientMock.mockResolvedValue(client);
+    expect((await downloadDocument(request(),ctx())).status).toBe(200);
+    expect(parsedEvidence).toEqual([{id:DOCUMENT_ID}]);
+  });
+
+  it('fails closed when supporting-evidence access requirements cannot be read',async()=>{
+    evidenceReadError={message:'Synthetic query failure'};
+    expect((await downloadDocument(request(),ctx())).status).toBe(503);
+    expect(createSignedUrlMock).not.toHaveBeenCalled();
+  });
+
   it("reads the row with the RLS client, filtered by the requested document id", async () => {
     await downloadDocument(request(), ctx());
 
@@ -134,6 +177,7 @@ describe("GET /api/knowledge-base/documents/[documentId]/download", () => {
     expect(recordedSelects[0]).toContain("workspace_id");
     expect(recordedSelects[0]).toContain("storage_ref");
     expect(recordedSelects[0]).toContain("original_filename");
+    expect(recordedSelects[0]).toContain("work_program_packet_id");
     // …and bound the filter to THIS document, not to nothing.
     expect(recordedFilters).toContainEqual(["id", DOCUMENT_ID]);
   });

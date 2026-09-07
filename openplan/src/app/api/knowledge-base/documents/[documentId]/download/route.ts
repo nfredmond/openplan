@@ -22,7 +22,8 @@ import {
  * Mirrors `/api/reports/[reportId]/artifacts/[artifactId]/download` segment for
  * segment: authorize via the caller's own read, confine the storage reference
  * to the document's own `<workspaceId>/<documentId>/` prefix, mint a
- * short-lived signed URL, redirect.
+ * short-lived signed URL. Review files and their supporting evidence stream
+ * through this authenticated route; other library files retain signed redirects.
  *
  * The row is read with the CALLER'S RLS client — `kb_documents` SELECT is
  * member-scoped, so a hit proves workspace membership (the same authorization
@@ -47,6 +48,7 @@ type DocumentRow = {
   source_kind: string;
   content_type: string | null;
   checksum: string | null;
+  work_program_packet_id: string | null;
 };
 
 export async function GET(request: NextRequest, context: RouteContext): Promise<NextResponse> {
@@ -70,7 +72,7 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
     // membership — a foreign document answers 404 here, not 403.
     const { data: documentData, error } = await supabase
       .from("kb_documents")
-      .select("id, workspace_id, title, original_filename, storage_ref, source_kind, content_type, checksum")
+      .select("id, workspace_id, title, original_filename, storage_ref, source_kind, content_type, checksum, work_program_packet_id")
       .eq("id", parsedParams.data.documentId)
       .maybeSingle();
 
@@ -127,6 +129,16 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
     // storage object.
     const filename = sanitizeFilename(document.original_filename ?? document.title);
 
+    // Review files and decision evidence must not hand out a reusable bearer URL.
+    // Check the caller's workspace-scoped evidence references even from Documents.
+    let reviewDocument = Boolean(document.work_program_packet_id);
+    if (!reviewDocument) {
+      const references = await supabase.from("program_work_program_events").select("id")
+        .eq("workspace_id", document.workspace_id).contains("evidence", JSON.stringify([{ id: document.id }])).limit(1);
+      if (references.error) return NextResponse.json({ error: "Document access requirements could not be checked. Retry when the connection recovers." }, { status: 503 });
+      reviewDocument = Boolean(references.data?.length);
+    }
+
     const service = createServiceRoleClient();
     const { data, error: signError } = await service.storage
       .from(ref.bucket)
@@ -147,7 +159,7 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
       workspaceId: document.workspace_id,
       userId: user.id,
     });
-    if (request.nextUrl.searchParams.get("delivery") === "authenticated" || (request.nextUrl.searchParams.get("disposition") === "inline" && document.source_kind === "uploaded_pdf")) {
+    if (reviewDocument || request.nextUrl.searchParams.get("delivery") === "authenticated" || (request.nextUrl.searchParams.get("disposition") === "inline" && document.source_kind === "uploaded_pdf")) {
       const original = await fetch(data.signedUrl, { signal: AbortSignal.timeout(30_000) });
       if (!original.ok || !original.body) return NextResponse.json({ error: "Retained original unavailable" }, { status: 503 });
       return new NextResponse(original.body, { headers: { "Content-Type": document.content_type || "application/octet-stream", "Content-Security-Policy": "sandbox; default-src 'none'; style-src 'unsafe-inline'; img-src data:", "X-OpenPlan-File-SHA256": document.checksum || "unavailable", "Content-Disposition": `${request.nextUrl.searchParams.get("disposition") === "inline" && document.source_kind === "uploaded_pdf" ? "inline" : "attachment"}; filename="${filename}"`, "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" } });

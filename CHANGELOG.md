@@ -19,6 +19,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- OWP review development adds exact-version reviewer assignments, return/resubmit,
+  separately documented adoption and authority, amendment baselines and retained
+  review packets. It requires additive migrations
+  [work_program_review](openplan/supabase/migrations/20260909000001_work_program_review.sql) and
+  [work_program_review_packets](openplan/supabase/migrations/20260909000002_work_program_review_packets.sql)
+  before application and Documents worker updates. Historical preparation records
+  gain no approval or spending authority. v0.44 remains unreleased.
+
 - Engagement workflow development retains campaign definitions, retry receipts and
   private moderation history, and adds queued PDF/XLSX/ZIP review files through the
   existing Documents worker and Reports. Engineering verification is recorded in the dated engagement review; human

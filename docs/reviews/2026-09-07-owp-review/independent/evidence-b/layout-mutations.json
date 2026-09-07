@@ -1,0 +1,106 @@
+[
+  {
+    "case": "baseline",
+    "exit": 0,
+    "passed": 4,
+    "failed": 0,
+    "failures": []
+  },
+  {
+    "case": "harmless_comment",
+    "exit": 0,
+    "passed": 4,
+    "failed": 0,
+    "failures": []
+  },
+  {
+    "case": "unbounded_newlines",
+    "exit": 1,
+    "passed": 3,
+    "failed": 1,
+    "failures": [
+      {
+        "name": "work program packet layout keeps multiline scope in printable cells without dropping line boundaries",
+        "reason": [
+          "AssertionError: expected 1 to be greater than 4"
+        ]
+      }
+    ]
+  },
+  {
+    "case": "unbounded_wrapping",
+    "exit": 1,
+    "passed": 2,
+    "failed": 2,
+    "failures": [
+      {
+        "name": "work program packet layout bounds unbroken wide text and keeps every Unicode character intact",
+        "reason": [
+          "AssertionError: expected false to be true // Object.is equality"
+        ]
+      },
+      {
+        "name": "work program packet layout prefers word boundaries when a review paragraph needs continuation",
+        "reason": [
+          "AssertionError: expected 1 to be greater than 1"
+        ]
+      }
+    ]
+  },
+  {
+    "case": "wide_identity_column",
+    "exit": 1,
+    "passed": 3,
+    "failed": 1,
+    "failures": [
+      {
+        "name": "work program packet layout moves long amendment identities into bounded detail rows without truncation",
+        "reason": [
+          "AssertionError: expected false to be true // Object.is equality"
+        ]
+      }
+    ]
+  },
+  {
+    "case": "raw_field_labels",
+    "exit": 1,
+    "passed": 3,
+    "failed": 1,
+    "failures": [
+      {
+        "name": "work program packet layout moves long amendment identities into bounded detail rows without truncation",
+        "reason": [
+          "AssertionError: expected 'Changed: preparation.funds[Long fundi\u2026' to be 'Changed: Financial preparation / Fund\u2026' // Object.is equality"
+        ]
+      }
+    ]
+  },
+  {
+    "case": "split_words",
+    "exit": 1,
+    "passed": 3,
+    "failed": 1,
+    "failures": [
+      {
+        "name": "work program packet layout prefers word boundaries when a review paragraph needs continuation",
+        "reason": [
+          "AssertionError: expected false to be true // Object.is equality"
+        ]
+      }
+    ]
+  },
+  {
+    "case": "split_unicode",
+    "exit": 1,
+    "passed": 3,
+    "failed": 1,
+    "failures": [
+      {
+        "name": "work program packet layout bounds unbroken wide text and keeps every Unicode character intact",
+        "reason": [
+          "AssertionError: expected false to be true // Object.is equality"
+        ]
+      }
+    ]
+  }
+]

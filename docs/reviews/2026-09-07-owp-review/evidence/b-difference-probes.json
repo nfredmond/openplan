@@ -1,0 +1,15 @@
+{
+  "beforeSchemaAccepted": true,
+  "afterSchemaAccepted": true,
+  "changedAmounts": [
+    100,
+    900
+  ],
+  "changes": [
+    {
+      "path": "preparation.funds[row 1; duplicate identity].amount",
+      "before": 100,
+      "after": 900
+    }
+  ]
+}

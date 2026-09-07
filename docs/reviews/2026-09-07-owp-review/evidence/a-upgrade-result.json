@@ -1,0 +1,18 @@
+{
+  "predecessor": "3004393820ec6f2b05f7a00136bf887914da48b4",
+  "container": "supabase_db_owp-independent-review-a",
+  "table_counts": {
+    "program_work_program_sources": 1,
+    "program_work_program_revisions": 2,
+    "program_work_program_extractions": 1,
+    "kb_documents": 4,
+    "kb_ocr_jobs": 3
+  },
+  "record_sha256": "722880368653ed5c1fd11435b8495230f61dd3e3699a3b5edaa378dcda3c012d",
+  "unchanged": true,
+  "no_authority_backfilled": true,
+  "migrations": {
+    "20260909000002_work_program_review_packets.sql": "8ba82764736812e62f2343784b59cb2e6e52ae61e8b099a10c961a8c4a5df0fe",
+    "20260909000001_work_program_review.sql": "543e1b10a07c6238bfa78f5ba85f74f4ea9a3d00043d3a32009d9abb239eeb8e"
+  }
+}

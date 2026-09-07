@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { WorkProgramElement } from "@/lib/programs/work-program/schema";
 import type { WorkProgramSource } from "@/lib/programs/work-program/types";
@@ -7,9 +8,10 @@ import { Field, SelectField } from "./fields";
 
 type Props = { element: WorkProgramElement; sources: WorkProgramSource[]; projects: { id: string; name: string }[]; onChange: (element: WorkProgramElement) => void; structured?: boolean };
 export function WorkProgramElementEditor({ element, sources, projects, onChange, structured = false }: Props) {
+  const [expanded, setExpanded] = useState(!element.title);
   const set = <K extends keyof WorkProgramElement>(key: K, value: WorkProgramElement[K]) => onChange({ ...element, [key]: value });
   const source = sources.find((row) => row.id === element.source?.sourceId);
-  return <details id={`owp-row-${element.id}`} className="min-w-0 rounded-lg border p-4" open={!element.title}>
+  return <details id={`owp-row-${element.id}`} className="min-w-0 rounded-lg border p-4" open={expanded} onToggle={(event) => setExpanded(event.currentTarget.open)}>
     <summary className="cursor-pointer font-semibold break-words">{element.code} {element.title || "New work element"} · {element.disposition}</summary>
     <div className="mt-4 space-y-5">
       <div className="grid min-w-0 gap-4 md:grid-cols-2"><Field label="Work element code" value={element.code} onChange={(value) => set("code", value)} /><Field label="Work element title" value={element.title} onChange={(value) => set("title", value)} />

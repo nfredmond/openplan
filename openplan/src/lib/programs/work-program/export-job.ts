@@ -1,3 +1,4 @@
+import { addWorkProgramPacketHtml, addWorkProgramPacketWorkbook, type WorkProgramPacket } from "./workflow-export";
 import { renderWorkProgramPageImages } from "./source-page-images";
 import { createHash } from "node:crypto";
 import { createServiceRoleClient } from "@/lib/supabase/server";
@@ -8,22 +9,36 @@ import { buildWorkProgramHtml, buildWorkProgramWorkbook, writeWorkProgramWorkboo
 import { renderReportPdf } from "@/lib/reports/pdf";
 import type { WorkProgramRevision } from "./types";
 
+async function exportDocument(documentId: string) {
+  const service = createServiceRoleClient();
+  const document = await service.from("kb_documents").select("id, workspace_id, work_program_revision_id, work_program_export_format, work_program_packet_id, work_program_packet_format, content_type").eq("id", documentId).single();
+  if (document.error || !document.data) throw new Error("Export record unavailable");
+  const row = document.data;
+  let packet: WorkProgramPacket | null = null;
+  if (row.work_program_packet_id) {
+    const result = await service.from("program_work_program_packets").select("id, snapshot_hash, created_at, snapshot, revision_id").eq("id", row.work_program_packet_id).eq("workspace_id", row.workspace_id).single();
+    if (result.error || !result.data) throw new Error("Review snapshot unavailable");
+    packet = result.data as unknown as WorkProgramPacket;
+    row.work_program_revision_id = result.data.revision_id;
+    row.work_program_export_format = row.work_program_packet_format;
+  }
+  if (!row.work_program_revision_id || !["html", "pdf", "xlsx"].includes(row.work_program_export_format)) throw new Error("Export identity unavailable");
+  return { row, packet };
+}
+
 /** Cache recovery must bind saved bytes to current immutable document and revision identity. */
 export async function loadWorkProgramExportIdentity(documentId: string) {
   const service = createServiceRoleClient();
-  const doc = await service.from("kb_documents").select("id, workspace_id, work_program_revision_id, work_program_export_format, content_type").eq("id", documentId).single();
-  if (doc.error || !doc.data?.work_program_revision_id || !["html", "pdf", "xlsx"].includes(doc.data.work_program_export_format)) throw new Error("Export identity unavailable");
-  const saved = await service.from("program_work_program_revisions").select("id, content_sha256").eq("id", doc.data.work_program_revision_id).eq("workspace_id", doc.data.workspace_id).single();
+  const { row: document, packet } = await exportDocument(documentId);
+  const saved = await service.from("program_work_program_revisions").select("id, content_sha256").eq("id", document.work_program_revision_id).eq("workspace_id", document.workspace_id).single();
   if (saved.error || !saved.data) throw new Error("Export revision identity unavailable");
-  return { documentId: doc.data.id as string, workspaceId: doc.data.workspace_id as string, revisionId: saved.data.id as string, revisionHash: saved.data.content_sha256 as string, format: doc.data.work_program_export_format as "html" | "pdf" | "xlsx", contentType: doc.data.content_type as string };
+  return { packetHash: packet?.snapshot_hash ?? null, documentId: document.id as string, workspaceId: document.workspace_id as string, revisionId: saved.data.id as string, revisionHash: saved.data.content_sha256 as string, format: document.work_program_export_format as "html" | "pdf" | "xlsx", contentType: document.content_type as string };
 }
 
 /** Only the Documents worker calls this; the request handler records a durable job. */
 export async function renderWorkProgramExport(documentId: string) {
   const service = createServiceRoleClient();
-  const document = await service.from("kb_documents").select("id, workspace_id, work_program_revision_id, work_program_export_format, content_type").eq("id", documentId).single();
-  if (document.error || !document.data?.work_program_revision_id) throw new Error("Export record unavailable");
-  const row = document.data;
+  const { row, packet } = await exportDocument(documentId);
   const saved = await service.from("program_work_program_revisions").select("*").eq("id", row.work_program_revision_id).eq("workspace_id", row.workspace_id).single();
   if (saved.error || !saved.data) throw new Error("Saved proposal unavailable");
   const revision = saved.data as WorkProgramRevision & { program_id: string };
@@ -37,11 +52,13 @@ export async function renderWorkProgramExport(documentId: string) {
   let bytes: Buffer; let engine = "html";
   const format = row.work_program_export_format as "html" | "pdf" | "xlsx";
   if (format === "xlsx") {
-    bytes = Buffer.from(await writeWorkProgramWorkbook(buildWorkProgramWorkbook(revision, sources)));
+    const workbook = buildWorkProgramWorkbook(revision, sources);
+    bytes = Buffer.from(await writeWorkProgramWorkbook(packet ? addWorkProgramPacketWorkbook(workbook, packet, revision) : workbook));
     engine = "sheetjs";
   } else {
     const pageImages = await renderWorkProgramPageImages(parsed.data, sources);
-    const rendered = buildWorkProgramHtml(revision, sources, pageImages);
+    const prepared = buildWorkProgramHtml(revision, sources, pageImages);
+    const rendered = packet ? addWorkProgramPacketHtml(prepared, packet, revision) : prepared;
     const html = legacyWithoutRegister ? rendered.replace(/(<body[^>]*>)/, '$1<p role="alert">Historical narrative only: this revision predates the frozen source register. Source coverage and source identity cannot be verified. The saved text has not been rewritten.</p>') : rendered;
     if (format === "html") bytes = Buffer.from(html, "utf8");
     else {
@@ -50,5 +67,5 @@ export async function renderWorkProgramExport(documentId: string) {
       bytes = Buffer.from(pdf.bytes); engine = pdf.engine;
     }
   }
-  return { bytes, checksum: createHash("sha256").update(bytes).digest("hex"), engine, format, contentType: row.content_type as string, workspaceId: row.workspace_id as string, revisionId: revision.id, revisionHash: revision.content_sha256 };
+  return { packetHash: packet?.snapshot_hash ?? null, bytes, checksum: createHash("sha256").update(bytes).digest("hex"), engine, format, contentType: row.content_type as string, workspaceId: row.workspace_id as string, revisionId: revision.id, revisionHash: revision.content_sha256 };
 }

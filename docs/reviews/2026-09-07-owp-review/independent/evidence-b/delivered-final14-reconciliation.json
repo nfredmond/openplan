@@ -1,0 +1,55 @@
+[
+  {
+    "audience": "internal",
+    "snapshotHash": "f504333868edc13b2a38aa70dea371354ca0639b3a0718f834d81e4c623401da",
+    "events": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "rowCount": 54,
+    "exactHtmlWorkbookRows": true,
+    "pdfNotesAndHashes": true,
+    "pendingCost": null,
+    "baselineCost": 76641.63,
+    "files": {
+      "html": "d8ec7e5f676bb40495fc9f8e693f9a2c89e44ae2d2b75e57dac101a77e2ca278",
+      "pdf": "5c147db28434297783498712a7af91d7e1afb9fe472188dd8693a81b575508b7",
+      "xlsx": "3aaa06faef2dd501109d057e2c2d35ac78d5f901dfced08df9d6d4cce70c0b27"
+    }
+  },
+  {
+    "audience": "public",
+    "snapshotHash": "1ecaa77e2eb31316f7ce0b414f9e1723b77cf9e61a4ca47ca1bf47af058f0212",
+    "events": [
+      5,
+      6,
+      8,
+      9,
+      10,
+      11,
+      13
+    ],
+    "rowCount": 34,
+    "exactHtmlWorkbookRows": true,
+    "pdfNotesAndHashes": true,
+    "pendingCost": null,
+    "baselineCost": 76641.63,
+    "files": {
+      "html": "1874115e837b20391c08c4e1cfbd363e6bb617c4aa13dad9b14abf2056ed337a",
+      "pdf": "c5348f8979dcea68f2768475ac3e076564099a2774336e43a1360a7f69cb9e85",
+      "xlsx": "cbdd349db88596e0143bf62bf815bcad6387f65b37f20d56c8a79a3cf6ba1a25"
+    }
+  }
+]

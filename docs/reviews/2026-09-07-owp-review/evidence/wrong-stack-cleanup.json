@@ -1,0 +1,13 @@
+{
+  "owned_fixture_users": 10,
+  "banned_users": 10,
+  "remaining_sessions": 0,
+  "retained_memberships": 20,
+  "mistake": "Repeat live suite ran against default stack because environment setting was omitted",
+  "fixture_window_utc": [
+    "2026-09-07T22:36:06Z",
+    "2026-09-07T22:36:25Z"
+  ],
+  "retained_records": "Existing scientific suites retain immutable fixtures. Owner-floor guard refused membership deletion; transaction rolled back. Ten newly created test accounts then banned and sessions revoked. Fixture rows and owner memberships retained.",
+  "schema_changed": false
+}

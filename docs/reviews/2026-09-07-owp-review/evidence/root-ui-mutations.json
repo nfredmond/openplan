@@ -1,0 +1,44 @@
+[
+  {
+    "name": "hidden_unavailable_reviewer",
+    "expectedPass": false,
+    "passed": false,
+    "exit": 1,
+    "test": "work-program-review-ui.test.tsx"
+  },
+  {
+    "name": "hidden_unavailable_document",
+    "expectedPass": false,
+    "passed": false,
+    "exit": 1,
+    "test": "work-program-review-ui.test.tsx"
+  },
+  {
+    "name": "harmless",
+    "expectedPass": true,
+    "passed": true,
+    "exit": 0,
+    "test": "work-program-review-ui.test.tsx"
+  },
+  {
+    "name": "hidden_authority",
+    "expectedPass": false,
+    "passed": false,
+    "exit": 1,
+    "test": "work-program-review-ui.test.tsx"
+  },
+  {
+    "name": "undated_due",
+    "expectedPass": false,
+    "passed": false,
+    "exit": 1,
+    "test": "work-program-workflow.test.ts"
+  },
+  {
+    "name": "collapsing_title",
+    "expectedPass": false,
+    "passed": false,
+    "exit": 1,
+    "test": "work-program-element-editing.test.tsx"
+  }
+]

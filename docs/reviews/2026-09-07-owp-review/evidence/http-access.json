@@ -1,0 +1,62 @@
+[
+  {
+    "label": "owner packet metadata",
+    "status": 200,
+    "expected": 200
+  },
+  {
+    "label": "agent action refused",
+    "status": 403,
+    "expected": 403
+  },
+  {
+    "label": "spoofed actor refused",
+    "status": 400,
+    "expected": 400
+  },
+  {
+    "label": "stale hash refused",
+    "status": 409,
+    "expected": 409
+  },
+  {
+    "label": "unauthenticated packet metadata",
+    "status": 401,
+    "expected": 401
+  },
+  {
+    "label": "unauthenticated bytes",
+    "status": 401,
+    "expected": 401
+  },
+  {
+    "label": "viewer review write",
+    "status": 403,
+    "expected": 403
+  },
+  {
+    "label": "viewer public-copy preparation",
+    "status": 403,
+    "expected": 403
+  },
+  {
+    "label": "revoked history metadata",
+    "status": 404,
+    "expected": 404
+  },
+  {
+    "label": "revoked packet metadata",
+    "status": 404,
+    "expected": 404
+  },
+  {
+    "label": "revoked packet bytes",
+    "status": 404,
+    "expected": 404
+  },
+  {
+    "label": "revoked supporting bytes",
+    "status": 404,
+    "expected": 404
+  }
+]

@@ -1,0 +1,26 @@
+{
+  "case": "Unicode crossing the 2000 UTF-16-unit note boundary",
+  "noteRows": [
+    {
+      "label": "Note",
+      "length": 2001,
+      "lastCodes": [
+        120,
+        120,
+        128690
+      ]
+    },
+    {
+      "label": "Note (continued)",
+      "length": 4,
+      "lastCodes": [
+        32,
+        101,
+        110,
+        100
+      ]
+    }
+  ],
+  "originalEmojiPresent": true,
+  "replacementCharacters": 0
+}

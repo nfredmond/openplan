@@ -22,6 +22,7 @@ export type WorkProgramSource = {
 export type WorkProgramRevision = {
   id: string;
   revision: number;
+  amendment_baseline_id?: string | null;
   previous_revision_id: string | null;
   request_id: string;
   content_json: WorkProgramDraft;
