@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-07
 review_by: 2026-10-05
-reviewed_commit: b458a491af57236003d881c9b84c6527ae5c8749
+reviewed_commit: 86e9d3eac8c16974adfe0081e4201cf8adca8f51
 current_release: v0.44.0
 independent_contexts: 2
 trigger: independent-whole-product-review-during-engagement-completion
@@ -79,3 +79,6 @@ Final evidence throughac9d1449: the d58370b8 source passes the full local QA gat
 The later automatic PR review supplied four further contrary cases: missing new submission versions, cross-campaign/current-pointer drift, offset shifts during moderation and uploads outside participation dates. These are concrete defects within the independent reviews' existing configuration, participation and privacy concerns. The fixes and meaningful unit/SQL/live HTTP/feed failures are preserved throughbb55364c, with an eleventh additive migration. Prior green checks are not claimed for this new source. The same Engagement recommendation and whole-product scope remain; rebuilt acceptance and the populated upgrade must now cover this follow-up.
 
 The populated upgrade now passes all eleven migrations. The one failure in the follow-up app suite was an offset-only page test double; the fixture now executes cursor predicates/order and preserves its501-record/orphan assertions. Harmless and broken cursor/orphan mutations distinguish the behavior. This test/evidence correction throughb458a491 changes no runtime code or product recommendation.
+
+
+Final automatic-review acceptance binds the retained source/build/CI and actual browser evidence in `evidence/after-review-*.json`. Root read the current production receipts, complete public feed, staff selection/pagination and delivered-file controls at desktop and 390px. All twelve received report files match the independently accepted artifact hashes. The four contrary automatic-review findings now have implementation, mutation, live permission/HTTP/feed and populated eleven-migration upgrade evidence. The initial feed-script navigation/name errors remain documented. This follow-up changes no product priority or claim tier: independent human usability, competitive comparison, decision follow-through and the separate v0.44 release remain open.
