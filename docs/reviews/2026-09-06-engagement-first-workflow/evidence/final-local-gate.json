@@ -1,0 +1,20 @@
+{
+  "commit": "d58370b846e26b4d727fa9efb4483c8bd7e7ea42",
+  "command": "OPENPLAN_SUPABASE_WORKDIR=<isolated verification stack> taskset -c 0-3 npm run qa:gate",
+  "exitCode": 0,
+  "app": {
+    "filesPassed": 1192,
+    "filesSkipped": 14,
+    "testsPassed": 13212,
+    "testsSkipped": 126
+  },
+  "liveRls": {
+    "filesPassed": 21,
+    "testsPassed": 149
+  },
+  "lint": "passed",
+  "productionAudit": "zero vulnerabilities",
+  "webpackProductionBuild": "passed",
+  "logSha256": "882755f53e737fcbeca4fa36231119090e5cd37f7c4bef18a486ff9406dec846",
+  "blindCategory": "Application and database checks do not establish visible use, native file usefulness, human usability or scientific validity."
+}

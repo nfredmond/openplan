@@ -1,0 +1,107 @@
+{
+  "build": "d58370b846e26b4d727fa9efb4483c8bd7e7ea42",
+  "files": [
+    {
+      "demo": 0,
+      "scope": "public",
+      "format": "pdf",
+      "sha256": "81c7b2658bd30d0113ddff9e164f75bcc677738d0908e7c063e2467434efc966",
+      "bytes": 111271
+    },
+    {
+      "demo": 0,
+      "scope": "public",
+      "format": "xlsx",
+      "sha256": "b832f78dadc886944e8c1027d70ab720fecca0c2218fa9ade869647f3c0685dc",
+      "bytes": 42070
+    },
+    {
+      "demo": 0,
+      "scope": "public",
+      "format": "zip",
+      "sha256": "8d8688abaf88033bddd33fd3e46b948f5bba11bac613fff61e596232308bcee0",
+      "bytes": 173358
+    },
+    {
+      "demo": 0,
+      "scope": "internal",
+      "format": "pdf",
+      "sha256": "21218a43b4d41ddffc250e36833d21d7fc6db547af5dfe9ff3295591d584a421",
+      "bytes": 128755
+    },
+    {
+      "demo": 0,
+      "scope": "internal",
+      "format": "xlsx",
+      "sha256": "3e437acaee1faf4cb165abcd49c3ba04b11559671d11c76e612119da8b4b352f",
+      "bytes": 42892
+    },
+    {
+      "demo": 0,
+      "scope": "internal",
+      "format": "zip",
+      "sha256": "28ce30c4bc6944cb209a465080bb146bf6b22c7969b4a6caa83a18a93963469f",
+      "bytes": 3721252
+    },
+    {
+      "demo": 1,
+      "scope": "public",
+      "format": "pdf",
+      "sha256": "7e101229d5016a7048d71047f7b9a8ca2f566e4130fbd2744ec1ffcaf019223a",
+      "bytes": 206021
+    },
+    {
+      "demo": 1,
+      "scope": "public",
+      "format": "xlsx",
+      "sha256": "d39914bf39da9155ffb3ba2b28cc29fb3c0fd4bccddd02030007fe55b8d978b2",
+      "bytes": 78218
+    },
+    {
+      "demo": 1,
+      "scope": "public",
+      "format": "zip",
+      "sha256": "81d7b82bc18e963e8f4b24aad5b53ed675d5cf5b0cbdf2545637115e12c0b5f0",
+      "bytes": 443948
+    },
+    {
+      "demo": 1,
+      "scope": "internal",
+      "format": "pdf",
+      "sha256": "843a43973f0f2636ab0c86b767cb71c5a1091b33717c11f2eb49b0ce192a0ed8",
+      "bytes": 213815
+    },
+    {
+      "demo": 1,
+      "scope": "internal",
+      "format": "xlsx",
+      "sha256": "f05b573fabe71cc0812644ec514a7b4eb72662fed7eb7b3034ac203aeebc35f2",
+      "bytes": 78720
+    },
+    {
+      "demo": 1,
+      "scope": "internal",
+      "format": "zip",
+      "sha256": "be4a0a77029795bb779ea3519123f1d8939651830d93900bbe781a61e822745e",
+      "bytes": 450981
+    }
+  ],
+  "console": [
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x262c0105e800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x262c0105e800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x262c0105e800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x262c0105e800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+    }
+  ]
+}

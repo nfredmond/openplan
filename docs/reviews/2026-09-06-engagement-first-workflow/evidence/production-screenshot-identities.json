@@ -1,0 +1,76 @@
+{
+  "build": "d58370b846e26b4d727fa9efb4483c8bd7e7ea42",
+  "location": "Private synthetic evidence scratch; no participant/client captures in git",
+  "files": [
+    {
+      "name": "linked-review-map-desktop.png",
+      "bytes": 315151,
+      "sha256": "74b1a4d5400dc7d068e7bac497dc6ef22bc4c8baa3a245fd3554093a43e4b080"
+    },
+    {
+      "name": "linked-review-map-390.png",
+      "bytes": 79957,
+      "sha256": "adac72c3ff5247d6034b66280cb52ef67fad9802b4780824fe952ac658de8a7f"
+    },
+    {
+      "name": "large-review-filter-desktop.png",
+      "bytes": 218784,
+      "sha256": "a84d75672daa5792d153619137ed59e347b8c948a9a9c3ac9c98eb299f6366d2"
+    },
+    {
+      "name": "large-review-filter-390.png",
+      "bytes": 82531,
+      "sha256": "5972829fb8fbf51ffb6d42caac5921cf45a9b20a1b4aa61e0bdac975467c98c3"
+    },
+    {
+      "name": "review-panel-final-390.png",
+      "bytes": 90495,
+      "sha256": "270022486d0712edb58dfc7b060a124c364b38ecf7169f16961590f091b0eaeb"
+    },
+    {
+      "name": "review-history-control-final-390.png",
+      "bytes": 90029,
+      "sha256": "b1a6f0cd99ea31a02c49376007d8d11025bb611cc5f271cd7f5b9b47d065d65f"
+    },
+    {
+      "name": "production-files-0-public-desktop.png",
+      "bytes": 254133,
+      "sha256": "26eb046db81c62a9ce919b5d573449f824be363be44b4edbfb137b3879242456"
+    },
+    {
+      "name": "production-files-0-public-390.png",
+      "bytes": 88540,
+      "sha256": "8faf4cb3ffb2f61aa47d82daf7bfa17e66c2fe65db59f58e97a36edf3608a405"
+    },
+    {
+      "name": "production-files-0-internal-desktop.png",
+      "bytes": 253651,
+      "sha256": "7f932125a499ef1ff5ef8e756603a09f790250e733d1e0e4e984c956880e8303"
+    },
+    {
+      "name": "production-files-0-internal-390.png",
+      "bytes": 84509,
+      "sha256": "0f35395dfc35258c07695af6b00fc4849ab3cd4a72563b055ff13724fb7cb78b"
+    },
+    {
+      "name": "production-files-1-public-desktop.png",
+      "bytes": 255106,
+      "sha256": "b0d52de09469c237e450caf3c078940a4f3c7b82f894823f206439e50f37d4fc"
+    },
+    {
+      "name": "production-files-1-public-390.png",
+      "bytes": 88533,
+      "sha256": "c5b6e6363066c1a60874b9214a10bc88e42aafd7397f20dd833093caa030eaf6"
+    },
+    {
+      "name": "production-files-1-internal-desktop.png",
+      "bytes": 254926,
+      "sha256": "33eb25d571bb3b36c14da689a72e7b97980bcbbe5518d3e5fd652970d187fb6a"
+    },
+    {
+      "name": "production-files-1-internal-390.png",
+      "bytes": 84489,
+      "sha256": "5f5dbfc69bba74cde8dbeec3fe1c15c8d0d07d4a0d507cfaedf6c17b4ce6e73f"
+    }
+  ]
+}
