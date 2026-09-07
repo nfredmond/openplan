@@ -19,6 +19,20 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- Engagement workflow development retains campaign definitions, retry receipts and
+  private moderation history, and adds queued PDF/XLSX/ZIP review files through the
+  existing Documents worker and Reports. Acceptance is in progress on an isolated
+  development branch; this entry does not declare a release or human usability pass.
+- Engagement requires these additive migrations before application and worker updates:
+  `20260908000001_engagement_record_custody.sql`,
+  `20260908000002_engagement_configuration_versions.sql`,
+  `20260908000003_engagement_public_copy_guards.sql`,
+  `20260908000004_engagement_report_jobs.sql`,
+  `20260908000005_engagement_report_delivery.sql`, and
+  `20260908000006_engagement_survey_receipts.sql`.
+  Historical contributions without a retained configuration remain explicitly unavailable.
+  Campaign PDF rendering uses installed Chrome to preserve multilingual text and maps.
+
 - OWP preparation development adds immutable extraction versions, structured funding,
   staffing and match calculations, draft recovery, and retained revision-specific
   HTML/PDF/XLSX rendering in the Documents worker. Engineering acceptance is still

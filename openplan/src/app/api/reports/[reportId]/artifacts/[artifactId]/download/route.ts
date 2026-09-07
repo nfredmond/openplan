@@ -1,3 +1,4 @@
+import { downloadEngagementReview } from "@/lib/engagement/review-export-download";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
@@ -116,6 +117,9 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
   if (!artifact) {
     return NextResponse.json({ error: "Artifact not found" }, { status: 404 });
   }
+
+  const engagementJobId = artifact.metadata_json?.engagementReviewJobId;
+  if (typeof engagementJobId === "string") return downloadEngagementReview(supabase, engagementJobId, "pdf", { reportId: report.id });
 
   const storagePath = typeof artifact.storage_path === "string" ? artifact.storage_path.trim() : "";
 

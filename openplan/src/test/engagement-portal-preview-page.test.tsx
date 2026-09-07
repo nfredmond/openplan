@@ -64,6 +64,7 @@ function fakeQuery(record: RecordedRead) {
     in: (column: string, values: unknown) => typeof q;
     order: () => typeof q;
     limit: () => typeof q;
+    range: (from: number, to: number) => typeof q;
     maybeSingle: () => Promise<{ data: Row | null; error: { message: string } | null }>;
     then: (
       resolve: (value: { data: Row[] | null; error: { message: string } | null }) => unknown
@@ -79,6 +80,7 @@ function fakeQuery(record: RecordedRead) {
     },
     order: () => q,
     limit: () => q,
+    range: () => q,
     maybeSingle: async () => {
       const { data, error } = resolveRows();
       return { data: data?.[0] ?? null, error };

@@ -1,0 +1,40 @@
+[
+  {
+    "mutation": "harmless SQL comment",
+    "outcome": "SURVIVED",
+    "expected": "SURVIVED",
+    "evidence": []
+  },
+  {
+    "mutation": "immutable configuration/history",
+    "outcome": "KILLED",
+    "expected": "KILLED",
+    "evidence": [
+      "ERROR:  immutable configuration accepted overwrite"
+    ]
+  },
+  {
+    "mutation": "mandatory review reason",
+    "outcome": "KILLED",
+    "expected": "KILLED",
+    "evidence": [
+      "ERROR:  publication without a reason succeeded"
+    ]
+  },
+  {
+    "mutation": "public export inclusion",
+    "outcome": "KILLED",
+    "expected": "KILLED",
+    "evidence": [
+      "ERROR:  public report includes pending content"
+    ]
+  },
+  {
+    "mutation": "frozen report snapshot",
+    "outcome": "KILLED",
+    "expected": "KILLED",
+    "evidence": [
+      "ERROR:  export snapshot accepted overwrite"
+    ]
+  }
+]

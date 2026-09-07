@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Loader2, ShieldAlert, Trash2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ type BulkItem = {
   title: string | null;
   status: string;
   source_type: string;
+  updated_at: string;
 };
 
 type CategoryOption = {
@@ -31,8 +32,10 @@ export function EngagementBulkModeration({
   categories: CategoryOption[];
 }) {
   const router = useRouter();
+  const selectedVersions = useRef(new Map<string, string>());
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isProcessing, setIsProcessing] = useState(false);
+  const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
 
@@ -44,14 +47,18 @@ export function EngagementBulkModeration({
       const next = new Set(prev);
       if (next.has(id)) {
         next.delete(id);
+        selectedVersions.current.delete(id);
       } else {
         next.add(id);
+        const item = items.find((item) => item.id === id);
+        if (item) selectedVersions.current.set(id, item.updated_at);
       }
       return next;
     });
-  }, []);
+  }, [items]);
 
   const selectAll = useCallback((subset: BulkItem[]) => {
+    selectedVersions.current = new Map(subset.map((item) => [item.id, item.updated_at]));
     setSelectedIds(new Set(subset.map((i) => i.id)));
   }, []);
 
@@ -61,6 +68,10 @@ export function EngagementBulkModeration({
 
   async function bulkUpdateStatus(newStatus: string) {
     if (selectedIds.size === 0) return;
+    if (!reason.trim()) { setError("Enter a review reason for these exact selected contributions."); return; }
+    if ([...selectedIds].some((id) => !items.some((item) => item.id === id && item.updated_at === selectedVersions.current.get(id)))) {
+      setError("The selection changed. Clear it and select the current contributions again."); return;
+    }
     setError(null);
     setResult(null);
     setIsProcessing(true);
@@ -74,7 +85,7 @@ export function EngagementBulkModeration({
         const response = await fetch(`/api/engagement/campaigns/${campaignId}/items/${itemId}`, {
           method: "PATCH",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ status: newStatus }),
+          body: JSON.stringify({ status: newStatus, expectedUpdatedAt: selectedVersions.current.get(itemId), moderationNotes: reason }),
         });
 
         if (response.ok) {
@@ -112,6 +123,9 @@ export function EngagementBulkModeration({
         </span>
       </div>
 
+      <label className="mt-4 block text-sm">Review reason for selected contributions
+        <textarea className="mt-1 block w-full rounded border p-2" value={reason} onChange={(event) => setReason(event.target.value)} maxLength={2000} />
+      </label>
       <div className="mt-4 flex flex-wrap gap-2">
         <Button
           type="button"

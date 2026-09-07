@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import {
@@ -40,6 +41,8 @@ const paramsSchema = z.object({
 });
 
 const submitSchema = z.object({
+  configurationVersionId: z.string().uuid().optional(),
+  requestId: z.string().uuid().optional(),
   categoryId: z.string().uuid().optional(),
   // E6 — when present, this submission is a reply to an approved top-level
   // comment. Validated (approved, same campaign, itself top-level) below.
@@ -177,7 +180,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const { data: campaign, error: campaignError } = await supabase
       .from("engagement_campaigns")
-      .select("id, workspace_id, title, status, allow_public_submissions, submissions_closed_at, demographics_enabled")
+      .select("id, workspace_id, title, status, allow_public_submissions, submissions_closed_at, demographics_enabled, configuration_version_id, participation_starts_at, participation_ends_at")
       .eq("share_token", parsedParams.data.shareToken)
       .eq("status", "active")
       .maybeSingle();
@@ -194,8 +197,30 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Campaign not found or not publicly available" }, { status: 404 });
     }
 
+    const requestHash = createHash("sha256").update(JSON.stringify(parsed.data)).digest("hex");
+    const receiptRequestId = parsed.data.requestId;
+    const receiptCampaignId = campaign.id;
+    async function retainedReceipt() {
+      if (!receiptRequestId) return null;
+      const saved = await supabase.from("engagement_items").select("id, request_sha256, created_at")
+        .eq("campaign_id", receiptCampaignId).eq("request_id", receiptRequestId).maybeSingle();
+      if (saved.error) return NextResponse.json({ error: "Could not verify your previous submission. Keep your draft and retry." }, { status: 503 });
+      if (!saved.data) return null;
+      if (saved.data.request_sha256 !== requestHash) return NextResponse.json({ error: "This request identifier already belongs to different feedback. Keep that receipt and start a new contribution." }, { status: 409 });
+      return NextResponse.json({ success: true, submissionId: saved.data.id, receivedAt: saved.data.created_at, reviewStatus: "received", replayed: true }, { status: 200 });
+    }
+    const previousReceipt = await retainedReceipt();
+    if (previousReceipt) return previousReceipt;
+
     if (!campaign.allow_public_submissions || campaign.submissions_closed_at) {
       return NextResponse.json({ error: "This campaign is not currently accepting public submissions" }, { status: 403 });
+    }
+
+    if ((campaign.participation_starts_at && Date.parse(campaign.participation_starts_at) > Date.now()) || (campaign.participation_ends_at && Date.parse(campaign.participation_ends_at) <= Date.now())) {
+      return NextResponse.json({ error: "This campaign is outside its participation dates." }, { status: 403 });
+    }
+    if (parsed.data.configurationVersionId && parsed.data.configurationVersionId !== campaign.configuration_version_id) {
+      return NextResponse.json({ error: "The campaign questions or instructions changed. Your draft is retained. Reload and review them before sending." }, { status: 409 });
     }
 
     // What a participant marked has to be somewhere this consultation is about
@@ -344,6 +369,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
       ? "Auto-flagged because the hidden website field was completed."
       : safety.autoFlagReason;
 
+    if (parsed.data.requestId && (safety.isDuplicate || safety.isRateLimited)) {
+      const racingReceipt = await retainedReceipt();
+      if (racingReceipt) return racingReceipt;
+    }
+
     if (safety.isRateLimited) {
       return NextResponse.json(
         { error: "Too many recent submissions from this connection. Please wait a few minutes and try again." },
@@ -373,6 +403,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       .from("engagement_items")
       .insert({
         campaign_id: campaign.id,
+        configuration_version_id: parsed.data.configurationVersionId ?? null,
+        request_id: parsed.data.requestId ?? null,
+        request_sha256: parsed.data.requestId ? requestHash : null,
         category_id: parsed.data.categoryId ?? null,
         parent_item_id: parentItemId,
         title: parsed.data.title?.trim() || null,
@@ -391,6 +424,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       .select("id, created_at")
       .single();
 
+    if (insertError?.code === "23505" && parsed.data.requestId) {
+      const concurrentReceipt = await retainedReceipt();
+      if (concurrentReceipt) return concurrentReceipt;
+    }
     if (insertError || !item) {
       audit.error("engagement_item_insert_failed", {
         campaignId: campaign.id,
@@ -451,6 +488,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         success: true,
         message: "Thank you for your feedback. Your submission will be reviewed by the project team.",
         submissionId: item.id,
+        receivedAt: item.created_at,
         reviewStatus: autoFlagReason ? "flagged" : "pending",
       },
       { status: 201 }

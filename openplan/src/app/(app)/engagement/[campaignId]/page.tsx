@@ -1,3 +1,7 @@
+import { EngagementCategoryEditor } from "@/components/engagement/engagement-category-editor";
+import { SurveyReviewQueue } from "@/components/engagement/survey-review-queue";
+import { EngagementReviewFiles } from "@/components/engagement/engagement-review-files";
+import { readEveryPage } from "@/lib/supabase/paged-read";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
@@ -87,6 +91,8 @@ import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 import { PlanningContextStripForProject } from "@/components/projects/planning-context-strip";
 
 type CampaignRow = {
+  participation_starts_at: string | null;
+  participation_ends_at: string | null;
   id: string;
   workspace_id: string;
   project_id: string | null;
@@ -160,7 +166,7 @@ export default async function EngagementCampaignDetailPage({
 
   const { data: campaignData, error: campaignError } = await supabase
     .from("engagement_campaigns")
-    .select("id, workspace_id, project_id, rtp_cycle_id, rtp_cycle_chapter_id, title, summary, status, engagement_type, share_token, public_description, allow_public_submissions, submissions_closed_at, demographics_enabled, representativeness_json, ai_synthesis_json, ai_synthesized_at, created_at, updated_at, accessibility_contact_label, accessibility_contact_email, accessibility_contact_phone, accessibility_alternate_formats")
+    .select("id, workspace_id, project_id, rtp_cycle_id, rtp_cycle_chapter_id, title, summary, status, engagement_type, participation_starts_at, participation_ends_at, share_token, public_description, allow_public_submissions, submissions_closed_at, demographics_enabled, representativeness_json, ai_synthesis_json, ai_synthesized_at, created_at, updated_at, accessibility_contact_label, accessibility_contact_email, accessibility_contact_phone, accessibility_alternate_formats")
     .eq("id", campaignId)
     .maybeSingle();
 
@@ -224,13 +230,13 @@ export default async function EngagementCampaignDetailPage({
       .eq("campaign_id", campaign.id)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true }),
-    supabase
+    readEveryPage((from, to) => supabase
       .from("engagement_items")
       .select(
         "id, campaign_id, category_id, title, body, submitted_by, status, source_type, moderation_notes, latitude, longitude, geometry, photo_path, votes_count, parent_item_id, metadata_json, created_at, updated_at"
       )
       .eq("campaign_id", campaign.id)
-      .order("updated_at", { ascending: false }),
+      .order("updated_at", { ascending: false }).order("id", { ascending: true }).range(from, to)).then((result) => ({ data: result.complete ? result.rows : [], error: result.complete ? null : result.error ?? { message: "The complete contribution list could not be loaded." } })),
     supabase.from("projects").select("id, name").eq("workspace_id", campaign.workspace_id).order("updated_at", { ascending: false }),
     loadCoveredProjectReports(supabase, campaign.workspace_id, reportProjects),
     // The RTP cycle (and chapter, when one is targeted) this campaign feeds.
@@ -888,7 +894,7 @@ export default async function EngagementCampaignDetailPage({
           </div>
 
           <div className="mt-5">
-            <EngagementCategoryCreator campaignId={campaign.id} />
+            {canManageContextLayers ? <EngagementCategoryCreator campaignId={campaign.id} /> : null}
           </div>
 
           {categoriesUnreadable ? (
@@ -934,6 +940,7 @@ export default async function EngagementCampaignDetailPage({
                     <MetaItem>{category.approvedCount} approved</MetaItem>
                     <MetaItem>Last activity {fmtDateTime(category.lastActivityAt)}</MetaItem>
                   </MetaList>
+                  {canManageContextLayers && categories?.find(row => row.id === category.categoryId) ? <EngagementCategoryEditor key={categories.find(row => row.id === category.categoryId)!.updated_at} campaignId={campaign.id} category={categories.find(row => row.id === category.categoryId)!} /> : null}
                 </div>
               ))}
 
@@ -1039,6 +1046,7 @@ export default async function EngagementCampaignDetailPage({
       </PageTabPanel>
 
       <PageTabPanel tabKey="responses" active={activeTab === "responses"}>
+        {canManageContextLayers ? <SurveyReviewQueue campaignId={campaign.id} /> : null}
         <div className="mt-6 space-y-6">
         <EngagementNotificationsInbox campaignId={campaign.id} initialNotifications={notifications} />
 
@@ -1109,7 +1117,7 @@ export default async function EngagementCampaignDetailPage({
           </article>
         ) : null}
 
-        {(items?.length ?? 0) > 0 && (
+        {canManageContextLayers && (items?.length ?? 0) > 0 && (
           <EngagementBulkModeration
             campaignId={campaign.id}
             items={(items ?? []) as Array<{
@@ -1119,6 +1127,7 @@ export default async function EngagementCampaignDetailPage({
               title: string | null;
               status: string;
               source_type: string;
+              updated_at: string;
             }>}
             categories={((categories ?? []) as Array<{ id: string; label: string }>).map((c) => ({
               id: c.id,
@@ -1129,6 +1138,7 @@ export default async function EngagementCampaignDetailPage({
 
         {items?.length ? (
           <EngagementItemRegistry
+            canWrite={canManageContextLayers}
             items={(recentItems as Array<{
               id: string;
               campaign_id: string;
@@ -1390,6 +1400,7 @@ export default async function EngagementCampaignDetailPage({
       </PageTabPanel>
 
       <PageTabPanel tabKey="record" active={activeTab === "record"}>
+        <EngagementReviewFiles campaignId={campaign.id} />
         <div className="mt-6 space-y-6">
         <CampaignHandoffReadinessSection
           handoffReadiness={handoffReadiness}

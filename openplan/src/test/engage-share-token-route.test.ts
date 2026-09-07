@@ -40,7 +40,7 @@ const fakeSupabase = {
     }
     if (table === "engagement_items") {
       // select → eq(campaign_id) → eq(status) → order(created_at) → limit(100)
-      return { select: () => ({ eq: () => ({ eq: () => ({ order: () => ({ limit: itemsResolve }) }) }) }) };
+      return { select: () => ({ eq: () => ({ eq: () => ({ order: () => ({ order: () => ({ range: itemsResolve }) }) }) }) }) };
     }
     throw new Error(`Unexpected table: ${table}`);
   }),

@@ -29,7 +29,11 @@ const itemSelectMock = vi.fn(() => ({ eq: itemEqIdMock }));
 const itemSingleMock = vi.fn();
 const itemInsertSelectMock = vi.fn(() => ({ single: itemSingleMock }));
 const itemInsertMock = vi.fn(() => ({ select: itemInsertSelectMock }));
-const itemUpdateEqMock = vi.fn().mockResolvedValue({ error: null });
+const itemUpdatedMock = vi.fn();
+const itemUpdateProjectionMock = vi.fn(() => ({ maybeSingle: itemUpdatedMock }));
+const itemUpdateVersionMock = vi.fn(() => ({ select: itemUpdateProjectionMock }));
+const itemUpdateScopeMock = vi.fn(() => ({ eq: itemUpdateVersionMock }));
+const itemUpdateEqMock = vi.fn(() => ({ eq: itemUpdateScopeMock }));
 const itemUpdateMock = vi.fn(() => ({ eq: itemUpdateEqMock }));
 
 const mockAudit = {
@@ -84,6 +88,7 @@ import { PATCH as patchItem } from "@/app/api/engagement/campaigns/[campaignId]/
 describe("engagement category and item routes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    itemUpdatedMock.mockResolvedValue({ data: { id: "66666666-6666-4666-8666-666666666666", updated_at: "2026-09-06T12:01:00+00:00" }, error: null });
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
     authGetUserMock.mockResolvedValue({
@@ -145,6 +150,7 @@ describe("engagement category and item routes", () => {
 
     itemMaybeSingleMock.mockResolvedValue({
       data: {
+        updated_at: "2026-09-06T12:00:00+00:00", status: "pending", body: "Original feedback", title: "Crossing issue", submitted_by: null, photo_path: null,
         id: "66666666-6666-4666-8666-666666666666",
         campaign_id: "11111111-1111-4111-8111-111111111111",
         category_id: "55555555-5555-4555-8555-555555555555",
@@ -210,7 +216,7 @@ describe("engagement category and item routes", () => {
       new NextRequest("http://localhost/api/engagement/campaigns/1/items/1", {
         method: "PATCH",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ status: "approved" }),
+        body: JSON.stringify({ expectedUpdatedAt: "2026-09-06T12:00:00+00:00", status: "approved", moderationNotes: "Reviewed" }),
       }),
       {
         params: Promise.resolve({
@@ -230,6 +236,7 @@ describe("engagement category and item routes", () => {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
+          expectedUpdatedAt: "2026-09-06T12:00:00+00:00",
           title: "Reclassified crossing issue",
           body: "Drivers roll the stop line and block the school crosswalk.",
           submittedBy: "Workshop attendee",
@@ -250,6 +257,9 @@ describe("engagement category and item routes", () => {
     );
 
     expect(response.status).toBe(200);
+    expect(itemSelectMock).toHaveBeenCalledWith("id, campaign_id, category_id, updated_at, status, title, body, submitted_by, photo_path, geometry, latitude, longitude");
+    expect(itemUpdateVersionMock).toHaveBeenCalledWith("updated_at", "2026-09-06T12:00:00+00:00");
+    expect(itemUpdateProjectionMock).toHaveBeenCalledWith("id, updated_at");
     expect(itemUpdateMock).toHaveBeenCalledWith(
       expect.objectContaining({
         title: "Reclassified crossing issue",
@@ -264,4 +274,17 @@ describe("engagement category and item routes", () => {
       })
     );
   });
+  it("refuses a stale version before writing and a lost concurrent update", async () => {
+    const call = (expectedUpdatedAt: string) => patchItem(new NextRequest("http://localhost/api/engagement/campaigns/1/items/1", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ expectedUpdatedAt, status: "approved", moderationNotes: "Reviewed" }) }), { params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111", itemId: "66666666-6666-4666-8666-666666666666" }) });
+    expect((await call("2026-09-05T12:00:00+00:00")).status).toBe(409);
+    expect(itemUpdateMock).not.toHaveBeenCalled();
+    itemUpdatedMock.mockResolvedValueOnce({ data: null, error: null });
+    expect((await call("2026-09-06T12:00:00+00:00")).status).toBe(409);
+  });
+  it("refuses approval without a review reason", async () => {
+    const response = await patchItem(new NextRequest("http://localhost/api/engagement/campaigns/1/items/1", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ expectedUpdatedAt: "2026-09-06T12:00:00+00:00", status: "approved" }) }), { params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111", itemId: "66666666-6666-4666-8666-666666666666" }) });
+    expect(response.status).toBe(400);
+    expect(itemUpdateMock).not.toHaveBeenCalled();
+  });
+
 });

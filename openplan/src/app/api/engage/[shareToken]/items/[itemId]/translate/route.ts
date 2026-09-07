@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -74,7 +75,7 @@ async function resolveApprovedItem(
 
   const { data: item, error: itemError } = await supabase
     .from("engagement_items")
-    .select("id, title, body, metadata_json")
+    .select("id, title, body, metadata_json, parent_item_id")
     .eq("id", itemId)
     .eq("campaign_id", campaign.id)
     .eq("status", "approved")
@@ -88,6 +89,10 @@ async function resolveApprovedItem(
     return { ok: false, response: NextResponse.json({ error: "Feedback item not found" }, { status: 404 }) };
   }
 
+  if (item.parent_item_id) {
+    const parent = await supabase.from("engagement_items").select("id").eq("id", item.parent_item_id).eq("campaign_id", campaign.id).eq("status", "approved").is("parent_item_id", null).maybeSingle();
+    if (parent.error || !parent.data) return { ok: false, response: NextResponse.json({ error: "Feedback item not found" }, { status: 404 }) };
+  }
   return {
     ok: true,
     item: {
@@ -100,11 +105,13 @@ async function resolveApprovedItem(
   };
 }
 
-function readCachedTranslation(metadata: Record<string, unknown>, language: TranslationLanguage): string | null {
+function readCachedTranslation(metadata: Record<string, unknown>, language: TranslationLanguage, sourceHash: string): string | null {
   const bag = metadata.ai_translations;
   if (!bag || typeof bag !== "object") return null;
   const value = (bag as Record<string, unknown>)[language];
-  return typeof value === "string" ? value : null;
+  if (!value || typeof value !== "object") return null;
+  const entry = value as Record<string, unknown>;
+  return entry.sourceHash === sourceHash && typeof entry.text === "string" ? entry.text : null;
 }
 
 export async function POST(request: NextRequest, context: RouteContext) {
@@ -147,7 +154,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     return await withWorkspaceIntegrationContext(item.workspaceId, async () => {
       // Cache hit: return without any model call or rate-limit charge.
-      const cached = readCachedTranslation(item.metadata, language);
+      const sourceHash = createHash("sha256").update(JSON.stringify([item.title, item.body])).digest("hex");
+      const cached = readCachedTranslation(item.metadata, language, sourceHash);
       if (cached !== null) {
         return NextResponse.json({ source: "cache", language, translated: cached }, { status: 200 });
       }
@@ -190,7 +198,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       // concurrent translations of the same comment into different languages can't
       // clobber each other's cache write. Non-fatal — we still return the
       // translation the caller just paid for even if the cache write fails.
-      const { error: cacheError } = await supabase.rpc("engagement_cache_item_translation", {
+      const { error: cacheError } = await supabase.rpc("engagement_cache_reviewed_translation", {
+        p_title: item.title, p_body: item.body, p_source_hash: sourceHash,
         p_item_id: item.id,
         p_language: language,
         p_translation: result.translated,
@@ -199,6 +208,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
         audit.warn("engagement_translation_cache_write_failed", { itemId: item.id, message: cacheError.message });
       }
 
+      const current = await resolveApprovedItem(supabase, audit, parsedParams.data.shareToken, parsedParams.data.itemId);
+      if (!current.ok) return current.response;
+      if (current.item.title !== item.title || current.item.body !== item.body) return NextResponse.json({ error: "This public copy changed during translation. Reload it." }, { status: 409 });
       return NextResponse.json({ source: "ai", language, translated: result.translated, caveat: result.caveat }, { status: 200 });
     });
   } catch (error) {

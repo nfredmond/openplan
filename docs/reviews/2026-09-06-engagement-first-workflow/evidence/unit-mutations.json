@@ -1,0 +1,71 @@
+[
+  {
+    "mutation": "harmless comment",
+    "outcome": "SURVIVED",
+    "expected": "SURVIVED",
+    "evidence": []
+  },
+  {
+    "mutation": "stale moderation",
+    "outcome": "KILLED",
+    "expected": "KILLED",
+    "evidence": [
+      "FAIL  src/test/engagement-items-route.test.ts > engagement category and item routes > refuses a stale version before writing and a lost concurrent update",
+      "AssertionError: expected 200 to be 409 // Object.is equality"
+    ]
+  },
+  {
+    "mutation": "concurrent write predicate",
+    "outcome": "KILLED",
+    "expected": "KILLED",
+    "evidence": [
+      "FAIL  src/test/engagement-items-route.test.ts > engagement category and item routes > PATCH /items updates moderation fields",
+      "AssertionError: expected \"vi.fn()\" to be called with arguments: [ 'updated_at', \u2026(1) ]"
+    ]
+  },
+  {
+    "mutation": "review reason",
+    "outcome": "KILLED",
+    "expected": "KILLED",
+    "evidence": [
+      "FAIL  src/test/engagement-items-route.test.ts > engagement category and item routes > refuses approval without a review reason",
+      "AssertionError: expected 200 to be 400 // Object.is equality"
+    ]
+  },
+  {
+    "mutation": "snapshot checksum",
+    "outcome": "KILLED",
+    "expected": "KILLED",
+    "evidence": [
+      "FAIL  src/test/engagement-review-export.test.ts > campaign review records > refuses corrupt snapshots and private records in public snapshots",
+      "AssertionError: expected [Function] to throw an error"
+    ]
+  },
+  {
+    "mutation": "public privacy",
+    "outcome": "KILLED",
+    "expected": "KILLED",
+    "evidence": [
+      "FAIL  src/test/engagement-review-export.test.ts > campaign review records > refuses corrupt snapshots and private records in public snapshots",
+      "AssertionError: expected [Function] to throw an error"
+    ]
+  },
+  {
+    "mutation": "long text missing parts",
+    "outcome": "KILLED",
+    "expected": "KILLED",
+    "evidence": [
+      "FAIL  src/test/engagement-review-export.test.ts > campaign review records > keeps literal spreadsheet text, repeated answers and complete multilingual long values",
+      "AssertionError: expected '\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\u2026' to be '\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\ud83d\ude42\u2026' // Object.is equality"
+    ]
+  },
+  {
+    "mutation": "false survey receipt",
+    "outcome": "KILLED",
+    "expected": "KILLED",
+    "evidence": [
+      "FAIL  src/test/survey-submit-route.test.ts > POST /api/engage/[shareToken]/survey/submit > honeypot cannot manufacture a receipt without valid stored answers",
+      "AssertionError: expected 201 to be 400 // Object.is equality"
+    ]
+  }
+]

@@ -69,6 +69,8 @@ type LinkedProjects =
   | { state: "ready"; ids: string[] };
 
 type Campaign = {
+  participation_starts_at?: string | null;
+  participation_ends_at?: string | null;
   id: string;
   title: string;
   summary: string | null;
@@ -87,6 +89,8 @@ export function EngagementCampaignControls({
   projects: ProjectOption[];
 }) {
   const router = useRouter();
+  const [participationStartsAt, setParticipationStartsAt] = useState(campaign.participation_starts_at?.slice(0,16) ?? "");
+  const [participationEndsAt, setParticipationEndsAt] = useState(campaign.participation_ends_at?.slice(0,16) ?? "");
   const [title, setTitle] = useState(campaign.title);
   const [summary, setSummary] = useState(campaign.summary ?? "");
   const [status, setStatus] = useState(campaign.status);
@@ -244,6 +248,8 @@ export function EngagementCampaignControls({
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
+          participationStartsAt: participationStartsAt ? new Date(`${participationStartsAt}Z`).toISOString() : null,
+          participationEndsAt: participationEndsAt ? new Date(`${participationEndsAt}Z`).toISOString() : null,
           title,
           summary: summary || null,
           status,
@@ -537,6 +543,10 @@ export function EngagementCampaignControls({
           </p>
         ) : null}
 
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="text-sm">Participation opens, UTC<input className="block w-full rounded border p-2" type="datetime-local" value={participationStartsAt} onChange={(event) => setParticipationStartsAt(event.target.value)} /></label>
+          <label className="text-sm">Participation closes, UTC<input className="block w-full rounded border p-2" type="datetime-local" value={participationEndsAt} onChange={(event) => setParticipationEndsAt(event.target.value)} /></label>
+        </div>
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           Save campaign

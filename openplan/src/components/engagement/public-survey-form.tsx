@@ -1533,11 +1533,13 @@ type DraftNotice =
  */
 export function PublicSurveyForm({
   shareToken,
+  configurationVersionId,
   questions,
   messages,
   previewMode = false,
 }: {
   shareToken: string;
+  configurationVersionId?: string | null;
   questions: PortalSurveyQuestion[];
   /**
    * Operator preview: render the survey exactly as a resident gets it, and send
@@ -1569,6 +1571,8 @@ export function PublicSurveyForm({
   const [submittedBy, setSubmittedBy] = useState("");
   const [website, setWebsite] = useState(""); // honeypot
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [receiptId, setReceiptId] = useState<string | null>(null);
+  const requestId = useRef<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<PortalDisclosureView | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -1611,6 +1615,14 @@ export function PublicSurveyForm({
   );
 
   const draftStorageKey = `openplan.survey.draft.${shareToken}`;
+  const localAnswerKey = `openplan.survey.answers.${shareToken}`;
+  const [localReady, setLocalReady] = useState(false);
+  const [localProblem, setLocalProblem] = useState<string | null>(null);
+  useEffect(() => {
+    if (!localReady || previewMode || localProblem) return;
+    try { localStorage.setItem(localAnswerKey, JSON.stringify({ version: 1, configurationVersionId, answers, submittedBy, receiptId, requestId: requestId.current })); }
+    catch { /* Server-side save remains available when browser storage is unavailable. */ }
+  }, [localReady, localProblem, localAnswerKey, previewMode, configurationVersionId, answers, submittedBy, receiptId]);
 
   /**
    * Browser storage, defensively.
@@ -1645,7 +1657,26 @@ export function PublicSurveyForm({
     if (previewMode) return;
     let cancelled = false;
     const token = readStoredToken();
-    if (!token) return;
+    let raw: string | null = null;
+    try { raw = localStorage.getItem(localAnswerKey); } catch { /* Storage may be disabled. */ }
+    if (raw) {
+      queueMicrotask(() => {
+        if (cancelled) return;
+        try {
+          const saved = JSON.parse(raw!);
+          if (saved.version !== 1 || !saved.answers || typeof saved.answers !== 'object' || Array.isArray(saved.answers) || typeof saved.submittedBy !== 'string' || (saved.receiptId && typeof saved.receiptId !== 'string') || (saved.requestId && typeof saved.requestId !== 'string')) throw new Error('Invalid saved answers');
+          setRestoredAnswers(saved.answers); setAnswers(saved.answers); setSubmittedBy(saved.submittedBy);
+          requestId.current = saved.requestId || null;
+          if (saved.receiptId) { setReceiptId(saved.receiptId); setSubmitted(true); }
+          setFormNonce(nonce => nonce + 1); setLocalReady(true);
+          if (saved.configurationVersionId && saved.configurationVersionId !== configurationVersionId) setDraftNotice({ kind: 'checkFailed' });
+          else setDraftNotice({ kind: 'restored', savedAt: null });
+          if (token) setResumeToken(token);
+        } catch { setLocalProblem('The saved survey on this computer could not be read. Download it before starting a new response.'); }
+      });
+      return () => { cancelled = true; };
+    }
+    if (!token) { queueMicrotask(() => { if (!cancelled) setLocalReady(true); }); return () => { cancelled = true; }; }
 
     void (async () => {
       try {
@@ -1684,7 +1715,7 @@ export function PublicSurveyForm({
         setDraftNotice({ kind: "restored", savedAt: payload.savedAt ?? null });
       } catch {
         if (!cancelled) setDraftNotice({ kind: "checkFailed" });
-      }
+      } finally { if (!cancelled) setLocalReady(true); }
     })();
 
     return () => {
@@ -1838,7 +1869,7 @@ export function PublicSurveyForm({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (previewMode) return;
+    if (previewMode || localProblem) return;
     setError(null);
     setFieldErrors({});
 
@@ -1863,11 +1894,17 @@ export function PublicSurveyForm({
     }
 
     setIsSubmitting(true);
+    if (!requestId.current) {
+      try { requestId.current = localStorage.getItem(`openplan-survey-request:${shareToken}`) || crypto.randomUUID(); localStorage.setItem(`openplan-survey-request:${shareToken}`, requestId.current); }
+      catch { requestId.current = crypto.randomUUID(); }
+    }
     try {
       const response = await fetch(`/api/engage/${shareToken}/survey/submit`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
+          requestId: requestId.current,
+          configurationVersionId: configurationVersionId || undefined,
           answers: payloadAnswers,
           submittedBy: submittedBy || undefined,
           // Names the draft this response finishes, so the server deletes it.
@@ -1877,8 +1914,8 @@ export function PublicSurveyForm({
           website,
         }),
       });
-      const payload = (await response.json()) as { error?: string; questionId?: string };
-      if (!response.ok) {
+      const payload = (await response.json()) as { error?: string; questionId?: string; sessionId?: string; success?: boolean };
+      if (!response.ok || payload.success !== true || !payload.sessionId) {
         // The route's validation messages are English literals (it returns a
         // `code` beside them, but the catalog has no key per
         // `SurveyAnswerErrorCode` yet — see the handoff). They are shown as the
@@ -1895,6 +1932,7 @@ export function PublicSurveyForm({
       writeStoredToken(null);
       setResumeToken(null);
       setDraftNotice(null);
+      setReceiptId(payload.sessionId);
       setSubmitted(true);
     } catch (submitError) {
       const fromServer = submitError instanceof Error ? submitError.message : "";
@@ -1993,6 +2031,7 @@ export function PublicSurveyForm({
   if (submitted) {
     return (
       <div className="public-success-state" {...rootLanguage}>
+        {receiptId ? <p lang="en" className="break-all">Receipt {receiptId}. <a className="underline" download={`survey-receipt-${receiptId}.json`} href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify({ sessionId: receiptId, answers }, null, 2))}`}>Save receipt</a></p> : null}
         <CheckCircle2 className="mx-auto h-9 w-9 text-[color:var(--pine)]" />
         <h3 className="mt-4 text-xl font-semibold text-foreground">
           <Copy of={portalMessageView(translator, "survey.received")} />
@@ -2013,6 +2052,9 @@ export function PublicSurveyForm({
           variant="outline"
           className="mt-5"
           onClick={() => {
+            requestId.current = null;
+            try { localStorage.removeItem(`openplan-survey-request:${shareToken}`); } catch {}
+            setReceiptId(null);
             setSubmitted(false);
             setAnswers({});
             // The previous response's restored answers must not seed the next
@@ -2034,6 +2076,8 @@ export function PublicSurveyForm({
 
   return (
     <form className="public-form-shell" onSubmit={handleSubmit} {...rootLanguage}>
+      <p className="mb-3 text-xs" lang="en">Answers and receipts are saved on this computer for recovery. Use “Save for later” to retain a server draft. On a shared computer, start a new response after saving your receipt.</p>
+      {localProblem ? <div role="alert" lang="en"><p>{localProblem}</p><Button type="button" onClick={() => { const raw=localStorage.getItem(localAnswerKey); if(!raw)return; const url=URL.createObjectURL(new Blob([raw],{type:'application/json'})); const link=document.createElement('a');link.href=url;link.download='unreadable-survey-draft.json';link.click();URL.revokeObjectURL(url); }}>Download saved survey</Button><Button type="button" onClick={() => { localStorage.removeItem(localAnswerKey);setLocalProblem(null);setLocalReady(true);requestId.current=null;setAnswers({});setRestoredAnswers({});setFormNonce(nonce=>nonce+1); }}>Start a new survey response</Button></div> : null}
       {hasUntranslatedCopy ? (
         <p
           className={cn(

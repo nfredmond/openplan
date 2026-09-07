@@ -295,7 +295,7 @@ describe("the map-first participant surface, with NO map key", () => {
    * away from a page a resident cannot use at all.
    */
   it("still accepts input, and still asks where", async () => {
-    const fetchMock = vi.fn(async () => ({ ok: true, json: async () => ({}) }) as unknown as Response);
+    const fetchMock = vi.fn(async () => ({ ok: true, json: async () => ({success:true, submissionId:"11111111-1111-4111-8111-111111111111"}) }) as unknown as Response);
     vi.stubGlobal("fetch", fetchMock);
 
     const PublicMapShell = await importShell();

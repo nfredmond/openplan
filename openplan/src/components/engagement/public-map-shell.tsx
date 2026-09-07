@@ -65,6 +65,7 @@ export type PublicMapShellItem = ParticipantMapItem & { parentItemId?: string | 
  */
 export function PublicMapShell({
   shareToken,
+  configurationVersionId,
   acceptingSubmissions,
   categories,
   items,
@@ -85,6 +86,7 @@ export function PublicMapShell({
   previewMode = false,
 }: {
   shareToken: string;
+  configurationVersionId?: string | null;
   acceptingSubmissions: boolean;
   categories: SidebarCategory[];
   /** Approved TOP-LEVEL items only; replies have no place on a map. */
@@ -433,7 +435,7 @@ export function PublicMapShell({
         ) : null}
 
         <PublicMapSidebar
-          shareToken={shareToken}
+          shareToken={shareToken} configurationVersionId={configurationVersionId}
           acceptingSubmissions={acceptingSubmissions}
           categories={categories}
           demographicsEnabled={demographicsEnabled}

@@ -39,6 +39,7 @@ type DestructiveKind =
  * still fails.
  */
 const ALLOWLIST: ReadonlyArray<{ file: string; kind: DestructiveKind; reason: string }> = [
+  { file: "20260908000005_engagement_report_delivery.sql", kind: "update", reason: "Adds XLSX and ZIP to the existing private report-artifacts bucket MIME list, preserving every existing type and unrestricted null settings. Changes no user files." },
   { file: "20260907000004_work_program_export_custody.sql", kind: "update", reason: "Adds text/html to the existing private Documents bucket MIME list; preserves all existing types and unrestricted null configuration. Does not modify user files." },
   { file: "20260907000005_work_program_recovery_forward_repair.sql", kind: "update", reason: "Idempotent forward repair of the same additive private-bucket MIME extension; no content or financial rows changed." },
   {

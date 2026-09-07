@@ -1,3 +1,4 @@
+import type { EngagementReviewSnapshot } from "./review-export";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { readEveryPage } from "@/lib/supabase/paged-read";
 import { isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
@@ -522,7 +523,7 @@ export async function loadApprovedSurveyAnswers(
         data: SurveyAnswerRow[] | null;
         error: { message: string } | null;
       }>
-  );
+  ).then((result) => ({ ...result, rows: result.rows.filter((row) => !(row.answer_json && typeof row.answer_json === "object" && "reviewed_redaction" in row.answer_json)) }));
 }
 
 // ── Full answer export (SENSITIVE; the door answer CONTENT leaves through) ──
@@ -1016,4 +1017,52 @@ export async function aggregateCampaignSurvey(
     questions: aggregated,
     error: definition.error ?? answers.error ?? approvedSessions.error ?? null,
   };
+}
+
+/** Idempotent public survey writes commit the session and all answers in one transaction. */
+export async function insertRetryableSurveyResponse(supabase: SupabaseClient, input: Parameters<typeof insertSurveyResponse>[1] & { requestId?: string; requestHash: string; configurationVersionId?: string }) {
+  const result = await supabase.rpc("submit_engagement_survey", {
+    p_campaign: input.campaignId, p_request: input.requestId ?? null, p_hash: input.requestHash, p_version: input.configurationVersionId ?? null,
+    p_session: { respondent_fingerprint: input.respondentFingerprint, submitted_by: input.submittedBy, status: input.status, metadata_json: input.metadata }, p_answers: input.answers,
+  });
+  return result.error || !result.data ? { ok: false as const, error: result.error?.message ?? "Survey could not be saved" } : { ok: true as const, sessionId: result.data as string };
+}
+
+/** Capability lookup returns a receipt only, never answers or private moderation. */
+export async function loadSurveyRequestReceipt(supabase: QueryClient, campaignId: string, requestId: string) {
+  return supabase.from("engagement_survey_response_sessions").select("id, request_sha256, created_at").eq("campaign_id", campaignId).eq("request_id", requestId).maybeSingle();
+}
+
+/** Staff caller must establish engagement.write before passing the privileged client. */
+export async function loadSurveyReviewPage(supabase: QueryClient, campaignId: string, page: number) {
+  const sessions = await supabase.from("engagement_survey_response_sessions").select("id, status, submitted_by, moderation_notes, configuration_version_id, created_at, updated_at", { count: "exact" })
+    .eq("campaign_id", campaignId).order("created_at", { ascending: true }).order("id").range(page * 20, page * 20 + 19);
+  if (sessions.error || !sessions.data) return { error: sessions.error?.message ?? "Response list unavailable" };
+  const ids = sessions.data.map((row) => row.id as string);
+  const answers = ids.length ? await pageSurveyRows<Record<string, unknown>>((from, to) => supabase.from("engagement_survey_answers").select("id, session_id, question_prompt_snapshot, question_type, answer_text, answer_json").eq("campaign_id", campaignId).in("session_id", ids).order("session_id").order("id").range(from, to)) : { rows: [], error: null };
+  if (answers.error) return { error: answers.error.message };
+  return { sessions: sessions.data, answers: answers.rows, total: sessions.count ?? 0, page };
+}
+
+type CampaignPublicCopyRow = Record<string, unknown>;
+
+/** Withdraw a public review file when any included public copy or thread parent is no longer publishable. */
+export async function publicReviewStillCurrent(service: SupabaseClient, snapshot: EngagementReviewSnapshot): Promise<boolean> {
+  async function matches(table: string, saved: CampaignPublicCopyRow[], fields: string[], state?: [string, string]): Promise<boolean> {
+    for (let offset = 0; offset < saved.length; offset += 100) {
+      const batch = saved.slice(offset, offset + 100);
+      const projection = [...new Set(['id', ...fields, ...(state ? [state[0]] : [])])].join(',');
+      const current = await (table === 'engagement_survey_response_sessions' ? service.from('engagement_survey_response_sessions').select(projection).eq('campaign_id', snapshot.campaign.id).in('id', batch.map(row => String(row.id))) : table === 'engagement_survey_answers' ? service.from('engagement_survey_answers').select(projection).eq('campaign_id', snapshot.campaign.id).in('id', batch.map(row => String(row.id))) : service.from(table).select(projection).eq('campaign_id', snapshot.campaign.id).in('id', batch.map(row => String(row.id))));
+      if (current.error || !current.data || current.data.length !== batch.length) return false;
+      const rows = current.data as unknown as CampaignPublicCopyRow[];
+      if (batch.some(row => !rows.some(now => now.id === row.id && (!state || now[state[0]] === state[1]) && fields.every(field => JSON.stringify(now[field]) === JSON.stringify(row[field]))))) return false;
+    }
+    return true;
+  }
+  if (!await matches('engagement_items', snapshot.items, ['title','body','submitted_by','photo_path','parent_item_id','geometry','latitude','longitude','category_id'], ['status','approved'])) return false;
+  const parents = [...new Set(snapshot.items.map(item => item.parent_item_id).filter(Boolean))].map(id => ({ id, parent_item_id: null }));
+  if (!await matches('engagement_items', parents, ['parent_item_id'], ['status','approved'])) return false;
+  if (!await matches('engagement_survey_response_sessions', snapshot.sessions, [], ['status','approved'])) return false;
+  if (!await matches('engagement_survey_answers', snapshot.answers, ['session_id','question_id','question_prompt_snapshot','question_type','answer_text','answer_json'])) return false;
+  return matches('engagement_closeloop_entries', snapshot.responses, ['theme_title','you_said','we_did','source_item_ids'], ['status','published']);
 }

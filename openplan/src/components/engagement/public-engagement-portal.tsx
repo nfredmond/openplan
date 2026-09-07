@@ -269,6 +269,7 @@ function PortalTabButton({
 
 export function PublicEngagementPortal({
   shareToken,
+  configurationVersionId,
   acceptingSubmissions,
   categories,
   approvedItems,
@@ -287,6 +288,7 @@ export function PublicEngagementPortal({
   previewMode = false,
 }: {
   shareToken: string;
+  configurationVersionId?: string | null;
   acceptingSubmissions: boolean;
   categories: CategoryOption[];
   approvedItems: ApprovedItem[];
@@ -924,6 +926,7 @@ export function PublicEngagementPortal({
                   component.
                 */}
                 <PortalSubmissionForm
+                  configurationVersionId={configurationVersionId}
                   shareToken={shareToken}
                   acceptingSubmissions={acceptingSubmissions}
                   categories={categories}
@@ -951,6 +954,7 @@ export function PublicEngagementPortal({
             {activeTab === "survey" && hasSurvey ? (
               acceptingSubmissions ? (
                 <PublicSurveyForm
+                  configurationVersionId={configurationVersionId}
                   shareToken={shareToken}
                   questions={surveyQuestions}
                   messages={messages}

@@ -41,6 +41,7 @@ export type SidebarCategory = PortalFormCategory;
  */
 export function PublicMapSidebar({
   shareToken,
+  configurationVersionId,
   acceptingSubmissions,
   categories,
   demographicsEnabled,
@@ -54,6 +55,7 @@ export function PublicMapSidebar({
   className,
 }: {
   shareToken: string;
+  configurationVersionId?: string | null;
   acceptingSubmissions: boolean;
   categories: SidebarCategory[];
   demographicsEnabled: boolean;
@@ -70,7 +72,7 @@ export function PublicMapSidebar({
 }) {
   return (
     <PortalSubmissionForm
-      shareToken={shareToken}
+      shareToken={shareToken} configurationVersionId={configurationVersionId}
       acceptingSubmissions={acceptingSubmissions}
       categories={categories}
       demographicsEnabled={demographicsEnabled}

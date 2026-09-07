@@ -37,7 +37,7 @@ vi.mock("@/lib/observability/audit", () => ({
 vi.mock("@/lib/engagement/survey-responses", () => ({
   loadSurveyDefinition: (...args: unknown[]) => loadSurveyDefinitionMock(...args),
   loadRecentFingerprintSessions: (...args: unknown[]) => loadRecentFingerprintSessionsMock(...args),
-  insertSurveyResponse: (...args: unknown[]) => insertSurveyResponseMock(...args),
+  insertRetryableSurveyResponse: (...args: unknown[]) => insertSurveyResponseMock(...args),
   deleteSurveyDraftByTokenHash: vi.fn(async () => ({ ok: true, removed: false })),
 }));
 

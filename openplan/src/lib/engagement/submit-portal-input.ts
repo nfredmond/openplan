@@ -32,6 +32,8 @@ export type PortalSubmissionDemographics = {
 
 export type PortalSubmissionInput = {
   shareToken: string;
+  requestId?: string;
+  configurationVersionId?: string | null;
   /** The required free text. Everything else on this object is optional. */
   body: string;
   categoryId?: string;
@@ -51,7 +53,7 @@ export type PortalSubmissionInput = {
 };
 
 export type PortalSubmissionResult =
-  | { ok: true }
+  | { ok: true; submissionId: string; receivedAt: string | null }
   | { ok: false; stage: "photo" | "submit" | "network"; serverMessage: string | null };
 
 /** Drop the empty strings a controlled input produces, so the API sees absent, not blank. */
@@ -76,8 +78,10 @@ function present(value: string | undefined | null): string | undefined {
 export async function submitPortalInput(input: PortalSubmissionInput): Promise<PortalSubmissionResult> {
   try {
     let photoPath: string | undefined;
+    const photoKey = input.requestId ? `openplan-engagement-photo:${input.shareToken}:${input.requestId}` : null;
+    try { photoPath = photoKey ? localStorage.getItem(photoKey) || undefined : undefined; } catch { /* Storage may be disabled. */ }
 
-    if (input.photoFile) {
+    if (input.photoFile && !photoPath) {
       const uploadResponse = await fetch(`/api/engage/${input.shareToken}/photo-upload`, {
         method: "POST",
         headers: { "content-type": input.photoFile.type },
@@ -88,6 +92,7 @@ export async function submitPortalInput(input: PortalSubmissionInput): Promise<P
         return { ok: false, stage: "photo", serverMessage: uploadPayload.error ?? null };
       }
       photoPath = uploadPayload.photoPath;
+      try { if (photoKey) localStorage.setItem(photoKey, photoPath); } catch { /* The in-memory draft still works. */ }
     }
 
     const demographics = input.demographics
@@ -109,6 +114,8 @@ export async function submitPortalInput(input: PortalSubmissionInput): Promise<P
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
+        requestId: input.requestId,
+        configurationVersionId: input.configurationVersionId || undefined,
         categoryId: present(input.categoryId),
         parentItemId: input.parentItemId || undefined,
         title: present(input.title),
@@ -121,12 +128,12 @@ export async function submitPortalInput(input: PortalSubmissionInput): Promise<P
       }),
     });
 
-    const payload = (await response.json()) as { error?: string };
-    if (!response.ok) {
+    const payload = (await response.json()) as { error?: string; success?: boolean; submissionId?: string; receivedAt?: string };
+    if (!response.ok || payload.success !== true || !payload.submissionId) {
       return { ok: false, stage: "submit", serverMessage: payload.error ?? null };
     }
 
-    return { ok: true };
+    return { ok: true, submissionId: payload.submissionId, receivedAt: payload.receivedAt ?? null };
   } catch {
     // A fetch that never completed, or a body that was not JSON. There is no
     // participant-facing wording from the server here, so the caller uses its

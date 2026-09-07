@@ -71,7 +71,7 @@ async function resolveVoteTarget(
   // through the vote endpoint.
   const { data: item, error: itemError } = await supabase
     .from("engagement_items")
-    .select("id, campaign_id, status")
+    .select("id, campaign_id, status, parent_item_id")
     .eq("id", itemId)
     .eq("campaign_id", campaign.id)
     .eq("status", "approved")
@@ -91,6 +91,10 @@ async function resolveVoteTarget(
     return { ok: false, response: NextResponse.json({ error: "Feedback item not found" }, { status: 404 }) };
   }
 
+  if (item.parent_item_id) {
+    const parent = await supabase.from("engagement_items").select("id").eq("id", item.parent_item_id).eq("campaign_id", campaign.id).eq("status", "approved").is("parent_item_id", null).maybeSingle();
+    if (parent.error || !parent.data) return { ok: false, response: NextResponse.json({ error: "Feedback item not found" }, { status: 404 }) };
+  }
   return { ok: true, campaignId: campaign.id, itemId: item.id };
 }
 

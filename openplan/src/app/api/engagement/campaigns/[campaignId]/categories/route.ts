@@ -1,3 +1,4 @@
+import { isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -121,4 +122,25 @@ export async function POST(request: NextRequest, context: RouteContext) {
     audit.error("category_create_unhandled_error", { durationMs: Date.now() - startedAt, error });
     return NextResponse.json({ error: "Unexpected error while creating engagement category" }, { status: 500 });
   }
+}
+
+/** Rename a category in place; configuration versions retain wording used by earlier contributions. */
+export async function PATCH(request: NextRequest, context: RouteContext) {
+  const audit = createApiAuditLogger("engagement.categories.edit", request);
+  const params = paramsSchema.safeParse(await context.params);
+  const body = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+  if (!body.ok) return body.response;
+  const parsed = createCategorySchema.extend({ categoryId: z.string().uuid(), expectedUpdatedAt: z.string().datetime({ offset: true }) }).safeParse(body.data);
+  if (!params.success || !parsed.success) return NextResponse.json({ error: "Category label and current version are required" }, { status: 400 });
+  const client = await createClient();
+  const { data: { user } } = await client.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const access = await loadCampaignAccess(client, params.data.campaignId, user.id, "engagement.write");
+  if (access.error || !access.allowed) return NextResponse.json({ error: "Staff access required" }, { status: 403 });
+  const result = await client.from("engagement_categories").update({ label: parsed.data.label, description: parsed.data.description || null, ...(parsed.data.color ? { color: parsed.data.color } : {}) })
+    .eq("campaign_id", params.data.campaignId).eq("id", parsed.data.categoryId).eq("updated_at", parsed.data.expectedUpdatedAt).select("id,updated_at").maybeSingle();
+  if (isWriteFailure(result.error)) { audit.error("category_edit_failed", { code: result.error?.code }); return NextResponse.json({ error: "Category could not be saved" }, { status: 500 }); }
+  if (writeMatchedNoRows(result)) return NextResponse.json({ error: "Category changed or access was revoked. Reload before editing." }, { status: 409 });
+  audit.info("category_edited", { categoryId: parsed.data.categoryId });
+  return NextResponse.json({ category: result.data });
 }

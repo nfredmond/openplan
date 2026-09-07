@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { parseEngagementGeometry } from "@/lib/engagement/geometry";
 import { ENGAGEMENT_PHOTO_MAX_BYTES } from "@/lib/engagement/photo";
 import {
   AGE_BANDS,
@@ -142,6 +143,7 @@ type StepId = "where" | "what" | "extras" | "you" | "send";
  */
 export function PortalSubmissionForm({
   shareToken,
+  configurationVersionId,
   acceptingSubmissions,
   categories,
   demographicsEnabled,
@@ -154,6 +156,7 @@ export function PortalSubmissionForm({
   className,
 }: {
   shareToken: string;
+  configurationVersionId?: string | null;
   acceptingSubmissions: boolean;
   categories: PortalFormCategory[];
   demographicsEnabled: boolean;
@@ -225,6 +228,11 @@ export function PortalSubmissionForm({
   const [raceEthnicity, setRaceEthnicity] = useState<string[]>([]);
   const [householdTenure, setHouseholdTenure] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [requestId, setRequestId] = useState("");
+  const [receipt, setReceipt] = useState<{ submissionId: string; receivedAt: string | null } | null>(null);
+  const [draftReady, setDraftReady] = useState(false);
+  const [draftWarning, setDraftWarning] = useState<string | null>(null);
+  const draftKey = `openplan-engagement-draft:${shareToken}:${parentItemId ?? "new"}`;
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<PortalDisclosureView | null>(null);
   /*
@@ -250,6 +258,41 @@ export function PortalSubmissionForm({
   const photoInputRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
 
+  useEffect(() => {
+    if (previewMode) return;
+    // Browser storage is an external system. Restore once per campaign/thread,
+    // before enabling writes, so an empty hydration state cannot erase a draft.
+    queueMicrotask(() => {
+      try {
+        const raw = localStorage.getItem(draftKey);
+        const saved = raw ? JSON.parse(raw) : null;
+        if (saved && (saved.version !== 1 || typeof saved.body !== "string" || typeof saved.requestId !== "string" || !/^[0-9a-f-]{36}$/i.test(saved.requestId) || [saved.whereWords,saved.categoryId,saved.title,saved.submittedBy].some(value => value != null && typeof value !== "string") || (saved.receipt && typeof saved.receipt.submissionId !== "string"))) throw new Error("Unrecognized draft");
+        setRequestId(saved?.requestId || crypto.randomUUID());
+        if (saved) {
+          setBody(saved.body); setWhereWords(saved.whereWords ?? ""); setCategoryId(saved.categoryId ?? "");
+          setTitle(saved.title ?? ""); setSubmittedBy(saved.submittedBy ?? "");
+          const parsedGeometry = saved.geometry ? parseEngagementGeometry(saved.geometry) : null;
+          if (parsedGeometry && !parsedGeometry.ok) throw new Error("Unreadable drawing");
+          setInlineGeometry(parsedGeometry?.ok ? parsedGeometry.geometry : null);
+          if (saved.receipt) { setReceipt(saved.receipt); setSubmitted(true); }
+          if (saved.configurationVersionId && saved.configurationVersionId !== configurationVersionId && !saved.receipt) setDraftWarning("The questions or categories changed since this draft. Review the current form and your answers before sending.");
+          else if (saved.hadPhoto && !saved.receipt) setDraftWarning("Your text and drawing were restored. Reattach any photograph before sending unless it was already uploaded.");
+        }
+        setDraftReady(true);
+      } catch {
+        setDraftWarning("This computer's saved draft could not be read. It has been kept. Download it before starting a new draft.");
+      }
+    });
+  }, [draftKey, previewMode, configurationVersionId]);
+
+  useEffect(() => {
+    if (!draftReady || previewMode || !requestId) return;
+    try {
+      localStorage.setItem(draftKey, JSON.stringify({ version: 1, configurationVersionId, requestId, body, whereWords, categoryId, title, submittedBy,
+        geometry: place.source === "stage" ? place.geometry ?? inlineGeometry : inlineGeometry, hadPhoto: Boolean(photoFile), receipt }));
+    } catch { /* Sending remains available when browser storage is disabled. */ }
+  }, [draftReady, previewMode, draftKey, configurationVersionId, requestId, body, whereWords, categoryId, title, submittedBy, place, inlineGeometry, photoFile, receipt]);
+
   const photoLimit = formatPortalMegabytes(ENGAGEMENT_PHOTO_MAX_BYTES, bcp47);
   const optionalHint = t("survey.optional");
 
@@ -261,11 +304,11 @@ export function PortalSubmissionForm({
     "where" step that offers a map that is not there.
   */
   const canDraw = place.source === "stage" ? place.mapAvailable : GEOMETRY_PICKER_CAN_DRAW;
-  const geometry = place.source === "stage" ? place.geometry : inlineGeometry;
+  const geometry = place.source === "stage" ? place.geometry ?? inlineGeometry : inlineGeometry;
 
   const clearGeometry = () => {
     if (place.source === "stage") place.onClearGeometry();
-    else setInlineGeometry(null);
+    setInlineGeometry(null);
   };
 
   /*
@@ -359,6 +402,11 @@ export function PortalSubmissionForm({
   }
 
   function resetForm() {
+    setRequestId(crypto.randomUUID());
+    setReceipt(null);
+    setDraftWarning(null);
+    setDraftReady(true);
+    setInlineGeometry(null);
     setSubmitted(false);
     setBody("");
     setWhereWords("");
@@ -429,6 +477,8 @@ export function PortalSubmissionForm({
 
     const result = await submitPortalInput({
       shareToken,
+      configurationVersionId,
+      requestId: requestId || undefined,
       body: composeBody(),
       categoryId,
       parentItemId,
@@ -445,6 +495,7 @@ export function PortalSubmissionForm({
     setIsSubmitting(false);
 
     if (result.ok) {
+      setReceipt({ submissionId: result.submissionId, receivedAt: result.receivedAt });
       setSubmitted(true);
       return;
     }
@@ -467,6 +518,13 @@ export function PortalSubmissionForm({
     setOperatorErrorDetail(result.serverMessage);
   }
 
+  if (!previewMode && !draftReady && draftWarning) return <div className="space-y-3 p-5" lang="en" role="alert">
+    <p>{draftWarning}</p><Button type="button" onClick={() => {
+      const raw = localStorage.getItem(draftKey) ?? "";
+      const link = document.createElement("a"); link.href = `data:application/json;charset=utf-8,${encodeURIComponent(raw)}`;
+      link.download = "unreadable-engagement-draft.json"; link.click();
+    }}>Download saved draft</Button><Button type="button" onClick={resetForm}>Start a new draft</Button></div>;
+
   if (!acceptingSubmissions) {
     return (
       <div className={cn("space-y-3 p-5", className)} data-testid="portal-sidebar-closed">
@@ -486,6 +544,8 @@ export function PortalSubmissionForm({
         {/* The one promise the agency must not let a resident infer wrongly:
             being read is not the same as being written back to. */}
         <p className="text-sm text-muted-foreground">{t("portal.followUpHint")}</p>
+        {receipt ? <div lang="en" className="break-all text-sm"><p>Receipt: {receipt.submissionId}</p><p>Received {receipt.receivedAt ?? "date unavailable"}. Receipt confirms storage. Awaiting review, published and answered are separate states.</p>
+          <a download={`engagement-receipt-${receipt.submissionId}.json`} href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify({ ...receipt, body: composeBody(), title, campaign: shareToken }, null, 2))}`} className="underline">Save receipt</a></div> : null}
         <Button type="button" variant="outline" className="min-h-11" onClick={resetForm}>
           {t("portal.shareAnother")}
         </Button>
@@ -693,6 +753,7 @@ export function PortalSubmissionForm({
       onSubmit={handleSubmit}
       data-testid="portal-guided-form"
     >
+      <p lang="en" className="px-5 text-xs text-muted-foreground">Text and drawings are saved on this computer for recovery. Photos may need to be reattached. {draftWarning}</p>
       {/*
         WHOSE COMMENT THIS ANSWERS, first in the form. A reply that lost its
         banner is a reply a resident cannot tell from a new comment, and the way

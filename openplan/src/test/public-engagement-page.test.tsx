@@ -131,7 +131,10 @@ const categoriesEqCampaignMock = vi.fn(() => ({ order: categoriesOrderSortMock }
 const categoriesSelectMock = vi.fn(() => ({ eq: categoriesEqCampaignMock }));
 
 const itemsLimitMock = vi.fn();
-const itemsOrderMock = vi.fn(() => ({ limit: itemsLimitMock }));
+const itemsOrderMock = vi.fn(() => ({ limit: itemsLimitMock, order: () => ({ range: async (from: number, to: number) => {
+  const result = await itemsLimitMock();
+  return { ...result, data: result.data?.slice(from, to + 1) ?? null };
+} }) }));
 const itemsEqStatusMock = vi.fn(() => ({ order: itemsOrderMock }));
 const itemsEqCampaignMock = vi.fn(() => ({ eq: itemsEqStatusMock }));
 const itemsSelectMock = vi.fn(() => ({ eq: itemsEqCampaignMock }));
@@ -1075,4 +1078,14 @@ describe("PublicEngagementPage", () => {
       expect(bundle.portalProps.readFailures.project).toBe(false);
     });
   });
+  it("returns a complete feed beyond the former 200-item cap and hides orphan replies", async () => {
+    const rows = Array.from({ length: 501 }, (_, index) => ({ id: `item-${index}`, body: `Contribution ${index}`, title: null, parent_item_id: null, category_id: null, created_at: "2026-09-06T12:00:00Z" }));
+    itemsLimitMock.mockResolvedValue({ data: [...rows, { ...rows[0], id: "orphan", parent_item_id: "withheld-parent" }], error: null });
+    const result = await loadPublicPortalResult("share-token-12345");
+    expect(result.status).toBe("ok");
+    if (result.status !== "ok") throw new Error("Portal unavailable");
+    expect(result.bundle.portalProps.approvedItems).toHaveLength(501);
+    expect(result.bundle.portalProps.approvedItems.some(item => item.id === "orphan")).toBe(false);
+  });
+
 });

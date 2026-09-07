@@ -15,7 +15,7 @@ vi.mock("@/lib/observability/audit", () => ({
 vi.mock("@/lib/engagement/survey-responses", () => ({
   loadSurveyDefinition: (...args: unknown[]) => loadSurveyDefinitionMock(...args),
   loadRecentFingerprintSessions: (...args: unknown[]) => loadRecentFingerprintSessionsMock(...args),
-  insertSurveyResponse: (...args: unknown[]) => insertSurveyResponseMock(...args),
+  insertRetryableSurveyResponse: (...args: unknown[]) => insertSurveyResponseMock(...args),
 }));
 
 import { POST } from "@/app/api/engage/[shareToken]/survey/submit/route";
@@ -56,9 +56,10 @@ describe("POST /api/engage/[shareToken]/survey/submit", () => {
     insertSurveyResponseMock.mockResolvedValue({ ok: true, sessionId: "sess-1" });
   });
 
-  it("honeypot → 201 without inserting", async () => {
+  it("honeypot cannot manufacture a receipt without valid stored answers", async () => {
     const res = await POST(req({ answers: [], website: "spam" }), params);
-    expect(res.status).toBe(201);
+    expect(res.status).toBe(400);
+    expect(await res.json()).not.toHaveProperty("success", true);
     expect(insertSurveyResponseMock).not.toHaveBeenCalled();
   });
 
