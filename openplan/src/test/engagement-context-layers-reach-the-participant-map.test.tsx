@@ -83,7 +83,8 @@ const mapboxMocks = vi.hoisted(() => {
     const self = { setDOMContent: vi.fn(() => self), setLngLat: vi.fn(() => self), addTo: vi.fn(() => self) };
     return self;
   });
-  const Marker = vi.fn(function MockMarker() {
+  const Marker = vi.fn(function MockMarker(options?: { element?: HTMLElement }) {
+    options?.element?.setAttribute("role", "img");
     const self = { remove: vi.fn(), setLngLat: vi.fn(() => self), setPopup: vi.fn(() => self), addTo: vi.fn(() => self) };
     return self;
   });
@@ -546,7 +547,11 @@ it("opens complete staff detail for point and shape selection without a duplicat
   const marker=mapboxMocks.Marker.mock.results[0].value;
   expect(marker.setPopup).not.toHaveBeenCalled();
   const element=(mapboxMocks.Marker.mock.calls[0] as unknown as [{element:HTMLElement}])[0].element;
+  expect(element).toHaveAttribute("role", "button");
+  const canvasClick = vi.fn();
+  const container = document.createElement("div"); container.append(element); container.addEventListener("click", canvasClick);
   act(()=>element.click()); expect(select).toHaveBeenLastCalledWith("point");
+  expect(canvasClick).not.toHaveBeenCalled();
   const before=mapboxMocks.Popup.mock.calls.length;
   act(()=>{const clicked=map.on.mock.calls.find(call=>call[0]==="click"&&call[1]==="engagement-shapes-line")?.[2] as (event:unknown)=>void;clicked({features:[{properties:{itemId:"route"}}],lngLat:{lng:1,lat:2}});});
   expect(select).toHaveBeenLastCalledWith("route"); expect(mapboxMocks.Popup).toHaveBeenCalledTimes(before);

@@ -304,7 +304,7 @@ export function LocationDisplayMap({
         }
       }
 
-      // Points stay markers with attached popups.
+      // Native review buttons open full detail; reading maps attach popups.
       pointItems.forEach((item) => {
         const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "min(300px, calc(100% - 24px))" }).setDOMContent(
           buildPopupContent(item, popupOptions)
@@ -313,7 +313,7 @@ export function LocationDisplayMap({
         const el = document.createElement(onSelectRef.current ? 'button' : 'div');
         if (onSelectRef.current) {
           el.setAttribute('type','button'); el.setAttribute('aria-label',`Review contribution ${item.title || item.id}`);
-          el.addEventListener('click',()=>onSelectRef.current?.(item.id));
+          el.addEventListener('click',(event)=>{event.stopPropagation();onSelectRef.current?.(item.id);});
         }
         el.className = 'w-4 h-4 rounded-full border-2 border-background shadow-sm cursor-pointer';
         el.style.backgroundColor = safeHexColor(item.color) ?? DEFAULT_MAP_COLOR;
@@ -322,7 +322,8 @@ export function LocationDisplayMap({
           .setLngLat([item.longitude, item.latitude])
           .addTo(map);
         // Staff review opens the full item beside the map. Reading maps retain popups.
-        if (!onSelectRef.current) marker.setPopup(popup);
+        if (onSelectRef.current) el.setAttribute("role", "button");
+        else marker.setPopup(popup);
 
         markersRef.current.push(marker);
       });

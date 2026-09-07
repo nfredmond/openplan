@@ -1,0 +1,27 @@
+{
+  "checks": [
+    "Invalid retained route is omitted from map markers",
+    "Keyboard map marker opens matching review detail",
+    "Linked staff map uses full detail without a duplicate popup",
+    "Pointer map selection retains the matching full review detail at390px",
+    "Linked map and list fit390px",
+    "Large campaign shows25items per page with complete1005count",
+    "Next page contains25distinct contributions",
+    "Review next follows the filtered list",
+    "Search resets pagination and returns the independently known last contribution"
+  ],
+  "console": [
+    "[.WebGL-0x27c4011c9200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x27c4011c9200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x27c4011c9200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x27c4011c9200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)",
+    "Image with src \"http://localhost:3225/api/engagement/campaigns/c2336c3c-95b1-4afd-a4b8-c13b3b9c098b/attachments?sessionId=f5f1d849-448e-4e88-b10f-cbfda2a07d0d&answerId=654ed8b1-e1bf-4b8b-8c0e-fd709505b028&index=0\" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: \"auto\"' or 'height: \"auto\"' to maintain the aspect ratio.",
+    "The resource http://localhost:3225/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1788810454092 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "The resource http://localhost:3225/_next/static/css/app/(app)/engagement/%5BcampaignId%5D/page.css?v=1788810456044 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "The resource http://localhost:3225/_next/static/media/36966cca54120369-s.p.woff2?v=1788810454092 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "The resource http://localhost:3225/_next/static/media/36966cca54120369-s.p.woff2?v=1788810454092 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "The resource http://localhost:3225/_next/static/css/app/(app)/engagement/%5BcampaignId%5D/page.css?v=1788810466440 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.",
+    "The resource http://localhost:3225/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1788810454092 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+  ],
+  "filteredText": "Page 1 of 1. 1 matching contributions."
+}
