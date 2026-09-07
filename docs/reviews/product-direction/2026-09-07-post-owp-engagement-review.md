@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-07
 review_by: 2026-10-05
-reviewed_commit: df3e3a66
+reviewed_commit: d5b5760b9f1ca58f337e69cfe3479b94a4796e5b
 current_release: v0.44.0
 independent_contexts: 2
 trigger: independent-whole-product-review-during-engagement-completion
@@ -67,3 +67,5 @@ v0.44 remains unreleased. Its nine complete and three partial historical journey
 Blind categories remain explicit: source reviews do not establish live access, artifact reconciliation does not establish readable geometry, sampled boundary containment is not a topology proof, browser automation does not establish human usefulness, native Calc is not Microsoft Excel, scoped review copies are not full archive restoration, and local engineering/CI do not establish production commissioning or nationwide planning/scientific validity. Independent human task failure or contrary comparative evidence can overturn the usability recommendation. Preserve those unresolved tests instead of claiming superiority.
 
 Final artifact follow-up accepts all twelve corrected files,24 demo PDF pages,161 reconciliations and four native recalculations, plus independent GEOS containment of the new county polygon. A later screenshot read found the review/public maps still substituting an invalid historical shape with its legacy center. The df3e3a66 correction aligns markers, badges, counts and report meaning, including geometry-only public points, with harmless and targeted display mutations. This is a bounded correction within the same reviewed workflow; final application/CI results remain separate.
+
+The final390px screenshot exposed inner-panel overflow that the outer document-width assertion missed. The narrow review grid and fieldset now shrink to their container, history-button text wraps and map popups are bounded by their map. These localized layout corrections preserve the reviewed workflow, with actual inner-bound checks recorded separately at landing.
