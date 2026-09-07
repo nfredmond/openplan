@@ -1,0 +1,27 @@
+[
+  {
+    "case": "baseline",
+    "exit": 0,
+    "stderr": ""
+  },
+  {
+    "case": "harmless_html_comment",
+    "exit": 0,
+    "stderr": ""
+  },
+  {
+    "case": "changed_note",
+    "exit": 1,
+    "stderr": "node:assert:152\n  throw new AssertionError(obj);\n  ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n... Skipped lines\n\n  [\n    [\n      'Review record',\n      'Revision 7; history through event 9; internal copy'\n    ],\n...\n      'Note',\n+     'Please review this exact engineering exercise revision. Return it if the source-cost caveat or product schedule needs clarification.'\n-     'Changed note without a new snapshot. Return it if the source-cost caveat or product schedule needs clarification.'\n    ],\n    [\n      'Event 2: Return for changes',\n      'Revision e46a9a87-c131-4079-91b5-f43555332ed7; SHA-256 518f96f94a8e24a867fbf60bf10befc295b995ce28f87f5b553bcf96f5196e95; recorded 2026-09-07T22:20:05.537867+00:00; recorded by 7d0732e1-0b93-43ae-8863-0b9ff416a939'\n    ],\n"
+  },
+  {
+    "case": "public_internal_leak",
+    "exit": 1,
+    "stderr": "node:assert:152\n  throw new AssertionError(obj);\n  ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\ntrue !== false\n"
+  },
+  {
+    "case": "missing_cost_becomes_zero",
+    "exit": 1,
+    "stderr": "node:assert:152\n  throw new AssertionError(obj);\n  ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n0 !== null\n"
+  }
+]

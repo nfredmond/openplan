@@ -1,0 +1,32 @@
+[
+  {
+    "case": "harmless",
+    "expectedPass": true,
+    "exit": 0,
+    "passed": true
+  },
+  {
+    "case": "packet_detection",
+    "expectedPass": false,
+    "exit": 1,
+    "passed": false
+  },
+  {
+    "case": "evidence_detection",
+    "expectedPass": false,
+    "exit": 1,
+    "passed": false
+  },
+  {
+    "case": "lookup_failure",
+    "expectedPass": false,
+    "exit": 1,
+    "passed": false
+  },
+  {
+    "case": "packet_projection",
+    "expectedPass": false,
+    "exit": 1,
+    "passed": false
+  }
+]

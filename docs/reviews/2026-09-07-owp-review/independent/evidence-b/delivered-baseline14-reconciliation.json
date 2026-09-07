@@ -1,0 +1,32 @@
+[
+  {
+    "audience": "internal",
+    "snapshotHash": "6f15c9a3fe279a84f4bb9b3ad0d606e53b8ced551851c29689f1bdb6d1a8edc5",
+    "events": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "rowCount": 51,
+    "exactHtmlWorkbookRows": true,
+    "pdfNotesAndHashes": true,
+    "selectedCost": 76641.63,
+    "baselineCost": 76641.63,
+    "files": {
+      "html": "048d1a12c24126277cf3d663ea63e856fb41f45a130b38d511b58c4483614e50",
+      "pdf": "6c70550fdcf47add0365f291e09bd0f753618130296375a7a3ab543d18781c6e",
+      "xlsx": "8d3088820d6c74c4ccb6ede88760a6eb2566ddfc8476da464487c20f26181dbf"
+    }
+  }
+]
