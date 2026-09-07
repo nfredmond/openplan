@@ -175,7 +175,7 @@ export default async function EngagementCampaignDetailPage({
   // facts and the page now says whichever is true.
   if (campaignError) {
     return (
-      <section className="module-page">
+      <section className="module-page grid-cols-[minmax(0,1fr)]">
         <div className="mx-auto w-full max-w-2xl">
           <StateBlock
             tone="danger"
@@ -610,7 +610,7 @@ export default async function EngagementCampaignDetailPage({
     campaign.status === "draft" ? "setup" : "responses",
   );
   return (
-    <section className="module-page">
+    <section className="module-page grid-cols-[minmax(0,1fr)]">
       <CartographicSurfaceWide /><PlanningContextStripForProject requestedProjectId={query.projectId} project={project} error={projectResult.error} className="mb-4" />
       <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/engagement" className="transition hover:text-foreground">
@@ -747,7 +747,7 @@ export default async function EngagementCampaignDetailPage({
       />
 
       <PageTabPanel tabKey="setup" active={activeTab === "setup"}>
-        <div className="mt-6 space-y-6">
+        <div className="mt-6 min-w-0 space-y-6">
         {/*
           CONSOLE ORDER IS THE WORKFLOW ORDER. Setting a campaign up — taking
           it public, writing the survey, closing the loop — comes before the
@@ -1017,7 +1017,7 @@ export default async function EngagementCampaignDetailPage({
 
       <PageTabPanel tabKey="responses" active={activeTab === "responses"}>
         {canManageContextLayers ? <SurveyReviewQueue campaignId={campaign.id} /> : null}
-        <div className="mt-6 space-y-6">
+        <div className="mt-6 min-w-0 space-y-6">
         <EngagementNotificationsInbox campaignId={campaign.id} initialNotifications={notifications} />
 
         {locatedItems.length > 0 ? (
@@ -1155,7 +1155,7 @@ export default async function EngagementCampaignDetailPage({
       </PageTabPanel>
 
       <PageTabPanel tabKey="analysis" active={activeTab === "analysis"}>
-        <div className="mt-6 space-y-6">
+        <div className="mt-6 min-w-0 space-y-6">
         <CrashCorroborationPanel
           {...crashCorroboration}
           moderationHref={`/engagement/${campaign.id}?tab=responses`}
@@ -1347,7 +1347,7 @@ export default async function EngagementCampaignDetailPage({
 
       <PageTabPanel tabKey="record" active={activeTab === "record"}>
         <EngagementReviewFiles campaignId={campaign.id} categories={categories ?? []} />
-        <div className="mt-6 space-y-6">
+        <div className="mt-6 min-w-0 space-y-6">
         <CampaignHandoffReadinessSection
           handoffReadiness={handoffReadiness}
           publicReviewCopyGuard={publicReviewCopyGuard}

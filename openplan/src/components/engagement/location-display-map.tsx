@@ -287,7 +287,7 @@ export function LocationDisplayMap({
           if (!item) return;
           onSelectRef.current?.(item.id);
 
-          new mapboxgl.Popup({ offset: 12, maxWidth: "300px" })
+          new mapboxgl.Popup({ offset: 12, maxWidth: "min(300px, calc(100% - 24px))" })
             .setLngLat(event.lngLat)
             .setDOMContent(buildPopupContent(item, popupOptions))
             .addTo(map);
@@ -306,7 +306,7 @@ export function LocationDisplayMap({
 
       // Points stay markers with attached popups.
       pointItems.forEach((item) => {
-        const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "300px" }).setDOMContent(
+        const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "min(300px, calc(100% - 24px))" }).setDOMContent(
           buildPopupContent(item, popupOptions)
         );
 

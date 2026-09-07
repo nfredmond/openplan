@@ -153,7 +153,7 @@ function ItemRow({
   return (
     <div className="module-record-row" id={`contribution-${item.id}`}>
       <p className="text-xs text-muted-foreground">Contribution {item.id}. Earlier copies and review history are retained privately.</p>
-      <Button type="button" variant="outline" onClick={async () => {
+      <Button type="button" variant="outline" className="h-auto w-full whitespace-normal" onClick={async () => {
         const response = await fetch(`/api/engagement/campaigns/${item.campaign_id}/items/${item.id}/history`);
         const payload = await response.json();
         if (!response.ok) { setError(payload.error || "History could not be loaded."); return; }
@@ -547,7 +547,7 @@ export function EngagementItemRegistry({
           </button>)}</nav>
           {selected ? <div className="min-w-0 space-y-3">
             {!hasEngagementLocation(selected) ? <p>This contribution describes its location in words or has no mapped location.</p> : null}
-            <fieldset disabled={!canWrite}><ItemRow key={`${selected.id}:${selected.updated_at}`} item={selected} categories={categories} /></fieldset>
+            <fieldset className="min-w-0" disabled={!canWrite}><ItemRow key={`${selected.id}:${selected.updated_at}`} item={selected} categories={categories} /></fieldset>
             <Button type="button" variant="outline" disabled={filteredItems.indexOf(selected) === filteredItems.length - 1} onClick={() => {
               const next = filteredItems.indexOf(selected) + 1; setPage(Math.floor(next / 25)); setSelectedId(filteredItems[next]?.id ?? null);
             }}>Review next contribution</Button>

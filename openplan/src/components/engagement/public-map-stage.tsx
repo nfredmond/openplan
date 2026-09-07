@@ -612,7 +612,7 @@ export function PublicMapStage({
           const itemId = event.features?.[0]?.properties?.itemId as string | undefined;
           const item = itemId ? shapeItemById.get(itemId) : undefined;
           if (!item) return;
-          new mapboxgl.Popup({ offset: 12, maxWidth: "300px" })
+          new mapboxgl.Popup({ offset: 12, maxWidth: "min(300px, calc(100% - 24px))" })
             .setLngLat(event.lngLat)
             .setDOMContent(buildParticipantPopupContent(item, popupOptions))
             .addTo(map);
@@ -675,7 +675,7 @@ export function PublicMapStage({
       for (const marker of markersRef.current) marker.remove();
       markersRef.current = [];
       for (const item of pointItems) {
-        const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "300px" }).setDOMContent(
+        const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "min(300px, calc(100% - 24px))" }).setDOMContent(
           buildParticipantPopupContent(item, popupOptions)
         );
         const element = document.createElement("div");
