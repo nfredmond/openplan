@@ -98,7 +98,7 @@ export function WorkProgramSources({ programId, workspaceId, sources, documents,
       <summary className="cursor-pointer font-medium break-words">{source.title} · {source.source_role} · {source.page_count} PDF pages</summary>
       <div className="mt-4 space-y-4 text-sm">
         <p><a className="underline" href={`/api/knowledge-base/documents/${source.document_id}/download`}>Download retained original</a>{source.source_url && <> · <a className="underline" href={source.source_url} target="_blank" rel="noreferrer">Official source</a></>}</p>
-        <SelectField label="Review extraction version" value={source.selectedVersionId ?? ""} onChange={(id) => onSelectVersion(source.id, id || null)}><option value="">Original attachment · {source.extraction_json.parser}</option>{source.versions?.map((version) => <option key={version.id} value={version.id}>{version.created_at} · {version.extraction_json.parser}</option>)}</SelectField>
+        <SelectField label="Review extraction version" value={source.selectedVersionId ?? ""} onChange={(id) => onSelectVersion(source.id, id || null)}><option value="">Original attachment</option>{source.versions?.map((version) => <option key={version.id} value={version.id}>{version.created_at} · {version.extraction_json.parser}</option>)}</SelectField>
         <p className="break-all text-xs text-muted-foreground">Original SHA-256: {source.document_checksum}</p>
         {source.extraction_json.warnings.map((warning) => <p key={warning}>{warning}</p>)}
         {canWrite && source.extraction_json.elements.length > 0 && <Button type="button" variant="outline" className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => onPropose(source, source.extraction_json.elements)}>Add all work elements for review</Button>}

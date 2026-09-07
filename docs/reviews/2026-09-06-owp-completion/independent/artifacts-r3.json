@@ -1,0 +1,103 @@
+{
+  "revision": 3,
+  "status": "one_material_mutation_failure",
+  "source_reconstruction": "../financial-reference.json, ../staffing-reference.json, ../source-inventory.json",
+  "verified": {
+    "printed_source_cells": 831,
+    "html_source_cells": 831,
+    "proposed_allocations": 25,
+    "current_cost_rows": 41,
+    "staffing_quantities": 13,
+    "mapping_rows": 16,
+    "task_product_descriptions": 183,
+    "whole_dollar_budget_passages": 30,
+    "whole_dollar_amount_tokens": 158,
+    "formulas_forced_recalculated": 543,
+    "all_poisoned_numeric_caches_replaced": true,
+    "formula_errors": 0,
+    "duplicate_and_distinct_mutations": "pass",
+    "pdf_pages_contact_sheet_visually_inspected": 141,
+    "selected_summary_print_pages": 2
+  },
+  "r2_findings_recheck": [
+    {
+      "finding": "Contracted Tow Operator role",
+      "status": "corrected",
+      "evidence": "Tasks E86; original current PDF29"
+    },
+    {
+      "finding": "WE50 grouped EDCTC Staff role",
+      "status": "corrected",
+      "evidence": "all19 WE50 tasks; original current PDF18"
+    },
+    {
+      "finding": "prior WE263 schedule contaminated by role text",
+      "status": "corrected",
+      "evidence": "Tasks F181 February 2026"
+    },
+    {
+      "finding": "CTP matrix loss",
+      "status": "corrected",
+      "evidence": "original current PDF12 now retained as image on export PDF137"
+    },
+    {
+      "finding": "no export running page identity",
+      "status": "corrected",
+      "evidence": "Preparation revision3 - Page N of141 footers; original source headers/footers retained as quoted-source artifacts"
+    },
+    {
+      "finding": "wide workbook print usability",
+      "status": "resolved_for_explicit_selected_summary_workflow",
+      "evidence": "Print summary A1:D85 defined print area; two readable pages via typed UNO selection. Full workbook export remains51 pages and wide input sheets remain unsuitable for paper."
+    }
+  ],
+  "findings": [
+    {
+      "id": "R3-1",
+      "severity": "material",
+      "problem": "Clearing staffing quantity changes unknown to zero in printable summary",
+      "input": "Staffing!H2 cleared",
+      "formula": "Print summary!B73 references Staffing!H2 directly",
+      "expected": "Unresolved",
+      "actual": "0",
+      "evidence": "summary-mutation-results.json; mutation-output/quantity-blank.xlsx",
+      "control": "Editing4.4 to5.4 updates summary to5.4; duplicate mutation also updates summary duplicate row count."
+    }
+  ],
+  "printing": {
+    "actual_download": "/home/nathaniel/Downloads/work-program-revision-3.xlsx",
+    "byte_identity": "browser-arrival-identity.json",
+    "successful_method": "UNO selected A1:D85 on Print summary; FilterData explicitly typed []com.sun.star.beans.PropertyValue containing Selection; calculateAll and PDF storeToURL",
+    "pdf": "selected-typed-print/work-program-revision-3.pdf",
+    "images": [
+      "selected-typed-print/page-1.png",
+      "selected-typed-print/page-2.png"
+    ],
+    "visual_result": "Both selected-print pages individually inspected at1500px; all four columns readable, no clipping. Header is not repeated on second page.",
+    "harness_failures_preserved": [
+      "selected-print",
+      "selected-range-print",
+      "selected-media-print"
+    ],
+    "harness_failure_cause": "Untyped or misplaced Selection property was ignored; each exported51 pages. These attempts do not prove selected-sheet behavior.",
+    "boundary": "Selection export proves printable summary content and print range, not a GUI print dialog interaction. Root independently owns browser download journey. Whole editable workbook paper reproduction is outside stated supported workflow."
+  },
+  "preserved_boundaries": [
+    "Prior authority, proposed funding and actual remaining balances remain distinct.",
+    "WE200EIR and263 unresolved; omission from next year is not closeout.",
+    "No agency adoption, approval, actual expenditure or balance verification implied.",
+    "Original prior expenditure salary column differs one cent from sum; exact printed cells retained.",
+    "Earlier R1 plain-conversion recalculation claim corrected in export-review-r1/recalculation-correction.json; explicit calculateAll sentinel proof replaces that claim.",
+    "Source narrative references/appendix inventory are preserved with original page citations; incorporated content and reference-only content remain distinct."
+  ],
+  "evidence_files": [
+    "comparison.json",
+    "forced-recalculation-results.json",
+    "structural-comparison.json",
+    "task-source-comparison.json",
+    "whole-dollar-budget-comparison.json",
+    "duplicate-results.json",
+    "summary-mutation-results.json",
+    "browser-arrival-identity.json"
+  ]
+}

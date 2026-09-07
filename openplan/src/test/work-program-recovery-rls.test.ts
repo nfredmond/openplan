@@ -64,14 +64,20 @@ live("Documents and OWP recovery transactions",()=>{
   it("isolates extraction versions and denies direct mutation",()=>exercise(`
     SELECT public.enqueue_kb_extraction('@document','@owner','read','text',ARRAY['eng'],'http://local/callback');
     SELECT public.apply_kb_extraction_callback(${callback},${chunk},500);
+    DO $$ DECLARE s public.program_work_program_sources; extraction uuid; BEGIN
+      SELECT * INTO s FROM public.attach_program_work_program_source('@program','@owner','@document',repeat('a',64),'predecessor',NULL,2,'{"parser":"manual-page-review","pageCount":2,"elements":[],"warnings":[]}');
+      SELECT id INTO extraction FROM public.kb_document_extractions WHERE document_id='@document';
+      PERFORM public.version_work_program_extraction(s.id,'@owner',extraction,gen_random_uuid(),'{"parser":"manual-page-review","pageCount":2,"elements":[],"warnings":[]}');
+    END $$;
     SET LOCAL ROLE authenticated;
     SELECT set_config('request.jwt.claim.sub','@viewer',true);
-    DO $$ BEGIN IF (SELECT count(*) FROM public.kb_document_extractions WHERE document_id='@document')<>1 THEN RAISE EXCEPTION 'Viewer could not inspect pages'; END IF;
+    DO $$ BEGIN IF (SELECT count(*) FROM public.kb_document_extractions WHERE document_id='@document')<>1 OR (SELECT count(*) FROM public.program_work_program_extractions WHERE workspace_id='@workspace')<>1 THEN RAISE EXCEPTION 'Viewer could not inspect pages'; END IF;
+      BEGIN UPDATE public.program_work_program_extractions SET extraction_json='{}'; RAISE EXCEPTION 'Direct source version edit allowed'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
       BEGIN UPDATE public.kb_document_extractions SET pages_json='[]'; RAISE EXCEPTION 'Direct page edit allowed'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
       BEGIN PERFORM public.enqueue_kb_extraction('@document','@owner','spoofed','text',ARRAY['eng'],'http://local/callback'); RAISE EXCEPTION 'Actor spoof allowed'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
     END $$;
     SELECT set_config('request.jwt.claim.sub','@outsider',true);
-    DO $$ BEGIN IF EXISTS(SELECT 1 FROM public.kb_document_extractions WHERE document_id='@document') THEN RAISE EXCEPTION 'Foreign pages visible'; END IF; END $$; RESET ROLE;`));
+    DO $$ BEGIN IF EXISTS(SELECT 1 FROM public.kb_document_extractions WHERE document_id='@document') OR EXISTS(SELECT 1 FROM public.program_work_program_extractions WHERE workspace_id='@workspace') THEN RAISE EXCEPTION 'Foreign pages visible'; END IF; END $$; RESET ROLE;`));
   it("resumes expired export leases and retains one immutable artifact per revision and format",()=>exercise(`
     SELECT public.save_program_work_program_revision('@program','@owner',0,gen_random_uuid(),'{"schemaVersion":1,"elements":[]}');
     DO $$ DECLARE j public.kb_ocr_jobs; second public.kb_ocr_jobs; token uuid:=gen_random_uuid(); oldtoken uuid:=gen_random_uuid(); path text; BEGIN

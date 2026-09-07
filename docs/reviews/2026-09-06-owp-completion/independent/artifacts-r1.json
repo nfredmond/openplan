@@ -1,0 +1,810 @@
+{
+  "reviewed_revision": 1,
+  "result": "numeric_reference_matches_but_content_and_layout_failures_remain",
+  "evidence_scope": "Retained render-cache files only. Browser arrival, app workflow, authorization, adoption, actual balances and delivery completion not established.",
+  "mappings": [
+    {
+      "code": "50",
+      "decision": "changed",
+      "expected_state": "changed_candidate",
+      "source_page_errors": {},
+      "disposition_correct": true
+    },
+    {
+      "code": "100",
+      "decision": "changed",
+      "expected_state": "changed_candidate",
+      "source_page_errors": {},
+      "disposition_correct": true
+    },
+    {
+      "code": "110",
+      "decision": "changed",
+      "expected_state": "changed_candidate",
+      "source_page_errors": {},
+      "disposition_correct": true
+    },
+    {
+      "code": "120",
+      "decision": "changed",
+      "expected_state": "changed_candidate",
+      "source_page_errors": {},
+      "disposition_correct": true
+    },
+    {
+      "code": "122",
+      "decision": "changed",
+      "expected_state": "changed_candidate",
+      "source_page_errors": {},
+      "disposition_correct": true
+    },
+    {
+      "code": "125",
+      "decision": "changed",
+      "expected_state": "changed_candidate",
+      "source_page_errors": {},
+      "disposition_correct": true
+    },
+    {
+      "code": "130",
+      "decision": "changed",
+      "expected_state": "changed_candidate",
+      "source_page_errors": {},
+      "disposition_correct": true
+    },
+    {
+      "code": "200",
+      "decision": "changed",
+      "expected_state": "changed_candidate",
+      "source_page_errors": {},
+      "disposition_correct": true
+    },
+    {
+      "code": "221",
+      "decision": "changed",
+      "expected_state": "changed_candidate",
+      "source_page_errors": {},
+      "disposition_correct": true
+    },
+    {
+      "code": "300",
+      "decision": "changed",
+      "expected_state": "changed_candidate",
+      "source_page_errors": {},
+      "disposition_correct": true
+    },
+    {
+      "code": "310",
+      "decision": "changed",
+      "expected_state": "changed_candidate",
+      "source_page_errors": {},
+      "disposition_correct": true
+    },
+    {
+      "code": "330",
+      "decision": "changed",
+      "expected_state": "changed_candidate",
+      "source_page_errors": {},
+      "disposition_correct": true
+    },
+    {
+      "code": "400",
+      "decision": "changed",
+      "expected_state": "changed_candidate",
+      "source_page_errors": {},
+      "disposition_correct": true
+    },
+    {
+      "code": "410",
+      "decision": "changed",
+      "expected_state": "changed_candidate",
+      "source_page_errors": {},
+      "disposition_correct": true
+    },
+    {
+      "code": "200EIR",
+      "decision": "unresolved",
+      "expected_state": "unresolved",
+      "source_page_errors": {},
+      "disposition_correct": true
+    },
+    {
+      "code": "263",
+      "decision": "unresolved",
+      "expected_state": "unresolved",
+      "source_page_errors": {},
+      "disposition_correct": true
+    }
+  ],
+  "material_sections": [
+    {
+      "section": "2025/26: cover",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2025/26: commissioners and staff roster",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2025/26: committees",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2025/26: table of contents and appendix list",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2025/26: introduction",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2025/26: location and organization",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2025/26: study area map",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2025/26: staffing, duties and authorizing documents",
+      "represented": true,
+      "treatment": "incorporated",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2025/26: federal planning, agency coordination and community participation",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2025/26: state planning and programming",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2025/26: federal planning factors",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2025/26: planning flowchart",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2025/26: work element detail and historical comparison",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2025/26: revenue budget and fund conditions",
+      "represented": true,
+      "treatment": "incorporated",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2025/26: expenditure budget and fixed assets",
+      "represented": true,
+      "treatment": "incorporated",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2025/26: salary schedule",
+      "represented": true,
+      "treatment": "incorporated",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2025/26: appendix A Caltrans planning activities",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2025/26: appendix B SACOG planning activities",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2025/26: appendix C FHWA metropolitan planning certification",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2025/26: appendix D FTA certifications and assurances",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2025/26: appendix E California DOT debarment and suspension certification",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2025/26: appendix F goals and objectives",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2025/26: acronyms",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: cover",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: commissioners and staff roster",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: committees",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: table of contents and appendix list",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: introduction",
+      "represented": true,
+      "treatment": "incorporated",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: location and organization",
+      "represented": true,
+      "treatment": "incorporated",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: study area map",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: staffing, duties and authorizing documents",
+      "represented": true,
+      "treatment": "incorporated",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: federal planning, agency coordination and community participation",
+      "represented": true,
+      "treatment": "incorporated",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: state planning and programming",
+      "represented": true,
+      "treatment": "incorporated",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: federal planning factors",
+      "represented": true,
+      "treatment": "incorporated",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: federal planning emphasis areas",
+      "represented": true,
+      "treatment": "incorporated",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: planning flowchart",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: work element detail and historical comparison",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: revenue budget and fund conditions",
+      "represented": true,
+      "treatment": "incorporated",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: expenditure budget and fixed assets",
+      "represented": true,
+      "treatment": "incorporated",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: salary schedule",
+      "represented": true,
+      "treatment": "incorporated",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: appendix A Caltrans planning activities",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: appendix B SACOG planning activities",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: appendix C FHWA metropolitan planning certification",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: appendix D FTA certifications and assurances",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: appendix E California DOT debarment and suspension certification",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: appendix F goals and objectives",
+      "represented": true,
+      "treatment": "incorporated",
+      "missing_page_citations": []
+    },
+    {
+      "section": "2026/27: acronyms",
+      "represented": true,
+      "treatment": "reference_only",
+      "missing_page_citations": []
+    }
+  ],
+  "staff_allocations": [
+    {
+      "code": "100",
+      "source_person_months": "4.4",
+      "export_quantity": "4.4",
+      "matching": true,
+      "cost_treatment": "capacity_only",
+      "rate_basis": "unresolved"
+    },
+    {
+      "code": "110",
+      "source_person_months": "7.9",
+      "export_quantity": "7.9",
+      "matching": true,
+      "cost_treatment": "capacity_only",
+      "rate_basis": "unresolved"
+    },
+    {
+      "code": "120",
+      "source_person_months": "4.9",
+      "export_quantity": "4.9",
+      "matching": true,
+      "cost_treatment": "capacity_only",
+      "rate_basis": "unresolved"
+    },
+    {
+      "code": "122",
+      "source_person_months": "1.6",
+      "export_quantity": "1.6",
+      "matching": true,
+      "cost_treatment": "capacity_only",
+      "rate_basis": "unresolved"
+    },
+    {
+      "code": "125",
+      "source_person_months": ".1",
+      "export_quantity": "0.1",
+      "matching": true,
+      "cost_treatment": "capacity_only",
+      "rate_basis": "unresolved"
+    },
+    {
+      "code": "130",
+      "source_person_months": "1.6",
+      "export_quantity": "1.6",
+      "matching": true,
+      "cost_treatment": "capacity_only",
+      "rate_basis": "unresolved"
+    },
+    {
+      "code": "200",
+      "source_person_months": "7.4",
+      "export_quantity": "7.4",
+      "matching": true,
+      "cost_treatment": "capacity_only",
+      "rate_basis": "unresolved"
+    },
+    {
+      "code": "221",
+      "source_person_months": "2.5",
+      "export_quantity": "2.5",
+      "matching": true,
+      "cost_treatment": "capacity_only",
+      "rate_basis": "unresolved"
+    },
+    {
+      "code": "300",
+      "source_person_months": "9.4",
+      "export_quantity": "9.4",
+      "matching": true,
+      "cost_treatment": "capacity_only",
+      "rate_basis": "unresolved"
+    },
+    {
+      "code": "310",
+      "source_person_months": "8.6",
+      "export_quantity": "8.6",
+      "matching": true,
+      "cost_treatment": "capacity_only",
+      "rate_basis": "unresolved"
+    },
+    {
+      "code": "330",
+      "source_person_months": "5.4",
+      "export_quantity": "5.4",
+      "matching": true,
+      "cost_treatment": "capacity_only",
+      "rate_basis": "unresolved"
+    },
+    {
+      "code": "400",
+      "source_person_months": "2.8",
+      "export_quantity": "2.8",
+      "matching": true,
+      "cost_treatment": "capacity_only",
+      "rate_basis": "unresolved"
+    },
+    {
+      "code": "410",
+      "source_person_months": "4.0",
+      "export_quantity": "4",
+      "matching": true,
+      "cost_treatment": "capacity_only",
+      "rate_basis": "unresolved"
+    }
+  ],
+  "WE50": "Informational, excluded from proposed totals; indirect pool $549,277.70 allocated once. Missing descriptive breakdown is separately reported.",
+  "missing_predecessor_work": "200EIR and263 remain unresolved; no proposed money added. Whole-program total is Unresolved; known13 direct-work-element subtotals are $1,649,870.12.",
+  "numeric_comparison_file": "comparison.json",
+  "pdf_visual_scope": {
+    "contact_sheet_sweep_pages": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      95
+    ],
+    "full_resolution_pages": [
+      1,
+      26,
+      38,
+      60,
+      73,
+      84
+    ],
+    "caveat": "Contact-sheet sweep evaluates gross layout, not every character. Exact source cells compared independently in XLSX/HTML; PDF has verified display defects."
+  },
+  "workbook_visual_scope": "LibreOffice print render and representative pages inspected; did not open interactive Calc UI. Print layout failure makes full print-layout acceptance fail.",
+  "issues": [
+    {
+      "id": "r1-whole-dollar-budget-omission",
+      "kind": "source_content_loss",
+      "severity": "material",
+      "original_pages": {
+        "prior": [
+          18,
+          33
+        ],
+        "current": [
+          19,
+          34
+        ]
+      },
+      "export_pages": [
+        18,
+        19,
+        38,
+        39,
+        40,
+        41
+      ],
+      "finding": "Whole-dollar work-element budget tables omitted despite text saying both precisions retained. WE50 breakdowns and prior SACOG $103,000 split are absent."
+    },
+    {
+      "id": "r1-fund-condition-omission",
+      "kind": "source_content_loss",
+      "severity": "material",
+      "original_pages": {
+        "prior": [
+          52
+        ],
+        "current": [
+          49
+        ]
+      },
+      "finding": "Revenue source footnotes omitted despite incorporated treatment: RPA 25% carryover, RPA transit-administration/advocacy exclusion, STIP two-year use, grant 11.47% non-Federal local match and two-year encumbrance-use language. These are dated source claims, not independently revalidated legal guidance."
+    },
+    {
+      "id": "r1-graphic-matrix-meaning-loss",
+      "kind": "source_structure_loss",
+      "severity": "material",
+      "original_pages": {
+        "current": [
+          10,
+          12,
+          13
+        ]
+      },
+      "export_pages": [
+        5,
+        7,
+        8,
+        9
+      ],
+      "finding": "Organization chart reporting relationships and CTP/Federal Planning Factor matrix mark-to-work-element relationships are lost when source pages become plain prose. No source images are embedded."
+    },
+    {
+      "id": "r1-empty-schedule-fields",
+      "kind": "organization_and_editability",
+      "severity": "material",
+      "export_pages": [
+        20,
+        26,
+        38,
+        60
+      ],
+      "xlsx_locations": [
+        "Work elements I2:I17",
+        "Work elements M2:M17",
+        "Tasks and products E2:F33"
+      ],
+      "finding": "Designated responsibility/schedule fields blank. Original completion schedule and responsible roles survive inside products paragraphs instead."
+    },
+    {
+      "id": "r1-task-blocks",
+      "kind": "organization_and_editability",
+      "severity": "material",
+      "xlsx_locations": [
+        "Tasks and products A2:F33"
+      ],
+      "finding": "Each work element has one tasks row and one products row containing multiple numbered activities. Individual numbered activities are not separate editable records; page header/footer text remains in those blocks."
+    },
+    {
+      "id": "r1-overlapping-table-headers",
+      "kind": "pdf_layout",
+      "severity": "material",
+      "export_pages": [
+        83,
+        84,
+        85,
+        86,
+        87,
+        90,
+        91,
+        92
+      ],
+      "finding": "Long underscore-delimited source column identifiers overlap adjacent table headers; some extend past the right table edge."
+    },
+    {
+      "id": "r1-missing-bullet-glyphs",
+      "kind": "pdf_layout",
+      "severity": "minor",
+      "export_pages": [
+        2,
+        5,
+        6,
+        22,
+        29,
+        42,
+        60,
+        62
+      ],
+      "finding": "Private-use source bullet characters appear as empty square boxes."
+    },
+    {
+      "id": "r1-xlsx-print-layout",
+      "kind": "spreadsheet_print_layout",
+      "severity": "material",
+      "workbook_render_pages": [
+        1,
+        2,
+        5,
+        13,
+        21,
+        29
+      ],
+      "finding": "LibreOffice prints367 pages. Read me labels and meanings print on separate pages; work-element column bands separate identifiers from objectives/discussion. pageSetup fitToWidth=1 exists but pageSetUpPr fitToPage is absent; cause is inference, failure is observed."
+    },
+    {
+      "id": "r1-source-pages-in-body",
+      "kind": "pdf_navigation",
+      "severity": "minor",
+      "export_pages": [
+        3,
+        5,
+        19,
+        27,
+        30,
+        36,
+        40,
+        43,
+        46,
+        49,
+        52,
+        58,
+        61
+      ],
+      "finding": "Extracted source footers/headers interrupt prose. Proposal lacks its own visible running page numbers, so embedded source numbers can confuse navigation."
+    },
+    {
+      "id": "r1-duplicate-count-blank-task",
+      "severity": "material",
+      "finding": "Forced calculateAll gives all25 duplicate counts0 instead of cached1. Actual copied allocation with blank task ID fails detection: K2/K3/ReconciliationB5=0/0/0 rather than2/2/2.",
+      "evidence": "duplicate-results.json"
+    }
+  ],
+  "comparison_proof": {
+    "harmless_reference_note": "survived",
+    "one_cent_RPA_reference_mutation": "detected at prior WE100/RPA numeric value",
+    "blank_to_zero_mutation": "detected at prior WE100/LTF numeric value"
+  },
+  "blind_categories": [
+    "Financial comparison covers831 source rows deliberately retained by export; it does not prove omitted narrative budgets or source matrices are preserved. Those omissions were caught separately.",
+    "A matching source date or statement is not proof of present-day applicability, adoption, completion, or available money.",
+    "No browser delivery claim from these files."
+  ],
+  "recalculation_claim_correction": {
+    "prior_claim": "LibreOffice recalculated399 formulas without errors or changed results.",
+    "correction": "Unproved. --convert-to preserved numeric caches, so399 formula cells with unchanged cached values do not establish recalculation.",
+    "trigger": "Implementation reviewer deliberately poisoned cached numeric results with -999 and observed conversion preserve them.",
+    "valid_evidence_remaining": [
+      "831 source cells matched independently",
+      "25 proposed allocations and41 costs matched original source",
+      "13 staffing quantities and16 mappings matched",
+      "conversion compatibility observed, but numeric recalculation not yet established"
+    ],
+    "next_verification": "Explicit UNO document.calculateAll() on original r1 and a copy whose formula caches are all -999. Poisoned caches must be replaced with independently expected values.",
+    "resolution": "Original conversion-based claim remains invalid; explicit UNO calculateAll has now independently repaired all399 poisoned caches."
+  },
+  "explicit_recalculation_status": "proven_for_this_workbook",
+  "explicit_recalculation_evidence": "forced-recalculation-results.json",
+  "explicit_recalculation_found_defect": {
+    "finding": "Original duplicate-count formulas calculate0 for all25 original allocation rows and fail to detect a copied duplicate row with blank task ID.",
+    "evidence": "duplicate-results.json",
+    "candidate_repair": "Explicit empty-string criterion IF(Crow=\"\",\"\",Crow) repairs duplicate detection; duplicated rows count2 each and distinct-task control counts1 each.",
+    "repaired_export_status": "Only scratch candidate formulas tested; immutable r1 retains defect."
+  }
+}

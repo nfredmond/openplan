@@ -21,6 +21,14 @@ export async function formatWorkProgramWorkbook(zip:JSZip,book:WorkBook) {
   }
   xml=xml.replace(/<cellXfs count="\d+">[\s\S]*?<\/cellXfs>/,`<cellXfs count="${oldXfs.length+added.length}">${oldXfs.join("")}${added.join("")}</cellXfs>`);
   zip.file("xl/styles.xml",xml);
+  const summaryIndex=book.SheetNames.indexOf("Print summary");
+  if(summaryIndex>=0){
+    const workbookPart=zip.file("xl/workbook.xml");if(!workbookPart)throw new Error("Workbook metadata missing");
+    let metadata=await workbookPart.async("string");
+    if(metadata.includes("<bookViews>"))metadata=metadata.replace(/<workbookView\b([^>]*?)\/?>/,(_tag,attributes:string)=>`<workbookView${attributes.replace(/\s+(?:activeTab|firstSheet)="[^"]*"/g,"")} activeTab="${summaryIndex}" firstSheet="${summaryIndex}"/>`);
+    else metadata=metadata.replace("<sheets>",`<bookViews><workbookView activeTab="${summaryIndex}" firstSheet="${summaryIndex}"/></bookViews><sheets>`);
+    zip.file("xl/workbook.xml",metadata);
+  }
   for(const [index,name] of book.SheetNames.entries()) {
     const sheet=book.Sheets[name],path=`xl/worksheets/sheet${index+1}.xml`,part=zip.file(path);if(!part)throw new Error("Worksheet missing");
     let data=await part.async("string");
@@ -32,6 +40,7 @@ export async function formatWorkProgramWorkbook(zip:JSZip,book:WorkBook) {
     if (data.includes("<sheetPr")) data=data.replace(/<sheetPr([^>]*)\/>/, '<sheetPr$1></sheetPr>').replace(/<pageSetUpPr[^>]*\/>/g, "").replace('</sheetPr>','<pageSetUpPr fitToPage="1"/></sheetPr>');
     else data=data.replace(/(<worksheet[^>]*>)/, '$1<sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>');
     data=data.replace(/<sheetViews>[\s\S]*?<\/sheetViews>/,'<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/><selection pane="bottomLeft" activeCell="A2" sqref="A2"/></sheetView></sheetViews>');
+    if(summaryIndex>=0)data=data.replace('<sheetView workbookViewId="0">',`<sheetView workbookViewId="0" tabSelected="${index===summaryIndex?1:0}">`);
     // Protect identity and formula cells without a password. Reviewers can deliberately unprotect.
     data=data.replace('</sheetData>','</sheetData><sheetProtection sheet="1" objects="1" scenarios="1" selectLockedCells="0" selectUnlockedCells="0" autoFilter="0"/>');
     if(!data.includes('<pageSetup'))data=data.replace('</worksheet>','<pageMargins left="0.3" right="0.3" top="0.4" bottom="0.4" header="0.2" footer="0.2"/><pageSetup orientation="landscape" paperSize="1" fitToWidth="1" fitToHeight="0"/></worksheet>');

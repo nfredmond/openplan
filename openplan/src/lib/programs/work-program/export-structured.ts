@@ -99,7 +99,7 @@ export function buildStructuredWorkProgramWorkbook(revision: WorkProgramRevision
   p.costs.forEach((item, index) => { const row = index + 2, enabled = r.byElement.some((entry) => entry.id === item.elementId); formula(costs, `J${row}`, active(row), enabled ? 1 : 0); formula(costs, `K${row}`, `IF(J${row}=0,0,IF(ISNUMBER(F${row}),ROUND(F${row},2),"Unresolved"))`, enabled ? item.amount : 0); });
   p.staffing.forEach((item, index) => {
     const row = index + 2, values = r.staff[index];
-    formula(staffing, `S${row}`, `IF(NOT(ISNUMBER(H${row})),"Unresolved",IF(I${row}="hours",H${row},IF(AND(ISNUMBER(X${row}),X${row}>0,K${row}<>""),H${row}*X${row},"Unresolved")))`, values.hours);
+    formula(staffing, `S${row}`, `IF(OR(NOT(ISNUMBER(H${row})),H${row}<0),"Unresolved",IF(I${row}="hours",H${row},IF(AND(ISNUMBER(X${row}),X${row}>0,K${row}<>""),H${row}*X${row},"Unresolved")))`, values.hours);
     formula(staffing, `T${row}`, `IF(L${row}="capacity_only","",IF(AND(ISNUMBER(S${row}),ISNUMBER(M${row}),N${row}="labor_cost",O${row}<=F${row},P${row}>=G${row},R${row}<>"",V${row}>0),ROUND(S${row}*M${row},2),"Unresolved"))`, item.costTreatment === "capacity_only" ? "" : values.cost);
     formula(staffing, `U${row}`, active(row), r.byElement.some((entry) => entry.id === item.elementId) ? 1 : 0);
     formula(staffing, `Y${row}`, `IF(D${row}<>"",D${row},E${row})`, item.staffId ?? item.role);
@@ -162,9 +162,9 @@ export function buildStructuredWorkProgramWorkbook(revision: WorkProgramRevision
     printValue(person.role || person.staffId || "Unfilled role", `'Staffing'!H${index + 2}`, person.quantity, person.unit, `${person.periodStart} to ${person.periodEnd}; ${person.costTreatment}. No hours conversion inferred.`);
   });
   const printable = sheet("Print summary", ["Measure / source", "Value", "Unit / meaning", "Basis / limitation"], printRows, [36, 26, 22, 55]);
-  links.forEach(item => formula(printable, `B${item.row}`, item.target, item.value));
+  links.forEach(item => formula(printable, `B${item.row}`, item.target.startsWith("'Staffing'!H") ? `IF(OR(NOT(ISNUMBER(${item.target})),${item.target}<0),"Unresolved",${item.target})` : `IF(ISBLANK(${item.target}),"Unresolved",${item.target})`, item.value));
   book.Workbook = { ...book.Workbook, Names: [...(book.Workbook?.Names ?? []), { Name: "_xlnm.Print_Area", Sheet: book.SheetNames.indexOf("Print summary"), Ref: `'Print summary'!$A$1:$D$${printRows.length + 1}` }] };
-  book.Sheets["Read me"].B7.v += " Print the Print summary sheet; use the PDF for the full formatted program. Wide input tabs are designed for on-screen editing, not compressed page printing.";
+  book.Sheets["Read me"].B7.v += " Print the selected Print summary sheet; do not choose entire workbook. Use the PDF for the full formatted program. Wide input tabs are designed for on-screen editing, not compressed page printing.";
   // Explicit input tables already carry units. Cached formula values match the application calculation.
   void funds;
   return book;

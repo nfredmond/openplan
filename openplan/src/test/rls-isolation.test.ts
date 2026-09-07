@@ -199,6 +199,8 @@ const SERVICE_ONLY_TABLES = new Set(["billing_webhook_receipts"]);
 const DEDICATED_LIVE_RLS_PROBES = new Set([
   "program_work_program_sources",
   "program_work_program_revisions",
+  "kb_document_extractions",
+  "program_work_program_extractions",
   "modeling_distributed_work_loading_custody",
   "modeling_structural_demand_diagnosis_custody",
   "modeling_validation_assessments",
@@ -1648,6 +1650,8 @@ describe("workspace RLS isolation inventory", () => {
     expect([...DEDICATED_LIVE_RLS_PROBES]).toEqual([
       "program_work_program_sources",
       "program_work_program_revisions",
+  "kb_document_extractions",
+  "program_work_program_extractions",
       "modeling_distributed_work_loading_custody",
       "modeling_structural_demand_diagnosis_custody",
       "modeling_validation_assessments",

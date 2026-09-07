@@ -1,0 +1,40 @@
+# Independent intake, worker, permissions and recovery review, round 2
+
+Stable snapshot of the isolated OWP checkout, 2026-09-06. Every inspected file is copied under `snapshot/`; `sha256.json` records identity. This report and all probes are outside the source checkout. No source or database edits. Export retention was excluded as requested.
+
+## Findings requiring correction
+
+1. **P1, reproduced: the delivery thread can publish a result before its durable checkpoint.** `workers/ocr_worker/main.py:179-181` and `:289-291` put result/state on the shared job before calling persist. `result_delivery_loop:349` selects that shared undelivered state under its own lock, but the producing assignment and commit are not inside that lock. In `worker_probes.json`, a paused persistence write lets the real deliver_result call send success while the SQLite row still has no result. Death at that point loses the exact callback identity already delivered. Commit terminal result creation under the shared lock before making it visible to delivery, and serialize delivery per job. The immutable SQL receipt handles duplicates only after the worker has retained the identity being replayed.
+
+2. **P1, code-derived: legacy active OCR jobs cannot recover through the new poller.** Migration `20260907000001_document_extraction_recovery.sql:3-5` adds nullable source_checksum and dispatch_callback_url without reconciling existing rows. `extraction-jobs.ts:29` filters on an exact callback URL, excluding legacy NULL rows. `enqueue_kb_extraction` at SQL `:44-45` returns any active row unchanged. Retrying a migrated orphan returns the same undispatchable job. Cancel also only sets cancel_requested; the poller never sees that legacy row to make it terminal. Upgrade or explicitly retire old active jobs with a retryable explanation. Do not leave a preserved historical job blocking new authorized attempts indefinitely.
+
+3. **P1, reproduced with a mocked database: one unreadable original blocks a multi-workspace dispatch batch.** `lib/knowledge-base/extraction-jobs.ts:43-47` throws the whole request on a missing/changed original, invalid storage reference, or signing failure. Earlier good jobs have already had dispatch_after advanced, but their collected requests never return; later good jobs are never visited. `dispatch-probe.json` shows good job 1 checkpointed, bad job 2 throwing, zero returned requests, and job 3 never reached. Isolate per-job failures, record a reason/backoff on that job, and return other independently valid jobs. Authorization-query/database outage handling should remain explicit rather than treating errors as absence.
+
+4. **P1, code-derived: old partial index conflicts have no self-service recovery and lose the new app-side extraction version.** Callback SQL inserts a complete extraction, then `:96-98` refuses mismatching preexisting chunk text. The exception rolls back the extraction insert as well, despite the message claiming the retained extraction is available. A failed legacy document with partial chunks from an earlier extractor can permanently reject the same new output. The exact result remains in the worker, but app source review cannot read it. Provide a safe versioned index/recovery path that preserves legitimate cited chunks, or retain complete immutable page output independently and expose the index conflict as a recoverable state.
+
+## Additional permission and lifecycle gaps
+
+- **Cancellation stops application, but does not reach processing.** App `documents/[documentId]/ocr/route.ts:53` sets cancel_requested. Polling marks that job failed and omits it. No code sends the worker cancellation endpoint or includes cancellation state in a worker response. A queued/running job therefore continues using the computer until it finishes; the app will ignore its terminal output. Propagate cancellation to accepted worker jobs while retaining original/result custody.
+- **All successfully extracted Documents PDFs become undeletable, including uncited uploads.** New extraction document/job FKs at migration `00001:12-13` are restrictive, and the extraction table has no delete grant or cleanup RPC. Any successful or blank-page extraction prevents the existing Documents DELETE from deleting its original. If this universal retention is intended, document it and expose an archive action. If immutable retention applies to cited program sources, preserve normal removal of unreferenced temporary uploads through a safe dependency-aware path. This is a product consequence of the schema, not a claim that original protection is unsafe.
+- **Version listing silently caps historical extractions.** `documents/[documentId]/ocr/route.ts:35` reads all versions without pagination. Current `openplan/supabase/config.toml:14` caps responses at 1,000 rows. Source version loading is paginated elsewhere; apply the same pattern here or disclose a paginated API.
+- **Configuration reporting still describes the old push worker.** `isKbOcrWorkerConfigured` checks worker URL/token, while intake now depends on a worker configured to poll a dispatch URL and a callback token. This can report configured while no poller can retrieve jobs. At minimum make the capability notice describe queued/offline/unconfirmed worker availability accurately; app-side configuration alone does not prove a live worker.
+
+## Improvements confirmed in the snapshot
+
+The earlier retained-result replay persistence bug is fixed. An injected failure after HTTP success restores in-memory undelivered; `worker_probes.json` records this outcome. Work directories use private permissions and a persistent default; SQLite startup loads active jobs only and completed identity lookup reads disk. Independent delivery removes starvation behind long recognition work, subject to the new publication race above.
+
+The callback SQL now places receipt insertion, immutable page insertion, complete chunk checks, document state and job state in one transaction. A raised exception rolls everything back. It checks job/document workspace, current requester write membership, original checksum, worker reference, payload-bound replay, ordered pages and chunk scope. This is a materially stronger implementation than the former multi-request callback writes. Live SQL/RLS execution is still untested in this review.
+
+Source attachment can retain manually cited originals before text extraction. Source review reads immutable per-page extraction output, so OCR pages now reach the work-program parser. Source parsing gets separate immutable versions, and SQL checks version/original/workspace/checksum alignment. Preparation references include source and extraction IDs, and the save function rechecks linked staffing/contract workspace membership. Authenticated and service roles have SELECT only on immutable extraction tables; writes enter narrowly granted definer functions.
+
+## Evidence and limits
+
+`worker-tests.json`: five snapshot worker suites exit zero, including durable, HTTP/pipeline, intake, OCR and callbacks. Their direct assertions and the previous round's mutation controls establish that they can fail; they do not cover the new independent-thread result publication race.
+
+`worker_probes.json`: retained-result checkpoint failure recovery plus a controlled interleaving proving success publication before persistence. The race probe uses actual SQLite reads and actual delivery function, with only persistence scheduling and network return injected.
+
+`dispatch-probe.json`: actual transpiled pendingExtractionRequests, with mocked Supabase/storage dependencies, demonstrates whole-batch failure. This does not establish live database state or RLS.
+
+`real-poppler-probe.json`: actual installed Poppler extracted a synthetic two-page PDF and preserved its blank second page, reporting pdftotext 26.01.0. This is a clearly synthetic parser fixture, not a planning source or OCR accuracy test.
+
+No live migrations, databases, real OCR engine, browser journeys, deployment restore or export artifacts were exercised. Human agency review remains a normal downstream action, not an engineering-acceptance prerequisite.

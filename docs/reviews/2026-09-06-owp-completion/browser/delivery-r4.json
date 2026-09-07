@@ -1,0 +1,30 @@
+{
+  "origin": "http://127.0.0.1:3218",
+  "appBuild": "dcef9a03403a",
+  "revision": 4,
+  "width": 390,
+  "documentScrollWidth": 390,
+  "save": "keyboard Enter after recovered manual note",
+  "delivery": "authenticated application buttons, browser-created Downloads files",
+  "opened": "native PDF/LibreOffice artifact inspection; browser internal and file URLs blocked, not bypassed",
+  "files": [
+    {
+      "format": "pdf",
+      "filename": "work-program-revision-4.pdf",
+      "bytes": 5100429,
+      "sha256": "828dd649eec558ed29159bcb34b32fa486cfd3532a9b458a0d308c4d32c35aa0"
+    },
+    {
+      "format": "xlsx",
+      "filename": "work-program-revision-4.xlsx",
+      "bytes": 228209,
+      "sha256": "bdd838fbfc53af4e7321dff5be4919a7bb19f13f79a1487e3ead9ce87c69c688"
+    },
+    {
+      "format": "html",
+      "filename": "work-program-revision-4.html",
+      "bytes": 5133986,
+      "sha256": "04e5eed6fd4a5d60e677ae11adec64d7f51a336db1a0a0564cde1d543287fead"
+    }
+  ]
+}
