@@ -1,0 +1,84 @@
+{
+  "health": {
+    "status": "ok",
+    "service": "openplan",
+    "checkedAt": "2026-09-07T23:19:04.179Z",
+    "deployment": {
+      "commit": "b8e81af737e2",
+      "version": "0.44.0"
+    },
+    "checks": {
+      "app": "ok",
+      "database": "not_checked"
+    }
+  },
+  "checks": [
+    "stamped production build",
+    "keyboard form operation and exact-version unsent recovery through real navigation",
+    {
+      "layout": {
+        "width": 1440,
+        "documentWidth": 1440,
+        "overflow": []
+      }
+    },
+    "keyboard revision selection clears disclosure consent at 1440px",
+    {
+      "layout": {
+        "width": 390,
+        "documentWidth": 390,
+        "overflow": []
+      }
+    },
+    "keyboard revision selection clears disclosure consent at 390px",
+    "all nine final files received with independently accepted byte hashes",
+    {
+      "truncatedDownload": {
+        "intercepted": 1,
+        "corruptDownloads": 0,
+        "refusal": "The downloaded file differs from the saved artifact. No file was opened; retry preparation.",
+        "recovered": "5c147db28434297783498712a7af91d7e1afb9fe472188dd8693a81b575508b7"
+      }
+    },
+    "no console errors or uncaught exceptions in production navigation and downloads"
+  ],
+  "received": [
+    {
+      "name": "work-program-revision-9-review-14-internal.html",
+      "sha256": "d8ec7e5f676bb40495fc9f8e693f9a2c89e44ae2d2b75e57dac101a77e2ca278"
+    },
+    {
+      "name": "work-program-revision-9-review-14-internal.pdf",
+      "sha256": "5c147db28434297783498712a7af91d7e1afb9fe472188dd8693a81b575508b7"
+    },
+    {
+      "name": "work-program-revision-9-review-14-internal.xlsx",
+      "sha256": "3aaa06faef2dd501109d057e2c2d35ac78d5f901dfced08df9d6d4cce70c0b27"
+    },
+    {
+      "name": "work-program-revision-9-review-14-public.html",
+      "sha256": "1874115e837b20391c08c4e1cfbd363e6bb617c4aa13dad9b14abf2056ed337a"
+    },
+    {
+      "name": "work-program-revision-9-review-14-public.pdf",
+      "sha256": "c5348f8979dcea68f2768475ac3e076564099a2774336e43a1360a7f69cb9e85"
+    },
+    {
+      "name": "work-program-revision-9-review-14-public.xlsx",
+      "sha256": "cbdd349db88596e0143bf62bf815bcad6387f65b37f20d56c8a79a3cf6ba1a25"
+    },
+    {
+      "name": "work-program-revision-5-review-14-internal.html",
+      "sha256": "048d1a12c24126277cf3d663ea63e856fb41f45a130b38d511b58c4483614e50"
+    },
+    {
+      "name": "work-program-revision-5-review-14-internal.pdf",
+      "sha256": "6c70550fdcf47add0365f291e09bd0f753618130296375a7a3ab543d18781c6e"
+    },
+    {
+      "name": "work-program-revision-5-review-14-internal.xlsx",
+      "sha256": "8d3088820d6c74c4ccb6ede88760a6eb2566ddfc8476da464487c20f26181dbf"
+    }
+  ],
+  "errors": []
+}

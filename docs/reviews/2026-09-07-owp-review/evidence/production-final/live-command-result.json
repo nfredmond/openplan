@@ -1,0 +1,18 @@
+{
+  "target": "/home/nathaniel/.local/state/openplan/owp-review-verification",
+  "command": "npm run test:rls-live",
+  "shellTargetOmitted": true,
+  "testFiles": 22,
+  "testsPassed": 157,
+  "durationSeconds": 21.38,
+  "entryTestsPassed": 2,
+  "controls": [
+    "configured file",
+    "harmless comment",
+    "removed flag rejected",
+    "explicit override",
+    "absent local file"
+  ],
+  "lintExit": 0,
+  "blindCategory": "Does not constrain direct database commands or unconfigured default stacks."
+}

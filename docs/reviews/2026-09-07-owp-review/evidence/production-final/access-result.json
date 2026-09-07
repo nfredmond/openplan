@@ -1,0 +1,65 @@
+{
+  "build": "b8e81af737e2",
+  "checks": [
+    {
+      "label": "ordinary Documents review bytes",
+      "status": 200,
+      "expected": 200,
+      "locationPresent": false
+    },
+    {
+      "label": "ordinary Documents supporting bytes",
+      "status": 200,
+      "expected": 200,
+      "locationPresent": false
+    },
+    {
+      "label": "revoked ordinary review bytes",
+      "status": 404,
+      "expected": 404,
+      "locationPresent": false
+    },
+    {
+      "label": "revoked ordinary supporting bytes",
+      "status": 404,
+      "expected": 404,
+      "locationPresent": false
+    },
+    {
+      "label": "revoked review history",
+      "status": 404,
+      "expected": 404,
+      "locationPresent": false
+    },
+    {
+      "label": "revoked ordinary review bytes final",
+      "status": 404,
+      "expected": 404,
+      "locationPresent": false
+    },
+    {
+      "label": "revoked ordinary supporting bytes final",
+      "status": 404,
+      "expected": 404,
+      "locationPresent": false
+    },
+    {
+      "label": "revoked review history final",
+      "status": 404,
+      "expected": 404,
+      "locationPresent": false
+    },
+    {
+      "label": "390px real navigation and recovered unavailable reviewer removal",
+      "passed": true
+    },
+    {
+      "label": "restored reviewer supporting bytes",
+      "status": 200,
+      "expected": 200,
+      "locationPresent": false
+    }
+  ],
+  "membershipRestored": true,
+  "instrumentCorrection": "Playwright uncheck timed out after removing the element; direct click plus explicit absence check repeated the full scenario successfully."
+}
