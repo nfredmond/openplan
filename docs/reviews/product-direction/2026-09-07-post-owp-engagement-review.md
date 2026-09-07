@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-07
 review_by: 2026-10-05
-reviewed_commit: ac9d14495f6b3ad274a26a68a8452cf7e60bf80e
+reviewed_commit: bb55364c8fff0a8c5a18d9d98eac6e5b05149412
 current_release: v0.44.0
 independent_contexts: 2
 trigger: independent-whole-product-review-during-engagement-completion
@@ -75,3 +75,5 @@ The final linked-map correction uses full staff detail for point and shape selec
 Actual browser input exposed two Mapbox integration errors in the preceding correction: the library assigned image role to the native button and marker clicks also selected an overlapping route. The corrected button role and stopped click propagation have separate failing mutations and a successful nine-check desktop/390px journey. These factual corrections preserve the existing independent-review recommendation and are recorded through891d27b0. No human accessibility or comparative acceptance is inferred.
 
 Final evidence throughac9d1449: the d58370b8 source passes the full local QA gate, identified production map/list and narrow-panel journeys, and actual delivery of all twelve byte-identical accepted files. The source and migrations did not change while recording this evidence. The bounded engineering workflow is ready for landing after its required GitHub checks; human usefulness, comparative superiority, M9b/c and the separate v0.44 gate stay open.
+
+The later automatic PR review supplied four further contrary cases: missing new submission versions, cross-campaign/current-pointer drift, offset shifts during moderation and uploads outside participation dates. These are concrete defects within the independent reviews' existing configuration, participation and privacy concerns. The fixes and meaningful unit/SQL/live HTTP/feed failures are preserved throughbb55364c, with an eleventh additive migration. Prior green checks are not claimed for this new source. The same Engagement recommendation and whole-product scope remain; rebuilt acceptance and the populated upgrade must now cover this follow-up.
