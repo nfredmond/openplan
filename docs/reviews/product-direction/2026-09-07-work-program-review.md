@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-07
 review_by: 2026-10-05
-reviewed_commit: 59f82dfc
+reviewed_commit: c22184db
 current_release: v0.44.0
 independent_contexts: 2
 trigger: independent-whole-product-review-at-owp-review-amendment-milestone
@@ -37,6 +37,7 @@ paths:
 - docs/reviews/2026-09-07-owp-review/independent/upgrade-and-guards.md
 - docs/reviews/2026-09-07-owp-review/independent/followup-b.md
 - docs/reviews/2026-09-07-owp-review/IMPLEMENTATION.md
+- docs/reviews/2026-09-07-owp-review/VERIFICATION.md
 - docs/product/V1_PRODUCT_CONTRACT.md
 - docs/product/US_PLANNING_CAPABILITY_MATRIX.md
 - docs/product/US_PLANNING_CAPABILITY_REGISTRY.json
@@ -68,3 +69,7 @@ Final independent artifact acceptance through dce8553b reconciles all nine histo
 The last recovery follow-up through ef78a09f exposes previously selected reviewers/documents that are no longer available, allowing the planner to remove the stale selection. It preserves the independent reviews' requirement that recovery remain understandable and exact-version-bound; it does not silently substitute an eligible reviewer. Seven component tests pass, with separate failures when either unavailable selection is hidden and a surviving harmless control. The repeat QA run was stopped before completion to include this correction. The independent final file acceptance remains valid because artifact generation/content and migrations did not change; final UI/QA/CI results must identify this later source.
 
 The40c5f431 production journey and full local gate passed, including all nine accepted files and a real truncated-byte refusal/retry. Its final ordinary-Documents probe then found an encoded-filter503 for supporting evidence. That failure contradicted the earlier source/mocked-query acceptance without exposing bytes. The59f82dfc correction passes an explicit JSON containment string;22 route tests now include the real PostgREST query builder, and the original array encoding demonstrably fails with22P02. Five route mutations plus a harmless control pass their expected outcomes. This narrow transport correction preserves the independent reviews' access recommendation and artifact/migration identities; final live HTTP and build/CI acceptance must include it.
+
+Acceptance synthesis through c22184db: the identified b8e81af7 production build completes real desktop and 390px navigation, keyboard/exact-version recovery, readable amendment differences, nine independently accepted file downloads and actual truncated-byte refusal/retry with zero console/page errors. Generic Documents now serves both review packets and supporting evidence without bearer redirects; revoked membership denies both bytes and metadata. Recovered unavailable reviewer selection is visible and removable through real narrow navigation. GitHub QA, shuffled tests, worker/modeling/ops checks, RLS and Restore Drill all passed on that application head. These results resolve the preceding pending production boundary; they do not establish actual agency authority, professional usefulness or full screen-reader accessibility. The retained verification record identifies exact versions and contrary evidence.
+
+The only later executable change loads optional checkout configuration before live tests. Real-process harmless/broken controls and all 157 live tests without a manual shell prefix establish that the owned configured stack is used. This directly addresses the wrong-stack error mechanism; unconfigured default stacks and arbitrary database commands remain outside that protection, and the retained synthetic fixture residue remains disclosed. Final GitHub checks for this test-entry and evidence commit are separate landing evidence. Neither this narrow safety correction nor final artifact/browser acceptance changes the independent whole-product recommendation: deepen M11a actuals next, then one M2d.3 reporting/correction period, preserve all other roadmap dependencies and the complete v1 contract, and keep v0.44 unreleased.
