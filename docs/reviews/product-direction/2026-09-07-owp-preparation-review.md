@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-07
 review_by: 2026-10-05
-reviewed_commit: 0686ad02
+reviewed_commit: 7174fa0a
 current_release: v0.44.0
 independent_contexts: 2
 trigger: independent-whole-product-review-during-owp-completion
@@ -75,3 +75,5 @@ The immediate documentation-only follow-up expands the browser manifest build ab
 Final bounded follow-up records the unchanged direction against independent R4 artifact guard mutations,45 HTTP checks and the source-level reassessment of all three original v0.44 partial outcomes. It adds operational instructions for the already-reviewed worker and declares the existing @next/env16.2.11 runtime import directly; no runtime API or dependency version changes. The dead-code failure before that declaration remains recorded. None changes milestone scope or grants release authority.
 
 The final preparation record incorporates the independent early/final migration replays and their seven targeted failures, preserves missing source evidence, and moves only M2d.1 preparation past its engineering gate. It leaves complete OWP administration partial, preserves M2d.2–4, and records all three unchanged release-outcome gaps. Repository null export identity assertions now retain the independent failing cases. Example settings match the documented worker/test commands. This bounded reassessment supplies the substantive basis for the final review binding; it is not a calendar extension.
+
+Final runtime follow-up adds identified2538406e browser recovery/download evidence and the unchanged workbook checksum. It explicitly preserves the outer local QA termination143 despite completed component outputs; a standalone build exits0 and exact-main CI remains independently required. This narrows the operational claim and leaves product direction unchanged.
