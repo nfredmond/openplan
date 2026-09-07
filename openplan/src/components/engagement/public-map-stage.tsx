@@ -752,19 +752,19 @@ export function PublicMapStage({
     if (!map) return;
     switch (event.key) {
       case "ArrowUp":
-        map.panBy([0, -KEYBOARD_PAN_STEP_PX]);
+        map.panBy([0, -KEYBOARD_PAN_STEP_PX], { duration: 0 });
         event.preventDefault();
         break;
       case "ArrowDown":
-        map.panBy([0, KEYBOARD_PAN_STEP_PX]);
+        map.panBy([0, KEYBOARD_PAN_STEP_PX], { duration: 0 });
         event.preventDefault();
         break;
       case "ArrowLeft":
-        map.panBy([-KEYBOARD_PAN_STEP_PX, 0]);
+        map.panBy([-KEYBOARD_PAN_STEP_PX, 0], { duration: 0 });
         event.preventDefault();
         break;
       case "ArrowRight":
-        map.panBy([KEYBOARD_PAN_STEP_PX, 0]);
+        map.panBy([KEYBOARD_PAN_STEP_PX, 0], { duration: 0 });
         event.preventDefault();
         break;
       case "+":

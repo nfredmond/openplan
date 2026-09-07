@@ -279,7 +279,7 @@ export function PortalSubmissionForm({
           setTitle(saved.title ?? ""); setSubmittedBy(saved.submittedBy ?? "");
           setAgeBand(saved.ageBand ?? ""); setZip5(saved.zip5 ?? ""); setPrimaryLanguage(saved.primaryLanguage ?? ""); setRaceEthnicity(saved.raceEthnicity ?? []); setHouseholdTenure(saved.householdTenure ?? ""); setPriorReceipt(saved.priorReceipt ?? null);
           const parsedGeometry = saved.geometry ? parseEngagementGeometry(saved.geometry) : null;
-          if (parsedGeometry && !parsedGeometry.ok) throw new Error("Unreadable drawing");
+          if (parsedGeometry && !parsedGeometry.ok && !saved.receipt) throw new Error("Unreadable drawing");
           setInlineGeometry(parsedGeometry?.ok ? parsedGeometry.geometry : null);
           if(parsedGeometry?.ok && parsedGeometry.geometry)restoreStage.current?.(parsedGeometry.geometry);
           if (saved.receipt) { setReceipt(saved.receipt); setSubmitted(true); }

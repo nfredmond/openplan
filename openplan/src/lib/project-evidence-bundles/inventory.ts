@@ -1,3 +1,4 @@
+import { projectReportCoverage } from "@/lib/engagement/project-report-coverage";
 import { DOCUMENT_LIBRARY_SOURCES } from "@/lib/document-library/sources";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { parseStorageRef, workerLocalRoot } from "@/lib/models/artifact-source";
@@ -20,6 +21,7 @@ const READ_LIMIT = PROJECT_EVIDENCE_CANDIDATE_LIMIT + 1;
 type ReadResult = { data: unknown; error: { message?: string | null } | null };
 type Query = PromiseLike<ReadResult> & {
   eq(column: string, value: string): Query;
+  or(filter: string, options: {referencedTable: string}): Query;
   order(column: string, options: { ascending: boolean }): Query;
   limit(count: number): Query;
 };
@@ -41,7 +43,7 @@ const SELECTS: Record<EvidenceDescriptor["id"], string> = {
   knowledge_base:
     "id, project_id, title, doc_kind, source_kind, original_filename, content_type, byte_size, storage_ref, checksum, status, extraction_error, citation_label, created_at, updated_at",
   report_artifacts:
-    "id, report_id, artifact_kind, storage_path, generated_at, metadata_json, updated_at, reports!inner(workspace_id, project_id, title)",
+    "id, report_id, artifact_kind, storage_path, generated_at, metadata_json, updated_at, reports!inner(workspace_id, project_id, engagement_campaign_id, title)",
   grant_application_exports:
     "id, opportunity_id, page_count, pdf_engine, generated_at, funding_opportunities!inner(project_id, title)",
   invoice_pdfs:
@@ -71,7 +73,7 @@ function numberValue(value: unknown): number | null {
 
 function metadataChecksum(value: unknown): string | null {
   const metadata = record(value);
-  return text(metadata?.checksumSha256) ?? text(metadata?.checksum_sha256) ?? null;
+  return text(metadata?.checksumSha256) ?? text(metadata?.checksum_sha256) ?? text(metadata?.sha256) ?? null;
 }
 
 function candidate(
@@ -154,6 +156,7 @@ function kbCandidate(row: Record<string, unknown>, projectId: string): ProjectEv
 
 function reportCandidate(row: Record<string, unknown>, projectId: string): ProjectEvidenceCandidate {
   const report = record(row.reports);
+  const reviewScope = typeof record(row.metadata_json)?.engagementReviewJobId === "string" ? text(record(row.metadata_json)?.scope) : null;
   const kind = text(row.artifact_kind) ?? "artifact";
   const stored = Boolean(text(row.storage_path));
   const inline = kind === "html" && Boolean(text(record(row.metadata_json)?.htmlContent));
@@ -165,7 +168,7 @@ function reportCandidate(row: Record<string, unknown>, projectId: string): Proje
     recordId: String(row.id),
     parentRecordId: text(row.report_id),
     projectId,
-    title: text(report?.title) ?? "(report unavailable)",
+    title: `${text(report?.title) ?? "(report unavailable)"}${reviewScope ? ` · ${reviewScope} review copy` : ""}`,
     originalFilename: null,
     contentType: kind === "pdf" ? "application/pdf" : "text/html; charset=utf-8",
     byteSize: null,
@@ -179,7 +182,7 @@ function reportCandidate(row: Record<string, unknown>, projectId: string): Proje
     claimTier: text(record(row.metadata_json)?.modelingClaimStatus),
     custodyState: available ? "openplan_stored" : "unavailable",
     uncertainty: [],
-    knownLimits: [],
+    knownLimits: reviewScope === "internal" ? ["Internal staff copy includes pending and withheld contributions and review reasons."] : reviewScope === "public" ? ["Public copy is rechecked for later redactions or withholding when downloaded."] : [],
     defaultSelected: false,
     required: false,
     selectable: available,
@@ -385,13 +388,14 @@ async function readSource(
   project: ProjectIdentity
 ): Promise<ReadResult> {
   try {
-    return await client
-      .from(source.table)
-      .select(SELECTS[source.id])
-      .eq(source.workspaceFilterColumn, project.workspace_id)
-      .eq(source.projectFilterColumn, project.id)
-      .order(source.orderColumn, { ascending: false })
-      .limit(READ_LIMIT);
+    let query = client.from(source.table).select(SELECTS[source.id])
+      .eq(source.workspaceFilterColumn, project.workspace_id);
+    if (source.id === "report_artifacts") {
+      const coverage = await projectReportCoverage(client, project);
+      if (!coverage.filter) return {data: null, error: coverage.error};
+      query = query.or(coverage.filter, {referencedTable: "reports"});
+    } else query = query.eq(source.projectFilterColumn, project.id);
+    return await query.order(source.orderColumn, { ascending: false }).limit(READ_LIMIT);
   } catch (error) {
     return { data: null, error: { message: error instanceof Error ? error.message : "read threw" } };
   }

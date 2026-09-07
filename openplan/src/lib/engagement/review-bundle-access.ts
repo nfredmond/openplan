@@ -1,3 +1,4 @@
+import { loadProjectReportArtifact } from './project-report-coverage';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { downloadEngagementReview } from './review-export-download';
 
@@ -6,7 +7,7 @@ export async function engagementBundleFilesAvailable(caller:SupabaseClient,manif
  if(!manifest||typeof manifest!=='object'||!('entries' in manifest)||!Array.isArray(manifest.entries))return false;
  for(const entry of manifest.entries) {
   if(entry?.inclusion?.status!=='included'||entry?.originalRecord?.sourceId!=='report_artifacts')continue;
-  const artifact=await caller.from('report_artifacts').select('id,report_id,storage_path,metadata_json,reports!inner(workspace_id,project_id)').eq('id',entry.originalRecord.recordId).eq('reports.workspace_id',project.workspace_id).eq('reports.project_id',project.id).maybeSingle();
+  const artifact=await loadProjectReportArtifact(caller,project,entry.originalRecord.recordId);
   if(artifact.error||!artifact.data)return false;
   const row=artifact.data,metadata=row.metadata_json;
   if(typeof metadata?.engagementReviewJobId!=='string')continue;

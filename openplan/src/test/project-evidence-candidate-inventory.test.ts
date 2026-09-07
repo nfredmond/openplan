@@ -24,11 +24,14 @@ function fakeClient(
           select(select: string) {
             const call = { table, select, filters: [] as Array<[string, string]>, limit: null as number | null };
             calls.push(call);
+            let offset=0;
             const chain = {
               eq(column: string, value: string) {
                 call.filters.push([column, value]);
                 return chain;
               },
+              range(from:number,to:number) { offset=from; call.limit=to+1; return chain; },
+              or(filter:string,options:{referencedTable:string}) { call.filters.push([options.referencedTable+".or",filter]); return chain; },
               order() {
                 return chain;
               },
@@ -38,7 +41,7 @@ function fakeClient(
               },
               then(resolve: (value: unknown) => void) {
                 resolve({
-                  data: errors[table] ? null : (data[table] ?? []).slice(0, call.limit ?? undefined),
+                  data: errors[table] ? null : (data[table] ?? []).slice(offset, call.limit ?? undefined),
                   error: errors[table] ? { message: errors[table] } : null,
                 });
               },
@@ -52,6 +55,25 @@ function fakeClient(
 }
 
 describe("project evidence candidate inventory", () => {
+  it("discovers a campaign-targeted report through project coverage without inventing a second target",async()=>{
+    const campaign={id:"campaign",workspace_id:PROJECT.workspace_id,project_id:PROJECT.id};
+    const fake=fakeClient({engagement_campaigns:[campaign],engagement_campaign_projects:[{engagement_campaigns:campaign}],report_artifacts:[{
+      id:"campaign-pdf",report_id:"campaign-report",artifact_kind:"pdf",storage_path:"retained.pdf",metadata_json:{sha256:"hash",engagementReviewJobId:"job",scope:"public"},
+      reports:{workspace_id:PROJECT.workspace_id,project_id:null,engagement_campaign_id:"campaign",title:"Campaign review"},
+    }]});
+    const inventory=await loadProjectEvidenceCandidateInventory(fake.client,PROJECT);
+    expect(inventory.failureMessage).toBeNull();
+    expect(inventory.readFailed).toBe(false);
+    expect(inventory.candidates.filter(row=>row.sourceId==="report_artifacts")).toHaveLength(1);
+    expect(inventory.candidates.find(row=>row.recordId==="campaign-pdf")?.recordedChecksumSha256).toBe("hash");
+    const query=fake.calls.find(call=>call.table==="report_artifacts");
+    expect(inventory.candidates.find(row=>row.recordId==="campaign-pdf")?.title).toContain("public review copy");
+    expect(query?.select).toContain("engagement_campaign_id");
+    expect(query?.filters).toContainEqual(["reports.workspace_id",PROJECT.workspace_id]);
+    expect(query?.filters).toContainEqual(["reports.or",`project_id.eq.${PROJECT.id},engagement_campaign_id.in.(campaign)`]);
+    expect(query?.filters).not.toContainEqual(["reports.project_id",PROJECT.id]);
+  });
+
   it("uses the existing library registry without the 20-row display cap and defaults only the GeoPackage and latest report artifact", async () => {
     const fake = fakeClient({
       report_artifacts: [
@@ -124,11 +146,11 @@ describe("project evidence candidate inventory", () => {
       exclusionReason: "OpenPlan does not hold bytes for this deliverable.",
     });
     const libraryCalls = fake.calls.filter((call) =>
-      call.table !== "project_evidence_bundles" && call.table !== "plans"
+      !["project_evidence_bundles", "plans", "engagement_campaigns", "engagement_campaign_projects"].includes(call.table)
     );
     expect(libraryCalls).toHaveLength(7);
     expect(libraryCalls.every((call) => call.limit === 501)).toBe(true);
-    expect(libraryCalls.every((call) => call.filters.some(([column, value]) => column.endsWith("project_id") && value === PROJECT.id))).toBe(true);
+    expect(libraryCalls.every((call) => call.filters.some(([column, value]) => (column.endsWith("project_id") && value === PROJECT.id) || (column === "reports.or" && value === `project_id.eq.${PROJECT.id}`)))).toBe(true);
     expect(fake.calls.find((call) => call.table === "kb_documents")?.select).toContain("checksum");
     expect(fake.calls.find((call) => call.table === "model_run_artifacts")?.select).toContain("file_url");
   });

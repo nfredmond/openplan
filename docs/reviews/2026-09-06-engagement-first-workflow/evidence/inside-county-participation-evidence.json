@@ -1,0 +1,15 @@
+[
+  {
+    "mode": "area",
+    "status": 201,
+    "response": {
+      "success": true,
+      "message": "Thank you for your feedback. Your submission will be reviewed by the project team.",
+      "submissionId": "e1048444-d42b-4a3a-9f0c-23cc4e2b369b",
+      "receivedAt": "2026-09-07T18:51:14.669346+00:00",
+      "reviewStatus": "pending"
+    },
+    "errors": [],
+    "overflow": 0
+  }
+]

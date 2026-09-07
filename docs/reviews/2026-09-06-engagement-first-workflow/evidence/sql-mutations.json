@@ -14,11 +14,11 @@
     ]
   },
   {
-    "mutation": "mandatory review reason",
+    "mutation": "fresh review version",
     "outcome": "KILLED",
     "expected": "KILLED",
     "evidence": [
-      "ERROR:  publication without a reason succeeded"
+      "ERROR:  stale direct review accepted"
     ]
   },
   {

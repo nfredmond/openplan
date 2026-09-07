@@ -774,6 +774,7 @@ export default async function EngagementCampaignDetailPage({
           campaignId={campaign.id}
           categories={builderCategories}
           initialEntries={closeLoopEntries}
+          sourceItems={(items ?? []).filter(item => item.status === "approved").map(item => ({id:item.id,title:item.title || item.body.slice(0,120)}))}
         />
 
         {/*

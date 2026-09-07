@@ -1,3 +1,4 @@
+import { loadProjectReportArtifact } from "@/lib/engagement/project-report-coverage";
 import { downloadEngagementReview } from "@/lib/engagement/review-export-download";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
@@ -100,13 +101,7 @@ async function reportBytes(
   project: ProjectScope,
   candidate: ProjectEvidenceCandidate
 ): Promise<ResolvedProjectEvidenceFile> {
-  const read = await caller
-    .from("report_artifacts")
-    .select("id, report_id, artifact_kind, storage_path, generated_at, metadata_json, reports!inner(workspace_id, project_id, title)")
-    .eq("id", candidate.recordId)
-    .eq("reports.workspace_id", project.workspace_id)
-    .eq("reports.project_id", project.id)
-    .maybeSingle();
+  const read = await loadProjectReportArtifact(caller, project, candidate.recordId);
   if (read.error || !read.data) failMissing(candidate);
   const row = read.data as Record<string, unknown>;
   const reportValue = Array.isArray(row.reports) ? row.reports[0] : row.reports;

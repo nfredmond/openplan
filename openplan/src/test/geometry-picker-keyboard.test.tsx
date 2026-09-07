@@ -6,13 +6,14 @@ type MockMap = { keyboard: { disable: ReturnType<typeof vi.fn> }; [k: string]: u
 const mapboxMocks = vi.hoisted(() => {
   const instances: MockMap[] = [];
   const Map = vi.fn(function MockMap() {
+    let center={lng:-121.5,lat:39.25};
     const instance = {
       keyboard: { disable: vi.fn() },
       addControl: vi.fn(),
       on: vi.fn(),
       getCanvas: vi.fn(() => ({ setAttribute: vi.fn() })),
-      getCenter: vi.fn(() => ({ lng: -121.5, lat: 39.25 })),
-      panBy: vi.fn(),
+      getCenter: vi.fn(() => center),
+      panBy: vi.fn((offset:number[],options?:{duration:number})=>{if(options?.duration===0)center={lng:center.lng+offset[0]/1000,lat:center.lat-offset[1]/1000};}),
       zoomIn: vi.fn(),
       zoomOut: vi.fn(),
       isStyleLoaded: vi.fn(() => false),
@@ -88,8 +89,8 @@ describe("GeometryPickerMap keyboard accessibility (WCAG 2.1.1)", () => {
     fireEvent.keyDown(app, { key: "ArrowUp" });
     fireEvent.keyDown(app, { key: "ArrowRight" });
     fireEvent.keyDown(app, { key: "+" });
-    expect(map.panBy).toHaveBeenCalledWith([0, -64]);
-    expect(map.panBy).toHaveBeenCalledWith([64, 0]);
+    expect(map.panBy).toHaveBeenCalledWith([0, -64], {duration:0});
+    expect(map.panBy).toHaveBeenCalledWith([64, 0], {duration:0});
     expect(map.zoomIn).toHaveBeenCalled();
   });
 
@@ -99,12 +100,13 @@ describe("GeometryPickerMap keyboard accessibility (WCAG 2.1.1)", () => {
     fireEvent.click(getByRole("button", { name: "A street or path" }));
     const app = getByRole("application");
     fireEvent.keyDown(app, { key: "Enter" });
+    fireEvent.keyDown(app, { key: "ArrowRight" });
     fireEvent.keyDown(app, { key: "Enter" });
     expect(onChange).toHaveBeenLastCalledWith({
       type: "LineString",
       coordinates: [
         [-121.5, 39.25],
-        [-121.5, 39.25],
+        [-121.436, 39.25],
       ],
     });
     fireEvent.keyDown(app, { key: "Backspace" });

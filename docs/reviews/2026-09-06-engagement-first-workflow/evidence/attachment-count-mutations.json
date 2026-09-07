@@ -1,0 +1,36 @@
+[
+  {
+    "mutation": "harmless photo comment",
+    "outcome": "survived",
+    "expected": "survived",
+    "evidence": []
+  },
+  {
+    "mutation": "legacy receipt survives new geometry rules",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-draft-photo-retry.test.tsx > retained receipt and edited draft have separate meaning > restores optional participant details and keeps an existing receipt accessible after closing"
+    ]
+  },
+  {
+    "mutation": "photo replacement custody",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-draft-photo-retry.test.tsx > photograph choices after an interrupted submission > honors remove after the first upload succeeds but submission fails",
+      "AssertionError: expected 'campaign/photo-1.png' to be undefined // Object.is equality",
+      "FAIL  src/test/engagement-draft-photo-retry.test.tsx > photograph choices after an interrupted submission > honors replace after the first upload succeeds but submission fails",
+      "AssertionError: expected 'campaign/photo-1.png' to be 'campaign/photo-2.png' // Object.is equality"
+    ]
+  },
+  {
+    "mutation": "invalid historical map counts",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-summary.test.ts > summarizeEngagementItems > counts valid route and area geometry without legacy coordinates and refuses invalid coordinates",
+      "AssertionError: expected { geolocatedItems: 4, \u2026(2) } to match object { geolocatedItems: 3, \u2026(1) }"
+    ]
+  }
+]

@@ -763,6 +763,18 @@ describe("POST /api/engage/[shareToken]/submit", () => {
     expect(response.status).toBe(400);
     expect(itemInsertMock).not.toHaveBeenCalled();
   });
+  it("recovers an accepted legacy collapsed route before applying current geometry validation", async () => {
+    const body = { requestId: "77777777-7777-4777-8777-777777777777", body: "Historical route feedback", geometry: { type: "LineString", coordinates: [[-121, 39], [-121, 39]] } };
+    receiptMock.mockResolvedValue({ data: { id: "legacy-route", request_sha256: createHash("sha256").update(JSON.stringify(body)).digest("hex"), created_at: "2026-09-06" }, error: null });
+    const response = await POST(jsonRequest("test-share-token-12345", body), { params: Promise.resolve({ shareToken: "test-share-token-12345" }) });
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ submissionId: "legacy-route", replayed: true });
+    receiptMock.mockResolvedValue({ data: null, error: null });
+    const fresh = await POST(jsonRequest("test-share-token-12345", body), { params: Promise.resolve({ shareToken: "test-share-token-12345" }) });
+    expect(fresh.status).toBe(400);
+    expect(itemInsertMock).not.toHaveBeenCalled();
+  });
+
   for(const status of ["closed","archived"])it(`recovers an exact receipt after ${status}, while refusing new writes and identifying edited retries`,async()=>{
     const body={requestId:"77777777-7777-4777-8777-777777777777",body:"Original received feedback"};
     campaignMaybeSingleMock.mockResolvedValue({data:{id:"11111111-1111-4111-8111-111111111111",status,allow_public_submissions:false},error:null});

@@ -1,0 +1,17 @@
+{
+  "checks": [
+    "Containing public bundle positive control 77e19961-7edd-40a1-9abe-417913663adf",
+    "Containing internal bundle positive control 77e19961-7edd-40a1-9abe-417913663adf",
+    "Containing public bundle positive control f56d75a2-d0cb-44f8-97eb-976db97370fe",
+    "Containing public bundle withdrawn after source redaction 77e19961-7edd-40a1-9abe-417913663adf",
+    "Containing public bundle withdrawn after source redaction f56d75a2-d0cb-44f8-97eb-976db97370fe",
+    "Internal snapshot remains available to staff after later public redaction",
+    "Removed campaign coverage withdraws its containing secondary-project bundle",
+    "Lead-project bundle remains available after secondary unlink",
+    "Viewer cannot read containing internal bundle manifest",
+    "Viewer can read containing public bundle metadata",
+    "Staff cannot mint a reusable containing-bundle storage URL",
+    "Revoked staff loses containing bundle bytes",
+    "Revoked staff loses original attachment stream"
+  ]
+}

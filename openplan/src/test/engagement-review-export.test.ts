@@ -3,7 +3,7 @@ import JSZip from 'jszip';
 vi.mock('@/lib/reports/pdf',()=>({renderReportPdf:async()=>({engine:'chrome',bytes:new Uint8Array([37,80,68,70])})}));
 import { createHash } from 'node:crypto';
 import * as XLSX from 'xlsx';
-import { buildCampaignReviewHtml,buildCampaignReviewWorkbook,parseReviewSnapshot,renderCampaignReviewFiles,campaignQuestionSummary,type EngagementReviewSnapshot } from '@/lib/engagement/review-export';
+import { buildCampaignReviewHtml,buildCampaignReviewWorkbook,parseReviewSnapshot,renderCampaignReviewFiles,campaignQuestionSummary,campaignReviewMap,type EngagementReviewSnapshot } from '@/lib/engagement/review-export';
 const snapshot:EngagementReviewSnapshot={schema:1,capturedAt:'2026-09-06T12:00:00Z',scope:'internal',filters:{},campaign:{id:'demo',title:'Demonstration only',summary:null,configurationVersionId:null},items:[{id:'one',status:'pending',body:'=HYPERLINK("https://invalid.test")',title:'<script>bad()</script>',configuration_version_id:null}],sessions:[{id:'session',status:'pending'}],answers:[{id:'answer1',session_id:'session',answer_text:'Repeated answer'},{id:'answer2',session_id:'session',answer_text:'Repeated answer'}],responses:[],definitions:[]};
 describe('campaign review records',()=>{
  it('refuses corrupt snapshots and private records in public snapshots',()=>{
@@ -12,6 +12,10 @@ describe('campaign review records',()=>{
   expect(()=>parseReviewSnapshot(raw+' ',hash)).toThrow('checksum');
   const bad=JSON.stringify({...snapshot,scope:'public'});
   expect(()=>parseReviewSnapshot(bad,createHash('sha256').update(bad).digest('hex'))).toThrow('Private records');
+ });
+ it('refuses private review intent embedded in an otherwise public snapshot',()=>{
+  const raw=JSON.stringify({...snapshot,scope:'public',items:[{id:'public',status:'approved',review_reason:'Private reviewer input'}],sessions:[],answers:[]});
+  expect(()=>parseReviewSnapshot(raw,createHash('sha256').update(raw).digest('hex'))).toThrow('Private records');
  });
  it('keeps literal spreadsheet text, repeated answers and complete multilingual long values',async()=>{
   const long='🙂'.repeat(599)+'日本語 فارسی '+ 'long narrative\n'.repeat(2400);
@@ -48,6 +52,16 @@ describe('campaign review records',()=>{
   const body='Japanese 日本語 and Farsi فارسی\n'.repeat(70),html=buildCampaignReviewHtml({...snapshot,items:[{id:'long-id',status:'pending',body}]},'checksum');
   expect(html).toContain('Record long-id · part 1 of 4');expect(html).toContain('Record long-id · part 4 of 4');
   expect(html.match(/Japanese 日本語 and Farsi فارسی/g)).toHaveLength(70);
+ });
+
+ it('shows a contribution detail inset when broad study context hides small routes',()=>{
+  const source:EngagementReviewSnapshot={...snapshot,campaign:{...snapshot.campaign,configurationVersionId:'v'},items:[{id:'line',status:'pending',geometry:{type:'LineString',coordinates:[[1,1],[1.01,1.01]]}}],definitions:[{id:'v',sha256:'hash',definition:{campaign:{place_geometry_geojson:{type:'Polygon',coordinates:[[[0,0],[20,0],[20,20],[0,0]]]}},categories:[],questions:[],layers:[]}}]};
+  expect(campaignReviewMap(source)).toContain('paint-order="stroke">1</text>');
+  const html=campaignReviewMap(source),lines=[...html.matchAll(/<polyline points="([^"]+)"/g)].map(match=>match[1].split(' ').map(point=>point.split(',').map(Number)));
+  expect(lines).toHaveLength(2);
+  expect(Math.abs(lines[0][1][0]-lines[0][0][0])).toBeLessThan(1);
+  expect(Math.abs(lines[1][1][0]-lines[1][0][0])).toBeGreaterThan(100);
+  expect(campaignReviewMap({...source,items:[]})).not.toContain('Contribution location detail');
  });
 
  it('keeps the exact UTF-8 snapshot bytes across ZIP chunk boundaries',async()=>{

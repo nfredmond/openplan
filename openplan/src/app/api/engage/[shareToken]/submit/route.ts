@@ -153,29 +153,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // event.
     const honeypotTriggered = Boolean(parsed.data.website?.length);
 
-    // Geometry: validate structure, vertex cap, ring closure, and WGS84
-    // bounds; then derive the representative lat/lng that keeps every legacy
-    // point surface working. A geometry, when present, wins over any
-    // separately supplied latitude/longitude.
-    let geometry: EngagementGeometry | null = null;
-    let latitude = parsed.data.latitude ?? null;
-    let longitude = parsed.data.longitude ?? null;
-
-    if (parsed.data.geometry !== undefined && parsed.data.geometry !== null) {
-      const geometryResult = parseEngagementGeometry(parsed.data.geometry);
-      if (!geometryResult.ok) {
-        return NextResponse.json({ error: geometryResult.error }, { status: 400 });
-      }
-      geometry = geometryResult.geometry;
-      const representative = computeEngagementGeometryRepresentativePoint(geometry);
-      latitude = representative.latitude;
-      longitude = representative.longitude;
-    } else if (latitude !== null && longitude !== null) {
-      // Legacy lat/lng-only payload: synthesize a Point geometry so newer
-      // geometry-aware surfaces see a consistent record.
-      geometry = { type: "Point", coordinates: [longitude, latitude] };
-    }
-
     const supabase = createServiceRoleClient();
 
     const { data: campaign, error: campaignError } = await supabase
@@ -222,6 +199,29 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
     if (parsed.data.configurationVersionId && parsed.data.configurationVersionId !== campaign.configuration_version_id) {
       return NextResponse.json({ error: "The campaign questions or instructions changed. Your draft is retained. Reload and review them before sending." }, { status: 409 });
+    }
+
+    // Geometry: validate structure, vertex cap, ring closure, and WGS84
+    // bounds; then derive the representative lat/lng that keeps every legacy
+    // point surface working. A geometry, when present, wins over any
+    // separately supplied latitude/longitude.
+    let geometry: EngagementGeometry | null = null;
+    let latitude = parsed.data.latitude ?? null;
+    let longitude = parsed.data.longitude ?? null;
+
+    if (parsed.data.geometry !== undefined && parsed.data.geometry !== null) {
+      const geometryResult = parseEngagementGeometry(parsed.data.geometry);
+      if (!geometryResult.ok) {
+        return NextResponse.json({ error: geometryResult.error }, { status: 400 });
+      }
+      geometry = geometryResult.geometry;
+      const representative = computeEngagementGeometryRepresentativePoint(geometry);
+      latitude = representative.latitude;
+      longitude = representative.longitude;
+    } else if (latitude !== null && longitude !== null) {
+      // Legacy lat/lng-only payload: synthesize a Point geometry so newer
+      // geometry-aware surfaces see a consistent record.
+      geometry = { type: "Point", coordinates: [longitude, latitude] };
     }
 
     // What a participant marked has to be somewhere this consultation is about

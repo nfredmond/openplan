@@ -316,12 +316,15 @@ export function EngagementCloseLoopBuilder({
   campaignId,
   categories,
   initialEntries,
+  sourceItems = [],
 }: {
   campaignId: string;
   categories: Category[];
   initialEntries: CloseLoopEntryRow[];
+  sourceItems?: Array<{id:string;title:string}>;
 }) {
   const [entries, setEntries] = useState<CloseLoopEntryRow[]>(initialEntries);
+  const [sourceItemIds,setSourceItemIds] = useState<string[]>([]);
   const [themeTitle, setThemeTitle] = useState("");
   const [youSaid, setYouSaid] = useState("");
   const [weDid, setWeDid] = useState("");
@@ -348,9 +351,11 @@ export function EngagementCloseLoopBuilder({
         youSaid: youSaid.trim() || undefined,
         weDid: weDid.trim() || undefined,
         categoryId: categoryId || undefined,
+        ...(sourceItemIds.length ? {sourceItemIds} : {}),
         sortOrder: entries.length,
       });
       setEntries((prev) => [...prev, payload.entry as CloseLoopEntryRow]);
+      setSourceItemIds([]);
       setThemeTitle("");
       setYouSaid("");
       setWeDid("");
@@ -489,6 +494,13 @@ export function EngagementCloseLoopBuilder({
           <span className="text-sm text-muted-foreground">We did</span>
           <Textarea value={weDid} onChange={(e) => setWeDid(e.target.value)} rows={2} placeholder="How the project team responded" />
         </label>
+        {sourceItems.length ? <label className="flex flex-col gap-1">
+          <span className="text-sm text-muted-foreground">Contributions addressed</span>
+          <select aria-label="Contributions addressed" multiple className="w-full rounded border p-2" size={Math.min(5,sourceItems.length)} value={sourceItemIds} onChange={event=>setSourceItemIds(Array.from(event.target.selectedOptions,option=>option.value))}>
+            {sourceItems.map(item=><option key={item.id} value={item.id}>{item.title}</option>)}
+          </select>
+          <span className="text-xs text-muted-foreground">Choose the published contributions this response addresses. Use Ctrl or Command to select more than one.</span>
+        </label> : null}
         {error ? <p className={ERROR_CLASS}>{error}</p> : null}
         <Button type="submit" disabled={busy || !themeTitle.trim()}>
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Add entry

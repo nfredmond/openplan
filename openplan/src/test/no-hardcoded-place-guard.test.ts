@@ -109,6 +109,7 @@ const NON_PLACE_FIVE_DIGIT_CODES: readonly string[] = [
   "23505", // unique_violation
   "23503", // foreign_key_violation
   "22023", // invalid_parameter_value
+  "40001", // serialization_failure: stale moderation is refused by PostgreSQL
   "42501", // insufficient_privilege — service RPC actor check
 ];
 
@@ -151,6 +152,7 @@ describe("no hardcoded place in shipped product code", () => {
     expect(fipsBranchesIn('COUNTIES.indexOf("48201")')).toEqual(["48201"]);
     // A SQLSTATE match is code, not a place, and must stay silent.
     expect(fipsBranchesIn('if (error.code === "42703") return false;')).toEqual([]);
+    expect(fipsBranchesIn('if (error.code === "40001") return stale;')).toEqual([]);
     // A comment naming a FIPS is prose. A placeholder or a lookup key is data.
     expect(fipsBranchesIn('// e.g. county FIPS "06057"')).toEqual([]);
     expect(fipsBranchesIn('<Input placeholder="12500" />')).toEqual([]);
