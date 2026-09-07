@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-07
 review_by: 2026-10-05
-reviewed_commit: d5b5760b9f1ca58f337e69cfe3479b94a4796e5b
+reviewed_commit: 314f946fc95fc921bc00cf2c8f6f4ce3d93a82bd
 current_release: v0.44.0
 independent_contexts: 2
 trigger: independent-whole-product-review-during-engagement-completion
@@ -68,4 +68,6 @@ Blind categories remain explicit: source reviews do not establish live access, a
 
 Final artifact follow-up accepts all twelve corrected files,24 demo PDF pages,161 reconciliations and four native recalculations, plus independent GEOS containment of the new county polygon. A later screenshot read found the review/public maps still substituting an invalid historical shape with its legacy center. The df3e3a66 correction aligns markers, badges, counts and report meaning, including geometry-only public points, with harmless and targeted display mutations. This is a bounded correction within the same reviewed workflow; final application/CI results remain separate.
 
-The final390px screenshot exposed inner-panel overflow that the outer document-width assertion missed. The narrow review grid and fieldset now shrink to their container, history-button text wraps and map popups are bounded by their map. These localized layout corrections preserve the reviewed workflow, with actual inner-bound checks recorded separately at landing.
+The final390px screenshot exposed inner-panel overflow that the outer document-width assertion missed. The narrow review grid and fieldset now shrink to their container, history-button text wraps and history controls remain within the panel. These localized layout corrections preserve the reviewed workflow, with actual inner-bound checks recorded separately at landing.
+
+The final linked-map correction uses full staff detail for point and shape selection, with no duplicate popup. Ordinary reading-map popup placement is not covered by this claim. Harmless and consequential source mutations, focused tests and the prior full local/GitHub gates are recorded through314f946f; the final stamped production journey remains a separate acceptance check. This is a local correction within the independent reviews' existing Engagement recommendation, with no change to the whole-product destination or open human/competitive gates.
