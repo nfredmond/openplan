@@ -7,6 +7,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 // Pure magic-byte sniffer (zero imports of its own): the BYTES decide whether
 // an "image" is an image, never the Content-Type header.
+import { enqueueExtraction } from "@/lib/knowledge-base/extraction-jobs";
 import { sniffImageFormat } from "@/lib/aerial/imagery";
 import {
   buildKbChunkRows,
@@ -37,8 +38,7 @@ import {
   resolveStoredSourceKind,
 } from "@/lib/knowledge-base/extract";
 
-// Extraction (unpdf/mammoth) runs inline; allow more than the default budget on
-// hosted platforms for larger PDFs.
+// PDFs are retained first and extracted by the Documents worker.
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
@@ -318,6 +318,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unsupported document type." }, { status: 415 });
     }
     const sourceKind = extractableKind;
+
+    if (sourceKind === "uploaded_pdf") {
+      // Retain the original record before any text extraction. A worker owns PDF parsing.
+      const inserted = await service.from("kb_documents").insert({
+        id: documentId, workspace_id: query.data.workspaceId, project_id: query.data.projectId ?? null,
+        uploaded_by: user.id, title: deriveTitle(query.data.title, query.data.filename), doc_kind: query.data.docKind ?? "other",
+        source_kind: sourceKind, original_filename: query.data.filename ?? null, content_type: "application/pdf",
+        byte_size: bodyRead.byteLength, storage_ref: `storage://${KB_DOCUMENTS_BUCKET}/${storagePath}`,
+        page_count: null, chunk_count: 0, char_count: null, checksum, status: "stored", extraction_source: "none", extraction_error: null,
+      }).select(KB_DOCUMENT_COLUMNS).single();
+      if (inserted.error || !inserted.data) return NextResponse.json({ error: "The original bytes were stored but the document record could not be confirmed. Retry the same upload." }, { status: 503 });
+      try {
+        const job = await enqueueExtraction(documentId, user.id, "text", new URL(request.url).origin);
+        return NextResponse.json({ document: inserted.data, job, notice: "Original retained. Text extraction is queued; you can review the original while processing runs." }, { status: 202 });
+      } catch {
+        return NextResponse.json({ document: inserted.data, warning: "Original retained. Text extraction could not be queued. Use Retry reading in the source controls." }, { status: 201 });
+      }
+    }
 
     // Extract + chunk BEFORE inserting the row so the persisted status is honest
     // (ready with real chunks, or failed with a real reason) in one write.

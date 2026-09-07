@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+vi.mock("server-only", () => ({}));
 
 const getUserMock = vi.fn();
 const membershipMaybeSingleMock = vi.fn();

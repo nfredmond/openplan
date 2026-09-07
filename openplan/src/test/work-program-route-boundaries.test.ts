@@ -32,7 +32,7 @@ const proposal = {
   authorityBasis: "", periodStart: "2026-07-01", periodEnd: "2027-06-30", introduction: "", staffing: "", financialNotes: "",
   currency: "USD", priorBalance: null, priorBalanceBasis: "", elements: [],
 };
-const source = (id: string, title: string) => ({ id, title, document_id: id, document_checksum: "a".repeat(64), page_count: 1, source_role: "predecessor", source_url: null, extraction_json: { parser: "manual-page-review", elements: [], warnings: [] } });
+
 
 describe("saved work-program HTTP behavior", () => {
   beforeEach(() => { vi.clearAllMocks(); });
@@ -46,22 +46,22 @@ describe("saved work-program HTTP behavior", () => {
     expect(response.status).toBe(409);
     expect(rpc).toHaveBeenCalledWith("save_program_work_program_revision", { p_program_id: programId, p_actor_id: "actor", p_expected_revision: 4, p_request_id: requestId, p_content: proposal });
   });
-  it("exports only the revision's frozen sources and refuses an unavailable inventory", async () => {
-    const revision = { id: "revision", revision: 1, source_ids: ["source-one"] as string[] | null, content_json: proposal, content_sha256: "b".repeat(64), created_at: "2026-09-06T10:00:00Z" };
-    const projection = vi.fn(); const filters = vi.fn();
-    const query = { select: (value: string) => { projection(value); return query; }, eq: (key: string, value: unknown) => { filters(key, value); return query; }, maybeSingle: async () => ({ data: revision, error: null }) };
-    mocks.authorize.mockResolvedValue({ supabase: { from: () => query }, user: { id: "actor" } });
-    mocks.load.mockResolvedValue({ sources: [source("source-one", "Original predecessor"), source("source-two", "Later attachment")] });
-    const request = (format: string) => new NextRequest(`http://localhost/api/example?revision=1&format=${format}`);
-    const html = await exportRevision(request("html"), context);
-    expect(html.status).toBe(200); const text = await html.text();
-    expect(text).toContain("Original predecessor"); expect(text).not.toContain("Later attachment");
-    expect(projection).toHaveBeenCalledWith("id, revision, previous_revision_id, request_id, content_json, content_sha256, source_ids, created_by, created_at");
-    expect(filters).toHaveBeenCalledWith("program_id", programId); expect(filters).toHaveBeenCalledWith("revision", 1);
-    revision.source_ids = ["missing-source"];
-    expect((await exportRevision(request("html"), context)).status).toBe(409);
-    revision.source_ids = null;
-    expect((await exportRevision(request("xlsx"), context)).status).toBe(409);
-    expect(await (await exportRevision(request("html"), context)).text()).toContain("Early development revision: the complete source register was not captured.");
+  it("reads the artifact belonging to the requested saved revision and only delivers completed files", async () => {
+    const calls: {table:string;projection:string;filters:[string,unknown][]}[]=[];
+    let artifact: {id:string;checksum:string|null;status:string}|null=null;
+    const client={from:(table:string)=>{
+      const call={table,projection:"",filters:[] as [string,unknown][]};calls.push(call);
+      const query={select:(value:string)=>{call.projection=value;return query;},eq:(key:string,value:unknown)=>{call.filters.push([key,value]);return query;},order:()=>query,limit:()=>query,maybeSingle:async()=>({error:null,data:table==="program_work_program_revisions"?{id:"revision-one",content_sha256:"b".repeat(64)}:table==="kb_documents"?artifact:{status:"succeeded"}})};return query;
+    }};
+    mocks.authorize.mockResolvedValue({supabase:client,user:{id:"actor"}});
+    const request=()=>new NextRequest("http://localhost/api/example?revision=1&format=pdf&download=1");
+    expect(await (await exportRevision(request(),context)).json()).toEqual({status:"not_prepared"});
+    artifact={id:"artifact-one",checksum:"c".repeat(64),status:"stored"};
+    const delivered=await exportRevision(request(),context);
+    expect(delivered.status).toBe(307);
+    expect(delivered.headers.get("location")).toBe("/api/knowledge-base/documents/artifact-one/download?delivery=authenticated");
+    expect(calls[0]).toEqual({table:"program_work_program_revisions",projection:"id, content_sha256",filters:[["program_id",programId],["revision",1]]});
+    expect(calls[1]).toEqual({table:"kb_documents",projection:"id, checksum, status",filters:[["work_program_revision_id","revision-one"],["work_program_export_format","pdf"]]});
+    expect(mocks.service).not.toHaveBeenCalled();
   });
 });

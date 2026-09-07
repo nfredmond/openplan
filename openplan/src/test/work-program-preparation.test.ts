@@ -78,7 +78,7 @@ describe("source-layout extraction", () => {
   });
   it("keeps source text, actual PDF pages and printed figures separate from the proposed program", () => {
     const result = extractWorkProgramSource([identity, elementPage]);
-    expect(result.parser).toBe("edctc-work-program-v2");
+    expect(result.parser).toBe("edctc-work-program-v4");
     expect(result.elements[0]).toMatchObject({ code: "100", key: "100:page-19", pageFrom: 19, pageTo: 19, revenueTotal: 51752, costTotal: 51752, priorActivities: "Prior work", currentActivities: "Current work", originalText: elementPage.text });
     expect(result.elements[0].warnings.join(" ")).toContain("breakdown");
   });
@@ -105,6 +105,19 @@ function revisionRecord(value = draft()): WorkProgramRevision {
 }
 
 describe("reviewed source references and financial treatment", () => {
+  it("keeps explicit task roles and wrapped schedules separate without inventing absent schedules", () => {
+    const source = sourceRecord();
+    const element = { ...source.extraction_json.elements[0], responsible: "Agency director", currentActivities: "1. Prepare report (Consultant) . July-November 2026\n2. Provide support (EDCTC Staff) as needed\n3. Publish material", products: "1. Final report" };
+    const value = proposeSourceElement(source, element);
+    expect(value.tasks.map(({ description, responsible, schedule }) => ({ description, responsible, schedule }))).toEqual([
+      { description: "Prepare report (Consultant)", responsible: "Consultant", schedule: "July-November 2026" },
+      { description: "Provide support (EDCTC Staff)", responsible: "EDCTC Staff", schedule: "as needed" },
+      { description: "Publish material", responsible: "Agency director", schedule: "" },
+    ]);
+    expect(value.products[0].schedule).toBe("");
+    expect(element.currentActivities).toContain("(Consultant) . July-November 2026");
+  });
+
   it("copies source narrative without promoting prior figures, schedule or owners", () => {
     const source = sourceRecord();
     const proposed = proposeSourceElement(source, source.extraction_json.elements[0]);

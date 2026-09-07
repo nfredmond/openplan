@@ -1,7 +1,14 @@
 import type { WorkProgramDraft } from "./schema";
 import type { WorkProgramSourceExtraction } from "./source-extraction";
 
+export type WorkProgramExtractionVersion = {
+  id: string; source_id: string; document_extraction_id: string;
+  extraction_json: WorkProgramSourceExtraction; content_sha256: string;
+  page_count: number; created_at: string;
+};
 export type WorkProgramSource = {
+  versions?: WorkProgramExtractionVersion[];
+  selectedVersionId?: string | null;
   id: string;
   document_id: string;
   document_checksum: string;
@@ -28,3 +35,5 @@ export type WorkProgramPreparation = {
   latest: WorkProgramRevision | null;
   revisions: Omit<WorkProgramRevision, "content_json">[];
 };
+
+export type WorkProgramPageImage = { sourceId: string; page: number; dataUrl: string; checksum: string };

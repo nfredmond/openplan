@@ -1,50 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { authorizeWorkProgram, loadWorkProgramPreparation } from "@/lib/programs/work-program/server";
-import { buildWorkProgramHtml, buildWorkProgramWorkbook, writeWorkProgramWorkbook } from "@/lib/programs/work-program/export";
-import { workProgramDraftSchema } from "@/lib/programs/work-program/schema";
-import { validateWorkProgramSources } from "@/lib/programs/work-program/source-review";
-import { renderReportPdf } from "@/lib/reports/pdf";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import type { WorkProgramRevision } from "@/lib/programs/work-program/types";
+import { authorizeWorkProgram } from "@/lib/programs/work-program/server";
+import { createServiceRoleClient } from "@/lib/supabase/server";
+import { readAssistantExecutionSource } from "@/lib/assistant/action-approval-server";
 
-const querySchema = z.object({ revision: z.coerce.number().int().positive(), format: z.enum(["html", "pdf", "xlsx"]) }).strict();
+const querySchema = z.object({ revision: z.coerce.number().int().positive(), format: z.enum(["html", "pdf", "xlsx"]), download: z.enum(["1"]).optional() }).strict();
+type Context = { params: Promise<{ programId: string }> };
 
-export async function GET(request: NextRequest, context: { params: Promise<{ programId: string }> }) {
+/** Rendering is durable background work; GET only reads status or delivers a retained file. */
+export async function GET(request: NextRequest, context: Context) {
   const audit = createApiAuditLogger("programs.workProgram.export", request);
-  try {
-    const { programId } = await context.params;
-    const access = await authorizeWorkProgram(request, programId, false);
-    if (access.response) return access.response;
-    const query = querySchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
-    if (!query.success) return NextResponse.json({ error: "Choose a saved revision and export format" }, { status: 400 });
-    const result = await access.supabase.from("program_work_program_revisions")
-      .select("id, revision, previous_revision_id, request_id, content_json, content_sha256, source_ids, created_by, created_at")
-      .eq("program_id", programId).eq("revision", query.data.revision).maybeSingle();
-    if (result.error) return NextResponse.json({ error: "The saved revision could not be read" }, { status: 503 });
-    if (!result.data) return NextResponse.json({ error: "Revision not found" }, { status: 404 });
-    const revision = result.data as WorkProgramRevision;
-    const parsed = workProgramDraftSchema.safeParse(revision.content_json);
-    if (!parsed.success) return NextResponse.json({ error: "The saved proposal failed validation; export is withheld" }, { status: 409 });
-    const preparation = await loadWorkProgramPreparation(access.supabase, programId);
-    if (!revision.source_ids && query.data.format !== "html") return NextResponse.json({ error: "This early development revision has no frozen source register. Its text remains readable in history; save a new revision to produce a source-bound export." }, { status: 409 });
-    const sourceIds = new Set(revision.source_ids ?? parsed.data.elements.flatMap((element) => element.source ? [element.source.sourceId] : []));
-    const sources = preparation.sources.filter((source) => sourceIds.has(source.id));
-    if (sources.length !== sourceIds.size) return NextResponse.json({ error: "A source in the frozen revision is unavailable; export is withheld" }, { status: 409 });
-    if (validateWorkProgramSources(parsed.data, sources)) return NextResponse.json({ error: "The revision's retained source references could not be verified" }, { status: 409 });
-    const headers: Record<string, string> = { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff", "X-OpenPlan-Revision-SHA256": revision.content_sha256 };
-    const name = `work-program-r${revision.revision}`;
-    if (query.data.format === "xlsx") {
-      const bytes = await writeWorkProgramWorkbook(buildWorkProgramWorkbook(revision, sources));
-      return new NextResponse(new Uint8Array(bytes), { headers: { ...headers, "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Content-Disposition": `attachment; filename="${name}.xlsx"` } });
-    }
-    const html = buildWorkProgramHtml(revision, sources).replace("<body>", revision.source_ids ? "<body>" : '<body><p class="notice">Early development revision: the complete source register was not captured. Only directly cited work-element sources are shown. Save a new revision for a complete source-bound PDF or XLSX.</p>');
-    if (query.data.format === "html") return new NextResponse(html, { headers: { ...headers, "Content-Type": "text/html; charset=utf-8", "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'self'" } });
-    const pdf = await renderReportPdf(html, { title: `${parsed.data.agency} work program proposal`, generatedAt: revision.created_at, footerLabel: `Preparation revision ${revision.revision}` });
-    audit.info("work_program_pdf_rendered", { programId, revision: revision.revision, engine: pdf.engine });
-    return new NextResponse(new Uint8Array(pdf.bytes), { headers: { ...headers, "Content-Type": "application/pdf", "Content-Disposition": `attachment; filename="${name}.pdf"`, "X-OpenPlan-Pdf-Engine": pdf.engine } });
-  } catch (error) {
-    audit.error("work_program_export_failed", { error });
-    return NextResponse.json({ error: "The complete export could not be produced. The saved proposal remains available; retry after the service recovers." }, { status: 503 });
-  }
+  const {programId} = await context.params;
+  const access = await authorizeWorkProgram(request,programId,false);
+  if(access.response) { audit.warn("export_access_refused", { status: access.response.status }); return access.response; }
+  const query = querySchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
+  if(!query.success) return NextResponse.json({error:"Choose a saved revision and format"},{status:400});
+  const revision = await access.supabase.from("program_work_program_revisions").select("id, content_sha256").eq("program_id",programId).eq("revision",query.data.revision).maybeSingle();
+  if(revision.error) return NextResponse.json({error:"Saved revision unavailable"},{status:503});
+  if(!revision.data) return NextResponse.json({error:"Revision not found"},{status:404});
+  const artifact = await access.supabase.from("kb_documents").select("id, checksum, status").eq("work_program_revision_id",revision.data.id).eq("work_program_export_format",query.data.format).maybeSingle();
+  if(artifact.error) return NextResponse.json({error:"Review file status unavailable"},{status:503});
+  if(!artifact.data) return NextResponse.json({status:"not_prepared"},{headers:{"Cache-Control":"private, no-store"}});
+  if(query.data.download && artifact.data.checksum) return new NextResponse(null, { status: 307, headers: { Location: `/api/knowledge-base/documents/${artifact.data.id}/download?delivery=authenticated`, "Cache-Control": "private, no-store" } });
+  const job = await access.supabase.from("kb_ocr_jobs").select("id, status, progress, failure_detail, message").eq("document_id",artifact.data.id).eq("job_kind","work_program_export").order("created_at",{ascending:false}).limit(1).maybeSingle();
+  if(job.error) return NextResponse.json({error:"Review file status unavailable"},{status:503});
+  return NextResponse.json({status:job.data?.status??"not_prepared",job:job.data,artifact:artifact.data,revisionHash:revision.data.content_sha256},{headers:{"Cache-Control":"private, no-store"}});
+}
+
+export async function POST(request: NextRequest, context: Context) {
+  const audit = createApiAuditLogger("programs.workProgram.export", request);
+  const {programId} = await context.params;
+  const access = await authorizeWorkProgram(request,programId,false);
+  if(access.response) { audit.warn("export_access_refused", { status: access.response.status }); return access.response; }
+  if(readAssistantExecutionSource(request)!=="manual") return NextResponse.json({error:"Open the proposal to prepare review files; this is not a registered agent write action."},{status:403});
+  const query = querySchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
+  if(!query.success) return NextResponse.json({error:"Choose a saved revision and format"},{status:400});
+  const job = await createServiceRoleClient().rpc("enqueue_work_program_export",{p_program_id:programId,p_revision:query.data.revision,p_format:query.data.format,p_actor_id:access.user.id});
+  if(job.error) return NextResponse.json({error:"Review file could not be queued. The saved proposal remains available."},{status:job.error.code==="42501"?403:503});
+  audit.info("export_accepted", { programId, revision: query.data.revision, format: query.data.format });
+  return NextResponse.json({job:job.data},{status:202,headers:{"Cache-Control":"private, no-store"}});
 }

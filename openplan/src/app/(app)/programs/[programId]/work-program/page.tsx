@@ -30,10 +30,13 @@ export default async function WorkProgramPage({ params }: { params: Promise<{ pr
       projects.push(...(result.data ?? []));
       if ((result.data?.length ?? 0) < 100) break;
     }
+    const staff = await supabase.from("invoicing_staff").select("id, name").eq("workspace_id", access.program.workspace_id).order("name");
+    const contracts = await supabase.from("invoicing_engagements").select("id, title").eq("workspace_id", access.program.workspace_id).order("title");
+    if (staff.error || contracts.error) throw new Error("Staff and contracts could not be read");
     return <section className="space-y-6 min-w-0">
       <Link href={`/programs/${programId}`} className="underline">Back to {access.program.title}</Link>
-      <header><h1 className="text-3xl font-semibold">Work program preparation</h1><p className="mt-2 text-muted-foreground">Prepare an OWP, UPWP or agency work program from retained sources. Review the proposed narrative and tables separately with planning and finance staff.</p></header>
-      <WorkProgramEditor programId={programId} workspaceId={access.program.workspace_id} userId={user.id} agency={access.program.sponsor_agency ?? ""} initial={preparation} documents={documents} projects={projects} canWrite={canAccessWorkspaceAction("programs.write", access.membership.role)} />
+      <header><h1 className="text-3xl font-semibold">Work program preparation</h1><p className="mt-2 text-muted-foreground">Prepare an OWP, UPWP or agency work program from retained sources. Link proposed narrative, funding and staffing to the retained originals.</p></header>
+      <WorkProgramEditor programId={programId} workspaceId={access.program.workspace_id} userId={user.id} agency={access.program.sponsor_agency ?? ""} initial={preparation} documents={documents} projects={projects} staff={(staff.data ?? []).map((row) => ({ value: row.id, label: row.name }))} contracts={(contracts.data ?? []).map((row) => ({ value: row.id, label: row.title }))} canWrite={canAccessWorkspaceAction("programs.write", access.membership.role)} />
     </section>;
   } catch {
     return <section className="space-y-4"><Link href={`/programs/${programId}`} className="underline">Back to program</Link><p role="alert">The work program could not be loaded. Check Workspace setup &amp; health and retry. Your saved proposal is unchanged.</p></section>;

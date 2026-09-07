@@ -67,6 +67,7 @@ import { stripSourceComments } from "./helpers/source-text";
  * `src/`. Every entry is a claim that can be checked by reading the route.
  */
 const EXTERNAL_CALLERS: Record<string, string> = {
+  "api/knowledge-base/extraction-dispatch": "workers/ocr_worker/main.py polls its configured OPENPLAN_KB_OCR_DISPATCH_URL to recover queued documents and cancellation requests.",
   "api/health":
     "Uptime monitoring and container orchestration probe this; it exists to be called from outside.",
   "api/geographies/equity-designation/ingest":

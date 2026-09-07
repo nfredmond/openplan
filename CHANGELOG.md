@@ -19,9 +19,28 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- OWP preparation development adds immutable extraction versions, structured funding,
+  staffing and match calculations, draft recovery, and retained revision-specific
+  HTML/PDF/XLSX rendering in the Documents worker. Engineering acceptance is still
+  in progress; no adoption, spending authorization or release pass is claimed.
+- Apply these additive migrations before the updated application/worker:
+  `20260907000001_document_extraction_recovery.sql`,
+  `20260907000002_work_program_extraction_versions.sql`,
+  `20260907000003_work_program_preparation_references.sql`,
+  `20260907000004_work_program_export_custody.sql`,
+  `20260907000005_work_program_recovery_forward_repair.sql`, and
+  `20260907000006_document_extraction_cancel.sql`.
+  The forward repair supports a development stack that applied the first four
+  versions before their final function corrections. Original files, old revisions
+  and existing search chunks remain retained. The Documents bucket additionally
+  accepts private generated HTML files.
+- Local `db:sync` now verifies that the app and migration target name the same
+  Supabase origin, using Next.js environment precedence. Set
+  `OPENPLAN_SUPABASE_WORKDIR` when operating an isolated local stack.
+
 - Programs now has an initial OWP/UPWP preparation editor: retain predecessor PDFs,
   review page references, propose continuing work and budgets, save revisions and
-  export a draft PDF/XLSX for planner/finance review. This does not complete agency-wide
+  export a draft PDF/XLSX for independent preparation review. This does not complete agency-wide
   reconciliation, adoption or the full OWP lifecycle. Browser downloads remain
   blocked in the local acceptance profile; see the September 6 handoff evidence.
 - Before running the preparation editor, apply additive migrations

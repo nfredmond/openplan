@@ -167,6 +167,10 @@ const UNREAD_COLUMNS: ReadonlyArray<{
       "look like a per-group demographic breakdown the product does not have.",
   },
 
+  ...[
+    "kb_ocr_job_callbacks.applied_payload_sha256", "kb_ocr_job_callbacks.ocr_job_id", "kb_ocr_job_callbacks.payload_bytes",
+    "kb_ocr_jobs.lease_token", "kb_ocr_jobs.lease_until",
+  ].map((column) => ({column, category: "READ_IN_SQL" as const, reason: "Transactional callback deduplication and export-lease RPCs read these fields; the Documents worker also renews and verifies leases outside src/. Live recovery tests exercise the stored values."})),
   // ---- READ_IN_SQL: the database reads these; TypeScript never names them --
   ...[
     ["census_tracts.households_zero_vehicle", "The numerator of `pct_zero_vehicle` in the census_tracts_computed view. TypeScript reads the computed percentage, never the raw count."],

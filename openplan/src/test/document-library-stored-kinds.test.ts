@@ -17,6 +17,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+vi.mock("server-only", () => ({}));
 import {
   DEFAULT_KB_DOCUMENT_MAX_BYTES,
   KB_DOCUMENT_COLUMNS,

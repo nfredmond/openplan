@@ -1,14 +1,17 @@
 import * as XLSX from "xlsx";
 import JSZip from "jszip";
+import { formatWorkProgramWorkbook } from "./workbook-layout";
+import { buildStructuredWorkProgramHtml, buildStructuredWorkProgramWorkbook } from "./export-structured";
 import { reconcileWorkProgram } from "./schema";
 import type { WorkProgramRevision, WorkProgramSource } from "./types";
 
 const escape = (value: unknown) => String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]!);
 const paragraph = (value: string) => `<p>${escape(value || "Unresolved / not entered").replaceAll("\n", "<br>")}</p>`;
 const heading = (title: string, value: string) => `<h3>${escape(title)}</h3>${paragraph(value)}`;
-const notice = "Preparation draft for separate planner and finance review. No adoption, spending authority, actual cost or live assignment is established by this document. Missing figures remain unresolved. Prior balances are reference information and are not added to proposed revenue.";
+const notice = "Preparation draft for review. No adoption, spending authority, actual cost or live assignment is established by this document. Missing figures remain unresolved. Prior balances are reference information and are not added to proposed revenue.";
 
-export function buildWorkProgramHtml(revision: WorkProgramRevision, sources: WorkProgramSource[]) {
+export function buildWorkProgramHtml(revision: WorkProgramRevision, sources: WorkProgramSource[], pageImages: import("./types").WorkProgramPageImage[] = []) {
+  if (revision.content_json.preparation) return buildStructuredWorkProgramHtml(revision, sources, pageImages);
   const draft = revision.content_json;
   const totals = reconcileWorkProgram(draft);
   const byId = new Map(sources.map((source) => [source.id, source]));
@@ -28,6 +31,7 @@ export function buildWorkProgramHtml(revision: WorkProgramRevision, sources: Wor
 type Cell = string | number | null;
 /** Workbook cells keep user text as strings; formulas are authored only by this exporter. */
 export function buildWorkProgramWorkbook(revision: WorkProgramRevision, sources: WorkProgramSource[]) {
+  if (revision.content_json.preparation) return buildStructuredWorkProgramWorkbook(revision, sources);
   const draft = revision.content_json, totals = reconcileWorkProgram(draft);
   const workbook = XLSX.utils.book_new();
   function sheet(name: string, rows: Cell[][], widths: number[]) {
@@ -92,5 +96,6 @@ export async function writeWorkProgramWorkbook(workbook: XLSX.WorkBook): Promise
   const xml = await part.async("string");
   if (!xml.endsWith("</workbook>")) throw new Error("The generated workbook definition is incomplete");
   zip.file("xl/workbook.xml", xml.replace("</workbook>", '<calcPr calcId="0" calcMode="auto" fullCalcOnLoad="1" forceFullCalc="1"/></workbook>'));
+  if (workbook.Sheets["Funding sources"]) await formatWorkProgramWorkbook(zip, workbook);
   return zip.generateAsync({ type: "uint8array", compression: "DEFLATE" });
 }

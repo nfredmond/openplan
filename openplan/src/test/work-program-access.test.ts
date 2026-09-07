@@ -63,7 +63,14 @@ describe("immutable source and revision loading", () => {
     expect(result.sources).toHaveLength(101); expect(result.sources[100].title).toBe("Original 100");
     expect(calls[0]).toMatchObject({ table: "program_work_program_revisions" });
     expect(calls[0].projection).toContain("content_json");
-    for (const call of calls) expect(call.filters).toContainEqual(["program_id", programId]);
+    for (const call of calls.filter((entry) => entry.table !== "program_work_program_extractions")) expect(call.filters).toContainEqual(["program_id", programId]);
+    const versionCalls = calls.filter((entry) => entry.table === "program_work_program_extractions");
+    expect(versionCalls).toHaveLength(101);
+    for (const [index, call] of versionCalls.entries()) {
+      expect(call.filters).toEqual([["source_id", `source-${index}`]]);
+      expect(call.projection).toBe("id, source_id, document_extraction_id, extraction_json, content_sha256, page_count, created_at");
+      expect(call.range).toEqual([0,99]);
+    }
     expect(calls.filter((call) => call.table.endsWith("sources")).map((call) => call.range)).toEqual([[0, 99], [100, 199]]);
     expect(calls[1].projection).toBe("id, document_id, document_checksum, source_role, source_url, page_count, extraction_json, created_at, kb_documents(title)");
     expect(calls.at(-1)?.filters).toContainEqual(["lte:revision", 2]);

@@ -44,6 +44,9 @@ type DocumentRow = {
   title: string | null;
   original_filename: string | null;
   storage_ref: string | null;
+  source_kind: string;
+  content_type: string | null;
+  checksum: string | null;
 };
 
 export async function GET(request: NextRequest, context: RouteContext): Promise<NextResponse> {
@@ -67,7 +70,7 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
     // membership — a foreign document answers 404 here, not 403.
     const { data: documentData, error } = await supabase
       .from("kb_documents")
-      .select("id, workspace_id, title, original_filename, storage_ref")
+      .select("id, workspace_id, title, original_filename, storage_ref, source_kind, content_type, checksum")
       .eq("id", parsedParams.data.documentId)
       .maybeSingle();
 
@@ -128,7 +131,7 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
     const { data, error: signError } = await service.storage
       .from(ref.bucket)
       .createSignedUrl(ref.objectPath, KB_DOCUMENT_SIGNED_URL_TTL_SECONDS, {
-        download: filename,
+        ...(request.nextUrl.searchParams.get("disposition") === "inline" && document.source_kind === "uploaded_pdf" ? {} : { download: filename }),
       });
 
     if (signError || !data?.signedUrl) {
@@ -144,6 +147,11 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
       workspaceId: document.workspace_id,
       userId: user.id,
     });
+    if (request.nextUrl.searchParams.get("delivery") === "authenticated" || (request.nextUrl.searchParams.get("disposition") === "inline" && document.source_kind === "uploaded_pdf")) {
+      const original = await fetch(data.signedUrl, { signal: AbortSignal.timeout(30_000) });
+      if (!original.ok || !original.body) return NextResponse.json({ error: "Retained original unavailable" }, { status: 503 });
+      return new NextResponse(original.body, { headers: { "Content-Type": document.content_type || "application/octet-stream", "Content-Security-Policy": "sandbox allow-downloads; default-src 'none'; style-src 'unsafe-inline'; img-src data:", "X-OpenPlan-File-SHA256": document.checksum || "unavailable", "Content-Disposition": `${request.nextUrl.searchParams.get("disposition") === "inline" && document.source_kind === "uploaded_pdf" ? "inline" : "attachment"}; filename="${filename}"`, "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" } });
+    }
     return NextResponse.redirect(data.signedUrl);
   } catch (error) {
     audit.error("kb_document_download_unhandled_error", { error });

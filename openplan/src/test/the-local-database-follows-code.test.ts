@@ -11,7 +11,7 @@ describe("the database follows checked-out code", () => {
   it("applies pending local migrations before the development server starts", () => {
     expect(packageJson.scripts.predev).toBe("npm run db:sync");
     expect(packageJson.scripts["db:sync"]).toBe(
-      "npm exec -- supabase migration up --local --yes --output-format json",
+      "node scripts/ops/sync-local-db.mjs",
     );
     expect(packageJson.scripts["db:sync"]).not.toContain("db reset");
     expect(packageJson.scripts["db:sync"]).not.toContain("--linked");

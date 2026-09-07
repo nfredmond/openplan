@@ -27,20 +27,7 @@ export async function loadWorkProgramPreparation(supabase: Awaited<ReturnType<ty
   const latestResult = await supabase.from("program_work_program_revisions").select(`${revisionColumns}, content_json`).eq("program_id", programId).order("revision", { ascending: false }).limit(1).maybeSingle();
   if (latestResult.error) throw new Error("Could not load the latest work-program revision");
   const latest = latestResult.data as WorkProgramRevision | null;
-  const sources: WorkProgramSource[] = [];
-  for (let offset = 0; ; offset += 100) {
-    const result = await supabase.from("program_work_program_sources").select(sourceColumns).eq("program_id", programId).order("created_at").order("id").range(offset, offset + 99);
-    if (result.error) throw new Error("Could not load retained work-program sources");
-    const rows = result.data ?? [];
-    for (const raw of rows) {
-      const row = raw as unknown as Omit<WorkProgramSource, "title"> & { kb_documents: { title: string } | { title: string }[] | null };
-      const document = Array.isArray(row.kb_documents) ? row.kb_documents[0] : row.kb_documents;
-      if (!document) throw new Error("A retained source document is unavailable");
-      const { kb_documents: _document, ...source } = row;
-      sources.push({ ...source, title: document.title });
-    }
-    if (rows.length < 100) break;
-  }
+  const sources = await loadWorkProgramSources(supabase, programId);
   const revisions: WorkProgramPreparation["revisions"] = [];
   // Bound history to the captured latest revision so a concurrent save cannot
   // produce a history that appears newer than the document being edited.
@@ -52,4 +39,36 @@ export async function loadWorkProgramPreparation(supabase: Awaited<ReturnType<ty
     if (rows.length < 100) break;
   }
   return { sources, latest, revisions };
+}
+
+/** Read only the immutable source inventory requested by a saved revision. */
+export async function loadWorkProgramSources(supabase: Awaited<ReturnType<typeof createClient>>, programId: string, sourceIds?: string[]): Promise<WorkProgramSource[]> {
+  if (sourceIds?.length === 0) return [];
+  const sources: WorkProgramSource[] = [];
+  for (let offset = 0; ; offset += 100) {
+    let query = supabase.from("program_work_program_sources").select(sourceColumns).eq("program_id", programId);
+    if (sourceIds) query = query.in("id", sourceIds);
+    const result = await query.order("created_at").order("id").range(offset, offset + 99);
+    if (result.error) throw new Error("Could not load retained work-program sources");
+    const rows = result.data ?? [];
+    for (const raw of rows) {
+      const row = raw as unknown as Omit<WorkProgramSource, "title"> & { kb_documents: { title: string } | { title: string }[] | null };
+      const document = Array.isArray(row.kb_documents) ? row.kb_documents[0] : row.kb_documents;
+      if (!document) throw new Error("A retained source document is unavailable");
+      const { kb_documents: _document, ...source } = row;
+      sources.push({ ...source, title: document.title });
+    }
+    if (rows.length < 100) break;
+  }
+  for (const source of sources) {
+    const versions = [];
+    for (let offset = 0; ; offset += 100) {
+      const result = await supabase.from("program_work_program_extractions").select("id, source_id, document_extraction_id, extraction_json, content_sha256, page_count, created_at").eq("source_id", source.id).order("created_at").order("id").range(offset, offset + 99);
+      if (result.error) throw new Error("Could not load source extraction versions");
+      versions.push(...(result.data ?? []));
+      if ((result.data?.length ?? 0) < 100) break;
+    }
+    source.versions = versions;
+  }
+  return sources;
 }
