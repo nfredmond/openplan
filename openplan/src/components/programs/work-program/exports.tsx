@@ -1,5 +1,6 @@
 "use client";
 import {useEffect,useState} from "react";
+import {downloadAuthenticatedArtifact} from "@/lib/export/download";
 import {Button} from "@/components/ui/button";
 const formats = ["html","pdf","xlsx"] as const;
 type Format = typeof formats[number];
@@ -7,6 +8,7 @@ type State = {status:string; job?:{failure_detail?:string};artifact?:{checksum:s
 export function WorkProgramExports({programId,revision}:{programId:string;revision:number}) {
   const [states,setStates]=useState<Partial<Record<Format,State>>>({});
   const [error,setError]=useState<string|null>(null);
+  const [downloading,setDownloading]=useState<Format|null>(null);
   const [busy,setBusy]=useState(false);
   const [generation,setGeneration]=useState(0);
   const url=(format:Format)=>`/api/programs/${programId}/work-program/export?revision=${revision}&format=${format}`;
@@ -26,6 +28,14 @@ export function WorkProgramExports({programId,revision}:{programId:string;revisi
     void read();
     return ()=>{active=false;clearTimeout(timer);};
   },[programId,revision,generation]);
+  async function download(format:Format) {
+    const checksum=states[format]?.artifact?.checksum;
+    if(!checksum)return;
+    setDownloading(format);setError(null);
+    try {await downloadAuthenticatedArtifact(`${url(format)}&download=1`,`work-program-revision-${revision}.${format}`,checksum);}
+    catch(e){setError(e instanceof Error?e.message:"Download unavailable");}
+    finally{setDownloading(null);}
+  }
   async function prepare() {
     setBusy(true);setError(null);
     try {
@@ -38,5 +48,5 @@ export function WorkProgramExports({programId,revision}:{programId:string;revisi
     } catch(e) {setError(e instanceof Error?e.message:"Preparation unavailable");}
     finally {setBusy(false);setGeneration(value=>value+1);}
   }
-  return <div className="space-y-2"><Button type="button" variant="outline" disabled={busy} onClick={()=>void prepare()}>{busy?"Queuing review files…":"Prepare or retry review files"}</Button><p className="text-xs">Rendering continues in the Documents worker after leaving this page. Each file uses this saved revision.</p>{error&&<p role="alert">{error}</p>}<ul className="space-y-2">{formats.map(format=><li key={format}>{states[format]?.status==="succeeded"&&states[format]?.artifact?.checksum?<><a className="underline" href={`${url(format)}&download=1`}>Download {format.toUpperCase()}</a><p className="break-all text-xs">File SHA-256: {states[format]?.artifact?.checksum}</p></>:<span>{format.toUpperCase()}: {states[format]?.status??"Loading status"}{states[format]?.job?.failure_detail?` — ${states[format]?.job?.failure_detail}`:""}</span>}</li>)}</ul></div>;
+  return <div className="space-y-2"><Button type="button" variant="outline" disabled={busy} onClick={()=>void prepare()}>{busy?"Queuing review files…":"Prepare or retry review files"}</Button><p className="text-xs">Rendering continues in the Documents worker after leaving this page. Each file uses this saved revision.</p>{error&&<p role="alert">{error}</p>}<ul className="space-y-2">{formats.map(format=><li key={format}>{states[format]?.status==="succeeded"&&states[format]?.artifact?.checksum?<><Button type="button" variant="outline" disabled={downloading!==null} onClick={()=>void download(format)}>{downloading===format?"Downloading…":`Download ${format.toUpperCase()}`}</Button><p className="break-all text-xs">File SHA-256: {states[format]?.artifact?.checksum}</p></>:<span>{format.toUpperCase()}: {states[format]?.status??"Loading status"}{states[format]?.job?.failure_detail?` — ${states[format]?.job?.failure_detail}`:""}</span>}</li>)}</ul></div>;
 }

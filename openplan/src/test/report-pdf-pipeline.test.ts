@@ -99,6 +99,16 @@ describe("detectPdfEngineAvailability", () => {
 });
 
 describe("renderReportPdf", () => {
+  it("carries safe revision labels and running page numbers into Chrome output", async () => {
+    existsSyncMock.mockReturnValue(true);
+    const pdf = vi.fn().mockResolvedValue(Buffer.from("%PDF-chrome"));
+    launchMock.mockResolvedValue({ newPage: async () => ({ setContent: async () => {}, pdf }), close: async () => {} });
+    await renderReportPdf(REPORT_HTML, { title: "Packet", generatedAt: null, footerLabel: "Revision <3> & review" });
+    expect(pdf).toHaveBeenCalledWith(expect.objectContaining({ displayHeaderFooter: true, footerTemplate: expect.stringContaining("Revision &lt;3&gt; &amp; review") }));
+    expect(pdf.mock.calls[0][0].footerTemplate).toContain('class="pageNumber"');
+    expect(pdf.mock.calls[0][0].footerTemplate).toContain('class="totalPages"');
+  });
+
   const ORIGINAL = { ...process.env };
 
   beforeEach(() => {

@@ -8,8 +8,8 @@ function sourceActivities(text: string, responsible: string) {
     const line = part.replace(/\s+/g, " ").trim();
     const scheduled = line.match(/(?:\.{2,}|…)[.\s…]*(.*)$/)
       ?? line.match(/(?<=\))\s*\.?\s*((?:as needed|ongoing|quarterly|annually|monthly|July|August|September|October|November|December|January|February|March|April|May|June)\b.*)$/i);
-    const explicitRole = line.match(/\(([^()]*(?:staff|consultant|director|planner)[^()]*)\)/i)?.[1];
-    return { id: crypto.randomUUID(), description: (scheduled ? line.slice(0, scheduled.index) : line).replace(/^\d+\.\s*/, "").trim(), responsible: explicitRole ?? responsible, schedule: scheduled?.[1].replace(/[.…]{2,}/g, " ").replace(/\s+/g, " ").trim() ?? "" };
+    const explicitRole = line.match(/\(([^()]*(?:staff|consultant|director|planner|operator)[^()]*)\)/i)?.[1];
+    return { id: crypto.randomUUID(), description: (scheduled ? line.slice(0, scheduled.index) : line).replace(/^\d+\.\s*/, "").trim(), responsible: explicitRole ?? responsible, schedule: scheduled?.[1].replace(explicitRole ? `(${explicitRole})` : /$^/, "").replace(/[.…]{2,}/g, " ").replace(/\s+/g, " ").trim() ?? "" };
   });
 }
 

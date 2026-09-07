@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { homedir } from "node:os";
 import { setTimeout as delay } from "node:timers/promises";
 import { createServiceRoleClient } from "../../src/lib/supabase/server";
-import { renderWorkProgramExport } from "../../src/lib/programs/work-program/export-job";
+import { loadWorkProgramExportIdentity, renderWorkProgramExport } from "../../src/lib/programs/work-program/export-job";
 
 async function main() {
 const service = createServiceRoleClient();
@@ -22,13 +22,14 @@ while (!stopping) {
   if (!job?.id) { await delay(2000); continue; }
   const heartbeat = setInterval(() => { void service.from("kb_ocr_jobs").update({ lease_until: new Date(Date.now()+600_000).toISOString() }).eq("id", job.id).eq("lease_token", token).eq("status", "running").then(({error})=>{if(error) console.error("Export lease renewal unavailable.");}); }, 30_000);
   try {
+    const identity = await loadWorkProgramExportIdentity(job.document_id);
     const folder = join(root, job.id);
     await mkdir(folder, { recursive: true, mode: 0o700 });
     let artifact: Awaited<ReturnType<typeof renderWorkProgramExport>> | null = null;
     try {
       const metadata = JSON.parse(await readFile(join(folder, "artifact.json"), "utf8"));
       const bytes = await readFile(join(folder, "artifact.bin"));
-      if (metadata.documentId === job.document_id && typeof metadata.checksum === "string" && createHash("sha256").update(bytes).digest("hex") === metadata.checksum) artifact = { ...metadata, bytes };
+      if (Object.entries(identity).every(([key, value]) => metadata[key] === value) && typeof metadata.engine === "string" && typeof metadata.checksum === "string" && createHash("sha256").update(bytes).digest("hex") === metadata.checksum) artifact = { ...metadata, bytes };
     } catch { /* Interrupted rendering or a corrupt cache is recoverable from the immutable revision. */ }
     if (!artifact) {
       artifact = await renderWorkProgramExport(job.document_id);
@@ -38,8 +39,8 @@ while (!stopping) {
       await writeFile(join(folder,"artifact.json.partial"),JSON.stringify({...metadata,documentId:job.document_id}),{mode:0o600});
       await rename(join(folder,"artifact.json.partial"),join(folder,"artifact.json"));
     }
-    const objectPath = `${artifact.workspaceId}/${job.document_id}/${artifact.checksum}.${artifact.format}`;
-    const uploaded = await service.storage.from("kb-documents").upload(objectPath,artifact.bytes,{contentType:artifact.contentType,upsert:false});
+    const objectPath = `${identity.workspaceId}/${identity.documentId}/${artifact.checksum}.${identity.format}`;
+    const uploaded = await service.storage.from("kb-documents").upload(objectPath,artifact.bytes,{contentType:identity.contentType,upsert:false});
     if (uploaded.error) {
       // A restart after storage commit must prove the retained bytes, not overwrite them.
       const existing = await service.storage.from("kb-documents").download(objectPath);

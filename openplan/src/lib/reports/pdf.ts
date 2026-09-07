@@ -32,6 +32,7 @@ export type PdfFormat = "Letter" | "A4";
 export type RenderHtmlToPdfOptions = {
   format?: PdfFormat;
   marginsPx?: number;
+  footerLabel?: string;
 };
 
 /** Where a self-hosted deployment is looked at when no path is configured. */
@@ -82,6 +83,11 @@ export async function renderHtmlToPdf(
     const pdf = await page.pdf({
       format,
       printBackground: true,
+      ...(options.footerLabel ? {
+        displayHeaderFooter: true,
+        headerTemplate: "<span></span>",
+        footerTemplate: `<div style="font-family:Arial;font-size:8px;width:100%;padding:0 48px;text-align:right">${options.footerLabel.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]!)} · Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>`,
+      } : {}),
       margin: { top: marginPx, right: marginPx, bottom: marginPx, left: marginPx },
     });
     return Buffer.from(pdf);
@@ -168,7 +174,7 @@ export async function renderReportPdf(
 
   if (availability.chromeAvailable) {
     try {
-      const bytes = await renderHtmlToPdf(html, { format: options.format });
+      const bytes = await renderHtmlToPdf(html, { format: options.format, footerLabel: options.footerLabel });
       return { bytes: new Uint8Array(bytes), engine: "chrome", pageCount: null, disclosure: null };
     } catch {
       // Fall through to the built-in writer. The caller audits the reason; a

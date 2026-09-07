@@ -8,6 +8,16 @@ import { buildWorkProgramHtml, buildWorkProgramWorkbook, writeWorkProgramWorkboo
 import { renderReportPdf } from "@/lib/reports/pdf";
 import type { WorkProgramRevision } from "./types";
 
+/** Cache recovery must bind saved bytes to current immutable document and revision identity. */
+export async function loadWorkProgramExportIdentity(documentId: string) {
+  const service = createServiceRoleClient();
+  const doc = await service.from("kb_documents").select("id, workspace_id, work_program_revision_id, work_program_export_format, content_type").eq("id", documentId).single();
+  if (doc.error || !doc.data?.work_program_revision_id || !["html", "pdf", "xlsx"].includes(doc.data.work_program_export_format)) throw new Error("Export identity unavailable");
+  const saved = await service.from("program_work_program_revisions").select("id, content_sha256").eq("id", doc.data.work_program_revision_id).eq("workspace_id", doc.data.workspace_id).single();
+  if (saved.error || !saved.data) throw new Error("Export revision identity unavailable");
+  return { documentId: doc.data.id as string, workspaceId: doc.data.workspace_id as string, revisionId: saved.data.id as string, revisionHash: saved.data.content_sha256 as string, format: doc.data.work_program_export_format as "html" | "pdf" | "xlsx", contentType: doc.data.content_type as string };
+}
+
 /** Only the Documents worker calls this; the request handler records a durable job. */
 export async function renderWorkProgramExport(documentId: string) {
   const service = createServiceRoleClient();

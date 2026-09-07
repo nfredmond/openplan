@@ -1,6 +1,6 @@
 import * as XLSX from "xlsx";
 import type { WorkProgramRevision, WorkProgramSource } from "./types";
-import { reconcileStructuredWorkProgram } from "./reconciliation";
+import { fundCoversWorkProgram, reconcileStructuredWorkProgram } from "./reconciliation";
 import { selectWorkProgramSources, workProgramCoverage } from "./source-review";
 
 const esc = (value: unknown) => String(value ?? "Unresolved").replace(/\uf0b7/g, "•").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
@@ -90,9 +90,9 @@ export function buildStructuredWorkProgramWorkbook(revision: WorkProgramRevision
   d.elements.forEach((element, index) => { const row = index + 2; formula(elements, `J${row}`, `IF(AND(D${row}<>"completed",E${row}<>"informational"),1,0)`, element.disposition !== "completed" && element.budgetTreatment !== "informational" ? 1 : 0); });
   p.allocations.forEach((item, index) => {
     const row = index + 2, fund = p.funds.find((fund) => fund.id === item.fundId), enabled = r.byElement.some((entry) => entry.id === item.elementId);
-    const eligible = fund?.basis === "proposed" && !["prior_authority", "prior_balance"].includes(fund.kind);
+    const eligible = fund?.basis === "proposed" && !["prior_authority", "prior_balance"].includes(fund.kind) && fundCoversWorkProgram(fund, d);
     formula(allocations, `H${row}`, active(row), enabled ? 1 : 0);
-    formula(allocations, `I${row}`, `IFERROR(IF(AND(INDEX('Funding sources'!E$2:E$${fe},MATCH(D${row},'Funding sources'!A$2:A$${fe},0))="proposed",INDEX('Funding sources'!D$2:D$${fe},MATCH(D${row},'Funding sources'!A$2:A$${fe},0))<>"prior_authority",INDEX('Funding sources'!D$2:D$${fe},MATCH(D${row},'Funding sources'!A$2:A$${fe},0))<>"prior_balance"),1,0),0)`, eligible ? 1 : 0);
+    formula(allocations, `I${row}`, `IFERROR(IF(AND(INDEX('Funding sources'!E$2:E$${fe},MATCH(D${row},'Funding sources'!A$2:A$${fe},0))="proposed",INDEX('Funding sources'!D$2:D$${fe},MATCH(D${row},'Funding sources'!A$2:A$${fe},0))<>"prior_authority",INDEX('Funding sources'!D$2:D$${fe},MATCH(D${row},'Funding sources'!A$2:A$${fe},0))<>"prior_balance",INDEX('Funding sources'!G$2:G$${fe},MATCH(D${row},'Funding sources'!A$2:A$${fe},0))<='Program narrative'!B3,INDEX('Funding sources'!H$2:H$${fe},MATCH(D${row},'Funding sources'!A$2:A$${fe},0))>='Program narrative'!B4),1,0),0)`, eligible ? 1 : 0);
     formula(allocations, `J${row}`, `IF(H${row}=0,0,IF(AND(I${row}=1,ISNUMBER(E${row})),ROUND(E${row},2),"Unresolved"))`, !enabled ? 0 : eligible ? item.amount : null);
     formula(allocations, `K${row}`, `COUNTIFS(B$2:B$${ae},B${row},C$2:C$${ae},IF(C${row}="","",C${row}),D$2:D$${ae},D${row})`, p.allocations.filter((other) => other.elementId === item.elementId && other.taskId === item.taskId && other.fundId === item.fundId).length);
   });
@@ -113,7 +113,7 @@ export function buildStructuredWorkProgramWorkbook(revision: WorkProgramRevision
     formula(elementTotals, `D${row}`, `IF(F${row}=0,"Excluded",IF(OR(COUNTIF('Expenditures'!B$2:B$${ce},A${row})+COUNTIFS('Staffing'!B$2:B$${se},A${row},'Staffing'!L$2:L$${se},"calculate")=0,COUNTIFS('Expenditures'!B$2:B$${ce},A${row},'Expenditures'!K$2:K$${ce},"Unresolved")+COUNTIFS('Staffing'!B$2:B$${se},A${row},'Staffing'!T$2:T$${se},"Unresolved")>0),"Unresolved",ROUND(SUMIF('Expenditures'!B$2:B$${ce},A${row},'Expenditures'!K$2:K$${ce})+SUMIF('Staffing'!B$2:B$${se},A${row},'Staffing'!T$2:T$${se}),2)))`, values ? values.cost : "Excluded");
     formula(elementTotals, `E${row}`, `IF(AND(ISNUMBER(C${row}),ISNUMBER(D${row})),ROUND(C${row}-D${row},2),"Unresolved")`, values?.difference ?? null);
   });
-  p.funds.forEach((item, index) => { const row = index + 2, values = r.byFund[index]; formula(fundTotals, `D${row}`, `IF(AND('Funding sources'!E${row}="proposed",'Funding sources'!D${row}<>"prior_authority",'Funding sources'!D${row}<>"prior_balance",ISNUMBER('Funding sources'!F${row})),'Funding sources'!F${row},"Unresolved")`, values.available); formula(fundTotals, `E${row}`, `IF(COUNTIFS('Allocations'!D$2:D$${ae},A${row},'Allocations'!H$2:H$${ae},1,'Allocations'!E$2:E$${ae},"")>0,"Unresolved",ROUND(SUMIFS('Allocations'!E$2:E$${ae},'Allocations'!D$2:D$${ae},A${row},'Allocations'!H$2:H$${ae},1),2))`, values.allocated); formula(fundTotals, `F${row}`, `IF(AND(ISNUMBER(D${row}),ISNUMBER(E${row})),ROUND(D${row}-E${row},2),"Unresolved")`, values.remainder); });
+  p.funds.forEach((item, index) => { const row = index + 2, values = r.byFund[index]; formula(fundTotals, `D${row}`, `IF(AND('Funding sources'!E${row}="proposed",'Funding sources'!D${row}<>"prior_authority",'Funding sources'!D${row}<>"prior_balance",ISNUMBER('Funding sources'!F${row}),'Funding sources'!G${row}<='Program narrative'!B3,'Funding sources'!H${row}>='Program narrative'!B4),'Funding sources'!F${row},"Unresolved")`, values.available); formula(fundTotals, `E${row}`, `IF(COUNTIFS('Allocations'!D$2:D$${ae},A${row},'Allocations'!H$2:H$${ae},1,'Allocations'!E$2:E$${ae},"")>0,"Unresolved",ROUND(SUMIFS('Allocations'!E$2:E$${ae},'Allocations'!D$2:D$${ae},A${row},'Allocations'!H$2:H$${ae},1),2))`, values.allocated); formula(fundTotals, `F${row}`, `IF(AND(ISNUMBER(D${row}),ISNUMBER(E${row})),ROUND(D${row}-E${row},2),"Unresolved")`, values.remainder); });
   p.funds.forEach((item, index) => {
     const row = index + 2, values = r.byFund[index];
     formula(fundTotals, `G${row}`, `IF(OR('Funding sources'!L${row}="",'Funding sources'!M${row}=0,'Funding sources'!J${row}="unresolved"),"Unresolved",IF('Funding sources'!J${row}="not_required",0,IF(NOT(ISNUMBER('Funding sources'!K${row})),"Unresolved",IF('Funding sources'!J${row}="amount",ROUND('Funding sources'!K${row},2),IF(NOT(ISNUMBER(E${row})),"Unresolved",IF('Funding sources'!J${row}="percent_funded_amount",ROUND(E${row}*'Funding sources'!K${row}/100,2),IF(AND('Funding sources'!J${row}="percent_total_cost",'Funding sources'!K${row}<100),ROUND(E${row}*'Funding sources'!K${row}/(100-'Funding sources'!K${row}),2),"Unresolved")))))))`, values.requiredMatch);
@@ -139,6 +139,32 @@ export function buildStructuredWorkProgramWorkbook(revision: WorkProgramRevision
   for (const address of ["B3", "B4"]) dateCell("Program narrative", address);
   p.funds.forEach((_, i) => { for (const col of ["G", "H"]) dateCell("Funding sources", `${col}${i + 2}`); });
   p.staffing.forEach((_, i) => { for (const col of ["F", "G", "O", "P"]) dateCell("Staffing", `${col}${i + 2}`); });
+  const printRows: Cell[][] = [
+    ["Preparation revision", revision.revision, "Identity", revision.content_sha256],
+    ["Scope", "Engineering proposal", "Authority", "No adoption or spending authorization"],
+    ["Print content", "Summary only", "Complete review", "Use the accompanying PDF for narrative, original tables, source passages and unresolved items. Full editable data remains on the workbook tabs."],
+  ];
+  const links: { row: number; target: string; value: Cell }[] = [];
+  const printValue = (label: string, target: string, value: Cell, unit: string, note: string) => {
+    printRows.push([label, value, unit, note]); links.push({ row: printRows.length + 1, target, value });
+  };
+  printValue("Known funding subtotal", "'Reconciliation'!B7", r.knownRevenue, d.currency, "Excludes unresolved work-element totals");
+  printValue("Known expenditure subtotal", "'Reconciliation'!B8", r.knownCost, d.currency, "Excludes unresolved work-element totals");
+  printValue("Whole-program funding", "'Reconciliation'!B2", r.revenue, d.currency, "Unknown inputs remain unresolved");
+  printValue("Whole-program cost", "'Reconciliation'!B3", r.cost, d.currency, "Unknown inputs remain unresolved");
+  printValue("Duplicated allocations", "'Reconciliation'!B5", Number(summary.B5.v), "rows", "Fix duplicated work-element/task/fund combinations");
+  r.byFund.forEach((fund, index) => {
+    printValue(`${fund.name} / ${fund.vintage}`, `'Fund totals'!D${index + 2}`, fund.available, d.currency, "Proposed available amount; prior authority remains reference only");
+    printValue(`${fund.name}: allocated`, `'Fund totals'!E${index + 2}`, fund.allocated, d.currency, `Vintage ${fund.vintage}`);
+    printValue(`${fund.name}: match difference`, `'Fund totals'!I${index + 2}`, fund.matchDifference, d.currency, "Proposed minus required match; unresolved applicability is retained");
+  });
+  p.staffing.forEach((person, index) => {
+    printValue(person.role || person.staffId || "Unfilled role", `'Staffing'!H${index + 2}`, person.quantity, person.unit, `${person.periodStart} to ${person.periodEnd}; ${person.costTreatment}. No hours conversion inferred.`);
+  });
+  const printable = sheet("Print summary", ["Measure / source", "Value", "Unit / meaning", "Basis / limitation"], printRows, [36, 26, 22, 55]);
+  links.forEach(item => formula(printable, `B${item.row}`, item.target, item.value));
+  book.Workbook = { ...book.Workbook, Names: [...(book.Workbook?.Names ?? []), { Name: "_xlnm.Print_Area", Sheet: book.SheetNames.indexOf("Print summary"), Ref: `'Print summary'!$A$1:$D$${printRows.length + 1}` }] };
+  book.Sheets["Read me"].B7.v += " Print the Print summary sheet; use the PDF for the full formatted program. Wide input tabs are designed for on-screen editing, not compressed page printing.";
   // Explicit input tables already carry units. Cached formula values match the application calculation.
   void funds;
   return book;

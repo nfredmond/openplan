@@ -22,7 +22,7 @@ export type WorkProgramSourceElement = {
 };
 
 export type WorkProgramSourceExtraction = {
-  parser: "edctc-work-program-v1" | "edctc-work-program-v2" | "edctc-work-program-v3" | "edctc-work-program-v4" | "manual-page-review";
+  parser: "edctc-work-program-v1" | "edctc-work-program-v2" | "edctc-work-program-v3" | "edctc-work-program-v4" | "edctc-work-program-v5" | "manual-page-review";
   pageCount: number;
   elements: WorkProgramSourceElement[];
   warnings: string[];
@@ -70,6 +70,7 @@ function readElement(code: string, pages: (ExtractedPage & { layoutText?: string
     schedule = rows.map((line) => line.slice(0, Math.max(0, staffColumn - 4)).trim()).filter((line) => line && line !== "Completion Schedule").join(" ");
     responsible = rows.map((line) => line.slice(Math.max(0, staffColumn - 4), monthsColumn > staffColumn ? monthsColumn - 2 : undefined).trim()).filter((line) => line && !line.startsWith("Staff Responsible")).map((line) => line.replace(/^(?:Work\s+)?Element:?\s*/i, "")).filter(Boolean).join(" ");
   }
+  if (!responsible) responsible = body.match(/^Work Activities to be completed by (.+)$/m)?.[1]?.trim() ?? "";
   return {
     key: `${code}:page-${pages[0].page}`,
     code, title: title || `Work element ${code}`,
@@ -106,7 +107,7 @@ export function extractWorkProgramSource(input: ExtractedPage[]): WorkProgramSou
   }
   if (pending) elements.push(readElement(pending.code, pending.pages));
   return {
-    parser: "edctc-work-program-v4", pageCount: pages.length, elements,
+    parser: "edctc-work-program-v5", pageCount: pages.length, elements,
     warnings: [
       "Extraction is a review aid. Original agency narrative, staffing schedules, financial summaries and appendices remain in the retained PDF and require separate review.",
       ...(elements.length === 0 ? ["No work-element headings were identified. Use manual page references."] : []),

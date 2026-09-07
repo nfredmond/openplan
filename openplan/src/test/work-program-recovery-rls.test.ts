@@ -90,4 +90,21 @@ live("Documents and OWP recovery transactions",()=>{
       BEGIN DELETE FROM public.kb_documents WHERE id=j.document_id; RAISE EXCEPTION 'Artifact deleted'; EXCEPTION WHEN foreign_key_violation THEN NULL; END;
       BEGIN PERFORM public.enqueue_work_program_export('@program',1,'pdf','@outsider'); RAISE EXCEPTION 'Foreign export queued'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
     END $$;`));
+  it("cancels only an accessible active extraction and preserves its original",()=>exercise(`
+    DO $$ DECLARE j public.kb_ocr_jobs; BEGIN
+      SELECT * INTO j FROM public.enqueue_kb_extraction('@document','@owner','cancel-test','text',ARRAY['eng'],'http://local/callback');
+      BEGIN PERFORM public.cancel_kb_extraction('@document',j.id,'@viewer'); RAISE EXCEPTION 'Viewer cancelled'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+      BEGIN PERFORM public.cancel_kb_extraction('@document',j.id,'@outsider'); RAISE EXCEPTION 'Outsider cancelled'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+      IF public.cancel_kb_extraction('@document',gen_random_uuid(),'@owner') THEN RAISE EXCEPTION 'Foreign job cancelled'; END IF;
+      IF NOT public.cancel_kb_extraction('@document',j.id,'@member') THEN RAISE EXCEPTION 'Member cancellation lost'; END IF;
+      IF NOT public.cancel_kb_extraction('@document',j.id,'@owner') THEN RAISE EXCEPTION 'Owner retry lost'; END IF;
+      IF NOT (SELECT cancel_requested FROM public.kb_ocr_jobs WHERE id=j.id) OR (SELECT checksum FROM public.kb_documents WHERE id='@document')<>repeat('a',64) THEN RAISE EXCEPTION 'Cancellation changed original'; END IF;
+      UPDATE public.kb_ocr_jobs SET status='succeeded' WHERE id=j.id;
+      IF public.cancel_kb_extraction('@document',j.id,'@owner') THEN RAISE EXCEPTION 'Terminal job cancelled'; END IF;
+      UPDATE public.kb_ocr_jobs SET status='queued',job_kind='work_program_export' WHERE id=j.id;
+      IF public.cancel_kb_extraction('@document',j.id,'@owner') THEN RAISE EXCEPTION 'Export cancelled through extraction RPC'; END IF;
+      DELETE FROM public.workspace_members WHERE workspace_id='@workspace' AND user_id='@member';
+      BEGIN PERFORM public.cancel_kb_extraction('@document',j.id,'@member'); RAISE EXCEPTION 'Revoked member cancelled'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+    END $$;`));
+
 });

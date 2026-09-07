@@ -44,6 +44,11 @@ export function emptyStructuredPreparation(): WorkProgramStructuredPreparation {
   return { formatVersion: 2, referenceFigures: [], extractionSelections: [], funds: [], allocations: [], costs: [], staffing: [], indirectPools: [], mappings: [], sourceSections: [], amendments: [], conflicts: [] };
 }
 
+/** Allocation rows span this proposal cycle; partial fund periods need an explicit unresolved review. */
+export function fundCoversWorkProgram(fund: WorkProgramStructuredPreparation["funds"][number], draft: WorkProgramDraft) {
+  return fund.periodStart <= draft.periodStart && fund.periodEnd >= draft.periodEnd && fund.periodStart <= fund.periodEnd;
+}
+
 /** All views consume these same proposal rows. Reference authority and pool totals are never revenue/cost. */
 export function reconcileStructuredWorkProgram(draft: WorkProgramDraft) {
   const p = draft.preparation ?? emptyStructuredPreparation();
@@ -122,7 +127,7 @@ export function reconcileStructuredWorkProgram(draft: WorkProgramDraft) {
     const labor = p.staffing.filter((row) => row.elementId === element.id && row.costTreatment === "calculate").map((row) => staff.find((item) => item.id === row.id)!.cost);
     const revenue = sum(allocationRows.map((row) => {
       const fund = funds.get(row.fundId);
-      return fund?.basis === "proposed" && !["prior_authority", "prior_balance"].includes(fund.kind) ? row.amount : null;
+      return fund?.basis === "proposed" && !["prior_authority", "prior_balance"].includes(fund.kind) && fundCoversWorkProgram(fund, draft) ? row.amount : null;
     }));
     const cost = sum([...costRows.map((row) => row.amount), ...labor]);
     const delta = difference(revenue, cost);
@@ -134,12 +139,13 @@ export function reconcileStructuredWorkProgram(draft: WorkProgramDraft) {
   const byFund = p.funds.map((fund) => {
     const rows = p.allocations.filter((row) => row.fundId === fund.id && activeIds.has(row.elementId));
     const allocated = rows.length ? sum(rows.map((row) => row.amount)) : 0;
-    const available = fund.basis === "proposed" && !["prior_authority", "prior_balance"].includes(fund.kind) ? fund.amount : null;
+    if (fund.basis === "proposed" && !["prior_authority", "prior_balance"].includes(fund.kind) && !fundCoversWorkProgram(fund, draft)) issue("fund_period", "Funding dates do not cover this proposal cycle or are reversed. Availability remains unresolved; no partial-period allocation was assumed.", fund.id, ...rows.map((row) => row.id));
+    const available = fund.basis === "proposed" && !["prior_authority", "prior_balance"].includes(fund.kind) && fundCoversWorkProgram(fund, draft) ? fund.amount : null;
     const remainder = difference(available, allocated);
     if (available === null && !["prior_authority", "prior_balance"].includes(fund.kind)) issue("fund_unresolved", "Proposed funding availability is unresolved.", fund.id);
     if (remainder !== null && remainder !== 0) issue(remainder < 0 ? "fund_overallocated" : "fund_unallocated", `Funding vintage has ${remainder.toFixed(2)} ${draft.currency} remaining after allocations.`, fund.id, ...rows.map((row) => row.id));
     const matchRows = p.allocations.filter((row) => row.matchForFundId === fund.id && activeIds.has(row.elementId));
-    const providedMatch = matchRows.length ? sum(matchRows.map((row) => { const source = funds.get(row.fundId); return source?.basis === "proposed" && !["prior_authority", "prior_balance"].includes(source.kind) && source.id !== fund.id ? row.amount : null; })) : 0;
+    const providedMatch = matchRows.length ? sum(matchRows.map((row) => { const source = funds.get(row.fundId); return source?.basis === "proposed" && !["prior_authority", "prior_balance"].includes(source.kind) && source.id !== fund.id && fundCoversWorkProgram(source, draft) ? row.amount : null; })) : 0;
     let requiredMatch: number | null = null;
     if (fund.matchNote?.trim() && fund.sourceRefs.length) {
       if (fund.matchBasis === "not_required") requiredMatch = 0;

@@ -21,6 +21,16 @@ function example() {
 const codes = (draft: WorkProgramDraft) => reconcileStructuredWorkProgram(draft).issues.map((issue) => issue.code);
 
 describe("structured work-program proposal", () => {
+  it.each([["2027-07-01", "2026-06-30"], ["2020-07-01", "2021-06-30"], ["2026-08-01", "2027-06-30"]])("withholds funding outside the proposal cycle %s to %s", (start, end) => {
+    const { draft, p } = example();
+    p.funds[0].periodStart = start; p.funds[0].periodEnd = end;
+    const result = reconcileStructuredWorkProgram(draft);
+    expect(result.revenue).toBeNull(); expect(result.byFund[0].available).toBeNull();
+    expect(codes(draft)).toContain("fund_period");
+    p.funds[0].periodStart = "2025-07-01"; p.funds[0].periodEnd = "2028-06-30";
+    expect(reconcileStructuredWorkProgram(draft).revenue).toBe(100);
+  });
+
   it.each([["percent_funded_amount", 5, 0.7, 0.04], ["percent_total_cost", 0.11, 12, 0.02]] as const)("rounds exact fractional-cent match once for %s", (basis, funded, percent, expected) => {
     const { draft, p } = example();
     Object.assign(p.funds[0], { amount: funded, matchBasis: basis, matchValue: percent, matchNote: "Explicit synthetic requirement" });

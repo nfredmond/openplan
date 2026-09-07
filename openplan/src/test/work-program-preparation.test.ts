@@ -65,6 +65,11 @@ const identity = { page: 1, text: "El Dorado County Transportation Commission\nO
 const elementPage = { page: 19, text: "WORK ELEMENT 100\nADMINISTRATION OF THE OVERALL WORK PROGRAM\nObjective\nExample objective\nDiscussion\nExample discussion\nPrevious Work Activities Completed\nPrior work\nCurrent Work Activities\nCurrent work\nEnd Products\nProduct\nCompletion Schedule\nJuly through June\nWork Element Budget\nRevenues Expenditures\nTOTALS $51,752 $51,752" };
 
 describe("source-layout extraction", () => {
+  it("retains an explicit activity-group assignment when there is no separate staff table", () => {
+    const page = { ...elementPage, text: elementPage.text.replace("Current Work Activities", "Work Activities to be completed by EDCTC Staff") };
+    expect(extractWorkProgramSource([identity, page]).elements[0].responsible).toBe("EDCTC Staff");
+  });
+
   it("recognizes plural Objectives without copying the paragraph into the title", () => {
     const plural = { ...elementPage, text: elementPage.text.replace("Objective\n", "Objectives\n") };
     expect(extractWorkProgramSource([identity, plural]).elements[0]).toMatchObject({ title: "ADMINISTRATION OF THE OVERALL WORK PROGRAM", objective: "Example objective" });
@@ -78,7 +83,7 @@ describe("source-layout extraction", () => {
   });
   it("keeps source text, actual PDF pages and printed figures separate from the proposed program", () => {
     const result = extractWorkProgramSource([identity, elementPage]);
-    expect(result.parser).toBe("edctc-work-program-v4");
+    expect(result.parser).toBe("edctc-work-program-v5");
     expect(result.elements[0]).toMatchObject({ code: "100", key: "100:page-19", pageFrom: 19, pageTo: 19, revenueTotal: 51752, costTotal: 51752, priorActivities: "Prior work", currentActivities: "Current work", originalText: elementPage.text });
     expect(result.elements[0].warnings.join(" ")).toContain("breakdown");
   });

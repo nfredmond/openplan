@@ -115,3 +115,20 @@ export function downloadGeojson(
   const serialized = JSON.stringify(geojson, null, 2);
   downloadText(serialized, filename, "application/geo+json;charset=utf-8");
 }
+
+/** Fetch a retained private artifact and verify its identity before a user-requested download. */
+export async function downloadAuthenticatedArtifact(path: string, filename: string, expectedChecksum: string) {
+  const target = new URL(path, window.location.origin);
+  if (target.origin !== window.location.origin || !/^[a-f0-9]{64}$/.test(expectedChecksum)) throw new Error("The retained file identity is invalid.");
+  const response = await fetch(target.href, { credentials: "same-origin", cache: "no-store" });
+  if (!response.ok) throw new Error("The retained file could not be downloaded. Check access and retry.");
+  const bytes = await response.arrayBuffer();
+  const actual = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)), (byte) => byte.toString(16).padStart(2, "0")).join("");
+  if (actual !== expectedChecksum) throw new Error("The downloaded file differs from the saved artifact. No file was opened; retry preparation.");
+  const blob = new Blob([bytes], { type: response.headers.get("content-type") || "application/octet-stream" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url; anchor.download = filename; anchor.hidden = true;
+  document.body.appendChild(anchor); anchor.click(); anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+}

@@ -150,7 +150,7 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
     if (request.nextUrl.searchParams.get("delivery") === "authenticated" || (request.nextUrl.searchParams.get("disposition") === "inline" && document.source_kind === "uploaded_pdf")) {
       const original = await fetch(data.signedUrl, { signal: AbortSignal.timeout(30_000) });
       if (!original.ok || !original.body) return NextResponse.json({ error: "Retained original unavailable" }, { status: 503 });
-      return new NextResponse(original.body, { headers: { "Content-Type": document.content_type || "application/octet-stream", "Content-Security-Policy": "sandbox allow-downloads; default-src 'none'; style-src 'unsafe-inline'; img-src data:", "X-OpenPlan-File-SHA256": document.checksum || "unavailable", "Content-Disposition": `${request.nextUrl.searchParams.get("disposition") === "inline" && document.source_kind === "uploaded_pdf" ? "inline" : "attachment"}; filename="${filename}"`, "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" } });
+      return new NextResponse(original.body, { headers: { "Content-Type": document.content_type || "application/octet-stream", "Content-Security-Policy": "sandbox; default-src 'none'; style-src 'unsafe-inline'; img-src data:", "X-OpenPlan-File-SHA256": document.checksum || "unavailable", "Content-Disposition": `${request.nextUrl.searchParams.get("disposition") === "inline" && document.source_kind === "uploaded_pdf" ? "inline" : "attachment"}; filename="${filename}"`, "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" } });
     }
     return NextResponse.redirect(data.signedUrl);
   } catch (error) {
