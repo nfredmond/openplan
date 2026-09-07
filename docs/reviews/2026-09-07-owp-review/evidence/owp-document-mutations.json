@@ -1,5 +1,11 @@
 [
   {
+    "case": "json_array_encoding",
+    "expectedPass": false,
+    "exit": 1,
+    "passed": false
+  },
+  {
     "case": "harmless",
     "expectedPass": true,
     "exit": 0,

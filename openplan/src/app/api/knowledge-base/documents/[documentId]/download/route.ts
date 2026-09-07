@@ -134,7 +134,7 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
     let reviewDocument = Boolean(document.work_program_packet_id);
     if (!reviewDocument) {
       const references = await supabase.from("program_work_program_events").select("id")
-        .eq("workspace_id", document.workspace_id).contains("evidence", [{ id: document.id }]).limit(1);
+        .eq("workspace_id", document.workspace_id).contains("evidence", JSON.stringify([{ id: document.id }])).limit(1);
       if (references.error) return NextResponse.json({ error: "Document access requirements could not be checked. Retry when the connection recovers." }, { status: 503 });
       reviewDocument = Boolean(references.data?.length);
     }

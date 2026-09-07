@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createClient as createSupabaseClient, type User } from "@supabase/supabase-js";
 import { NextRequest } from "next/server";
 
 /**
@@ -140,8 +141,26 @@ describe("GET /api/knowledge-base/documents/[documentId]/download", () => {
     expect(response.status).toBe(200);expect(response.headers.get('location')).toBeNull();
     expect(response.headers.get('cache-control')).toBe('private, no-store');
     expect(await response.text()).toBe('retained bytes');
-    if(kind==='evidence')expect(evidenceCalls).toEqual([['select','id'],['eq','workspace_id',WORKSPACE_ID],['contains','evidence',[{id:DOCUMENT_ID}]],['limit',1]]);
+    if(kind==='evidence')expect(evidenceCalls).toEqual([['select','id'],['eq','workspace_id',WORKSPACE_ID],['contains','evidence',JSON.stringify([{id:DOCUMENT_ID}])],['limit',1]]);
   });
+  it('uses valid JSON containment through the real PostgREST query builder',async()=>{
+    let parsedEvidence:unknown;
+    const client=createSupabaseClient('https://database.example.test','synthetic-public-key',{auth:{persistSession:false},global:{fetch:async input=>{
+      const url=new URL(String(input));
+      if(url.pathname.endsWith('/kb_documents'))return new Response(JSON.stringify([documentRow]),{headers:{'Content-Type':'application/json'}});
+      if(url.pathname.endsWith('/program_work_program_events')){
+        try{parsedEvidence=JSON.parse(url.searchParams.get('evidence')!.slice(3));}
+        catch{return new Response(JSON.stringify({code:'22P02',message:'invalid input syntax for type json'}),{status:400,headers:{'Content-Type':'application/json'}});}
+        return new Response(JSON.stringify([{id:'event'}]),{headers:{'Content-Type':'application/json'}});
+      }
+      throw new Error('Unexpected test request');
+    }}});
+    vi.spyOn(client.auth,'getUser').mockResolvedValue({data:{user:{id:USER_ID} as User},error:null});
+    createClientMock.mockResolvedValue(client);
+    expect((await downloadDocument(request(),ctx())).status).toBe(200);
+    expect(parsedEvidence).toEqual([{id:DOCUMENT_ID}]);
+  });
+
   it('fails closed when supporting-evidence access requirements cannot be read',async()=>{
     evidenceReadError={message:'Synthetic query failure'};
     expect((await downloadDocument(request(),ctx())).status).toBe(503);
