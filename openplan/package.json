@@ -7,7 +7,7 @@
   "scripts": {
     "predev": "npm run db:sync",
     "dev": "next dev",
-    "db:sync": "npm exec -- supabase migration up --local --yes --output-format json",
+    "db:sync": "node scripts/ops/sync-local-db.mjs",
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint --max-warnings 0",
