@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-07
 review_by: 2026-10-05
-reviewed_commit: f457b52d
+reviewed_commit: 89d50c01
 current_release: v0.44.0
 independent_contexts: 2
 trigger: independent-whole-product-review-at-owp-review-amendment-milestone
