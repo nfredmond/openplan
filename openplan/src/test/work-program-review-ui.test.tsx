@@ -75,4 +75,17 @@ describe('exact version review form',()=>{
   expect(screen.getByDisplayValue(raw)).toBeInTheDocument();
  });
 
+ it('lets the planner remove unavailable selections from a recovered form',async()=>{
+  sessionStorage.setItem('owp-review:user:program:draft',JSON.stringify({revisionId:one.id,revisionHash:one.content_sha256,form:{kind:'submit',note:'Saved review request',visibility:'internal',reviewerIds:[two.id],documentIds:[one.id]}}));
+  render(<WorkProgramWorkflow {...props()} />);await screen.findByText(/Review status: draft/);
+  const reviewer=screen.getByRole('checkbox',{name:/Unavailable reviewer/});
+  const document=screen.getByRole('checkbox',{name:/Unavailable document/});
+  expect(reviewer).toBeChecked();expect(document).toBeChecked();
+  fireEvent.click(reviewer);fireEvent.click(document);
+  await waitFor(()=>{
+   const saved=JSON.parse(sessionStorage.getItem('owp-review:user:program:draft')!);
+   expect(saved.form.reviewerIds).toEqual([]);expect(saved.form.documentIds).toEqual([]);
+  });
+ });
+
 });

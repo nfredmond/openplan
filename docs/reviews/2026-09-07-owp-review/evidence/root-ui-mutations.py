@@ -3,6 +3,8 @@ import subprocess, json
 root=Path(__file__).resolve().parents[4]
 app=root/'openplan'
 cases=[
+ ('hidden_unavailable_reviewer','src/components/programs/work-program/workflow.tsx','const unavailableReviewers = reviewers.filter(id => !eligibleReviewers.some(member => member.id === id));','const unavailableReviewers: string[] = [];',False,'work-program-review-ui.test.tsx'),
+ ('hidden_unavailable_document','src/components/programs/work-program/workflow.tsx','const unavailableDocuments = evidence.filter(id => !documents.some(document => document.id === id));','const unavailableDocuments: string[] = [];',False,'work-program-review-ui.test.tsx'),
  ('harmless', 'src/components/programs/work-program/workflow.tsx', '"use client";', '"use client";\n// Harmless review mutation.', True, 'work-program-review-ui.test.tsx'),
  ('hidden_authority','src/components/programs/work-program/workflow.tsx','authority: authorityAction ? authority : "", scope: authorityAction ? scope : "", evidenceDate: authorityAction ? evidenceDate || null : null','authority, scope, evidenceDate: evidenceDate || null',False,'work-program-review-ui.test.tsx'),
  ('undated_due','src/lib/my-work/sources.ts','badge: dueOn ? deadlineBadge("OWP review", overdue) : { label: row.status === "returned" ? "Changes requested" : "OWP review", tone: "neutral" }','badge: deadlineBadge("OWP review", overdue)',False,'work-program-workflow.test.ts'),
