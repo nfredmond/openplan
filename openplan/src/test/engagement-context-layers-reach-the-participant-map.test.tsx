@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -84,7 +84,7 @@ const mapboxMocks = vi.hoisted(() => {
     return self;
   });
   const Marker = vi.fn(function MockMarker() {
-    const self = { setLngLat: vi.fn(() => self), setPopup: vi.fn(() => self), addTo: vi.fn(() => self) };
+    const self = { remove: vi.fn(), setLngLat: vi.fn(() => self), setPopup: vi.fn(() => self), addTo: vi.fn(() => self) };
     return self;
   });
   const LngLatBounds = vi.fn(function MockBounds() {
@@ -508,4 +508,27 @@ describe("the public engagement portal", () => {
     expect(screen.getAllByText(/could not be loaded/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/not a finding that there are none/i).length).toBeGreaterThan(0);
   });
+});
+
+
+describe("retained invalid drawings are not substituted with center points", () => {
+  it("maps a coordinate-only legacy point but omits an explicit collapsed drawing", async () => {
+    const { LocationDisplayMap } = await import("@/components/engagement/location-display-map");
+    render(<LocationDisplayMap items={[
+      {id:"valid",title:null,body:"Legacy point",latitude:2,longitude:1},
+      {id:"invalid",title:null,body:"Collapsed route",latitude:2,longitude:1,geometry:{type:"LineString",coordinates:[[1,2],[1,2]]}},
+    ]}/>);
+    const map = mapboxMocks.instances.at(-1) as {on:ReturnType<typeof vi.fn>};
+    const load = map.on.mock.calls.find(call=>call[0]==="load")?.[1] as ()=>void;
+    expect(load).toBeTypeOf("function"); act(()=>load());
+    expect(mapboxMocks.Marker).toHaveBeenCalledTimes(1);
+  });
+});
+
+
+vi.mock("next/navigation",()=>({useRouter:()=>({refresh:vi.fn()})}));
+it("identifies the invalid historical drawing in staff review", async () => {
+  const { EngagementItemRegistry } = await import("@/components/engagement/engagement-item-registry");
+  render(<EngagementItemRegistry categories={[]} counts={{totalItems:1,uncategorizedItems:1,geographyCoverage:{geolocatedItems:0},moderationQueue:{actionableCount:0,pendingCount:0,flaggedCount:0}}} items={[{id:"invalid",campaign_id:"campaign",category_id:null,submitted_by:null,moderation_notes:null,title:null,body:"Collapsed route",status:"rejected",source_type:"public",latitude:2,longitude:1,geometry:{type:"LineString",coordinates:[[1,2],[1,2]]},updated_at:"2026-09-01"}]}/>);
+  expect(screen.getByText("Invalid retained drawing")).toBeInTheDocument();
 });

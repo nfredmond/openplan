@@ -22,6 +22,14 @@ Current source reconciliation and bounded maintenance proof are in the
 [consolidation review](../reviews/TECHNICAL_PRODUCT_REVIEW_2026-09-06.md) and
 [verification record](../reviews/2026-09-06-consolidation/VERIFICATION.md).
 
+## Engagement disposition, September 7, 2026
+
+The [first workflow verification](../reviews/2026-09-06-engagement-first-workflow/VERIFICATION.md) supersedes KI-087's still-pending supported-browser delivery statement. The retained campaign handoff PDF and containing Project ZIP arrived through fresh authenticated Chrome; independent review checked all eight PDF pages, manifest hashes and embedded PDF identity. The old ERR_BLOCKED_BY_CLIENT profile did not reproduce and was not repaired. Its failed evidence remains unchanged below.
+
+New campaign review files add snapshot-bound authenticated streams, checksum verification and recovery through the existing Documents worker. Independent review caught and corrected UTF-16 ZIP corruption, clipped workbook text, degenerate demonstration drawings and a county example outside its irregular boundary. Original failed files and root/reviewer verification errors remain in the dated implementation record. Corrected examples have every-page review, exact reconciliation and native Calc recalculation. A report's scoped public/internal copy is not a full restricted-history backup; a Project bundle containing only its PDF does not automatically include every engagement companion.
+
+Remaining engagement limits: human setup/participation and recipient usefulness, screen-reader/touch/language evaluation, competitor comparison, advanced synthesis and decision follow-through remain unproved. Dense report-map labels can overlap; the internal county response has a minor page split. Optional demographics are best effort after the main receipt; browser storage disabled cannot provide durable local draft/photo restoration. The isolated checkout's unchanged Python worker environments were absent, so their 52 suites were not run. This does not substitute for the changed TypeScript Documents worker's separate runtime checks. The v0.44 release gate stays open.
+
 ## Open watch items
 
 | ID | Severity | Boundary | Current disposition | Evidence |

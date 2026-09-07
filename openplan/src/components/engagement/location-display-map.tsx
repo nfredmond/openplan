@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { readStoredEngagementGeometry, type EngagementGeometry } from "@/lib/engagement/geometry";
+import { hasEngagementLocation, readStoredEngagementGeometry, type EngagementGeometry } from "@/lib/engagement/geometry";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
@@ -194,7 +194,7 @@ export function LocationDisplayMap({
         shapeItems.push({ ...item, parsedGeometry: geometry });
       } else if (geometry?.type === "Point") {
         pointItems.push({ ...item, longitude: geometry.coordinates[0], latitude: geometry.coordinates[1] });
-      } else if (item.latitude !== null && item.longitude !== null) {
+      } else if (item.geometry == null && hasEngagementLocation(item) && item.latitude !== null && item.longitude !== null) {
         pointItems.push({ ...item, latitude: item.latitude, longitude: item.longitude });
       }
     }
@@ -389,11 +389,7 @@ export function LocationDisplayMap({
     }
   }, [contextLayers, items]);
 
-  const hasMappedItems = items.some(
-    (item) =>
-      (item.latitude !== null && item.longitude !== null) ||
-      readStoredEngagementGeometry(item.geometry ?? null) !== null
-  );
+  const hasMappedItems = items.some(hasEngagementLocation);
   // A campaign that has published context but collected no located input yet
   // still has something a resident needs to see. The old rule — render nothing
   // unless somebody has already commented — hid the project from the very

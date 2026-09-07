@@ -444,3 +444,16 @@ describe("drawing reports geometry after the stage commits its own state", () =>
     consoleError.mockRestore();
   });
 });
+
+
+describe("retained contribution geometry", () => {
+  it("uses a geometry-only point and does not turn an invalid route into its old center", async () => {
+    await renderStage({items:[
+      {id:"valid",title:null,body:"Geometry point",latitude:null,longitude:null,geometry:{type:"Point",coordinates:[1,2]}},
+      {id:"invalid",title:null,body:"Collapsed route",latitude:2,longitude:1,geometry:{type:"LineString",coordinates:[[1,2],[1,2]]}},
+    ]});
+    const located=mapboxMocks.ctl.mock.results.filter(result=>result.type==='return' && result.value.setLngLat?.mock.calls.length);
+    expect(located).toHaveLength(1);
+    expect(located[0].value.setLngLat).toHaveBeenCalledWith([1,2]);
+  });
+});

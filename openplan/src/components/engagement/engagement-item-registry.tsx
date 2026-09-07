@@ -176,7 +176,9 @@ function ItemRow({
             )}
             {storedGeometry ? (
               <StatusBadge tone="neutral">{engagementGeometryTypeLabel(storedGeometry.type)} geometry</StatusBadge>
-            ) : (latitude || longitude) ? (
+            ) : item.geometry != null ? (
+              <StatusBadge tone="warning">Invalid retained drawing</StatusBadge>
+            ) : hasEngagementLocation(item) ? (
               <StatusBadge tone="neutral">Geolocated</StatusBadge>
             ) : null}
             {votesCount > 0 ? <StatusBadge tone="info">▲ {votesCount} support</StatusBadge> : null}
@@ -544,7 +546,7 @@ export function EngagementItemRegistry({
             <span className="block font-medium">{item.title || item.body.slice(0,90)}</span><span>{titleizeEngagementValue(item.status)} · {item.parent_item_id ? "Reply" : "Contribution"}</span>
           </button>)}</nav>
           {selected ? <div className="min-w-0 space-y-3">
-            {!selected.geometry && !(typeof selected.latitude === "number" && typeof selected.longitude === "number") ? <p>This contribution describes its location in words or has no mapped location.</p> : null}
+            {!hasEngagementLocation(selected) ? <p>This contribution describes its location in words or has no mapped location.</p> : null}
             <fieldset disabled={!canWrite}><ItemRow key={`${selected.id}:${selected.updated_at}`} item={selected} categories={categories} /></fieldset>
             <Button type="button" variant="outline" disabled={filteredItems.indexOf(selected) === filteredItems.length - 1} onClick={() => {
               const next = filteredItems.indexOf(selected) + 1; setPage(Math.floor(next / 25)); setSelectedId(filteredItems[next]?.id ?? null);

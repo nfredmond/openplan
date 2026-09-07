@@ -1,0 +1,43 @@
+[
+  {
+    "mutation": "harmless display comment",
+    "outcome": "survived",
+    "expected": "survived",
+    "evidence": []
+  },
+  {
+    "mutation": "invalid review-map center substitution",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-context-layers-reach-the-participant-map.test.tsx > retained invalid drawings are not substituted with center points > maps a coordinate-only legacy point but omits an explicit collapsed drawing",
+      "AssertionError: expected \"vi.fn()\" to be called 1 times, but got 2 times"
+    ]
+  },
+  {
+    "mutation": "invalid public-map center substitution",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/the-map-stage-tells-the-truth.test.tsx > retained contribution geometry > uses a geometry-only point and does not turn an invalid route into its old center",
+      "AssertionError: expected [ { type: 'return', \u2026(1) }, \u2026(1) ] to have a length of 1 but got 2"
+    ]
+  },
+  {
+    "mutation": "geometry-only public point",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/the-map-stage-tells-the-truth.test.tsx > retained contribution geometry > uses a geometry-only point and does not turn an invalid route into its old center",
+      "AssertionError: expected [] to have a length of 1 but got +0"
+    ]
+  },
+  {
+    "mutation": "invalid drawing review badge",
+    "outcome": "failed-for-behavior",
+    "expected": "failed-for-behavior",
+    "evidence": [
+      "FAIL  src/test/engagement-context-layers-reach-the-participant-map.test.tsx > identifies the invalid historical drawing in staff review"
+    ]
+  }
+]

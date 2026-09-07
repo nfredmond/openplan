@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
-import { readStoredEngagementGeometry, type EngagementGeometry } from "@/lib/engagement/geometry";
+import { hasEngagementLocation, readStoredEngagementGeometry, type EngagementGeometry } from "@/lib/engagement/geometry";
 import {
   appendVertex,
   buildPreviewFeatureCollection,
@@ -546,7 +546,9 @@ export function PublicMapStage({
     for (const item of items) {
       const geometry = readStoredEngagementGeometry(item.geometry ?? null);
       if (geometry && geometry.type !== "Point") shapeItems.push({ ...item, parsedGeometry: geometry });
-      else if (item.latitude !== null && item.longitude !== null) {
+      else if (geometry?.type === "Point") {
+        pointItems.push({ ...item, longitude: geometry.coordinates[0], latitude: geometry.coordinates[1] });
+      } else if (item.geometry == null && hasEngagementLocation(item) && item.latitude !== null && item.longitude !== null) {
         pointItems.push({ ...item, latitude: item.latitude, longitude: item.longitude });
       }
     }
@@ -841,11 +843,7 @@ export function PublicMapStage({
   */
   const hasSomethingToShow =
     Boolean(initialView) ||
-    items.some(
-      (item) =>
-        (item.latitude !== null && item.longitude !== null) ||
-        readStoredEngagementGeometry(item.geometry ?? null) !== null
-    ) ||
+    items.some(hasEngagementLocation) ||
     (contextLayers?.layers ?? []).some((layer) => Boolean(layer.bbox));
 
   const showUnframedNotice = !mapUnavailable && !hasSomethingToShow && !unframedNoticeDismissed;
