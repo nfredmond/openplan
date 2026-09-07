@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-07
 review_by: 2026-10-05
-reviewed_commit: 89d50c01
+reviewed_commit: dce8553b
 current_release: v0.44.0
 independent_contexts: 2
 trigger: independent-whole-product-review-at-owp-review-amendment-milestone
@@ -62,3 +62,5 @@ The whole v1 contract remains binding: every core planner type across all fifty 
 The user's next dependency order is M11a contract/task/staff actuals connected to the versioned baselines, followed by one complete M2d.3 reporting/correction period. Full OWP/UPWP administration and closeout remain open. Preserve provider choice for proven Planner Agent tasks, Engagement human observation and decision follow-through, capital delivery, complete RTP updates, local-tax/grant recipient reporting, procurement and scientific validation in the sole roadmap. Existing capability homes should deepen before any new module is proposed. Human judgments, consequential publication and actual authority remain with responsible people. Agency usefulness and real adoption cannot be inferred from engineering review.
 
 v0.44 remains unreleased; its three partial historical acceptance outcomes retain their separate disposition. This milestone does not authorize a tag or a repeated full campaign. Blind categories: automated browser actions do not establish screen-reader experience or practicing-planner usefulness; native Calc is not Excel; a scoped export is not a full archive restore; database fixtures do not prove current HTTP access; hash fidelity does not prove readable or correct meaning; an isolated upgrade is not every agency deployment; and neither engineering acceptance nor current California references establish nationwide completeness. Contrary agency observation or source evidence can overturn the recommendation.
+
+Final independent artifact acceptance through dce8553b reconciles all nine history14 files, the supporting TXT and selected revision/baseline hashes, including native Calc and PDF inspection. Old hidden fields remain visible with an explicit append-only correction; final commands contain only their relevant fields. Root's complete QA at b13e3f93 and independent populated/GitHub upgrade evidence remain attributable to their exact versions. The subsequent Documents route correction makes review files/evidence use authenticated streaming even from the ordinary library. Reviewer B independently inspected its restored caller-scoped lookup and fail-closed branch. Twenty-one route tests and four consequential mutations cover that follow-up; final production/GitHub checks are separate. This correction preserves the same product recommendation and full-v1 boundaries, while closing a concrete bearer-link revocation gap. Already-issued links and downloaded copies remain outside immediate revocation.
