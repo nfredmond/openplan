@@ -3,7 +3,7 @@
 <!-- openplan-product-direction-review
 review_date: 2026-09-07
 review_by: 2026-10-05
-reviewed_commit: ef78a09f
+reviewed_commit: 59f82dfc
 current_release: v0.44.0
 independent_contexts: 2
 trigger: independent-whole-product-review-at-owp-review-amendment-milestone
@@ -66,3 +66,5 @@ v0.44 remains unreleased; its three partial historical acceptance outcomes retai
 Final independent artifact acceptance through dce8553b reconciles all nine history14 files, the supporting TXT and selected revision/baseline hashes, including native Calc and PDF inspection. Old hidden fields remain visible with an explicit append-only correction; final commands contain only their relevant fields. Root's complete QA at b13e3f93 and independent populated/GitHub upgrade evidence remain attributable to their exact versions. The subsequent Documents route correction makes review files/evidence use authenticated streaming even from the ordinary library. Reviewer B independently inspected its restored caller-scoped lookup and fail-closed branch. Twenty-one route tests and four consequential mutations cover that follow-up; final production/GitHub checks are separate. This correction preserves the same product recommendation and full-v1 boundaries, while closing a concrete bearer-link revocation gap. Already-issued links and downloaded copies remain outside immediate revocation.
 
 The last recovery follow-up through ef78a09f exposes previously selected reviewers/documents that are no longer available, allowing the planner to remove the stale selection. It preserves the independent reviews' requirement that recovery remain understandable and exact-version-bound; it does not silently substitute an eligible reviewer. Seven component tests pass, with separate failures when either unavailable selection is hidden and a surviving harmless control. The repeat QA run was stopped before completion to include this correction. The independent final file acceptance remains valid because artifact generation/content and migrations did not change; final UI/QA/CI results must identify this later source.
+
+The40c5f431 production journey and full local gate passed, including all nine accepted files and a real truncated-byte refusal/retry. Its final ordinary-Documents probe then found an encoded-filter503 for supporting evidence. That failure contradicted the earlier source/mocked-query acceptance without exposing bytes. The59f82dfc correction passes an explicit JSON containment string;22 route tests now include the real PostgREST query builder, and the original array encoding demonstrably fails with22P02. Five route mutations plus a harmless control pass their expected outcomes. This narrow transport correction preserves the independent reviews' access recommendation and artifact/migration identities; final live HTTP and build/CI acceptance must include it.
