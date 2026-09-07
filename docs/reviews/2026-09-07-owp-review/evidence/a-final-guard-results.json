@@ -1,0 +1,172 @@
+[
+  {
+    "name": "noop_survivor",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "name": "authority_noop_survivor",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "name": "baseline_baseline_late_authority",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "name": "baseline_sequence",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "name": "baseline_hash",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "name": "baseline_role",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "name": "baseline_independent",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "name": "baseline_retry",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "name": "baseline_revocation",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "name": "baseline_disclosure",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "name": "baseline_public_review",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "name": "baseline_evidence",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "name": "baseline_withdrawal",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "name": "baseline_stale_review",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "name": "baseline_return_resubmit",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "name": "baseline_rls",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "name": "baseline_packet_recovery",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "name": "baseline_public_role",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "name": "baseline_stale_packet",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "name": "baseline_authority_field_scope",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "name": "baseline_legacy_retry",
+    "passed": true,
+    "detail": ""
+  },
+  {
+    "name": "mutant_authority_field_scope",
+    "passed": true,
+    "detail": "ERROR:  ASSERT_HIDDEN_comment_authority\nCONTEXT:  PL/pgSQL function inline_code_block line 3 at RAISE\n"
+  },
+  {
+    "name": "mutant_revocation",
+    "passed": true,
+    "detail": "ERROR:  ASSERT_REVOKED_RETRY\nCONTEXT:  PL/pgSQL function inline_code_block line 3 at RAISE\n"
+  },
+  {
+    "name": "mutant_sequence",
+    "passed": true,
+    "detail": "ERROR:  ASSERT_STALE_SEQUENCE\nCONTEXT:  PL/pgSQL function inline_code_block line 3 at RAISE\n"
+  },
+  {
+    "name": "mutant_hash",
+    "passed": true,
+    "detail": "ERROR:  ASSERT_WRONG_HASH\nCONTEXT:  PL/pgSQL function inline_code_block line 3 at RAISE\n"
+  },
+  {
+    "name": "mutant_role",
+    "passed": true,
+    "detail": "ERROR:  ASSERT_MEMBER_AUTHORITY\nCONTEXT:  PL/pgSQL function inline_code_block line 3 at RAISE\n"
+  },
+  {
+    "name": "mutant_independent",
+    "passed": true,
+    "detail": "ERROR:  ASSERT_SELF_REVIEW\nCONTEXT:  PL/pgSQL function inline_code_block line 3 at RAISE\n"
+  },
+  {
+    "name": "mutant_retry",
+    "passed": true,
+    "detail": "ERROR:  ASSERT_CHANGED_RETRY\nCONTEXT:  PL/pgSQL function inline_code_block line 3 at RAISE\n"
+  },
+  {
+    "name": "mutant_baseline_late_authority",
+    "passed": true,
+    "detail": "ERROR:  ASSERT_PENDING_AUTHORIZED\nCONTEXT:  PL/pgSQL function inline_code_block line 3 at RAISE\n"
+  },
+  {
+    "name": "mutant_public_review",
+    "passed": true,
+    "detail": "ERROR:  ASSERT_UNREVIEWED_COPY\nCONTEXT:  PL/pgSQL function inline_code_block line 3 at RAISE\n"
+  },
+  {
+    "name": "mutant_disclosure",
+    "passed": true,
+    "detail": "ERROR:  ASSERT_PRIVATE_LEAK\nCONTEXT:  PL/pgSQL function inline_code_block line 3 at RAISE\n"
+  },
+  {
+    "name": "mutant_withdrawal",
+    "passed": true,
+    "detail": "ERROR:  ASSERT_WITHDRAW_BASELINE\nCONTEXT:  PL/pgSQL function inline_code_block line 3 at RAISE\n"
+  },
+  {
+    "name": "mutant_evidence",
+    "passed": true,
+    "detail": "ERROR:  ASSERT_EVIDENCE_CHANGED\nCONTEXT:  PL/pgSQL function inline_code_block line 3 at RAISE\n"
+  },
+  {
+    "name": "mutant_legacy_retry_order",
+    "passed": true,
+    "detail": "ERROR:  Authority fields require an authority record\nCONTEXT:  PL/pgSQL function record_work_program_event(uuid,uuid,jsonb) line 15 at RAISE\nSQL expression \"NOT ((SELECT id=e.id FROM public.record_work_program_event(p,a,saved)))\"\nPL/pgSQL function inline_code_block line 184 at IF\n"
+  }
+]

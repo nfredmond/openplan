@@ -20,7 +20,7 @@ export async function authorizeWorkProgram(request: NextRequest, programId: stri
 }
 
 const sourceColumns = "id, document_id, document_checksum, source_role, source_url, page_count, extraction_json, created_at, kb_documents(title)";
-const revisionColumns = "id, revision, previous_revision_id, request_id, content_sha256, source_ids, created_by, created_at";
+const revisionColumns = "id, revision, amendment_baseline_id, previous_revision_id, request_id, content_sha256, source_ids, created_by, created_at";
 
 /** Paginate immutable rows in a stable order; never silently omit an older source or revision. */
 export async function loadWorkProgramPreparation(supabase: Awaited<ReturnType<typeof createClient>>, programId: string): Promise<WorkProgramPreparation> {

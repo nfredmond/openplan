@@ -1,0 +1,72 @@
+[
+  {
+    "case": "baseline",
+    "exit": 0,
+    "passed": 3,
+    "failed": 0,
+    "failures": []
+  },
+  {
+    "case": "harmless_comment",
+    "exit": 0,
+    "passed": 3,
+    "failed": 0,
+    "failures": []
+  },
+  {
+    "case": "unbounded_newlines",
+    "exit": 1,
+    "passed": 2,
+    "failed": 1,
+    "failures": [
+      {
+        "name": "work program packet layout keeps multiline scope in printable cells without dropping line boundaries",
+        "reason": [
+          "AssertionError: expected 1 to be greater than 4\n    at /tmp/owp-review-b/layout.test.ts:55:26\n    at file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2955:64"
+        ]
+      }
+    ]
+  },
+  {
+    "case": "unbounded_wrapping",
+    "exit": 1,
+    "passed": 2,
+    "failed": 1,
+    "failures": [
+      {
+        "name": "work program packet layout bounds unbroken wide text and keeps every Unicode character intact",
+        "reason": [
+          "AssertionError: expected false to be true // Object.is equality\n    at /tmp/owp-review-b/layout.test.ts:64:67\n    at file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2955:64"
+        ]
+      }
+    ]
+  },
+  {
+    "case": "wide_identity_column",
+    "exit": 1,
+    "passed": 2,
+    "failed": 1,
+    "failures": [
+      {
+        "name": "work program packet layout moves long amendment identities into bounded detail rows without truncation",
+        "reason": [
+          "AssertionError: expected false to be true // Object.is equality\n    at /tmp/owp-review-b/layout.test.ts:81:58\n    at file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2955:64"
+        ]
+      }
+    ]
+  },
+  {
+    "case": "split_unicode",
+    "exit": 1,
+    "passed": 2,
+    "failed": 1,
+    "failures": [
+      {
+        "name": "work program packet layout bounds unbroken wide text and keeps every Unicode character intact",
+        "reason": [
+          "AssertionError: expected false to be true // Object.is equality\n    at /tmp/owp-review-b/layout.test.ts:65:81\n    at file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/owp-review-2026-09-07/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2955:64"
+        ]
+      }
+    ]
+  }
+]

@@ -1,4 +1,5 @@
 "use client";
+import { WorkProgramWorkflow } from "./workflow";
 import { WorkProgramComparison } from "./comparison";
 import { WorkProgramExports } from "./exports";
 import { useEffect, useRef, useState } from "react";
@@ -14,12 +15,12 @@ import { Field, SelectField } from "./fields";
 import { WorkProgramSources } from "./sources";
 import { WorkProgramElementEditor } from "./element-editor";
 
-type Props = { programId: string; workspaceId: string; userId: string; agency: string; initial: WorkProgramPreparation; documents: { id: string; title: string }[]; projects: { id: string; name: string }[]; canWrite: boolean; staff?: { value: string; label: string }[]; contracts?: { value: string; label: string }[] };
+type Props = { programId: string; workspaceId: string; userId: string; agency: string; initial: WorkProgramPreparation; documents: { id: string; title: string }[]; evidenceDocuments?: { id: string; title: string }[]; projects: { id: string; name: string }[]; canWrite: boolean; staff?: { value: string; label: string }[]; contracts?: { value: string; label: string }[] };
 type PendingSave = { expectedRevision: number; requestId: string; draft: WorkProgramDraft };
 function emptyDraft(agency: string): WorkProgramDraft {
   return { schemaVersion: 1, documentKind: "owp", agency, responsibleAuthority: "", authorityBasis: "", periodStart: "", periodEnd: "", introduction: "", staffing: "", financialNotes: "", currency: "USD", priorBalance: null, priorBalanceBasis: "", elements: [] };
 }
-export function WorkProgramEditor({ programId, workspaceId, userId, agency, initial, documents, projects, canWrite, staff = [], contracts = [] }: Props) {
+export function WorkProgramEditor({ programId, workspaceId, userId, agency, initial, documents, evidenceDocuments = documents, projects, canWrite, staff = [], contracts = [] }: Props) {
   const [preparation, setPreparation] = useState(initial);
   const [draft, setDraft] = useState(initial.latest?.content_json ?? emptyDraft(agency));
   const [baseRevision, setBaseRevision] = useState(initial.latest?.revision ?? 0);
@@ -103,6 +104,7 @@ export function WorkProgramEditor({ programId, workspaceId, userId, agency, init
   const coverage = workProgramCoverage(draft, preparation.sources);
   return <div className="min-w-0 space-y-6">
     <div className="rounded-lg border p-4 text-sm"><p>Preparation draft. This draft does not adopt a program, authorize spending, assign live work or log actual costs.</p><p className="mt-2">Editing from revision {baseRevision}. Latest loaded revision: {preparation.latest?.revision ?? "none"}.{dirty ? " Local changes are not saved to the program." : ""}{recovered ? " A local recovery was loaded." : ""}</p></div>
+    <WorkProgramWorkflow programId={programId} userId={userId} preparation={preparation} dirty={dirty} canWrite={canWrite && !busy} documents={evidenceDocuments} onAmendment={loadLatest} />
     <WorkProgramSources programId={programId} workspaceId={workspaceId} sources={selectedSources} documents={documents} canWrite={canWrite && !busy} onAttached={refreshSources} onSelectVersion={(sourceId, versionId) => {
       const converted = upgradeWorkProgramDraft(draft);
       const p = converted.preparation!;

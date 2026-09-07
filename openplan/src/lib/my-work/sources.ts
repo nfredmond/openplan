@@ -764,6 +764,20 @@ const landUsePlanActionsSource: MyWorkSource = {
   }),
 };
 
+const workProgramReviewsSource: MyWorkSource = {
+  id: "work_program_reviews", label: "Work program reviews", readLabel: "work program reviews", block: "undated",
+  table: "program_work_program_reviews", select: "id, program_id, revision_id, assignee_user_id, due_on, status, programs!inner(title, workspace_id)",
+  workspaceFilterColumn: "workspace_id", assigneeColumn: "assignee_user_id", orderColumn: "due_on", orderAscending: true,
+  staticFilters: [{ kind: "in", column: "status", values: ["pending", "returned"] }],
+  toItems: (rows, { now }) => rows.map(row => {
+    const program = embedded(row.programs), dueOn = asString(row.due_on), overdue = isDeadlinePast(dueOn, now);
+    return { sourceId: "work_program_reviews", block: dueOn ? "deadlines" : "undated", id: String(row.id),
+      title: `${row.status === "returned" ? "Revise" : "Review"} ${asString(program?.title) ?? "work program"}`, projectId: null, projectName: null, dueOn, isOverdue: overdue,
+      ...assigneeKey(row), ownerLabel: null, badge: dueOn ? deadlineBadge("OWP review", overdue) : { label: row.status === "returned" ? "Changes requested" : "OWP review", tone: "neutral" }, detail: dueOn ? `Due ${formatWorkDeadlineDate(dueOn)}` : "No due date assigned",
+      href: `/programs/${row.program_id}/work-program#work-program-review`, dedupKey: null } satisfies MyWorkItem;
+  }),
+};
+
 const landUsePlanProcessSource: MyWorkSource = {
   id: "land_use_plan_process",
   label: "Plan process",
@@ -1018,6 +1032,7 @@ export const MY_WORK_SOURCES: readonly MyWorkSource[] = [
   narrativeDraftsSource,
   decisionPackageReviewsSource,
   landUsePlanActionsSource,
+  workProgramReviewsSource,
   landUsePlanProcessSource,
   landUsePlanReviewClosingSource,
   grantDecisionsSource,
