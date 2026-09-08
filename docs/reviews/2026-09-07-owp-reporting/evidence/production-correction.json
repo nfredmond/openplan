@@ -1,0 +1,11 @@
+{
+  "originalHash": "368639a4e5d4aad660b8f94ba8a1fd918dc31e6b25839f6cacf95b560b5c3e6a",
+  "correctedHash": "97f5caf9088b47955d9892dacf167cfa8a8543b595cc2de630aaa71707d6af11",
+  "originalLabor": "50.30",
+  "correctedLabor": "50.55",
+  "periodIncurred": "130.56",
+  "cumulativeIncurred": "230.56",
+  "remaining": "75.45",
+  "actualPlusRemaining": "306.01",
+  "errors": []
+}

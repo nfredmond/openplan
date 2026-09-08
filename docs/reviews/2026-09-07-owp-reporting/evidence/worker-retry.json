@@ -1,0 +1,19 @@
+{
+  "database": "disposable owp-reporting-verification, API 58321",
+  "failure": "Synthetic requester lost owner role after queueing; final custody denied; rendered and uploaded bytes retained",
+  "retry": "Owner restored, same job/document IDs, cached file mtimes and checksums preserved, actual downloads verified",
+  "artifacts": {
+    "pdf": {
+      "checksum": "bfb5b9b8e1f2f32751f8164dfccc3035dbf838499df2e6e2adcdf8d99c0803a1",
+      "bytes": 229955,
+      "mtime": 1788840713845.343
+    },
+    "xlsx": {
+      "checksum": "83cc387cf2fd684fff338c8bb8b185c69ee0b9d2aa024b439e1ff06f517e94a8",
+      "bytes": 26401,
+      "mtime": 1788840713961.3442
+    }
+  },
+  "memberDownloads": "denied",
+  "errors": []
+}
