@@ -4,7 +4,7 @@ import {utils} from "xlsx";
 
 const editable:Record<string,string[]>={"Program narrative":["B"],"Work elements":["B","C","D","E","F","G","H","I","L","M"],"Tasks and products":["D","E","F"],"Funding sources":["B","C","D","E","F","G","H","I","J","K","L"],"Allocations":["E","G"],"Expenditures":["D","E","F","I"],"Staffing":["E","F","G","H","I","J","K","L","M","N","O","P","Q","R","X"],"Indirect pools":["B","C","F"],"Mappings":["B","D"],"Source sections":["B","C","D","E"],"Amendments":["D","E"],"Conflicts":["B","C","D"]};
 /** Add ordinary OpenXML styles/protection after SheetJS CE emits cells and formulas. */
-export async function formatWorkProgramWorkbook(zip:JSZip,book:WorkBook) {
+export async function formatWorkProgramWorkbook(zip:JSZip,book:WorkBook,options:{readOnly?:boolean}={}) {
   const part=zip.file("xl/styles.xml");if(!part)throw new Error("Workbook styles missing");
   let xml=await part.async("string");
   const fonts=Number(xml.match(/<fonts count="(\d+)"/)?.[1]);
@@ -34,7 +34,7 @@ export async function formatWorkProgramWorkbook(zip:JSZip,book:WorkBook) {
     let data=await part.async("string");
     data=data.replace(/<c\b([^>]*\br="([A-Z]+)(\d+)"[^>]*)>/g,(_whole,attributes:string,column:string,row:string)=>{
       const cell=sheet[`${column}${row}`];const base=Number(attributes.match(/\bs="(\d+)"/)?.[1]??0);
-      const kind=row==="1"?"header":!cell?.f&&editable[name]?.includes(column)?"input":"fixed";
+      const kind=row==="1"?"header":!options.readOnly&&!cell?.f&&editable[name]?.includes(column)?"input":"fixed";
       return `<c${attributes.replace(/\s+s="\d+"/,"")} s="${styles.get(`${base}:${kind}`)??styles.get(`0:${kind}`)}">`;
     });
     if (data.includes("<sheetPr")) data=data.replace(/<sheetPr([^>]*)\/>/, '<sheetPr$1></sheetPr>').replace(/<pageSetUpPr[^>]*\/>/g, "").replace('</sheetPr>','<pageSetUpPr fitToPage="1"/></sheetPr>');

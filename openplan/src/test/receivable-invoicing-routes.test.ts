@@ -771,7 +771,7 @@ describe("POST /api/invoicing/client-invoices", () => {
     expect(response.status).toBe(201);
     const body = await response.json();
     // 8000 billed + 5000 this invoice = 13000 against a 10000 ceiling.
-    expect(body.nteWarning).toEqual({ billedToDate: 8000, notToExceed: 10000, overBy: 3000 });
+    expect(body.nteWarning).toEqual({ basis: "legacy_terms_unassessed", billedToDate: 8000, notToExceed: 10000, overBy: 3000 });
     expect(body.invoice).toMatchObject({ id: INVOICE });
   });
 });

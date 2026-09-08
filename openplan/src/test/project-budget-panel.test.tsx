@@ -46,10 +46,10 @@ describe("ProjectBudgetPanel", () => {
       screen.getByText(/No budget entered for this deliverable, so burn cannot be judged\./i)
     ).toBeInTheDocument();
 
-    // Money decomposition stays visible: billed (sent line) + direct spend.
+    // Billing stays visible separately; only spending contributes to incurred cost.
     expect(screen.getByText("$750.00")).toBeInTheDocument();
-    expect(screen.getByText("$2,000.00")).toBeInTheDocument();
-    expect(screen.getByText("$2,750.00")).toBeInTheDocument();
+    expect(screen.getAllByText("$2,000.00")).toHaveLength(2);
+    expect(screen.queryByText("$2,750.00")).not.toBeInTheDocument();
 
     expect(screen.getByTestId("project-spend-entry-form")).toBeInTheDocument();
   });

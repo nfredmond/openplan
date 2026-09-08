@@ -1,5 +1,5 @@
-import { ProjectContracts } from "@/components/invoicing/contracts/project-contracts";
-import type { ComponentProps } from "react";
+export { ProjectContracts } from "@/components/invoicing/contracts/project-contracts";
+import type { ComponentProps, ReactNode } from "react";
 import { PilotWorkflowHandoff } from "@/components/operations/pilot-workflow-handoff";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
@@ -26,6 +26,7 @@ import { ProjectSpineBoard } from "./project-spine-board";
  * say the same thing twice, and are now one `ProjectSpineBoard`.
  */
 export function ProjectOverviewTab({
+  contractSection,
   postureHeader,
   aerialCachedPosture,
   aerialCachedPostureUpdatedAt,
@@ -39,6 +40,7 @@ export function ProjectOverviewTab({
   canWriteIdentity,
   workspaceHomeGeographyLabel,
 }: {
+  contractSection: ReactNode;
   postureHeader: ComponentProps<typeof ProjectPostureHeader>;
   aerialCachedPosture: ComponentProps<typeof ProjectPostureUnified>["aerialPosture"];
   aerialCachedPostureUpdatedAt: string | null;
@@ -57,7 +59,7 @@ export function ProjectOverviewTab({
   return (
     <>
       <ProjectPostureHeader {...postureHeader} />
-      <ProjectContracts projectId={project.id} workspaceId={project.workspace_id} />
+      {contractSection}
 
       <ProjectPostureUnified
         rtpPosture={project.rtp_posture}

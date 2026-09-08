@@ -56,8 +56,8 @@ export function ProjectBudgetPanel({
             <p className="module-section-label">Budget &amp; pace</p>
             <h2 className="module-section-title">Burn against entered budgets</h2>
             <p className="module-section-description">
-              Billed client-invoice lines plus direct spend, compared to the budgets and percent-complete planners
-              actually entered. No run-rates, no projections — a deliverable without a basis gets a refusal, not a guess.
+              Direct spending compared with entered budgets and progress. Billing is shown separately.
+              Contract management includes reviewed labor costs and remaining-work estimates.
             </p>
           </div>
         </div>
@@ -109,9 +109,9 @@ export function ProjectBudgetPanel({
           <p className="module-summary-detail">Ledger entries recorded on this project.</p>
         </div>
         <div className="module-summary-card">
-          <p className="module-summary-label">Recorded direct cost</p>
+          <p className="module-summary-label">Direct spending</p>
           <p className="module-summary-value text-base leading-tight">{fmtCurrency(snapshot.actualToDate)}</p>
-          <p className="module-summary-detail">Recorded spending only. Labor valuation and source coverage are reviewed in contract management.</p>
+          <p className="module-summary-detail">Spending ledger amounts only. Labor valuation and source coverage are reviewed in contract management.</p>
         </div>
       </div>
 

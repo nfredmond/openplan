@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useState, type ReactNode } from "react";
-export function Field({label,children}:{label:string;children:ReactNode}) { return <label className="grid min-w-0 gap-1 text-sm"><span className="font-medium">{label}</span>{children}</label>; }
+import { useEffect, useState, useId, cloneElement, isValidElement, type ReactNode, type ReactElement } from "react";
+export function Field({label,children}:{label:string;children:ReactNode}) { const id=useId(); return <div className="grid min-w-0 gap-1 text-sm"><label htmlFor={id} className="font-medium">{label}</label>{isValidElement(children)?cloneElement(children as ReactElement<{id:string}>,{id}):children}</div>; }
 export const inputClass="min-w-0 w-full rounded border border-input bg-background px-3 py-2 text-sm";
 export function TextField({label,value,onChange,type="text",required=false}:{label:string;value:string|null;onChange:(value:string)=>void;type?:string;required?:boolean}) { return <Field label={label}><input className={inputClass} type={type} value={value??""} required={required} onChange={e=>onChange(e.target.value)}/></Field>; }
 export function NoteField({label,value,onChange,required=false}:{label:string;value:string;onChange:(value:string)=>void;required?:boolean}) { return <Field label={label}><textarea className={inputClass} rows={3} value={value} required={required} onChange={e=>onChange(e.target.value)}/></Field>; }

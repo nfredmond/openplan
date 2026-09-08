@@ -20,6 +20,21 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+### In development: contract reconciliation
+
+Projects and Invoicing carry proposed and approved contract baselines, source actuals, task and staff budgets, separate cost and billing rates, retained corrections and private management export preparation. Acceptance and v0.46 release remain pending.
+
+Apply these additive migrations before using this development workflow:
+
+- `20260911000001_contract_reconciliation.sql`: `contract_reconciliation`
+- `20260911000002_contract_billing.sql`: `contract_billing`
+- `20260911000003_contract_documents.sql`: `contract_documents`
+- `20260911000004_contract_imports.sql`: `contract_imports`
+- `20260911000005_contract_relationships.sql`: `contract_relationships`
+- `20260911000006_contract_staff_assignments.sql`: `contract_staff_assignments`
+- `20260911000007_contract_evidence.sql`: `contract_evidence`
+
+
 Subsequent development changes will be listed here.
 
 ## 0.45.0 — 2026-09-07

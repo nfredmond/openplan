@@ -79,6 +79,8 @@ export type ProjectDeleteAssessment = {
  * hang off a project would be destroyed by a delete that never mentioned it.
  */
 export const PROJECT_DELETE_RELATIONS: readonly ProjectDeleteRelation[] = [
+  { table: "contract_source_deletions", column: "project_id", label: "retained contract source history", severity: "blocking", behavior: "restrict", href: "/invoicing" },
+  { table: "contract_tasks", column: "project_id", label: "retained contract tasks", severity: "blocking", behavior: "restrict", href: "/invoicing" },
   // External commitments. These outlive the project by design.
   {
     table: "billing_invoice_records",

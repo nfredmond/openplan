@@ -1,10 +1,11 @@
+import JSZip from "jszip";
 import { describe,it,expect } from "vitest";
 import { randomUUID } from "node:crypto";
 import { utils } from "xlsx";
 import { cents } from "@/lib/programs/work-program/reporting";
 import { contractActualSchema,type ContractState,type ContractSnapshot,type ActualVersion } from "@/lib/invoicing/contracts/schema";
 import { reconcileContract,reconcileSnapshot } from "@/lib/invoicing/contracts/reconciliation";
-import { contractSnapshotHtml,contractSnapshotWorkbook } from "@/lib/invoicing/contracts/export";
+import { contractSnapshotHtml,contractSnapshotWorkbook,renderContractSnapshot } from "@/lib/invoicing/contracts/export";
 import { previewContractCsv } from "@/lib/invoicing/contracts/import";
 function fixture(){
  const task=randomUUID(),staff=randomUUID(),deliverable=randomUUID(),baseline=randomUUID(),entry=randomUUID();
@@ -15,6 +16,7 @@ function fixture(){
  return {state,actual,command,report,task};
 }
 describe("contract source reconciliation",()=>{
+ it("selects remaining-work versions independently of transaction timestamps",()=>{const {state}=fixture();const first=state.estimates[0];state.estimates.unshift({...first,id:randomUUID(),version:2,created_at:"2026-09-01T01:00:00Z",command:{...first.command,cost:"40.00",expectedVersion:1}});expect(reconcileContract(state,{coverageComplete:true}).remainingCost).toBe("40.00");});
  it("separates internal cost, commitments, gross billing, retention, partial payments and credits",()=>{
   const {state,actual}=fixture();
   for(const category of ["commitment","payment","credit"] as const)state.actuals.push({...actual,id:randomUUID(),entry_id:randomUUID(),time_entry_id:null,command:{...actual.command,category,sourceKey:category},amount:"5.00",hours:null,allocations:actual.allocations.map(a=>({...a,amount:"5.00",hours:null}))});
@@ -48,4 +50,27 @@ describe("contract source reconciliation",()=>{
  it("exports reconciled money, source and baseline history with escaped notes",()=>{
   const {report}=fixture();report.snapshot.actuals[0].command.sourceReference='<script>alert("x")</script>';const html=contractSnapshotHtml(report),book=contractSnapshotWorkbook(report);expect(html).toContain("37.47");expect(html).toContain(report.snapshot_hash);expect(html).not.toContain("<script>");expect(utils.sheet_to_json(book.Sheets["Contract totals"],{header:1})[1]).toEqual(["Contract",12.47,0,0,0,1.01]);expect(book.SheetNames).toContain("Approved staff budgets");expect(book.SheetNames).toContain("Billing source allocations");
  });
+ it("exposes overlapping opening balances and unallocated staff budgets",()=>{
+  const {state,actual}=fixture();state.baselines[0].content.tasks[0].staff[0].cost="300.00";
+  const opening:ActualVersion={...actual,id:randomUUID(),entry_id:randomUUID(),time_entry_id:null,command:{...actual.command,sourceKey:"opening",category:"opening",openingStart:"2026-09-01",openingEnd:"2026-09-07",openingBasis:"Synthetic opening ledger",entryDate:"2026-09-07"}};state.actuals.push(opening);
+  const r=reconcileContract(state,{coverageComplete:true});expect(r.overlappingOpenings).toEqual([opening]);expect(r.actualPlusRemaining).toBeNull();expect(r.staffBudgetRemainders[0].cost).toBe("200.00");
+  opening.command.reconciliationNote="Opening balance covers separate historical source items; detailed September time is excluded from that balance.";expect(reconcileContract(state,{coverageComplete:true}).actualPlusRemaining).toBe("49.94");
+  opening.command.status="excluded";opening.amount=null;expect(reconcileContract(state,{coverageComplete:true}).actualPlusRemaining).toBe("37.47");
+ });
+
+ it("writes a wrapped and printable retained workbook with preserved exact source values",async()=>{
+  const {report}=fixture();const rendered=await renderContractSnapshot(report,"xlsx"),zip=await JSZip.loadAsync(rendered.bytes);
+  const styles=await zip.file("xl/styles.xml")!.async("string"),sheet=await zip.file("xl/worksheets/sheet1.xml")!.async("string");
+  expect(styles).toContain('wrapText="1"');expect(sheet).toContain('fitToWidth="1"');expect(sheet).toContain('sheetProtection');expect(sheet).toContain(report.snapshot_hash);
+ });
+
+ it("maps unique task and staff names without guessing between duplicates",()=>{
+  const {command,state}=fixture();const csv="key,task,staff,hours,date,description\nSYNTH-CSV,Prepare draft,Synthetic staff,1.01,2026-09-01,Intake";
+  const mapping={sourceKey:"key",taskId:"task",staffId:"staff",hours:"hours",entryDate:"date",description:"description"};
+  const preview=previewContractCsv(csv,"synthetic.csv",mapping,command,randomUUID(),state.baselines[0].content.tasks,state.staff);
+  expect(preview.rows[0].errors).toEqual([]);expect(preview.rows[0].command?.allocations[0].taskId).toBe(state.baselines[0].content.tasks[0].id);expect(preview.rows[0].command?.staffId).toBe(state.staff[0].id);
+  const ambiguous=previewContractCsv(csv,"synthetic.csv",mapping,command,randomUUID(),[...state.baselines[0].content.tasks,{...state.baselines[0].content.tasks[0],id:randomUUID()}],state.staff);
+  expect(ambiguous.rows[0].command).toBeNull();expect(ambiguous.rows[0].errors.join(" ")).toContain("one approved task");
+ });
+
 });

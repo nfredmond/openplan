@@ -76,7 +76,7 @@ const WRITER_GATE_MIGRATIONS = [
 // would have moved neither number and would have made this the one table where
 // a viewer writes.
 const EXPECTED_GATED_TABLES = 82;
-const EXPECTED_RESTRICTIVE_POLICIES = 250;
+const EXPECTED_RESTRICTIVE_POLICIES = 251;
 // 198 rather than 197 since 20260728000012 added `vmt_significance_screenings`.
 // Its INSERT policy is role-AWARE (it calls `workspace_member_can_write`), which
 // is why the gated-table and restrictive-policy counts above did NOT move: a
@@ -371,6 +371,7 @@ describe("viewer write denial", () => {
     // two narrow disclosure policies are intentional; ordinary reports remain readable.
     // Payroll-derived management files intentionally restrict readers as well as writers.
     expect(readingGates.sort()).toEqual([
+      "kb_documents.private_contract_documents (ALL)",
       "kb_documents.private_management_documents (ALL)",
       "project_evidence_bundles.engagement_bundle_scope (SELECT)",
       "report_artifacts.engagement_artifact_scope (SELECT)",

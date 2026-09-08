@@ -34,17 +34,39 @@ CREATE TABLE public.contract_commands (
  engagement_id uuid NOT NULL REFERENCES public.invoicing_engagements(id), request_id uuid NOT NULL, actor_id uuid NOT NULL REFERENCES auth.users(id), command jsonb NOT NULL, result jsonb NOT NULL,
  created_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY(engagement_id,request_id)
 );
-DO $$ DECLARE tab text; BEGIN
- FOREACH tab IN ARRAY ARRAY['contract_baselines','contract_tasks','contract_rates','contract_actual_versions','contract_estimates','contract_snapshots','contract_commands'] LOOP
-  EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY',tab);
-  EXECUTE format('REVOKE ALL ON public.%I FROM anon,authenticated,service_role',tab);
-  EXECUTE format('GRANT SELECT ON public.%I TO service_role',tab);
-  IF tab<>'contract_commands' THEN
-   EXECUTE format('GRANT SELECT ON public.%I TO authenticated',tab);
-   EXECUTE format('CREATE POLICY management_read ON public.%I FOR SELECT TO authenticated USING(EXISTS(SELECT 1 FROM public.workspace_members m WHERE m.workspace_id=%I.workspace_id AND m.user_id=auth.uid() AND m.role IN (''owner'',''admin'')))',tab,tab);
-  END IF;
- END LOOP;
-END $$;
+ALTER TABLE public.contract_baselines ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.contract_baselines FROM anon,authenticated,service_role;
+GRANT SELECT ON public.contract_baselines TO service_role;
+GRANT SELECT ON public.contract_baselines TO authenticated;
+CREATE POLICY management_read ON public.contract_baselines FOR SELECT TO authenticated USING(EXISTS(SELECT 1 FROM public.workspace_members m WHERE m.workspace_id=contract_baselines.workspace_id AND m.user_id=auth.uid() AND m.role IN ('owner','admin')));
+ALTER TABLE public.contract_tasks ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.contract_tasks FROM anon,authenticated,service_role;
+GRANT SELECT ON public.contract_tasks TO service_role;
+GRANT SELECT ON public.contract_tasks TO authenticated;
+CREATE POLICY management_read ON public.contract_tasks FOR SELECT TO authenticated USING(EXISTS(SELECT 1 FROM public.workspace_members m WHERE m.workspace_id=contract_tasks.workspace_id AND m.user_id=auth.uid() AND m.role IN ('owner','admin')));
+ALTER TABLE public.contract_rates ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.contract_rates FROM anon,authenticated,service_role;
+GRANT SELECT ON public.contract_rates TO service_role;
+GRANT SELECT ON public.contract_rates TO authenticated;
+CREATE POLICY management_read ON public.contract_rates FOR SELECT TO authenticated USING(EXISTS(SELECT 1 FROM public.workspace_members m WHERE m.workspace_id=contract_rates.workspace_id AND m.user_id=auth.uid() AND m.role IN ('owner','admin')));
+ALTER TABLE public.contract_actual_versions ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.contract_actual_versions FROM anon,authenticated,service_role;
+GRANT SELECT ON public.contract_actual_versions TO service_role;
+GRANT SELECT ON public.contract_actual_versions TO authenticated;
+CREATE POLICY management_read ON public.contract_actual_versions FOR SELECT TO authenticated USING(EXISTS(SELECT 1 FROM public.workspace_members m WHERE m.workspace_id=contract_actual_versions.workspace_id AND m.user_id=auth.uid() AND m.role IN ('owner','admin')));
+ALTER TABLE public.contract_estimates ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.contract_estimates FROM anon,authenticated,service_role;
+GRANT SELECT ON public.contract_estimates TO service_role;
+GRANT SELECT ON public.contract_estimates TO authenticated;
+CREATE POLICY management_read ON public.contract_estimates FOR SELECT TO authenticated USING(EXISTS(SELECT 1 FROM public.workspace_members m WHERE m.workspace_id=contract_estimates.workspace_id AND m.user_id=auth.uid() AND m.role IN ('owner','admin')));
+ALTER TABLE public.contract_snapshots ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.contract_snapshots FROM anon,authenticated,service_role;
+GRANT SELECT ON public.contract_snapshots TO service_role;
+GRANT SELECT ON public.contract_snapshots TO authenticated;
+CREATE POLICY management_read ON public.contract_snapshots FOR SELECT TO authenticated USING(EXISTS(SELECT 1 FROM public.workspace_members m WHERE m.workspace_id=contract_snapshots.workspace_id AND m.user_id=auth.uid() AND m.role IN ('owner','admin')));
+ALTER TABLE public.contract_commands ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.contract_commands FROM anon,authenticated,service_role;
+GRANT SELECT ON public.contract_commands TO service_role;
 CREATE POLICY task_member_read ON public.contract_tasks FOR SELECT TO authenticated USING(EXISTS(SELECT 1 FROM public.workspace_members m WHERE m.workspace_id=contract_tasks.workspace_id AND m.user_id=auth.uid()));
 
 -- This closes the legacy same-workspace, different-project hole for every writer.
@@ -74,6 +96,15 @@ END $$;
 CREATE TRIGGER contract_time_custody BEFORE UPDATE OR DELETE ON public.invoicing_time_entries FOR EACH ROW EXECUTE FUNCTION public.guard_contract_source();
 CREATE TRIGGER contract_spend_custody BEFORE UPDATE OR DELETE ON public.project_spend_entries FOR EACH ROW EXECUTE FUNCTION public.guard_contract_source();
 
+-- A shared source can acquire OWP attribution after its first contract version.
+CREATE FUNCTION public.contract_shared_source_stale(v public.contract_actual_versions,p_cutoff timestamptz DEFAULT now()) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=pg_catalog,public AS $$
+ SELECT EXISTS(SELECT 1 FROM public.work_program_actual_versions ow WHERE ow.created_at<=p_cutoff AND
+  ((v.time_entry_id IS NOT NULL AND ow.time_entry_id=v.time_entry_id) OR (v.spend_entry_id IS NOT NULL AND ow.spend_entry_id=v.spend_entry_id)) AND
+  NOT EXISTS(SELECT 1 FROM public.work_program_actual_versions newer WHERE newer.entry_id=ow.entry_id AND newer.version>ow.version AND newer.created_at<=p_cutoff) AND
+  (ow.id IS DISTINCT FROM (v.command->>'owpVersionId')::uuid OR ow.amount IS DISTINCT FROM v.amount OR ow.hours IS DISTINCT FROM v.hours OR ow.status IS DISTINCT FROM v.command->>'status' OR ow.entry_date IS DISTINCT FROM (v.command->>'entryDate')::date))
+$$;
+REVOKE ALL ON FUNCTION public.contract_shared_source_stale(public.contract_actual_versions,timestamptz) FROM PUBLIC,anon,authenticated;
+
 -- SQL aggregate reads have no PostgREST page cap. Monetary values cross JSON boundaries as decimal strings.
 CREATE FUNCTION public.read_contract_management(p_engagement_id uuid,p_actor_id uuid,p_cutoff timestamptz DEFAULT now()) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
 DECLARE e public.invoicing_engagements; actor_role text; result jsonb;
@@ -85,18 +116,23 @@ BEGIN
  'staff',coalesce((SELECT jsonb_agg(jsonb_build_object('id',s.id,'name',s.name,'active',s.active,'user_id',s.user_id) ORDER BY s.name) FROM public.invoicing_staff s WHERE s.workspace_id=e.workspace_id AND (actor_role IN ('owner','admin') OR s.user_id=p_actor_id)),'[]'),
  'deliverables',coalesce((SELECT jsonb_agg(jsonb_build_object('id',d.id,'title',d.title)) FROM public.project_deliverables d WHERE d.project_id=e.project_id),'[]'),
  'documents',coalesce((SELECT jsonb_agg(jsonb_build_object('id',d.id,'title',d.title,'checksum',d.checksum)) FROM public.kb_documents d WHERE d.workspace_id=e.workspace_id AND d.checksum IS NOT NULL AND d.work_program_report_id IS NULL),'[]'),
- 'baselines',coalesce((SELECT jsonb_agg(to_jsonb(b) ORDER BY b.version) FROM public.contract_baselines b WHERE b.engagement_id=e.id AND b.created_at<=p_cutoff),'[]'),
- 'actuals',coalesce((SELECT jsonb_agg(to_jsonb(v)||jsonb_build_object('amount',v.amount::text,'hours',v.hours::text,'shared_source_stale',CASE WHEN v.command->>'owpVersionId' IS NULL THEN false ELSE NOT EXISTS(SELECT 1 FROM public.work_program_actual_versions ow WHERE ow.id=(v.command->>'owpVersionId')::uuid AND NOT EXISTS(SELECT 1 FROM public.work_program_actual_versions newer WHERE newer.entry_id=ow.entry_id AND newer.version>ow.version AND newer.created_at<=p_cutoff)) END) ORDER BY v.created_at,v.version) FROM public.contract_actual_versions v WHERE v.engagement_id=e.id AND v.created_at<=p_cutoff),'[]'),
+ 'baselines',coalesce((SELECT jsonb_agg(to_jsonb(b)||CASE WHEN b.approved_at>p_cutoff THEN jsonb_build_object('state','proposed','approved_at',NULL,'approval_evidence','') ELSE '{}'::jsonb END ORDER BY b.version) FROM public.contract_baselines b WHERE b.engagement_id=e.id AND b.created_at<=p_cutoff),'[]'),
+ 'actuals',coalesce((SELECT jsonb_agg(to_jsonb(v)||jsonb_build_object('amount',v.amount::text,'hours',v.hours::text,'shared_source_stale',public.contract_shared_source_stale(v,p_cutoff)) ORDER BY v.created_at,v.version) FROM public.contract_actual_versions v WHERE v.engagement_id=e.id AND v.created_at<=p_cutoff),'[]'),
  'rates',coalesce((SELECT jsonb_agg(to_jsonb(r)||jsonb_build_object('hourly_rate',r.hourly_rate::text)) FROM public.contract_rates r WHERE r.engagement_id=e.id AND r.created_at<=p_cutoff),'[]'),
  'estimates',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY x.created_at) FROM public.contract_estimates x WHERE x.engagement_id=e.id AND x.created_at<=p_cutoff),'[]'),
  'billingSources',coalesce((SELECT jsonb_agg(to_jsonb(bs)) FROM public.contract_billing_sources bs WHERE bs.engagement_id=e.id AND bs.created_at<=p_cutoff),'[]'),
  'invoices',coalesce((SELECT jsonb_agg(jsonb_build_object('id',i.id,'invoice_number',i.invoice_number,'status',i.status,'subtotal_amount',i.subtotal_amount::text,'retention_amount',i.retention_amount::text,'currency_code',i.currency_code,'invoice_date',i.invoice_date,'sent_date',i.sent_date,'updated_at',i.updated_at)) FROM public.client_invoices i WHERE i.engagement_id=e.id AND i.created_at<=p_cutoff),'[]'),
  'unmappedTime',coalesce((SELECT jsonb_agg(jsonb_build_object('id',t.id,'hours',t.hours::text,'entry_date',t.entry_date,'staff_id',t.staff_id)) FROM public.invoicing_time_entries t WHERE t.engagement_id=e.id AND t.created_at<=p_cutoff AND NOT EXISTS(SELECT 1 FROM public.contract_actual_versions v WHERE v.time_entry_id=t.id AND v.created_at<=p_cutoff)),'[]'),
  'unmappedSpend',coalesce((SELECT jsonb_agg(jsonb_build_object('id',s.id,'amount',s.amount::text,'entry_date',s.entry_date)) FROM public.project_spend_entries s WHERE s.project_id=e.project_id AND s.created_at<=p_cutoff AND NOT EXISTS(SELECT 1 FROM public.contract_actual_versions v WHERE v.spend_entry_id=s.id AND v.created_at<=p_cutoff)),'[]'),
+ 'cutoffConflicts',EXISTS(SELECT 1 FROM public.client_invoices i WHERE i.engagement_id=e.id AND i.created_at<=p_cutoff AND i.updated_at>p_cutoff) OR
+ EXISTS(SELECT 1 FROM public.invoicing_time_entries t WHERE t.engagement_id=e.id AND t.created_at<=p_cutoff AND t.updated_at>p_cutoff AND NOT EXISTS(SELECT 1 FROM public.contract_actual_versions v WHERE v.time_entry_id=t.id AND v.created_at<=p_cutoff)) OR
+ EXISTS(SELECT 1 FROM public.project_spend_entries x WHERE x.project_id=e.project_id AND x.created_at<=p_cutoff AND x.updated_at>p_cutoff AND NOT EXISTS(SELECT 1 FROM public.contract_actual_versions v WHERE v.spend_entry_id=x.id AND v.created_at<=p_cutoff)) OR
+ EXISTS(SELECT 1 FROM public.contract_source_deletions d WHERE d.workspace_id=e.workspace_id AND (d.engagement_id=e.id OR d.project_id=e.project_id) AND d.source_created_at<=p_cutoff AND d.deleted_at>p_cutoff),
+ 'imports',coalesce((SELECT jsonb_agg(jsonb_build_object('id',i.id,'filename',i.filename,'source_hash',i.source_hash,'created_at',i.created_at) ORDER BY i.created_at) FROM public.contract_imports i WHERE i.engagement_id=e.id AND i.created_at<=p_cutoff),'[]'),
  'snapshots',coalesce((SELECT jsonb_agg(jsonb_build_object('id',s.id,'title',s.title,'created_at',s.created_at,'snapshot_hash',s.snapshot_hash) ORDER BY s.created_at DESC) FROM public.contract_snapshots s WHERE s.engagement_id=e.id),'[]'));
  IF actor_role='member' THEN
   -- Members see their original input, never its payroll valuation, invoices or management budgets.
-  result:=result||jsonb_build_object('rates','[]'::jsonb,'estimates','[]'::jsonb,'invoices','[]'::jsonb,'billingSources','[]'::jsonb,'unmappedSpend','[]'::jsonb,'snapshots','[]'::jsonb,'documents','[]'::jsonb,
+  result:=result||jsonb_build_object('cutoffConflicts',false,'imports','[]'::jsonb,'rates','[]'::jsonb,'estimates','[]'::jsonb,'invoices','[]'::jsonb,'billingSources','[]'::jsonb,'unmappedSpend','[]'::jsonb,'snapshots','[]'::jsonb,'documents','[]'::jsonb,
    'baselines',coalesce((SELECT jsonb_agg(jsonb_build_object('id',b.id,'version',b.version,'state',b.state,'content',jsonb_build_object('title',b.content->'title','scope',b.content->'scope','currency',b.content->'currency','tasks',(SELECT jsonb_agg(t-'cost'-'fee'-'hours'-'staff') FROM jsonb_array_elements(b.content->'tasks') t)))) FROM public.contract_baselines b WHERE b.engagement_id=e.id AND b.state='approved' AND b.created_at<=p_cutoff),'[]'),
    'actuals',coalesce((SELECT jsonb_agg(jsonb_build_object('id',v.id,'entry_id',v.entry_id,'version',v.version,'created_at',v.created_at,'hours',v.hours::text,'time_entry_id',v.time_entry_id,'command',v.command-'amount'-'rateId'-'valuationBasis'||jsonb_build_object('amount',NULL,'rateId',NULL,'valuationBasis','unvalued'),'amount',NULL,'allocations','[]'::jsonb)) FROM public.contract_actual_versions v JOIN public.invoicing_staff s ON s.id=(v.command->>'staffId')::uuid WHERE v.engagement_id=e.id AND s.user_id=p_actor_id AND v.created_by=p_actor_id AND v.created_at<=p_cutoff),'[]'),
    'unmappedTime',coalesce((SELECT jsonb_agg(t) FROM jsonb_array_elements(result->'unmappedTime') t WHERE EXISTS(SELECT 1 FROM public.invoicing_staff s WHERE s.id=(t->>'staff_id')::uuid AND s.user_id=p_actor_id)),'[]'));
@@ -188,6 +224,7 @@ BEGIN
   IF category='labor' AND (h IS NULL OR h<=0 OR h>24) THEN RAISE EXCEPTION 'Daily labor requires hours greater than zero and at most 24' USING ERRCODE='22023'; END IF;
   IF category='opening' AND (coalesce(length(trim(p_command->>'openingBasis')),0)=0 OR (p_command->>'openingStart')::date IS NULL OR (p_command->>'openingEnd')::date IS NULL OR (p_command->>'openingEnd')::date<(p_command->>'openingStart')::date OR (p_command->>'openingEnd')::date>dt) THEN RAISE EXCEPTION 'Document opening coverage and accounting basis' USING ERRCODE='22023'; END IF;
   IF category IN ('payment','credit') AND (p_command->>'invoiceId' IS NULL OR NOT EXISTS(SELECT 1 FROM public.client_invoices i WHERE i.id=(p_command->>'invoiceId')::uuid AND i.engagement_id=e.id AND i.status IN ('sent','paid'))) THEN RAISE EXCEPTION 'Link documented cash or credit to an issued contract invoice' USING ERRCODE='22023'; END IF;
+  IF category IN ('payment','credit') AND EXISTS(SELECT 1 FROM public.client_invoices i WHERE i.id=(p_command->>'invoiceId')::uuid AND (i.invoice_date IS NULL OR i.sent_date IS NULL OR dt<greatest(i.invoice_date,i.sent_date))) THEN RAISE EXCEPTION 'Document invoice issue dates before reconciling cash or credits; an event cannot precede that invoice' USING ERRCODE='22023'; END IF;
   IF basis='cost_rate' THEN
    SELECT * INTO rate FROM public.contract_rates WHERE id=(p_command->>'rateId')::uuid AND engagement_id=e.id AND staff_id=s.id AND basis='cost' AND dt BETWEEN starts_on AND ends_on;
    IF category<>'labor' OR rate.id IS NULL THEN RAISE EXCEPTION 'Approved effective cost rate required' USING ERRCODE='22023'; END IF;
@@ -216,8 +253,14 @@ BEGIN
   IF EXISTS(SELECT 1 FROM public.contract_actual_versions v WHERE v.entry_id<>entry AND ((tid IS NOT NULL AND v.time_entry_id=tid) OR (sid IS NOT NULL AND v.spend_entry_id=sid))) THEN RAISE EXCEPTION 'Physical source already allocated to a contract actual' USING ERRCODE='PT409'; END IF;
   IF t.work_program_id IS NOT NULL OR spend.work_program_id IS NOT NULL OR p_command->>'owpVersionId' IS NOT NULL THEN
    SELECT * INTO ov FROM public.work_program_actual_versions WHERE id=(p_command->>'owpVersionId')::uuid AND workspace_id=e.workspace_id;
+   IF (SELECT r.content_json->>'currency' FROM public.program_work_program_revisions r WHERE r.id=ov.revision_id) IS DISTINCT FROM b.content->>'currency' THEN RAISE EXCEPTION 'Shared OWP and contract valuations require the same documented currency; no conversion is inferred' USING ERRCODE='22023'; END IF;
    IF ov.id IS NULL OR (ov.time_entry_id IS DISTINCT FROM tid OR ov.spend_entry_id IS DISTINCT FROM sid) OR ov.amount IS DISTINCT FROM money OR ov.hours IS DISTINCT FROM h OR ov.entry_date<>dt OR ov.status IS DISTINCT FROM st OR EXISTS(SELECT 1 FROM public.work_program_actual_versions n WHERE n.entry_id=ov.entry_id AND n.version>ov.version) THEN RAISE EXCEPTION 'Use the current matching OWP valuation; correct shared sources in OWP first' USING ERRCODE='22023'; END IF;
   END IF;
+  IF st='approved' AND category='labor' AND coalesce(length(trim(p_command->>'reconciliationNote')),0)=0 AND (
+   EXISTS(SELECT 1 FROM public.contract_actual_versions v WHERE v.workspace_id=e.workspace_id AND v.entry_id<>entry AND v.command->>'staffId'=s.id::text AND v.command->>'entryDate'=dt::text AND v.command->>'category'='labor' AND v.command->>'status'<>'excluded' AND NOT EXISTS(SELECT 1 FROM public.contract_actual_versions n WHERE n.entry_id=v.entry_id AND n.version>v.version)) OR
+   EXISTS(SELECT 1 FROM public.work_program_actual_versions v WHERE v.workspace_id=e.workspace_id AND v.staff_id=s.id AND v.entry_date=dt AND v.kind='labor' AND v.status<>'excluded' AND v.time_entry_id IS DISTINCT FROM tid AND NOT EXISTS(SELECT 1 FROM public.work_program_actual_versions n WHERE n.entry_id=v.entry_id AND n.version>v.version)) OR
+   EXISTS(SELECT 1 FROM public.invoicing_time_entries x WHERE x.workspace_id=e.workspace_id AND x.staff_id=s.id AND x.entry_date=dt AND x.id IS DISTINCT FROM tid AND NOT EXISTS(SELECT 1 FROM public.contract_actual_versions v WHERE v.time_entry_id=x.id) AND NOT EXISTS(SELECT 1 FROM public.work_program_actual_versions v WHERE v.time_entry_id=x.id))
+  ) THEN RAISE EXCEPTION 'Other time or payroll exists for this staff date; reconcile overlap explicitly before approval' USING ERRCODE='22023'; END IF;
   IF tid IS NULL AND category='labor' THEN
    INSERT INTO public.invoicing_time_entries(workspace_id,staff_id,engagement_id,entry_date,hours,notes,billable,created_by) VALUES(e.workspace_id,s.id,e.id,dt,h,p_command->>'description',(p_command->>'billable')::boolean,p_actor_id) RETURNING id INTO tid;
   END IF;
@@ -250,8 +293,8 @@ BEGIN
   IF cutoff IS NULL OR cutoff>now() OR asof IS NULL OR coalesce(length(trim(p_command->>'coverageEvidence')),0)=0 THEN RAISE EXCEPTION 'Snapshot requires source cutoff, date and coverage evidence' USING ERRCODE='22023'; END IF;
   SELECT * INTO b FROM public.contract_baselines WHERE engagement_id=e.id AND state='approved' AND approved_at<=cutoff ORDER BY version DESC LIMIT 1;
   IF b.id IS NULL THEN RAISE EXCEPTION 'Approve an evidenced baseline before issuing a management snapshot' USING ERRCODE='22023'; END IF;
-  IF EXISTS(SELECT 1 FROM public.client_invoices inv WHERE inv.engagement_id=e.id AND inv.created_at<=cutoff AND inv.updated_at>cutoff) THEN RAISE EXCEPTION 'Invoice state changed after this cutoff. Use a current cutoff; past issuance history cannot be inferred' USING ERRCODE='22023'; END IF;
   report:=public.read_contract_management(e.id,p_actor_id,cutoff)||jsonb_build_object('baselineId',b.id,'originalBaselineId',(SELECT id FROM public.contract_baselines WHERE engagement_id=e.id AND state='approved' AND approved_at<=cutoff ORDER BY version LIMIT 1),'asOf',asof,'sourceCutoff',cutoff,'coverageComplete',(p_command->>'coverageComplete')::boolean,'coverageEvidence',p_command->>'coverageEvidence');
+  IF (report->>'cutoffConflicts')::boolean THEN RAISE EXCEPTION 'Legacy invoice or source changed or was deleted after cutoff; use a current cutoff instead of inferring historical source coverage' USING ERRCODE='22023'; END IF;
   INSERT INTO public.contract_snapshots(engagement_id,workspace_id,title,snapshot,snapshot_hash,created_by) VALUES(e.id,e.workspace_id,p_command->>'title',report,encode(extensions.digest(report::text,'sha256'),'hex'),p_actor_id) RETURNING id INTO report_id;
   result:=jsonb_build_object('snapshotId',report_id);
  END IF;

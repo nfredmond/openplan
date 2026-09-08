@@ -15,7 +15,8 @@ export function reconcileContract(state: ContractState, options: { asOf?: string
  const actuals = currentActuals(state.actuals, options.asOf);
  const tasks = new Map<string, Rollup>(), staff = new Map<string, Rollup>(), deliverables = new Map<string, Rollup>();
  const total = empty(), identities = new Set<string>();
- const unresolved = actuals.filter(v => v.shared_source_stale || v.command.status === "draft" || v.amount === null || v.allocations.length === 0);
+ const overlappingOpenings = actuals.filter(v => v.command.category === "opening" && v.command.status === "approved" && !v.command.reconciliationNote.trim() && actuals.some(other => other.entry_id !== v.entry_id && other.command.status !== "excluded" && ["labor","expense","opening"].includes(other.command.category) && (other.command.openingStart ?? other.command.entryDate) <= (v.command.openingEnd ?? v.command.entryDate) && (other.command.openingEnd ?? other.command.entryDate) >= (v.command.openingStart ?? v.command.entryDate) && other.allocations.some(a => v.allocations.some(b => a.taskId === b.taskId))));
+ const unresolved = actuals.filter(v => v.shared_source_stale || overlappingOpenings.includes(v) || (v.command.status !== "excluded" && (v.command.status === "draft" || v.amount === null || v.allocations.length === 0)));
  const excluded = actuals.filter(v => v.command.status === "excluded");
  function row(map: Map<string, Rollup>, id: string, label: string) { if (!map.has(id)) map.set(id, { id, label, totals: empty() }); return map.get(id)!.totals; }
  function add(target: Metrics, v: ActualVersion, amount: string | null, hours: string | null) {
@@ -43,9 +44,10 @@ export function reconcileContract(state: ContractState, options: { asOf?: string
  }
  for (const map of [tasks, staff, deliverables]) for (const metric of contractMetrics) if ([...map.values()].reduce((n, r) => n + cents(r.totals[metric]), BigInt(0)) !== cents(total[metric])) throw new Error(`Unreconciled ${metric}`);
  const estimates = baseline?.content.tasks.map(t => {
-  const estimate = state.estimates.filter(e => e.task_id === t.id && e.command.asOf <= (options.asOf ?? "9999-12-31")).at(-1);
+  const estimate = state.estimates.filter(e => e.task_id === t.id && e.command.asOf <= (options.asOf ?? "9999-12-31")).reduce<ContractState["estimates"][number] | undefined>((latest, e) => !latest || e.version > latest.version ? e : latest, undefined);
   return { task: t, estimate, incurred: tasks.get(t.id)?.totals.incurred ?? "0.00" };
  }) ?? [];
+ const staffBudgetRemainders = (baseline?.content.tasks ?? []).map(task => ({task, cost: task.cost === null ? null : decimalText(cents(task.cost) - task.staff.reduce((sum, s) => sum + cents(s.cost ?? "0"), BigInt(0))), hours: task.hours === null ? null : decimalText(cents(task.hours) - task.staff.reduce((sum, s) => sum + cents(s.hours ?? "0"), BigInt(0))), unknownCost: task.staff.filter(s => s.cost === null).length, unknownHours: task.staff.filter(s => s.hours === null).length}));
  const complete = !!options.coverageComplete && !!baseline && estimates.length > 0 && estimates.every(e => e.estimate?.command.cost != null && e.estimate.command.hours != null) && !unresolved.length && !state.unmappedSpend.length && !state.unmappedTime.length;
  const remainingCost = complete ? decimalText(estimates.reduce((n, e) => n + cents(e.estimate!.command.cost!), BigInt(0))) : null;
  const issued = state.invoices.filter(i => i.status === "sent" || i.status === "paid");
@@ -55,6 +57,6 @@ export function reconcileContract(state: ContractState, options: { asOf?: string
  const grossBilled = currencyMismatch || undatedInvoices.length ? null : decimalText(invoices.reduce((n, i) => n + cents(i.subtotal_amount), BigInt(0)));
  const retention = currencyMismatch || undatedInvoices.length ? null : decimalText(invoices.reduce((n, i) => n + cents(i.retention_amount), BigInt(0)));
  const grossFeeRemaining = baseline?.content.feeBasis === "gross_fee" && baseline.content.fee !== null && grossBilled !== null ? decimalText(cents(baseline.content.fee) - cents(grossBilled) + cents(total.credits)) : null;
- return { baseline, actuals, total, byTask: [...tasks.values()], byStaff: [...staff.values()], byDeliverable: [...deliverables.values()], unresolved, excluded, estimates, remainingCost, actualPlusRemaining: remainingCost === null ? null : decimalText(cents(total.incurred) + cents(remainingCost)), grossBilled, retention, grossFeeRemaining, currencyMismatch, undatedInvoices, unknownHours: actuals.filter(v => v.command.status === "approved" && v.command.category === "opening" && v.hours === null).length };
+ return { baseline, staffBudgetRemainders, overlappingOpenings, actuals, total, byTask: [...tasks.values()], byStaff: [...staff.values()], byDeliverable: [...deliverables.values()], unresolved, excluded, estimates, remainingCost, actualPlusRemaining: remainingCost === null ? null : decimalText(cents(total.incurred) + cents(remainingCost)), grossBilled, retention, grossFeeRemaining, currencyMismatch, undatedInvoices, unknownHours: actuals.filter(v => v.command.status === "approved" && v.command.category === "opening" && v.hours === null).length };
 }
 export function reconcileSnapshot(report: ContractSnapshot) { return reconcileContract(report.snapshot, { asOf: report.snapshot.asOf, baselineId: report.snapshot.baselineId, coverageComplete: report.snapshot.coverageComplete }); }

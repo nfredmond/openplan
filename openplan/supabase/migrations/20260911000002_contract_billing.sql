@@ -23,6 +23,7 @@ BEGIN
  VALUES(invoice_id,e.workspace_id,e.client_id,e.id,e.project_id,p_command->>'invoiceNumber','draft',(p_command->>'invoiceDate')::date,(p_command->>'dueDate')::date,b.content->>'currency',percent,p_actor_id);
  FOR source IN SELECT value FROM jsonb_array_elements(p_command->'entryIds') LOOP
   SELECT * INTO v FROM public.contract_actual_versions WHERE entry_id=(source#>>'{}')::uuid AND engagement_id=e.id ORDER BY version DESC LIMIT 1;
+  IF public.contract_shared_source_stale(v) THEN RAISE EXCEPTION 'Reconcile the current shared OWP source before billing' USING ERRCODE='PT409'; END IF;
   IF v.id IS NULL OR v.command->>'status'<>'approved' OR NOT coalesce((v.command->>'billable')::boolean,false) OR v.command->>'category' NOT IN ('labor','expense') OR v.amount IS NULL OR jsonb_array_length(v.allocations)=0 OR EXISTS(SELECT 1 FROM public.contract_billing_sources x WHERE x.entry_id=v.entry_id) THEN RAISE EXCEPTION 'Only approved, allocated, unbilled labor and expenses may be billed' USING ERRCODE='PT409'; END IF;
   IF v.time_entry_id IS NOT NULL THEN
    PERFORM 1 FROM public.invoicing_time_entries WHERE id=v.time_entry_id FOR UPDATE;

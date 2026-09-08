@@ -1,3 +1,5 @@
+import JSZip from "jszip";
+import { formatWorkProgramWorkbook } from "@/lib/programs/work-program/workbook-layout";
 import { utils } from "xlsx";
 import { writeWorkProgramWorkbook } from "@/lib/programs/work-program/export";
 import { renderReportPdf } from "@/lib/reports/pdf";
@@ -17,12 +19,14 @@ export function contractSnapshotTables(report: ContractSnapshot): { name: string
  tables.push({ name: "Remaining work", rows: [["Task", "Agreed deadline", "Estimate date", "Remaining hours", "Remaining cost", "Estimate basis", "Independent progress", "Progress note"], ...r.estimates.map(e => [e.task.title, e.task.deadline, e.estimate?.command.asOf ?? null, e.estimate?.command.hours ?? null, e.estimate?.command.cost ?? null, e.estimate?.command.basis ?? null, e.estimate?.command.progress ?? null, e.estimate?.command.progressNote ?? null])] });
  tables.push({ name: "Source history", rows: [["Source", "Version", "Recorded", "Date", "Category", "Status", "Amount", "Hours", "Reference", "Correction", "Physical source", "OWP version"], ...state.actuals.map(v => [v.command.sourceKey, v.version, v.created_at, v.command.entryDate, v.command.category, v.command.status, v.amount, v.hours, v.command.sourceReference, v.command.correctionNote, v.time_entry_id ?? v.spend_entry_id, v.command.owpVersionId])] });
  tables.push({ name: "Allocations", rows: [["Source", "Version", "Task", "Deliverable", "Share (basis points)", "Amount", "Hours"], ...state.actuals.flatMap(v => v.allocations.map(a => [v.command.sourceKey, v.version, a.taskId, a.deliverableId, a.share, a.amount, a.hours]))] });
- tables.push({ name: "Unresolved", rows: [["Record", "State", "Known amount", "Known hours"], ...r.unresolved.map(v => [v.command.sourceKey, v.command.status, v.amount, v.hours]), ...state.unmappedSpend.map(v => [v.id, "Project spending not mapped to this contract", v.amount, null]), ...state.unmappedTime.map(v => [v.id, "Contract time not reviewed", null, v.hours])] });
+ tables.push({ name: "Unresolved", rows: [["Record", "State", "Known amount", "Known hours"], ...r.unresolved.map(v => [v.command.sourceKey, v.shared_source_stale?"Shared OWP source requires reconciliation":r.overlappingOpenings.includes(v)?"Opening overlap requires reconciliation":v.command.status, v.amount, v.hours]), ...state.unmappedSpend.map(v => [v.id, "Project spending not mapped to this contract", v.amount, null]), ...state.unmappedTime.map(v => [v.id, "Contract time not reviewed", null, v.hours])] });
  tables.push({ name: "Approved task budgets", rows: [["Task", "Fee", "Internal cost", "Hours", "Agreed deadline", "Scope"], ...(r.baseline?.content.tasks??[]).map(t=>[t.title,t.fee,t.cost,t.hours,t.deadline,t.scope])] });
  tables.push({ name: "Approved staff budgets", rows: [["Task", "Staff", "Hours", "Internal cost"], ...(r.baseline?.content.tasks??[]).flatMap(t=>t.staff.map(s=>[t.title,state.staff.find(p=>p.id===s.staffId)?.name??s.staffId,s.hours,s.cost]))] });
  tables.push({ name: "Billing source allocations", rows: [["Invoice", "Source entry", "Valuation version", "Billing rate", "Task", "Deliverable", "Gross fee", "Hours"], ...(state.billingSources??[]).flatMap(s=>s.lines.map(l=>[s.invoice_id,s.entry_id,s.actual_version_id,s.billing_rate_id,l.taskId,l.deliverableId,l.amount,l.hours]))] });
  tables.push({ name: "Valuation evidence", rows: [["Source", "Version", "Basis", "Cost rate", "Opening coverage", "Opening basis", "Overlap reconciliation", "Shared source state"], ...state.actuals.map(v=>[v.command.sourceKey,v.version,v.command.valuationBasis,v.command.rateId,`${v.command.openingStart??""} to ${v.command.openingEnd??""}`,v.command.openingBasis,v.command.reconciliationNote,v.shared_source_stale?"OWP correction requires reconciliation":"Retained valuation"])] });
  tables.push({ name: "Rates", rows: [["Staff", "Basis", "Effective start", "Effective end", "Rate", "Source", "Identity"], ...state.rates.map(v => [state.staff.find(s => s.id === v.staff_id)?.name ?? v.staff_id, v.basis, v.starts_on, v.ends_on, v.hourly_rate, v.source_reference, v.id])] });
+ tables.push({name:"Agreement evidence",rows:[["Baseline","Document","Title","SHA-256","Retained file","Bytes"],...state.baselines.flatMap(b=>(b.source_receipts??[]).map(d=>[b.id,d.id,d.title,d.checksum,d.storageRef,d.bytes]))]});
+ tables.push({name:"Staff budget coverage",rows:[["Task","Cost not allocated to staff","Hours not allocated to staff","Unknown staff costs","Unknown staff hours","Meaning"],...r.staffBudgetRemainders.map(b=>[b.task.title,b.cost,b.hours,b.unknownCost,b.unknownHours,"Difference from known staff allocations. May include direct expenses; consult the retained task scope."])]});
  return tables;
 }
 export function contractSnapshotHtml(report: ContractSnapshot) {
@@ -44,7 +48,7 @@ export function contractSnapshotWorkbook(report: ContractSnapshot) {
  return book;
 }
 export async function renderContractSnapshot(report: ContractSnapshot, format: "pdf"|"xlsx") {
- if (format === "xlsx") return { bytes: Buffer.from(await writeWorkProgramWorkbook(contractSnapshotWorkbook(report))), engine: "sheetjs" };
+ if (format === "xlsx") { const book=contractSnapshotWorkbook(report),zip=await JSZip.loadAsync(await writeWorkProgramWorkbook(book)); await formatWorkProgramWorkbook(zip,book,{readOnly:true}); return {bytes:Buffer.from(await zip.generateAsync({type:"uint8array",compression:"DEFLATE"})),engine:"sheetjs"}; }
  const pdf = await renderReportPdf(contractSnapshotHtml(report), {title:report.title,generatedAt:report.created_at,footerLabel:"Internal contract management"});
  return {bytes:Buffer.from(pdf.bytes),engine:pdf.engine};
 }
