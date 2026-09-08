@@ -20,6 +20,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- Indexed original documents remain usable for settlement and deliverable evidence after extraction finishes: [migration](openplan/supabase/migrations/20260921000001_contract_indexed_source_files.sql).
+
 - [contract_pending_reviews](openplan/supabase/migrations/20260920000001_contract_pending_reviews.sql) routes pending contract approvals, received-invoice reviews and proposed responses through My Work, preserving existing scoped authority.
 
 - Draft PM proposals can use their own retained source files and shared colleague availability through [contract_pm_proposal_inputs](openplan/supabase/migrations/20260919000001_contract_pm_proposal_inputs.sql). Reassignment comparisons preserve approved assignments until applied.

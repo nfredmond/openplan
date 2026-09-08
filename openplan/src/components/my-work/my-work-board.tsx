@@ -77,7 +77,7 @@ const BLOCK_NOTES: Record<MyWorkBlockId, string> = {
   blocked_projects:
     "Stage gates whose latest decision was a hold. A hold is a fact about the project, not an item on one person's list — so this block reads the same for everyone here.",
   needs_review:
-    "Work in other modules that has stopped and needs someone here to act. Nobody is assigned to these — the queue reads the same for everyone in the workspace.",
+    "Work awaiting a review or decision. Contract items appear only when your designated role can take that next step.",
   workspace_deadlines:
     "Grant decisions, award obligations and invoice windows. Nobody is assigned to these, so nothing here is shown as belonging to anyone.",
 };

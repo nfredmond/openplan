@@ -10,6 +10,17 @@ const close=`state:=jsonb_build_object('kind','closeout','requestId',gen_random_
 const financial=`INSERT INTO public.client_invoices(id,workspace_id,engagement_id,client_id,invoice_number,status,invoice_date,sent_date,subtotal_amount,total_amount,retention_amount,currency_code) VALUES(p,workspace,engagement,client,'SYNTH-01','sent','2026-09-01','2026-09-01',100,90,10,'USD');state:=jsonb_build_object('kind','settlement','requestId',gen_random_uuid(),'expectedVersion',0,'content',jsonb_build_object('eventId',entry,'sourceKey','SYNTH-POST-01','direction','outgoing','invoiceId',p,'invoiceVersion',(SELECT updated_at FROM public.client_invoices WHERE id=p),'date','2026-09-08','kind','payment','amount','25.01','currency','USD','state','recorded','documentId',document,'sourceReference','Synthetic accounting posting','correctionEvidence','','legacyActualId',NULL));c:=state||jsonb_build_object('_request',state,'_inputHash',public.contract_closeout_hash(engagement),'_position','[]'::jsonb);`;
 function check(body:string){const mutation=process.env.OPENPLAN_CONTRACT_TEST_SQL?readFileSync(process.env.OPENPLAN_CONTRACT_TEST_SQL,"utf8"):"";const output=execFileSync("docker",["exec","-i",resolveLocalDbContainer(),"psql","-U","postgres","-d","postgres","-v","ON_ERROR_STOP=1"],{input:`BEGIN;${mutation}\n${setup.replace('-- TEST_BODY',body+"\nRAISE NOTICE 'CLOSEOUT_ASSERTIONS_REACHED';")}\nROLLBACK;`,encoding:"utf8",stdio:["pipe","pipe","pipe"]});expect(output).toContain("ROLLBACK");}
 describe.skipIf(!LIVE_RLS)("contract settlement and closeout custody",()=>{
+ it("accepts indexed retained originals for settlement and deliverable submission without admitting foreign files",()=>check(`${baseline}
+ UPDATE public.kb_documents SET status='ready' WHERE id=document;
+ ${financial}PERFORM public.record_contract_command(engagement,owner_id,c);
+ IF NOT EXISTS(SELECT 1 FROM public.contract_settlement_events WHERE event_id=entry AND source_receipt->>'id'=document::text) THEN RAISE EXCEPTION 'Indexed settlement source not retained';END IF;
+ ${deliver}PERFORM public.record_contract_command(engagement,member_id,c);
+ IF NOT EXISTS(SELECT 1 FROM public.contract_deliverable_events WHERE deliverable_id=deliverable AND source_receipt->>'id'=document::text) THEN RAISE EXCEPTION 'Indexed submission source not retained';END IF;
+ INSERT INTO public.workspaces(id,name,slug) VALUES(foreign_deliverable,'Synthetic foreign file owner',foreign_deliverable::text);
+ INSERT INTO public.kb_documents(id,workspace_id,uploaded_by,title,source_kind,checksum,storage_ref,status) VALUES(element,foreign_deliverable,outsider,'Synthetic private original','uploaded_txt',repeat('c',64),'storage://kb-documents/'||foreign_deliverable||'/'||element||'/private.txt','ready');
+ c:=c||jsonb_build_object('requestId',gen_random_uuid(),'expectedVersion',1,'documentId',element,'state','returned');
+ BEGIN PERFORM public.record_contract_command(engagement,owner_id,c);RAISE EXCEPTION 'Foreign indexed source admitted';EXCEPTION WHEN invalid_parameter_value THEN NULL;END;
+ `));
  it("separates submission, return, resubmission and authorized acceptance without rewriting the artifact",()=>check(`${baseline}${deliver}
  BEGIN PERFORM public.record_contract_command(engagement,owner_id,c||jsonb_build_object('state','accepted'));RAISE EXCEPTION 'Unsubmitted deliverable accepted';EXCEPTION WHEN invalid_parameter_value THEN NULL;END;
  result:=public.record_contract_command(engagement,member_id,c);
