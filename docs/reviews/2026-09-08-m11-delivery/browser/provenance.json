@@ -1,0 +1,34 @@
+{
+  "synthetic": true,
+  "commit": "b2b8b3802314ab9435353d5a1d65e6e30b593a4f",
+  "checkout": "/home/nathaniel/.local/state/openplan/m11-delivery-closeout-2026-09-08",
+  "origin": "http://m11.localhost:3247",
+  "identityCommand": "bash openplan/scripts/ops/which-openplan.sh http://m11.localhost:3247",
+  "desktop": [
+    2648,
+    1268
+  ],
+  "mobile": [
+    390,
+    844
+  ],
+  "journey": "Sign in, Projects, agency assignment, task A or Weekly assignment management, Forecasts",
+  "actors": [
+    "Synthetic owner",
+    "Synthetic scoped PM"
+  ],
+  "facts": [
+    "Purchaser direction changes only after exact baseline 4 approval",
+    "Supplier gross 25; incurred 25; documented payments 24; open 0; unbilled fee 1225",
+    "PM sees nine reserved hours against eight available, unsupported finish",
+    "Private second-project schedule and task titles absent from PM page",
+    "Outside reservation object keys restricted to staffId/date/hours",
+    "Console returned no warnings or errors",
+    "Document width equals 390px; schedule table and shell navigation scroll within their containers"
+  ],
+  "limitations": [
+    "Precedes review layout repair",
+    "Not complete mobile/keyboard/save interruption acceptance",
+    "Not observed agency PM or finance acceptance"
+  ]
+}

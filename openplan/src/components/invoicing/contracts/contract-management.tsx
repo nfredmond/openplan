@@ -15,6 +15,7 @@ import { AccountingReconciliation } from "./accounting-reconciliation";
 import { DeliveryManagement } from "./delivery-management";
 import { SettlementManagement, AcceptanceManagement, CloseoutManagement } from "./settlement-closeout";
 import { CalculationJobs } from "./calculation-jobs";
+import { Field,inputClass } from "./fields";
 import { MasterTermsPanel } from "./master-terms";
 const tabs=["Position","Baselines","Master terms","Actuals","Rates","Remaining work","Billing","Received invoices","Accounting","Access","Settlement","Acceptance","Closeout","Snapshots"] as const;
 export function ContractManagement({initial}:{initial:ContractState}) {
@@ -33,6 +34,7 @@ export function ContractManagement({initial}:{initial:ContractState}) {
  const agreementInvoices=invoices.filter(i=>i.direction===position?.billingDirection);
  const cash=(metric:"payments"|"credits"|"retention"|"open")=>position?.pendingReceived||!["received","outgoing"].includes(position?.billingDirection??"")||agreementInvoices.some(i=>i.currency!==position?.baseline?.content.currency)?null:decimalText(agreementInvoices.reduce((sum,i)=>sum+cents(i[metric]),BigInt(0)));
  const latestForecast=state.delivery?.forecasts.at(-1),currentForecast=latestForecast?.input_hash===state.delivery?.inputHash?latestForecast?.content.result:undefined;
+ const visibleTabs=tabs.filter(t=>t==="Remaining work"?state.role!=="consultant":t==="Access"?owner:t==="Received invoices"?state.role!=="member":t==="Snapshots"?admin:["Rates","Billing","Master terms","Accounting"].includes(t)?finance:admin||t==="Position"||(t==="Actuals"&&state.role==="member"));
  const visibleMetrics=state.closeout?contractMetrics.filter(k=>k!=="payments"&&k!=="credits"):contractMetrics;
  function table(title:string,rows:Rollup[]){return <div><h3 className="mb-2 font-semibold">{title}</h3><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr><th className="p-2 text-left">Work</th>{visibleMetrics.map(k=><th className="p-2 text-right" key={k}>{k}</th>)}</tr></thead><tbody>{rows.map(r=><tr key={r.id} className="border-t"><th className="p-2 text-left font-normal">{r.label}</th>{visibleMetrics.map(k=><td className="p-2 text-right tabular-nums" key={k}>{r.totals[k]}</td>)}</tr>)}</tbody></table></div></div>;}
  return <main className="mx-auto max-w-6xl space-y-6 p-4 sm:p-8">
@@ -41,11 +43,12 @@ export function ContractManagement({initial}:{initial:ContractState}) {
  {message&&<p className="rounded border p-3" role="status">{message}</p>}
  {admin&&<CalculationJobs engagementId={state.engagement.id} onCompleted={async()=>{await reload();setMessage("Calculation completed. Review the retained result below.");}}/>}
  {pending&&<div className="flex flex-wrap items-center gap-3 rounded border p-3"><p className="text-sm">A retained save request is available for recovery.</p><Button disabled={busy} onClick={()=>void send(pending)}>Retry retained request</Button><Button variant="outline" disabled={busy} onClick={()=>{localStorage.removeItem(key);setPending(null);}}>Dismiss retry after review</Button></div>}
- <nav aria-label="Contract management" className="flex flex-wrap gap-2">{tabs.filter(t=>t==="Remaining work"?state.role!=="consultant":t==="Access"?owner:t==="Received invoices"?state.role!=="member":t==="Snapshots"?admin:["Rates","Billing","Master terms","Accounting"].includes(t)?finance:admin||t==="Position"||(t==="Actuals"&&state.role==="member")).map(t=><Button key={t} variant={tab===t?"default":"outline"} onClick={()=>setTab(t)}>{t}</Button>)}</nav>
+ <div className="sm:hidden"><Field label="Contract section"><select className={inputClass} value={tab} onChange={e=>setTab(e.target.value as typeof tab)}>{visibleTabs.map(t=><option key={t} value={t}>{t}</option>)}</select></Field></div>
+ <nav aria-label="Contract management" className="hidden flex-wrap gap-2 sm:flex">{visibleTabs.map(t=><Button key={t} variant={tab===t?"default":"outline"} onClick={()=>setTab(t)}>{t}</Button>)}</nav>
  {tab==="Settlement"&&admin&&<SettlementManagement state={state} send={send} busy={busy}/>}
  {tab==="Acceptance"&&admin&&<AcceptanceManagement state={state} send={send} busy={busy}/>}
  {tab==="Closeout"&&admin&&<CloseoutManagement state={state} send={send} busy={busy}/>}
- {tab==="Position"&&<section className="space-y-6">{error&&<p role="alert">{error}. No totals are asserted.</p>}{position&&<>
+ {tab==="Position"&&<section className="space-y-6">{error&&<p role="alert">{error}. No totals are asserted.</p>}{position&&!error&&<>
  <p>Current approved baseline: {position.baseline?`version ${position.baseline.version}, ${position.baseline.content.title}`:"Not yet approved"}. {position.baseline?.content.currency??"Currency unassessed"}. Totals cover approved retained sources.</p>
  <p>Agreement billing direction: {position.baseline?.content.billingDirection??"outgoing (legacy convention; amend if this assignment is an agency purchase)"}. Cash totals below use that direction. Settlement lists each invoice separately.</p>
  {position.pendingReceived&&<p role="alert">A received invoice or correction still needs approval. Supplier fee drawdown remains unassessed until it is reconciled.</p>}
