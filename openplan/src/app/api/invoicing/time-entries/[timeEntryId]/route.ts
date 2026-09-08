@@ -104,7 +104,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     const { data: timeEntry, error: timeEntryError } = await supabase
       .from("invoicing_time_entries")
-      .select("id, workspace_id, billed_line_item_id")
+      .select("id, workspace_id, engagement_id, billed_line_item_id")
       .eq("id", parsedParams.data.timeEntryId)
       .single();
 
@@ -144,6 +144,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     if (parsed.data.deliverableId) {
+      const { data: engagement, error: engagementError } = await supabase.from("invoicing_engagements").select("id, workspace_id, project_id").eq("id", timeEntry.engagement_id).single();
+      if (engagementError || !engagement || engagement.workspace_id !== parsed.data.workspaceId) return NextResponse.json({ error: "Engagement project is unavailable" }, { status: 400 });
       const { data: deliverable, error: deliverableError } = await supabase
         .from("project_deliverables")
         .select("id, project_id, projects(workspace_id)")
@@ -153,13 +155,13 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       const deliverableWorkspaceId =
         (deliverable?.projects as { workspace_id?: string | null } | null)?.workspace_id ?? null;
 
-      if (deliverableError || !deliverable || deliverableWorkspaceId !== parsed.data.workspaceId) {
+      if (deliverableError || !deliverable || deliverableWorkspaceId !== parsed.data.workspaceId || deliverable.project_id !== engagement.project_id) {
         audit.warn("deliverable_workspace_mismatch", {
           workspaceId: parsed.data.workspaceId,
           deliverableId: parsed.data.deliverableId,
           message: deliverableError?.message ?? null,
         });
-        return NextResponse.json({ error: "Deliverable is not available in the requested workspace" }, { status: 400 });
+        return NextResponse.json({ error: "Deliverable must belong to the engagement project" }, { status: 400 });
       }
     }
 
@@ -271,7 +273,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
     const { data: timeEntry, error: timeEntryError } = await supabase
       .from("invoicing_time_entries")
-      .select("id, workspace_id, billed_line_item_id")
+      .select("id, workspace_id, engagement_id, billed_line_item_id")
       .eq("id", parsedParams.data.timeEntryId)
       .single();
 

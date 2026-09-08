@@ -33,7 +33,7 @@ describe("buildDeliverableBudgetSummary — pace gates", () => {
     expect(summary.remaining).toBeNull();
     expect(summary.burnPercent).toBeNull();
     // Money is still reported honestly even without a budget.
-    expect(summary.actualToDate).toBe(1000);
+    expect(summary.actualToDate).toBe(400);
     expect(summary.paceDetail).toMatch(/no budget/i);
   });
 
@@ -52,7 +52,7 @@ describe("buildDeliverableBudgetSummary — pace gates", () => {
   it("is on pace inside the tolerance band", () => {
     const summary = buildDeliverableBudgetSummary(
       { id: D1, budget_amount: 1000, percent_complete: 45 },
-      [],
+      [spend(D1, 500)],
       [sentLine(D1, 500)]
     );
 
@@ -65,7 +65,7 @@ describe("buildDeliverableBudgetSummary — pace gates", () => {
     // burn 50%, progress 40% → drift exactly +PACE_TOLERANCE_POINTS.
     const upperEdge = buildDeliverableBudgetSummary(
       { id: D1, budget_amount: 1000, percent_complete: 40 },
-      [],
+      [spend(D1, 500)],
       [sentLine(D1, 500)]
     );
     expect(upperEdge.paceStatus).toBe("on_pace");
@@ -73,7 +73,7 @@ describe("buildDeliverableBudgetSummary — pace gates", () => {
     // burn 50%, progress 60% → drift exactly -PACE_TOLERANCE_POINTS.
     const lowerEdge = buildDeliverableBudgetSummary(
       { id: D1, budget_amount: 1000, percent_complete: 60 },
-      [],
+      [spend(D1, 500)],
       [sentLine(D1, 500)]
     );
     expect(lowerEdge.paceStatus).toBe("on_pace");
@@ -95,7 +95,7 @@ describe("buildDeliverableBudgetSummary — pace gates", () => {
     // burn 29.9%, progress 40% → drift -10.1 < -10.
     const summary = buildDeliverableBudgetSummary(
       { id: D1, budget_amount: 1000, percent_complete: 40 },
-      [],
+      [spend(D1, 299)],
       [sentLine(D1, 299)]
     );
 
@@ -106,7 +106,7 @@ describe("buildDeliverableBudgetSummary — pace gates", () => {
   it("is over budget when actual exceeds budget, even with percent entered", () => {
     const summary = buildDeliverableBudgetSummary(
       { id: D1, budget_amount: 1000, percent_complete: 90 },
-      [spend(D1, 600)],
+      [spend(D1, 1100)],
       [sentLine(D1, 500)]
     );
 
@@ -140,7 +140,7 @@ describe("buildDeliverableBudgetSummary — pace gates", () => {
 });
 
 describe("buildDeliverableBudgetSummary — billed vs spend decomposition", () => {
-  it("decomposes actual into billed (sent/paid only) plus ledger spend", () => {
+  it("keeps fee billing separate from incurred direct spending", () => {
     const summary = buildDeliverableBudgetSummary(
       { id: D1, budget_amount: "5000.00", percent_complete: "40" },
       [spend(D1, "750.25"), spend(D1, 249.75)],
@@ -153,11 +153,11 @@ describe("buildDeliverableBudgetSummary — billed vs spend decomposition", () =
 
     expect(summary.billedToDate).toBe(1000);
     expect(summary.spendToDate).toBe(1000);
-    expect(summary.actualToDate).toBe(2000);
+    expect(summary.actualToDate).toBe(1000);
     expect(summary.budgetAmount).toBe(5000);
-    expect(summary.remaining).toBe(3000);
-    expect(summary.burnPercent).toBe(40);
-    expect(summary.paceStatus).toBe("on_pace");
+    expect(summary.remaining).toBe(4000);
+    expect(summary.burnPercent).toBe(20);
+    expect(summary.paceStatus).toBe("billed_behind_progress");
   });
 
   it("counts client-invoice 'sent' lines as billed — both invoicing vocabularies are covered", () => {
@@ -168,8 +168,8 @@ describe("buildDeliverableBudgetSummary — billed vs spend decomposition", () =
     );
 
     expect(summary.billedToDate).toBe(400);
-    expect(summary.actualToDate).toBe(400);
-    expect(summary.paceStatus).toBe("on_pace");
+    expect(summary.actualToDate).toBe(0);
+    expect(summary.paceStatus).toBe("billed_behind_progress");
   });
 
   it("keeps draft and internal-review lines out of billed, disclosed as draftedAmount", () => {
@@ -187,7 +187,7 @@ describe("buildDeliverableBudgetSummary — billed vs spend decomposition", () =
     expect(summary.billedToDate).toBe(100);
     expect(summary.draftedAmount).toBe(500);
     // Rejected lines count nowhere.
-    expect(summary.actualToDate).toBe(100);
+    expect(summary.actualToDate).toBe(0);
   });
 
   it("ignores billed lines and spend attributed to other deliverables", () => {
@@ -199,7 +199,7 @@ describe("buildDeliverableBudgetSummary — billed vs spend decomposition", () =
 
     expect(summary.spendToDate).toBe(100);
     expect(summary.billedToDate).toBe(100);
-    expect(summary.actualToDate).toBe(200);
+    expect(summary.actualToDate).toBe(100);
   });
 });
 
@@ -257,8 +257,8 @@ describe("buildProjectBudgetSnapshot", () => {
     // Project-level billing (null deliverable) counts at the project level.
     expect(snapshot.billedToDate).toBe(750);
     expect(snapshot.spendToDate).toBe(1000);
-    expect(snapshot.actualToDate).toBe(1750);
-    expect(snapshot.remainingAgainstStatedBudget).toBe(8250);
+    expect(snapshot.actualToDate).toBe(1000);
+    expect(snapshot.remainingAgainstStatedBudget).toBe(9000);
   });
 
   it("ignores billed lines that reference deliverables outside the project, and says so", () => {
@@ -271,7 +271,7 @@ describe("buildProjectBudgetSnapshot", () => {
     });
 
     expect(snapshot.billedToDate).toBe(100);
-    expect(snapshot.actualToDate).toBe(100);
+    expect(snapshot.actualToDate).toBe(0);
     expect(snapshot.attention).toContainEqual(
       expect.stringContaining("1 billed line references deliverables outside this project")
     );

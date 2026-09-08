@@ -1,0 +1,49 @@
+{
+  "date": "2026-09-08T08:08:33.946Z",
+  "build": {
+    "commit": "67345968745b",
+    "version": "0.46.0"
+  },
+  "baseUrl": "http://localhost:3246",
+  "synthetic": true,
+  "ownerNavigation": [
+    "Projects",
+    "Synthetic project",
+    "Planning contracts",
+    "Contract",
+    "My Work",
+    "Draft analysis",
+    "Contract"
+  ],
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "horizontalOverflow": false,
+  "keyboard": {
+    "tabFromPosition": "Baselines",
+    "enterActivated": true
+  },
+  "member": {
+    "http": 200,
+    "approvedVersion": 3,
+    "privateCollectionsEmpty": true,
+    "allAmountsAbsent": true,
+    "privateReportHttp": 404,
+    "privateDownloadHttp": 404,
+    "approvedCorrectionDisabled": true
+  },
+  "consoleErrors": [],
+  "memberPageErrors": [],
+  "downloadByteComparisons": {
+    "pdf": true,
+    "xlsx": true
+  },
+  "scope": "Engineering acceptance with isolated synthetic records; no human usefulness or real approval claim"
+}

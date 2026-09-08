@@ -1,0 +1,132 @@
+[
+  {
+    "mutation": "harmless-comment",
+    "status": "survived",
+    "expectedFailure": null
+  },
+  {
+    "mutation": "duplicate-source",
+    "status": "killed",
+    "expectedFailure": "expected.*to throw"
+  },
+  {
+    "mutation": "proposed-budget",
+    "status": "killed",
+    "expectedFailure": "expected 2 to be 1"
+  },
+  {
+    "mutation": "cost-plus-billing",
+    "status": "killed",
+    "expectedFailure": "Unreconciled incurred"
+  },
+  {
+    "mutation": "forecast-coverage",
+    "status": "killed",
+    "expectedFailure": "expected.*to be null"
+  },
+  {
+    "mutation": "opening-overlap",
+    "status": "killed",
+    "expectedFailure": "expected.*to be null"
+  },
+  {
+    "mutation": "staff-remainder",
+    "status": "killed",
+    "expectedFailure": "expected.*200.00"
+  },
+  {
+    "mutation": "gross-retention",
+    "status": "killed",
+    "expectedFailure": "expected.*100.00"
+  },
+  {
+    "mutation": "sql-harmless",
+    "status": "survived",
+    "expectedFailure": null
+  },
+  {
+    "mutation": "source-dedup",
+    "status": "killed",
+    "expectedFailure": "Duplicate source accepted"
+  },
+  {
+    "mutation": "private-role",
+    "status": "killed",
+    "expectedFailure": "Member changed approved actual"
+  },
+  {
+    "mutation": "shared-drift",
+    "status": "killed",
+    "expectedFailure": "Reverse shared mapping missed"
+  },
+  {
+    "mutation": "shared-billing",
+    "status": "killed",
+    "expectedFailure": "Stale shared actual billed"
+  },
+  {
+    "mutation": "agreement-delete",
+    "status": "killed",
+    "expectedFailure": "Agreement deleted"
+  },
+  {
+    "mutation": "historical-parent",
+    "status": "killed",
+    "expectedFailure": "Historical deliverable moved"
+  },
+  {
+    "mutation": "workbook-layout",
+    "status": "killed",
+    "expectedFailure": "wrapText"
+  },
+  {
+    "mutation": "private-table",
+    "status": "killed",
+    "expectedFailure": "Private contract table leaked: contract_rates"
+  },
+  {
+    "mutation": "payroll-overlap",
+    "status": "killed",
+    "expectedFailure": "Duplicate payroll approved"
+  },
+  {
+    "mutation": "snapshot-cutoff",
+    "status": "killed",
+    "expectedFailure": "Future source value entered cutoff"
+  },
+  {
+    "mutation": "source-deletion",
+    "status": "killed",
+    "expectedFailure": "Deleted source evidence lost"
+  },
+  {
+    "mutation": "estimate-version",
+    "status": "killed",
+    "expectedFailure": "expected.*25.00.*40.00"
+  },
+  {
+    "mutation": "member-harmless",
+    "status": "survived",
+    "expectedFailure": null
+  },
+  {
+    "mutation": "member-null-source",
+    "status": "killed",
+    "expectedFailure": "expected false to be true"
+  },
+  {
+    "mutation": "member-review-state",
+    "status": "killed",
+    "expectedFailure": "Member sees superseded draft after approval"
+  },
+  {
+    "mutation": "source-created-time",
+    "status": "killed",
+    "expectedFailure": "Creation time rewritten"
+  },
+  {
+    "mutation": "owp-picker-privacy",
+    "status": "killed",
+    "expectedFailure": "OWP picker leaked private valuation"
+  }
+]

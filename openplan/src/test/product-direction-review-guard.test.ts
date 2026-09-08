@@ -50,7 +50,7 @@ describe("the recurring product-direction review", () => {
       readFileSync(resolve(APP_ROOT, "src/lib/jurisdiction-readiness/registry.v1.json"), "utf8"),
     );
     expect(frozenReadiness.releaseVersion).toBe("0.44.0");
-    expect(registry.currentRelease).toBe("v0.45.0");
+    expect(registry.currentRelease).toBe(`v${JSON.parse(readFileSync(resolve(APP_ROOT, "package.json"), "utf8")).version}`);
     expect(source).toContain("Product direction records checked");
   });
 

@@ -404,9 +404,9 @@ describe("the burn column", () => {
     // billed (sent invoice line, $10,000) + direct spend ($15,000) = $25,000
     // against a $100,000 stated budget. The DRAFT invoice line is excluded.
     expect(p1?.burn.available).toBe(true);
-    expect(p1?.burn.actualToDate).toBe(25000);
+    expect(p1?.burn.actualToDate).toBe(15000);
     expect(p1?.burn.budgetAmount).toBe(100000);
-    expect(p1?.burn.burnPercent).toBe(25);
+    expect(p1?.burn.burnPercent).toBe(15);
     expect(p1?.burn.basis).toBe("stated_budget");
     expect(p1?.burn.coverage).toBe("complete");
   });

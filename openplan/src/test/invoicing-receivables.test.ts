@@ -205,11 +205,11 @@ describe("buildEngagementBilledSummary", () => {
 
   it("splits billed-to-date (sent+paid) from drafted-unbilled and excludes void", () => {
     const summary = buildEngagementBilledSummary(engagement, [
-      { engagement_id: "eng-1", status: "sent", total_amount: 400 },
-      { engagement_id: "eng-1", status: "paid", total_amount: 300 },
-      { engagement_id: "eng-1", status: "draft", total_amount: 250 },
-      { engagement_id: "eng-1", status: "void", total_amount: 800 },
-      { engagement_id: "eng-2", status: "sent", total_amount: 999 }, // another engagement
+      { engagement_id: "eng-1", status: "sent", subtotal_amount: 400 },
+      { engagement_id: "eng-1", status: "paid", subtotal_amount: 300 },
+      { engagement_id: "eng-1", status: "draft", subtotal_amount: 250 },
+      { engagement_id: "eng-1", status: "void", subtotal_amount: 800 },
+      { engagement_id: "eng-2", status: "sent", subtotal_amount: 999 }, // another engagement
     ]);
 
     expect(summary).toEqual({
@@ -221,10 +221,16 @@ describe("buildEngagementBilledSummary", () => {
     });
   });
 
+  it("keeps gross ceiling drawdown separate from net receivable retention", () => {
+    const summary=buildEngagementBilledSummary(engagement,[{engagement_id:"eng-1",status:"sent",subtotal_amount:1100,retention_amount:220,total_amount:880}]);
+    expect(summary.billedToDate).toBe(1100);
+    expect(summary.remaining).toBe(-100);
+  });
+
   it("flags an over-NTE engagement", () => {
     const summary = buildEngagementBilledSummary(engagement, [
-      { engagement_id: "eng-1", status: "sent", total_amount: 700 },
-      { engagement_id: "eng-1", status: "paid", total_amount: 500 },
+      { engagement_id: "eng-1", status: "sent", subtotal_amount: 700 },
+      { engagement_id: "eng-1", status: "paid", subtotal_amount: 500 },
     ]);
 
     expect(summary.billedToDate).toBe(1200);
@@ -234,11 +240,11 @@ describe("buildEngagementBilledSummary", () => {
 
   it("never counts an unassigned (NULL engagement) invoice toward ANY engagement", () => {
     const invoices = [
-      { engagement_id: "eng-1", status: "sent", total_amount: 400 },
-      { engagement_id: "eng-2", status: "sent", total_amount: 300 },
+      { engagement_id: "eng-1", status: "sent", subtotal_amount: 400 },
+      { engagement_id: "eng-2", status: "sent", subtotal_amount: 300 },
       // Unassigned invoice: must not inflate billedToDate or eat NTE headroom
       // of either engagement.
-      { engagement_id: null, status: "sent", total_amount: 10000 },
+      { engagement_id: null, status: "sent", subtotal_amount: 10000 },
     ];
 
     const first = buildEngagementBilledSummary({ id: "eng-1", not_to_exceed_amount: 1000 }, invoices);
@@ -254,8 +260,8 @@ describe("buildEngagementBilledSummary", () => {
 
   it("claims nothing when the engagement itself has no id", () => {
     const summary = buildEngagementBilledSummary({}, [
-      { engagement_id: null, status: "sent", total_amount: 500 },
-      { engagement_id: "eng-1", status: "sent", total_amount: 400 },
+      { engagement_id: null, status: "sent", subtotal_amount: 500 },
+      { engagement_id: "eng-1", status: "sent", subtotal_amount: 400 },
     ]);
 
     expect(summary.billedToDate).toBe(0);
@@ -264,7 +270,7 @@ describe("buildEngagementBilledSummary", () => {
 
   it("reports no ceiling honestly when the engagement has no NTE", () => {
     const summary = buildEngagementBilledSummary({ id: "eng-1" }, [
-      { engagement_id: "eng-1", status: "sent", total_amount: 700 },
+      { engagement_id: "eng-1", status: "sent", subtotal_amount: 700 },
     ]);
 
     expect(summary.notToExceed).toBeNull();

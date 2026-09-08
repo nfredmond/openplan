@@ -70,7 +70,7 @@ import { ProjectFundingPanel } from "./_components/project-funding-panel";
 import { ProjectDeliveryBoard } from "./_components/project-delivery-board";
 import { ProjectRiskAndDecisionLog } from "./_components/project-risk-decision-log";
 import { ProjectEvidenceAndActivity } from "./_components/project-evidence-activity";
-import { ProjectOverviewTab } from "./_components/project-overview-tab";
+import { ProjectOverviewTab, ProjectContracts } from "./_components/project-overview-tab";
 import { ProjectInvoiceRegister } from "./_components/project-invoice-register";
 import { ProjectActivityTimeline } from "./_components/project-activity-timeline";
 import { ProjectMapPresencePanel } from "./_components/project-map-presence-panel";
@@ -1290,7 +1290,7 @@ export default async function ProjectDetailPage({
       <PageTabNav tabs={projectTabs} activeKey={activeTab} basePath={`/projects/${project.id}`} searchParams={resolvedSearchParams} ariaLabel="Project sections" />
 
       <PageTabPanel tabKey="overview" active={activeTab === "overview"}>
-        <ProjectOverviewTab
+        <ProjectOverviewTab contractSection={await ProjectContracts({projectId:project.id,workspaceId:project.workspace_id})}
           postureHeader={{
             project,
             workspaceData,

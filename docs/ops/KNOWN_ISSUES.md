@@ -12,6 +12,19 @@ This is a quality-boundary register, not a development queue. Scheduling lives
 only in `docs/ROADMAP.md`.
 
 
+## Contract reconciliation boundary, September 8 v0.46 candidate
+
+[Contract evidence](../reviews/2026-09-07-contract-reconciliation/VERIFICATION.md)
+records synthetic agreement, time, billing, amendment, correction and export
+journeys. The former billing-plus-spending project-cost and net-retention gross
+ceiling defects are corrected in the described paths. Private valuations,
+retained history and relationship guards have isolated adverse checks.
+Full financial/agency acceptance, scheduling, forecast finish dates and closeout
+remain unproved. [Operator guidance](CONTRACT_RECONCILIATION.md) explains source
+mapping, overlap evidence, exact retries and immutable report preparation.
+Legacy net receivables preserve whole-invoice payment semantics; documented
+partial cash and credits are separate contract management events. Source lists retain time/spending/OWP identity; advanced mapping also accepts IDs. No real client money or approval was used.
+
 ## OWP period reporting boundary, September 7 v0.45 candidate
 
 [Reporting evidence](../reviews/2026-09-07-owp-reporting/IMPLEMENTATION.md) covers

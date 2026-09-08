@@ -22,6 +22,38 @@ stable enough to promise smooth upgrades indefinitely.
 
 Subsequent development changes will be listed here.
 
+## 0.46.0 — 2026-09-08
+
+- Reconcile a planning contract from Projects or the existing engagement register.
+  Retain original and amended approved scope, fee, internal budgets, task/staff
+  allocations, deliverables and agreed deadlines. Proposals do not raise approved
+  budgets. Assigned tasks connect to My Work.
+- Enter and import source time, costs and documented opening balances without an
+  OWP. Keep effective cost/billing rates, split allocations, private member time,
+  corrections and shared-source identity. Incurred cost, commitments, gross fee,
+  retention, documented payments and credits stay distinct.
+- Issue private dated PDF/XLSX management snapshots through Documents. Remaining
+  estimates and source coverage control actual-plus-remaining cost. Prior reports,
+  agreement files and original CSVs are retained.
+- Correct the legacy cross-project time attribution gap and stop treating client
+  billing plus direct spending as project cost. Legacy net receivables retain
+  their payment meaning; gross-fee drawdown is explicit.
+- Internal management only. Scheduling, accounting replacement, funder forms,
+  contract closeout and practitioner usefulness remain open. M11 is not complete.
+  See [operator guidance](docs/ops/CONTRACT_RECONCILIATION.md) and
+  [engineering evidence](docs/reviews/2026-09-07-contract-reconciliation/VERIFICATION.md).
+
+Apply these additive migrations before starting the updated application:
+
+- `20260911000001_contract_reconciliation.sql`: `contract_reconciliation`
+- `20260911000002_contract_billing.sql`: `contract_billing`
+- `20260911000003_contract_documents.sql`: `contract_documents`
+- `20260911000004_contract_imports.sql`: `contract_imports`
+- `20260911000005_contract_relationships.sql`: `contract_relationships`
+- `20260911000006_contract_staff_assignments.sql`: `contract_staff_assignments`
+- `20260911000007_contract_evidence.sql`: `contract_evidence`
+- `20260911000008_contract_source_deletions.sql`: `contract_source_deletions`
+
 ## 0.45.0 — 2026-09-07
 
 - Administer an OWP reporting period from Programs or My Work. Record agency time

@@ -1,0 +1,14 @@
+{
+  "simultaneousCommands": 2,
+  "committed": 1,
+  "rejectedAsAlreadyBilled": 1,
+  "retrySucceeded": true,
+  "position": {
+    "net": 90.9,
+    "gross": 101.0,
+    "lines": 2,
+    "sources": 1,
+    "invoices": 1
+  },
+  "blindCategory": "Synthetic two-session race; not arbitrary distributed failure or external accounting acceptance"
+}

@@ -56,8 +56,8 @@ export function ProjectBudgetPanel({
             <p className="module-section-label">Budget &amp; pace</p>
             <h2 className="module-section-title">Burn against entered budgets</h2>
             <p className="module-section-description">
-              Billed client-invoice lines plus direct spend, compared to the budgets and percent-complete planners
-              actually entered. No run-rates, no projections — a deliverable without a basis gets a refusal, not a guess.
+              Direct spending compared with entered budgets and progress. Billing is shown separately.
+              Contract management includes reviewed labor costs and remaining-work estimates.
             </p>
           </div>
         </div>
@@ -109,9 +109,9 @@ export function ProjectBudgetPanel({
           <p className="module-summary-detail">Ledger entries recorded on this project.</p>
         </div>
         <div className="module-summary-card">
-          <p className="module-summary-label">Actual to date</p>
+          <p className="module-summary-label">Direct spending</p>
           <p className="module-summary-value text-base leading-tight">{fmtCurrency(snapshot.actualToDate)}</p>
-          <p className="module-summary-detail">Billed plus direct spend — the total burned so far.</p>
+          <p className="module-summary-detail">Spending ledger amounts only. Labor valuation and source coverage are reviewed in contract management.</p>
         </div>
       </div>
 
@@ -152,7 +152,7 @@ export function ProjectBudgetPanel({
                       <p className="module-record-summary">{summary.paceDetail}</p>
                     </div>
                     <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
-                      Billed {fmtCurrency(summary.billedToDate)} · Spend {fmtCurrency(summary.spendToDate)} · Actual {fmtCurrency(summary.actualToDate)}
+                      Billed {fmtCurrency(summary.billedToDate)} · Spend {fmtCurrency(summary.spendToDate)}
                       {summary.remaining !== null ? ` · Remaining ${fmtCurrency(summary.remaining)}` : ""}
                       {summary.draftedAmount > 0 ? ` · Drafted (not billed) ${fmtCurrency(summary.draftedAmount)}` : ""}
                     </p>

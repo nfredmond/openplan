@@ -185,7 +185,7 @@ export async function POST(request: NextRequest) {
 
     const { data: engagement, error: engagementError } = await supabase
       .from("invoicing_engagements")
-      .select("id, workspace_id")
+      .select("id, workspace_id, project_id")
       .eq("id", parsed.data.engagementId)
       .single();
 
@@ -199,8 +199,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (parsed.data.deliverableId) {
-      // Deliverables are project-scoped; the workspace check goes through the
-      // parent project.
+      // Deliverable attribution must match both workspace and engagement project.
       const { data: deliverable, error: deliverableError } = await supabase
         .from("project_deliverables")
         .select("id, project_id, projects(workspace_id)")
@@ -210,13 +209,13 @@ export async function POST(request: NextRequest) {
       const deliverableWorkspaceId =
         (deliverable?.projects as { workspace_id?: string | null } | null)?.workspace_id ?? null;
 
-      if (deliverableError || !deliverable || deliverableWorkspaceId !== parsed.data.workspaceId) {
+      if (deliverableError || !deliverable || deliverableWorkspaceId !== parsed.data.workspaceId || deliverable.project_id !== engagement.project_id) {
         audit.warn("deliverable_workspace_mismatch", {
           workspaceId: parsed.data.workspaceId,
           deliverableId: parsed.data.deliverableId,
           message: deliverableError?.message ?? null,
         });
-        return NextResponse.json({ error: "Deliverable is not available in the requested workspace" }, { status: 400 });
+        return NextResponse.json({ error: "Deliverable must belong to the engagement project" }, { status: 400 });
       }
     }
 

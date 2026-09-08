@@ -383,6 +383,9 @@ const fromMock = vi.fn((table: string) => {
   if (table === "project_spend_entries") {
     return { select: spendEntriesSelectMock };
   }
+  if (table === "invoicing_engagements") {
+    return {select:(projection:string)=>{expect(projection).toBe("id,title,engagement_kind");return {eq:()=>({eq:()=>({order:()=>({range:async()=>({data:[],error:null})})})})};}};
+  }
   if (table === "client_invoices") {
     return { select: clientInvoicesSelectMock };
   }
