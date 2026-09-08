@@ -163,8 +163,8 @@ BEGIN
   INSERT INTO public.invoicing_time_entries(workspace_id,staff_id,engagement_id,entry_date,hours,notes,billable,created_by,work_program_id) VALUES(w,s.id,(p_command->>'contractId')::uuid,dt,h,p_command->>'description',coalesce((p_command->>'billable')::boolean,false),p_actor_id,p_program_id) RETURNING id INTO tid;
  END IF;
  IF tid IS NOT NULL THEN
-  IF old.id IS NOT NULL AND EXISTS(SELECT 1 FROM public.invoicing_time_entries WHERE id=tid AND billed_line_item_id IS NOT NULL) AND (old.hours<>h OR old.entry_date<>dt) THEN RAISE EXCEPTION 'Correct the billed time and invoice relationship before changing hours or date' USING ERRCODE='PT409'; END IF;
-  UPDATE public.invoicing_time_entries SET work_program_id=p_program_id,hours=h,entry_date=dt,notes=p_command->>'description' WHERE id=tid;
+  IF old.id IS NOT NULL AND EXISTS(SELECT 1 FROM public.invoicing_time_entries WHERE id=tid AND billed_line_item_id IS NOT NULL) AND (old.hours<>h OR old.entry_date<>dt OR coalesce((old.detail->>'billable')::boolean,false) IS DISTINCT FROM coalesce((p_command->>'billable')::boolean,false)) THEN RAISE EXCEPTION 'Correct the billed time and invoice relationship before changing hours or date' USING ERRCODE='PT409'; END IF;
+  UPDATE public.invoicing_time_entries SET work_program_id=p_program_id,hours=h,entry_date=dt,notes=p_command->>'description',billable=coalesce((p_command->>'billable')::boolean,false) WHERE id=tid;
  END IF;
  IF old.id IS NULL AND p_command->>'spendEntryId' IS NOT NULL THEN
   SELECT * INTO x FROM public.project_spend_entries WHERE id=(p_command->>'spendEntryId')::uuid FOR UPDATE;

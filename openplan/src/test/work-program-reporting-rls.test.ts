@@ -43,6 +43,7 @@ live("OWP operational actuals and frozen reporting", () => {
  c:=c||jsonb_build_object('requestId',gen_random_uuid(),'expectedVersion',1,'status','approved','basis','cost_rate','rateId',rate_id,'hours','1.01','correctionNote','Synthetic approval');
  result:=public.record_work_program_actual(p,o,c);
  IF (SELECT amount FROM public.work_program_actual_versions WHERE entry_id=entry AND version=2)<>12.47 THEN RAISE EXCEPTION 'Cost valuation is not exact'; END IF;
+ IF (SELECT billable FROM public.invoicing_time_entries WHERE work_program_id=p) THEN RAISE EXCEPTION 'Nonbillable time became billable'; END IF;
  IF (SELECT hours FROM public.work_program_actual_versions WHERE entry_id=entry AND version=1)<>1 THEN RAISE EXCEPTION 'Original valuation changed'; END IF;
  BEGIN PERFORM public.record_work_program_actual(p,m,c||jsonb_build_object('requestId',gen_random_uuid(),'expectedVersion',2,'status','draft','basis','unvalued','amount',NULL)); RAISE EXCEPTION 'Member changed approved time'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
  `));
@@ -175,6 +176,9 @@ live("OWP operational actuals and frozen reporting", () => {
   const body = `${save} BEGIN PERFORM public.record_work_program_actual(p,o,c||jsonb_build_object('requestId',gen_random_uuid(),'entryId',gen_random_uuid())); RAISE EXCEPTION 'Duplicate source accepted'; EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL; END;`;
   marker(body, actualFunction.replace('Actuals access denied', 'Actual access denied'));
   expect(() => exercise(body, actualFunction.replace("v.workspace_id=w AND v.source_key=p_command->>'sourceKey'", "false AND v.source_key=p_command->>'sourceKey'"))).toThrow(/Duplicate source accepted/);
+  const billableBody = `${save}${approve} IF (SELECT billable FROM public.invoicing_time_entries WHERE work_program_id=p) THEN RAISE EXCEPTION 'Nonbillable correction changed meaning'; END IF;`;
+  marker(billableBody);
+  expect(() => exercise(billableBody, actualFunction.replace("billable=coalesce((p_command->>'billable')::boolean,false)", "billable=true"))).toThrow(/Nonbillable correction changed meaning/);
   const memberBody = `BEGIN PERFORM public.record_work_program_actual(p,m,c||'{"amount":"10.00","basis":"recorded","status":"approved"}'); RAISE EXCEPTION 'Member approved private costs'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;`;
   marker(memberBody);
   expect(() => exercise(memberBody, actualFunction.replace("IF actor_role='member' AND", "IF false AND"))).toThrow(/Member approved private costs/);

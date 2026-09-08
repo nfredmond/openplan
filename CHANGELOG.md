@@ -18,6 +18,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ---
 
+## Unreleased
+
+Subsequent development changes will be listed here.
+
 ## 0.45.0 — 2026-09-07
 
 - Administer an OWP reporting period from Programs or My Work. Record agency time

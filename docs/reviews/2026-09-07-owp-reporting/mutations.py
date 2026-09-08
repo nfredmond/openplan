@@ -16,6 +16,9 @@ cases=[
  ('viewer-policy-scope','supabase/migrations/20260910000003_work_program_report_exports.sql','AS RESTRICTIVE FOR ALL TO authenticated','AS PERMISSIVE FOR ALL TO authenticated',['src/test/viewer-write-denial-guard.test.ts'],False),
  ('pagination-cap','src/lib/programs/work-program/reporting-server.ts','if (page.length < 200) return rows;','return rows;',['src/test/work-program-reporting-pagination.test.ts'],False),
  ('allocation-projection','src/lib/programs/work-program/reporting-server.ts','id, actual_version_id, element_id','id, element_id',['src/test/work-program-reporting-pagination.test.ts'],False),
+ ('release-count','src/test/migrations/release-ordering.test.ts','migrationsAtRelease: 271','migrationsAtRelease: 272',['src/test/migrations/release-ordering.test.ts'],False),
+ ('direction-release','../docs/product/US_PLANNING_CAPABILITY_REGISTRY.json','"currentRelease": "v0.45.0"','"currentRelease": "v0.46.0"',['src/test/product-direction-review-guard.test.ts'],False),
+ ('rls-probe-census','src/test/rls-isolation.test.ts','  "work_program_actual_versions",','  // deliberate missing actual probe',['src/test/rls-isolation.test.ts'],False),
  ('form-scope','src/test/create-forms-inline-ratchet.test.ts','"src/components/programs/work-program/actual-entry.tsx":','"src/components/programs/work-program/missing-actual-entry.tsx":',['src/test/create-forms-inline-ratchet.test.ts'],False),
 ]
 selected=os.environ.get("OWP_MUTATION_CASES", "").split(",")

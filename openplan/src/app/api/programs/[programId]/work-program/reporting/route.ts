@@ -26,7 +26,7 @@ export async function GET(request: NextRequest, context: Context) {
    const current = [...new Map(raw.sort((a, b) => Number(a.version) - Number(b.version)).map(v => [v.entry_id, v])).values()];
    const own = current.filter(v => ownIds.includes(v.staff_id) && v.created_by === access.user.id && v.status === "draft").map(v => {
     const d = v.detail as Record<string, unknown>;
-    return { entryId: v.entry_id, version: v.version, entryDate: d.entryDate, hours: d.hours, description: d.description, sourceKey: d.sourceKey, sourceReference: d.sourceReference, staffId: v.staff_id, revisionId: d.revisionId, projectId: d.projectId, contractId: d.contractId, allocations: d.allocations };
+    return { entryId: v.entry_id, version: v.version, entryDate: d.entryDate, hours: d.hours, billable: d.billable === true, description: d.description, sourceKey: d.sourceKey, sourceReference: d.sourceReference, staffId: v.staff_id, revisionId: d.revisionId, projectId: d.projectId, contractId: d.contractId, allocations: d.allocations };
    });
    return NextResponse.json({ canManage, staff, revisions, ownTime: own }, { headers: { "Cache-Control": "private, no-store" } });
   }
