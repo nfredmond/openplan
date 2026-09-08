@@ -73,6 +73,16 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  {
+    column: "contract_source_deletions.deleted_at",
+    category: "READ_IN_SQL",
+    reason: "read_contract_management compares deletion/departure time with the snapshot cutoff in the same SQL statement as captured sources; live contract custody tests reject missing history.",
+  },
+  {
+    column: "contract_source_deletions.source_created_at",
+    category: "READ_IN_SQL",
+    reason: "read_contract_management uses original source creation time to determine whether a deleted or moved legacy row existed at the requested cutoff.",
+  },
   // ---- INERT: the commercial-era schema, deliberately left in place --------
   ...[
     "access_requests.data_sensitivity",

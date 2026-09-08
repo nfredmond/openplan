@@ -123,5 +123,10 @@
     "mutation": "source-created-time",
     "status": "killed",
     "expectedFailure": "Creation time rewritten"
+  },
+  {
+    "mutation": "owp-picker-privacy",
+    "status": "killed",
+    "expectedFailure": "OWP picker leaked private valuation"
   }
 ]

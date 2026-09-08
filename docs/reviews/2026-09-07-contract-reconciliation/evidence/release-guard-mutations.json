@@ -1,0 +1,22 @@
+[
+  {
+    "mutation": "release-harmless",
+    "status": "survived",
+    "expectedFailure": null
+  },
+  {
+    "mutation": "release-migration-count",
+    "status": "killed",
+    "expectedFailure": "expected 278 to be 279"
+  },
+  {
+    "mutation": "sql-column-accounting",
+    "status": "killed",
+    "expectedFailure": "contract_source_deletions.deleted_at"
+  },
+  {
+    "mutation": "registry-package-drift",
+    "status": "killed",
+    "expectedFailure": "capability registry release does not match package release"
+  }
+]

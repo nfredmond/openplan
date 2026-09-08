@@ -9,7 +9,7 @@ assignment and all monetary records below are explicitly synthetic.
 
 Work began from main a0aed946, v0.45.0, in the isolated checkout
 `/home/nathaniel/.local/state/openplan/contract-reconciliation-2026-09-07`.
-Checkpoint 654d95b4 is pushed. Final production acceptance, GitHub checks, tag and
+Checkpoint 654d95b4 is pushed. Release candidate 85f201a2 is pushed in PR #106. Final production acceptance, GitHub checks, tag and
 demo refresh are pending and will be recorded here separately. Main and its demo
 were not used for fixture writes or mutated by the test suite.
 
@@ -77,9 +77,7 @@ The populated v0.45 upgrade applied all eight additive migrations and preserved
 original time, spending, invoice, OWP actual and OWP revision JSON byte for byte.
 Before/after SHA-256 was
 944920f37e2e8652865c3482b56b5611a4b42fa3f14ad55ccd732d53b20da4ec.
-19 contract/catalog checks passed on that upgraded stack. Later member-projection
-and source-departure trigger refinements require final fresh CI migration proof;
-the isolated live stack received the equivalent function/trigger changes.
+19 contract/catalog checks passed on that upgraded stack. A subsequent fresh installation of all eight migrations passed all 187 live checks across 24 suites, including member projection and source-departure guards. The final OWP source picker read function also passed the focused live suite after installation. GitHub fresh-migration proof remains separate.
 
 Full QA passed at the preceding checkpoint, including lint, deadcode, 13,291
 unit tests, dependency audit and webpack build. All 52 Python worker suites
@@ -93,7 +91,7 @@ agreement and parent relationships, incomplete budget reconciliation, duplicate
 payroll, deleted/moved legacy sources and timestamp-based estimate selection.
 Fixes have targeted database or unit regressions. Private table probes use
 populated rows, not empty-policy checks. Aggregation covers more than 1000 records.
-Harmless and targeted mutation results will be retained alongside this note.
+The retained mutation-results.json records 26 controls: three harmless survivors and 23 targeted failures, including member form normalization, review status, creation-time custody and OWP picker privacy. A check can still miss defects outside its stated boundary.
 
 ## Boundaries
 
