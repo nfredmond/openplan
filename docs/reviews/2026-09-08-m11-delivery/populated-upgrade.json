@@ -1,0 +1,13 @@
+{
+  "from": "v0.46.0",
+  "migrations": 5,
+  "retainedRecords": [
+    "approved baseline with source receipts",
+    "two actual versions",
+    "physical time entry"
+  ],
+  "beforeSha256": "cf690df97fc3187c0e0f74229a4bebe83a213452a19b5b4b88c434724c1fdea9",
+  "afterSha256": "cf690df97fc3187c0e0f74229a4bebe83a213452a19b5b4b88c434724c1fdea9",
+  "unchanged": true,
+  "blindCategory": "Representative synthetic upgrade, not full backup recovery or every historical agency deployment"
+}

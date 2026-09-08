@@ -23,13 +23,15 @@ def run(name,suite,sql,expected=None):
 def mutate(name,suite,source,before,after,expected):
  assert before in source,(name,before)
  run(name,suite,source.replace(before,after),expected)
-master=definition('20260912000001_contract_master_authorization.sql','validate_contract_master_authorization')
+master=definition('20260912000005_legacy_order_authorization.sql','validate_contract_master_authorization')
 master_suite='contract-master-authorization-rls.test.ts'
 run('harmless-master-comment',master_suite,'-- harmless mutation\n'+master)
 mutate('shared-ceiling',master_suite,master,'IF total>p_terms.ceiling THEN','IF false THEN','Shared ceiling exceeded')
 check=definition('20260912000001_contract_master_authorization.sql','check_contract_master_approval')
 mutate('proposal-is-not-authority',master_suite,check,"AND state='approved' ORDER BY version DESC LIMIT 1",'ORDER BY version DESC LIMIT 1','Proposal increased authority')
 mutate('master-end-date',master_suite,master,"(period->>'endsOn')::date>p_terms.ends_on",'false','Invalid authorization accepted: period')
+period=definition('20260912000005_legacy_order_authorization.sql','record_contract_order_period')
+mutate('legacy-period-master-guard',master_suite,period,'IF terms.id IS NOT NULL THEN PERFORM','IF false THEN PERFORM','Legacy review escaped master dates')
 guard=definition('20260912000001_contract_master_authorization.sql','guard_contract_master_terms')
 mutate('immutable-master-evidence',master_suite,guard,"IF OLD.state<>'proposed' OR NEW.state<>'approved' OR", "IF false AND (OLD.state<>'proposed' OR NEW.state<>'approved') AND",'Approved terms rewritten')
 reader=definition('20260912000002_contract_scoped_access.sql','read_contract_management_v046')

@@ -1,0 +1,12 @@
+[
+  {
+    "control": "harmless-concurrency-comment",
+    "outcome": "survived",
+    "reason": "Unchanged concurrency result"
+  },
+  {
+    "control": "concurrent-ceiling-bypass",
+    "outcome": "killed",
+    "reason": "Two approvals commit when the shared ceiling is bypassed"
+  }
+]

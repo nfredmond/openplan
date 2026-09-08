@@ -74,6 +74,11 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   reason: string;
 }> = [
   {
+    column: "contract_order_periods.period_metadata",
+    category: "READ_IN_SQL",
+    reason: "Master ceiling validation reads legacy period_metadata; read_contract_management aliases it to authorization for the management page and immutable export.",
+  },
+  {
     column: "contract_source_deletions.deleted_at",
     category: "READ_IN_SQL",
     reason: "read_contract_management compares deletion/departure time with the snapshot cutoff in the same SQL statement as captured sources; live contract custody tests reject missing history.",

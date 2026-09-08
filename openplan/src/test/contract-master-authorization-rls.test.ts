@@ -44,6 +44,20 @@ function check(body:string) {
   EXCEPTION WHEN invalid_parameter_value THEN NULL; END;
  END LOOP;
  `));
+ it("reconciles legacy periods without rewriting approved baselines or weakening master dates",()=>check(`
+ INSERT INTO public.invoicing_engagements(id,workspace_id,client_id,project_id,title,engagement_kind) VALUES(p,workspace,client,project,'Synthetic legacy master','on_call');
+ UPDATE public.invoicing_engagements SET parent_engagement_id=p,engagement_kind='task_order' WHERE id=engagement;
+ INSERT INTO public.contract_baselines(id,engagement_id,workspace_id,version,state,content,content_hash,approval_evidence,created_by,approved_at) VALUES(baseline,engagement,workspace,1,'approved',c->'content',repeat('a',64),'Retained synthetic v0.46 approval',owner_id,now());
+ SELECT content_hash INTO original_hash FROM public.contract_baselines WHERE id=baseline;
+ PERFORM public.record_contract_command(p,owner_id,jsonb_build_object('kind','master_terms','requestId',gen_random_uuid(),'expectedVersion',0,'termsId',cost_rate,'currency','USD','ceiling','1500.00','startsOn','2026-01-01','endsOn','2026-12-31','terms','Synthetic legacy reconciliation','sourceDocumentId',document));
+ BEGIN PERFORM public.record_contract_command(p,owner_id,jsonb_build_object('kind','approve_master_terms','requestId',gen_random_uuid(),'expectedVersion',1,'termsId',cost_rate,'approvalEvidence','Synthetic'));RAISE EXCEPTION 'Unknown legacy period became assessed';EXCEPTION WHEN invalid_parameter_value THEN NULL;END;
+ c:=jsonb_build_object('kind','order_period','requestId',gen_random_uuid(),'expectedVersion',0,'baselineId',baseline,'authorization',jsonb_build_object('startsOn','2026-01-01','endsOn','2026-12-31','beneficiary','Synthetic agency','funding','Synthetic internal budget','costBasis','Retained source agreement','eligibility','unassessed','eligibilityEvidence',''),'sourceDocumentId',document,'evidence','Synthetic finance reading of existing source');
+ PERFORM public.record_contract_command(engagement,owner_id,c);
+ PERFORM public.record_contract_command(p,owner_id,jsonb_build_object('kind','approve_master_terms','requestId',gen_random_uuid(),'expectedVersion',1,'termsId',cost_rate,'approvalEvidence','Synthetic'));
+ IF (SELECT content_hash FROM public.contract_baselines WHERE id=baseline)<>original_hash OR (SELECT content?'authorization' FROM public.contract_baselines WHERE id=baseline) THEN RAISE EXCEPTION 'Legacy approval rewritten';END IF;
+ BEGIN PERFORM public.record_contract_command(engagement,owner_id,c||jsonb_build_object('requestId',gen_random_uuid(),'expectedVersion',1,'authorization',(c->'authorization')||jsonb_build_object('endsOn','2027-01-01')));RAISE EXCEPTION 'Legacy review escaped master dates';EXCEPTION WHEN invalid_parameter_value THEN NULL;END;
+ PERFORM set_config('request.jwt.claim.sub',member_id::text,true);EXECUTE 'SET LOCAL ROLE authenticated';IF EXISTS(SELECT 1 FROM public.contract_order_periods) THEN RAISE EXCEPTION 'Private legacy authorization leaked';END IF;EXECUTE 'RESET ROLE';
+ `));
  it("retains evidence and denies members, actor spoofing and rewritten approvals",()=>check(`${master}
  BEGIN UPDATE public.contract_master_terms SET ceiling=9999 WHERE id=cost_rate; RAISE EXCEPTION 'Approved terms rewritten';EXCEPTION WHEN check_violation THEN NULL;END;
  BEGIN UPDATE public.kb_documents SET checksum=repeat('b',64) WHERE id=document; RAISE EXCEPTION 'Master source replaced';EXCEPTION WHEN check_violation THEN NULL;END;

@@ -21,6 +21,11 @@
       "expectedFailure": "Invalid authorization accepted: period"
     },
     {
+      "name": "legacy-period-master-guard",
+      "outcome": "killed",
+      "expectedFailure": "Legacy review escaped master dates"
+    },
+    {
       "name": "immutable-master-evidence",
       "outcome": "killed",
       "expectedFailure": "Approved terms rewritten"

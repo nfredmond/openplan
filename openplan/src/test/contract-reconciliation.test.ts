@@ -5,7 +5,7 @@ import { utils } from "xlsx";
 import { cents } from "@/lib/programs/work-program/reporting";
 import { contractActualSchema,type ContractState,type ContractSnapshot,type ActualVersion } from "@/lib/invoicing/contracts/schema";
 import { reconcileContract,reconcileSnapshot } from "@/lib/invoicing/contracts/reconciliation";
-import { contractSnapshotHtml,contractSnapshotWorkbook,renderContractSnapshot } from "@/lib/invoicing/contracts/export";
+import { contractSnapshotHtml,contractSnapshotWorkbook,renderContractSnapshot,contractSnapshotTables } from "@/lib/invoicing/contracts/export";
 import { previewContractCsv } from "@/lib/invoicing/contracts/import";
 function fixture(){
  const task=randomUUID(),staff=randomUUID(),deliverable=randomUUID(),baseline=randomUUID(),entry=randomUUID();
@@ -16,6 +16,25 @@ function fixture(){
  return {state,actual,command,report,task};
 }
 describe("contract source reconciliation",()=>{
+ it("versions agency snapshot exports and retains source matching and accounting evidence",()=>{
+  const {report}=fixture();expect(contractSnapshotTables(report).some(t=>t.name==="Received invoices")).toBe(false);
+  report.snapshot.schemaVersion=2;
+  report.snapshot.masterTerms=[{id:randomUUID(),version:1,state:"approved",currency:"USD",ceiling:"1500.00",starts_on:"2026-01-01",ends_on:"2026-12-31",terms:"Synthetic master terms",approval_evidence:"Synthetic finance authority",source_document_id:randomUUID()}];
+  report.snapshot.masterTerms[0].source_receipt={id:report.snapshot.masterTerms[0].source_document_id,checksum:"c".repeat(64),storageRef:"storage://kb-documents/synthetic-master",bytes:123};
+  report.snapshot.receivedInvoices=[{id:randomUUID(),invoice_id:randomUUID(),version:2,state:"approved",content:{number:"SYNTH-RECEIVED",date:"2026-09-01",currency:"USD",total:"25.00",fileId:randomUUID(),lines:[{description:"Synthetic indirect cost",amount:"25.00",treatment:"indirect",basis:"Synthetic documented indirect basis"}]},matches:[{entryId:report.snapshot.actuals[0].entry_id,versionId:report.snapshot.actuals[0].id,amount:"25.00"}],review_note:"Synthetic finance matched",created_at:report.created_at}];
+  report.snapshot.accountingImports=[{id:randomUUID(),filename:"synthetic-posted.csv",source_hash:"d".repeat(64),rows:[{externalId:"SYNTH-POST-1",sourceKey:"SYNTH-1",amount:"12.47",hours:"1.01",currency:"USD"}],created_at:report.created_at}];
+  report.snapshot.orderPeriods=[{id:randomUUID(),baseline_id:report.snapshot.baselineId,version:1,authorization:{startsOn:"2026-01-01",endsOn:"2026-12-31",beneficiary:"Synthetic agency",funding:"Synthetic source",costBasis:"Retained labor basis",eligibility:"unassessed",eligibilityEvidence:""},evidence:"Legacy source reconciliation",source_document_id:randomUUID()}];
+  const tables=contractSnapshotTables(report);
+  expect(tables.find(t=>t.name==="Legacy period evidence")?.rows[1].slice(2,5)).toEqual(["2026-01-01","2026-12-31","Synthetic agency"]);
+  expect(tables.find(t=>t.name==="Master source custody")?.rows[1].slice(2)).toEqual(["c".repeat(64),"storage://kb-documents/synthetic-master",123]);
+  expect(tables.find(t=>t.name==="Master authorization")?.rows[1][3]).toBe("1500.00");
+  expect(tables.find(t=>t.name==="Received source matching")?.rows[1].slice(2)).toEqual([report.snapshot.actuals[0].entry_id,report.snapshot.actuals[0].id,"25.00"]);
+  expect(tables.find(t=>t.name==="Received cost treatment")?.rows[1].slice(2)).toEqual(["indirect","Synthetic indirect cost","25.00","Synthetic documented indirect basis"]);
+  expect(tables.find(t=>t.name==="Accounting comparison")?.rows[1].slice(4)).toEqual(["SYNTH-POST-1","SYNTH-1","12.47","1.01","USD"]);
+  expect(contractSnapshotHtml(report)).toContain("Synthetic documented indirect basis");
+  expect(contractSnapshotWorkbook(report).SheetNames).toContain("Accounting comparison");
+ });
+
  it("selects remaining-work versions independently of transaction timestamps",()=>{const {state}=fixture();const first=state.estimates[0];state.estimates.unshift({...first,id:randomUUID(),version:2,created_at:"2026-09-01T01:00:00Z",command:{...first.command,cost:"40.00",expectedVersion:1}});expect(reconcileContract(state,{coverageComplete:true}).remainingCost).toBe("40.00");});
  it("separates internal cost, commitments, gross billing, retention, partial payments and credits",()=>{
   const {state,actual}=fixture();
