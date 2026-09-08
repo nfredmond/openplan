@@ -1,0 +1,27 @@
+[
+  {
+    "name": "harmless-port-comment",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "ignore-occupied-port",
+    "outcome": "killed",
+    "expected": "test_skips_an_occupied_block"
+  },
+  {
+    "name": "ignore-ephemeral-range",
+    "outcome": "killed",
+    "expected": "test_avoids_ephemeral"
+  },
+  {
+    "name": "reuse-source-ports",
+    "outcome": "killed",
+    "expected": "test_avoids_ephemeral"
+  },
+  {
+    "name": "swap-service-port-order",
+    "outcome": "killed",
+    "expected": "test_preserves_the_six_service_positions"
+  }
+]

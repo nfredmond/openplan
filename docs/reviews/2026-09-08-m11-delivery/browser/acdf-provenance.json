@@ -1,0 +1,28 @@
+{
+  "synthetic": true,
+  "commit": "acdfd933bd468c951e0e2f9d50c9d73bc21fe6b9",
+  "origin": "http://m11.localhost:3247",
+  "checkout": "/home/nathaniel/.local/state/openplan/m11-delivery-closeout-2026-09-08",
+  "desktop": [
+    2648,
+    1268
+  ],
+  "mobile": [
+    390,
+    844
+  ],
+  "journey": "Projects > agency assignment > task A > Remaining work > Forecasts; Position",
+  "actor": "Synthetic scoped PM",
+  "facts": [
+    "Completed calculation history starts collapsed",
+    "Mobile section selectors retain permitted sections",
+    "Keyboard Enter expands and collapses all 16 capacity-conflict dates",
+    "Full desktop and 390px captures inspected",
+    "Console returned no warnings or errors"
+  ],
+  "limitations": [
+    "acdf-pm-review-390.jpg is an earlier scaled 270x582 capture; full acdf-pm-controls-390.jpg and acdf-pm-warning-dates-390.jpg supersede that capture limitation",
+    "No observed human acceptance",
+    "Full closeout and interrupted saves remain outstanding"
+  ]
+}

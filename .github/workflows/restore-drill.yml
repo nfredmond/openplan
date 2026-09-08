@@ -7,6 +7,8 @@ on:
   pull_request:
     paths:
       - "openplan/scripts/ops/disposable-restore-drill.sh"
+      - "openplan/scripts/ops/restore_ports.py"
+      - "openplan/scripts/ops/tests/test_restore_ports.py"
       - "openplan/src/test/local-supabase-env.ts"
       - "openplan/supabase/migrations/**"
       - ".github/workflows/restore-drill.yml"
