@@ -85,36 +85,6 @@
     "expected": "exports versioned forecast dates"
   },
   {
-    "name": "harmless-current-staff-sql",
-    "outcome": "survived",
-    "expected": null
-  },
-  {
-    "name": "ignore-departed-membership",
-    "outcome": "killed",
-    "expected": "Departed staff received new work"
-  },
-  {
-    "name": "retain-removed-node-assignment",
-    "outcome": "killed",
-    "expected": "Removed node left an active assignment"
-  },
-  {
-    "name": "hide-new-pm-colleague",
-    "outcome": "killed",
-    "expected": "Scoped PM cannot choose a new colleague"
-  },
-  {
-    "name": "reserve-closed-assignment",
-    "outcome": "killed",
-    "expected": "Closed assignment still reserved capacity"
-  },
-  {
-    "name": "closure-does-not-stale-capacity",
-    "outcome": "killed",
-    "expected": "Closure did not stale reservation inputs"
-  },
-  {
     "name": "ignore-corrected-received-date",
     "outcome": "killed",
     "expected": "uses corrected current received invoice"
@@ -178,5 +148,65 @@
     "name": "forget-new-custody-relation",
     "outcome": "killed",
     "expected": "reads every relation"
+  },
+  {
+    "name": "harmless-current-staff-sql",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "hide-colleague-availability",
+    "outcome": "killed",
+    "expected": "New colleague availability unavailable"
+  },
+  {
+    "name": "hide-pm-owned-proposal-document",
+    "outcome": "killed",
+    "expected": "PM proposal source scope incorrect"
+  },
+  {
+    "name": "expose-other-uploaders-documents",
+    "outcome": "killed",
+    "expected": "PM proposal source scope incorrect"
+  },
+  {
+    "name": "ignore-departed-membership",
+    "outcome": "killed",
+    "expected": "Departed staff received new work"
+  },
+  {
+    "name": "retain-removed-node-assignment",
+    "outcome": "killed",
+    "expected": "Removed node left an active assignment"
+  },
+  {
+    "name": "hide-new-pm-colleague",
+    "outcome": "killed",
+    "expected": "Scoped PM cannot choose a new colleague"
+  },
+  {
+    "name": "reserve-closed-assignment",
+    "outcome": "killed",
+    "expected": "Closed assignment still reserved capacity"
+  },
+  {
+    "name": "closure-does-not-stale-capacity",
+    "outcome": "killed",
+    "expected": "Closure did not stale reservation inputs"
+  },
+  {
+    "name": "harmless-reassignment-form",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "ignore-proposed-reassignment",
+    "outcome": "killed",
+    "expected": "compares a newly selected colleague"
+  },
+  {
+    "name": "rewrite-baseline-from-response-form",
+    "outcome": "killed",
+    "expected": "compares a newly selected colleague"
   }
 ]

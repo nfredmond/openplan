@@ -45,8 +45,11 @@ code('src/lib/invoicing/contracts/reconciliation.ts',['src/test/contract-reconci
 code('src/lib/invoicing/contracts/export.ts',['src/test/contract-delivery.test.ts'],[
  ('harmless-current-forecast-report',lambda s:'// Preserve old report formats.\n'+s,None),
  ('reuse-stale-report-forecast',lambda s:s.replace('latestForecast?.input_hash===state.delivery?.inputHash','true'),'exports versioned forecast dates')])
-sql=(root/'supabase/migrations/20260917000001_contract_staff_schedule_integrity.sql').read_text().replace('CREATE FUNCTION','CREATE OR REPLACE FUNCTION')
+sql=((root/'supabase/migrations/20260917000001_contract_staff_schedule_integrity.sql').read_text()+'\n'+(root/'supabase/migrations/20260919000001_contract_pm_proposal_inputs.sql').read_text()).replace('CREATE FUNCTION','CREATE OR REPLACE FUNCTION')
 controls=[('harmless-current-staff-sql',sql+'\n-- Staff custody proof.\n',None),
+ ('hide-colleague-availability',sql.replace("SELECT array_agg(s.id) INTO staff_ids FROM public.invoicing_staff s WHERE s.workspace_id=e.workspace_id AND (public.contract_staff_available(s.id,e.workspace_id) OR s.id=ANY(staff_ids));",''),'New colleague availability unavailable'),
+ ('hide-pm-owned-proposal-document',sql.replace("OR EXISTS(SELECT 1 FROM public.kb_documents owned WHERE owned.id=(d->>'id')::uuid AND owned.workspace_id=e.workspace_id AND owned.uploaded_by=p_actor_id)",''),'PM proposal source scope incorrect'),
+ ('expose-other-uploaders-documents',sql.replace('owned.uploaded_by=p_actor_id','true'),'PM proposal source scope incorrect'),
  ('ignore-departed-membership',sql.replace('AND (s.user_id IS NULL OR EXISTS(SELECT 1 FROM public.workspace_members m WHERE m.workspace_id=p_workspace AND m.user_id=s.user_id))',''),'Departed staff received new work'),
  ('retain-removed-node-assignment',sql.replace('UPDATE public.contract_task_assignments SET active=false WHERE engagement_id=e.id;',"UPDATE public.contract_task_assignments SET active=false WHERE engagement_id=e.id AND task_id IN (SELECT (n->>'taskId')::uuid FROM jsonb_array_elements(c->'nodes') n);"),'Removed node left an active assignment'),
  ('hide-new-pm-colleague',sql.replace("(actor_role='pm' AND (public.contract_staff_available(s.id,e.workspace_id) OR EXISTS", "(actor_role='pm' AND (false OR EXISTS"),'Scoped PM cannot choose a new colleague'),
@@ -77,3 +80,8 @@ code('src/test/planner-copy-says-the-plain-thing.test.ts',['src/test/planner-cop
 code('src/test/migrations/inventory.test.ts',['src/test/migrations/inventory.test.ts'],[
  ('harmless-schema-inventory',lambda s:'// Additive custody relation.\n'+s,None),
  ('forget-new-custody-relation',lambda s:s.replace('relations: 238,','relations: 237,'),'reads every relation')])
+
+code('src/components/invoicing/contracts/management-responses.tsx',['src/test/contract-response-reassignment.test.tsx'],[
+ ('harmless-reassignment-form',lambda s:s.replace('const value=', '// Retained comparison inputs.\nconst value='),None),
+ ('ignore-proposed-reassignment',lambda s:s.replace('schedule:reassign?', 'schedule:false?'),'compares a newly selected colleague'),
+ ('rewrite-baseline-from-response-form',lambda s:s.replace('const d=new FormData(e.currentTarget),record=', 'state.baselines[0].content.fee="0.00";const d=new FormData(e.currentTarget),record='),'compares a newly selected colleague')])

@@ -33,6 +33,11 @@ describe.skipIf(!LIVE_RLS)("current staff and working assignments",()=>{
  INSERT INTO public.invoicing_staff(id,workspace_id,name,active) VALUES(p,workspace,'Synthetic new colleague',true);
  state:=public.read_contract_management(engagement,outsider);
  IF NOT EXISTS(SELECT 1 FROM jsonb_array_elements(state->'staff') person WHERE person->>'id'=p::text) OR jsonb_array_length(state->'rates')<>0 THEN RAISE EXCEPTION 'Scoped PM cannot choose a new colleague privately';END IF;
+ INSERT INTO public.contract_capacity_versions(engagement_id,workspace_id,staff_id,version,content,created_by) VALUES(engagement,workspace,p,1,jsonb_build_object('staffId',p,'startsOn','2026-09-01','endsOn','2026-09-30','hoursPerDay','8.00','calendar',jsonb_build_object('name','Synthetic explicit calendar','weekdays',jsonb_build_array(1,2,3,4,5),'exceptions','[]'::jsonb),'evidence','Synthetic shared availability'),owner_id);
+ IF NOT EXISTS(SELECT 1 FROM jsonb_array_elements(public.read_contract_delivery(engagement,outsider)->'capacityVersions') cap WHERE cap->>'staff_id'=p::text) THEN RAISE EXCEPTION 'New colleague availability unavailable for comparison';END IF;
+ INSERT INTO public.kb_documents(id,workspace_id,uploaded_by,title,source_kind,checksum,storage_ref,status) VALUES(element,workspace,outsider,'Synthetic PM proposal source','uploaded_txt',repeat('c',64),'storage://kb-documents/'||workspace||'/'||element||'/synthetic.txt','stored'),(foreign_deliverable,workspace,owner_id,'PRIVATE UNRELATED FINANCE SOURCE','uploaded_txt',repeat('d',64),'storage://kb-documents/'||workspace||'/synthetic-private.txt','stored');
+ state:=public.read_contract_management(engagement,outsider);
+ IF NOT EXISTS(SELECT 1 FROM jsonb_array_elements(state->'documents') d WHERE d->>'id'=element::text) OR state->'documents' @> jsonb_build_array(jsonb_build_object('id',foreign_deliverable)) THEN RAISE EXCEPTION 'PM proposal source scope incorrect';END IF;
  ${schedule}
  c:=jsonb_set(c,'{content,nodes,0,staff,0,staffId}',to_jsonb(p::text));PERFORM public.record_contract_command(engagement,outsider,c);
  IF NOT EXISTS(SELECT 1 FROM public.contract_task_assignments WHERE engagement_id=engagement AND staff_id=p AND active) THEN RAISE EXCEPTION 'Scoped PM reassignment unavailable';END IF;
