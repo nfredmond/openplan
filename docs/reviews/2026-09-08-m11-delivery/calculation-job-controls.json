@@ -1,0 +1,72 @@
+[
+  {
+    "name": "harmless-job-comment",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "changed-request-retry",
+    "outcome": "killed",
+    "expected": "Queue retry changed"
+  },
+  {
+    "name": "stale-browser-queue",
+    "outcome": "killed",
+    "expected": "Stale browser queued"
+  },
+  {
+    "name": "expired-worker-commit",
+    "outcome": "killed",
+    "expected": "Old worker committed"
+  },
+  {
+    "name": "normalized-request-replacement",
+    "outcome": "killed",
+    "expected": "Normalized request replaced"
+  },
+  {
+    "name": "redundant-queue-source-check",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "changed-source-both-guards",
+    "outcome": "killed",
+    "expected": "Stale queued calculation committed"
+  },
+  {
+    "name": "revoked-worker-authority",
+    "outcome": "killed",
+    "expected": "Queued inputs changed"
+  },
+  {
+    "name": "expired-heartbeat",
+    "outcome": "killed",
+    "expected": "Expired lease revived"
+  },
+  {
+    "name": "outside-job-visibility",
+    "outcome": "killed",
+    "expected": "Outside calculation metadata leaked"
+  },
+  {
+    "name": "private-job-payload",
+    "outcome": "killed",
+    "expected": "Private job request readable"
+  },
+  {
+    "name": "harmless-job-api",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "allow-agent-queue",
+    "outcome": "killed",
+    "expected": "denies ungoverned agent requests"
+  },
+  {
+    "name": "strip-forged-queue-result",
+    "outcome": "killed",
+    "expected": "denies ungoverned agent requests"
+  }
+]

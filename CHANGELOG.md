@@ -20,6 +20,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- Patch the CSV parser to 7.0.2 and update compatible AI SDK dependencies after current dependency advisories. Duplicate prototype-named CSV headers remain data. Production dependency audit is clean in the candidate verification.
+
+- Draft durable calculation jobs use [contract_calculation_jobs](openplan/supabase/migrations/20260916000001_contract_calculation_jobs.sql). Run `npm run worker:contract-calculations` locally for reviewed forecasts, response comparisons, accounting imports and closeout packages. Queued requests preserve original authorship, reviewed input versions and retry identity.
+
 - Draft weekly management and delivery closeout use [contract_management_responses](openplan/supabase/migrations/20260914000001_contract_management_responses.sql), [contract_settlement_closeout](openplan/supabase/migrations/20260915000001_contract_settlement_closeout.sql), [contract_closeout_relationships](openplan/supabase/migrations/20260915000003_contract_closeout_relationships.sql), and [contract_management_reports](openplan/supabase/migrations/20260915000002_contract_management_reports.sql). Comparisons preserve approved baselines; financial events preserve incurred costs; closeout retains acceptance, reconciliation, obligations and reopening history. These are development candidates pending full acceptance.
 
 - Draft agency contract reconciliation: designated PM/finance access, scoped consultant invoice review, shared task-order authorization, and retained accounting comparison. Remaining-work forecasts, weekly PM responses and closeout remain in development; M11 is open.

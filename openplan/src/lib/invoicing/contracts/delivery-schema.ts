@@ -13,7 +13,7 @@ export const deliveryCommandSchemas=[
  z.object({kind:z.literal("schedule"),...base,content:scheduleSchema}).strict(),
  z.object({kind:z.literal("work_update"),...base,content:workUpdateSchema}).strict(),
  z.object({kind:z.literal("work_review"),...base,updateId:id,state:z.enum(["accepted","returned"]),remainingCost:amount,remainingGrossBilling:amount,valuationEvidence:note,evidence:note.min(1)}).strict(),
- z.object({kind:z.literal("forecast"),requestId:id,asOf:date,horizonEnd:date,coverageComplete:z.boolean(),coverageEvidence:note.min(1),reviewEvidence:note.min(1)}).strict(),
+ z.object({kind:z.literal("forecast"),requestId:id,expectedInputHash:z.string().regex(/^[a-f0-9]{64}$/),asOf:date,horizonEnd:date,coverageComplete:z.boolean(),coverageEvidence:note.min(1),reviewEvidence:note.min(1)}).strict(),
 ] as const;
 export const deliveryCommandSchema=z.discriminatedUnion("kind",deliveryCommandSchemas);
 export type WorkingCalendar=z.infer<typeof workingCalendarSchema>;

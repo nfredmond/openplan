@@ -37,7 +37,7 @@ source_controls('src/lib/invoicing/contracts/closeout.ts',['src/test/contract-cl
  ('ignore-unaccepted-delivery',lambda s:s.replace('if(command.workAccepted&&!workAccepted)','if(false)'),'expected [Function] to throw'),
  ('claim-unsettled-finances',lambda s:s.replace('if(command.financialSettled&&!financialSettled)','if(false)'),'expected [Function] to throw'),
  ('erase-valid-underspend',lambda s:s.replace('cents(authorizedCost)-cents(reconciled.total.incurred)','BigInt(0)'),'expected')])
-source_controls('src/lib/invoicing/contracts/server.ts',['src/test/contract-workflow-api.test.ts'],[
+source_controls('src/lib/invoicing/contracts/calculation.ts',['src/test/contract-workflow-api.test.ts'],[
  ('harmless-workflow-api',lambda s:'// Retained financial review.\n'+s,None),
  ('ignore-financial-read-race',lambda s:s.replace('state.closeout.inputHash!==(confirm.data as ContractState).closeout?.inputHash','false'),'expected'),
  ('leak-closeout-rates',lambda s:s.replace('safeState={...state,rates:[],access:[]','safeState={...state,rates:state.rates,access:[]'),'expected'),

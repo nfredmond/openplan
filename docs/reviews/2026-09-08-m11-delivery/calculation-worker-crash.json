@@ -1,0 +1,27 @@
+{
+  "job": {
+    "id": "9e7ef8e8-75b0-4447-90f3-842b20ec4575",
+    "status": "running",
+    "attempts": 1,
+    "request_id": "69e22cec-32b7-49f2-8894-868eff5e7331",
+    "lease_until": "2026-09-08T20:46:30.107843+00:00"
+  },
+  "ownedProcesses": [
+    2855961,
+    2858062
+  ],
+  "fault": "Both test worker processes terminated after claim and before calculation; lease expires naturally.",
+  "after": {
+    "id": "9e7ef8e8-75b0-4447-90f3-842b20ec4575",
+    "result": {
+      "id": "0fa8afff-9c2b-4b57-8373-d39951f56b0e",
+      "version": 3
+    },
+    "status": "succeeded",
+    "attempts": 2,
+    "retainedCommands": 1,
+    "retainedForecasts": 1
+  },
+  "browser": "PM page displayed succeeded, attempts 2, and Reviewed forecast 3 after automatic reload.",
+  "blindCategory": "Controlled local process crash after claim, before calculation. Not power-loss, disk corruption or remote storage recovery."
+}
