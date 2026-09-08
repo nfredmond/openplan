@@ -84,3 +84,11 @@ statement-level delete protection denied the operation before the new row trigge
 That test did not prove the new trigger. The corrected probe also updates object
 metadata, with a transaction-only permissive storage control, so removing the new
 trigger is observable without bypassing the platform's deletion protection.
+
+Final setup review found that existing staff APIs supported an account link but
+the staff editor did not expose it. The existing Staff screen now uses the shared
+team picker for create/edit, and reporting links directly to it. The actual staff
+query selects the saved user identity; component and projection mutations detect
+an omitted link or missing field. Opening balances with unspecified historical
+hours now explicitly mark hour totals incomplete, rather than implying zero
+historical effort. Final build/browser acceptance follows these additions.

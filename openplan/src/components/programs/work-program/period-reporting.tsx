@@ -36,7 +36,7 @@ export function PeriodReporting({ programId, data, save, disabled }: { programId
  <Field label="Period notes" multiline value={period.note} onChange={v => setPeriod(p => ({ ...p, note: v }))}/>
  <Button className="h-auto min-h-10 max-w-full whitespace-normal" type="button" variant="outline" disabled={!baseline || !period.starts_on || !period.ends_on} onClick={() => {
   if (!baseline) return;
-  const versions = (data.actuals ?? []).filter(v => v.created_at <= period.source_cutoff).sort((a, b) => a.version - b.version);
+  const versions = (data.actuals ?? []).filter(v => Date.parse(v.created_at) <= Date.parse(period.source_cutoff)).sort((a, b) => a.version - b.version);
   const actuals = [...new Map(versions.map(v => [v.entry_id, v])).values()].filter(v => v.entry_date <= period.ends_on && (v.entry_date >= baseline.content_json.periodStart || v.kind === "opening"));
   setShown({ schemaVersion: 1, workingPreview: true, period, baseline, actuals, valuationHistory: versions, reviewNote: "Working preview; draft and excluded costs are unresolved and omitted from incurred totals." });
  }}>Preview current budget position</Button>
