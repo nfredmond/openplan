@@ -92,3 +92,12 @@ query selects the saved user identity; component and projection mutations detect
 an omitted link or missing field. Opening balances with unspecified historical
 hours now explicitly mark hour totals incomplete, rather than implying zero
 historical effort. Final build/browser acceptance follows these additions.
+
+The first stamped production staff-link edit failed with HTTP 400. Creation's
+roster validation had already been repaired historically, but PATCH still queried
+another person's membership through a self-only RLS client. PATCH now uses the
+same checked service roster helper as creation. Faithful self-only query mocks
+reproduce the original failure; reverting this fix makes the teammate edit test
+fail. A separate mutation permits a foreign account and fails the refusal test.
+The test account's unsuccessful relink is being completed through the corrected UI
+before member time acceptance continues.
