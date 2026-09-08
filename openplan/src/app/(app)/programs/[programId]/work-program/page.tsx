@@ -39,7 +39,7 @@ export default async function WorkProgramPage({ params }: { params: Promise<{ pr
     return <section className="space-y-6 min-w-0">
       <Link href={`/programs/${programId}`} className="underline">Back to {access.program.title}</Link>
       <header><h1 className="text-3xl font-semibold">Work program</h1><p className="mt-2 text-muted-foreground">Prepare an OWP, UPWP or agency work program from retained sources. Link proposed narrative, funding and staffing to the retained originals.</p></header>
-      <ReportingPanel programId={programId} userId={user.id} />
+      <ReportingPanel programId={programId} workspaceId={access.program.workspace_id} userId={user.id} />
       <h2 id="preparation" className="text-2xl font-semibold">Preparation and adoption history</h2>
       <WorkProgramEditor programId={programId} workspaceId={access.program.workspace_id} userId={user.id} agency={access.program.sponsor_agency ?? ""} initial={preparation} documents={documents} evidenceDocuments={evidenceDocuments} projects={projects} staff={(staff.data ?? []).map((row) => ({ value: row.id, label: row.name }))} contracts={(contracts.data ?? []).map((row) => ({ value: row.id, label: row.title }))} canWrite={canAccessWorkspaceAction("programs.write", access.membership.role)} />
     </section>;

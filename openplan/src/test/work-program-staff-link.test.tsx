@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
+import { ReportingPanel } from "@/components/programs/work-program/reporting-panel";
 import { StaffAndRatesPanel } from "@/components/invoicing/staff-and-rates-panel";
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
@@ -28,10 +29,20 @@ it("creates linked staff through the existing staff API and retains the selected
  await waitFor(() => expect(fetcher.mock.calls.some(([, init]) => init?.method === "PATCH")).toBe(true));
  expect(JSON.parse(fetcher.mock.calls.find(([, init]) => init?.method === "PATCH")![1]!.body as string)).toMatchObject({ workspaceId, userId });
 });
-it("loads staff account identity in the real projection and offers a reachable setup link", () => {
+it("loads staff account identity in the real projection", () => {
  const page = readFileSync("src/app/(app)/invoicing/_components/receivables-lane.tsx", "utf8");
  const projection = page.match(/\.from\("invoicing_staff"\)\s*\.select\("([^"]+)"\)/)?.[1];
  expect(projection?.split(", ")).toContain("user_id");
  expect(page).toContain("userId: member.user_id");
- expect(readFileSync("src/components/programs/work-program/reporting-panel.tsx", "utf8")).toContain('/invoicing?direction=receivables#staff-time-access');
+});
+
+it.each([workspaceId, "00000000-0000-4000-8000-000000000003"])("keeps the program workspace %s when opening staff setup", async (programWorkspaceId) => {
+ vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ revisions: [] }), { status: 200 })));
+ render(<ReportingPanel programId="00000000-0000-4000-8000-000000000004" workspaceId={programWorkspaceId} userId={userId}/>);
+ await screen.findByText("Save a preparation revision below before attributing actual work. Adopt a baseline before issuing a management report.");
+ const target = new URL(screen.getByRole("link", { name: "Staff and account setup" }).getAttribute("href")!, "http://localhost");
+ expect(target.pathname).toBe("/invoicing");
+ expect(target.searchParams.get("workspaceId")).toBe(programWorkspaceId);
+ expect(target.searchParams.get("direction")).toBe("receivables");
+ expect(target.hash).toBe("#staff-time-access");
 });

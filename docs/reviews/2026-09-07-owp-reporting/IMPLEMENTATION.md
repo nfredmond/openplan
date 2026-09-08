@@ -177,3 +177,15 @@ checks do not replace live relationship/RLS tests; synthetic SQL fixtures do not
 prove all agency data shapes; mutation controls cover stated failure categories,
 not every possible defect. M11a and M2d.3 remain partial. Merge, final GitHub
 results and local demo promotion are recorded in the release receipt separately.
+
+
+The installed demo's existing program has no saved preparation revision. Its
+empty state correctly requires preparation before actual attribution. The first
+read-only probe expected an existing revision and was corrected to inspect that
+starting state. A second check found a real setup-link omission: the program's
+workspace was absent from the staff URL. A multi-workspace account therefore
+reached the workspace chooser instead of its program's staff register. The link
+now carries the authorized program workspace explicitly. The earlier isolated
+single-workspace journey could not reveal this defect. A rendered-link regression
+covers two different workspace identities, and final demo acceptance repeats the
+multi-workspace navigation before tagging v0.45.0.
