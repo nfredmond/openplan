@@ -1,0 +1,12 @@
+{
+  "from": "v0.46.0 plus eleven draft migrations",
+  "newMigrations": [
+    "20260917000001_contract_staff_schedule_integrity.sql",
+    "20260918000001_contract_mutable_source_cutoffs.sql"
+  ],
+  "stack": "m11-contract-verification-upgrade",
+  "beforeSha256": "a6b1bfe272ecc1b77c37730603d9a0267878f7ec5a09bb50a0a1803fa42b31ca",
+  "afterSha256": "a6b1bfe272ecc1b77c37730603d9a0267878f7ec5a09bb50a0a1803fa42b31ca",
+  "unchanged": true,
+  "blindCategory": "Representative synthetic baseline, two actual versions and physical time. Not full backup recovery or every historical source."
+}

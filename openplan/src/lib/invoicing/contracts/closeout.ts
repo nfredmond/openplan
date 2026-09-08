@@ -10,7 +10,7 @@ export function currentSettlementEvents(versions:SettlementVersion[],asOf="9999-
 export function settlementPosition(state:ContractState,asOf="9999-12-31"):InvoicePosition[]{
  const events=currentSettlementEvents(state.closeout?.settlements??[],asOf),actuals=currentActuals(state.actuals,asOf).filter(a=>a.command.status==="approved");
  const received=new Map<string,NonNullable<ContractState["receivedInvoices"]>[number]>();for(const i of state.receivedInvoices??[])if(!received.has(i.invoice_id)||received.get(i.invoice_id)!.version<i.version)received.set(i.invoice_id,i);
- const invoices=[...state.invoices.filter(i=>["sent","paid"].includes(i.status)&&i.invoice_date&&i.invoice_date<=asOf).map(i=>({id:i.id,direction:"outgoing" as const,number:i.invoice_number,currency:i.currency_code,version:i.updated_at,gross:i.subtotal_amount,initialRetention:i.retention_amount})),...[...received.values()].filter(i=>i.state==="approved"&&i.content.date<=asOf).map(i=>({id:i.invoice_id,direction:"received" as const,number:i.content.number,currency:i.content.currency,version:String(i.version),gross:i.content.total,initialRetention:"0.00"}))];
+ const invoices=[...state.invoices.filter(i=>["sent","paid"].includes(i.status)&&(!i.invoice_date||i.invoice_date<=asOf)&&(!i.sent_date||i.sent_date<=asOf)).map(i=>({id:i.id,direction:"outgoing" as const,number:i.invoice_number,currency:i.currency_code,version:i.updated_at,legacyStatus:i.status,datesKnown:!!i.invoice_date&&!!i.sent_date,gross:i.subtotal_amount,initialRetention:i.retention_amount})),...[...received.values()].filter(i=>i.state==="approved"&&i.content.date<=asOf).map(i=>({id:i.invoice_id,direction:"received" as const,number:i.content.number,currency:i.content.currency,version:String(i.version),legacyStatus:i.state,datesKnown:true,gross:i.content.total,initialRetention:"0.00"}))];
  return invoices.map(invoice=>{
   let payments=BigInt(0),credits=BigInt(0),refunds=BigInt(0),adjustments=BigInt(0),retention=cents(invoice.initialRetention),disputed=BigInt(0);const warnings:string[]=[],seen=new Set<string>();
   const legacy=actuals.filter(a=>a.command.invoiceId===invoice.id&&["payment","credit"].includes(a.command.category));
@@ -24,6 +24,8 @@ export function settlementPosition(state:ContractState,asOf="9999-12-31"):Invoic
   }
   if(retention<BigInt(0)||disputed<BigInt(0)||refunds>payments)warnings.push("A release or refund exceeds the documented amount held or paid.");
   const open=cents(invoice.gross)+adjustments-credits-payments+refunds;
+  if(!invoice.datesKnown)warnings.push("Issued invoice dates are missing; confirm the documented obligation and period.");
+  if(invoice.legacyStatus==="paid"&&open!==BigInt(0))warnings.push("Invoice is marked paid but documented financial events leave an open balance.");
   if(retention+disputed>(open>BigInt(0)?open:BigInt(0)))warnings.push("Retention and disputed amounts exceed the remaining invoice balance; reconcile overlap or release.");
   return {...invoice,payments:decimalText(payments),credits:decimalText(credits),refunds:decimalText(refunds),adjustments:decimalText(adjustments),retention:decimalText(retention),disputed:decimalText(disputed),open:decimalText(open),currentlyDue:decimalText(open-retention-disputed),warnings};
  });
@@ -32,10 +34,12 @@ export function closeoutPosition(state:ContractState,command:CloseoutCommand):Cl
  const reconciled=reconcileContract(state,{asOf:command.asOf}),invoices=settlementPosition(state,command.asOf),warnings:string[]=[],latest=new Map<string,NonNullable<ContractState["closeout"]>["deliverableEvents"][number]>();
  for(const event of state.closeout?.deliverableEvents??[])if(!latest.has(event.deliverable_id)||latest.get(event.deliverable_id)!.version<event.version)latest.set(event.deliverable_id,event);
  const tasks=reconciled.baseline?.content.tasks??[],workAccepted=tasks.length>0&&tasks.every(t=>t.deliverableId&&latest.get(t.deliverableId)?.state==="accepted"&&latest.get(t.deliverableId)!.date<=command.asOf);
- const currentReceived=new Map<string,string>();for(const i of state.receivedInvoices??[])currentReceived.set(i.invoice_id,i.state);
+ const currentReceived=new Map<string,NonNullable<ContractState["receivedInvoices"]>[number]>();for(const i of (state.receivedInvoices??[]).toSorted((a,b)=>a.version-b.version))currentReceived.set(i.invoice_id,i);
  if(!workAccepted)warnings.push("Some approved tasks lack a separately authorized accepted deliverable.");
  if(!command.coverageComplete||reconciled.unresolved.length||state.unmappedTime.length||state.unmappedSpend.length||state.unmappedSpendCount)warnings.push("Financial source coverage is incomplete or unresolved.");
- if([...currentReceived.values()].some(s=>s!=="approved")||state.invoices.some(i=>i.status==="draft"))warnings.push("Unresolved or draft invoices remain.");
+ if([...currentReceived.values()].some(i=>i.state!=="approved")||state.invoices.some(i=>i.status==="draft"))warnings.push("Unresolved or draft invoices remain.");
+ if(state.invoices.some(i=>!["draft","sent","paid","void"].includes(i.status)))warnings.push("An invoice has an unrecognized financial status.");
+ if(state.invoices.some(i=>i.status!=="void"&&((i.invoice_date&&i.invoice_date>command.asOf)||(i.sent_date&&i.sent_date>command.asOf)))||currentActuals(state.actuals).some(a=>a.command.status!=="excluded"&&a.command.entryDate>command.asOf)||currentSettlementEvents(state.closeout?.settlements??[]).some(e=>e.content.date>command.asOf)||[...currentReceived.values()].some(i=>i.content.date>command.asOf))warnings.push("Known financial records fall after the closeout as-of date; reconcile the final period.");
  if(invoices.some(i=>i.open!=="0.00"||i.retention!=="0.00"||i.disputed!=="0.00"||i.warnings.length))warnings.push("Invoice balances, retention, disputes or version reconciliation remain open.");
  if(reconciled.total.commitments!=="0.00")warnings.push("Recorded commitments remain open.");
  const financialSettled=!warnings.some(w=>!w.startsWith("Some approved tasks"));

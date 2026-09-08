@@ -106,3 +106,20 @@ The browser still computes an optional preview locally. It is bounded to a
 730-day horizon; large preview responsiveness remains an acceptance check.
 Human agency PM and finance acceptance, reminders for contract work, final
 mobile/artifact/recovery journeys and complete M11 acceptance remain open.
+
+### Draft current-position safeguards
+
+The M11 candidate uses documented payments and credits for the invoice register's
+balances and aging, with separate currencies, retention, disputes and refund
+obligations. A changed invoice version or incomplete read leaves coverage
+unassessed. Gross authorization remaining to bill excludes credits in new
+format-5 reports. Only an unchanged reviewed forecast supplies current remaining
+costs; stale reports and older issued formats retain their history.
+
+Apply both `20260917000001_contract_staff_schedule_integrity.sql` and
+`20260918000001_contract_mutable_source_cutoffs.sql` for current staffing and
+historical-cutoff safeguards. Removed working assignments and closed contracts
+release reservations. Departed staff cannot receive new accepted work. Since
+mutable planning records have no retrospective versions, a later change can
+prevent a new historical report. Choose a current cutoff; previously issued
+reports are still retained. The safeguard starts when this migration is applied.

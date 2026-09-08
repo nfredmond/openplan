@@ -42,10 +42,10 @@ source_controls('src/lib/invoicing/contracts/calculation.ts',['src/test/contract
  ('ignore-financial-read-race',lambda s:s.replace('state.closeout.inputHash!==(confirm.data as ContractState).closeout?.inputHash','false'),'expected'),
  ('leak-closeout-rates',lambda s:s.replace('safeState={...state,rates:[],access:[]','safeState={...state,rates:state.rates,access:[]'),'expected'),
  ('allow-excess-retention-release',lambda s:s.replace('if(invoice.warnings.some(w=>w.includes("exceeds")||w.includes("exceed")))','if(false)'),'expected')])
-source_controls('src/components/invoicing/contracts/cash-position.tsx',['src/test/contract-cash-position.test.tsx'],[
+source_controls('src/lib/invoicing/contracts/cash-summary-server.ts',['src/test/contract-cash-position.test.tsx'],[
  ('harmless-register-balance',lambda s:'// Complete invoice reading.\n'+s,None),
- ('truncate-invoice-balance-pages',lambda s:s.replace('if(page.data.length<200)break;','break;'),'expected'),
- ('sum-different-currencies',lambda s:s.replace('totals.set(p.currency,(totals.get(p.currency)','totals.set("USD",(totals.get("USD")'),'expected')])
+ ('truncate-invoice-balance-pages',lambda s:s.replace('if(page.data.length<200)break;','break;'),'expected')])
+source_controls('src/components/invoicing/contracts/cash-position.tsx',['src/test/contract-cash-position.test.tsx'],[('harmless-currency-totals',lambda s:'// Exact currency totals.\n'+s,None),('sum-different-currencies',lambda s:s.replace('totals.set(p.currency,total)','totals.set("USD",total)'),'expected')])
 source_controls('src/lib/invoicing/contracts/export.ts',['src/test/contract-responses.test.ts'],[
  ('harmless-response-export',lambda s:'// Response review evidence.\n'+s,None),
  ('omit-response-history',lambda s:s.replace('if(state.responses){','if(false&&state.responses){'),'expected')])

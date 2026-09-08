@@ -238,7 +238,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   upstream: 0,
   // The cross-workspace package notice uses the real membership object three
   // times: where work waits, what is active, and what the caller can switch.
-  workspace: 160,
+  workspace: 159,
 };
 
 describe("planner copy says the plain thing", () => {

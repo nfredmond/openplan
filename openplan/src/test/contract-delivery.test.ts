@@ -8,6 +8,7 @@ describe("reviewed contract delivery",()=>{
   const f=fixture(),reviewed=randomUUID();f.delivery.workUpdates[0].reviewed_update_id=reviewed;f.delivery.forecasts=[{id:randomUUID(),version:1,input_hash:f.delivery.inputHash,created_at:"2026-09-08T01:00:00Z",content:{inputs:{state:f.state},result:forecastDelivery(f.state,f.delivery,f.options),reviewEvidence:"Synthetic reviewed forecast",coverageEvidence:"Synthetic complete source coverage"}}];
   const report={id:randomUUID(),title:"Synthetic agency PM report",created_at:"2026-09-08T02:00:00Z",snapshot_hash:"c".repeat(64),snapshot:{...f.state,schemaVersion:3 as const,delivery:f.delivery,asOf:f.options.asOf,sourceCutoff:"2026-09-08T02:00:00Z",coverageComplete:true,coverageEvidence:"Synthetic",baselineId:f.state.baselines[0].id,originalBaselineId:f.state.baselines[0].id}};
   const tables=contractSnapshotTables(report);expect(tables.find(t=>t.name==="Reviewed forecasts")?.rows[1].slice(4,8)).toEqual(["2026-09-13","100.01","100.01","200.02"]);expect(tables.find(t=>t.name==="Forecast dates")?.rows[2].slice(5,7)).toEqual(["2026-09-12","2026-09-13"]);expect(tables.find(t=>t.name==="Staff work review history")?.rows[1][14]).toBe(reviewed);expect(contractSnapshotWorkbook(report).SheetNames).toContain("Shared capacity");
+  const current={...report,snapshot:{...report.snapshot,schemaVersion:5 as const}};let budget=contractSnapshotTables(current).find(t=>t.name==="Budget and billing")!;expect(budget.rows.find(r=>r[0]==="Reviewed forecast remaining cost")?.[1]).toBe("100.01");expect(budget.rows.find(r=>r[0]==="Unbilled gross fee")?.[1]).toBe("1000.00");current.snapshot.delivery.inputHash="stale";budget=contractSnapshotTables(current).find(t=>t.name==="Budget and billing")!;expect(budget.rows.find(r=>r[0]==="Reviewed forecast remaining cost")?.[1]).toBeNull();
  });
 
  it("uses explicit unavailable days, exact effort, finish-to-start reviews and distinct dates",()=>{
@@ -15,6 +16,13 @@ describe("reviewed contract delivery",()=>{
   expect(r.nodes[0]).toMatchObject({start:"2026-09-08",finish:"2026-09-11",originalApprovedFinish:"2026-09-30",currentApprovedFinish:"2026-09-30",actualStart:"2026-09-01",actualFinish:null});
   expect(r.nodes[1]).toMatchObject({start:"2026-09-12",finish:"2026-09-13"});expect(r.finish).toBe("2026-09-13");expect(r.remainingCost).toBe("100.01");expect(r.actualPlusRemaining).toBe("100.01");expect(r.remainingGrossBilling).toBe("200.02");
   f.schedule.nodes[1].durationKind="working";expect(forecastDelivery(f.state,f.delivery,f.options).finish).toBe("2026-09-15");
+ });
+ it("withholds a forecast after an amendment or reassignment changes the active staff assignment",()=>{
+  const f=fixture();f.delivery.assignments=[];const r=forecastDelivery(f.state,f.delivery,f.options);expect(r.finish).toBeNull();expect(r.warnings.map(w=>w.code)).toContain("changed_assignment");
+ });
+ it("keeps a missed approved deadline visible when reviewed remaining effort reaches zero",()=>{
+  const f=fixture();f.options.asOf="2026-09-12";const update=f.delivery.workUpdates[0];update.content={...update.content,asOf:"2026-09-12",hours:"0.00",status:"reported_complete",actualFinish:"2026-09-11"};update.remaining_cost="0.00";f.state.baselines[0].content.tasks[0].deadline="2026-09-10";
+  const result=forecastDelivery(f.state,f.delivery,f.options);expect(result.nodes[0].finish).toBe("2026-09-11");expect(result.warnings).toContainEqual(expect.objectContaining({code:"deadline_threat",nodeId:f.schedule.nodes[0].id,date:"2026-09-11"}));
  });
  it("handles leap dates and explicitly working weekends without assumed holidays",()=>{
   expect(nextDate("2028-02-28")).toBe("2028-02-29");expect(nextDate("2028-02-29")).toBe("2028-03-01");

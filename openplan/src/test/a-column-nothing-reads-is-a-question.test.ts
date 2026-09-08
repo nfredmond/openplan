@@ -73,6 +73,7 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "contract_source_changes.changed_at", category: "READ_IN_SQL", reason: "read_contract_management compares immutable source-change timing with a proposed historical cutoff; the isolated staff/cutoff tests prove refusal and private timing access." },
   { column: "contract_settlement_events.event_id", category: "READ_IN_SQL", reason: "Settlement SQL groups immutable source versions by event_id and enforces uniqueness; content.eventId carries the same validated identity into the management page and accounting handoff." },
   {
     column: "contract_order_periods.period_metadata",

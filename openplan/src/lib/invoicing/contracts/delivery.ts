@@ -77,6 +77,7 @@ export function forecastDelivery(state:ContractState,delivery:DeliveryState,opti
    if(!node.staff.length){supported=false;costCovered=false;billingCovered=false;warn("missing_assignment","Assign staff and review their remaining effort, including zero-hour work.",node.id);}
    for(const person of node.staff){
     const update=updates.get(`${node.taskId}:${person.staffId}`),staff=state.staff.find(s=>s.id===person.staffId);
+    if(delivery.assignments&&!delivery.assignments.some(a=>a.taskId===node.taskId&&a.staffId===person.staffId)){supported=false;warn("changed_assignment","The working schedule no longer matches the active task assignment. Review the schedule after reassignment or amendment.",node.id,person.staffId);}
     if(!staff?.active){supported=false;warn("departed_staff","Assigned staff is inactive or unavailable in this assignment.",node.id,person.staffId);}
     if(!update||update.state!=="accepted"||update.content.asOf>asOf){supported=false;costCovered=false;billingCovered=false;warn("unreviewed_update","An exact-version remaining-work update needs PM acceptance.",node.id,person.staffId);continue;}
     if(update.content.asOf<schedule!.updateDueOn&&asOf>schedule!.updateDueOn){supported=false;warn("overdue_update","The reviewed update predates the required reporting date.",node.id,person.staffId,schedule!.updateDueOn);}
@@ -90,7 +91,7 @@ export function forecastDelivery(state:ContractState,delivery:DeliveryState,opti
    const nodeUpdates=node.staff.map(p=>updates.get(`${node.taskId}:${p.staffId}`));
    if(nodeUpdates.length&&nodeUpdates.every(u=>u?.state==="accepted"&&u.content.actualFinish))result.actualFinish=nodeUpdates.map(u=>u!.content.actualFinish!).sort().at(-1)!;
    if(!supported)return;
-   if([...remaining.values()].every(h=>h===BigInt(0))){result.start=start;result.finish=result.actualFinish??start;return;}
+   if([...remaining.values()].every(h=>h===BigInt(0))){result.start=start;result.finish=result.actualFinish??start;}else{
    for(let date=start;date<=horizonEnd&&date<=node.reserveThrough;date=nextDate(date)){
     if(!isWorkingDate(node.calendar,date))continue;
     let dayWorked=false;
@@ -104,6 +105,7 @@ export function forecastDelivery(state:ContractState,delivery:DeliveryState,opti
     }
     if(dayWorked)result.start??=date;
     if([...remaining.values()].every(h=>h===BigInt(0))){if(supported)result.finish=date;break;}
+   }
    }
   }
   if(!result.finish)warn("unresolved_finish","Work does not have a supported finish inside its reservation and forecast horizon.",node.id);

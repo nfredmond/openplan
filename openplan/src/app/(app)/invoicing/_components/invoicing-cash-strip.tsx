@@ -20,8 +20,8 @@ import { formatCurrency, insetClass, looksLikePendingSchema } from "./invoicing-
 /**
  * Mirrors the register reads each lane makes: the reimbursement lane
  * summarizes its 20 most recent register records, so the strip does too —
- * the two numbers must never disagree. The receivable side uses the same
- * 500-row cap as the invoicing list routes.
+ * the two numbers must never disagree. The receivable side reads all issued invoices and uses documented settlement
+ * events, with currency and coverage kept explicit.
  */
 const REIMBURSEMENT_STRIP_LIMIT = 20;
 

@@ -5,14 +5,13 @@ import { ClientInvoiceComposer } from "@/components/invoicing/client-invoice-com
 import { ClientInvoiceStatusControl } from "@/components/invoicing/client-invoice-status-control";
 import { EngagementComposer, type EngagementComposerRecord } from "@/components/invoicing/engagement-composer";
 import { EngagementNteBar } from "@/components/invoicing/engagement-nte-bar";
-import { ReceivableAgingStrip } from "@/components/invoicing/receivable-aging-strip";
+import { ContractCashPosition } from "@/components/invoicing/contracts/cash-position";
 import { StaffAndRatesPanel } from "@/components/invoicing/staff-and-rates-panel";
 import { TimeEntryComposer } from "@/components/invoicing/time-entry-composer";
 import { TimeEntryRowControls } from "@/components/invoicing/time-entry-row-controls";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   buildEngagementBilledSummary,
-  buildReceivableAgingSummary,
   summarizeReceivables,
   type ClientInvoiceRecordLike,
 } from "@/lib/invoicing/receivables";
@@ -207,7 +206,6 @@ export async function ReceivablesLane({
     : ((deliverablesRead.data ?? []) as Array<{ id: string; project_id: string; title: string }>);
 
   const receivableSummary = summarizeReceivables(invoices);
-  const workspaceAging = buildReceivableAgingSummary(invoices);
   const unbilledSummary = summarizeUnbilledTime(timeEntries);
 
   const engagementTitleById = new Map(engagements.map((engagement) => [engagement.id, engagement.title]));
@@ -275,7 +273,7 @@ export async function ReceivablesLane({
           </p>
         ) : (
           <>
-            <div className="mt-4 grid gap-px border border-border/60 bg-border/80 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-4 border border-border/60 bg-background/70">
               <div className="bg-background/70 px-4 py-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Invoices</p>
                 <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{receivableSummary.totalCount}</p>
@@ -283,28 +281,12 @@ export async function ReceivablesLane({
                   {receivableSummary.draftCount} draft, {receivableSummary.sentCount} sent, {receivableSummary.paidCount} paid, {receivableSummary.voidCount} void.
                 </p>
               </div>
-              <div className="bg-background/70 px-4 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Outstanding</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(receivableSummary.outstandingAmount)}</p>
-                <p className="mt-1 text-sm text-muted-foreground">Sent invoices not yet paid or voided.</p>
-              </div>
-              <div className="bg-background/70 px-4 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Overdue</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(receivableSummary.overdueAmount)}</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {receivableSummary.overdueCount} invoice{receivableSummary.overdueCount === 1 ? "" : "s"} past due date.
-                </p>
-              </div>
-              <div className="bg-background/70 px-4 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Paid</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(receivableSummary.paidAmount)}</p>
-                <p className="mt-1 text-sm text-muted-foreground">Settled receivable value.</p>
-              </div>
+
             </div>
 
             <div className="mt-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Workspace aging</p>
-              <ReceivableAgingStrip aging={workspaceAging} />
+              <p className="mb-2 text-sm text-muted-foreground">Status counts describe the loaded register rows. Financial balances below read every issued invoice.</p>
+              <ContractCashPosition workspaceId={workspaceId} details/>
             </div>
           </>
         )}
@@ -340,9 +322,8 @@ export async function ReceivablesLane({
         ) : (
           <ul className="mt-4 space-y-4">
             {clients.map((client) => {
-              const clientEngagements = engagements.filter((engagement) => engagement.client_id === client.id);
               const clientInvoices = invoices.filter((invoice) => invoice.client_id === client.id);
-              const clientAging = buildReceivableAgingSummary(clientInvoices);
+              const clientEngagements = engagements.filter((engagement) => engagement.client_id === client.id);
               const composerRecord: ClientComposerRecord = {
                 id: client.id,
                 name: client.name,
@@ -368,7 +349,7 @@ export async function ReceivablesLane({
                   </div>
 
                   <div className="mt-3">
-                    <ReceivableAgingStrip aging={clientAging} />
+                    <ContractCashPosition workspaceId={workspaceId} clientId={client.id} details/>
                   </div>
 
                   {clientEngagements.length > 0 ? (

@@ -56,7 +56,7 @@ export function reconcileContract(state: ContractState, options: { asOf?: string
  const currencyMismatch = invoices.some(i => i.currency_code !== baseline?.content.currency);
  const grossBilled = currencyMismatch || undatedInvoices.length ? null : decimalText(invoices.reduce((n, i) => n + cents(i.subtotal_amount), BigInt(0)));
  const retention = currencyMismatch || undatedInvoices.length ? null : decimalText(invoices.reduce((n, i) => n + cents(i.retention_amount), BigInt(0)));
- const grossFeeRemaining = baseline?.content.feeBasis === "gross_fee" && baseline.content.fee !== null && grossBilled !== null ? decimalText(cents(baseline.content.fee) - cents(grossBilled) + cents(total.credits)) : null;
+ const grossFeeRemaining = baseline?.content.feeBasis === "gross_fee" && baseline.content.fee !== null && grossBilled !== null ? decimalText(cents(baseline.content.fee) - cents(grossBilled) + ((state.schemaVersion??0)<5?cents(total.credits):BigInt(0))) : null;
  return { baseline, staffBudgetRemainders, overlappingOpenings, actuals, total, byTask: [...tasks.values()], byStaff: [...staff.values()], byDeliverable: [...deliverables.values()], unresolved, excluded, estimates, remainingCost, actualPlusRemaining: remainingCost === null ? null : decimalText(cents(total.incurred) + cents(remainingCost)), grossBilled, retention, grossFeeRemaining, currencyMismatch, undatedInvoices, unknownHours: actuals.filter(v => v.command.status === "approved" && v.command.category === "opening" && v.hours === null).length };
 }
 export function reconcileSnapshot(report: ContractSnapshot) { return reconcileContract(report.snapshot, { asOf: report.snapshot.asOf, baselineId: report.snapshot.baselineId, coverageComplete: report.snapshot.coverageComplete }); }

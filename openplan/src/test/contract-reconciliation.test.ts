@@ -40,6 +40,7 @@ describe("contract source reconciliation",()=>{
   const {state,actual}=fixture();
   for(const category of ["commitment","payment","credit"] as const)state.actuals.push({...actual,id:randomUUID(),entry_id:randomUUID(),time_entry_id:null,command:{...actual.command,category,sourceKey:category},amount:"5.00",hours:null,allocations:actual.allocations.map(a=>({...a,amount:"5.00",hours:null}))});
   const r=reconcileContract(state,{coverageComplete:true});expect(r.total).toEqual({incurred:"12.47",hours:"1.01",commitments:"5.00",payments:"5.00",credits:"5.00"});expect(r.grossBilled).toBe("100.00");expect(r.retention).toBe("10.00");expect(r.grossFeeRemaining).toBe("905.00");expect(r.actualPlusRemaining).toBe("37.47");
+  state.schemaVersion=5;expect(reconcileContract(state).grossFeeRemaining).toBe("900.00");expect(reconcileContract(state).total.credits).toBe("5.00");
   for(const view of [r.byTask,r.byStaff,r.byDeliverable])expect(view.reduce((n,v)=>n+cents(v.totals.incurred),BigInt(0))).toBe(BigInt(1247));
  });
  it("uses the current source correction once and preserves proposed amendments",()=>{

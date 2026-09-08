@@ -20,6 +20,9 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- Draft scheduling integrity uses [contract_staff_schedule_integrity](openplan/supabase/migrations/20260917000001_contract_staff_schedule_integrity.sql). Departed staff cannot receive accepted work, removed schedule nodes release assignments, and closed contracts release shared capacity while prior forecasts remain retained.
+- Added [contract_mutable_source_cutoffs](openplan/supabase/migrations/20260918000001_contract_mutable_source_cutoffs.sql) to refuse retrospective reports after mutable planning inputs change, preserving already issued reports.
+
 - Patch the CSV parser to 7.0.2 and update compatible AI SDK dependencies after current dependency advisories. Duplicate prototype-named CSV headers remain data. Production dependency audit is clean in the candidate verification.
 
 - Draft durable calculation jobs use [contract_calculation_jobs](openplan/supabase/migrations/20260916000001_contract_calculation_jobs.sql). Run `npm run worker:contract-calculations` locally for reviewed forecasts, response comparisons, accounting imports and closeout packages. Queued requests preserve original authorship, reviewed input versions and retry identity.

@@ -473,10 +473,10 @@ const EXPECTED = {
   permissiveWrites: 280,
   expanded: 286,
   tablesWithPolicies: 209,
-  relations: 237,
-  tables: 227,
+  relations: 238,
+  tables: 228,
   views: 10,
-  rlsEnabledTables: 227,
+  rlsEnabledTables: 228,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
