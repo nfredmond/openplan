@@ -1,6 +1,6 @@
 import { parse } from "csv-parse/sync";
 import { createHash } from "node:crypto";
-import { contractActualSchema,type ContractActual } from "./schema";
+import { accountingFields,accountingRowSchema,contractActualSchema,type ContractActual } from "./schema";
 export const contractImportFields=["sourceKey","entryDate","description","hours","amount","staffId","taskId","timeEntryId","spendEntryId","owpVersionId"] as const;
 export type ContractImportMapping=Partial<Record<typeof contractImportFields[number],string>>;
 function stableId(requestId:string,index:number,kind:string){const h=createHash("sha256").update(`${requestId}:${index}:${kind}`).digest("hex");return `${h.slice(0,8)}-${h.slice(8,12)}-4${h.slice(13,16)}-a${h.slice(17,20)}-${h.slice(20,32)}`;}
@@ -22,4 +22,19 @@ export function previewContractCsv(csv:string,filename:string,mapping:ContractIm
   return {row:index+1,errors:[...attributionErrors,...(!sourceKey?["Map a stable originating source key"]:[]),...(duplicate?["Duplicate source key in this file"]:[]),...(!parsed.success?parsed.error.issues.map(i=>`${i.path.join(".")}: ${i.message}`):[])],command:parsed.success&&!duplicate&&!attributionErrors.length?parsed.data:null};
  });
  return {hash,filename,columns:Object.keys(records[0]),rows};
+}
+
+/** Reparse retained accounting CSV on the server; client-supplied row values are never accepted. */
+export function parseAccountingImport(command: Extract<import("./schema").ContractCommand,{kind:"accounting_import"}>) {
+ const records=parse(command.csv,{columns:true,bom:true,skip_empty_lines:true,max_record_size:50000}) as Record<string,string>[];
+ if(!records.length||records.length>200)throw new Error("Retain 1 to 200 accounting records per file.");
+ const seen=new Set<string>();
+ const rows=records.map((record,index)=>{
+  const values=Object.fromEntries(accountingFields.map(key=>[key,(record[command.mapping[key]]??"").trim()||null]));
+  const row=accountingRowSchema.safeParse(values);
+  if(!row.success)throw new Error(`Accounting row ${index+1} needs a source key, external identifier, currency and exact amounts.`);
+  if(seen.has(row.data.externalId))throw new Error(`Repeated external identifier at row ${index+1}.`);
+  seen.add(row.data.externalId);return row.data;
+ });
+ return {...command,rows};
 }

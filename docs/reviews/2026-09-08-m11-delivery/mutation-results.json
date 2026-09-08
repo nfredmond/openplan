@@ -1,0 +1,84 @@
+{
+  "controls": [
+    {
+      "name": "harmless-master-comment",
+      "outcome": "survived",
+      "expectedFailure": null
+    },
+    {
+      "name": "shared-ceiling",
+      "outcome": "killed",
+      "expectedFailure": "Shared ceiling exceeded"
+    },
+    {
+      "name": "proposal-is-not-authority",
+      "outcome": "killed",
+      "expectedFailure": "Proposal increased authority"
+    },
+    {
+      "name": "master-end-date",
+      "outcome": "killed",
+      "expectedFailure": "Invalid authorization accepted: period"
+    },
+    {
+      "name": "immutable-master-evidence",
+      "outcome": "killed",
+      "expectedFailure": "Approved terms rewritten"
+    },
+    {
+      "name": "harmless-role-comment",
+      "outcome": "survived",
+      "expectedFailure": null
+    },
+    {
+      "name": "pm-rate-record-privacy",
+      "outcome": "killed",
+      "expectedFailure": "PM cost or rate boundary incorrect"
+    },
+    {
+      "name": "pm-rate-edit-refusal",
+      "outcome": "killed",
+      "expectedFailure": "PM edited rates"
+    },
+    {
+      "name": "no-duplicate-source-matching",
+      "outcome": "killed",
+      "expectedFailure": "Cost matched twice"
+    },
+    {
+      "name": "exact-invoice-review",
+      "outcome": "killed",
+      "expectedFailure": "Stale invoice review accepted"
+    },
+    {
+      "name": "harmless-accounting-comment",
+      "outcome": "survived",
+      "expectedFailure": null
+    },
+    {
+      "name": "accounting-discrepancy",
+      "outcome": "killed",
+      "expectedFailure": "Mismatched accounting values reconciled"
+    },
+    {
+      "name": "exact-accounting-valuation",
+      "outcome": "killed",
+      "expectedFailure": "Stale accounting valuation accepted"
+    },
+    {
+      "name": "harmless-csv-comment",
+      "outcome": "survived",
+      "expectedFailure": null
+    },
+    {
+      "name": "csv-duplicate-identifiers",
+      "outcome": "killed",
+      "expectedFailure": "expected [Function] to throw an error"
+    }
+  ],
+  "blindCategories": [
+    "Synthetic records do not establish agency finance acceptance",
+    "Transactional SQL tests do not establish browser reachability",
+    "Mutation families cover named decisions, not all possible malformed JSON or distributed failures"
+  ]
+}

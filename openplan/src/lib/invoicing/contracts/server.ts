@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { readAssistantExecutionSource } from "@/lib/assistant/action-approval-server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { parseAccountingImport } from "./import";
 import { contractCommandSchema } from "./schema";
 import { reportingError } from "@/lib/programs/work-program/reporting-server";
 export async function contractAccess(engagementId: string) {
@@ -21,7 +22,9 @@ export async function saveContractCommand(request: NextRequest, engagementId: st
  if (readAssistantExecutionSource(request) !== "manual") return NextResponse.json({ error: "Contract management is not a registered Planner Agent action. Use the contract management page." }, { status: 403 });
  const command = contractCommandSchema.safeParse(input);
  if (!command.success) return NextResponse.json({ error: "Check required dates, source evidence, exact amounts and allocations", issues: command.error.issues }, { status: 400 });
- const result = await access.service!.rpc("record_contract_command", { p_engagement_id: engagementId, p_actor_id: access.user!.id, p_command: command.data });
+ let normalized: unknown=command.data;
+ try {if(command.data.kind==="accounting_import")normalized=parseAccountingImport(command.data);} catch(error) {return NextResponse.json({error:error instanceof Error?error.message:"Accounting CSV could not be read"},{status:400});}
+ const result = await access.service!.rpc("record_contract_command", { p_engagement_id: engagementId, p_actor_id: access.user!.id, p_command: normalized });
  if (result.error) audit.warn("contract_command_refused", { engagementId, kind: command.data.kind, code: result.error.code });
  else audit.info("contract_command_saved", { engagementId, kind: command.data.kind, requestId: command.data.requestId });
  return result.error ? reportingError(result.error) : NextResponse.json(result.data, { headers: { "Cache-Control": "private, no-store" } });

@@ -12,7 +12,7 @@ export async function POST(request:NextRequest,context:{params:Promise<{engageme
  const {engagementId}=await context.params,access=await contractAccess(engagementId);
  const audit=createApiAuditLogger("invoicing.contract.import",request);
  if(access.response)return access.response;
- if(access.state.role==="member"||readAssistantExecutionSource(request)!=="manual")return NextResponse.json({error:"Management imports require a human owner or administrator"},{status:403});
+ if(!["owner","admin","finance"].includes(access.state.role)||readAssistantExecutionSource(request)!=="manual")return NextResponse.json({error:"Management imports require a human owner or administrator"},{status:403});
  const body=await readJsonOrNullWithLimit(request,2200000);if(!body.ok)return body.response;
  const parsed=schema.safeParse(body.data);if(!parsed.success)return NextResponse.json({error:"Choose a CSV, mapping and default attribution"},{status:400});
  try{
@@ -29,7 +29,7 @@ export async function POST(request:NextRequest,context:{params:Promise<{engageme
 export async function GET(request:NextRequest,context:{params:Promise<{engagementId:string}>}) {
  const {engagementId}=await context.params,access=await contractAccess(engagementId);
  if(access.response)return access.response;
- if(access.state.role==="member")return NextResponse.json({error:"Original cost imports are private management evidence"},{status:403});
+ if(!["owner","admin","finance"].includes(access.state.role))return NextResponse.json({error:"Original cost imports are private management evidence"},{status:403});
  const id=z.string().uuid().safeParse(request.nextUrl.searchParams.get("importId"));
  if(!id.success)return NextResponse.json({error:"Choose a retained import"},{status:400});
  const result=await access.service!.from("contract_imports").select("csv_text,source_hash,filename").eq("id",id.data).eq("engagement_id",engagementId).single();

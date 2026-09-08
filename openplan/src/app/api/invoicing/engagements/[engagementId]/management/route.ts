@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { contractAccess, saveContractCommand } from "@/lib/invoicing/contracts/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 type Context = { params: Promise<{ engagementId: string }> };
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest, context: Context) {
  return access.response ?? NextResponse.json(access.state, { headers: { "Cache-Control": "private, no-store" } });
 }
 export async function POST(request: NextRequest, context: Context) {
- const body = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+ const body = await readJsonOrNullWithLimit(request, 2_000_000);
  if (!body.ok) return body.response;
  return saveContractCommand(request, (await context.params).engagementId, body.data);
 }
