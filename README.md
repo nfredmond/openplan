@@ -5,11 +5,14 @@ maintained by Nat Ford Planning & Analysis. It brings projects, place-based
 evidence, analysis, plans, public engagement, reports and implementation records
 into one application. The source license is Apache-2.0.
 
-The product is under active development. The September 6 acceptance record has
-nine of twelve journeys passed and three partial, with v0.44 release withheld.
-The subsequent report correction has separate evidence; it did not establish a
-complete twelve-journey pass. See the [final outcome record](docs/ops/V044_FINAL_FIRST_WEEK_OUTCOMES_2026-09-06.md).
- The [v1 contract](docs/product/V1_PRODUCT_CONTRACT.md)
+The product is under active development. Version 0.44 ships OWP and engagement
+improvements and repairs the local Control updater under the
+[development release policy](docs/product/DEVELOPMENT_RELEASE_POLICY.md).
+The September 6 acceptance record remains nine of twelve journeys passed and
+three partial; this release does not claim a complete campaign pass or validated
+forecasts. See the [historical outcome record](docs/ops/V044_FINAL_FIRST_WEEK_OUTCOMES_2026-09-06.md)
+and [release verification](docs/reviews/2026-09-07-control-release/VERIFICATION.md).
+The [v1 contract](docs/product/V1_PRODUCT_CONTRACT.md)
 sets the full destination: core planning practice across all 50 states and DC,
 California as the deepest implementation, and separately validated AequilibraE
 and ActivitySim outputs for every claimed nationwide use. The

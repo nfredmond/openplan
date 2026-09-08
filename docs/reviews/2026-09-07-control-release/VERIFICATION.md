@@ -80,7 +80,7 @@ service is running. The separate isolated CI workflow is retained. Tests inject
 an inert runner and require both zero default process calls and preservation of
 an opted-in proof failure. The wrong-target run is not release isolation evidence.
 
-## Pending at this checkpoint
+## Application and remote checks
 
 The initial full QA command completed: 13,260 app tests passed, 127 skipped,
 zero production dependency vulnerabilities, and the webpack production build
@@ -89,8 +89,36 @@ accepted isolation evidence. After the opt-in correction, thirteen focused
 local-gate and migration-ordering tests passed, and their harmless/broken
 mutation controls behaved as recorded beside this note.
 
-Live Control Update-button deployment, post-update browser navigation,
-final remote CI and the development tag remain to finish. No completed release is
-claimed by this checkpoint. Local detailed logs are under
+The real native Update demo button deployed commit `021ff4495e08` in 160 seconds.
+The transaction reached `ready`, retained the preceding `2965670c` build and its
+build log, and the actual HTTP health response reported version 0.44.0 and that
+candidate SHA. `which-openplan.sh` independently matched the served commit to the
+canonical checkout, with the expected separate `~/apps/openplan` serving tree.
+All 268 local migration versions match the source inventory. The screenshot
+`control-updated.png` shows the actual window after that update.
+
+Chrome sign-in through the landing page reached the existing test workspace;
+real navigation reached Programming Cycles and Engagement, including the new
+entry points. Desktop captures were inspected, with no browser console errors.
+This is an updated-demo navigation check, not a repeat of the previous agents'
+full OWP/engagement acceptance. The attempted 390px browser override did not
+change this tab's measured 2648x1324 viewport; that capture is rejected as narrow
+layout evidence. Native Control has separate accepted size/scale coverage above.
+No application records were created through this navigation check.
+
+GitHub isolated RLS run [34176046011](https://github.com/nfredmond/openplan/actions/runs/34176046011)
+passed on the application commit. The unchanged migration set also passed
+Upgrade Path [34171532756](https://github.com/nfredmond/openplan/actions/runs/34171532756)
+on its parent main. CI [34176046173](https://github.com/nfredmond/openplan/actions/runs/34176046173)
+checks the application commit; the final documentation commit has a separate CI
+record in GitHub. The annotated v0.44.0 tag is published only after its code checks
+pass. The tag and GitHub checks, rather than this pre-tag note, establish landing.
+
+Vercel ignored the disabled-deploy configuration early enough to still post its
+blocked-account status. Its installed CLI source identifies the reversible
+repository-disconnect API. The OpenPlan project alone was disconnected through
+that API, and a fresh project read verified its Git link was absent. No project,
+deployment, domain or subscription was deleted; nothing paid was provisioned.
+The old failure status is historical and is not a required release check. Local detailed logs are under
 `/tmp/openplan-control-2026-09-07`; candidate receipts/build logs remain in the private
 updates directory. Do not commit raw database backups or application records.

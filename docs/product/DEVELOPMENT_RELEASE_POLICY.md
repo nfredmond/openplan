@@ -66,7 +66,8 @@ bounded engineering improvement. Agent testing cannot stand in for that feedback
 
 Local build, database, services and demo checks are the relevant deployment
 checks. Vercel status is not a required release check. Automatic Git deployments
-are disabled in `openplan/vercel.json`; production-health polling is manual and
+are disabled in `openplan/vercel.json` and the Vercel project is disconnected
+from this repository; production-health polling is manual and
 requires an explicit target. Pilot preflight skips unconfigured hosted targets.
 Re-enabling hosted deployment requires Nathaniel's direction and concrete spend
 authorization before any paid provisioning. Optional hosting configuration is
