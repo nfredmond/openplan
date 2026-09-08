@@ -109,6 +109,19 @@ live("OWP operational actuals and frozen reporting", () => {
  IF NOT EXISTS(SELECT 1 FROM public.work_program_actual_versions WHERE staff_id=staff AND status='approved') THEN RAISE EXCEPTION 'Departed staff history lost'; END IF;
  BEGIN PERFORM public.record_work_program_actual(p,m,c||jsonb_build_object('requestId',gen_random_uuid(),'entryId',gen_random_uuid(),'sourceKey','inactive-member-time','status','draft','basis','unvalued','amount',NULL)); RAISE EXCEPTION 'Inactive staff entered new time'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
  `));
+ const openingBody = `
+ c:=c||jsonb_build_object('kind','opening','entryDate','2026-08-15','staffId',NULL,'hours',NULL,'amount','100.00','basis','recorded','status','approved','openingBasis','Synthetic crossing balance','openingStart','2026-07-01','openingEnd','2026-08-15');
+ PERFORM public.record_work_program_actual(p,o,c);
+ ${period}
+ BEGIN PERFORM public.work_program_management_command(p,o,jsonb_build_object('kind','review','requestId',gen_random_uuid(),'periodId',period_id,'expectedVersion',1,'note','Review')); RAISE EXCEPTION 'Crossing opening silently omitted period costs'; EXCEPTION WHEN invalid_parameter_value THEN IF SQLERRM NOT LIKE 'Opening coverage must%' THEN RAISE; END IF; END;
+ `;
+ it("refuses opening coverage that would hide reporting-period costs", () => {
+  const sql = readFileSync("supabase/migrations/20260910000002_work_program_reporting.sql", "utf8");
+  const original = sql.slice(sql.indexOf("CREATE FUNCTION"), sql.indexOf("END $$;") + 7).replace("CREATE FUNCTION", "CREATE OR REPLACE FUNCTION");
+  marker(openingBody, original.replace("Name and source cutoff", "A name and source cutoff"));
+  const broken = original.replace("IF EXISTS(SELECT 1 FROM jsonb_array_elements(records) v WHERE v->>'kind'='opening'", "IF false AND EXISTS(SELECT 1 FROM jsonb_array_elements(records) v WHERE v->>'kind'='opening'");
+  expect(() => exercise(openingBody, broken)).toThrow(/Crossing opening silently omitted period costs/);
+ });
  it("populated private tables deny members and foreign actors, including allocations and rates", () => marker(`${save}${approve}${period}
  PERFORM public.work_program_management_command(p,o,jsonb_build_object('kind','rate','requestId',gen_random_uuid(),'rateId',rate_id,'staffId',staff,'startsOn','2026-07-01','endsOn','2026-12-31','hourlyCost','12.35','sourceReference','Synthetic approved cost rate'));
  IF NOT EXISTS(SELECT 1 FROM public.work_program_cost_rates WHERE id=rate_id) OR NOT EXISTS(SELECT 1 FROM public.work_program_actual_allocations a JOIN public.work_program_actual_versions v ON v.id=a.actual_version_id WHERE v.program_id=p) THEN RAISE EXCEPTION 'Private fixtures missing'; END IF;

@@ -20,7 +20,7 @@ opening balances and corrected immutable reports. It does not establish agency
 accounting completeness, fund eligibility, funder-specific reimbursement forms,
 actual authority or practitioner usefulness. CSV identifier columns require source
 UUIDs or the selected manual defaults; automatic name matching is not supplied.
-Mapped source entries require reporting corrections; already-billed hours require
+Opening coverage must lie within the fiscal year and precede the report start; a crossing aggregate must be reconciled rather than split into invented daily costs. Mapped source entries require reporting corrections; already-billed hours require
 the invoice relationship to be corrected first. Original source versions remain
 retained. Unsaved form edits are not durable drafts; a submitted save with unknown
 outcome is retained locally for exact retry. Browser storage must be available
