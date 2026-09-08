@@ -4,7 +4,7 @@ import { Field, inputClass, NoteField, TextField, useRetainedDraft, type Command
 import { Button } from "@/components/ui/button";
 export function BaselineForm({state,send,busy}:{state:ContractState;send:CommandSender;busy:boolean}) {
  const latest=state.baselines.at(-1);
- const draft=useRetainedDraft<ContractBaseline>(`contract-baseline:${state.engagement.id}:${latest?.version??0}`,latest?.content??{title:state.engagement.title,scope:"",currency:"USD",fee:null,cost:null,hours:null,feeBasis:"unassessed",feeTerms:"",sourceDocuments:[],approvalEvidence:"",tasks:[]});
+ const draft=useRetainedDraft<ContractBaseline>(`contract-baseline:${state.engagement.id}:${latest?.version??0}`,latest?.content??{title:state.engagement.title,scope:"",currency:"USD",fee:null,cost:null,hours:null,billingDirection:"unassessed",feeBasis:"unassessed",feeTerms:"",sourceDocuments:[],approvalEvidence:"",tasks:[]});
  const value=draft.value;
  function set<K extends keyof ContractBaseline>(key:K,v:ContractBaseline[K]){draft.setValue({...value,[key]:v});}
  function task(index:number,patch:Partial<ContractBaseline["tasks"][number]>){set("tasks",value.tasks.map((t,i)=>i===index?{...t,...patch}:t));}
@@ -14,6 +14,8 @@ export function BaselineForm({state,send,busy}:{state:ContractState;send:Command
  <TextField label="Baseline title" value={value.title} onChange={v=>set("title",v)} required/>
  <NoteField label="Agreed scope" value={value.scope} onChange={v=>set("scope",v)} required/>
  <div className="grid gap-3 sm:grid-cols-4">{(["fee","cost","hours"] as const).map(k=><TextField key={k} label={k==="fee"?"Approved fee":k==="cost"?"Internal cost budget":"Budget hours"} value={value[k]} onChange={v=>set(k,v||null)}/>)}<TextField label="Currency code" value={value.currency} onChange={v=>set("currency",v)}/></div>
+ <Field label="Agreement billing direction"><select className={inputClass} value={value.billingDirection??"outgoing"} onChange={e=>set("billingDirection",e.target.value as ContractBaseline["billingDirection"])}><option value="unassessed">Unassessed agreement perspective</option><option value="received">Agency purchaser: received supplier invoices</option><option value="outgoing">Service provider: outgoing client invoices</option><option value="internal">Internal assignment without contract billing</option></select></Field>
+ <p className="text-sm">Document this perspective in the retained agreement terms. Legacy baselines without this field retain their outgoing billing convention until amended.</p>
  <Field label="Fee ceiling basis"><select className={inputClass} value={value.feeBasis} onChange={e=>set("feeBasis",e.target.value as ContractBaseline["feeBasis"])}><option value="unassessed">Agreement terms unassessed</option><option value="gross_fee">Confirmed gross fee before retention</option></select></Field>
  <NoteField label="Source for fee ceiling terms" value={value.feeTerms} onChange={v=>set("feeTerms",v)} required={value.feeBasis==="gross_fee"}/>
  <fieldset className="space-y-3 rounded border p-4"><legend>Authorized period and cost treatment</legend>

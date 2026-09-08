@@ -53,7 +53,7 @@ export function forecastDelivery(state:ContractState,delivery:DeliveryState,opti
    const key=`${person.staffId}:${date}`,hours=cents(person.hoursPerDay);allReservations.set(key,(allReservations.get(key)??BigInt(0))+hours);reservations.push({staffId:person.staffId,date,hours:money(hours)});
   }
  }
- let knownCost=BigInt(0),knownBilling=BigInt(0),costCovered=true,billingCovered=schedule.billingTreatment==="time_materials";
+ let knownCost=BigInt(0),knownBilling=BigInt(0),costCovered=true,billingCovered=schedule.billingTreatment==="time_materials"&&(!baseline.content.billingDirection||["outgoing","received"].includes(baseline.content.billingDirection));
  for(const task of baseline.content.tasks)if(!schedule.nodes.some(n=>n.taskId===task.id&&n.kind==="work")){costCovered=false;billingCovered=false;warn("missing_task",`${task.title} has no remaining-work schedule.`);}
  const visited=new Set<string>();
  function calculate(node:Schedule["nodes"][number]){
@@ -117,6 +117,6 @@ export function forecastDelivery(state:ContractState,delivery:DeliveryState,opti
  if(!costCovered)warn("cost_coverage","Remaining cost lacks a reviewed valuation for some assigned work.");
  if(!sourceCovered)warn("actual_coverage","Actual-plus-remaining cost requires complete reconciled source coverage.");
  if(actualPlusRemaining!==null&&baseline.content.cost!==null&&cents(actualPlusRemaining)>cents(baseline.content.cost))warn("cost_threat","Actual-plus-remaining cost exceeds the current approved internal cost budget.");
- if(billingCovered&&reconciliation.grossBilled!==null&&baseline.content.fee!==null&&cents(reconciliation.grossBilled)+knownBilling>cents(baseline.content.fee))warn("fee_threat","Issued gross billing plus reviewed remaining gross billing exceeds the approved fee.");
+ if(billingCovered&&reconciliation.grossBilled!==null&&baseline.content.fee!==null&&cents(reconciliation.grossBilled)+knownBilling>cents(baseline.content.fee))warn("fee_threat","Documented gross billing plus reviewed remaining gross billing exceeds the approved fee.");
  return {...empty,finish:results.length&&results.every(n=>n.finish)&&!warnings.some(w=>w.code==="missing_task")?results.map(n=>n.finish!).sort().at(-1)!:null,remainingCost,actualPlusRemaining,remainingGrossBilling:billingCovered?money(knownBilling):null};
 }

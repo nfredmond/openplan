@@ -20,7 +20,11 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-- Indexed original documents remain usable for settlement and deliverable evidence after extraction finishes: [migration](openplan/supabase/migrations/20260921000001_contract_indexed_source_files.sql).
+- [contract_forecast_billing_custody](openplan/supabase/migrations/20260923000001_contract_forecast_billing_custody.sql) binds received invoice revisions and the changed billing calculation to forecast hashes. Existing reviewed forecasts remain retained and become stale.
+
+- [contract_billing_direction](openplan/supabase/migrations/20260922000001_contract_billing_direction.sql) approves the agency purchaser, service provider or internal billing perspective with the baseline. New management snapshots use format 6; closeout packages use format 2 with received-cost and accounting attribution. Prior issued formats remain readable.
+
+- Indexed original documents remain usable for settlement and deliverable evidence after extraction finishes: [contract_indexed_source_files](openplan/supabase/migrations/20260921000001_contract_indexed_source_files.sql).
 
 - [contract_pending_reviews](openplan/supabase/migrations/20260920000001_contract_pending_reviews.sql) routes pending contract approvals, received-invoice reviews and proposed responses through My Work, preserving existing scoped authority.
 

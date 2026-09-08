@@ -50,13 +50,20 @@ export function reconcileContract(state: ContractState, options: { asOf?: string
  const staffBudgetRemainders = (baseline?.content.tasks ?? []).map(task => ({task, cost: task.cost === null ? null : decimalText(cents(task.cost) - task.staff.reduce((sum, s) => sum + cents(s.cost ?? "0"), BigInt(0))), hours: task.hours === null ? null : decimalText(cents(task.hours) - task.staff.reduce((sum, s) => sum + cents(s.hours ?? "0"), BigInt(0))), unknownCost: task.staff.filter(s => s.cost === null).length, unknownHours: task.staff.filter(s => s.hours === null).length}));
  const complete = !!options.coverageComplete && !!baseline && estimates.length > 0 && estimates.every(e => e.estimate?.command.cost != null && e.estimate.command.hours != null) && !unresolved.length && !state.unmappedSpend.length && !state.unmappedTime.length;
  const remainingCost = complete ? decimalText(estimates.reduce((n, e) => n + cents(e.estimate!.command.cost!), BigInt(0))) : null;
- const issued = state.invoices.filter(i => i.status === "sent" || i.status === "paid");
+ // Missing direction preserves the pre-M11 outgoing convention; new proposals state it explicitly.
+ const billingDirection = (state.schemaVersion ?? 0) >= 6 ? baseline?.content.billingDirection ?? "outgoing" : "outgoing";
+ const billingLabel = billingDirection === "received" ? "Approved supplier gross invoices" : billingDirection === "outgoing" ? "Issued client gross invoices" : "Billing not assessed for this agreement";
+ const issued = billingDirection === "outgoing" ? state.invoices.filter(i => i.status === "sent" || i.status === "paid") : [];
  const undatedInvoices = issued.filter(i => !i.sent_date || !i.invoice_date);
  const invoices = issued.filter(i => i.sent_date && i.invoice_date && i.sent_date <= (options.asOf ?? "9999-12-31") && i.invoice_date <= (options.asOf ?? "9999-12-31"));
- const currencyMismatch = invoices.some(i => i.currency_code !== baseline?.content.currency);
- const grossBilled = currencyMismatch || undatedInvoices.length ? null : decimalText(invoices.reduce((n, i) => n + cents(i.subtotal_amount), BigInt(0)));
- const retention = currencyMismatch || undatedInvoices.length ? null : decimalText(invoices.reduce((n, i) => n + cents(i.retention_amount), BigInt(0)));
+ const latestReceived = new Map<string, NonNullable<ContractState["receivedInvoices"]>[number]>();
+ for (const invoice of state.receivedInvoices ?? []) if (!latestReceived.has(invoice.invoice_id) || latestReceived.get(invoice.invoice_id)!.version < invoice.version) latestReceived.set(invoice.invoice_id, invoice);
+ const received = [...latestReceived.values()].filter(i => i.content.date <= (options.asOf ?? "9999-12-31"));
+ const pendingReceived = billingDirection === "received" && received.some(i => i.state !== "approved");
+ const currencyMismatch = billingDirection === "received" ? received.some(i => i.content.currency !== baseline?.content.currency) : invoices.some(i => i.currency_code !== baseline?.content.currency);
+ const grossBilled = currencyMismatch || undatedInvoices.length || pendingReceived || !["outgoing", "received"].includes(billingDirection) ? null : decimalText(billingDirection === "received" ? received.reduce((n, i) => n + cents(i.content.total), BigInt(0)) : invoices.reduce((n, i) => n + cents(i.subtotal_amount), BigInt(0)));
+ const retention = billingDirection !== "outgoing" || currencyMismatch || undatedInvoices.length ? null : decimalText(invoices.reduce((n, i) => n + cents(i.retention_amount), BigInt(0)));
  const grossFeeRemaining = baseline?.content.feeBasis === "gross_fee" && baseline.content.fee !== null && grossBilled !== null ? decimalText(cents(baseline.content.fee) - cents(grossBilled) + ((state.schemaVersion??0)<5?cents(total.credits):BigInt(0))) : null;
- return { baseline, staffBudgetRemainders, overlappingOpenings, actuals, total, byTask: [...tasks.values()], byStaff: [...staff.values()], byDeliverable: [...deliverables.values()], unresolved, excluded, estimates, remainingCost, actualPlusRemaining: remainingCost === null ? null : decimalText(cents(total.incurred) + cents(remainingCost)), grossBilled, retention, grossFeeRemaining, currencyMismatch, undatedInvoices, unknownHours: actuals.filter(v => v.command.status === "approved" && v.command.category === "opening" && v.hours === null).length };
+ return { baseline, billingDirection, billingLabel, pendingReceived, staffBudgetRemainders, overlappingOpenings, actuals, total, byTask: [...tasks.values()], byStaff: [...staff.values()], byDeliverable: [...deliverables.values()], unresolved, excluded, estimates, remainingCost, actualPlusRemaining: remainingCost === null ? null : decimalText(cents(total.incurred) + cents(remainingCost)), grossBilled, retention, grossFeeRemaining, currencyMismatch, undatedInvoices, unknownHours: actuals.filter(v => v.command.status === "approved" && v.command.category === "opening" && v.hours === null).length };
 }
 export function reconcileSnapshot(report: ContractSnapshot) { return reconcileContract(report.snapshot, { asOf: report.snapshot.asOf, baselineId: report.snapshot.baselineId, coverageComplete: report.snapshot.coverageComplete }); }

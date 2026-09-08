@@ -12,6 +12,19 @@ This is a quality-boundary register, not a development queue. Scheduling lives
 only in `docs/ROADMAP.md`.
 
 
+## M11 delivery candidate, September 8 (unreleased)
+
+The [M11 implementation record](../reviews/2026-09-08-m11-delivery/IMPLEMENTATION.md)
+tracks scoped received invoices, accounting reconciliation, reviewed work and
+capacity, deterministic forecasts, PM responses and settlement/closeout records.
+The candidate adds an approved agreement billing direction and versioned accounting
+handoffs. Legacy baselines keep their outgoing billing convention until amended;
+old issued reports retain their prior format. Engineering checks and partial
+synthetic journeys do not establish a completed agency or small-practice workflow.
+Shared-capacity and closeout artifact acceptance, overlapping withheld amounts,
+consultant correction access and reminder delivery remain open. M11 also requires
+observed agency PM and independent finance acceptance, neither yet obtained.
+
 ## Contract reconciliation boundary, September 8 v0.46
 
 [Contract evidence](../reviews/2026-09-07-contract-reconciliation/VERIFICATION.md)

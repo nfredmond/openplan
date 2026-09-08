@@ -1,6 +1,6 @@
 import type { ContractState } from "./schema";
 import type { CloseoutPosition } from "./closeout-schema";
-export type CloseoutPackage={formatVersion:1;state:ContractState;position:CloseoutPosition;request:{asOf:string}};
+export type CloseoutPackage={formatVersion:1|2;state:ContractState;position:CloseoutPosition;request:{asOf:string}};
 /** Stable financial identities support independent reconciliation; source versions are never summed together. */
 export function accountingHandoffRows(pkg:CloseoutPackage):string[][]{
  const {state,position}=pkg,currency=state.baselines.filter(b=>b.state==="approved").at(-1)?.content.currency??"unassessed";
@@ -11,6 +11,25 @@ export function accountingHandoffRows(pkg:CloseoutPackage):string[][]{
  for(const e of state.closeout?.settlements??[])rows.push([`financial_${e.content.kind}`,e.id,String(e.version),e.content.eventId,e.content.sourceKey,e.content.direction,e.content.invoiceId,e.content.date,e.content.currency,e.content.amount,"","","","",e.content.state,`${e.content.sourceReference}; legacy source ${e.content.legacyActualId??"none"}; ${e.content.correctionEvidence}`]);
  for(const i of position.invoices)for(const metric of ["gross","payments","credits","refunds","adjustments","retention","disputed","open","currentlyDue"] as const)rows.push([`invoice_total_${metric}`,i.id,i.version,"",i.number,i.direction,i.id,pkg.request.asOf,i.currency,i[metric],"","","","","reconciled",i.warnings.join("; ")]);
  rows.push(["contract_total_incurred",state.engagement.id,"","","","","",pkg.request.asOf,currency,position.incurred,"","","","","reconciled","Sum current approved physical cost sources once; payments, credits and commitments are separate"]);
+ if(pkg.formatVersion===2){
+  rows[0].push("source_key","source_version_id","source_file_id","source_sha256","cost_treatment","allocation_share","source_allocation_amount","source_allocation_hours","reviewed_row_index");
+  for(const row of rows.slice(1))while(row.length<rows[0].length)row.push("");
+  const add=(base:string[],detail:string[])=>{rows.push([...base,...detail]);};
+  for(const invoice of state.receivedInvoices??[]){
+   for(const [index,line] of invoice.content.lines.entries())add(["received_invoice_line",`${invoice.id}:line:${index}`,String(invoice.version),invoice.id,invoice.content.number,"received",invoice.invoice_id,invoice.content.date,invoice.content.currency,line.amount,"","","","",invoice.state,`${line.description}; ${line.basis}`],["","",invoice.content.fileId,"",line.treatment,"","","",""]);
+   for(const [index,match] of (invoice.matches??[]).entries()){
+    const identity=`${invoice.id}:match:${index}`;
+    add(["received_cost_match",identity,String(invoice.version),match.entryId,invoice.content.number,"received",invoice.invoice_id,invoice.content.date,invoice.content.currency,match.amount,"","",match.staffId??"","",invoice.state,"Matched to an existing source; no additional incurred cost"],[match.sourceKey??"",match.versionId,invoice.content.fileId,"",match.category??"","","","",""]);
+    for(const [allocationIndex,allocation] of (match.allocations??[]).entries())add(["received_match_source_allocation",`${identity}:${allocationIndex}`,String(invoice.version),identity,invoice.content.number,"received",invoice.invoice_id,invoice.content.date,invoice.content.currency,"","",allocation.taskId,match.staffId??"",allocation.deliverableId??"",invoice.state,"Retained full source allocation, not an allocation of the matched invoice amount; do not add to costs or invoice totals"],[match.sourceKey??"",match.versionId,invoice.content.fileId,"",match.category??"",String(allocation.share),allocation.amount??"unassessed",allocation.hours??"unassessed",""]);
+   }
+  }
+  for(const imported of state.accountingImports??[])for(const [index,row] of imported.rows.entries())add(["accounting_import_row",`${imported.id}:${index}`,"",imported.id,row.externalId,"","",imported.created_at,row.currency,row.amount,row.hours??"unassessed","","","","external_authority",`Original file: ${imported.filename}; comparison record, not a new cost`],[row.sourceKey,"",imported.id,imported.source_hash,"","","","",String(index)]);
+  for(const review of state.accountingReviews??[]){
+   const imported=state.accountingImports?.find(i=>i.id===review.import_id),row=imported?.rows[review.row_index],actual=state.actuals.find(a=>a.id===review.actual_version_id);
+   add(["accounting_review_version",review.id,String(review.version),review.import_id,row?.externalId??"","","",review.created_at,row?.currency??"unassessed","","","",actual?.command.staffId??"","",review.state,review.evidence],[row?.sourceKey??"",review.actual_version_id??"",review.import_id,imported?.source_hash??"",actual?.command.category??"","","","",String(review.row_index)]);
+  }
+  rows.push(["handoff_format",state.engagement.id,"2",state.engagement.project_id,"","","",pkg.request.asOf,currency,"","","","","","retained","Only contract_total_incurred is the reconciled incurred total. Historical versions, invoice presentations, matches and external comparisons must not be added together.","","","","","","","","",""]);
+ }
  return rows;
 }
 export function accountingHandoffCsv(pkg:CloseoutPackage){return accountingHandoffRows(pkg).map(row=>row.map(v=>`"${(/^[=+@\t\r]/.test(v)||(/^\-/.test(v)&&!/^\-?\d+(\.\d+)?$/.test(v))?"'":"")+v.replaceAll('"','""')}"`).join(",")).join("\r\n")+"\r\n";}

@@ -428,6 +428,12 @@ CORE-ENG-04 requires both PDF and XLSX, linked to the same campaign snapshot and
 
 ## M11. Planning contract budgets, staff effort and delivery forecasts
 
+The [September 8 implementation candidate](reviews/2026-09-08-m11-delivery/IMPLEMENTATION.md)
+follows the four delivery steps: agency reconciliation; reviewed remaining work
+and forecasts; actionable weekly review; settlement and closeout. It remains
+unreleased with browser/artifact and human acceptance gaps. No single increment
+closes M11; the milestone and completion criteria below remain binding.
+
 - **Planning outcome:** a consulting or agency PM sees work consumed and work remaining by contract/task order, task, employee and deliverable, understands a threatened fee or deadline, and acts before the next invoice reveals the overrun. This is core planning practice independently of Caltrans reimbursement.
 - **Gap/evidence:** `CONTRACT_BUDGET_CORE_REQUIREMENTS_REVIEW.md` records the original arithmetic, attribution and missing-baseline defects. The [v0.46 contract reconciliation evidence](reviews/2026-09-07-contract-reconciliation/VERIFICATION.md) adds approved baseline history, standalone task/staff/deliverable actuals, separate rates and financial meanings, corrections, remaining estimates and private reports. Final release checks are recorded in that evidence; human financial reconstruction, scheduling and the complete M11b/c outcomes remain open. `REQUIREMENTS_HISTORY_RECOVERY.md` retains the original task/employee requirements.
 - **Dependencies/scope:** M11a starts early on selected M1/M3/M4 controls. Extend Projects, engagements, time/rates, Invoicing, delivery records and My Work. Reuse risk/issue/decision records. Separate commercial contract/task order from the task work breakdown and separate internal costs, client fee, cash and funder award. M10 uses these financial foundations; a private planning job does not require all capital controls. M12 uses them to manage an RTP contract while its regional financial element remains a separate public plan ledger.
