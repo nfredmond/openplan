@@ -5,7 +5,8 @@ for whoever wrote the code. Each entry says what is new, and — where it matter
 — what you have to do about it.
 
 **Upgrading, in short:** pull the new code, run
-`npm exec -- supabase migration up --linked` **before** the app deploys, then
+`npm exec -- supabase migration up` for the configured local stack, or explicitly
+select your remote database with `--linked`, **before** the app deploys, then
 deploy. That order matters; see the note under 0.2.0. **If you are upgrading from
 0.2.0 or earlier, read the security note under 0.3.0 first** — that fix lives
 entirely in the migrations, so it takes effect as soon as they run.
@@ -19,18 +20,40 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+No unreleased changes.
+
+## 0.44.0 — 2026-09-07
+
+Development release under Nathaniel's revised [release policy](docs/product/DEVELOPMENT_RELEASE_POLICY.md).
+The September 6 full campaign remains nine passes and three partial outcomes.
+Safety treatment/cost/benefit work, credible model forecasts and complete visible
+model-evidence explanations remain incomplete. The distributed-loading candidate
+stays retired and scientifically inconclusive; no model default or validation
+claim is promoted.
+
+- OpenPlan Control now opens on a compact Demo tab, with separate Development
+  and Diagnostics tabs and a persistent activity pane. The updater preserves
+  tracked symbolic links, fixing its self-created dirty-checkout failure, and
+  retains a build log and failure reason. Existing update recovery remains.
+- Routine development releases use relevant engineering and workflow checks.
+  The complete twelve-journey assessment and strategy-review age no longer
+  freeze unrelated improvements. Evidence-integrity checks remain required.
+- Hosted deployment is deferred. Automatic Vercel Git deployments are disabled,
+  scheduled hosted health polling is removed, and pilot preflight skips hosted
+  checks without configured targets. Local operation requires no Vercel account.
+
 - OWP review development adds exact-version reviewer assignments, return/resubmit,
   separately documented adoption and authority, amendment baselines and retained
   review packets. It requires additive migrations
   [work_program_review](openplan/supabase/migrations/20260909000001_work_program_review.sql) and
   [work_program_review_packets](openplan/supabase/migrations/20260909000002_work_program_review_packets.sql)
   before application and Documents worker updates. Historical preparation records
-  gain no approval or spending authority. v0.44 remains unreleased.
+  gain no approval or spending authority.
 
 - Engagement workflow development retains campaign definitions, retry receipts and
   private moderation history, and adds queued PDF/XLSX/ZIP review files through the
   existing Documents worker and Reports. Engineering verification is recorded in the dated engagement review; human
-  usability, comparative superiority and the separate release gate remain open.
+  usability and comparative superiority remain unproved.
 - Engagement requires these additive migrations before application and worker updates:
   [engagement_record_custody](openplan/supabase/migrations/20260908000001_engagement_record_custody.sql),
   [engagement_configuration_versions](openplan/supabase/migrations/20260908000002_engagement_configuration_versions.sql),
@@ -81,7 +104,6 @@ stable enough to promise smooth upgrades indefinitely.
   workflow reference, with DJI Mini 4 Pro identified by Nathaniel. Processing speed,
   quality and controller transfer are separate tests; no engine replacement is claimed.
 
-## 0.44.0 — 2026-09-05
 
 - First-week browser checks use a locked local MCP launcher that avoids script
   injection from iframe-reference normalization. Console errors still fail the

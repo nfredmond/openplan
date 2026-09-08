@@ -62,8 +62,9 @@ provides no monitoring. Its current remote runs are separate evidence to inspect
 
 ## Local demo update and recovery
 
-OpenPlan Control now builds updates separately and offers **Recover the previous
-demo**. It checks the configured service directory before changing that service.
+OpenPlan Control opens on the Demo tab with **Open demo** and **Update demo**.
+Development holds the test-site controls. Diagnostics holds checks, the last
+update log and **Recover previous demo**. Updates build separately. It checks the configured service directory before changing that service.
 Use the same coordinator from the nested app directory when diagnosing the tool:
 
 ```bash
@@ -78,7 +79,9 @@ services. A mismatched or unavailable predecessor identity blocks an update.
 
 Candidates, changed-source snapshots, retained runtime directories, displaced failed builds and the recovery journal stay
 in a private sibling directory, normally `~/apps/.openplan-updates`. These may
-contain secrets. Keep them local. The tool retains them until an operator reviews
+contain secrets. Keep them local. Each new attempt records its start time,
+failure reason and a streamed `build.log`; Diagnostics can reopen the last log.
+Git-tracked symbolic links are preserved when preparing the candidate. The tool retains them until an operator reviews
 their disposition; allow disk space for dependencies and builds on each update.
 An interrupted update blocks another update until recovery is resolved. A failed
 preparation leaves the original directory in place. A failed promotion attempts

@@ -1,5 +1,12 @@
 # The first-week harness
 
+September 7, 2026 policy correction: the [development release policy](../docs/product/DEVELOPMENT_RELEASE_POLICY.md)
+determines which outcomes block a release. This runner still fails when a
+selected journey is partial. Known partial outcomes in the full campaign do not
+block unrelated interim releases. Keep results unchanged; run affected journeys
+and reserve the full campaign for broad integration checkpoints and v1 acceptance.
+
+
 Twenty releases of OpenPlan shipped with nobody but agents looking at it. Then
 Nathaniel used it himself for twenty minutes and produced a better defect list
 than eleven thousand tests had.

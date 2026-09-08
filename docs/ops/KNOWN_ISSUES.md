@@ -1,5 +1,12 @@
 # OpenPlan known issues
 
+Current release interpretation, September 7, 2026: the [development release policy](../product/DEVELOPMENT_RELEASE_POLICY.md)
+supersedes older blanket full-campaign release requirements below. Historical
+partial outcomes remain partial; relevant data, permission, claim and workflow
+regressions still block the increment being released. Vercel is inactive and
+hosted deployment deferred, not a failing local deployment dependency.
+
+
 **Reviewed:** 2026-09-06 against the unreleased v0.44.0 candidate.
 This is a quality-boundary register, not a development queue. Scheduling lives
 only in `docs/ROADMAP.md`.

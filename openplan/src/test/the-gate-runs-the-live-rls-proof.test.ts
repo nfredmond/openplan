@@ -1,10 +1,10 @@
 import { readFileSync } from "node:fs";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 // A plain ESM script with no types — the gate step must be able to run it with
 // bare `node` before anything is compiled.
-import { decideRlsGate } from "../../scripts/ops/rls-gate.mjs";
+import { decideRlsGate, main } from "../../scripts/ops/rls-gate.mjs";
 
 /**
  * THE PRE-SHIP GATE MUST REACH THE LIVE RLS PROOF.
@@ -20,6 +20,20 @@ import { decideRlsGate } from "../../scripts/ops/rls-gate.mjs";
  * proof, and the proof's skip path stays honest.
  */
 describe("the gate runs the live RLS proof", () => {
+  it("does not inspect or write a database without an explicit live-test opt-in", () => {
+    const run = vi.fn(() => { throw new Error("unexpected live process"); });
+    expect(main({ env: {}, run })).toBe(0);
+    expect(run).not.toHaveBeenCalled();
+  });
+
+  it("runs an opted-in proof and preserves its failure", () => {
+    const run = vi.fn()
+      .mockReturnValueOnce({ status: 0, stdout: 'DB_URL="postgresql://fixture"' })
+      .mockReturnValueOnce({ status: 7 });
+    expect(main({ env: { OPENPLAN_RLS_GATE: "1" }, run })).toBe(7);
+    expect(run).toHaveBeenLastCalledWith("npm", ["run", "test:rls-live"], { stdio: "inherit" });
+  });
+
   it("wires the proof into qa:gate", () => {
     const pkg = JSON.parse(readFileSync("package.json", "utf8")) as {
       scripts: Record<string, string>;

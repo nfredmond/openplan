@@ -56,8 +56,10 @@ npm test
 npm run qa:gate
 ```
 
-The full gate includes product-direction freshness, lint, dead-code analysis,
-app tests, the configured RLS gate, production dependency audit and build. The
+The full gate includes lint, dead-code analysis,
+app tests, an optional explicit RLS step, production dependency audit and build.
+Live tests write fixtures. Set `OPENPLAN_RLS_GATE=1` only after selecting an
+isolated test stack; ordinary `qa:gate` never starts them automatically. The
 shuffled suite protects against order dependence. First-week evidence verifier
 tests run inside the app suite; they do not launch browsers or prove usability.
 
@@ -71,6 +73,10 @@ For visible work, use identified-checkout browser journeys from real navigation,
 desktop and 390px, keyboard and console review, and inspect saved/exported
 artifacts. Agent completion cannot establish professional usefulness or public
 understanding. Apply actual-user observation to consequential workflow design.
+
+Strategy-review expiry and the known partial full-journey assessment do not block
+every development release. Follow the [development release policy](docs/product/DEVELOPMENT_RELEASE_POLICY.md).
+Hosted deployment is deferred; Vercel is not a required check.
 
 ## Pull requests and release handoff
 

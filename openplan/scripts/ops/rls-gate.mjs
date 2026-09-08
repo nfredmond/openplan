@@ -1,23 +1,10 @@
 /**
- * THE LIVE RLS PROOF, AS PART OF THE PRE-SHIP GATE.
+ * Optional live isolation proof for an explicitly selected test stack.
  *
- * WHERE THIS CAME FROM. On 2026-08-15 the `RLS Isolation` workflow was found
- * red on every push for three and a half days — 48 consecutive runs — while
- * `npm run qa:gate` was green every single time. Both facts were true: the
- * census that failed lives in `test:rls-live`, and `qa:gate` never ran it. Two
- * feature lanes shipped five workspace-scoped tables in that window
- * (`safety_crash_parties`, and the four `workspace_gis_*` tables) and the guard
- * that noticed had no way to reach anybody.
- *
- * A guard whose only reader is a web page somebody remembers to open is a
- * convention. This makes it part of the command that decides whether work is
- * shippable.
- *
- * WHY IT SKIPS RATHER THAN FAILS WITHOUT A STACK. `ci.yml` runs `qa:gate` on a
- * runner with no Supabase, and the live proof has its own workflow there that
- * starts one. A hard failure here would break that job for a reason that has
- * nothing to do with the code under test. The skip is LOUD and names what went
- * unproven, because a quiet skip is how this hole opened in the first place.
+ * Since September 7, 2026, finding a running database does not authorize writes.
+ * OPENPLAN_RLS_GATE=1 opts into fixture-writing tests after the operator selects
+ * an isolated stack. Ordinary qa:gate stays local and does not write DB fixtures.
+ * The separate RLS Isolation workflow continues to run the proof in CI.
  */
 
 import { spawnSync } from "node:child_process";
@@ -52,12 +39,17 @@ const SKIP_BANNER = [
   "  another workspace's members, and that every workspace-scoped table",
   "  in the schema is covered by a probe.",
   "",
-  "  To prove it:  npm exec -- supabase start && npm run test:rls-live",
+  "  To prove it: select an isolated test database, then npm run test:rls-live",
   "",
 ].join("\n");
 
-function main() {
-  const status = spawnSync("npm", ["exec", "--", "supabase", "status", "-o", "env"], {
+export function main({ env = process.env, run = spawnSync } = {}) {
+  // A running local stack can be the operator's demo, not a disposable test DB.
+  if (env.OPENPLAN_RLS_GATE !== "1") {
+    process.stdout.write(`${SKIP_BANNER}\n  Live tests write fixtures. Select an isolated test stack, then use\n  OPENPLAN_RLS_GATE=1 npm run qa:gate, or run npm run test:rls-live explicitly.\n\n`);
+    return 0;
+  }
+  const status = run("npm", ["exec", "--", "supabase", "status", "-o", "env"], {
     encoding: "utf8",
     stdio: ["ignore", "pipe", "ignore"],
   });
@@ -72,7 +64,7 @@ function main() {
     return 0;
   }
 
-  const proof = spawnSync("npm", ["run", "test:rls-live"], { stdio: "inherit" });
+  const proof = run("npm", ["run", "test:rls-live"], { stdio: "inherit" });
   return proof.status ?? 1;
 }
 

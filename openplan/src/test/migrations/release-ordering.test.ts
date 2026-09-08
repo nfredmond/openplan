@@ -341,11 +341,12 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
   },
   // 0.44.0 adds append-only distributed-work-loading custody, then hardens
   // every conservation and no-promotion boundary in a corrective migration.
-  // First-week corrections retain FARS, unknown price years, and acquisition custody.
+  // The untagged candidate also accumulated OWP and engagement migrations.
+  // This first 0.44 release records their full inventory.
   {
     tag: "0.44.0",
-    lastMigration: "20260905000003_crash_resource_update_provenance.sql",
-    migrationsAtRelease: 246,
+    lastMigration: "20260909000002_work_program_review_packets.sql",
+    migrationsAtRelease: 268,
   },
 ];
 

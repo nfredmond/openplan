@@ -9,6 +9,7 @@ and stay local, inside a mode-0700 sibling directory.
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
 import fcntl
 import hashlib
 import json
@@ -261,20 +262,35 @@ class DemoUpdate:
         candidate = transaction / "candidate"
         backup = transaction / "previous"
         record = {"instance": str(self.instance), "service": self.service, "url": self.url,
-                  "previous_sha": previous, "backup": str(backup), "candidate": str(candidate), "phase": "preparing"}
+                  "previous_sha": previous, "backup": str(backup), "candidate": str(candidate), "phase": "preparing",
+                  "started_at": datetime.now(timezone.utc).isoformat(), "log": str(transaction / "build.log")}
         self.save(record)
         print("Preparing a separate candidate. The current demo stays in place.", flush=True)
         try:
             def ignore(path: str, names: list[str]) -> list[str]:
                 return [name for name in names if name in ("node_modules", ".next")] if Path(path) == self.instance / "openplan" else []
-            shutil.copytree(self.instance, candidate, symlinks=False, ignore=ignore)
+            # Preserve Git-tracked links. Dereferencing them dirties the copy
+            # and makes the builder refuse its own candidate before fetching.
+            shutil.copytree(self.instance, candidate, symlinks=True, ignore=ignore)
             builder = Path(__file__).with_name("refresh-walkthrough-instance.sh")
-            result = subprocess.run(["bash", str(builder), str(candidate)], env={**os.environ, "OPENPLAN_REFRESH_PREPARE_ONLY": "1"})
-            if result.returncode:
-                raise UpdateError(f"Candidate preparation failed with exit {result.returncode}")
+            print(f"Update log: {record['log']}", flush=True)
+            with Path(record["log"]).open("w") as log:
+                with subprocess.Popen(
+                    ["bash", str(builder), str(candidate)],
+                    env={**os.environ, "OPENPLAN_REFRESH_PREPARE_ONLY": "1"},
+                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+                ) as process:
+                    for line in process.stdout:
+                        log.write(line)
+                        log.flush()
+                        print(line, end="", flush=True)
+                    code = process.wait()
+            if code:
+                raise UpdateError(f"Candidate preparation failed with exit {code}. See {record['log']}")
             record["candidate_sha"] = command(["git", "rev-parse", "HEAD"], candidate)
-        except BaseException:
+        except BaseException as exc:
             record["phase"] = "preparation_failed"
+            record["error"] = str(exc)
             self.save(record)
             print("Preparation failed. The original demo directory is unchanged.", flush=True)
             raise

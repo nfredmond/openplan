@@ -16,6 +16,11 @@ v1.0.0 tag. Nathaniel set this direction after comparing independent Claude and
 Codex full-repository reviews on 2026-08-25. A later product-direction review may
 strengthen or amend it, but a release plan may not quietly narrow it.
 
+Interim releases follow the [development release policy](DEVELOPMENT_RELEASE_POLICY.md),
+accepted by Nathaniel on September 7, 2026. The complete v1 destination remains
+binding; known partial v1 outcomes do not freeze unrelated development releases.
+Hosted deployment is deferred and Vercel is inactive.
+
 ## Mission
 
 **OpenPlan v1 is the ultimate free and open-source operating system for planning

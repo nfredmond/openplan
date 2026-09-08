@@ -1,5 +1,8 @@
 # OpenPlan documentation
 
+[Development release policy](product/DEVELOPMENT_RELEASE_POLICY.md) governs interim releases and deferred hosted operation.
+
+
 Use this index to distinguish current instructions and priorities from historical
 evidence. The application is in `openplan/` beneath the repository root.
 

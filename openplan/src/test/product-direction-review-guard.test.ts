@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -22,9 +23,9 @@ function countFiles(root: string, suffix: string): number {
 }
 
 describe("the recurring product-direction review", () => {
-  it("fails closed unless the current review and matrix preserve the v1 scope", () => {
+  it("checks that the review and matrix preserve the v1 scope", () => {
     expect(run("--check")).toMatch(
-      /Product direction is current through \d{4}-\d{2}-\d{2}/,
+      /Product direction records checked; review deadline \d{4}-\d{2}-\d{2}/,
     );
   });
 
@@ -50,7 +51,41 @@ describe("the recurring product-direction review", () => {
     );
     expect(frozenReadiness.releaseVersion).toBe("0.44.0");
     expect(registry.currentRelease).toBe("v0.44.0");
-    expect(source).toContain("Product direction is current");
+    expect(source).toContain("Product direction records checked");
+  });
+
+  it("keeps overdue strategy reviews advisory without changing their recorded dates", () => {
+    const directory = mkdtempSync(resolve(tmpdir(), "openplan-review-clock-"));
+    const clock = resolve(directory, "clock.cjs");
+    writeFileSync(clock, `const RealDate = Date; global.Date = class extends RealDate {
+      constructor(...args) { super(...(args.length ? args : ['2099-01-01T00:00:00Z'])); }
+    };`);
+    try {
+      const output = execFileSync(process.execPath, ["--require", clock, SCRIPT, "--check"], {
+        cwd: APP_ROOT, encoding: "utf8",
+      });
+      expect(output).toContain("Product direction records checked");
+      expect(output).not.toContain("is current");
+    } finally {
+      rmSync(directory, { recursive: true });
+    }
+  });
+
+  it("still rejects a frozen-artifact hash mismatch", () => {
+    const directory = mkdtempSync(resolve(tmpdir(), "openplan-review-hash-"));
+    const preload = resolve(directory, "hash.cjs");
+    writeFileSync(preload, `const fs = require('node:fs'); const read = fs.readFileSync;
+      fs.readFileSync = function(file, ...args) {
+        if (String(file).endsWith('NATIONWIDE_VALIDATION_PREREGISTRATION_V1.sha256')) return '0'.repeat(64);
+        return read.call(this, file, ...args);
+      }; require('node:module').syncBuiltinESMExports();`);
+    try {
+      expect(() => execFileSync(process.execPath, ["--require", preload, SCRIPT, "--check"], {
+        cwd: APP_ROOT, encoding: "utf8", stdio: "pipe",
+      })).toThrow(/preregistration hash does not match/);
+    } finally {
+      rmSync(directory, { recursive: true });
+    }
   });
 
   it("builds a fresh-context packet from the live repository state", () => {

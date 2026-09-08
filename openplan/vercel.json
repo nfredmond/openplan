@@ -28,5 +28,8 @@
       "path": "/api/cron/sweep-deadlines",
       "schedule": "0 13 * * *"
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": false
+  }
 }

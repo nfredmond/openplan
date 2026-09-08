@@ -318,24 +318,84 @@ class ControlPanel:
         LOG_DIR.mkdir(parents=True, exist_ok=True)
 
         root.title("OpenPlan Control")
-        # Offset from the corner rather than centred: centred, it opens directly
-        # underneath whatever terminal or editor is already there.
-        root.geometry("980x1000+60+60")
-        root.minsize(860, 720)
-
-        # Keep output available while status and actions scroll at smaller sizes
-        # or larger desktop font scales. Keyboard focus reveals hidden actions.
+        root.geometry("820x760+60+60")
+        root.minsize(640, 700)
+        root.configure(background="#101b25")
+        root.option_add("*Font", "{DejaVu Sans} 10")
+        root.option_add("*Label.Background", "#182735")
+        root.option_add("*Label.Foreground", "#edf4f3")
+        style = ttk.Style(root)
+        style.theme_use("clam")
+        style.configure(".", background="#182735", foreground="#edf4f3")
+        style.configure("TFrame", background="#182735")
+        style.configure("TButton", padding=(14, 10), background="#293f50", borderwidth=0)
+        style.map("TButton", background=[("active", "#36576b"), ("disabled", "#25333e")],
+                  foreground=[("disabled", "#8c9ba5")])
+        style.configure("Primary.TButton", background="#95dbc4", foreground="#10251e")
+        style.map("Primary.TButton", background=[("active", "#b4ecd9"), ("disabled", "#3c6157")],
+                  foreground=[("disabled", "#b0c2bc")])
+        style.configure("TNotebook", background="#101b25", borderwidth=0)
+        style.configure("TNotebook.Tab", padding=(18, 10), background="#101b25", foreground="#b1c1cc")
+        style.map("TNotebook.Tab", background=[("selected", "#182735")], foreground=[("selected", "#95dbc4")])
+        style.configure("TLabel", background="#182735", foreground="#edf4f3")
         root.columnconfigure(0, weight=1)
-        root.rowconfigure(0, weight=3)
-        root.rowconfigure(1, weight=2, minsize=220)
-        upper = ttk.Frame(root)
-        upper.grid(row=0, column=0, sticky="nsew")
-        self.controls_canvas = tk.Canvas(upper, highlightthickness=0, takefocus=0)
-        scrollbar = ttk.Scrollbar(upper, orient="vertical", command=self.controls_canvas.yview)
+        root.rowconfigure(1, weight=1, minsize=260)
+        root.rowconfigure(2, weight=2, minsize=200)
+
+        header = tk.Frame(root, background="#101b25")
+        header.grid(row=0, column=0, sticky="ew", padx=24, pady=(20, 16))
+        tk.Label(header, text="OpenPlan", font=("DejaVu Sans", 24, "bold"),
+                 background="#101b25", foreground="#edf4f3").pack(anchor="w")
+        tk.Label(header, text="Your local workspace", background="#101b25",
+                 foreground="#b1c1cc").pack(anchor="w")
+
+        self.tabs = ttk.Notebook(root, height=250)
+        self.tabs.grid(row=1, column=0, sticky="nsew", padx=20)
+        demo = ttk.Frame(self.tabs, padding=16)
+        dev = ttk.Frame(self.tabs, padding=16)
+        diagnostics = ttk.Frame(self.tabs)
+        self.tabs.add(demo, text="Demo")
+        self.tabs.add(dev, text="Development")
+        self.tabs.add(diagnostics, text="Diagnostics")
+
+        tk.Label(demo, text="Your planning workspace", font=("DejaVu Sans", 14, "bold"),
+                 anchor="w").pack(fill="x")
+        self.demo_summary = tk.Label(demo, text="Checking the demo…", anchor="w", justify="left", wraplength=100)
+        self.demo_summary.pack(fill="x", pady=(8, 12))
+        self._wrap_to_width(self.demo_summary)
+        actions = ttk.Frame(demo)
+        actions.pack(fill="x")
+        self.open_demo_btn = ttk.Button(actions, text="Open demo", command=self.open_demo, style="Primary.TButton")
+        self.open_demo_btn.pack(side="left", padx=(0, 12))
+        self.update_demo_btn = ttk.Button(actions, text="Update demo", command=self.refresh_demo)
+        self.update_demo_btn.pack(side="left")
+        self._track(self.open_demo_btn)
+        self._track(self.update_demo_btn)
+        hint = tk.Label(demo, text="Installs the latest GitHub code. Keeps the previous build for recovery.",
+                        fg="#b1c1cc", anchor="w", justify="left", wraplength=100)
+        hint.pack(fill="x", pady=(6, 0))
+        self._wrap_to_width(hint)
+
+        tk.Label(dev, text="Try the current work", font=("DejaVu Sans", 14, "bold"), anchor="w").pack(fill="x", pady=(0, 8))
+        dev_hint = tk.Label(dev, text="Runs this checkout locally. Usually ready in 10–30 seconds.",
+                            fg="#b1c1cc", anchor="w", justify="left", wraplength=100)
+        dev_hint.pack(fill="x", pady=(0, 16))
+        self._wrap_to_width(dev_hint)
+        dev_actions = ttk.Frame(dev)
+        dev_actions.pack(fill="x")
+        self.dev_btn = ttk.Button(dev_actions, text="Start test site", command=self.toggle_dev)
+        self.dev_btn.pack(side="left", padx=(0, 12))
+        open_dev_btn = ttk.Button(dev_actions, text="Open test site", command=self.open_dev)
+        open_dev_btn.pack(side="left")
+        self._track(self.dev_btn)
+        self._track(open_dev_btn)
+
+        self.controls_canvas = tk.Canvas(diagnostics, background="#182735", highlightthickness=0, takefocus=0)
+        scrollbar = ttk.Scrollbar(diagnostics, orient="vertical", command=self.controls_canvas.yview)
         scrollbar.pack(side="right", fill="y")
         self.controls_canvas.pack(side="left", fill="both", expand=True)
         self.controls_canvas.configure(yscrollcommand=scrollbar.set)
-        self.controls = ttk.Frame(self.controls_canvas)
+        self.controls = ttk.Frame(self.controls_canvas, padding=16)
         content = self.controls_canvas.create_window((0, 0), window=self.controls, anchor="nw")
         self.controls_canvas.bind("<Configure>", lambda event: self.controls_canvas.itemconfigure(content, width=event.width))
         self.controls.bind("<Configure>", lambda event: self.controls_canvas.configure(scrollregion=self.controls_canvas.bbox("all")))
@@ -344,16 +404,17 @@ class ControlPanel:
         root.bind("<Button-5>", self._scroll_controls, add="+")
         root.bind("<MouseWheel>", self._scroll_controls, add="+")
         self._build_status(self.controls)
-        self._build_actions(self.controls)
+        for label, action in [("Check running versions", self.check_which),
+                              ("Check local setup", self.run_doctor),
+                              ("Show test-site errors", self.show_log),
+                              ("Show last update log", self.show_update_log),
+                              ("Recover previous demo", self.recover_demo)]:
+            self._button(self.controls, label, action, "")
         self._build_output(root)
-
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
         self._pump_output()
         self._refresh_status()
-
-        self.say("Ready. Press “Check what's running” any time you're not sure what")
-        self.say("a browser is showing you.")
-        self.say("")
+        self.say("Ready. Open the demo to start planning, or update it to get the latest work.")
 
     # -- layout ------------------------------------------------------------
 
@@ -385,128 +446,55 @@ class ControlPanel:
     def _wrap_to_width(self, label: tk.Label) -> None:
         label.bind("<Configure>", lambda event: label.configure(wraplength=max(40, event.width - 4)))
 
-    def _build_status(self, root: tk.Tk) -> None:
-        box = ttk.LabelFrame(root, text="  What's running right now  ", padding=12)
-        box.pack(fill="x", padx=14, pady=(14, 8))
-
-        self.status_labels: dict[str, tk.Label] = {}
-        self.status_dots: dict[str, tk.Label] = {}
-        # Last answer from GitHub, and when it was taken. See _status_worker.
-        self._checks_cache: tuple[str, str] | None = None
-        self._checks_at: float = 0.0
-
-        # The title column carries the "which is which" hint inline. An earlier
-        # version put it in a right-aligned label on the same row, and on a
-        # long status message the two collided and overprinted each other.
-        rows = [
-            ("demo", "Demo site — port 3000", "the one you show people"),
-            ("dev", f"Test site — port {DEV_PORT}", "the code being worked on now"),
-            ("db", "Database", "everything needs this"),
-            ("checks", "Automated checks", "the robots that test every change"),
-        ]
-        for key, title, hint in rows:
-            row = ttk.Frame(box)
-            row.pack(fill="x", pady=4)
-            dot = tk.Label(row, text="●", fg=IDLE, font=("", 15))
-            dot.grid(row=0, column=0, rowspan=3, padx=(0, 10), sticky="n")
-            tk.Label(row, text=title, font=("", 11, "bold"), anchor="w").grid(
-                row=0, column=1, sticky="w"
-            )
-            tk.Label(row, text=hint, fg=IDLE, anchor="w").grid(
-                row=1, column=1, sticky="w"
-            )
-            lab = tk.Label(row, text="checking…", anchor="w", justify="left", wraplength=100)
-            lab.grid(row=2, column=1, sticky="ew", pady=(2, 0))
+    def _build_status(self, root) -> None:
+        self.status_labels = {}
+        self.status_dots = {}
+        self._checks_cache = None
+        self._checks_at = 0.0
+        for key, title in [("demo", "Demo · localhost:3000"), ("dev", f"Development · localhost:{DEV_PORT}"),
+                           ("db", "Local database"), ("checks", "GitHub checks")]:
+            row = ttk.Frame(root)
+            row.pack(fill="x", pady=(0, 12))
+            dot = tk.Label(row, text="●", fg=IDLE)
+            dot.grid(row=0, column=0, rowspan=2, padx=(0, 10), sticky="n")
+            tk.Label(row, text=title, font=("DejaVu Sans", 10, "bold"), anchor="w").grid(row=0, column=1, sticky="w")
+            lab = tk.Label(row, text="Checking…", anchor="w", justify="left", wraplength=100, fg="#b1c1cc")
+            lab.grid(row=1, column=1, sticky="ew", pady=(3, 0))
             row.columnconfigure(1, weight=1)
             self._wrap_to_width(lab)
-            self.status_dots[key] = dot
             self.status_labels[key] = lab
+            self.status_dots[key] = dot
 
-    def _build_actions(self, root: tk.Tk) -> None:
-        wrap = ttk.Frame(root)
-        wrap.pack(fill="x", padx=14, pady=4)
-
-        demo = ttk.LabelFrame(wrap, text="  Showing OpenPlan to someone  ", padding=10)
-        demo.pack(side="left", fill="both", expand=True, padx=(0, 7))
-        self._button(
-            demo, "Open the demo", self.open_demo,
-            "Opens port 3000 in Chrome.",
-        )
-        self._button(
-            demo, "Update the demo to the latest", self.refresh_demo,
-            "Builds current main, which may still be under review.\n"
-            "An update does not establish demo acceptance.",
-        )
-        self._button(
-            demo, "Recover the previous demo", self.recover_demo,
-            "Restores the retained demo after a failed or interrupted update.",
-        )
-
-        dev = ttk.LabelFrame(wrap, text="  Testing the current work  ", padding=10)
-        dev.pack(side="left", fill="both", expand=True, padx=(7, 0))
-        self.dev_btn = self._button(
-            dev, "Start the test site", self.toggle_dev,
-            f"Runs the code as it is right now, on port {DEV_PORT}.\n"
-            "Opens in Chrome once ready — usually 10–30 seconds.",
-        )
-        self._button(
-            dev, "Open the test site", self.open_dev,
-            "If it's already running.",
-        )
-
-        checks = ttk.LabelFrame(root, text="  When something looks wrong  ", padding=10)
-        checks.pack(fill="x", padx=14, pady=(8, 4))
-        # Buttons in a row with their hints BENEATH them, not beside: side-by-side
-        # the third pair ran off the edge of the window.
-        strip = ttk.Frame(checks)
-        strip.pack(fill="x")
-        for col, (label, cmd, hint) in enumerate([
-            ("Check what's running", self.check_which, "which code each site is serving"),
-            ("Check the setup", self.run_doctor, "database, settings, missing pieces"),
-            ("Show the recent errors", self.show_log, "last 80 lines from the test site"),
-        ]):
-            b = ttk.Button(strip, text=label, command=cmd)
-            b.grid(row=0, column=col, sticky="ew", padx=(0, 10))
-            hint_label = tk.Label(strip, text=hint, fg=IDLE, anchor="w", justify="left", wraplength=100)
-            hint_label.grid(row=1, column=col, sticky="ew", padx=(0, 10))
-            self._wrap_to_width(hint_label)
-            strip.columnconfigure(col, weight=1, uniform="checks")
-            self._track(b)
-
-    def _build_output(self, root: tk.Tk) -> None:
-        box = ttk.LabelFrame(root, text="  What's happening  ", padding=8)
-        box.grid(row=1, column=0, sticky="nsew", padx=14, pady=(6, 14))
-        self.out = scrolledtext.ScrolledText(
-            box, wrap="word", height=14, font=("monospace", 10),
-            background="#111418", foreground="#e6e6e6", insertbackground="#e6e6e6",
-            relief="flat", padx=10, pady=8,
-        )
-        self.out.configure(state="disabled")
-
+    def _build_output(self, root) -> None:
+        box = ttk.Frame(root, padding=14)
+        box.grid(row=2, column=0, sticky="nsew", padx=20, pady=(14, 20))
         bar = ttk.Frame(box)
-        bar.pack(side="bottom", fill="x", pady=(6, 0))
-        self.out.pack(fill="both", expand=True)
-        bar.columnconfigure(0, weight=1)
-        self.spinner = tk.Label(bar, text="", fg=IDLE, anchor="w", justify="left", wraplength=100)
-        self.spinner.grid(row=0, column=0, sticky="ew")
-        self._wrap_to_width(self.spinner)
-        buttons = ttk.Frame(bar)
-        buttons.grid(row=0, column=1, rowspan=2, sticky="e")
-        ttk.Button(buttons, text="Clear", command=self.clear_output).pack(side="right")
-        self.copy_btn = ttk.Button(buttons, text="Copy all text", command=self.copy_output)
+        bar.pack(fill="x", pady=(0, 10))
+        tk.Label(bar, text="Activity", font=("DejaVu Sans", 11, "bold")).pack(side="left")
+        ttk.Button(bar, text="Clear", command=self.clear_output).pack(side="right")
+        self.copy_btn = ttk.Button(bar, text="Copy log", command=self.copy_output)
         self.copy_btn.pack(side="right", padx=(0, 8))
-        self.copy_note = tk.Label(bar, text="", fg=OK, anchor="w", justify="left", wraplength=100)
-        self.copy_note.grid(row=1, column=0, sticky="ew")
+        self.spinner = tk.Label(box, text="", fg="#b1c1cc", anchor="w", wraplength=100)
+        self.spinner.pack(side="bottom", fill="x", pady=(6, 0))
+        self._wrap_to_width(self.spinner)
+        self.copy_note = tk.Label(box, text="", fg="#95dbc4", anchor="w", wraplength=100)
+        self.copy_note.pack(side="bottom", fill="x")
         self._wrap_to_width(self.copy_note)
+        self.out = scrolledtext.ScrolledText(
+            box, wrap="word", height=7, font=("DejaVu Sans Mono", 9),
+            background="#101b25", foreground="#d4e3e8", insertbackground="#edf4f3",
+            relief="flat", borderwidth=0, padx=12, pady=10,
+        )
+        self.out.pack(fill="both", expand=True)
+        self.out.configure(state="disabled")
 
     def _button(self, parent, label, cmd, hint) -> ttk.Button:
         b = ttk.Button(parent, text=label, command=cmd)
-        b.pack(fill="x", pady=(2, 0))
-        # wraplength, because the two action columns are each about half the
-        # window and a hint written as one line ran off the right edge.
-        hint_label = tk.Label(parent, text=hint, fg=IDLE, justify="left", anchor="w", wraplength=100)
-        hint_label.pack(fill="x", pady=(1, 9))
-        self._wrap_to_width(hint_label)
+        b.pack(fill="x", pady=(2, 6))
+        if hint:
+            lab = tk.Label(parent, text=hint, fg="#b1c1cc", justify="left", anchor="w", wraplength=100)
+            lab.pack(fill="x", pady=(0, 8))
+            self._wrap_to_width(lab)
         self._track(b)
         return b
 
@@ -535,7 +523,7 @@ class ControlPanel:
                 break
             drained = True
             self.out.configure(state="normal")
-            self.out.insert("end", line + "\n")
+            self.out.insert("end", re.sub(r"\x1b\[[0-9;]*[A-Za-z]", "", line) + "\n")
             self.out.configure(state="disabled")
         if drained:
             self.out.see("end")
@@ -592,7 +580,7 @@ class ControlPanel:
                 b.state(["disabled"] if busy else ["!disabled"])
             except tk.TclError:
                 pass
-        self.spinner.configure(text=(f"⏳  {what}" if busy else ""))
+        self.spinner.configure(text=(f"Working: {what}" if busy else "Ready"))
 
     def _work(self, what: str, fn) -> None:
         """Run fn on a worker thread with the buttons disabled meanwhile."""
@@ -687,8 +675,12 @@ class ControlPanel:
             for key, (colour, text) in (("demo", d), ("dev", v), ("db", b), ("checks", c)):
                 self.status_dots[key].configure(fg=colour)
                 self.status_labels[key].configure(text=text)
+            self.demo_summary.configure(text=(
+                f"Demo v{version} · " + ("Update available" if behind else "Running locally")
+                if demo else "Demo is not running. Check Diagnostics for details."
+            ), fg="#edf4f3")
             self.dev_btn.configure(
-                text=("Stop this window's test site" if owned else "Start the test site")
+                text=("Stop test site" if owned else "Start test site")
             )
 
         self.root.after(0, apply)
@@ -753,6 +745,25 @@ class ControlPanel:
                 self.say("The demo may need recovery. Check what's running and check the setup.")
 
         self._work("updating the demo", job)
+
+    def show_update_log(self) -> None:
+        def job() -> None:
+            receipt = DEMO_DIR.parent.parent / ".openplan-updates/latest.json"
+            if not receipt.exists():
+                self.say("No update has been recorded yet.")
+                return
+            record = json.loads(receipt.read_text())
+            self.say(f"Last update: {record.get('phase', 'unknown')}")
+            if record.get("error"):
+                self.say(record["error"])
+            path = Path(record["log"]) if record.get("log") else None
+            if path and path.is_file():
+                self.say(f"Saved log: {path}")
+                for line in path.read_text(errors="replace").splitlines()[-120:]:
+                    self.say(line)
+            else:
+                self.say("This older update did not retain a build log. New updates save one automatically.")
+        self._work("reading the last update", job)
 
     def recover_demo(self) -> None:
         script = APP_DIR / "scripts" / "ops" / "safe-refresh-walkthrough.py"

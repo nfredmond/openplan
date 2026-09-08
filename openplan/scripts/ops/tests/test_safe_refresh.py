@@ -45,6 +45,10 @@ class SafeRefreshTests(unittest.TestCase):
         (migrations / "20260101000000_fixture.sql").write_text("-- never applied\n")
         (app / "version.txt").write_text("predecessor\n")
         (app / "retired.txt").write_text("removed by the next version\n")
+        (self.origin / ".claude/skills").mkdir(parents=True)
+        (self.origin / ".claude/skills/example.md").write_text("fixture skill\n")
+        (self.origin / ".agents").mkdir()
+        (self.origin / ".agents/skills").symlink_to("../.claude/skills")
         (self.origin / ".gitignore").write_text(".env.local\n.next/\nnode_modules/\n")
         self.git(self.origin, "add", ".")
         self.git(self.origin, "commit", "-qm", "Fixture predecessor")
@@ -160,6 +164,28 @@ Server(("127.0.0.1",int(sys.argv[1])),Handler).serve_forever()
         self.assertFalse((self.instance / "openplan/added.txt").exists())
         for name in (".next", "node_modules"):
             self.assertEqual((self.instance / "openplan" / name / "predecessor").read_text(), "original runtime bytes\n")
+
+    def test_tracked_symlink_survives_candidate_and_update(self):
+        try:
+            self.updater.update()
+        except self.module.UpdateError as exc:
+            self.fail(f"Tracked symbolic link prevented update: {exc}")
+        candidate = Path(self.record()["candidate"])
+        for root in (candidate, self.instance):
+            self.assertTrue((root / ".agents/skills").is_symlink())
+            self.assertEqual(str((root / ".agents/skills").readlink()), "../.claude/skills")
+            self.assertEqual(self.git(root, "status", "--porcelain", "--untracked-files=no"), "")
+        self.assertTrue(self.updater.health_matches(self.new_sha))
+
+    def test_failed_build_keeps_a_durable_reason_and_log(self):
+        (self.base / "fail-build").touch()
+        with self.assertRaisesRegex(self.module.UpdateError, "Candidate preparation failed"):
+            self.updater.update()
+        record = self.record()
+        self.assertIn("exit 7", record["error"])
+        self.assertIn("Building", Path(record["log"]).read_text())
+        self.assertIn("T", record["started_at"])
+        self.assertTrue(self.updater.health_matches(self.old_sha))
 
     def test_failed_build_keeps_running_predecessor(self):
         (self.base / "fail-build").touch()
@@ -335,9 +361,12 @@ def prove_mutations():
     source = SOURCE.read_text()
     cases = [
         ("comment", "# Persist all owned paths", "# Retain all owned paths", None, True),
+        ("tracked links flattened", "symlinks=True, ignore=ignore", "symlinks=False, ignore=ignore", "test_tracked_symlink_survives_candidate_and_update", False),
+        ("failure reason discarded", 'record["error"] = str(exc)', 'record["error"] = ""', "test_failed_build_keeps_a_durable_reason_and_log", False),
+
         ("foreign target", 'if Path(configured).absolute() != self.instance / "openplan":', 'if False:', "test_foreign_service_target_refuses_before_preparation", False),
         ("unverified predecessor", 'if not self.health_matches(previous):', 'if False:', "test_unverified_current_identity_refuses_before_preparation", False),
-        ("failed build promoted", 'if result.returncode:\n                raise UpdateError(f"Candidate preparation', 'if False:\n                raise UpdateError(f"Candidate preparation', "test_failed_build_keeps_running_predecessor", False),
+        ("failed build promoted", 'if code:\n                raise UpdateError(f"Candidate preparation', 'if False:\n                raise UpdateError(f"Candidate preparation', "test_failed_build_keeps_running_predecessor", False),
         ("rollback omitted", 'except BaseException:\n            self.recover(record)\n            raise', 'except BaseException:\n            pass\n            raise', "test_failed_restart_restores_previous_and_preserves_failed_candidate", False),
         ("backup identity ignored", 'if command(["git", "rev-parse", "HEAD"], backup) != record["previous_sha"]:', 'if False:', "test_retained_predecessor_identity_must_match", False),
         ("settings conflict ignored", 'or current_settings_hash != settings_hash', 'or False', "test_changed_settings_during_build_refuse_promotion", False),

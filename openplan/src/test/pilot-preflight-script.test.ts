@@ -83,6 +83,17 @@ describe("pilot preflight script", () => {
     });
   });
 
+  it("does not contact hosted services when no targets are configured", async () => {
+    const fixture = await makeFixture();
+    const unexpectedRead = async () => { throw new Error("unconfigured hosted service contacted"); };
+    const summary = await buildPilotPreflight(fixture, {
+      healthCheck: unexpectedRead, vercelInspect: unexpectedRead,
+    });
+    expect(summary.sections.productionHealth.status).toBe("skipped");
+    expect(summary.sections.deploymentReadiness.status).toBe("skipped");
+    expect(summary.safety.externalReads).toEqual({ productionHealth: false, vercelInspect: false });
+  });
+
   it("builds a read-only local Supabase, migration, production-health, and deployment readiness bundle", async () => {
     const fixture = await makeFixture();
     const healthCheck = async (url: string) => ({
@@ -179,7 +190,9 @@ describe("pilot preflight script", () => {
     });
 
     const summary = await buildPilotPreflight(
-      { envFile: fixture.envFile, migrationsDir: fixture.migrationsDir },
+      { envFile: fixture.envFile,
+        healthUrl: "https://example.invalid/api/health",
+        deploymentTarget: "https://example.invalid", migrationsDir: fixture.migrationsDir },
       { healthCheck, vercelInspect },
     );
 
@@ -254,8 +267,8 @@ describe("pilot preflight script", () => {
     );
     expect(parsed.issues).toEqual(
       expect.arrayContaining([
-        "production health: production health check skipped by operator flag",
-        "deployment readiness: Vercel deployment inspection skipped by operator flag",
+        "production health: production health check skipped: no target configured or explicitly disabled",
+        "deployment readiness: Vercel deployment inspection skipped: no target configured or explicitly disabled",
       ]),
     );
     const serialized = JSON.stringify(parsed);

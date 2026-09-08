@@ -1,0 +1,22 @@
+[
+  {
+    "case": "rls no-op",
+    "survived": true
+  },
+  {
+    "case": "automatic live writes",
+    "survived": false
+  },
+  {
+    "case": "live failure hidden",
+    "survived": false
+  },
+  {
+    "case": "release no-op",
+    "survived": true
+  },
+  {
+    "case": "release inventory understated",
+    "survived": false
+  }
+]

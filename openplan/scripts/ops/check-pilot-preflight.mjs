@@ -46,14 +46,14 @@ function usage() {
     "OpenPlan pilot-readiness preflight bundle",
     "",
     "Usage:",
-    "  pnpm ops:check-pilot-preflight",
-    "  pnpm ops:check-pilot-preflight -- --env-file .env.local --migrations-dir supabase/migrations --json",
+    "  npm run ops:check-pilot-preflight",
+    "  npm run ops:check-pilot-preflight -- --env-file .env.local --migrations-dir supabase/migrations --json",
     "",
     "Options:",
     "  --env-file <path>          Local env file to inspect; defaults to .env.local",
     "  --migrations-dir <path>    Supabase migrations directory; defaults to supabase/migrations",
-    "  --health-url <url>         Production health URL; defaults to canonical production /api/health",
-    "  --deployment-target <url>  Vercel deployment or alias to inspect; defaults to canonical production alias",
+    "  --health-url <url>         Optional health URL; no hosted target by default",
+    "  --deployment-target <url>  Optional Vercel deployment to inspect; disabled without a target",
     "  --vercel-command <path>    Vercel CLI command path; defaults to vercel",
     "  --vercel-scope <scope>      Vercel team/user scope for inspect; omit to use your CLI default",
     "  --skip-health              Skip the live production health fetch",
@@ -248,11 +248,15 @@ function skippedSection(label) {
   return {
     status: "skipped",
     skipped: true,
-    issues: [`${label} skipped by operator flag`],
+    issues: [`${label} skipped: no target configured or explicitly disabled`],
   };
 }
 
 export async function buildPilotPreflight(options = {}, deps = {}) {
+  options = { ...options,
+    skipHealth: options.skipHealth || !options.healthUrl,
+    skipVercel: options.skipVercel || !options.deploymentTarget,
+  };
   const localSupabase = await buildLocalSupabaseStatus({
     envFile: options.envFile,
     migrationsDir: options.migrationsDir,

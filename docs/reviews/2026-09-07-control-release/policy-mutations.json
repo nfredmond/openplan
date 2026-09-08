@@ -1,0 +1,27 @@
+[
+  {
+    "case": "direction noop",
+    "survived": true,
+    "expected": true
+  },
+  {
+    "case": "expired review blocks development",
+    "survived": false,
+    "expected": false
+  },
+  {
+    "case": "frozen hash ignored",
+    "survived": false,
+    "expected": false
+  },
+  {
+    "case": "preflight noop",
+    "survived": true,
+    "expected": true
+  },
+  {
+    "case": "unconfigured hosting contacted",
+    "survived": false,
+    "expected": false
+  }
+]

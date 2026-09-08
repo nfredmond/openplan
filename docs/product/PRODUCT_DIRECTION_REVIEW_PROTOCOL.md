@@ -6,20 +6,19 @@ turns that obligation into a recurring check.
 
 ## Triggers
 
-A review is required:
+The [development release policy](DEVELOPMENT_RELEASE_POLICY.md), adopted by
+Nathaniel on September 7, 2026, governs interim releases.
 
-- at least every 31 days before v1;
-- at every roadmap milestone and before selecting a new major lane;
-- when a materially stronger model or agent becomes available;
-- before adding a module, removing a core capability, lowering a validation
-  claim, or narrowing the v1 contract;
-- whenever Nathaniel says "what's next" and the recorded direction review is
-  expired or contradicted by current evidence.
+Review direction when a substantial scope decision needs it, evidence contradicts
+the roadmap, or Nathaniel requests reassessment. Aim for a monthly check-in as a
+reminder. A new model's availability is an opportunity to reconsider difficult
+questions, not an automatic interruption of development. Routine fixes and
+bounded features do not require a new whole-product review.
 
-`npm run product:direction:check` fails when the dated record is expired,
-mechanically incomplete, or inconsistent with the current release. It runs in
-`qa:gate`, so an overdue strategic review blocks release work instead of relying
-on an agent remembering this document.
+`npm run product:direction:check` checks evidence integrity and reports overdue
+reviews and intervening changes as reminders. Review dates remain historical;
+never advance them just to clear CI. The command is available explicitly, while
+its integrity tests remain in QA. Strategy freshness is not a release gate.
 
 ## Prepare the evidence packet
 
@@ -33,8 +32,9 @@ The command captures the current release, commit, tags, recent history, codebase
 inventory, canonical contract, roadmap, and the questions below. It does not
 call a model, spend credits, or publish anything.
 
-Give the packet to at least two independent fresh-context agents. Prefer three
-or more and use the strongest genuinely different models available. Do not tell
+For a full independent strategic review, give the packet to two fresh-context
+agents when the decision warrants that cost. Bounded maintenance can use a
+single technical review. Do not tell
 later reviewers the earlier conclusion before they produce their own. Each may
 read the repository and histories, but must begin from the evidence packet and
 reconstruct current state.
@@ -82,8 +82,9 @@ The combined review must explicitly examine:
 - Convert accepted direction into the product contract, roadmap, coverage
   matrix, executable checks, and a dated review record.
 - Record uncertainty and the evidence that would settle it.
-- A review is complete only after its guard fails on a deliberate bad record and
-  passes after restoration.
+- When changing a guard, prove a relevant broken record is rejected and a
+  harmless change survives. Repeating mutation work for an unchanged guard at
+  every documentation checkpoint is not required.
 
 ## Dated record format
 

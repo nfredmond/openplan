@@ -26,10 +26,11 @@ Before selecting a substantial lane, run `npm run product:direction:check` in
 
 If the check fails, investigate the actual reason. An expired or contradictory
 review requires reassessment; changing its date or commit is not new evidence.
-The [review protocol](docs/product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md) requires
-at least two independent fresh-context reviews monthly, at milestones and when
-a materially stronger model becomes available. Preserve independent reports and
-disagreements. Prior agents' statements are claims to investigate.
+The [review protocol](docs/product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md) guides
+periodic and consequential scope reviews. Strategy age and intervening commits
+are reminders, not release blockers. Use independent review where the decision
+warrants it; do not require two whole-product reviews for every bounded change.
+Preserve independent reports and disagreements. Prior agents' statements are claims to investigate.
 
 ## Product decisions
 
@@ -140,7 +141,9 @@ npm exec -- supabase start
 npm exec -- supabase migration up
 ```
 
-Use npm; the build uses webpack. Each worker suite uses its own environment.
+Use npm; the build uses webpack. Live RLS tests write fixtures: use an isolated
+test stack and opt in explicitly with `OPENPLAN_RLS_GATE=1` when running them
+through QA. A running demo database is not a test target by default. Each worker suite uses its own environment.
 Check disk before large models/downloads; ignored model records live under
 `data/screening-runs/` and `data/_screening_cache/`. Never print secrets or commit
 raw histories, client records or confidential acceptance captures.
@@ -149,6 +152,13 @@ Migrations are additive and data-safe. Ask before destructive operations,
 database resets, killing others' processes, force pushes or paid infrastructure.
 Self-service recovery must not depend on Nathaniel. Verify documented restore
 procedures separately from representative database fixtures.
+
+Follow the [development release policy](docs/product/DEVELOPMENT_RELEASE_POLICY.md).
+OpenPlan has zero users as of September 7, 2026. Ship useful, honestly limited
+increments. The full twelve-journey assessment does not block every pre-v1 release;
+retain its partial outcomes and require relevant evidence for each shipped claim.
+Vercel is inactive and hosted deployment deferred. Local checks govern local
+operation; do not troubleshoot or provision paid hosting as a release prerequisite.
 
 Keep one dependable main. Commit and push verified checkpoints, inspect GitHub
 CI separately, and preserve unrelated work. A push is not a passing release.
