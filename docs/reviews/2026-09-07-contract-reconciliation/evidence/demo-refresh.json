@@ -1,0 +1,8 @@
+{
+  "phase": "ready",
+  "previous_sha": "a0aed9464ff4b920b23ff70d7082cdeb21110c42",
+  "candidate_sha": "03a7efeb834d855f091910554cd885087ab4eba1",
+  "backup": "/home/nathaniel/apps/.openplan-updates/6461b6b6beae4f3cb219f4fc6053e0bf/previous",
+  "started_at": "2026-09-08T08:28:58.217809+00:00",
+  "previous_version": "0.45.0"
+}

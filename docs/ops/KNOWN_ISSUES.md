@@ -12,7 +12,7 @@ This is a quality-boundary register, not a development queue. Scheduling lives
 only in `docs/ROADMAP.md`.
 
 
-## Contract reconciliation boundary, September 8 v0.46 candidate
+## Contract reconciliation boundary, September 8 v0.46
 
 [Contract evidence](../reviews/2026-09-07-contract-reconciliation/VERIFICATION.md)
 records synthetic agreement, time, billing, amendment, correction and export

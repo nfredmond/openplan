@@ -10,9 +10,10 @@ assignment and all monetary records below are explicitly synthetic.
 Work began from main a0aed946, v0.45.0, in the isolated checkout
 `/home/nathaniel/.local/state/openplan/contract-reconciliation-2026-09-07`.
 Production acceptance is bound to 67345968745b6881b48989c6b0a4cb9f70465fb5,
-version 0.46.0, in PR #106. Final local QA and browser acceptance passed. GitHub
-checks, release integration, tag and demo refresh are recorded separately below
-as they finish. Main and its demo were not used for fixture writes or mutated
+version 0.46.0, in PR #106. Final local QA, browser acceptance and all seven final-head GitHub checks passed.
+PR #106 merged as 03a7efeb and the local demo serves that v0.46 build with v0.45
+retained. [Landing evidence](LANDING.md) records the runtime/database identities,
+CI links and release-publication reference. Main and its demo were not used for fixture writes or mutated
 by the test suite.
 
 ## Exercised workflow

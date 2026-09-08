@@ -1,0 +1,37 @@
+{
+  "date": "2026-09-08T08:32:35.067Z",
+  "deployment": {
+    "commit": "03a7efeb834d",
+    "version": "0.46.0"
+  },
+  "database": {
+    "container": "supabase_db_openplan",
+    "migrationCount": 279,
+    "lastMigration": "20260911000008",
+    "legacyTablesChecked": 8,
+    "populatedTables": 5,
+    "originalFieldsUnchanged": true
+  },
+  "navigation": [
+    "Existing test account sign-in",
+    "Client receivables",
+    "Projects",
+    "Existing project",
+    "Planning contracts",
+    "Workspace receivables register"
+  ],
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "horizontalOverflow": false,
+  "pageErrors": [],
+  "businessWrites": false,
+  "scope": "Installed-build read-only navigation; complete mutation acceptance remains in the isolated synthetic workspace"
+}
