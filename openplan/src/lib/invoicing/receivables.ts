@@ -350,7 +350,7 @@ export function buildEngagementBilledSummary(
       continue;
     }
 
-    const amount = receivableInvoiceAmount(invoice);
+    const amount = parseCurrencyAmount(invoice.subtotal_amount);
     if (status === "sent" || status === "paid") {
       billedToDate = roundCurrency(billedToDate + amount);
     } else if (status === "draft") {

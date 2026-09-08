@@ -1,0 +1,28 @@
+import "server-only";
+import { NextRequest, NextResponse } from "next/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { readAssistantExecutionSource } from "@/lib/assistant/action-approval-server";
+import { createApiAuditLogger } from "@/lib/observability/audit";
+import { contractCommandSchema } from "./schema";
+import { reportingError } from "@/lib/programs/work-program/reporting-server";
+export async function contractAccess(engagementId: string) {
+ const client = await createClient();
+ const { data: { user } } = await client.auth.getUser();
+ if (!user) return { response: NextResponse.json({ error: "Sign in to manage this contract" }, { status: 401 }) };
+ const service = createServiceRoleClient();
+ const result = await service.rpc("read_contract_management", { p_engagement_id: engagementId, p_actor_id: user.id });
+ if (result.error) return { response: reportingError(result.error) };
+ return { user, client, service, state: result.data };
+}
+export async function saveContractCommand(request: NextRequest, engagementId: string, input: unknown) {
+ const audit = createApiAuditLogger("invoicing.contract.command", request);
+ const access = await contractAccess(engagementId);
+ if (access.response) return access.response;
+ if (readAssistantExecutionSource(request) !== "manual") return NextResponse.json({ error: "Contract management is not a registered Planner Agent action. Use the contract management page." }, { status: 403 });
+ const command = contractCommandSchema.safeParse(input);
+ if (!command.success) return NextResponse.json({ error: "Check required dates, source evidence, exact amounts and allocations", issues: command.error.issues }, { status: 400 });
+ const result = await access.service!.rpc("record_contract_command", { p_engagement_id: engagementId, p_actor_id: access.user!.id, p_command: command.data });
+ if (result.error) audit.warn("contract_command_refused", { engagementId, kind: command.data.kind, code: result.error.code });
+ else audit.info("contract_command_saved", { engagementId, kind: command.data.kind, requestId: command.data.requestId });
+ return result.error ? reportingError(result.error) : NextResponse.json(result.data, { headers: { "Cache-Control": "private, no-store" } });
+}

@@ -109,9 +109,9 @@ export function ProjectBudgetPanel({
           <p className="module-summary-detail">Ledger entries recorded on this project.</p>
         </div>
         <div className="module-summary-card">
-          <p className="module-summary-label">Actual to date</p>
+          <p className="module-summary-label">Recorded direct cost</p>
           <p className="module-summary-value text-base leading-tight">{fmtCurrency(snapshot.actualToDate)}</p>
-          <p className="module-summary-detail">Billed plus direct spend — the total burned so far.</p>
+          <p className="module-summary-detail">Recorded spending only. Labor valuation and source coverage are reviewed in contract management.</p>
         </div>
       </div>
 
@@ -152,7 +152,7 @@ export function ProjectBudgetPanel({
                       <p className="module-record-summary">{summary.paceDetail}</p>
                     </div>
                     <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
-                      Billed {fmtCurrency(summary.billedToDate)} · Spend {fmtCurrency(summary.spendToDate)} · Actual {fmtCurrency(summary.actualToDate)}
+                      Billed {fmtCurrency(summary.billedToDate)} · Spend {fmtCurrency(summary.spendToDate)}
                       {summary.remaining !== null ? ` · Remaining ${fmtCurrency(summary.remaining)}` : ""}
                       {summary.draftedAmount > 0 ? ` · Drafted (not billed) ${fmtCurrency(summary.draftedAmount)}` : ""}
                     </p>

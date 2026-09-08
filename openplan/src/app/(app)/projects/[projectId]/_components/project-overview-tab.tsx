@@ -1,3 +1,4 @@
+import { ProjectContracts } from "@/components/invoicing/contracts/project-contracts";
 import type { ComponentProps } from "react";
 import { PilotWorkflowHandoff } from "@/components/operations/pilot-workflow-handoff";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
@@ -56,6 +57,7 @@ export function ProjectOverviewTab({
   return (
     <>
       <ProjectPostureHeader {...postureHeader} />
+      <ProjectContracts projectId={project.id} workspaceId={project.workspace_id} />
 
       <ProjectPostureUnified
         rtpPosture={project.rtp_posture}

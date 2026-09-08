@@ -1,0 +1,7 @@
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+export async function ProjectContracts({projectId,workspaceId}:{projectId:string;workspaceId:string}) {
+ const client=await createClient(),rows:{id:string;title:string;engagement_kind:string}[]=[];
+ for(let offset=0;;offset+=200){const result=await client.from("invoicing_engagements").select("id,title,engagement_kind").eq("project_id",projectId).eq("workspace_id",workspaceId).order("id").range(offset,offset+199);if(result.error)return <section className="rounded border p-4"><h2 className="font-semibold">Planning contracts</h2><p>Contract records could not be read. No contract totals are asserted.</p></section>;rows.push(...result.data);if(result.data.length<200)break;}
+ return <section className="space-y-3 rounded border p-4"><h2 className="text-lg font-semibold">Planning contracts</h2><p className="text-sm text-muted-foreground">Review approved scope, task budgets, source actuals and remaining work.</p>{rows.map(r=><p key={r.id}><Link className="underline" href={`/invoicing/engagements/${r.id}`}>{r.title}</Link> <span className="text-sm text-muted-foreground">{r.engagement_kind.replaceAll("_"," ")}</span></p>)}<Link className="text-sm underline" href={`/invoicing?direction=receivables&workspaceId=${workspaceId}`}>{rows.length?"Open the engagement register":"Create a project-linked contract in Invoicing"}</Link></section>;
+}

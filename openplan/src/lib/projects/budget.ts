@@ -73,7 +73,7 @@ export const DELIVERABLE_PACE_LABELS: Record<DeliverablePaceStatus, string> = {
   no_progress_basis: "No progress basis",
   on_pace: "On pace",
   billed_ahead_of_progress: "Burn ahead of progress",
-  billed_behind_progress: "Billing behind progress",
+  billed_behind_progress: "Spending below recorded progress",
   over_budget: "Over budget",
 };
 
@@ -100,7 +100,7 @@ export type DeliverableBudgetSummary = {
   billedToDate: number;
   /** Direct spend recorded in the project ledger. */
   spendToDate: number;
-  /** billedToDate + spendToDate — the decomposed total burned against the budget. */
+  /** Recorded direct cost only. Client fee billing is a separate measure. */
   actualToDate: number;
   /** Draft/internal-review invoice lines, disclosed separately. */
   draftedAmount: number;
@@ -180,7 +180,7 @@ export function buildDeliverableBudgetSummary(
   const billedToDate = sumAmounts(ownLines.filter((line) => isSentStatus(line.invoice_status)).map((line) => line.amount));
   const draftedAmount = sumAmounts(ownLines.filter((line) => isDraftStatus(line.invoice_status)).map((line) => line.amount));
   const spendToDate = sumAmounts(ownSpend.map((entry) => entry.amount));
-  const actualToDate = roundCurrency(billedToDate + spendToDate);
+  const actualToDate = spendToDate;
 
   const remaining = budgetAmount === null ? null : roundCurrency(budgetAmount - actualToDate);
   const burnPercent =
@@ -210,7 +210,7 @@ export function buildDeliverableBudgetSummary(
       paceDetail = `Burned ${burnPercent}% of budget at ${percentComplete}% complete — burn is running ahead of recorded progress.`;
     } else if (drift < -PACE_TOLERANCE_POINTS) {
       paceStatus = "billed_behind_progress";
-      paceDetail = `Burned ${burnPercent}% of budget at ${percentComplete}% complete — billing is trailing recorded progress.`;
+      paceDetail = `Burned ${burnPercent}% of budget at ${percentComplete}% complete — recorded spending is below recorded progress.`;
     } else {
       paceStatus = "on_pace";
       paceDetail = `Burned ${burnPercent}% of budget at ${percentComplete}% complete — within ${PACE_TOLERANCE_POINTS} points.`;
@@ -276,7 +276,7 @@ export function buildProjectBudgetSnapshot({
   // the schema), so every entry counts at the project level even when its
   // deliverable attribution is missing or stale.
   const spendToDate = sumAmounts(spendRecords.map((entry) => entry.amount));
-  const actualToDate = roundCurrency(billedToDate + spendToDate);
+  const actualToDate = spendToDate;
 
   const statedBudget = parseOptionalAmount(project?.budget_amount);
   const budgetedSummaries = summaries.filter((summary) => summary.budgetAmount !== null);

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ClientComposer, type ClientComposerRecord } from "@/components/invoicing/client-composer";
 import { ClientInvoiceComposer } from "@/components/invoicing/client-invoice-composer";
 import { ClientInvoiceStatusControl } from "@/components/invoicing/client-invoice-status-control";
@@ -392,6 +393,7 @@ export async function ReceivablesLane({
                           <li key={engagement.id} className="border border-border/50 bg-background/80 px-3 py-3">
                             <div className="flex flex-wrap items-center gap-2">
                               <p className="text-sm font-semibold text-foreground">{engagement.title}</p>
+                              {engagement.project_id && <Link className="text-sm underline" href={`/invoicing/engagements/${engagement.id}`}>Manage contract</Link>}
                               <StatusBadge tone="info">
                                 {ENGAGEMENT_KIND_LABELS[engagement.engagement_kind] ?? titleCase(engagement.engagement_kind)}
                               </StatusBadge>

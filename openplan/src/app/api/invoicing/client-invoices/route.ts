@@ -561,11 +561,12 @@ export async function POST(request: NextRequest) {
     // Not-to-exceed overruns WARN and never block: the ceiling is the
     // engagement's business context, and the planner composing the invoice is
     // the one who has to negotiate it — hiding the invoice would not.
-    let nteWarning: { billedToDate: number; notToExceed: number; overBy: number } | undefined;
+    let nteWarning: { billedToDate: number; notToExceed: number; overBy: number; basis: "legacy_terms_unassessed" } | undefined;
     if (notToExceed !== null && priorBilledToDate !== null) {
-      const projected = Math.round((priorBilledToDate + totals.totalAmount) * 100) / 100;
+      const projected = Math.round((priorBilledToDate + totals.subtotalAmount) * 100) / 100;
       if (projected > notToExceed) {
         nteWarning = {
+          basis: "legacy_terms_unassessed",
           billedToDate: priorBilledToDate,
           notToExceed,
           overBy: Math.round((projected - notToExceed) * 100) / 100,
