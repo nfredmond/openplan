@@ -85,6 +85,7 @@ type RateTableRow = {
 
 type TimeEntryRow = TimeEntryLike & {
   id: string;
+  work_program_id: string | null;
   notes: string | null;
 };
 
@@ -156,7 +157,7 @@ export async function ReceivablesLane({
         .order("updated_at", { ascending: false }),
       supabase
         .from("invoicing_time_entries")
-        .select("id, staff_id, engagement_id, deliverable_id, entry_date, hours, notes, billable, labor_category, billed_line_item_id")
+        .select("id, staff_id, engagement_id, work_program_id, deliverable_id, entry_date, hours, notes, billable, labor_category, billed_line_item_id")
         .eq("workspace_id", workspaceId)
         .order("entry_date", { ascending: false })
         .limit(TIME_REGISTER_LIMIT),
@@ -567,7 +568,7 @@ export async function ReceivablesLane({
                         <td className="px-3 py-2 text-muted-foreground">{entry.entry_date ?? "N/A"}</td>
                         <td className="px-3 py-2 text-foreground">{Number(entry.hours ?? 0)}</td>
                         <td className="px-3 py-2 text-muted-foreground">
-                          {(entry.engagement_id && engagementTitleById.get(entry.engagement_id)) ?? "Unknown"}
+                          {entry.engagement_id ? engagementTitleById.get(entry.engagement_id) ?? "Unknown contract" : entry.work_program_id ? "Agency work program" : "Unknown"}
                         </td>
                         <td className="px-3 py-2 text-muted-foreground">
                           {entry.deliverable_id ? deliverableTitleById.get(entry.deliverable_id) ?? "Deliverable" : "—"}
@@ -582,6 +583,7 @@ export async function ReceivablesLane({
                           <TimeEntryRowControls
                             workspaceId={workspaceId}
                             timeEntryId={entry.id}
+                            workProgramId={entry.work_program_id}
                             entryDate={entry.entry_date ?? null}
                             hours={Number(entry.hours ?? 0)}
                             billable={entry.billable !== false}

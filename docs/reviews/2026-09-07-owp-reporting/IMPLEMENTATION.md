@@ -189,3 +189,12 @@ now carries the authorized program workspace explicitly. The earlier isolated
 single-workspace journey could not reveal this defect. A rendered-link regression
 covers two different workspace identities, and final demo acceptance repeats the
 multi-workspace navigation before tagging v0.45.0.
+
+The follow-up staff-register inspection also found agency time labeled as an
+unknown contract, with the older inline edit/remove controls. Database guards
+already refused changes to mapped time, but those controls led to a rejected
+operation. The register now identifies agency work and links mapped entries to
+OWP corrections, including billed sources whose invoice restrictions still
+apply. Its query explicitly selects the work-program identity. Contract-only
+entries retain their existing controls. Component tests and projection/control
+mutations cover the corrected behavior; no ledger or migration changed.

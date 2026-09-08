@@ -23,6 +23,10 @@ cases=[
  ('staff-link-projection','src/app/(app)/invoicing/_components/receivables-lane.tsx','id, name, title, user_id, default_labor_category','id, name, title, default_labor_category',['src/test/work-program-staff-link.test.tsx'],False),
  ('staff-link-workspace','src/components/programs/work-program/reporting-panel.tsx','&workspaceId=${encodeURIComponent(workspaceId)}','',['src/test/work-program-staff-link.test.tsx'],False),
  ('staff-link-wrong-workspace','src/components/programs/work-program/reporting-panel.tsx','encodeURIComponent(workspaceId)','encodeURIComponent(programId)',['src/test/work-program-staff-link.test.tsx'],False),
+ ('mapped-time-no-op','src/components/invoicing/time-entry-row-controls.tsx','type TimeEntryRowControlsProps =','// Harmless type comment.\ntype TimeEntryRowControlsProps =',['src/test/work-program-staff-link.test.tsx'],True),
+ ('unmapped-time-controls','src/components/invoicing/time-entry-row-controls.tsx','if (billed) return null;','if (!billed) return null;',['src/test/work-program-staff-link.test.tsx'],False),
+ ('mapped-time-controls','src/components/invoicing/time-entry-row-controls.tsx','if (workProgramId) {','if (false) {',['src/test/work-program-staff-link.test.tsx'],False),
+ ('mapped-time-projection','src/app/(app)/invoicing/_components/receivables-lane.tsx','id, staff_id, engagement_id, work_program_id, deliverable_id','id, staff_id, engagement_id, deliverable_id',['src/test/work-program-staff-link.test.tsx'],False),
  ('unknown-opening-hours','src/lib/programs/work-program/reporting.ts','const unknownHours = actuals.filter(v => (v.kind === "labor" || v.kind === "opening") && v.hours === null).length;','const unknownHours = 0;',['src/test/work-program-reporting.test.ts'],False),
  ('form-scope','src/test/create-forms-inline-ratchet.test.ts','"src/components/programs/work-program/actual-entry.tsx":','"src/components/programs/work-program/missing-actual-entry.tsx":',['src/test/create-forms-inline-ratchet.test.ts'],False),
 ]

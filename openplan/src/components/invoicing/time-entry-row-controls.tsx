@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 type TimeEntryRowControlsProps = {
   workspaceId: string;
   timeEntryId: string;
+  workProgramId?: string | null;
   entryDate: string | null;
   hours: number;
   billable: boolean;
@@ -31,13 +32,15 @@ type TimeEntryRowControlsProps = {
  * engagement is a different act with different consequences for an invoice, and
  * belongs to a fuller editor, not to an inline row fix.
  *
- * A billed entry renders nothing at all. The route refuses it with a 409 and the
+ * Mapped OWP time links to its traceable correction workflow.
+ * An unmapped billed entry renders nothing at all. The route refuses it with a 409 and the
  * reason is structural (it is on an invoice already), so offering the control
  * and then explaining the refusal would be an invitation to a dead end.
  */
 export function TimeEntryRowControls({
   workspaceId,
   timeEntryId,
+  workProgramId,
   entryDate,
   hours,
   billable,
@@ -52,9 +55,11 @@ export function TimeEntryRowControls({
   const [busy, setBusy] = useState<"save" | "delete" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  if (!canWrite || billed) {
-    return null;
+  if (!canWrite) return null;
+  if (workProgramId) {
+    return <a className="openplan-inline-label" href={`/programs/${encodeURIComponent(workProgramId)}/work-program#actual-work`}>Correct in work program</a>;
   }
+  if (billed) return null;
 
   async function save() {
     setError(null);

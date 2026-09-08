@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
+import { TimeEntryRowControls } from "@/components/invoicing/time-entry-row-controls";
 import { ReportingPanel } from "@/components/programs/work-program/reporting-panel";
 import { StaffAndRatesPanel } from "@/components/invoicing/staff-and-rates-panel";
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
@@ -45,4 +46,29 @@ it.each([workspaceId, "00000000-0000-4000-8000-000000000003"])("keeps the progra
  expect(target.searchParams.get("workspaceId")).toBe(programWorkspaceId);
  expect(target.searchParams.get("direction")).toBe("receivables");
  expect(target.hash).toBe("#staff-time-access");
+});
+
+it.each([false, true])("routes mapped time corrections through the work program, billed=%s", (billed) => {
+ const programId = "00000000-0000-4000-8000-000000000004";
+ render(<TimeEntryRowControls workspaceId={workspaceId} timeEntryId="time" workProgramId={programId} entryDate="2026-08-01" hours={2} billable={false} billed={billed} canWrite/>);
+ expect(screen.getByRole("link", { name: "Correct in work program" })).toHaveAttribute("href", `/programs/${programId}/work-program#actual-work`);
+ expect(screen.queryByRole("button", { name: "Correct", exact: true })).not.toBeInTheDocument();
+ expect(screen.queryByRole("button", { name: "Remove", exact: true })).not.toBeInTheDocument();
+ const page = readFileSync("src/app/(app)/invoicing/_components/receivables-lane.tsx", "utf8");
+ expect(page.match(/\.from\("invoicing_time_entries"\)\s*\.select\("([^"]+)"\)/)?.[1].split(", ")).toContain("work_program_id");
+ expect(page).toContain("workProgramId={entry.work_program_id}");
+});
+
+it("preserves ordinary unbilled contract corrections and billed-entry protection", async () => {
+ const fetcher = network();
+ const { unmount } = render(<TimeEntryRowControls workspaceId={workspaceId} timeEntryId="contract-time" entryDate="2026-08-01" hours={2} billable billed={false} canWrite/>);
+ fireEvent.click(screen.getByRole("button", { name: "Correct", exact: true }));
+ fireEvent.change(screen.getByLabelText("Corrected hours"), { target: { value: "3.5" } });
+ fireEvent.click(screen.getByRole("button", { name: "Save correction" }));
+ await waitFor(() => expect(fetcher.mock.calls.some(([url, init]) => url === "/api/invoicing/time-entries/contract-time" && init?.method === "PATCH")).toBe(true));
+ expect(JSON.parse(fetcher.mock.calls.find(([, init]) => init?.method === "PATCH")![1]!.body as string)).toEqual({ workspaceId, entryDate: "2026-08-01", hours: 3.5, billable: true });
+ unmount();
+ render(<TimeEntryRowControls workspaceId={workspaceId} timeEntryId="billed-contract-time" entryDate="2026-08-01" hours={2} billable billed canWrite/>);
+ expect(screen.queryByRole("button", { name: "Correct", exact: true })).not.toBeInTheDocument();
+ expect(screen.queryByRole("button", { name: "Remove", exact: true })).not.toBeInTheDocument();
 });
