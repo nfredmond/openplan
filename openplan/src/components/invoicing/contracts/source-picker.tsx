@@ -1,0 +1,17 @@
+"use client";
+import type { ContractActual, ContractState } from "@/lib/invoicing/contracts/schema";
+import { Field, inputClass, TextField } from "./fields";
+
+/** Map a retained physical source before allocating it to approved contract tasks. */
+export function ContractSourcePicker({state,value,onChange}:{state:ContractState;value:ContractActual;onChange:(value:ContractActual)=>void}) {
+ const patch=(change:Partial<ContractActual>)=>onChange({...value,...change});
+ return <details className="space-y-3 rounded border p-3"><summary>Map existing time, spending or OWP records</summary>
+ <p className="text-sm">Choose the existing source to keep its original identity. Review its task allocations before saving.</p>
+ {!value.expectedVersion&&<>
+ <Field label="Existing contract time"><select className={inputClass} value={value.timeEntryId??""} onChange={e=>{const t=state.unmappedTime.find(t=>t.id===e.target.value);if(t)patch({category:"labor",timeEntryId:t.id,spendEntryId:null,owpVersionId:null,staffId:t.staff_id,hours:t.hours,amount:null,valuationBasis:"unvalued",rateId:null,entryDate:t.entry_date,sourceKey:`time:${t.id}`,sourceReference:`Existing time entry ${t.id}`,description:t.notes||"Existing contract time",billable:t.billable??value.billable,status:"draft"});}}><option value="">Select an unmapped time source</option>{state.unmappedTime.map(t=><option key={t.id} value={t.id}>{t.entry_date} · {state.staff.find(s=>s.id===t.staff_id)?.name} · {t.hours} hours · {t.notes}</option>)}</select></Field>
+ <Field label="Existing project spending"><select className={inputClass} value={value.spendEntryId??""} onChange={e=>{const s=state.unmappedSpend.find(s=>s.id===e.target.value);if(s)patch({category:"expense",spendEntryId:s.id,timeEntryId:null,owpVersionId:null,staffId:null,hours:null,amount:s.amount,valuationBasis:"recorded",rateId:null,entryDate:s.entry_date,sourceKey:`expense:${s.id}`,sourceReference:`Existing expense entry ${s.id}`,description:s.description||"Existing project spending",status:"draft"});}}><option value="">Select an unmapped expense source</option>{state.unmappedSpend.map(s=><option key={s.id} value={s.id}>{s.entry_date} · {s.amount} · {s.description}</option>)}</select></Field>
+ </>}
+ <Field label="Current shared OWP valuation"><select className={inputClass} value={value.owpVersionId??""} onChange={e=>{const s=state.owpSources?.find(s=>s.id===e.target.value);if(s)patch({category:s.category,owpVersionId:s.id,timeEntryId:s.timeEntryId,spendEntryId:s.spendEntryId,staffId:s.staffId,hours:s.hours,amount:s.amount,valuationBasis:s.amount===null?"unvalued":"recorded",rateId:null,entryDate:s.entryDate,status:s.status,sourceKey:value.expectedVersion?value.sourceKey:s.sourceKey,sourceReference:value.expectedVersion?value.sourceReference:s.sourceReference,description:value.expectedVersion?value.description:s.description,billable:s.billable});}}><option value="">Select a current matching OWP source</option>{state.owpSources?.map(s=><option key={s.id} value={s.id}>{s.sourceKey} · {s.entryDate} · {s.category} · {s.amount??"Unvalued"}</option>)}</select></Field>
+ <details><summary>Enter a retained source ID</summary>{(["timeEntryId","spendEntryId","owpVersionId"] as const).map(k=><TextField key={k} label={k==="timeEntryId"?"Existing time ID":k==="spendEntryId"?"Existing spending ID":"Current OWP valuation ID"} value={value[k]} onChange={v=>patch({[k]:v||null})}/>)}</details>
+ </details>;
+}

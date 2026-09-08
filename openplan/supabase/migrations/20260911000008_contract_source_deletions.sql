@@ -28,12 +28,21 @@ BEGIN
   SELECT project_id INTO project FROM public.invoicing_engagements WHERE id=engagement;
  END IF;
  IF EXISTS(SELECT 1 FROM public.contract_baselines b JOIN public.invoicing_engagements e ON e.id=b.engagement_id WHERE e.workspace_id=w AND (e.id=engagement OR e.project_id=project)) THEN
+  IF TG_OP='UPDATE' THEN
+   IF NEW.created_at IS DISTINCT FROM OLD.created_at THEN RAISE EXCEPTION 'Original source creation time is retained for contract cutoffs' USING ERRCODE='23514'; END IF;
+   IF TG_TABLE_NAME='project_spend_entries' THEN
+    IF NEW.project_id IS NOT DISTINCT FROM OLD.project_id THEN RETURN NEW; END IF;
+   ELSE
+    IF (NEW.workspace_id,NEW.engagement_id) IS NOT DISTINCT FROM (OLD.workspace_id,OLD.engagement_id) THEN RETURN NEW; END IF;
+   END IF;
+  END IF;
   INSERT INTO public.contract_source_deletions(workspace_id,engagement_id,project_id,source_table,source_id,source_created_at)
   VALUES(w,engagement,project,TG_TABLE_NAME,OLD.id,OLD.created_at);
  END IF;
+ IF TG_OP='UPDATE' THEN RETURN NEW; END IF;
  RETURN OLD;
 END $$;
 REVOKE ALL ON FUNCTION public.retain_contract_source_deletion() FROM PUBLIC,anon,authenticated;
-CREATE TRIGGER retain_contract_source_deletion AFTER DELETE ON public.invoicing_time_entries FOR EACH ROW EXECUTE FUNCTION public.retain_contract_source_deletion();
-CREATE TRIGGER retain_contract_source_deletion AFTER DELETE ON public.project_spend_entries FOR EACH ROW EXECUTE FUNCTION public.retain_contract_source_deletion();
-CREATE TRIGGER retain_contract_source_deletion AFTER DELETE ON public.client_invoices FOR EACH ROW EXECUTE FUNCTION public.retain_contract_source_deletion();
+CREATE TRIGGER retain_contract_source_deletion AFTER DELETE OR UPDATE ON public.invoicing_time_entries FOR EACH ROW EXECUTE FUNCTION public.retain_contract_source_deletion();
+CREATE TRIGGER retain_contract_source_deletion AFTER DELETE OR UPDATE ON public.project_spend_entries FOR EACH ROW EXECUTE FUNCTION public.retain_contract_source_deletion();
+CREATE TRIGGER retain_contract_source_deletion AFTER DELETE OR UPDATE ON public.client_invoices FOR EACH ROW EXECUTE FUNCTION public.retain_contract_source_deletion();

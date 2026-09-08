@@ -7,6 +7,7 @@ output=Path(os.environ.get('CONTRACT_PROOF_OUTPUT','/tmp/openplan-contract-proof
 output.mkdir(parents=True,exist_ok=True)
 results=[]
 def run(name,suite,expected,sql=None,path=None,before=None,after=None):
+    if os.environ.get('CONTRACT_PROOF_ONLY') and name not in os.environ['CONTRACT_PROOF_ONLY'].split(','):return
     original=path.read_text() if path else None
     env=os.environ.copy()
     if sql:
@@ -54,4 +55,15 @@ sqlcase('agreement-delete','20260911000007_contract_evidence.sql','guard_contrac
 sqlcase('historical-parent','20260911000007_contract_evidence.sql','guard_contract_historical_parent',"IF retained AND (TG_OP='DELETE' OR NEW.project_id", "IF false AND (TG_OP='DELETE' OR NEW.project_id",'Historical deliverable moved')
 run('workbook-layout','src/test/contract-reconciliation.test.ts','wrapText',path=Path('src/lib/invoicing/contracts/export.ts'),before='await formatWorkProgramWorkbook(zip,book,{readOnly:true});',after='void formatWorkProgramWorkbook;')
 run('private-table','src/test/contract-reconciliation-rls.test.ts','Private contract table leaked: contract_rates',sql='ALTER POLICY management_read ON public.contract_rates USING (true);')
+sqlcase('payroll-overlap',base,'record_contract_command',"IF st='approved' AND category='labor' AND coalesce", "IF false AND category='labor' AND coalesce",'Duplicate payroll approved')
+sqlcase('snapshot-cutoff',base,'record_contract_command',"IF (report->>'cutoffConflicts')::boolean", "IF false",'Future source value entered cutoff')
+sqlcase('source-deletion','20260911000008_contract_source_deletions.sql','retain_contract_source_deletion','IF EXISTS','IF false AND EXISTS','Deleted source evidence lost')
+run('estimate-version','src/test/contract-reconciliation.test.ts','expected.*25.00.*40.00',path=unit,before='!latest || e.version > latest.version ? e : latest',after='e')
+member=Path('src/components/invoicing/contracts/actual-form.tsx')
+run('member-harmless','src/test/contract-member-correction.test.tsx',None,path=member,before='const admin=state.role!=="member"',after='const admin=state.role!=="member" /* Private cost boundary */')
+original=member.read_text()
+run('member-null-source','src/test/contract-member-correction.test.tsx','expected false to be true',path=member,before=original,after=original.replace('spendEntryId:correcting.spend_entry_id??null','spendEntryId:correcting.spend_entry_id').replace('spendEntryId:value.spendEntryId??null','spendEntryId:value.spendEntryId'))
+sqlcase('member-review-state',base,'read_contract_management',"'status',v.command->>'status'", "'status','draft'",'Member sees superseded draft after approval')
+sqlcase('source-created-time','20260911000008_contract_source_deletions.sql','retain_contract_source_deletion','IF NEW.created_at IS DISTINCT FROM OLD.created_at','IF false','Creation time rewritten')
+sqlcase('owp-picker-privacy',base,'read_contract_management',"CASE WHEN actor_role IN ('owner','admin') THEN coalesce","CASE WHEN true THEN coalesce",'OWP picker leaked private valuation')
 print('Restored all source mutations. See results.json for individual evidence.',flush=True)

@@ -1,0 +1,11 @@
+{
+  "predecessorSha256": "944920f37e2e8652865c3482b56b5611a4b42fa3f14ad55ccd732d53b20da4ec",
+  "unchanged": true,
+  "tables": [
+    "invoicing_time_entries",
+    "project_spend_entries",
+    "client_invoices",
+    "work_program_actual_versions",
+    "program_work_program_revisions"
+  ]
+}

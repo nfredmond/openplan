@@ -1,0 +1,25 @@
+{
+  "synthetic": true,
+  "worksheets": 18,
+  "rollupsInCents": [
+    24950,
+    10000,
+    7500,
+    1000,
+    480
+  ],
+  "billing": {
+    "Approved fee": 1200,
+    "Approved internal cost": 600,
+    "Gross billed before retention": 200,
+    "Invoice retention": 20,
+    "Gross fee remaining after credits": 1010,
+    "Remaining cost estimate": 400,
+    "Actual plus remaining": 649.5,
+    "Unknown historical hours": 0
+  },
+  "sourceHistoryRows": 13,
+  "originalCsvSha256": "f59cce2e0baca534d7ec720614e7a9fecc34ccd8ecc61b4317b82327c5c29be2",
+  "pdfSha256": "fcead5d1b9681ea189d3ce5b4941508aed6e2e2f8be8c6c9e7e45da570aeda57",
+  "xlsxSha256": "94cbd7e36077596a59630238a66cd378e54bdcd24faf527ca18597880fe680a6"
+}

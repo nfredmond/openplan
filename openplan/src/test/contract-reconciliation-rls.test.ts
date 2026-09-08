@@ -19,6 +19,7 @@ const marker = (body: string, replacement = "") => expect(exercise(body,replacem
  IF result<>again OR (SELECT count(*) FROM public.invoicing_time_entries WHERE engagement_id=engagement)<>1 THEN RAISE EXCEPTION 'Retry duplicated time'; END IF;
  ${approve}
  state:=public.read_contract_management(engagement,member_id);
+ IF state->'actuals'->1->'command'->>'status'<>'approved' THEN RAISE EXCEPTION 'Member sees superseded draft after approval';END IF;
  IF state->'actuals'->1->>'amount' IS NOT NULL OR state::text LIKE '%12.47%' OR state::text LIKE '%500.00%' THEN RAISE EXCEPTION 'Private cost leaked'; END IF;
  IF (SELECT sum((a->>'amount')::numeric) FROM public.contract_actual_versions v CROSS JOIN LATERAL jsonb_array_elements(v.allocations) a WHERE v.entry_id=entry AND version=2)<>12.47 THEN RAISE EXCEPTION 'Split cents lost'; END IF;
  IF (SELECT count(*) FROM public.contract_actual_versions WHERE entry_id=entry)<>2 THEN RAISE EXCEPTION 'History overwritten'; END IF;
@@ -101,6 +102,18 @@ const marker = (body: string, replacement = "") => expect(exercise(body,replacem
  PERFORM public.record_contract_command(engagement,owner_id,c||jsonb_build_object('requestId',gen_random_uuid(),'entryId',gen_random_uuid(),'sourceKey','documented-credit','category','credit','amount','10.00'));
  IF (SELECT count(*) FROM public.project_spend_entries WHERE project_id=project)<>0 OR (SELECT count(*) FROM public.invoicing_time_entries WHERE engagement_id=engagement)<>1 THEN RAISE EXCEPTION 'Cash or billing created another cost';END IF;
  `));
+ it("retries one contract export and refuses expired leases or private indexing",()=>marker(`${saveBaseline}
+ result:=public.record_contract_command(engagement,owner_id,jsonb_build_object('kind','snapshot','requestId',gen_random_uuid(),'title','Synthetic worker recovery','asOf','2026-09-01','sourceCutoff',now(),'coverageComplete',false,'coverageEvidence','Synthetic'));
+ report:=(result->>'snapshotId')::uuid;
+ SELECT to_jsonb(j) INTO result FROM public.enqueue_contract_snapshot(report,'pdf',owner_id) j;
+ UPDATE public.kb_ocr_jobs SET status='failed',failure_detail='Synthetic interrupted render' WHERE id=(result->>'id')::uuid;
+ SELECT to_jsonb(j) INTO again FROM public.enqueue_contract_snapshot(report,'pdf',owner_id) j;
+ IF result->>'id'<>again->>'id' OR again->>'status'<>'queued' THEN RAISE EXCEPTION 'Contract worker retry duplicated artifact';END IF;
+ UPDATE public.kb_ocr_jobs SET status='running',lease_token=cost_rate,lease_until=now()-interval '1 second' WHERE id=(result->>'id')::uuid;
+ BEGIN PERFORM public.finish_work_program_export((result->>'id')::uuid,cost_rate,repeat('a',64),10,'invalid','synthetic');RAISE EXCEPTION 'Expired contract worker finalized';EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL;END;
+ BEGIN INSERT INTO public.kb_document_chunks(document_id,workspace_id,chunk_index,content) VALUES((result->>'document_id')::uuid,workspace,0,'PRIVATE synthetic contract');RAISE EXCEPTION 'Private contract report indexed';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ `));
+
  it("retains CSV input with atomic rows and unchanged retries",()=>marker(`${saveBaseline}${time}
  c:=c||jsonb_build_object('sourceReference','Synthetic CSV sha256:'||encode(extensions.digest('source,hours'||chr(10)||'one,1.01','sha256'),'hex'));
  state:=jsonb_build_object('requestId',gen_random_uuid(),'filename','synthetic.csv','csv','source,hours'||chr(10)||'one,1.01','mapping','{}'::jsonb,'commands',jsonb_build_array(c));
@@ -120,6 +133,8 @@ const marker = (body: string, replacement = "") => expect(exercise(body,replacem
  owc:=jsonb_build_object('requestId',gen_random_uuid(),'entryId',ow_entry,'expectedVersion',0,'revisionId',ow_revision.id,'kind','labor','status','approved','entryDate','2026-09-01','sourceKey','synthetic-shared-owp','sourceReference','Synthetic source mapping','description','Shared original time','staffId',staff,'projectId',project,'contractId',engagement,'hours','1.01','amount','12.47','basis','recorded','billable',true,'timeEntryId',(SELECT time_entry_id FROM public.contract_actual_versions WHERE entry_id=entry LIMIT 1),'allocations',jsonb_build_array(jsonb_build_object('elementId',element,'share',10000)));
  PERFORM public.record_work_program_actual(p,owner_id,owc);
  state:=public.read_contract_management(engagement,owner_id);
+ IF jsonb_array_length(state->'owpSources')<>1 OR state->'owpSources'->0->>'amount'<>'12.47' THEN RAISE EXCEPTION 'Current OWP source picker omitted retained valuation';END IF;
+ again:=public.read_contract_management(engagement,member_id);IF jsonb_array_length(again->'owpSources')<>0 OR again::text LIKE '%12.47%' THEN RAISE EXCEPTION 'OWP picker leaked private valuation';END IF;
  IF NOT (state->'actuals'->1->>'shared_source_stale')::boolean THEN RAISE EXCEPTION 'Reverse shared mapping missed';END IF;
  PERFORM public.record_contract_command(engagement,owner_id,jsonb_build_object('kind','rate','requestId',gen_random_uuid(),'rateId',billing_rate,'staffId',staff,'basis','billing','startsOn','2026-01-01','endsOn','2026-12-31','hourlyRate','100.00','sourceReference','Synthetic rate'));
  BEGIN PERFORM public.record_contract_command(engagement,owner_id,jsonb_build_object('kind','bill','requestId',gen_random_uuid(),'invoiceNumber','STALE','invoiceDate','2026-09-01','retentionPercent','0.00','entryIds',jsonb_build_array(entry)));RAISE EXCEPTION 'Stale shared actual billed';EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL;END;
@@ -161,6 +176,13 @@ const marker = (body: string, replacement = "") => expect(exercise(body,replacem
  report:=gen_random_uuid();INSERT INTO public.contract_baselines(id,engagement_id,workspace_id,version,state,content,content_hash,created_by,created_at) VALUES(report,engagement,workspace,2,'proposed',c->'content',repeat('b',64),owner_id,now()-interval '1 hour');
  PERFORM public.record_contract_command(engagement,owner_id,jsonb_build_object('kind','approve','requestId',gen_random_uuid(),'baselineId',report,'expectedVersion',2,'approvalEvidence','Synthetic later approval'));
  state:=public.read_contract_management(engagement,owner_id,now()-interval '1 microsecond');IF state->'baselines'->0->>'state'<>'proposed' OR state->'baselines'->0->>'approval_evidence'<>'' THEN RAISE EXCEPTION 'Future approval entered cutoff';END IF;
+ `));
+
+ it("retains evidence when legacy sources leave their original contract and rejects creation-time rewrites",()=>marker(`${saveBaseline}
+ INSERT INTO public.project_spend_entries(id,project_id,entry_date,amount,description,created_at) VALUES(ow_entry,project,'2026-09-01',100,'Synthetic moved receipt',now()-interval '1 hour');
+ BEGIN UPDATE public.project_spend_entries SET created_at=now()+interval '1 hour' WHERE id=ow_entry;RAISE EXCEPTION 'Creation time rewritten';EXCEPTION WHEN check_violation THEN NULL;END;
+ UPDATE public.project_spend_entries SET project_id=other_project WHERE id=ow_entry;
+ state:=public.read_contract_management(engagement,owner_id,now());IF NOT (state->>'cutoffConflicts')::boolean THEN RAISE EXCEPTION 'Moved source vanished from cutoff';END IF;
  `));
 
  it("refuses shared costs denominated in another or unknown currency",()=>marker(`${saveBaseline}${time}

@@ -88,3 +88,5 @@ appropriate exact evidence hashes. Prior commercial-era deletions remain in Git
 history; this consolidation does not repeat a mass deletion.
 
 - [OWP preparation implementation and verification](reviews/2026-09-06-handoffs/OWP_PREPARATION_IMPLEMENTATION.md) — bounded Programs preparation increment and unfinished acceptance evidence.
+
+Contract management: [operator workflow](ops/CONTRACT_RECONCILIATION.md) and [v0.46 engineering evidence](reviews/2026-09-07-contract-reconciliation/VERIFICATION.md). Full M11 remains open.
