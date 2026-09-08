@@ -764,6 +764,14 @@ const landUsePlanActionsSource: MyWorkSource = {
   }),
 };
 
+const workProgramPeriodsSource: MyWorkSource = {
+  id: "work_program_periods", label: "Work program reporting", readLabel: "work program reporting periods", block: "undated",
+  table: "work_program_reporting_periods", select: "id, program_id, workspace_id, name, state, created_by, programs!inner(title, workspace_id)",
+  workspaceFilterColumn: "workspace_id", assigneeColumn: "created_by", orderColumn: "updated_at", orderAscending: false,
+  staticFilters: [{ kind: "in", column: "state", values: ["draft", "review", "returned", "correcting"] }],
+  toItems: rows => rows.map(row => ({ sourceId: "work_program_periods", block: "undated", id: String(row.id), title: `Report ${asString(row.name) ?? "work program period"}`, projectId: null, projectName: null, dueOn: null, isOverdue: false, assigneeUserId: asString(row.created_by), ownerLabel: null, badge: { label: "OWP reporting", tone: "neutral" }, detail: asString(row.state), href: `/programs/${row.program_id}/work-program#period-reports`, dedupKey: null } satisfies MyWorkItem)),
+};
+
 const workProgramReviewsSource: MyWorkSource = {
   id: "work_program_reviews", label: "Work program reviews", readLabel: "work program reviews", block: "undated",
   table: "program_work_program_reviews", select: "id, program_id, revision_id, assignee_user_id, due_on, status, programs!inner(title, workspace_id)",
@@ -1033,6 +1041,7 @@ export const MY_WORK_SOURCES: readonly MyWorkSource[] = [
   decisionPackageReviewsSource,
   landUsePlanActionsSource,
   workProgramReviewsSource,
+  workProgramPeriodsSource,
   landUsePlanProcessSource,
   landUsePlanReviewClosingSource,
   grantDecisionsSource,

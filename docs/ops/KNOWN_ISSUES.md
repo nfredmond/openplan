@@ -12,6 +12,21 @@ This is a quality-boundary register, not a development queue. Scheduling lives
 only in `docs/ROADMAP.md`.
 
 
+## OWP period reporting boundary, September 7 v0.45 candidate
+
+[Reporting evidence](../reviews/2026-09-07-owp-reporting/IMPLEMENTATION.md) covers
+synthetic internal management reporting, private cost rates, source allocations,
+opening balances and corrected immutable reports. It does not establish agency
+accounting completeness, fund eligibility, funder-specific reimbursement forms,
+actual authority or practitioner usefulness. CSV identifier columns require source
+UUIDs or the selected manual defaults; automatic name matching is not supplied.
+Mapped source entries require reporting corrections; already-billed hours require
+the invoice relationship to be corrected first. Original source versions remain
+retained. Unsaved form edits are not durable drafts; a submitted save with unknown
+outcome is retained locally for exact retry. Browser storage must be available
+for that local recovery. The complete OWP/UPWP and contract-administration gaps
+below remain open, as do historical scientific and whole-product partial outcomes.
+
 ## Reconciliation of dated dispositions
 
 The existing KI rows below are retained unchanged, including their historical

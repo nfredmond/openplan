@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const TIME_ENTRY_SELECT =
-  "id, workspace_id, staff_id, engagement_id, deliverable_id, entry_date, hours, notes, billable, labor_category, billed_line_item_id, created_by, created_at, updated_at";
+  "id, workspace_id, staff_id, engagement_id, deliverable_id, entry_date, hours, notes, billable, work_program_id, labor_category, billed_line_item_id, created_by, created_at, updated_at";
 
 /**
  * List cap: at most this many rows come back, newest entry_date first. The
@@ -125,6 +125,11 @@ export async function POST(request: NextRequest) {
   try {
     const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
     if (!payloadBody.ok) return payloadBody.response;
+    const workProgramInput = payloadBody.data as { programId?: string; workProgramActual?: unknown } | null;
+    if (workProgramInput?.programId && workProgramInput.workProgramActual) {
+      const { saveWorkProgramActual } = await import("@/lib/programs/work-program/reporting-server");
+      return saveWorkProgramActual(request, workProgramInput.programId, workProgramInput.workProgramActual, "labor");
+    }
     const parsed = createTimeEntrySchema.safeParse(payloadBody.data);
 
     if (!parsed.success) {

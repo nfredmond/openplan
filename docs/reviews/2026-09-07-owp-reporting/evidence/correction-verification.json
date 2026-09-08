@@ -1,0 +1,16 @@
+{
+  "checks": [
+    {
+      "keyboardTabs": 4,
+      "layout": {
+        "width": 390,
+        "documentWidth": 390
+      }
+    },
+    "Member private API and actual document download denial",
+    "Truncated downloaded bytes refused before browser file delivery"
+  ],
+  "errors": [],
+  "originalHash": "d9c0b17941588d0c8aac4f75377a1ab45a1370b0c37829756138c6a270126733",
+  "correctedHash": "8d3d33a8bfdaa33ec27979a7f6622101eb8ef962f40c1739297458cc9c4b3c7e"
+}

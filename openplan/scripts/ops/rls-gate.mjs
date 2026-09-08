@@ -43,6 +43,7 @@ const SKIP_BANNER = [
   "",
 ].join("\n");
 
+/** @param {{ env?: Record<string, string | undefined>, run?: typeof spawnSync }} options */
 export function main({ env = process.env, run = spawnSync } = {}) {
   // A running local stack can be the operator's demo, not a disposable test DB.
   if (env.OPENPLAN_RLS_GATE !== "1") {

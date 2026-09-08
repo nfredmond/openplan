@@ -146,6 +146,16 @@ Done means both styles look intentional across the main workflows and overlays, 
 - **Risks and product questions:** availability and quality of prior OWP/accounting files, agency-specific interpretation and approval practices, staff effort to maintain meaningful progress, restricted cost/personnel records and source updates. Later agency cases assess work-element meaning and usefulness with practitioners; this is not a dependency on this preparation engineering exercise. Do not turn this into a replacement general ledger or make legal-compliance claims from templates.
 - **Operating costs:** ordinary records/decimal calculations plus source intake, rendering, storage and periodic human review. Use shared resumable export/intake workers where needed. A free manual/local route is mandatory; optional agents can draft/explain but cannot authorize, adopt or invent evidence.
 
+**September 7 reporting increment (v0.45 candidate):** the existing work-program
+page now connects agency/contract time, attributed expenses, opening balances,
+private approved cost rates and traceable corrections to adopted-baseline periods.
+Draft, review, return, issue and corrected versions produce reconciled internal
+PDF/XLSX management reports through Documents. [Implementation and verification](reviews/2026-09-07-owp-reporting/IMPLEMENTATION.md)
+retain synthetic browser, upgrade, access, arithmetic and failure evidence.
+M2d.3 and M11a remain partial: funder forms/eligibility, fund claims, full contract
+controls and accounting reconciliation are subsequent work; this is no payroll
+replacement or completed OWP administration claim.
+
 **Source-specific limits.** California's covered grants can be managed and invoiced at work-element level while retaining task budgets for internal control; the 2024 guidance replaces a separate CAT amendment after incorporation but contains ambiguous task-budget wording. Do not invent a universal threshold or duplicate filing. Oahu's current eligible UPWP and broader OWP-and-Budget demonstrate separate scope over a two-year period. Resolve actual agreement terms and current workbook labels before promising a filing-compatible export. Source details and bounded reading coverage: [OWP research](reviews/2026-09-04-pre-handoff/OWP_ADMINISTRATION_REQUIREMENTS_RESEARCH.md).
 
 ## M3. Free, private and recoverable agency operation

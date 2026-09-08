@@ -49,6 +49,7 @@ type DocumentRow = {
   content_type: string | null;
   checksum: string | null;
   work_program_packet_id: string | null;
+  work_program_report_id: string | null;
 };
 
 export async function GET(request: NextRequest, context: RouteContext): Promise<NextResponse> {
@@ -72,7 +73,7 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
     // membership — a foreign document answers 404 here, not 403.
     const { data: documentData, error } = await supabase
       .from("kb_documents")
-      .select("id, workspace_id, title, original_filename, storage_ref, source_kind, content_type, checksum, work_program_packet_id")
+      .select("id, workspace_id, title, original_filename, storage_ref, source_kind, content_type, checksum, work_program_packet_id, work_program_report_id")
       .eq("id", parsedParams.data.documentId)
       .maybeSingle();
 
@@ -131,7 +132,7 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
 
     // Review files and decision evidence must not hand out a reusable bearer URL.
     // Check the caller's workspace-scoped evidence references even from Documents.
-    let reviewDocument = Boolean(document.work_program_packet_id);
+    let reviewDocument = Boolean(document.work_program_packet_id || document.work_program_report_id);
     if (!reviewDocument) {
       const references = await supabase.from("program_work_program_events").select("id")
         .eq("workspace_id", document.workspace_id).contains("evidence", JSON.stringify([{ id: document.id }])).limit(1);

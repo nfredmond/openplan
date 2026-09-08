@@ -54,7 +54,7 @@ const updateSpendEntrySchema = z
   );
 
 const SPEND_ENTRY_SELECT =
-  "id, project_id, deliverable_id, entry_date, amount, description, vendor_label, created_by, created_at, updated_at";
+  "id, project_id, deliverable_id, entry_date, amount, description, work_program_id, vendor_label, created_by, created_at, updated_at";
 
 type RouteContext = {
   params: Promise<{ projectId: string }>;
@@ -155,6 +155,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
     if (!payloadBody.ok) return payloadBody.response;
+    const workProgramInput = payloadBody.data as { programId?: string; workProgramActual?: unknown } | null;
+    if (workProgramInput?.programId && workProgramInput.workProgramActual) {
+      const { saveWorkProgramActual } = await import("@/lib/programs/work-program/reporting-server");
+      return saveWorkProgramActual(request, workProgramInput.programId, workProgramInput.workProgramActual, "expense", parsedParams.data.projectId);
+    }
 
     const parsed = createSpendEntrySchema.safeParse(payloadBody.data);
     if (!parsed.success) {
