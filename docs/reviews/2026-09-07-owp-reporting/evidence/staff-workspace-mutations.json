@@ -1,0 +1,23 @@
+[
+  {
+    "case": "no-op",
+    "result": "survived",
+    "tests": [
+      "src/test/work-program-reporting.test.ts"
+    ]
+  },
+  {
+    "case": "staff-link-workspace",
+    "result": "failed as expected",
+    "tests": [
+      "src/test/work-program-staff-link.test.tsx"
+    ]
+  },
+  {
+    "case": "staff-link-wrong-workspace",
+    "result": "failed as expected",
+    "tests": [
+      "src/test/work-program-staff-link.test.tsx"
+    ]
+  }
+]
