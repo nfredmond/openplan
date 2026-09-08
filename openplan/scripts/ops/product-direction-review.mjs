@@ -514,8 +514,15 @@ function runCheck() {
   if (!/diagnostic/i.test(preregistration.splitDesign?.currentThirtyPercentHoldout ?? "")) {
     fail("the current 30 percent holdout is not labeled diagnostic-only");
   }
-  if (field(block, "current_release") !== release) {
-    fail(`latest review release does not match package release ${release}`);
+  const reviewedRelease = field(block, "current_release");
+  if (!/^v\d+\.\d+\.\d+$/.test(reviewedRelease)) {
+    fail("latest review release must be an exact v-prefixed semantic version");
+  }
+  if (compareSemver(reviewedRelease.slice(1), release.slice(1)) > 0) {
+    fail(`latest review claims future release ${reviewedRelease}`);
+  }
+  if (reviewedRelease !== release) {
+    console.warn(`Review reminder: latest review covers ${reviewedRelease}; package is ${release}`);
   }
 
   const independentContexts = Number.parseInt(field(block, "independent_contexts"), 10);
@@ -602,7 +609,7 @@ function runCheck() {
 
   process.stdout.write(
     `Product direction records checked; review deadline ${reviewByText}: ${relative(reviewPath)} ` +
-      `(${independentContexts} independent contexts, ${release}).\n`,
+      `(${independentContexts} independent contexts, review ${reviewedRelease}, package ${release}).\n`,
   );
 }
 

@@ -1,0 +1,17 @@
+[
+  {
+    "case": "harmless-comment",
+    "exit": 0,
+    "expected": 0
+  },
+  {
+    "case": "old-review-blocks-release",
+    "exit": 1,
+    "expected": 1
+  },
+  {
+    "case": "future-review-ignored",
+    "exit": 1,
+    "expected": 1
+  }
+]

@@ -88,6 +88,31 @@ describe("the recurring product-direction review", () => {
     }
   });
 
+  it.each([
+    ["v0.43.0", true],
+    ["v99.0.0", false],
+  ])("handles a strategy review recorded for %s without rewriting it", (reviewedRelease, accepted) => {
+    const directory = mkdtempSync(resolve(tmpdir(), "openplan-review-release-"));
+    const preload = resolve(directory, "release.cjs");
+    writeFileSync(preload, `const fs = require('node:fs'); const read = fs.readFileSync;
+      fs.readFileSync = function(file, ...args) {
+        const value = read.call(this, file, ...args);
+        if (String(file).includes('/docs/reviews/product-direction/') && String(file).endsWith('.md')) {
+          return String(value).replace(/current_release: v\\d+\\.\\d+\\.\\d+/, 'current_release: ${reviewedRelease}');
+        }
+        return value;
+      }; require('node:module').syncBuiltinESMExports();`);
+    const check = () => execFileSync(process.execPath, ["--require", preload, SCRIPT, "--check"], {
+      cwd: APP_ROOT, encoding: "utf8", stdio: "pipe",
+    });
+    try {
+      if (accepted) expect(check()).toContain("Product direction records checked");
+      else expect(check).toThrow(/latest review claims future release/);
+    } finally {
+      rmSync(directory, { recursive: true });
+    }
+  });
+
   it("builds a fresh-context packet from the live repository state", () => {
     const packet = run("--packet");
     const pageCount = countFiles(resolve(APP_ROOT, "src/app"), "/page.tsx");

@@ -122,3 +122,21 @@ deployment, domain or subscription was deleted; nothing paid was provisioned.
 The old failure status is historical and is not a required release check. Local detailed logs are under
 `/tmp/openplan-control-2026-09-07`; candidate receipts/build logs remain in the private
 updates directory. Do not commit raw database backups or application records.
+
+## Final review-version correction
+
+A final source review found that exact strategy-review/package version equality
+would reintroduce a whole-product review requirement at the next minor release.
+An older recorded review now produces a reminder without changing its date or
+version. Malformed and future release claims still fail. Seven direction tests
+passed; isolated read interception exercises both old and future review versions.
+The accompanying mutation record retains a harmless survivor and rejects both
+restored version blocking and ignored future claims. Current release metadata in
+the contract/roadmap/capability inventory still stays aligned with the package;
+that housekeeping does not assert a new strategic review.
+
+The final demo refresh also served `8f5df8180c1c`, independently matching main.
+Both existing desktop launchers point to the repaired Control source. CI
+34176046173 passed on the application commit; RLS 34176659476 passed on the
+documentation checkpoint. The later review-checker adjustment changes no browser
+or server application code; its subsequent GitHub run is separate landing evidence.

@@ -47,7 +47,7 @@ unfinished where their evidence is absent.
 ## Reviews proportional to the work
 
 Review product direction at meaningful scope decisions, when evidence contradicts
-the plan, and periodically as a reminder. A monthly expiry or a new code commit
+the plan, and periodically as a reminder. A monthly expiry, a new code commit or a later development version
 is not an engineering failure. Keep dates and source commits honest; do not
 rewrite a review's metadata merely to make CI pass. The direction checker still
 rejects broken evidence references, altered frozen artifacts and unsupported
