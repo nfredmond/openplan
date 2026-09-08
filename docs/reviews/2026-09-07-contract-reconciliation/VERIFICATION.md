@@ -9,9 +9,11 @@ assignment and all monetary records below are explicitly synthetic.
 
 Work began from main a0aed946, v0.45.0, in the isolated checkout
 `/home/nathaniel/.local/state/openplan/contract-reconciliation-2026-09-07`.
-Checkpoint 654d95b4 is pushed. Release candidate 85f201a2 is pushed in PR #106. Final production acceptance, GitHub checks, tag and
-demo refresh are pending and will be recorded here separately. Main and its demo
-were not used for fixture writes or mutated by the test suite.
+Production acceptance is bound to 67345968745b6881b48989c6b0a4cb9f70465fb5,
+version 0.46.0, in PR #106. Final local QA and browser acceptance passed. GitHub
+checks, release integration, tag and demo refresh are recorded separately below
+as they finish. Main and its demo were not used for fixture writes or mutated
+by the test suite.
 
 ## Exercised workflow
 
@@ -79,11 +81,13 @@ Before/after SHA-256 was
 944920f37e2e8652865c3482b56b5611a4b42fa3f14ad55ccd732d53b20da4ec.
 19 contract/catalog checks passed on that upgraded stack. A subsequent fresh installation of all eight migrations passed all 187 live checks across 24 suites, including member projection and source-departure guards. The final OWP source picker read function also passed the focused live suite after installation. GitHub fresh-migration proof remains separate.
 
-Full QA passed at the preceding checkpoint, including lint, deadcode, 13,291
-unit tests, dependency audit and webpack build. All 52 Python worker suites
-passed using their respective installed environments. The latest complete live
-run passed 186 checks across 24 suites; a subsequent contract export-recovery
-check passed in a focused 17-test run. Final current-source counts are pending.
+Final QA on 67345968 passed lint, deadcode, 13,293 unit tests, dependency audit
+with zero reported vulnerabilities and webpack production build. All 52 Python
+worker suites passed using their respective installed environments. The fresh
+isolated database run passed 187 checks across 24 suites; the final focused
+contract export/member checks passed 17 tests. Live RLS was explicitly separate
+from ordinary QA. Four release-inventory controls also passed: one harmless
+survivor and three targeted failures, retained in release-guard-mutations.json.
 
 Independent review found defects rather than treating green tests as acceptance:
 issued-line appends, historical cutoff/currency ambiguity, OWP drift, mutable
@@ -103,3 +107,22 @@ the same real event. Overlap review therefore requires explicit evidence. Legacy
 net receivables keep their existing whole-invoice semantics; partial cash is
 separate contract management evidence. Scientific models and historical partial
 whole-product journeys were not regraded or promoted.
+
+## Production browser acceptance, September 8
+
+The production server on :3246 reported 0.46.0 / 67345968745b and matched the
+isolated checkout. Real navigation passed from Projects through the project and
+contract, and from My Work's assigned task back to the contract. Desktop
+1440x1000 and 390x844 captures were inspected. The narrow layout had no document
+horizontal overflow. Keyboard Tab moved from Position to Baselines, and Enter
+opened the baseline panel. The production member saw approved version 3 with
+correction disabled. Its management response contained no cost amounts, rates,
+private snapshots or OWP valuations. Requests for the populated private report
+and its document download both returned 404. Fresh owner console review and
+member page-error review were empty. Both production PDF and XLSX downloads
+matched the retained, inspected files byte for byte.
+
+The machine-readable provenance is evidence/production-browser.json. Browser
+checks cannot establish keyboard access to every control, screen-reader quality
+or practitioner usefulness. Intentional aborted requests from earlier recovery
+journeys are separate from this fresh production console review.
