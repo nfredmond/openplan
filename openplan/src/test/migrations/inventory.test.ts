@@ -464,16 +464,17 @@ const EXPECTED = {
   // ten permissive read policies and one restrictive Documents policy. Isolated catalog checked.
   // Seven immutable agency reconciliation tables, each with SELECT-only RLS.
   // Confirmed on disposable m11-contract-verification: 733 policies, 217 tables.
-  policies: 733,
-  permissive: 482,
+  // Reviewed delivery adds four SELECT-only history tables and one security-invoker My Work view.
+  policies: 737,
+  permissive: 486,
   restrictive: 251,
   permissiveWrites: 280,
   expanded: 286,
-  tablesWithPolicies: 199,
-  relations: 226,
-  tables: 217,
-  views: 9,
-  rlsEnabledTables: 217,
+  tablesWithPolicies: 203,
+  relations: 231,
+  tables: 221,
+  views: 10,
+  rlsEnabledTables: 221,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
@@ -820,6 +821,7 @@ describe("migration schema inventory", () => {
     expect(schema.views()).toEqual([
       "census_tracts_computed",
       "census_tracts_map",
+      "contract_delivery_my_work",
       "gtfs_stops_map",
       "lodes_by_tract",
       "project_bca_screenings_latest",

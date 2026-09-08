@@ -1,0 +1,167 @@
+[
+  {
+    "name": "harmless-calculation",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "ignore-unavailable-date",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "drop-leap-day",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "allow-dependency-cycle",
+    "outcome": "killed",
+    "expected": "expected [Function] to throw"
+  },
+  {
+    "name": "missing-review-is-zero",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "ignore-reviewer-availability",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "ignore-capacity-overload",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "accept-unreviewed-work",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "ignore-overdue-update",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "ignore-blocked-work",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "ignore-departed-staff",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "claim-incomplete-costs",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "bill-fixed-fee-as-effort",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "hide-cost-warning",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "hide-fee-warning",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "hide-date-warning",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "harmless-delivery-sql",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "staff-self-review",
+    "outcome": "killed",
+    "expected": "Staff approved their update"
+  },
+  {
+    "name": "stale-reviewed-update",
+    "outcome": "killed",
+    "expected": "Stale work review accepted"
+  },
+  {
+    "name": "stale-forecast-input",
+    "outcome": "killed",
+    "expected": "Concurrent forecast changes accepted"
+  },
+  {
+    "name": "stale-capacity",
+    "outcome": "killed",
+    "expected": "Stale capacity accepted"
+  },
+  {
+    "name": "harmless-api",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "ignore-read-race",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "leak-forecast-rates",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "allow-agent-write",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "discard-forged-fields",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "physical-time-staleness",
+    "outcome": "killed",
+    "expected": "Unreconciled physical time did not stale forecast"
+  },
+  {
+    "name": "disable-rls-contract_schedules",
+    "outcome": "killed",
+    "expected": "Outside delivery stream leaked"
+  },
+  {
+    "name": "disable-rls-contract_capacity_versions",
+    "outcome": "killed",
+    "expected": "Outside delivery stream leaked"
+  },
+  {
+    "name": "disable-rls-contract_work_updates",
+    "outcome": "killed",
+    "expected": "Outside delivery stream leaked"
+  },
+  {
+    "name": "disable-rls-contract_forecasts",
+    "outcome": "killed",
+    "expected": "Outsider saw forecast"
+  },
+  {
+    "name": "harmless-forecast-export",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "drop-forecast-evidence",
+    "outcome": "killed",
+    "expected": "expected"
+  }
+]

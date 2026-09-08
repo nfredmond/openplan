@@ -764,12 +764,18 @@ const landUsePlanActionsSource: MyWorkSource = {
   }),
 };
 
+const contractWorkReviewsSource: MyWorkSource = {
+ staticFilters:[],id:"contract_work_reviews",label:"Remaining-work reviews",readLabel:"submitted contract remaining-work updates",block:"undated",table:"contract_delivery_my_work",
+ select:"id, workspace_id, engagement_id, task_id, project_id, title, assignee_user_id, reported_on",workspaceFilterColumn:"workspace_id",assigneeColumn:"assignee_user_id",orderColumn:"reported_on",orderAscending:true,
+ toItems:rows=>rows.map(row=>({sourceId:"contract_work_reviews",block:"undated",id:String(row.id),title:`Review remaining work: ${asString(row.title)??"Contract task"}`,projectId:asString(row.project_id),projectName:null,dueOn:null,isOverdue:false,assigneeUserId:asString(row.assignee_user_id),ownerLabel:null,badge:{label:"PM review",tone:"warning"},detail:`Staff update as of ${asString(row.reported_on)??"unrecorded"}`,href:`/invoicing/engagements/${row.engagement_id}?tab=remaining#work-update-${row.id}`,dedupKey:null} satisfies MyWorkItem)),
+};
+
 const contractTasksSource: MyWorkSource = {
   id: "contract_tasks", label: "Contract tasks", readLabel: "approved contract task assignments", block: "undated",
   table: "contract_task_assignments", select: "id, engagement_id, workspace_id, assignee_user_id, active, contract_tasks!inner(id, project_id, title, deadline)",
   workspaceFilterColumn: "workspace_id", assigneeColumn: "assignee_user_id", orderColumn: "id", orderAscending: true,
   staticFilters: [{kind:"eq",column:"active",value:"true"}],
-  toItems: (rows,{now}) => rows.map(row => { const task=embedded(row.contract_tasks),dueOn=asString(task?.deadline),overdue=dueOn?isDeadlinePast(dueOn,now):false;return { sourceId:"contract_tasks",block:dueOn?"deadlines":"undated",id:String(row.id),title:asString(task?.title)??"Contract task",projectId:asString(task?.project_id),projectName:null,dueOn,isOverdue:overdue,assigneeUserId:asString(row.assignee_user_id),ownerLabel:null,badge:{label:"Contract task",tone:overdue?"warning":"neutral"},detail:dueOn?`Agreed deadline ${dueOn}`:"Agreed deadline unrecorded",href:`/invoicing/engagements/${row.engagement_id}`,dedupKey:null } satisfies MyWorkItem; }),
+  toItems: (rows,{now}) => rows.map(row => { const task=embedded(row.contract_tasks),dueOn=asString(task?.deadline),overdue=dueOn?isDeadlinePast(dueOn,now):false;return { sourceId:"contract_tasks",block:dueOn?"deadlines":"undated",id:String(row.id),title:asString(task?.title)??"Contract task",projectId:asString(task?.project_id),projectName:null,dueOn,isOverdue:overdue,assigneeUserId:asString(row.assignee_user_id),ownerLabel:null,badge:{label:"Contract task",tone:overdue?"warning":"neutral"},detail:dueOn?`Agreed deadline ${dueOn}`:"Agreed deadline unrecorded",href:`/invoicing/engagements/${row.engagement_id}?tab=remaining`,dedupKey:null } satisfies MyWorkItem; }),
 };
 
 const workProgramPeriodsSource: MyWorkSource = {
@@ -1051,6 +1057,7 @@ export const MY_WORK_SOURCES: readonly MyWorkSource[] = [
   workProgramReviewsSource,
   workProgramPeriodsSource,
   contractTasksSource,
+  contractWorkReviewsSource,
   landUsePlanProcessSource,
   landUsePlanReviewClosingSource,
   grantDecisionsSource,

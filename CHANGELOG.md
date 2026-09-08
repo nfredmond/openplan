@@ -23,6 +23,8 @@ stable enough to promise smooth upgrades indefinitely.
 - Draft agency contract reconciliation: designated PM/finance access, scoped consultant invoice review, shared task-order authorization, and retained accounting comparison. Remaining-work forecasts, weekly PM responses and closeout remain in development; M11 is open.
 - Additive migrations: [contract_master_authorization](openplan/supabase/migrations/20260912000001_contract_master_authorization.sql), [contract_scoped_access](openplan/supabase/migrations/20260912000002_contract_scoped_access.sql), [received_consultant_invoices](openplan/supabase/migrations/20260912000003_received_consultant_invoices.sql), [contract_accounting_reconciliation](openplan/supabase/migrations/20260912000004_contract_accounting_reconciliation.sql), [legacy_order_authorization](openplan/supabase/migrations/20260912000005_legacy_order_authorization.sql). Apply them before this candidate runs. Original accounting transactions remain authoritative in the external ledger.
 
+- Draft remaining-work review uses [contract_delivery](openplan/supabase/migrations/20260913000001_contract_delivery.sql): explicit calendars, shared capacity, exact-version staff/PM reviews and retained forecasts. Browser and human acceptance remain open.
+
 ## 0.46.0 — 2026-09-08
 
 - Reconcile a planning contract from Projects or the existing engagement register.
