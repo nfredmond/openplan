@@ -1,0 +1,232 @@
+[
+  {
+    "name": "harmless-response",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "ignore-stale-response",
+    "outcome": "killed",
+    "expected": "expected [Function] to throw"
+  },
+  {
+    "name": "ignore-record-content-version",
+    "outcome": "killed",
+    "expected": "expected [Function] to throw"
+  },
+  {
+    "name": "promote-scenario-to-staff-review",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "allow-unrelated-work-assumption",
+    "outcome": "killed",
+    "expected": "expected [Function] to throw"
+  },
+  {
+    "name": "harmless-settlement",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "ignore-partial-payment",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "retention-reduces-open-debt",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "refund-reduces-debt",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "duplicate-legacy-payment",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "ignore-unaccepted-delivery",
+    "outcome": "killed",
+    "expected": "expected [Function] to throw"
+  },
+  {
+    "name": "claim-unsettled-finances",
+    "outcome": "killed",
+    "expected": "expected [Function] to throw"
+  },
+  {
+    "name": "erase-valid-underspend",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "harmless-workflow-api",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "ignore-financial-read-race",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "leak-closeout-rates",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "allow-excess-retention-release",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "harmless-register-balance",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "truncate-invoice-balance-pages",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "sum-different-currencies",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "harmless-response-export",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "omit-response-history",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "harmless-workflow-sql",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "allow-staff-financial-event",
+    "outcome": "killed",
+    "expected": "Staff posted financial event"
+  },
+  {
+    "name": "allow-unsubmitted-acceptance",
+    "outcome": "killed",
+    "expected": "Unsubmitted deliverable accepted"
+  },
+  {
+    "name": "allow-stale-financial-version",
+    "outcome": "killed",
+    "expected": "Changed invoice accepted"
+  },
+  {
+    "name": "allow-duplicate-financial-source",
+    "outcome": "killed",
+    "expected": "Duplicate financial source accepted"
+  },
+  {
+    "name": "allow-stale-closeout",
+    "outcome": "killed",
+    "expected": "Stale closeout accepted"
+  },
+  {
+    "name": "apply-changed-project-decision",
+    "outcome": "killed",
+    "expected": "Changed project decision applied"
+  },
+  {
+    "name": "allow-private-pm-report",
+    "outcome": "killed",
+    "expected": "PM queued private finance report"
+  },
+  {
+    "name": "publish-revoked-pm-export",
+    "outcome": "killed",
+    "expected": "Revoked PM export published"
+  },
+  {
+    "name": "allow-closed-raw-source-change",
+    "outcome": "killed",
+    "expected": "Closed raw financial source changed"
+  },
+  {
+    "name": "allow-foreign-closeout-workspace",
+    "outcome": "killed",
+    "expected": "Wrong workspace history accepted"
+  },
+  {
+    "name": "disable-rls-contract_management_responses",
+    "outcome": "killed",
+    "expected": "Outside response evidence leaked"
+  },
+  {
+    "name": "disable-rls-contract_response_applications",
+    "outcome": "killed",
+    "expected": "Outside response evidence leaked"
+  },
+  {
+    "name": "disable-rls-contract_settlement_events",
+    "outcome": "killed",
+    "expected": "Outside closeout evidence leaked"
+  },
+  {
+    "name": "disable-rls-contract_deliverable_events",
+    "outcome": "killed",
+    "expected": "Outside closeout evidence leaked"
+  },
+  {
+    "name": "disable-rls-contract_closeouts",
+    "outcome": "killed",
+    "expected": "Outside closeout evidence leaked"
+  },
+  {
+    "name": "harmless-schema-inventory",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "introduce-unread-column",
+    "outcome": "killed",
+    "expected": "contract_closeouts.unexplained_marker"
+  },
+  {
+    "name": "harmless-reimbursement-read-bootstrap",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "conceal-reimbursement-read-failure",
+    "outcome": "killed",
+    "expected": "invoicing-read-failures.test.tsx"
+  },
+  {
+    "name": "harmless-funder-money-bootstrap",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "change-funder-ledger-cents",
+    "outcome": "killed",
+    "expected": "expected"
+  },
+  {
+    "name": "harmless-copy-ratchet",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "introduce-machine-copy",
+    "outcome": "killed",
+    "expected": "posture"
+  }
+]

@@ -1,0 +1,11 @@
+import { beforeEach,describe,it,expect,vi } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
+const mocks=vi.hoisted(()=>({range:vi.fn(),select:vi.fn(),eq:vi.fn(),filter:vi.fn(),order:vi.fn(),read:vi.fn()}));
+vi.mock("@/lib/supabase/server",()=>({createClient:async()=>({from:()=>({select:mocks.select})})}));
+vi.mock("@/lib/invoicing/contracts/invoice-position-server",()=>({readAssignmentInvoicePosition:mocks.read}));
+import { ContractCashPosition } from "@/components/invoicing/contracts/cash-position";
+describe("documented invoice summary",()=>{
+ beforeEach(()=>{vi.clearAllMocks();mocks.select.mockReturnValue({eq:mocks.eq});mocks.eq.mockReturnValue({in:mocks.filter});mocks.filter.mockReturnValue({order:mocks.order});mocks.order.mockReturnValue({range:mocks.range});});
+ it("reads beyond the first page and keeps currency totals exact",async()=>{const rows=Array.from({length:201},(_,i)=>({id:String(i),engagement_id:"synthetic"}));mocks.range.mockImplementation(async(start:number,end:number)=>({data:rows.slice(start,end+1),error:null}));mocks.read.mockResolvedValue(rows.map((r,i)=>({id:r.id,direction:"outgoing",currency:i===200?"CAD":"USD",open:i===200?"0.01":"0.03",warnings:[]})));const html=renderToStaticMarkup(await ContractCashPosition({workspaceId:"synthetic"}));expect(mocks.select).toHaveBeenCalledWith("id,engagement_id");expect(mocks.eq).toHaveBeenCalledWith("workspace_id","synthetic");expect(mocks.filter).toHaveBeenCalledWith("status",["sent","paid"]);expect(mocks.range.mock.calls).toEqual([[0,199],[200,399]]);expect(html).toContain("6.00");expect(html).toContain("USD");expect(html).toContain("0.01");expect(html).toContain("CAD");});
+ it("does not claim a complete balance for inaccessible invoices or failed later pages",async()=>{mocks.range.mockResolvedValue({data:[{id:"1",engagement_id:"private"}],error:null});mocks.read.mockResolvedValue(null);expect(renderToStaticMarkup(await ContractCashPosition({workspaceId:"synthetic"}))).toContain("complete balance is unavailable");mocks.range.mockResolvedValue({data:null,error:{message:"Synthetic read failure"}});expect(renderToStaticMarkup(await ContractCashPosition({workspaceId:"synthetic"}))).toContain("No total is asserted");});
+});

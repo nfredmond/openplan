@@ -1,0 +1,16 @@
+import type { ContractState } from "./schema";
+import type { CloseoutPosition } from "./closeout-schema";
+export type CloseoutPackage={formatVersion:1;state:ContractState;position:CloseoutPosition;request:{asOf:string}};
+/** Stable financial identities support independent reconciliation; source versions are never summed together. */
+export function accountingHandoffRows(pkg:CloseoutPackage):string[][]{
+ const {state,position}=pkg,currency=state.baselines.filter(b=>b.state==="approved").at(-1)?.content.currency??"unassessed";
+ const rows:string[][]=[["record_type","record_id","version","parent_id","external_id","direction","invoice_id","date","currency","amount","hours","task_id","staff_id","deliverable_id","state","evidence"]];
+ for(const v of state.actuals){rows.push(["actual_version",v.id,String(v.version),v.entry_id,v.command.sourceKey,"",v.command.invoiceId??"",v.command.entryDate,currency,v.amount??"unassessed",v.hours??"unassessed","",v.command.staffId??"","",v.command.status,v.command.sourceReference]);for(const [index,a] of v.allocations.entries())rows.push(["actual_allocation",`${v.id}:${index}`,String(v.version),v.id,v.command.sourceKey,"",v.command.invoiceId??"",v.command.entryDate,currency,a.amount??"unassessed",a.hours??"unassessed",a.taskId,v.command.staffId??"",a.deliverableId??"",v.command.status,`Share ${a.share}/10000; category ${v.command.category}`]);}
+ for(const s of state.billingSources)for(const l of s.lines)rows.push(["outgoing_billing_allocation",l.lineId,"",s.actual_version_id,s.entry_id,"outgoing",s.invoice_id,"",currency,l.amount,l.hours??"unassessed",l.taskId,state.actuals.find(a=>a.id===s.actual_version_id)?.command.staffId??"",l.deliverableId??"","retained","Presentation of an existing incurred source; no second cost"]);
+ for(const i of state.receivedInvoices??[])rows.push(["received_invoice_version",i.id,String(i.version),i.invoice_id,i.content.number,"received",i.invoice_id,i.content.date,i.content.currency,i.content.total,"","","","",i.state,i.review_note]);
+ for(const e of state.closeout?.settlements??[])rows.push([`financial_${e.content.kind}`,e.id,String(e.version),e.content.eventId,e.content.sourceKey,e.content.direction,e.content.invoiceId,e.content.date,e.content.currency,e.content.amount,"","","","",e.content.state,`${e.content.sourceReference}; legacy source ${e.content.legacyActualId??"none"}; ${e.content.correctionEvidence}`]);
+ for(const i of position.invoices)for(const metric of ["gross","payments","credits","refunds","adjustments","retention","disputed","open","currentlyDue"] as const)rows.push([`invoice_total_${metric}`,i.id,i.version,"",i.number,i.direction,i.id,pkg.request.asOf,i.currency,i[metric],"","","","","reconciled",i.warnings.join("; ")]);
+ rows.push(["contract_total_incurred",state.engagement.id,"","","","","",pkg.request.asOf,currency,position.incurred,"","","","","reconciled","Sum current approved physical cost sources once; payments, credits and commitments are separate"]);
+ return rows;
+}
+export function accountingHandoffCsv(pkg:CloseoutPackage){return accountingHandoffRows(pkg).map(row=>row.map(v=>`"${(/^[=+@\t\r]/.test(v)||(/^\-/.test(v)&&!/^\-?\d+(\.\d+)?$/.test(v))?"'":"")+v.replaceAll('"','""')}"`).join(",")).join("\r\n")+"\r\n";}

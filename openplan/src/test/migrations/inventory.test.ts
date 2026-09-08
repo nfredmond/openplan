@@ -465,16 +465,17 @@ const EXPECTED = {
   // Seven immutable agency reconciliation tables, each with SELECT-only RLS.
   // Confirmed on disposable m11-contract-verification: 733 policies, 217 tables.
   // Reviewed delivery adds four SELECT-only history tables and one security-invoker My Work view.
-  policies: 737,
-  permissive: 486,
+  // Weekly responses and closeout add five immutable tables with SELECT-only policies.
+  policies: 742,
+  permissive: 491,
   restrictive: 251,
   permissiveWrites: 280,
   expanded: 286,
-  tablesWithPolicies: 203,
-  relations: 231,
-  tables: 221,
+  tablesWithPolicies: 208,
+  relations: 236,
+  tables: 226,
   views: 10,
-  rlsEnabledTables: 221,
+  rlsEnabledTables: 226,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

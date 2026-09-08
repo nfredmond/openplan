@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+vi.mock("server-only",()=>({}));
 
 /**
  * A READ THAT FAILED MAY NOT BE RENDERED AS AN ANSWER — reimbursement lane.

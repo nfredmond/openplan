@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { InvoiceBalance } from "@/components/invoicing/contracts/invoice-balance";
 import { ClientComposer, type ClientComposerRecord } from "@/components/invoicing/client-composer";
 import { ClientInvoiceComposer } from "@/components/invoicing/client-invoice-composer";
 import { ClientInvoiceStatusControl } from "@/components/invoicing/client-invoice-status-control";
@@ -452,6 +453,7 @@ export async function ReceivablesLane({
                             {invoice.paid_date ? <span>Paid {invoice.paid_date}</span> : null}
                             {invoice.payment_terms ? <span>{invoice.payment_terms}</span> : null}
                           </div>
+                          {invoice.engagement_id && <InvoiceBalance engagementId={invoice.engagement_id} invoiceId={invoice.id}/>}
                           <div className="mt-2 border-t border-border/50 pt-2">
                             <ClientInvoiceStatusControl
                               workspaceId={workspaceId}

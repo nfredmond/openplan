@@ -73,6 +73,7 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "contract_settlement_events.event_id", category: "READ_IN_SQL", reason: "Settlement SQL groups immutable source versions by event_id and enforces uniqueness; content.eventId carries the same validated identity into the management page and accounting handoff." },
   {
     column: "contract_order_periods.period_metadata",
     category: "READ_IN_SQL",

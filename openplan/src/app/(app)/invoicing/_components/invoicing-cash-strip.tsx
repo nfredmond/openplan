@@ -2,7 +2,7 @@ import {
   summarizeBillingInvoiceRecords,
   type BillingInvoiceRecordLike,
 } from "@/lib/invoicing/invoice-records";
-import { summarizeReceivables, type ClientInvoiceRecordLike } from "@/lib/invoicing/receivables";
+import { ContractCashPosition } from "@/components/invoicing/contracts/cash-position";
 import { createClient } from "@/lib/supabase/server";
 import { formatCurrency, insetClass, looksLikePendingSchema } from "./invoicing-page-helpers";
 
@@ -24,32 +24,14 @@ import { formatCurrency, insetClass, looksLikePendingSchema } from "./invoicing-
  * 500-row cap as the invoicing list routes.
  */
 const REIMBURSEMENT_STRIP_LIMIT = 20;
-const RECEIVABLE_STRIP_LIMIT = 500;
+
 
 type StripQueryResult = { data: unknown[] | null; error: { message?: string } | null };
 
 export async function InvoicingCashStrip({ workspaceId }: { workspaceId: string }) {
   const supabase = await createClient();
 
-  const [receivableRead, reimbursementRead] = (await Promise.all([
-    supabase
-      .from("client_invoices")
-      .select("id, status, engagement_id, subtotal_amount, retention_percent, retention_amount, total_amount, due_date")
-      .eq("workspace_id", workspaceId)
-      .order("created_at", { ascending: false })
-      .limit(RECEIVABLE_STRIP_LIMIT),
-    supabase
-      .from("billing_invoice_records")
-      .select("id, status, amount, retention_percent, retention_amount, due_date")
-      .eq("workspace_id", workspaceId)
-      .order("created_at", { ascending: false })
-      .limit(REIMBURSEMENT_STRIP_LIMIT),
-  ])) as [StripQueryResult, StripQueryResult];
-
-  const receivablesPending = Boolean(receivableRead.error) && looksLikePendingSchema(receivableRead.error?.message);
-  const receivablesUnavailable = Boolean(receivableRead.error);
-  const clientInvoices = receivablesUnavailable ? [] : ((receivableRead.data ?? []) as ClientInvoiceRecordLike[]);
-  const receivableSummary = summarizeReceivables(clientInvoices);
+  const reimbursementRead = await supabase.from("billing_invoice_records").select("id, status, amount, retention_percent, retention_amount, due_date").eq("workspace_id",workspaceId).order("created_at",{ascending:false}).limit(REIMBURSEMENT_STRIP_LIMIT) as StripQueryResult;
 
   const reimbursementPending = Boolean(reimbursementRead.error) && looksLikePendingSchema(reimbursementRead.error?.message);
   const reimbursementUnavailable = Boolean(reimbursementRead.error);
@@ -61,33 +43,7 @@ export async function InvoicingCashStrip({ workspaceId }: { workspaceId: string 
   return (
     <div className={`${insetClass()} grid gap-px bg-border/80 sm:grid-cols-2`}>
       <div className="bg-background/70 px-4 py-4">
-        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Owed to you by clients
-        </p>
-        {receivablesUnavailable ? (
-          <p className="mt-2 text-sm text-muted-foreground">
-            {receivablesPending
-              ? "Not set up yet — the client invoicing tables are pending in this database. Apply the latest migrations to start billing clients."
-              : "Client invoice records could not be loaded right now."}
-          </p>
-        ) : clientInvoices.length === 0 ? (
-          <p className="mt-2 text-sm text-muted-foreground">
-            Not set up yet — no client invoices recorded in this workspace. The receivables lane is where they start.
-          </p>
-        ) : (
-          <>
-            <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
-              {formatCurrency(receivableSummary.outstandingAmount)}
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {receivableSummary.sentCount} sent invoice{receivableSummary.sentCount === 1 ? "" : "s"} outstanding
-              {receivableSummary.overdueCount > 0
-                ? ` · ${receivableSummary.overdueCount} overdue totaling ${formatCurrency(receivableSummary.overdueAmount)}`
-                : " · none overdue"}
-              .
-            </p>
-          </>
-        )}
+        <ContractCashPosition workspaceId={workspaceId}/>
       </div>
 
       <div className="bg-background/70 px-4 py-4">

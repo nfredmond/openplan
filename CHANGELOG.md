@@ -20,6 +20,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- Draft weekly management and delivery closeout use [contract_management_responses](openplan/supabase/migrations/20260914000001_contract_management_responses.sql), [contract_settlement_closeout](openplan/supabase/migrations/20260915000001_contract_settlement_closeout.sql), [contract_closeout_relationships](openplan/supabase/migrations/20260915000003_contract_closeout_relationships.sql), and [contract_management_reports](openplan/supabase/migrations/20260915000002_contract_management_reports.sql). Comparisons preserve approved baselines; financial events preserve incurred costs; closeout retains acceptance, reconciliation, obligations and reopening history. These are development candidates pending full acceptance.
+
 - Draft agency contract reconciliation: designated PM/finance access, scoped consultant invoice review, shared task-order authorization, and retained accounting comparison. Remaining-work forecasts, weekly PM responses and closeout remain in development; M11 is open.
 - Additive migrations: [contract_master_authorization](openplan/supabase/migrations/20260912000001_contract_master_authorization.sql), [contract_scoped_access](openplan/supabase/migrations/20260912000002_contract_scoped_access.sql), [received_consultant_invoices](openplan/supabase/migrations/20260912000003_received_consultant_invoices.sql), [contract_accounting_reconciliation](openplan/supabase/migrations/20260912000004_contract_accounting_reconciliation.sql), [legacy_order_authorization](openplan/supabase/migrations/20260912000005_legacy_order_authorization.sql). Apply them before this candidate runs. Original accounting transactions remain authoritative in the external ledger.
 

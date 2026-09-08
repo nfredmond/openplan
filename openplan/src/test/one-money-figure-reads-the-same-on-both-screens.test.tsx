@@ -1,5 +1,7 @@
 import { render } from "@testing-library/react";
 import { beforeAll, afterAll, beforeEach, describe, expect, it, vi } from "vitest";
+// These cases compare funder reimbursements. Documented client settlement has its own populated reader tests.
+vi.mock("@/components/invoicing/contracts/cash-position",()=>({ContractCashPosition:()=>null}));
 
 /**
  * ONE INVOICE RECORD, TWO SCREENS, AND THE TWO NUMBERS A PLANNER RECONCILES.
