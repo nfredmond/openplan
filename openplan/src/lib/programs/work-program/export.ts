@@ -96,6 +96,6 @@ export async function writeWorkProgramWorkbook(workbook: XLSX.WorkBook): Promise
   const xml = await part.async("string");
   if (!xml.endsWith("</workbook>")) throw new Error("The generated workbook definition is incomplete");
   zip.file("xl/workbook.xml", xml.replace("</workbook>", '<calcPr calcId="0" calcMode="auto" fullCalcOnLoad="1" forceFullCalc="1"/></workbook>'));
-  if (workbook.Sheets["Funding sources"]) await formatWorkProgramWorkbook(zip, workbook);
+  if ((workbook.Sheets["Funding sources"] || workbook.Sheets["Budget position"])) await formatWorkProgramWorkbook(zip, workbook);
   return zip.generateAsync({ type: "uint8array", compression: "DEFLATE" });
 }

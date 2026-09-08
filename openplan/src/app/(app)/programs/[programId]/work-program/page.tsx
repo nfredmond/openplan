@@ -1,3 +1,4 @@
+import { ReportingPanel } from "@/components/programs/work-program/reporting-panel";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -10,7 +11,7 @@ export default async function WorkProgramPage({ params }: { params: Promise<{ pr
   const { programId } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) redirect("/sign-in");
   const access = await loadProgramAccess(supabase, programId, user.id, "programs.read");
   if (access.error) return <p role="alert">Program access could not be checked. Reload when the connection recovers.</p>;
   if (!access.program || !access.allowed || !access.membership) notFound();
@@ -37,7 +38,9 @@ export default async function WorkProgramPage({ params }: { params: Promise<{ pr
     if (staff.error || contracts.error) throw new Error("Staff and contracts could not be read");
     return <section className="space-y-6 min-w-0">
       <Link href={`/programs/${programId}`} className="underline">Back to {access.program.title}</Link>
-      <header><h1 className="text-3xl font-semibold">Work program preparation</h1><p className="mt-2 text-muted-foreground">Prepare an OWP, UPWP or agency work program from retained sources. Link proposed narrative, funding and staffing to the retained originals.</p></header>
+      <header><h1 className="text-3xl font-semibold">Work program</h1><p className="mt-2 text-muted-foreground">Prepare an OWP, UPWP or agency work program from retained sources. Link proposed narrative, funding and staffing to the retained originals.</p></header>
+      <ReportingPanel programId={programId} userId={user.id} />
+      <h2 id="preparation" className="text-2xl font-semibold">Preparation and adoption history</h2>
       <WorkProgramEditor programId={programId} workspaceId={access.program.workspace_id} userId={user.id} agency={access.program.sponsor_agency ?? ""} initial={preparation} documents={documents} evidenceDocuments={evidenceDocuments} projects={projects} staff={(staff.data ?? []).map((row) => ({ value: row.id, label: row.name }))} contracts={(contracts.data ?? []).map((row) => ({ value: row.id, label: row.title }))} canWrite={canAccessWorkspaceAction("programs.write", access.membership.role)} />
     </section>;
   } catch {

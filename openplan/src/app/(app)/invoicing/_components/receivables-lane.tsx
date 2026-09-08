@@ -69,6 +69,7 @@ type ClientInvoiceRow = ClientInvoiceRecordLike & {
 
 type StaffRow = {
   id: string;
+  user_id: string | null;
   name: string;
   title: string | null;
   default_labor_category: string | null;
@@ -145,7 +146,7 @@ export async function ReceivablesLane({
         .limit(INVOICE_LIST_LIMIT),
       supabase
         .from("invoicing_staff")
-        .select("id, name, title, default_labor_category, active")
+        .select("id, name, title, user_id, default_labor_category, active")
         .eq("workspace_id", workspaceId)
         .order("updated_at", { ascending: false }),
       supabase
@@ -512,6 +513,7 @@ export async function ReceivablesLane({
                 name: member.name,
                 title: member.title,
                 defaultLaborCategory: member.default_labor_category,
+                userId: member.user_id,
                 active: member.active,
               }))}
               rateTables={rateTableOptions.map((table) => ({

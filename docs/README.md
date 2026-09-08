@@ -32,6 +32,7 @@ pointer to AGENTS.md, not a second rulebook.
 - [Team commissioning](../openplan/docs/FIRST_DEPLOYMENT.md): what an independent
   operator must establish before real team use.
 - [Runbook](../openplan/docs/ops/RUNBOOK.md): diagnosis and recovery boundaries.
+- [OWP reporting-period guide](ops/OWP_REPORTING.md): agency time, source costs, private valuations and corrected internal management reports.
 - [September 7 OWP review and amendments](reviews/2026-09-07-owp-review/VERIFICATION.md): exact-version decisions, retained baselines, inspected exports and bounded engineering acceptance.
 - [September 6 workspace/control checkpoint](reviews/2026-09-06-housekeeping/VERIFICATION.md): retained local archives, native layout and isolated update/recovery evidence.
 - [Backup and restore](../openplan/docs/ops/BACKUP_AND_RESTORE.md): durable state,

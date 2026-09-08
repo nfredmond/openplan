@@ -384,6 +384,22 @@ describe("POST /api/invoicing/staff", () => {
 describe("PATCH /api/invoicing/staff/[staffId]", () => {
   const context = { params: Promise.resolve({ staffId: STAFF }) };
 
+  it("links a teammate on staff edits using the verified workspace roster", async () => {
+    const response = await patchStaffMember(jsonRequest(`http://localhost/api/invoicing/staff/${STAFF}`, "PATCH", { workspaceId: WORKSPACE, userId: LINKED_USER }), context);
+    expect(response.status).toBe(200);
+    expect(staffUpdateMock).toHaveBeenCalledWith({ user_id: LINKED_USER });
+    expect(staffUpdateSelectMock).toHaveBeenCalledWith(expect.stringContaining("user_id"));
+  });
+  it("refuses an edited staff account outside the workspace", async () => {
+    serviceRosterListMock.mockResolvedValueOnce({ data: [{ user_id: USER, role: "owner" }], error: null });
+    const response = await patchStaffMember(jsonRequest(`http://localhost/api/invoicing/staff/${STAFF}`, "PATCH", { workspaceId: WORKSPACE, userId: LINKED_USER }), context);
+    expect(response.status).toBe(400); expect(staffUpdateMock).not.toHaveBeenCalled();
+  });
+  it("keeps failed staff-edit roster reads distinct from an absent teammate", async () => {
+    serviceRosterListMock.mockResolvedValueOnce({ data: null, error: { message: "Synthetic read failure" } });
+    const response = await patchStaffMember(jsonRequest(`http://localhost/api/invoicing/staff/${STAFF}`, "PATCH", { workspaceId: WORKSPACE, userId: LINKED_USER }), context);
+    expect(response.status).toBe(500); expect(await response.json()).toMatchObject({ error: "Could not verify the linked user's workspace membership" }); expect(staffUpdateMock).not.toHaveBeenCalled();
+  });
   it("deactivates a staff record", async () => {
     const response = await patchStaffMember(
       jsonRequest(`http://localhost/api/invoicing/staff/${STAFF}`, "PATCH", {

@@ -1,0 +1,22 @@
+{
+  "base": "v0.44.0",
+  "container": "supabase_db_owp-reporting-upgrade",
+  "predecessorMigrations": 268,
+  "successorMigrations": 271,
+  "rows": {
+    "program_work_program_revisions": 1,
+    "program_work_program_events": 1,
+    "invoicing_time_entries": 1,
+    "project_spend_entries": 1,
+    "invoicing_engagements": 1,
+    "invoicing_staff": 1,
+    "kb_documents": 1
+  },
+  "unchanged": true,
+  "noActualsBackfilled": true,
+  "migrations": {
+    "20260910000001_work_program_actuals.sql": "63b7d0ad7d2776ecd67fd46a0bf8b4c166b22c7398bf9ebb9a3befaf342f8db7",
+    "20260910000002_work_program_reporting.sql": "72727fb1fe2f7f15f9b6ed623698f59ee37f199b6755254885ed856f5bb615de",
+    "20260910000003_work_program_report_exports.sql": "c150afe43ee82b3753889caf1a28071111783b22c0db79aa0318705c32239572"
+  }
+}

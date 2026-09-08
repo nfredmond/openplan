@@ -1,0 +1,20 @@
+[
+  {
+    "file": "production-first-report.xlsx",
+    "allViewsReconciled": true,
+    "period": "130.31",
+    "cumulative": "230.31",
+    "actualPlusRemaining": "305.76",
+    "sheets": 16,
+    "sha256": "cd31003bdf828ee7668bfa7d02aa954fffa0a7f760eeb8b1b1950e9bc8543787"
+  },
+  {
+    "file": "production-corrected-report.xlsx",
+    "allViewsReconciled": true,
+    "period": "130.56",
+    "cumulative": "230.56",
+    "actualPlusRemaining": "306.01",
+    "sheets": 16,
+    "sha256": "83cc387cf2fd684fff338c8bb8b185c69ee0b9d2aa024b439e1ff06f517e94a8"
+  }
+]

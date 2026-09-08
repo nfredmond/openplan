@@ -460,16 +460,16 @@ const EXPECTED = {
   // 20260907000001/2 add two immutable extraction tables with member SELECT only.
   // Engagement custody adds four SELECT-only relations; all writes use guarded server transactions.
   // M2d.2 adds four private review tables and four SELECT policies. Live catalog checked on the isolated stack.
-  policies: 706,
-  permissive: 457,
-  restrictive: 249,
+  policies: 714,
+  permissive: 464,
+  restrictive: 250,
   permissiveWrites: 280,
   expanded: 286,
-  tablesWithPolicies: 177,
-  relations: 202,
-  tables: 193,
+  tablesWithPolicies: 182,
+  relations: 208,
+  tables: 199,
   views: 9,
-  rlsEnabledTables: 193,
+  rlsEnabledTables: 199,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

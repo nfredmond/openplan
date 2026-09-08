@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { isOnRoster, loadWorkspaceRoster, type RosterServiceClient } from "@/lib/workspaces/roster";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
@@ -103,19 +104,17 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     if (parsed.data.userId) {
-      const { data: linkedMember, error: linkedMemberError } = await supabase
-        .from("workspace_members")
-        .select("workspace_id, user_id")
-        .eq("workspace_id", parsed.data.workspaceId)
-        .eq("user_id", parsed.data.userId)
-        .maybeSingle();
-
-      if (linkedMemberError || !linkedMember) {
-        audit.warn("staff_user_workspace_mismatch", {
-          workspaceId: parsed.data.workspaceId,
-          linkedUserId: parsed.data.userId,
-          message: linkedMemberError?.message ?? null,
-        });
+      const roster = await loadWorkspaceRoster(
+        createServiceRoleClient() as unknown as RosterServiceClient,
+        user.id,
+        parsed.data.workspaceId,
+        { resolveEmails: false }
+      );
+      if (!roster.ok) {
+        audit.error("staff_link_roster_read_failed", { workspaceId: parsed.data.workspaceId, reason: roster.reason });
+        return NextResponse.json({ error: "Could not verify the linked user's workspace membership" }, { status: 500 });
+      }
+      if (!isOnRoster(roster.members, parsed.data.userId)) {
         return NextResponse.json({ error: "Linked user is not a member of the requested workspace" }, { status: 400 });
       }
     }

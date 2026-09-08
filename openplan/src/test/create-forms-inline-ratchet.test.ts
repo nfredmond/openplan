@@ -108,6 +108,8 @@ const GUIDED_FLOW_IMPORT = "@/components/ui/guided-flow";
  * which is the whole difference between this and a convention.
  */
 const NOT_A_GUIDED_FLOW: Record<string, string> = {
+  "src/components/programs/work-program/actual-entry.tsx": "R3 — ongoing ledger editing with source mapping, import preview and traceable corrections.",
+  "src/components/programs/work-program/period-reporting.tsx": "R3 — reporting period workspace revisited for progress, review and corrected issues.",
   "src/components/safety/safety-workspace.tsx":
     "R1 — the project selector changes the crash map and its exact evidence context in place; hiding it in a sheet would separate the choice from the map and acquisition it controls.",
   /*

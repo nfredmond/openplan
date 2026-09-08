@@ -1,0 +1,34 @@
+{
+  "checks": [
+    {
+      "health": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-09-08T04:09:06.424Z",
+        "deployment": {
+          "commit": "6c50861e5c3e",
+          "version": "0.45.0"
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      }
+    },
+    "Reached existing staff setup from OWP; unlinked and relinked the member account using the visible picker",
+    "Member recorded own agency time; interrupted response recovered after reload with same request",
+    "Administrator approved effective cost valuation of 2 hours at 25.15 = 50.30",
+    "Adopted budget and actual-plus-remaining reconcile in reviewed report",
+    "Downloaded actual PDF and XLSX through checksummed authenticated delivery",
+    {
+      "layout": {
+        "width": 390,
+        "documentWidth": 390,
+        "overflow": []
+      }
+    }
+  ],
+  "errors": [
+    "Failed to load resource: net::ERR_FAILED"
+  ]
+}

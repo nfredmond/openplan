@@ -20,7 +20,26 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No unreleased changes.
+Subsequent development changes will be listed here.
+
+## 0.45.0 — 2026-09-07
+
+- Administer an OWP reporting period from Programs or My Work. Record agency time
+  without a client contract, map existing contract time/expenses, preview CSV
+  imports and retain documented opening balances.
+- Separate incurred costs, commitments, billed amounts, payments and dated
+  remaining-work estimates. Owners/admins approve effective cost rates and source
+  valuations; members enter and correct their own draft time.
+- Review, return, issue and correct internal PDF/XLSX management reports through
+  the Documents worker. Each issued snapshot retains its adopted baseline,
+  source cutoff, original valuations and correction history. Later amendments
+  leave earlier files unchanged. Private costs are restricted in APIs, SQL,
+  Documents and storage.
+- Internal management only: funder forms, claim eligibility, payroll/accounting
+  replacement, scheduling and closeout remain future work. M11a and M2d.3 remain
+  partial; no scientific claim or historical partial journey is promoted.
+- Candidate acceptance and release status: [reporting evidence](docs/reviews/2026-09-07-owp-reporting/IMPLEMENTATION.md).
+- Additive migrations: `work_program_actuals`, `work_program_reporting`, `work_program_report_exports`.
 
 ## 0.44.0 — 2026-09-07
 
