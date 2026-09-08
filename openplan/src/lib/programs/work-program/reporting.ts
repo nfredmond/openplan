@@ -97,5 +97,6 @@ export function summarizeReport(snapshot: ReportSnapshot) {
  for (const view of [byElement, byTask, byStaff, bySource]) for (const scope of ["period", "cumulative"] as const) for (const key of metrics) {
   if ([...view.values()].reduce((sum, r) => sum + cents(r[scope][key]), BigInt(0)) !== cents(total[scope][key])) throw new Error(`Unreconciled ${scope} ${key}`);
  }
- return { total, byElement: [...byElement.values()], byTask: [...byTask.values()], byStaff: [...byStaff.values()], bySource: [...bySource.values()], budget, unresolved };
+ const unknownHours = actuals.filter(v => (v.kind === "labor" || v.kind === "opening") && v.hours === null).length;
+ return { unknownHours, total, byElement: [...byElement.values()], byTask: [...byTask.values()], byStaff: [...byStaff.values()], bySource: [...bySource.values()], budget, unresolved };
 }

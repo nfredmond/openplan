@@ -19,6 +19,9 @@ cases=[
  ('release-count','src/test/migrations/release-ordering.test.ts','migrationsAtRelease: 271','migrationsAtRelease: 272',['src/test/migrations/release-ordering.test.ts'],False),
  ('direction-release','../docs/product/US_PLANNING_CAPABILITY_REGISTRY.json','"currentRelease": "v0.45.0"','"currentRelease": "v0.46.0"',['src/test/product-direction-review-guard.test.ts'],False),
  ('rls-probe-census','src/test/rls-isolation.test.ts','  "work_program_actual_versions",','  // deliberate missing actual probe',['src/test/rls-isolation.test.ts'],False),
+ ('staff-link-payload','src/components/invoicing/staff-and-rates-panel.tsx','userId: staffUserId ?? undefined,','userId: undefined,',['src/test/work-program-staff-link.test.tsx'],False),
+ ('staff-link-projection','src/app/(app)/invoicing/_components/receivables-lane.tsx','id, name, title, user_id, default_labor_category','id, name, title, default_labor_category',['src/test/work-program-staff-link.test.tsx'],False),
+ ('unknown-opening-hours','src/lib/programs/work-program/reporting.ts','const unknownHours = actuals.filter(v => (v.kind === "labor" || v.kind === "opening") && v.hours === null).length;','const unknownHours = 0;',['src/test/work-program-reporting.test.ts'],False),
  ('form-scope','src/test/create-forms-inline-ratchet.test.ts','"src/components/programs/work-program/actual-entry.tsx":','"src/components/programs/work-program/missing-actual-entry.tsx":',['src/test/create-forms-inline-ratchet.test.ts'],False),
 ]
 selected=os.environ.get("OWP_MUTATION_CASES", "").split(",")

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AssigneePicker } from "@/components/workspaces/assignee-picker";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatMoney } from "@/lib/money/format";
@@ -14,6 +15,7 @@ type StaffRow = {
   title: string | null;
   defaultLaborCategory: string | null;
   active: boolean;
+  userId?: string | null;
 };
 
 type RateTableRow = {
@@ -61,6 +63,7 @@ export function StaffAndRatesPanel({
   const [staffOpen, setStaffOpen] = useState(false);
   const [staffName, setStaffName] = useState("");
   const [staffTitle, setStaffTitle] = useState("");
+  const [staffUserId, setStaffUserId] = useState<string | null>(null);
   const [staffCategory, setStaffCategory] = useState("");
   const [tableOpen, setTableOpen] = useState(false);
   const [tableName, setTableName] = useState("");
@@ -80,6 +83,7 @@ export function StaffAndRatesPanel({
         body: JSON.stringify({
           workspaceId,
           name: staffName,
+          userId: staffUserId ?? undefined,
           title: staffTitle || undefined,
           defaultLaborCategory: staffCategory || undefined,
         }),
@@ -89,6 +93,7 @@ export function StaffAndRatesPanel({
         throw new Error(payload.details || payload.error || "Failed to create staff record");
       }
       setStaffName("");
+      setStaffUserId(null);
       setStaffTitle("");
       setStaffCategory("");
       setStaffOpen(false);
@@ -137,7 +142,7 @@ export function StaffAndRatesPanel({
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div id="staff-time-access" className="grid gap-4 lg:grid-cols-2">
       <div className="space-y-3 border border-border/60 bg-background/70 px-4 py-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Staff</p>
@@ -181,6 +186,8 @@ export function StaffAndRatesPanel({
                 placeholder="Default labor category"
               />
             </div>
+            <p className="text-sm text-muted-foreground">Link a team account so this person can enter their own draft OWP time. No client contract is required.</p>
+            <AssigneePicker workspaceId={workspaceId} value={staffUserId} onChange={setStaffUserId} label="Staff workspace account" disabled={saving === "staff"}/>
             <div className="flex flex-wrap items-center gap-3">
               <Button type="submit" size="sm" disabled={saving === "staff"}>
                 {saving === "staff" ? (
@@ -371,6 +378,7 @@ function StaffRowEditor({
   const [name, setName] = useState(member.name);
   const [title, setTitle] = useState(member.title ?? "");
   const [category, setCategory] = useState(member.defaultLaborCategory ?? "");
+  const [userId, setUserId] = useState<string | null>(member.userId ?? null);
   const [busy, setBusy] = useState<"save" | "active" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -437,6 +445,7 @@ function StaffRowEditor({
               placeholder="Default labor category"
             />
           </div>
+          <AssigneePicker workspaceId={workspaceId} value={userId} onChange={setUserId} label={`Workspace account for ${member.name}`} disabled={busy !== null}/>
           <div className="flex flex-wrap items-center gap-3">
             <Button
               type="button"
@@ -445,6 +454,7 @@ function StaffRowEditor({
               onClick={() =>
                 void run("save", {
                   name: name.trim(),
+                  userId,
                   title: title.trim() === "" ? null : title.trim(),
                   defaultLaborCategory: category.trim() === "" ? null : category.trim(),
                 })
@@ -466,6 +476,7 @@ function StaffRowEditor({
                 setOpen(false);
                 setError(null);
                 setName(member.name);
+                setUserId(member.userId ?? null);
                 setTitle(member.title ?? "");
                 setCategory(member.defaultLaborCategory ?? "");
               }}

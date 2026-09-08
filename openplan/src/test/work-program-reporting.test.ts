@@ -37,6 +37,11 @@ describe("OWP report source reconciliation", () => {
   expect(result.total.cumulative.incurred).toBe("24.70");
   expect(result.budget[0].actualPlusRemaining).toBeNull();
  });
+ it("keeps unknown opening hours explicit instead of claiming zero historical effort", () => {
+  const { snapshot } = fixture();
+  snapshot.actuals[0].kind = "opening"; snapshot.actuals[0].hours = null; snapshot.actuals[0].allocations[0].hours = null;
+  const result = summarizeReport(snapshot); expect(result.unknownHours).toBe(1); expect(result.total.cumulative.hours).toBe("0.00");
+ });
  it("refuses missing valuations, incorrect allocations and foreign task identities", () => {
   for (const broken of ["valuation", "split", "task"] as const) {
    const { snapshot } = fixture();
