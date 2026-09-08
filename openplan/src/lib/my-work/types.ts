@@ -64,6 +64,7 @@ export const MY_WORK_SOURCE_IDS = [
   "work_program_periods",
   "contract_tasks",
   "contract_work_reviews",
+  "contract_pending_reviews",
   "land_use_plan_process",
   "land_use_plan_review_closing",
   "grant_decisions",

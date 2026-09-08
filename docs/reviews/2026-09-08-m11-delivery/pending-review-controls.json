@@ -1,0 +1,97 @@
+[
+  {
+    "name": "harmless-pending-sql",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "hide-finance-baseline",
+    "outcome": "killed",
+    "expected": "Finance baseline queue missing"
+  },
+  {
+    "name": "give-pm-finance-queue",
+    "outcome": "killed",
+    "expected": "PM received finance decision"
+  },
+  {
+    "name": "include-old-master-proposal",
+    "outcome": "killed",
+    "expected": "Scoped finance master version incorrect"
+  },
+  {
+    "name": "hide-master-finance-queue",
+    "outcome": "killed",
+    "expected": "Scoped finance master version incorrect"
+  },
+  {
+    "name": "resurrect-received-versions",
+    "outcome": "killed",
+    "expected": "Reviewed invoice retained PM approval"
+  },
+  {
+    "name": "give-pm-reviewed-invoices",
+    "outcome": "killed",
+    "expected": "Reviewed invoice retained PM approval"
+  },
+  {
+    "name": "hide-submitted-invoices",
+    "outcome": "killed",
+    "expected": "PM invoice queue missing"
+  },
+  {
+    "name": "wrong-response-title",
+    "outcome": "killed",
+    "expected": "Latest response decision incorrect"
+  },
+  {
+    "name": "show-old-response",
+    "outcome": "killed",
+    "expected": "Latest response decision incorrect"
+  },
+  {
+    "name": "show-applied-response",
+    "outcome": "killed",
+    "expected": "Applied response remained pending"
+  },
+  {
+    "name": "harmless-pending-adapter",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "omit-pending-adapter",
+    "outcome": "killed",
+    "expected": "reads scoped retained versions"
+  },
+  {
+    "name": "omit-pending-projection",
+    "outcome": "killed",
+    "expected": "reads scoped retained versions"
+  },
+  {
+    "name": "hide-pending-read-failure",
+    "outcome": "killed",
+    "expected": "reports an unavailable decision queue"
+  },
+  {
+    "name": "wrong-pending-destination",
+    "outcome": "killed",
+    "expected": "reads scoped retained versions"
+  },
+  {
+    "name": "harmless-pending-inventory",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "omit-pending-inventory-count",
+    "outcome": "killed",
+    "expected": "reads every relation"
+  },
+  {
+    "name": "omit-pending-view-inventory",
+    "outcome": "killed",
+    "expected": "reports a view's columns"
+  }
+]

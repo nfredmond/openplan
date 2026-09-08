@@ -20,6 +20,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- [contract_pending_reviews](openplan/supabase/migrations/20260920000001_contract_pending_reviews.sql) routes pending contract approvals, received-invoice reviews and proposed responses through My Work, preserving existing scoped authority.
+
 - Draft PM proposals can use their own retained source files and shared colleague availability through [contract_pm_proposal_inputs](openplan/supabase/migrations/20260919000001_contract_pm_proposal_inputs.sql). Reassignment comparisons preserve approved assignments until applied.
 
 - Draft scheduling integrity uses [contract_staff_schedule_integrity](openplan/supabase/migrations/20260917000001_contract_staff_schedule_integrity.sql). Departed staff cannot receive accepted work, removed schedule nodes release assignments, and closed contracts release shared capacity while prior forecasts remain retained.

@@ -770,6 +770,16 @@ const contractWorkReviewsSource: MyWorkSource = {
  toItems:rows=>rows.map(row=>({sourceId:"contract_work_reviews",block:"undated",id:String(row.id),title:`Review remaining work: ${asString(row.title)??"Contract task"}`,projectId:asString(row.project_id),projectName:null,dueOn:null,isOverdue:false,assigneeUserId:asString(row.assignee_user_id),ownerLabel:null,badge:{label:"PM review",tone:"warning"},detail:`Staff update as of ${asString(row.reported_on)??"unrecorded"}`,href:`/invoicing/engagements/${row.engagement_id}?tab=remaining#work-update-${row.id}`,dedupKey:null} satisfies MyWorkItem)),
 };
 
+const contractPendingReviewsSource: MyWorkSource = {
+ id:"contract_pending_reviews",label:"Contract decisions",readLabel:"pending contract approvals and invoice reviews",block:"needs_review",table:"contract_pending_my_work",
+ select:"id, workspace_id, engagement_id, project_id, title, review_kind, reported_on",workspaceFilterColumn:"workspace_id",assigneeColumn:null,orderColumn:"reported_on",orderAscending:true,staticFilters:[],
+ toItems:rows=>rows.map(row=>{
+  const kind=asString(row.review_kind),label=kind==="baseline"?"Approve contract baseline":kind==="master"?"Approve master terms":kind==="received_finance"?"Approve received invoice":kind==="received_review"?"Review received invoice":"Review proposed response";
+  const tab=kind==="baseline"?"baselines":kind==="master"?"master-terms":kind?.startsWith("received")?"received":"remaining&section=Responses";
+  return {sourceId:"contract_pending_reviews",block:"needs_review",id:`${kind}:${row.id}`,title:`${label}: ${asString(row.title)??"Planning assignment"}`,projectId:asString(row.project_id),projectName:null,dueOn:null,isOverdue:false,assigneeUserId:null,ownerLabel:null,badge:{label:"Contract decision",tone:"warning"},detail:kind==="response"?"Check the compared inputs before applying; changed inputs require a new comparison.":"Review the exact retained version. This queue does not grant approval authority.",href:`/invoicing/engagements/${row.engagement_id}?tab=${tab}`,dedupKey:null} satisfies MyWorkItem;
+ }),
+};
+
 const contractTasksSource: MyWorkSource = {
   id: "contract_tasks", label: "Contract tasks", readLabel: "approved contract task assignments", block: "undated",
   table: "contract_task_assignments", select: "id, engagement_id, workspace_id, assignee_user_id, active, contract_tasks!inner(id, project_id, title, deadline)",
@@ -1058,6 +1068,7 @@ export const MY_WORK_SOURCES: readonly MyWorkSource[] = [
   workProgramPeriodsSource,
   contractTasksSource,
   contractWorkReviewsSource,
+  contractPendingReviewsSource,
   landUsePlanProcessSource,
   landUsePlanReviewClosingSource,
   grantDecisionsSource,

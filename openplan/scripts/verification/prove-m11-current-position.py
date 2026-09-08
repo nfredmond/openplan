@@ -79,7 +79,7 @@ code('src/test/planner-copy-says-the-plain-thing.test.ts',['src/test/planner-cop
  ('allow-old-copy-count',lambda s:s.replace('workspace: 159,','workspace: 160,'),'A term of art moved')])
 code('src/test/migrations/inventory.test.ts',['src/test/migrations/inventory.test.ts'],[
  ('harmless-schema-inventory',lambda s:'// Additive custody relation.\n'+s,None),
- ('forget-new-custody-relation',lambda s:s.replace('relations: 238,','relations: 237,'),'reads every relation')])
+ ('forget-new-custody-relation',lambda s:s.replace('relations: 239,','relations: 238,'),'reads every relation')])
 
 code('src/components/invoicing/contracts/management-responses.tsx',['src/test/contract-response-reassignment.test.tsx'],[
  ('harmless-reassignment-form',lambda s:s.replace('const value=', '// Retained comparison inputs.\nconst value='),None),

@@ -339,8 +339,8 @@ export function MyWorkBoard({
         ) : blocks.needs_review.length === 0 ? (
           <p className="module-empty-state">
             Nothing is waiting on a person: no comment is pending moderation, no model run failed
-            in the last {FAILED_RUN_QUEUE_WINDOW_DAYS} days, and no drafted narrative is awaiting a
-            decision.
+            in the last {FAILED_RUN_QUEUE_WINDOW_DAYS} days, no drafted narrative is awaiting a
+            decision, and no contract approval or invoice review is pending.
           </p>
         ) : null}
       </article>
