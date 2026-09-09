@@ -47,7 +47,7 @@ export function buildPeriodReportHtml(report: PeriodReport) {
 export function buildPeriodReportWorkbook(report: PeriodReport): WorkBook {
  const book = utils.book_new();
  for (const table of reportTables(report)) {
-  const widths = table.rows[0].map((_, i) => i === 0 ? 40 : table.name === "Identity" ? 95 : /Progress|records|history/.test(table.name) ? 35 : 20);
+  const widths = table.rows[0].map((_, i) => i === 0 ? 40 : (table.name === "Identity" || table.name === "Reimbursement packet" || ((table.name === "Shared contract costs" || table.name === "Deliverable evidence") && i === 2)) ? 95 : /Progress|records|history/.test(table.name) ? 35 : 20);
   const rows = table.rows.flatMap((row, index) => {
    const parts = row.map((value, column) => {
     const v = value ?? "Unresolved";
