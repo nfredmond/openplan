@@ -1,3 +1,4 @@
+import { requireContractVerificationStack } from "./helpers/contract-verification-stack";
 import { describe, expect, it } from "vitest";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
@@ -14,7 +15,7 @@ const prepare=`
  IF result<>again OR (SELECT count(*) FROM public.contract_accounting_imports WHERE id=p)<>1 THEN RAISE EXCEPTION 'Accounting retry duplicated';END IF;
 `;
 function check(body:string){
- if(!process.env.CI&&!process.env.OPENPLAN_SUPABASE_WORKDIR?.includes("m11-contract-verification"))throw new Error("Explicit disposable m11-contract-verification stack required");
+ requireContractVerificationStack(resolveLocalDbContainer());
  const mutation=process.env.OPENPLAN_CONTRACT_TEST_SQL?readFileSync(process.env.OPENPLAN_CONTRACT_TEST_SQL,"utf8"):"";
  const output=execFileSync("docker",["exec","-i",resolveLocalDbContainer(),"psql","-X","-U","postgres","-d","postgres","-v","ON_ERROR_STOP=1","-At"],{encoding:"utf8",input:`BEGIN;${mutation}\n${setup.replace("-- TEST_BODY",body)} SELECT 'ACCOUNTING_ASSERTIONS_REACHED'; ROLLBACK;`,stdio:["pipe","pipe","pipe"]});expect(output).toContain("ACCOUNTING_ASSERTIONS_REACHED");
 }

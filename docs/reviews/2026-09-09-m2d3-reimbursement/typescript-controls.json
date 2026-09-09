@@ -1,0 +1,44 @@
+[
+  {
+    "case": "harmless comment",
+    "expected": "survived",
+    "exit": 0,
+    "reasonObserved": true
+  },
+  {
+    "case": "duplicate source",
+    "expected": "assertion failed",
+    "exit": 1,
+    "reasonObserved": true
+  },
+  {
+    "case": "reimbursement arithmetic",
+    "expected": "assertion failed",
+    "exit": 1,
+    "reasonObserved": true
+  },
+  {
+    "case": "numeric-looking evidence",
+    "expected": "assertion failed",
+    "exit": 1,
+    "reasonObserved": true
+  },
+  {
+    "case": "agent refusal",
+    "expected": "assertion failed",
+    "exit": 1,
+    "reasonObserved": true
+  },
+  {
+    "case": "correction projection",
+    "expected": "assertion failed",
+    "exit": 1,
+    "reasonObserved": true
+  },
+  {
+    "case": "disposable database guard",
+    "expected": "assertion failed",
+    "exit": 1,
+    "reasonObserved": true
+  }
+]

@@ -20,6 +20,13 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+### M2d.3 reimbursement cycle, engineering candidate
+
+- Reviewed eligibility and reimbursement/match shares extend issued OWP period reports. Retained packet versions and external receipt events preserve return, correction and resubmission; source reservations prevent a second packet from counting the same cost.
+- Private PDF/XLSX packets reuse Documents custody. Agency form compatibility, actual authority and practitioner acceptance require separate evidence. M11 human acceptance and reminder approval remain open.
+- Additive migration: [work_program_reimbursement](openplan/supabase/migrations/20261003000001_work_program_reimbursement.sql).
+
+
 - Ordinary client invoices now retain an explicitly entered currency. Missing legacy currency stays unassessed in previews, invoice rows and PDFs; issued invoices use the existing void-and-reissue correction path.
 
 - [contract_delivery_read_cost](openplan/supabase/migrations/20261002000001_contract_delivery_read_cost.sql) attaches complete delivery history once after the other management layers and adds an authorized hash-only read for calculation concurrency checks. Original forecast inputs remain in management snapshots.

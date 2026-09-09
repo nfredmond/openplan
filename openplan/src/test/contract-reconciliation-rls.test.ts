@@ -1,3 +1,4 @@
+import { requireContractVerificationStack } from "./helpers/contract-verification-stack";
 import { describe, expect, it } from "vitest";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
@@ -8,7 +9,7 @@ const saveBaseline = `result:=public.record_contract_command(engagement,owner_id
 const time = `c:=jsonb_build_object('kind','actual','requestId',gen_random_uuid(),'entryId',entry,'expectedVersion',0,'sourceKey','synthetic-time','sourceReference','Synthetic timesheet','entryDate','2026-09-01','category','labor','status','draft','description','Synthetic draft effort','staffId',staff,'hours','1.01','amount',NULL,'valuationBasis','unvalued','rateId',NULL,'billable',true,'allocations',jsonb_build_array(jsonb_build_object('taskId',task,'deliverableId',deliverable,'share',3333),jsonb_build_object('taskId',task2,'deliverableId',deliverable,'share',6667)),'correctionNote','','openingBasis','','reconciliationNote','');`;
 const approve = `c:=c||jsonb_build_object('requestId',gen_random_uuid(),'expectedVersion',1,'status','approved','amount','12.47','valuationBasis','recorded','correctionNote','Synthetic reviewed valuation'); PERFORM public.record_contract_command(engagement,owner_id,c);`;
 function exercise(body: string, replacement = "") {
- if (!process.env.CI && !process.env.OPENPLAN_SUPABASE_WORKDIR?.includes("contract-verification")) throw new Error("Explicit isolated contract-verification stack required");
+ requireContractVerificationStack(resolveLocalDbContainer());
  return execFileSync("docker", ["exec", "-i", resolveLocalDbContainer(), "psql", "-X", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1", "-At"], { encoding: "utf8", input: `BEGIN;${process.env.OPENPLAN_CONTRACT_TEST_SQL ? readFileSync(process.env.OPENPLAN_CONTRACT_TEST_SQL,"utf8") : ""}${replacement}\n${setup.replace("-- TEST_BODY",body)} SELECT 'CONTRACT_ASSERTIONS_REACHED';ROLLBACK;`, stdio: ["pipe","pipe","pipe"] });
 }
 const marker = (body: string, replacement = "") => expect(exercise(body,replacement)).toContain("CONTRACT_ASSERTIONS_REACHED");

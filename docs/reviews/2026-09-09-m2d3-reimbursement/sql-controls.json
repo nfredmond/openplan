@@ -1,0 +1,68 @@
+[
+  {
+    "case": "harmless comment",
+    "expected": "survived",
+    "exit": 0,
+    "reasonObserved": true
+  },
+  {
+    "case": "duplicate source",
+    "expected": "failed",
+    "exit": 1,
+    "reasonObserved": true
+  },
+  {
+    "case": "shared contract valuation",
+    "expected": "failed",
+    "exit": 1,
+    "reasonObserved": true
+  },
+  {
+    "case": "remaining work",
+    "expected": "failed",
+    "exit": 1,
+    "reasonObserved": true
+  },
+  {
+    "case": "source version",
+    "expected": "failed",
+    "exit": 1,
+    "reasonObserved": true
+  },
+  {
+    "case": "eligible ceiling",
+    "expected": "failed",
+    "exit": 1,
+    "reasonObserved": true
+  },
+  {
+    "case": "share balance",
+    "expected": "failed",
+    "exit": 1,
+    "reasonObserved": true
+  },
+  {
+    "case": "fund membership",
+    "expected": "failed",
+    "exit": 1,
+    "reasonObserved": true
+  },
+  {
+    "case": "authority evidence",
+    "expected": "failed",
+    "exit": 1,
+    "reasonObserved": true
+  },
+  {
+    "case": "actor authority",
+    "expected": "failed",
+    "exit": 1,
+    "reasonObserved": true
+  },
+  {
+    "case": "retry content",
+    "expected": "failed",
+    "exit": 1,
+    "reasonObserved": true
+  }
+]

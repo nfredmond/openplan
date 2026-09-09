@@ -12,6 +12,10 @@ This is a quality-boundary register, not a development queue. Scheduling lives
 only in `docs/ROADMAP.md`.
 
 
+## M2d.3 reimbursement engineering candidate, September 9
+
+The [supporting-packet cycle](OWP_REIMBURSEMENT.md) extends issued OWP reports and shared contract valuations. Exact amounts, reviewed evidence and source reservations survive return and correction. The [engineering record](../reviews/2026-09-09-m2d3-reimbursement/IMPLEMENTATION.md) separates synthetic browser/database evidence from actual agency acceptance. Prescribed form compatibility, real eligibility decisions and external receipt authenticity require responsible human review. A source belongs to one packet lineage; reservation transfer, accepted-packet reopening and final closeout are not implemented here. M11 human acceptance and reminder approval remain open.
+
 ## M11 delivery candidate, September 8 (unreleased)
 
 The [M11 implementation record](../reviews/2026-09-08-m11-delivery/IMPLEMENTATION.md)
