@@ -34,3 +34,11 @@ Thirty focused ordering/download-route/checksum tests passed. The first focused 
 Finish Documents file saving and final production desktop/390px acceptance, private-access and interrupted retry evidence. Align version/changelog/release ordering, run harmless and targeted controls for changed guards, inspect final CI/upgrade, then tag. The pending reminder CHECK change remains untouched. M11 PM/finance usefulness, prescribed agency forms, actual authority and automatic reminder delivery remain unproved.
 
 After the release, continue M2d.4 in Programs using existing work-program baselines, reimbursement reservations and shared cost identities. Carryover must preserve predecessor history and cannot duplicate expenses, treat accepted claims as cash, or turn unresolved commitments/refunds into zero. The roadmap remains the sole queue.
+
+## Production verification and hover correction
+
+The explicit `qa-process-result.json` receipt records exit 0 for the complete local gate at `f5dda94d757b2c12127a5695318e62befa1c7875`. Two earlier combined tool sessions ended with exit 143; their component logs are not counted as clean gates. The successful rerun used a subprocess result written to disk. The production identity check matches version 0.47.0, that full SHA and the isolated checkout.
+
+The production browser journey repeats real navigation and all four Programs downloads. Desktop and 390px screenshots retain both packet versions, keyboard focus and no horizontal overflow. Console inspection after the production navigation found no warnings/errors. Authenticated HTTP checks of ordinary Documents endpoints return all four exact files without bearer redirects; anonymous callers receive 401 and another-workspace owner receives 404 for both metadata and bytes. History remains two packets and eight events. This does not complete native Documents browser saving.
+
+The production desktop screenshot exposed pale-green download labels on an almost-white hover background. A DOM style inspection confirmed text rgb(168,217,184) and background color(srgb 0.954196 0.982118 0.976784). The reimbursement download buttons now reuse the neighboring report controls' background/foreground hover classes. This bounded styling change preserves download and authorization behavior; its final render is checked separately below.

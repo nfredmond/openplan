@@ -1,0 +1,19 @@
+{
+  "build": "ccef7e2f9ddef443679b166d35903f11c6cc6704 plus documentation-only working changes",
+  "url": "http://127.0.0.1:3257/api/knowledge-base/documents/ad4a766b-134e-428c-be94-ad5ec9be42af/download",
+  "action": "activate ordinary Documents download link",
+  "event": {
+    "method": "Network.loadingFailed",
+    "sequence": 1178,
+    "params": {
+      "blockedReason": "inspector",
+      "canceled": false,
+      "errorText": "net::ERR_BLOCKED_BY_CLIENT",
+      "requestId": "B7639D97B613060EEEB59A4685482A8F",
+      "timestamp": 59601.925331,
+      "type": "Document"
+    }
+  },
+  "truncated": false,
+  "interpretation": "The connected browser debugging layer blocked document navigation. This does not identify an application download defect."
+}
