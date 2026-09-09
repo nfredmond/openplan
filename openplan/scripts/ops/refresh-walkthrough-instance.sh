@@ -64,14 +64,14 @@ else
 fi
 
 step "Checking the local Supabase migration inventory for this build"
-# WHY. This script refreshes CODE and nothing else. The database it talks to is
-# refreshed by nobody, so a fast-forward carrying a migration leaves the new
+# A fast-forward carrying a migration must not leave the new
 # build running against the old schema — and that failure is silent in the worst
 # possible way: the service starts, the restart succeeds, `/api/health` answers
 # "ok", and the commit check below MATCHES. Nothing in this script could see it.
 # `/api/health` reports `database: "not_checked"` precisely because it does not
 # look; the planner finds out when one page returns a missing-column error and
 # the rest look fine. So ask the database directly, before the slow steps.
+check_migrations() {
 if ! MIGRATION_JSON="$(cd "$APP_DIR" && npm exec -- supabase migration list --local --output-format json 2>/dev/null | tail -n 1)"; then
   fail "could not query migration state; no build or restart attempted"
 fi
@@ -109,6 +109,15 @@ process.stdin.on("end", () => {
   console.log(pending.length ? "PENDING " + pending.join(" ") : "CURRENT");
 });
 ' "$APP_DIR/supabase/migrations" 2>/dev/null || true)"
+
+}
+check_migrations
+
+# Only the retained-build coordinator opts into local database upgrades.
+if [[ "$MIGRATION_VERDICT" == PENDING* && "${OPENPLAN_REFRESH_PREPARE_ONLY:-0}" == "1" && -n "${OPENPLAN_REFRESH_DATABASE_BACKUP:-}" ]]; then
+  python3 "$SCRIPT_DIR/demo_database.py" "$APP_DIR" "$OPENPLAN_REFRESH_ACTIVE_INSTANCE" "$OPENPLAN_REFRESH_SERVICE" "$OPENPLAN_REFRESH_DATABASE_BACKUP"
+  check_migrations
+fi
 
 case "$MIGRATION_VERDICT" in
   CURRENT)

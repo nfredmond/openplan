@@ -34,6 +34,7 @@ pointer to AGENTS.md, not a second rulebook.
 - [Runbook](../openplan/docs/ops/RUNBOOK.md): diagnosis and recovery boundaries.
 - [OWP reporting-period guide](ops/OWP_REPORTING.md): agency time, source costs, private valuations and corrected internal management reports.
 - [September 7 OWP review and amendments](reviews/2026-09-07-owp-review/VERIFICATION.md): exact-version decisions, retained baselines, inspected exports and bounded engineering acceptance.
+- [September 9 desktop Control repair](reviews/2026-09-09-control-main/VERIFICATION.md): visible demo/main commits and backed-up local database upgrades.
 - [September 6 workspace/control checkpoint](reviews/2026-09-06-housekeeping/VERIFICATION.md): retained local archives, native layout and isolated update/recovery evidence.
 - [Backup and restore](../openplan/docs/ops/BACKUP_AND_RESTORE.md): durable state,
   existing mechanisms, representative drills and missing full-recovery proof.

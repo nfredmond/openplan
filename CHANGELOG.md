@@ -20,6 +20,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- Desktop Control shows the running demo commit beside freshly checked GitHub main. **Update to main** backs up and upgrades the identified local demo database when migrations are pending, then builds and promotes the app while retaining the previous build.
+
 ### M2d.3 reimbursement cycle, engineering candidate
 
 - Reviewed eligibility and reimbursement/match shares extend issued OWP period reports. Retained packet versions and external receipt events preserve return, correction and resubmission; source reservations prevent a second packet from counting the same cost.

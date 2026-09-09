@@ -236,23 +236,52 @@ def database_up() -> bool:
     return code == 0 and out.strip() == "true"
 
 
-def commits_behind(commit: str) -> int | None:
-    """How far behind this checkout's HEAD a reported build is. None = unknown."""
+def commits_behind(commit: str, target: str = "HEAD") -> int | None:
+    """Count ancestors of a known target; divergence stays unknown."""
     if not commit or commit == "unknown":
         return None
     code, _ = run_quiet(["git", "cat-file", "-e", f"{commit}^{{commit}}"], cwd=REPO_DIR)
     if code != 0:
         return None
-    code, _ = run_quiet(["git", "merge-base", "--is-ancestor", commit, "HEAD"], cwd=REPO_DIR)
+    code, _ = run_quiet(["git", "merge-base", "--is-ancestor", commit, target], cwd=REPO_DIR)
     if code != 0:
         return None
-    code, out = run_quiet(["git", "rev-list", "--count", f"{commit}..HEAD"], cwd=REPO_DIR)
+    code, out = run_quiet(["git", "rev-list", "--count", f"{commit}..{target}"], cwd=REPO_DIR)
     if code != 0:
         return None
     try:
         return int(out.strip())
     except ValueError:
         return None
+
+
+def github_main() -> tuple[str | None, str]:
+    """Fetch the update target without moving the checkout or hiding fetch failure."""
+    code, _ = run_quiet(["git", "fetch", "--quiet", "origin",
+                         "refs/heads/main:refs/remotes/origin/main"], cwd=REPO_DIR, timeout=20)
+    if code:
+        return None, "GitHub main unavailable. Check network and GitHub sign-in."
+    code, sha = run_quiet(["git", "rev-parse", "refs/remotes/origin/main"], cwd=REPO_DIR)
+    if code or not re.fullmatch(r"[0-9a-f]{40,64}", sha):
+        return None, "GitHub main commit could not be read."
+    return sha, "Checked " + time.strftime("%H:%M:%S")
+
+
+def demo_status(demo: dict | None, target: str | None, checked: str) -> tuple[str, str]:
+    """Keep the served commit visible even when GitHub or ancestry is unavailable."""
+    main = f"GitHub main · {target[:12]}" if target else "GitHub main · not checked"
+    if demo is None:
+        return BAD, f"Demo is not answering.\n{main}\n{checked}"
+    commit = demo.get("commit") or "unrecorded"
+    version = demo.get("version") or "unknown"
+    behind = commits_behind(commit, target) if target else None
+    state = "Comparison unavailable"
+    colour = WARN
+    if behind == 0:
+        state, colour = "Up to date with main", OK
+    elif behind is not None:
+        state = f"Update available · {behind} commits behind main"
+    return colour, f"Demo v{version} · {commit[:12]}\n{main}\n{state}. {checked}"
 
 
 def automated_checks() -> tuple[str, str]:
@@ -314,6 +343,8 @@ class ControlPanel:
         self.dev_owner: ProcessIdentity | None = None
         self._status_timer: str | None = None
         self._status_running = False
+        self._main_cache = (None, "Checking GitHub main…")
+        self._main_at = 0.0
 
         LOG_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -339,7 +370,7 @@ class ControlPanel:
         style.map("TNotebook.Tab", background=[("selected", "#182735")], foreground=[("selected", "#95dbc4")])
         style.configure("TLabel", background="#182735", foreground="#edf4f3")
         root.columnconfigure(0, weight=1)
-        root.rowconfigure(1, weight=1, minsize=260)
+        root.rowconfigure(1, weight=1, minsize=290)
         root.rowconfigure(2, weight=2, minsize=200)
 
         header = tk.Frame(root, background="#101b25")
@@ -358,27 +389,25 @@ class ControlPanel:
         self.tabs.add(dev, text="Development")
         self.tabs.add(diagnostics, text="Diagnostics")
 
-        tk.Label(demo, text="Your planning workspace", font=("DejaVu Sans", 14, "bold"),
-                 anchor="w").pack(fill="x")
-        self.demo_summary = tk.Label(demo, text="Checking the demo…", anchor="w", justify="left", wraplength=100)
+        self.demo_summary = tk.Label(demo, text="Checking the demo…", anchor="w", justify="left", wraplength=500)
         self.demo_summary.pack(fill="x", pady=(8, 12))
         self._wrap_to_width(self.demo_summary)
         actions = ttk.Frame(demo)
         actions.pack(fill="x")
         self.open_demo_btn = ttk.Button(actions, text="Open demo", command=self.open_demo, style="Primary.TButton")
         self.open_demo_btn.pack(side="left", padx=(0, 12))
-        self.update_demo_btn = ttk.Button(actions, text="Update demo", command=self.refresh_demo)
+        self.update_demo_btn = ttk.Button(actions, text="Update to main", command=self.refresh_demo)
         self.update_demo_btn.pack(side="left")
         self._track(self.open_demo_btn)
         self._track(self.update_demo_btn)
-        hint = tk.Label(demo, text="Installs the latest GitHub code. Keeps the previous build for recovery.",
-                        fg="#b1c1cc", anchor="w", justify="left", wraplength=100)
+        hint = tk.Label(demo, text="Updates code and database. Keeps recovery copies.",
+                        fg="#b1c1cc", anchor="w", justify="left", wraplength=500)
         hint.pack(fill="x", pady=(6, 0))
         self._wrap_to_width(hint)
 
         tk.Label(dev, text="Try the current work", font=("DejaVu Sans", 14, "bold"), anchor="w").pack(fill="x", pady=(0, 8))
         dev_hint = tk.Label(dev, text="Runs this checkout locally. Usually ready in 10–30 seconds.",
-                            fg="#b1c1cc", anchor="w", justify="left", wraplength=100)
+                            fg="#b1c1cc", anchor="w", justify="left", wraplength=500)
         dev_hint.pack(fill="x", pady=(0, 16))
         self._wrap_to_width(dev_hint)
         dev_actions = ttk.Frame(dev)
@@ -458,7 +487,7 @@ class ControlPanel:
             dot = tk.Label(row, text="●", fg=IDLE)
             dot.grid(row=0, column=0, rowspan=2, padx=(0, 10), sticky="n")
             tk.Label(row, text=title, font=("DejaVu Sans", 10, "bold"), anchor="w").grid(row=0, column=1, sticky="w")
-            lab = tk.Label(row, text="Checking…", anchor="w", justify="left", wraplength=100, fg="#b1c1cc")
+            lab = tk.Label(row, text="Checking…", anchor="w", justify="left", wraplength=500, fg="#b1c1cc")
             lab.grid(row=1, column=1, sticky="ew", pady=(3, 0))
             row.columnconfigure(1, weight=1)
             self._wrap_to_width(lab)
@@ -474,10 +503,10 @@ class ControlPanel:
         ttk.Button(bar, text="Clear", command=self.clear_output).pack(side="right")
         self.copy_btn = ttk.Button(bar, text="Copy log", command=self.copy_output)
         self.copy_btn.pack(side="right", padx=(0, 8))
-        self.spinner = tk.Label(box, text="", fg="#b1c1cc", anchor="w", wraplength=100)
+        self.spinner = tk.Label(box, text="", fg="#b1c1cc", anchor="w", wraplength=500)
         self.spinner.pack(side="bottom", fill="x", pady=(6, 0))
         self._wrap_to_width(self.spinner)
-        self.copy_note = tk.Label(box, text="", fg="#95dbc4", anchor="w", wraplength=100)
+        self.copy_note = tk.Label(box, text="", fg="#95dbc4", anchor="w", wraplength=500)
         self.copy_note.pack(side="bottom", fill="x")
         self._wrap_to_width(self.copy_note)
         self.out = scrolledtext.ScrolledText(
@@ -492,7 +521,7 @@ class ControlPanel:
         b = ttk.Button(parent, text=label, command=cmd)
         b.pack(fill="x", pady=(2, 6))
         if hint:
-            lab = tk.Label(parent, text=hint, fg="#b1c1cc", justify="left", anchor="w", wraplength=100)
+            lab = tk.Label(parent, text=hint, fg="#b1c1cc", justify="left", anchor="w", wraplength=500)
             lab.pack(fill="x", pady=(0, 8))
             self._wrap_to_width(lab)
         self._track(b)
@@ -635,19 +664,14 @@ class ControlPanel:
 
     def _status_worker(self) -> None:
         demo = http_health(DEMO_URL)
-        if demo is None:
-            d = (BAD, "not running — the demo should start by itself when you log in")
-        else:
-            version = demo.get("version", "?")
-            commit = (demo.get("commit") or "")[:12]
-            behind = commits_behind(commit)
-            if behind is None:
-                d = (WARN, f"running v{version} — cannot tell how current it is")
-            elif behind == 0:
-                d = (OK, f"running v{version} at {commit}, matches this commit; acceptance not checked")
-            else:
-                d = (WARN, f"running v{version} at {commit}, {behind} commits behind this checkout; "
-                           "newer code may still be under review")
+        d = demo_status(demo, *self._main_cache)
+        self.root.after(0, lambda: self._apply_demo_status(d))
+        now = time.monotonic()
+        if now - self._main_at > 60:
+            self._main_cache = github_main()
+            self._main_at = now
+            d = demo_status(demo, *self._main_cache)
+            self.root.after(0, lambda: self._apply_demo_status(d))
 
         owner = port_owner_dir(DEV_PORT)
         owned = owned_session_alive(self.dev_proc, self.dev_owner)
@@ -675,15 +699,17 @@ class ControlPanel:
             for key, (colour, text) in (("demo", d), ("dev", v), ("db", b), ("checks", c)):
                 self.status_dots[key].configure(fg=colour)
                 self.status_labels[key].configure(text=text)
-            self.demo_summary.configure(text=(
-                f"Demo v{version} · " + ("Update available" if behind else "Running locally")
-                if demo else "Demo is not running. Check Diagnostics for details."
-            ), fg="#edf4f3")
             self.dev_btn.configure(
                 text=("Stop test site" if owned else "Start test site")
             )
 
         self.root.after(0, apply)
+
+    def _apply_demo_status(self, status: tuple[str, str]) -> None:
+        colour, text = status
+        self.demo_summary.configure(text=text, fg=colour)
+        self.status_labels["demo"].configure(text=text)
+        self.status_dots["demo"].configure(fg=colour)
 
     # -- actions -----------------------------------------------------------
 
@@ -724,7 +750,7 @@ class ControlPanel:
             self.say("=" * 66)
             self.say("UPDATING THE DEMO. This rebuilds it and restarts it — a few minutes.")
             self.say("A separate candidate is built and the previous demo is retained.")
-            self.say("A failed promotion triggers recovery. Database readiness is checked separately.")
+            self.say("Pending local database migrations are backed up and applied automatically.")
             self.say("=" * 66)
             code = self._stream([sys.executable, str(script)], cwd=APP_DIR)
             self.say("")
@@ -739,6 +765,7 @@ class ControlPanel:
                     self.say(f"The demo reports checkout commit {reported}.")
                 else:
                     self.say("BUILD IDENTITY UNVERIFIED: the demo did not report its checkout commit.")
+                self._main_at = 0.0
                 self.say("Database readiness and browser acceptance remain unverified here.")
             else:
                 self.say(f"UPDATE STOPPED (exit {code}). Review the last completed step above.")

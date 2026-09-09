@@ -164,7 +164,7 @@ jobs:
       - name: Unit tests
         run: |
           set -u
-          for required in test_automated_checks.py test_control_layout.py test_control_panel.py test_control_processes.py test_safe_refresh.py; do
+          for required in test_automated_checks.py test_control_layout.py test_control_panel.py test_control_processes.py test_safe_refresh.py test_demo_database.py; do
             test -f "$required" || { echo "missing required ops suite: $required"; exit 1; }
           done
           count=0
@@ -185,6 +185,7 @@ jobs:
         run: |
           python -B test_control_panel.py --prove-mutations
           python -B test_safe_refresh.py --prove-mutations
+          python -B test_demo_database.py --prove-mutations
 
   worker-tests:
     name: worker (python unit tests)

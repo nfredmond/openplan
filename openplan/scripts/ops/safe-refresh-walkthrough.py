@@ -3,7 +3,8 @@
 
 Use this entry point for operator updates. The shell builder's prepare-only mode
 checks its local migration inventory; it does not prove the runtime database.
-No database migration or reset runs here. Retained directories contain secrets
+Pending local migrations get a retained backup before application. No reset runs.
+Retained directories contain secrets
 and stay local, inside a mode-0700 sibling directory.
 """
 from __future__ import annotations
@@ -277,7 +278,10 @@ class DemoUpdate:
             with Path(record["log"]).open("w") as log:
                 with subprocess.Popen(
                     ["bash", str(builder), str(candidate)],
-                    env={**os.environ, "OPENPLAN_REFRESH_PREPARE_ONLY": "1"},
+                    env={**os.environ, "OPENPLAN_REFRESH_PREPARE_ONLY": "1",
+                         "OPENPLAN_REFRESH_DATABASE_BACKUP": str(transaction / "database-before.dump"),
+                         "OPENPLAN_REFRESH_ACTIVE_INSTANCE": str(self.instance),
+                         "OPENPLAN_REFRESH_SERVICE": self.service},
                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
                 ) as process:
                     for line in process.stdout:

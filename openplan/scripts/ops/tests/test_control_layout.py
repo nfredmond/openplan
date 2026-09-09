@@ -49,6 +49,7 @@ class LayoutTests(unittest.TestCase):
                     # Explicit stress text, never represented as operational evidence.
                     for key, label in app.status_labels.items():
                         label.configure(text=f"Layout exercise: {key}. " + "Long status with a retained source path and unverified build identity. " * 3)
+                    app.demo_summary.configure(text="Demo v0.46.0 · aaaaaaaaaaaa\nGitHub main · bbbbbbbbbbbb\nUpdate available · 128 commits behind main. Checked 23:59:59")
                     app.say("Layout exercise output: retained while resizing and tabbing.")
                     app._pump_output()
                     app.spinner.configure(text="Layout exercise: recovering the previous demo")

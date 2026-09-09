@@ -224,6 +224,38 @@ class ControllerTests(unittest.TestCase):
         with patch.object(panel, "run_quiet", side_effect=[(0, ""), (1, "")]):
             self.assertIsNone(panel.commits_behind("a" * 12))
 
+    def test_main_fetch_is_fresh_and_does_not_move_checkout(self):
+        with patch.object(panel, "run_quiet", side_effect=[(0, ""), (0, "b" * 40)]) as run:
+            sha, _ = panel.github_main()
+        self.assertEqual(sha, "b" * 40)
+        self.assertEqual(run.call_args_list[0].args[0], ["git", "fetch", "--quiet", "origin", "refs/heads/main:refs/remotes/origin/main"])
+        with patch.object(panel, "run_quiet", return_value=(1, "offline")) as run:
+            sha, reason = panel.github_main()
+        self.assertIsNone(sha)
+        self.assertIn("unavailable", reason)
+        self.assertEqual(run.call_count, 1, "failed fetch must not reuse stale origin/main")
+
+    def test_demo_summary_names_served_commit_and_main_when_comparison_unknown(self):
+        demo = {"version":"0.46.0", "commit":"a" * 12}
+        with patch.object(panel, "commits_behind", return_value=None):
+            colour, text = panel.demo_status(demo, "b" * 40, "Checked now")
+        self.assertEqual(colour, panel.WARN)
+        self.assertIn("aaaaaaaaaaaa", text)
+        self.assertIn("bbbbbbbbbbbb", text)
+        self.assertIn("Comparison unavailable", text)
+        self.assertNotIn("Up to date", text)
+        with patch.object(panel, "commits_behind", return_value=7) as behind:
+            _, text = panel.demo_status(demo, "b" * 40, "Checked now")
+        behind.assert_called_once_with("a" * 12, "b" * 40)
+        self.assertIn("7 commits behind main", text)
+        with patch.object(panel, "commits_behind", return_value=0):
+            colour, text = panel.demo_status(demo, "a" * 40, "Checked now")
+        self.assertEqual(colour, panel.OK)
+        self.assertIn("Up to date with main", text)
+        _, offline = panel.demo_status(demo, None, "GitHub unavailable")
+        self.assertIn("aaaaaaaaaaaa", offline)
+        self.assertIn("GitHub unavailable", offline)
+
     def ci(self, records, nightly=None):
         sha = "a" * 40
         if nightly is None:
@@ -260,7 +292,7 @@ class ControllerTests(unittest.TestCase):
 
 
 class RefreshScriptTests(unittest.TestCase):
-    def refresh(self, migrations='{"migrations":[{"local":"20260101000000","remote":"20260101000000"}]}', reported="a" * 12, migration_exit=0, status_exit=0, prepare_only=False):
+    def refresh(self, migrations='{"migrations":[{"local":"20260101000000","remote":"20260101000000"}]}', reported="a" * 12, migration_exit=0, status_exit=0, prepare_only=False, coordinated=False):
         with tempfile.TemporaryDirectory(prefix="openplan-refresh-test-") as temp:
             base = Path(temp)
             app = base / "instance" / "openplan"
@@ -284,7 +316,7 @@ if name == "git":
     elif "rev-list" in args: print("0")
     elif "rev-parse" in args: print("a" * 40)
 elif name == "npm" and "migration" in args:
-    print(os.environ["FAKE_MIGRATIONS"])
+    print(os.environ["FAKE_MIGRATIONS_AFTER"] if pathlib.Path(os.environ["FAKE_UPGRADED"]).exists() else os.environ["FAKE_MIGRATIONS"])
     sys.exit(int(os.environ["FAKE_MIGRATION_EXIT"]))
 elif name == "curl": print(json.dumps({"deployment":{"commit":os.environ["FAKE_REPORTED"]}}, separators=(",", ":")))
 '''
@@ -293,9 +325,23 @@ elif name == "curl": print(json.dumps({"deployment":{"commit":os.environ["FAKE_R
                 tool.write_text(fake)
                 tool.chmod(0o700)
             env = {**os.environ, "PATH": str(bindir) + os.pathsep + os.environ["PATH"], "PYTHONDONTWRITEBYTECODE": "1", "FAKE_CALL_LOG": str(base / "calls"), "FAKE_MIGRATIONS": migrations, "FAKE_REPORTED": reported, "FAKE_MIGRATION_EXIT": str(migration_exit), "FAKE_STATUS_EXIT": str(status_exit)}
+            env["FAKE_UPGRADED"] = str(base / "upgraded")
+            env["FAKE_MIGRATIONS_AFTER"] = '{"migrations":[{"local":"20260101000000","remote":"20260101000000"}]}'
+            if coordinated:
+                env.update(OPENPLAN_REFRESH_DATABASE_BACKUP=str(base / "backup.dump"), OPENPLAN_REFRESH_ACTIVE_INSTANCE=str(base / "active"), OPENPLAN_REFRESH_SERVICE="fixture.service")
+                (ops / "demo_database.py").write_text('import os,pathlib,sys\nassert sys.argv[3] == "fixture.service"\npathlib.Path(os.environ["FAKE_UPGRADED"]).touch()\nwith open(os.environ["FAKE_CALL_LOG"],"a") as f: f.write("database-upgrade\\n")\n')
             env["OPENPLAN_REFRESH_PREPARE_ONLY"] = "1" if prepare_only else "0"
             result = subprocess.run(["bash", str(script), str(app.parent)], env=env, capture_output=True, text=True, timeout=15)
             return result, (base / "calls").read_text()
+
+    def test_coordinator_applies_pending_schema_before_build(self):
+        pending = '{"migrations":[{"local":"20260101000000","remote":""}]}'
+        result, calls = self.refresh(migrations=pending, coordinated=True, prepare_only=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("database-upgrade", calls)
+        self.assertLess(calls.index("database-upgrade"), calls.index("npm ci"))
+        self.assertEqual(calls.count("migration list"), 2, "the upgraded inventory must be checked again")
+        self.assertNotIn("systemctl", calls)
 
     def test_unreadable_empty_malformed_and_pending_schema_stop_before_build(self):
         for migrations in ("not JSON", '{"migrations":[]}', '{"migrations":[{}]}', '{"migrations":[{"local":"20260101000000","remote":""}]}'):
@@ -358,6 +404,17 @@ def prove_mutations():
     controller = SOURCE.read_text()
     refresh = (OPS / "refresh-walkthrough-instance.sh").read_text()
     mutations = [
+        ("database preparation disconnected", "REFRESH_TEST_SOURCE", refresh,
+         'python3 "$SCRIPT_DIR/demo_database.py"', 'echo "$SCRIPT_DIR/demo_database.py"',
+         "RefreshScriptTests.test_coordinator_applies_pending_schema_before_build", False),
+
+        ("served commit hidden", "CONTROL_PANEL_TEST_SOURCE", controller,
+         '{commit[:12]}\\n{main}', 'hidden\\n{main}',
+         "ControllerTests.test_demo_summary_names_served_commit_and_main_when_comparison_unknown", False),
+        ("fetch failure ignored", "CONTROL_PANEL_TEST_SOURCE", controller,
+         'if code:\n        return None, "GitHub main unavailable.', 'if False:\n        return None, "GitHub main unavailable.',
+         "ControllerTests.test_main_fetch_is_fresh_and_does_not_move_checkout", False),
+
         ("harmless comment", "CONTROL_PANEL_TEST_SOURCE", controller,
          "# Small helpers.", "# Plain-data helpers.", None, True),
         ("preparation restarted service", "REFRESH_TEST_SOURCE", refresh,

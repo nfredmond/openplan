@@ -165,6 +165,18 @@ Server(("127.0.0.1",int(sys.argv[1])),Handler).serve_forever()
         for name in (".next", "node_modules"):
             self.assertEqual((self.instance / "openplan" / name / "predecessor").read_text(), "original runtime bytes\n")
 
+    def test_coordinator_supplies_private_database_backup_target(self):
+        real_popen = subprocess.Popen
+        with patch.object(self.module.subprocess, "Popen", wraps=real_popen) as popen:
+            self.updater.update()
+        builders = [call for call in popen.call_args_list if call.args and call.args[0][0] == "bash"]
+        self.assertEqual(len(builders), 1)
+        env = builders[0].kwargs["env"]
+        self.assertEqual(env["OPENPLAN_REFRESH_ACTIVE_INSTANCE"], str(self.instance))
+        self.assertEqual(env["OPENPLAN_REFRESH_SERVICE"], "isolated-test.service")
+        self.assertEqual(Path(env["OPENPLAN_REFRESH_DATABASE_BACKUP"]).parent.parent, self.updater.state)
+        self.assertEqual(env["OPENPLAN_REFRESH_PREPARE_ONLY"], "1")
+
     def test_tracked_symlink_survives_candidate_and_update(self):
         try:
             self.updater.update()
@@ -360,6 +372,7 @@ Server(("127.0.0.1",int(sys.argv[1])),Handler).serve_forever()
 def prove_mutations():
     source = SOURCE.read_text()
     cases = [
+        ("database backup target changed", 'str(transaction / "database-before.dump")', 'str(self.instance / "database-before.dump")', "test_coordinator_supplies_private_database_backup_target", False),
         ("comment", "# Persist all owned paths", "# Retain all owned paths", None, True),
         ("tracked links flattened", "symlinks=True, ignore=ignore", "symlinks=False, ignore=ignore", "test_tracked_symlink_survives_candidate_and_update", False),
         ("failure reason discarded", 'record["error"] = str(exc)', 'record["error"] = ""', "test_failed_build_keeps_a_durable_reason_and_log", False),
