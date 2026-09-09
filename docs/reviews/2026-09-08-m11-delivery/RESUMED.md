@@ -286,3 +286,19 @@ The new production build is 5c7627b2, with full-SHA runtime stamping and a match
 which-openplan receipt. An earlier missing stamp and then eight-character stamp
 were corrected; the identity helper compares the twelve-character health value.
 Browser role and remaining shared-capacity journeys continue on that build.
+
+The full QA run at 7012cae3 passed lint/deadcode and 13,395 tests but failed one
+schema-inventory assertion: the new relation was not included in its expected
+count. The live catalog confirms one new RLS-enabled table with zero policies.
+The inventory now counts 242 relations, 229 tables and 229 RLS tables. Its 36
+focused checks pass (three live drift checks were skipped in that focused run);
+a harmless comment survives and reverting the relation count fails for 242 versus
+241. The complete QA gate has not yet been rerun for this correction.
+
+The original populated v0.46 baseline, two actual versions and physical time
+still produce canonical SHA256 a6b1bfe272ecc1b77c37730603d9a0267878f7ec5a09bb50a0a1803fa42b31ca
+on the upgraded stack after migration 29. The comparison query was recovered by
+reading complete history chunks 88 and 721. Those chunks are marked read in the
+local ledger; no other bulk chunks were silently marked. The original temporary
+before.json is gone, so this compares against its prior committed checksum rather
+than claiming the old file was recovered. See resumed-populated-visibility-upgrade.json.

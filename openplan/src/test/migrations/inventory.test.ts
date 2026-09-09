@@ -467,16 +467,18 @@ const EXPECTED = {
   // Reviewed delivery adds four SELECT-only history tables and one security-invoker My Work view.
   // Weekly responses and closeout add five immutable tables with SELECT-only policies.
   // Calculation jobs add one scoped metadata SELECT policy and one RLS table.
+  // Source visibility receipts add one service-only RLS table and no policies.
+  // Confirmed on the disposable stack: contract_source_observations has RLS and zero policies.
   policies: 743,
   permissive: 492,
   restrictive: 251,
   permissiveWrites: 280,
   expanded: 286,
   tablesWithPolicies: 209,
-  relations: 241,
-  tables: 228,
+  relations: 242,
+  tables: 229,
   views: 13,
-  rlsEnabledTables: 228,
+  rlsEnabledTables: 229,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
