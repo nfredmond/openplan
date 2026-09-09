@@ -20,6 +20,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- [contract_completed_review_dates](openplan/supabase/migrations/20260928000001_contract_completed_review_dates.sql) retains actual outside-review dates and evidence separately from expected review periods and deliverable acceptance. Existing reviewed forecasts remain retained and become stale under the new calculation revision.
+
 - [contract_participant_and_accounting_work](openplan/supabase/migrations/20260926000001_contract_participant_and_accounting_work.sql) routes explicit consultant grants and unresolved accounting rows through My Work, and removes closed assignments from active work. [contract_participant_caller_view](openplan/supabase/migrations/20260927000001_contract_participant_caller_view.sql) keeps the consultant view under caller privileges with a narrow, caller-bound function.
 
 - [contract_export_source_receipts](openplan/supabase/migrations/20260925000001_contract_export_source_receipts.sql) retains received-invoice file checksums in new report format 7 and closeout format 3. New cost tables keep documented settlement separate. Earlier issued reports and packages retain their formats.

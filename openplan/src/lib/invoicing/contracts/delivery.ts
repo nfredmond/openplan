@@ -18,6 +18,7 @@ export function validateSchedule(schedule:Schedule){
   if(node.staff.some(s=>cents(s.hoursPerDay)<=BigInt(0)||cents(s.hoursPerDay)>BigInt(2400)))throw new Error("Daily reservations must be greater than zero and at most 24 hours.");
   if(node.kind!=="work"&&node.staff.length)throw new Error("Outside review periods do not reserve internal staff. Add a separate review-work task for staff effort.");
   if(!unique(node.calendar.weekdays.map(String))||!unique(node.calendar.exceptions.map(e=>e.date)))throw new Error("Calendar weekdays and exceptions must be unique.");
+  if(node.completedReview&&(node.kind==="work"||node.completedReview.startedOn>node.completedReview.finishedOn||!node.completedReview.evidence.trim()))throw new Error("Completed outside reviews require ordered actual dates and documented evidence; staff actual dates come from reviewed work updates.");
   visit(node.id);
  }
  if(schedule.billingTreatment!=="unassessed"&&(!schedule.billingSourceId||!schedule.billingEvidence))throw new Error("Document the agreement terms before forecasting gross billing.");
@@ -64,6 +65,15 @@ export function forecastDelivery(state:ContractState,delivery:DeliveryState,opti
   let supported=!!task,start=node.notBefore>asOf?node.notBefore:asOf;
   for(const predecessor of node.predecessors){const prior=results.find(r=>r.id===predecessor)!;if(!prior.finish){supported=false;warn("unsupported_predecessor","A predecessor has no supported finish.",node.id);}else if(nextDate(prior.finish)>start)start=nextDate(prior.finish);}
   if(node.kind!=="work"){
+   if(node.completedReview){
+    const actual=node.completedReview;result.actualStart=actual.startedOn;result.actualFinish=actual.finishedOn;
+    if(actual.finishedOn>asOf){warn("future_review_actual","Recorded review completion falls after this forecast's as-of date.",node.id);return;}
+    const conflict=node.predecessors.some(id=>{const prior=results.find(r=>r.id===id)!;return !prior.finish||prior.finish>=actual.startedOn;});
+    if(!supported||conflict){warn("review_sequence_conflict","Recorded review dates conflict with the finish-to-start sequence or an unresolved predecessor. Reconcile the sequence while retaining the reported actual dates.",node.id);return;}
+    result.start=actual.startedOn;result.finish=actual.finishedOn;
+    if(result.currentApprovedFinish&&result.finish>result.currentApprovedFinish)warn("deadline_threat","The recorded review finish exceeds the current approved task deadline.",node.id,null,result.finish);
+    return;
+   }
    if(node.reviewStatus!=="available"){warn("review_unavailable","The outside reviewer is unavailable or availability has not been assessed.",node.id);return;}
    if(node.durationDays===null||!node.reviewEvidence){warn("missing_review_duration","Document this outside review period and its duration.",node.id);return;}
    if(!supported)return;
@@ -91,7 +101,7 @@ export function forecastDelivery(state:ContractState,delivery:DeliveryState,opti
    const nodeUpdates=node.staff.map(p=>updates.get(`${node.taskId}:${p.staffId}`));
    if(nodeUpdates.length&&nodeUpdates.every(u=>u?.state==="accepted"&&u.content.actualFinish))result.actualFinish=nodeUpdates.map(u=>u!.content.actualFinish!).sort().at(-1)!;
    if(!supported)return;
-   if([...remaining.values()].every(h=>h===BigInt(0))){result.start=start;result.finish=result.actualFinish??start;}else{
+   if([...remaining.values()].every(h=>h===BigInt(0))){result.start=result.actualFinish?(result.actualStart??result.actualFinish):start;result.finish=result.actualFinish??start;}else{
    for(let date=start;date<=horizonEnd&&date<=node.reserveThrough;date=nextDate(date)){
     if(!isWorkingDate(node.calendar,date))continue;
     let dayWorked=false;

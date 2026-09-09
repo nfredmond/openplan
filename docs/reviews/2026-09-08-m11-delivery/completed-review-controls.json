@@ -1,0 +1,77 @@
+[
+  {
+    "name": "harmless-review-comment",
+    "outcome": "survived",
+    "reason": null
+  },
+  {
+    "name": "ignore-recorded-review",
+    "outcome": "killed",
+    "reason": "retains evidenced review actuals"
+  },
+  {
+    "name": "future-review-supported",
+    "outcome": "killed",
+    "reason": "keeps actual dates"
+  },
+  {
+    "name": "conflicting-review-supported",
+    "outcome": "killed",
+    "reason": "keeps actual dates"
+  },
+  {
+    "name": "skip-review-evidence-check",
+    "outcome": "killed",
+    "reason": "rejects reversed dates"
+  },
+  {
+    "name": "staff-review-actuals",
+    "outcome": "killed",
+    "reason": "rejects reversed dates"
+  },
+  {
+    "name": "completed-work-start-after-finish",
+    "outcome": "killed",
+    "reason": "retains evidenced review actuals"
+  },
+  {
+    "name": "hide-review-export",
+    "outcome": "killed",
+    "reason": "exports actual review evidence"
+  },
+  {
+    "name": "lost-review-form-evidence",
+    "outcome": "killed",
+    "reason": "reaches actual review inputs"
+  },
+  {
+    "name": "harmless-completed-review-sql",
+    "outcome": "survived",
+    "reason": null
+  },
+  {
+    "name": "missing-review-evidence-sql",
+    "outcome": "killed",
+    "reason": "Invalid completed review accepted: evidence"
+  },
+  {
+    "name": "reversed-review-dates-sql",
+    "outcome": "killed",
+    "reason": "Invalid completed review accepted: reverse"
+  },
+  {
+    "name": "future-review-dates-sql",
+    "outcome": "killed",
+    "reason": "Invalid completed review accepted: future"
+  },
+  {
+    "name": "work-review-actuals-sql",
+    "outcome": "killed",
+    "reason": "Invalid completed review accepted: work"
+  },
+  {
+    "name": "old-review-calculation-hash",
+    "outcome": "killed",
+    "reason": "Completed review calculation revision missing"
+  }
+]

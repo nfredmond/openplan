@@ -1,0 +1,27 @@
+import {afterEach,it,expect,vi} from "vitest";
+import {cleanup,render,screen,fireEvent,waitFor} from "@testing-library/react";
+import {randomUUID} from "node:crypto";
+import {deliveryFixture} from "./fixtures/contract-delivery";
+import {forecastDelivery,validateSchedule} from "@/lib/invoicing/contracts/delivery";
+import {scheduleSchema} from "@/lib/invoicing/contracts/delivery-schema";
+import {contractSnapshotTables} from "@/lib/invoicing/contracts/export";
+import type {ContractSnapshot} from "@/lib/invoicing/contracts/schema";
+import {DeliveryManagement} from "@/components/invoicing/contracts/delivery-management";
+vi.mock("next/navigation",()=>({useSearchParams:()=>new URLSearchParams()}));
+afterEach(()=>{cleanup();localStorage.clear();});
+function fixture(){const f=deliveryFixture();f.delivery.workUpdates[0].content={...f.delivery.workUpdates[0].content,hours:"0.00",actualStart:"2026-09-01",actualFinish:"2026-09-01",status:"reported_complete"};f.schedule.nodes[1].completedReview={startedOn:"2026-09-02",finishedOn:"2026-09-08",evidence:"Synthetic outside reviewer reports review finished; not deliverable acceptance"};f.schedule.nodes[1].reviewStatus="unavailable";f.schedule.nodes[1].durationDays=null;f.state.delivery=f.delivery;return f;}
+it("retains evidenced review actuals without requiring future availability or estimating a new duration",()=>{
+ const f=fixture(),before=JSON.stringify(f.state),r=forecastDelivery(f.state,f.delivery,f.options);expect(r.finish).toBe("2026-09-08");expect(r.nodes[0]).toMatchObject({start:"2026-09-01",finish:"2026-09-01"});expect(r.nodes[1]).toMatchObject({start:"2026-09-02",finish:"2026-09-08",actualStart:"2026-09-02",actualFinish:"2026-09-08",originalApprovedFinish:"2026-09-30",currentApprovedFinish:"2026-09-30"});expect(JSON.stringify(f.state)).toBe(before);expect(f.state.closeout).toBeUndefined();
+});
+it("keeps actual dates but withholds support for future completion or a contradictory dependency",()=>{
+ const f=fixture();f.schedule.nodes[1].completedReview!.finishedOn="2026-09-09";let r=forecastDelivery(f.state,f.delivery,f.options);expect(r.finish).toBeNull();expect(r.warnings.map(w=>w.code)).toContain("future_review_actual");expect(r.nodes[1].actualFinish).toBe("2026-09-09");f.schedule.nodes[1].completedReview!.finishedOn="2026-09-08";f.delivery.workUpdates[0].content.actualFinish="2026-09-03";r=forecastDelivery(f.state,f.delivery,f.options);expect(r.finish).toBeNull();expect(r.warnings.map(w=>w.code)).toContain("review_sequence_conflict");expect(r.nodes[1].actualFinish).toBe("2026-09-08");
+});
+it("rejects reversed dates, unsupported staff actuals and absent evidence, while preserving legacy schedules",()=>{
+ const f=fixture();for(const kind of ["reverse","work","evidence"]){const s=structuredClone(f.schedule);if(kind==="reverse")s.nodes[1].completedReview!.startedOn="2026-09-09";if(kind==="work")s.nodes[0].completedReview=s.nodes[1].completedReview;if(kind==="evidence")s.nodes[1].completedReview!.evidence="";expect(()=>validateSchedule(s)).toThrow("Completed outside reviews");}const invalid=structuredClone(f.schedule);invalid.nodes[1].completedReview!.startedOn="2026-02-31";expect(scheduleSchema.safeParse(invalid).success).toBe(false);delete f.schedule.nodes[1].completedReview;expect(scheduleSchema.parse(f.schedule).nodes[1]).not.toHaveProperty("completedReview");
+});
+it("exports actual review evidence from each retained schedule version",()=>{
+ const f=fixture(),snapshot:ContractSnapshot={id:randomUUID(),title:"Synthetic review history",created_at:"2026-09-08",snapshot_hash:"a".repeat(64),snapshot:{...f.state,schemaVersion:7,asOf:"2026-09-08",sourceCutoff:"2026-09-08T12:00:00Z",coverageComplete:true,coverageEvidence:"Synthetic",baselineId:f.state.baselines[0].id,originalBaselineId:f.state.baselines[0].id}};const table=contractSnapshotTables(snapshot).find(t=>t.name==="Completed review evidence");expect(table!.rows[1]).toEqual([1,"Agency review","agency_review","2026-09-02","2026-09-08",f.schedule.nodes[1].completedReview!.evidence]);delete f.schedule.nodes[1].completedReview;expect(contractSnapshotTables(snapshot).some(t=>t.name==="Completed review evidence")).toBe(false);
+});
+it("reaches actual review inputs through Schedule and saves exact dates and evidence",async()=>{
+ const f=fixture();delete f.schedule.nodes[1].completedReview;const send=vi.fn().mockResolvedValue(true);render(<DeliveryManagement state={f.state} send={send} busy={false}/>);fireEvent.click(screen.getByRole("button",{name:"Schedule"}));fireEvent.click(screen.getByRole("checkbox",{name:"Outside review completed"}));fireEvent.change(screen.getByLabelText("Actual review start"),{target:{value:"2026-09-02"}});fireEvent.change(screen.getByLabelText("Actual review finish"),{target:{value:"2026-09-08"}});fireEvent.change(screen.getByLabelText("Completed review evidence and responsible reviewer"),{target:{value:"Synthetic dated reviewer confirmation"}});fireEvent.submit(screen.getByRole("button",{name:"Retain reviewed working schedule"}).closest("form")!);await waitFor(()=>expect(send).toHaveBeenCalledWith(expect.objectContaining({kind:"schedule",content:expect.objectContaining({nodes:expect.arrayContaining([expect.objectContaining({completedReview:{startedOn:"2026-09-02",finishedOn:"2026-09-08",evidence:"Synthetic dated reviewer confirmation"}})])})})));expect(screen.getByText(/Deliverable acceptance remains a separate decision/)).toBeVisible();
+});
