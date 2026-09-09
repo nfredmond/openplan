@@ -1,0 +1,79 @@
+{
+  "checkout": "/home/nathaniel/code/openplan",
+  "baseCommit": "8e06a4cc",
+  "dirtyFiles": [
+    "openplan/src/app/(auth)/layout.tsx",
+    "openplan/src/test/public-landing-page.test.tsx"
+  ],
+  "identity": "which-openplan confirmed served checkout at :3248; unstamped dev server",
+  "journey": "Homepage Sign in to existing workspace link to /sign-in; no account submission",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "mobileDocumentWidth": 390,
+  "consoleErrors": [],
+  "copy": "Connected planning work",
+  "focusedTests": 120,
+  "lint": "passed",
+  "controls": {
+    "initialGap": "Joined adjacent block text defeated trailing word boundary; two old-wording controls survived. Fixed by joining individual text nodes with whitespace.",
+    "results": [
+      {
+        "name": "baseline-auth-copy",
+        "exitCode": 0,
+        "sourceSHA256": "2fb899480a6e706cbd6d1c33c236bce25e5cd21759932feffbec0ac67695b139",
+        "outcome": "survived"
+      },
+      {
+        "name": "harmless-auth-copy",
+        "exitCode": 0,
+        "sourceSHA256": "6df6b24fb89b46a275c88f15308e384ba007696370ea00bda669c3d9397d7376",
+        "outcome": "survived"
+      },
+      {
+        "name": "restore-unsupported-auth-adoption",
+        "exitCode": 1,
+        "sourceSHA256": "7d07e247a38fb6e08dc2590b22cb762b3fb9d2617e9532458601c526a81a0b13",
+        "outcome": "killed"
+      }
+    ]
+  },
+  "homepageControlsAfterExtractionChange": [
+    {
+      "name": "restore-homepage-adoption",
+      "outcome": "killed",
+      "exitCode": 1
+    },
+    {
+      "name": "restore-workflow-adoption",
+      "outcome": "killed",
+      "exitCode": 1
+    }
+  ],
+  "blindCategory": "These adoption phrase families only; not proof of all claims or authentication behavior.",
+  "ownFailedChecks": [
+    "npm invoked from repo root: ENOENT, no tests ran; corrected package root.",
+    "First lint failed on JSX keys in parameterized test; corrected.",
+    "Direct /login was404 and browser wait timed out; navigated real homepage link to /sign-in.",
+    "Initial two restored-claim mutations survived because adjacent text blocks lost word boundaries; fixed text-node extraction and reran."
+  ],
+  "screenshots": [
+    {
+      "file": "auth-copy-desktop.png",
+      "sha256": "65c5d86cf56c3f6200a214c0e5b11a20594eeeca6e1538468345231cc4304224",
+      "bytes": 150648
+    },
+    {
+      "file": "auth-copy-mobile.png",
+      "sha256": "e5b23391f58cb424af8e711ba6f1aa6bbe581592ebc6e1ebec77406d903d6368",
+      "bytes": 61698
+    }
+  ]
+}

@@ -11,6 +11,7 @@ vi.mock("next/link", () => ({
 }));
 
 import PublicLandingPage from "@/app/(public)/page";
+import AuthLayout from "@/app/(auth)/layout";
 
 /**
  * THE COPY CHANGED; THE POSTURE DID NOT.
@@ -25,6 +26,18 @@ import PublicLandingPage from "@/app/(public)/page";
  * copy-freeze rather than a posture guard.
  */
 describe("PublicLandingPage", () => {
+  it.each([
+    ["homepage", <PublicLandingPage key="homepage" />],
+    ["account access", <AuthLayout key="account-access"><p>Account access</p></AuthLayout>],
+  ])("%s does not claim established adoption without evidence", (_surface, content) => {
+    // The September 2026 product direction records zero users.
+    const { container } = render(content);
+    const text = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+    const parts: string[] = [];
+    while (text.nextNode()) parts.push(text.currentNode.textContent ?? "");
+    expect(parts.join(" ")).not.toMatch(/\b(?:used|trusted|adopted) by\b|\b(?:planners|teams) use it\b/i);
+  });
+
   it("leads with self-serve sign-up, keeps sign-in secondary, and shows source/license proof near the Apache claim", () => {
     render(<PublicLandingPage />);
 
