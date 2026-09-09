@@ -28,7 +28,9 @@ tasks, 100 staff and 731 days; this does not prove unbounded retained-history sc
 or simultaneous maximum-length notes. Automatic reminder CHECK replacement still
 awaits specific authorization and email transport remains unconfigured. M11 requires
 observed agency PM and independent human finance acceptance, neither yet obtained.
-The requested complete prior-session history audit remains in progress.
+The [complete available-history audit](../reviews/2026-09-08-m11-delivery/HISTORY_REVIEW.md)
+is finished: all 404 exact-reference text chunks and 302 recovered images were read.
+Original truncations and unavailable records remain explicitly identified.
 
 ## Contract reconciliation boundary, September 8 v0.46
 
