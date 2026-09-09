@@ -28,7 +28,7 @@ Local custody and read ledgers are under:
 `conversation/manifest.json` records all five completed conversation chunks.
 `history/` and `history-v2/` index every original record, text occurrence, metadata,
 credential redaction, encrypted field and recovered image. `history-read/` retains
-exact text plus exact-substring duplicate references; only chunks 1–6 of 756 have
+exact text plus exact-substring duplicate references; only chunks 1–6, 88 and 721 of 756 have
 been read in full. Preparation/inventory is not reading. Raw transcripts and
 captures stay local, outside Git. Only findings and nonconfidential receipts belong
 in repository notes.
@@ -131,3 +131,17 @@ Current retry edits follow this inventory and will be checkpointed before landin
 Keep checks, main integration and final acceptance results separate from this
 read-only inventory. A merge must retain every M11 commit and preserve all older
 branch ancestry; do not squash away the evidence chain.
+
+## Subsequent verification supersedes the earlier open findings
+
+RESUMED.md records the completed source-visibility repair, actual issued PDF/XLSX
+and closeout JSON/CSV downloads, complete PDF page overview review, all workbook
+sheets and rendered overviews, worker lease recovery, and A/B shared-capacity
+browser comparison. Those later records supersede the pending wording in items
+2, 4 and 5 above only for their stated scope. Maximum missing-capacity calculation
+also exposed and then repaired a second memory failure; maximum browser/RPC
+acceptance and the consultant correction journey remain distinct unfinished work.
+Chunks 88 and 721 were read fully to recover the populated-upgrade canonical
+comparison and historical workbook/CI details. No other bulk chunks are counted
+as read. The unavailable original temporary comparison file was not recovered;
+its query and previously committed hash were recovered and independently matched.

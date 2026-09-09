@@ -1,3 +1,4 @@
+import { forecastWarningNodes } from "./forecast-warning-nodes";
 import { settlementPosition } from "./closeout";
 import { accountingHandoffRows, type CloseoutPackage } from "./closeout-export";
 import JSZip from "jszip";
@@ -55,7 +56,16 @@ export function contractSnapshotTables(report: ContractSnapshot): { name: string
   const d=state.delivery;
   tables.push({name:"Reviewed forecasts",rows:[["Version","Issued","As of","Horizon","Supported finish","Remaining cost","Actual plus remaining","Expected gross billing","Input SHA-256","Current at snapshot","Review evidence","Coverage evidence"],...d.forecasts.map(f=>[f.version,f.created_at,f.content.result.asOf,f.content.result.horizonEnd,f.content.result.finish,f.content.result.remainingCost,f.content.result.actualPlusRemaining,f.content.result.remainingGrossBilling,f.input_hash,f.input_hash===d.inputHash?"Unchanged inputs":"Stale inputs",f.content.reviewEvidence,f.content.coverageEvidence])]});
   tables.push({name:"Forecast dates",rows:[["Forecast version","Schedule item","Task","Original approved finish","Current approved finish","Forecast start","Forecast finish","Actual start","Actual finish"],...d.forecasts.flatMap(f=>f.content.result.nodes.map(n=>[f.version,n.title,n.taskId,n.originalApprovedFinish,n.currentApprovedFinish,n.start,n.finish,n.actualStart,n.actualFinish]))]});
-  tables.push({name:"Forecast warnings",rows:[["Forecast version","Cause","Schedule item","Staff","Date","Explanation"],...d.forecasts.flatMap(f=>f.content.result.warnings.map(w=>[f.version,w.code,w.nodeId,w.staffId,w.date,w.message]))]});
+  const scopes:Cell[][]=[["Forecast version","Scope reference","Schedule item ID","Schedule item title"]];
+  tables.push({name:"Forecast warnings",rows:[["Forecast version","Cause","Schedule item","Staff","Date","Explanation"],...d.forecasts.flatMap(f=>{
+   const seen=new Set<string>();
+   return f.content.result.warnings.map(w=>{
+    const reference=f.content.result.formatVersion>=3&&w.nodeMask!==undefined?`Shared scope ${w.nodeMask}`:null;
+    if(reference&&!seen.has(reference)){seen.add(reference);for(const node of forecastWarningNodes(f.content.result,w))scopes.push([f.version,reference,node.id,node.title]);}
+    return [f.version,w.code,reference??w.nodeId,w.staffId,w.date,w.message];
+   });
+  })]});
+  if(scopes.length>1)tables.push({name:"Forecast warning scopes",rows:scopes});
   tables.push({name:"Staff work review history",rows:[["Task","Staff","Version","State","As of","Remaining hours","Availability per day","Reported status","Blockers","Actual start","Actual finish","Remaining cost","Expected gross billing","Valuation evidence","Reviewed input ID","Review evidence"],...d.workUpdates.map(u=>[u.task_id,u.staff_id,u.version,u.state,u.content.asOf,u.content.hours,u.content.availableHoursPerDay,u.content.status,u.content.blockers,u.content.actualStart,u.content.actualFinish,u.remaining_cost,u.remaining_gross_billing,u.valuation_evidence,u.reviewed_update_id??null,u.evidence])]});
   tables.push({name:"Schedule assumptions",rows:[["Version","Assumptions","Update due","Billing treatment","Billing evidence"],...d.scheduleVersions.map(s=>[s.version,s.content.assumptions,s.content.updateDueOn,s.content.billingTreatment,s.content.billingEvidence])]});
   tables.push({name:"Schedule review periods",rows:[["Version","Item","Kind","Earliest start","Reservation end","Dependencies","Duration days","Day counting","Reviewer availability","Review evidence","Calendar","Weekdays","Dated exceptions"],...d.scheduleVersions.flatMap(s=>s.content.nodes.map(n=>[s.version,n.title,n.kind,n.notBefore,n.reserveThrough,n.predecessors.join(", "),n.durationDays,n.durationKind,n.reviewStatus,n.reviewEvidence,n.calendar.name,n.calendar.weekdays.join(", "),n.calendar.exceptions.map(e=>`${e.date}: ${e.working?"working":"unavailable"}; ${e.reason}`).join("\n")]))]});

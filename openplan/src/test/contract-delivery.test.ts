@@ -1,9 +1,29 @@
 import { describe,expect,it } from "vitest";
+import { forecastWarningNodes } from "@/lib/invoicing/contracts/forecast-warning-nodes";
 import { randomUUID } from "node:crypto";
 import { forecastDelivery,isWorkingDate,nextDate,validateSchedule } from "@/lib/invoicing/contracts/delivery";
 import { contractSnapshotTables,contractSnapshotWorkbook } from "@/lib/invoicing/contracts/export";
 import { deliveryFixture as fixture } from "./fixtures/contract-delivery";
 describe("reviewed contract delivery",()=>{
+ it("retains every affected task and date in shared missing-capacity warnings beyond 64 tasks",()=>{
+  const f=fixture(),template=f.schedule.nodes[0],task=f.state.baselines[0].content.tasks[0],update=f.delivery.workUpdates[0];
+  f.schedule.nodes=Array.from({length:70},(_,index)=>({...template,id:randomUUID(),taskId:randomUUID(),notBefore:index===69?"2026-09-10":"2026-09-08",reserveThrough:"2026-09-11"}));
+  f.state.baselines[0].content.tasks=f.schedule.nodes.map(node=>({...task,id:node.taskId}));
+  f.delivery.assignments=f.schedule.nodes.map(node=>({taskId:node.taskId,staffId:f.staff}));
+  f.delivery.workUpdates=f.schedule.nodes.map(node=>({...update,id:randomUUID(),task_id:node.taskId,content:{...update.content,taskId:node.taskId}}));
+  f.delivery.capacityVersions=[];
+  const before=JSON.stringify(f.delivery),result=forecastDelivery(f.state,f.delivery,f.options),warnings=result.warnings.filter(w=>w.code==="missing_capacity");
+  expect(warnings.map(w=>w.date)).toEqual(["2026-09-08","2026-09-10","2026-09-11"]);
+  expect(warnings.map(w=>forecastWarningNodes(result,w).map(n=>n.id))).toEqual([f.schedule.nodes.slice(0,69).map(n=>n.id),f.schedule.nodes.map(n=>n.id),f.schedule.nodes.map(n=>n.id)]);
+  expect(result.finish).toBeNull();expect(result.nodes.every(n=>n.finish===null)).toBe(true);expect(JSON.stringify(f.delivery)).toBe(before);
+  f.delivery.forecasts=[{id:randomUUID(),version:1,input_hash:f.delivery.inputHash,created_at:"2026-09-08",content:{inputs:{synthetic:true},result,reviewEvidence:"Synthetic",coverageEvidence:"Synthetic"}}];
+  const tables=contractSnapshotTables({id:randomUUID(),title:"Synthetic",created_at:"2026-09-08",snapshot_hash:"c".repeat(64),snapshot:{...f.state,schemaVersion:7,delivery:f.delivery,asOf:f.options.asOf,sourceCutoff:"2026-09-08T00:00:00Z",coverageComplete:true,coverageEvidence:"Synthetic",baselineId:f.state.baselines[0].id,originalBaselineId:f.state.baselines[0].id}});
+  const scopes=tables.find(t=>t.name==="Forecast warning scopes")!.rows.slice(1),exported=tables.find(t=>t.name==="Forecast warnings")!.rows.filter(row=>row[1]==="missing_capacity");
+  expect(exported).toHaveLength(3);
+  expect(exported.map(row=>scopes.filter(scope=>scope[1]===row[2]).map(scope=>scope[2]))).toEqual(warnings.map(w=>forecastWarningNodes(result,w).map(n=>n.id)));
+  const legacy={...result,formatVersion:1 as const};expect(forecastWarningNodes(legacy,{...warnings[0],nodeId:result.nodes[69].id})).toEqual([result.nodes[69]]);
+ });
+
  it("sums this assignment's shared daily reservations once while keeping outside hours separate",()=>{
   const f=fixture(),secondTask=randomUUID(),secondNode=randomUUID();
   f.state.baselines[0].content.tasks.push({...f.state.baselines[0].content.tasks[0],id:secondTask});
@@ -12,7 +32,7 @@ describe("reviewed contract delivery",()=>{
   f.delivery.workUpdates.push({...f.delivery.workUpdates[0],id:randomUUID(),task_id:secondTask,content:{...f.delivery.workUpdates[0].content,taskId:secondTask}});
   f.delivery.outsideReservations=[{staffId:f.staff,date:"2026-09-08",hours:"4.00"}];
   const input=JSON.stringify(f.delivery),result=forecastDelivery(f.state,f.delivery,f.options);
-  expect(result.formatVersion).toBe(2);
+  expect(result.formatVersion).toBe(3);
   expect(result.reservations.filter(r=>r.staffId===f.staff&&r.date==="2026-09-08")).toEqual([{staffId:f.staff,date:"2026-09-08",hours:"4.01"}]);
   expect(new Set(result.reservations.map(r=>`${r.staffId}:${r.date}`)).size).toBe(result.reservations.length);
   expect(result.warnings).toContainEqual(expect.objectContaining({code:"capacity_conflict",staffId:f.staff,date:"2026-09-08",message:expect.stringContaining("8.01")}));

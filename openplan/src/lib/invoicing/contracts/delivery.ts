@@ -31,8 +31,15 @@ export function forecastDelivery(state:ContractState,delivery:DeliveryState,opti
  const schedule=delivery.scheduleVersions.toSorted((a,b)=>a.version-b.version).at(-1)?.content;
  const warnings:ForecastWarning[]=[],results:ForecastResult["nodes"]=[],reservations:ForecastResult["reservations"]=[];
  const warningKeys=new Set<string>();
- function warn(code:string,message:string,nodeId:string|null=null,staffId:string|null=null,date:string|null=null){const key=JSON.stringify([code,nodeId,staffId,date]);if(!warningKeys.has(key)){warningKeys.add(key);warnings.push({code,message,nodeId,staffId,date});}}
- const empty:ForecastResult={formatVersion:2,asOf,horizonEnd,finish:null,remainingCost:null,actualPlusRemaining:null,remainingGrossBilling:null,coverageComplete:options.coverageComplete,warnings,nodes:results,reservations};
+ const nodeBits=new Map<string,bigint>(),sharedWarnings=new Map<string,{warning:ForecastWarning;mask:bigint}>();
+ function warn(code:string,message:string,nodeId:string|null=null,staffId:string|null=null,date:string|null=null){
+  if(nodeId&&(code==="missing_capacity"||code==="capacity_conflict")){
+   const key=`${code}:${staffId}:${date}`,existing=sharedWarnings.get(key),bit=nodeBits.get(nodeId)!;
+   if(existing)existing.mask|=bit;else sharedWarnings.set(key,{warning:{code,message,nodeId:null,staffId,date},mask:bit});
+   return;
+  }
+  const key=JSON.stringify([code,nodeId,staffId,date]);if(!warningKeys.has(key)){warningKeys.add(key);warnings.push({code,message,nodeId,staffId,date});}}
+ const empty:ForecastResult={formatVersion:3,asOf,horizonEnd,finish:null,remainingCost:null,actualPlusRemaining:null,remainingGrossBilling:null,coverageComplete:options.coverageComplete,warnings,nodes:results,reservations};
  if(!schedule){warn("missing_schedule","A reviewed schedule has not been retained.");return empty;}
  validateSchedule(schedule);
  const baseline=state.baselines.filter(b=>b.state==="approved").toSorted((a,b)=>a.version-b.version).at(-1),original=state.baselines.filter(b=>b.state==="approved").toSorted((a,b)=>a.version-b.version)[0];
@@ -70,7 +77,7 @@ export function forecastDelivery(state:ContractState,delivery:DeliveryState,opti
   if(visited.has(node.id))return;visited.add(node.id);
   for(const predecessor of node.predecessors)calculate(schedule!.nodes.find(n=>n.id===predecessor)!);
   const task=baseline!.content.tasks.find(t=>t.id===node.taskId);
-  const result:ForecastResult["nodes"][number]={id:node.id,title:node.title,taskId:node.taskId,start:null,finish:null,originalApprovedFinish:original?.content.tasks.find(t=>t.id===node.taskId)?.deadline??null,currentApprovedFinish:task?.deadline??null,actualStart:null,actualFinish:null};results.push(result);
+  const result:ForecastResult["nodes"][number]={id:node.id,title:node.title,taskId:node.taskId,start:null,finish:null,originalApprovedFinish:original?.content.tasks.find(t=>t.id===node.taskId)?.deadline??null,currentApprovedFinish:task?.deadline??null,actualStart:null,actualFinish:null};nodeBits.set(node.id,BigInt(1)<<BigInt(results.length));results.push(result);
   let supported=!!task,start=node.notBefore>asOf?node.notBefore:asOf;
   for(const predecessor of node.predecessors){const prior=results.find(r=>r.id===predecessor)!;if(!prior.finish){supported=false;warn("unsupported_predecessor","A predecessor has no supported finish.",node.id);}else if(nextDate(prior.finish)>start)start=nextDate(prior.finish);}
   if(node.kind!=="work"){
@@ -131,6 +138,7 @@ export function forecastDelivery(state:ContractState,delivery:DeliveryState,opti
   if(result.finish&&result.currentApprovedFinish&&result.finish>result.currentApprovedFinish)warn("deadline_threat","The forecast finish exceeds the current approved task deadline.",node.id,null,result.finish);
  }
  for(const node of schedule.nodes)calculate(node);
+ for(const {warning,mask} of sharedWarnings.values())warnings.push({...warning,nodeMask:mask.toString(16)});
  const reconciliation=reconcileContract(state,{asOf}),sourceCovered=options.coverageComplete&&!reconciliation.unresolved.length&&!state.unmappedTime.length&&!state.unmappedSpend.length&&!state.unmappedSpendCount;
  const remainingCost=costCovered?money(knownCost):null,actualPlusRemaining=sourceCovered&&remainingCost!==null?money(cents(reconciliation.total.incurred)+knownCost):null;
  if(!costCovered)warn("cost_coverage","Remaining cost lacks a reviewed valuation for some assigned work.");

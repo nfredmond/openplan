@@ -72,6 +72,19 @@ describe.skipIf(!LIVE_RLS)("contract settlement and closeout custody",()=>{
  PERFORM set_config('request.jwt.claim.sub',outsider::text,true);SET LOCAL ROLE authenticated;
  IF public.contract_open_for_work(engagement) IS NOT NULL OR EXISTS(SELECT 1 FROM public.contract_active_tasks_my_work) THEN RAISE EXCEPTION 'Foreign assignment status leaked';END IF;RESET ROLE;
  `));
+ it("keeps a consultant's closed invoice history reachable with matching scoped state",()=>check(`${baseline}
+ INSERT INTO public.contract_access_versions(engagement_id,workspace_id,user_id,version,role,active,evidence,created_by) VALUES(engagement,workspace,outsider,1,'consultant',true,'Synthetic consultant access',owner_id);
+ PERFORM set_config('request.jwt.claim.sub',outsider::text,true);SET LOCAL ROLE authenticated;
+ IF (SELECT open_for_work FROM public.contract_participant_my_work WHERE id=engagement) IS DISTINCT FROM true THEN RAISE EXCEPTION 'Active consultant status missing';END IF;RESET ROLE;
+ ${close}result:=public.record_contract_command(engagement,owner_id,c);report:=(result->>'id')::uuid;
+ IF (public.read_contract_management(engagement,outsider)->>'openForWork')::boolean IS DISTINCT FROM false THEN RAISE EXCEPTION 'Closed management state missing';END IF;
+ PERFORM set_config('request.jwt.claim.sub',outsider::text,true);SET LOCAL ROLE authenticated;
+ IF (SELECT open_for_work FROM public.contract_participant_my_work WHERE id=engagement) IS DISTINCT FROM false THEN RAISE EXCEPTION 'Closed participant history or state missing';END IF;RESET ROLE;
+ PERFORM public.record_contract_command(engagement,owner_id,jsonb_build_object('kind','reopen','requestId',gen_random_uuid(),'expectedVersion',1,'closeoutId',report,'evidence','Synthetic authorized reopening'));
+ IF (public.read_contract_management(engagement,outsider)->>'openForWork')::boolean IS DISTINCT FROM true THEN RAISE EXCEPTION 'Reopened management state missing';END IF;
+ PERFORM set_config('request.jwt.claim.sub',outsider::text,true);SET LOCAL ROLE authenticated;
+ IF (SELECT open_for_work FROM public.contract_participant_my_work WHERE id=engagement) IS DISTINCT FROM true THEN RAISE EXCEPTION 'Reopened consultant status missing';END IF;RESET ROLE;
+ `));
  it("requires each reopened obligation to survive or receive new satisfaction evidence",()=>check(`${baseline}${close}
  result:=public.record_contract_command(engagement,owner_id,c);report:=(result->>'id')::uuid;
  PERFORM public.record_contract_command(engagement,owner_id,jsonb_build_object('kind','reopen','requestId',gen_random_uuid(),'expectedVersion',1,'closeoutId',report,'evidence','Synthetic reopen for review'));

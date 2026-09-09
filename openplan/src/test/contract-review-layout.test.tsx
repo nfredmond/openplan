@@ -5,6 +5,7 @@ import {deliveryFixture} from "./fixtures/contract-delivery";
 import {forecastDelivery} from "@/lib/invoicing/contracts/delivery";
 import {ForecastWarnings} from "@/components/invoicing/contracts/forecast-warnings";
 import {CalculationJobs} from "@/components/invoicing/contracts/calculation-jobs";
+import {ReceivedInvoicePanel} from "@/components/invoicing/contracts/agency-reconciliation";
 import {ContractManagement} from "@/components/invoicing/contracts/contract-management";
 vi.mock("next/navigation",()=>({useSearchParams:()=>new URLSearchParams()}));
 afterEach(()=>{cleanup();vi.unstubAllGlobals();localStorage.clear();window.history.replaceState({},"","/");});
@@ -45,4 +46,24 @@ it("opens the accounting reconciliation form from its My Work destination",()=>{
 
 it("retained forecast warnings link to affected inputs from the full contract page",()=>{
  const f=deliveryFixture();f.delivery.outsideReservations=[{staffId:f.staff,date:"2026-09-08",hours:"5.00"}];const result=forecastDelivery(f.state,f.delivery,f.options);f.delivery.forecasts=[{id:"reviewed",version:1,input_hash:f.delivery.inputHash,content:{inputs:{synthetic:true},result,reviewEvidence:"Synthetic reviewed forecast",coverageEvidence:"Synthetic complete sources"},created_at:"2026-09-08"}];f.state.delivery=f.delivery;vi.stubGlobal("fetch",vi.fn().mockResolvedValue({ok:true,json:async()=>[]}));render(<ContractManagement initial={f.state}/>);fireEvent.click(screen.getByRole("button",{name:"Remaining work"}));fireEvent.click(screen.getByRole("button",{name:"Forecasts"}));expect(screen.getAllByRole("link",{name:"Review affected Draft"}).map(link=>link.getAttribute("href"))).toContain(`/invoicing/engagements/${f.state.engagement.id}?tab=remaining&section=Capacity`);
+});
+
+it("keeps closed consultant invoices downloadable while refusing new forms and corrections",()=>{
+ const f=deliveryFixture();f.state.role="consultant";f.state.openForWork=false;
+ f.state.receivedInvoices=[{id:"version",invoice_id:"invoice",version:2,state:"returned",created_at:"2026-09-08",content:{number:"SYNTHETIC-RETURN",date:"2026-09-08",currency:"USD",total:"25.00",fileId:"synthetic-file",lines:[]},review_note:"Synthetic return"}];
+ render(<ReceivedInvoicePanel state={f.state} send={vi.fn()} busy={false}/>);
+ expect(screen.getByRole("link",{name:"Download retained original"})).toHaveAttribute("href",`/api/invoicing/engagements/${f.state.engagement.id}/management/received-file?fileId=synthetic-file`);
+ expect(screen.getByRole("status")).toHaveTextContent("This assignment is closed");expect(screen.queryByRole("button",{name:"Correct returned invoice"})).toBeNull();expect(screen.queryByRole("button",{name:"Retain submitted invoice"})).toBeNull();
+});
+
+it("pages shared warnings and expands their exact dates and affected tasks on demand",()=>{
+ const f=deliveryFixture(),result=forecastDelivery(f.state,f.delivery,f.options);
+ result.warnings=Array.from({length:51},(_,index)=>({code:"missing_capacity",nodeId:null,nodeMask:"3",staffId:`SYNTHETIC-STAFF-${index}`,date:"2026-09-08",message:`Synthetic warning ${index}`}));
+ result.warnings.push({...result.warnings[50],date:"2026-09-10"});
+ render(<ForecastWarnings result={result}/>);
+ expect(screen.queryByText(/Synthetic warning 50/)).toBeNull();fireEvent.click(screen.getByRole("button",{name:"Next warnings"}));
+ const summary=screen.getByText(/Synthetic warning 50/);expect(screen.queryByText("2026-09-10")).toBeNull();fireEvent.click(summary);
+ expect(screen.getByText("2026-09-08")).toBeInTheDocument();expect(screen.getByText("2026-09-10")).toBeInTheDocument();
+ for(const node of result.nodes)expect(screen.getByText(node.title)).toBeInTheDocument();
+ expect(screen.getByText("Staff record: SYNTHETIC-STAFF-50")).toBeInTheDocument();
 });

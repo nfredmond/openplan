@@ -13,10 +13,19 @@ import {accountingHandoffRows,type CloseoutPackage} from "@/lib/invoicing/contra
 
 const quote=(value:unknown)=>`'${JSON.stringify(value).replaceAll("'","''")}'::jsonb`;
 
+function requireDisposableStack(container:string,githubActions=process.env.GITHUB_ACTIONS){
+ if(!/^supabase_db_openplan-restore-target-[1-9][0-9]*$/.test(container)&&!["supabase_db_m11-contract-verification","supabase_db_m11-contract-verification-upgrade"].includes(container)&&!(githubActions==="true"&&container==="supabase_db_openplan"))throw new Error("Select the explicitly disposable M11 verification stack");
+}
+it("allows only named M11 stacks locally and the exact disposable Actions stack",()=>{
+ for(const container of ["supabase_db_m11-contract-verification","supabase_db_m11-contract-verification-upgrade","supabase_db_openplan-restore-target-123"])expect(()=>requireDisposableStack(container,"false")).not.toThrow();
+ expect(()=>requireDisposableStack("supabase_db_openplan","true")).not.toThrow();
+ for(const [container,actions] of [["supabase_db_openplan","false"],["supabase_db_openplan","1"],["supabase_db_demo","true"],["supabase_db_other","false"],["supabase_db_openplan-restore-target-anything","true"],["supabase_db_openplan-restore-source-123","false"]])expect(()=>requireDisposableStack(container,actions)).toThrow("explicitly disposable");
+});
+
 // A live RPC adapter preserves one disposable transaction through real JS normalization and SQL writes.
 function session(){
  const container=resolveLocalDbContainer();
- if(!["supabase_db_m11-contract-verification","supabase_db_m11-contract-verification-upgrade"].includes(container))throw new Error("Select the explicitly disposable M11 verification stack");
+ requireDisposableStack(container);
  const child=spawn("docker",["exec","-i",container,"psql","-U","postgres","-d","postgres","-qAt","-v","ON_ERROR_STOP=1"],{stdio:["pipe","pipe","pipe"]});
  const lines=createInterface({input:child.stdout});let diagnostic="";child.stderr.on("data",chunk=>{diagnostic+=String(chunk);});
  const query=(sql:string)=>new Promise<unknown>((resolve,reject)=>{

@@ -346,3 +346,58 @@ claim to show the new bundle before restart. Browser selector waits for a headin
 that was actually a details summary timed out; the retained forecast succeeded
 and was read with its actual text. Signing out goes to the public home, not the
 sign-in URL; that test expectation was corrected without changing product code.
+
+### Newly exposed failures after 37a3c22f
+
+The newly registered practice RPC test failed on the disposable GitHub runner
+because its explicit local container allowlist omitted that runner. Source
+visibility passed there. Exact-head CI is not green. The local-only exception is
+being extended solely to supabase_db_openplan when GITHUB_ACTIONS is exactly true.
+
+The maximum unknown-capacity case (200 tasks, 100 staff, 731 days) exhausted its
+2 GB Node worker heap and fatally aborted with exit 134 at roughly 50 seconds.
+The prior maximum known-capacity pass did not cover this shape. The process died
+before writing its JSON receipt; the fatal GC/tool output is the evidence.
+Shared warnings are being compacted without deleting dated unknowns or task
+attribution; browser/RPC/export acceptance of that change remains pending.
+
+A fresh consultant My Work journey exposed misleading submission instructions
+for the closed synthetic A assignment. Retained invoice access is appropriate;
+closed-state labeling and prevention of new submission remain to be corrected.
+No human PM or independent finance acceptance has occurred.
+
+The adverse maximum now completes in 46.9 seconds of worker time, 239,801,936
+bytes heap, with 73,100 shared dated capacity warnings, 200 unresolved task
+finishes, and 23,411,056 serialized bytes. Format 3 stores exact affected-node
+bits against that forecast's retained node order. It does not remove unknowns
+or alter format 1/2 results. Exports retain a separate scope-to-task mapping,
+avoiding duplicated warning text for every task. The UI paginates explanations
+and only renders dated details when opened. Node evidence is not browser or
+maximum durable-RPC evidence.
+
+Migration 30 reuses caller-bound contract_open_for_work in the consultant view
+and includes the same authorized closed state in management reads. Closed invoice
+history remains reachable; new submissions, correction and review forms are
+hidden while closed, or when state is unknown. Both named disposable stacks
+received the additive migration. Seventeen focused live tests passed, including
+closed/reopened consultant state, retained access and source visibility. The
+practice RPC and exact disposable-stack guard separately passed.
+
+Nine warning/closed-state controls distinguish harmless source comments from
+lost task attribution, lost export mappings, old-format reinterpretation, closed
+forms/prompts, omitted query fields, an overbroad stack allowlist and missing
+pagination. Each source was restored. SQL controls run inside rollback-only
+transactions; their separate receipt records the result. No real client records
+or authorized human decisions were used.
+
+The restore CI failure on 37a3c22f was also the practice stack allowlist: the
+restore drill uses supabase_db_openplan-restore-target-NNN. That exact numeric
+pattern is now accepted; source-stack and arbitrary suffix names remain refused.
+The earlier Docker rate-limit message recovered and was not the final failure.
+Other 37a3c22f QA, shuffled tests and worker/modeling/ops jobs passed. New-head CI
+will determine the corrected state.
+
+A mistaken edit command used repository-relative paths from the package root and
+changed no files; it was rerun in the intended root. A later focused test command
+named a nonexistent inventory test, so only the existing practice file ran; its
+two passes do not claim inventory verification.
