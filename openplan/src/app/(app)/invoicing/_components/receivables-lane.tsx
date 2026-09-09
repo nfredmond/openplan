@@ -19,7 +19,6 @@ import {
 import { summarizeUnbilledTime, type TimeEntryLike } from "@/lib/invoicing/time-billing";
 import { createClient } from "@/lib/supabase/server";
 import {
-  formatCurrency,
   insetClass,
   looksLikePendingSchema,
   panelClass,
