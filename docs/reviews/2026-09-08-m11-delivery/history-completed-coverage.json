@@ -1,0 +1,15 @@
+{
+  "session": "01a08215-d429-7813-8747-178f4af31327",
+  "sourceSha256": "843269f25422e54a18058689015931e1e27d786338380dc8b6d248722f610b4a",
+  "sourceBytes": 158403031,
+  "referenceChunksRead": 404,
+  "textReferences": 153042,
+  "uniqueTextLines": 44427,
+  "priorReadLines": 2367,
+  "imagesRead": 302,
+  "controls": {
+    "copiedManifest": "pass",
+    "missingFinalChunk": "('coverage gap', 44400, 0, 1034)"
+  },
+  "blindBoundary": "Ledger proves retained exact-text coverage and image identity; human reading is recorded observation, not mechanically provable. Original truncated outputs and encrypted reasoning remain unavailable."
+}
