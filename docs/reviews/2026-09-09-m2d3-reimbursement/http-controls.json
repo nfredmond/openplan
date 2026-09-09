@@ -1,0 +1,12 @@
+[
+  {
+    "case": "harmless output wording",
+    "exit": 0,
+    "reasonObserved": true
+  },
+  {
+    "case": "wrong retained checksum",
+    "exit": 1,
+    "reasonObserved": true
+  }
+]
