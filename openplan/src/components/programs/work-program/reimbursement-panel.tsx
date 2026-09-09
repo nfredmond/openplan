@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
+import { CloseoutReview } from "./closeout-review";
 import { Button } from "@/components/ui/button";
 import { Field, SelectField } from "./fields";
 import { downloadAuthenticatedArtifact } from "@/lib/export/download";
@@ -9,12 +10,13 @@ type Data = { claims: ReimbursementClaim[]; reports: PeriodReport[]; events: Rei
 const buttonClass = "h-auto min-h-10 max-w-full whitespace-normal";
 const blank = (): ReimbursementClaim => ({ id: crypto.randomUUID(), version: 0, state: "draft", current_report_id: null, draft: { reportId: "", title: "", authorityEvidence: "", formEvidence: "", costs: [] } });
 export function ReimbursementPanel({ programId, userId, reports }: { programId: string; userId: string; reports: PeriodReport[] }) {
+ const [historyAvailable, setHistoryAvailable] = useState(false);
  const [data, setData] = useState<Data>({ claims: [], reports: [], events: [] });
  const [claim, setClaim] = useState<ReimbursementClaim>(blank), [note, setNote] = useState(""), [message, setMessage] = useState("");
  const [busy, setBusy] = useState(false), [pending, setPending] = useState<ReimbursementCommand | null>(null);
  const [files, setFiles] = useState<Record<string, { status: string; document?: { id: string; checksum: string | null }; error?: string }>>({});
  const url = `/api/programs/${programId}/work-program/reimbursement`, key = `owp-reimbursement-pending:${userId}:${programId}`;
- const load = useCallback(async () => { const response = await fetch(url, { cache: "no-store" }); const body = await response.json(); if (!response.ok) throw new Error(body.error); setData(body); return body as Data; }, [url]);
+ const load = useCallback(async () => { setHistoryAvailable(false); const response = await fetch(url, { cache: "no-store" }); const body = await response.json(); if (!response.ok) throw new Error(body.error); setData(body); setHistoryAvailable(true); return body as Data; }, [url]);
  useEffect(() => { void load().catch(e => setMessage(e.message)); try { const raw = localStorage.getItem(key); if (raw) setPending(JSON.parse(raw)); } catch { setMessage("Pending request could not be read; the local recovery text remains retained."); } }, [key, load]);
  async function save(command: ReimbursementCommand) {
   setBusy(true); setMessage("");
@@ -45,7 +47,7 @@ export function ReimbursementPanel({ programId, userId, reports }: { programId: 
    const response = await fetch(fileUrl); const body = await response.json(); if (!response.ok) throw new Error(body.error); setFiles(f => ({ ...f, [fileKey]: body }));
   } catch (e) { setFiles(f => ({ ...f, [fileKey]: { status: "unavailable", error: e instanceof Error ? e.message : "File unavailable" } })); }
  }
- return <section id="reimbursement-packets" className="space-y-5 rounded-xl border p-4 min-w-0">
+ return <><section id="reimbursement-packets" className="space-y-5 rounded-xl border p-4 min-w-0">
   <h2 className="text-xl font-semibold">Reimbursement packets</h2>
   <p className="text-sm">Connect an issued period report to reviewed eligibility and funding shares. Private cost records are restricted to owners and administrators. Recording an external receipt does not send a packet or record a payment.</p>
   <div className="flex flex-wrap gap-2">{data.claims.map(c => <Button className={buttonClass} variant="outline" key={c.id} disabled={busy || !!pending} onClick={() => { setClaim(c); setNote(""); }}>{c.draft.title} · {c.state}</Button>)}<Button className={buttonClass} variant="outline" disabled={busy || !!pending} onClick={() => setClaim(blank())}>New reimbursement packet</Button><Button className={buttonClass} variant="outline" onClick={() => void load().catch(e => setMessage(e.message))}>Reload packet history</Button></div>
@@ -77,5 +79,5 @@ export function ReimbursementPanel({ programId, userId, reports }: { programId: 
   <h3 className="font-semibold">Retained packets and receipts</h3>
   {data.reports.filter(r => r.snapshot.reimbursement?.claimId === claim.id).sort((a, b) => a.version - b.version).map(r => <div className="space-y-3 rounded-lg border p-3" key={r.id}><p>Packet version {r.snapshot.reimbursement!.packetVersion} · {r.id === claim.current_report_id ? "Current retained packet" : "Prior packet"} · requested {r.snapshot.reimbursement!.reimbursementTotal}</p><p className="break-all text-xs">SHA256 {r.snapshot_hash}</p><div className="flex flex-wrap gap-3">{(["pdf", "xlsx"] as const).map(format => { const f = files[`${r.id}:${format}`]; return <div key={format} className="space-y-2"><Button className={buttonClass} variant="outline" onClick={() => artifact(r.id, format, true)}>Prepare packet {format.toUpperCase()}</Button><Button className={buttonClass} variant="ghost" onClick={() => artifact(r.id, format, false)}>Check packet {format.toUpperCase()}</Button>{f && <p role="status">{f.status} {f.error}</p>}{f?.document?.checksum && <Button className={`${buttonClass} hover:bg-background hover:text-foreground`} variant="outline" onClick={async () => { try { await downloadAuthenticatedArtifact(`/api/knowledge-base/documents/${f.document!.id}/download?delivery=authenticated`, `reimbursement-${claim.id}-v${r.snapshot.reimbursement!.packetVersion}.${format}`, f.document!.checksum!); } catch (e) { setMessage(e instanceof Error ? e.message : "Download failed"); } }}>Download packet {format.toUpperCase()}</Button>}</div>; })}</div></div>)}
   {data.events.filter(e => e.claim_id === claim.id).sort((a, b) => a.sequence - b.sequence).map(e => <p key={e.id} className="text-sm break-words">{e.sequence}. {e.kind} · {e.created_at} · {e.note}</p>)}
- </section>;
+ </section><CloseoutReview reports={reports} history={historyAvailable ? data : null}/></>;
 }
