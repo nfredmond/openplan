@@ -275,6 +275,7 @@ describe("reference count projections", () => {
       [...new Set(selectSites.filter((site) => site.table && schema.isView(site.table)).map((site) => site.table))].sort()
     ).toEqual([
       "census_tracts_map",
+      "contract_participant_my_work",
       "gtfs_stops_map",
       "project_bca_screenings_latest",
       "project_decision_package_my_work",

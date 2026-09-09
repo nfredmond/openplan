@@ -20,6 +20,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- [contract_participant_and_accounting_work](openplan/supabase/migrations/20260926000001_contract_participant_and_accounting_work.sql) routes explicit consultant grants and unresolved accounting rows through My Work, and removes closed assignments from active work. [contract_participant_caller_view](openplan/supabase/migrations/20260927000001_contract_participant_caller_view.sql) keeps the consultant view under caller privileges with a narrow, caller-bound function.
+
 - [contract_export_source_receipts](openplan/supabase/migrations/20260925000001_contract_export_source_receipts.sql) retains received-invoice file checksums in new report format 7 and closeout format 3. New cost tables keep documented settlement separate. Earlier issued reports and packages retain their formats.
 
 - [contract_staff_import_visibility](openplan/supabase/migrations/20260924000001_contract_staff_import_visibility.sql) lets staff see time recorded for them by finance, retaining dates, hours, review status and task attribution without private payroll amounts, notes or file access. Finance-owned drafts remain read-only to staff.

@@ -1,0 +1,62 @@
+[
+  {
+    "name": "harmless-workbook-comment",
+    "outcome": "survived",
+    "reason": null
+  },
+  {
+    "name": "coerce-external-identifiers",
+    "outcome": "killed",
+    "reason": "keeps one accounting row"
+  },
+  {
+    "name": "lose-budget-numeric-type",
+    "outcome": "killed",
+    "reason": "keeps one accounting row"
+  },
+  {
+    "name": "money-format-revision",
+    "outcome": "killed",
+    "reason": "keeps one accounting row"
+  },
+  {
+    "name": "truncate-note-details",
+    "outcome": "killed",
+    "reason": "keeps one accounting row"
+  },
+  {
+    "name": "wrong-detail-record",
+    "outcome": "killed",
+    "reason": "keeps one accounting row"
+  },
+  {
+    "name": "lost-detail-link",
+    "outcome": "killed",
+    "reason": "keeps one accounting row"
+  },
+  {
+    "name": "harmless-caller-comment",
+    "outcome": "survived",
+    "reason": null
+  },
+  {
+    "name": "owner-view-regression",
+    "outcome": "killed",
+    "reason": "Participant view bypasses caller privileges"
+  },
+  {
+    "name": "anonymous-function-grant",
+    "outcome": "killed",
+    "reason": "Anonymous participant function access"
+  },
+  {
+    "name": "foreign-participant-row",
+    "outcome": "killed",
+    "reason": "Participant grant or own return count incorrect"
+  },
+  {
+    "name": "other-invoice-return-count",
+    "outcome": "killed",
+    "reason": "Participant grant or own return count incorrect"
+  }
+]

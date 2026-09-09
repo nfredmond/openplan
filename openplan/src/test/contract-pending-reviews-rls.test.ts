@@ -69,6 +69,12 @@ describe.skipIf(!LIVE_RLS)("pending contract review eligibility", () => {
 });
 
 describe.skipIf(!LIVE_RLS)("scoped participant and accounting queues",()=>{
+ it("keeps participant view caller-owned and denies anonymous function access",()=>check(`
+ IF NOT EXISTS(SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relname='contract_participant_my_work' AND c.reloptions @> ARRAY['security_invoker=true','security_barrier=true']) THEN RAISE EXCEPTION 'Participant view bypasses caller privileges';END IF;
+ IF has_function_privilege('anon','public.contract_participant_work_rows()','EXECUTE') THEN RAISE EXCEPTION 'Anonymous participant function access';END IF;
+ IF NOT has_function_privilege('authenticated','public.contract_participant_work_rows()','EXECUTE') THEN RAISE EXCEPTION 'Caller participant function unavailable';END IF;
+ `));
+
  it("shows only the consultant's explicit grants and current own returned invoices",()=>check(`
  INSERT INTO public.contract_access_versions(engagement_id,workspace_id,user_id,version,role,active,evidence,created_by) VALUES(engagement,workspace,outsider,1,'consultant',true,'Synthetic external consultant',owner_id);
  INSERT INTO public.invoicing_engagements(id,workspace_id,client_id,project_id,title) VALUES(p,workspace,client,other_project,'PRIVATE OTHER ASSIGNMENT');

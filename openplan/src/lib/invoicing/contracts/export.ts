@@ -17,7 +17,7 @@ export function contractSnapshotTables(report: ContractSnapshot): { name: string
  const costMetrics=(state.schemaVersion??0)>=7?contractMetrics.filter(k=>k!=="payments"&&k!=="credits"):contractMetrics;
  function rows(values: Rollup[]): Cell[][] { return [["Work", ...costMetrics], ...values.map(v => [v.label, ...costMetrics.map(k => v.totals[k])])]; }
  if((state.schemaVersion??0)>=7&&state.closeout){
-  tables.push({name:"Current invoice position",rows:[["Invoice and direction","Measure","Amount and currency"],...settlementPosition(state,state.asOf).flatMap(i=>(["gross","payments","credits","refunds","retention","disputed","open","currentlyDue"] as const).map(metric=>[`${i.number} / ${i.direction}`,metric,`${i[metric]??"Unassessed"} ${i.currency}`]))]});
+  tables.push({name:"Current invoice position",rows:[["Invoice and direction","Measure","Amount and currency"],...settlementPosition(state,state.asOf).flatMap(i=>(["gross","payments","credits","refunds","retention","disputed","open","currentlyDue"] as const).map(metric=>[`${i.number} / ${i.direction}`,metric==="currentlyDue"?"Currently due":metric,`${i[metric]??"Unassessed"} ${i.currency}`]))]});
   const current=state.closeout.versions.at(-1),closed=state.closeout.versions.filter(v=>v.state==="closed").at(-1);
   tables.push({name:"Closeout position",rows:[["Measure","Retained position"],["Current assignment state",current?.state??"No closeout retained"],["Last closed revision",closed?.version??null],["Last closeout incurred cost",closed?.content.position?.incurred??null],["Last closeout underspend",closed?.content.position?.underspend??null],["Last closeout work acceptance",closed?String(closed.content.request.workAccepted):null],["Last closeout financial settlement",closed?String(closed.content.request.financialSettled):null],["Continuing open obligations",closed?.content.request.obligations?.filter(o=>o.status==="open").length??null],["Meaning","Reopening does not revoke prior acceptance or settle later work. Review the current revision and continuing obligations."]]});
  }
@@ -82,15 +82,31 @@ export function contractSnapshotHtml(report: ContractSnapshot) {
 }
 export function contractSnapshotWorkbook(report: ContractSnapshot) {
  const book = utils.book_new();
- for (const table of contractSnapshotTables(report)) {
-  const widths = table.rows[0].map((_,i) => i===0 ? 36 : table.name==="Identity" ? 95 : 30);
+ const typedColumns=(report.snapshot.schemaVersion??0)>=7;
+ const amountHeaders=new Set<string>([...contractMetrics,"Amount","Hours","Fee","Cost","Gross","Payments","Credits","Refunds","Adjustments","Retention","Disputed","Open balance","Currently due","Matched amount","External amount","External hours","Hourly rate","Rate","Remaining hours","Known amount","Known hours","Internal cost","Gross fee","Cost not allocated to staff","Hours not allocated to staff","Shared ceiling","Actual plus remaining","Expected gross billing","Availability per day","Hours per working day","Before remaining cost","Proposed remaining cost","Available hours per day","Incurred cost","Underspend","Remaining cost","Remaining gross billing","amount","source_allocation_amount","source_allocation_hours"]);
+
+ const tables=contractSnapshotTables(report),details:Cell[][]=[["Record ID","Field","Part","Parts","Retained text"]],detailLinks=new Map<string,number>();
+ if(typedColumns){
+  const handoff=tables.find(table=>table.name==="Accounting handoff");
+  for(const [rowIndex,row] of (handoff?.rows??[]).entries())if(rowIndex>0)for(const [column,value] of row.entries())if(typeof value==="string"&&value.length>250){
+   const parts=value.match(/[\s\S]{1,250}/g)!;detailLinks.set(`${rowIndex}:${column}`,details.length+1);
+   parts.forEach((part,index)=>details.push([row[1],handoff!.rows[0][column],index+1,parts.length,part]));
+  }
+  if(details.length>1){tables.push({name:"Accounting text details",rows:details});tables[0].rows.push(["Long accounting text","Handoff cells retain full values. Links open all text parts in Accounting text details; parts repeat the stable record ID and field."]);}
+ }
+ for (const table of tables) {
+  const widths = table.name==="Accounting text details" ? [42,24,8,8,100] : table.rows[0].map((_,i) => i===0 ? 36 : table.name==="Identity" ? 95 : 30);
+  const isAmount=(index:number,row:Cell[])=>!typedColumns||amountHeaders.has(String(table.rows[0][index]))||(table.name==="Closeout position"&&index===1&&["Last closeout incurred cost","Last closeout underspend"].includes(String(row[0])));
   const rows = table.rows.flatMap(row => {
-   const parts = row.map(v => typeof v === "number" ? [v] : typeof v === "string" && /^-?\d+\.\d{2}$/.test(v) && Math.abs(Number(v))<1e12 ? [Number(v)] : (report.snapshot.schemaVersion??0)>=7&&table.name==="Accounting handoff"?[String(v??"Unassessed")]:String(v ?? "Unassessed").match(/[\s\S]{1,250}/g) ?? [""]);
+   const parts = row.map((v,index) => typeof v === "number" ? [v] : typeof v === "string" && isAmount(index,row) && /^-?\d+\.\d{2}$/.test(v) && Math.abs(Number(v))<1e12 ? [Number(v)] : (report.snapshot.schemaVersion??0)>=7&&table.name==="Accounting handoff"?[String(v??"Unassessed")]:String(v ?? "Unassessed").match(/[\s\S]{1,250}/g) ?? [""]);
    return Array.from({ length: Math.max(...parts.map(p=>p.length)) }, (_,i) => parts.map(p=>p[i]??""));
   });
   const sheet = utils.aoa_to_sheet(rows); sheet["!cols"] = widths.map(wch=>({wch}));
   sheet["!rows"] = rows.map(row=>({hpt:Math.min(360,Math.max(30,...row.map((v,i)=>16*(String(v).split("\n").length+Math.ceil(String(v).length/(widths[i]-3))))))}));
-  for(const key of Object.keys(sheet).filter(k=>!k.startsWith("!"))) if(sheet[key].t==="n")sheet[key].z="#,##0.00;[Red](#,##0.00)";
+  for(const key of Object.keys(sheet).filter(k=>!k.startsWith("!"))) if(sheet[key].t==="n"){
+   const cell=utils.decode_cell(key);sheet[key].z=isAmount(cell.c,rows[cell.r])?"#,##0.00;[Red](#,##0.00)":"0";
+  }
+  if(typedColumns&&table.name==="Accounting handoff")for(const [key,row] of detailLinks){const [r,c]=key.split(":").map(Number);sheet[utils.encode_cell({r,c})].l={Target:`#'Accounting text details'!A${row}`,Tooltip:"Read every retained text part for this record and field"};}
   utils.book_append_sheet(book,sheet,table.name);
  }
  return book;

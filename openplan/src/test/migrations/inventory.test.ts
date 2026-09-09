@@ -473,9 +473,9 @@ const EXPECTED = {
   permissiveWrites: 280,
   expanded: 286,
   tablesWithPolicies: 209,
-  relations: 239,
+  relations: 241,
   tables: 228,
-  views: 11,
+  views: 13,
   rlsEnabledTables: 228,
 } as const;
 
@@ -823,7 +823,9 @@ describe("migration schema inventory", () => {
     expect(schema.views()).toEqual([
       "census_tracts_computed",
       "census_tracts_map",
+      "contract_active_tasks_my_work",
       "contract_delivery_my_work",
+      "contract_participant_my_work",
       "contract_pending_my_work",
       "gtfs_stops_map",
       "lodes_by_tract",

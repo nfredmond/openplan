@@ -31,11 +31,15 @@ describe("source receipts and readable current management position",()=>{
   report.snapshot.schemaVersion=6;const old=contractSnapshotTables(report);expect(old.some(t=>t.name==="Current invoice position")).toBe(false);expect(old.find(t=>t.name==="Contract totals")!.rows[0]).toContain("payments");expect(old.find(t=>t.name==="Deliverable acceptance")!.rows[1].at(-1)).toBe("storage://synthetic/report.txt");
  });
  it("keeps one accounting row per stable record in the new workbook",()=>{
-  const f=fixture();f.state.receivedInvoices![0].review_note="Synthetic long accounting evidence ".repeat(30);f.pkg.formatVersion=3;
+  const f=fixture();f.state.receivedInvoices![0].review_note="Synthetic long accounting evidence ".repeat(30);f.state.receivedInvoices![0].content.number="00123.00";f.state.accountingImports![0].rows[0].externalId="00045.00";f.state.accountingImports![0].rows[0].sourceKey="00067.00";f.pkg.formatVersion=3;
   const request={kind:"closeout" as const,requestId:randomUUID(),expectedInputHash:"e".repeat(64),expectedVersion:0,title:"Synthetic closeout",asOf:"2026-09-08",coverageComplete:true,coverageEvidence:"Synthetic",workAccepted:false,workAuthority:"Synthetic PM",financialSettled:false,financeAuthority:"Synthetic finance",obligations:[],evidence:"Synthetic"};
   const state={...f.state,schemaVersion:7 as const,closeout:{settlements:[],deliverableEvents:[],inputHash:"a".repeat(64),versions:[{id:randomUUID(),version:1,state:"closed" as const,previous_id:null,input_hash:"a".repeat(64),content:{request,package:f.pkg},content_hash:"b".repeat(64),created_at:"2026-09-08"}]}};
   const report:ContractSnapshot={id:randomUUID(),title:"Synthetic",created_at:"2026-09-08",snapshot_hash:"c".repeat(64),snapshot:{...state,asOf:"2026-09-08",sourceCutoff:"2026-09-08T12:00:00Z",coverageComplete:true,coverageEvidence:"Synthetic",baselineId:f.state.baselines[0].id,originalBaselineId:f.state.baselines[0].id}};
-  const rows=utils.sheet_to_json<unknown[]>(contractSnapshotWorkbook(report).Sheets["Accounting handoff"],{header:1});
-  expect(rows).toHaveLength(accountingHandoffRows(f.pkg).length);expect(rows.find(r=>r[0]==="received_invoice_version")![15]).toBe(f.state.receivedInvoices![0].review_note);
+  const book=contractSnapshotWorkbook(report),rows=utils.sheet_to_json<unknown[]>(book.Sheets["Accounting handoff"],{header:1});
+  expect(rows).toHaveLength(accountingHandoffRows(f.pkg).length);expect(rows.find(r=>r[0]==="received_invoice_version")![4]).toBe("00123.00");expect(rows.find(r=>r[0]==="accounting_import_row")!.slice(4,5)).toEqual(["00045.00"]);expect(rows.find(r=>r[0]==="accounting_import_row")![16]).toBe("00067.00");expect(rows.find(r=>r[0]==="received_invoice_version")![9]).toBe(25.01);expect(rows.find(r=>r[0]==="received_invoice_version")![15]).toBe(f.state.receivedInvoices![0].review_note);
+  expect(book.Sheets["Approved task budgets"].C2).toMatchObject({t:"n",v:Number(f.state.baselines[0].content.tasks[0].cost)});expect(book.Sheets["Received invoices"].B2).toMatchObject({t:"s",v:"00123.00"});expect(book.Sheets["Closeout position"].B3).toMatchObject({t:"n",v:1,z:"0"});
+  const details=utils.sheet_to_json<unknown[]>(book.Sheets["Accounting text details"],{header:1}).slice(1).filter(row=>row[0]===f.state.receivedInvoices![0].id&&row[1]==="evidence");
+  expect(details.map(row=>row[4]).join("")).toBe(f.state.receivedInvoices![0].review_note);expect(details.map(row=>row[2])).toEqual(details.map((_,index)=>index+1));expect(book.Sheets["Accounting handoff"].P2.l?.Target).toBe("#'Accounting text details'!A2");
+
  });
 });
