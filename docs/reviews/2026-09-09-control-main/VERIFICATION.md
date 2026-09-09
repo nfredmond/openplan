@@ -33,3 +33,6 @@ The native Demo tab showed both commits matching. `current-desktop.png` and `cur
 The final follow-up changes only status readability and completion wording. These do not claim full product acceptance. Its main update is exercised again after pushing so the installed demo can match the final main commit.
 
 GitHub RLS passed on `9950e247`. The first CI attempt failed during apt dependency setup in both Python jobs because Google's Chrome repository returned a hash mismatch, before tests ran. The other CI jobs were still running when this note was prepared; this is not a claim that GitHub CI passed. Local operations checks passed as recorded above. Main `d41d5006` had passed CI, RLS and the unchanged SQL upgrade-path workflow before this repair.
+
+
+The same apt hash mismatch repeated on fresh runners for `1d3e6377`. Both affected jobs now select Ubuntu's own source file for these Ubuntu packages, with checksum/signature verification unchanged. The runner image's [source configuration](https://github.com/actions/runner-images/blob/main/images/ubuntu/scripts/build/configure-apt-sources.sh) confirms `sources.list.d/ubuntu.sources` on current Ubuntu runners. A missing source file fails before installation. This changes neither the local machine's apt configuration nor the test assertions. GitHub results for this final follow-up must be inspected separately.

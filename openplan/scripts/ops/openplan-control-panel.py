@@ -280,7 +280,7 @@ def demo_status(demo: dict | None, target: str | None, checked: str) -> tuple[st
     if behind == 0:
         state, colour = "Up to date with main", OK
     elif behind is not None:
-        state = f"Update available · {behind} commits behind main"
+        state = f"Update available · {behind} {'commit' if behind == 1 else 'commits'} behind main"
     return colour, f"Demo v{version} · {commit[:12]}\n{main}\n{state}. {checked}"
 
 
