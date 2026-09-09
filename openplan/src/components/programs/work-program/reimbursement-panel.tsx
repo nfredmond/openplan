@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { CloseoutReview } from "./closeout-review";
+import { CloseoutPanel } from "./closeout-panel";
 import { Button } from "@/components/ui/button";
 import { Field, SelectField } from "./fields";
 import { downloadAuthenticatedArtifact } from "@/lib/export/download";
@@ -79,5 +80,5 @@ export function ReimbursementPanel({ programId, userId, reports }: { programId: 
   <h3 className="font-semibold">Retained packets and receipts</h3>
   {data.reports.filter(r => r.snapshot.reimbursement?.claimId === claim.id).sort((a, b) => a.version - b.version).map(r => <div className="space-y-3 rounded-lg border p-3" key={r.id}><p>Packet version {r.snapshot.reimbursement!.packetVersion} · {r.id === claim.current_report_id ? "Current retained packet" : "Prior packet"} · requested {r.snapshot.reimbursement!.reimbursementTotal}</p><p className="break-all text-xs">SHA256 {r.snapshot_hash}</p><div className="flex flex-wrap gap-3">{(["pdf", "xlsx"] as const).map(format => { const f = files[`${r.id}:${format}`]; return <div key={format} className="space-y-2"><Button className={buttonClass} variant="outline" onClick={() => artifact(r.id, format, true)}>Prepare packet {format.toUpperCase()}</Button><Button className={buttonClass} variant="ghost" onClick={() => artifact(r.id, format, false)}>Check packet {format.toUpperCase()}</Button>{f && <p role="status">{f.status} {f.error}</p>}{f?.document?.checksum && <Button className={`${buttonClass} hover:bg-background hover:text-foreground`} variant="outline" onClick={async () => { try { await downloadAuthenticatedArtifact(`/api/knowledge-base/documents/${f.document!.id}/download?delivery=authenticated`, `reimbursement-${claim.id}-v${r.snapshot.reimbursement!.packetVersion}.${format}`, f.document!.checksum!); } catch (e) { setMessage(e instanceof Error ? e.message : "Download failed"); } }}>Download packet {format.toUpperCase()}</Button>}</div>; })}</div></div>)}
   {data.events.filter(e => e.claim_id === claim.id).sort((a, b) => a.sequence - b.sequence).map(e => <p key={e.id} className="text-sm break-words">{e.sequence}. {e.kind} · {e.created_at} · {e.note}</p>)}
- </section><CloseoutReview reports={reports} history={historyAvailable ? data : null}/></>;
+ </section><CloseoutReview reports={reports} history={historyAvailable ? data : null}/><CloseoutPanel programId={programId} userId={userId} reports={reports}/></>;
 }

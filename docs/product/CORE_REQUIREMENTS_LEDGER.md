@@ -249,3 +249,7 @@ CORE-OWP-01/M2d.3 now has a bounded [supporting-packet implementation](../review
 ### September 9 closeout review start
 
 CORE-OWP-01/M2d.4 has a [preparatory closeout review](../reviews/2026-09-09-m2d4-closeout/VERIFICATION.md) of one retained reporting baseline, corrected claim requests and unfinished work. Private JSON export retains exact source records and claim evidence. Acceptance does not become payment; missing settlement, refunds and approved carryover remain unknown. Linked cash/refund reconciliation, successor approval/mapping, actual closure and authorized reopening remain incomplete. No agency outcome or capability rating is promoted.
+
+### September 9 saved reconciliation increment (unreleased)
+
+CORE-OWP-01/M2d.4 now extends the preparatory review with [saved reconciliation and carryover evidence](../reviews/2026-09-09-m2d4-settlement/VERIFICATION.md). It retains exact source/successor baselines, current claim receipts, assessed refunds and commitments, approved single-fund successor mappings and immutable reopening history. It creates no second expense and does not close a period. Actual closure/source-write guards, multi-target mappings, refund payment matching, independent reconstruction and practicing-finance acceptance remain unfinished; the full requirement stays partial.

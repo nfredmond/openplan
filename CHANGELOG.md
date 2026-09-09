@@ -20,6 +20,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- OWP closeout now retains private reconciliation drafts, approval evidence and reopening history. Match receipts to current claims, assess commitments/refunds and map approved carryover to exact adopted successor work and funding without copying costs. Unresolved balances stay visible. This records human review; period closure, multi-target carryover, prescribed forms and agency usefulness remain unfinished. Apply `20261004000001_work_program_closeout_reconciliation.sql` before using it.
+
 - Begin OWP closeout review from an issued management report: inspect the retained baseline, corrected claim requests, unresolved settlement and unfinished work, and save a private JSON review with its source records. This preparatory review does not approve carryover, settle obligations or close a cycle.
 
 ## 0.47.0 — 2026-09-09
