@@ -34,14 +34,14 @@ export async function GET(request: NextRequest, context: Context) {
    loadActualVersions(access.supabase, programId, cutoff),
    reportingRows(access.supabase, "work_program_cost_rates", "id, staff_id, starts_on, ends_on, hourly_cost, source_reference", ["workspace_id", access.program.workspace_id]),
    reportingRows(access.supabase, "work_program_reporting_periods", "id, name, starts_on, ends_on, baseline_id, source_cutoff, version, state, progress, note, review_snapshot", ["program_id", programId]),
-   reportingRows(access.supabase, "work_program_period_reports", "id, period_id, version, snapshot, snapshot_hash, issued_by, issued_at, corrects_report_id", ["program_id", programId]),
+   reportingRows(access.supabase, "work_program_period_reports", "id, report_kind, period_id, version, snapshot, snapshot_hash, issued_by, issued_at, corrects_report_id", ["program_id", programId]),
    reportingRows(access.supabase, "program_work_program_events", "id, revision_id, kind, payload", ["program_id", programId]),
    reportingRows(access.supabase, "invoicing_engagements", "id, title, project_id", ["workspace_id", access.program.workspace_id]),
    reportingRows(access.supabase, "project_deliverables", "id, title, project_id, projects!inner(workspace_id)", ["projects.workspace_id", access.program.workspace_id]),
    reportingRows(access.supabase, "invoicing_time_entries", "id, staff_id, engagement_id, entry_date, hours, notes, billable, work_program_id", ["workspace_id", access.program.workspace_id]),
    reportingRows(access.supabase, "project_spend_entries", "id, project_id, entry_date, amount, description, work_program_id, projects!inner(workspace_id)", ["projects.workspace_id", access.program.workspace_id]),
   ]);
-  return NextResponse.json({ canManage, cutoff, staff, revisions, actuals, rates, periods, reports, events, contracts, deliverables, timeSources: timeSources.filter(t => !t.work_program_id), spendSources: spendSources.filter(t => !t.work_program_id) }, { headers: { "Cache-Control": "private, no-store" } });
+  return NextResponse.json({ canManage, cutoff, staff, revisions, actuals, rates, periods, reports: reports.filter(r => r.report_kind === "management"), events, contracts, deliverables, timeSources: timeSources.filter(t => !t.work_program_id), spendSources: spendSources.filter(t => !t.work_program_id) }, { headers: { "Cache-Control": "private, no-store" } });
  } catch { return NextResponse.json({ error: "Reporting records could not be read. Retry when the connection recovers." }, { status: 503 }); }
 }
 export async function POST(request: NextRequest, context: Context) {

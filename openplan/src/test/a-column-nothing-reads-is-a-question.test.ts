@@ -73,6 +73,7 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "work_program_reimbursement_sources.source_identity", category: "READ_IN_SQL", reason: "The reimbursement transaction reserves physical time/spend identities across all workspace packets. Live duplicate packet and correction tests exercise this boundary." },
   { column: "contract_source_changes.transaction_id", category: "READ_IN_SQL", reason: "The visibility guard distinguishes inputs known inside the issuing transaction from changes first observed after another transaction commits; the two-session visibility probe covers the latter." },
   { column: "contract_source_observations.source_change_id", category: "READ_IN_SQL", reason: "The management reader joins an immutable first-observation receipt to each journaled source change without exposing private change timing." },
   { column: "contract_source_observations.observed_at", category: "READ_IN_SQL", reason: "The management reader refuses historical cutoffs earlier than its conservative source visibility receipt; this is not a claimed commit timestamp." },

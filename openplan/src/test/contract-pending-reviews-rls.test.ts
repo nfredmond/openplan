@@ -1,3 +1,4 @@
+import { requireContractVerificationStack } from "./helpers/contract-verification-stack";
 import { describe, expect, it } from "vitest";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
@@ -6,7 +7,7 @@ import { resolveLocalDbContainer } from "./helpers/live-catalog";
 
 const setup = readFileSync("src/test/fixtures/contracts/setup.sql", "utf8");
 function check(body: string) {
-  if (!process.env.CI && !process.env.OPENPLAN_SUPABASE_WORKDIR?.includes("m11-contract-verification")) throw new Error("Explicit disposable M11 stack required");
+  requireContractVerificationStack(resolveLocalDbContainer());
   const mutation = process.env.OPENPLAN_CONTRACT_TEST_SQL ? readFileSync(process.env.OPENPLAN_CONTRACT_TEST_SQL, "utf8") : "";
   const output = execFileSync("docker", ["exec", "-i", resolveLocalDbContainer(), "psql", "-X", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1", "-At"], {
     input: `BEGIN;${mutation}\n${setup.replace("-- TEST_BODY", body)} SELECT 'PENDING_ASSERTIONS_REACHED'; ROLLBACK;`, encoding: "utf8", stdio: ["pipe", "pipe", "pipe"],

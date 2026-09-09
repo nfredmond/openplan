@@ -1,0 +1,86 @@
+{
+  "claim": {
+    "id": "c029ee24-497a-44fc-9234-021dd1098dd1",
+    "state": "accepted",
+    "version": 8,
+    "currentReportId": "8a2159d3-32fd-44d6-a920-ad15900bf36c"
+  },
+  "files": [
+    {
+      "format": "pdf",
+      "checksum": "8314047a8841f91b3f2c34d982a28b65497e2280464b357f7f18336027e6f006",
+      "snapshotHash": "bd3b7c3546f85a36634c2b1c17a53a557256bd0ceb1166605593f3b31f23e34a",
+      "packetVersion": 1,
+      "downloadHash": "8314047a8841f91b3f2c34d982a28b65497e2280464b357f7f18336027e6f006",
+      "bytes": 151545
+    },
+    {
+      "format": "xlsx",
+      "checksum": "6cfdb8a5b48d6920f5d633b81384742a6aca01e06da884ba9abaeff3832580eb",
+      "snapshotHash": "bd3b7c3546f85a36634c2b1c17a53a557256bd0ceb1166605593f3b31f23e34a",
+      "packetVersion": 1,
+      "downloadHash": "6cfdb8a5b48d6920f5d633b81384742a6aca01e06da884ba9abaeff3832580eb",
+      "bytes": 30083
+    },
+    {
+      "format": "pdf",
+      "checksum": "0c65661ebd3eb87e87fa83c2a58993bc86a1c0c7f9eeb5ab9444dc2cc5636d6c",
+      "snapshotHash": "735b161100d91c2a502952d6eb3d10d534d41b578ff590ee9420b19ab01ea818",
+      "packetVersion": 2,
+      "downloadHash": "0c65661ebd3eb87e87fa83c2a58993bc86a1c0c7f9eeb5ab9444dc2cc5636d6c",
+      "bytes": 160047
+    },
+    {
+      "format": "xlsx",
+      "checksum": "ffe8d2f4230b7389edf09275608639cbee5d598cc1f76eaaba046e439037b994",
+      "snapshotHash": "735b161100d91c2a502952d6eb3d10d534d41b578ff590ee9420b19ab01ea818",
+      "packetVersion": 2,
+      "downloadHash": "ffe8d2f4230b7389edf09275608639cbee5d598cc1f76eaaba046e439037b994",
+      "bytes": 30537
+    }
+  ],
+  "events": [
+    {
+      "kind": "save",
+      "reportId": null,
+      "sequence": 1
+    },
+    {
+      "kind": "review",
+      "reportId": "f974a843-5918-4b14-b246-cf8bb6b07755",
+      "sequence": 2
+    },
+    {
+      "kind": "submit",
+      "reportId": "f974a843-5918-4b14-b246-cf8bb6b07755",
+      "sequence": 3
+    },
+    {
+      "kind": "return",
+      "reportId": "f974a843-5918-4b14-b246-cf8bb6b07755",
+      "sequence": 4
+    },
+    {
+      "kind": "save",
+      "reportId": "f974a843-5918-4b14-b246-cf8bb6b07755",
+      "sequence": 5
+    },
+    {
+      "kind": "review",
+      "reportId": "8a2159d3-32fd-44d6-a920-ad15900bf36c",
+      "sequence": 6
+    },
+    {
+      "kind": "submit",
+      "reportId": "8a2159d3-32fd-44d6-a920-ad15900bf36c",
+      "sequence": 7
+    },
+    {
+      "kind": "accept",
+      "reportId": "8a2159d3-32fd-44d6-a920-ad15900bf36c",
+      "sequence": 8
+    }
+  ],
+  "reservations": 1,
+  "originalPdfUnchangedAfterCorrection": true
+}

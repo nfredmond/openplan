@@ -216,7 +216,8 @@ const BASELINE: Readonly<Record<string, number>> = {
   mode: 14,
   "moderation queue": 1,
   operator: 45,
-  packet: 126,
+  // M2d.3 uses Nathaniel's requested reimbursement packet terminology for retained funder files.
+  packet: 134,
   payload: 2,
   populate: 1,
   posture: 52,
@@ -224,7 +225,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   provenance: 12,
   readiness: 33,
   // Safety must distinguish crash records from people killed or injured.
-  record: 262,
+  record: 265,
   registry: 20,
   resolve: 3,
   scaffold: 3,

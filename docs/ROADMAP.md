@@ -156,6 +156,8 @@ M2d.3 and M11a remain partial: funder forms/eligibility, fund claims, full contr
 controls and accounting reconciliation are subsequent work; this is no payroll
 replacement or completed OWP administration claim.
 
+**September 9 M2d.3 engineering increment:** [reporting/reimbursement evidence](reviews/2026-09-09-m2d3-reimbursement/IMPLEMENTATION.md) extends those retained reports and M11 source valuations with reviewed eligibility, dated fund shares, progress/deliverable evidence and private PDF/XLSX supporting packets. Return, correction and resubmission retain source reservations and replace the current request without adding historical versions. Shared contract costs require the current approved matching valuation. Synthetic desktop/390px and interrupted-save evidence establish the bounded cycle; agency-specific prescribed-form compatibility and actual reviewer usefulness remain open. M2d.4 and the full M2d outcome remain queued. M11 human acceptance and reminder approval stay separate and open.
+
 **Source-specific limits.** California's covered grants can be managed and invoiced at work-element level while retaining task budgets for internal control; the 2024 guidance replaces a separate CAT amendment after incorporation but contains ambiguous task-budget wording. Do not invent a universal threshold or duplicate filing. Oahu's current eligible UPWP and broader OWP-and-Budget demonstrate separate scope over a two-year period. Resolve actual agreement terms and current workbook labels before promising a filing-compatible export. Source details and bounded reading coverage: [OWP research](reviews/2026-09-04-pre-handoff/OWP_ADMINISTRATION_REQUIREMENTS_RESEARCH.md).
 
 ## M3. Free, private and recoverable agency operation
