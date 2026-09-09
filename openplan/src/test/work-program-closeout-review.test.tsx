@@ -1,6 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { ReportingPanel } from "@/components/programs/work-program/reporting-panel";
+import type { PeriodReport } from "@/lib/programs/work-program/reporting";
 import { ReimbursementPanel } from "@/components/programs/work-program/reimbursement-panel";
 import { CloseoutReview } from "@/components/programs/work-program/closeout-review";
 import { reviewWorkProgramCloseout, type CloseoutHistory } from "@/lib/programs/work-program/closeout-review";
@@ -9,12 +11,12 @@ import { downloadText } from "@/lib/export/download";
 vi.mock("@/lib/export/download", () => ({ downloadText: vi.fn() }));
 function closeoutFixture() {
   const { report: original, draft } = packetFixture();
-  const corrected = structuredClone(original);
+  const corrected: PeriodReport = structuredClone(original);
   corrected.id = randomUUID(); corrected.snapshot_hash = "d".repeat(64);
   corrected.corrects_report_id = original.id;
   corrected.snapshot.reimbursement!.packetVersion = 2;
   corrected.snapshot.reimbursement!.reimbursementTotal = "9.00";
-  const source = structuredClone(original);
+  const source: PeriodReport = structuredClone(original);
   source.id = draft.reportId;
   delete source.snapshot.reimbursement;
   const history: CloseoutHistory = {
@@ -104,6 +106,15 @@ describe("OWP closeout review boundaries", () => {
       fireEvent.click(screen.getByRole("button", { name: "Reload packet history" }));
       await screen.findByText("Synthetic interrupted history read");
       expect(screen.queryByRole("button", { name: "Save private closeout review JSON" })).not.toBeInTheDocument();
+    } finally { vi.unstubAllGlobals(); }
+  });
+
+  it.each([false, true])("shows closeout navigation only with manager access: %s", async canManage => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ canManage, revisions: [] }) }));
+    try {
+      render(<ReportingPanel programId={randomUUID()} workspaceId={randomUUID()} userId={randomUUID()}/>);
+      await screen.findByText(/Save a preparation revision below/);
+      expect(screen.queryByRole("link", { name: "Closeout review" }) !== null).toBe(canManage);
     } finally { vi.unstubAllGlobals(); }
   });
 
