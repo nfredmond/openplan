@@ -167,3 +167,18 @@ complete. All seven GitHub checks passed on 782fcfd7; current uncommitted repair
 still need separate acceptance. Main consolidation remains authorized and pending.
 
 Complete bulk reading now covers chunks 1–24, 88 and 721. Chunks 15, 23 and 24 were re-read separately after combined output truncation; truncated attempts were not counted. These chunks retain the v0.46 acceptance and original contract custody implementation. The old main nightly failure (run 34234455220, head 76f019bf) was already disclosed at IMPLEMENTATION.md line 16; the earlier agent promised follow-up. Current source inspection shows its moderation step omitted the now-required review reason and ignored rejected responses while waiting for success. A harness repair is prepared but has not yet been browser verified. This remains unfinished follow-through, not an assertion that the handoff concealed the failed run. Other bulk chunks and recovered images remain available but unread.
+
+The original reading ledger additionally includes complete chunk 25. A local exact
+line/reference ledger (`history-reference/ledger.json`) decodes valid JSON wrappers,
+retains original representations and hashes, and references byte-identical repeated
+lines. No semantic summarization is used to remove text. Its first four bounded
+chunks were fully read; 400 chunks remain unread. It currently re-reads some passages
+already covered indirectly by the original substring ledger; this wastes reading
+but does not omit it. All 302 recovered unique images still require full visual
+review. This remains an incomplete history review, not unavailable history.
+
+The recovered nightly failure is now reproduced and repaired locally, with the
+exact failure control in RESUMED.md. The review also led to the ordinary invoice
+currency and reopened-obligation browser checks described there. Consolidation
+into main remains authorized and pending the engineering checks; no branch or
+worktree has been discarded.

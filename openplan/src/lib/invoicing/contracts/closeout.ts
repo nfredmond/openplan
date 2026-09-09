@@ -10,7 +10,7 @@ export function currentSettlementEvents(versions:SettlementVersion[],asOf="9999-
 export function settlementPosition(state:ContractState,asOf="9999-12-31"):InvoicePosition[]{
  const events=currentSettlementEvents(state.closeout?.settlements??[],asOf),actuals=currentActuals(state.actuals,asOf).filter(a=>a.command.status==="approved");
  const received=new Map<string,NonNullable<ContractState["receivedInvoices"]>[number]>();for(const i of state.receivedInvoices??[])if(!received.has(i.invoice_id)||received.get(i.invoice_id)!.version<i.version)received.set(i.invoice_id,i);
- const invoices=[...state.invoices.filter(i=>["sent","paid"].includes(i.status)&&(!i.invoice_date||i.invoice_date<=asOf)&&(!i.sent_date||i.sent_date<=asOf)).map(i=>({id:i.id,direction:"outgoing" as const,number:i.invoice_number,currency:i.currency_code,version:i.updated_at,legacyStatus:i.status,datesKnown:!!i.invoice_date&&!!i.sent_date,gross:i.subtotal_amount,initialRetention:i.retention_amount})),...[...received.values()].filter(i=>i.state==="approved"&&i.content.date<=asOf).map(i=>({id:i.invoice_id,direction:"received" as const,number:i.content.number,currency:i.content.currency,version:String(i.version),legacyStatus:i.state,datesKnown:true,gross:i.content.total,initialRetention:"0.00"}))];
+ const invoices=[...state.invoices.filter(i=>["sent","paid"].includes(i.status)&&(!i.invoice_date||i.invoice_date<=asOf)&&(!i.sent_date||i.sent_date<=asOf)).map(i=>({id:i.id,direction:"outgoing" as const,number:i.invoice_number,currency:i.currency_code??"unassessed",version:i.updated_at,legacyStatus:i.status,datesKnown:!!i.invoice_date&&!!i.sent_date,gross:i.subtotal_amount,initialRetention:i.retention_amount})),...[...received.values()].filter(i=>i.state==="approved"&&i.content.date<=asOf).map(i=>({id:i.invoice_id,direction:"received" as const,number:i.content.number,currency:i.content.currency,version:String(i.version),legacyStatus:i.state,datesKnown:true,gross:i.content.total,initialRetention:"0.00"}))];
  return invoices.map(invoice=>{
   let payments=BigInt(0),credits=BigInt(0),refunds=BigInt(0),adjustments=BigInt(0),retention=cents(invoice.initialRetention),disputed=BigInt(0);const warnings:string[]=[],seen=new Set<string>();
   const legacy=actuals.filter(a=>a.command.invoiceId===invoice.id&&["payment","credit"].includes(a.command.category));
@@ -24,6 +24,7 @@ export function settlementPosition(state:ContractState,asOf="9999-12-31"):Invoic
   }
   if(retention<BigInt(0)||disputed<BigInt(0)||refunds>payments)warnings.push("A release or refund exceeds the documented amount held or paid.");
   const open=cents(invoice.gross)+adjustments-credits-payments+refunds;
+  if(!/^[A-Z]{3}$/.test(invoice.currency))warnings.push("Invoice currency is unassessed; reconcile the issued invoice before asserting financial settlement. No currency is inferred.");
   if(!invoice.datesKnown)warnings.push("Issued invoice dates are missing; confirm the documented obligation and period.");
   if(invoice.legacyStatus==="paid"&&open!==BigInt(0))warnings.push("Invoice is marked paid but documented financial events leave an open balance.");
   const unresolvedHolds=(state.schemaVersion??0)>=7&&((retention>BigInt(0)&&disputed>BigInt(0))||retention+disputed>(open>BigInt(0)?open:BigInt(0)));

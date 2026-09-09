@@ -29,4 +29,9 @@ it("keeps known balances but labels aging incomplete for unassessed hold allocat
  const html=renderToStaticMarkup(await ContractCashPosition({workspaceId:"synthetic",details:true}));expect(html).toContain("5.00 USD");expect(html).toContain("Known currently due amounts");expect(html).toContain("1 invoices have unassessed amounts currently due");expect(html).toContain("Aging is incomplete");
 });
 
+ it("keeps unknown-currency invoices separate from one another and known totals",async()=>{
+ const rows=["1","2","3"].map(id=>({id,engagement_id:"synthetic",client_id:"client",updated_at:"2026-09-08"}));mocks.range.mockImplementation(async(start:number)=>({data:start===0?rows:[],error:null}));mocks.read.mockResolvedValue(rows.map((r,i)=>({id:r.id,number:"SYNTH-"+r.id,direction:"outgoing",currency:[null,"","USD"][i],open:["100.00","200.00","5.00"][i],currentlyDue:"5.00",payments:"1.00",credits:"2.00",refunds:"0.50",retention:"3.00",disputed:"4.00",version:r.updated_at,warnings:[]})));
+ const html=renderToStaticMarkup(await ContractCashPosition({workspaceId:"synthetic",details:true}));expect(html).toContain("5.00 USD");expect(html.match(/class="text-2xl font-semibold"/g)).toHaveLength(1);expect(html).toContain("SYNTH-1: currency unassessed");expect(html).toContain("SYNTH-2: currency unassessed");expect(html).toContain("Documented open amount 100.00");expect(html).toContain("Documented open amount 200.00");expect(html).not.toContain("300.00");expect(html).toContain("complete balance is unavailable");
+ });
+
 });

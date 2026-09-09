@@ -295,29 +295,33 @@ async function main() {
       .first();
     await itemRow.waitFor({ timeout: 20000 });
     await itemRow.getByText(/Pending/i).first().waitFor({ timeout: 20000 });
-    await Promise.all([
+    const moderationReason = 'Synthetic smoke review: public planning feedback checked for inclusion; no actual agency approval.';
+    await itemRow.getByLabel('Moderation notes', { exact: true }).fill(moderationReason);
+    const [moderationResponse] = await Promise.all([
       page.waitForResponse(
         (response) =>
           response.request().method() === 'PATCH' &&
-          response.url().includes(`/api/engagement/campaigns/${ids.campaignId}/items/${ids.itemId}`) &&
-          response.ok(),
+          response.url().includes(`/api/engagement/campaigns/${ids.campaignId}/items/${ids.itemId}`),
         { timeout: 20000 }
       ),
       itemRow.getByRole('button', { name: /^approve$/i }).click(),
     ]);
+    if (!moderationResponse.ok()) throw new Error(`Moderation approval refused (${moderationResponse.status()}): ${await moderationResponse.text()}`);
 
     const approvedItem = firstRow(
       await restSelect('engagement_items', {
-        select: 'id,status,source_type,category_id,title,body',
+        select: 'id,status,source_type,category_id,title,body,moderation_notes',
         id: `eq.${ids.itemId}`,
       }),
       'approved engagement item'
     );
     assertEqual(approvedItem.status, 'approved', 'Moderation quick action did not approve the public item');
+    assertEqual(approvedItem.moderation_notes, moderationReason, 'Moderation reason was not retained with the approved item');
     notes.push('Approved the public item through the staff moderation registry and verified durable status.');
     await page.reload({ waitUntil: 'networkidle' });
-    await page.getByText(itemTitle, { exact: false }).first().waitFor({ timeout: 20000 });
-    await page.getByText(/Approved/i).first().waitFor({ timeout: 20000 });
+    const retainedItemRow = page.locator('.module-record-row').filter({ has: page.getByRole('heading', { name: itemTitle, exact: true }) }).filter({ has: page.getByLabel('Moderation notes', { exact: true }) });
+    await retainedItemRow.waitFor({ timeout: 20000 });
+    await retainedItemRow.locator('[data-slot=badge]').getByText('Approved', { exact: true }).waitFor({ timeout: 20000 });
     await screenshot(page, 'local-engagement-report-handoff-02-moderation-approved');
 
     /*

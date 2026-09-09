@@ -42,3 +42,5 @@ describe("unassessed hold overlap",()=>{
   f.state.schemaVersion=6;f.state.closeout!.settlements=f.state.closeout!.settlements.slice(0,2);expect(settlementPosition(f.state)[0].currentlyDue).toBe("-25.00");
  });
 });
+
+ it.each([null,"","usd"])("preserves an unknown invoice currency (%s) and refuses even zero-balance settlement",currency=>{const f=fixture();f.state.invoices[0].currency_code=currency;f.state.invoices[0].subtotal_amount="0.00";f.state.invoices[0].retention_amount="0.00";const p=settlementPosition(f.state)[0];expect(p.currency).toBe(currency??"unassessed");expect(p.open).toBe("0.00");expect(p.warnings.join(" ")).toContain("currency is unassessed");expect(()=>closeoutPosition(f.state,{...f.command,financialSettled:true})).toThrow("Financial settlement");expect(f.state.invoices[0].currency_code).toBe(currency);});

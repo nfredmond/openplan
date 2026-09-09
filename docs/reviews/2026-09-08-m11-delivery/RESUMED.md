@@ -570,3 +570,59 @@ currency/correction-form candidate before continuing.
 The 6ce900c9 full local gate stopped at lint: the currency change left an unused `formatCurrency` import. It was removed; that run did not reach tests or build. The repeated populated comparison still matches a6b1bfe272ecc1b77c37730603d9a0267878f7ec5a09bb50a0a1803fa42b31ca. The real two-session visibility probe after the reader refactor retains its harmless cutoff and rejects both late mutable and immutable commits, with fresh snapshot exact replay intact.
 
 The ea1303ca full gate passed lint but stopped at two stale forecast API mocks (13,408 other tests passed). The API tests now model the hash-only version RPC, assert the authorization/read sequence and verify both version reads occur. A harmless source comment passes; disabling source-version comparisons fails the API status assertion. The first added sequence assertion omitted the initial authorization read and was corrected before accepting the control. No build or full-gate success is claimed for that failed run.
+
+
+## Ordinary practice UI and recovered nightly follow-through
+
+31b19881 passed the full local gate: lint, dead code, 1,226 test files / 13,410
+assertions, audit and webpack production build. The gate intentionally skipped
+live isolation; the separately recorded 239-test live run remains the database
+proof. Browser identity matched 31b19881 at the owned port 3247. Owned server
+1438550 was stopped after acceptance before the next build.
+
+The actual small-practice UI now voided SYNTH-PRACTICE-FIXED-01 (unknown currency
+retained) and created/issued SYNTH-PRACTICE-FIXED-02 with explicit USD. All records
+are synthetic; marking sent was an internal status transition, no transmission.
+Financial events retained partial payments 600 + 350, then a version-2 correction
+to 365, credit 50, refund 10, debit 5, additional retention 20 and release 120,
+and dispute 50 opened/resolved. Gross 1000, payments 965, open 0, retention 0,
+disputed 0. Expense 200 and excluded commitment history stay separate. The actual
+UI retained submitted/returned/resubmitted/accepted deliverable events, then
+closed with a 300 underspend and an October 15 records obligation.
+
+Browser JSON/CSV downloads independently reconstruct those amounts using Decimal;
+resumed-practice-reconstruction.json retains hashes. The JSON carries acceptance
+and obligation evidence; the CSV carries the financial handoff. Desktop and 390px
+captures were inspected locally; narrow layout has no document overflow. The
+closeout-phase console and page-error review was empty, not a claim about all
+prior phases. No practicing PM or independent human finance acceptance occurred.
+
+The first interrupted closeout probe lost the durable enqueue response, not the
+final package response. Retried original request recovered the same job
+4e71d118-cb82-42c2-85fd-4020e95c3de6 and produced one revision 1
+bc2be91d-bdd1-4364-b2f8-4386163c9d73. It is queue recovery evidence only.
+The actual UI then reopened to revision 2. A stale form failed to repopulate its
+prior obligation, although the package retained it and the server refuses dropping
+it. The component now refreshes its form on a new retained revision, preserving
+unsaved edits within the same revision. The revised regression test transitions
+through initially empty, closed and reopened states; its old mount-only test had
+missed this defect. Rebuilt reclose and final-result interruption remain pending.
+
+A second observed defect was blank currency in ordinary cash summaries. Unknown
+currency invoices now remain separately identified with their nonzero amounts;
+they cannot aggregate with one another or known currency totals. Settlement warns
+about unknown currency and cannot claim even a zero-amount unknown-currency invoice
+settled. Original invoice currency is not inferred or rewritten. 21 focused tests
+and TypeScript pass. Harmless controls pass; removing form revision identity,
+unknown-currency warning, or aggregate exclusion fails the intended assertions.
+These last repairs still need a rebuilt browser check and complete gate.
+
+Recovered old nightly run 34234455220 failed because moderation omitted the required
+reason. The repaired smoke supplies/retains that reason and reports a rejected PATCH
+immediately. Later selectors also selected hidden option text or both a badge and
+option; the final selector identifies the visible moderation row and status badge.
+The full smoke passes public submission, staff moderation, public visibility,
+report provenance and generated HTML artifact. A harmless comment passes; removing
+the reason fails with the exact 400 review-reason refusal. It ran only on the named
+58621 disposable API, with separate browser contexts and scratch output directories.
+This is a repaired local reproduction; a new main nightly has not yet run.

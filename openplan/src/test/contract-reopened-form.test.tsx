@@ -1,5 +1,5 @@
 import {it,expect,vi,afterEach} from "vitest";
-import {render,screen,cleanup} from "@testing-library/react";
+import {render,screen,cleanup,fireEvent} from "@testing-library/react";
 import {randomUUID} from "node:crypto";
 import {CloseoutManagement} from "@/components/invoicing/contracts/settlement-closeout";
 import {deliveryFixture} from "./fixtures/contract-delivery";
@@ -10,7 +10,15 @@ it("carries open obligations into the reopened form without claiming a new rejec
  const request:CloseoutCommand={kind:"closeout",requestId:randomUUID(),expectedInputHash:"a".repeat(64),expectedVersion:0,title:"Synthetic closeout",asOf:"2026-09-08",coverageComplete:true,coverageEvidence:"Synthetic",workAccepted:true,workAuthority:"Synthetic PM",financialSettled:true,financeAuthority:"Synthetic finance",obligations:[obligation],evidence:"Synthetic"};
  const first={id:randomUUID(),version:1,state:"closed" as const,previous_id:null,input_hash:"a".repeat(64),content:{request},content_hash:"b".repeat(64),created_at:"2026-09-08"};
  f.state.closeout={inputHash:"c".repeat(64),settlements:[],deliverableEvents:[],versions:[first,{...first,id:randomUUID(),version:2,state:"reopened",previous_id:first.id,content:{request:{...request,workAccepted:false,financialSettled:false,obligations:[]},evidence:"Synthetic new review"}}]};
- render(<CloseoutManagement state={f.state} send={vi.fn()} busy={false}/>);
+ const props={send:vi.fn(),busy:false};
+ const view=render(<CloseoutManagement {...props} state={{...f.state,closeout:{...f.state.closeout,versions:[]}}}/>);
+ expect(screen.queryByLabelText("Obligation")).toBeNull();
+ view.rerender(<CloseoutManagement {...props} state={{...f.state,closeout:{...f.state.closeout,versions:[first]}}}/>);
+ view.rerender(<CloseoutManagement {...props} state={f.state}/>);
  expect(screen.getByLabelText("Obligation")).toHaveValue(obligation.title);expect(screen.getByLabelText("Responsible person")).toHaveValue(obligation.owner);expect(screen.getByLabelText("Obligation due date")).toHaveValue("2026-10-15");
  expect(screen.getByText(/Reopening makes no new acceptance or settlement decision/)).toBeInTheDocument();expect(screen.queryByText(/Work acceptance claimed: false/)).toBeNull();expect(first.content.request.obligations).toEqual([obligation]);
+ fireEvent.change(screen.getByLabelText("Responsible person"),{target:{value:"Synthetic revised custodian"}});
+ view.rerender(<CloseoutManagement {...props} state={{...f.state}}/>);
+ expect(screen.getByLabelText("Responsible person")).toHaveValue("Synthetic revised custodian");
+ expect(first.content.request.obligations).toEqual([obligation]);
 });

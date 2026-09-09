@@ -1,0 +1,16 @@
+[
+  {
+    "name": "harmless",
+    "exit": 0,
+    "expectedPass": true,
+    "expectedFailure": null,
+    "matched": true
+  },
+  {
+    "name": "missing-review-reason",
+    "exit": 1,
+    "expectedPass": false,
+    "expectedFailure": "Moderation approval refused (400)",
+    "matched": true
+  }
+]
