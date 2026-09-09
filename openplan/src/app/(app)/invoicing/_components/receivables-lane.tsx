@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { formatInvoiceMoney } from "@/lib/invoicing/invoice-currency";
 import { InvoiceBalance } from "@/components/invoicing/contracts/invoice-balance";
 import { ClientComposer, type ClientComposerRecord } from "@/components/invoicing/client-composer";
 import { ClientInvoiceComposer } from "@/components/invoicing/client-invoice-composer";
@@ -56,6 +57,7 @@ type ClientInvoiceRow = ClientInvoiceRecordLike & {
   engagement_id: string | null;
   project_id: string | null;
   invoice_number: string;
+  currency_code: string | null;
   status: string;
   sent_date: string | null;
   paid_date: string | null;
@@ -141,7 +143,7 @@ export async function ReceivablesLane({
       supabase
         .from("client_invoices")
         .select(
-          "id, client_id, engagement_id, project_id, invoice_number, status, sent_date, paid_date, period_start, period_end, invoice_date, due_date, subtotal_amount, retention_percent, retention_amount, total_amount, payment_terms, notes, created_at"
+          "id, client_id, engagement_id, project_id, invoice_number, status, sent_date, paid_date, period_start, period_end, invoice_date, due_date, subtotal_amount, retention_percent, retention_amount, total_amount, payment_terms, currency_code, notes, created_at"
         )
         .eq("workspace_id", workspaceId)
         .order("created_at", { ascending: false })
@@ -424,7 +426,7 @@ export async function ReceivablesLane({
                               ) : null}
                             </div>
                             <p className="text-sm font-semibold text-foreground">
-                              {formatCurrency(Number(invoice.total_amount ?? 0))}
+                              {formatInvoiceMoney(Number(invoice.total_amount ?? 0),invoice.currency_code)}
                             </p>
                           </div>
                           <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">

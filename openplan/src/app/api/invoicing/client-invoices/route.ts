@@ -45,6 +45,7 @@ const createClientInvoiceSchema = z.object({
   engagementId: z.string().uuid().optional(),
   projectId: z.string().uuid().optional(),
   invoiceNumber: z.string().trim().min(1).max(120),
+  currencyCode: z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/).optional(),
   // An invoice is composed as a draft and becomes anything else only through
   // an explicit status transition on the detail route.
   status: z.literal("draft").optional(),
@@ -429,6 +430,7 @@ export async function POST(request: NextRequest) {
         engagement_id: engagement?.id ?? null,
         project_id: effectiveProjectId,
         invoice_number: parsed.data.invoiceNumber,
+        currency_code: parsed.data.currencyCode ?? null,
         status: "draft",
         invoice_date: parsed.data.invoiceDate?.trim() || null,
         period_start: parsed.data.periodStart?.trim() || null,

@@ -20,6 +20,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- Ordinary client invoices now retain an explicitly entered currency. Missing legacy currency stays unassessed in previews, invoice rows and PDFs; issued invoices use the existing void-and-reissue correction path.
+
 - [contract_delivery_read_cost](openplan/supabase/migrations/20261002000001_contract_delivery_read_cost.sql) attaches complete delivery history once after the other management layers and adds an authorized hash-only read for calculation concurrency checks. Original forecast inputs remain in management snapshots.
 
 - [contract_forecast_evidence_envelope](openplan/supabase/migrations/20261001000001_contract_forecast_evidence_envelope.sql) permits up to 96 MB of server-calculated forecast evidence. Submitted delivery commands retain their 8 MB database ceiling and the web route retains its 2 MB request limit. This supports the measured maximum fixture without raising worker memory limits or weakening source, author or retry checks.

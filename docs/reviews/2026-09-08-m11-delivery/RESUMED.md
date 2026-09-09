@@ -534,3 +534,35 @@ Expense, settlement, closeout, reopening and downloaded reconstruction remain
 in progress for this UI case; the earlier transactional RPC case is separate.
 The browser still serves 5218ceb8, so the 782fcfd7 recovered-form and narrow-button
 fixes still need rebuilt browser verification.
+
+
+## Explicit currency in ordinary client invoices
+
+The small-practice UI exposed a gap hidden by the earlier hand-seeded RPC invoice:
+the ordinary client-invoice composer did not send currency and the create route
+did not retain it. The issued synthetic invoice therefore remained unassessed in
+settlement despite dollar-formatted composer previews and PDF fallback. No currency
+was inferred from its later-approved contract baseline or backfilled into it.
+
+The composer now asks for an explicit three-letter currency and previews that
+currency; the API validates and persists it. Older callers omitting the field
+retain null. The ordinary register selects and displays each invoice's currency;
+PDFs and previews disclose absent currency instead of inventing dollars. Existing
+issued monetary content remains unchanged. The existing correction path is void
+and reissue; browser proof will retain the original unassessed synthetic invoice
+and create a separately identified USD replacement. No conversion or rate-currency
+inference is introduced. The any-place skill was applied to avoid a US default.
+
+64 focused component, API, PDF and projection tests pass, including EUR, missing
+currency and invalid code. A harmless edit survives; omitting the submitted code,
+dropping database persistence, allowing malformed codes, or restoring the missing
+currency dollar fallback each fails the intended assertion. TypeScript passes.
+The complete 38-file live suite after migrations 31/32 passes 239 tests on the
+named populated upgrade stack. GitHub acceptance remains separate.
+
+The practice UI has also retained its 200 expense and a 40 commitment, then
+excluded the commitment in version 2 with its release evidence. The expense stays
+approved in version 1. Settlement and closeout are still unfinished. Owned server
+891108 was stopped by verified cwd/cmdline and pidfd before the next build; no
+other server or worker was stopped. The next browser must identify the rebuilt
+currency/correction-form candidate before continuing.

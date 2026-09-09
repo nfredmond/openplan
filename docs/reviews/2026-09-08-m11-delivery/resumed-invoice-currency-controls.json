@@ -1,0 +1,35 @@
+{
+  "controls": [
+    {
+      "name": "harmless",
+      "exit": 0,
+      "expectedPass": true,
+      "matched": true
+    },
+    {
+      "name": "currency-not-submitted",
+      "exit": 1,
+      "expectedPass": false,
+      "matched": true
+    },
+    {
+      "name": "currency-not-retained",
+      "exit": 1,
+      "expectedPass": false,
+      "matched": true
+    },
+    {
+      "name": "malformed-code-accepted",
+      "exit": 1,
+      "expectedPass": false,
+      "matched": true
+    },
+    {
+      "name": "invented-dollar-currency",
+      "exit": 1,
+      "expectedPass": false,
+      "matched": true
+    }
+  ],
+  "blindCategory": "Synthetic route/component/PDF checks; real saved currency and browser void/reissue still require acceptance."
+}
