@@ -26,8 +26,10 @@ export function settlementPosition(state:ContractState,asOf="9999-12-31"):Invoic
   const open=cents(invoice.gross)+adjustments-credits-payments+refunds;
   if(!invoice.datesKnown)warnings.push("Issued invoice dates are missing; confirm the documented obligation and period.");
   if(invoice.legacyStatus==="paid"&&open!==BigInt(0))warnings.push("Invoice is marked paid but documented financial events leave an open balance.");
-  if(retention+disputed>(open>BigInt(0)?open:BigInt(0)))warnings.push("Retention and disputed amounts exceed the remaining invoice balance; reconcile overlap or release.");
-  return {...invoice,payments:decimalText(payments),credits:decimalText(credits),refunds:decimalText(refunds),adjustments:decimalText(adjustments),retention:decimalText(retention),disputed:decimalText(disputed),open:decimalText(open),currentlyDue:decimalText(open-retention-disputed),warnings};
+  const unresolvedHolds=(state.schemaVersion??0)>=7&&((retention>BigInt(0)&&disputed>BigInt(0))||retention+disputed>(open>BigInt(0)?open:BigInt(0)));
+  if(unresolvedHolds)warnings.push("Currently due is unassessed: retention and dispute overlap or their application to the remaining balance requires reconciliation. Documented payments do not imply a release.");
+  else if(retention+disputed>(open>BigInt(0)?open:BigInt(0)))warnings.push("Retention and disputed amounts exceed the remaining invoice balance; reconcile overlap or release.");
+  return {...invoice,payments:decimalText(payments),credits:decimalText(credits),refunds:decimalText(refunds),adjustments:decimalText(adjustments),retention:decimalText(retention),disputed:decimalText(disputed),open:decimalText(open),currentlyDue:unresolvedHolds?null:decimalText(open-retention-disputed),warnings};
  });
 }
 export function closeoutPosition(state:ContractState,command:CloseoutCommand):CloseoutPosition{

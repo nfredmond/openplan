@@ -31,3 +31,14 @@ describe("reopened continuing obligations",()=>{
   expect(f.state.closeout!.versions[0].content.request.obligations).toEqual([obligation]);
  });
 });
+describe("unassessed hold overlap",()=>{
+ it("retains cash and each hold without inferring their overlap or a release",()=>{
+  const f=fixture();f.state.schemaVersion=7;f.add("dispute_open","20.00");
+  expect(settlementPosition(f.state)[0]).toMatchObject({open:"100.01",retention:"10.00",disputed:"20.00",currentlyDue:null});
+  f.add("payment","95.01");const p=settlementPosition(f.state)[0];expect(p).toMatchObject({open:"5.00",payments:"95.01",retention:"10.00",disputed:"20.00",currentlyDue:null});expect(p.warnings.join(" ")).toContain("do not imply a release");
+  expect(()=>closeoutPosition(f.state,{...f.command,financialSettled:true})).toThrow("Financial settlement");
+  const csv=accountingHandoffCsv({formatVersion:3,state:f.state,position:closeoutPosition(f.state,f.command),request:f.command});expect(csv.split("\r\n").find(r=>r.startsWith('"invoice_total_currentlyDue"'))).toContain('"unassessed"');
+  f.add("dispute_resolve","20.00");expect(settlementPosition(f.state)[0].currentlyDue).toBeNull();f.add("retention_release","10.00");expect(settlementPosition(f.state)[0].currentlyDue).toBe("5.00");
+  f.state.schemaVersion=6;f.state.closeout!.settlements=f.state.closeout!.settlements.slice(0,2);expect(settlementPosition(f.state)[0].currentlyDue).toBe("-25.00");
+ });
+});

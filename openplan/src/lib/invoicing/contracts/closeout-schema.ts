@@ -16,5 +16,5 @@ export type DeliverableEvent={id:string;version:number;deliverable_id:string;sta
 export type CloseoutCommand=z.infer<typeof closeoutCommandSchemas[2]>;
 export type CloseoutVersion={id:string;version:number;state:"closed"|"reopened";previous_id:string|null;input_hash:string;content:{request:CloseoutCommand;evidence?:string;package?:unknown;position?:CloseoutPosition};content_hash:string;created_at:string};
 export type CloseoutState={settlements:SettlementVersion[];deliverableEvents:DeliverableEvent[];versions:CloseoutVersion[];inputHash:string};
-export type InvoicePosition={id:string;direction:"outgoing"|"received";number:string;currency:string;version:string;gross:string;payments:string;credits:string;refunds:string;adjustments:string;retention:string;disputed:string;open:string;currentlyDue:string;warnings:string[]};
+export type InvoicePosition={id:string;direction:"outgoing"|"received";number:string;currency:string;version:string;gross:string;payments:string;credits:string;refunds:string;adjustments:string;retention:string;disputed:string;open:string;currentlyDue:string|null;warnings:string[]};
 export type CloseoutPosition={invoices:InvoicePosition[];workAccepted:boolean;financialSettled:boolean;incurred:string;authorizedCost:string|null;underspend:string|null;commitments:string;warnings:string[];openObligations:number};

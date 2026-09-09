@@ -290,3 +290,21 @@ rebuilt; fresh format 7 PDF/XLSX downloads and browser acceptance remain outstan
 Controls cannot establish original-file authenticity, human authority, full visual
 layout, or independent human finance acceptance. The open retention/dispute overlap
 calculation limitation remains for the next correction.
+
+### Retention and dispute overlap correction
+
+Snapshot format 7 no longer subtracts both a retention hold and a dispute from the
+balance as if their coverage were known to be disjoint. With overlapping/unallocated
+holds, or holds larger than the remaining balance, currently due is unassessed.
+Cash, gross balance, retention and disputes remain separately visible. Aging labels
+its coverage incomplete. A recorded payment does not imply a hold release and is
+accepted with the unresolved position retained; releases beyond documented holds
+and refunds beyond documented payments are still refused using numeric checks,
+independent of warning wording. Earlier report formats retain their original meaning.
+
+Validation: 27 focused calculation, command, accounting and cash-view checks;
+TypeScript and targeted lint; `hold-overlap-controls.json` records one harmless
+survivor and six targeted failures. These controls do not prove any particular hold
+allocation or external posting. An explicit hold-allocation adapter is not present;
+currently due remains unassessed until documented events resolve that uncertainty.
+Browser verification of the new labels follows the rebuilt app.

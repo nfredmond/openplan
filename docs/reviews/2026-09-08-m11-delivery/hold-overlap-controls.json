@@ -1,0 +1,37 @@
+[
+  {
+    "name": "harmless-hold-comment",
+    "outcome": "survived",
+    "reason": null
+  },
+  {
+    "name": "invent-hold-overlap",
+    "outcome": "killed",
+    "reason": "retains cash and each hold"
+  },
+  {
+    "name": "rewrite-historic-holds",
+    "outcome": "killed",
+    "reason": "retains cash and each hold"
+  },
+  {
+    "name": "reject-unresolved-payment",
+    "outcome": "killed",
+    "reason": "records documented payments"
+  },
+  {
+    "name": "allow-excess-release",
+    "outcome": "killed",
+    "reason": "records documented payments"
+  },
+  {
+    "name": "unknown-due-as-zero",
+    "outcome": "killed",
+    "reason": "keeps known balances"
+  },
+  {
+    "name": "omit-unassessed-handoff",
+    "outcome": "killed",
+    "reason": "retains cash and each hold"
+  }
+]

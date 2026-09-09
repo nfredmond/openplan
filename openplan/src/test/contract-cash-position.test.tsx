@@ -25,3 +25,8 @@ describe("documented invoice summary",()=>{
  });
 
 });
+
+it("keeps known balances but labels aging incomplete for unassessed hold allocation",async()=>{
+ const row={id:"1",engagement_id:"synthetic",client_id:"client",due_date:"2026-09-01",updated_at:"2026-09-08T00:00:00Z"};mocks.range.mockImplementation(async(start:number)=>({data:start===0?[row]:[],error:null}));mocks.read.mockResolvedValue([{id:"1",direction:"outgoing",currency:"USD",open:"5.00",currentlyDue:null,payments:"95.00",refunds:"0.00",retention:"20.00",disputed:"10.00",version:row.updated_at,warnings:["Synthetic hold overlap unassessed"]}]);
+ const html=renderToStaticMarkup(await ContractCashPosition({workspaceId:"synthetic",details:true}));expect(html).toContain("5.00 USD");expect(html).toContain("Known currently due amounts");expect(html).toContain("1 invoices have unassessed amounts currently due");expect(html).toContain("Aging is incomplete");
+});

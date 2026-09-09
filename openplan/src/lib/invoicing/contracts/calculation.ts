@@ -1,3 +1,4 @@
+import { cents } from "@/lib/programs/work-program/reporting";
 import { parseAccountingImport } from "./import";
 import { compareResponse } from "./response";
 import { forecastDelivery,validateSchedule } from "./delivery";
@@ -33,7 +34,7 @@ export async function normalizeContractCommand(service:CalculationClient,engagem
     const prospective={...state,closeout:{...state.closeout,settlements:[...state.closeout.settlements,{id:command.requestId,version:command.expectedVersion+1,content:command.content,source_receipt:{id:command.content.documentId,checksum:"pending SQL custody",storageRef:"",bytes:null},created_at:new Date().toISOString()}]}};
     const content=command.content,position=settlementPosition(prospective),invoice=position.find(i=>i.id===content.invoiceId&&i.direction===content.direction);
     if(!invoice)throw new Error("An approved received invoice or issued outgoing invoice is required");
-    if(invoice.warnings.some(w=>w.includes("exceeds")||w.includes("exceed")))throw new Error(invoice.warnings.join(" "));
+    if(cents(invoice.retention)<BigInt(0)||cents(invoice.disputed)<BigInt(0)||cents(invoice.refunds)>cents(invoice.payments))throw new Error(invoice.warnings.join(" "));
     normalized={...command,_request:command,_inputHash:state.closeout.inputHash,_position:position};
    }else{
     if(command.expectedInputHash!==state.closeout.inputHash)throw new Error("The closeout data changed since you opened this page. Reload and review the changed position.");
