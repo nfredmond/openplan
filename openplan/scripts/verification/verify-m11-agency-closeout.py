@@ -14,13 +14,13 @@ def latest(rows,key):
         if row[key] not in result or int(row['version'])>int(result[row[key]]['version']):result[row[key]]=row
     return list(result.values())
 
-def verify(folder):
-    json_path=folder/'closeout-b40809c2-826d-429d-9dcf-eaf87c7513da.json'
+def verify(folder,closeout_id="b40809c2-826d-429d-9dcf-eaf87c7513da",expected_format=2):
+    json_path=folder/f"closeout-{closeout_id}.json"
     csv_path=json_path.with_suffix('.csv')
     record=json.loads(json_path.read_text());content=record['content'];package=content['package'];state=package['state']
     computed=hashlib.sha256(json.dumps(canonical_jsonb(content),ensure_ascii=False,separators=(', ',': ')).encode()).hexdigest()
     assert computed==record['content_hash'],'Retained closeout content hash mismatch'
-    assert package['formatVersion']==2,'Unexpected package format'
+    assert package['formatVersion']==expected_format,'Unexpected package format'
     actuals=[row for row in latest(state['actuals'],'entry_id') if row['command']['status']=='approved']
     assert len(actuals)==7,'Current cost source count'
     incurred=sum(Decimal(row['amount']) for row in actuals if row['command']['category'] in ('labor','expense'))
@@ -52,10 +52,18 @@ def verify(folder):
     matches=[r for r in rows if r['record_type']=='received_cost_match'];assert len(matches)==1 and matches[0]['amount']=='25.00' and matches[0]['source_version_id'] in {r['id'] for r in actuals},'Matched cost lineage'
     import_row=next(r for r in rows if r['record_type']=='accounting_import_row');review=next(r for r in rows if r['record_type']=='accounting_review_version')
     assert import_row['external_id']==review['external_id']=='SYNTH-POST-01' and import_row['source_sha256']==review['source_sha256'] and len(import_row['source_sha256'])==64 and review['source_version_id']==matches[0]['source_version_id'],'Accounting reconciliation lineage'
-    receipt={'synthetic':True,'closeoutId':record['id'],'contentHash':computed,'formatVersion':2,'incurred':str(incurred),'hours':str(hours),'underspend':str(underspend),'invoiceOpen':str(balance),'openObligations':1,'csvRows':len(rows),'csvColumns':25,'files':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in (json_path,csv_path)},'limitations':['Engineering reconstruction by a separate script, not independent human finance acceptance','Original received-invoice file checksum is absent from format-2 handoff','Report front-page legacy payment labels still need correction']}
+    if expected_format>=3:
+        receipts=[r for r in rows if r['record_type']=='received_file_receipt']
+        assert len(receipts)==len(state['receivedInvoices']),'Missing received original receipts'
+        for invoice_version in state['receivedInvoices']:
+            source=invoice_version['source_receipt'];receipt=next(r for r in receipts if r['parent_id']==invoice_version['id'])
+            assert len(source['checksum'])==64 and receipt['source_sha256']==source['checksum'],'CSV original checksum mismatch'
+            assert receipt['source_file_id']==source['id']==invoice_version['content']['fileId'],'CSV original file identity mismatch'
+            assert source['bytes']>0,'Missing original byte count'
+    receipt={'synthetic':True,'closeoutId':record['id'],'contentHash':computed,'formatVersion':expected_format,'incurred':str(incurred),'hours':str(hours),'underspend':str(underspend),'invoiceOpen':str(balance),'openObligations':1,'csvRows':len(rows),'csvColumns':25,'files':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in (json_path,csv_path)},'limitations':['Engineering reconstruction by a separate script, not independent human finance acceptance',*(['Original received-invoice file checksum is absent from format-2 handoff','Report front-page legacy payment labels still need correction'] if expected_format==2 else ['PDF and workbook visual acceptance is separate from this JSON/CSV reconstruction'])]}
     return receipt
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser();parser.add_argument('folder',type=Path);parser.add_argument('--receipt',type=Path);args=parser.parse_args();result=verify(args.folder)
+    parser=argparse.ArgumentParser();parser.add_argument('folder',type=Path);parser.add_argument('--receipt',type=Path);parser.add_argument('--closeout-id',default='b40809c2-826d-429d-9dcf-eaf87c7513da');parser.add_argument('--format',type=int,choices=[2,3],default=2);args=parser.parse_args();result=verify(args.folder,args.closeout_id,args.format)
     if args.receipt:args.receipt.write_text(json.dumps(result,indent=2)+'\n')
     print(json.dumps(result,indent=2))

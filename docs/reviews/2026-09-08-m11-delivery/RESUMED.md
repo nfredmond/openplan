@@ -194,3 +194,47 @@ fails both suites, and replacing the caller's payload with the stored one fails
 the altered-request rejection. TypeScript and focused lint pass. These checks do
 not establish an actual browser disconnect after commit. The served browser build
 is still aa66ac63 until rebuilt; no newer browser acceptance is claimed.
+
+### Issued downloads, reconstruction and recovery acceptance
+
+A fresh supported browser tab (1406501442) successfully delivered the issued
+format-7 PDF/XLSX, closeout revision 3 JSON/CSV and fresh copies of revision 1.
+Using the documented download event followed by the actual download link worked.
+This supersedes the earlier delivery blocker; the precise cause of the earlier
+failed clicks remains unproved. No blocked browser-internal page was retried.
+
+The PDF download is 1,578,600 bytes and matches the retained checksum above.
+Read-only database inspection finds exactly one job for its document, one PDF
+document for its report, and one stored object matching its checksum. Thus the
+natural-lease document-worker recovery produced one retained, delivered artifact.
+A first query guessed storage_path and failed; the actual field is storage_ref.
+
+Revision 3's downloaded JSON/CSV independently reconstruct USD 625 incurred,
+60 hours, USD 175 underspend, zero invoice balance and one continuing obligation.
+The format-3 reconstruction additionally checks each original invoice file receipt.
+Whitespace survives; missing receipt, changed checksum, changed file identity,
+zero-byte original and wrong format each fail at their intended assertion.
+See resumed-closeout3-reconstruction.json and resumed-download-controls.json.
+Both fresh revision-1 downloads are byte-for-byte identical to the older files.
+
+The actual 136-page PDF was rendered and all pages visually inspected in labeled
+contact sheets; settlement and reopened revision pages were also inspected at full
+render size. No obvious clipping was found in that inspection. The PDF preserves
+separate payment, credit, refund, cost, closeout, reopening and obligation history.
+This is an overview layout inspection, not human review of every source statement.
+One multi-image tool output was context-truncated; those pages were explicitly
+reopened in smaller calls, so no page group is silently counted as inspected.
+
+The downloaded workbook has 49 sheets and no error-typed cells. An isolated
+LibreOffice profile rendered all sheets to 56 pages; all pages were visually
+inspected in contact sheets. Wide audit tables print small; the workbook retains
+its full cell data and separate long-text sheet. This is not a claim that the
+wide workbook printout substitutes for the PDF or that each cell was independently
+reconciled. Its source SHA256 stayed unchanged after read-only rendering:
+a0c0d77a232ff591cae39bc4beedba6b36881176fe50d7efe5805d46447d19d5.
+Raw synthetic files, renderings and browser receipts remain in the persistent
+local acceptance scratch directory. Independent human finance acceptance is absent.
+
+Exact-head GitHub CI for 4a8acb20 passed QA, shuffled order, live RLS, restore,
+worker, modeling and ops suites. This is separate from the still-served aa66ac63
+browser build and from the remaining journeys and cutoff/concurrency work.

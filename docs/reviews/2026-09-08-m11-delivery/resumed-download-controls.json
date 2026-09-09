@@ -1,0 +1,55 @@
+{
+  "synthetic": true,
+  "controls": [
+    {
+      "control": "unchanged",
+      "result": "passed",
+      "reason": null
+    },
+    {
+      "control": "harmless-json-whitespace",
+      "result": "passed",
+      "reason": null
+    },
+    {
+      "control": "missing-receipt",
+      "result": "rejected",
+      "reason": "Missing received original receipts"
+    },
+    {
+      "control": "checksum-mismatch",
+      "result": "rejected",
+      "reason": "CSV original checksum mismatch"
+    },
+    {
+      "control": "file-id-mismatch",
+      "result": "rejected",
+      "reason": "CSV original file identity mismatch"
+    },
+    {
+      "control": "zero-byte-original",
+      "result": "rejected",
+      "reason": "Missing original byte count"
+    },
+    {
+      "control": "wrong-format",
+      "result": "rejected",
+      "reason": "Unexpected package format"
+    }
+  ],
+  "revision1Redownload": {
+    "json": {
+      "identical": true,
+      "sha256": "5d4ec1fe8d34a28c4d673e6ad5293d24bfa3ee5d0becd36aeda18e6590e7f785"
+    },
+    "csv": {
+      "identical": true,
+      "sha256": "8c445878a9f1e667701f51149d76250b664197dd3dca0917919d0b5c56351c02"
+    }
+  },
+  "blindCategories": [
+    "No human finance acceptance",
+    "No PDF or workbook cell validation from this reconstruction",
+    "No source authenticity beyond retained hashes"
+  ]
+}
