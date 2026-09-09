@@ -1,0 +1,47 @@
+[
+  {
+    "name": "harmless-staff-comment",
+    "outcome": "survived",
+    "reason": null
+  },
+  {
+    "name": "hide-imported-time",
+    "outcome": "killed",
+    "reason": "Imported own draft visibility"
+  },
+  {
+    "name": "leak-finance-notes",
+    "outcome": "killed",
+    "reason": "Imported payroll private fields leaked"
+  },
+  {
+    "name": "leak-other-staff",
+    "outcome": "killed",
+    "reason": "Imported own current approved time missing"
+  },
+  {
+    "name": "allow-finance-draft-edit",
+    "outcome": "killed",
+    "reason": "Imported own draft visibility"
+  },
+  {
+    "name": "lose-task-attribution",
+    "outcome": "killed",
+    "reason": "Own time attribution missing"
+  },
+  {
+    "name": "enable-imported-draft-button",
+    "outcome": "killed",
+    "reason": "Staff source register behavior"
+  },
+  {
+    "name": "drop-source-dates",
+    "outcome": "killed",
+    "reason": "Staff source register behavior"
+  },
+  {
+    "name": "reverse-source-order",
+    "outcome": "killed",
+    "reason": "Staff source register behavior"
+  }
+]

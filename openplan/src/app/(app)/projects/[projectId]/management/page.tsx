@@ -1,3 +1,4 @@
+import { readEveryPage } from "@/lib/supabase/paged-read";
 import Link from "next/link";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { classifyCronFreshness, readCronHeartbeatAt, CRON_JOB_SWEEP_DEADLINES } from "@/lib/notifications/cron-heartbeat";
@@ -13,13 +14,11 @@ export default async function WeeklyManagement({params}:{params:Promise<{project
  if(!user)return <main className="p-8">Sign in to review your assignments.</main>;
  const project=await client.from("projects").select("id,name,workspace_id").eq("id",projectId).maybeSingle();
  if(project.error||!project.data)return <main className="p-8">Project unavailable.</main>;
- const service=createServiceRoleClient(),states:ContractState[]=[];let unavailable=0,readFailed=false;
- for(let offset=0;;offset+=200){
-  const page=await client.from("invoicing_engagements").select("id").eq("project_id",projectId).eq("workspace_id",project.data.workspace_id).order("id").range(offset,offset+199);
-  if(page.error){readFailed=true;break;}
-  for(const row of page.data){const r=await service.rpc("read_contract_management",{p_engagement_id:row.id,p_actor_id:user.id});if(r.error||!["owner","admin","pm","finance"].includes(r.data?.role))unavailable++;else states.push(r.data as ContractState);}
-  if(page.data.length<200)break;
- }
+ const workspaceId=project.data.workspace_id;
+ const service=createServiceRoleClient(),states:ContractState[]=[];let unavailable=0;
+ const read=await readEveryPage<{id:string}>((from,to)=>client.from("invoicing_engagements").select("id").eq("project_id",projectId).eq("workspace_id",workspaceId).order("id").range(from,to),{pageSize:200});
+ const readFailed=!read.complete;
+ if(read.complete)for(const row of read.rows){const r=await service.rpc("read_contract_management",{p_engagement_id:row.id,p_actor_id:user.id});if(r.error||!["owner","admin","pm","finance"].includes(r.data?.role))unavailable++;else states.push(r.data as ContractState);}
  const heartbeat=await readCronHeartbeatAt(service as unknown as Parameters<typeof readCronHeartbeatAt>[0],CRON_JOB_SWEEP_DEADLINES),freshness=classifyCronFreshness(heartbeat);
  return <main className="mx-auto max-w-6xl space-y-6 p-4 sm:p-8"><Link className="underline" href={`/projects/${projectId}`}>Project overview</Link><h1 className="text-3xl font-semibold">Weekly assignment management</h1><p>{project.data.name}</p><p>Review the remaining work in each contract, shared staff reservations and saved response. Costs are shown only for assignments you manage.</p>{readFailed&&<p role="alert">The contract register could not be fully read. This view is incomplete.</p>}{unavailable>0&&<p>{unavailable} contracts require separate management access. Their costs and work are withheld.</p>}<section className="space-y-2 rounded border p-4"><h2 className="font-semibold">Updates and reminders</h2><Link className="underline" href={`/my-work?workspaceId=${project.data.workspace_id}`}>Open My Work for assigned tasks and pending PM reviews</Link><p>Existing reminder sweep: {freshness==="healthy"?`last succeeded ${heartbeat}`:freshness==="stale"?`stale, last succeeded ${heartbeat}`:"no successful run recorded"}. Email transport: {isEmailTransportConfigured()?"configured; delivery is recorded per message":"not configured"}.</p><p>Contract-specific automatic reminders are awaiting installation. My Work lists pending reviews when opened.</p></section>
  {states.map(state=>{

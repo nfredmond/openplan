@@ -1,5 +1,6 @@
 import {afterEach,it,expect,vi} from "vitest";
 import {render,screen,fireEvent,waitFor,cleanup} from "@testing-library/react";
+import {emptyActual} from "@/components/invoicing/contracts/actual-form";
 import {deliveryFixture} from "./fixtures/contract-delivery";
 import {forecastDelivery} from "@/lib/invoicing/contracts/delivery";
 import {ForecastWarnings} from "@/components/invoicing/contracts/forecast-warnings";
@@ -25,4 +26,12 @@ it("does not show a zero cash position when financial source reconciliation fail
  const f=deliveryFixture();f.state.invoices=[{id:"synthetic-invoice",invoice_number:"SYNTHETIC",status:"sent",subtotal_amount:"25.00",retention_amount:"0.00",currency_code:"USD",invoice_date:"2026-09-08",sent_date:"2026-09-08",updated_at:"2026-09-08T00:00:00Z"}];
  f.state.closeout={settlements:[{id:"synthetic-event",version:1,created_at:"2026-09-08T00:00:00Z",content:{eventId:"synthetic-event",sourceKey:"SYNTHETIC",direction:"outgoing",invoiceId:"synthetic-invoice",invoiceVersion:"2026-09-08T00:00:00Z",date:"2026-09-08",kind:"payment",amount:"5.00",currency:"CAD",state:"recorded",documentId:"synthetic-source",sourceReference:"Synthetic mismatched currency",correctionEvidence:"",legacyActualId:null},source_receipt:{id:"synthetic-source",checksum:"a".repeat(64),storageRef:"synthetic",bytes:1}}],deliverableEvents:[],versions:[],inputHash:"b".repeat(64)};
  vi.stubGlobal("fetch",vi.fn().mockResolvedValue({ok:true,json:async()=>[]}));render(<ContractManagement initial={f.state}/>);expect(screen.getByRole("alert")).toHaveTextContent("Settlement currency differs");expect(screen.queryByText("Open invoice balances")).toBeNull();expect(screen.queryByText("Incurred internal cost")).toBeNull();
+});
+
+it("keeps imported drafts read-only to staff and orders dated sources without mutating history",()=>{
+ const f=deliveryFixture();f.state.role="member";
+ f.state.actuals=[{id:"later",entry_id:"later",version:1,created_at:"2026-09-08T00:00:00Z",command:{...emptyActual(f.staff),sourceKey:"SYNTHETIC-LATER",entryDate:"2026-09-08",description:"Time recorded by finance",sourceReference:"Ask finance",hours:"2.00"},amount:null,hours:"2.00",allocations:[],time_entry_id:null,spend_entry_id:null,member_can_correct:false},{id:"earlier",entry_id:"earlier",version:1,created_at:"2026-09-08T00:00:00Z",command:{...emptyActual(f.staff),sourceKey:"SYNTHETIC-EARLIER",entryDate:"2026-09-01",description:"Own draft",sourceReference:"Own timesheet",hours:"1.00"},amount:null,hours:"1.00",allocations:[],time_entry_id:null,spend_entry_id:null,member_can_correct:true}];
+ const original=JSON.stringify(f.state.actuals);render(<ContractManagement initial={f.state}/>);fireEvent.click(screen.getByRole("button",{name:"Actuals"}));
+ expect(screen.getAllByText(/SYNTHETIC-(EARLIER|LATER) · version/).map(e=>e.textContent)).toEqual(["SYNTHETIC-EARLIER · version 1 · draft","SYNTHETIC-LATER · version 1 · draft"]);
+ const buttons=screen.getAllByRole("button",{name:"Correct this source"});expect(buttons[0]).toBeEnabled();expect(buttons[1]).toBeDisabled();expect(screen.getByText("2026-09-08 · Time recorded by finance · 2.00 hours")).toBeInTheDocument();expect(JSON.stringify(f.state.actuals)).toBe(original);
 });

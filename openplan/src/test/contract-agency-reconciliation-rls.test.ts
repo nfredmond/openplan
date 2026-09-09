@@ -59,4 +59,22 @@ function check(body:string){
  INSERT INTO public.contract_received_invoices(invoice_id,engagement_id,workspace_id,version,state,content,submitted_by,created_by) SELECT p,engagement_id,workspace_id,1,'submitted',content,submitted_by,created_by FROM public.contract_received_invoices WHERE invoice_id=entry AND version=1;
  BEGIN PERFORM public.record_contract_command(engagement,owner_id,c||jsonb_build_object('requestId',gen_random_uuid(),'invoiceId',p));RAISE EXCEPTION 'Cost matched twice';EXCEPTION WHEN check_violation THEN NULL;END;
  `));
+ it("shows finance-imported own hours without private notes, values, foreign staff or correction authority",()=>check(`${baseline}
+ c:=jsonb_build_object('kind','actual','requestId',gen_random_uuid(),'entryId',entry,'expectedVersion',0,'sourceKey','SYNTHETIC-PAYROLL-OWN','sourceReference','PRIVATE-PAYROLL-FILE 73.19','entryDate','2026-09-01','category','labor','status','draft','description','PRIVATE-FINANCE-NOTE','staffId',staff,'hours','2.00','amount','146.38','valuationBasis','recorded','rateId',NULL,'billable',true,'allocations',jsonb_build_array(jsonb_build_object('taskId',task,'deliverableId',deliverable,'share',10000)));
+ PERFORM public.record_contract_command(engagement,owner_id,c);
+ state:=public.read_contract_management(engagement,member_id);
+ IF jsonb_array_length(state->'actuals')<>1 OR state->'actuals'->0->>'hours' IS DISTINCT FROM '2.00' OR (state->'actuals'->0->>'member_can_correct')::boolean IS DISTINCT FROM false THEN RAISE EXCEPTION 'Imported own draft visibility or correction guard failed';END IF;
+ BEGIN PERFORM public.record_contract_command(engagement,member_id,c||jsonb_build_object('requestId',gen_random_uuid(),'expectedVersion',1,'amount',NULL,'valuationBasis','unvalued','correctionNote','Attempt to change finance original'));RAISE EXCEPTION 'Staff edited finance draft';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ PERFORM public.record_contract_command(engagement,owner_id,c||jsonb_build_object('requestId',gen_random_uuid(),'expectedVersion',1,'status','approved','hours','3.00','amount','219.57','correctionNote','PRIVATE-FINANCE-CORRECTION'));
+ INSERT INTO public.invoicing_staff(id,workspace_id,name,user_id) VALUES(p,workspace,'Other staff',owner_id);
+ PERFORM public.record_contract_command(engagement,owner_id,c||jsonb_build_object('requestId',gen_random_uuid(),'entryId',ow_entry,'sourceKey','PRIVATE-OTHER-PERSON','staffId',p));
+ state:=public.read_contract_management(engagement,member_id);
+ IF jsonb_array_length(state->'actuals')<>2 OR state->'actuals'->1->>'hours' IS DISTINCT FROM '3.00' OR state->'actuals'->1->'command'->>'status' IS DISTINCT FROM 'approved' OR state->'actuals'->1->'command'->>'entryDate' IS DISTINCT FROM '2026-09-01' THEN RAISE EXCEPTION 'Imported own current approved time missing';END IF;
+ IF state::text LIKE '%PRIVATE-%' OR state::text LIKE '%219.57%' OR state::text LIKE '%146.38%' OR state->'actuals'->1->>'amount' IS NOT NULL OR state->'actuals'->1->'command'->>'rateId' IS NOT NULL OR state->'actuals'->1->'command'->'allocations'->0->>'amount' IS NOT NULL THEN RAISE EXCEPTION 'Imported payroll private fields leaked';END IF;
+ IF state->'actuals'->1->'command'->'allocations'->0->>'taskId' IS DISTINCT FROM task::text OR state->'actuals'->1->'command'->'allocations'->0->>'deliverableId' IS DISTINCT FROM deliverable::text THEN RAISE EXCEPTION 'Own time attribution missing';END IF;
+ PERFORM set_config('request.jwt.claim.sub',member_id::text,true);EXECUTE 'SET LOCAL ROLE authenticated';
+ IF EXISTS(SELECT 1 FROM public.contract_actual_versions WHERE entry_id=entry) THEN RAISE EXCEPTION 'Staff read raw payroll values';END IF;
+ EXECUTE 'RESET ROLE';
+ `));
+
 });

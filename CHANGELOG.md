@@ -20,6 +20,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- [contract_staff_import_visibility](openplan/supabase/migrations/20260924000001_contract_staff_import_visibility.sql) lets staff see time recorded for them by finance, retaining dates, hours, review status and task attribution without private payroll amounts, notes or file access. Finance-owned drafts remain read-only to staff.
+
 - [contract_forecast_billing_custody](openplan/supabase/migrations/20260923000001_contract_forecast_billing_custody.sql) binds received invoice revisions and the changed billing calculation to forecast hashes. Existing reviewed forecasts remain retained and become stale.
 
 - [contract_billing_direction](openplan/supabase/migrations/20260922000001_contract_billing_direction.sql) approves the agency purchaser, service provider or internal billing perspective with the baseline. New management snapshots use format 6; closeout packages use format 2 with received-cost and accounting attribution. Prior issued formats remain readable.
