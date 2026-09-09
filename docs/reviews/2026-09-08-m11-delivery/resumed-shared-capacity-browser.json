@@ -1,0 +1,20 @@
+{
+  "build": "5c7627b215c781cc7d35f77217f0922d01d57a1c",
+  "schemaThrough": "20260929000001",
+  "before": {
+    "forecast": 1,
+    "finish": null,
+    "reserved": "9.00",
+    "available": "8.00"
+  },
+  "after": {
+    "forecast": 2,
+    "finish": "2026-09-14",
+    "remainingCost": "200.00",
+    "approvedFinish": "2026-10-15"
+  },
+  "closeoutRevision": 5,
+  "keyboardHorizontalScrollObserved": 40,
+  "pageErrors": [],
+  "scope": "Synthetic owner journey; no human PM or finance acceptance"
+}

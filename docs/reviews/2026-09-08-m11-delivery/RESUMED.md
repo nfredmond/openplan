@@ -302,3 +302,47 @@ reading complete history chunks 88 and 721. Those chunks are marked read in the
 local ledger; no other bulk chunks were silently marked. The original temporary
 before.json is gone, so this compares against its prior committed checksum rather
 than claiming the old file was recovered. See resumed-populated-visibility-upgrade.json.
+
+### Shared-capacity release, reclosure and expanded checks
+
+The synthetic owner entered B's 20-hour, 5-hour/day update through Projects →
+Weekly assignment management → Updates, then reviewed its exact version with a
+USD 200 remaining-cost assumption and unassessed billing. Forecast 1 retained
+9 reserved hours against 8 available and no supported finish. Actual desktop and
+390px screenshots show the warning; outside assignment details remain withheld.
+
+B's changed inputs made A forecast 7 stale. The owner reviewed A forecast 8,
+retaining zero remaining work, September 9 completion and USD 625 actual cost,
+then retained closeout revision 5 through the form. Revision 5 preserves USD 175
+underspend, zero invoice balance and the open October 15 records obligation.
+Its downloaded JSON/CSV independently reconstruct the same figures. Revisions
+1–4 retain their hashes. See resumed-closeout5-reconstruction.json.
+
+Closing A made B forecast 1 stale and released A's reservations. B forecast 2 now
+supports September 14 while keeping the October 15 approved deadline, USD 200
+estimate, explicit September 9 unavailability and unassessed expected billing.
+No B schedule, baseline or resource allocation was changed to obtain that result.
+The previous overload remains retained. At 390px there is no document overflow;
+the date table scrolls within its container. Tab reaches that container and Arrow
+Right moves it 40 pixels, exposing later columns. Page errors were empty. These
+are synthetic owner actions, not independent PM/staff/finance acceptance.
+Selected screenshots and resumed-shared-capacity-browser.json retain build
+5c7627b2 and migration-29 identity. A preview cleared on a later state refresh;
+the retained comparison, rather than an expired preview, was inspected.
+
+The full QA rerun passed lint, deadcode checks, 13,396 tests, production dependency
+audit (zero vulnerabilities), TypeScript and webpack build. The ordinary gate
+explicitly skipped live RLS; it does not prove that boundary. The established
+34-file live command separately passed 230 tests. I then found that it omitted
+both newly added practice-retry and source-visibility files; those had only run
+in focused checks. Both are now explicitly included in test:rls-live, and the
+expanded 36-file command passed all 232 tests on the disposable upgrade stack.
+The QA build used f563e1d7 application sources; the only edit while it ran was
+adding those two live-test command entries. Exact-head CI remains a separate gate.
+
+The owned production server was stopped as QA entered its build phase. The
+already-loaded browser captures retain their preceding-build scope; they do not
+claim to show the new bundle before restart. Browser selector waits for a heading
+that was actually a details summary timed out; the retained forecast succeeded
+and was read with its actual text. Signing out goes to the public home, not the
+sign-in URL; that test expectation was corrected without changing product code.
