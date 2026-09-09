@@ -31,6 +31,13 @@ export function settlementPosition(state:ContractState,asOf="9999-12-31"):Invoic
  });
 }
 export function closeoutPosition(state:ContractState,command:CloseoutCommand):CloseoutPosition{
+ const previous=state.closeout?.versions.filter(v=>v.state==="closed").at(-1);
+ for(const obligation of previous?.content.request.obligations??[]){
+  if(obligation.status!=="open")continue;
+  const disposition=command.obligations.find(o=>o.id===obligation.id);
+  if(!disposition)throw new Error("Carry forward each prior open obligation or record its satisfied disposition with evidence.");
+  if(disposition.status==="satisfied"&&disposition.basis===obligation.basis)throw new Error("Record new evidence before marking a prior continuing obligation satisfied.");
+ }
  const reconciled=reconcileContract(state,{asOf:command.asOf}),invoices=settlementPosition(state,command.asOf),warnings:string[]=[],latest=new Map<string,NonNullable<ContractState["closeout"]>["deliverableEvents"][number]>();
  for(const event of state.closeout?.deliverableEvents??[])if(!latest.has(event.deliverable_id)||latest.get(event.deliverable_id)!.version<event.version)latest.set(event.deliverable_id,event);
  const tasks=reconciled.baseline?.content.tasks??[],workAccepted=tasks.length>0&&tasks.every(t=>t.deliverableId&&latest.get(t.deliverableId)?.state==="accepted"&&latest.get(t.deliverableId)!.date<=command.asOf);

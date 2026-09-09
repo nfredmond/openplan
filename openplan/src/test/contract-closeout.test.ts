@@ -18,3 +18,16 @@ describe("documented financial settlement and closeout",()=>{
  it("refuses unsupported work acceptance, unresolved finances and missing coverage",()=>{const f=fixture();expect(()=>closeoutPosition(f.state,{...f.command,workAccepted:true})).toThrow("authorized accepted deliverable");expect(()=>closeoutPosition(f.state,{...f.command,financialSettled:true})).toThrow("unresolved source coverage");f.state.invoices=[];expect(()=>closeoutPosition(f.state,{...f.command,coverageComplete:false,financialSettled:true})).toThrow("Financial settlement");});
  it("retains stable handoff identities and protects spreadsheet cells without changing exact amount strings",()=>{const f=fixture();const event=f.add("payment","50.01",{sourceKey:"=SYNTHETIC_FORMULA",sourceReference:"Synthetic quoted \"source\""}),position=closeoutPosition(f.state,f.command),pkg={formatVersion:1 as const,state:f.state,position,request:f.command};const rows=accountingHandoffRows(pkg);expect(rows.find(r=>r[0]==="financial_payment")?.slice(1,5)).toEqual([event.id,"1",event.content.eventId,"=SYNTHETIC_FORMULA"]);const csv=accountingHandoffCsv(pkg);expect(csv).toContain('"\'=SYNTHETIC_FORMULA"');expect(csv).toContain('"50.01"');expect(csv).toContain('"invoice_total_open"');expect(csv).toContain('"contract_total_incurred"');expect(contractCommandSchema.safeParse({...f.command,_position:{financialSettled:true}}).success).toBe(false);});
 });
+
+describe("reopened continuing obligations",()=>{
+ it("requires retained identity and new evidence before satisfaction",()=>{
+  const f=fixture(),obligation={id:randomUUID(),title:"Retain records",owner:"Synthetic agency",dueOn:null,status:"open" as const,basis:"Synthetic retention condition"};
+  f.state.closeout!.versions=[{id:randomUUID(),version:1,state:"closed",previous_id:null,input_hash:"a".repeat(64),content:{request:{...f.command,obligations:[obligation]}},content_hash:"b".repeat(64),created_at:f.date}];
+  expect(()=>closeoutPosition(f.state,f.command)).toThrow("Carry forward each prior open obligation");
+  expect(closeoutPosition(f.state,{...f.command,obligations:[obligation]}).openObligations).toBe(1);
+  expect(()=>closeoutPosition(f.state,{...f.command,obligations:[{...obligation,status:"satisfied"}]})).toThrow("new evidence");
+  expect(closeoutPosition(f.state,{...f.command,obligations:[{...obligation,status:"satisfied",basis:"Synthetic retention period ended and archive receipt retained"}]}).openObligations).toBe(0);
+  expect(contractCommandSchema.safeParse({...f.command,obligations:[obligation,obligation]}).success).toBe(false);
+  expect(f.state.closeout!.versions[0].content.request.obligations).toEqual([obligation]);
+ });
+});

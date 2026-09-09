@@ -46,6 +46,19 @@ function check(body:string){
  PERFORM public.record_contract_command(engagement,owner_id,jsonb_build_object('kind','access','requestId',gen_random_uuid(),'expectedVersion',1,'email',outsider||'@example.test','role','consultant','active',false,'evidence','Synthetic revocation'));
  BEGIN PERFORM public.read_received_invoice_file(engagement,outsider,(state->'receivedInvoices'->0->'content'->>'fileId')::uuid);RAISE EXCEPTION 'Revoked consultant downloaded file';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
  `));
+ it("retains exact received original receipts within consultant scope and source cutoff",()=>check(`${baseline}${grants}${invoice}
+ state:=public.read_contract_management(engagement,outsider);
+ SELECT checksum INTO original_hash FROM public.contract_received_files WHERE id=(state->'receivedInvoices'->0->'content'->>'fileId')::uuid;
+ IF state->'receivedInvoices'->0->'source_receipt'->>'checksum' IS DISTINCT FROM original_hash OR state->'receivedInvoices'->0->'source_receipt'->>'filename' IS DISTINCT FROM 'synthetic.csv' OR (state->'receivedInvoices'->0->'source_receipt'->>'bytes')::integer IS DISTINCT FROM octet_length(convert_to('source,amount'||chr(10)||'SYNTHETIC-001,25.00','UTF8')) THEN RAISE EXCEPTION 'Original received receipt missing';END IF;
+ PERFORM public.record_contract_command(engagement,owner_id,c||jsonb_build_object('requestId',gen_random_uuid(),'invoiceId',gen_random_uuid(),'content',(c->'content')||jsonb_build_object('number','PRIVATE-OTHER-CONTRACTOR'),'file',jsonb_build_object('filename','PRIVATE-OTHER-CONTRACTOR.csv','contentType','text/csv','base64',encode(convert_to('PRIVATE-OTHER-CONTRACTOR','UTF8'),'base64'))));
+ state:=public.read_contract_management(engagement,outsider);
+ IF jsonb_array_length(state->'receivedInvoices') IS DISTINCT FROM 1 OR state::text LIKE '%PRIVATE-OTHER-CONTRACTOR%' THEN RAISE EXCEPTION 'Other contractor receipt leaked';END IF;
+ state:=public.read_contract_management(engagement,owner_id);IF state->>'schemaVersion' IS DISTINCT FROM '7' THEN RAISE EXCEPTION 'New snapshot receipt format missing';END IF;
+ INSERT INTO public.contract_received_files(id,engagement_id,workspace_id,filename,content_type,bytes,checksum,created_by,created_at) SELECT p,engagement_id,workspace_id,filename,content_type,bytes,checksum,created_by,now()+interval '1 minute' FROM public.contract_received_files WHERE checksum=original_hash AND engagement_id=engagement;
+ INSERT INTO public.contract_received_invoices(invoice_id,engagement_id,workspace_id,version,state,content,submitted_by,created_by) SELECT i.invoice_id,i.engagement_id,i.workspace_id,2,i.state,jsonb_set(i.content,'{fileId}',to_jsonb(p)),i.submitted_by,i.created_by FROM public.contract_received_invoices i WHERE i.invoice_id=entry AND i.version=1;
+ state:=public.read_contract_management(engagement,outsider,now());
+ IF state->'receivedInvoices'->1->'source_receipt' IS DISTINCT FROM 'null'::jsonb THEN RAISE EXCEPTION 'Future original receipt crossed cutoff';END IF;
+ `));
  it("matches current sources exactly, prevents duplicate matching and never creates a second incurred cost",()=>check(`${baseline}${grants}${invoice}
  c:=jsonb_build_object('kind','actual','requestId',gen_random_uuid(),'entryId',ow_entry,'expectedVersion',0,'sourceKey','synthetic-vendor-cost','sourceReference','Synthetic accounting cost','entryDate','2026-09-01','category','expense','status','approved','description','Synthetic invoice source','staffId',NULL,'hours',NULL,'amount','25.00','valuationBasis','recorded','rateId',NULL,'billable',false,'allocations',jsonb_build_array(jsonb_build_object('taskId',task,'deliverableId',deliverable,'share',10000)));
  PERFORM public.record_contract_command(engagement,owner_id,c);

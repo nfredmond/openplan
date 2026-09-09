@@ -54,6 +54,19 @@ describe.skipIf(!LIVE_RLS)("contract settlement and closeout custody",()=>{
  PERFORM public.record_contract_command(engagement,owner_id,c);
  IF (SELECT previous_id FROM public.contract_closeouts WHERE engagement_id=engagement AND version=2) IS DISTINCT FROM report OR (SELECT content_hash FROM public.contract_closeouts WHERE id=report)<>original_hash THEN RAISE EXCEPTION 'Reopening lost prior custody';END IF;
  `));
+ it("requires each reopened obligation to survive or receive new satisfaction evidence",()=>check(`${baseline}${close}
+ result:=public.record_contract_command(engagement,owner_id,c);report:=(result->>'id')::uuid;
+ PERFORM public.record_contract_command(engagement,owner_id,jsonb_build_object('kind','reopen','requestId',gen_random_uuid(),'expectedVersion',1,'closeoutId',report,'evidence','Synthetic reopen for review'));
+ state:=state||jsonb_build_object('requestId',gen_random_uuid(),'expectedVersion',2);
+ c:=state||jsonb_build_object('_request',state,'_inputHash',public.contract_closeout_hash(engagement),'_position',jsonb_build_object('workAccepted',false,'financialSettled',false),'_package',jsonb_build_object('formatVersion',3,'synthetic',true));
+ BEGIN PERFORM public.record_contract_command(engagement,owner_id,c||jsonb_build_object('obligations','[]'::jsonb,'_request',state||jsonb_build_object('obligations','[]'::jsonb)));RAISE EXCEPTION 'Prior obligation silently lost';EXCEPTION WHEN check_violation THEN NULL;END;
+ again:=jsonb_set(state,'{obligations,0,status}','"satisfied"');
+ BEGIN PERFORM public.record_contract_command(engagement,owner_id,c||again||jsonb_build_object('_request',again));RAISE EXCEPTION 'Obligation satisfied without new evidence';EXCEPTION WHEN check_violation THEN NULL;END;
+ again:=jsonb_set(state,'{obligations}',jsonb_build_array(state->'obligations'->0,state->'obligations'->0));
+ BEGIN PERFORM public.record_contract_command(engagement,owner_id,c||again||jsonb_build_object('_request',again));RAISE EXCEPTION 'Duplicate obligation identity admitted';EXCEPTION WHEN check_violation THEN NULL;END;
+ result:=public.record_contract_command(engagement,owner_id,c);
+ IF (SELECT content->'request'->'obligations' FROM public.contract_closeouts WHERE id=(result->>'id')::uuid) IS DISTINCT FROM state->'obligations' THEN RAISE EXCEPTION 'Carried obligation changed';END IF;
+ `));
  it("refuses unsupported closeout claims, stale inputs and outsider reads from populated evidence streams",()=>check(`${baseline}${financial}PERFORM public.record_contract_command(engagement,owner_id,c);${deliver}PERFORM public.record_contract_command(engagement,member_id,c);${close}
  BEGIN PERFORM public.record_contract_command(engagement,owner_id,c||jsonb_build_object('workAccepted',true));RAISE EXCEPTION 'Unsupported work acceptance claimed';EXCEPTION WHEN invalid_parameter_value THEN NULL;END;
  BEGIN PERFORM public.record_contract_command(engagement,owner_id,c||jsonb_build_object('_inputHash',repeat('0',64)));RAISE EXCEPTION 'Stale closeout accepted';EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL;END;

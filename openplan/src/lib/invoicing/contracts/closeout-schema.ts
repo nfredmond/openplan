@@ -7,7 +7,7 @@ export const obligationSchema=z.object({id,title:required,owner:required,dueOn:d
 export const closeoutCommandSchemas=[
  z.object({kind:z.literal("settlement"),...base,content:settlementEventSchema}).strict(),
  z.object({kind:z.literal("deliverable_event"),...base,deliverableId:id,state:z.enum(["submitted","returned","resubmitted","accepted"]),date,documentId:id,authority:required,evidence:required}).strict(),
- z.object({kind:z.literal("closeout"),...base,expectedInputHash:z.string().regex(/^[a-f0-9]{64}$/),title:required.max(300),asOf:date,coverageComplete:z.boolean(),coverageEvidence:required,workAccepted:z.boolean(),workAuthority:required,financialSettled:z.boolean(),financeAuthority:required,obligations:z.array(obligationSchema).max(200),evidence:required}).strict(),
+ z.object({kind:z.literal("closeout"),...base,expectedInputHash:z.string().regex(/^[a-f0-9]{64}$/),title:required.max(300),asOf:date,coverageComplete:z.boolean(),coverageEvidence:required,workAccepted:z.boolean(),workAuthority:required,financialSettled:z.boolean(),financeAuthority:required,obligations:z.array(obligationSchema).max(200).refine(items=>new Set(items.map(o=>o.id)).size===items.length,"Continuing obligation identities must be unique"),evidence:required}).strict(),
  z.object({kind:z.literal("reopen"),...base,closeoutId:id,evidence:required}).strict(),
 ] as const;
 export type SettlementEvent=z.infer<typeof settlementEventSchema>;

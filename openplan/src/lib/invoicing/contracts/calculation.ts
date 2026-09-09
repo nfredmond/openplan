@@ -38,7 +38,7 @@ export async function normalizeContractCommand(service:CalculationClient,engagem
    }else{
     if(command.expectedInputHash!==state.closeout.inputHash)throw new Error("The closeout data changed since you opened this page. Reload and review the changed position.");
     const position=closeoutPosition(state,command),safeState={...state,rates:[],access:[],imports:[],snapshots:[],closeout:{...state.closeout,versions:state.closeout.versions.map(v=>({id:v.id,version:v.version,state:v.state,content_hash:v.content_hash,previous_id:v.previous_id}))}};
-    normalized={...command,_request:command,_inputHash:state.closeout.inputHash,_position:position,_package:{formatVersion:2,state:safeState,position,request:command}};
+    normalized={...command,_request:command,_inputHash:state.closeout.inputHash,_position:position,_package:{formatVersion:3,state:safeState,position,request:command}};
    }
   }
   if(command.kind==="accounting_import")normalized=parseAccountingImport(command);

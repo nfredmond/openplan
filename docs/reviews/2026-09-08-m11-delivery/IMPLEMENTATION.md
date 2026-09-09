@@ -253,3 +253,40 @@ Snapshot b54a3c9a-b9ad-40a7-887c-98432928fcfa was issued through the UI, and the
 Desktop capture recovered at native 2616x1226 after clearing the viewport override. e3fe-acceptance-desktop.jpg and e3fe-acceptance-history-desktop.jpg show the entry form and all four retained events. At 390x844, DOM confirms document width 390 and the accepted version is reachable, but repeated screenshot timeouts leave that visual acceptance open. CUA scroll also timed out; clicking the observed accepted-version heading successfully brought the history into view. Use the existing selected browser and owned tab. The viewport was explicitly restored to 2616x1226 afterward.
 
 Finance then recorded reopening revision 2 through the UI, pointing to the first closeout. Independent SQL confirms revision 1's hash is unchanged. Reopening copy currently prints false acceptance/settlement claims despite making no new assessment, and its new form starts with no carried obligations. Correct that copy and carry forward prior open obligations before another closeout; the previous package already retains the obligation.
+
+### Export receipts and continuing obligations (September 8, later checkpoint)
+
+The downloaded agency package reconstructed exactly (625 incurred, 175 underspend,
+25 gross less 24 payments less 2 credits plus 1 refund = zero open), but its format 6
+management report put legacy zero payment columns ahead of the actual settlement.
+New snapshot format 7 presents documented invoice balances first and removes those
+misleading legacy cash columns from cost rollups. New closeout package format 3
+retains received-original filename, type, byte count and checksum in the accounting
+handoff; missing receipts remain unassessed. Earlier issued package/report formats
+retain their prior output. The workbook keeps one accounting handoff row per stable
+record, including long evidence. New acceptance tables distinguish storage reference
+from the actual retained byte count.
+
+Reopening had also initialized an empty obligations form and presented false new
+acceptance/settlement claims. The form now carries the last closed obligations and
+explains that reopening makes no new acceptance decision. Both deterministic
+calculation and an additive database insert trigger require each prior open
+obligation to remain or receive new satisfaction evidence. Duplicate identities
+are refused. Historical packages remain unchanged.
+
+Validation: 22 focused calculation/export/download checks, one form check, 17 live
+agency/closeout/billing checks on the populated upgrade stack, TypeScript and targeted
+lint. The two new live checks first failed on the old behavior for missing receipts
+and silently lost obligations. The control harness records 2 harmless survivors and
+19 targeted failures in `export-receipt-controls.json`. The populated v0.46 baseline,
+both actual versions and physical time retain the identical canonical hash through
+migration 20260925000001 (`populated-export-upgrade.json`). New test fixtures initially
+reused an invoice number, attempted to update immutable fixture history, and used an
+ambiguous SQL column; those fixture errors were corrected using distinct identities
+and additive synthetic records. No application history was rewritten.
+
+This checkpoint is source/database evidence. The served build remains e3fede11 until
+rebuilt; fresh format 7 PDF/XLSX downloads and browser acceptance remain outstanding.
+Controls cannot establish original-file authenticity, human authority, full visual
+layout, or independent human finance acceptance. The open retention/dispute overlap
+calculation limitation remains for the next correction.

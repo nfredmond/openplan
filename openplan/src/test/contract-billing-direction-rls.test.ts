@@ -16,7 +16,7 @@ function check(body:string){
  IF EXISTS(SELECT 1 FROM public.contract_baselines b WHERE b.id=baseline AND b.state='approved') THEN RAISE EXCEPTION 'Proposal gained authority';END IF;
  PERFORM public.record_contract_command(engagement,owner_id,jsonb_build_object('kind','approve','requestId',gen_random_uuid(),'expectedVersion',1,'baselineId',baseline,'approvalEvidence','Synthetic source-authorized purchaser'));
  state:=public.read_contract_management(engagement,owner_id);
- IF state->>'schemaVersion'<>'6' OR state->'baselines'->0->'content'->>'billingDirection'<>'received' THEN RAISE EXCEPTION 'Approved perspective or report format lost';END IF;
+ IF (state->>'schemaVersion')::integer<6 OR state->'baselines'->0->'content'->>'billingDirection'<>'received' THEN RAISE EXCEPTION 'Approved perspective or report format lost';END IF;
  `));
  it("rejects invalid or undocumented perspectives even through the database command boundary",()=>check(`
  c:=jsonb_set(c,'{content,billingDirection}','"invented"');

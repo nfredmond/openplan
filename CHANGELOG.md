@@ -20,6 +20,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- [contract_export_source_receipts](openplan/supabase/migrations/20260925000001_contract_export_source_receipts.sql) retains received-invoice file checksums in new report format 7 and closeout format 3. New cost tables keep documented settlement separate. Earlier issued reports and packages retain their formats.
+
 - [contract_staff_import_visibility](openplan/supabase/migrations/20260924000001_contract_staff_import_visibility.sql) lets staff see time recorded for them by finance, retaining dates, hours, review status and task attribution without private payroll amounts, notes or file access. Finance-owned drafts remain read-only to staff.
 
 - [contract_forecast_billing_custody](openplan/supabase/migrations/20260923000001_contract_forecast_billing_custody.sql) binds received invoice revisions and the changed billing calculation to forecast hashes. Existing reviewed forecasts remain retained and become stale.
