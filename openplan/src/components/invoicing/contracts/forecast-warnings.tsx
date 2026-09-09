@@ -3,7 +3,7 @@ import type {ForecastResult,ForecastWarning} from "@/lib/invoicing/contracts/del
 /** Repeated dated warnings share an explanation; every source date remains available. */
 export function ForecastWarnings({result,engagementId}:{result:ForecastResult;engagementId?:string}){
  const groups=new Map<string,ForecastWarning[]>();
- for(const warning of result.warnings){const key=JSON.stringify([warning.code,warning.nodeId,warning.staffId,warning.message]);groups.set(key,[...(groups.get(key)??[]),warning]);}
+ for(const warning of result.warnings){const key=JSON.stringify([warning.code,warning.nodeId,warning.staffId,warning.message]);const group=groups.get(key)??[];group.push(warning);groups.set(key,group);}
  return <div className="space-y-3">{[...groups.entries()].map(([key,warnings])=>{
   const warning=warnings[0],name=result.nodes.find(n=>n.id===warning.nodeId)?.title,section=warning.code.includes("capacity")||warning.code.includes("availability")?"Capacity":warning.code.includes("update")||warning.code.includes("effort")?"Updates":"Schedule";
   const explanation=`${name?`${name}: `:""}${warning.message}`;

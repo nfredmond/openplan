@@ -1,5 +1,9 @@
 # Continue M11 after refreshing browser tooling
 
+September 8 evening continuation: read [RESUMED.md](RESUMED.md) first for the
+new browser findings, forecast form/size fixes, reopened agency state and actual
+document-worker interruption. The original remaining scope below still applies.
+
 Resume implementation and verification; do not re-plan or call M11 complete. Nathaniel supplied the full four-increment plan: (1) agency reconciliation, scoped PM/finance/consultant access, master/task-order controls, received invoices and accounting intake; (2) staff-proposed/PM-reviewed remaining work, calendars/capacity/dependencies/review periods, explained and retained cost/date forecasts; (3) actionable weekly PM review, responses versus approved baselines, My Work/reminders and management exports; (4) settlement, separate deliverable acceptance, continuing obligations, immutable closeout/reopening and accounting handoff. The agency team is the first case, a small consulting practice the second. Human PM observation and independent finance acceptance remain required and absent. Do not shrink the milestone to the work already implemented.
 
 ## Start here

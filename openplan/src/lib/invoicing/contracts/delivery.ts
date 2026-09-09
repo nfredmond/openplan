@@ -30,8 +30,9 @@ export function forecastDelivery(state:ContractState,delivery:DeliveryState,opti
  if(horizonEnd<asOf||horizonEnd>nextDate(asOf,730))throw new Error("Forecast horizon must be between the as-of date and 730 days later.");
  const schedule=delivery.scheduleVersions.toSorted((a,b)=>a.version-b.version).at(-1)?.content;
  const warnings:ForecastWarning[]=[],results:ForecastResult["nodes"]=[],reservations:ForecastResult["reservations"]=[];
- function warn(code:string,message:string,nodeId:string|null=null,staffId:string|null=null,date:string|null=null){if(!warnings.some(w=>w.code===code&&w.nodeId===nodeId&&w.staffId===staffId&&w.date===date))warnings.push({code,message,nodeId,staffId,date});}
- const empty:ForecastResult={formatVersion:1,asOf,horizonEnd,finish:null,remainingCost:null,actualPlusRemaining:null,remainingGrossBilling:null,coverageComplete:options.coverageComplete,warnings,nodes:results,reservations};
+ const warningKeys=new Set<string>();
+ function warn(code:string,message:string,nodeId:string|null=null,staffId:string|null=null,date:string|null=null){const key=JSON.stringify([code,nodeId,staffId,date]);if(!warningKeys.has(key)){warningKeys.add(key);warnings.push({code,message,nodeId,staffId,date});}}
+ const empty:ForecastResult={formatVersion:2,asOf,horizonEnd,finish:null,remainingCost:null,actualPlusRemaining:null,remainingGrossBilling:null,coverageComplete:options.coverageComplete,warnings,nodes:results,reservations};
  if(!schedule){warn("missing_schedule","A reviewed schedule has not been retained.");return empty;}
  validateSchedule(schedule);
  const baseline=state.baselines.filter(b=>b.state==="approved").toSorted((a,b)=>a.version-b.version).at(-1),original=state.baselines.filter(b=>b.state==="approved").toSorted((a,b)=>a.version-b.version)[0];
@@ -40,20 +41,28 @@ export function forecastDelivery(state:ContractState,delivery:DeliveryState,opti
  for(const update of delivery.workUpdates.toSorted((a,b)=>a.version-b.version))updates.set(`${update.task_id}:${update.staff_id}`,update);
  const capacities=new Map<string,DeliveryState["capacityVersions"][number]>();
  for(const cap of delivery.capacityVersions.toSorted((a,b)=>a.version-b.version))capacities.set(`${cap.staff_id}:${cap.content.startsOn}`,cap);
+ const capacityPeriods=new Map<string,DeliveryState["capacityVersions"]>();
+ for(const cap of capacities.values()){const periods=capacityPeriods.get(cap.staff_id)??[];periods.push(cap);capacityPeriods.set(cap.staff_id,periods);}
+ const capacityByDate=new Map<string,bigint|null>();
  const allReservations=new Map<string,bigint>();
+ const ownReservations=new Map<string,{staffId:string;date:string;hours:bigint}>();
  for(const r of delivery.outsideReservations){const key=`${r.staffId}:${r.date}`;allReservations.set(key,(allReservations.get(key)??BigInt(0))+cents(r.hours));}
  function capacity(staffId:string,date:string):bigint|null{
-  const periods=[...capacities.values()].filter(p=>p.staff_id===staffId&&p.content.startsOn<=date&&p.content.endsOn>=date);
-  if(periods.length!==1)return null;
-  return isWorkingDate(periods[0].content.calendar,date)?cents(periods[0].content.hoursPerDay):BigInt(0);
+  const key=`${staffId}:${date}`;
+  if(capacityByDate.has(key))return capacityByDate.get(key)!;
+  const periods=(capacityPeriods.get(staffId)??[]).filter(p=>p.content.startsOn<=date&&p.content.endsOn>=date);
+  const result=periods.length!==1?null:isWorkingDate(periods[0].content.calendar,date)?cents(periods[0].content.hoursPerDay):BigInt(0);
+  capacityByDate.set(key,result);return result;
  }
  for(const node of schedule.nodes)for(const person of node.staff){
   for(let date=node.notBefore<asOf?asOf:node.notBefore;date<=node.reserveThrough&&date<=horizonEnd;date=nextDate(date)){
    if(!isWorkingDate(node.calendar,date))continue;
    const cap=capacity(person.staffId,date);if(cap===BigInt(0))continue;
-   const key=`${person.staffId}:${date}`,hours=cents(person.hoursPerDay);allReservations.set(key,(allReservations.get(key)??BigInt(0))+hours);reservations.push({staffId:person.staffId,date,hours:money(hours)});
+   const key=`${person.staffId}:${date}`,hours=cents(person.hoursPerDay);allReservations.set(key,(allReservations.get(key)??BigInt(0))+hours);
+   const own=ownReservations.get(key);if(own)own.hours+=hours;else ownReservations.set(key,{staffId:person.staffId,date,hours});
   }
  }
+ for(const own of ownReservations.values())reservations.push({...own,hours:money(own.hours)});
  let knownCost=BigInt(0),knownBilling=BigInt(0),costCovered=true,billingCovered=schedule.billingTreatment==="time_materials"&&(!baseline.content.billingDirection||["outgoing","received"].includes(baseline.content.billingDirection));
  for(const task of baseline.content.tasks)if(!schedule.nodes.some(n=>n.taskId===task.id&&n.kind==="work")){costCovered=false;billingCovered=false;warn("missing_task",`${task.title} has no remaining-work schedule.`);}
  const visited=new Set<string>();

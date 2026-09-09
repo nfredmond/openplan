@@ -20,6 +20,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- Forecast form edits cancel pending previews and remove results for earlier input values. New forecast format 2 sums this assignment's reservations by person and date, retaining task attribution in the saved schedule. This avoids a JSON-size failure in the measured 200-task, 100-person, 731-day case. Earlier results remain unchanged. Maximum adverse-warning and browser-delivery acceptance remain open.
+
 - [contract_completed_review_dates](openplan/supabase/migrations/20260928000001_contract_completed_review_dates.sql) retains actual outside-review dates and evidence separately from expected review periods and deliverable acceptance. Existing reviewed forecasts remain retained and become stale under the new calculation revision.
 
 - [contract_participant_and_accounting_work](openplan/supabase/migrations/20260926000001_contract_participant_and_accounting_work.sql) routes explicit consultant grants and unresolved accounting rows through My Work, and removes closed assignments from active work. [contract_participant_caller_view](openplan/supabase/migrations/20260927000001_contract_participant_caller_view.sql) keeps the consultant view under caller privileges with a narrow, caller-bound function.

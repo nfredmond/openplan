@@ -1,0 +1,47 @@
+[
+  {
+    "name": "harmless-comment",
+    "outcome": "survived",
+    "test": null
+  },
+  {
+    "name": "reservation-overwritten",
+    "outcome": "killed",
+    "test": "sums this assignment's shared daily reservations once"
+  },
+  {
+    "name": "old-reservation-format",
+    "outcome": "killed",
+    "test": "sums this assignment's shared daily reservations once"
+  },
+  {
+    "name": "capacity-date-omitted",
+    "outcome": "killed",
+    "test": "keeps dated capacity revisions"
+  },
+  {
+    "name": "overlap-treated-as-known",
+    "outcome": "killed",
+    "test": "keeps dated capacity revisions"
+  },
+  {
+    "name": "warning-date-omitted",
+    "outcome": "killed",
+    "test": "keeps dated capacity revisions"
+  },
+  {
+    "name": "form-edit-keeps-worker",
+    "outcome": "killed",
+    "test": "cancels pending work and clears completed previews when forecast form fields change"
+  },
+  {
+    "name": "form-edit-keeps-preview",
+    "outcome": "killed",
+    "test": "cancels pending work and clears completed previews when forecast form fields change"
+  },
+  {
+    "name": "group-drops-earlier-dates",
+    "outcome": "killed",
+    "test": "groups repeated warnings while retaining every date"
+  }
+]

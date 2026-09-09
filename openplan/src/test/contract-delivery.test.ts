@@ -4,6 +4,34 @@ import { forecastDelivery,isWorkingDate,nextDate,validateSchedule } from "@/lib/
 import { contractSnapshotTables,contractSnapshotWorkbook } from "@/lib/invoicing/contracts/export";
 import { deliveryFixture as fixture } from "./fixtures/contract-delivery";
 describe("reviewed contract delivery",()=>{
+ it("sums this assignment's shared daily reservations once while keeping outside hours separate",()=>{
+  const f=fixture(),secondTask=randomUUID(),secondNode=randomUUID();
+  f.state.baselines[0].content.tasks.push({...f.state.baselines[0].content.tasks[0],id:secondTask});
+  f.schedule.nodes.push({...f.schedule.nodes[0],id:secondNode,taskId:secondTask,staff:[{staffId:f.staff,hoursPerDay:"0.01"}]});
+  f.delivery.assignments!.push({taskId:secondTask,staffId:f.staff});
+  f.delivery.workUpdates.push({...f.delivery.workUpdates[0],id:randomUUID(),task_id:secondTask,content:{...f.delivery.workUpdates[0].content,taskId:secondTask}});
+  f.delivery.outsideReservations=[{staffId:f.staff,date:"2026-09-08",hours:"4.00"}];
+  const input=JSON.stringify(f.delivery),result=forecastDelivery(f.state,f.delivery,f.options);
+  expect(result.formatVersion).toBe(2);
+  expect(result.reservations.filter(r=>r.staffId===f.staff&&r.date==="2026-09-08")).toEqual([{staffId:f.staff,date:"2026-09-08",hours:"4.01"}]);
+  expect(new Set(result.reservations.map(r=>`${r.staffId}:${r.date}`)).size).toBe(result.reservations.length);
+  expect(result.warnings).toContainEqual(expect.objectContaining({code:"capacity_conflict",staffId:f.staff,date:"2026-09-08",message:expect.stringContaining("8.01")}));
+  expect(result.finish).toBeNull();expect(JSON.stringify(f.delivery)).toBe(input);
+ });
+ it("keeps dated capacity revisions, overlapping periods and changed inputs distinct across calculations",()=>{
+  const f=fixture(),cap=f.delivery.capacityVersions[0];
+  f.delivery.capacityVersions.push({...cap,id:randomUUID(),version:2,content:{...cap.content,hoursPerDay:"4.00"}});
+  f.delivery.outsideReservations=[{staffId:f.staff,date:"2026-09-08",hours:"0.01"},{staffId:f.staff,date:"2026-09-10",hours:"0.01"}];
+  const input=JSON.stringify(f.delivery),first=forecastDelivery(f.state,f.delivery,f.options);
+  expect(first.finish).toBeNull();expect(first.warnings.filter(w=>w.code==="capacity_conflict").map(w=>w.date)).toEqual(["2026-09-08","2026-09-10"]);
+  expect(first.reservations.some(r=>r.date==="2026-09-09")).toBe(false);
+  expect(JSON.stringify(f.delivery)).toBe(input);
+  f.delivery.capacityVersions[1].content.hoursPerDay="8.00";
+  expect(forecastDelivery(f.state,f.delivery,f.options).finish).toBe("2026-09-13");
+  f.delivery.capacityVersions.push({...cap,id:randomUUID(),version:3,content:{...cap.content,startsOn:"2026-09-10",endsOn:"2026-09-10"}});
+  const overlap=forecastDelivery(f.state,f.delivery,f.options);
+  expect(overlap.finish).toBeNull();expect(overlap.warnings.filter(w=>w.code==="missing_capacity").map(w=>w.date)).toEqual(["2026-09-10"]);
+ });
  it("exports versioned forecast dates, assumptions, capacity and exact reviewed input identities",()=>{
   const f=fixture(),reviewed=randomUUID();f.delivery.workUpdates[0].reviewed_update_id=reviewed;f.delivery.forecasts=[{id:randomUUID(),version:1,input_hash:f.delivery.inputHash,created_at:"2026-09-08T01:00:00Z",content:{inputs:{state:f.state},result:forecastDelivery(f.state,f.delivery,f.options),reviewEvidence:"Synthetic reviewed forecast",coverageEvidence:"Synthetic complete source coverage"}}];
   const report={id:randomUUID(),title:"Synthetic agency PM report",created_at:"2026-09-08T02:00:00Z",snapshot_hash:"c".repeat(64),snapshot:{...f.state,schemaVersion:3 as const,delivery:f.delivery,asOf:f.options.asOf,sourceCutoff:"2026-09-08T02:00:00Z",coverageComplete:true,coverageEvidence:"Synthetic",baselineId:f.state.baselines[0].id,originalBaselineId:f.state.baselines[0].id}};

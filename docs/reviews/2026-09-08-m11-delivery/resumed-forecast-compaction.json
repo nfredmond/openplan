@@ -1,0 +1,62 @@
+{
+  "synthetic": true,
+  "receipts": [
+    {
+      "source": "before",
+      "tasks": 40,
+      "staff": 20,
+      "days": 180,
+      "mainThreadHeartbeats": 70,
+      "elapsedMs": 558,
+      "heapUsed": 56675536,
+      "rss": 240771072,
+      "reservations": 144000,
+      "finish": "2026-12-16",
+      "remainingCost": "800.00",
+      "warnings": 41,
+      "serializedBytes": 12404674,
+      "resultSha256": "46d7aa936ba1a1d6212dd58b137ef87256f804d5d17bfd4dac36c3d6f7f1ea99",
+      "serializationError": null
+    },
+    {
+      "source": "current",
+      "tasks": 40,
+      "staff": 20,
+      "days": 180,
+      "mainThreadHeartbeats": 45,
+      "elapsedMs": 386,
+      "heapUsed": 26048056,
+      "rss": 251387904,
+      "reservations": 3600,
+      "finish": "2026-12-16",
+      "remainingCost": "800.00",
+      "warnings": 41,
+      "serializedBytes": 330274,
+      "resultSha256": "46d7aa936ba1a1d6212dd58b137ef87256f804d5d17bfd4dac36c3d6f7f1ea99",
+      "serializationError": null
+    },
+    {
+      "source": "current",
+      "tasks": 200,
+      "staff": 100,
+      "days": 731,
+      "mainThreadHeartbeats": 3552,
+      "elapsedMs": 35558,
+      "heapUsed": 156744472,
+      "rss": 502538240,
+      "reservations": 73100,
+      "finish": "2026-12-16",
+      "remainingCost": "20000.00",
+      "warnings": 202,
+      "serializedBytes": 6388564,
+      "resultSha256": "cdea1dbd582fd11013eeb9d2275677827d48ccbd61ad85a2ea25840cebc03bcd",
+      "serializationError": null
+    }
+  ],
+  "blindCategories": [
+    "Browser rendering and structured cloning",
+    "Adverse maximum-size warning count",
+    "Agency calendar validity",
+    "Human acceptance"
+  ]
+}
