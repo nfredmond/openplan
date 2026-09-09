@@ -20,6 +20,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- [contract_participant_closed_state](openplan/supabase/migrations/20260930000001_contract_participant_closed_state.sql) keeps closed consultant assignments and retained invoice downloads reachable, labels their state, and hides submission/review forms until a responsible manager reopens the assignment.
+
+- Forecast format 3 shares capacity warnings by person and date while retaining every affected task. Warning pages expand dates on demand; exports include exact scope-to-task mappings. The maximum missing-capacity Node-worker case now serializes without exhausting its 2 GB heap. Browser and durable-job maximum acceptance remain separate checks; older retained formats are unchanged.
+
 - [contract_source_visibility_receipts](openplan/supabase/migrations/20260929000001_contract_source_visibility_receipts.sql) refuses new historical reports when a source was first observed after the requested cutoff, including changes from transactions that started earlier and committed later. Open the management page and choose a fresh cutoff after new changes. First observation is conservative evidence, not an exact commit timestamp; older issued reports remain unchanged.
 
 - Forecast form edits cancel pending previews and remove results for earlier input values. New forecast format 2 sums this assignment's reservations by person and date, retaining task attribution in the saved schedule. This avoids a JSON-size failure in the measured 200-task, 100-person, 731-day case. Earlier results remain unchanged. Maximum adverse-warning and browser-delivery acceptance remain open.

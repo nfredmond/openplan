@@ -401,3 +401,8 @@ A mistaken edit command used repository-relative paths from the package root and
 changed no files; it was rerun in the intended root. A later focused test command
 named a nonexistent inventory test, so only the existing practice file ran; its
 two passes do not claim inventory verification.
+
+Full QA at 916798e9 exposed one missed release-document entry for migration 30.
+Its focused predecessor checks had not covered release ordering. The changelog
+now names the migration and format-3 warning behavior. This is a real failed
+gate and repair, not a claim that the initial full run passed.
