@@ -1,0 +1,34 @@
+{
+  "synthetic": true,
+  "container": "supabase_db_m11-contract-verification",
+  "fixtureEngagement": "44d03fed-f878-4b32-aa4f-b2c530972acd",
+  "cases": [
+    {
+      "case": "harmless-no-op",
+      "transactionStart": "2026-09-09 03:26:12.996849+00",
+      "cutoffBeforeCommit": "2026-09-09 03:26:13.037691+00",
+      "conflict": false,
+      "freshSnapshotAndExactReplay": true
+    },
+    {
+      "case": "late-mutable-title",
+      "transactionStart": "2026-09-09 03:26:13.55832+00",
+      "cutoffBeforeCommit": "2026-09-09 03:26:13.601458+00",
+      "conflict": true,
+      "freshSnapshotAndExactReplay": true
+    },
+    {
+      "case": "late-immutable-estimate",
+      "transactionStart": "2026-09-09 03:26:14.111543+00",
+      "cutoffBeforeCommit": "2026-09-09 03:26:14.159861+00",
+      "conflict": true,
+      "freshSnapshotAndExactReplay": true
+    }
+  ],
+  "privateReceipts": true,
+  "blindCategories": [
+    "First observation is a conservative upper bound, not exact commit time",
+    "One mutable and one immutable source interleaving, not every possible transaction schedule",
+    "Fixture is synthetic and remains only in this disposable database"
+  ]
+}

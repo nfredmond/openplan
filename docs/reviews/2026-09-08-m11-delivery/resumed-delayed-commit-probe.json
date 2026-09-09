@@ -1,0 +1,23 @@
+{
+  "synthetic": true,
+  "container": "supabase_db_m11-contract-verification",
+  "fixtureEngagement": "290806b7-a88c-4435-a15d-8e3a2cf2acbb",
+  "cases": [
+    {
+      "case": "harmless-no-op",
+      "transactionStart": "2026-09-09 03:18:41.7827+00",
+      "cutoffBeforeCommit": "2026-09-09 03:18:41.825555+00",
+      "cutoffConflicts": false,
+      "returnedTitle": "Synthetic planning contract"
+    },
+    {
+      "case": "changed-title",
+      "transactionStart": "2026-09-09 03:18:41.988425+00",
+      "cutoffBeforeCommit": "2026-09-09 03:18:42.031476+00",
+      "cutoffConflicts": false,
+      "returnedTitle": "Synthetic delayed-commit changed title"
+    }
+  ],
+  "finding": "Late-committed title is returned for a cutoff preceding commit without a cutoff conflict. Historical knowledge-time reconstruction is not established.",
+  "blindCategory": "One mutable engagement source; not every source or interleaving"
+}

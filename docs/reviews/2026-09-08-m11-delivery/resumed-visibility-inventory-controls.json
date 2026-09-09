@@ -1,0 +1,10 @@
+[
+  {
+    "control": "harmless-comment",
+    "exitCode": 0
+  },
+  {
+    "control": "omit-observation-time",
+    "exitCode": 1
+  }
+]

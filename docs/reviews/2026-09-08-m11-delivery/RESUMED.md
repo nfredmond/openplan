@@ -238,3 +238,51 @@ local acceptance scratch directory. Independent human finance acceptance is abse
 Exact-head GitHub CI for 4a8acb20 passed QA, shuffled order, live RLS, restore,
 worker, modeling and ops suites. This is separate from the still-served aa66ac63
 browser build and from the remaining journeys and cutoff/concurrency work.
+
+### Delayed-commit defect and conservative source visibility repair
+
+The requested history review led to a real two-session probe. An engagement title
+changed in a transaction started before the chosen cutoff and committed after it.
+The old reader returned the changed title without a cutoff conflict. The exact
+failed boundary is recorded in resumed-delayed-commit-probe.json. Its original
+title-to-itself control also changed updated_at through a trigger, so it was not a
+true harmless mutation. The repaired probe uses a zero-row UPDATE as its control.
+
+Migration 20260929000001 adds immutable first-observation receipts to the source
+journal and covers the mutable and immutable source tables read into management
+reports. Another transaction's source must have been observed by the cutoff;
+otherwise report issuance refuses it. First observation is an upper bound on
+visibility, not an invented commit time. Same-transaction inputs remain known to
+their issuing transaction and publish atomically with its report. Existing issued
+reports are untouched. Cutoffs preceding installation or first observation can be
+refused even when some records actually committed earlier; a fresh management read
+and later cutoff restore reporting. No global isolation change was made.
+
+Both explicitly disposable M11 stacks applied migration 29. The final function
+orders new observation inserts by source ID to keep concurrent insertion order
+consistent; that exact function was applied to both stacks after the initial
+migration. The two-session probe now refuses late mutable title and immutable
+estimate sources, permits fresh reports and exact retries, and denies direct
+authenticated access to the timing receipts. All 63 contract live tests pass.
+Removing the visibility comparison fails at the late title; disabling the estimate
+journal trigger fails at the late estimate; a harmless comment survives. Controls
+ran on the separate upgrade stack, and the function and trigger were restored.
+The column inventory passes, rejects omission of the observed_at classification,
+and survives a harmless comment. This is representative concurrency evidence, not
+an exhaustive proof of all possible schedules or source adapters.
+
+The workbook cell checker initially assumed a shared-string table and failed;
+the corrected inline-string-compatible check confirmed 49 sheets, no error cells
+and unchanged bytes. A quoted Vitest glob found no files; the corrected expanded
+invocation ran the 63 live checks above. Neither failed invocation is a pass.
+
+A separately owned headless installed Chrome, using the repository's Playwright
+recipe, successfully captures actual 390px screenshots. The CUA connector still
+times out on Page.captureScreenshot with emulation, even with explicit bounds;
+its emulation and viewport override were cleared. No blocked browser-internal
+page was retried. Five disposable synthetic test logins were rotated and saved in
+a private local scratch file to resume role journeys; no real account changed.
+The new production build is 5c7627b2, with full-SHA runtime stamping and a matching
+which-openplan receipt. An earlier missing stamp and then eight-character stamp
+were corrected; the identity helper compares the twelve-character health value.
+Browser role and remaining shared-capacity journeys continue on that build.

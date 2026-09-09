@@ -20,6 +20,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- [contract_source_visibility_receipts](openplan/supabase/migrations/20260929000001_contract_source_visibility_receipts.sql) refuses new historical reports when a source was first observed after the requested cutoff, including changes from transactions that started earlier and committed later. Open the management page and choose a fresh cutoff after new changes. First observation is conservative evidence, not an exact commit timestamp; older issued reports remain unchanged.
+
 - Forecast form edits cancel pending previews and remove results for earlier input values. New forecast format 2 sums this assignment's reservations by person and date, retaining task attribution in the saved schedule. This avoids a JSON-size failure in the measured 200-task, 100-person, 731-day case. Earlier results remain unchanged. Maximum adverse-warning and browser-delivery acceptance remain open.
 
 - [contract_completed_review_dates](openplan/supabase/migrations/20260928000001_contract_completed_review_dates.sql) retains actual outside-review dates and evidence separately from expected review periods and deliverable acceptance. Existing reviewed forecasts remain retained and become stale under the new calculation revision.

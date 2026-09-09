@@ -1,0 +1,24 @@
+{
+  "controls": [
+    {
+      "control": "harmless-comment",
+      "result": "survived",
+      "reason": null
+    },
+    {
+      "control": "ignore-observation-time",
+      "result": "rejected",
+      "reason": "late-mutable-title: source visibility guard expected True"
+    },
+    {
+      "control": "omit-immutable-source-journal",
+      "result": "rejected",
+      "reason": "late-immutable-estimate: source visibility guard expected True"
+    }
+  ],
+  "restored": true,
+  "blindCategories": [
+    "Representative source triggers, not exhaustive table mutations",
+    "No randomized concurrency schedule"
+  ]
+}
