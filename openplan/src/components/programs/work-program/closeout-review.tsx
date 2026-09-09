@@ -20,25 +20,25 @@ export function CloseoutReview({ reports, history }: { reports: PeriodReport[]; 
       <option value="">Select an issued management report</option>
       {reports.map(candidate => <option key={candidate.id} value={candidate.id}>{candidate.snapshot.period.name} · version {candidate.version} · through {candidate.snapshot.period.ends_on}</option>)}
     </SelectField>
-    {!history && <p role="status">Reimbursement history is unavailable or loading. Reload packet history above before reviewing claims.</p>}
+    {!history && <p role="status">Reimbursement history is unavailable or loading. Reload reimbursement history above before reviewing claims.</p>}
     {error && <p role="alert">Closeout review unavailable: {error}</p>}
     {review && <>
       <p className="text-sm">Baseline revision {review.baselineRevision} · {review.currency} · cycle {review.cycleStart} to {review.cycleEnd}. Report through {review.reportThrough}; sources saved through {review.sourceCutoff}.</p>
       {!review.fullCycleThrough && <p role="status">This report does not end at the cycle end. Final-period reconciliation remains incomplete.</p>}
       <p className="break-all text-xs">Retained baseline SHA256 {review.baselineHash}</p>
       <div className="grid gap-3 sm:grid-cols-2">
-        <p>Recorded incurred cost: {review.recorded.incurred} {review.currency}</p>
-        <p>Recorded commitments: {review.recorded.commitments} {review.currency}</p>
+        <p>Incurred cost in this report: {review.recorded.incurred} {review.currency}</p>
+        <p>Commitments in this report: {review.recorded.commitments} {review.currency}</p>
         <p>Outstanding commitments: Unknown</p><p>Refunds due: Unassessed</p>
         <p>Approved carryover: Unassessed</p><p>Excluded or unresolved source entries: {review.unresolvedEntries}</p>
       </div>
       <h3 className="font-semibold">Claims requiring reconciliation</h3>
-      {!review.claims.length && <p>No claims are recorded in the loaded history. Completeness of the agency claim register remains unassessed.</p>}
+      {!review.claims.length && <p>No claims appear in the loaded history. Completeness of the agency claim register remains unassessed.</p>}
       {review.claims.map(claim => <article key={claim.claimId} className="space-y-2 rounded-lg border p-3 text-sm">
         <h4 className="font-semibold break-words">{claim.title} · {claim.state}</h4>
         <p>Retained request: {claim.retainedRequest ?? "Unresolved for this baseline"} {claim.baselineMatches ? review.currency : ""}. Outstanding balance: Unknown.</p>
-        <p>{claim.reconciliation} Earlier packet versions are retained history and are not added to the current request.</p>
-        <p className="break-all text-xs">Packet {claim.packetId ?? "Not reviewed"} · SHA256 {claim.packetHash ?? "Unavailable"}</p>
+        <p>{claim.reconciliation} Earlier versions are retained history and are not added to the current request.</p>
+        <p className="break-all text-xs">Reviewed request {claim.packetId ?? "Not reviewed"} · SHA256 {claim.packetHash ?? "Unavailable"}</p>
         <details><summary>Review retained claim evidence</summary>{claim.evidence.map(event => <p key={event.id} className="mt-2 break-words">{event.sequence}. {event.kind} · {event.created_at} · {event.note}</p>)}</details>
       </article>)}
       <h3 className="font-semibold">Work to map into the next cycle</h3>
