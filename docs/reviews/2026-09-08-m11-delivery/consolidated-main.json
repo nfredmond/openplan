@@ -1,0 +1,140 @@
+{
+  "checkedAt": "2026-09-09T06:32:00.032750+00:00",
+  "main": "a6662abe12b4e05bac92601839e2db1869067ef3",
+  "remoteMain": "a6662abe12b4e05bac92601839e2db1869067ef3",
+  "merge": "a6662abe12b4e05bac92601839e2db1869067ef3",
+  "pr": 107,
+  "checksOnHead5850d63e": "all seven passed; QA 15m53s, shuffled 10m10s, live RLS 4m24s, restore 4m53s, worker 30s, ops 1m38s, modeling 1m12s",
+  "refs": [
+    {
+      "ref": "refs/heads/fix/owp-staff-workspace",
+      "sha": "dfdb9845974ad870db159a0576eedbb087a38150",
+      "containedInMain": true
+    },
+    {
+      "ref": "refs/heads/main",
+      "sha": "a6662abe12b4e05bac92601839e2db1869067ef3",
+      "containedInMain": true
+    },
+    {
+      "ref": "refs/heads/work/contract-reconciliation",
+      "sha": "76f019bfb80300434c23273db07c43610cbf1625",
+      "containedInMain": true
+    },
+    {
+      "ref": "refs/heads/work/engagement-first-workflow",
+      "sha": "860260baa7a84ceacd354d12006fa9d503721037",
+      "containedInMain": true
+    },
+    {
+      "ref": "refs/heads/work/m11-delivery-closeout",
+      "sha": "5850d63e99b755f5c2da2ca930ae67768a5f25d4",
+      "containedInMain": true
+    },
+    {
+      "ref": "refs/heads/work/owp-preparation",
+      "sha": "398d8f0df8178cf4c56eca21110c09e139c4d60d",
+      "containedInMain": true
+    },
+    {
+      "ref": "refs/heads/work/owp-reporting",
+      "sha": "859ecabf4d34b1a33f20255a69fa50fc847115b4",
+      "containedInMain": true
+    },
+    {
+      "ref": "refs/heads/work/owp-review",
+      "sha": "e204cdeeaffdf3ac8fca51c067c0c4e38e1a9814",
+      "containedInMain": true
+    },
+    {
+      "ref": "refs/remotes/origin/HEAD",
+      "sha": "a6662abe12b4e05bac92601839e2db1869067ef3",
+      "containedInMain": true
+    },
+    {
+      "ref": "refs/remotes/origin/fix/owp-staff-workspace",
+      "sha": "dfdb9845974ad870db159a0576eedbb087a38150",
+      "containedInMain": true
+    },
+    {
+      "ref": "refs/remotes/origin/main",
+      "sha": "a6662abe12b4e05bac92601839e2db1869067ef3",
+      "containedInMain": true
+    },
+    {
+      "ref": "refs/remotes/origin/work/contract-reconciliation",
+      "sha": "21f64907cb99253b14b18a5cb8fc4f5512447684",
+      "containedInMain": true
+    },
+    {
+      "ref": "refs/remotes/origin/work/engagement-first-workflow",
+      "sha": "860260baa7a84ceacd354d12006fa9d503721037",
+      "containedInMain": true
+    },
+    {
+      "ref": "refs/remotes/origin/work/m11-delivery-closeout",
+      "sha": "5850d63e99b755f5c2da2ca930ae67768a5f25d4",
+      "containedInMain": true
+    },
+    {
+      "ref": "refs/remotes/origin/work/owp-preparation",
+      "sha": "398d8f0df8178cf4c56eca21110c09e139c4d60d",
+      "containedInMain": true
+    },
+    {
+      "ref": "refs/remotes/origin/work/owp-reporting",
+      "sha": "859ecabf4d34b1a33f20255a69fa50fc847115b4",
+      "containedInMain": true
+    },
+    {
+      "ref": "refs/remotes/origin/work/owp-review",
+      "sha": "e204cdeeaffdf3ac8fca51c067c0c4e38e1a9814",
+      "containedInMain": true
+    }
+  ],
+  "worktrees": [
+    {
+      "path": "/home/nathaniel/code/openplan",
+      "head": "a6662abe12b4e05bac92601839e2db1869067ef3",
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/contract-reconciliation-2026-09-07",
+      "head": "76f019bfb80300434c23273db07c43610cbf1625",
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/engagement-first-workflow-2026-09-06",
+      "head": "860260baa7a84ceacd354d12006fa9d503721037",
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/m11-delivery-closeout-2026-09-08",
+      "head": "5850d63e99b755f5c2da2ca930ae67768a5f25d4",
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/owp-preparation-2026-09-06",
+      "head": "398d8f0df8178cf4c56eca21110c09e139c4d60d",
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/owp-reporting-2026-09-07",
+      "head": "dfdb9845974ad870db159a0576eedbb087a38150",
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/owp-review-2026-09-07",
+      "head": "e204cdeeaffdf3ac8fca51c067c0c4e38e1a9814",
+      "status": ""
+    }
+  ],
+  "openPullRequests": [],
+  "stashes": "",
+  "limits": [
+    "Never-saved or already garbage-collected work cannot be proven recoverable",
+    "Old worktrees and branches retained; every recorded head is an ancestor of main",
+    "Demo checkout clean at 76f019bf; no separate last-week work found",
+    "Full previous-agent transcript review remains in progress; human M11 acceptance remains open"
+  ]
+}

@@ -1,3 +1,5 @@
+> Current continuation, September 9 UTC: PR #107 is merged to main at `a6662abe`. Every recorded local/remote branch head is contained in main; all seven worktrees were clean. Continue the full previous-agent audit from exact-reference chunk 64 and recovered image 32, using HISTORY_REVIEW.md and local reading ledgers. RESUMED.md records completed synthetic engineering acceptance and its limits. Inspect post-merge CI, populated-upgrade CI and the nightly browser run. Human agency PM observation, independent human finance acceptance and the unanswered reminder CHECK-replacement permission remain open. The owned :3247 server still serves the verified application build `81da52b2` from the M11 worktree; later commits contain docs/worker fixture changes. Do not infer its identity from main HEAD. The original handoff follows as historical context.
+
 # Continue M11 after refreshing browser tooling
 
 September 8 evening continuation: read [RESUMED.md](RESUMED.md) first for the

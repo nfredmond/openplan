@@ -1,10 +1,6 @@
 # M11 handoff history reconciliation, September 8 evening
 
-Status: all prior user/assistant messages and both handoff/implementation notes read.
-Relevant tool verification continues. This is not a claim that every bulk tool dump
-or recovered screenshot has been inspected. The user was asked whether that much
-broader line-by-line dump review is desired; no answer has arrived yet. Preserve
-this distinction and continue the authorized implementation and consolidation.
+Status: the full available transcript and all recovered images are in scope, as the user explicitly requested. All prior user/assistant messages and both handoff/implementation notes are read. Bulk tool-output and image reading remains in progress; the latest dated section below gives exact coverage. The earlier optional question about bulk review did not narrow the user's instruction. Main consolidation is now complete for every recorded branch/worktree head; the historical audit remains open.
 
 ## Source and reading record
 
@@ -193,3 +189,18 @@ kept distinct from the recovered full output. Image review remains unfinished.
 Exact-reference chunk 11 was re-read separately after a combined output truncation.
 It retains the original master-authorization migration and binding M11 completion
 criteria; chunks 1–11 are now read, 393 remain. No full-history completion is claimed.
+
+
+## Resumed full-history reading, September 9 UTC
+
+The user explicitly requested the entire available conversation. The earlier optional question about bulk tool-output review does not narrow that instruction and is not an approval gate. All available bulk text and recovered images remain in scope. The original chronological records and exact-duplicate references remain local; credential values are withheld from reading copies. From reference chunk 31, repetitive per-line provenance headers are omitted only from the display; the original headers remain in every chunk and ledger, and all substantive text is displayed.
+
+Reference chunks 1–63 have been read in full; 341 remain. Historical images 1–31 have been visually inspected; 271 remain. No entire-history completion is claimed. These totals supersede earlier intermediate totals above. The original ledger still records chunks 1–25, 88 and 721. Available but unread material is not unavailable history.
+
+The reading filter had its own failure: it missed historical local-stack S3/JWT credential fields in chunk 12, exposing them in tool output again. This was reported promptly and the value filter extended before subsequent reading. Neither the credentials nor the raw transcript/captures were put into repository notes. The prior reader also over-redacted some credential-named type/expression text; those displayed redactions must not be described as exact unredacted source reading. The original transcript is unchanged.
+
+Recovered failures and repairs: initial master/received-invoice SQL ambiguity; the startup guard's refusal of an omitted disposable-stack selector; Turbopack's linked-dependency failure; an unescaped JSX apostrophe; malformed generated route types; legacy-period SQL's reserved `authorization` name and duplicated `terms` declaration; a date mutation rejected by the fee ceiling instead of the date guard; a stale-review mutation initially blocked by its transition guard; and a CSV mutation runner that expected the application's error string rather than the assertion's actual failure text. Later chunks show the targeted fixes and renewed checks. Current resumed full QA, rebuilt browser journeys, and 239 isolated live tests provide separate current evidence; historical green statements alone do not.
+
+Images corroborate ordinary signup, project creation, contract navigation, master proposal/approval and both task-order links. They also show the earlier invoice composer lacked a currency field and displayed USD; the resumed explicit-currency fix and unknown-currency preservation are documented in RESUMED.md. The synthetic consultant counterparty was left with the client form's public-agency default. Treat that as a fixture classification limitation, not evidence of a private-firm classification journey. No additional user approval or reduction of the four-increment scope has been recovered from these chunks.
+
+Main integration: PR #107 merged without squash at `a6662abe12b4e05bac92601839e2db1869067ef3` after all seven checks passed on `5850d63e`. Main was fast-forwarded to the same commit. `consolidated-main.json` records every local/remote branch head contained in main, seven clean worktrees, no stashes and no remaining open PRs. No branch, worktree or old Git object was deleted. Post-merge CI and the nightly journey run remain separate checks to inspect.
