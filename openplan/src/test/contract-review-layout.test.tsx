@@ -67,3 +67,12 @@ it("pages shared warnings and expands their exact dates and affected tasks on de
  for(const node of result.nodes)expect(screen.getByText(node.title)).toBeInTheDocument();
  expect(screen.getByText("Staff record: SYNTHETIC-STAFF-50")).toBeInTheDocument();
 });
+
+it("clears a returned-invoice form when recovered submission changes the retained version",()=>{
+ const f=deliveryFixture();f.state.role="consultant";f.state.openForWork=true;
+ const returned={id:"returned-version",invoice_id:"invoice",version:2,state:"returned" as const,created_at:"2026-09-08",content:{number:"SYNTHETIC-RECOVER",date:"2026-09-08",currency:"USD",total:"25.00",fileId:"synthetic-file",lines:[]},review_note:"Synthetic return"};f.state.receivedInvoices=[returned];
+ const send=vi.fn(),view=render(<ReceivedInvoicePanel state={f.state} send={send} busy={false}/>);
+ fireEvent.click(screen.getByRole("button",{name:"Correct returned invoice"}));expect(screen.getByRole("heading",{name:"Correct returned invoice SYNTHETIC-RECOVER"})).toBeInTheDocument();
+ view.rerender(<ReceivedInvoicePanel state={{...f.state,receivedInvoices:[returned,{...returned,id:"submitted-version",version:3,state:"submitted"}]}} send={send} busy={false}/>);
+ expect(screen.queryByRole("heading",{name:"Correct returned invoice SYNTHETIC-RECOVER"})).toBeNull();expect(screen.getByRole("heading",{name:"Submit a received invoice"})).toBeInTheDocument();expect(screen.getByLabelText("Received invoice number")).toHaveValue("");
+});

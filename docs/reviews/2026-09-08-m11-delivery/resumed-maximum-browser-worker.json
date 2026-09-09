@@ -1,0 +1,15 @@
+{
+  "build": "5218ceb8",
+  "worker": "http://m11.localhost:3247/_next/static/chunks/8615.ddd2c1ce6ddea44f.js",
+  "synthetic": true,
+  "elapsedMs": 31725.300000000745,
+  "beats": 3129,
+  "maxGapMs": 366.6000000005588,
+  "warnings": 73302,
+  "missing": 73100,
+  "nodes": 200,
+  "unknownFinishes": 200,
+  "format": 3,
+  "bytes": 23411056,
+  "scope": "Actual compiled production worker with synthetic maximum input, browser structured clone and timer measurement. No durable RPC acceptance."
+}

@@ -1,0 +1,16 @@
+{
+  "controls": [
+    {
+      "name": "harmless",
+      "exit": 0,
+      "expectedPass": true
+    },
+    {
+      "name": "stale-returned-selection",
+      "exit": 1,
+      "expectedPass": false
+    }
+  ],
+  "restored": true,
+  "blindCategory": "Component rerender after a recovered save; browser path separately exercised"
+}

@@ -406,3 +406,67 @@ Full QA at 916798e9 exposed one missed release-document entry for migration 30.
 Its focused predecessor checks had not covered release ordering. The changelog
 now names the migration and format-3 warning behavior. This is a real failed
 gate and repair, not a claim that the initial full run passed.
+
+### Consultant-owned correction and committed-response interruption
+
+On build 5218ceb8, the owner explicitly granted synthetic consultant access to B.
+The consultant entered SYNTH-CONSULTANT-B-01 with an intentionally incorrect
+USD 27 source CSV. The owner returned exact version 1 with a correction reason.
+The consultant reached the returned invoice through My Work, corrected it to
+USD 25 at 390px and uploaded the corrected CSV. The browser proxy waited for
+the server's 200 response/version 3, then deliberately aborted that response.
+The retained browser request replayed successfully and local pending state cleared.
+The actual downloaded source is retained locally for byte comparison. This is
+post-commit received-invoice recovery, separate from queued-closeout recovery.
+
+Recovery revealed that the child form still held the old returned version after
+the parent successfully reloaded. Selection is now derived from the latest
+returned version; a submitted or superseded version cannot keep a correction
+form open. Focused controls and rebuilt-browser verification remain pending.
+
+Fresh consultant console: two 404 responses for /api/assistant/context on the
+scoped contract page, plus the deliberate net::ERR_FAILED interruption. The
+earlier reused session had one unattributed 401 during restart; it was not
+reproduced in this fresh login. Do not report an entirely empty console.
+Browser automation also corrected case-sensitive Sign out selectors, a mistaken
+link selector for a details caption, and a reload issued before navigation
+completed. Those selector/time-order failures are not successful journeys.
+
+The consultant correction has exactly three invoice revisions: submitted 27,
+returned 27, submitted 25. All retain the consultant's submitted_by identity.
+The corrected download matches its uploaded CSV SHA-256
+07490852b9667b2247a86a9ddc966a0bdb8c4faceecd9b04aae17d233eb9fea5.
+The replay produced no fourth invoice version. An initial verification query
+wrongly named a nonexistent request_id column; the corrected version/author/file
+query supplied the evidence. The stale-form test now distinguishes an unchanged
+comment from retaining a superseded returned selection; browser rebuild pending.
+
+Maximum browser calculation using the actual production worker completes in
+31.7 seconds, preserves 200 unknown finishes and 73,100 dated capacity warnings,
+and serializes 23,411,056 bytes. A 10 ms page timer fired 3,129 times, with a largest
+gap of 366.6 ms; this is not an instant/no-pause claim. The first probe incorrectly
+launched webpack's compiled classic worker as a module and failed importScripts;
+it was corrected to the bundle's actual loading mode. The normal app preview
+had already worked.
+
+A separate intercepted-read stress fixture feeds that result into the actual
+forecast page, marked Synthetic maximum stress fixture — unissued. This writes
+no business record. It renders 302 explanation groups in pages of 50. Keyboard
+Enter reaches groups 201–250 and expands all 731 dates and 200 task references,
+including September 7, 2028. At 390px the warning and staff reference wrap; the
+date table scrolls internally. Cancellation and form-date changes stop a maximum
+preview, leave no working result, and preserve the separate synthetic reviewed
+fixture. One long calculate button extended 12 pixels past the main content box;
+its text now wraps. Rebuilt verification of that style change remains pending.
+
+One earlier 390px screenshot visibly clipped during a shell resize transition,
+despite a green document-overflow check. It is superseded by the settled closed
+status image, which was visually read. The desktop returned-invoice entry and
+settled maximum warning image were also inspected. Do not reuse the transitional
+capture as evidence.
+
+NEW OPEN LIMIT: source inspection shows the durable delivery RPC still limits
+normalized requests to 8 MB. The maximum warning result alone is 23.4 MB; Node
+and browser success do not establish retained maximum forecasts. This limit
+needs a measured persistence/transport repair and explicit over-limit behavior
+before claiming maximum durable acceptance. No limit has been raised yet.

@@ -14,9 +14,10 @@ export function ContractAccessPanel({state,send,busy}:{state:ContractState;send:
 }
 
 export function ReceivedInvoicePanel({state,send,busy}:{state:ContractState;send:CommandSender;busy:boolean}) {
- const [correcting,setCorrecting]=useState<ReceivedInvoice>(),[error,setError]=useState("");
+ const [selectedCorrection,setCorrecting]=useState<ReceivedInvoice>(),[error,setError]=useState("");
  const open=state.openForWork===true;
  const versions=state.receivedInvoices??[],latest=versions.filter(i=>!versions.some(n=>n.invoice_id===i.invoice_id&&n.version>i.version));
+ const correcting=latest.find(invoice=>invoice.id===selectedCorrection?.id&&invoice.state==="returned");
  const manager=["owner","admin","pm","finance"].includes(state.role),finance=["owner","admin","finance"].includes(state.role);
  const sources=currentActuals(state.actuals).filter(v=>v.command.status==="approved"&&["labor","expense","commitment"].includes(v.command.category));
  async function submit(form:HTMLFormElement){

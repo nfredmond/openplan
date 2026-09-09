@@ -1,0 +1,38 @@
+{
+  "build": "5218ceb8",
+  "synthetic": true,
+  "lostCorrection": {
+    "status": 200,
+    "body": {
+      "state": "submitted",
+      "version": 3,
+      "invoiceId": "8e075a28-cf67-496f-8e94-adbeb483d689"
+    },
+    "requestId": "e4b41c4a-b81a-4156-8921-429795636633"
+  },
+  "console": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    }
+  ],
+  "failures": [
+    {
+      "path": "/api/assistant/context",
+      "status": 404
+    },
+    {
+      "path": "/api/assistant/context",
+      "status": 404
+    }
+  ],
+  "scope": "Actual correction was committed, its HTTP response deliberately aborted, then replayed from retained browser request; not closeout queue retry."
+}
