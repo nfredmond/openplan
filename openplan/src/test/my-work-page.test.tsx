@@ -37,6 +37,8 @@ const createClientMock = vi.fn(async () => RLS_CLIENT);
 const createServiceRoleClientMock = vi.fn(() => SERVICE_CLIENT);
 const loadWorkspaceContextMock = vi.fn();
 const loadRosterMock = vi.fn();
+const loadParticipantWorkMock = vi.fn();
+vi.mock("@/lib/invoicing/contracts/participant-work",()=>({loadParticipantWork:(...args:unknown[])=>loadParticipantWorkMock(...args)}));
 const loadMyWorkMock = vi.fn();
 const loadOtherWorkspaceDecisionPackageWorkMock = vi.fn();
 
@@ -83,6 +85,7 @@ function emptyResult(overrides: Record<string, unknown> = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  loadParticipantWorkMock.mockResolvedValue({rows:[],complete:true});
   createClientMock.mockResolvedValue(RLS_CLIENT);
   createServiceRoleClientMock.mockReturnValue(SERVICE_CLIENT);
   loadWorkspaceContextMock.mockResolvedValue({
@@ -240,4 +243,15 @@ describe("/my-work page wiring", () => {
     await expect(renderPage()).rejects.toThrow("redirect:/sign-in");
     expect(loadMyWorkMock).not.toHaveBeenCalled();
   });
+});
+
+describe("external consultant My Work entry",()=>{
+ it("loads explicitly shared assignments with the caller client before requiring workspace membership",async()=>{
+  loadWorkspaceContextMock.mockResolvedValue({membership:null,options:[]});const assignments={rows:[{id:"contract-a",title:"Synthetic external assignment",returned_invoices:1}],complete:true};loadParticipantWorkMock.mockResolvedValue(assignments);
+  const page=await renderPage();expect(loadParticipantWorkMock).toHaveBeenCalledWith(RLS_CLIENT);expect(page.props).toMatchObject({work:assignments,standalone:true});expect(loadMyWorkMock).not.toHaveBeenCalled();expect(loadRosterMock).not.toHaveBeenCalled();
+ });
+ it("retains scoped consultant work alongside a member queue and preserves read failure",async()=>{
+  const assignments={rows:[],complete:false};loadParticipantWorkMock.mockResolvedValue(assignments);const page=await renderPage();expect(page.type).toBe(MyWorkBoard);expect(page.props.participantWork).toEqual(assignments);
+  loadWorkspaceContextMock.mockResolvedValue({membership:null,options:[]});const external=await renderPage();expect(external.props.work).toEqual(assignments);expect(external.props.standalone).toBe(true);
+ });
 });

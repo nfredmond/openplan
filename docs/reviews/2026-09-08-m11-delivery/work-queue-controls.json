@@ -1,0 +1,137 @@
+[
+  {
+    "name": "harmless-queue-comment",
+    "outcome": "survived",
+    "reason": null
+  },
+  {
+    "name": "hide-unknown-participant-work",
+    "outcome": "killed",
+    "reason": "renders the scoped invoice entry"
+  },
+  {
+    "name": "omit-forecast-parent-link",
+    "outcome": "killed",
+    "reason": "retained forecast warnings link"
+  },
+  {
+    "name": "skip-external-entry",
+    "outcome": "killed",
+    "reason": "loads explicitly shared assignments"
+  },
+  {
+    "name": "skip-member-external-entry",
+    "outcome": "killed",
+    "reason": "retains scoped consultant work"
+  },
+  {
+    "name": "participant-service-client",
+    "outcome": "killed",
+    "reason": "loads explicitly shared assignments"
+  },
+  {
+    "name": "participant-partial-list",
+    "outcome": "killed",
+    "reason": "reads every capped participant page"
+  },
+  {
+    "name": "participant-no-order",
+    "outcome": "killed",
+    "reason": "reads every capped participant page"
+  },
+  {
+    "name": "participant-destination",
+    "outcome": "killed",
+    "reason": "renders the scoped invoice entry"
+  },
+  {
+    "name": "ignore-contract-read-failure",
+    "outcome": "killed",
+    "reason": "does not claim an empty contract review section"
+  },
+  {
+    "name": "hide-remaining-review",
+    "outcome": "killed",
+    "reason": "routes submitted remaining-work reviews"
+  },
+  {
+    "name": "misroute-accounting-review",
+    "outcome": "killed",
+    "reason": "reads scoped retained versions"
+  },
+  {
+    "name": "inactive-source-read",
+    "outcome": "killed",
+    "reason": "reads active contract tasks"
+  },
+  {
+    "name": "omit-accounting-navigation",
+    "outcome": "killed",
+    "reason": "opens the accounting reconciliation form"
+  },
+  {
+    "name": "consultant-dead-end",
+    "outcome": "killed",
+    "reason": "gives external consultants"
+  },
+  {
+    "name": "harmless-queue-sql",
+    "outcome": "survived",
+    "reason": null
+  },
+  {
+    "name": "unscoped-participant-sql",
+    "outcome": "killed",
+    "reason": "Participant grant or own return count incorrect"
+  },
+  {
+    "name": "other-participant-return",
+    "outcome": "killed",
+    "reason": "Participant grant or own return count incorrect"
+  },
+  {
+    "name": "old-return-resurfaces",
+    "outcome": "killed",
+    "reason": "Old returned invoice resurfaced"
+  },
+  {
+    "name": "private-accounting-status",
+    "outcome": "killed",
+    "reason": "PM learned private accounting source state"
+  },
+  {
+    "name": "old-accounting-review",
+    "outcome": "killed",
+    "reason": "Old unresolved accounting row resurfaced"
+  },
+  {
+    "name": "ignore-open-discrepancy",
+    "outcome": "killed",
+    "reason": "Reopened source discrepancy missing"
+  },
+  {
+    "name": "ignore-new-source-version",
+    "outcome": "killed",
+    "reason": "Changed reconciled source missing from queue"
+  },
+  {
+    "name": "show-inactive-assignment",
+    "outcome": "killed",
+    "reason": "Inactive staff assignment shown"
+  },
+  {
+    "name": "show-closed-assignment",
+    "outcome": "killed",
+    "reason": "Closed staff assignment remained active"
+  },
+  {
+    "name": "old-closeout-controls-active",
+    "outcome": "killed",
+    "reason": "Reopened staff assignment not restored"
+  },
+  {
+    "name": "foreign-open-status",
+    "outcome": "killed",
+    "reason": "Foreign assignment status leaked"
+  }
+]

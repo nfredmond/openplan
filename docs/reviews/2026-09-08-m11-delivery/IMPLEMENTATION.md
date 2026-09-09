@@ -308,3 +308,73 @@ survivor and six targeted failures. These controls do not prove any particular h
 allocation or external posting. An explicit hold-allocation adapter is not present;
 currently due remains unassessed until documented events resolve that uncertainty.
 Browser verification of the new labels follows the rebuilt app.
+
+### Reachable participant/accounting work and closed assignments
+
+External consultants previously reached a workspace-membership dead end in My Work.
+The new caller-filtered participant view exposes only explicitly shared contract
+identity and current own returned-invoice counts. My Work loads it with the caller's
+RLS client before its membership branch, and includes it alongside an existing member
+queue. No project-wide service-role queue read was added. A consultant's contract page
+returns to My Work and omits inaccessible project/register destinations.
+
+Finance now sees unreviewed, unresolved and stale accounting-import comparisons in
+its existing contract decision queue. Exact current review/source versions govern the
+entry; a prior unresolved review does not resurrect after reconciliation. Remaining-work
+reviews join the review section. Failed contract reads now suppress the empty-review
+claim; the previous block-source list had omitted contract sources. Closing removes
+staff assignments from the active queue without rewriting assignments; reopening
+restores them. Narrow caller-bound predicates protect these view joins. The initial
+view implementation failed live authenticated reads because it called internal-only
+functions; corrected predicates preserve those internal function restrictions.
+
+The full contract-page warning journey also lacked affected-input links although its
+isolated warning component test passed. ForecastTable now requires the contract ID;
+its forecast and response parents pass it. A full component test exercises the link.
+
+Validation: 45 focused tests pass in shuffled order with CI seed 457120; TypeScript
+and targeted lint pass; 14 live queue/closeout tests pass on the named populated upgrade
+stack. Migration 20260926000001 preserves the same baseline, two actual versions and
+physical-time hash (`populated-queue-upgrade.json`). `work-queue-controls.json` retains
+2 harmless survivors and 25 targeted failures. Its initial partial-read control
+survived because a failed page discards rows inside readEveryPage, whereas its page
+ceiling can return a prefix. The test now exercises that ceiling and catches publishing
+the prefix. Controls do not establish visual reachability or notification delivery.
+
+CI b81ada60 passed QA, RLS and restore but failed shuffled tests: the new cash test was
+outside the describe block containing its setup. Running that test alone reproduced
+its uninitialized query mock; moving it into the setup scope fixes both isolation and
+the exact failed seed. A full new CI result remains required.
+
+### Browser interruption and retained revision 3
+
+On the identified b81ada607d86 build, forecast 6 retained zero remaining production
+cost and 625 actual-plus-remaining cost. Its scheduled external-review dates remain
+October 2-3, separate from September 1-8 reported production actuals and the retained
+September 8 deliverable acceptance; actual outside-review dates are not yet an editable
+schedule input. Revision 3 (`ad939fa2-30a0-4e7b-b878-507e6f409cc0`) closed with package
+format 3, 625 incurred, 175 underspend, zero balance and the unchanged open records
+obligation. The 390px form carried the obligation and its Enter key submitted the
+revision. `revised-closeout-custody.json` proves revision 1's original hash and the
+obligation were retained. This is synthetic engineering evidence only.
+
+390px DOM width was 390 with no page overflow, but screenshot commands timed out.
+A subsequent UI download call timed out and reset the browser kernel. Fresh setup
+then repeatedly failed because the trusted browser worker imports the removed path
+`browser/26.814.41957/scripts/browser-service.mjs`; installed plugin files are now
+under `browser/26.901.51231`. One explicit kernel reset did not repair it. No plugin,
+native-host, browser-profile or browser-service files were modified. Browser acceptance
+needs a refreshed plugin/runtime connection. The owned tab is 1406501167, last at task
+A Closeout, synthetic finance signed in; its viewport remains emulated 390x844 because
+control failed before it could be reset. Do not attach old stalled tabs 1406500898/0901.
+New package UI downloads did not complete. Main and the demo were not changed.
+
+An independent **unissued local renderer check** used the actual retained synthetic
+state, without creating a snapshot or simulating a UI download. Its format 7 PDF and
+XLSX were rendered, and the early invoice/closeout tables visibly show 24 payments,
+zero balance, 625 incurred, 175 underspend and one obligation. The PDF is 133 pages
+including history; the spreadsheet was inspected through LibreOffice's read-only PDF
+render because the artifact runtime loader is unavailable. These temporary renders
+are not issued reports or browser-delivery evidence. Full source-receipt, accounting
+handoff and long-cell inspection remains open, including preservation of numeric-looking
+external identifiers by the existing generic workbook conversion.

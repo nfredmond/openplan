@@ -1,0 +1,60 @@
+{
+  "synthetic": true,
+  "servedCommit": "b81ada607d86073acadc84b3498af7f5b0793f09",
+  "revisions": [
+    {
+      "id": "b40809c2-826d-429d-9dcf-eaf87c7513da",
+      "state": "closed",
+      "version": 1,
+      "incurred": "625.00",
+      "underspend": "175.00",
+      "obligations": [
+        {
+          "id": "d4744a94-4fb9-4499-b684-09c0aa59543a",
+          "basis": "Corrected original report appendix explicitly retains this records obligation. Engineering condition only; no universal legal retention period or additional production cost is asserted.",
+          "dueOn": "2026-10-15",
+          "owner": "Synthetic agency records custodian",
+          "title": "Retain source evidence and answer the synthetic records audit",
+          "status": "open"
+        }
+      ],
+      "previous_id": null,
+      "content_hash": "4ee477076ff7863ed4e987fd624692de13d50f50422d0ca4d38db37ac960cb67",
+      "formatVersion": 2
+    },
+    {
+      "id": "6cf0edf2-20fc-4ab8-a4d6-b0c596823a35",
+      "state": "reopened",
+      "version": 2,
+      "incurred": null,
+      "underspend": null,
+      "obligations": null,
+      "previous_id": "b40809c2-826d-429d-9dcf-eaf87c7513da",
+      "content_hash": "99ba35ebcfea9e27d49bfee0e2c4311bde605caaf48295e8a4d398e4214a860e",
+      "formatVersion": null
+    },
+    {
+      "id": "ad939fa2-30a0-4e7b-b878-507e6f409cc0",
+      "state": "closed",
+      "version": 3,
+      "incurred": "625.00",
+      "underspend": "175.00",
+      "obligations": [
+        {
+          "id": "d4744a94-4fb9-4499-b684-09c0aa59543a",
+          "basis": "Corrected original report appendix explicitly retains this records obligation. Engineering condition only; no universal legal retention period or additional production cost is asserted.",
+          "dueOn": "2026-10-15",
+          "owner": "Synthetic agency records custodian",
+          "title": "Retain source evidence and answer the synthetic records audit",
+          "status": "open"
+        }
+      ],
+      "previous_id": "6cf0edf2-20fc-4ab8-a4d6-b0c596823a35",
+      "content_hash": "2bf6c1ab0e6734da23230bf20abeaf28d4c3d0fed0897725cd790611cdb9d6c6",
+      "formatVersion": 3
+    }
+  ],
+  "oldHashUnchanged": true,
+  "openObligationUnchanged": true,
+  "downloadDelivery": "unverified: browser runtime lost removed plugin service module after a timeout"
+}

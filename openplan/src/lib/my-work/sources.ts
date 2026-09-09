@@ -765,27 +765,27 @@ const landUsePlanActionsSource: MyWorkSource = {
 };
 
 const contractWorkReviewsSource: MyWorkSource = {
- staticFilters:[],id:"contract_work_reviews",label:"Remaining-work reviews",readLabel:"submitted contract remaining-work updates",block:"undated",table:"contract_delivery_my_work",
+ staticFilters:[],id:"contract_work_reviews",label:"Remaining-work reviews",readLabel:"submitted contract remaining-work updates",block:"needs_review",table:"contract_delivery_my_work",
  select:"id, workspace_id, engagement_id, task_id, project_id, title, assignee_user_id, reported_on",workspaceFilterColumn:"workspace_id",assigneeColumn:"assignee_user_id",orderColumn:"reported_on",orderAscending:true,
- toItems:rows=>rows.map(row=>({sourceId:"contract_work_reviews",block:"undated",id:String(row.id),title:`Review remaining work: ${asString(row.title)??"Contract task"}`,projectId:asString(row.project_id),projectName:null,dueOn:null,isOverdue:false,assigneeUserId:asString(row.assignee_user_id),ownerLabel:null,badge:{label:"PM review",tone:"warning"},detail:`Staff update as of ${asString(row.reported_on)??"unrecorded"}`,href:`/invoicing/engagements/${row.engagement_id}?tab=remaining#work-update-${row.id}`,dedupKey:null} satisfies MyWorkItem)),
+ toItems:rows=>rows.map(row=>({sourceId:"contract_work_reviews",block:"needs_review",id:String(row.id),title:`Review remaining work: ${asString(row.title)??"Contract task"}`,projectId:asString(row.project_id),projectName:null,dueOn:null,isOverdue:false,assigneeUserId:asString(row.assignee_user_id),ownerLabel:null,badge:{label:"PM review",tone:"warning"},detail:`Staff update as of ${asString(row.reported_on)??"unrecorded"}`,href:`/invoicing/engagements/${row.engagement_id}?tab=remaining#work-update-${row.id}`,dedupKey:null} satisfies MyWorkItem)),
 };
 
 const contractPendingReviewsSource: MyWorkSource = {
  id:"contract_pending_reviews",label:"Contract decisions",readLabel:"pending contract approvals and invoice reviews",block:"needs_review",table:"contract_pending_my_work",
  select:"id, workspace_id, engagement_id, project_id, title, review_kind, reported_on",workspaceFilterColumn:"workspace_id",assigneeColumn:null,orderColumn:"reported_on",orderAscending:true,staticFilters:[],
  toItems:rows=>rows.map(row=>{
-  const kind=asString(row.review_kind),label=kind==="baseline"?"Approve contract baseline":kind==="master"?"Approve master terms":kind==="received_finance"?"Approve received invoice":kind==="received_review"?"Review received invoice":"Review proposed response";
-  const tab=kind==="baseline"?"baselines":kind==="master"?"master-terms":kind?.startsWith("received")?"received":"remaining&section=Responses";
+  const kind=asString(row.review_kind),label=kind==="baseline"?"Approve contract baseline":kind==="master"?"Approve master terms":kind==="received_finance"?"Approve received invoice":kind==="received_review"?"Review received invoice":kind==="accounting"?"Reconcile accounting import":"Review proposed response";
+  const tab=kind==="baseline"?"baselines":kind==="master"?"master-terms":kind?.startsWith("received")?"received":kind==="accounting"?"accounting":"remaining&section=Responses";
   return {sourceId:"contract_pending_reviews",block:"needs_review",id:`${kind}:${row.id}`,title:`${label}: ${asString(row.title)??"Planning assignment"}`,projectId:asString(row.project_id),projectName:null,dueOn:null,isOverdue:false,assigneeUserId:null,ownerLabel:null,badge:{label:"Contract decision",tone:"warning"},detail:kind==="response"?"Check the compared inputs before applying; changed inputs require a new comparison.":"Review the exact retained version. This queue does not grant approval authority.",href:`/invoicing/engagements/${row.engagement_id}?tab=${tab}`,dedupKey:null} satisfies MyWorkItem;
  }),
 };
 
 const contractTasksSource: MyWorkSource = {
   id: "contract_tasks", label: "Contract tasks", readLabel: "approved contract task assignments", block: "undated",
-  table: "contract_task_assignments", select: "id, engagement_id, workspace_id, assignee_user_id, active, contract_tasks!inner(id, project_id, title, deadline)",
+  table: "contract_active_tasks_my_work", select: "id, engagement_id, workspace_id, assignee_user_id, project_id, title, deadline",
   workspaceFilterColumn: "workspace_id", assigneeColumn: "assignee_user_id", orderColumn: "id", orderAscending: true,
-  staticFilters: [{kind:"eq",column:"active",value:"true"}],
-  toItems: (rows,{now}) => rows.map(row => { const task=embedded(row.contract_tasks),dueOn=asString(task?.deadline),overdue=dueOn?isDeadlinePast(dueOn,now):false;return { sourceId:"contract_tasks",block:dueOn?"deadlines":"undated",id:String(row.id),title:asString(task?.title)??"Contract task",projectId:asString(task?.project_id),projectName:null,dueOn,isOverdue:overdue,assigneeUserId:asString(row.assignee_user_id),ownerLabel:null,badge:{label:"Contract task",tone:overdue?"warning":"neutral"},detail:dueOn?`Agreed deadline ${dueOn}`:"Agreed deadline unrecorded",href:`/invoicing/engagements/${row.engagement_id}?tab=remaining`,dedupKey:null } satisfies MyWorkItem; }),
+  staticFilters: [],
+  toItems: (rows,{now}) => rows.map(row => { const task=row,dueOn=asString(task?.deadline),overdue=dueOn?isDeadlinePast(dueOn,now):false;return { sourceId:"contract_tasks",block:dueOn?"deadlines":"undated",id:String(row.id),title:asString(task?.title)??"Contract task",projectId:asString(task?.project_id),projectName:null,dueOn,isOverdue:overdue,assigneeUserId:asString(row.assignee_user_id),ownerLabel:null,badge:{label:"Contract task",tone:overdue?"warning":"neutral"},detail:dueOn?`Agreed deadline ${dueOn}`:"Agreed deadline unrecorded",href:`/invoicing/engagements/${row.engagement_id}?tab=remaining`,dedupKey:null } satisfies MyWorkItem; }),
 };
 
 const workProgramPeriodsSource: MyWorkSource = {

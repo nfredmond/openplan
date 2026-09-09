@@ -54,6 +54,24 @@ describe.skipIf(!LIVE_RLS)("contract settlement and closeout custody",()=>{
  PERFORM public.record_contract_command(engagement,owner_id,c);
  IF (SELECT previous_id FROM public.contract_closeouts WHERE engagement_id=engagement AND version=2) IS DISTINCT FROM report OR (SELECT content_hash FROM public.contract_closeouts WHERE id=report)<>original_hash THEN RAISE EXCEPTION 'Reopening lost prior custody';END IF;
  `));
+ it("removes closed assignments from staff My Work and restores them on documented reopening",()=>check(`${baseline}
+ PERFORM set_config('request.jwt.claim.sub',member_id::text,true);SET LOCAL ROLE authenticated;
+ IF NOT EXISTS(SELECT 1 FROM public.contract_active_tasks_my_work WHERE engagement_id=engagement AND assignee_user_id=member_id) THEN RAISE EXCEPTION 'Active staff assignment missing';END IF;RESET ROLE;
+ UPDATE public.contract_task_assignments SET active=false WHERE engagement_id=engagement;
+ PERFORM set_config('request.jwt.claim.sub',member_id::text,true);SET LOCAL ROLE authenticated;
+ IF EXISTS(SELECT 1 FROM public.contract_active_tasks_my_work WHERE engagement_id=engagement) THEN RAISE EXCEPTION 'Inactive staff assignment shown';END IF;RESET ROLE;
+ UPDATE public.contract_task_assignments SET active=true WHERE engagement_id=engagement;
+
+ ${close}result:=public.record_contract_command(engagement,owner_id,c);report:=(result->>'id')::uuid;
+ PERFORM set_config('request.jwt.claim.sub',member_id::text,true);SET LOCAL ROLE authenticated;
+ IF EXISTS(SELECT 1 FROM public.contract_active_tasks_my_work WHERE engagement_id=engagement) THEN RAISE EXCEPTION 'Closed staff assignment remained active';END IF;
+ IF NOT EXISTS(SELECT 1 FROM public.contract_task_assignments WHERE engagement_id=engagement AND active) THEN RAISE EXCEPTION 'Historical assignment rewritten';END IF;RESET ROLE;
+ PERFORM public.record_contract_command(engagement,owner_id,jsonb_build_object('kind','reopen','requestId',gen_random_uuid(),'expectedVersion',1,'closeoutId',report,'evidence','Synthetic authorized additional work'));
+ PERFORM set_config('request.jwt.claim.sub',member_id::text,true);SET LOCAL ROLE authenticated;
+ IF NOT EXISTS(SELECT 1 FROM public.contract_active_tasks_my_work WHERE engagement_id=engagement AND assignee_user_id=member_id) THEN RAISE EXCEPTION 'Reopened staff assignment not restored';END IF;RESET ROLE;
+ PERFORM set_config('request.jwt.claim.sub',outsider::text,true);SET LOCAL ROLE authenticated;
+ IF public.contract_open_for_work(engagement) IS NOT NULL OR EXISTS(SELECT 1 FROM public.contract_active_tasks_my_work) THEN RAISE EXCEPTION 'Foreign assignment status leaked';END IF;RESET ROLE;
+ `));
  it("requires each reopened obligation to survive or receive new satisfaction evidence",()=>check(`${baseline}${close}
  result:=public.record_contract_command(engagement,owner_id,c);report:=(result->>'id')::uuid;
  PERFORM public.record_contract_command(engagement,owner_id,jsonb_build_object('kind','reopen','requestId',gen_random_uuid(),'expectedVersion',1,'closeoutId',report,'evidence','Synthetic reopen for review'));

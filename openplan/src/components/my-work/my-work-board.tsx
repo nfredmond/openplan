@@ -1,3 +1,5 @@
+import {ContractParticipantWork} from "./contract-participant-work";
+import type {ParticipantWork} from "@/lib/invoicing/contracts/participant-work";
 import Link from "next/link";
 
 import { RecordAssigneeChip, type ProjectAssigneeRoster } from "@/components/projects/record-assignee";
@@ -45,6 +47,7 @@ import { WorkspaceSwitchButton } from "@/components/workspaces/workspace-switche
  */
 
 export type MyWorkBoardProps = {
+  participantWork?:ParticipantWork;
   scope: MyWorkScope;
   items: MyWorkItem[];
   perSource: MyWorkResult["perSource"];
@@ -84,10 +87,10 @@ const BLOCK_NOTES: Record<MyWorkBlockId, string> = {
 
 /** Which sources feed which block — used to answer "empty, or unreadable?". */
 const BLOCK_SOURCES: Record<MyWorkBlockId, readonly MyWorkSourceId[]> = {
-  deadlines: ["deliverables", "milestones", "submittals", "land_use_plan_actions"],
-  undated: ["issues", "land_use_plan_actions"],
+  deadlines: ["deliverables", "milestones", "submittals", "land_use_plan_actions", "contract_tasks"],
+  undated: ["issues", "land_use_plan_actions", "contract_tasks"],
   blocked_projects: ["stage_gate_holds"],
-  needs_review: ["engagement_moderation", "failed_model_runs", "narrative_drafts", "decision_package_reviews"],
+  needs_review: ["engagement_moderation", "failed_model_runs", "narrative_drafts", "decision_package_reviews", "contract_work_reviews", "contract_pending_reviews"],
   workspace_deadlines: ["grant_decisions", "award_obligations", "invoice_windows"],
 };
 
@@ -98,6 +101,8 @@ const BLOCK_SOURCES: Record<MyWorkBlockId, readonly MyWorkSourceId[]> = {
  * console, and "this block is unavailable" tells them nothing.
  */
 const NEEDS_REVIEW_SOURCE_LABELS: Record<string, string> = {
+  contract_work_reviews:"remaining-work updates awaiting PM review",
+  contract_pending_reviews:"contract approvals and accounting or invoice reviews",
   engagement_moderation: "comments to moderate",
   failed_model_runs: "failed model runs",
   narrative_drafts: "narrative drafts awaiting review",
@@ -153,6 +158,7 @@ export function MyWorkBoard({
   departedIncludedInUnassigned,
   isViewer,
   otherWorkspaceDecisionPackageWork = [],
+  participantWork,
 }: MyWorkBoardProps) {
   const blocks = groupMyWorkItemsByBlock(items);
 
@@ -179,6 +185,7 @@ export function MyWorkBoard({
 
   return (
     <section className="module-page">
+      {participantWork&&<ContractParticipantWork work={participantWork}/>}
       <article className="module-intro-card">
         <div className="module-intro-kicker">Workspace</div>
         <div className="module-intro-body">
@@ -338,9 +345,9 @@ export function MyWorkBoard({
           </p>
         ) : blocks.needs_review.length === 0 ? (
           <p className="module-empty-state">
-            Nothing is waiting on a person: no comment is pending moderation, no model run failed
+            No items are listed in this review section: no comment is pending moderation, no model run failed
             in the last {FAILED_RUN_QUEUE_WINDOW_DAYS} days, no drafted narrative is awaiting a
-            decision, and no contract approval or invoice review is pending.
+            decision, and no contract approval, remaining-work update, accounting import or invoice review is pending.
           </p>
         ) : null}
       </article>

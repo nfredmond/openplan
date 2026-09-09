@@ -255,13 +255,17 @@ describe("my work — the review queue on screen", () => {
     // without saying which one is a sentence nobody can act on.
     expect(waiting.getByText(/comments to moderate could not be read/)).toBeInTheDocument();
     expect(waiting.getByText(/whether anything is waiting is unknown/)).toBeInTheDocument();
-    expect(waiting.queryByText(/Nothing is waiting on a person/)).toBeNull();
+    expect(waiting.queryByText(/No items are listed in this review section/)).toBeNull();
   });
 
   it("says the queue is clear only when all three lanes actually read clear", async () => {
     await renderBoard({ empty: true });
     const waiting = blockNamed("Waiting on a person");
 
-    expect(waiting.getByText(/Nothing is waiting on a person/)).toBeInTheDocument();
+    expect(waiting.getByText(/No items are listed in this review section/)).toBeInTheDocument();
   });
+});
+
+it.each(["contract_work_reviews","contract_pending_reviews"])("does not claim an empty contract review section when %s fails",async(source)=>{
+ await renderBoard({empty:true,failures:{[source==="contract_work_reviews"?"contract_delivery_my_work":"contract_pending_my_work"]:"Synthetic missing review lane"}});const block=screen.getByTestId("my-work-needs-review");expect(within(block).getByTestId("my-work-needs-review-unreadable")).toHaveTextContent("whether anything is waiting is unknown");expect(within(block).queryByText(/No items are listed/)).toBeNull();
 });
