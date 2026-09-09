@@ -1,0 +1,14 @@
+[
+  {
+    "name": "harmless",
+    "exit": 0,
+    "matched": true,
+    "scope": "Copied artifacts only; originals retained unchanged"
+  },
+  {
+    "name": "changed-payment",
+    "exit": 1,
+    "matched": true,
+    "scope": "Copied artifacts only; originals retained unchanged"
+  }
+]

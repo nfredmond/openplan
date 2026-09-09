@@ -182,3 +182,9 @@ exact failure control in RESUMED.md. The review also led to the ordinary invoice
 currency and reopened-obligation browser checks described there. Consolidation
 into main remains authorized and pending the engineering checks; no branch or
 worktree has been discarded.
+
+
+Exact-reference chunks 1–10 have now been fully read (394 remain). They recover
+the original M11 scope/ownership, shared-cap design and earlier source-custody forms;
+no additional user approval was found. Repeated historical formatted truncation is
+kept distinct from the recovered full output. Image review remains unfinished.

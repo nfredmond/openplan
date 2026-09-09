@@ -626,3 +626,38 @@ report provenance and generated HTML artifact. A harmless comment passes; removi
 the reason fails with the exact 400 review-reason refusal. It ran only on the named
 58621 disposable API, with separate browser contexts and scratch output directories.
 This is a repaired local reproduction; a new main nightly has not yet run.
+
+
+## Rebuilt practice closeout and CI fixture repair
+
+81da52b2 passed the complete local QA gate: lint, dead code, 1,226 test files /
+13,414 assertions, audit and webpack build. Browser identity matched that build
+at port 3247. Practice revision 3 was committed before the browser's completed-job
+poll was deliberately aborted; reload recovered the same succeeded job
+110b1216-cd64-4aae-9e3f-77460705947b and retained revision. This supersedes the
+prior queue-only recovery limitation for this synthetic practice case.
+
+Reopening revision 4 immediately carried the original obligation into the form
+without reloading. Keyboard submission at 390px retained final closed revision 5,
+47398512-dfaa-4a5d-af6e-6d6cf333070b. Actual JSON/CSV downloads reconstruct gross
+1000, payments 965, credit 50, refund 10, debit 5, open/retention/disputed zero,
+incurred 200, underspend 300 and one October 15 records obligation. The original
+revision 1 redownload remains byte-identical. A harmless copied CSV newline passes;
+changing the copied payment 365 to 366 fails the open-balance assertion. Original
+artifacts are untouched. Desktop and 390px captures were visually inspected.
+The final-phase console contains six deliberately aborted poll ERR_FAILED messages;
+page errors and failed HTTP responses are empty. This is agent engineering evidence,
+not practicing-PM observation or independent human finance acceptance.
+
+A separately labelled legacy API caller created the agency's 37.89 synthetic
+unknown-currency invoice without currencyCode. Desktop and 390px ordinary register
+views show its amount separately and disclose incomplete currency totals. No currency
+was inferred. The rebuilt 390px forecast button wraps inside the viewport and keyboard
+submission completes an unissued B preview; old reviewed forecasts remain stale.
+
+GitHub worker job 102353382207 on 81da52b2 failed because the GTFS fixture generated
+its ZIP and recorded checksum on opposite sides of a timestamp boundary. Production
+correctly refused the different checksum. Fixture ZIP metadata is now deterministic;
+51 focused worker checks pass. A harmless comment passes, and restoring wall-clock
+ZIP metadata fails the new two-date exact-byte regression. Production checksum and
+scientific behavior are unchanged. Other CI checks and main integration are separate.

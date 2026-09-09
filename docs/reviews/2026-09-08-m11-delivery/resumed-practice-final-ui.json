@@ -1,0 +1,50 @@
+{
+  "builtCommit": "81da52b28ee3",
+  "finalLost": {
+    "queue": {
+      "jobId": "110b1216-cd64-4aae-9e3f-77460705947b",
+      "status": "queued"
+    },
+    "jobId": "110b1216-cd64-4aae-9e3f-77460705947b",
+    "completed": {
+      "id": "110b1216-cd64-4aae-9e3f-77460705947b",
+      "kind": "closeout",
+      "status": "succeeded",
+      "attempts": 1,
+      "created_at": "2026-09-09T05:53:25.230011+00:00",
+      "updated_at": "2026-09-09T05:53:26.484815+00:00",
+      "failure_detail": null
+    }
+  },
+  "originalBytesUnchanged": true,
+  "console": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    }
+  ],
+  "pageErrors": [],
+  "failedResponses": [],
+  "finalVersion": 5,
+  "obligationCarriedWithoutReload": true
+}

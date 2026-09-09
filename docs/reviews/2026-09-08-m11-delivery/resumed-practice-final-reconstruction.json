@@ -1,0 +1,43 @@
+{
+  "builtCommit": "81da52b28ee3",
+  "closeoutId": "47398512-dfaa-4a5d-af6e-6d6cf333070b",
+  "revision": 5,
+  "contentHash": "1806b6173a0dcbd3b545e1f40cc2b14c9b4ade6f70aff383d4471576183f4c2d",
+  "formatVersion": 3,
+  "gross": "1000.00",
+  "financialEvents": {
+    "payment": "965.00",
+    "credit": "50.00",
+    "refund": "10.00",
+    "adjustment_debit": "5.00",
+    "adjustment_credit": "0",
+    "retention_hold": "20.00",
+    "retention_release": "120.00",
+    "dispute_open": "50.00",
+    "dispute_resolve": "50.00"
+  },
+  "open": "0.00",
+  "retention": "0.00",
+  "disputed": "0.00",
+  "incurred": "200.00",
+  "approvedCost": "500",
+  "underspend": "300.00",
+  "openObligations": 1,
+  "obligationDue": "2026-10-15",
+  "acceptedHistoryPreserved": true,
+  "originalUnknownCurrencyVoidPreserved": true,
+  "paymentCorrectionHistoryPreserved": true,
+  "files": [
+    {
+      "file": "practice-closeout-5.json",
+      "bytes": 43587,
+      "sha256": "fa5b415a9469b44539354a8f213907f44785e14d9ef15eb9314d52ac911393bd"
+    },
+    {
+      "file": "practice-closeout-5.csv",
+      "bytes": 9213,
+      "sha256": "86f898ca2e56d4148033d56d452d15e9cb4571452db0b39c35fbcf1366dfd547"
+    }
+  ],
+  "scope": "Independent Decimal reconstruction from browser-downloaded synthetic package and CSV. CSV proves financial handoff; JSON carries approval and obligation evidence. Not independent human finance acceptance."
+}

@@ -23,6 +23,7 @@ import re
 import sys
 import types
 import zipfile
+from unittest.mock import patch
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -115,7 +116,7 @@ PUBLISHER_URL = "http://agency.example/gtfs.zip"
 
 
 def _feed_bytes(files: dict[str, str] | None = None) -> bytes:
-    """A tiny valid GTFS: 3 stops on one line, 2 trips 30 minutes apart."""
+    """Stable fixture bytes for a tiny GTFS: archive metadata must not follow the clock."""
     base = {
         "agency.txt": "agency_id,agency_name,agency_url,agency_timezone\n1,T,http://t,America/Los_Angeles\n",
         "calendar.txt": (
@@ -138,8 +139,18 @@ def _feed_bytes(files: dict[str, str] | None = None) -> bytes:
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w") as zf:
         for name, content in base.items():
-            zf.writestr(name, content)
+            zf.writestr(zipfile.ZipInfo(name, date_time=(2000, 1, 1, 0, 0, 0)), content)
     return buf.getvalue()
+
+
+def test_fixture_archive_and_recorded_checksum_survive_a_clock_change():
+    with patch("zipfile.time.localtime", return_value=(2026, 9, 8, 1, 0, 0, 1, 251, 0)):
+        raw = _feed_bytes()
+    with patch("zipfile.time.localtime", return_value=(2026, 9, 9, 2, 0, 0, 2, 252, 0)):
+        rebuilt = _feed_bytes()
+        row = _version_row()
+    assert rebuilt == raw, "identical fixture inputs must retain identical ZIP bytes across clock changes"
+    assert row["checksum_sha256"] == hashlib.sha256(raw).hexdigest()
 
 
 def _version_row(**overrides) -> dict:
