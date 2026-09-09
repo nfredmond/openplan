@@ -661,3 +661,19 @@ correctly refused the different checksum. Fixture ZIP metadata is now determinis
 51 focused worker checks pass. A harmless comment passes, and restoring wall-clock
 ZIP metadata fails the new two-date exact-byte regression. Production checksum and
 scientific behavior are unchanged. Other CI checks and main integration are separate.
+
+
+The rebuilt 81da52b2 consultant case starts at My Work, opens B, and corrects a
+newly returned version 4. After retaining version 5, the successful POST response
+is deliberately lost. Keyboard exact retry recovers version 5, removes the pending
+retry and the stale correction form without reload, and restores the new-invoice
+form. Desktop and 390px screenshots are inspected; 390px document width is 390.
+The invoice remains submitted USD 25, not finance-approved. Versions 1–5 and the
+retained original remain available. The intentionally failed fetch is recovery
+injection, not an unexplained application error.
+
+The product-direction check passes with its existing v0.44 review reminders;
+its date was not refreshed as a substitute for review. Fresh pre-merge inventory
+finds all seven worktrees clean, no stashes and only M11 outside main ancestry.
+Current process inspection finds no other active editor. Nathaniel explicitly
+requested consolidation; this supersedes the old handoff's main-ownership block.

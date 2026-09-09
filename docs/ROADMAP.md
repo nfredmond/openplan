@@ -430,9 +430,13 @@ CORE-ENG-04 requires both PDF and XLSX, linked to the same campaign snapshot and
 
 The [September 8 implementation candidate](reviews/2026-09-08-m11-delivery/IMPLEMENTATION.md)
 follows the four delivery steps: agency reconciliation; reviewed remaining work
-and forecasts; actionable weekly review; settlement and closeout. It remains
-unreleased with browser/artifact and human acceptance gaps. No single increment
-closes M11; the milestone and completion criteria below remain binding.
+and forecasts; actionable weekly review; settlement and closeout. The
+[resumed engineering evidence](reviews/2026-09-08-m11-delivery/RESUMED.md) now covers
+synthetic agency and small-practice journeys, actual issued artifacts, shared-capacity
+release, source-visibility races, durable recovery and the measured maximum calculation.
+It remains unreleased. Human agency PM observation, independent finance acceptance,
+automatic reminder authorization/delivery and the full prior-session audit remain open.
+No single increment closes M11; the milestone and completion criteria below remain binding.
 
 - **Planning outcome:** a consulting or agency PM sees work consumed and work remaining by contract/task order, task, employee and deliverable, understands a threatened fee or deadline, and acts before the next invoice reveals the overrun. This is core planning practice independently of Caltrans reimbursement.
 - **Gap/evidence:** `CONTRACT_BUDGET_CORE_REQUIREMENTS_REVIEW.md` records the original arithmetic, attribution and missing-baseline defects. The [v0.46 contract reconciliation evidence](reviews/2026-09-07-contract-reconciliation/VERIFICATION.md) adds approved baseline history, standalone task/staff/deliverable actuals, separate rates and financial meanings, corrections, remaining estimates and private reports. Final release checks are recorded in that evidence; human financial reconstruction, scheduling and the complete M11b/c outcomes remain open. `REQUIREMENTS_HISTORY_RECOVERY.md` retains the original task/employee requirements.

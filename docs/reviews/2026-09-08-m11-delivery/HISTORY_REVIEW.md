@@ -188,3 +188,8 @@ Exact-reference chunks 1–10 have now been fully read (394 remain). They recove
 the original M11 scope/ownership, shared-cap design and earlier source-custody forms;
 no additional user approval was found. Repeated historical formatted truncation is
 kept distinct from the recovered full output. Image review remains unfinished.
+
+
+Exact-reference chunk 11 was re-read separately after a combined output truncation.
+It retains the original master-authorization migration and binding M11 completion
+criteria; chunks 1–11 are now read, 393 remain. No full-history completion is claimed.

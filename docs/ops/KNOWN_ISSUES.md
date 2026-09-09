@@ -19,11 +19,16 @@ tracks scoped received invoices, accounting reconciliation, reviewed work and
 capacity, deterministic forecasts, PM responses and settlement/closeout records.
 The candidate adds an approved agreement billing direction and versioned accounting
 handoffs. Legacy baselines keep their outgoing billing convention until amended;
-old issued reports retain their prior format. Engineering checks and partial
-synthetic journeys do not establish a completed agency or small-practice workflow.
-Shared-capacity and closeout artifact acceptance, overlapping withheld amounts,
-consultant correction access and reminder delivery remain open. M11 also requires
-observed agency PM and independent finance acceptance, neither yet obtained.
+old issued reports retain their prior format. The [resumed engineering evidence](../reviews/2026-09-08-m11-delivery/RESUMED.md)
+now records synthetic agency and small-practice browser journeys, consultant correction,
+shared-capacity release, inspected actual exports and interrupted-save/worker recovery.
+Unknown currency and overlapping holds remain explicitly unassessed; neither is
+silently allocated or inferred. The maximum measured durable forecast contains 200
+tasks, 100 staff and 731 days; this does not prove unbounded retained-history scaling
+or simultaneous maximum-length notes. Automatic reminder CHECK replacement still
+awaits specific authorization and email transport remains unconfigured. M11 requires
+observed agency PM and independent human finance acceptance, neither yet obtained.
+The requested complete prior-session history audit remains in progress.
 
 ## Contract reconciliation boundary, September 8 v0.46
 
