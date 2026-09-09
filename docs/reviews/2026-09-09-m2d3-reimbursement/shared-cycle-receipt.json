@@ -1,0 +1,66 @@
+{
+  "claims": [
+    {
+      "id": "6e09b1a1-caae-4693-a35d-c2f180596025",
+      "state": "accepted",
+      "version": 8
+    }
+  ],
+  "events": [
+    "save",
+    "review",
+    "submit",
+    "return",
+    "save",
+    "review",
+    "submit",
+    "accept"
+  ],
+  "reports": [
+    {
+      "id": "d9183695-2907-47c8-84d6-dc23e1ee45fd",
+      "request": "30.00",
+      "snapshotHash": "a27f53e6d6e484223f001ead299b08319dc8fd9c5be5207aaa43d6bb58133184",
+      "contractCosts": 1,
+      "historyEvents": 1,
+      "packetVersion": 1
+    },
+    {
+      "id": "374c1a74-ab3f-4386-895b-99b0104c5030",
+      "request": "29.00",
+      "snapshotHash": "dc47256d55d0de3740dca207c123eba8fe84426ca9770a8a26c9a1a01c4e2453",
+      "contractCosts": 1,
+      "historyEvents": 5,
+      "packetVersion": 2
+    }
+  ],
+  "sources": 2,
+  "spendEntries": 1,
+  "artifacts": [
+    {
+      "file": "synthetic-shared-v1.pdf",
+      "sha256": "d52d089e72b4fa6e296801fca14ef8601bc0d3069a881718080532da7a50d9f1",
+      "bytes": 190980,
+      "source": "retained worker artifact, not a confirmed browser download"
+    },
+    {
+      "file": "synthetic-shared-v1.xlsx",
+      "sha256": "f9d2a66cee5f17ea1986b083a53eb4be24650b1fdda186b4de2a9a3403565d03",
+      "bytes": 32842,
+      "source": "retained worker artifact, not a confirmed browser download"
+    },
+    {
+      "file": "synthetic-shared-v2.pdf",
+      "sha256": "70fa601e04a940b5c650c6f632f6c192638772c0a7917e2f4d8fed9ebf960818",
+      "bytes": 199247,
+      "source": "retained worker artifact, not a confirmed browser download"
+    },
+    {
+      "file": "synthetic-shared-v2.xlsx",
+      "sha256": "8b8370fce49975d3f841984f665bf1bc42baa42ced89868e5bf6b5a3df68b631",
+      "bytes": 33296,
+      "source": "retained worker artifact, not a confirmed browser download"
+    }
+  ],
+  "independentWorkbookReconstruction": "passed using Python ZIP/XML and Decimal; source costs, request, match, vintage text, physical source and retained contract valuation reconcile"
+}
