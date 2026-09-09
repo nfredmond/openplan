@@ -1,0 +1,75 @@
+{
+  "build": {
+    "commit": "64bd60632ccb",
+    "version": "0.47.0"
+  },
+  "checkout": "/home/nathaniel/.local/state/openplan/v047-release-2026-09-09",
+  "journey": "390px landing > sign in > Overview > Jump to a module > Documents by keyboard; all four keyboard downloads",
+  "receipts": [
+    {
+      "label": "documents-390",
+      "documentId": "0fc52e78-effc-43f1-83de-1d983beb85fe",
+      "filename": "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v1.pdf",
+      "bytes": 190980,
+      "sha256": "d52d089e72b4fa6e296801fca14ef8601bc0d3069a881718080532da7a50d9f1",
+      "keyboard": true
+    },
+    {
+      "label": "documents-390",
+      "documentId": "69aa3565-e3c8-48ad-8c46-31f36e0742ce",
+      "filename": "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v1.xlsx",
+      "bytes": 32842,
+      "sha256": "f9d2a66cee5f17ea1986b083a53eb4be24650b1fdda186b4de2a9a3403565d03",
+      "keyboard": true
+    },
+    {
+      "label": "documents-390",
+      "documentId": "528a43d8-ab8f-473f-b071-5547db505ae1",
+      "filename": "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v2.pdf",
+      "bytes": 199247,
+      "sha256": "70fa601e04a940b5c650c6f632f6c192638772c0a7917e2f4d8fed9ebf960818",
+      "keyboard": true
+    },
+    {
+      "label": "documents-390",
+      "documentId": "ad4a766b-134e-428c-be94-ad5ec9be42af",
+      "filename": "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v2.xlsx",
+      "bytes": 33296,
+      "sha256": "8b8370fce49975d3f841984f665bf1bc42baa42ced89868e5bf6b5a3df68b631",
+      "keyboard": true
+    },
+    {
+      "label": "original-after-correction",
+      "documentId": "0fc52e78-effc-43f1-83de-1d983beb85fe",
+      "filename": "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v1.pdf",
+      "bytes": 190980,
+      "sha256": "d52d089e72b4fa6e296801fca14ef8601bc0d3069a881718080532da7a50d9f1",
+      "keyboard": true
+    },
+    {
+      "label": "original-after-interruption",
+      "documentId": "0fc52e78-effc-43f1-83de-1d983beb85fe",
+      "filename": "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v1.pdf",
+      "bytes": 190980,
+      "sha256": "d52d089e72b4fa6e296801fca14ef8601bc0d3069a881718080532da7a50d9f1",
+      "keyboard": true
+    }
+  ],
+  "controls": {
+    "harmlessAnnotation": "survived",
+    "wrongChecksum": "rejected",
+    "interruptedRequest": [
+      {
+        "url": "/api/knowledge-base/documents/0fc52e78-effc-43f1-83de-1d983beb85fe/download",
+        "error": "net::ERR_INTERNET_DISCONNECTED"
+      },
+      {
+        "url": "/api/knowledge-base/documents/0fc52e78-effc-43f1-83de-1d983beb85fe/download",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "retry": "exact original bytes saved"
+  },
+  "console": [],
+  "blindCategory": "Synthetic retained supporting packets; not human PM or finance acceptance, prescribed forms, or external authority."
+}

@@ -1,8 +1,8 @@
 # v0.47 release verification
 
-September 9, 2026. Candidate based on main `ccef7e2f9ddef443679b166d35903f11c6cc6704`, isolated checkout `/home/nathaniel/.local/state/openplan/v047-release-2026-09-09`, branch `work/v047-release`. Release is not yet declared.
+September 9, 2026. Candidate based on main `ccef7e2f9ddef443679b166d35903f11c6cc6704`, isolated checkout `/home/nathaniel/.local/state/openplan/v047-release-2026-09-09`, branch `work/v047-release`. The engineering acceptance below is complete. The v0.47.0 tag is published only after GitHub CI and RLS succeed on the final main release commit. Earlier checkpoint statuses below are historical.
 
-## Current evidence
+## Initial evidence
 
 The live development server at `http://127.0.0.1:3257` was identified by `which-openplan.sh` as this checkout. Its private synthetic database is the existing named disposable `supabase_db_m2d3-reimbursement-verification`, API 58821, database 58822, workdir `/home/nathaniel/.local/state/openplan/m2d3-verification`. No demo records were changed.
 
@@ -29,7 +29,7 @@ Thirty focused ordering/download-route/checksum tests passed. The first focused 
 
 [Programs file receipts](programs-downloads.json) record all four delivered files plus two unchanged original-PDF retries. Its independent checksum comparison accepts an irrelevant annotation and rejects an incorrect expected hash. It establishes byte custody, not agency usefulness. [Desktop](programs-desktop.png) and [390px keyboard focus](programs-390.png) are identified development-build captures, not final production-build evidence.
 
-## Remaining work
+## Work remaining at the initial checkpoint
 
 Finish Documents file saving and final production desktop/390px acceptance, private-access and interrupted retry evidence. Align version/changelog/release ordering, run harmless and targeted controls for changed guards, inspect final CI/upgrade, then tag. The pending reminder CHECK change remains untouched. M11 PM/finance usefulness, prescribed agency forms, actual authority and automatic reminder delivery remain unproved.
 
@@ -43,7 +43,7 @@ The production browser journey repeats real navigation and all four Programs dow
 
 The production desktop screenshot exposed pale-green download labels on an almost-white hover background. A DOM style inspection confirmed text rgb(168,217,184) and background color(srgb 0.954196 0.982118 0.976784). The reimbursement download buttons now reuse the neighboring report controls' background/foreground hover classes. This bounded styling change preserves download and authorization behavior; its final render is checked separately below.
 
-## Latest checkpoint
+## Checkpoint before final Documents verification
 
 Application build `64bd60632ccbc030755efd91c4898889923ca9da` passes targeted ESLint and a production webpack build with explicit exit 0. `which-openplan.sh` matches the full SHA, version and isolated checkout. The [final desktop capture](final-desktop.png) shows the hovered download label readable; [390px keyboard capture](final-390.png) shows the focus indicator and stacked controls. Two computed-style reads timed out in the connected tool, so the final visual conclusion uses the inspected screenshot rather than inventing numeric contrast measurements. No new styling test was added for this reversible class correction. The final [console record](final-console.json) contains no warnings/errors. Temporary viewport and request-blocking overrides are cleared.
 
@@ -52,3 +52,17 @@ All four Programs downloads were repeated on this build. [File receipts](final-d
 GitHub's [populated v0.46 upgrade](https://github.com/nfredmond/openplan/actions/runs/34390581395) passed at `adcda972`; no migration changed afterward. [Live RLS](https://github.com/nfredmond/openplan/actions/runs/34390802433) passed at `f5dda94d`. The application changed afterward only to fix button hover classes. CI and RLS for `64bd6063` are still running at this checkpoint and must be inspected before release. The evidence commit following this application build adds only verification records.
 
 **Release remains untagged.** Draft [PR #111](https://github.com/nfredmond/openplan/pull/111) preserves the candidate. Native Documents downloads remain blocked by the connected browser's inspector. The user has been asked to authorize the repository's Playwright harness with a separate Chrome test profile because the computer-use tool requires explicit authorization for another UI automation method. There is no answer yet. No app security header or browser security setting was weakened. M2d.4 has not been implemented while this release boundary remains open.
+
+## Documents acceptance and direct main merge
+
+Nathaniel explicitly directed direct main merges without draft PRs and authorized the repository Playwright harness. Creating draft PR #111 was an agent workflow error. Main fast-forwarded to `1b08f71f64bb5429895097dbb2e28ae427376959` and was pushed; GitHub marked #111 merged on September 9 at 22:39:18 UTC. All six PR checks had succeeded before that merge. Subsequent release documentation follows the same direct-main workflow.
+
+The separate Chrome session used the repository's installed Playwright dependency and a fresh temporary browser context against loopback 3257. It signed in through the landing page, entered Overview and navigated to Documents. Health identity was asserted as version 0.47.0 and application build `64bd60632ccb`; `git diff 64bd6063..1b08f71f` contains only evidence documents and captures. The served checkout remains the isolated release tree. No account, database fixture, security header or browser security setting was changed.
+
+[Native Documents receipts](documents-browser-results.json) record all four retained original/corrected PDF/XLSX artifacts saved at 1440px by click and 390px by keyboard Enter. Every saved file matches its retained SHA-256 and byte count. The original PDF was saved again after correction, deliberately interrupted with a scoped `internetdisconnected` request abort, then successfully retried with identical original bytes. The route override was removed and the browser closed. Console warnings/errors are empty. [Desktop](documents-1440.png) and [390px](documents-390.png) captures were visually inspected; file names wrap, controls remain reachable, and document width equals viewport width. Tab advances from Download to its adjacent Delete control; Delete was never activated.
+
+The first scratch-script attempts stopped at duplicate link selectors because the same document appears in the document library and the all-files index. Selecting the first visible library entry resolved this harness ambiguity. The earlier interpretation that these were responsive duplicates was wrong. A harmless expected-record annotation survived checksum verification; a false expected checksum failed for the explicit byte-custody assertion. This verification cannot establish human usefulness, financial approval, agency-form compatibility or external authority. The connected-browser inspector failure remains a preserved tooling observation; it is no longer an unverified application download boundary.
+
+Local QA, isolated RLS, worker, upgrade, route privacy and command-recovery evidence above remain applicable. The only application change after the full local QA gate is the separately built and browser-verified hover class correction. All six GitHub checks also passed on the final application and evidence branch before merging. Final main checks must independently pass before tagging. No reminder constraint, paid hosting, model claim, real submission or human acceptance status changed.
+
+A separate [390px entry journey](documents-mobile-navigation.json) started at the landing page, signed in, opened Jump to a module from Overview, searched Documents and entered with the keyboard. All four downloads and the interrupted original retry also passed from that narrow-width entry. A preliminary attempt to reuse a scratch authentication snapshot stopped at sign-in; the successful journey entered the fixture credentials through the real form. No reused browser state is part of the successful entry claim.

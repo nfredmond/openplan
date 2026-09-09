@@ -20,11 +20,11 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No changes recorded after the v0.47.0 candidate.
+No changes recorded after v0.47.0.
 
 ## 0.47.0 — 2026-09-09
 
-Development release candidate. Tagging requires the [release verification](docs/reviews/2026-09-09-v047-release/VERIFICATION.md).
+Development release. [Engineering verification and limits](docs/reviews/2026-09-09-v047-release/VERIFICATION.md) cover local operation, retained file downloads and upgrade from v0.46.0.
 
 - Review contract remaining work, staff calendars and shared capacity; retain forecasts, PM responses, settlement and closeout with their original baselines and source evidence. Scoped consultant invoices, agency billing direction and accounting reconciliation keep cost, fee, cash and reimbursement separate.
 - Prepare OWP reimbursement supporting packets from issued reports, reviewed eligibility and balanced fund/match shares. Return and correction retain earlier packets and reserve each physical source against duplicate claims. Private PDF/XLSX files remain in Documents with retained checksums.
