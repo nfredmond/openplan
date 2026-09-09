@@ -23,6 +23,8 @@ Ordinary Documents PDF and XLSX link navigation reaches ERR_BLOCKED_BY_CLIENT. A
 
 The candidate version is 0.47.0. Its changelog lists all 28 additive migrations after v0.46, and the release-ordering table records 307 migrations through 20261003000001. The package version does not declare a release. The stale roadmap audit statement is corrected against the completed HISTORY_REVIEW.md record.
 
+The first candidate-wide rerun caught two omitted version fields in the capability matrix and registry. Both version fields were aligned to v0.47.0 without changing review dates, evidence or capability ratings. That failed run is not counted as passing candidate QA.
+
 Thirty focused ordering/download-route/checksum tests passed. The first focused invocation mistakenly ran from the repository root and discovered no runnable suites. The corrected package-root run then caught date-prefixed changelog labels that did not satisfy the exact migration slug check; the labels were corrected without weakening the check. Release-ordering controls accept a harmless SQL comment, reject a migration moved below v0.46's high-water mark, and reject a missing changelog migration reference. All temporary inputs were restored. The guard cannot assess SQL semantics or data preservation.
 
 [Programs file receipts](programs-downloads.json) record all four delivered files plus two unchanged original-PDF retries. Its independent checksum comparison accepts an irrelevant annotation and rejects an incorrect expected hash. It establishes byte custody, not agency usefulness. [Desktop](programs-desktop.png) and [390px keyboard focus](programs-390.png) are identified development-build captures, not final production-build evidence.
