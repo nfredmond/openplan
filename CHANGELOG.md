@@ -20,6 +20,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- [contract_delivery_read_cost](openplan/supabase/migrations/20261002000001_contract_delivery_read_cost.sql) attaches complete delivery history once after the other management layers and adds an authorized hash-only read for calculation concurrency checks. Original forecast inputs remain in management snapshots.
+
+- [contract_forecast_evidence_envelope](openplan/supabase/migrations/20261001000001_contract_forecast_evidence_envelope.sql) permits up to 96 MB of server-calculated forecast evidence. Submitted delivery commands retain their 8 MB database ceiling and the web route retains its 2 MB request limit. This supports the measured maximum fixture without raising worker memory limits or weakening source, author or retry checks.
+
 - [contract_participant_closed_state](openplan/supabase/migrations/20260930000001_contract_participant_closed_state.sql) keeps closed consultant assignments and retained invoice downloads reachable, labels their state, and hides submission/review forms until a responsible manager reopens the assignment.
 
 - Forecast format 3 shares capacity warnings by person and date while retaining every affected task. Warning pages expand dates on demand; exports include exact scope-to-task mappings. The maximum missing-capacity Node-worker case now serializes without exhausting its 2 GB heap. Browser and durable-job maximum acceptance remain separate checks; older retained formats are unchanged.

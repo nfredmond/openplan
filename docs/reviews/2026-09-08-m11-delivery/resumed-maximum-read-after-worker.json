@@ -1,0 +1,17 @@
+[
+  {
+    "name": "read_contract_delivery_version",
+    "elapsedMs": 155.015165,
+    "error": null,
+    "bytes": 80,
+    "heapUsed": 10878640
+  },
+  {
+    "name": "read_contract_management",
+    "elapsedMs": 8571.425663999999,
+    "error": null,
+    "bytes": 167283448,
+    "forecasts": 2,
+    "heapUsed": 388031736
+  }
+]

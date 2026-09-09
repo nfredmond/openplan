@@ -12,11 +12,11 @@ export async function normalizeContractCommand(service:CalculationClient,engagem
 
   if(command.kind==="schedule")validateSchedule(command.content);
   if(command.kind==="forecast"||command.kind==="response"){
-   const before=await service.rpc("read_contract_delivery",{p_engagement_id:engagementId,p_actor_id:actorId});
+   const before=await service.rpc("read_contract_delivery_version",{p_engagement_id:engagementId,p_actor_id:actorId});
    if(before.error)throw new Error("Forecast source version is unavailable");
    const fresh=await service.rpc("read_contract_management",{p_engagement_id:engagementId,p_actor_id:actorId});
    if(fresh.error)throw new Error("Forecast inputs are unavailable");
-   const after=await service.rpc("read_contract_delivery",{p_engagement_id:engagementId,p_actor_id:actorId});
+   const after=await service.rpc("read_contract_delivery_version",{p_engagement_id:engagementId,p_actor_id:actorId});
    const state=fresh.data as ContractState;
    if(after.error||!state.delivery||(before.data as DeliveryState).inputHash!==state.delivery.inputHash||state.delivery.inputHash!==(after.data as DeliveryState).inputHash)throw new Error("Forecast inputs changed during reading. Reload and review again.");
    if(command.kind==="forecast"&&command.expectedInputHash!==state.delivery.inputHash)throw new Error("The forecast data changed since you opened this page. Reload and review the changed assumptions.");

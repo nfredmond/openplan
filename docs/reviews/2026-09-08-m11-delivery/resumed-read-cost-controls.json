@@ -1,0 +1,48 @@
+{
+  "controls": [
+    {
+      "name": "unauthorized-version",
+      "exit": 1,
+      "expectedFailure": "Outsider read delivery version",
+      "matched": true
+    },
+    {
+      "name": "harmless",
+      "exit": 0,
+      "expectedFailure": null,
+      "matched": true
+    },
+    {
+      "name": "old-envelope",
+      "exit": 1,
+      "expectedFailure": "Delivery evidence exceeds",
+      "matched": true
+    },
+    {
+      "name": "original-request-unbounded",
+      "exit": 1,
+      "expectedFailure": "Oversized original request accepted",
+      "matched": true
+    },
+    {
+      "name": "normalized-unbounded",
+      "exit": 1,
+      "expectedFailure": "Oversized normalized forecast accepted",
+      "matched": true
+    },
+    {
+      "name": "version-constant",
+      "exit": 1,
+      "expectedFailure": "Version read is not the exact current hash alone",
+      "matched": true
+    },
+    {
+      "name": "history-omitted",
+      "exit": 1,
+      "expectedFailure": "Management delivery history changed",
+      "matched": true
+    }
+  ],
+  "scope": "Transaction-contained synthetic SQL mutations; full history and exact error category asserted.",
+  "blindCategory": "No elapsed-time assertion; maximum real RPC and worker measurements recorded separately."
+}

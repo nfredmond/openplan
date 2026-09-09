@@ -145,3 +145,23 @@ Chunks 88 and 721 were read fully to recover the populated-upgrade canonical
 comparison and historical workbook/CI details. No other bulk chunks are counted
 as read. The unavailable original temporary comparison file was not recovered;
 its query and previously committed hash were recovered and independently matched.
+
+
+Further complete bulk reading covers chunks 7–13 as well as 1–6, 88 and 721.
+Chunk 8 contains an escaped duplicate of an already-read output: the decoded bytes
+were checked for exact equality and the nonduplicate metadata/tail was read;
+local `history-read/chunk8-equivalence.json` records the comparison. Chunks 9–12
+recover the earlier contract guide, roadmap, capability ledger and complete
+September 7 direction synthesis. They preserve independent human reconstruction,
+full planning outcomes, and the disclosed older wrong-stack fixture incident.
+That incident is historical evidence, not proof this M11 run touched that stack.
+Chunk 13 is a historical truncated formatted-output copy; its untruncated stdout
+was recovered and read in chunks 9–12. Other available bulk chunks remain unread;
+this is still not an entire-history completion claim.
+
+Later work now closes the own-consultant correction/lost-response case and the
+measured maximum durable package case within RESUMED.md's explicit limits. New
+failures and revisions, including the inaccurate SQL mutation receipt, are retained
+there. The handoff did not authorize claiming those earlier partial checks as
+complete. All seven GitHub checks passed on 782fcfd7; current uncommitted repairs
+still need separate acceptance. Main consolidation remains authorized and pending.

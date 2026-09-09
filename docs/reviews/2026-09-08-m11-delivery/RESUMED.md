@@ -470,3 +470,67 @@ normalized requests to 8 MB. The maximum warning result alone is 23.4 MB; Node
 and browser success do not establish retained maximum forecasts. This limit
 needs a measured persistence/transport repair and explicit over-limit behavior
 before claiming maximum durable acceptance. No limit has been raised yet.
+
+
+## Calculated evidence envelope and repeated history reads
+
+The preceding 8 MB open limit is superseded for calculated forecasts by migration
+20261001000001. A producer-approved synthetic baseline has 200 tasks, 100 staff,
+20,000 assignments and 40,000 submitted/accepted update rows. Its actual RPC
+source response is 40,151,790 bytes. The real normalizer retains 63,566,200 bytes,
+73,300 warnings and 73,100 summed reservations, with every unsupported task finish
+still null. The original 8 MB RPC rejected this package with SQLSTATE 22023;
+the 96 MB calculated-evidence envelope retained it. Original submitted delivery
+commands still have the 8 MB database bound and the web request remains 2 MB.
+This is synthetic engineering evidence, not a real contract or human acceptance.
+
+The first durable attempt failed: rereading the already-retained package exceeded
+the existing database statement timeout. It did not exhaust the 2 GB child heap.
+Migration 20261002000001 moves complete delivery construction out of intermediate
+management layers and adds a caller-authorized, 80-byte hash-only read for the two
+concurrency comparisons. Full retained inputs stay in the management response and
+issued packages. Delivery is read before source-visibility observations; the final
+large merge occurs after their decisions, preserving the cutoff custody boundary.
+
+An initial revision still copied the second maximum forecast through two final
+merges and its post-job read timed out. That attempt is not accepted evidence.
+The final revision retains delivery separately until the return. With two retained
+maximum forecasts the actual HTTP response is 167,283,448 bytes and succeeded in
+8.571 seconds including transfer; the hash read took 155 ms. This does not prove
+unbounded history scaling or make a 167 MB management response lightweight.
+
+Durable job a8a77bd3-c86d-41a8-af5e-01fea3f73c74 recovered on attempt 2 under
+NODE_OPTIONS=--max-old-space-size=2048 and retained forecast version 2,
+aea6c469-204b-49e7-88f3-5c02bb17f73e. Version 1 remains
+58bb6c15-7d35-4922-a963-f4ddf4e4418e. The input hash stayed
+0e16743c58f9470f60500a58393c189386d0dc94e45fd3c1880a546218a52048.
+No timeout or worker heap limit was raised. Named disposable primary and populated
+upgrade stacks now have both migrations; the populated comparison and complete
+live suite still require their final repeat.
+
+Nine focused tests passed. Harmless SQL survives; restoring the old envelope,
+removing original-command or normalized limits, admitting an outsider, returning
+a constant hash, or dropping delivery history each fails for its named assertion.
+The seven checks on 782fcfd7 also passed, including QA, live RLS and restore;
+these newer changes need their own final checks and build identity.
+
+CORRECTION: the earlier closed-management-reader mutation receipt reported a
+failure that was only a missing SQL terminator in the injected harness. It was
+not evidence of the closed-state guard. The corrected harness includes the
+terminator and now requires the specific `Closed management state missing`
+assertion. The closed-inbox mutation requires `Closed participant history or
+state missing`; its harmless control passes. The corrected receipt replaces the
+old file without erasing this explanation.
+
+The new small-practice browser case uses personal synthetic workspace
+71092363-2a01-4bab-b03f-abfe878212f7, project
+714683c5-9d7e-418d-a225-1f40d79f6f9c and engagement
+faf088b6-7810-457d-b90f-630b8521309f. From actual navigation it created a client,
+fixed-fee engagement, invoice SYNTH-PRACTICE-FIXED-01 (1000 gross, 100 retention,
+900 net), marked the invoice sent internally, uploaded and retained two explicit
+synthetic PDFs, created a final-memo deliverable, and proposed then approved the
+1000 fee / 500 internal cost / 10 hours baseline. No external message was sent.
+Expense, settlement, closeout, reopening and downloaded reconstruction remain
+in progress for this UI case; the earlier transactional RPC case is separate.
+The browser still serves 5218ceb8, so the 782fcfd7 recovered-form and narrow-button
+fixes still need rebuilt browser verification.
