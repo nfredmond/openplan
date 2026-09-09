@@ -178,3 +178,19 @@ output and encoded screenshot data; it also has encrypted reasoning fields.
 The next audit must track all records and explicitly identify any inaccessible
 content, duplicates, source truncation or necessary credential redaction. Do not
 claim the history was read based on this structural inventory.
+
+### Retained-closeout retry repair
+
+The history review confirms retry-safe requests are part of the user's plan.
+Normalization now recognizes a previously retained closeout request and passes
+its original caller payload to SQL's existing exact-request/actor check. It does
+not recalculate against the later source hash or substitute a saved payload for
+an altered caller request. The live disposable practice case now replays exactly,
+refuses altered title and different actor, and refuses a new request with stale
+inputs. The real API adapter also exercises the replay path.
+
+Seven API/live checks pass. A harmless comment survives; removing the retry path
+fails both suites, and replacing the caller's payload with the stored one fails
+the altered-request rejection. TypeScript and focused lint pass. These checks do
+not establish an actual browser disconnect after commit. The served browser build
+is still aa66ac63 until rebuilt; no newer browser acceptance is claimed.

@@ -76,8 +76,10 @@ it.skipIf(!LIVE_RLS)("normalizes and persists small-practice settlement, costs a
   const normalizedClose=await normalizeContractCommand(db,context.engagement,context.owner,close);
   const saved=await db.rpc("record_contract_command",{p_engagement_id:context.engagement,p_actor_id:context.owner,p_command:normalizedClose});expect(saved.error).toBeNull();
   expect(await db.rpc("record_contract_command",{p_engagement_id:context.engagement,p_actor_id:context.owner,p_command:normalizedClose})).toEqual(saved);
-  // Re-normalizing a completed closeout currently rejects its original source hash; this is not HTTP retry coverage.
-  await expect(normalizeContractCommand(db,context.engagement,context.owner,close)).rejects.toThrow("closeout data changed");
+  expect(await send(close)).toEqual(saved.data);
+  await expect(send({...close,title:"Altered retry title"})).rejects.toThrow("Retained request changed");
+  const wrongActor=await db.rpc("record_contract_command",{p_engagement_id:context.engagement,p_actor_id:context.member,p_command:normalizedClose});expect(wrongActor.error?.message).toBe("Retained request changed");
+  await expect(send({...close,requestId:randomUUID()})).rejects.toThrow("closeout data changed");
   const closed=await read(),version=closed.closeout!.versions[0],hash=version.content_hash,pkg=version.content.package as CloseoutPackage;
   expect(pkg.position).toMatchObject({incurred:"200.00",underspend:"300.00",openObligations:1});
   const rows=accountingHandoffRows(pkg);expect(rows.some(r=>r[0]==="contract_total_incurred"&&r.includes("200.00"))).toBe(true);expect(rows.some(r=>r[0]==="invoice_total_open"&&r.includes("0.00"))).toBe(true);

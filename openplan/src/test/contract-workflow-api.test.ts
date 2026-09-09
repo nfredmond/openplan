@@ -5,12 +5,24 @@ import { deliveryFixture } from "./fixtures/contract-delivery";
 const mocks=vi.hoisted(()=>({rpc:vi.fn(),getUser:vi.fn()}));
 vi.mock("server-only",()=>({}));
 vi.mock("@/lib/supabase/server",()=>({createClient:async()=>({auth:{getUser:mocks.getUser}}),createServiceRoleClient:()=>({rpc:mocks.rpc})}));
+import {contractCommandSchema} from "@/lib/invoicing/contracts/schema";
+import type {CloseoutCommand} from "@/lib/invoicing/contracts/closeout-schema";
 import { saveContractCommand } from "@/lib/invoicing/contracts/server";
 const request=()=>new NextRequest("http://m11.localhost:3247/api/invoicing/engagements/synthetic/management",{method:"POST"});
 describe("server calculated closeout and settlement",()=>{
  beforeEach(()=>{vi.clearAllMocks();mocks.getUser.mockResolvedValue({data:{user:{id:randomUUID()}}});});
  function context(){const f=deliveryFixture();f.state.role="finance";f.state.delivery=f.delivery;f.state.closeout={settlements:[],deliverableEvents:[],versions:[],inputHash:"c".repeat(64)};mocks.rpc.mockImplementation(async()=>({data:f.state,error:null}));const command={kind:"closeout",requestId:randomUUID(),expectedInputHash:"c".repeat(64),expectedVersion:0,title:"Synthetic",asOf:"2026-09-08",coverageComplete:true,coverageEvidence:"Synthetic coverage",workAccepted:false,workAuthority:"Unassessed",financialSettled:false,financeAuthority:"Synthetic finance",obligations:[],evidence:"Synthetic decision"};return {...f,command};}
  it("computes the retained position itself and omits raw rate records from the package",async()=>{const f=context();f.state.rates=[{id:randomUUID(),staff_id:f.staff,basis:"cost",starts_on:"2026-09-01",ends_on:"2026-10-01",hourly_rate:"123.45",source_reference:"PRIVATE RATE"}];const result=await saveContractCommand(request(),f.state.engagement.id,f.command);expect(result.status).toBe(200);const write=mocks.rpc.mock.calls.find(([name])=>name==="record_contract_command")![1].p_command;expect(write._position).toMatchObject({incurred:"0.00",underspend:"500.00",workAccepted:false,financialSettled:true});expect(write._inputHash).toBe(f.state.closeout!.inputHash);expect(write._package.formatVersion).toBe(3);expect(JSON.stringify(write._package)).not.toContain("PRIVATE RATE");expect(write._request).toEqual(f.command);});
+ it("replays a retained closeout through SQL without recalculating its obsolete source hash",async()=>{
+  const f=context(),saved={closeoutId:randomUUID()};
+  f.state.closeout!.versions=[{id:saved.closeoutId,version:1,state:"closed",previous_id:null,input_hash:"c".repeat(64),content:{request:contractCommandSchema.parse(f.command) as CloseoutCommand},content_hash:"d".repeat(64),created_at:"2026-09-08T00:00:00Z"}];
+  f.state.closeout!.inputHash="e".repeat(64);
+  mocks.rpc.mockImplementation(async(name:string)=>({data:name==="record_contract_command"?saved:f.state,error:null}));
+  const response=await saveContractCommand(request(),f.state.engagement.id,f.command);
+  expect(response.status).toBe(200);expect(await response.json()).toEqual(saved);
+  const write=mocks.rpc.mock.calls.find(([name])=>name==="record_contract_command")![1].p_command;
+  expect(write).toEqual({...f.command,_request:f.command});
+ });
  it("refuses a stale closeout preview without adopting the later financial position",async()=>{const f=context();const result=await saveContractCommand(request(),f.state.engagement.id,{...f.command,expectedInputHash:"0".repeat(64)});expect(result.status).toBe(400);expect((await result.json()).error).toContain("changed since you opened this page");expect(mocks.rpc.mock.calls.some(([name])=>name==="record_contract_command")).toBe(false);});
  it("refuses a changed source set before writing or an unsupported work-acceptance claim",async()=>{const f=context();let reads=0;mocks.rpc.mockImplementation(async(name:string)=>({data:name==="read_contract_management"?{...f.state,closeout:{...f.state.closeout,inputHash:++reads<3?f.state.closeout!.inputHash:"changed"}}:f.state,error:null}));const result=await saveContractCommand(request(),f.state.engagement.id,f.command);expect(result.status).toBe(400);expect((await result.json()).error).toContain("changed during reading");expect(mocks.rpc.mock.calls.some(([name])=>name==="record_contract_command")).toBe(false);const second=context();const unsupported=await saveContractCommand(request(),second.state.engagement.id,{...second.command,workAccepted:true});expect(unsupported.status).toBe(400);expect((await unsupported.json()).error).toContain("authorized accepted deliverable");});
  it("records documented payments with unresolved holds while preserving release protection",async()=>{

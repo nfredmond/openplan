@@ -1,0 +1,133 @@
+# M11 handoff history reconciliation, September 8 evening
+
+Status: all prior user/assistant messages and both handoff/implementation notes read.
+Relevant tool verification continues. This is not a claim that every bulk tool dump
+or recovered screenshot has been inspected. The user was asked whether that much
+broader line-by-line dump review is desired; no answer has arrived yet. Preserve
+this distinction and continue the authorized implementation and consolidation.
+
+## Source and reading record
+
+Prior M11 session: 01a08215-d429-7813-8747-178f4af31327.
+Source: /home/nathaniel/.codex/sessions/2026/09/08/rollout-2026-09-08T10-34-23-01a08215-d429-7813-8747-178f4af31327.jsonl.
+SHA256: 843269f25422e54a18058689015931e1e27d786338380dc8b6d248722f610b4a.
+The source has 9,439 records, 158,403,031 bytes. No source file was modified.
+
+All 171 user/assistant response messages were extracted with source record numbers
+and exact character boundaries, then read in five bounded chunks. This includes
+the initial full instructions and plan, every progress message, the browser
+interruption/recovery discussion and the final handoff. Five other response
+messages contain harness instructions; the initial instruction blocks were also
+read in the broader record review. The six function-call/output records were read,
+including the two asynchronous user questions. IMPLEMENTATION.md was read fully
+in contiguous character ranges 0–18000, 18000–36000, 36000–54000, 54000–72000 and
+72000–79172. CONTINUE.md was read fully, as was this run's RESUMED.md.
+
+Local custody and read ledgers are under:
+/home/nathaniel/.local/state/openplan/m11-resumed-acceptance-2026-09-08/.
+`conversation/manifest.json` records all five completed conversation chunks.
+`history/` and `history-v2/` index every original record, text occurrence, metadata,
+credential redaction, encrypted field and recovered image. `history-read/` retains
+exact text plus exact-substring duplicate references; only chunks 1–6 of 756 have
+been read in full. Preparation/inventory is not reading. Raw transcripts and
+captures stay local, outside Git. Only findings and nonconfidential receipts belong
+in repository notes.
+
+One early combined user-message read was tool-truncated. The full plan and full
+instructions were subsequently read from the bounded chunk files. A later combined
+conversation display elided a short part of the already-read plan; its complete
+text was independently read in history chunk 5. No missing plan text was inferred.
+
+Encrypted reasoning is unavailable as plaintext: 1,621 encrypted occurrences,
+including duplicated compacted history, are individually indexed by source line,
+field and hash in unavailable.json. These are not recovered private reasoning.
+302 distinct embedded images were recovered byte-for-byte but are not yet all
+visually reviewed. The original source itself contains shortened command outputs
+and the user's abbreviated pasted browser-assessment transcript at record 9369.
+Its displayed '+N lines' portions are not present in that pasted message. The
+separate assessment report exists; its underlying full assessment-session transcript
+has not yet been identified. Expired /tmp artifacts remain unavailable on disk;
+embedded source/output records may recover some content but do not prove an old
+runtime or download still exists. Credential-looking values are explicitly redacted
+in reading copies; originals are not copied into repository notes.
+
+## Instructions and approvals recovered
+
+- Record 9 is the authoritative four-increment plan. It explicitly requires agency
+  internal staff and two consultant orders first, then a small consulting practice.
+  It preserves PM employee-cost access within assignments, finance-only private
+  rates, scoped consultants, received/outgoing/reimbursement distinctions, exact
+  source attribution and no duplicate cost. It requires deterministic forecasts,
+  explicit calendars and reviews, staff proposal/PM acceptance, retained assumptions,
+  actionable responses, reminders, settlement and immutable closeout/reopening.
+- Record 9 also requires retry-safe requests, interrupted saves, isolated RLS,
+  populated upgrades, worker recovery, desktop/390px/keyboard journeys, inspected
+  PDF/XLSX and exported reconstruction. Neither synthetic engineering approval nor
+  one release completes M11. Observed agency PM review and independent human finance
+  acceptance are explicitly required. No later user message removes these conditions.
+- Record 1554 asks permission for the prepared reminder CHECK replacement. Record
+  1557 only acknowledges presentation of the question. No user approval reply exists.
+  Records 9188, 9233 and 9369 concern browser recovery and continuation, not that SQL.
+  The reminder migration remains unapplied; current notices must remain truthful.
+- The current user's consolidation request authorizes landing all OpenPlan work to
+  main. It supersedes the handoff's earlier no-merge scope. Active ownership still
+  needs verification before changing main. It does not authorize paid services,
+  actual agency decisions, outreach, or destructive database operations.
+
+## Omissions, contradictions and recovered problems
+
+The handoff preserves the full plan and principal remaining work. No later hidden
+user approval or scope reduction was found in the conversation. Its acceptance
+claims are deliberately narrower than milestone completion.
+
+1. The old preview claim, 'changed input state' at records 9054/9122, covered loaded
+   server state and worker lifecycle. It did not cover edits inside the form. This
+   run reproduced stale displayed money after unchecking coverage and fixed it in
+   aa66ac63. The new browser journey confirms clearing while retaining old reviews.
+2. The 144,000-row measurement at record 9122 was honestly bounded, but was not the
+   schema maximum. This run found 14,620,000 rows at maximum and JSON serialization
+   failure, then compacted own daily totals into versioned format 2. Node maximum
+   serialization now works. Adverse warning volume, browser clone/render, RPC and
+   maximum export limits remain open.
+3. The pre-commit save interruption at records 7617/7664 is real historical evidence
+   of a retained failed request. It does not prove a lost response after commit.
+   Our live practice test found re-normalization rejected a completed closeout's old
+   hash. The current repair sends an identified retained request to SQL's existing
+   actor/payload check. Exact replay succeeds; altered payload and different actor
+   fail. This still requires appropriate request-path/browser recovery evidence.
+4. Source-cutoff claims at records 3254–3385 refer to a conservative mutation ledger.
+   They do not establish transaction-commit visibility. The handoff explicitly
+   preserves this gap. No global transaction-isolation change has been made.
+5. Artifact claims at records 7752, 8764–9014 distinguish issued old downloads from
+   unissued new renderer checks. Preserve that distinction. This run issued a new
+   format-7 report and recovered a killed PDF worker, but current browser delivery,
+   byte comparisons and complete artifact inspection remain unfinished.
+6. Former staff/consultant queue and permission failures were repaired in code and
+   tested historically. The consultant's own corrected-invoice journey through the
+   newer My Work entry is still open; do not substitute the earlier PM/finance
+   correction journey at records 5021–5073.
+7. The previous agent candidly corrected premature lint success, wrong worker PID,
+   wrong live-test opt-in, ineffective mutation anchors, syntax-only fault failures,
+   SQL NULL assertions, shuffled-test setup, view privilege and migration inventory
+   omissions. These are not current failures merely because they appear in history.
+   Their fixes need current checks; the old blanket-green claims cannot be reused.
+8. The handoff's runtime PIDs, /tmp paths and closed A state were stale after restart
+   and this run's synthetic reopening. RESUMED.md supersedes them. The other Codex
+   process currently seen in main is a browser-tool app-server, not evidence of a
+   second editing agent. All seven worktrees were clean at the consolidation scan.
+
+## Current consolidation evidence
+
+At 527cf048, seven worktrees have no tracked or untracked changes. Every non-M11
+worktree HEAD is an ancestor of main 76f019bf. The only open PR is draft #107,
+work/m11-delivery-closeout to main, with 25 commits absent from main at that point.
+All 194 unique commits referenced by the last week's reflogs are contained in
+local or remote branches. Full Git object inspection found 30 unreachable commits,
+none dated September 1 or later, plus 574 blobs and 328 trees. These older objects
+remain untouched. This does not prove that never-saved or garbage-collected work
+can be recovered. No merge, branch deletion, reset or cleanup has occurred yet.
+
+Current retry edits follow this inventory and will be checkpointed before landing.
+Keep checks, main integration and final acceptance results separate from this
+read-only inventory. A merge must retain every M11 commit and preserve all older
+branch ancestry; do not squash away the evidence chain.

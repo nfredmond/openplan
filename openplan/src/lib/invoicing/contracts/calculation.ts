@@ -28,6 +28,8 @@ export async function normalizeContractCommand(service:CalculationClient,engagem
    const first=await service.rpc("read_contract_management",{p_engagement_id:engagementId,p_actor_id:actorId});
    const state=first.data as ContractState;
    if(first.error||!state.closeout)throw new Error("Closeout source records are unavailable");
+   // SQL replays the original result only after checking the actor and exact retained request.
+   if(command.kind==="closeout"&&state.closeout.versions.some(v=>v.content.request?.requestId===command.requestId))return {...command,_request:command};
    const confirm=await service.rpc("read_contract_management",{p_engagement_id:engagementId,p_actor_id:actorId});
    if(confirm.error||state.closeout.inputHash!==(confirm.data as ContractState).closeout?.inputHash)throw new Error("Financial sources changed during reading. Reload and reconcile again.");
    if(command.kind==="settlement"){
