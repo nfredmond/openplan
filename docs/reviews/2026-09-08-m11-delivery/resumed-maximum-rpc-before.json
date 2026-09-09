@@ -1,0 +1,11 @@
+{
+  "stage": "Before transport repair",
+  "elapsedMs": 2991.649582,
+  "error": {
+    "code": "22023",
+    "details": null,
+    "hint": null,
+    "message": "Invalid delivery request"
+  },
+  "result": null
+}

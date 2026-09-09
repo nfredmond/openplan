@@ -98,13 +98,17 @@ npm run ops:restore-drill
 
 This command creates and removes disposable local services and test data. Inspect
 [its script](../../scripts/ops/disposable-restore-drill.sh) and confirm its
-project names and port ranges do not conflict with other work before running it.
+project names before running it.
 It starts two temporary Supabase projects, applies migrations, populates selected
 tenant/evidence rows, dumps selected tables as SQL, imports those rows into the
 second project's migration-created schema, transfers one private object through
 the Storage API, checks relationships and hashes, and runs live RLS tests against
-the restored target. The script uses ports in the 563xx and 573xx ranges and
-cleans up its temporary projects and files on exit.
+the restored target. On Linux, the script selects unused six-port blocks between 20000 and 31987,
+excluding the kernel outbound connection range and the source stack's ports.
+It probes existing listeners without stopping them. Selection cannot prevent an
+unrelated service from taking a port before Docker binds it; a collision fails
+the drill rather than replacing that service. The script cleans up only its
+temporary projects and files on exit.
 
 It does **not** restore the full custom-format database archive or the `/mnt`
 tar archive above, preserve all local model artifacts, test complete Auth/role

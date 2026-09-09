@@ -1,0 +1,117 @@
+[
+  {
+    "name": "harmless-billing-comment",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "ignore-purchaser-direction",
+    "outcome": "killed",
+    "expected": "draws agency fee"
+  },
+  {
+    "name": "sum-historical-received",
+    "outcome": "killed",
+    "expected": "draws agency fee"
+  },
+  {
+    "name": "treat-pending-as-approved",
+    "outcome": "killed",
+    "expected": "does not infer zero"
+  },
+  {
+    "name": "skip-received-currency",
+    "outcome": "killed",
+    "expected": "does not infer zero"
+  },
+  {
+    "name": "rewrite-old-report-direction",
+    "outcome": "killed",
+    "expected": "preserves issued format 5"
+  },
+  {
+    "name": "omit-handoff-source-version",
+    "outcome": "killed",
+    "expected": "retains received line basis"
+  },
+  {
+    "name": "omit-handoff-review-history",
+    "outcome": "killed",
+    "expected": "retains original accounting identity"
+  },
+  {
+    "name": "omit-handoff-line-basis",
+    "outcome": "killed",
+    "expected": "retains received line basis"
+  },
+  {
+    "name": "rewrite-old-handoff",
+    "outcome": "killed",
+    "expected": "leaves format 1 columns"
+  },
+  {
+    "name": "omit-purchaser-cash",
+    "outcome": "killed",
+    "expected": "shows supplier cash totals"
+  },
+  {
+    "name": "sum-both-cash-directions",
+    "outcome": "killed",
+    "expected": "shows supplier cash totals"
+  },
+  {
+    "name": "pending-cash-as-zero",
+    "outcome": "killed",
+    "expected": "shows supplier cash totals"
+  },
+  {
+    "name": "internal-billing-forecast",
+    "outcome": "killed",
+    "expected": "separates outgoing, internal"
+  },
+  {
+    "name": "emit-old-closeout-package",
+    "outcome": "killed",
+    "expected": "computes the retained position"
+  },
+  {
+    "name": "reject-new-closeout-download",
+    "outcome": "killed",
+    "expected": "downloads retained old and new"
+  },
+  {
+    "name": "unscoped-closeout-download",
+    "outcome": "killed",
+    "expected": "downloads retained old and new"
+  },
+  {
+    "name": "omit-form-perspective",
+    "outcome": "killed",
+    "expected": "retains the selected purchaser"
+  },
+  {
+    "name": "harmless-direction-sql",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "admit-unknown-direction",
+    "outcome": "killed",
+    "expected": "Invalid perspective accepted"
+  },
+  {
+    "name": "admit-undocumented-direction",
+    "outcome": "killed",
+    "expected": "Undocumented perspective accepted"
+  },
+  {
+    "name": "old-snapshot-format",
+    "outcome": "killed",
+    "expected": "Approved perspective or report format lost"
+  },
+  {
+    "name": "omit-received-forecast-custody",
+    "outcome": "killed",
+    "expected": "Received invoice did not stale forecast"
+  }
+]

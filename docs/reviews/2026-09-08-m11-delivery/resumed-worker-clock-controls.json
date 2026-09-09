@@ -1,0 +1,14 @@
+[
+  {
+    "name": "harmless",
+    "exit": 0,
+    "expectedFailure": null,
+    "matched": true
+  },
+  {
+    "name": "wall-clock-zip",
+    "exit": 1,
+    "expectedFailure": "identical fixture inputs must retain identical ZIP bytes across clock changes",
+    "matched": true
+  }
+]

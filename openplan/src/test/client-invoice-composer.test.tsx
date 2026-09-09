@@ -67,6 +67,7 @@ function stubFetch({ nteWarning }: { nteWarning?: { billedToDate: number; notToE
 }
 
 function fillRequiredHeader() {
+  fireEvent.change(screen.getByLabelText("Invoice currency code"), {target:{value:"USD"}});
   fireEvent.change(screen.getByLabelText("Client"), { target: { value: CLIENT_ID } });
   fireEvent.change(screen.getByLabelText("Invoice number"), { target: { value: "INV-2026-014" } });
 }
@@ -88,6 +89,7 @@ describe("ClientInvoiceComposer", () => {
 
   it("computes line amounts and invoice totals live with the shared helpers", () => {
     render(<ClientInvoiceComposer {...baseProps} />);
+    fireEvent.change(screen.getByLabelText("Invoice currency code"), {target:{value:"USD"}});
 
     fireEvent.change(screen.getByLabelText(/Description \(line 1\)/), { target: { value: "Planning services" } });
     fireEvent.change(screen.getByLabelText("Quantity"), { target: { value: "10" } });
@@ -100,6 +102,25 @@ describe("ClientInvoiceComposer", () => {
     expect(totals.getByText("Retention (10.00%)")).toBeInTheDocument();
     expect(totals.getByText("$150.00")).toBeInTheDocument();
     expect(totals.getByText("$1,350.00")).toBeInTheDocument();
+  });
+
+  it("keeps an unchosen currency unassessed and submits an explicitly chosen different currency",async()=>{
+    const fetchMock=stubFetch();render(<ClientInvoiceComposer {...baseProps}/>);
+    expect(screen.getByLabelText("Invoice currency code")).toHaveValue("");
+    fireEvent.change(screen.getByLabelText(/Description \(line 1\)/),{target:{value:"Synthetic fixed fee"}});
+    fireEvent.change(screen.getByLabelText("Quantity"),{target:{value:"1"}});
+    fireEvent.change(screen.getByLabelText("Unit rate"),{target:{value:"1000"}});
+    const totals=within(screen.getByText("Invoice totals").closest("aside") as HTMLElement);
+    expect(totals.getAllByText("1000.00 (currency unassessed)")).toHaveLength(2);
+    fireEvent.submit(screen.getByRole("button",{name:"Save client invoice"}).closest("form")!);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert")).toHaveTextContent("Enter the invoice currency");
+    fillRequiredHeader();fireEvent.change(screen.getByLabelText("Invoice currency code"),{target:{value:"eur"}});
+    expect(totals.getAllByText("€1,000.00")).toHaveLength(2);
+    fireEvent.click(screen.getByRole("button",{name:"Save client invoice"}));
+    await waitFor(()=>expect(fetchMock).toHaveBeenCalled());
+    const call=fetchMock.mock.calls.find(([,init])=>init?.method==="POST") as unknown as [string,{body:string}];
+    expect(JSON.parse(call[1].body)).toMatchObject({currencyCode:"EUR",lineItems:[{quantity:1,unitAmount:1000}]});
   });
 
   it("pulls unbilled time into grouped draft lines with rate sources disclosed", async () => {
@@ -156,6 +177,7 @@ describe("ClientInvoiceComposer", () => {
       clientId: string;
       engagementId: string;
       invoiceNumber: string;
+      currencyCode: string;
       lineItems: Array<Record<string, unknown>>;
     };
 
@@ -163,6 +185,7 @@ describe("ClientInvoiceComposer", () => {
     expect(payload.clientId).toBe(CLIENT_ID);
     expect(payload.engagementId).toBe(ENGAGEMENT_ID);
     expect(payload.invoiceNumber).toBe("INV-2026-014");
+    expect(payload.currencyCode).toBe("USD");
     // The untouched starter line is dropped; only the two pulled groups remain.
     expect(payload.lineItems).toHaveLength(2);
 

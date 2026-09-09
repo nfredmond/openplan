@@ -81,3 +81,45 @@ This is internal planning management. It does not establish accounting revenue,
 claim eligibility, external authority, funder forms, resource scheduling, forecast
 finish dates, contract closeout or practitioner usefulness. M11 and the full v1
 contract remain open.
+
+
+## Development candidate: reviewed delivery calculations
+
+Apply the unreleased migrations named in CHANGELOG before using this candidate.
+From `openplan/`, run `npm run worker:contract-calculations` with this deployment's
+local `.env.local`. It uses the same Supabase configuration as the app and needs
+no paid provider. The existing `worker:document-exports` remains responsible for
+PDF/XLSX documents. Keep these workers pointed at the intended database.
+
+Forecasts, response comparisons, accounting imports and closeout submissions
+return a durable job identity and HTTP 202. The management page polls scoped
+metadata and reloads retained results after completion. Queued is not saved.
+The worker runs calculations in a child process while its parent renews a
+two-minute lease every 20 seconds. A terminated attempt is reclaimed after lease
+expiry; the job and contract decision commit in one database transaction.
+Explicitly failed jobs can be retried by their still-authorized requester. A
+changed source or approval payload requires a new review, never silent rebasing.
+Original accounting rows and private closeout payloads are excluded from the
+metadata endpoint and authenticated table reads.
+
+The browser still computes an optional preview locally. It is bounded to a
+730-day horizon; large preview responsiveness remains an acceptance check.
+Human agency PM and finance acceptance, reminders for contract work, final
+mobile/artifact/recovery journeys and complete M11 acceptance remain open.
+
+### Draft current-position safeguards
+
+The M11 candidate uses documented payments and credits for the invoice register's
+balances and aging, with separate currencies, retention, disputes and refund
+obligations. A changed invoice version or incomplete read leaves coverage
+unassessed. Gross authorization remaining to bill excludes credits in new
+format-5 reports. Only an unchanged reviewed forecast supplies current remaining
+costs; stale reports and older issued formats retain their history.
+
+Apply both `20260917000001_contract_staff_schedule_integrity.sql` and
+`20260918000001_contract_mutable_source_cutoffs.sql` for current staffing and
+historical-cutoff safeguards. Removed working assignments and closed contracts
+release reservations. Departed staff cannot receive new accepted work. Since
+mutable planning records have no retrospective versions, a later change can
+prevent a new historical report. Choose a current cutoff; previously issued
+reports are still retained. The safeguard starts when this migration is applied.

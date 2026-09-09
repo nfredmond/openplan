@@ -1,0 +1,107 @@
+[
+  {
+    "name": "harmless-export-comment",
+    "outcome": "survived",
+    "reason": null
+  },
+  {
+    "name": "omit-received-checksum",
+    "outcome": "killed",
+    "reason": "retains received original checksums"
+  },
+  {
+    "name": "rewrite-format-two",
+    "outcome": "killed",
+    "reason": "retains received original checksums"
+  },
+  {
+    "name": "lost-obligation-check",
+    "outcome": "killed",
+    "reason": "requires retained identity"
+  },
+  {
+    "name": "unsupported-obligation-satisfaction",
+    "outcome": "killed",
+    "reason": "requires retained identity"
+  },
+  {
+    "name": "duplicate-obligation-identity",
+    "outcome": "killed",
+    "reason": "requires retained identity"
+  },
+  {
+    "name": "legacy-cash-columns",
+    "outcome": "killed",
+    "reason": "shows documented cash up front"
+  },
+  {
+    "name": "missing-current-cash",
+    "outcome": "killed",
+    "reason": "shows documented cash up front"
+  },
+  {
+    "name": "missing-retained-byte-count",
+    "outcome": "killed",
+    "reason": "shows documented cash up front"
+  },
+  {
+    "name": "split-accounting-record",
+    "outcome": "killed",
+    "reason": "keeps one accounting row"
+  },
+  {
+    "name": "emit-old-package",
+    "outcome": "killed",
+    "reason": "computes the retained position"
+  },
+  {
+    "name": "empty-reopened-form",
+    "outcome": "killed",
+    "reason": "carries open obligations"
+  },
+  {
+    "name": "false-reopened-claims",
+    "outcome": "killed",
+    "reason": "carries open obligations"
+  },
+  {
+    "name": "reject-package-three",
+    "outcome": "killed",
+    "reason": "downloads retained old and new"
+  },
+  {
+    "name": "harmless-receipt-sql",
+    "outcome": "survived",
+    "reason": null
+  },
+  {
+    "name": "omit-receipt-sql",
+    "outcome": "killed",
+    "reason": "Original received receipt missing"
+  },
+  {
+    "name": "future-receipt-sql",
+    "outcome": "killed",
+    "reason": "Future original receipt crossed cutoff"
+  },
+  {
+    "name": "old-report-format-seven",
+    "outcome": "killed",
+    "reason": "New snapshot receipt format missing"
+  },
+  {
+    "name": "drop-obligation-sql",
+    "outcome": "killed",
+    "reason": "Prior obligation silently lost"
+  },
+  {
+    "name": "satisfy-obligation-sql",
+    "outcome": "killed",
+    "reason": "Obligation satisfied without new evidence"
+  },
+  {
+    "name": "duplicate-obligation-sql",
+    "outcome": "killed",
+    "reason": "Duplicate obligation identity admitted"
+  }
+]

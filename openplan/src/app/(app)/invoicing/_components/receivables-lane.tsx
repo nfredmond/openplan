@@ -1,24 +1,24 @@
 import Link from "next/link";
+import { formatInvoiceMoney } from "@/lib/invoicing/invoice-currency";
+import { InvoiceBalance } from "@/components/invoicing/contracts/invoice-balance";
 import { ClientComposer, type ClientComposerRecord } from "@/components/invoicing/client-composer";
 import { ClientInvoiceComposer } from "@/components/invoicing/client-invoice-composer";
 import { ClientInvoiceStatusControl } from "@/components/invoicing/client-invoice-status-control";
 import { EngagementComposer, type EngagementComposerRecord } from "@/components/invoicing/engagement-composer";
 import { EngagementNteBar } from "@/components/invoicing/engagement-nte-bar";
-import { ReceivableAgingStrip } from "@/components/invoicing/receivable-aging-strip";
+import { ContractCashPosition } from "@/components/invoicing/contracts/cash-position";
 import { StaffAndRatesPanel } from "@/components/invoicing/staff-and-rates-panel";
 import { TimeEntryComposer } from "@/components/invoicing/time-entry-composer";
 import { TimeEntryRowControls } from "@/components/invoicing/time-entry-row-controls";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   buildEngagementBilledSummary,
-  buildReceivableAgingSummary,
   summarizeReceivables,
   type ClientInvoiceRecordLike,
 } from "@/lib/invoicing/receivables";
 import { summarizeUnbilledTime, type TimeEntryLike } from "@/lib/invoicing/time-billing";
 import { createClient } from "@/lib/supabase/server";
 import {
-  formatCurrency,
   insetClass,
   looksLikePendingSchema,
   panelClass,
@@ -56,6 +56,7 @@ type ClientInvoiceRow = ClientInvoiceRecordLike & {
   engagement_id: string | null;
   project_id: string | null;
   invoice_number: string;
+  currency_code: string | null;
   status: string;
   sent_date: string | null;
   paid_date: string | null;
@@ -141,7 +142,7 @@ export async function ReceivablesLane({
       supabase
         .from("client_invoices")
         .select(
-          "id, client_id, engagement_id, project_id, invoice_number, status, sent_date, paid_date, period_start, period_end, invoice_date, due_date, subtotal_amount, retention_percent, retention_amount, total_amount, payment_terms, notes, created_at"
+          "id, client_id, engagement_id, project_id, invoice_number, status, sent_date, paid_date, period_start, period_end, invoice_date, due_date, subtotal_amount, retention_percent, retention_amount, total_amount, payment_terms, currency_code, notes, created_at"
         )
         .eq("workspace_id", workspaceId)
         .order("created_at", { ascending: false })
@@ -206,7 +207,6 @@ export async function ReceivablesLane({
     : ((deliverablesRead.data ?? []) as Array<{ id: string; project_id: string; title: string }>);
 
   const receivableSummary = summarizeReceivables(invoices);
-  const workspaceAging = buildReceivableAgingSummary(invoices);
   const unbilledSummary = summarizeUnbilledTime(timeEntries);
 
   const engagementTitleById = new Map(engagements.map((engagement) => [engagement.id, engagement.title]));
@@ -274,7 +274,7 @@ export async function ReceivablesLane({
           </p>
         ) : (
           <>
-            <div className="mt-4 grid gap-px border border-border/60 bg-border/80 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-4 border border-border/60 bg-background/70">
               <div className="bg-background/70 px-4 py-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Invoices</p>
                 <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{receivableSummary.totalCount}</p>
@@ -282,28 +282,12 @@ export async function ReceivablesLane({
                   {receivableSummary.draftCount} draft, {receivableSummary.sentCount} sent, {receivableSummary.paidCount} paid, {receivableSummary.voidCount} void.
                 </p>
               </div>
-              <div className="bg-background/70 px-4 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Outstanding</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(receivableSummary.outstandingAmount)}</p>
-                <p className="mt-1 text-sm text-muted-foreground">Sent invoices not yet paid or voided.</p>
-              </div>
-              <div className="bg-background/70 px-4 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Overdue</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(receivableSummary.overdueAmount)}</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {receivableSummary.overdueCount} invoice{receivableSummary.overdueCount === 1 ? "" : "s"} past due date.
-                </p>
-              </div>
-              <div className="bg-background/70 px-4 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Paid</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(receivableSummary.paidAmount)}</p>
-                <p className="mt-1 text-sm text-muted-foreground">Settled receivable value.</p>
-              </div>
+
             </div>
 
             <div className="mt-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Workspace aging</p>
-              <ReceivableAgingStrip aging={workspaceAging} />
+              <p className="mb-2 text-sm text-muted-foreground">Status counts describe the loaded register rows. Financial balances below read every issued invoice.</p>
+              <ContractCashPosition workspaceId={workspaceId} details/>
             </div>
           </>
         )}
@@ -339,9 +323,8 @@ export async function ReceivablesLane({
         ) : (
           <ul className="mt-4 space-y-4">
             {clients.map((client) => {
-              const clientEngagements = engagements.filter((engagement) => engagement.client_id === client.id);
               const clientInvoices = invoices.filter((invoice) => invoice.client_id === client.id);
-              const clientAging = buildReceivableAgingSummary(clientInvoices);
+              const clientEngagements = engagements.filter((engagement) => engagement.client_id === client.id);
               const composerRecord: ClientComposerRecord = {
                 id: client.id,
                 name: client.name,
@@ -367,7 +350,7 @@ export async function ReceivablesLane({
                   </div>
 
                   <div className="mt-3">
-                    <ReceivableAgingStrip aging={clientAging} />
+                    <ContractCashPosition workspaceId={workspaceId} clientId={client.id} details/>
                   </div>
 
                   {clientEngagements.length > 0 ? (
@@ -442,7 +425,7 @@ export async function ReceivablesLane({
                               ) : null}
                             </div>
                             <p className="text-sm font-semibold text-foreground">
-                              {formatCurrency(Number(invoice.total_amount ?? 0))}
+                              {formatInvoiceMoney(Number(invoice.total_amount ?? 0),invoice.currency_code)}
                             </p>
                           </div>
                           <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
@@ -452,6 +435,7 @@ export async function ReceivablesLane({
                             {invoice.paid_date ? <span>Paid {invoice.paid_date}</span> : null}
                             {invoice.payment_terms ? <span>{invoice.payment_terms}</span> : null}
                           </div>
+                          {invoice.engagement_id && <InvoiceBalance engagementId={invoice.engagement_id} invoiceId={invoice.id}/>}
                           <div className="mt-2 border-t border-border/50 pt-2">
                             <ClientInvoiceStatusControl
                               workspaceId={workspaceId}

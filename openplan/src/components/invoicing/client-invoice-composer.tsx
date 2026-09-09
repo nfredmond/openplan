@@ -18,6 +18,7 @@ import {
   type TimeEntryLike,
 } from "@/lib/invoicing/time-billing";
 import { formatMoney } from "@/lib/money/format";
+import { formatInvoiceMoney } from "@/lib/invoicing/invoice-currency";
 
 export type InvoiceClientOption = { id: string; name: string };
 export type InvoiceEngagementOption = {
@@ -114,6 +115,7 @@ export function ClientInvoiceComposer({
   const [engagementId, setEngagementId] = useState("");
   const [projectId, setProjectId] = useState("");
   const [invoiceNumber, setInvoiceNumber] = useState("");
+  const [currencyCode, setCurrencyCode] = useState("");
   const [invoiceDate, setInvoiceDate] = useState("");
   const [periodStart, setPeriodStart] = useState("");
   const [periodEnd, setPeriodEnd] = useState("");
@@ -327,6 +329,10 @@ export function ClientInvoiceComposer({
       return;
     }
 
+    if (!/^[A-Z]{3}$/.test(currencyCode)) {
+      setError("Enter the invoice currency as a three-letter code from the agreement.");
+      return;
+    }
     setIsSaving(true);
     try {
       const response = await fetch("/api/invoicing/client-invoices", {
@@ -338,6 +344,7 @@ export function ClientInvoiceComposer({
           engagementId: engagementId || undefined,
           projectId: projectId || undefined,
           invoiceNumber,
+          currencyCode,
           invoiceDate: invoiceDate || undefined,
           periodStart: periodStart || undefined,
           periodEnd: periodEnd || undefined,
@@ -477,6 +484,11 @@ export function ClientInvoiceComposer({
               </div>
             </div>
 
+            <div className="space-y-2">
+              <label htmlFor="client-invoice-currency" className="text-sm font-medium">Invoice currency code</label>
+              <Input id="client-invoice-currency" value={currencyCode} onChange={event=>setCurrencyCode(event.target.value.trim().toUpperCase())} required maxLength={3} pattern="[A-Z]{3}" placeholder="Three-letter code from the agreement"/>
+              <p className="text-xs text-muted-foreground">State the currency agreed with the client. Amounts and rates are not converted. Previously issued invoices keep their original currency; correct them by voiding and reissuing.</p>
+            </div>
             <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-2">
                 <label htmlFor="client-invoice-number" className="text-sm font-medium">
@@ -665,7 +677,7 @@ export function ClientInvoiceComposer({
                         ) : null}
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-sm font-semibold text-foreground">{formatMoney(lineAmountPreview(line), { precision: "cents" })}</span>
+                        <span className="text-sm font-semibold text-foreground">{formatInvoiceMoney(lineAmountPreview(line), currencyCode)}</span>
                         <button
                           type="button"
                           className="openplan-inline-label openplan-inline-label-muted"
@@ -743,15 +755,15 @@ export function ClientInvoiceComposer({
           <dl className="mt-4 space-y-3 text-sm text-muted-foreground">
             <div className="flex items-center justify-between gap-3 border-b border-border/50 pb-3">
               <dt>Subtotal</dt>
-              <dd className="font-semibold text-foreground">{formatMoney(totals.subtotalAmount, { precision: "cents" })}</dd>
+              <dd className="font-semibold text-foreground">{formatInvoiceMoney(totals.subtotalAmount, currencyCode)}</dd>
             </div>
             <div className="flex items-center justify-between gap-3 border-b border-border/50 pb-3">
               <dt>Retention ({totals.retentionPercent.toFixed(2)}%)</dt>
-              <dd className="font-semibold text-foreground">{formatMoney(totals.retentionAmount, { precision: "cents" })}</dd>
+              <dd className="font-semibold text-foreground">{formatInvoiceMoney(totals.retentionAmount, currencyCode)}</dd>
             </div>
             <div className="space-y-1 pt-1">
               <dt className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Invoice total</dt>
-              <dd className="text-2xl font-semibold tracking-tight text-foreground">{formatMoney(totals.totalAmount, { precision: "cents" })}</dd>
+              <dd className="text-2xl font-semibold tracking-tight text-foreground">{formatInvoiceMoney(totals.totalAmount, currencyCode)}</dd>
             </div>
           </dl>
           {selectedEngagement?.notToExceedAmount != null ? (

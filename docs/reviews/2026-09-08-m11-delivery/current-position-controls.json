@@ -1,0 +1,212 @@
+[
+  {
+    "name": "harmless-current-schedule",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "zero-effort-hides-late-finish",
+    "outcome": "killed",
+    "expected": "keeps a missed approved deadline"
+  },
+  {
+    "name": "ignore-changed-working-assignment",
+    "outcome": "killed",
+    "expected": "withholds a forecast after an amendment"
+  },
+  {
+    "name": "harmless-financial-coverage",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "hide-undated-obligation",
+    "outcome": "killed",
+    "expected": "keeps undated obligations"
+  },
+  {
+    "name": "paid-status-without-evidence",
+    "outcome": "killed",
+    "expected": "keeps undated obligations"
+  },
+  {
+    "name": "ignore-future-financial-records",
+    "outcome": "killed",
+    "expected": "does not settle a past period"
+  },
+  {
+    "name": "harmless-complete-cash-read",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "ignore-changed-invoice-row",
+    "outcome": "killed",
+    "expected": "ages the amount currently due"
+  },
+  {
+    "name": "truncate-cash-read",
+    "outcome": "killed",
+    "expected": "reads beyond the first page"
+  },
+  {
+    "name": "harmless-cash-aging",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "age-held-amounts-as-due",
+    "outcome": "killed",
+    "expected": "ages the amount currently due"
+  },
+  {
+    "name": "mix-cash-currencies",
+    "outcome": "killed",
+    "expected": "reads beyond the first page"
+  },
+  {
+    "name": "harmless-gross-authorization",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "credits-increase-unbilled-gross",
+    "outcome": "killed",
+    "expected": "separates internal cost"
+  },
+  {
+    "name": "harmless-current-forecast-report",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "reuse-stale-report-forecast",
+    "outcome": "killed",
+    "expected": "exports versioned forecast dates"
+  },
+  {
+    "name": "ignore-corrected-received-date",
+    "outcome": "killed",
+    "expected": "uses corrected current received invoice"
+  },
+  {
+    "name": "harmless-cutoff-custody",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "omit-staff-custody",
+    "outcome": "killed",
+    "expected": "Staff change was not retained"
+  },
+  {
+    "name": "omit-membership-deletion-custody",
+    "outcome": "killed",
+    "expected": "Departed membership was not retained"
+  },
+  {
+    "name": "ignore-mutable-cutoff",
+    "outcome": "killed",
+    "expected": "Mutable inputs entered an earlier cutoff"
+  },
+  {
+    "name": "expose-private-mutation-timing",
+    "outcome": "killed",
+    "expected": "Private change timing exposed"
+  },
+  {
+    "name": "expose-later-project-response",
+    "outcome": "killed",
+    "expected": "Later project response entered cutoff"
+  },
+  {
+    "name": "harmless-column-registration",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "omit-used-sql-field-registration",
+    "outcome": "killed",
+    "expected": "these columns exist"
+  },
+  {
+    "name": "harmless-copy-ratchet",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "allow-old-copy-count",
+    "outcome": "killed",
+    "expected": "A term of art moved"
+  },
+  {
+    "name": "harmless-schema-inventory",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "forget-new-custody-relation",
+    "outcome": "killed",
+    "expected": "reads every relation"
+  },
+  {
+    "name": "harmless-current-staff-sql",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "hide-colleague-availability",
+    "outcome": "killed",
+    "expected": "New colleague availability unavailable"
+  },
+  {
+    "name": "hide-pm-owned-proposal-document",
+    "outcome": "killed",
+    "expected": "PM proposal source scope incorrect"
+  },
+  {
+    "name": "expose-other-uploaders-documents",
+    "outcome": "killed",
+    "expected": "PM proposal source scope incorrect"
+  },
+  {
+    "name": "ignore-departed-membership",
+    "outcome": "killed",
+    "expected": "Departed staff received new work"
+  },
+  {
+    "name": "retain-removed-node-assignment",
+    "outcome": "killed",
+    "expected": "Removed node left an active assignment"
+  },
+  {
+    "name": "hide-new-pm-colleague",
+    "outcome": "killed",
+    "expected": "Scoped PM cannot choose a new colleague"
+  },
+  {
+    "name": "reserve-closed-assignment",
+    "outcome": "killed",
+    "expected": "Closed assignment still reserved capacity"
+  },
+  {
+    "name": "closure-does-not-stale-capacity",
+    "outcome": "killed",
+    "expected": "Closure did not stale reservation inputs"
+  },
+  {
+    "name": "harmless-reassignment-form",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "ignore-proposed-reassignment",
+    "outcome": "killed",
+    "expected": "compares a newly selected colleague"
+  },
+  {
+    "name": "rewrite-baseline-from-response-form",
+    "outcome": "killed",
+    "expected": "compares a newly selected colleague"
+  }
+]

@@ -1,0 +1,21 @@
+import { afterEach,expect,it,vi } from "vitest";
+import { cleanup,fireEvent,render,screen,waitFor } from "@testing-library/react";
+import { randomUUID } from "node:crypto";
+import { ManagementResponses } from "@/components/invoicing/contracts/management-responses";
+import { compareResponse } from "@/lib/invoicing/contracts/response";
+import { forecastDelivery } from "@/lib/invoicing/contracts/delivery";
+import { contractCommandSchema,type ContractCommand } from "@/lib/invoicing/contracts/schema";
+import { deliveryFixture } from "./fixtures/contract-delivery";
+afterEach(cleanup);
+it("compares a newly selected colleague without changing approved work or accepting a staff update",async()=>{
+ const f=deliveryFixture(),colleague=randomUUID(),record={id:randomUUID(),recordType:"risk" as const,title:"Synthetic reassignment response",status:"open",recordHash:"d".repeat(64),updated_at:"2026-09-08T00:00:00Z"};
+ f.state.staff.push({id:colleague,name:"Synthetic new colleague",active:true,user_id:null});
+ f.delivery.capacityVersions.push({...f.delivery.capacityVersions[0],id:randomUUID(),staff_id:colleague,content:{...f.delivery.capacityVersions[0].content,staffId:colleague}});
+ f.delivery.forecasts=[{id:randomUUID(),version:1,input_hash:f.delivery.inputHash,content:{inputs:{},result:forecastDelivery(f.state,f.delivery,f.options),reviewEvidence:"Synthetic review",coverageEvidence:"Synthetic coverage"},created_at:record.updated_at}];
+ f.state.delivery=f.delivery;f.state.responses={records:[record],responses:[],applications:[]};const before=structuredClone(f.state);
+ const send=vi.fn(async(command:ContractCommand)=>{const parsed=contractCommandSchema.parse(command);if(parsed.kind!=="response")throw new Error("Expected comparison");const compared=compareResponse(f.state,parsed);expect(compared.after.finish).toBe("2026-09-12");expect(compared.after.remainingCost).toBe("50.00");expect(compared.after.nodes.find(n=>n.id===f.work)?.finish).toBe("2026-09-10");expect(compared.request.schedule.nodes[0].staff).toEqual([{staffId:colleague,hoursPerDay:"2.00"}]);return true;});
+ render(<ManagementResponses state={f.state} send={send} busy={false}/>);
+ for(const [label,value] of [["Response project decision",record.id],["Response task",f.task],["Response staff",colleague],["Assumed remaining hours","4.00"],["Assumed available hours per day","8.00"],["Assumed remaining internal cost","50.00"],["Assumed remaining gross billing","100.00"],["Assumption valuation basis","Synthetic revised workload valuation"],["Response explanation","Synthetic proposed reassignment"]])fireEvent.change(screen.getByLabelText(label),{target:{value}});
+ fireEvent.click(screen.getByLabelText("Reassign this task to the selected person in this proposal"));fireEvent.change(screen.getByLabelText("Proposed reserved hours per working day"),{target:{value:"2.00"}});
+ fireEvent.click(screen.getByRole("button",{name:"Retain proposed effort comparison"}));await waitFor(()=>expect(send).toHaveResolvedWith(true));expect(f.state).toEqual(before);
+});

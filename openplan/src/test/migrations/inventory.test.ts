@@ -462,16 +462,23 @@ const EXPECTED = {
   // M2d.2 adds four private review tables and four SELECT policies. Live catalog checked on the isolated stack.
   // Contract reconciliation adds ten RLS tables, nine private/member SELECT tables,
   // ten permissive read policies and one restrictive Documents policy. Isolated catalog checked.
-  policies: 726,
-  permissive: 475,
+  // Seven immutable agency reconciliation tables, each with SELECT-only RLS.
+  // Confirmed on disposable m11-contract-verification: 733 policies, 217 tables.
+  // Reviewed delivery adds four SELECT-only history tables and one security-invoker My Work view.
+  // Weekly responses and closeout add five immutable tables with SELECT-only policies.
+  // Calculation jobs add one scoped metadata SELECT policy and one RLS table.
+  // Source visibility receipts add one service-only RLS table and no policies.
+  // Confirmed on the disposable stack: contract_source_observations has RLS and zero policies.
+  policies: 743,
+  permissive: 492,
   restrictive: 251,
   permissiveWrites: 280,
   expanded: 286,
-  tablesWithPolicies: 192,
-  relations: 219,
-  tables: 210,
-  views: 9,
-  rlsEnabledTables: 210,
+  tablesWithPolicies: 209,
+  relations: 242,
+  tables: 229,
+  views: 13,
+  rlsEnabledTables: 229,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
@@ -818,6 +825,10 @@ describe("migration schema inventory", () => {
     expect(schema.views()).toEqual([
       "census_tracts_computed",
       "census_tracts_map",
+      "contract_active_tasks_my_work",
+      "contract_delivery_my_work",
+      "contract_participant_my_work",
+      "contract_pending_my_work",
       "gtfs_stops_map",
       "lodes_by_tract",
       "project_bca_screenings_latest",

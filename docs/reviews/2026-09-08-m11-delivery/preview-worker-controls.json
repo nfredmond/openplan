@@ -1,0 +1,52 @@
+[
+  {
+    "name": "harmless-preview-comment",
+    "outcome": "survived",
+    "reason": null
+  },
+  {
+    "name": "skip-worker-request",
+    "outcome": "killed",
+    "reason": "calculates preview outside the page"
+  },
+  {
+    "name": "keep-completed-worker",
+    "outcome": "killed",
+    "reason": "calculates preview outside the page"
+  },
+  {
+    "name": "hide-worker-error",
+    "outcome": "killed",
+    "reason": "reports calculation and transport errors"
+  },
+  {
+    "name": "skip-worker-cancel",
+    "outcome": "killed",
+    "reason": "cancels and discards late replies"
+  },
+  {
+    "name": "skip-page-cleanup",
+    "outcome": "killed",
+    "reason": "discards calculations and previous previews"
+  },
+  {
+    "name": "show-stale-preview",
+    "outcome": "killed",
+    "reason": "discards calculations and previous previews"
+  },
+  {
+    "name": "calculate-before-queue",
+    "outcome": "killed",
+    "reason": "queues reviewed calculation without"
+  },
+  {
+    "name": "worker-false-result",
+    "outcome": "killed",
+    "reason": "runs the worker"
+  },
+  {
+    "name": "worker-hide-validation",
+    "outcome": "killed",
+    "reason": "runs the worker"
+  }
+]

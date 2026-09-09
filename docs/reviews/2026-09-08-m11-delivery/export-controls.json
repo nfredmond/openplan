@@ -1,0 +1,12 @@
+[
+  {
+    "control": "harmless export comment",
+    "outcome": "survived",
+    "reason": "focused test success"
+  },
+  {
+    "control": "drop format 2 agency evidence",
+    "outcome": "killed",
+    "reason": "expected undefined to deeply equal"
+  }
+]

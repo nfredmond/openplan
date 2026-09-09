@@ -1,0 +1,5 @@
+{
+  "migration": "20260928000001_contract_completed_review_dates.sql",
+  "baseline_actual_time_unchanged": true,
+  "canonical_sha256": "a6b1bfe272ecc1b77c37730603d9a0267878f7ec5a09bb50a0a1803fa42b31ca"
+}

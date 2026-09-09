@@ -116,7 +116,7 @@ const baseHtmlData = {
     retention_amount: 0,
     total_amount: 5000,
     payment_terms: "Net 30 from receipt",
-    currency_code: null,
+    currency_code: "USD",
     notes: "June progress billing",
   },
   lineItems: [
@@ -205,6 +205,12 @@ describe("buildClientInvoiceHtml", () => {
     expect(html).toContain("&lt;script&gt;alert(&quot;boom&quot;)&lt;/script&gt;");
     expect(html).toContain("Acme &amp; Sons &lt;Planning&gt;");
     expect(html).toContain("&quot;River&quot; &amp; Co");
+  });
+
+  it("does not invent dollars for a legacy invoice without a currency",()=>{
+    const html=buildClientInvoiceHtml({...baseHtmlData,invoice:{...baseHtmlData.invoice,currency_code:null}});
+    expect(html).toContain("5000.00 (currency unassessed)");
+    expect(html).not.toContain("$5,000.00");
   });
 
   it("formats amounts in the invoice's own currency code when one is recorded", () => {

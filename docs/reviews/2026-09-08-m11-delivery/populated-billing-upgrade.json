@@ -1,0 +1,10 @@
+{
+  "synthetic": true,
+  "throughMigration": "20260923000001",
+  "unchanged": [
+    "approved baseline",
+    "both retained actual versions",
+    "physical time"
+  ],
+  "canonicalSha256": "a6b1bfe272ecc1b77c37730603d9a0267878f7ec5a09bb50a0a1803fa42b31ca"
+}

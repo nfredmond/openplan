@@ -128,6 +128,8 @@ export function CrashExportButton({
     // Serialized from the same declaration the route parses back, so the file's
     // stated filters and the query that produced it cannot diverge.
     for (const [key, value] of crashFilterSearchParams(filters)) params.set(key, value);
+    // This endpoint returns a file attachment, so it needs a browser download rather than Next.js page routing.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
     window.location.href = `/api/safety/crashes/export?${params.toString()}`;
   }
 

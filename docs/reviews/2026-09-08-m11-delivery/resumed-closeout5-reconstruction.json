@@ -1,0 +1,21 @@
+{
+  "synthetic": true,
+  "closeoutId": "8d3bc003-7ea1-4eb2-968f-204e40e10f90",
+  "contentHash": "c688b5f5098968973ef9a89d0bf9bbc0c7b18c946da77ba75edf22543dbb8ce9",
+  "formatVersion": 3,
+  "incurred": "625.00",
+  "hours": "60.00",
+  "underspend": "175.00",
+  "invoiceOpen": "0.00",
+  "openObligations": 1,
+  "csvRows": 64,
+  "csvColumns": 25,
+  "files": {
+    "closeout-8d3bc003-7ea1-4eb2-968f-204e40e10f90.json": "159eb7a191d85a6fa5bbe40c77538140a3216a390f1ef255b49966be8cb41083",
+    "closeout-8d3bc003-7ea1-4eb2-968f-204e40e10f90.csv": "730a3e96fc7d4bc8379be0e35af20e31df68285e1f27ce40869ca3a5da7e2c8d"
+  },
+  "limitations": [
+    "Engineering reconstruction by a separate script, not independent human finance acceptance",
+    "PDF and workbook visual acceptance is separate from this JSON/CSV reconstruction"
+  ]
+}

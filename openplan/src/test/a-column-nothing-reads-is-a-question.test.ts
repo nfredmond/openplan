@@ -73,6 +73,16 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "contract_source_changes.transaction_id", category: "READ_IN_SQL", reason: "The visibility guard distinguishes inputs known inside the issuing transaction from changes first observed after another transaction commits; the two-session visibility probe covers the latter." },
+  { column: "contract_source_observations.source_change_id", category: "READ_IN_SQL", reason: "The management reader joins an immutable first-observation receipt to each journaled source change without exposing private change timing." },
+  { column: "contract_source_observations.observed_at", category: "READ_IN_SQL", reason: "The management reader refuses historical cutoffs earlier than its conservative source visibility receipt; this is not a claimed commit timestamp." },
+  { column: "contract_source_changes.changed_at", category: "READ_IN_SQL", reason: "read_contract_management compares immutable source-change timing with a proposed historical cutoff; the isolated staff/cutoff tests prove refusal and private timing access." },
+  { column: "contract_settlement_events.event_id", category: "READ_IN_SQL", reason: "Settlement SQL groups immutable source versions by event_id and enforces uniqueness; content.eventId carries the same validated identity into the management page and accounting handoff." },
+  {
+    column: "contract_order_periods.period_metadata",
+    category: "READ_IN_SQL",
+    reason: "Master ceiling validation reads legacy period_metadata; read_contract_management aliases it to authorization for the management page and immutable export.",
+  },
   {
     column: "contract_source_deletions.deleted_at",
     category: "READ_IN_SQL",

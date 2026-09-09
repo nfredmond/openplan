@@ -1,0 +1,60 @@
+{
+  "controls": [
+    {
+      "name": "harmless",
+      "exit": 0,
+      "expectedPass": true,
+      "matched": true
+    },
+    {
+      "name": "missing-task-membership",
+      "exit": 1,
+      "expectedPass": false,
+      "matched": true
+    },
+    {
+      "name": "lost-export-scope",
+      "exit": 1,
+      "expectedPass": false,
+      "matched": true
+    },
+    {
+      "name": "old-format-reinterpreted",
+      "exit": 1,
+      "expectedPass": false,
+      "matched": true
+    },
+    {
+      "name": "closed-form-enabled",
+      "exit": 1,
+      "expectedPass": false,
+      "matched": true
+    },
+    {
+      "name": "closed-inbox-prompt",
+      "exit": 1,
+      "expectedPass": false,
+      "matched": true
+    },
+    {
+      "name": "status-projection-omitted",
+      "exit": 1,
+      "expectedPass": false,
+      "matched": true
+    },
+    {
+      "name": "unqualified-local-stack-allowed",
+      "exit": 1,
+      "expectedPass": false,
+      "matched": true
+    },
+    {
+      "name": "shared-warning-pagination-hidden",
+      "exit": 1,
+      "expectedPass": false,
+      "matched": true
+    }
+  ],
+  "restored": true,
+  "blindCategory": "Bounded behavior tests; not database, maximum browser performance or human acceptance"
+}

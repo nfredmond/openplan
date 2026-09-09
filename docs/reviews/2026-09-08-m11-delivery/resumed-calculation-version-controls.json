@@ -1,0 +1,16 @@
+[
+  {
+    "name": "harmless",
+    "exit": 0,
+    "expectedPass": true,
+    "expectedFailure": null,
+    "matched": true
+  },
+  {
+    "name": "changed-inputs-accepted",
+    "exit": 1,
+    "expectedPass": false,
+    "expectedFailure": "promise resolved",
+    "matched": true
+  }
+]

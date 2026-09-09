@@ -1,0 +1,47 @@
+[
+  {
+    "name": "harmless-layout-comment",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "hide-warning-dates",
+    "outcome": "killed",
+    "expected": "groups repeated warnings"
+  },
+  {
+    "name": "drop-warning-link",
+    "outcome": "killed",
+    "expected": "groups repeated warnings"
+  },
+  {
+    "name": "hide-failed-job",
+    "outcome": "killed",
+    "expected": "keeps failed work"
+  },
+  {
+    "name": "expand-completed-history",
+    "outcome": "killed",
+    "expected": "keeps failed work"
+  },
+  {
+    "name": "lose-retry-identity",
+    "outcome": "killed",
+    "expected": "keeps failed work"
+  },
+  {
+    "name": "expose-finance-menu",
+    "outcome": "killed",
+    "expected": "mobile section selectors"
+  },
+  {
+    "name": "assert-zero-on-source-error",
+    "outcome": "killed",
+    "expected": "does not show a zero cash"
+  },
+  {
+    "name": "disconnect-mobile-subsection",
+    "outcome": "killed",
+    "expected": "mobile section selectors"
+  }
+]

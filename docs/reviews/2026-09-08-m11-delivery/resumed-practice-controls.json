@@ -1,0 +1,12 @@
+[
+  {
+    "control": "harmless-comment",
+    "outcome": "survived",
+    "exit": 0
+  },
+  {
+    "control": "credit-sign",
+    "outcome": "killed",
+    "exit": 1
+  }
+]

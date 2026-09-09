@@ -1,0 +1,66 @@
+{
+  "case": "Synthetic agency received invoice SYNTH-VENDOR-01",
+  "events": [
+    {
+      "id": "59a4b814-912a-4ba5-b2b8-136ec4f038cf",
+      "kind": "credit",
+      "amount": "2.00",
+      "version": 1,
+      "sourceKey": "SYNTH-CREDIT-01"
+    },
+    {
+      "id": "56c155c4-fd58-4d7c-9e59-7a478b2ec649",
+      "kind": "dispute_open",
+      "amount": "3.00",
+      "version": 1,
+      "sourceKey": "SYNTH-DISPUTE-01"
+    },
+    {
+      "id": "264cdf0f-36ea-4a80-afa0-beaafa721f1b",
+      "kind": "retention_hold",
+      "amount": "5.00",
+      "version": 1,
+      "sourceKey": "SYNTH-HOLD-01"
+    },
+    {
+      "id": "67db5661-c1df-48f2-a901-a590c1233c35",
+      "kind": "payment",
+      "amount": "10.00",
+      "version": 1,
+      "sourceKey": "SYNTH-PAY-01"
+    },
+    {
+      "id": "bf057b2a-8ec5-491d-ab20-f2f177e05e5a",
+      "kind": "payment",
+      "amount": "14.00",
+      "version": 1,
+      "sourceKey": "SYNTH-PAY-02"
+    },
+    {
+      "id": "76feab39-1d15-4592-bad8-8aba09fd0373",
+      "kind": "refund",
+      "amount": "1.00",
+      "version": 1,
+      "sourceKey": "SYNTH-REFUND-01"
+    },
+    {
+      "id": "40e1a4a0-a48f-4b57-9549-c06b90782c25",
+      "kind": "retention_release",
+      "amount": "5.00",
+      "version": 1,
+      "sourceKey": "SYNTH-RELEASE-01"
+    },
+    {
+      "id": "b89c8cfa-e1f9-4bfd-9cbe-678adbc60af8",
+      "kind": "dispute_resolve",
+      "amount": "3.00",
+      "version": 1,
+      "sourceKey": "SYNTH-RESOLVE-01"
+    }
+  ],
+  "open": "0.00",
+  "retention": "0.00",
+  "disputed": "0.00",
+  "independentEquation": "25.00 - 24.00 - 2.00 + 1.00 = 0.00",
+  "boundary": "Independent SQL/Decimal event reconstruction; exported-file reconstruction remains pending."
+}

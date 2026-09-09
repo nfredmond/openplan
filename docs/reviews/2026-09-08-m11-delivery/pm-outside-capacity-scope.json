@@ -1,0 +1,91 @@
+{
+  "synthetic": true,
+  "taskBRole": "member",
+  "outsideReservations": [
+    {
+      "date": "2026-09-08",
+      "hours": "5.00",
+      "staffId": "a5a23d59-dd94-4a38-ab03-5090d60a6cfc"
+    },
+    {
+      "date": "2026-09-09",
+      "hours": "5.00",
+      "staffId": "a5a23d59-dd94-4a38-ab03-5090d60a6cfc"
+    },
+    {
+      "date": "2026-09-10",
+      "hours": "5.00",
+      "staffId": "a5a23d59-dd94-4a38-ab03-5090d60a6cfc"
+    },
+    {
+      "date": "2026-09-11",
+      "hours": "5.00",
+      "staffId": "a5a23d59-dd94-4a38-ab03-5090d60a6cfc"
+    },
+    {
+      "date": "2026-09-14",
+      "hours": "5.00",
+      "staffId": "a5a23d59-dd94-4a38-ab03-5090d60a6cfc"
+    },
+    {
+      "date": "2026-09-15",
+      "hours": "5.00",
+      "staffId": "a5a23d59-dd94-4a38-ab03-5090d60a6cfc"
+    },
+    {
+      "date": "2026-09-16",
+      "hours": "5.00",
+      "staffId": "a5a23d59-dd94-4a38-ab03-5090d60a6cfc"
+    },
+    {
+      "date": "2026-09-17",
+      "hours": "5.00",
+      "staffId": "a5a23d59-dd94-4a38-ab03-5090d60a6cfc"
+    },
+    {
+      "date": "2026-09-18",
+      "hours": "5.00",
+      "staffId": "a5a23d59-dd94-4a38-ab03-5090d60a6cfc"
+    },
+    {
+      "date": "2026-09-21",
+      "hours": "5.00",
+      "staffId": "a5a23d59-dd94-4a38-ab03-5090d60a6cfc"
+    },
+    {
+      "date": "2026-09-22",
+      "hours": "5.00",
+      "staffId": "a5a23d59-dd94-4a38-ab03-5090d60a6cfc"
+    },
+    {
+      "date": "2026-09-23",
+      "hours": "5.00",
+      "staffId": "a5a23d59-dd94-4a38-ab03-5090d60a6cfc"
+    },
+    {
+      "date": "2026-09-24",
+      "hours": "5.00",
+      "staffId": "a5a23d59-dd94-4a38-ab03-5090d60a6cfc"
+    },
+    {
+      "date": "2026-09-25",
+      "hours": "5.00",
+      "staffId": "a5a23d59-dd94-4a38-ab03-5090d60a6cfc"
+    },
+    {
+      "date": "2026-09-28",
+      "hours": "5.00",
+      "staffId": "a5a23d59-dd94-4a38-ab03-5090d60a6cfc"
+    },
+    {
+      "date": "2026-09-29",
+      "hours": "5.00",
+      "staffId": "a5a23d59-dd94-4a38-ab03-5090d60a6cfc"
+    },
+    {
+      "date": "2026-09-30",
+      "hours": "5.00",
+      "staffId": "a5a23d59-dd94-4a38-ab03-5090d60a6cfc"
+    }
+  ]
+}

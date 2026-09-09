@@ -1,0 +1,13 @@
+{
+  "controls": [
+    {
+      "name": "harmless-csv-data-comment",
+      "outcome": "survived"
+    },
+    {
+      "name": "prior-vulnerable-parser",
+      "outcome": "killed"
+    }
+  ],
+  "blindCategory": "Dependency prototype behavior with duplicate-column grouping; not an audit of every CSV import or provider network path."
+}

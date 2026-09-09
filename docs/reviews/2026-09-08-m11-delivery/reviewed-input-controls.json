@@ -1,0 +1,17 @@
+[
+  {
+    "name": "harmless-reviewed-input",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "ignore-browser-forecast-version",
+    "outcome": "killed",
+    "expected": "stale browser review"
+  },
+  {
+    "name": "ignore-browser-closeout-version",
+    "outcome": "killed",
+    "expected": "stale closeout preview"
+  }
+]

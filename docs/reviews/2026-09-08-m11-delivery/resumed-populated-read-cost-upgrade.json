@@ -1,0 +1,24 @@
+{
+  "container": "supabase_db_m11-contract-verification-upgrade",
+  "retainedFixture": {
+    "workspace": "4edcefa4-6ec8-46f2-a9f8-bcfbe926b27c",
+    "canonicalSha256": "a6b1bfe272ecc1b77c37730603d9a0267878f7ec5a09bb50a0a1803fa42b31ca",
+    "counts": {
+      "time": 1,
+      "actuals": 2,
+      "baselines": 1
+    }
+  },
+  "unchangedFromPriorCanonicalReceipt": true,
+  "blindCategory": "Recovered comparison query and prior committed canonical checksum; old temporary before.json is unavailable. Representative baseline, two actual versions and physical time, not a full restore.",
+  "migrations": [
+    "20261001000001_contract_forecast_evidence_envelope.sql",
+    "20261002000001_contract_delivery_read_cost.sql"
+  ],
+  "verifiedAt": "2026-09-08 resumed read-cost/currency checkpoint",
+  "counts": {
+    "time": 1,
+    "actuals": 2,
+    "baselines": 1
+  }
+}

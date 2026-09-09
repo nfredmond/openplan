@@ -12,6 +12,24 @@ This is a quality-boundary register, not a development queue. Scheduling lives
 only in `docs/ROADMAP.md`.
 
 
+## M11 delivery candidate, September 8 (unreleased)
+
+The [M11 implementation record](../reviews/2026-09-08-m11-delivery/IMPLEMENTATION.md)
+tracks scoped received invoices, accounting reconciliation, reviewed work and
+capacity, deterministic forecasts, PM responses and settlement/closeout records.
+The candidate adds an approved agreement billing direction and versioned accounting
+handoffs. Legacy baselines keep their outgoing billing convention until amended;
+old issued reports retain their prior format. The [resumed engineering evidence](../reviews/2026-09-08-m11-delivery/RESUMED.md)
+now records synthetic agency and small-practice browser journeys, consultant correction,
+shared-capacity release, inspected actual exports and interrupted-save/worker recovery.
+Unknown currency and overlapping holds remain explicitly unassessed; neither is
+silently allocated or inferred. The maximum measured durable forecast contains 200
+tasks, 100 staff and 731 days; this does not prove unbounded retained-history scaling
+or simultaneous maximum-length notes. Automatic reminder CHECK replacement still
+awaits specific authorization and email transport remains unconfigured. M11 requires
+observed agency PM and independent human finance acceptance, neither yet obtained.
+The requested complete prior-session history audit remains in progress.
+
 ## Contract reconciliation boundary, September 8 v0.46
 
 [Contract evidence](../reviews/2026-09-07-contract-reconciliation/VERIFICATION.md)

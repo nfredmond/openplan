@@ -1,0 +1,30 @@
+[
+  {
+    "name": "harmless",
+    "exit": 0,
+    "expectedPass": true,
+    "expectedFailure": null,
+    "matched": true
+  },
+  {
+    "name": "stale-reopened-form",
+    "exit": 1,
+    "expectedPass": false,
+    "expectedFailure": "Unable to find a label with the text of: Obligation",
+    "matched": true
+  },
+  {
+    "name": "unknown-currency-settled",
+    "exit": 1,
+    "expectedPass": false,
+    "expectedFailure": "currency is unassessed",
+    "matched": true
+  },
+  {
+    "name": "unknown-currency-aggregated",
+    "exit": 1,
+    "expectedPass": false,
+    "expectedFailure": "length of 1",
+    "matched": true
+  }
+]

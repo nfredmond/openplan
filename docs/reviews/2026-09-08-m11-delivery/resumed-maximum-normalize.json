@@ -1,0 +1,15 @@
+{
+  "synthetic": true,
+  "source": "Actual management RPC read of separately approved maximum baseline; actual normalizer with fixed responses for repeatable size measurement",
+  "bytes": 63566200,
+  "elapsedMs": 45424.712215,
+  "heap": 293066016,
+  "result": {
+    "finish": null,
+    "warnings": 73300,
+    "reservations": 73100,
+    "remainingCost": "20000.00"
+  },
+  "inputHash": "0e16743c58f9470f60500a58393c189386d0dc94e45fd3c1880a546218a52048",
+  "blindCategory": "Normalization and serialization; subsequent real RPC validates persistence and source hash"
+}

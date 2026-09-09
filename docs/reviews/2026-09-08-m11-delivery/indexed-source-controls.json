@@ -1,0 +1,17 @@
+[
+  {
+    "name": "harmless-indexed-source",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "reject-ready-original",
+    "outcome": "killed",
+    "expected": "Retain an original source file"
+  },
+  {
+    "name": "admit-foreign-indexed-source",
+    "outcome": "killed",
+    "expected": "Foreign indexed source admitted"
+  }
+]

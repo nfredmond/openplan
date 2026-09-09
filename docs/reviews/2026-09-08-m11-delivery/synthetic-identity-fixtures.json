@@ -1,0 +1,23 @@
+{
+  "meaning": "Synthetic identity setup only; no actual agency authority or external transmission",
+  "workspace": "64572b1d-aaf8-400a-84a5-6167cab3e6e3",
+  "actors": {
+    "staff": {
+      "id": "097a18a4-ae3c-44a1-b3c0-33a35ed311bb",
+      "email": "m11-staff@synthetic.example.test"
+    },
+    "pm": {
+      "id": "206b564b-e360-4390-bcee-d9a12455cdde",
+      "email": "m11-pm@synthetic.example.test"
+    },
+    "finance": {
+      "id": "05df06b0-18f9-48b8-a01f-47a752c3f19c",
+      "email": "m11-finance@synthetic.example.test"
+    },
+    "consultant": {
+      "id": "74c79be0-6e8c-41b9-97b7-999cb443ba2c",
+      "email": "m11-consultant@synthetic.example.test"
+    }
+  },
+  "staffId": "a5a23d59-dd94-4a38-ab03-5090d60a6cfc"
+}

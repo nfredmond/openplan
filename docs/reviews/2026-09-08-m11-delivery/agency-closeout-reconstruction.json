@@ -1,0 +1,22 @@
+{
+  "synthetic": true,
+  "closeoutId": "b40809c2-826d-429d-9dcf-eaf87c7513da",
+  "contentHash": "4ee477076ff7863ed4e987fd624692de13d50f50422d0ca4d38db37ac960cb67",
+  "formatVersion": 2,
+  "incurred": "625.00",
+  "hours": "60.00",
+  "underspend": "175.00",
+  "invoiceOpen": "0.00",
+  "openObligations": 1,
+  "csvRows": 59,
+  "csvColumns": 25,
+  "files": {
+    "closeout-b40809c2-826d-429d-9dcf-eaf87c7513da.json": "5d4ec1fe8d34a28c4d673e6ad5293d24bfa3ee5d0becd36aeda18e6590e7f785",
+    "closeout-b40809c2-826d-429d-9dcf-eaf87c7513da.csv": "8c445878a9f1e667701f51149d76250b664197dd3dca0917919d0b5c56351c02"
+  },
+  "limitations": [
+    "Engineering reconstruction by a separate script, not independent human finance acceptance",
+    "Original received-invoice file checksum is absent from format-2 handoff",
+    "Report front-page legacy payment labels still need correction"
+  ]
+}

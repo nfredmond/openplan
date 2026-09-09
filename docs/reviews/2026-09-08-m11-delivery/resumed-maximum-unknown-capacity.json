@@ -1,0 +1,22 @@
+{
+  "synthetic": true,
+  "tasks": 200,
+  "staff": 100,
+  "days": 731,
+  "case": "No capacity periods: every working date remains unknown",
+  "mainThreadHeartbeats": 4670,
+  "elapsedMs": 47070.952986000004,
+  "result": {
+    "finish": null,
+    "missingCapacity": 73100,
+    "allNodes": 200,
+    "allUnknown": true,
+    "firstMask": "ffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "warnings": 73302,
+    "bytes": 23411056,
+    "heap": 239801936,
+    "elapsedMs": 46856.751741
+  },
+  "source": "Working format-3 shared warning implementation after 37a3c22f",
+  "blindCategory": "Node worker resource limit, not browser or durable RPC acceptance"
+}

@@ -649,6 +649,17 @@ describe("POST /api/invoicing/client-invoices", () => {
     expect(invoiceInsertMock).not.toHaveBeenCalled();
   });
 
+  it("retains an explicit invoice currency and preserves missing legacy currency without a default",async()=>{
+    const explicit=await postClientInvoice(jsonRequest("http://localhost/api/invoicing/client-invoices","POST",{...invoicePayload,currencyCode:"eur"}));
+    expect(explicit.status).toBe(201);expect(invoiceInsertMock).toHaveBeenLastCalledWith(expect.objectContaining({currency_code:"EUR"}));
+    const legacy=await postClientInvoice(jsonRequest("http://localhost/api/invoicing/client-invoices","POST",invoicePayload));
+    expect(legacy.status).toBe(201);expect(invoiceInsertMock).toHaveBeenLastCalledWith(expect.objectContaining({currency_code:null}));
+  });
+  it("refuses malformed invoice currency before writing an invoice",async()=>{
+    const response=await postClientInvoice(jsonRequest("http://localhost/api/invoicing/client-invoices","POST",{...invoicePayload,currencyCode:"dollars"}));
+    expect(response.status).toBe(400);expect(invoiceInsertMock).not.toHaveBeenCalled();
+  });
+
   it("creates the invoice, computes line amounts server-side, and stamps source time entries", async () => {
     const response = await postClientInvoice(
       jsonRequest("http://localhost/api/invoicing/client-invoices", "POST", invoicePayload)

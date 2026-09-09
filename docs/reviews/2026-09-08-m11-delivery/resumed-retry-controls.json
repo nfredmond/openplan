@@ -1,0 +1,17 @@
+[
+  {
+    "control": "harmless-comment",
+    "outcome": "survived",
+    "reason": null
+  },
+  {
+    "control": "remove-retry",
+    "outcome": "killed",
+    "reason": "closeout data changed"
+  },
+  {
+    "control": "replace-caller-payload",
+    "outcome": "killed",
+    "reason": "promise resolved"
+  }
+]

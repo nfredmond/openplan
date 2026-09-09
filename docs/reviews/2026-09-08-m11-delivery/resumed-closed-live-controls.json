@@ -1,0 +1,26 @@
+{
+  "controls": [
+    {
+      "name": "harmless",
+      "exit": 0,
+      "expectedPass": true,
+      "matched": true
+    },
+    {
+      "name": "closed-inbox-marked-open",
+      "exit": 1,
+      "expectedPass": false,
+      "matched": true,
+      "expectedFailure": "Closed participant history or state missing"
+    },
+    {
+      "name": "closed-reader-marked-open",
+      "exit": 1,
+      "expectedPass": false,
+      "matched": true,
+      "expectedFailure": "Closed management state missing"
+    }
+  ],
+  "mutationScope": "Each DDL mutation is inside its test transaction; ROLLBACK or failed connection closes it. No DROP or persistent replacement.",
+  "blindCategory": "Synthetic live SQL, not browser or human review"
+}

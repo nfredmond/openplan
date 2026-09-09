@@ -1,0 +1,42 @@
+"use client";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import type { ContractState, ReceivedInvoice } from "@/lib/invoicing/contracts/schema";
+import { currentActuals } from "@/lib/invoicing/contracts/reconciliation";
+import { Field, inputClass, type CommandSender } from "./fields";
+const value=(d:FormData,key:string)=>String(d.get(key)??"");
+
+export function ContractAccessPanel({state,send,busy}:{state:ContractState;send:CommandSender;busy:boolean}) {
+ const grants=state.access??[];
+ return <section className="space-y-4"><h2 className="text-xl font-semibold">Contract responsibilities</h2><p>PMs can review employee costs within this assignment. Finance controls rates and financial approvals. Consultant access requires an existing account without membership in this agency team.</p><form className="space-y-3" onSubmit={async e=>{e.preventDefault();const d=new FormData(e.currentTarget),email=value(d,"email");await send({kind:"access",requestId:crypto.randomUUID(),email,expectedVersion:Math.max(0,...grants.filter(g=>g.email.toLowerCase()===email.trim().toLowerCase()).map(g=>g.version)),role:value(d,"role") as "pm"|"finance"|"consultant",active:d.get("active")==="on",evidence:value(d,"evidence")});}}>
+ <Field label="Account email"><input name="email" type="email" className={inputClass} required/></Field><Field label="Contract role"><select name="role" className={inputClass}><option value="pm">Project manager</option><option value="finance">Finance reviewer</option><option value="consultant">Consultant participant</option></select></Field><label className="flex gap-2"><input name="active" type="checkbox" defaultChecked/>Access is active</label><Field label="Designation or revocation evidence"><textarea name="evidence" className={inputClass} required/></Field><Button disabled={busy}>Retain contract designation</Button></form>
+ {grants.map(g=><p key={g.id}>{g.email}: {g.role}, version {g.version}, {g.active?"active":"revoked"}. {g.evidence}</p>)}<p className="text-sm">Share the address of this contract with the designated participant through your established communication process. This form does not send an invitation.</p></section>;
+}
+
+export function ReceivedInvoicePanel({state,send,busy}:{state:ContractState;send:CommandSender;busy:boolean}) {
+ const [selectedCorrection,setCorrecting]=useState<ReceivedInvoice>(),[error,setError]=useState("");
+ const open=state.openForWork===true;
+ const versions=state.receivedInvoices??[],latest=versions.filter(i=>!versions.some(n=>n.invoice_id===i.invoice_id&&n.version>i.version));
+ const correcting=latest.find(invoice=>invoice.id===selectedCorrection?.id&&invoice.state==="returned");
+ const manager=["owner","admin","pm","finance"].includes(state.role),finance=["owner","admin","finance"].includes(state.role);
+ const sources=currentActuals(state.actuals).filter(v=>v.command.status==="approved"&&["labor","expense","commitment"].includes(v.command.category));
+ async function submit(form:HTMLFormElement){
+  setError("");const d=new FormData(form),file=d.get("file");
+  if(!(file instanceof File)||!file.size||file.size>1000000){setError("Select the original PDF or CSV, up to 1 MB. Larger files need a separate retained document workflow.");return;}
+  const bytes=new Uint8Array(await file.arrayBuffer());let binary="";for(const byte of bytes)binary+=String.fromCharCode(byte);
+  const confirmed=await send({kind:"received_invoice",requestId:crypto.randomUUID(),invoiceId:correcting?.invoice_id??crypto.randomUUID(),expectedVersion:correcting?.version??0,content:{number:value(d,"number"),date:value(d,"date"),currency:value(d,"currency"),lines:(["direct","indirect","fixed_fee"] as const).filter(k=>value(d,k)!=="").map(treatment=>({treatment,amount:value(d,treatment),description:value(d,`${treatment}Description`),basis:value(d,`${treatment}Basis`)}))},file:{filename:file.name,contentType:file.name.toLowerCase().endsWith(".csv")?"text/csv":"application/pdf",base64:btoa(binary)}});
+  if(confirmed)setCorrecting(undefined);
+ }
+ return <section className="space-y-5"><h2 className="text-xl font-semibold">Received consultant invoices</h2><p>Review an invoice received by the agency. Source matching retains the payable evidence without adding incurred cost. Outgoing client billing and funder reimbursement remain separate.</p>{error&&<p role="alert">{error}</p>}
+ {!open&&<p role="status">{state.openForWork===false?"This assignment is closed. Its retained invoices remain available. A responsible manager must reopen it before another submission or review.":"Assignment status is unassessed. Reload before submitting or reviewing an invoice."}</p>}
+ {open&&<form key={correcting?.id??"new"} className="space-y-3 rounded border p-4" onSubmit={e=>{e.preventDefault();void submit(e.currentTarget);}}>
+ <h3 className="font-semibold">{correcting?`Correct returned invoice ${correcting.content.number}`:"Submit a received invoice"}</h3>
+ {([['number','Received invoice number','text'],['date','Received invoice date','date'],['currency','Received invoice currency','text']] as const).map(([name,label,type])=><Field key={name} label={label}><input className={inputClass} name={name} type={type} required defaultValue={correcting?.content[name]??(name==="currency"?state.baselines.at(-1)?.content.currency:undefined)} readOnly={!!correcting&&(name==="number"||name==="currency")}/></Field>)}
+ {([['direct','Direct cost'],['indirect','Indirect cost'],['fixed_fee','Fixed fee']] as const).map(([name,label])=>{const prior=correcting?.content.lines.find(l=>l.treatment===name);return <fieldset key={name} className="space-y-2 rounded border p-3"><legend>{label}</legend><Field label={`${label} amount, blank if absent`}><input name={name} className={inputClass} defaultValue={prior?.amount}/></Field><Field label={`${label} description`}><input name={`${name}Description`} className={inputClass} defaultValue={prior?.description}/></Field><Field label={`${label} documented basis`}><input name={`${name}Basis`} className={inputClass} defaultValue={prior?.basis}/></Field></fieldset>;})}
+ <Field label="Original received PDF or CSV"><input name="file" type="file" accept="application/pdf,text/csv,.csv" required className={inputClass}/></Field><Button disabled={busy}>Retain submitted invoice</Button>{correcting&&<Button type="button" variant="outline" onClick={()=>setCorrecting(undefined)}>Return to new invoice</Button>}</form>}
+ {latest.map(i=><article key={i.id} className="space-y-3 rounded border p-4"><h3 className="font-semibold">{i.content.number}: {i.state}, version {i.version}</h3><p>{i.content.total} {i.content.currency} · {i.content.date}</p><p>{i.review_note}</p><a className="underline" href={`/api/invoicing/engagements/${state.engagement.id}/management/received-file?fileId=${i.content.fileId}`}>Download retained original</a>
+ {open&&i.state==="returned"&&<Button variant="outline" disabled={busy} onClick={()=>setCorrecting(i)}>Correct returned invoice</Button>}
+ {open&&manager&&["submitted","reviewed"].includes(i.state)&&<form className="space-y-3" onSubmit={async e=>{e.preventDefault();const d=new FormData(e.currentTarget);await send({kind:"received_review",requestId:crypto.randomUUID(),invoiceId:i.invoice_id,expectedVersion:i.version,state:value(d,"state") as "returned"|"reviewed"|"approved",note:value(d,"note"),matches:sources.filter(s=>value(d,s.id)!=="").map(s=>({entryId:s.entry_id,versionId:s.id,amount:value(d,s.id)}))});}}><Field label={`Review decision for ${i.content.number}`}><select name="state" className={inputClass}><option value="reviewed">PM reviewed</option><option value="returned">Return for correction</option>{finance&&<option value="approved">Finance approved</option>}</select></Field><Field label={`Review evidence for ${i.content.number}`}><textarea name="note" className={inputClass} required/></Field>{finance&&<fieldset><legend>Finance source matching, required for approval</legend>{sources.map(s=><Field key={s.id} label={`${s.command.sourceKey}: ${s.command.category}, ${s.amount} available before prior matches`}><input name={s.id} className={inputClass} placeholder="Amount matched to this invoice"/></Field>)}</fieldset>}<Button disabled={busy}>Retain exact-version review</Button></form>}
+ <details><summary>Invoice history</summary>{versions.filter(v=>v.invoice_id===i.invoice_id).map(v=><p key={v.id}>Version {v.version}: {v.state}, {v.content.total} {v.content.currency}, {v.created_at}. {v.review_note}</p>)}</details></article>)}
+ </section>;
+}

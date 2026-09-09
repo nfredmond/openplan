@@ -1,3 +1,5 @@
+import {loadParticipantWork} from "@/lib/invoicing/contracts/participant-work";
+import {ContractParticipantWork} from "@/components/my-work/contract-participant-work";
 import { redirect } from "next/navigation";
 
 import { MyWorkBoard } from "@/components/my-work/my-work-board";
@@ -50,7 +52,9 @@ export default async function MyWorkPage({
   }
 
   const { membership, options: workspaceOptions } = await loadWorkspaceContext(supabase, user.id);
+  const participantWork=await loadParticipantWork(supabase);
   if (!membership) {
+    if(!participantWork.complete||participantWork.rows.length)return <ContractParticipantWork work={participantWork} standalone/>;
     return (
       <WorkspaceMembershipRequired
         moduleLabel="My work"
@@ -95,6 +99,7 @@ export default async function MyWorkPage({
 
   return (
     <MyWorkBoard
+      participantWork={participantWork}
       scope={work.scope}
       items={work.items}
       perSource={work.perSource}

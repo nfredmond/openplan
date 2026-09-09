@@ -1,0 +1,32 @@
+[
+  {
+    "name": "harmless-read-comment",
+    "outcome": "survived",
+    "expected": null
+  },
+  {
+    "name": "stop-on-short-page",
+    "outcome": "killed",
+    "expected": "continues through a lower server cap"
+  },
+  {
+    "name": "skip-capped-rows",
+    "outcome": "killed",
+    "expected": "reads every low-cap page"
+  },
+  {
+    "name": "assert-partial-cash",
+    "outcome": "killed",
+    "expected": "does not claim a complete balance"
+  },
+  {
+    "name": "hide-incomplete-contract-register",
+    "outcome": "killed",
+    "expected": "discloses a failed later read"
+  },
+  {
+    "name": "read-unscoped-contracts",
+    "outcome": "killed",
+    "expected": "reads every low-cap page"
+  }
+]

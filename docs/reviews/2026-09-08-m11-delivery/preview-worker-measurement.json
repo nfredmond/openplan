@@ -1,0 +1,18 @@
+{
+  "synthetic": true,
+  "execution": "Bundled browser-worker source through Node message bridge; not browser acceptance",
+  "tasks": 40,
+  "staff": 20,
+  "horizonDays": 180,
+  "reservations": 144000,
+  "elapsedMs": 771,
+  "mainThreadHeartbeats": 68,
+  "exactDirectResultMatch": true,
+  "resultSha256": "a6d75bd89de396a309e52e456b52ed3270347022fbadd53d6fc8469d680450c7",
+  "blindCategories": [
+    "Browser worker bootstrap and CSP",
+    "DOM rendering and main-thread structured cloning at maximum size",
+    "Agency calendar validity",
+    "Human acceptance"
+  ]
+}

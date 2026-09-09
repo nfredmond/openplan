@@ -71,8 +71,9 @@ start_project() {
 }
 
 mkdir -p "$BACKUP_ROOT/storage/kb-documents"
-make_project "$SOURCE_ROOT" 56321 56322 56320 56323 56324 56327
-make_project "$TARGET_ROOT" 57321 57322 57320 57323 57324 57327
+SOURCE_PORTS=$(python3 "$APP_ROOT/scripts/ops/restore_ports.py")
+read -r -a SOURCE_PORT_ARRAY <<< "$SOURCE_PORTS"
+make_project "$SOURCE_ROOT" "${SOURCE_PORT_ARRAY[@]}"
 
 echo "[restore-drill] starting disposable source stack $SOURCE_PROJECT"
 start_project "$SOURCE_ROOT"
@@ -190,6 +191,9 @@ curl --fail --silent --show-error \
   -o "$BACKUP_ROOT/source-download.txt"
 test "$(sha256sum "$BACKUP_ROOT/source-download.txt" | cut -d' ' -f1)" = "$OBJECT_HASH"
 
+TARGET_PORTS=$(python3 "$APP_ROOT/scripts/ops/restore_ports.py" "${SOURCE_PORT_ARRAY[@]}")
+read -r -a TARGET_PORT_ARRAY <<< "$TARGET_PORTS"
+make_project "$TARGET_ROOT" "${TARGET_PORT_ARRAY[@]}"
 echo "[restore-drill] starting isolated restore target $TARGET_PROJECT"
 start_project "$TARGET_ROOT"
 TARGET_DB=$(db_container "$TARGET_PROJECT")
