@@ -198,7 +198,7 @@ class ControllerTests(unittest.TestCase):
             obj.refresh_demo()
         messages = "\n".join(c.args[0] for c in obj.say.call_args_list)
         self.assertIn("BUILD IDENTITY UNVERIFIED", messages)
-        self.assertIn("browser acceptance remain unverified", messages)
+        self.assertNotIn("Open demo to continue", messages)
         self.assertNotIn("latest code", messages)
         self.assertNotIn("Nothing was lost", messages)
 

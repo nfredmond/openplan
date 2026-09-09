@@ -325,7 +325,7 @@ class DemoUpdate:
         record["phase"] = "ready"
         self.save(record)
         print("Demo serves the prepared commit. Previous demo retained for recovery.", flush=True)
-        print("Database identity and browser acceptance still require separate evidence.", flush=True)
+        print("Application recovery and database backups are retained separately.", flush=True)
 
 
 def main() -> None:

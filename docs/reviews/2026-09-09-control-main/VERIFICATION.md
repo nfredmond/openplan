@@ -18,8 +18,18 @@ Applied migration history must be an exact prefix of the candidate's files. A pr
 
 ## Verification and limits
 
-All seven operations test files passed, including 31 controller/builder cases, 20 isolated updater cases, six database cases, and native layout at 820×760 and 640×700 with 1.33 and 2.0 scaling. The four mutation harnesses observed 48 broken behaviors fail through assertions and four harmless controls survive. Layout tests initially caught collapsed activity space and a clipped hint; both were corrected without relaxing assertions. The live update outcome will be recorded after its run.
+All seven operations test files passed, including 31 controller/builder cases, 20 isolated updater cases, six database cases, and native layout at 820×760 and 640×700 with 1.33 and 2.0 scaling. The four mutation harnesses observed 48 broken behaviors fail through assertions and four harmless controls survive. Layout tests initially caught collapsed activity space and a clipped hint; both were corrected without relaxing assertions. Mutation outcomes are retained in `mutation-results.json`.
 
 Database unit tests mock commands and cannot prove real container routing, SQL behavior, or full restoration. Archive listing proves readability, not a completed restore. The existing upgrade and restore workflows remain separate evidence. Custom remote stacks, altered API gateway routing, and arbitrary systemd wrapper configurations are outside this machine-specific updater. Native Control supports desktop sizes, not a 390px phone viewport.
 
 No user records, environment values, or database backups belong in this directory. Runtime backups and logs stay in the private local updater directory.
+
+## Observed desktop update
+
+The actual Tk **Update to main** button, invoked through its normal widget command, completed the update from `76f019bfb803` to `9950e247c58b` on September 9. It created a private 50,776,184-byte custom database backup, applied all 28 pending migrations, built Next 16.3.4 with webpack and TypeScript, promoted the candidate, and verified the serving commit. `which-openplan.sh` agreed. The demo checkout remained clean. The prior application build and database dump remain in `~/apps/.openplan-updates/`.
+
+The native Demo tab showed both commits matching. `current-desktop.png` and `current-small.png` show the repaired display at the default and minimum supported window sizes. Commit text uses the light foreground after inspection found the previous green too dark. The source hash and observed runtime identity are in `live-update.json`. The **Open demo** button opened a new Chrome tab at the demo home page. Real navigation reached the dashboard and Programming Cycles; the browser console returned no entries. The dashboard did disclose an unreadable project-submittals summary. That application data-query issue was not resolved or represented as a successful read by this Control repair. No user records were changed for the navigation check.
+
+The final follow-up changes only status readability and completion wording. These do not claim full product acceptance. Its main update is exercised again after pushing so the installed demo can match the final main commit.
+
+GitHub RLS passed on `9950e247`. The first CI attempt failed during apt dependency setup in both Python jobs because Google's Chrome repository returned a hash mismatch, before tests ran. The other CI jobs were still running when this note was prepared; this is not a claim that GitHub CI passed. Local operations checks passed as recorded above. Main `d41d5006` had passed CI, RLS and the unchanged SQL upgrade-path workflow before this repair.

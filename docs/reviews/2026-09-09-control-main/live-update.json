@@ -1,0 +1,33 @@
+{
+  "previous_commit": "76f019bfb80300434c23273db07c43610cbf1625",
+  "updated_commit": "9950e247c58b9371704315cd7b27a602d1f2fe81",
+  "update_phase": "ready",
+  "health": {
+    "status": "ok",
+    "service": "openplan",
+    "checkedAt": "2026-09-09T17:40:59.969Z",
+    "deployment": {
+      "commit": "9950e247c58b",
+      "version": "0.46.0"
+    },
+    "checks": {
+      "app": "ok",
+      "database": "not_checked"
+    }
+  },
+  "database_phase": "upgraded",
+  "migrations_before": 279,
+  "migrations_applied": 28,
+  "backup_bytes": 50776184,
+  "backup_sha256": "b1b6710b8b46078f7ee056e5228f50cdcf2acb2f4c5c649c43df582c45206c5b",
+  "panel_sha256": "4b69dda5b1e5bac339b7f040029bdd829e7e43c8e27ca6b0f5795e0afb97c55f",
+  "ui_entry": "real Tk Update to main button invoked through ttk.Button.invoke",
+  "open_demo": "real Tk Open demo button opened Chrome at http://localhost:3000/",
+  "browser_navigation": [
+    "/",
+    "/dashboard",
+    "/programs"
+  ],
+  "browser_console_entries": 0,
+  "full_database_restore_exercised": false
+}

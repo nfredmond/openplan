@@ -707,7 +707,7 @@ class ControlPanel:
 
     def _apply_demo_status(self, status: tuple[str, str]) -> None:
         colour, text = status
-        self.demo_summary.configure(text=text, fg=colour)
+        self.demo_summary.configure(text=text, fg="#edf4f3")
         self.status_labels["demo"].configure(text=text)
         self.status_dots["demo"].configure(fg=colour)
 
@@ -762,11 +762,10 @@ class ControlPanel:
                 if (status == 0 and re.fullmatch(r"[0-9a-f]{40,64}", expected)
                         and isinstance(reported, str) and len(reported) >= 12
                         and expected.startswith(reported)):
-                    self.say(f"The demo reports checkout commit {reported}.")
+                    self.say(f"Demo updated to {reported}. Open demo to continue.")
                 else:
                     self.say("BUILD IDENTITY UNVERIFIED: the demo did not report its checkout commit.")
                 self._main_at = 0.0
-                self.say("Database readiness and browser acceptance remain unverified here.")
             else:
                 self.say(f"UPDATE STOPPED (exit {code}). Review the last completed step above.")
                 self.say("The demo may need recovery. Check what's running and check the setup.")

@@ -1,0 +1,62 @@
+{
+  "controller": [
+    "KILLED: database preparation disconnected",
+    "KILLED: served commit hidden",
+    "KILLED: fetch failure ignored",
+    "SURVIVED: harmless comment",
+    "KILLED: preparation restarted service",
+    "KILLED: update bypassed coordinator",
+    "KILLED: foreign session included",
+    "KILLED: PID reuse ignored",
+    "KILLED: leader identity ignored",
+    "KILLED: port conflict allowed",
+    "KILLED: CI wrong commit accepted",
+    "KILLED: CI running ignored",
+    "KILLED: duplicate polling allowed",
+    "KILLED: refresh mismatch promoted",
+    "KILLED: unreadable schema continued",
+    "KILLED: failed schema query continued",
+    "KILLED: wrong build continued",
+    "KILLED: leader required after requested termination",
+    "KILLED: handle cleanup omitted",
+    "KILLED: failed checkout inspection continued",
+    "KILLED: file migration inventory ignored"
+  ],
+  "database": [
+    "harmless comment SURVIVED",
+    "remote URL accepted KILLED",
+    "different runtime accepted KILLED",
+    "foreign container accepted KILLED",
+    "unreadable backup accepted KILLED",
+    "failed dump accepted KILLED",
+    "database replacement ignored KILLED",
+    "migration left pending KILLED",
+    "history gap ignored KILLED"
+  ],
+  "recovery": [
+    "database backup target changed: KILLED",
+    "comment: SURVIVED",
+    "tracked links flattened: KILLED",
+    "failure reason discarded: KILLED",
+    "foreign target: KILLED",
+    "unverified predecessor: KILLED",
+    "failed build promoted: KILLED",
+    "rollback omitted: KILLED",
+    "backup identity ignored: KILLED",
+    "settings conflict ignored: KILLED",
+    "local artifact detached: KILLED",
+    "local file collision ignored: KILLED",
+    "managed settings flattened: KILLED",
+    "retained file corruption ignored: KILLED",
+    "newer settings overwritten: KILLED",
+    "symlink ancestor followed: KILLED",
+    "interruption ignored: KILLED",
+    "lock omitted: KILLED"
+  ],
+  "layout": [
+    "comment: SURVIVED",
+    "collapsed output: KILLED",
+    "overflowing status: KILLED",
+    "hidden keyboard focus: KILLED"
+  ]
+}
