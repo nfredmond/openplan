@@ -126,3 +126,55 @@ https://www.postgresql.org/docs/14/transaction-iso.html.
 The notification CHECK replacement remains unauthorized and unapplied. Agency PM
 observation and independent human finance acceptance remain absent. No release,
 tag, merge, external authority or M11 completion is claimed.
+
+## Second safe checkpoint, before requested history audit
+
+User now explicitly requests complete prior-session history reconciliation, then
+consolidation of all OpenPlan branches, PRs and uncommitted work from the last
+week into main without losing agent work. This supersedes the earlier no-merge
+scope, but requires checking current ownership and preserving every checkout.
+
+Production build aa66ac63 completed. Its server restarted in session 21387 on
+3247; which-openplan reports matching checkout and commit. A fresh Chrome tab
+1406501439 loaded this build. The real preview showed USD 625 and September 9
+finish. Unchecking coverage removed the working preview while retaining reviewed
+forecast 7. Console warnings/errors were empty. Desktop viewport was 2616x1226.
+The confirmed capture is persistent scratch/aa66-preview-cleared-desktop-confirmed.png.
+The first same-call capture was stale and still showed the previous state; it is
+not evidence of clearing. A separate later capture matches the DOM. Mobile
+acceptance remains open. Browser access remained available.
+
+The new practice RPC test passed in the named disposable M11 stack and rolled
+back its complete fixture. It exercises real JS normalization plus SQL writes for
+fixed-fee gross billing 1000, incurred cost 200, released commitment, payments 965,
+credits 50, refunds 10, debit adjustment 5, released retention and dispute, open
+balance zero, corrected payment history, separate deliverable events, closeout
+with 300 underspend and a continuing records obligation, CSV reconstruction and
+immutable reopening. The starting invoice is seeded, not created through the
+invoice UI. This does not establish a full practicing-consultant browser journey.
+A harmless comment control survived; reversing the credit sign failed at open
+balance 100 versus expected zero. Sources were restored; typecheck passed.
+
+The first test failed on re-normalization of the completed closeout's original
+hash. This is a real request-path retry gap, not a financial-fixture error. The
+updated test distinguishes successful replay of the exact normalized SQL command
+from the currently rejected re-normalization. HTTP/durable-worker retry semantics
+must be investigated and repaired where required. No claim of end-to-end retry
+success is made. One attempted rerun used nonexistent `python` and the repository
+root instead of the app root; it failed before running tests. The corrected run
+used python3 and the app root. These failed invocations are not passes.
+
+The naturally reclaimed interrupted PDF job succeeded. Its single retained
+document 801468f0-9055-4053-8b7a-50280d9a8b17 has 1,578,600 bytes and SHA256
+2dbbb2f85abe073341336b60fff22570261a1db994ceb97cf9e7c2df13c4cb05.
+The job is be00fec3-ed4b-43fd-a490-7b6a5d6695bc. Storage-object uniqueness and
+actual browser file delivery still need checks. A status query first used the
+wrong lease column name; the successful query uses lease_until.
+
+History source located, not yet fully read:
+/home/nathaniel/.codex/sessions/2026/09/08/rollout-2026-09-08T10-34-23-01a08215-d429-7813-8747-178f4af31327.jsonl
+It contains 9,439 JSONL records and 158,403,031 bytes. Much is repeated tool-event
+output and encoded screenshot data; it also has encrypted reasoning fields.
+The next audit must track all records and explicitly identify any inaccessible
+content, duplicates, source truncation or necessary credential redaction. Do not
+claim the history was read based on this structural inventory.
