@@ -1,0 +1,27 @@
+[
+  {
+    "name": "harmless-json-formatting",
+    "outcome": "survived",
+    "reason": null
+  },
+  {
+    "name": "changed-cost-with-new-hash",
+    "outcome": "killed",
+    "reason": "Independent actual totals"
+  },
+  {
+    "name": "lost-open-obligation",
+    "outcome": "killed",
+    "reason": "Continuing obligation lost"
+  },
+  {
+    "name": "changed-csv-version",
+    "outcome": "killed",
+    "reason": "CSV source-version identities"
+  },
+  {
+    "name": "altered-content-hash",
+    "outcome": "killed",
+    "reason": "Retained closeout content hash mismatch"
+  }
+]
