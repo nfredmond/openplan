@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: e6d25edd
-current_release: v0.46.0
+current_release: v0.47.0
 review_by: 2026-10-05
 paths:
 - AGENTS.md
@@ -437,7 +437,7 @@ and forecasts; actionable weekly review; settlement and closeout. The
 synthetic agency and small-practice journeys, actual issued artifacts, shared-capacity
 release, source-visibility races, durable recovery and the measured maximum calculation.
 It remains unreleased. Human agency PM observation, independent finance acceptance,
-automatic reminder authorization/delivery and the full prior-session audit remain open.
+automatic reminder authorization/delivery remain open. The [available-history audit](reviews/2026-09-08-m11-delivery/HISTORY_REVIEW.md) is complete: 404 text chunks and 302 recovered images were read; original gaps remain identified.
 No single increment closes M11; the milestone and completion criteria below remain binding.
 
 - **Planning outcome:** a consulting or agency PM sees work consumed and work remaining by contract/task order, task, employee and deliverable, understands a threatened fee or deadline, and acts before the next invoice reveals the overrun. This is core planning practice independently of Caltrans reimbursement.

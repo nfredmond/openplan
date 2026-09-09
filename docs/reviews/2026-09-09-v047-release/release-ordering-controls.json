@@ -1,0 +1,23 @@
+{
+  "results": [
+    {
+      "case": "harmless SQL comment",
+      "expected": "survived",
+      "exit": 0,
+      "reasonObserved": true
+    },
+    {
+      "case": "migration inserted before v0.46 high-water mark",
+      "expected": "failed",
+      "exit": 1,
+      "reasonObserved": true
+    },
+    {
+      "case": "release omits a required migration",
+      "expected": "failed",
+      "exit": 1,
+      "reasonObserved": true
+    }
+  ],
+  "blindCategory": "Migration filenames/counts and changelog references only; SQL behavior and populated upgrade safety require separate live checks."
+}

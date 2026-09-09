@@ -20,60 +20,49 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-- Desktop Control shows the running demo commit beside freshly checked GitHub main. **Update to main** backs up and upgrades the identified local demo database when migrations are pending, then builds and promotes the app while retaining the previous build.
+No changes recorded after the v0.47.0 candidate.
 
-### M2d.3 reimbursement cycle, engineering candidate
+## 0.47.0 — 2026-09-09
 
-- Reviewed eligibility and reimbursement/match shares extend issued OWP period reports. Retained packet versions and external receipt events preserve return, correction and resubmission; source reservations prevent a second packet from counting the same cost.
-- Private PDF/XLSX packets reuse Documents custody. Agency form compatibility, actual authority and practitioner acceptance require separate evidence. M11 human acceptance and reminder approval remain open.
-- Additive migration: [work_program_reimbursement](openplan/supabase/migrations/20261003000001_work_program_reimbursement.sql).
+Development release candidate. Tagging requires the [release verification](docs/reviews/2026-09-09-v047-release/VERIFICATION.md).
 
+- Review contract remaining work, staff calendars and shared capacity; retain forecasts, PM responses, settlement and closeout with their original baselines and source evidence. Scoped consultant invoices, agency billing direction and accounting reconciliation keep cost, fee, cash and reimbursement separate.
+- Prepare OWP reimbursement supporting packets from issued reports, reviewed eligibility and balanced fund/match shares. Return and correction retain earlier packets and reserve each physical source against duplicate claims. Private PDF/XLSX files remain in Documents with retained checksums.
+- Retain exact pending commands across interrupted saves and run long calculations in resumable local workers. Start `npm run worker:contract-calculations` for forecasts, response comparisons, accounting imports and closeout; `npm run worker:document-exports` prepares retained files.
+- Record invoice currency explicitly. Missing legacy currency, unassessed capacity and overlapping holds remain unknown. Closed consultant assignments preserve invoice access. The measured forecast case covers 200 tasks, 100 staff and 731 days; this is not an unlimited-history or simultaneous-load claim.
+- Desktop Control shows the running demo commit beside freshly checked GitHub main. Update to main backs up and upgrades the identified local demo database, then promotes a prepared build while retaining the previous build.
+- Human agency PM and independent finance acceptance remain outstanding. Supporting packets do not establish prescribed agency-form compatibility, eligibility or external authority. Automatic reminder installation/delivery remains pending; the proposed notification constraint replacement is excluded. Full OWP year-end closeout/carryover is next under M2d.4. Model validation and the other core roadmap obligations remain open.
 
-- Ordinary client invoices now retain an explicitly entered currency. Missing legacy currency stays unassessed in previews, invoice rows and PDFs; issued invoices use the existing void-and-reissue correction path.
+Apply these 28 additive migrations before running the new application. The release contains 307 migrations through `20261003000001`; original issued files and historical formats remain retained.
 
-- [contract_delivery_read_cost](openplan/supabase/migrations/20261002000001_contract_delivery_read_cost.sql) attaches complete delivery history once after the other management layers and adds an authorized hash-only read for calculation concurrency checks. Original forecast inputs remain in management snapshots.
-
-- [contract_forecast_evidence_envelope](openplan/supabase/migrations/20261001000001_contract_forecast_evidence_envelope.sql) permits up to 96 MB of server-calculated forecast evidence. Submitted delivery commands retain their 8 MB database ceiling and the web route retains its 2 MB request limit. This supports the measured maximum fixture without raising worker memory limits or weakening source, author or retry checks.
-
-- [contract_participant_closed_state](openplan/supabase/migrations/20260930000001_contract_participant_closed_state.sql) keeps closed consultant assignments and retained invoice downloads reachable, labels their state, and hides submission/review forms until a responsible manager reopens the assignment.
-
-- Forecast format 3 shares capacity warnings by person and date while retaining every affected task. Warning pages expand dates on demand; exports include exact scope-to-task mappings. The maximum missing-capacity Node-worker case now serializes without exhausting its 2 GB heap. Browser and durable-job maximum acceptance remain separate checks; older retained formats are unchanged.
-
-- [contract_source_visibility_receipts](openplan/supabase/migrations/20260929000001_contract_source_visibility_receipts.sql) refuses new historical reports when a source was first observed after the requested cutoff, including changes from transactions that started earlier and committed later. Open the management page and choose a fresh cutoff after new changes. First observation is conservative evidence, not an exact commit timestamp; older issued reports remain unchanged.
-
-- Forecast form edits cancel pending previews and remove results for earlier input values. New forecast format 2 sums this assignment's reservations by person and date, retaining task attribution in the saved schedule. This avoids a JSON-size failure in the measured 200-task, 100-person, 731-day case. Earlier results remain unchanged. Maximum adverse-warning and browser-delivery acceptance remain open.
-
-- [contract_completed_review_dates](openplan/supabase/migrations/20260928000001_contract_completed_review_dates.sql) retains actual outside-review dates and evidence separately from expected review periods and deliverable acceptance. Existing reviewed forecasts remain retained and become stale under the new calculation revision.
-
-- [contract_participant_and_accounting_work](openplan/supabase/migrations/20260926000001_contract_participant_and_accounting_work.sql) routes explicit consultant grants and unresolved accounting rows through My Work, and removes closed assignments from active work. [contract_participant_caller_view](openplan/supabase/migrations/20260927000001_contract_participant_caller_view.sql) keeps the consultant view under caller privileges with a narrow, caller-bound function.
-
-- [contract_export_source_receipts](openplan/supabase/migrations/20260925000001_contract_export_source_receipts.sql) retains received-invoice file checksums in new report format 7 and closeout format 3. New cost tables keep documented settlement separate. Earlier issued reports and packages retain their formats.
-
-- [contract_staff_import_visibility](openplan/supabase/migrations/20260924000001_contract_staff_import_visibility.sql) lets staff see time recorded for them by finance, retaining dates, hours, review status and task attribution without private payroll amounts, notes or file access. Finance-owned drafts remain read-only to staff.
-
-- [contract_forecast_billing_custody](openplan/supabase/migrations/20260923000001_contract_forecast_billing_custody.sql) binds received invoice revisions and the changed billing calculation to forecast hashes. Existing reviewed forecasts remain retained and become stale.
-
-- [contract_billing_direction](openplan/supabase/migrations/20260922000001_contract_billing_direction.sql) approves the agency purchaser, service provider or internal billing perspective with the baseline. New management snapshots use format 6; closeout packages use format 2 with received-cost and accounting attribution. Prior issued formats remain readable.
-
-- Indexed original documents remain usable for settlement and deliverable evidence after extraction finishes: [contract_indexed_source_files](openplan/supabase/migrations/20260921000001_contract_indexed_source_files.sql).
-
-- [contract_pending_reviews](openplan/supabase/migrations/20260920000001_contract_pending_reviews.sql) routes pending contract approvals, received-invoice reviews and proposed responses through My Work, preserving existing scoped authority.
-
-- Draft PM proposals can use their own retained source files and shared colleague availability through [contract_pm_proposal_inputs](openplan/supabase/migrations/20260919000001_contract_pm_proposal_inputs.sql). Reassignment comparisons preserve approved assignments until applied.
-
-- Draft scheduling integrity uses [contract_staff_schedule_integrity](openplan/supabase/migrations/20260917000001_contract_staff_schedule_integrity.sql). Departed staff cannot receive accepted work, removed schedule nodes release assignments, and closed contracts release shared capacity while prior forecasts remain retained.
-- Added [contract_mutable_source_cutoffs](openplan/supabase/migrations/20260918000001_contract_mutable_source_cutoffs.sql) to refuse retrospective reports after mutable planning inputs change, preserving already issued reports.
-
-- Patch the CSV parser to 7.0.2 and update compatible AI SDK dependencies after current dependency advisories. Duplicate prototype-named CSV headers remain data. Production dependency audit is clean in the candidate verification.
-
-- Draft durable calculation jobs use [contract_calculation_jobs](openplan/supabase/migrations/20260916000001_contract_calculation_jobs.sql). Run `npm run worker:contract-calculations` locally for reviewed forecasts, response comparisons, accounting imports and closeout packages. Queued requests preserve original authorship, reviewed input versions and retry identity.
-
-- Draft weekly management and delivery closeout use [contract_management_responses](openplan/supabase/migrations/20260914000001_contract_management_responses.sql), [contract_settlement_closeout](openplan/supabase/migrations/20260915000001_contract_settlement_closeout.sql), [contract_closeout_relationships](openplan/supabase/migrations/20260915000003_contract_closeout_relationships.sql), and [contract_management_reports](openplan/supabase/migrations/20260915000002_contract_management_reports.sql). Comparisons preserve approved baselines; financial events preserve incurred costs; closeout retains acceptance, reconciliation, obligations and reopening history. These are development candidates pending full acceptance.
-
-- Draft agency contract reconciliation: designated PM/finance access, scoped consultant invoice review, shared task-order authorization, and retained accounting comparison. Remaining-work forecasts, weekly PM responses and closeout remain in development; M11 is open.
-- Additive migrations: [contract_master_authorization](openplan/supabase/migrations/20260912000001_contract_master_authorization.sql), [contract_scoped_access](openplan/supabase/migrations/20260912000002_contract_scoped_access.sql), [received_consultant_invoices](openplan/supabase/migrations/20260912000003_received_consultant_invoices.sql), [contract_accounting_reconciliation](openplan/supabase/migrations/20260912000004_contract_accounting_reconciliation.sql), [legacy_order_authorization](openplan/supabase/migrations/20260912000005_legacy_order_authorization.sql). Apply them before this candidate runs. Original accounting transactions remain authoritative in the external ledger.
-
-- Draft remaining-work review uses [contract_delivery](openplan/supabase/migrations/20260913000001_contract_delivery.sql): explicit calendars, shared capacity, exact-version staff/PM reviews and retained forecasts. Browser and human acceptance remain open.
+- [contract_master_authorization](openplan/supabase/migrations/20260912000001_contract_master_authorization.sql)
+- [contract_scoped_access](openplan/supabase/migrations/20260912000002_contract_scoped_access.sql)
+- [received_consultant_invoices](openplan/supabase/migrations/20260912000003_received_consultant_invoices.sql)
+- [contract_accounting_reconciliation](openplan/supabase/migrations/20260912000004_contract_accounting_reconciliation.sql)
+- [legacy_order_authorization](openplan/supabase/migrations/20260912000005_legacy_order_authorization.sql)
+- [contract_delivery](openplan/supabase/migrations/20260913000001_contract_delivery.sql)
+- [contract_management_responses](openplan/supabase/migrations/20260914000001_contract_management_responses.sql)
+- [contract_settlement_closeout](openplan/supabase/migrations/20260915000001_contract_settlement_closeout.sql)
+- [contract_management_reports](openplan/supabase/migrations/20260915000002_contract_management_reports.sql)
+- [contract_closeout_relationships](openplan/supabase/migrations/20260915000003_contract_closeout_relationships.sql)
+- [contract_calculation_jobs](openplan/supabase/migrations/20260916000001_contract_calculation_jobs.sql)
+- [contract_staff_schedule_integrity](openplan/supabase/migrations/20260917000001_contract_staff_schedule_integrity.sql)
+- [contract_mutable_source_cutoffs](openplan/supabase/migrations/20260918000001_contract_mutable_source_cutoffs.sql)
+- [contract_pm_proposal_inputs](openplan/supabase/migrations/20260919000001_contract_pm_proposal_inputs.sql)
+- [contract_pending_reviews](openplan/supabase/migrations/20260920000001_contract_pending_reviews.sql)
+- [contract_indexed_source_files](openplan/supabase/migrations/20260921000001_contract_indexed_source_files.sql)
+- [contract_billing_direction](openplan/supabase/migrations/20260922000001_contract_billing_direction.sql)
+- [contract_forecast_billing_custody](openplan/supabase/migrations/20260923000001_contract_forecast_billing_custody.sql)
+- [contract_staff_import_visibility](openplan/supabase/migrations/20260924000001_contract_staff_import_visibility.sql)
+- [contract_export_source_receipts](openplan/supabase/migrations/20260925000001_contract_export_source_receipts.sql)
+- [contract_participant_and_accounting_work](openplan/supabase/migrations/20260926000001_contract_participant_and_accounting_work.sql)
+- [contract_participant_caller_view](openplan/supabase/migrations/20260927000001_contract_participant_caller_view.sql)
+- [contract_completed_review_dates](openplan/supabase/migrations/20260928000001_contract_completed_review_dates.sql)
+- [contract_source_visibility_receipts](openplan/supabase/migrations/20260929000001_contract_source_visibility_receipts.sql)
+- [contract_participant_closed_state](openplan/supabase/migrations/20260930000001_contract_participant_closed_state.sql)
+- [contract_forecast_evidence_envelope](openplan/supabase/migrations/20261001000001_contract_forecast_evidence_envelope.sql)
+- [contract_delivery_read_cost](openplan/supabase/migrations/20261002000001_contract_delivery_read_cost.sql)
+- [work_program_reimbursement](openplan/supabase/migrations/20261003000001_work_program_reimbursement.sql)
 
 ## 0.46.0 — 2026-09-08
 
