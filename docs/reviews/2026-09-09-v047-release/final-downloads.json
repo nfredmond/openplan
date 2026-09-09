@@ -1,0 +1,116 @@
+{
+  "files": [
+    {
+      "filename": "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v1 (1).pdf",
+      "bytes": 190980,
+      "sha256": "d52d089e72b4fa6e296801fca14ef8601bc0d3069a881718080532da7a50d9f1",
+      "savedAtEpoch": 1788978830.44442
+    },
+    {
+      "filename": "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v1 (1).xlsx",
+      "bytes": 32842,
+      "sha256": "f9d2a66cee5f17ea1986b083a53eb4be24650b1fdda186b4de2a9a3403565d03",
+      "savedAtEpoch": 1788980061.06931
+    },
+    {
+      "filename": "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v1 (2).pdf",
+      "bytes": 190980,
+      "sha256": "d52d089e72b4fa6e296801fca14ef8601bc0d3069a881718080532da7a50d9f1",
+      "savedAtEpoch": 1788978903.827164
+    },
+    {
+      "filename": "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v1 (2).xlsx",
+      "bytes": 32842,
+      "sha256": "f9d2a66cee5f17ea1986b083a53eb4be24650b1fdda186b4de2a9a3403565d03",
+      "savedAtEpoch": 1788980288.0800438
+    },
+    {
+      "filename": "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v1 (3).pdf",
+      "bytes": 190980,
+      "sha256": "d52d089e72b4fa6e296801fca14ef8601bc0d3069a881718080532da7a50d9f1",
+      "savedAtEpoch": 1788980058.06907
+    },
+    {
+      "filename": "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v1 (4).pdf",
+      "bytes": 190980,
+      "sha256": "d52d089e72b4fa6e296801fca14ef8601bc0d3069a881718080532da7a50d9f1",
+      "savedAtEpoch": 1788980287.8186269
+    },
+    {
+      "filename": "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v1.pdf",
+      "bytes": 190980,
+      "sha256": "d52d089e72b4fa6e296801fca14ef8601bc0d3069a881718080532da7a50d9f1",
+      "savedAtEpoch": 1788978800.2860727
+    },
+    {
+      "filename": "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v1.xlsx",
+      "bytes": 32842,
+      "sha256": "f9d2a66cee5f17ea1986b083a53eb4be24650b1fdda186b4de2a9a3403565d03",
+      "savedAtEpoch": 1788978815.5312335
+    },
+    {
+      "filename": "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v2 (1).pdf",
+      "bytes": 199247,
+      "sha256": "70fa601e04a940b5c650c6f632f6c192638772c0a7917e2f4d8fed9ebf960818",
+      "savedAtEpoch": 1788980061.2638433
+    },
+    {
+      "filename": "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v2 (1).xlsx",
+      "bytes": 33296,
+      "sha256": "8b8370fce49975d3f841984f665bf1bc42baa42ced89868e5bf6b5a3df68b631",
+      "savedAtEpoch": 1788980063.231708
+    },
+    {
+      "filename": "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v2 (2).pdf",
+      "bytes": 199247,
+      "sha256": "70fa601e04a940b5c650c6f632f6c192638772c0a7917e2f4d8fed9ebf960818",
+      "savedAtEpoch": 1788980099.0150294
+    },
+    {
+      "filename": "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v2 (2).xlsx",
+      "bytes": 33296,
+      "sha256": "8b8370fce49975d3f841984f665bf1bc42baa42ced89868e5bf6b5a3df68b631",
+      "savedAtEpoch": 1788980112.724054
+    },
+    {
+      "filename": "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v2 (3).pdf",
+      "bytes": 199247,
+      "sha256": "70fa601e04a940b5c650c6f632f6c192638772c0a7917e2f4d8fed9ebf960818",
+      "savedAtEpoch": 1788980288.4060578
+    },
+    {
+      "filename": "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v2 (3).xlsx",
+      "bytes": 33296,
+      "sha256": "8b8370fce49975d3f841984f665bf1bc42baa42ced89868e5bf6b5a3df68b631",
+      "savedAtEpoch": 1788980291.5631087
+    },
+    {
+      "filename": "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v2 (4).pdf",
+      "bytes": 199247,
+      "sha256": "70fa601e04a940b5c650c6f632f6c192638772c0a7917e2f4d8fed9ebf960818",
+      "savedAtEpoch": 1788980325.7525363
+    },
+    {
+      "filename": "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v2.pdf",
+      "bytes": 199247,
+      "sha256": "70fa601e04a940b5c650c6f632f6c192638772c0a7917e2f4d8fed9ebf960818",
+      "savedAtEpoch": 1788978818.1012604
+    },
+    {
+      "filename": "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v2.xlsx",
+      "bytes": 33296,
+      "sha256": "8b8370fce49975d3f841984f665bf1bc42baa42ced89868e5bf6b5a3df68b631",
+      "savedAtEpoch": 1788978820.623475
+    }
+  ],
+  "finalBuild": "64bd60632ccbc030755efd91c4898889923ca9da",
+  "scope": "Downloads saved from Programs across initial and final journeys. All four formats/versions downloaded again from the final build. Native Documents saving remains unconfirmed.",
+  "finalBuildCompletedAtEpoch": 1788980217.8290503,
+  "finalBuildFiles": [
+    "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v1 (2).xlsx",
+    "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v1 (4).pdf",
+    "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v2 (3).pdf",
+    "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v2 (3).xlsx",
+    "reimbursement-6e09b1a1-caae-4693-a35d-c2f180596025-v2 (4).pdf"
+  ]
+}

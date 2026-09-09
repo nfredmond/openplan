@@ -1,0 +1,155 @@
+{
+  "results": [
+    {
+      "documentId": "0fc52e78-effc-43f1-83de-1d983beb85fe",
+      "actor": "anonymous",
+      "operation": "metadata",
+      "status": 401
+    },
+    {
+      "documentId": "0fc52e78-effc-43f1-83de-1d983beb85fe",
+      "actor": "anonymous",
+      "operation": "bytes",
+      "status": 401
+    },
+    {
+      "documentId": "0fc52e78-effc-43f1-83de-1d983beb85fe",
+      "actor": "foreign workspace owner",
+      "operation": "metadata",
+      "status": 404
+    },
+    {
+      "documentId": "0fc52e78-effc-43f1-83de-1d983beb85fe",
+      "actor": "foreign workspace owner",
+      "operation": "bytes",
+      "status": 404
+    },
+    {
+      "documentId": "0fc52e78-effc-43f1-83de-1d983beb85fe",
+      "actor": "owner",
+      "operation": "ordinary Documents HTTP download",
+      "status": 200,
+      "bytes": 190980,
+      "sha256": "d52d089e72b4fa6e296801fca14ef8601bc0d3069a881718080532da7a50d9f1",
+      "cache": "private, no-store",
+      "bearerRedirect": false
+    },
+    {
+      "documentId": "69aa3565-e3c8-48ad-8c46-31f36e0742ce",
+      "actor": "anonymous",
+      "operation": "metadata",
+      "status": 401
+    },
+    {
+      "documentId": "69aa3565-e3c8-48ad-8c46-31f36e0742ce",
+      "actor": "anonymous",
+      "operation": "bytes",
+      "status": 401
+    },
+    {
+      "documentId": "69aa3565-e3c8-48ad-8c46-31f36e0742ce",
+      "actor": "foreign workspace owner",
+      "operation": "metadata",
+      "status": 404
+    },
+    {
+      "documentId": "69aa3565-e3c8-48ad-8c46-31f36e0742ce",
+      "actor": "foreign workspace owner",
+      "operation": "bytes",
+      "status": 404
+    },
+    {
+      "documentId": "69aa3565-e3c8-48ad-8c46-31f36e0742ce",
+      "actor": "owner",
+      "operation": "ordinary Documents HTTP download",
+      "status": 200,
+      "bytes": 32842,
+      "sha256": "f9d2a66cee5f17ea1986b083a53eb4be24650b1fdda186b4de2a9a3403565d03",
+      "cache": "private, no-store",
+      "bearerRedirect": false
+    },
+    {
+      "documentId": "528a43d8-ab8f-473f-b071-5547db505ae1",
+      "actor": "anonymous",
+      "operation": "metadata",
+      "status": 401
+    },
+    {
+      "documentId": "528a43d8-ab8f-473f-b071-5547db505ae1",
+      "actor": "anonymous",
+      "operation": "bytes",
+      "status": 401
+    },
+    {
+      "documentId": "528a43d8-ab8f-473f-b071-5547db505ae1",
+      "actor": "foreign workspace owner",
+      "operation": "metadata",
+      "status": 404
+    },
+    {
+      "documentId": "528a43d8-ab8f-473f-b071-5547db505ae1",
+      "actor": "foreign workspace owner",
+      "operation": "bytes",
+      "status": 404
+    },
+    {
+      "documentId": "528a43d8-ab8f-473f-b071-5547db505ae1",
+      "actor": "owner",
+      "operation": "ordinary Documents HTTP download",
+      "status": 200,
+      "bytes": 199247,
+      "sha256": "70fa601e04a940b5c650c6f632f6c192638772c0a7917e2f4d8fed9ebf960818",
+      "cache": "private, no-store",
+      "bearerRedirect": false
+    },
+    {
+      "documentId": "ad4a766b-134e-428c-be94-ad5ec9be42af",
+      "actor": "anonymous",
+      "operation": "metadata",
+      "status": 401
+    },
+    {
+      "documentId": "ad4a766b-134e-428c-be94-ad5ec9be42af",
+      "actor": "anonymous",
+      "operation": "bytes",
+      "status": 401
+    },
+    {
+      "documentId": "ad4a766b-134e-428c-be94-ad5ec9be42af",
+      "actor": "foreign workspace owner",
+      "operation": "metadata",
+      "status": 404
+    },
+    {
+      "documentId": "ad4a766b-134e-428c-be94-ad5ec9be42af",
+      "actor": "foreign workspace owner",
+      "operation": "bytes",
+      "status": 404
+    },
+    {
+      "documentId": "ad4a766b-134e-428c-be94-ad5ec9be42af",
+      "actor": "owner",
+      "operation": "ordinary Documents HTTP download",
+      "status": 200,
+      "bytes": 33296,
+      "sha256": "8b8370fce49975d3f841984f665bf1bc42baa42ced89868e5bf6b5a3df68b631",
+      "cache": "private, no-store",
+      "bearerRedirect": false
+    }
+  ],
+  "packets": [
+    {
+      "hash": "a27f53e6d6e484223f001ead299b08319dc8fd9c5be5207aaa43d6bb58133184",
+      "version": 1,
+      "request": "30.00"
+    },
+    {
+      "hash": "dc47256d55d0de3740dca207c123eba8fe84426ca9770a8a26c9a1a01c4e2453",
+      "version": 2,
+      "request": "29.00"
+    }
+  ],
+  "eventCount": 8,
+  "claimVersion": 8,
+  "blindCategory": "Authenticated HTTP access and byte custody; this does not establish native browser saving or authentic financial approval."
+}

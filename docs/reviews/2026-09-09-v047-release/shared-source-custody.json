@@ -1,0 +1,1 @@
+{"claimVersion" : 8, "state" : "accepted", "sourceReservations" : 2, "events" : 8, "packets" : [{"version" : "1", "hash" : "a27f53e6d6e484223f001ead299b08319dc8fd9c5be5207aaa43d6bb58133184", "request" : "30.00", "contractCosts" : 1}, {"version" : "2", "hash" : "dc47256d55d0de3740dca207c123eba8fe84426ca9770a8a26c9a1a01c4e2453", "request" : "29.00", "contractCosts" : 1}]}
