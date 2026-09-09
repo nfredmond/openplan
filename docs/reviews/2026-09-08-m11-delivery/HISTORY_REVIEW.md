@@ -165,3 +165,5 @@ failures and revisions, including the inaccurate SQL mutation receipt, are retai
 there. The handoff did not authorize claiming those earlier partial checks as
 complete. All seven GitHub checks passed on 782fcfd7; current uncommitted repairs
 still need separate acceptance. Main consolidation remains authorized and pending.
+
+Complete bulk reading now covers chunks 1–24, 88 and 721. Chunks 15, 23 and 24 were re-read separately after combined output truncation; truncated attempts were not counted. These chunks retain the v0.46 acceptance and original contract custody implementation. The old main nightly failure (run 34234455220, head 76f019bf) was already disclosed at IMPLEMENTATION.md line 16; the earlier agent promised follow-up. Current source inspection shows its moderation step omitted the now-required review reason and ignored rejected responses while waiting for success. A harness repair is prepared but has not yet been browser verified. This remains unfinished follow-through, not an assertion that the handoff concealed the failed run. Other bulk chunks and recovered images remain available but unread.

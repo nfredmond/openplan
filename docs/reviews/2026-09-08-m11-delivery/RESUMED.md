@@ -568,3 +568,5 @@ other server or worker was stopped. The next browser must identify the rebuilt
 currency/correction-form candidate before continuing.
 
 The 6ce900c9 full local gate stopped at lint: the currency change left an unused `formatCurrency` import. It was removed; that run did not reach tests or build. The repeated populated comparison still matches a6b1bfe272ecc1b77c37730603d9a0267878f7ec5a09bb50a0a1803fa42b31ca. The real two-session visibility probe after the reader refactor retains its harmless cutoff and rejects both late mutable and immutable commits, with fresh snapshot exact replay intact.
+
+The ea1303ca full gate passed lint but stopped at two stale forecast API mocks (13,408 other tests passed). The API tests now model the hash-only version RPC, assert the authorization/read sequence and verify both version reads occur. A harmless source comment passes; disabling source-version comparisons fails the API status assertion. The first added sequence assertion omitted the initial authorization read and was corrected before accepting the control. No build or full-gate success is claimed for that failed run.
