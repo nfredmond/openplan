@@ -245,3 +245,7 @@ September 7 M2d.2 [engineering acceptance](../reviews/2026-09-07-owp-review/VERI
 ## September 9 reporting and reimbursement engineering cycle
 
 CORE-OWP-01/M2d.3 now has a bounded [supporting-packet implementation](../reviews/2026-09-09-m2d3-reimbursement/IMPLEMENTATION.md): approved staff and shared M11 contract costs, reviewed eligibility and funding/match shares, dated progress and remaining-work evidence, retained PDF/XLSX packets, and return/correction/resubmission with immutable source reservations. The exact browser retry recovers one command, and corrected requests replace earlier amounts. Agency-specific prescribed forms and real reviewer usefulness remain unproved; this does not complete full OWP administration or M2d.4. M11 human acceptance and reminder approval remain open and separate.
+
+### September 9 closeout review start
+
+CORE-OWP-01/M2d.4 has a [preparatory closeout review](../reviews/2026-09-09-m2d4-closeout/VERIFICATION.md) of one retained reporting baseline, corrected claim requests and unfinished work. Private JSON export retains exact source records and claim evidence. Acceptance does not become payment; missing settlement, refunds and approved carryover remain unknown. Linked cash/refund reconciliation, successor approval/mapping, actual closure and authorized reopening remain incomplete. No agency outcome or capability rating is promoted.

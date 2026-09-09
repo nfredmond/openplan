@@ -1,0 +1,37 @@
+{
+  "results": [
+    {
+      "actor": "owner",
+      "endpoint": "reporting",
+      "status": 200
+    },
+    {
+      "actor": "anonymous",
+      "endpoint": "reporting",
+      "status": 401
+    },
+    {
+      "actor": "foreign workspace owner",
+      "endpoint": "reporting",
+      "status": 404
+    },
+    {
+      "actor": "owner",
+      "endpoint": "reimbursement",
+      "status": 200
+    },
+    {
+      "actor": "anonymous",
+      "endpoint": "reimbursement",
+      "status": 401
+    },
+    {
+      "actor": "foreign workspace owner",
+      "endpoint": "reimbursement",
+      "status": 404
+    }
+  ],
+  "selectedReportUnchanged": true,
+  "baselineHash": "b5413b0c1a17fb7d79274838cb4c1ceef6d5a2bf726afa0894af3775be5bf0e2",
+  "blindCategory": "HTTP owner/anonymous/foreign access; member navigation covered separately by component role tests."
+}

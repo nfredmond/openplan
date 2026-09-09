@@ -1,0 +1,58 @@
+[
+  {
+    "width": 1440,
+    "build": {
+      "commit": "8bd928f41822",
+      "version": "0.47.0"
+    },
+    "journey": "Landing > sign in > Overview > Programming Cycles > program > Administer a reporting period > Closeout review",
+    "filename": "owp-closeout-review-a7c831df-7fb9-4562-89fa-35c776032088.json",
+    "sha256": "2ec8f7da103524bf2a60015a8d3521be93507344f44e97157487cd95b4e7fc7d",
+    "reportId": "a7c831df-7fb9-4562-89fa-35c776032088",
+    "baselineHash": "b5413b0c1a17fb7d79274838cb4c1ceef6d5a2bf726afa0894af3775be5bf0e2",
+    "currentRequest": "29.00",
+    "outstandingBalance": null,
+    "sourceRecordsUnchanged": true,
+    "historyFailureWithdrawsExport": true,
+    "retryIdentical": true,
+    "console": [
+      {
+        "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+        "url": "http://127.0.0.1:3258/api/programs/40fd212d-5862-48d4-901f-a1888b7eeeb9/work-program/reimbursement",
+        "expected": true
+      }
+    ],
+    "geometry": {
+      "viewport": 1440,
+      "document": 1440
+    }
+  },
+  {
+    "width": 390,
+    "build": {
+      "commit": "8bd928f41822",
+      "version": "0.47.0"
+    },
+    "journey": "Landing > sign in > Overview > Programming Cycles > program > Administer a reporting period > Closeout review",
+    "filename": "owp-closeout-review-a7c831df-7fb9-4562-89fa-35c776032088.json",
+    "sha256": "2ec8f7da103524bf2a60015a8d3521be93507344f44e97157487cd95b4e7fc7d",
+    "reportId": "a7c831df-7fb9-4562-89fa-35c776032088",
+    "baselineHash": "b5413b0c1a17fb7d79274838cb4c1ceef6d5a2bf726afa0894af3775be5bf0e2",
+    "currentRequest": "29.00",
+    "outstandingBalance": null,
+    "sourceRecordsUnchanged": true,
+    "historyFailureWithdrawsExport": true,
+    "retryIdentical": true,
+    "console": [
+      {
+        "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+        "url": "http://127.0.0.1:3258/api/programs/40fd212d-5862-48d4-901f-a1888b7eeeb9/work-program/reimbursement",
+        "expected": true
+      }
+    ],
+    "geometry": {
+      "viewport": 390,
+      "document": 390
+    }
+  }
+]

@@ -1,0 +1,134 @@
+[
+  {
+    "mutation": "harmless comment",
+    "exitCode": 0,
+    "expected": "survived",
+    "testFailures": []
+  },
+  {
+    "mutation": "old packet instead of correction",
+    "exitCode": 1,
+    "expected": "failed",
+    "testFailures": [
+      "FAIL  src/test/work-program-closeout-review.test.tsx > OWP closeout review boundaries > uses one corrected request and leaves acceptance, commitments and refunds unreconciled",
+      "AssertionError: expected [ '10.00' ] to deeply equal [ '9.00' ]",
+      "FAIL  src/test/work-program-closeout-review.test.tsx > OWP closeout review boundaries > keeps a id mismatch unresolved instead of mixing another baseline or claim",
+      "FAIL  src/test/work-program-closeout-review.test.tsx > OWP closeout review boundaries > keeps a hash mismatch unresolved instead of mixing another baseline or claim",
+      "FAIL  src/test/work-program-closeout-review.test.tsx > OWP closeout review boundaries > keeps a currency mismatch unresolved instead of mixing another baseline or claim",
+      "FAIL  src/test/work-program-closeout-review.test.tsx > OWP closeout review boundaries > keeps a claim mismatch unresolved instead of mixing another baseline or claim",
+      "AssertionError: expected true to be false // Object.is equality",
+      "FAIL  src/test/work-program-closeout-review.test.tsx > OWP closeout review boundaries > withholds an export when history is unavailable and exports exact retained inputs after recovery",
+      "AssertionError: expected '10.00' to be '9.00' // Object.is equality"
+    ]
+  },
+  {
+    "mutation": "wrong baseline identity",
+    "exitCode": 1,
+    "expected": "failed",
+    "testFailures": [
+      "FAIL  src/test/work-program-closeout-review.test.tsx > OWP closeout review boundaries > keeps a id mismatch unresolved instead of mixing another baseline or claim",
+      "AssertionError: expected true to be false // Object.is equality"
+    ]
+  },
+  {
+    "mutation": "wrong baseline checksum",
+    "exitCode": 1,
+    "expected": "failed",
+    "testFailures": [
+      "FAIL  src/test/work-program-closeout-review.test.tsx > OWP closeout review boundaries > keeps a hash mismatch unresolved instead of mixing another baseline or claim",
+      "AssertionError: expected true to be false // Object.is equality"
+    ]
+  },
+  {
+    "mutation": "wrong currency",
+    "exitCode": 1,
+    "expected": "failed",
+    "testFailures": [
+      "FAIL  src/test/work-program-closeout-review.test.tsx > OWP closeout review boundaries > keeps a currency mismatch unresolved instead of mixing another baseline or claim",
+      "AssertionError: expected true to be false // Object.is equality"
+    ]
+  },
+  {
+    "mutation": "wrong claim",
+    "exitCode": 1,
+    "expected": "failed",
+    "testFailures": [
+      "FAIL  src/test/work-program-closeout-review.test.tsx > OWP closeout review boundaries > keeps a claim mismatch unresolved instead of mixing another baseline or claim",
+      "AssertionError: expected true to be false // Object.is equality"
+    ]
+  },
+  {
+    "mutation": "payment inferred from acceptance",
+    "exitCode": 1,
+    "expected": "failed",
+    "testFailures": [
+      "FAIL  src/test/work-program-closeout-review.test.tsx > OWP closeout review boundaries > uses one corrected request and leaves acceptance, commitments and refunds unreconciled",
+      "AssertionError: expected '0.00' to be null",
+      "FAIL  src/test/work-program-closeout-review.test.tsx > OWP closeout review boundaries > keeps a id mismatch unresolved instead of mixing another baseline or claim",
+      "FAIL  src/test/work-program-closeout-review.test.tsx > OWP closeout review boundaries > keeps a hash mismatch unresolved instead of mixing another baseline or claim",
+      "FAIL  src/test/work-program-closeout-review.test.tsx > OWP closeout review boundaries > keeps a currency mismatch unresolved instead of mixing another baseline or claim",
+      "FAIL  src/test/work-program-closeout-review.test.tsx > OWP closeout review boundaries > keeps a claim mismatch unresolved instead of mixing another baseline or claim",
+      "FAIL  src/test/work-program-closeout-review.test.tsx > OWP closeout review boundaries > keeps a missing mismatch unresolved instead of mixing another baseline or claim",
+      "AssertionError: expected '0.00' to be null"
+    ]
+  },
+  {
+    "mutation": "duplicate cumulative sources",
+    "exitCode": 1,
+    "expected": "failed",
+    "testFailures": [
+      "FAIL  src/test/work-program-closeout-review.test.tsx > OWP closeout review boundaries > refuses cumulative duplicate sources and unissued or reimbursement snapshots",
+      "AssertionError: expected [Function] to throw an error"
+    ]
+  },
+  {
+    "mutation": "working preview accepted",
+    "exitCode": 1,
+    "expected": "failed",
+    "testFailures": [
+      "FAIL  src/test/work-program-closeout-review.test.tsx > OWP closeout review boundaries > refuses cumulative duplicate sources and unissued or reimbursement snapshots",
+      "AssertionError: expected [Function] to throw an error"
+    ]
+  },
+  {
+    "mutation": "failed history represented as empty",
+    "exitCode": 1,
+    "expected": "failed",
+    "testFailures": [
+      "FAIL  src/test/work-program-closeout-review.test.tsx > OWP closeout review boundaries > withholds an export when history is unavailable and exports exact retained inputs after recovery",
+      "FAIL  src/test/work-program-closeout-review.test.tsx > OWP closeout review boundaries > withdraws a displayed review if reloading reimbursement history fails"
+    ]
+  },
+  {
+    "mutation": "stale review after failed reload",
+    "exitCode": 1,
+    "expected": "failed",
+    "testFailures": [
+      "FAIL  src/test/work-program-closeout-review.test.tsx > OWP closeout review boundaries > withdraws a displayed review if reloading reimbursement history fails"
+    ]
+  },
+  {
+    "mutation": "export loses source baseline",
+    "exitCode": 1,
+    "expected": "failed",
+    "testFailures": [
+      "FAIL  src/test/work-program-closeout-review.test.tsx > OWP closeout review boundaries > withholds an export when history is unavailable and exports exact retained inputs after recovery",
+      "AssertionError: expected null to deeply equal { \u2026(7) }"
+    ]
+  },
+  {
+    "mutation": "harmless navigation comment",
+    "exitCode": 0,
+    "expected": "survived",
+    "testFailures": []
+  },
+  {
+    "mutation": "staff sees private navigation",
+    "exitCode": 1,
+    "expected": "failed",
+    "testFailures": [
+      "FAIL  src/test/work-program-closeout-review.test.tsx > OWP closeout review boundaries > shows closeout navigation only with manager access: false",
+      "AssertionError: expected true to be false // Object.is equality"
+    ]
+  }
+]

@@ -1,0 +1,33 @@
+{
+  "commit": "f65a27db9432c1f0a460bfe8b966a8c1446327bd",
+  "checks": [
+    {
+      "conclusion": "success",
+      "headSha": "f65a27db9432c1f0a460bfe8b966a8c1446327bd",
+      "name": "CI",
+      "status": "completed",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34413821641"
+    },
+    {
+      "conclusion": "success",
+      "headSha": "f65a27db9432c1f0a460bfe8b966a8c1446327bd",
+      "name": "RLS Isolation",
+      "status": "completed",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34413821609"
+    },
+    {
+      "conclusion": "success",
+      "headSha": "f65a27db9432c1f0a460bfe8b966a8c1446327bd",
+      "name": "Upgrade Path",
+      "status": "completed",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34413821804"
+    }
+  ],
+  "release": {
+    "isDraft": false,
+    "isPrerelease": false,
+    "publishedAt": "2026-09-09T22:59:36Z",
+    "tagName": "v0.47.0",
+    "url": "https://github.com/nfredmond/openplan/releases/tag/v0.47.0"
+  }
+}

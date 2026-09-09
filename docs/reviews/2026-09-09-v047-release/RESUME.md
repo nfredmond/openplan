@@ -1,4 +1,4 @@
-# Continue after v0.47 engineering acceptance
+# Continue after the v0.47 release
 
 The release preparation was merged and pushed directly to main at `1b08f71f`; GitHub marked draft PR #111 merged. Nathaniel explicitly requires direct main merges without draft PRs. The draft approval workflow was an agent error, not a release-policy requirement. The repository Playwright harness is explicitly authorized for browser work; do not ask again.
 
@@ -6,6 +6,8 @@ The Documents gap is closed. VERIFICATION.md and documents-browser-results.json 
 
 The isolated checkout is `/home/nathaniel/.local/state/openplan/v047-release-2026-09-09`, branch `work/v047-release`. Its production server on port 3257 is application build `64bd60632ccbc030755efd91c4898889923ca9da`. Later commits change release documentation only. Do not stamp a later SHA on that existing build. The named disposable stack is `supabase_db_m2d3-reimbursement-verification`, workdir `/home/nathaniel/.local/state/openplan/m2d3-verification`, API 58821 and DB 58822. Existing synthetic credentials are only in `/tmp/m2d3-shared-browser-fixture.json`; never print or commit them. Scratch scripts and private saved files are in `/home/nathaniel/.local/state/openplan/v047-release-evidence-2026-09-09`.
 
-Push the final release evidence directly to main, inspect successful CI and RLS on that exact commit, then tag v0.47.0. Check live tag state before acting; version metadata is not proof that a tag was published. Preserve the pending reminder constraint proposal untouched.
+v0.47.0 is published from `f65a27db9432c1f0a460bfe8b966a8c1446327bd`. CI, live RLS and the populated v0.46 upgrade passed on that exact commit before tagging. See release-receipt.json. Do not recreate or move the tag. Preserve the pending reminder constraint proposal untouched.
 
 Next is M2d.4 in existing Programs, not a new module. Extend adopted work-program baselines, period actuals, reimbursement lineages and source reservations. Reconcile outstanding claims, commitments and refunds with retained approval evidence; carry unfinished work into a successor without copying physical expenses or treating an accepted claim as cash. Old baseline and exact predecessor/successor mappings must survive. Reopening requires appropriate retained authority. Provider choice, engagement, capital delivery, RTP and separate nationwide model validation remain early roadmap obligations. The current roadmap is the sole queue.
+
+The follow-on closeout review is being verified in `/home/nathaniel/.local/state/openplan/m2d4-closeout-review-2026-09-09`. Its current evidence is `docs/reviews/2026-09-09-m2d4-closeout/VERIFICATION.md`; that preparatory review is not full closure or approved carryover.
