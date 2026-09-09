@@ -50,7 +50,7 @@ export default function AuthLayout({
                 <p className="mt-2 text-sm text-foreground">Create an account, then open your workspace to move a planning story from context to a board-ready packet.</p>
               </div>
               <div className="border-l-2 border-[color:var(--copper)] bg-[color:var(--copper)]/10 px-4 py-3">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Why teams use it</p>
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Connected planning work</p>
                 <p className="mt-2 text-sm text-foreground">Analysis, engagement, and deliverables stay tied to the same record, so nothing gets stranded across separate tools.</p>
               </div>
             </div>
