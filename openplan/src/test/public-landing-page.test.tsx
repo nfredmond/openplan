@@ -25,6 +25,12 @@ import PublicLandingPage from "@/app/(public)/page";
  * copy-freeze rather than a posture guard.
  */
 describe("PublicLandingPage", () => {
+  it("does not claim established adoption without evidence", () => {
+    // The September 2026 product direction records zero users.
+    const { container } = render(<PublicLandingPage />);
+    expect(container.textContent).not.toMatch(/\b(?:used|trusted|adopted) by\b|\bplanners use it\b/i);
+  });
+
   it("leads with self-serve sign-up, keeps sign-in secondary, and shows source/license proof near the Apache claim", () => {
     render(<PublicLandingPage />);
 

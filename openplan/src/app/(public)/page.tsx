@@ -150,7 +150,7 @@ export default function PublicLandingPage() {
           <div className="public-headline-block">
             <h1 className="public-title">Your maps, your public comments, and your report — in one place.</h1>
             <p className="public-lead max-w-4xl">
-              OpenPlan is software for the work planners actually do: studying a corridor, asking the public what they think, keeping track of projects and grants, and writing the documents that come out of all of it. It is free, and the code is public. Used by city and county planners, MPOs and RTPAs, tribes, non-profits and consultants.
+              OpenPlan is software for the work planners actually do: studying a corridor, asking the public what they think, keeping track of projects and grants, and writing the documents that come out of all of it. It is free, and the code is public. Designed for city and county planners, MPOs and RTPAs, tribes, non-profits and consultants.
             </p>
           </div>
 
@@ -220,7 +220,7 @@ export default function PublicLandingPage() {
           <div className="public-section-header">
             <div>
               <p className="public-section-label">What you can do with it</p>
-              <h2 className="public-section-title">Three things planners use it for</h2>
+              <h2 className="public-section-title">Three planning workflows</h2>
             </div>
             <p className="public-section-description max-w-2xl">
               Most planning work starts with a question about a place and ends with a document somebody has to defend. OpenPlan is built for the middle.

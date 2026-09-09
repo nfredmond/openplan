@@ -1,0 +1,73 @@
+{
+  "checkout": "/home/nathaniel/code/openplan",
+  "baseCommit": "2c1e489a",
+  "dirtyFiles": [
+    "openplan/src/app/(public)/page.tsx",
+    "openplan/src/test/public-landing-page.test.tsx"
+  ],
+  "url": "http://127.0.0.1:3248/",
+  "identity": "which-openplan confirmed this checkout is served live; unstamped dev server",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "mobileDocumentWidth": 390,
+  "consoleErrors": [],
+  "claims": [
+    "Designed for city and county planners",
+    "Three planning workflows"
+  ],
+  "focusedTests": 119,
+  "lint": "passed",
+  "controls": [
+    {
+      "name": "baseline",
+      "outcome": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "harmless-audience-wording",
+      "outcome": "survived",
+      "exitCode": 0
+    },
+    {
+      "name": "unsupported-adoption",
+      "outcome": "killed",
+      "exitCode": 1
+    },
+    {
+      "name": "unsupported-usage-heading",
+      "outcome": "killed",
+      "exitCode": 1
+    }
+  ],
+  "blindCategory": "Phrase guard is not a proof of all public claims, adoption or complete product usability. Browser check covers these copy changes only.",
+  "screenshots": [
+    {
+      "file": "homepage-copy-desktop.png",
+      "sha256": "d4d9a00669ccbedd7e2eea732ab8c3f55c8c44f003566bfd28f5c57314451f2f",
+      "bytes": 287013
+    },
+    {
+      "file": "homepage-copy-mobile.png",
+      "sha256": "dbd836aa262b1ae831c2f7248b476b9cba8eab254471ecd7c8e1dfd055111148",
+      "bytes": 96086
+    },
+    {
+      "file": "homepage-workflows-desktop.png",
+      "sha256": "f47a6180714e4532519e04447258430b22021a2f4cbd9f29338979710fa548f7",
+      "bytes": 317174
+    },
+    {
+      "file": "homepage-workflows-mobile.png",
+      "sha256": "afd2463042470195cd83585fcc5045d2314f2e42614571cf31322b2b6c76ff82",
+      "bytes": 98165
+    }
+  ]
+}
