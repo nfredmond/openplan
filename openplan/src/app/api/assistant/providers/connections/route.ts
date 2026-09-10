@@ -4,7 +4,8 @@ import { z } from "zod";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { loadProviderProjectPacket, newProviderConnectionToken, PROVIDER_CONNECTION_COLUMNS, providerBody, providerBrowserOrigin, providerError, providerJson, providerRpcError, providerScopeSchema, providerUser, requireProviderBrowserOrigin } from "@/lib/assistant/provider-server";
 
-const createSchema = providerScopeSchema.extend({ label: z.string().trim().min(1).max(120), authMode: z.enum(["chatgpt", "apiKey"]) }).strict();
+const createSchema = providerScopeSchema.extend({ label: z.string().trim().min(1).max(120), provider: z.enum(["codex", "claude"]).optional(), authMode: z.enum(["chatgpt", "apiKey", "claude_subscription"]) }).strict()
+  .refine(body => (body.provider ?? "codex") === "claude" ? body.authMode === "claude_subscription" : body.authMode !== "claude_subscription");
 const revokeSchema = z.object({ connectionId: z.string().uuid() }).strict();
 
 export async function GET(request: NextRequest) {
@@ -30,15 +31,15 @@ export async function POST(request: NextRequest) {
     const { client, userId } = await providerUser();
     await loadProviderProjectPacket(client, userId, { workspaceId: body.workspaceId, projectId: body.projectId });
     const { connectionId, token, tokenHash } = newProviderConnectionToken();
-    const { data, error } = await createServiceRoleClient().rpc("create_assistant_provider_connection", {
+    const { data, error } = await createServiceRoleClient().rpc(body.provider ? "create_assistant_provider_connection_v2" : "create_assistant_provider_connection", {
       p_id: connectionId, p_user_id: userId, p_workspace_id: body.workspaceId, p_project_id: body.projectId,
-      p_label: body.label, p_token_hash: tokenHash, p_auth_mode: body.authMode,
+      p_label: body.label, p_token_hash: tokenHash, p_auth_mode: body.authMode, ...(body.provider ? { p_provider: body.provider } : {}),
     });
     providerRpcError(error);
     // The token is shown once. Losing this response requires revoking that
     // connection and issuing another; the server cannot recover its plaintext.
     audit.info("connection_issued", { connectionId });
-    return providerJson({ connection: data, setup: { version: 1, appUrl: providerBrowserOrigin(request),
+    return providerJson({ connection: data, setup: { ...(body.provider ? { version: 2, provider: body.provider } : { version: 1 }), appUrl: providerBrowserOrigin(request),
       connectionId, workspaceId: body.workspaceId, projectId: body.projectId, expectedAuthMode: body.authMode, token } }, 201);
   } catch (error) { const response = providerError(error); audit.warn("request_refused", { status: response.status }); return response; }
 }

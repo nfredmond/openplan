@@ -11,6 +11,8 @@ const base = providerScopeSchema.extend({ requestId: z.string().uuid(), question
 const createSchema = z.discriminatedUnion("provider", [
   base.extend({ provider: z.literal("codex"), connectionId: z.string().uuid(), authMode: z.enum(["chatgpt", "apiKey"]), acceptApiCharges: z.literal(true).optional() }).strict()
     .refine(body => body.authMode !== "apiKey" || body.acceptApiCharges === true, { message: "Native API billing requires explicit charge acknowledgement." }),
+  base.extend({ provider: z.literal("claude"), connectionId: z.string().uuid(), authMode: z.literal("claude_subscription"),
+    model: z.string().regex(/^claude-[a-z0-9-]{1,140}$/) }).strict(),
   base.extend({ provider: z.literal("anthropic"), connectionId: z.null(), authMode: z.enum(["workspace_api_key", "deployment_api_key"]), acceptApiCharges: z.literal(true) }).strict(),
 ]);
 const cancelSchema = z.object({ turnId: z.string().uuid() }).strict();

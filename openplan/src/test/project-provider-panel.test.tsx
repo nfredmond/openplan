@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ProjectProviderPanel } from "@/components/assistant/project-provider-panel";
 
 const workspaceId = "22222222-2222-4222-8222-222222222222", projectId = "33333333-3333-4333-8333-333333333333", connectionId = "11111111-1111-4111-8111-111111111111", turnId = "44444444-4444-4444-8444-444444444444", requestId = "55555555-5555-4555-8555-555555555555";
-const connection = { id: connectionId, workspace_id: workspaceId, project_id: projectId, device_label: "Synthetic computer", expected_auth_mode: "chatgpt", expires_at: "2099-01-01T00:00:00Z", revoked_at: null, last_status: "connected" };
+const connection = { provider: "codex", id: connectionId, workspace_id: workspaceId, project_id: projectId, device_label: "Synthetic computer", expected_auth_mode: "chatgpt", expires_at: "2099-01-01T00:00:00Z", revoked_at: null, last_status: "connected" };
 const proposal = { status: "proposed", kind: "create_project_record", approval: "approval_required", description: "Create a draft submittal.", payload: { kind: "create_project_record", recordType: "submittal", projectId, title: "Synthetic draft", submittalType: "other", notes: "Synthetic original notes." } };
 const savedTurn = () => ({ id: turnId, request_id: requestId, workspace_id: workspaceId, project_id: projectId, provider: "codex", model_id: "fixture-model", auth_mode: "chatgpt", question: "Draft a submittal", packet_hash: "a".repeat(64), state: "succeeded", failure_code: null, created_at: "2026-09-10T00:00:00Z",
   result: { answer: "The cost is not supplied.", citations: [{ id: `project:${projectId}`, label: "Synthetic project", href: `/projects/${projectId}` }], proposal } });
@@ -158,7 +158,7 @@ describe("project provider controls", () => {
     fireEvent.click(screen.getByRole("button", { name: "Create project connection" }));
     await screen.findByText("The connection file did not match this project and app.");
     expect(screen.queryByRole("button", { name: "Download connection file" })).not.toBeInTheDocument();
-    expect(writes[0].body).toEqual({ workspaceId, projectId, label: "My computer", authMode: "chatgpt" });
+    expect(writes[0].body).toEqual({ workspaceId, projectId, label: "My computer", provider: "codex", authMode: "chatgpt" });
   });
   it("offers a correctly scoped connection file without rendering the token", async () => {
     const token = `op_pc_${connectionId}.${"x".repeat(43)}`;
@@ -171,4 +171,71 @@ describe("project provider controls", () => {
     await openPanel({ busy: true }); await fillNative(); expect(screen.getByRole("button", { name: "Send project request" })).toBeDisabled();
     fireEvent.keyDown(screen.getByLabelText("Project question"), { key: "Enter" }); expect(writes).toEqual([]);
   });
+});
+
+const claudeConnectionId = "77777777-7777-4777-8777-777777777777";
+const claudeConnection = { ...connection, id: claudeConnectionId, provider: "claude", device_label: "Synthetic Claude computer", expected_auth_mode: "claude_subscription" };
+
+it("switching native providers clears the old selection and offers only matching connections", async () => {
+  connectionRows = [connection, claudeConnection]; await openPanel(); await fillNative();
+  expect(screen.getByRole("button", { name: "Send project request" })).toBeEnabled();
+  fireEvent.change(screen.getByLabelText("Provider"), { target: { value: "claude" } });
+  expect(screen.getByLabelText("Project connection")).toHaveValue("");
+  expect(screen.getByLabelText("Model ID")).toHaveValue("");
+  expect(screen.queryByRole("option", { name: "Synthetic computer · connected" })).not.toBeInTheDocument();
+  expect(screen.getByRole("option", { name: "Synthetic Claude computer · connected" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Send project request" })).toBeDisabled();
+  fireEvent.change(screen.getByLabelText("Provider"), { target: { value: "codex" } });
+  expect(screen.getByLabelText("Project connection")).toHaveValue("");
+  fireEvent.change(screen.getByLabelText("Provider"), { target: { value: "claude" } });
+  fireEvent.change(screen.getByLabelText("Project connection"), { target: { value: claudeConnectionId } });
+  fireEvent.change(screen.getByLabelText("Model ID"), { target: { value: "claude-sonnet-4-6" } });
+  fireEvent.keyDown(screen.getByLabelText("Project question"), { key: "Enter" });
+  await waitFor(() => expect(writes).toHaveLength(1));
+  expect(writes[0].body).toMatchObject({ provider: "claude", connectionId: claudeConnectionId, authMode: "claude_subscription", model: "claude-sonnet-4-6" });
+  expect(writes[0].body).not.toHaveProperty("acceptApiCharges");
+  await screen.findByText("Status: queued");
+});
+
+it("Claude retries keep the original provider, connection and request without reopening provider choice", async () => {
+  connectionRows = [connection, claudeConnection];
+  const normal = writeHandler; let tries = 0;
+  writeHandler = async (...args) => { if (++tries === 1) throw new Error("Synthetic Claude response loss"); return normal(...args); };
+  await openPanel();
+  fireEvent.change(screen.getByLabelText("Provider"), { target: { value: "claude" } });
+  fireEvent.change(screen.getByLabelText("Project connection"), { target: { value: claudeConnectionId } });
+  fireEvent.change(screen.getByLabelText("Model ID"), { target: { value: "claude-sonnet-4-6" } });
+  fireEvent.change(screen.getByLabelText("Project question"), { target: { value: "SYNTHETIC Claude question" } });
+  fireEvent.click(screen.getByRole("button", { name: "Send project request" }));
+  await screen.findByRole("button", { name: "Retry same request" });
+  expect(screen.getByLabelText("Provider")).toBeDisabled(); expect(screen.getByLabelText("Project connection")).toBeDisabled();
+  fireEvent.click(screen.getByRole("button", { name: "Retry same request" }));
+  await waitFor(() => expect(writes).toHaveLength(2)); expect(writes[1]).toEqual(writes[0]);
+  expect(writes[0].body.provider).toBe("claude"); await screen.findByText("Status: queued");
+});
+
+it("Claude setup downloads only its own provider binding and disappears when provider choice changes", async () => {
+  const secret = `op_pc_${claudeConnectionId}.${"s".repeat(43)}`;
+  writeHandler = async () => response({ connection: { id: claudeConnectionId }, setup: { version: 2, provider: "claude", appUrl: window.location.origin,
+    workspaceId, projectId, connectionId: claudeConnectionId, expectedAuthMode: "claude_subscription", token: secret } }, 201);
+  await openPanel();
+  fireEvent.change(screen.getByLabelText("Provider"), { target: { value: "claude" } });
+  fireEvent.click(screen.getByText("Connect or revoke a computer"));
+  fireEvent.click(screen.getByRole("button", { name: "Create project connection" }));
+  await screen.findByRole("button", { name: "Download connection file" });
+  expect(writes[0].body).toEqual({ workspaceId, projectId, label: "My computer", provider: "claude", authMode: "claude_subscription" });
+  expect(document.body.textContent).not.toContain(secret);
+  fireEvent.change(screen.getByLabelText("Provider"), { target: { value: "codex" } });
+  expect(screen.queryByRole("button", { name: "Download connection file" })).not.toBeInTheDocument();
+});
+
+it("a returned setup cannot silently change the chosen native provider", async () => {
+  writeHandler = async () => response({ connection: { id: claudeConnectionId }, setup: { version: 2, provider: "codex", appUrl: window.location.origin,
+    workspaceId, projectId, connectionId: claudeConnectionId, expectedAuthMode: "claude_subscription", token: `op_pc_${claudeConnectionId}.${"s".repeat(43)}` } }, 201);
+  await openPanel();
+  fireEvent.change(screen.getByLabelText("Provider"), { target: { value: "claude" } });
+  fireEvent.click(screen.getByText("Connect or revoke a computer"));
+  fireEvent.click(screen.getByRole("button", { name: "Create project connection" }));
+  await screen.findByText("The connection file did not match this project and app.");
+  expect(screen.queryByRole("button", { name: "Download connection file" })).not.toBeInTheDocument();
 });

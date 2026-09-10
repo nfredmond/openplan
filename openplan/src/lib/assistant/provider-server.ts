@@ -94,8 +94,8 @@ export async function loadProviderProjectPacket(client: ProviderUserClient, user
 
 export const retainedProviderTurnSchema = z.object({
   id: z.string().uuid(), request_id: z.string().uuid(), workspace_id: z.string().uuid(), project_id: z.string().uuid(),
-  connection_id: z.string().uuid().nullable(), provider: z.enum(["codex", "anthropic"]), model_id: z.string().min(1).max(160),
-  auth_mode: z.enum(["chatgpt", "apiKey", "workspace_api_key", "deployment_api_key"]), question: z.string().min(1).max(2000),
+  connection_id: z.string().uuid().nullable(), provider: z.enum(["codex", "claude", "anthropic"]), model_id: z.string().min(1).max(160),
+  auth_mode: z.enum(["chatgpt", "apiKey", "claude_subscription", "workspace_api_key", "deployment_api_key"]), question: z.string().min(1).max(2000),
   packet_canonical: z.string().max(200_000), packet_hash: z.string().regex(/^[a-f0-9]{64}$/),
   state: z.enum(["queued", "running", "succeeded", "failed", "cancelled", "interrupted"]), attempt_id: z.string().uuid().nullable(),
   lease_expires_at: z.string().nullable(), result: z.unknown().nullable(), provider_receipt: z.unknown().nullable(),

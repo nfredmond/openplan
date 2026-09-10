@@ -1,0 +1,37 @@
+[
+  {
+    "name": "harmless SQL control",
+    "exitCode": 0,
+    "assertion": null,
+    "expectedOutcome": true,
+    "tail": "\n RUN  v4.1.11 /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan\n\n\n Test Files  1 passed (1)\n      Tests  6 passed | 28 skipped (34)\n   Start at  09:55:34\n   Duration  3.88s (transform 45ms, setup 54ms, import 48ms, tests 3.28s, environment 348ms)\n\n"
+  },
+  {
+    "name": "connection identity removed",
+    "exitCode": 1,
+    "assertion": "Existing history was rebound to another provider",
+    "expectedOutcome": true,
+    "tail": "\n RUN  v4.1.11 /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan\n\n \u276f src/test/assistant-provider-turns-rls.test.ts (34 tests | 2 failed | 28 skipped) 2957ms\n     \u00d7 binds retained turns to their connection provider and account even for direct service writes 63ms\n     \u00d7 binds retained turns to their connection provider and account even for direct service writes 58ms\n\n Test Files  1 failed (1)\n      Tests  2 failed | 4 passed | 28 skipped (34)\n   Start at  09:55:38\n   Duration  3.57s (transform 45ms, setup 55ms, import 48ms, tests 2.96s, environment 353ms)\n\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 2 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/test/assistant-provider-turns-rls.test.ts > scoped codex connections and retained turns > binds retained turns to their connection provider and account even for direct service writes\n FAIL  src/test/assistant-provider-turns-rls.test.ts > scoped claude connections and retained turns > binds retained turns to their connection provider and account even for direct service writes\nError: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Existing history was rebound to another provider\nCONTEXT:  PL/pgSQL function inline_code_block line 5 at RAISE\n\n \u276f exercise src/test/assistant-provider-turns-rls.test.ts:46:20\n\n \u276f src/test/assistant-provider-turns-rls.test.ts:195:108\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/2]\u23af\n\n"
+  },
+  {
+    "name": "provider account pair removed",
+    "exitCode": 1,
+    "assertion": "Wrong account pair accepted",
+    "expectedOutcome": true,
+    "tail": "\n RUN  v4.1.11 /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan\n\n \u276f src/test/assistant-provider-turns-rls.test.ts (34 tests | 2 failed | 28 skipped) 3119ms\n     \u00d7 v2 creation requires a valid provider account pair and service authority 58ms\n     \u00d7 v2 creation requires a valid provider account pair and service authority 57ms\n\n Test Files  1 failed (1)\n      Tests  2 failed | 4 passed | 28 skipped (34)\n   Start at  09:55:42\n   Duration  3.72s (transform 46ms, setup 56ms, import 48ms, tests 3.12s, environment 343ms)\n\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 2 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/test/assistant-provider-turns-rls.test.ts > scoped codex connections and retained turns > v2 creation requires a valid provider account pair and service authority\n FAIL  src/test/assistant-provider-turns-rls.test.ts > scoped claude connections and retained turns > v2 creation requires a valid provider account pair and service authority\nError: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Wrong account pair accepted\nCONTEXT:  PL/pgSQL function inline_code_block line 8 at RAISE\n\n \u276f exercise src/test/assistant-provider-turns-rls.test.ts:46:20\n\n \u276f src/test/assistant-provider-turns-rls.test.ts:227:88\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/2]\u23af\n\n"
+  },
+  {
+    "name": "Claude model check removed",
+    "exitCode": 1,
+    "assertion": "Claude model alias accepted",
+    "expectedOutcome": true,
+    "tail": "\n RUN  v4.1.11 /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan\n\n \u276f src/test/assistant-provider-turns-rls.test.ts (34 tests | 1 failed | 28 skipped) 3227ms\n     \u00d7 enforces exact Claude model identifiers without changing Codex model names 58ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 5 passed | 28 skipped (34)\n   Start at  09:55:46\n   Duration  3.82s (transform 45ms, setup 55ms, import 48ms, tests 3.23s, environment 340ms)\n\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/test/assistant-provider-turns-rls.test.ts > scoped claude connections and retained turns > enforces exact Claude model identifiers without changing Codex model names\nError: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Claude model alias accepted\nCONTEXT:  PL/pgSQL function inline_code_block line 4 at RAISE\n\n \u276f exercise src/test/assistant-provider-turns-rls.test.ts:46:20\n\n \u276f src/test/assistant-provider-turns-rls.test.ts:250:90\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/1]\u23af\n\n"
+  },
+  {
+    "name": "browser can issue connector token",
+    "exitCode": 1,
+    "assertion": "Browser minted v2 connection directly",
+    "expectedOutcome": true,
+    "tail": "\n RUN  v4.1.11 /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan\n\n \u276f src/test/assistant-provider-turns-rls.test.ts (34 tests | 2 failed | 28 skipped) 3141ms\n     \u00d7 v2 creation requires a valid provider account pair and service authority 56ms\n     \u00d7 v2 creation requires a valid provider account pair and service authority 55ms\n\n Test Files  1 failed (1)\n      Tests  2 failed | 4 passed | 28 skipped (34)\n   Start at  09:55:50\n   Duration  3.73s (transform 46ms, setup 55ms, import 49ms, tests 3.14s, environment 339ms)\n\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 2 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/test/assistant-provider-turns-rls.test.ts > scoped codex connections and retained turns > v2 creation requires a valid provider account pair and service authority\n FAIL  src/test/assistant-provider-turns-rls.test.ts > scoped claude connections and retained turns > v2 creation requires a valid provider account pair and service authority\nError: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Browser minted v2 connection directly\nCONTEXT:  PL/pgSQL function inline_code_block line 4 at RAISE\n\n \u276f exercise src/test/assistant-provider-turns-rls.test.ts:46:20\n\n \u276f src/test/assistant-provider-turns-rls.test.ts:227:88\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/2]\u23af\n\n"
+  }
+]

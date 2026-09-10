@@ -1,0 +1,16 @@
+{
+  "tests": 101,
+  "passed": 101,
+  "failed": 0,
+  "files": 3,
+  "typecheck": "passed",
+  "lint": "passed",
+  "migration": "20261011000001_assistant_claude_connections.sql",
+  "isolatedDatabase": "supabase_db_openplan-restore-target-2026091050",
+  "migrationRowCustody": [
+    "connections|81|8bd2374b1050eda31712eae0664ad1eb",
+    "turns|91|d13e394217140ce406df0cf785e89361"
+  ],
+  "fullQa": "pending",
+  "browserAcceptance": "pending"
+}

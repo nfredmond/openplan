@@ -1,0 +1,14 @@
+[
+  {
+    "name": "harmless UI comment",
+    "exitCode": 0,
+    "outcome": "survived",
+    "tail": "\n RUN  v4.1.11 /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan\n\n\n Test Files  1 passed (1)\n      Tests  4 passed | 18 skipped (22)\n   Start at  09:54:58\n   Duration  1.53s (transform 77ms, setup 55ms, import 200ms, tests 767ms, environment 354ms)\n\n"
+  },
+  {
+    "name": "provider change keeps old selection",
+    "exitCode": 1,
+    "outcome": "failed",
+    "tail": "\n RUN  v4.1.11 /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan\n\n \u276f src/test/project-provider-panel.test.tsx (22 tests | 1 failed | 21 skipped) 340ms\n   \u00d7 switching native providers clears the old selection and offers only matching connections 338ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 21 skipped (22)\n   Start at  09:55:00\n   Duration  1.10s (transform 78ms, setup 57ms, import 201ms, tests 340ms, environment 340ms)\n\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/test/project-provider-panel.test.tsx > switching native providers clears the old selection and offers only matching connections\nError: expect(element).toHaveValue()\n\nExpected the element to have value:\n\nReceived:\n  11111111-1111-4111-8111-111111111111\n \u276f src/test/project-provider-panel.test.tsx:189:55\n    187|   expect(screen.getByRole(\"button\", { name: \"Send project request\" }))\u2026\n    188|   fireEvent.change(screen.getByLabelText(\"Provider\"), { target: { valu\u2026\n    189|   expect(screen.getByLabelText(\"Project connection\")).toHaveValue(\"\");\n       |                                                       ^\n    190|   fireEvent.change(screen.getByLabelText(\"Provider\"), { target: { valu\u2026\n    191|   fireEvent.change(screen.getByLabelText(\"Project connection\"), { targ\u2026\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/1]\u23af\n\n"
+  }
+]

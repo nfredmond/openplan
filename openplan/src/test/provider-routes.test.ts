@@ -62,6 +62,19 @@ beforeEach(() => {
 });
 
 describe("personal project connection routes", () => {
+  it("issues Claude v2 setup bound to the exact native provider and subscription mode", async () => {
+    mocks.rpc.mockImplementation(async (_name, args) => ({ data: { id: args.p_id }, error: null }));
+    const response = await connections.POST(browserRequest("connections", { workspaceId: workspace, projectId: project, provider: "claude", label: "Claude fixture", authMode: "claude_subscription" }));
+    expect(response.status).toBe(201);
+    const saved = await response.json();
+    expect(saved.setup).toMatchObject({ version: 2, provider: "claude", workspaceId: workspace, projectId: project, expectedAuthMode: "claude_subscription" });
+    expect(mocks.rpc).toHaveBeenCalledWith("create_assistant_provider_connection_v2", expect.objectContaining({ p_provider: "claude", p_auth_mode: "claude_subscription", p_user_id: owner, p_project_id: project }));
+    expect(mocks.rpc.mock.calls[0][1].p_token_hash).toBe(createHash("sha256").update(saved.setup.token).digest("hex"));
+  });
+  it.each([{ provider: "claude", authMode: "apiKey" }, { provider: "claude", authMode: "chatgpt" }, { provider: "codex", authMode: "claude_subscription" }, { authMode: "claude_subscription" }])("refuses a connection with the wrong provider account pair %j", async changed => {
+    const response = await connections.POST(browserRequest("connections", { workspaceId: workspace, projectId: project, label: "Bad pair", ...changed }));
+    expect(response.status).toBe(400); expect(mocks.rpc).not.toHaveBeenCalled();
+  });
   it("issues a scoped token once and stores only its hash after exact project reads", async () => {
     const response = await connections.POST(browserRequest("connections", { workspaceId: workspace, projectId: project, label: "Local fixture", authMode: "chatgpt" }));
     expect(response.status).toBe(201); expect(response.headers.get("cache-control")).toBe("no-store");
@@ -118,6 +131,26 @@ describe("personal project connection routes", () => {
 });
 
 describe("connector bearer routes", () => {
+  it("claims Claude with its exact provider and refuses a different provider carrying that mode", async () => {
+    mocks.rpc.mockResolvedValue({ data: { status: "connected", turn: turn({ provider: "claude", auth_mode: "claude_subscription", model_id: "claude-sonnet-4-6" }) }, error: null });
+    const response = await native.POST(nativeRequest({ operation: "claim", authMode: "claude_subscription", status: "connected" }));
+    expect(response.status).toBe(200);
+    expect((await response.json()).turn).toMatchObject({ provider: "claude", authMode: "claude_subscription", model: "claude-sonnet-4-6" });
+    mocks.rpc.mockResolvedValue({ data: { status: "connected", turn: turn({ provider: "codex", auth_mode: "claude_subscription" }) }, error: null });
+    expect((await native.POST(nativeRequest({ operation: "claim", authMode: "claude_subscription", status: "connected" }))).status).toBe(409);
+  });
+  it("retains Claude answers and rejects another provider's receipt before database completion", async () => {
+    const claudeTurn = turn({ provider: "claude", auth_mode: "claude_subscription", model_id: "claude-sonnet-4-6" });
+    turnQuery = query(claudeTurn);
+    mocks.rpc.mockImplementation(async (name, args) => ({ data: name === "finish_assistant_provider_turn" ? { ...claudeTurn, state: "succeeded", result: args.p_result, provider_receipt: args.p_provider_receipt } : { id, attemptId: attempt, state: "running" }, error: null }));
+    const body = { operation: "finish", turnId: id, attemptId: attempt, answer: JSON.stringify(answer()), receipt: { ...receipt(), provider: "claude", authMode: "claude_subscription", model: "claude-sonnet-4-6" }, failureCode: null };
+    expect((await native.POST(nativeRequest(body))).status).toBe(200);
+    expect(turnQuery.select).toHaveBeenCalledWith(PROVIDER_TURN_COLUMNS);
+    mocks.rpc.mockClear();
+    const refused = await native.POST(nativeRequest({ ...body, receipt: { ...body.receipt, provider: "codex" } }));
+    expect(refused.status).toBe(409); expect(await refused.json()).toEqual({ error: "provider_receipt_mismatch" });
+    expect(mocks.rpc.mock.calls.some(call => call[0] === "finish_assistant_provider_turn")).toBe(false);
+  });
   it("discloses only a checked project task with the exact native attempt", async () => {
     const response = await native.POST(nativeRequest({ operation: "claim", authMode: "chatgpt", status: "connected" }));
     expect(response.status).toBe(200); const body = await response.json();
@@ -223,4 +256,17 @@ describe("saved browser provider requests", () => {
     const response = await turns.DELETE(browserRequest("turns", { turnId: id }, "DELETE"));
     expect(response.status).toBe(200); expect(await response.json()).toEqual({ cancelled: false, state: "succeeded", turnId: id });
   });
+});
+
+it("queues Claude through its native connection without invoking the API transport", async () => {
+  const body = { ...createBody(), provider: "claude", authMode: "claude_subscription", model: "claude-sonnet-4-6" };
+  mocks.rpc.mockResolvedValue({ data: { created: true, turn: turn({ provider: "claude", auth_mode: "claude_subscription", model_id: body.model, state: "queued", attempt_id: null }) }, error: null });
+  const response = await turns.POST(browserRequest("turns", body));
+  expect(response.status).toBe(201); expect((await response.json()).turn.state).toBe("queued");
+  expect(mocks.rpc).toHaveBeenCalledWith("create_assistant_provider_turn", expect.objectContaining({ p_provider: "claude", p_auth_mode: "claude_subscription", p_connection_id: token.connectionId, p_model_id: body.model }));
+  expect(mocks.api).not.toHaveBeenCalled();
+  mocks.rpc.mockClear();
+  expect((await turns.POST(browserRequest("turns", { ...body, model: "sonnet" }))).status).toBe(400);
+  expect((await turns.POST(browserRequest("turns", { ...body, authMode: "apiKey" }))).status).toBe(400);
+  expect(mocks.rpc).not.toHaveBeenCalled(); expect(mocks.api).not.toHaveBeenCalled();
 });

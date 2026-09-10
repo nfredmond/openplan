@@ -4,7 +4,7 @@ v0.52.0 is published at 914a9d966bbf1ea344b4d9ccd0762dbfa184aeea.
 v0.52.1 dependency maintenance is published at 5d7ccdb067bb4db639132889f8efd5db160dfc6b.
 The current main publication receipt is 00a650ab4b4db77c22e9626f69c6a3d6f4e4d077.
 This separate work/planner-agent-claude-connection branch is not another released
-backend. The worker now accepts version 2 provider-bound connection files and dispatches Claude. App routes, SQL and the project panel still need integration.
+backend. The worker now accepts version 2 provider-bound connection files and dispatches Claude. App routes, SQL and the project panel now include Claude. Focused checks pass; full QA, browser acceptance and release checks remain pending.
 
 ## Implemented transport boundary
 
@@ -53,9 +53,9 @@ wrapper, not just the stream parser.
 
 ## Remaining work
 
-Before merging as supported functionality, extend the existing connection and
-frozen-request schema additively and integrate the existing project panel. Keep
-v1 Codex setup files and all original saved results readable. Prove wrong-provider refusal, exact retry,
+Before merging as supported functionality, finish full QA, shuffled tests, isolated
+RLS, browser acceptance and upgrade checks. v1 Codex setup files and old seven-argument
+connection issuance remain compatible; the new panel requests explicit v2 bindings. Prove wrong-provider refusal, exact retry,
 revocation, cancellation and private history in the database and from real desktop
 and 390px navigation. No silent provider or billing fallback. Additional native
 backends, broader grounded tasks, MCP and assignments remain roadmap obligations.
@@ -98,3 +98,36 @@ fixtures test permissions and symlinks as the current user, not a distinct UID o
 an installed /etc managed policy. The sandbox does not prove independent failure
 of safe mode; that earlier surviving mutation remains recorded. Worker tests do
 not establish database isolation or browser reachability. Those are next.
+
+## App and database checkpoint
+
+The candidate adds Installed Claude Code in the existing project panel, v2 native
+connection issuance, Claude queued requests and provider-aware delivery. The
+migration extends the existing tables, checks and native connection identity;
+it does not remove records. A composite foreign key prevents retained requests
+from being rebound to another provider or account. The original connection RPC
+and legacy setup shape remain available to older callers. All native histories
+stay within the same personal access and project retention protections.
+
+The named disposable QA database applied migration 20261011000001. Its 81 existing
+connection rows and 91 saved turns retained identical aggregate row checksums.
+The restored focused suite passes 101 tests across routes, panel and both native
+providers' live RLS/custody cases. TypeScript and lint passed. Eleven targeted
+SQL function mutations, four constraint/permission mutations and their harmless
+controls behaved as expected. Route/UI mutations caught provider or account
+mismatches, missing claimed provider, wrong RPC dispatch and invalid model input.
+
+One new UI test initially failed to detect removal of the selection reset: the
+old option was hidden while its React state survived. The corrected test switches
+away and back, exposing the stale selection; the targeted mutation now fails and
+the harmless control passes. The initial surviving receipt remains alongside the
+corrected evidence. A first UI command ran at repository root and did not execute
+tests; its corrected app-root run found one stale expected POST body, updated to
+include the intentional explicit provider field. These are not browser evidence.
+
+Remaining verification includes real navigation at desktop and 390px, usable
+connection downloads, retained answers and approval handoff, interruptions,
+revocation and console review. Claude generation will use installed native CLI
+plus synthetic OAuth/local responses unless actual paid-extra-usage settings are
+known. The local fixture is engineering transport evidence, not live model quality
+or a zero-cost promise for users' provider accounts.

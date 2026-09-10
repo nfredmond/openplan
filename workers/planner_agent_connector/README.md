@@ -1,9 +1,11 @@
-# Planner Agent local connector — v0.52.0
+# Planner Agent local connector
 
 The native transport, scoped connection routes, saved requests, outbound connector
 and project controls are implemented. Desktop and 390px browser journeys exercise
 actual native answers and a scripted direct API transport on the same narrow task.
-See the September 10 provider-connection evidence. Broader A0a/A1 work remains open.
+That is the published v0.52 evidence. The Claude extension below is an unreleased
+development candidate until its browser and release checks are recorded. Broader
+A0a/A1 work remains open.
 
 The initial native transport uses installed standalone Codex **0.154.0** on Linux,
 Node 24 and `/usr/bin/bwrap`. It accepts a resolved native binary in a `bin`
@@ -46,7 +48,7 @@ node --test workers/planner_agent_connector/test/*.test.mjs
 
 The connector never opens a local HTTP listener. A project connection file from
 Planner Agent fixes its app origin, project and expected native account mode.
-After the browser controls are available, import that downloaded file using:
+Import that downloaded file using:
 
 ```sh
 node workers/planner_agent_connector/connector.mjs configure \
@@ -93,3 +95,48 @@ September 10 implementation evidence records native account detection and real
 ChatGPT-authenticated synthetic project answers through the desktop and 390px app
 journeys. These do not prove all native platforms/backends, professional usefulness,
 live Anthropic quality or general agent assignments.
+
+## Claude Code extension
+
+The candidate also supports installed Claude Code **2.1.263** on Linux through
+version 2 connection files. Choose Installed Claude Code in the project task
+panel, create a connection and download its file. Use the same configure command,
+with the Claude binary and native profile instead:
+
+```sh
+node workers/planner_agent_connector/connector.mjs configure \
+  --config "$HOME/.local/state/openplan-connectors/claude-project/connection.json" \
+  --setup "$HOME/Downloads/openplan-connection.json" \
+  --binary "$HOME/.local/bin/claude" --profile "$HOME/.claude"
+```
+
+Run models and run with that config path. Claude's models command checks native
+sign-in without generating; it reports modelsUnavailable because this adapter has
+no tested non-generating model catalog. Supply an exact claude- model identifier
+that your account supports. Unsupported versions and models fail without switching
+provider, model or account mode. Existing version 1 Codex files remain readable.
+
+Claude subscription sign-in stays in Claude Code. API-key, cloud-provider and
+signed-out modes are refused by this native adapter. Subscription limits still
+apply. OpenPlan cannot inspect whether the account has enabled paid extra usage;
+disable that setting in Claude to prevent extra charges. Fast mode is disabled.
+No API key or paid service is supplied by this connector.
+
+Claude owns its private .credentials.json and atomic refresh. Other existing
+profile entries are masked, with valid empty objects for JSON files. Safe mode,
+empty settings sources and tool lists, strict empty MCP configuration, replaced
+system instructions and disabled session persistence restrict the task to the
+frozen project packet. Managed /etc/claude-code policy environments are currently
+refused. Root/overlapping scratch paths, non-private credential files, profile
+symlinks and unsupported native versions are refused before a task starts.
+
+```sh
+OPENPLAN_CLAUDE_NATIVE_BINARY="$HOME/.local/bin/claude" \
+  node --test workers/planner_agent_connector/test/claude-native-isolation.test.mjs
+```
+
+This fixture runs the installed CLI with synthetic OAuth and local scripted
+Messages responses. It proves native refusals, bounded structured output, dispatch,
+account-status inspection and interruption behavior. It does not establish live
+Claude model availability, output quality, account allowance or extra-usage
+settings. See [the Claude checkpoint](../../docs/reviews/2026-09-10-claude-native-spike/CHECKPOINT.md).

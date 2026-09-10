@@ -6,7 +6,9 @@ import { LIVE_RLS } from "./local-supabase-env";
 import { resolveLocalDbContainer } from "./helpers/live-catalog";
 
 const live = LIVE_RLS ? describe : describe.skip;
-live("scoped provider connections and retained turns", () => {
+live.each(["codex", "claude"] as const)("scoped %s connections and retained turns", provider => {
+  const authMode = provider === "claude" ? "claude_subscription" : "chatgpt";
+  const model = provider === "claude" ? "claude-sonnet-4-6" : "fixture-model";
   let container: string;
   beforeAll(() => {
     if (process.env.GITHUB_ACTIONS !== "true" && !isAbsolute(process.env.OPENPLAN_SUPABASE_WORKDIR ?? "")) {
@@ -26,18 +28,18 @@ live("scoped provider connections and retained turns", () => {
           'project',jsonb_build_object('id','@project','name','Synthetic provider project','summary',NULL,'status','active','planType','corridor','deliveryPhase','planning','updatedAt','2026-09-10T00:00:00Z'),
           'source',jsonb_build_object('id','project:@project','href','/projects/@project','label','Synthetic provider project'))::text;
       $p$;
-      SELECT public.create_assistant_provider_connection('@connection','@owner','@workspace','@project','Synthetic device',repeat('a',64),'chatgpt');
+      SELECT public.create_assistant_provider_connection${provider === 'claude' ? '_v2' : ''}('@connection','@owner','@workspace','@project','Synthetic device',repeat('a',64),'${authMode}'${provider === 'claude' ? ",'claude'" : ''});
       CREATE FUNCTION pg_temp.make_turn(p_request uuid DEFAULT '@request',p_question text DEFAULT 'What is known?') RETURNS jsonb LANGUAGE sql AS $p$
-        SELECT public.create_assistant_provider_turn(p_request,'@owner','@workspace','@project','@connection','codex','fixture-model','chatgpt',p_question,pg_temp.packet());
+        SELECT public.create_assistant_provider_turn(p_request,'@owner','@workspace','@project','@connection','${provider}','${model}','${authMode}',p_question,pg_temp.packet());
       $p$;
       CREATE FUNCTION pg_temp.claim() RETURNS jsonb LANGUAGE sql AS $p$
-        SELECT public.claim_assistant_provider_turn('@connection',repeat('a',64),'chatgpt','connected');
+        SELECT public.claim_assistant_provider_turn('@connection',repeat('a',64),'${authMode}','connected');
       $p$;
       CREATE FUNCTION pg_temp.answer() RETURNS jsonb LANGUAGE sql AS $p$
         SELECT jsonb_build_object('answer','Synthetic project; cost not supplied.','citations',jsonb_build_array(pg_temp.packet()::jsonb->'source'),'proposal',NULL);
       $p$;
       CREATE FUNCTION pg_temp.receipt() RETURNS jsonb LANGUAGE sql AS $p$
-        SELECT jsonb_build_object('schemaVersion',1,'provider','codex','model','fixture-model','authMode','chatgpt','threadId','synthetic-thread','turnId','synthetic-turn');
+        SELECT jsonb_build_object('schemaVersion',1,'provider','${provider}','model','${model}','authMode','${authMode}','threadId','synthetic-thread','turnId','synthetic-turn');
       $p$;
       ${body}
       SELECT 'PROVIDER_ASSERTIONS_REACHED'; ROLLBACK;`.replace(/@(owner|custodian|viewer|outsider|workspace|otherProject|other|project|connection|secondRequest|request)/g, (_, key) => ids[key]);
@@ -49,7 +51,7 @@ live("scoped provider connections and retained turns", () => {
     DO $$ DECLARE first jsonb; again jsonb; claimed jsonb; finished jsonb; job_id uuid; attempt uuid; BEGIN
       first:=pg_temp.make_turn(); again:=pg_temp.make_turn();
       IF NOT (first->>'created')::boolean OR (again->>'created')::boolean OR first->'turn' IS DISTINCT FROM again->'turn' THEN RAISE EXCEPTION 'Request retry did not retain original job'; END IF;
-      again:=public.create_assistant_provider_turn('@request','@owner','@workspace','@project','@connection','codex','fixture-model','chatgpt','What is known?',replace(pg_temp.packet(),'Synthetic provider project','Synthetic later name'));
+      again:=public.create_assistant_provider_turn('@request','@owner','@workspace','@project','@connection','${provider}','${model}','${authMode}','What is known?',replace(pg_temp.packet(),'Synthetic provider project','Synthetic later name'));
       IF first->'turn'->'packet' IS DISTINCT FROM again->'turn'->'packet' THEN RAISE EXCEPTION 'Retry replaced the original packet'; END IF;
       BEGIN PERFORM pg_temp.make_turn('@request','Changed question'); RAISE EXCEPTION 'Changed retry accepted'; EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL; END;
       claimed:=pg_temp.claim(); job_id:=(claimed->'turn'->>'id')::uuid; attempt:=(claimed->'turn'->>'attempt_id')::uuid;
@@ -65,8 +67,8 @@ live("scoped provider connections and retained turns", () => {
   it("isolates tokens, projects and native account modes before claim", () => exercise(`
     DO $$ DECLARE answer jsonb; BEGIN
       PERFORM pg_temp.make_turn();
-      BEGIN PERFORM public.claim_assistant_provider_turn('@connection',repeat('b',64),'chatgpt','connected'); RAISE EXCEPTION 'Wrong token accepted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
-      BEGIN PERFORM public.create_assistant_provider_turn('@secondRequest','@owner','@workspace','@otherProject','@connection','codex','fixture-model','chatgpt','Question',pg_temp.packet()); RAISE EXCEPTION 'Wrong project accepted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+      BEGIN PERFORM public.claim_assistant_provider_turn('@connection',repeat('b',64),'${authMode}','connected'); RAISE EXCEPTION 'Wrong token accepted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+      BEGIN PERFORM public.create_assistant_provider_turn('@secondRequest','@owner','@workspace','@otherProject','@connection','${provider}','${model}','${authMode}','Question',pg_temp.packet()); RAISE EXCEPTION 'Wrong project accepted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
       answer:=public.claim_assistant_provider_turn('@connection',repeat('a',64),'apiKey','connected');
       IF answer->>'status'<>'auth_mode_changed' OR answer->'turn'<>'null'::jsonb OR (SELECT state FROM public.assistant_provider_turns WHERE request_id='@request')<>'queued' THEN RAISE EXCEPTION 'Changed auth mode started work'; END IF;
       answer:=public.claim_assistant_provider_turn('@connection',repeat('a',64),NULL,'needs_login');
@@ -126,8 +128,8 @@ live("scoped provider connections and retained turns", () => {
     SET LOCAL ROLE authenticated; SELECT set_config('request.jwt.claim.sub','@outsider',true);
     DO $$ BEGIN
       IF EXISTS(SELECT 1 FROM public.assistant_provider_connections) OR EXISTS(SELECT 1 FROM public.assistant_provider_turns) THEN RAISE EXCEPTION 'Other user saw provider records'; END IF;
-      BEGIN PERFORM public.claim_assistant_provider_turn('@connection',repeat('a',64),'chatgpt','connected'); RAISE EXCEPTION 'Authenticated client invoked service claim'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
-      BEGIN INSERT INTO public.assistant_provider_connections(user_id,workspace_id,project_id,device_label,token_hash,expected_auth_mode) VALUES('@outsider','@workspace','@project','Bad device',repeat('c',64),'chatgpt'); RAISE EXCEPTION 'Authenticated client minted a connection'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+      BEGIN PERFORM public.claim_assistant_provider_turn('@connection',repeat('a',64),'${authMode}','connected'); RAISE EXCEPTION 'Authenticated client invoked service claim'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+      BEGIN INSERT INTO public.assistant_provider_connections(user_id,workspace_id,project_id,device_label,token_hash,expected_auth_mode) VALUES('@outsider','@workspace','@project','Bad device',repeat('c',64),'${authMode}'); RAISE EXCEPTION 'Authenticated client minted a connection'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
     END $$;
     SELECT set_config('request.jwt.claim.sub','@viewer',true);
     DO $$ BEGIN IF EXISTS(SELECT 1 FROM public.assistant_provider_connections) OR EXISTS(SELECT 1 FROM public.assistant_provider_turns) THEN RAISE EXCEPTION 'Another member read personal provider records'; END IF; END $$;
@@ -151,7 +153,7 @@ live("scoped provider connections and retained turns", () => {
     SET LOCAL ROLE anon;
     DO $$ BEGIN
       BEGIN PERFORM 1 FROM public.assistant_provider_connections; RAISE EXCEPTION 'Anonymous caller read connection data'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
-      BEGIN PERFORM public.claim_assistant_provider_turn('@connection',repeat('a',64),'chatgpt','connected'); RAISE EXCEPTION 'Anonymous caller invoked claim'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+      BEGIN PERFORM public.claim_assistant_provider_turn('@connection',repeat('a',64),'${authMode}','connected'); RAISE EXCEPTION 'Anonymous caller invoked claim'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
     END $$;
     RESET ROLE;`));
 
@@ -189,5 +191,67 @@ live("scoped provider connections and retained turns", () => {
       IF (SELECT count(*) FROM public.assistant_provider_turns WHERE project_id='@project')<>1 THEN RAISE EXCEPTION 'Private history was lost'; END IF;
     END $$;
   `));
+
+  it("binds retained turns to their connection provider and account even for direct service writes", () => exercise(`
+    SELECT pg_temp.make_turn();
+    DO $$ DECLARE constraint_name text; BEGIN
+      BEGIN
+        UPDATE public.assistant_provider_connections SET provider='${provider === "claude" ? "codex" : "claude"}',
+          expected_auth_mode='${provider === "claude" ? "chatgpt" : "claude_subscription"}' WHERE id='@connection';
+        RAISE EXCEPTION 'Existing history was rebound to another provider';
+      EXCEPTION WHEN foreign_key_violation THEN
+        GET STACKED DIAGNOSTICS constraint_name=CONSTRAINT_NAME;
+        IF constraint_name<>'assistant_provider_turn_connection_identity' THEN RAISE EXCEPTION 'Wrong identity guard failed'; END IF;
+      END;
+      IF (SELECT provider FROM public.assistant_provider_connections WHERE id='@connection')<>'${provider}' THEN RAISE EXCEPTION 'Refused update changed connection'; END IF;
+    END $$;`));
+
+  it("refuses cross-provider creation and wrong receipt provider while preserving the original request", () => exercise(`
+    DO $$ DECLARE claimed jsonb; BEGIN
+      BEGIN
+        PERFORM public.create_assistant_provider_turn('@secondRequest','@owner','@workspace','@project','@connection',
+          '${provider === "claude" ? "codex" : "claude"}','${provider === "claude" ? "fixture-model" : "claude-sonnet-4-6"}',
+          '${provider === "claude" ? "chatgpt" : "claude_subscription"}','Bad provider',pg_temp.packet());
+        RAISE EXCEPTION 'Cross-provider request accepted';
+      EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+      PERFORM pg_temp.make_turn(); claimed:=pg_temp.claim();
+      BEGIN
+        PERFORM public.finish_assistant_provider_turn((claimed->'turn'->>'id')::uuid,(claimed->'turn'->>'attempt_id')::uuid,NULL,'@connection',repeat('a',64),pg_temp.answer(),
+          jsonb_set(pg_temp.receipt(),'{provider}','"${provider === "claude" ? "codex" : "claude"}"'),NULL);
+        RAISE EXCEPTION 'Another provider receipt accepted';
+      EXCEPTION WHEN invalid_parameter_value THEN NULL; END;
+      IF (SELECT state FROM public.assistant_provider_turns WHERE request_id='@request')<>'running'
+        OR (SELECT count(*) FROM public.assistant_provider_turns WHERE connection_id='@connection')<>1 THEN RAISE EXCEPTION 'Refusal changed retained request'; END IF;
+    END $$;`));
+
+  it("v2 creation requires a valid provider account pair and service authority", () => exercise(`
+    DO $$ DECLARE constraint_name text; BEGIN
+      BEGIN
+        PERFORM public.create_assistant_provider_connection_v2('@secondRequest','@outsider','@workspace','@project','Wrong membership',repeat('b',64),'claude_subscription','claude');
+        RAISE EXCEPTION 'Service issued a connection outside user membership';
+      EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+      BEGIN
+        PERFORM public.create_assistant_provider_connection_v2('@secondRequest','@owner','@workspace','@project','Bad pair',repeat('b',64),'chatgpt','claude');
+        RAISE EXCEPTION 'Wrong account pair accepted';
+      EXCEPTION WHEN check_violation THEN
+        GET STACKED DIAGNOSTICS constraint_name=CONSTRAINT_NAME;
+        IF constraint_name<>'assistant_provider_connection_mode' THEN RAISE EXCEPTION 'Wrong account-pair guard failed'; END IF;
+      END;
+    END $$;
+    SET LOCAL ROLE authenticated; SELECT set_config('request.jwt.claim.sub','@owner',true);
+    DO $$ BEGIN
+      BEGIN
+        PERFORM public.create_assistant_provider_connection_v2('@secondRequest','@owner','@workspace','@project','Unapproved native credential',repeat('b',64),'claude_subscription','claude');
+        RAISE EXCEPTION 'Browser minted v2 connection directly';
+      EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+    END $$;
+    RESET ROLE;`));
+
+  it("enforces exact Claude model identifiers without changing Codex model names", () => exercise(`
+    DO $$ DECLARE constraint_name text; saved jsonb; BEGIN
+      ${provider === "claude" ? "BEGIN" : ""}
+        saved:=public.create_assistant_provider_turn('@request','@owner','@workspace','@project','@connection','${provider}','sonnet','${authMode}','Model check',pg_temp.packet());
+        ${provider === "claude" ? "RAISE EXCEPTION 'Claude model alias accepted'; EXCEPTION WHEN check_violation THEN GET STACKED DIAGNOSTICS constraint_name=CONSTRAINT_NAME; IF constraint_name<>'assistant_provider_claude_model' THEN RAISE EXCEPTION 'Wrong model guard failed'; END IF; END;" : "IF saved->'turn'->>'model_id'<>'sonnet' THEN RAISE EXCEPTION 'Codex model name was changed'; END IF;"}
+    END $$;`));
 
 });
