@@ -141,9 +141,8 @@ export default async function AssistantActivityPage() {
           <div className="module-intro-body">
             <h1 className="module-intro-title">Planner Agent Activity</h1>
             <p className="module-intro-description">
-              Every action the Planner Agent executes in this workspace is written to a per-execution audit
-              ledger — successes and failures alike — so operators can answer who fired what, when, and with
-              what outcome.
+              Recorded Planner Agent executions in this workspace, including their reported outcomes.
+              This list can be incomplete if an audit write fails; check the affected record when confirming a change.
             </p>
             {authorshipAvailable ? null : (
               <p className="module-intro-description text-amber-600 dark:text-amber-300">
@@ -168,7 +167,7 @@ export default async function AssistantActivityPage() {
             <div className="module-summary-card">
               <p className="module-summary-label">Failed</p>
               <p className="module-summary-value">{summary.failed}</p>
-              <p className="module-summary-detail">Failures are audited with the same rigor as successes.</p>
+              <p className="module-summary-detail">Failed executions among these retained audit rows.</p>
             </div>
           </div>
         </article>

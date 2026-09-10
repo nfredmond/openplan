@@ -1028,7 +1028,7 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
           approval: "approval_required",
           auditEvent: "assistant.operation.project.record_stage_gate_hold",
           auditNote:
-            "Appends one HOLD to the append-only stage-gate decision log through the normal route, and the change is recorded in the activity log. It cannot record a pass, and it supersedes nothing — the existing log is untouched.",
+            "Appends one HOLD to the stage-gate decision log. It cannot record a pass or change an existing decision. Check the decision and its activity entry to confirm the outcome.",
           executeAction: {
             kind: "record_stage_gate_hold",
             workspaceId: context.workspace.id,
