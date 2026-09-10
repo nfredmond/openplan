@@ -113,9 +113,9 @@ BEGIN
     SELECT f INTO fund FROM jsonb_array_elements(target->'content_json'->'preparation'->'funds')f WHERE f->>'id'=row->>'successorFundId';
     IF fund IS NULL OR fund->>'amount' IS NULL OR fund->>'kind' IS DISTINCT FROM 'carryover' THEN RAISE EXCEPTION 'Select an assessed carryover fund in the adopted successor' USING ERRCODE='22023'; END IF;
     SELECT sum((e->>'amount')::numeric) INTO total FROM jsonb_array_elements(assessment->'work')e WHERE e->>'disposition'='carryover' AND (SELECT b.program_id FROM public.program_work_program_revisions b WHERE b.id=(e->>'successorRevisionId')::uuid)=(target->>'program_id')::uuid AND e->>'successorFundId'=row->>'successorFundId';
-    -- Other source programs can use the same successor fund, but cannot allocate it twice.
+    -- Reserve the latest approved allocation through reopening/draft corrections until a replacement is approved.
     SELECT total+coalesce(sum((e->>'amount')::numeric),0) INTO total FROM public.work_program_closeout_records c CROSS JOIN LATERAL jsonb_array_elements(c.content->'assessment'->'work')e
-     WHERE c.workspace_id=w AND c.program_id<>p_program_id AND c.state='approved' AND NOT EXISTS(SELECT 1 FROM public.work_program_closeout_records newer WHERE newer.program_id=c.program_id AND newer.version>c.version)
+     WHERE c.workspace_id=w AND c.program_id<>p_program_id AND c.state='approved' AND NOT EXISTS(SELECT 1 FROM public.work_program_closeout_records newer WHERE newer.program_id=c.program_id AND newer.state='approved' AND newer.version>c.version)
      AND e->>'disposition'='carryover' AND (SELECT b.program_id FROM public.program_work_program_revisions b WHERE b.id=(e->>'successorRevisionId')::uuid)=(target->>'program_id')::uuid AND e->>'successorFundId'=row->>'successorFundId';
     IF total>(fund->>'amount')::numeric THEN RAISE EXCEPTION 'Carryover exceeds the successor fund baseline' USING ERRCODE='22023'; END IF;
    ELSIF row->>'successorRevisionId' IS NOT NULL OR row->>'successorElementId' IS NOT NULL OR row->>'sourceFundId' IS NOT NULL OR row->>'successorFundId' IS NOT NULL OR row->>'amount' IS NOT NULL THEN RAISE EXCEPTION 'Only carryover work may name a successor or amount' USING ERRCODE='22023'; END IF;

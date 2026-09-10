@@ -159,7 +159,7 @@ live("OWP saved reconciliation and carryover custody", () => {
  SELECT p,w,2,r.id,r.content_sha256,'withdraw_authority',o,jsonb_build_object('targetEventId',id),'[]',gen_random_uuid() FROM public.program_work_program_events WHERE program_id=p AND kind='adoption';
  BEGIN ${approve} RAISE EXCEPTION 'Withdrawn adoption approved'; EXCEPTION WHEN SQLSTATE 'PT409' THEN IF SQLERRM NOT LIKE 'The retained baseline%' THEN RAISE; END IF; END;
  `));
- it("counts approved carryover across source cycles and successor amendments", () => marker(`
+ it("retains approved funding through reopening, across source cycles and successor amendments", () => marker(`
  original:=to_jsonb(next_revision.id);
  SELECT * INTO next_revision FROM public.save_program_work_program_revision(next_program,o,1,gen_random_uuid(),next_revision.content_json||'{"financialNotes":"Synthetic successor amendment"}');
  INSERT INTO public.program_work_program_events(program_id,workspace_id,sequence,revision_id,revision_hash,kind,actor_id,payload,evidence,request_id) VALUES(next_program,w,2,next_revision.id,next_revision.content_sha256,'adoption',o,'{}','[]',gen_random_uuid());
@@ -178,6 +178,7 @@ live("OWP saved reconciliation and carryover custody", () => {
  other_command:=jsonb_build_object('kind','save','requestId',gen_random_uuid(),'reportId',other_report,'expectedVersion',0,'sourceHash',other_data->>'sourceHash','assessment',jsonb_set(jsonb_set(assessment||'{"claims":[],"commitments":[]}','{work,0,amount}','"15.00"'),'{work,0,successorRevisionId}',original));
  PERFORM public.work_program_closeout_command(other_program,o,other_command);
  PERFORM public.work_program_closeout_command(other_program,o,other_command-'assessment'||jsonb_build_object('kind','approve','requestId',gen_random_uuid(),'expectedVersion',1,'note','Synthetic second source authority'));
+ PERFORM public.work_program_closeout_command(other_program,o,other_command-'assessment'||jsonb_build_object('kind','reopen','requestId',gen_random_uuid(),'expectedVersion',2,'note','Review is reopened; approved carryover remains reserved until replacement approval'));
  END;
  BEGIN ${approve} RAISE EXCEPTION 'Competing source over-allocated successor'; EXCEPTION WHEN invalid_parameter_value THEN IF SQLERRM NOT LIKE 'Carryover exceeds the successor%' THEN RAISE; END IF; END;
  close_command:=close_command||jsonb_build_object('requestId',gen_random_uuid(),'expectedVersion',1,'assessment',jsonb_set(assessment,'{work,0,amount}','"15.00"')); ${save}

@@ -91,7 +91,7 @@ export function CloseoutPanel({ programId, userId, reports }: { programId: strin
             <Field label={`Commitment ${index + 1} discharge and remaining obligation evidence`} multiline value={row.evidence} onChange={evidence => setAssessment({ ...assessment, commitments: assessment.commitments.map((c, i) => i === index ? { ...c, evidence } : c) })}/>
           </article>)}
           <h3 className="font-semibold">Completion and next-cycle carryover</h3>
-          <p>Amounts describe reviewed carryover authority, not a calculation of available cash. Create and adopt the successor cycle through Programming Cycles first. Fund periods, conditions and external approval must be checked in the evidence.</p>
+          <p>Amounts describe reviewed carryover authority, not a calculation of available cash. Create and adopt the successor cycle through Programming Cycles first. Fund periods, conditions and external approval must be checked in the evidence. Reopening keeps the previous approved carryover reserved until a replacement is approved.</p>
           {assessment.work.map((row, index) => {
             const target = data.source.successors.find(b => b.id === row.successorRevisionId);
             return <article key={row.elementId} className="min-w-0 space-y-3 rounded-lg border p-3">
