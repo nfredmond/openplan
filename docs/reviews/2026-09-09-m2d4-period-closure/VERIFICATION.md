@@ -1,5 +1,7 @@
 # M2d.4 accounting period closure
 
+Release disposition: included in [v0.48.0](../2026-09-09-v048-release/VERIFICATION.md). The dated checkpoints below retain their original findings.
+
 Status: engineering acceptance complete locally, unreleased. GitHub results must be checked separately on the final pushed main commit.
 
 Started from main `5dffba4b` after full QA, shuffled tests, RLS isolation and upgrade CI were green. Worktree: `/home/nathaniel/.local/state/openplan/m2d4-period-closure-2026-09-09`. Owned closeout API/UI/domain, additive migration, related tests and evidence. No other coding session was active. No draft PR, paid service or reminder change.

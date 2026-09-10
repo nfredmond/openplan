@@ -1,5 +1,7 @@
 # M2d.4 saved reconciliation and carryover — engineering evidence
 
+Release disposition: included in [v0.48.0](../2026-09-09-v048-release/VERIFICATION.md). The dated checkpoints below retain their original findings.
+
 Status: bounded implementation verified locally; unreleased. This does not complete M2d.4. GitHub results must be read against the pushed main commit separately from these local checks.
 
 ## Start gate and ownership

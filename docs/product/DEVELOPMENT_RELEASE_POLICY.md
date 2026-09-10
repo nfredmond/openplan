@@ -58,9 +58,17 @@ whose consequence warrants another perspective. Two new whole-product agent
 reviews are not required for every feature, bug fix, commit or minor release.
 Existing reports remain historical evidence. Preserve disagreements.
 
-Human observation establishes usefulness and should shape priorities as users
-arrive. Recruiting external planners is not a prerequisite for shipping a
-bounded engineering improvement. Agent testing cannot stand in for that feedback.
+Nathaniel's September 9, 2026 clarification: no human review is required to
+implement, verify, merge or release OpenPlan. Do not recruit reviewers, require
+PM/finance sign-off or leave verified work unreleased while waiting for human
+acceptance. Human-review entries in older roadmaps and evidence describe
+unmeasured field outcomes; they are not development or release gates. Optional
+user feedback can inform later improvements. Engineering evidence must still
+state what was tested and must not claim an unobserved outcome.
+
+This release rule does not change permissions or approval records within agency
+workflows. Software release approval and an agency's authorization to spend,
+adopt a plan or submit a reimbursement claim are separate actions.
 
 ## Local operation now, hosting later
 

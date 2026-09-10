@@ -1,5 +1,7 @@
 # M2d.4 refund payment matching
 
+Release disposition: included in [v0.48.0](../2026-09-09-v048-release/VERIFICATION.md). The dated checkpoints below retain their original findings.
+
 Status: local engineering acceptance complete, unreleased. Final main CI is inspected separately on the pushed commit; this record does not declare a release tag.
 
 This increment extends Saved reconciliation with explicit outgoing refund matches to existing approved payment entries. Exact cents preserve partial and excess disbursements independently from incoming claim receipts. Unknown assessments remain unknown. A reviewer identifies the recipient, direction and payment reference in the evidence; OpenPlan does not verify a bank transfer.

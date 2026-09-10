@@ -1,5 +1,7 @@
 # M2d.4 closeout review start
 
+Release disposition: included in [v0.48.0](../2026-09-09-v048-release/VERIFICATION.md). The dated checkpoints below retain their original findings.
+
 This increment begins the next roadmap priority after v0.47.0. It is not full year-end closeout or approved carryover. Application build `8bd928f41822fbcccd44206b2e6df8096cf3cca1` extends the existing owner/admin OWP reporting and reimbursement page, without new tables, APIs, costs, model behavior or authority writes. Work is isolated in `/home/nathaniel/.local/state/openplan/m2d4-closeout-review-2026-09-09` on `work/m2d4-closeout-review`.
 
 ## Behavior

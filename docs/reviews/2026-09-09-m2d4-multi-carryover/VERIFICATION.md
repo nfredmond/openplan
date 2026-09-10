@@ -1,5 +1,7 @@
 # M2d.4 multiple carryover allocations
 
+Release disposition: included in [v0.48.0](../2026-09-09-v048-release/VERIFICATION.md). The dated checkpoints below retain their original findings.
+
 Engineering increment, unreleased. Local engineering checks and inspected browser acceptance passed. Final main CI is checked separately on the commit that lands this evidence; a push alone is not acceptance.
 
 Extends Saved reconciliation with multiple source-fund and adopted successor work/fund allocations per old work element. Several old elements can share a successor. The read-only legacy projection preserves original approval JSON, hashes and exact pending retry payloads. New arrays require null legacy scalar mapping fields. Source and successor fund ceilings aggregate the rows and retained approved reservations, including legacy mappings and successor amendments. Reopening keeps the previous approval reserved until replacement approval. No expense is copied.

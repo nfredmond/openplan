@@ -1,0 +1,12 @@
+[
+  {
+    "name": "harmless comment",
+    "exitCode": 0,
+    "expected": "survived"
+  },
+  {
+    "name": "incorrect release migration count",
+    "exitCode": 1,
+    "expected": "detected"
+  }
+]

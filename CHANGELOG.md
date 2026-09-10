@@ -20,7 +20,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-- Split unfinished OWP work among adopted successor elements and funds, or combine old elements in a successor. Saved reconciliation retains each allocation, original approval and correction history without copying expenses. Combined source/successor funding limits include earlier approved mappings. Apply `work_program_multi_carryover` (`20261007000001`). Independent two-cycle reconstruction, restore and finance acceptance remain open.
+No changes yet.
+
+## 0.48.0 — 2026-09-09
+
+Development release. [Engineering evidence](docs/reviews/2026-09-09-v048-release/VERIFICATION.md) covers saved OWP reconciliation, closure, refund matching and multiple successor allocations. No human review or finance sign-off is required for this release.
+
+
+- Split unfinished OWP work among adopted successor elements and funds, or combine old elements in a successor. Saved reconciliation retains each allocation, original approval and correction history without copying expenses. Combined source/successor funding limits include earlier approved mappings. Apply `work_program_multi_carryover` (`20261007000001`). Independent two-cycle reconstruction and exact restore remain open.
 
 - Match outgoing OWP refunds to existing approved payments, preserving unknown, partial and excess refund balances. Receipt/refund conflicts and over-allocation across approved baselines are refused by physical entry identity, including after correction. Matched late refunds remain protected by period closure. Apply `work_program_refund_matches` (`20261006000001`). Payment direction is a reviewer decision with evidence; this does not verify a bank transfer or add a cost.
 

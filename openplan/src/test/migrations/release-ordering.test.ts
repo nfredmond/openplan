@@ -363,6 +363,11 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20261003000001_work_program_reimbursement.sql",
     migrationsAtRelease: 307,
   },
+  {
+    tag: "0.48.0",
+    lastMigration: "20261007000001_work_program_multi_carryover.sql",
+    migrationsAtRelease: 311,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");
