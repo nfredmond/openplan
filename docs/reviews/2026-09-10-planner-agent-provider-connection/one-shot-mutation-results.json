@@ -1,0 +1,14 @@
+[
+  {
+    "case": "harmless-comment",
+    "exitCode": 0,
+    "expectedOutcome": true,
+    "tail": "\u2714 CLI imports only the supplied connection into private files without logging its token (69.618325ms)\n\u2714 CLI refuses extra provider-endpoint arguments and does not echo secrets (60.056752ms)\n\u2714 one-shot polling distinguishes an idle reply from an unavailable app (151.74425ms)\n\u2139 tests 3\n\u2139 suites 0\n\u2139 pass 3\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 339.138138\n"
+  },
+  {
+    "case": "swallowed-one-shot-failure",
+    "exitCode": 1,
+    "expectedOutcome": true,
+    "tail": "\u2714 CLI imports only the supplied connection into private files without logging its token (74.198216ms)\n\u2714 CLI refuses extra provider-endpoint arguments and does not echo secrets (62.819506ms)\n\u2716 one-shot polling distinguishes an idle reply from an unavailable app (154.729353ms)\n\u2139 tests 3\n\u2139 suites 0\n\u2139 pass 2\n\u2139 fail 1\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 353.599996\n\n\u2716 failing tests:\n\ntest at workers/planner_agent_connector/test/connector-cli.test.mjs:35:1\n\u2716 one-shot polling distinguishes an idle reply from an unavailable app (154.729353ms)\n  AssertionError [ERR_ASSERTION]: Missing expected rejection.\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async TestContext.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/workers/planner_agent_connector/test/connector-cli.test.mjs:45:5)\n      at async Test.run (node:internal/test_runner/test:1404:7)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {\n    generatedMessage: false,\n    code: 'ERR_ASSERTION',\n    actual: undefined,\n    operator: 'rejects',\n    diff: 'simple'\n  }\n"
+  }
+]

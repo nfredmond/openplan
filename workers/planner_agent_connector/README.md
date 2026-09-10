@@ -1,8 +1,9 @@
 # Planner Agent local connector (implementation in progress)
 
-The native transport, scoped connection routes, saved requests and outbound
-connector are implemented. The app controls and browser acceptance are still
-being connected. This is not an A0a completion claim.
+The native transport, scoped connection routes, saved requests, outbound connector
+and project controls are implemented. Desktop and 390px browser journeys exercise
+actual native answers and a scripted direct API transport on the same narrow task.
+See the September 10 provider-connection evidence. Broader A0a/A1 work remains open.
 
 The initial native transport uses installed standalone Codex **0.154.0** on Linux,
 Node 24 and `/usr/bin/bwrap`. It accepts a resolved native binary in a `bin`
@@ -62,7 +63,8 @@ Choose a new private configuration directory for each connection. Configuration
 refuses to overwrite an existing file and restricts both the imported download
 and saved config to the current user. Native sign-in remains in Codex's supported
 login flow. `models` prints only sanitized native account mode/plan and catalog.
-Ctrl+C stops the owned connector; rerun the same command to recover. One OS lock
+Ctrl+C stops the owned connector; rerun the same command to recover. `run --once` exits nonzero when the app is unavailable; ordinary continuous mode
+retains its journal and polls again. One OS lock
 prevents two connector processes from consuming the same local journal.
 
 Completed output is synced before delivery and resent identically after a network
@@ -87,7 +89,7 @@ These use a local scripted Responses server, synthetic account data and temporar
 profiles. They force shell, file-reading, patch and MCP calls and inspect the
 actual runtime refusals and model-visible context. No real provider request is
 made. Retained synthetic fixtures are printed for inspection. Separately, the
-September 10 implementation evidence records native account detection and one real
-ChatGPT-authenticated synthetic project answer; neither proves the unfinished app
-journey, all native platforms/backends, professional usefulness or general agent
-assignments.
+September 10 implementation evidence records native account detection and real
+ChatGPT-authenticated synthetic project answers through the desktop and 390px app
+journeys. These do not prove all native platforms/backends, professional usefulness,
+live Anthropic quality or general agent assignments.

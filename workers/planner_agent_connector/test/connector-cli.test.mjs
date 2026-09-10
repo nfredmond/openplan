@@ -1,3 +1,4 @@
+import { createServer } from "node:http";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtemp, writeFile, readFile, stat } from "node:fs/promises";
@@ -29,4 +30,21 @@ test("CLI refuses extra provider-endpoint arguments and does not echo secrets", 
     assert.match(error.stderr, /connector_arguments_invalid/); assert.ok(!error.stderr.includes("PRIVATE_ARGUMENT_CANARY")); return true;
   });
   const help = await run(["--help"]); assert.match(help.stdout, /configure/); assert.match(help.stdout, /Native sign-in remains in/);
+});
+
+test("one-shot polling distinguishes an idle reply from an unavailable app", async () => {
+  const root=await mkdtemp(join(tmpdir(),"openplan-connector-once-"));
+  let status=200,calls=0;
+  const server=createServer((request,response)=>{calls++;request.resume();response.writeHead(status,{"content-type":"application/json"});response.end(status===200?JSON.stringify({status:"unavailable",turn:null}):JSON.stringify({error:"PRIVATE_HTTP_BODY"}));});
+  await new Promise(resolve=>server.listen(0,"127.0.0.1",resolve));
+  try {
+    const config=join(root,"connection.json"),appUrl=`http://127.0.0.1:${server.address().port}`;
+    await writeFile(config,JSON.stringify({setup:{...setup,appUrl},binaryPath:"/usr/bin/false",providerHome:root}),{mode:0o600});
+    const control=await run(["run","--config",config,"--once"]);assert.match(control.stdout,/unavailable/);assert.equal(calls,1);
+    status=503;
+    await assert.rejects(run(["run","--config",config,"--once"]),error=>{
+      assert.equal(error.code,1);assert.match(error.stderr,/connector_request_refused/);assert.ok(!error.stderr.includes("PRIVATE_HTTP_BODY"));assert.ok(!error.stderr.includes(setup.token));return true;
+    });
+    assert.equal(calls,2,"One-shot failure must not retry automatically");
+  } finally {await new Promise(resolve=>server.close(resolve));}
 });

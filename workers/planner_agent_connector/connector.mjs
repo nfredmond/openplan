@@ -79,6 +79,7 @@ export async function connectorMain(argv) {
         // provider output, project text or credentials enter the terminal log.
         if (lastStatus !== "connection_unavailable") process.stdout.write("Project connector: connection_unavailable; saved delivery retained\n");
         lastStatus = "connection_unavailable";
+        if (flags.once) throw error;
       }
       if (flags.once) break;
       await delay(3000, undefined, { signal });

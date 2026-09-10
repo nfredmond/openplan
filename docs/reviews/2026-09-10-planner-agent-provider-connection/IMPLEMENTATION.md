@@ -300,3 +300,41 @@ Blind categories: these are synthetic project engineering journeys, not practici
 planner usefulness or live Anthropic service acceptance. Native-account success does
 not prove all models/accounts/platforms. Concurrency and final full release QA are
 still pending; no A0a completion or release declaration is made at this checkpoint.
+
+## Database competition and connector exit status
+
+Eight new live transaction cases cover identical native/API request creation,
+competing native claims, concurrent membership removal/project move, cancellation
+and revocation before delivery, and identical competing result delivery. The test
+observes actual database lock waits, commits the competing change, and checks the
+saved outcome. These and the twelve sequential provider/RLS cases pass on the named
+clean disposable stack. The new suite is included in test:rls-live.
+
+Harness errors were corrected before claiming evidence: the first invocation ran
+from the repository root through an unpinned cached Vitest rather than the app's
+installed runner. It still targeted the explicitly named disposable stack. A fixed
+synthetic token hash collided between committed concurrency fixtures; new fixtures
+use distinct hashes, and the one conflicting synthetic row's hash was changed in
+that stack. The membership case initially hit the existing last-owner protection;
+a separate synthetic custodian now preserves an owner while the tested membership
+is removed. No app guard was weakened to accommodate these harness errors.
+
+Harmless SQL comments survive. Missing scope locks, overlapping native claims,
+falsely new duplicate requests and changed completion replays fail their targeted
+assertions. Removing only the cancelled-state guard still hit the independent row
+constraint; a second mutant also cleared the failure code and actually published a
+late answer, which the test rejected. All SQL definitions were restored. The receipt
+files retain both the independent constraint defense and the stronger mutation.
+
+The connector's --once command previously exited zero after HTTP 503. A real local
+HTTP test reproduced it. It now exits nonzero without retrying or printing the
+response body/token; a valid idle response still exits zero. Harmless comment and
+restored-defect mutations verify the regression check. No provider generation is
+needed for this test. Concurrency controls do not simulate physical power loss,
+network partitions inside Postgres, or every possible multi-transaction ordering.
+
+Next: full QA, shuffled tests, full isolated RLS, worker/native suites and populated
+upgrade evidence; prepare a bounded v0.52.0 release, merge directly to main and inspect
+its final CI before tagging. A0a remains partial beyond the tested narrow project
+record task; API evidence uses a scripted transport and broader chat/provider work,
+additional native backends and durable assignments remain ahead.
