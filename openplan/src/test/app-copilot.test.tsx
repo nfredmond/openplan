@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -169,6 +169,41 @@ describe("AppCopilot", () => {
       expect(screen.getAllByText("Grounded workspace summary.").length).toBeGreaterThan(0);
     });
   }
+
+  it("preserves a question typed while the initial context is loading", async () => {
+    let resolveContext!: (response: Response) => void;
+    const context = new Promise<Response>(resolve => { resolveContext = resolve; });
+    const originalFetch = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation((input, init) => String(input).startsWith("/api/assistant/context") ? context : originalFetch(input, init));
+    render(<AppCopilot workspaceId={WORKSPACE_ID} workspaceName="Foothill COG" />);
+    fireEvent.click(screen.getByRole("button", { name: "Planner Agent" }));
+    const input = screen.getByPlaceholderText(/Ask about project status/);
+    fireEvent.change(input, { target: { value: "Keep this question while loading" } });
+    expect(screen.getByRole("button", { name: /Send/ })).toBeDisabled();
+    await act(async () => resolveContext(jsonResponse({ preview: previewFixture })));
+    expect(input).toHaveValue("Keep this question while loading");
+    fireEvent.click(screen.getByRole("button", { name: /Send/ }));
+    await screen.findByText("Here is a grounded AI reply.");
+    const chat = fetchMock.mock.calls.find(call => String(call[0]).startsWith("/api/assistant/chat"));
+    expect(JSON.parse(String(chat![1]?.body)).question).toBe("Keep this question while loading");
+  });
+
+  it("clears the old case's draft at a context switch while preserving a newly typed question", async () => {
+    const view = render(<AppCopilot workspaceId={WORKSPACE_ID} workspaceName="Foothill COG" />);
+    fireEvent.click(screen.getByRole("button", { name: "Planner Agent" }));
+    await screen.findAllByText("Grounded workspace summary.");
+    const input = screen.getByPlaceholderText(/Ask about project status/);
+    fireEvent.change(input, { target: { value: "Old case question" } });
+    let resolveContext!: (response: Response) => void;
+    const context = new Promise<Response>(resolve => { resolveContext = resolve; });
+    const originalFetch = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation((url, init) => String(url).startsWith("/api/assistant/context") ? context : originalFetch(url, init));
+    view.rerender(<AppCopilot workspaceId="33333333-3333-4333-8333-333333333333" workspaceName="New case" />);
+    await waitFor(() => expect(input).toHaveValue(""));
+    fireEvent.change(input, { target: { value: "New case question" } });
+    await act(async () => resolveContext(jsonResponse({ preview: { ...previewFixture, title: "New case" } })));
+    expect(input).toHaveValue("New case question");
+  });
 
   it("streams a free-text reply into the chat area", async () => {
     await openPanel();

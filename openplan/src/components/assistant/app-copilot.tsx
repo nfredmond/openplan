@@ -1473,6 +1473,8 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
     async function loadContext() {
       setLoadingContext(true);
+      // Clear the previous case immediately; preserve text typed while this context loads.
+      setDraft("");
       setError(null);
       setContextRecovery(null);
 
@@ -1505,7 +1507,6 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
             preview: payload.preview,
           },
         ]);
-        setDraft("");
       } catch (loadError) {
         if (ignore) return;
         setBasePreview(null);

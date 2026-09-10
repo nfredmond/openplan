@@ -1,0 +1,14 @@
+[
+  {
+    "name": "harmless",
+    "result": "survived"
+  },
+  {
+    "name": "erase-new-question",
+    "result": "failed"
+  },
+  {
+    "name": "retain-old-case-question",
+    "result": "failed"
+  }
+]

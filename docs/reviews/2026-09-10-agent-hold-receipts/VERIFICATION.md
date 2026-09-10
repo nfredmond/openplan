@@ -118,3 +118,26 @@ codex_audit_write_probe_20260910 fixture from earlier work. It was not an isolat
 failure. A fresh named disposable stack, hold-release-rls-2026-09-10 on API29821 and
 DB29822, is being prepared for a clean full run. The older fixture and its evidence
 are preserved. No database reset or drop was used.
+
+
+## Browser input-loss correction
+
+At e02ad733, full QA/build and shuffled seed540087 passed13,571 tests in1,239
+files;35files/309tests were skipped without live opt-in. The first browser
+attempt identified the matching production checkout on3281, entered through
+sign-in and Projects, then found that a question typed while project context was
+loading disappeared when loading completed. No approval or HOLD was sent.
+
+The context loader cleared the draft after its asynchronous read. It now clears
+the previous case's draft when loading begins and preserves text typed during
+that read. Both initial-load and case-switch tests cover the distinction. The
+harmless comment survives; restoring late draft clearing or omitting old-case
+clearing fails the expected input-value assertion. All22copilot tests pass.
+Browser recovery must be rerun on the corrected build.
+
+The first new-stack name was rejected by the existing contract fixture guard;
+those refusals are setup failures, not product test outcomes. Only that owned
+runner was interrupted, and its stack stopped with backup. Its replacement is
+openplan-restore-target-2026091050 at the same API29821/DB29822, matching the existing
+explicit disposable-stack rule. No guard was relaxed. The full live suite is
+running there. The browser still uses the separately retained22301stack.
