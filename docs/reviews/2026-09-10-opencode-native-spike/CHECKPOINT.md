@@ -64,3 +64,39 @@ configuration, cache and session directories. API keys do not refresh; OAuth mod
 must refuse instead of pretending this mount supports native credential refresh.
 Do not mount the user's history or project directory. Broader native modes require
 separate acceptance. Then run actual-native canaries and cancellation before SQL/UI.
+
+
+## Weekly-limit checkpoint, September10
+
+The OpenCode launch helper is now implemented separately from the app. It pins
+Linux1.18.30, mounts only a private native auth.json read-only, uses fresh private
+runtime/data/config/cache/state and disables inherited context/plugins/tools,
+auxiliary model tasks and model-catalog network fetching. Thirty launch tests pass.
+One harmless launch mutation survived and34 targeted changes failed. The first
+file-type mutation survived because the test directory had public permissions;
+changing the synthetic directory to0700 isolated the file-type check. The initial
+receipt remains. An existing-runtime-before-task-directory case also prevents
+reuse from passing through a later incidental mkdir refusal.
+
+The actual launch with synthetic native OpenAI API credentials completed one
+Responses request through the relay using the catalog's gpt-6-astra. It reread the
+exact assistant message and matched the supplied parent message ID. Physical mount
+checks found no private profile/scratch canary and refused an auth-file write with
+EROFS. No canary or synthetic key entered the model request. Default connector
+suite now passes151 with3 native opt-in skips; no app or browser support is claimed.
+
+Two protocol details must survive resumption. The exploratory custom model gpt-6
+was synthetic; the production native catalog does not contain that exact ID and
+refused it before any request. Use actual native model IDs such as the observed
+gpt-6-astra, without promising remote account availability. Also GET/provider
+includes credential fields: never expose its raw result. Use native auth-list and
+model-list commands plus strict sanitized parsing. The native list-message endpoint
+rejects its stored plain OutputFormat class on readback in1.18.30. Exact assistant
+message GET succeeds, so the bounded adapter can verify that message and its exact
+supplied parent ID while OpenPlan retains its own frozen question/result. Do not
+claim general native history interoperability or patch native databases.
+
+See [RESUME.md](RESUME.md) for the precise next boundary and local commands. This
+checkpoint intentionally stops before account/result/process wrapper and SQL/UI
+integration. Native physical guard mutations are next; generated-option mutations
+and one positive native launch do not independently prove every runtime restriction.

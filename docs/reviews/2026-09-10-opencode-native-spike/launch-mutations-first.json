@@ -1,0 +1,190 @@
+[
+  {
+    "mutation": "harmless-comment",
+    "exitCode": 0,
+    "expected": 0,
+    "failures": []
+  },
+  {
+    "mutation": "weak-secret",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses invalid serverPassword: weak (3.582338ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses invalid serverPassword: weak (3.582338ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "relay-scheme",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses invalid relayUrl: https://127.0.0.1:1234/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa (3.520952ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses invalid relayUrl: https://127.0.0.1:1234/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa (3.520952ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "relay-host",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses invalid relayUrl: http://localhost:1234/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa (3.819226ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses invalid relayUrl: http://localhost:1234/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa (3.819226ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "relay-port",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses invalid relayUrl: http://127.0.0.1/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa (3.73678ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses invalid relayUrl: http://127.0.0.1/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa (3.73678ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "relay-credentials",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses invalid relayUrl: http://user:secret@127.0.0.1:1234/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa (7.011387ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses invalid relayUrl: http://user:secret@127.0.0.1:1234/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa (7.011387ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "relay-query",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses invalid relayUrl: http://127.0.0.1:1234/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa?changed=true (3.459296ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses invalid relayUrl: http://127.0.0.1:1234/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa?changed=true (3.459296ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "relay-fragment",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses invalid relayUrl: http://127.0.0.1:1234/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa#changed (4.131374ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses invalid relayUrl: http://127.0.0.1:1234/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa#changed (4.131374ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "relay-secret-path",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses invalid relayUrl: http://127.0.0.1:1234/responses (3.14867ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses invalid relayUrl: http://127.0.0.1:1234/responses (3.14867ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "version-pin",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses a different installed version (4.074417ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses a different installed version (4.074417ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "profile-root",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses unsafe layout: profile root (3.227929ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unsafe layout: profile root (3.227929ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "scratch-root",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses unsafe layout: scratch root (4.172471ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unsafe layout: scratch root (4.172471ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:"
+    ]
+  },
+  {
+    "mutation": "same-path",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses unsafe layout: same (3.297991ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unsafe layout: same (3.297991ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "profile-inside-scratch",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses unsafe layout: profile within scratch (3.461901ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unsafe layout: profile within scratch (3.461901ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "scratch-inside-profile",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses unsafe layout: scratch within profile (3.230986ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unsafe layout: scratch within profile (3.230986ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "profile-directory",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses a file as providerHome (3.374366ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses a file as providerHome (3.374366ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:"
+    ]
+  },
+  {
+    "mutation": "scratch-directory",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses a file as scratchPath (3.588179ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses a file as scratchPath (3.588179ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:"
+    ]
+  },
+  {
+    "mutation": "credential-file",
+    "exitCode": 0,
+    "expected": 1,
+    "failures": []
+  }
+]

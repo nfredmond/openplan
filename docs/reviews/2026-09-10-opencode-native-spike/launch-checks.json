@@ -1,0 +1,29 @@
+{
+  "nativeVersion": "1.18.30",
+  "launchTests": 30,
+  "connectorDefault": {
+    "passed": 151,
+    "failed": 0,
+    "nativeOptInSkipped": 3
+  },
+  "mutations": {
+    "harmlessPassed": 1,
+    "targetedFailed": 34
+  },
+  "native": {
+    "model": "gpt-6-astra",
+    "provider": "openai",
+    "requests": 1,
+    "assistantReadbackIdentical": true,
+    "credentialMountWriteRefused": "EROFS",
+    "privateProfileAndScratchCanaries": "absent from physical mount and native request",
+    "syntheticOnly": true
+  },
+  "limits": [
+    "Account/result wrapper and app integration not implemented",
+    "Unit launch mutations challenge generated options; separate native guard mutations remain next",
+    "Raw native provider endpoint contains credentials and must not be exposed",
+    "Native list-message endpoint rejects stored format in this pinned version; exact assistant-message readback succeeds",
+    "No real OpenCode account or provider generation acceptance"
+  ]
+}

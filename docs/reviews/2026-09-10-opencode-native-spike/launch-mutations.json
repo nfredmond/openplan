@@ -1,0 +1,382 @@
+[
+  {
+    "mutation": "harmless-comment",
+    "exitCode": 0,
+    "expected": 0,
+    "failures": []
+  },
+  {
+    "mutation": "weak-secret",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses invalid serverPassword: weak (3.30734ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses invalid serverPassword: weak (3.30734ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "relay-scheme",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses invalid relayUrl: https://127.0.0.1:1234/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa (3.27034ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses invalid relayUrl: https://127.0.0.1:1234/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa (3.27034ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "relay-host",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses invalid relayUrl: http://localhost:1234/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa (4.247784ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses invalid relayUrl: http://localhost:1234/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa (4.247784ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "relay-port",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses invalid relayUrl: http://127.0.0.1/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa (3.792956ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses invalid relayUrl: http://127.0.0.1/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa (3.792956ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "relay-credentials",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses invalid relayUrl: http://user:secret@127.0.0.1:1234/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa (4.141684ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses invalid relayUrl: http://user:secret@127.0.0.1:1234/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa (4.141684ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "relay-query",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses invalid relayUrl: http://127.0.0.1:1234/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa?changed=true (2.991885ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses invalid relayUrl: http://127.0.0.1:1234/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa?changed=true (2.991885ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "relay-fragment",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses invalid relayUrl: http://127.0.0.1:1234/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa#changed (3.707213ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses invalid relayUrl: http://127.0.0.1:1234/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa#changed (3.707213ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "relay-secret-path",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses invalid relayUrl: http://127.0.0.1:1234/responses (3.934883ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses invalid relayUrl: http://127.0.0.1:1234/responses (3.934883ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "version-pin",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses a different installed version (3.29204ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses a different installed version (3.29204ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "profile-root",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses unsafe layout: profile root (3.85892ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unsafe layout: profile root (3.85892ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "scratch-root",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses unsafe layout: scratch root (3.280309ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unsafe layout: scratch root (3.280309ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:"
+    ]
+  },
+  {
+    "mutation": "same-path",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses unsafe layout: same (3.317599ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unsafe layout: same (3.317599ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "profile-inside-scratch",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses unsafe layout: profile within scratch (4.042907ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unsafe layout: profile within scratch (4.042907ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "scratch-inside-profile",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses unsafe layout: scratch within profile (3.078588ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unsafe layout: scratch within profile (3.078588ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "profile-directory",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses a file as providerHome (3.517726ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses a file as providerHome (3.517726ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:"
+    ]
+  },
+  {
+    "mutation": "scratch-directory",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses a file as scratchPath (3.402739ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses a file as scratchPath (3.402739ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:"
+    ]
+  },
+  {
+    "mutation": "credential-file",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses directory native credentials (3.59367ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses directory native credentials (3.59367ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "credential-mode",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses public native credentials (3.44033ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses public native credentials (3.44033ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "credential-size",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses oversized native credentials (4.507644ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses oversized native credentials (4.507644ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "readonly-credential",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 mounts only the private credential file and fresh runtime (11.267546ms)",
+      "\u2716 failing tests:",
+      "\u2716 mounts only the private credential file and fresh runtime (11.267546ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "private-runtime",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 mounts only the private credential file and fresh runtime (13.858675ms)",
+      "\u2716 failing tests:",
+      "\u2716 mounts only the private credential file and fresh runtime (13.858675ms)",
+      "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:"
+    ]
+  },
+  {
+    "mutation": "pure-mode",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 mounts only the private credential file and fresh runtime (17.191152ms)",
+      "\u2716 failing tests:",
+      "\u2716 mounts only the private credential file and fresh runtime (17.191152ms)",
+      "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:"
+    ]
+  },
+  {
+    "mutation": "default-plugins",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 mounts only the private credential file and fresh runtime (15.201429ms)",
+      "\u2716 failing tests:",
+      "\u2716 mounts only the private credential file and fresh runtime (15.201429ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "external-skills",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 mounts only the private credential file and fresh runtime (11.419784ms)",
+      "\u2716 failing tests:",
+      "\u2716 mounts only the private credential file and fresh runtime (11.419784ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "claude-context",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 mounts only the private credential file and fresh runtime (11.337259ms)",
+      "\u2716 failing tests:",
+      "\u2716 mounts only the private credential file and fresh runtime (11.337259ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "project-config",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 mounts only the private credential file and fresh runtime (11.541454ms)",
+      "\u2716 failing tests:",
+      "\u2716 mounts only the private credential file and fresh runtime (11.541454ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "model-fetch",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 mounts only the private credential file and fresh runtime (12.577218ms)",
+      "\u2716 failing tests:",
+      "\u2716 mounts only the private credential file and fresh runtime (12.577218ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "allowed-provider",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 mounts only the private credential file and fresh runtime (11.647183ms)",
+      "\u2716 failing tests:",
+      "\u2716 mounts only the private credential file and fresh runtime (11.647183ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:"
+    ]
+  },
+  {
+    "mutation": "native-tools",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 mounts only the private credential file and fresh runtime (15.707933ms)",
+      "\u2716 failing tests:",
+      "\u2716 mounts only the private credential file and fresh runtime (15.707933ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:"
+    ]
+  },
+  {
+    "mutation": "relay-binding",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 mounts only the private credential file and fresh runtime (11.918404ms)",
+      "\u2716 failing tests:",
+      "\u2716 mounts only the private credential file and fresh runtime (11.918404ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "auxiliary-model",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 mounts only the private credential file and fresh runtime (15.70583ms)",
+      "\u2716 failing tests:",
+      "\u2716 mounts only the private credential file and fresh runtime (15.70583ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "automatic-sharing",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 mounts only the private credential file and fresh runtime (11.879822ms)",
+      "\u2716 failing tests:",
+      "\u2716 mounts only the private credential file and fresh runtime (11.879822ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "native-updater",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 mounts only the private credential file and fresh runtime (12.23969ms)",
+      "\u2716 failing tests:",
+      "\u2716 mounts only the private credential file and fresh runtime (12.23969ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "runtime-reuse",
+    "exitCode": 1,
+    "expected": 1,
+    "failures": [
+      "\u2716 refuses a preexisting runtime even before its task directory exists (3.051988ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses a preexisting runtime even before its task directory exists (3.051988ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  }
+]
