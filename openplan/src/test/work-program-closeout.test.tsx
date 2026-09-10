@@ -8,7 +8,7 @@ import { CloseoutPanel } from "@/components/programs/work-program/closeout-panel
 function example(): CloseoutData {
   const { report, actual, draft } = packetFixture();
   const sourceReport = structuredClone(report); delete sourceReport.snapshot.reimbursement;
-  const source: CloseoutSource = { report: sourceReport, actuals: [actual], successors: [], reimbursement: { claims: [{ id: report.snapshot.reimbursement!.claimId, version: 2, state: "reviewed", current_report_id: report.id, draft }], reports: [report], events: [] } };
+  const source: CloseoutSource = { report: sourceReport, actuals: [{ ...actual, currency: "USD" }, ...["USD", "EUR"].map(currency => ({ ...actual, id: randomUUID(), entry_id: randomUUID(), currency, source_key: `synthetic-${currency}-receipt`, kind: "payment" as const, amount: "7.00", hours: null, detail: { ...actual.detail, kind: "payment" as const, amount: "7.00", hours: null } }))], successors: [], reimbursement: { claims: [{ id: report.snapshot.reimbursement!.claimId, version: 2, state: "reviewed", current_report_id: report.id, draft }], reports: [report], events: [] } };
   return { source, sourceHash: "a".repeat(64), records: [] };
 }
 afterEach(() => { vi.unstubAllGlobals(); localStorage.clear(); });
@@ -45,7 +45,7 @@ describe("saved closeout evidence and recovery", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save reconciliation draft" }));
     await screen.findByText("Synthetic interrupted response");
     expect(screen.getByRole("button", { name: "Save reconciliation draft" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Record reconciliation approval" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Save reconciliation approval" })).toBeDisabled();
     view.unmount();
     render(<CloseoutPanel programId={programId} userId={userId} reports={[data.source.report]}/>);
     await waitFor(() => expect(screen.getByRole("button", { name: "Retry reconciliation save" })).not.toBeDisabled());
@@ -62,12 +62,15 @@ describe("saved closeout evidence and recovery", () => {
     fireEvent.change(screen.getByLabelText("Reconciliation source report"), { target: { value: data.source.report.id } });
     await screen.findByRole("button", { name: "Save reconciliation version 1 JSON" });
     fireEvent.change(screen.getByLabelText("Reconciliation approval or reopening evidence"), { target: { value: "Synthetic authority" } });
-    expect(screen.getByRole("button", { name: "Record reconciliation approval" })).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: "Save reconciliation approval" })).not.toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Match receipt to claim 1" }));
+    expect(screen.getByRole("option", { name: /synthetic-USD-receipt/ })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: /synthetic-EUR-receipt/ })).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Register completeness and reconciliation evidence"), { target: { value: "Unsaved edits" } });
-    expect(screen.getByRole("button", { name: "Record reconciliation approval" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Save reconciliation approval" })).toBeDisabled();
     fireEvent.click(screen.getByRole("button", { name: "Reload reconciliation" }));
     await screen.findByText("Synthetic history unavailable");
     expect(screen.queryByRole("button", { name: "Save reconciliation version 1 JSON" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Record reconciliation approval" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Save reconciliation approval" })).not.toBeInTheDocument();
   });
 });

@@ -29,7 +29,7 @@ BEGIN
  source:=jsonb_build_object('report',to_jsonb(r),'reimbursement',jsonb_build_object('claims',claims,
   'reports',coalesce((SELECT jsonb_agg(to_jsonb(packet) ORDER BY packet.id) FROM public.work_program_period_reports packet WHERE packet.program_id=p_program_id AND packet.snapshot ? 'reimbursement' AND packet.snapshot->'baseline'->>'id'=r.snapshot->'baseline'->>'id'),'[]'),
   'events',coalesce((SELECT jsonb_agg(to_jsonb(e) ORDER BY e.claim_id,e.sequence) FROM public.work_program_reimbursement_events e WHERE e.claim_id IN (SELECT (c->>'id')::uuid FROM jsonb_array_elements(claims)c)),'[]')),
-  'actuals',coalesce((SELECT jsonb_agg(to_jsonb(a)||jsonb_build_object('amount',a.amount::text,'hours',a.hours::text) ORDER BY a.entry_id) FROM public.work_program_actual_versions a WHERE a.program_id=p_program_id AND NOT EXISTS(SELECT 1 FROM public.work_program_actual_versions newer WHERE newer.entry_id=a.entry_id AND newer.version>a.version)),'[]'),
+  'actuals',coalesce((SELECT jsonb_agg(to_jsonb(a)||jsonb_build_object('amount',a.amount::text,'hours',a.hours::text,'currency',(SELECT b.content_json->>'currency' FROM public.program_work_program_revisions b WHERE b.id=a.revision_id)) ORDER BY a.entry_id) FROM public.work_program_actual_versions a WHERE a.program_id=p_program_id AND NOT EXISTS(SELECT 1 FROM public.work_program_actual_versions newer WHERE newer.entry_id=a.entry_id AND newer.version>a.version)),'[]'),
   'successors',coalesce((SELECT jsonb_agg(to_jsonb(b)||jsonb_build_object('title',p.title,'authorityEvidence',(SELECT jsonb_agg(to_jsonb(e) ORDER BY e.sequence) FROM public.program_work_program_events e WHERE e.revision_id=b.id)) ORDER BY b.id) FROM public.program_work_program_revisions b JOIN public.programs p ON p.id=b.program_id
    WHERE b.workspace_id=w AND b.program_id<>p_program_id AND b.content_json->>'currency'=r.snapshot->'baseline'->'content_json'->>'currency'
    AND b.content_json->>'periodStart'>r.snapshot->'baseline'->'content_json'->>'periodStart'
@@ -85,7 +85,7 @@ BEGIN
    IF jsonb_typeof(row->'receipts') IS DISTINCT FROM 'array' THEN RAISE EXCEPTION 'List the matched receipts' USING ERRCODE='22023'; END IF;
    FOR receipt IN SELECT * FROM jsonb_array_elements(row->'receipts') LOOP
     SELECT a INTO actual FROM jsonb_array_elements(source->'actuals')a WHERE a->>'id'=receipt->>'actualVersionId' AND a->>'kind'='payment' AND a->>'status'='approved';
-    IF actual IS NULL OR actual->>'amount' IS NULL OR coalesce(receipt->>'amount','') !~ '^[0-9]{1,12}(\.[0-9]{1,2})?$' OR (receipt->>'amount')::numeric<=0 THEN RAISE EXCEPTION 'Match a positive amount to a current approved payment' USING ERRCODE='22023'; END IF;
+    IF actual IS NULL OR actual->>'currency' IS DISTINCT FROM baseline->'content_json'->>'currency' OR actual->>'amount' IS NULL OR coalesce(receipt->>'amount','') !~ '^[0-9]{1,12}(\.[0-9]{1,2})?$' OR (receipt->>'amount')::numeric<=0 THEN RAISE EXCEPTION 'Match a positive amount to a current approved payment' USING ERRCODE='22023'; END IF;
     SELECT sum((r->>'amount')::numeric) INTO total FROM jsonb_array_elements(assessment->'claims')c CROSS JOIN LATERAL jsonb_array_elements(c->'receipts')r WHERE r->>'actualVersionId'=receipt->>'actualVersionId';
     IF total>(actual->>'amount')::numeric THEN RAISE EXCEPTION 'Receipt allocations exceed the physical payment' USING ERRCODE='22023'; END IF;
    END LOOP;

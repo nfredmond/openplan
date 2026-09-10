@@ -52,7 +52,7 @@ export function CloseoutPanel({ programId, userId, reports }: { programId: strin
   const workChange = (index: number, change: Partial<CloseoutAssessment["work"][number]>) => setAssessment(current => current && ({ ...current, work: current.work.map((row, i) => i === index ? { ...row, ...change } : row) }));
   return <section id="closeout-reconciliation" className="min-w-0 space-y-4 rounded-xl border p-4">
     <h2 className="text-xl font-semibold">Saved closeout reconciliation</h2>
-    <p className="text-sm">Reconcile receipts, commitments and refunds, then record approval evidence for unfinished work carried into an adopted successor cycle. These records do not close a period or post costs. Missing amounts remain unknown.</p>
+    <p className="text-sm">Reconcile receipts, commitments and refunds, then retain approval evidence for unfinished work carried into an adopted successor cycle. This review does not close a period or post costs. Missing amounts remain unknown.</p>
     <fieldset disabled={busy || !!pending} className="min-w-0"><SelectField label="Reconciliation source report" value={reportId} onChange={setReportId}><option value="">Select an issued management report</option>{reports.map(report => <option key={report.id} value={report.id}>{report.snapshot.period.name} · version {report.version}</option>)}</SelectField></fieldset>
     <Button className={buttonClass} variant="outline" disabled={busy || !reportId} onClick={() => { setBusy(true); void load(reportId).catch(error => setMessage(error.message)).finally(() => setBusy(false)); }}>Reload reconciliation</Button>
     {message && <p role="status" className="break-words rounded-lg border p-3">{message}</p>}
@@ -74,7 +74,7 @@ export function CloseoutPanel({ programId, userId, reports }: { programId: strin
               <h4 className="font-semibold break-words">{claim.draft.title} · {claim.state}</h4>
               <p>Requested less matched receipts: {balance ?? "Unknown"}. A negative balance identifies overpayment; refunds are assessed separately.</p>
               {row.receipts.map((receipt, receiptIndex) => <div key={receiptIndex} className="space-y-2">
-                <SelectField label={`Claim ${index + 1} receipt ${receiptIndex + 1}`} value={receipt.actualVersionId} onChange={actualVersionId => claimChange(index, { receipts: row.receipts.map((r, i) => i === receiptIndex ? { ...r, actualVersionId } : r) })}><option value="">Select an approved payment</option>{data.source.actuals.filter(a => a.kind === "payment" && a.status === "approved").map(a => <option key={a.id} value={a.id}>{a.entry_date} · {a.source_key} · {a.amount ?? "Unvalued"}</option>)}</SelectField>
+                <SelectField label={`Claim ${index + 1} receipt ${receiptIndex + 1}`} value={receipt.actualVersionId} onChange={actualVersionId => claimChange(index, { receipts: row.receipts.map((r, i) => i === receiptIndex ? { ...r, actualVersionId } : r) })}><option value="">Select an approved payment</option>{data.source.actuals.filter(a => a.kind === "payment" && a.status === "approved" && a.currency === data.source.report.snapshot.baseline.content_json.currency).map(a => <option key={a.id} value={a.id}>{a.entry_date} · {a.source_key} · {a.amount ?? "Unvalued"}</option>)}</SelectField>
                 <Field label={`Claim ${index + 1} receipt ${receiptIndex + 1} amount`} value={receipt.amount} onChange={amount => claimChange(index, { receipts: row.receipts.map((r, i) => i === receiptIndex ? { ...r, amount } : r) })}/>
                 <Button type="button" className={buttonClass} variant="outline" onClick={() => claimChange(index, { receipts: row.receipts.filter((_, i) => i !== receiptIndex) })}>Remove receipt {receiptIndex + 1} from claim {index + 1}</Button>
               </div>)}
@@ -91,7 +91,7 @@ export function CloseoutPanel({ programId, userId, reports }: { programId: strin
             <Field label={`Commitment ${index + 1} discharge and remaining obligation evidence`} multiline value={row.evidence} onChange={evidence => setAssessment({ ...assessment, commitments: assessment.commitments.map((c, i) => i === index ? { ...c, evidence } : c) })}/>
           </article>)}
           <h3 className="font-semibold">Completion and next-cycle carryover</h3>
-          <p>Amounts record reviewed carryover authority, not a calculation of available cash. Create and adopt the successor cycle through Programming Cycles first. Fund periods, conditions and external approval must be checked in the evidence.</p>
+          <p>Amounts describe reviewed carryover authority, not a calculation of available cash. Create and adopt the successor cycle through Programming Cycles first. Fund periods, conditions and external approval must be checked in the evidence.</p>
           {assessment.work.map((row, index) => {
             const target = data.source.successors.find(b => b.id === row.successorRevisionId);
             return <article key={row.elementId} className="min-w-0 space-y-3 rounded-lg border p-3">
@@ -111,7 +111,7 @@ export function CloseoutPanel({ programId, userId, reports }: { programId: strin
         </fieldset>
       </form>
       <Field label="Reconciliation approval or reopening evidence" multiline value={note} onChange={setNote}/>
-      <Button className={buttonClass} variant="outline" disabled={busy || !!pending || !note.trim() || (!approved && (!latest || dirty || latest.source_hash !== data.sourceHash))} onClick={() => send({ ...base(), kind: approved ? "reopen" : "approve", note })}>{approved ? "Reopen approved reconciliation" : "Record reconciliation approval"}</Button>
+      <Button className={buttonClass} variant="outline" disabled={busy || !!pending || !note.trim() || (!approved && (!latest || dirty || latest.source_hash !== data.sourceHash))} onClick={() => send({ ...base(), kind: approved ? "reopen" : "approve", note })}>{approved ? "Reopen approved reconciliation" : "Save reconciliation approval"}</Button>
       <h3 className="font-semibold">Retained reconciliation history</h3>
       {data.records.map(record => <article key={record.id} className="space-y-2 rounded-lg border p-3 text-sm">
         <p>Version {record.version} · {record.state} · {record.created_at}</p><p className="break-words">{record.content.note}</p>

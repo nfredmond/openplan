@@ -108,6 +108,7 @@ const GUIDED_FLOW_IMPORT = "@/components/ui/guided-flow";
  * which is the whole difference between this and a convention.
  */
 const NOT_A_GUIDED_FLOW: Record<string, string> = {
+  "src/components/programs/work-program/closeout-panel.tsx": "R3 — reconciliation edits receipts, commitments and successor funding beside their retained source records; it is revisited through an existing program route, not a bounded create.",
   "src/components/programs/work-program/reimbursement-panel.tsx": "R3 — period reimbursement review joins tabular source eligibility, funding shares and retained correction history in one revisitable workspace.",
   "src/components/programs/work-program/actual-entry.tsx": "R3 — ongoing ledger editing with source mapping, import preview and traceable corrections.",
   "src/components/programs/work-program/period-reporting.tsx": "R3 — reporting period workspace revisited for progress, review and corrected issues.",

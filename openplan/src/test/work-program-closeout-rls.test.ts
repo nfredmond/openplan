@@ -81,11 +81,28 @@ live("OWP saved reconciliation and carryover custody", () => {
  BEGIN PERFORM public.work_program_closeout_command(p,o,close_command||jsonb_build_object('assessment',jsonb_set(assessment,'{claims,0,receipts}',(assessment->'claims'->0->'receipts')||(assessment->'claims'->0->'receipts')))); RAISE EXCEPTION 'Duplicated receipt accepted'; EXCEPTION WHEN invalid_parameter_value THEN IF SQLERRM NOT LIKE 'Receipt allocations exceed%' THEN RAISE; END IF; END;
  BEGIN PERFORM public.work_program_closeout_command(p,o,close_command||jsonb_build_object('assessment',jsonb_set(assessment,'{claims,0,receipts,0,actualVersionId}',to_jsonb(gen_random_uuid())))); RAISE EXCEPTION 'Foreign receipt accepted'; EXCEPTION WHEN invalid_parameter_value THEN IF SQLERRM NOT LIKE 'Match a positive%' THEN RAISE; END IF; END;
  `));
- it("refuses foreign successors, unknown funding, wrong currency and duplicate funding totals", () => marker(`
+ it("refuses foreign successors, unknown funding and excess funding totals", () => marker(`
  BEGIN PERFORM public.work_program_closeout_command(p,o,close_command||jsonb_build_object('assessment',jsonb_set(assessment,'{work,0,successorRevisionId}',to_jsonb(gen_random_uuid())))); RAISE EXCEPTION 'Foreign successor accepted'; EXCEPTION WHEN invalid_parameter_value THEN IF SQLERRM NOT LIKE 'Carryover requires an adopted%' THEN RAISE; END IF; END;
  BEGIN PERFORM public.work_program_closeout_command(p,o,close_command||jsonb_build_object('assessment',jsonb_set(assessment,'{work,0,sourceFundId}',to_jsonb(gen_random_uuid())))); RAISE EXCEPTION 'Unknown fund accepted'; EXCEPTION WHEN invalid_parameter_value THEN IF SQLERRM NOT LIKE 'Carryover source fund%' THEN RAISE; END IF; END;
  BEGIN PERFORM public.work_program_closeout_command(p,o,close_command||jsonb_build_object('assessment',jsonb_set(assessment,'{work,0,amount}','"31.00"'))); RAISE EXCEPTION 'Successor over-allocation accepted'; EXCEPTION WHEN invalid_parameter_value THEN IF SQLERRM NOT LIKE 'Carryover exceeds the successor%' THEN RAISE; END IF; END;
  BEGIN PERFORM public.work_program_closeout_command(p,o,close_command||jsonb_build_object('assessment',jsonb_set(assessment,'{work,0,amount}','"101.00"'))); RAISE EXCEPTION 'Source over-allocation accepted'; EXCEPTION WHEN invalid_parameter_value THEN IF SQLERRM NOT LIKE 'Carryover exceeds the source%' THEN RAISE; END IF; END;
+ `));
+ for (const [name, change] of [["different currency", '{"currency":"EUR"}'], ["earlier cycle", '{"periodStart":"2026-01-01"}']] as const) it(`excludes a successor with ${name}`, () => marker(`
+ SELECT * INTO next_revision FROM public.save_program_work_program_revision(next_program,o,1,gen_random_uuid(),next_revision.content_json||'${change}');
+ INSERT INTO public.program_work_program_events(program_id,workspace_id,sequence,revision_id,revision_hash,kind,actor_id,payload,evidence,request_id) VALUES(next_program,w,2,next_revision.id,next_revision.content_sha256,'adoption',o,'{}','[]',gen_random_uuid());
+ close_data:=public.read_work_program_closeout(p,o,report_id);
+ IF EXISTS(SELECT 1 FROM jsonb_array_elements(close_data->'source'->'successors')b WHERE b->>'id'=next_revision.id::text) THEN RAISE EXCEPTION 'Invalid successor offered'; END IF;
+ close_command:=close_command||jsonb_build_object('sourceHash',close_data->>'sourceHash','assessment',jsonb_set(assessment,'{work,0,successorRevisionId}',to_jsonb(next_revision.id)));
+ BEGIN PERFORM public.work_program_closeout_command(p,o,close_command); RAISE EXCEPTION 'Invalid successor accepted'; EXCEPTION WHEN invalid_parameter_value THEN IF SQLERRM NOT LIKE 'Carryover requires an adopted%' THEN RAISE; END IF; END;
+ `));
+ it("refuses a payment valued under a different baseline currency", () => marker(`
+ SELECT * INTO next_revision FROM public.save_program_work_program_revision(p,o,1,gen_random_uuid(),r.content_json||'{"currency":"EUR"}');
+ SELECT detail INTO original FROM public.work_program_actual_versions WHERE entry_id=payment;
+ PERFORM public.record_work_program_actual(p,o,original||jsonb_build_object('requestId',gen_random_uuid(),'expectedVersion',1,'revisionId',next_revision.id,'correctionNote','Synthetic changed currency baseline'));
+ close_data:=public.read_work_program_closeout(p,o,report_id);
+ assessment:=jsonb_set(assessment,'{claims,0,receipts,0,actualVersionId}',to_jsonb((SELECT id FROM public.work_program_actual_versions WHERE entry_id=payment ORDER BY version DESC LIMIT 1)));
+ close_command:=close_command||jsonb_build_object('sourceHash',close_data->>'sourceHash','assessment',assessment);
+ BEGIN PERFORM public.work_program_closeout_command(p,o,close_command); RAISE EXCEPTION 'Foreign currency payment matched'; EXCEPTION WHEN invalid_parameter_value THEN IF SQLERRM NOT LIKE 'Match a positive%' THEN RAISE; END IF; END;
  `));
  it("requires evidence and current retained costs before approval", () => marker(`${save}
  BEGIN PERFORM public.work_program_closeout_command(p,o,close_command-'assessment'||jsonb_build_object('kind','approve','requestId',gen_random_uuid(),'expectedVersion',1,'note','')); RAISE EXCEPTION 'Empty approval accepted'; EXCEPTION WHEN invalid_parameter_value THEN IF SQLERRM NOT LIKE 'Record the approval%' THEN RAISE; END IF; END;

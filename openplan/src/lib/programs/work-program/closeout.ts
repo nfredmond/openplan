@@ -20,7 +20,7 @@ export const closeoutCommandSchema = z.discriminatedUnion("kind", [
 ]);
 export type CloseoutCommand = z.infer<typeof closeoutCommandSchema>;
 export type SuccessorBaseline = { id: string; program_id: string; revision: number; content_sha256: string; content_json: WorkProgramDraft; title: string };
-export type CloseoutSource = { report: PeriodReport; reimbursement: CloseoutHistory; actuals: ActualVersion[]; successors: SuccessorBaseline[] };
+export type CloseoutSource = { report: PeriodReport; reimbursement: CloseoutHistory; actuals: (ActualVersion & { currency: string | null })[]; successors: SuccessorBaseline[] };
 export type CloseoutRecord = { id: string; version: number; state: "draft" | "approved" | "reopened"; report_id: string; source_hash: string; content_hash: string; content: { source: CloseoutSource; assessment: CloseoutAssessment; note: string }; actor_id: string; created_at: string };
 export type CloseoutData = { source: CloseoutSource; sourceHash: string; records: CloseoutRecord[] };
 

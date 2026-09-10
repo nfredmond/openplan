@@ -115,6 +115,7 @@ describe("OWP closeout review boundaries", () => {
       render(<ReportingPanel programId={randomUUID()} workspaceId={randomUUID()} userId={randomUUID()}/>);
       await screen.findByText(/Save a preparation revision below/);
       expect(screen.queryByRole("link", { name: "Closeout review" }) !== null).toBe(canManage);
+      expect(screen.queryByRole("link", { name: "Saved reconciliation" }) !== null).toBe(canManage);
     } finally { vi.unstubAllGlobals(); }
   });
 

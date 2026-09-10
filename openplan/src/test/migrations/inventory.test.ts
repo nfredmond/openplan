@@ -469,16 +469,17 @@ const EXPECTED = {
   // Calculation jobs add one scoped metadata SELECT policy and one RLS table.
   // Source visibility receipts add one service-only RLS table and no policies.
   // Confirmed on the disposable stack: contract_source_observations has RLS and zero policies.
-  policies: 746,
-  permissive: 495,
+  // 20261004000001: one private SELECT-only closeout history table; live catalog confirms +1.
+  policies: 747,
+  permissive: 496,
   restrictive: 251,
   permissiveWrites: 280,
   expanded: 286,
-  tablesWithPolicies: 212,
-  relations: 245,
-  tables: 232,
+  tablesWithPolicies: 213,
+  relations: 246,
+  tables: 233,
   views: 13,
-  rlsEnabledTables: 232,
+  rlsEnabledTables: 233,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
