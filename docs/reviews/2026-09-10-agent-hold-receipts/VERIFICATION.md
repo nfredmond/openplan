@@ -141,3 +141,46 @@ runner was interrupted, and its stack stopped with backup. Its replacement is
 openplan-restore-target-2026091050 at the same API29821/DB29822, matching the existing
 explicit disposable-stack rule. No guard was relaxed. The full live suite is
 running there. The browser still uses the separately retained22301stack.
+
+
+## v0.50.0 release preparation
+
+At02a82286, the corrected production build was identified on3281. Real navigation
+through sign-in, Projects, Planner Agent approval and Planner Agent Activity passed
+at1440px and390px. Only the model's proposal stream was deterministic and explicitly
+synthetic; context, approval, decision, receipt and authentication routes were real.
+Context responses were delayed without changing their contents to exercise the
+input-loss fix. No paid model was called.
+
+For each viewport, an HTTP response was interrupted after the transaction returned
+201. The recovery link, refresh and page reload showed the same original decision
+and receipt without another POST. A separate request was interrupted before it
+reached the server; after navigation/reload, keyboard resume reused its original
+approval and wrote exactly one HOLD. A repeated authenticated POST returned200 and
+the same decision, with no extra audit or decision row. Anonymous recovery GET
+returned401. Only the two deliberately interrupted network errors appeared in each
+console; there were no page errors or unexpected HTTP failures. Document width
+matched each viewport, and recovery content stayed within its panel. Screenshots
+were inspected. A harness retry corrected an early click before a SPA project
+transition settled; it did not require a product change.
+
+The final clean disposable stack is openplan-restore-target-2026091050, API29821,
+DB29822. All338 live tests in42files passed. Full QA/build and shuffled tests at
+e02ad733 passed13,571 tests in1,239files; the subsequent narrow chat fix passed22
+focused tests, scoped lint and its production build. All52 worker suites passed.
+Final release metadata and main CI/upgrade results remain separate pending checks.
+
+Eight retained approval/audit rows from the v0.49.4 browser evidence were compared
+against the actually upgraded22301database. Every previously captured field matched;
+new context/receipt fields remained null. The source evidence file's checksum is
+retained. A harmless unused probe note survived and altering a returned hash copy
+failed the historical-record comparison. No database evidence was changed by that
+comparison. It covers those recorded fields, not every historical row or an
+independent restore. Final CI also rehearses a populated previous-release upgrade.
+
+This increment makes approved HOLD recovery durable. It does not make other action
+kinds transactional, authenticate an external agent, add assignments or provider
+adapters, establish field usefulness, generate prescribed forms or change separate
+scientific evidence tiers. Human review is not a merge or release gate. No reminder
+constraint, paid service or demo installation was changed. Final main CI and tag
+are pending at this release-preparation checkpoint.

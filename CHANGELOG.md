@@ -20,6 +20,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+No changes yet.
+
+## 0.50.0 — 2026-09-10
+
 Approved Planner Agent HOLD decisions now retain their exact request and a durable
 result receipt. Planner Agent Activity can check the original result after an
 interrupted response or explicitly resume unchanged, unexpired consent. The HOLD,
@@ -31,7 +35,12 @@ It adds retained context and result columns plus service-only transaction/read
 functions; historical audit rows remain unchanged. Older approvals without the
 exact request cannot be resumed through the recovery screen.
 
-Engineering acceptance is in progress. No external agent identity, delegated
+[Engineering verification](docs/reviews/2026-09-10-agent-hold-receipts/VERIFICATION.md)
+includes desktop/390px keyboard recovery, concurrent requests, database connection
+loss, retained pre-upgrade consent and isolated RLS. Questions typed while context
+is loading also remain intact. Final main CI is checked before tagging.
+
+No external agent identity, delegated
 assignment, provider adapter, prescribed agency form or scientific validation is
 claimed by this increment.
 

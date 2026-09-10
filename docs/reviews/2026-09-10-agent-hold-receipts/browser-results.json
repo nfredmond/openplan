@@ -1,0 +1,420 @@
+[
+  {
+    "width": 1440,
+    "health": {
+      "commit": "02a82286dbbf",
+      "version": "0.49.4"
+    },
+    "saved": {
+      "approvalId": "f9ea4f41-eb0f-4641-bacc-332a7b58e622",
+      "approval": {
+        "id": "f9ea4f41-eb0f-4641-bacc-332a7b58e622",
+        "input_hash": "880cabbb477665842cabb0d699c852ea67ca68f4274f5d9f4810206f810a6f2b",
+        "consumed_at": "2026-09-10T10:57:41.224206+00:00",
+        "execution_context": {
+          "action": {
+            "kind": "record_stage_gate_hold",
+            "gateId": "programming-eligibility",
+            "projectId": "daea1aad-c1ea-4a74-94da-89e512ea86fe",
+            "rationale": "SYNTHETIC after-response recovery 1440 1789037859023",
+            "workspaceId": "e5d07b22-4ee6-41dc-828f-0dbfc93383f1",
+            "missingArtifacts": [
+              "stip-tip-listing"
+            ]
+          },
+          "binding": {
+            "gateId": "programming-eligibility",
+            "gateName": "Programmed and eligible",
+            "templateId": "us_federal_aid_stage_gates_v0_1",
+            "gateSequence": 1,
+            "templateVersion": "0.1.0",
+            "templateSelection": "interim_unconfigured_default"
+          },
+          "version": 1,
+          "workspace": {
+            "id": "e5d07b22-4ee6-41dc-828f-0dbfc93383f1",
+            "home_country_code": null,
+            "home_geography_ref": null,
+            "home_geography_kind": null,
+            "home_geography_source": null,
+            "home_subdivision_code": null,
+            "stage_gate_template_id": "us_federal_aid_stage_gates_v0_1",
+            "stage_gate_template_selection": "interim_unconfigured_default"
+          },
+          "priorDecisionId": "a7b758cd-878a-409a-a74e-5d74b2219132"
+        },
+        "user_id": "f5a71ef2-4dfa-44f6-860d-61fb24b3dcb6"
+      },
+      "decisions": [
+        {
+          "id": "54102155-4087-4a0f-a2a5-47273813af79",
+          "rationale": "SYNTHETIC after-response recovery 1440 1789037859023",
+          "decision": "HOLD"
+        }
+      ],
+      "executions": [
+        {
+          "id": "04cc253a-0156-46c9-b88a-b061d9000d30",
+          "result_receipt": {
+            "decision": {
+              "id": "54102155-4087-4a0f-a2a5-47273813af79",
+              "run_id": null,
+              "gate_id": "programming-eligibility",
+              "decision": "HOLD",
+              "metadata": {
+                "source": "api.stage_gates.decisions",
+                "gateName": "Programmed and eligible",
+                "authorship": {
+                  "agentId": "openplan.planner_agent",
+                  "actorKind": "planner_agent",
+                  "inputHash": "880cabbb477665842cabb0d699c852ea67ca68f4274f5d9f4810206f810a6f2b",
+                  "approvalId": "f9ea4f41-eb0f-4641-bacc-332a7b58e622",
+                  "approvedAt": "2026-09-10T10:57:41.111781+00:00",
+                  "approvedByUserId": "f5a71ef2-4dfa-44f6-860d-61fb24b3dcb6"
+                },
+                "gateSequence": 1,
+                "templateVersion": "0.1.0",
+                "templateSelection": "interim_unconfigured_default"
+              },
+              "rationale": "SYNTHETIC after-response recovery 1440 1789037859023",
+              "decided_at": "2026-09-10T10:57:41.217736+00:00",
+              "decided_by": "f5a71ef2-4dfa-44f6-860d-61fb24b3dcb6",
+              "project_id": "daea1aad-c1ea-4a74-94da-89e512ea86fe",
+              "template_id": "us_federal_aid_stage_gates_v0_1",
+              "model_run_id": null,
+              "workspace_id": "e5d07b22-4ee6-41dc-828f-0dbfc93383f1",
+              "county_run_id": null,
+              "missing_artifacts": [
+                "stip-tip-listing"
+              ]
+            },
+            "schemaVersion": 1
+          },
+          "approval_id": "f9ea4f41-eb0f-4641-bacc-332a7b58e622",
+          "input_hash": "880cabbb477665842cabb0d699c852ea67ca68f4274f5d9f4810206f810a6f2b"
+        }
+      ]
+    },
+    "resumed": {
+      "approvalId": "08f1811a-f860-4048-bf78-4db32bc0da74",
+      "approval": {
+        "id": "08f1811a-f860-4048-bf78-4db32bc0da74",
+        "input_hash": "6c0b1fa3d5d0f4c1a03310482af9494502627286275bd3ed8e7b82ff07baffc6",
+        "consumed_at": "2026-09-10T10:57:46.756067+00:00",
+        "execution_context": {
+          "action": {
+            "kind": "record_stage_gate_hold",
+            "gateId": "programming-eligibility",
+            "projectId": "daea1aad-c1ea-4a74-94da-89e512ea86fe",
+            "rationale": "SYNTHETIC before-response recovery 1440 1789037863462",
+            "workspaceId": "e5d07b22-4ee6-41dc-828f-0dbfc93383f1",
+            "missingArtifacts": [
+              "stip-tip-listing"
+            ]
+          },
+          "binding": {
+            "gateId": "programming-eligibility",
+            "gateName": "Programmed and eligible",
+            "templateId": "us_federal_aid_stage_gates_v0_1",
+            "gateSequence": 1,
+            "templateVersion": "0.1.0",
+            "templateSelection": "interim_unconfigured_default"
+          },
+          "version": 1,
+          "workspace": {
+            "id": "e5d07b22-4ee6-41dc-828f-0dbfc93383f1",
+            "home_country_code": null,
+            "home_geography_ref": null,
+            "home_geography_kind": null,
+            "home_geography_source": null,
+            "home_subdivision_code": null,
+            "stage_gate_template_id": "us_federal_aid_stage_gates_v0_1",
+            "stage_gate_template_selection": "interim_unconfigured_default"
+          },
+          "priorDecisionId": "54102155-4087-4a0f-a2a5-47273813af79"
+        },
+        "user_id": "f5a71ef2-4dfa-44f6-860d-61fb24b3dcb6"
+      },
+      "decisions": [
+        {
+          "id": "ba38738b-b1f3-4937-a73a-e181203bbdc7",
+          "rationale": "SYNTHETIC before-response recovery 1440 1789037863462",
+          "decision": "HOLD"
+        }
+      ],
+      "executions": [
+        {
+          "id": "0512b31c-4ce4-4d8c-ae63-14779089ba92",
+          "result_receipt": {
+            "decision": {
+              "id": "ba38738b-b1f3-4937-a73a-e181203bbdc7",
+              "run_id": null,
+              "gate_id": "programming-eligibility",
+              "decision": "HOLD",
+              "metadata": {
+                "source": "api.stage_gates.decisions",
+                "gateName": "Programmed and eligible",
+                "authorship": {
+                  "agentId": "openplan.planner_agent",
+                  "actorKind": "planner_agent",
+                  "inputHash": "6c0b1fa3d5d0f4c1a03310482af9494502627286275bd3ed8e7b82ff07baffc6",
+                  "approvalId": "08f1811a-f860-4048-bf78-4db32bc0da74",
+                  "approvedAt": "2026-09-10T10:57:45.118753+00:00",
+                  "approvedByUserId": "f5a71ef2-4dfa-44f6-860d-61fb24b3dcb6"
+                },
+                "gateSequence": 1,
+                "templateVersion": "0.1.0",
+                "templateSelection": "interim_unconfigured_default"
+              },
+              "rationale": "SYNTHETIC before-response recovery 1440 1789037863462",
+              "decided_at": "2026-09-10T10:57:46.753704+00:00",
+              "decided_by": "f5a71ef2-4dfa-44f6-860d-61fb24b3dcb6",
+              "project_id": "daea1aad-c1ea-4a74-94da-89e512ea86fe",
+              "template_id": "us_federal_aid_stage_gates_v0_1",
+              "model_run_id": null,
+              "workspace_id": "e5d07b22-4ee6-41dc-828f-0dbfc93383f1",
+              "county_run_id": null,
+              "missing_artifacts": [
+                "stip-tip-listing"
+              ]
+            },
+            "schemaVersion": 1
+          },
+          "approval_id": "08f1811a-f860-4048-bf78-4db32bc0da74",
+          "input_hash": "6c0b1fa3d5d0f4c1a03310482af9494502627286275bd3ed8e7b82ff07baffc6"
+        }
+      ]
+    },
+    "postCount": 3,
+    "replay": 200,
+    "anonymous": 401,
+    "geometry": {
+      "viewport": 1440,
+      "scroll": 1440,
+      "left": 305,
+      "right": 1391,
+      "width": 1084,
+      "content": 1084
+    },
+    "errors": [
+      {
+        "type": "console",
+        "text": "Failed to load resource: net::ERR_CONNECTION_FAILED"
+      },
+      {
+        "type": "console",
+        "text": "Failed to load resource: net::ERR_CONNECTION_FAILED"
+      }
+    ],
+    "responses": []
+  },
+  {
+    "width": 390,
+    "health": {
+      "commit": "02a82286dbbf",
+      "version": "0.49.4"
+    },
+    "saved": {
+      "approvalId": "4c11952d-08a4-465e-be4d-1e911120b097",
+      "approval": {
+        "id": "4c11952d-08a4-465e-be4d-1e911120b097",
+        "input_hash": "419a46e20b192ea15b99f44eca0de10f2dcb68c50efa48e377399053db14b46a",
+        "consumed_at": "2026-09-10T10:57:50.435573+00:00",
+        "execution_context": {
+          "action": {
+            "kind": "record_stage_gate_hold",
+            "gateId": "programming-eligibility",
+            "projectId": "c8b59371-a3a0-4df3-b633-581f7555e4b7",
+            "rationale": "SYNTHETIC after-response recovery 390 1789037868574",
+            "workspaceId": "e5d07b22-4ee6-41dc-828f-0dbfc93383f1",
+            "missingArtifacts": [
+              "stip-tip-listing"
+            ]
+          },
+          "binding": {
+            "gateId": "programming-eligibility",
+            "gateName": "Programmed and eligible",
+            "templateId": "us_federal_aid_stage_gates_v0_1",
+            "gateSequence": 1,
+            "templateVersion": "0.1.0",
+            "templateSelection": "interim_unconfigured_default"
+          },
+          "version": 1,
+          "workspace": {
+            "id": "e5d07b22-4ee6-41dc-828f-0dbfc93383f1",
+            "home_country_code": null,
+            "home_geography_ref": null,
+            "home_geography_kind": null,
+            "home_geography_source": null,
+            "home_subdivision_code": null,
+            "stage_gate_template_id": "us_federal_aid_stage_gates_v0_1",
+            "stage_gate_template_selection": "interim_unconfigured_default"
+          },
+          "priorDecisionId": "9e49b04d-45f5-4358-ba95-b9ce375835b1"
+        },
+        "user_id": "f5a71ef2-4dfa-44f6-860d-61fb24b3dcb6"
+      },
+      "decisions": [
+        {
+          "id": "d6382efa-e0dd-46e2-99c7-7dd8bb2bd6c2",
+          "rationale": "SYNTHETIC after-response recovery 390 1789037868574",
+          "decision": "HOLD"
+        }
+      ],
+      "executions": [
+        {
+          "id": "83fce4fe-ec9f-462b-9f3a-1265ab4701a1",
+          "result_receipt": {
+            "decision": {
+              "id": "d6382efa-e0dd-46e2-99c7-7dd8bb2bd6c2",
+              "run_id": null,
+              "gate_id": "programming-eligibility",
+              "decision": "HOLD",
+              "metadata": {
+                "source": "api.stage_gates.decisions",
+                "gateName": "Programmed and eligible",
+                "authorship": {
+                  "agentId": "openplan.planner_agent",
+                  "actorKind": "planner_agent",
+                  "inputHash": "419a46e20b192ea15b99f44eca0de10f2dcb68c50efa48e377399053db14b46a",
+                  "approvalId": "4c11952d-08a4-465e-be4d-1e911120b097",
+                  "approvedAt": "2026-09-10T10:57:50.332172+00:00",
+                  "approvedByUserId": "f5a71ef2-4dfa-44f6-860d-61fb24b3dcb6"
+                },
+                "gateSequence": 1,
+                "templateVersion": "0.1.0",
+                "templateSelection": "interim_unconfigured_default"
+              },
+              "rationale": "SYNTHETIC after-response recovery 390 1789037868574",
+              "decided_at": "2026-09-10T10:57:50.430688+00:00",
+              "decided_by": "f5a71ef2-4dfa-44f6-860d-61fb24b3dcb6",
+              "project_id": "c8b59371-a3a0-4df3-b633-581f7555e4b7",
+              "template_id": "us_federal_aid_stage_gates_v0_1",
+              "model_run_id": null,
+              "workspace_id": "e5d07b22-4ee6-41dc-828f-0dbfc93383f1",
+              "county_run_id": null,
+              "missing_artifacts": [
+                "stip-tip-listing"
+              ]
+            },
+            "schemaVersion": 1
+          },
+          "approval_id": "4c11952d-08a4-465e-be4d-1e911120b097",
+          "input_hash": "419a46e20b192ea15b99f44eca0de10f2dcb68c50efa48e377399053db14b46a"
+        }
+      ]
+    },
+    "resumed": {
+      "approvalId": "9824bb18-4157-48ae-8dae-3eabfb6981ed",
+      "approval": {
+        "id": "9824bb18-4157-48ae-8dae-3eabfb6981ed",
+        "input_hash": "c8dcfbc89a471be0d98d47c811ea1b5d2a2f40f7b71d6a2535e116c59634b868",
+        "consumed_at": "2026-09-10T10:57:55.478977+00:00",
+        "execution_context": {
+          "action": {
+            "kind": "record_stage_gate_hold",
+            "gateId": "programming-eligibility",
+            "projectId": "c8b59371-a3a0-4df3-b633-581f7555e4b7",
+            "rationale": "SYNTHETIC before-response recovery 390 1789037872290",
+            "workspaceId": "e5d07b22-4ee6-41dc-828f-0dbfc93383f1",
+            "missingArtifacts": [
+              "stip-tip-listing"
+            ]
+          },
+          "binding": {
+            "gateId": "programming-eligibility",
+            "gateName": "Programmed and eligible",
+            "templateId": "us_federal_aid_stage_gates_v0_1",
+            "gateSequence": 1,
+            "templateVersion": "0.1.0",
+            "templateSelection": "interim_unconfigured_default"
+          },
+          "version": 1,
+          "workspace": {
+            "id": "e5d07b22-4ee6-41dc-828f-0dbfc93383f1",
+            "home_country_code": null,
+            "home_geography_ref": null,
+            "home_geography_kind": null,
+            "home_geography_source": null,
+            "home_subdivision_code": null,
+            "stage_gate_template_id": "us_federal_aid_stage_gates_v0_1",
+            "stage_gate_template_selection": "interim_unconfigured_default"
+          },
+          "priorDecisionId": "d6382efa-e0dd-46e2-99c7-7dd8bb2bd6c2"
+        },
+        "user_id": "f5a71ef2-4dfa-44f6-860d-61fb24b3dcb6"
+      },
+      "decisions": [
+        {
+          "id": "24086c6f-dd16-4e29-af8c-3647e3d1d679",
+          "rationale": "SYNTHETIC before-response recovery 390 1789037872290",
+          "decision": "HOLD"
+        }
+      ],
+      "executions": [
+        {
+          "id": "2bc0b516-6cda-4287-a80c-e8f023bb6843",
+          "result_receipt": {
+            "decision": {
+              "id": "24086c6f-dd16-4e29-af8c-3647e3d1d679",
+              "run_id": null,
+              "gate_id": "programming-eligibility",
+              "decision": "HOLD",
+              "metadata": {
+                "source": "api.stage_gates.decisions",
+                "gateName": "Programmed and eligible",
+                "authorship": {
+                  "agentId": "openplan.planner_agent",
+                  "actorKind": "planner_agent",
+                  "inputHash": "c8dcfbc89a471be0d98d47c811ea1b5d2a2f40f7b71d6a2535e116c59634b868",
+                  "approvalId": "9824bb18-4157-48ae-8dae-3eabfb6981ed",
+                  "approvedAt": "2026-09-10T10:57:54.050718+00:00",
+                  "approvedByUserId": "f5a71ef2-4dfa-44f6-860d-61fb24b3dcb6"
+                },
+                "gateSequence": 1,
+                "templateVersion": "0.1.0",
+                "templateSelection": "interim_unconfigured_default"
+              },
+              "rationale": "SYNTHETIC before-response recovery 390 1789037872290",
+              "decided_at": "2026-09-10T10:57:55.474458+00:00",
+              "decided_by": "f5a71ef2-4dfa-44f6-860d-61fb24b3dcb6",
+              "project_id": "c8b59371-a3a0-4df3-b633-581f7555e4b7",
+              "template_id": "us_federal_aid_stage_gates_v0_1",
+              "model_run_id": null,
+              "workspace_id": "e5d07b22-4ee6-41dc-828f-0dbfc93383f1",
+              "county_run_id": null,
+              "missing_artifacts": [
+                "stip-tip-listing"
+              ]
+            },
+            "schemaVersion": 1
+          },
+          "approval_id": "9824bb18-4157-48ae-8dae-3eabfb6981ed",
+          "input_hash": "c8dcfbc89a471be0d98d47c811ea1b5d2a2f40f7b71d6a2535e116c59634b868"
+        }
+      ]
+    },
+    "postCount": 3,
+    "replay": 200,
+    "anonymous": 401,
+    "geometry": {
+      "viewport": 390,
+      "scroll": 390,
+      "left": 49,
+      "right": 341,
+      "width": 290,
+      "content": 290
+    },
+    "errors": [
+      {
+        "type": "console",
+        "text": "Failed to load resource: net::ERR_CONNECTION_FAILED"
+      },
+      {
+        "type": "console",
+        "text": "Failed to load resource: net::ERR_CONNECTION_FAILED"
+      }
+    ],
+    "responses": []
+  }
+]

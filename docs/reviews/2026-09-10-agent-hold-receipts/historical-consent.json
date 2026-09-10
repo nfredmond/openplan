@@ -1,0 +1,123 @@
+{
+  "sourceSha256": "36440107d73e8fb6e04d0795a5cf8188f069bebd858659e1a4c6d6bd3235d8e8",
+  "sourceRelease": "v0.49.4",
+  "database": "openplan-restore-target-3390964",
+  "results": [
+    {
+      "table": "assistant_action_approvals",
+      "id": "fba7ee69-85cc-424a-8c1f-c596e6f6e789",
+      "comparedFields": [
+        "id",
+        "input_hash",
+        "consumed_at",
+        "created_at",
+        "user_id"
+      ],
+      "addedColumn": "execution_context",
+      "addedValue": null
+    },
+    {
+      "table": "assistant_action_executions",
+      "id": "9c33660b-be09-4178-81ae-5580c064059a",
+      "comparedFields": [
+        "id",
+        "approval_id",
+        "input_hash",
+        "approved_by_user_id",
+        "approved_at",
+        "actor_kind",
+        "outcome",
+        "input_summary"
+      ],
+      "addedColumn": "result_receipt",
+      "addedValue": null
+    },
+    {
+      "table": "assistant_action_approvals",
+      "id": "f1a145ca-6483-4f10-b62a-7513e5a85ec8",
+      "comparedFields": [
+        "id",
+        "input_hash",
+        "consumed_at",
+        "created_at",
+        "user_id"
+      ],
+      "addedColumn": "execution_context",
+      "addedValue": null
+    },
+    {
+      "table": "assistant_action_executions",
+      "id": "786b94d7-a92b-4ba9-b5a7-413d3cdec2de",
+      "comparedFields": [
+        "id",
+        "approval_id",
+        "input_hash",
+        "approved_by_user_id",
+        "approved_at",
+        "actor_kind",
+        "outcome",
+        "input_summary"
+      ],
+      "addedColumn": "result_receipt",
+      "addedValue": null
+    },
+    {
+      "table": "assistant_action_approvals",
+      "id": "03181ded-783c-4a4a-9bd2-3ce2e96c7e2d",
+      "comparedFields": [
+        "id",
+        "input_hash",
+        "consumed_at",
+        "created_at",
+        "user_id"
+      ],
+      "addedColumn": "execution_context",
+      "addedValue": null
+    },
+    {
+      "table": "assistant_action_executions",
+      "id": "8bfd0952-fe61-4f3e-9e46-9670816dd94e",
+      "comparedFields": [
+        "id",
+        "approval_id",
+        "input_hash",
+        "approved_by_user_id",
+        "approved_at",
+        "actor_kind",
+        "outcome",
+        "input_summary"
+      ],
+      "addedColumn": "result_receipt",
+      "addedValue": null
+    },
+    {
+      "table": "assistant_action_approvals",
+      "id": "51382e50-5b69-4a7d-ad26-e2e57c8868e3",
+      "comparedFields": [
+        "id",
+        "input_hash",
+        "consumed_at",
+        "created_at",
+        "user_id"
+      ],
+      "addedColumn": "execution_context",
+      "addedValue": null
+    },
+    {
+      "table": "assistant_action_executions",
+      "id": "17b59955-9f1c-441a-ba04-0a577c071237",
+      "comparedFields": [
+        "id",
+        "approval_id",
+        "input_hash",
+        "approved_by_user_id",
+        "approved_at",
+        "actor_kind",
+        "outcome",
+        "input_summary"
+      ],
+      "addedColumn": "result_receipt",
+      "addedValue": null
+    }
+  ]
+}

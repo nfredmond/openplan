@@ -1,0 +1,10 @@
+[
+  {
+    "name": "harmless",
+    "result": "survived"
+  },
+  {
+    "name": "wrong-migration-count",
+    "result": "failed"
+  }
+]
