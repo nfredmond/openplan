@@ -9,7 +9,8 @@ import { runProviderApiTurn } from "@/lib/assistant/provider-api-turn";
 export const maxDuration = 60;
 const base = providerScopeSchema.extend({ requestId: z.string().uuid(), question: z.string().trim().min(1).max(2000), model: z.string().trim().min(1).max(160) });
 const createSchema = z.discriminatedUnion("provider", [
-  base.extend({ provider: z.literal("codex"), connectionId: z.string().uuid(), authMode: z.enum(["chatgpt", "apiKey"]) }).strict(),
+  base.extend({ provider: z.literal("codex"), connectionId: z.string().uuid(), authMode: z.enum(["chatgpt", "apiKey"]), acceptApiCharges: z.literal(true).optional() }).strict()
+    .refine(body => body.authMode !== "apiKey" || body.acceptApiCharges === true, { message: "Native API billing requires explicit charge acknowledgement." }),
   base.extend({ provider: z.literal("anthropic"), connectionId: z.null(), authMode: z.enum(["workspace_api_key", "deployment_api_key"]), acceptApiCharges: z.literal(true) }).strict(),
 ]);
 const cancelSchema = z.object({ turnId: z.string().uuid() }).strict();

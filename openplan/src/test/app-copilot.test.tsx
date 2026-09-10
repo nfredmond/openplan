@@ -3,9 +3,10 @@ import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { AssistantPreview, AssistantQuickLink, AssistantResponse } from "@/lib/assistant/catalog";
+const navigation = vi.hoisted(() => ({ pathname: "/" }));
 
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/",
+  usePathname: () => navigation.pathname,
   useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }),
   useSearchParams: () => new URLSearchParams(),
 }));
@@ -94,6 +95,8 @@ describe("AppCopilot", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    navigation.pathname = "/";
+    Element.prototype.scrollIntoView = vi.fn();
     window.localStorage.clear();
     window.sessionStorage.clear();
     vi.stubGlobal("ResizeObserver", ResizeObserverStub);
@@ -527,6 +530,41 @@ describe("AppCopilot", () => {
     expect(headers["x-openplan-assistant-approval-id"]).toBe("approval-1");
     expect(headers["x-openplan-assistant-input-hash"]).toBe("hash-1");
     expect(headers["x-openplan-assistant-execution-source"]).toBe("planner_agent_quick_link");
+  });
+
+  it("hands a retained provider draft to the same explicit approval and receipt path only once in this conversation", async () => {
+    const projectId = "33333333-3333-4333-8333-333333333333", turnId = "44444444-4444-4444-8444-444444444444";
+    navigation.pathname = `/projects/${projectId}`;
+    const payload = { kind: "create_project_record", recordType: "submittal", projectId, title: "Synthetic provider draft", submittalType: "other", notes: "Original retained provider notes." };
+    const originalFetch = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation((input, init) => {
+      const url = String(input);
+      if (url.startsWith("/api/assistant/providers/connections")) return jsonResponse({ connections: [] });
+      if (url.startsWith("/api/assistant/providers/turns")) return jsonResponse({ turns: [{ id: turnId, request_id: turnId, workspace_id: WORKSPACE_ID, project_id: projectId,
+        provider: "codex", model_id: "fixture-model", auth_mode: "chatgpt", question: "Draft a submittal", packet_hash: "a".repeat(64), state: "succeeded", failure_code: null, created_at: "2026-09-10T00:00:00Z",
+        result: { answer: "Synthetic retained answer.", citations: [{ id: `project:${projectId}`, href: `/projects/${projectId}`, label: "Synthetic project" }],
+          proposal: { status: "proposed", kind: "create_project_record", approval: "approval_required", description: "Create a draft submittal.", payload } } }] });
+      if (url === `/api/projects/${projectId}/records`) return jsonResponse({ record: { id: "synthetic-record" } }, 201);
+      return originalFetch(input, init);
+    });
+    await openPanel();
+    fireEvent.click(screen.getByRole("button", { name: "Project task · choose provider" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Review draft submittal in conversation" }));
+    expect(fetchMock.mock.calls.filter(call => (call[1] as RequestInit | undefined)?.method === "POST")).toHaveLength(0);
+    fireEvent.click(screen.getByRole("button", { name: "Project task · choose provider" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Review draft submittal in conversation" }));
+    expect(screen.getAllByRole("button", { name: "Approve & run" })).toHaveLength(1);
+    fireEvent.click(screen.getByRole("button", { name: "Approve & run" }));
+    const sheet = within(await screen.findByRole("dialog", { name: "Approve Planner Agent action" }));
+    expect(sheet.getByText("Original retained provider notes.")).toBeInTheDocument();
+    expect(fetchMock.mock.calls.filter(call => (call[1] as RequestInit | undefined)?.method === "POST")).toHaveLength(0);
+    fireEvent.click(sheet.getByRole("button", { name: "Approve action" }));
+    await screen.findByText(/Approved and executed/);
+    const approvalCall = fetchMock.mock.calls.find(call => String(call[0]) === "/api/assistant/actions/approvals")!;
+    expect(JSON.parse(String((approvalCall[1] as RequestInit).body)).action).toEqual(payload);
+    const writes = fetchMock.mock.calls.filter(call => String(call[0]) === `/api/projects/${projectId}/records`);
+    expect(writes).toHaveLength(1);
+    expect((writes[0][1] as RequestInit).headers).toMatchObject({ "x-openplan-assistant-approval-id": "approval-1", "x-openplan-assistant-input-hash": "hash-1" });
   });
 
   it("directs an interrupted approved HOLD to its retained result without claiming rollback", async () => {

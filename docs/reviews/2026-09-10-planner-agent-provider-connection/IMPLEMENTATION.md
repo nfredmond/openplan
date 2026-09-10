@@ -193,3 +193,41 @@ Journal write-order and OS-lock tests do not simulate physical power loss. The
 browser selector, proposal handoff and desktop/390px journeys are still unfinished.
 The CLI setup path is tested with synthetic downloaded credentials. No release or
 complete A0a/A1a capability claim is made at this checkpoint.
+
+## Browser candidate checkpoint
+
+The existing project Planner Agent now contains provider/model/account controls,
+connection setup/revocation, saved requests and cancellation. The small project task
+is distinct from the existing broader chat. Native API-key turns require the same
+explicit per-request charge acknowledgement as direct API turns; the server checks
+it too. An interrupted POST retries its frozen question/model/request identity.
+Recovery uses an exact request-id query rather than relying on the latest 20 rows.
+Confirmed writes retain their success wording if only the following history refresh
+fails. Saved draft proposals enter the existing conversation approval sheet and
+registry; polling and recovery execute no business action. Reopening the same
+provider draft does not duplicate its card within that conversation.
+
+The 16 panel tests and 24 existing/new copilot tests exercise those user controls;
+route tests now include native API billing acknowledgement. The appended UI mutation
+receipt covers project/source boundaries, API consent, identical retries, IME
+handling, duplicate proposal cards and an injected business write before approval.
+These are DOM tests, not layout or real-browser acceptance.
+
+Actual installed-native tests now additionally force the skills namespace's read
+operation with two credential-file resource formats. Both return `skill package is
+not available`; a fully qualified alternate function name returns unsupported-call.
+The model-input corpus contains neither the native credential canary nor private
+project/home/skill markers. The first expected-error pattern omitted the runtime's
+actual unavailable-package wording and failed; inspected the returned refusals and
+corrected that pattern without changing the native launcher. No real provider call
+or credential is used by these tests.
+
+Chrome 152.0.7977.82 launches through the existing root QA harness. This worktree
+has no separate harness node_modules, so the first local import failed; reused the
+installed root harness dependency without installing another browser. The named
+browser fixture stack `openplan-restore-target-3390964` at
+`/tmp/openplan-restore-drill.yBEWX9/openplan-restore-target-3390964` now also has the
+additive provider migration (314 total). No reset or demo database change occurred.
+Next: freeze this candidate, identify the served build, exercise desktop and 390px
+navigation, downloads, provider delivery, cancellation, retries and proposal approval;
+then run full QA/shuffle, isolated RLS/concurrency and applicable upgrade checks.

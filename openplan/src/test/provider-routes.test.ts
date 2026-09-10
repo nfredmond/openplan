@@ -180,6 +180,13 @@ describe("saved browser provider requests", () => {
     const response = await turns.POST(browserRequest("turns", { ...createBody(), provider: "anthropic", connectionId: null, authMode: "workspace_api_key" }));
     expect(mocks.rpc).not.toHaveBeenCalled(); expect(mocks.api).not.toHaveBeenCalled(); expect(response.status).toBe(400);
   });
+  it("also requires charge acknowledgement for a native API-key account", async () => {
+    const response = await turns.POST(browserRequest("turns", { ...createBody(), authMode: "apiKey" }));
+    expect(mocks.rpc).not.toHaveBeenCalled(); expect(response.status).toBe(400);
+    mocks.rpc.mockResolvedValue({ data: { created: true, turn: turn({ auth_mode: "apiKey", state: "queued", attempt_id: null }) }, error: null });
+    const accepted = await turns.POST(browserRequest("turns", { ...createBody(), authMode: "apiKey", acceptApiCharges: true }));
+    expect(accepted.status).toBe(201); expect(mocks.api).not.toHaveBeenCalled();
+  });
   it("refuses a mismatched recovered request", async () => {
     mocks.rpc.mockResolvedValue({ data: { created: false, turn: turn({ question: "Different request" }) }, error: null });
     expect((await turns.POST(browserRequest("turns", createBody()))).status).toBe(409);

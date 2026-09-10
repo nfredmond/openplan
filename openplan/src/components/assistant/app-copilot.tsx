@@ -42,6 +42,7 @@ import {
 } from "@/lib/assistant/chat-stream";
 import type { AssistantChatProposal } from "@/lib/assistant/chat-tools";
 import type { AnalysisCostThresholdWarning } from "@/lib/ai/cost-threshold";
+import { ProjectProviderPanel, type ProviderProposalReview } from "./project-provider-panel";
 
 type AppCopilotProps = {
   workspaceId: string | null;
@@ -2125,6 +2126,15 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
   const summaryLabel = preview?.title ?? workspaceName;
 
+  function reviewProviderProposal(review: ProviderProposalReview) {
+    const entryId = `provider-${review.id}`;
+    setMessages(current => current.some(entry => entry.id === entryId) ? current : [...current, {
+      id: entryId, role: "assistant", type: "chat", text: review.answer, status: "complete", question: review.question,
+      toolEvents: [], proposals: [{ id: `${entryId}-proposal`, proposal: review.proposal, state: "pending" }],
+    }]);
+    setTimeout(() => document.getElementById(entryId)?.scrollIntoView({ block: "nearest" }), 0);
+  }
+
   return (
     <>
       {/*
@@ -2186,6 +2196,9 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
             <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 grid-rows-[minmax(0,1fr)_auto]">
               <div role="region" aria-label="Planner Agent conversation" tabIndex={0} className="min-h-0 min-w-0 overflow-y-auto px-5 py-4 sm:px-6">
                 <div className="space-y-4 pb-2">
+                  {target.kind === "project" && target.id && (target.workspaceId ?? workspaceId) ? (
+                    <ProjectProviderPanel key={`${target.workspaceId ?? workspaceId}:${target.id}`} workspaceId={(target.workspaceId ?? workspaceId)!} projectId={target.id} busy={responding} onReview={reviewProviderProposal} />
+                  ) : null}
                   {loadingContext ? (
                     <div className="flex items-center gap-2 rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-slate-300/82">
                       <Loader2 className="h-4 w-4 animate-spin text-emerald-300" />
@@ -2219,8 +2232,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                       className="rounded-[0.5rem] border border-amber-300/28 bg-amber-400/12 px-4 py-3 text-sm text-amber-100"
                     >
                       <p className="font-semibold">
-                        The Planner Agent can&apos;t chat yet because no AI key is set up for this
-                        workspace.
+                        {target.kind === "project" ? "The existing project chat needs a workspace AI key. The project provider task above can use an installed Codex connection." : "The Planner Agent can't chat yet because no AI key is set up for this workspace."}
                       </p>
                       <p className="mt-1">
                         <Link
@@ -2448,7 +2460,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
                     if (message.type === "chat") {
                       return (
-                        <div key={message.id} className="rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-4 py-4 shadow-[0_18px_34px_rgba(2,8,15,0.18)]">
+                        <div key={message.id} id={message.id} className="rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-4 py-4 shadow-[0_18px_34px_rgba(2,8,15,0.18)]">
                           <div className="mb-3 flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-300/72">
                             <Bot className="h-3.5 w-3.5 text-emerald-300" />
                             Planner Agent

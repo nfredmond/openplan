@@ -33,6 +33,9 @@ for (const expectedAuthMode of ["apiKey", "chatgpt"]) test(`native isolation and
     ["apply_patch", { patch: "*** Begin Patch\n*** Add File: /work/model-write\n+unauthorized\n*** End Patch" }],
     ["list_mcp_resources", {}],
     ["read_mcp_resource", { server: "canary", uri: "file:///provider/auth.json" }],
+    ["read", { package: "/provider", resource: "file:///provider/auth.json" }, "skills"],
+    ["read", { package: "/provider", resource: "skill:///provider/auth.json" }, "skills"],
+    ["skills.read", { package: "/provider", resource: "file:///provider/auth.json" }],
   ];
   const requests = [];
   let serverFailure;
@@ -44,7 +47,7 @@ for (const expectedAuthMode of ["apiKey", "chatgpt"]) test(`native isolation and
       const body = JSON.parse(raw); requests.push(body);
       const index = requests.length - 1;
       const item = index < forced.length
-        ? { type: "function_call", id: `fc_${index}`, call_id: `call_${index}`, name: forced[index][0], arguments: JSON.stringify(forced[index][1]) }
+        ? { type: "function_call", id: `fc_${index}`, call_id: `call_${index}`, name: forced[index][0], arguments: JSON.stringify(forced[index][1]), ...(forced[index][2] ? { namespace: forced[index][2] } : {}) }
         : { type: "message", id: "msg_final", role: "assistant", status: "completed", content: [{ type: "output_text", text: "SYNTHETIC project-only reply.", annotations: [] }] };
       const events = [
         { type: "response.created", response: { id: `resp_${index}`, object: "response", status: "in_progress", output: [] } },
@@ -77,14 +80,14 @@ for (const expectedAuthMode of ["apiKey", "chatgpt"]) test(`native isolation and
     assert.equal(result.items.at(-1).text, "SYNTHETIC project-only reply.");
     assert.equal(requests.length, forced.length + 1);
     const recorded = JSON.stringify(requests);
-    for (const marker of ["PRIVATE_HOME_CANARY", "PRIVATE_PROJECT_RULE_CANARY", "PRIVATE_SKILL_CANARY"]) assert.ok(!recorded.includes(marker), `Leaked ${marker}`);
+    for (const marker of ["PRIVATE_HOME_CANARY", "PRIVATE_PROJECT_RULE_CANARY", "PRIVATE_SKILL_CANARY", "SYNTHETIC_NO_PROVIDER_KEY"]) assert.ok(!recorded.includes(marker), `Leaked ${marker}`);
     const tools = requests[0].tools.map((tool) => tool.name ?? tool.type);
     for (const [name] of forced) assert.ok(!tools.includes(name), `Exposed forbidden ${name}`);
     const outputs = requests.at(-1).input.filter((item) => item.type === "function_call_output");
     for (const [index, [name]] of forced.entries()) {
       const output = outputs.find((item) => item.call_id === `call_${index}`);
       assert.ok(output, `Missing refusal for ${name}`);
-      assert.match(output.output, /unsupported call/, `Native runtime executed ${name}`);
+      assert.match(output.output, index < 6 ? /unsupported call/ : /unsupported call|skill package is not available/i, `Native runtime executed ${name}`);
     }
     await assert.rejects(access(join(work, "mcp-started")), { code: "ENOENT" });
     await assert.rejects(access(join(work, "model-write")), { code: "ENOENT" });
