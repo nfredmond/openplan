@@ -1,4 +1,12 @@
-# Approved HOLD recovery, backend checkpoint
+# Approved HOLD recovery — v0.50.0
+
+Released at `0df7a50a209c0e5e545cc86bfb0331e4ec18c2a9` on September10,2026.
+[Final CI receipts](final-ci.json) record successful full QA/shuffle/workers, RLS
+isolation and the populated upgrade from v0.49.4 on that exact commit. The published
+v0.50.0 tag resolves to it. The dated checkpoints below retain the implementation
+history; their unfinished statements describe those earlier checkpoints.
+
+## Initial backend checkpoint
 
 Worktree `~/.local/state/openplan/agent-hold-receipts-2026-09-10`, branch
 `work/agent-hold-receipts`, based on released v0.49.4 at 4d02130b. This is not a
