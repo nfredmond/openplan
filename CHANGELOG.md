@@ -22,6 +22,17 @@ stable enough to promise smooth upgrades indefinitely.
 
 No changes yet.
 
+## 0.49.2 — 2026-09-10
+
+Development candidate. [Verification](docs/reviews/2026-09-10-assistant-audit-outcomes/VERIFICATION.md)
+tracks the outstanding release checks. No new database migration.
+
+- Stop marking a rejected stage-gate decision as a successful Planner Agent
+  action. Missing decision responses no longer claim a saved decision.
+- Preserve an action's original result when its separate audit request throws.
+  Failed audit persistence remains an operator warning; this does not provide
+  durable execution receipts or automatic recovery of missing audit rows.
+
 ## 0.49.1 — 2026-09-10
 
 Development release. [Verification](docs/reviews/2026-09-10-planner-action-followup/VERIFICATION.md)
