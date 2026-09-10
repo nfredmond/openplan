@@ -1,0 +1,50 @@
+{
+  "nativeVersion": "1.18.30",
+  "network": "Commands executed with bwrap --unshare-net",
+  "syntheticOnly": true,
+  "credentialListCollisionConfirmed": true,
+  "unitTests": 38,
+  "rows": [
+    {
+      "name": "api",
+      "account": {
+        "status": "connected",
+        "authMode": "opencode_api",
+        "planType": null
+      },
+      "modelCount": 49
+    },
+    {
+      "name": "displayCollision",
+      "account": {
+        "status": "needs_login",
+        "authMode": null,
+        "planType": null
+      },
+      "modelCount": 49
+    },
+    {
+      "name": "oauth",
+      "account": {
+        "status": "unsupported_auth_mode",
+        "authMode": null,
+        "planType": null
+      },
+      "modelCount": 49
+    },
+    {
+      "name": "missing",
+      "account": {
+        "status": "needs_login",
+        "authMode": null,
+        "planType": null
+      },
+      "modelCount": 49
+    }
+  ],
+  "limits": [
+    "Pure credential projection only; private bounded reader and credential-to-native-process binding remain unimplemented",
+    "Native model list is available even without credentials; it does not establish remote account or model access",
+    "No real provider calls or browser integration"
+  ]
+}

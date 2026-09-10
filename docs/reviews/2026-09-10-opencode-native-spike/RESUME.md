@@ -65,10 +65,16 @@ or explicit backend binding; existing apiKey claim inference currently means Cod
    Run it with OPENPLAN_OPENCODE_NATIVE_BINARY pointing to the pinned binary:
    node --test workers/planner_agent_connector/test/opencode-native-filesystem.test.mjs.
    It uses only synthetic credentials, no model requests. Continue at step 2.
-2. Implement sanitized native auth/model parsing and bounded owned server lifecycle.
-   Let CLI read credentials. Never expose raw GET/provider: it contains keys.
-   Bind model selection to actual native models output. Native gpt-6 is absent;
-   gpt-6-astra exists in this installed catalog. Catalog is not account availability.
+2. The pure account projection and native model parser are implemented in
+   opencode-account.mjs with 38 tests and 19 targeted mutation failures plus a
+   harmless survivor. The native auth-list approach proved ambiguous: exact ID
+   openai and custom ID OpenAI print identical output; all four API/OAuth/missing/
+   display-collision cases return the same 49 model IDs. See account-checks.json.
+   Next implement the bounded private credential reader and bind the inspected
+   credential snapshot to the owned native process. Only the exact openai record
+   may establish opencode_api mode. Do not expose credentials, raw GET/provider
+   or account metadata. Native gpt-6 is absent; gpt-6-astra exists in this catalog.
+   Catalog presence is not account availability. Server lifecycle remains next.
 3. Native POST structured response and exact assistant-message GET work. General
    list-message GET rejects stored OutputFormat in this version. Use exact supplied
    parent message ID and assistant ID for the bounded verification; preserve this

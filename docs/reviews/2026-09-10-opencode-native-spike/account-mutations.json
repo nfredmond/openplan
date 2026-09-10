@@ -1,0 +1,226 @@
+[
+  {
+    "mutation": "harmless-comment",
+    "exitCode": 0,
+    "expectationMet": true,
+    "failures": []
+  },
+  {
+    "mutation": "root-shape",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses unreadable account: null root (1.288761ms)",
+      "\u2716 refuses unreadable account: array root (0.147789ms)",
+      "\u2716 refuses unreadable account: string root (0.091352ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unreadable account: null root (1.288761ms)",
+      "\u2716 refuses unreadable account: array root (0.147789ms)",
+      "\u2716 refuses unreadable account: string root (0.091352ms)"
+    ]
+  },
+  {
+    "mutation": "exact-provider",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 does not infer OpenAI credentials from other names or inherited properties: {\"OpenAI\":{\"type\":\"api\",\"key\":\"SYNTHETIC_SECRET\"}} (0.175912ms)",
+      "\u2716 failing tests:",
+      "\u2716 does not infer OpenAI credentials from other names or inherited properties: {\"OpenAI\":{\"type\":\"api\",\"key\":\"SYNTHETIC_SECRET\"}} (0.175912ms)"
+    ]
+  },
+  {
+    "mutation": "own-provider",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 does not infer OpenAI credentials from other names or inherited properties: {} (0.87422ms)",
+      "\u2716 failing tests:",
+      "\u2716 does not infer OpenAI credentials from other names or inherited properties: {} (0.87422ms)"
+    ]
+  },
+  {
+    "mutation": "account-shape",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses unreadable account: null account (0.956735ms)",
+      "\u2716 refuses unreadable account: array account (0.12204ms)",
+      "\u2716 refuses unreadable account: string account (0.082395ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unreadable account: null account (0.956735ms)",
+      "\u2716 refuses unreadable account: array account (0.12204ms)",
+      "\u2716 refuses unreadable account: string account (0.082395ms)"
+    ]
+  },
+  {
+    "mutation": "mode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses unsupported native mode oauth (0.892614ms)",
+      "\u2716 refuses unsupported native mode wellknown (0.211308ms)",
+      "\u2716 refuses unsupported native mode unknown (0.173046ms)",
+      "\u2716 refuses unsupported native mode undefined (0.19588ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unsupported native mode oauth (0.892614ms)",
+      "\u2716 refuses unsupported native mode wellknown (0.211308ms)",
+      "\u2716 refuses unsupported native mode unknown (0.173046ms)",
+      "\u2716 refuses unsupported native mode undefined (0.19588ms)"
+    ]
+  },
+  {
+    "mutation": "key-type",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses unreadable account: invalid key 0 (0.515864ms)",
+      "\u2716 refuses unreadable account: invalid key 1 (0.120136ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unreadable account: invalid key 0 (0.515864ms)",
+      "\u2716 refuses unreadable account: invalid key 1 (0.120136ms)"
+    ]
+  },
+  {
+    "mutation": "key-content",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses unreadable account: invalid key 2 (0.395016ms)",
+      "\u2716 refuses unreadable account: invalid key 3 (0.094248ms)",
+      "\u2716 refuses unreadable account: invalid key 4 (0.076945ms)",
+      "\u2716 refuses unreadable account: invalid key 5 (0.073429ms)",
+      "\u2716 refuses unreadable account: invalid key 6 (0.077907ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unreadable account: invalid key 2 (0.395016ms)",
+      "\u2716 refuses unreadable account: invalid key 3 (0.094248ms)",
+      "\u2716 refuses unreadable account: invalid key 4 (0.076945ms)",
+      "\u2716 refuses unreadable account: invalid key 5 (0.073429ms)",
+      "\u2716 refuses unreadable account: invalid key 6 (0.077907ms)"
+    ]
+  },
+  {
+    "mutation": "metadata-shape",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses unreadable account: invalid metadata 0 (0.830357ms)",
+      "\u2716 refuses unreadable account: invalid metadata 1 (0.122561ms)",
+      "\u2716 refuses unreadable account: invalid metadata 2 (0.083027ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unreadable account: invalid metadata 0 (0.830357ms)",
+      "\u2716 refuses unreadable account: invalid metadata 1 (0.122561ms)",
+      "\u2716 refuses unreadable account: invalid metadata 2 (0.083027ms)"
+    ]
+  },
+  {
+    "mutation": "metadata-values",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses unreadable account: invalid metadata 3 (0.403782ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unreadable account: invalid metadata 3 (0.403782ms)"
+    ]
+  },
+  {
+    "mutation": "secret-projection",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 projects exact native API mode without credentials or identifying metadata (1.989173ms)",
+      "\u2716 failing tests:",
+      "\u2716 projects exact native API mode without credentials or identifying metadata (1.989173ms)"
+    ]
+  },
+  {
+    "mutation": "backend-binding",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 projects exact native API mode without credentials or identifying metadata (2.409937ms)",
+      "\u2716 failing tests:",
+      "\u2716 projects exact native API mode without credentials or identifying metadata (2.409937ms)"
+    ]
+  },
+  {
+    "mutation": "catalog-type",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses malformed native catalog: nonstring (0.912442ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses malformed native catalog: nonstring (0.912442ms)"
+    ]
+  },
+  {
+    "mutation": "catalog-size",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses malformed native catalog: oversized output (1.107119ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses malformed native catalog: oversized output (1.107119ms)"
+    ]
+  },
+  {
+    "mutation": "catalog-count",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses malformed native catalog: too many models (0.843461ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses malformed native catalog: too many models (0.843461ms)"
+    ]
+  },
+  {
+    "mutation": "catalog-provider",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses malformed native catalog: wrong provider (0.382702ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses malformed native catalog: wrong provider (0.382702ms)"
+    ]
+  },
+  {
+    "mutation": "catalog-duplicates",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses malformed native catalog: duplicate (0.38131ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses malformed native catalog: duplicate (0.38131ms)"
+    ]
+  },
+  {
+    "mutation": "catalog-id-length",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses malformed native catalog: long model ID (0.402029ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses malformed native catalog: long model ID (0.402029ms)"
+    ]
+  },
+  {
+    "mutation": "catalog-default",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 preserves exact native model IDs and does not choose a default (1.010937ms)",
+      "\u2716 failing tests:",
+      "\u2716 preserves exact native model IDs and does not choose a default (1.010937ms)"
+    ]
+  },
+  {
+    "mutation": "catalog-id",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 preserves exact native model IDs and does not choose a default (1.134421ms)",
+      "\u2716 failing tests:",
+      "\u2716 preserves exact native model IDs and does not choose a default (1.134421ms)"
+    ]
+  }
+]

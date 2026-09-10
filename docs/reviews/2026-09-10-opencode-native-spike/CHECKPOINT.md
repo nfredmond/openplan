@@ -124,3 +124,32 @@ This physical test does not execute native generation; the separate production
 probe supplies the bounded synthetic native-generation evidence. No OpenCode
 user-facing support or release is claimed. Continue with sanitized account/model
 parsing and the owned server lifecycle in RESUME.md.
+
+## Native account ambiguity and parser checkpoint, September 10
+
+The earlier instruction to infer account mode from native `auth list` was
+insufficient. The pinned native CLI prints a model-database display name, falling
+back to the literal credential ID. Synthetic records under `openai` and `OpenAI`
+produced byte-identical successful credential-list output. Native `models openai`
+also returned the same 49 IDs for valid API, OAuth, display-collision and empty
+credential fixtures. Every command ran with `bwrap --unshare-net`, so this is an
+offline catalog, not proof of provider access. Primary source:
+[provider-list implementation](https://raw.githubusercontent.com/anomalyco/opencode/3104c1428ec91f809e5ab86631300de41eb6952e/packages/opencode/src/cli/cmd/providers.ts).
+
+`opencode-account.mjs` now projects only the exact own `openai` credential record
+to a nonidentifying mode/status. It returns no secret or metadata. API mode is
+`opencode_api`, distinct from Codex's API mode; unsupported modes remain explicit.
+The separate plain model parser preserves exact IDs and supplies no default or
+access claim. Its 38 tests pass. One harmless mutation survived and 19 targeted
+changes failed. The first catalog-size mutation survived because invalid text
+also triggered the syntax check. The corrected fixture contains valid unique
+model records below the count limit and above the byte limit. Both receipts remain.
+The restored complete connector suite passes 189 tests with four native skips.
+
+This is a pure projection, not an integrated connection check. A bounded private
+reader, binding the inspected credentials to the native process, server lifecycle,
+turn verification and app integration remain unfinished. Do not feed untrusted
+provider labels into this projection or treat a local configured status as proven
+remote access. The four native catalogs were parsed successfully against retained
+synthetic command output; no live account or model call was used. Private probe:
+`probe-account-identity.mjs` in the evidence directory recorded in RESUME.md.

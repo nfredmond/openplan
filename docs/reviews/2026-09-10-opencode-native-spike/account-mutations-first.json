@@ -1,0 +1,162 @@
+[
+  {
+    "mutation": "harmless-comment",
+    "exitCode": 0,
+    "expectationMet": true,
+    "failures": []
+  },
+  {
+    "mutation": "root-shape",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses unreadable account: null root (1.241602ms)",
+      "\u2716 refuses unreadable account: array root (0.176493ms)",
+      "\u2716 refuses unreadable account: string root (0.088507ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unreadable account: null root (1.241602ms)",
+      "\u2716 refuses unreadable account: array root (0.176493ms)",
+      "\u2716 refuses unreadable account: string root (0.088507ms)"
+    ]
+  },
+  {
+    "mutation": "exact-provider",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 does not infer OpenAI credentials from other names or inherited properties: {\"OpenAI\":{\"type\":\"api\",\"key\":\"SYNTHETIC_SECRET\"}} (0.179028ms)",
+      "\u2716 failing tests:",
+      "\u2716 does not infer OpenAI credentials from other names or inherited properties: {\"OpenAI\":{\"type\":\"api\",\"key\":\"SYNTHETIC_SECRET\"}} (0.179028ms)"
+    ]
+  },
+  {
+    "mutation": "own-provider",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 does not infer OpenAI credentials from other names or inherited properties: {} (0.856916ms)",
+      "\u2716 failing tests:",
+      "\u2716 does not infer OpenAI credentials from other names or inherited properties: {} (0.856916ms)"
+    ]
+  },
+  {
+    "mutation": "account-shape",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses unreadable account: null account (0.964529ms)",
+      "\u2716 refuses unreadable account: array account (0.120828ms)",
+      "\u2716 refuses unreadable account: string account (0.082546ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unreadable account: null account (0.964529ms)",
+      "\u2716 refuses unreadable account: array account (0.120828ms)",
+      "\u2716 refuses unreadable account: string account (0.082546ms)"
+    ]
+  },
+  {
+    "mutation": "mode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses unsupported native mode oauth (0.972294ms)",
+      "\u2716 refuses unsupported native mode wellknown (0.225385ms)",
+      "\u2716 refuses unsupported native mode unknown (0.934834ms)",
+      "\u2716 refuses unsupported native mode undefined (0.178757ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unsupported native mode oauth (0.972294ms)",
+      "\u2716 refuses unsupported native mode wellknown (0.225385ms)",
+      "\u2716 refuses unsupported native mode unknown (0.934834ms)",
+      "\u2716 refuses unsupported native mode undefined (0.178757ms)"
+    ]
+  },
+  {
+    "mutation": "key-type",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses unreadable account: invalid key 0 (0.446292ms)",
+      "\u2716 refuses unreadable account: invalid key 1 (0.097233ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unreadable account: invalid key 0 (0.446292ms)",
+      "\u2716 refuses unreadable account: invalid key 1 (0.097233ms)"
+    ]
+  },
+  {
+    "mutation": "key-content",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses unreadable account: invalid key 2 (0.414212ms)",
+      "\u2716 refuses unreadable account: invalid key 3 (0.094188ms)",
+      "\u2716 refuses unreadable account: invalid key 4 (0.080301ms)",
+      "\u2716 refuses unreadable account: invalid key 5 (0.073729ms)",
+      "\u2716 refuses unreadable account: invalid key 6 (0.07952ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unreadable account: invalid key 2 (0.414212ms)",
+      "\u2716 refuses unreadable account: invalid key 3 (0.094188ms)",
+      "\u2716 refuses unreadable account: invalid key 4 (0.080301ms)",
+      "\u2716 refuses unreadable account: invalid key 5 (0.073729ms)",
+      "\u2716 refuses unreadable account: invalid key 6 (0.07952ms)"
+    ]
+  },
+  {
+    "mutation": "metadata-shape",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses unreadable account: invalid metadata 0 (0.866004ms)",
+      "\u2716 refuses unreadable account: invalid metadata 1 (0.120106ms)",
+      "\u2716 refuses unreadable account: invalid metadata 2 (0.087686ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unreadable account: invalid metadata 0 (0.866004ms)",
+      "\u2716 refuses unreadable account: invalid metadata 1 (0.120106ms)",
+      "\u2716 refuses unreadable account: invalid metadata 2 (0.087686ms)"
+    ]
+  },
+  {
+    "mutation": "metadata-values",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses unreadable account: invalid metadata 3 (0.390978ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unreadable account: invalid metadata 3 (0.390978ms)"
+    ]
+  },
+  {
+    "mutation": "secret-projection",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 projects exact native API mode without credentials or identifying metadata (1.917969ms)",
+      "\u2716 failing tests:",
+      "\u2716 projects exact native API mode without credentials or identifying metadata (1.917969ms)"
+    ]
+  },
+  {
+    "mutation": "backend-binding",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 projects exact native API mode without credentials or identifying metadata (2.095914ms)",
+      "\u2716 failing tests:",
+      "\u2716 projects exact native API mode without credentials or identifying metadata (2.095914ms)"
+    ]
+  },
+  {
+    "mutation": "catalog-type",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses malformed native catalog: nonstring (0.962376ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses malformed native catalog: nonstring (0.962376ms)"
+    ]
+  },
+  {
+    "mutation": "catalog-size",
+    "exitCode": 0,
+    "expectationMet": false,
+    "failures": []
+  }
+]
