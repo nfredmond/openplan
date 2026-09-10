@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { randomUUID } from "node:crypto";
 import { packetFixture } from "./helpers/owp-reimbursement-fixture";
-import { closeoutClaimBalance, closeoutCommandSchema, initialCloseoutAssessment, type CloseoutData, type CloseoutSource } from "@/lib/programs/work-program/closeout";
+import { closeoutRefundBalance, closeoutClaimBalance, closeoutCommandSchema, initialCloseoutAssessment, type CloseoutData, type CloseoutSource } from "@/lib/programs/work-program/closeout";
 import { CloseoutPanel } from "@/components/programs/work-program/closeout-panel";
 
 function example(): CloseoutData {
@@ -24,6 +24,52 @@ describe("saved closeout evidence and recovery", () => {
     expect(closeoutClaimBalance(source, source.reimbursement.claims[0].id, assessment)).toBe("2.97");
     assessment.claims[0].receipts[0].amount = "11.00";
     expect(closeoutClaimBalance(source, source.reimbursement.claims[0].id, assessment)).toBe("-1.00");
+  });
+  it("refund matching preserves unknown, partial and excess disbursements separately from receipts", () => {
+    const { source } = example(), assessment = initialCloseoutAssessment(source), row = assessment.claims[0];
+    expect(closeoutRefundBalance(row)).toBeNull();
+    row.refundDue = "6.00"; expect(closeoutRefundBalance(row)).toBeNull();
+    row.evidence = "Synthetic outgoing payment reference";
+    expect(closeoutRefundBalance(row)).toBe("6.00");
+    row.refundPayments = [{ actualVersionId: randomUUID(), amount: "4.01" }];
+    expect(closeoutRefundBalance(row)).toBe("1.99");
+    expect(closeoutClaimBalance(source, row.claimId, assessment)).toBe("10.00");
+    row.refundPayments[0].amount = "7.00";
+    expect(closeoutRefundBalance(row)).toBe("-1.00");
+    row.refundDue = null; expect(closeoutRefundBalance(row)).toBeNull();
+  });
+  it("refund matching retains legacy retry payloads and validates exact amounts", () => {
+    const data = example(), command = { kind: "save", requestId: randomUUID(), reportId: data.source.report.id, expectedVersion: 0, sourceHash: data.sourceHash, assessment: initialCloseoutAssessment(data.source) };
+    expect(closeoutCommandSchema.parse(command)).toEqual(command);
+    command.assessment.claims[0].refundPayments = [{ actualVersionId: randomUUID(), amount: "0.001" }];
+    expect(closeoutCommandSchema.safeParse(command).success).toBe(false);
+    command.assessment.claims[0].refundPayments[0].amount = "4.01";
+    expect(closeoutCommandSchema.parse(command)).toEqual(command);
+  });
+  it("refund matching sends the selected payment and amount and can remove a match", async () => {
+    const data = example(), bodies: Record<string, unknown>[] = [];
+    vi.stubGlobal("fetch", vi.fn(async (_url: string, options?: RequestInit) => {
+      if (options?.method === "POST") { bodies.push(JSON.parse(String(options.body))); return Response.json({ version: 1 }); }
+      return Response.json(data);
+    }));
+    render(<CloseoutPanel programId={randomUUID()} userId={randomUUID()} reports={[data.source.report]}/>);
+    await act(async () => {});
+    fireEvent.change(screen.getByLabelText("Reconciliation source report"), { target: { value: data.source.report.id } });
+    await screen.findByRole("button", { name: "Match refund payment to claim 1" });
+    fireEvent.click(screen.getByRole("button", { name: "Match refund payment to claim 1" }));
+    expect(screen.queryByRole("option", { name: /synthetic-EUR-receipt/ })).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Claim 1 refund payment 1"), { target: { value: data.source.actuals[1].id } });
+    fireEvent.change(screen.getByLabelText("Claim 1 refund payment 1 amount"), { target: { value: "4.00" } });
+    fireEvent.change(screen.getByLabelText("Claim 1 refund due (blank means unknown)"), { target: { value: "6.00" } });
+    fireEvent.change(screen.getByLabelText("Claim 1 reconciliation evidence"), { target: { value: "Synthetic outgoing reference" } });
+    expect(screen.getByText(/Assessed refund less matched outbound payments: 2.00/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Save reconciliation draft" }));
+    await waitFor(() => expect(bodies).toHaveLength(1));
+    expect(bodies[0]).toMatchObject({ kind: "save", assessment: { claims: [{ refundPayments: [{ actualVersionId: data.source.actuals[1].id, amount: "4.00" }], refundDue: "6.00", evidence: "Synthetic outgoing reference" }] } });
+    await waitFor(() => expect(screen.getByRole("button", { name: "Match refund payment to claim 1" })).not.toBeDisabled());
+    fireEvent.click(screen.getByRole("button", { name: "Match refund payment to claim 1" }));
+    fireEvent.click(screen.getByRole("button", { name: "Remove refund payment 1 from claim 1" }));
+    expect(screen.queryByLabelText("Claim 1 refund payment 1")).not.toBeInTheDocument();
   });
   it("rejects malformed money and unapproved command fields", () => {
     const data = example(); const command = { kind: "save", requestId: randomUUID(), reportId: data.source.report.id, expectedVersion: 0, sourceHash: data.sourceHash, assessment: initialCloseoutAssessment(data.source) };

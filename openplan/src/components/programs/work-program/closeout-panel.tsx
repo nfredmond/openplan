@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { downloadText } from "@/lib/export/download";
-import { closeoutClaimBalance, closeoutCommandSchema, initialCloseoutAssessment, type CloseoutAssessment, type CloseoutCommand, type CloseoutData } from "@/lib/programs/work-program/closeout";
+import { closeoutRefundBalance, closeoutClaimBalance, closeoutCommandSchema, initialCloseoutAssessment, type CloseoutAssessment, type CloseoutCommand, type CloseoutData } from "@/lib/programs/work-program/closeout";
 import type { PeriodReport } from "@/lib/programs/work-program/reporting";
 import { Field, SelectField } from "./fields";
 
@@ -69,8 +69,8 @@ export function CloseoutPanel({ programId, userId, reports }: { programId: strin
           {!assessment.claims.length && <p>No claims in this baseline. Document whether the external claim register is complete above.</p>}
           {assessment.claims.map((row, index) => {
             const claim = data.source.reimbursement.claims.find(candidate => candidate.id === row.claimId)!;
-            let balance: string | null = null;
-            try { balance = closeoutClaimBalance(data.source, row.claimId, assessment); } catch { /* Incomplete amount input stays unknown. */ }
+            let balance: string | null = null, refundBalance: string | null = null;
+            try { balance = closeoutClaimBalance(data.source, row.claimId, assessment); refundBalance = closeoutRefundBalance(row); } catch { /* Incomplete amount input stays unknown. */ }
             return <article key={row.claimId} className="min-w-0 space-y-3 rounded-lg border p-3">
               <h4 className="font-semibold break-words">{claim.draft.title} · {claim.state}</h4>
               <p>Requested less matched receipts: {balance ?? "Unknown"}. A negative balance identifies overpayment; refunds are assessed separately.</p>
@@ -81,6 +81,14 @@ export function CloseoutPanel({ programId, userId, reports }: { programId: strin
               </div>)}
               <Button type="button" className={buttonClass} variant="outline" onClick={() => claimChange(index, { receipts: [...row.receipts, { actualVersionId: "", amount: "" }] })}>Match receipt to claim {index + 1}</Button>
               <Field label={`Claim ${index + 1} refund due (blank means unknown)`} value={row.refundDue ?? ""} onChange={refundDue => claimChange(index, { refundDue: refundDue || null })}/>
+              <p>Assessed refund less matched outbound payments: {refundBalance ?? "Unknown"}. A negative balance identifies excess refund payment.</p>
+              <p className="text-sm">Match an existing approved payment only after checking its outgoing bank or accounting reference. Explain the recipient, payment direction and reconciliation in the evidence below. Payment totals in management reports remain gross amounts, not net cash.</p>
+              {(row.refundPayments ?? []).map((payment, paymentIndex) => <div key={paymentIndex} className="space-y-2">
+                <SelectField label={`Claim ${index + 1} refund payment ${paymentIndex + 1}`} value={payment.actualVersionId} onChange={actualVersionId => claimChange(index, { refundPayments: (row.refundPayments ?? []).map((r, i) => i === paymentIndex ? { ...r, actualVersionId } : r) })}><option value="">Select an approved outgoing payment</option>{data.source.actuals.filter(a => a.kind === "payment" && a.status === "approved" && a.currency === data.source.report.snapshot.baseline.content_json.currency).map(a => <option key={a.id} value={a.id}>{a.entry_date} · {a.source_key} · {a.amount ?? "Unvalued"}</option>)}</SelectField>
+                <Field label={`Claim ${index + 1} refund payment ${paymentIndex + 1} amount`} value={payment.amount} onChange={amount => claimChange(index, { refundPayments: (row.refundPayments ?? []).map((r, i) => i === paymentIndex ? { ...r, amount } : r) })}/>
+                <Button type="button" className={buttonClass} variant="outline" onClick={() => claimChange(index, { refundPayments: (row.refundPayments ?? []).filter((_, i) => i !== paymentIndex) })}>Remove refund payment {paymentIndex + 1} from claim {index + 1}</Button>
+              </div>)}
+              <Button type="button" className={buttonClass} variant="outline" onClick={() => claimChange(index, { refundPayments: [...(row.refundPayments ?? []), { actualVersionId: "", amount: "" }] })}>Match refund payment to claim {index + 1}</Button>
               <Field label={`Claim ${index + 1} reconciliation evidence`} multiline value={row.evidence} onChange={evidence => claimChange(index, { evidence })}/>
             </article>;
           })}
@@ -115,7 +123,7 @@ export function CloseoutPanel({ programId, userId, reports }: { programId: strin
       <Button className={buttonClass} variant="outline" disabled={busy || !!pending || closed || !note.trim() || (!approved && (!latest || dirty || latest.source_hash !== data.sourceHash))} onClick={() => send({ ...base(), kind: approved ? "reopen" : "approve", note })}>{approved ? "Reopen approved reconciliation" : "Save reconciliation approval"}</Button>
       <section aria-label="Accounting period closure" className="space-y-3 rounded-lg border p-3">
         <h3 className="font-semibold">Accounting period closure</h3>
-        <p>{closed ? `Closed from ${closure.starts_on} through ${closure.ends_on}. Reopen this accounting period before correcting its sources or reconciliation.` : `Open. Closing protects cumulative accounting from ${data.source.report.snapshot.baseline.content_json.periodStart} through ${data.source.report.snapshot.period.ends_on}, including linked receipts and claims.`}</p>
+        <p>{closed ? `Closed from ${closure.starts_on} through ${closure.ends_on}. Reopen this accounting period before correcting its sources or reconciliation.` : `Open. Closing protects cumulative accounting from ${data.source.report.snapshot.baseline.content_json.periodStart} through ${data.source.report.snapshot.period.ends_on}, including linked receipts, refunds and claims.`}</p>
         <p>Outstanding claims, commitments and refunds remain visible. Closure does not mean payment or funder acceptance. Use the evidence field above to identify the responsible authority and explain the decision. Later-period work remains available.</p>
         <Button className={buttonClass} variant="outline" disabled={busy || !!pending || !note.trim() || (!closed && (!approved || dirty || latest?.report_id !== reportId || latest?.source_hash !== data.sourceHash))}
           onClick={() => send({ ...base(), kind: closed ? "reopen_period" : "close_period", expectedClosureVersion: data.closures?.at(-1)?.version ?? 0, note })}>

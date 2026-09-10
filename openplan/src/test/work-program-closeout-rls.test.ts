@@ -56,6 +56,76 @@ live("OWP saved reconciliation and carryover custody", () => {
  const marker = (body: string, replacement = "", extraSource = "", progress = "Review remains", paymentDate = "2026-08-01") => expect(exercise(body, replacement, extraSource, progress, paymentDate)).toContain("OWP_REPORT_ASSERTIONS_REACHED");
  const save = "result:=public.work_program_closeout_command(p,o,close_command); saved_id:=(result->>'id')::uuid;";
  const approve = "result:=public.work_program_closeout_command(p,o,close_command-'assessment'||jsonb_build_object('kind','approve','requestId',gen_random_uuid(),'expectedVersion',1,'note','Synthetic authority evidence'));";
+ const refundSource = `
+ PERFORM public.record_work_program_actual(p,o,(SELECT detail FROM public.work_program_actual_versions WHERE entry_id=payment)||jsonb_build_object('requestId',gen_random_uuid(),'entryId',expense_entry,'expectedVersion',0,'entryDate','2026-09-05','sourceKey','synthetic-outgoing-refund','amount','5.00','sourceReference','Synthetic outgoing bank transfer to funder'));
+ close_data:=public.read_work_program_closeout(p,o,report_id);
+ assessment:=jsonb_set(jsonb_set(assessment,'{claims,0,refundDue}','"6.00"'),'{claims,0,refundPayments}',jsonb_build_array(jsonb_build_object('actualVersionId',(SELECT id FROM public.work_program_actual_versions WHERE entry_id=expense_entry),'amount','4.00')));
+ close_command:=close_command||jsonb_build_object('sourceHash',close_data->>'sourceHash','assessment',assessment);
+ `;
+ it("refund matching retains partial payments, exact retries and the original through correction without posting costs", () => marker(`${refundSource}${save}${approve}
+ SELECT content INTO original FROM public.work_program_closeout_records WHERE program_id=p AND version=2;
+ IF original->'assessment'->'claims'->0->'refundPayments'->0->>'amount'<>'4.00' OR original->'assessment'->'claims'->0->>'refundDue'<>'6.00' THEN RAISE EXCEPTION 'Partial refund changed'; END IF;
+ IF public.work_program_closeout_command(p,o,close_command)->>'id'<>saved_id::text THEN RAISE EXCEPTION 'Refund retry duplicated history'; END IF;
+ PERFORM public.work_program_closeout_command(p,o,close_command-'assessment'||jsonb_build_object('kind','reopen','requestId',gen_random_uuid(),'expectedVersion',2,'note','Synthetic refund correction authority'));
+ close_command:=close_command||jsonb_build_object('requestId',gen_random_uuid(),'expectedVersion',3,'assessment',jsonb_set(assessment,'{claims,0,refundPayments,0,amount}','"5.00"')); ${save}
+ IF (SELECT content FROM public.work_program_closeout_records WHERE program_id=p AND version=2)<>original THEN RAISE EXCEPTION 'Original refund approval changed'; END IF;
+ IF (SELECT count(*) FROM public.work_program_actual_versions)<>physical_count+1 THEN RAISE EXCEPTION 'Refund matching duplicated a physical entry'; END IF;
+ `));
+ for (const [name, change, error] of [
+  ["unknown source", "jsonb_set(assessment,'{claims,0,refundPayments,0,actualVersionId}',to_jsonb(gen_random_uuid()))", "Match a positive refund%"],
+  ["nonpayment source", "jsonb_set(assessment,'{claims,0,refundPayments,0,actualVersionId}',to_jsonb((SELECT id FROM public.work_program_actual_versions WHERE entry_id=obligation)))", "Match a positive refund%"],
+  ["fractional cents", "jsonb_set(assessment,'{claims,0,refundPayments,0,amount}','\"0.001\"')", "Match a positive refund%"],
+  ["zero match", "jsonb_set(assessment,'{claims,0,refundPayments,0,amount}','\"0.00\"')", "Match a positive refund%"],
+  ["missing evidence", "jsonb_set(assessment,'{claims,0,evidence}','\"\"')", "Explain the outgoing%"],
+  ["invalid list", "jsonb_set(assessment,'{claims,0,refundPayments}','null')", "List the matched refund%"],
+  ["overallocated payment", "jsonb_set(assessment,'{claims,0,refundPayments}',(assessment->'claims'->0->'refundPayments')||(assessment->'claims'->0->'refundPayments'))", "Cash matches exceed%"],
+  ["receipt used as refund", "jsonb_set(assessment,'{claims,0,refundPayments,0,actualVersionId}',to_jsonb((SELECT id FROM public.work_program_actual_versions WHERE entry_id=payment)))", "A physical payment cannot%"],
+ ] as const) it(`refund matching refuses ${name}`, () => marker(`${refundSource}
+ BEGIN PERFORM public.work_program_closeout_command(p,o,close_command||jsonb_build_object('assessment',${change})); RAISE EXCEPTION 'Invalid refund match accepted: ${name}'; EXCEPTION WHEN invalid_parameter_value THEN IF SQLERRM NOT LIKE '${error}' THEN RAISE; END IF; END;
+ `));
+ for (const status of ["draft", "excluded"] as const) it(`refund matching refuses a current ${status} payment and its superseded approved version`, () => marker(`${refundSource}
+ PERFORM public.record_work_program_actual(p,o,(SELECT detail FROM public.work_program_actual_versions WHERE entry_id=expense_entry)||jsonb_build_object('requestId',gen_random_uuid(),'expectedVersion',1,'status','${status}','correctionNote','Synthetic payment no longer approved'));
+ close_data:=public.read_work_program_closeout(p,o,report_id); close_command:=close_command||jsonb_build_object('sourceHash',close_data->>'sourceHash');
+ BEGIN PERFORM public.work_program_closeout_command(p,o,close_command); RAISE EXCEPTION 'Superseded refund matched'; EXCEPTION WHEN invalid_parameter_value THEN IF SQLERRM NOT LIKE 'Match a positive refund%' THEN RAISE; END IF; END;
+ assessment:=jsonb_set(assessment,'{claims,0,refundPayments,0,actualVersionId}',to_jsonb((SELECT id FROM public.work_program_actual_versions WHERE entry_id=expense_entry ORDER BY version DESC LIMIT 1)));
+ BEGIN PERFORM public.work_program_closeout_command(p,o,close_command||jsonb_build_object('assessment',assessment)); RAISE EXCEPTION 'Unapproved refund matched'; EXCEPTION WHEN invalid_parameter_value THEN IF SQLERRM NOT LIKE 'Match a positive refund%' THEN RAISE; END IF; END;
+ `));
+ it("refund matching refuses a different currency", () => marker(`${refundSource}
+ SELECT * INTO next_revision FROM public.save_program_work_program_revision(p,o,1,gen_random_uuid(),r.content_json||'{"currency":"EUR"}');
+ PERFORM public.record_work_program_actual(p,o,(SELECT detail FROM public.work_program_actual_versions WHERE entry_id=expense_entry)||jsonb_build_object('requestId',gen_random_uuid(),'expectedVersion',1,'revisionId',next_revision.id,'correctionNote','Synthetic currency correction'));
+ close_data:=public.read_work_program_closeout(p,o,report_id);
+ assessment:=jsonb_set(assessment,'{claims,0,refundPayments,0,actualVersionId}',to_jsonb((SELECT id FROM public.work_program_actual_versions WHERE entry_id=expense_entry ORDER BY version DESC LIMIT 1)));
+ BEGIN PERFORM public.work_program_closeout_command(p,o,close_command||jsonb_build_object('sourceHash',close_data->>'sourceHash','assessment',assessment)); RAISE EXCEPTION 'Foreign currency refund matched'; EXCEPTION WHEN invalid_parameter_value THEN IF SQLERRM NOT LIKE 'Match a positive refund%' THEN RAISE; END IF; END;
+ `));
+ it("refund matching reserves physical payments across baselines and corrections through reopening", () => marker(`${refundSource}${save}${approve}
+ PERFORM public.work_program_closeout_command(p,o,close_command-'assessment'||jsonb_build_object('kind','reopen','requestId',gen_random_uuid(),'expectedVersion',2,'note','Synthetic correction review stays open'));
+ SELECT * INTO r FROM public.save_program_work_program_revision(p,o,1,gen_random_uuid(),r.content_json||'{"agency":"Synthetic amended baseline"}');
+ INSERT INTO public.program_work_program_events(program_id,workspace_id,sequence,revision_id,revision_hash,kind,actor_id,payload,evidence,request_id) VALUES(p,w,2,r.id,r.content_sha256,'adoption',o,'{}','[]',gen_random_uuid());
+ PERFORM public.record_work_program_actual(p,o,(SELECT detail FROM public.work_program_actual_versions WHERE entry_id=expense_entry)||jsonb_build_object('requestId',gen_random_uuid(),'expectedVersion',1,'revisionId',r.id,'correctionNote','Synthetic payment attribution correction'));
+ PERFORM public.record_work_program_actual(p,o,(SELECT detail FROM public.work_program_actual_versions WHERE entry_id=payment)||jsonb_build_object('requestId',gen_random_uuid(),'entryId',document,'expectedVersion',0,'revisionId',r.id,'kind','expense','entryDate','2026-09-02','sourceKey','synthetic-second-baseline-cost','amount','12.35'));
+ period_id:=gen_random_uuid();
+ PERFORM public.work_program_management_command(p,o,jsonb_build_object('kind','period','requestId',gen_random_uuid(),'periodId',period_id,'expectedVersion',0,'name','Synthetic amended report','startsOn','2026-09-01','endsOn','2026-09-30','baselineId',r.id,'sourceCutoff',now(),'progress',jsonb_build_array(jsonb_build_object('elementId',element,'taskId',task,'asOf','2026-09-30','completed','Synthetic amended work','outstanding','Review remains','estimateBasis','Synthetic unassessed remaining estimate'))));
+ PERFORM public.work_program_management_command(p,o,jsonb_build_object('kind','review','requestId',gen_random_uuid(),'periodId',period_id,'expectedVersion',1,'note','Synthetic review'));
+ result:=public.work_program_management_command(p,o,jsonb_build_object('kind','issue','requestId',gen_random_uuid(),'periodId',period_id,'expectedVersion',2,'note','Synthetic issue')); report_id:=(result->>'reportId')::uuid;
+ cid:=gen_random_uuid(); draft:=jsonb_set(draft,'{costs,0,actualVersionId}',to_jsonb((SELECT id FROM public.work_program_actual_versions WHERE entry_id=document)))||jsonb_build_object('reportId',report_id);
+ PERFORM public.work_program_reimbursement_command(p,o,jsonb_build_object('kind','save','requestId',gen_random_uuid(),'claimId',cid,'expectedVersion',0,'draft',draft));
+ PERFORM public.work_program_reimbursement_command(p,o,jsonb_build_object('kind','review','requestId',gen_random_uuid(),'claimId',cid,'expectedVersion',1,'note','Synthetic review'));
+ assessment:=jsonb_set(assessment,'{claims}',jsonb_build_array(jsonb_build_object('claimId',cid,'receipts','[]'::jsonb,'refundDue','2.00','refundPayments',jsonb_build_array(jsonb_build_object('actualVersionId',(SELECT id FROM public.work_program_actual_versions WHERE entry_id=expense_entry ORDER BY version DESC LIMIT 1),'amount','2.00')),'evidence','Synthetic second claim refund reference')));
+ close_data:=public.read_work_program_closeout(p,o,report_id);
+ close_command:=close_command||jsonb_build_object('requestId',gen_random_uuid(),'reportId',report_id,'expectedVersion',3,'sourceHash',close_data->>'sourceHash','assessment',assessment);
+ BEGIN PERFORM public.work_program_closeout_command(p,o,close_command); RAISE EXCEPTION 'Other baseline refund reservation lost'; EXCEPTION WHEN invalid_parameter_value THEN IF SQLERRM NOT LIKE 'Cash matches exceed%' THEN RAISE; END IF; END;
+ BEGIN PERFORM public.work_program_closeout_command(p,o,close_command||jsonb_build_object('assessment',jsonb_set(jsonb_set(assessment,'{claims,0,receipts}',assessment->'claims'->0->'refundPayments'),'{claims,0,refundPayments}','[]'))); RAISE EXCEPTION 'Other baseline direction lost'; EXCEPTION WHEN invalid_parameter_value THEN IF SQLERRM NOT LIKE 'Another baseline reserves%' THEN RAISE; END IF; END;
+ close_command:=close_command||jsonb_build_object('assessment',jsonb_set(assessment,'{claims,0,refundPayments,0,amount}','"1.00"')); ${save}
+ IF result->>'version'<>'4' THEN RAISE EXCEPTION 'Remaining physical payment could not be matched'; END IF;
+ `));
+ it("refund matching protects a late disbursement until authorized period reopening", () => marker(`${refundSource}${save}${approve}
+ close_command:=close_command-'assessment'||jsonb_build_object('kind','close_period','requestId',gen_random_uuid(),'expectedVersion',2,'expectedClosureVersion',0,'note','Synthetic period closure authority');
+ PERFORM public.work_program_period_closure_command(p,o,close_command);
+ SELECT detail INTO original FROM public.work_program_actual_versions WHERE entry_id=expense_entry;
+ BEGIN PERFORM public.record_work_program_actual(p,o,original||jsonb_build_object('requestId',gen_random_uuid(),'expectedVersion',1,'amount','6.00','correctionNote','Synthetic late refund correction')); RAISE EXCEPTION 'Matched late refund changed'; EXCEPTION WHEN SQLSTATE 'PT409' THEN IF SQLERRM NOT LIKE 'This accounting period is closed.%' THEN RAISE; END IF; END;
+ PERFORM public.work_program_period_closure_command(p,o,close_command||jsonb_build_object('kind','reopen_period','requestId',gen_random_uuid(),'expectedClosureVersion',1,'note','Synthetic reopening authority'));
+ PERFORM public.record_work_program_actual(p,o,original||jsonb_build_object('requestId',gen_random_uuid(),'expectedVersion',1,'amount','6.00','correctionNote','Synthetic authorized refund correction'));
+ `));
  it("retains exact retries, overlapping baselines, open balances and source identity through approval and reopening", () => marker(`${save}
  original:=public.work_program_closeout_command(p,o,close_command);
  IF result<>original THEN RAISE EXCEPTION 'Retry changed result'; END IF;

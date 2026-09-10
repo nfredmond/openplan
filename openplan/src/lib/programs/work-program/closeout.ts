@@ -7,7 +7,7 @@ const id = z.string().uuid();
 const evidence = z.string().trim().max(12000);
 export const closeoutAssessmentSchema = z.object({
   registerEvidence: evidence,
-  claims: z.array(z.object({ claimId: id, receipts: z.array(z.object({ actualVersionId: id, amount: decimal }).strict()).max(300), refundDue: decimal.nullable(), evidence }).strict()).max(300),
+  claims: z.array(z.object({ claimId: id, receipts: z.array(z.object({ actualVersionId: id, amount: decimal }).strict()).max(300), refundDue: decimal.nullable(), refundPayments: z.array(z.object({ actualVersionId: id, amount: decimal }).strict()).max(300).optional(), evidence }).strict()).max(300),
   commitments: z.array(z.object({ actualVersionId: id, outstandingAmount: decimal.nullable(), evidence }).strict()).max(1000),
   work: z.array(z.object({ elementId: id, disposition: z.enum(["unassessed", "completed", "carryover"]), successorRevisionId: id.nullable(), successorElementId: id.nullable(), sourceFundId: id.nullable(), successorFundId: id.nullable(), amount: decimal.nullable(), evidence }).strict()).max(500),
 }).strict();
@@ -44,4 +44,10 @@ export function closeoutClaimBalance(source: CloseoutSource, claimId: string, as
   const request = packet?.snapshot.reimbursement?.reimbursementTotal;
   if (!request || !row?.evidence.trim()) return null;
   return decimalText(cents(request) - row.receipts.reduce((total, receipt) => total + cents(receipt.amount), BigInt(0)));
+}
+
+/** Retain unknown assessments and excess disbursements independently of claim receipts. */
+export function closeoutRefundBalance(row: CloseoutAssessment["claims"][number]) {
+  if (row.refundDue === null || !row.evidence.trim()) return null;
+  return decimalText(cents(row.refundDue) - (row.refundPayments ?? []).reduce((total, payment) => total + cents(payment.amount), BigInt(0)));
 }
