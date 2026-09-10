@@ -192,11 +192,12 @@ type ReadResult = {
 
 const SERVICE_ONLY_TABLES = new Set(["billing_webhook_receipts"]);
 
-// These append-only ledgers cannot join this harness's create/delete fixture
-// cycle. Their named live suites are part of `npm run test:rls-live` and prove
+// These domain-specific ledgers use dedicated transaction and access fixtures. Their named live suites are part of `npm run test:rls-live` and prove
 // the same member-visible / outsider-hidden boundary plus their stricter write
 // rules. Keep this list exact so a filename alone cannot silently count.
 const DEDICATED_LIVE_RLS_PROBES = new Set([
+  "assistant_provider_connections",
+  "assistant_provider_turns",
   "program_work_program_sources",
   "program_work_program_revisions",
   "kb_document_extractions",
@@ -1715,6 +1716,8 @@ describe("workspace RLS isolation inventory", () => {
     ]);
     expect([...SERVICE_ONLY_TABLES]).toEqual(["billing_webhook_receipts"]);
     expect([...DEDICATED_LIVE_RLS_PROBES]).toEqual([
+      "assistant_provider_connections",
+      "assistant_provider_turns",
       "program_work_program_sources",
       "program_work_program_revisions",
   "kb_document_extractions",

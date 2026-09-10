@@ -1,0 +1,72 @@
+[
+  {
+    "case": "provider-comment",
+    "exitCode": 0,
+    "expectedOutcome": true,
+    "assertion": null,
+    "tail": "Native isolation fixture: /tmp/openplan-native-isolation-svLsaF\n\u2714 native isolation and exact auth mode: apiKey (404.402756ms)\n\u2714 native isolation and exact auth mode: chatgpt (218.36353ms)\n\u2139 tests 2\n\u2139 suites 0\n\u2139 pass 2\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 683.989351\n"
+  },
+  {
+    "case": "native-auth-mode",
+    "exitCode": 1,
+    "expectedOutcome": true,
+    "assertion": "Missing expected rejection",
+    "tail": "Native isolation fixture: /tmp/openplan-native-isolation-qSOuZs\n\u2714 native isolation and exact auth mode: apiKey (410.808563ms)\n\u2716 native isolation and exact auth mode: chatgpt (392.384178ms)\n\u2139 tests 2\n\u2139 suites 0\n\u2139 pass 1\n\u2139 fail 1\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 866.79738\n\n\u2716 failing tests:\n\ntest at workers/planner_agent_connector/test/codex-native-isolation.test.mjs:17:55\n\u2716 native isolation and exact auth mode: chatgpt (392.384178ms)\n  AssertionError [ERR_ASSERTION]: Missing expected rejection.\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async TestContext.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/workers/planner_agent_connector/test/codex-native-isolation.test.mjs:63:7)\n      at async Test.run (node:internal/test_runner/test:1404:7)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {\n    generatedMessage: false,\n    code: 'ERR_ASSERTION',\n    actual: undefined,\n    operator: 'rejects',\n    diff: 'simple'\n  }\n"
+  },
+  {
+    "case": "launch-comment",
+    "exitCode": 0,
+    "expectedOutcome": true,
+    "assertion": null,
+    "tail": "Native isolation fixture: /tmp/openplan-native-isolation-75PQ4c\n\u2714 native isolation and exact auth mode: apiKey (402.072068ms)\n\u2714 native isolation and exact auth mode: chatgpt (218.523312ms)\n\u2139 tests 2\n\u2139 suites 0\n\u2139 pass 2\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 683.899863\n"
+  },
+  {
+    "case": "inherited-config",
+    "exitCode": 1,
+    "expectedOutcome": true,
+    "assertion": "Exposed forbidden",
+    "tail": "\u2716 native isolation and exact auth mode: apiKey (394.63217ms)\n\u2714 native isolation and exact auth mode: chatgpt (219.991282ms)\n\u2139 tests 2\n\u2139 suites 0\n\u2139 pass 1\n\u2139 fail 1\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 672.518096\n\n\u2716 failing tests:\n\ntest at workers/planner_agent_connector/test/codex-native-isolation.test.mjs:17:55\n\u2716 native isolation and exact auth mode: apiKey (394.63217ms)\n  AssertionError [ERR_ASSERTION]: Exposed forbidden list_mcp_resources\n      at TestContext.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/workers/planner_agent_connector/test/codex-native-isolation.test.mjs:82:41)\n      at async Test.run (node:internal/test_runner/test:1404:7)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {\n    generatedMessage: false,\n    code: 'ERR_ASSERTION',\n    actual: false,\n    expected: true,\n    operator: '==',\n    diff: 'simple'\n  }\n"
+  },
+  {
+    "case": "home-instructions",
+    "exitCode": 1,
+    "expectedOutcome": true,
+    "assertion": "Leaked PRIVATE_HOME_CANARY",
+    "tail": "\u2716 native isolation and exact auth mode: apiKey (398.874144ms)\n\u2714 native isolation and exact auth mode: chatgpt (217.870921ms)\n\u2139 tests 2\n\u2139 suites 0\n\u2139 pass 1\n\u2139 fail 1\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 677.652805\n\n\u2716 failing tests:\n\ntest at workers/planner_agent_connector/test/codex-native-isolation.test.mjs:17:55\n\u2716 native isolation and exact auth mode: apiKey (398.874144ms)\n  AssertionError [ERR_ASSERTION]: Leaked PRIVATE_HOME_CANARY\n      at TestContext.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/workers/planner_agent_connector/test/codex-native-isolation.test.mjs:80:113)\n      at async Test.run (node:internal/test_runner/test:1404:7)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {\n    generatedMessage: false,\n    code: 'ERR_ASSERTION',\n    actual: false,\n    expected: true,\n    operator: '==',\n    diff: 'simple'\n  }\n"
+  },
+  {
+    "case": "host-environments",
+    "exitCode": 1,
+    "expectedOutcome": true,
+    "assertion": "Exposed forbidden view_image",
+    "tail": "\u2716 native isolation and exact auth mode: apiKey (416.211408ms)\n\u2714 native isolation and exact auth mode: chatgpt (222.363288ms)\n\u2139 tests 2\n\u2139 suites 0\n\u2139 pass 1\n\u2139 fail 1\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 700.129547\n\n\u2716 failing tests:\n\ntest at workers/planner_agent_connector/test/codex-native-isolation.test.mjs:17:55\n\u2716 native isolation and exact auth mode: apiKey (416.211408ms)\n  AssertionError [ERR_ASSERTION]: Exposed forbidden view_image\n      at TestContext.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/workers/planner_agent_connector/test/codex-native-isolation.test.mjs:82:41)\n      at async Test.run (node:internal/test_runner/test:1404:7)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {\n    generatedMessage: false,\n    code: 'ERR_ASSERTION',\n    actual: false,\n    expected: true,\n    operator: '==',\n    diff: 'simple'\n  }\n"
+  },
+  {
+    "case": "session-comment",
+    "exitCode": 0,
+    "expectedOutcome": true,
+    "assertion": null,
+    "tail": "\u2714 refuses malformed instead of reporting a completed answer (24.710347ms)\n\u2714 refuses unfinished instead of reporting a completed answer (22.504875ms)\n\u2714 refuses empty-response instead of reporting a completed answer (21.332534ms)\n\u2714 refuses wrong-id instead of reporting a completed answer (23.202291ms)\n\u2714 refuses oversized instead of reporting a completed answer (26.246757ms)\n\u2714 refuses hang instead of reporting a completed answer (103.619825ms)\n\u2714 retains a final event that arrives before the correlated start response (23.324843ms)\n\u2714 EOF after a start acknowledgement does not create a final receipt (23.476639ms)\n\u2714 cancellation ends the owned process and refuses pending work (2.039008ms)\n\u2714 provider permission requests cannot become business or host approval (22.713499ms)\n\u2714 dynamic calls use the supplied project tool callback (21.535115ms)\n\u2139 tests 11\n\u2139 suites 0\n\u2139 pass 11\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 356.574537\n"
+  },
+  {
+    "case": "wrong-response-id",
+    "exitCode": 1,
+    "expectedOutcome": true,
+    "assertion": "Missing expected rejection",
+    "tail": "\u2714 refuses malformed instead of reporting a completed answer (25.942182ms)\n\u2714 refuses unfinished instead of reporting a completed answer (21.776631ms)\n\u2714 refuses empty-response instead of reporting a completed answer (21.719674ms)\n\u2716 refuses wrong-id instead of reporting a completed answer (22.46999ms)\n\u2714 refuses oversized instead of reporting a completed answer (25.541535ms)\n\u2714 refuses hang instead of reporting a completed answer (103.249145ms)\n\u2714 retains a final event that arrives before the correlated start response (21.449293ms)\n\u2714 EOF after a start acknowledgement does not create a final receipt (21.905395ms)\n\u2714 cancellation ends the owned process and refuses pending work (2.041953ms)\n\u2714 provider permission requests cannot become business or host approval (21.698283ms)\n\u2714 dynamic calls use the supplied project tool callback (22.840128ms)\n\u2139 tests 11\n\u2139 suites 0\n\u2139 pass 10\n\u2139 fail 1\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 355.980696\n\n\u2716 failing tests:\n\ntest at workers/planner_agent_connector/test/codex-session.test.mjs:22:3\n\u2716 refuses wrong-id instead of reporting a completed answer (22.46999ms)\n  AssertionError [ERR_ASSERTION]: Missing expected rejection.\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async TestContext.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/workers/planner_agent_connector/test/codex-session.test.mjs:24:11)\n      at async Test.run (node:internal/test_runner/test:1404:7)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {\n    generatedMessage: false,\n    code: 'ERR_ASSERTION',\n    actual: undefined,\n    expected: { code: 'native_response_unmatched' },\n    operator: 'rejects',\n    diff: 'simple'\n  }\n"
+  },
+  {
+    "case": "approval-refusal",
+    "exitCode": 1,
+    "expectedOutcome": true,
+    "assertion": "Provider permission request was not refused",
+    "tail": "\u2714 refuses malformed instead of reporting a completed answer (25.611177ms)\n\u2714 refuses unfinished instead of reporting a completed answer (23.420884ms)\n\u2714 refuses empty-response instead of reporting a completed answer (21.696309ms)\n\u2714 refuses wrong-id instead of reporting a completed answer (22.27949ms)\n\u2714 refuses oversized instead of reporting a completed answer (25.111444ms)\n\u2714 refuses hang instead of reporting a completed answer (104.964612ms)\n\u2714 retains a final event that arrives before the correlated start response (24.016788ms)\n\u2714 EOF after a start acknowledgement does not create a final receipt (21.909552ms)\n\u2714 cancellation ends the owned process and refuses pending work (1.959268ms)\n\u2716 provider permission requests cannot become business or host approval (23.910277ms)\n\u2714 dynamic calls use the supplied project tool callback (20.949981ms)\n\u2139 tests 11\n\u2139 suites 0\n\u2139 pass 10\n\u2139 fail 1\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 363.408492\n\n\u2716 failing tests:\n\ntest at workers/planner_agent_connector/test/codex-session.test.mjs:58:1\n\u2716 provider permission requests cannot become business or host approval (23.910277ms)\n  AssertionError [ERR_ASSERTION]: Provider permission request was not refused\n  + actual - expected\n  \n  + undefined\n  - {\n  -   code: -32601,\n  -   message: 'Unsupported project connector request'\n  - }\n  \n      at TestContext.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/workers/planner_agent_connector/test/codex-session.test.mjs:66:12)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async Test.run (node:internal/test_runner/test:1404:7)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {\n    generatedMessage: false,\n    code: 'ERR_ASSERTION',\n    actual: undefined,\n    expected: { code: -32601, message: 'Unsupported project connector request' },\n    operator: 'deepStrictEqual',\n    diff: 'simple'\n  }\n"
+  },
+  {
+    "case": "unfinished-frame",
+    "exitCode": 1,
+    "expectedOutcome": true,
+    "assertion": "native_stream_interrupted",
+    "tail": "2ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n  + actual - expected\n  \n  + Comparison {}\n  - Comparison {\n  -   code: 'native_stream_interrupted'\n  - }\n  \n      at async TestContext.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/workers/planner_agent_connector/test/codex-session.test.mjs:24:11)\n      at async Test.run (node:internal/test_runner/test:1404:7)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: Error: The protocol request never settled\n        at Timeout._onTimeout (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/workers/planner_agent_connector/test/codex-session.test.mjs:12:43)\n        at listOnTimeout (node:internal/timers:685:17)\n        at process.processTimers (node:internal/timers:618:7),\n    expected: { code: 'native_stream_interrupted' },\n    operator: 'rejects',\n    diff: 'simple'\n  }\n\ntest at workers/planner_agent_connector/test/codex-session.test.mjs:39:1\n\u2716 EOF after a start acknowledgement does not create a final receipt (1022.498252ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n  + actual - expected\n  \n  + Comparison {}\n  - Comparison {\n  -   code: 'native_stream_interrupted'\n  - }\n  \n      at async TestContext.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/workers/planner_agent_connector/test/codex-session.test.mjs:44:5)\n      at async Test.run (node:internal/test_runner/test:1404:7)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:969:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: Error: The protocol request never settled\n        at Timeout._onTimeout (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/workers/planner_agent_connector/test/codex-session.test.mjs:12:43)\n        at listOnTimeout (node:internal/timers:685:17)\n        at process.processTimers (node:internal/timers:618:7),\n    expected: { code: 'native_stream_interrupted' },\n    operator: 'rejects',\n    diff: 'simple'\n  }\n"
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "case": "byte-comment",
+    "expectedOutcome": true,
+    "exitCode": 0,
+    "output": "\n RUN  v4.1.10 /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan\n\n\n Test Files  1 passed (1)\n      Tests  17 passed (17)\n   Start at  06:30:44\n   Duration  703ms (transform 101ms, setup 56ms, import 136ms, tests 21ms, environment 336ms)\n\n"
+  },
+  {
+    "case": "byte-limit-removed",
+    "expectedOutcome": true,
+    "exitCode": 1,
+    "output": "\n RUN  v4.1.10 /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan\n\n \u276f src/test/provider-project-task.test.ts (17 tests | 1 failed) 26ms\n     \u00d7 refuses oversized source and question rather than silently truncating 4ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 16 passed (17)\n   Start at  06:30:46\n   Duration  736ms (transform 103ms, setup 53ms, import 139ms, tests 26ms, environment 354ms)\n\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/test/provider-project-task.test.ts > selected-project provider task > refuses oversized source and question rather than silently truncating\nAssertionError: expected [Function] to throw an error\n\n- Expected:\nnull\n\n+ Received:\nundefined\n\n \u276f src/test/provider-project-task.test.ts:60:68\n     58|     expect(() => providerProjectPrompt(packet(), \"x\".repeat(2001))).to\u2026\n     59|     const unicode = packet(); unicode.project.summary = \"\u754c\".repeat(39_\u2026\n     60|     expect(() => providerProjectPrompt(unicode, \"What is known?\")).toT\u2026\n       |                                                                    ^\n     61|   });\n     62| });\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/1]\u23af\n\n"
+  },
+  {
+    "case": "missing-isolated-workdir",
+    "expectedOutcome": true,
+    "exitCode": 1,
+    "output": "\n RUN  v4.1.10 /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan\n\n \u276f src/test/assistant-provider-turns-rls.test.ts (11 tests | 11 skipped) 4ms\n\n Test Files  1 failed (1)\n      Tests  11 skipped (11)\n   Start at  06:30:47\n   Duration  586ms (transform 45ms, setup 56ms, import 46ms, tests 4ms, environment 328ms)\n\n\n\u23af\u23af\u23af\u23af\u23af\u23af Failed Suites 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/test/assistant-provider-turns-rls.test.ts > scoped provider connections and retained turns\nError: Provider fixtures require an explicit absolute OPENPLAN_SUPABASE_WORKDIR for an isolated stack.\n \u276f src/test/assistant-provider-turns-rls.test.ts:13:13\n     11|   beforeAll(() => {\n     12|     if (process.env.GITHUB_ACTIONS !== \"true\" && !isAbsolute(process.e\u2026\n     13|       throw new Error(\"Provider fixtures require an explicit absolute \u2026\n       |             ^\n     14|     }\n     15|     container = resolveLocalDbContainer();\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/1]\u23af\n\n"
+  }
+]

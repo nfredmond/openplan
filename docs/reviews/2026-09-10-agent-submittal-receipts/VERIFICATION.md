@@ -9,7 +9,9 @@ on September 10, 2026 at 12:30:29 UTC from
 before tagging. Machine-readable final CI and publication receipts are retained
 beside this file. CI full QA and shuffled tests each passed 13,649 tests with
 336 skipped; local runs passed 13,656 with 329 skipped. Live RLS passed 358 tests
-in 44 files. The populated upgrade from v0.50.0 retained counts
+in 44 files. The seven extra CI skips are the environment-dependent cases in
+`every-worker-suite-can-actually-run.test.ts`; the local worker interpreter was
+available for those checks. The populated upgrade from v0.50.0 retained counts
 `2:2:1:1:1:1:1`. The historical preparation checkpoints below remain unchanged.
 
 Based on released v0.50.0 at0df7a50a. The current branch is
