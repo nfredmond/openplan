@@ -1,0 +1,107 @@
+{
+  "release": "v0.52.0",
+  "commit": "914a9d966bbf1ea344b4d9ccd0762dbfa184aeea",
+  "publishedAt": "2026-09-10T15:49:52Z",
+  "url": "https://github.com/nfredmond/openplan/releases/tag/v0.52.0",
+  "remoteTagObject": "ff72b1391c309b83779fdcfc05f23af151244408",
+  "checks": [
+    {
+      "name": "order independence (shuffled vitest)",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "914a9d966bbf1ea344b4d9ccd0762dbfa184aeea",
+      "html_url": "https://github.com/nfredmond/openplan/actions/runs/34496143711/job/102934966985",
+      "completed_at": "2026-09-10T15:42:52Z"
+    },
+    {
+      "name": "ops scripts (python unit tests)",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "914a9d966bbf1ea344b4d9ccd0762dbfa184aeea",
+      "html_url": "https://github.com/nfredmond/openplan/actions/runs/34496143711/job/102934966814",
+      "completed_at": "2026-09-10T15:32:11Z"
+    },
+    {
+      "name": "modeling scripts (python unit tests)",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "914a9d966bbf1ea344b4d9ccd0762dbfa184aeea",
+      "html_url": "https://github.com/nfredmond/openplan/actions/runs/34496143711/job/102934966708",
+      "completed_at": "2026-09-10T15:32:20Z"
+    },
+    {
+      "name": "verify (qa gate)",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "914a9d966bbf1ea344b4d9ccd0762dbfa184aeea",
+      "html_url": "https://github.com/nfredmond/openplan/actions/runs/34496143711/job/102934966546",
+      "completed_at": "2026-09-10T15:47:07Z"
+    },
+    {
+      "name": "worker (python unit tests)",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "914a9d966bbf1ea344b4d9ccd0762dbfa184aeea",
+      "html_url": "https://github.com/nfredmond/openplan/actions/runs/34496143711/job/102934966423",
+      "completed_at": "2026-09-10T15:31:34Z"
+    },
+    {
+      "name": "live RLS isolation",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "914a9d966bbf1ea344b4d9ccd0762dbfa184aeea",
+      "html_url": "https://github.com/nfredmond/openplan/actions/runs/34496143791/job/102934965787",
+      "completed_at": "2026-09-10T15:38:23Z"
+    },
+    {
+      "name": "previous release -> seed -> HEAD migration up",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "914a9d966bbf1ea344b4d9ccd0762dbfa184aeea",
+      "html_url": "https://github.com/nfredmond/openplan/actions/runs/34496143678/job/102934965369",
+      "completed_at": "2026-09-10T15:34:36Z"
+    }
+  ],
+  "qa": {
+    "passed": 13748,
+    "skipped": 357,
+    "filesPassed": 1249,
+    "filesSkipped": 39,
+    "connectorPassed": 31,
+    "connectorNativeSkips": 2
+  },
+  "shuffle": {
+    "seed": 299921,
+    "passed": 13748,
+    "skipped": 357
+  },
+  "rls": {
+    "passed": 379,
+    "files": 46
+  },
+  "upgrade": {
+    "from": "v0.51.0",
+    "migration": "20261010000001_assistant_provider_connections.sql",
+    "rowsBefore": "2:2:1:1:1:1:1",
+    "rowsAfter": "2:2:1:1:1:1:1",
+    "custodyCheck": "passed"
+  },
+  "audit": {
+    "productionVulnerabilities": 0,
+    "allDependenciesAtPublication": {
+      "info": 0,
+      "low": 2,
+      "moderate": 9,
+      "high": 3,
+      "critical": 0,
+      "total": 14
+    },
+    "nextWork": "Patch development-tool dependency advisories before widening native support."
+  },
+  "privateLogHashes": {
+    "qa-final-914a9d96.log": "9cf4881c3f72d532c650332a2f49e1e1439e5897296700c34f7f764f846ec6de",
+    "shuffle-final-914a9d96.log": "58454e4fc1ae3d825bb46d41aa79b7d766c7ddc235fb48de7bbb61041bd9e700",
+    "rls-final-914a9d96.log": "d0e541690faa166401b91f6161eb035b26a657f5eefe3e4584dc97b7dad99dd4",
+    "upgrade-final-914a9d96.log": "cb2dbe2f27664cb33c721f909b166d3db91bc9f672ac5914af3decc1607fcbda"
+  }
+}

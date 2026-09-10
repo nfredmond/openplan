@@ -1,7 +1,9 @@
 # Scoped Planner Agent provider connections — v0.52.0
 
-Release preparation is complete locally; final main CI and the populated v0.51.0
-upgrade must pass before tagging. No human sign-off is required. The dated
+Published [v0.52.0](https://github.com/nfredmond/openplan/releases/tag/v0.52.0)
+at 2026-09-10 15:49:52 UTC from `914a9d966bbf1ea344b4d9ccd0762dbfa184aeea`.
+All seven exact-commit CI checks passed before tagging. The remote annotated tag
+resolves to that same commit. No human sign-off was required. The dated
 [implementation history](IMPLEMENTATION.md) preserves initial failures, corrections,
 mutations and blind categories. This record makes no completed A0/A1 or v1 claim.
 
@@ -12,6 +14,23 @@ create the draft. Both transports retain frozen request identity, source packet,
 model/account mode and original result. Retry never selects another provider or
 silently generates a second answer. Private counts and a database deletion guard
 preserve the project's provider history.
+
+## Final main and publication
+
+The [release receipt](release-ci.json) records GitHub check links and hashes of the
+private original logs. Full QA and shuffled seed 299921 each passed 13,748 tests,
+with 357 named skips. CI connector checks passed 31 with two named native skips;
+the installed-native cases were separately exercised locally. Isolated RLS passed
+379 tests in 46 files. All Python CI jobs passed. The populated upgrade from
+v0.51.0 applied the provider migration, preserved custody hashes and retained
+`2:2:1:1:1:1:1` row counts before and after.
+
+The production dependency audit reported zero vulnerabilities. At publication,
+the complete lockfile audit reported 14 affected development dependency packages,
+including three rated high. CI installation had reported 10 earlier in the run;
+the current advisory report is retained separately. These are not a claim of
+production exposure or a clean development audit. Patching them is the next
+maintenance increment before widening native provider support.
 
 ## Local checks
 
