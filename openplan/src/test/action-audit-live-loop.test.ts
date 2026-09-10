@@ -139,4 +139,28 @@ describe("withAssistantActionAudit (live-loop proof)", () => {
     );
     warnSpy.mockRestore();
   });
+  it.each(["succeeded", "failed"] as const)("preserves the %s body outcome when audit persistence throws", async (outcome) => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      const client = makeCapturingClient();
+      client.insertMock.mockRejectedValue(new Error("synthetic audit transport failure"));
+      const effectError = new Error("synthetic effect refusal");
+      const body = vi.fn(async () => {
+        if (outcome === "failed") throw effectError;
+        return { savedId: "retained-result" };
+      });
+      const result = withAssistantActionAudit({ from: client.from } as never,
+        { actionKind: "record_stage_gate_hold", workspaceId: "w-1", userId: "u-1" }, body);
+      if (outcome === "failed") await expect(result).rejects.toBe(effectError);
+      else await expect(result).resolves.toEqual({ savedId: "retained-result" });
+      expect(body).toHaveBeenCalledTimes(1);
+      expect(client.insertMock).toHaveBeenCalledTimes(1);
+      expect(client.insertMock).toHaveBeenCalledWith(expect.objectContaining({ outcome }));
+      expect(warnSpy).toHaveBeenCalledWith(`[action-audit] ${outcome}-row insert threw`,
+        expect.objectContaining({ message: "synthetic audit transport failure" }));
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
 });

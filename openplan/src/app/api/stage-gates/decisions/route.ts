@@ -12,7 +12,6 @@ import { assistantActionAuditIdentity, withAssistantActionAudit } from "@/lib/ob
 import { refuseOutOfScopeAgentRequest } from "@/lib/assistant/agent-request-scope";
 import { USER_AUTHORED } from "@/lib/assistant/agent-principal";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
-import { insertNotReadableBackResponse, isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { describeOffVocabularyGate, lookupStageGateInTemplate } from "@/lib/stage-gates/gate-vocabulary";
 import { resolveWorkspaceStageGateBinding } from "@/lib/stage-gates/template-loader";
 
@@ -591,45 +590,62 @@ export async function POST(request: NextRequest) {
      */
     const authorship = approval.authorship;
 
-    const insertDecision = async () => await supabase
-      .from("stage_gate_decisions")
-      .insert({
-        workspace_id: workspaceId,
-        project_id: project.id,
-        gate_id: lookup.gate.gate_id,
-        // Stamped from the binding that was validated against, not from the
-        // request: a gate id is only interpretable inside its own template, and
-        // that association cannot be reconstructed after a workspace rebinds.
-        template_id: lookup.templateId,
-        decision,
-        rationale,
-        missing_artifacts: missingArtifacts,
-        run_id: parsed.data.runId ?? null,
-        model_run_id: parsed.data.modelRunId ?? null,
-        county_run_id: parsed.data.countyRunId ?? null,
-        metadata: {
-          source: "api.stage_gates.decisions",
-          templateVersion: lookup.templateVersion,
-          gateName: lookup.gate.name,
-          gateSequence: lookup.gate.sequence,
-          // Whether the workspace CHOSE this jurisdiction's gates or inherited
-          // the labeled interim default. Recorded on the decision because the
-          // binding can change later, and a decision made under assumed gates
-          // must stay identifiable as one.
-          templateSelection: binding.templateSelection,
-          authorship: {
-            actorKind: authorship.actorKind,
-            agentId: authorship.actorAgentId,
-            approvedByUserId: authorship.approvedByUserId,
-            approvedAt: authorship.approvedAt,
-            approvalId: approval.approvalId,
-            inputHash: approval.inputHash,
+    const insertDecision = async () => {
+      const result = await supabase
+        .from("stage_gate_decisions")
+        .insert({
+          workspace_id: workspaceId,
+          project_id: project.id,
+          gate_id: lookup.gate.gate_id,
+          // Stamped from the binding that was validated against, not from the
+          // request: a gate id is only interpretable inside its own template, and
+          // that association cannot be reconstructed after a workspace rebinds.
+          template_id: lookup.templateId,
+          decision,
+          rationale,
+          missing_artifacts: missingArtifacts,
+          run_id: parsed.data.runId ?? null,
+          model_run_id: parsed.data.modelRunId ?? null,
+          county_run_id: parsed.data.countyRunId ?? null,
+          metadata: {
+            source: "api.stage_gates.decisions",
+            templateVersion: lookup.templateVersion,
+            gateName: lookup.gate.name,
+            gateSequence: lookup.gate.sequence,
+            // Whether the workspace CHOSE this jurisdiction's gates or inherited
+            // the labeled interim default. Recorded on the decision because the
+            // binding can change later, and a decision made under assumed gates
+            // must stay identifiable as one.
+            templateSelection: binding.templateSelection,
+            authorship: {
+              actorKind: authorship.actorKind,
+              agentId: authorship.actorAgentId,
+              approvedByUserId: authorship.approvedByUserId,
+              approvedAt: authorship.approvedAt,
+              approvalId: approval.approvalId,
+              inputHash: approval.inputHash,
+            },
           },
-        },
-        decided_by: user.id,
-      })
-      .select(DECISION_COLUMNS)
-      .single();
+          decided_by: user.id,
+        })
+        .select(DECISION_COLUMNS)
+        .single();
+      // PostgREST errors (including singular-response errors) do not prove an
+      // insert committed. Validate inside the audited body before claiming success.
+      if (result.error || !result.data) {
+        audit.error("decision_insert_failed", {
+          workspaceId,
+          projectId,
+          userId: user.id,
+          gateId: lookup.gate.gate_id,
+          decision,
+          message: result.error?.message ?? "Decision write returned no row",
+          code: result.error?.code ?? null,
+        });
+        throw new Error("Failed to record the stage-gate decision");
+      }
+      return result;
+    };
 
     /**
      * The ledger row is written for the AGENT path only, and that asymmetry is
@@ -643,53 +659,31 @@ export async function POST(request: NextRequest) {
      * already recorded twice over: in `stage_gate_decisions` itself, which is
      * append-only, and in this route's `decision_recorded` audit line.
      */
-    const insertResult =
-      agentSourced && serviceSupabase
-        ? await withAssistantActionAudit(
-            serviceSupabase,
-            {
-              actionKind: "record_stage_gate_hold",
-              workspaceId,
-              userId: user.id,
-              ...assistantActionAuditIdentity(approval),
-              inputSummary: {
-                projectId: project.id,
-                gateId: lookup.gate.gate_id,
-                decision,
-                citedRun: citedRunKeys[0] ?? null,
-                missingArtifactCount: missingArtifacts.length,
+    let insertResult: Awaited<ReturnType<typeof insertDecision>>;
+    try {
+      insertResult =
+        agentSourced && serviceSupabase
+          ? await withAssistantActionAudit(
+              serviceSupabase,
+              {
+                actionKind: "record_stage_gate_hold",
+                workspaceId,
+                userId: user.id,
+                ...assistantActionAuditIdentity(approval),
+                inputSummary: {
+                  projectId: project.id,
+                  gateId: lookup.gate.gate_id,
+                  decision,
+                  citedRun: citedRunKeys[0] ?? null,
+                  missingArtifactCount: missingArtifacts.length,
+                },
               },
-            },
-            insertDecision
-          )
-        : await insertDecision();
+              insertDecision
+            )
+          : await insertDecision();
 
-    if (isWriteFailure(insertResult.error)) {
-      audit.error("decision_insert_failed", {
-        workspaceId,
-        projectId,
-        userId: user.id,
-        gateId: lookup.gate.gate_id,
-        decision,
-        message: insertResult.error?.message ?? null,
-        code: insertResult.error?.code ?? null,
-      });
+    } catch {
       return NextResponse.json({ error: "Failed to record the stage-gate decision" }, { status: 500 });
-    }
-
-    if (writeMatchedNoRows(insertResult)) {
-      // The INSERT landed and the read-back came up empty. That is a policy
-      // shape (INSERT granted, this row not SELECTable), never a failed write —
-      // answering an error here would make the client retry and record the
-      // decision twice. See src/lib/http/write-outcome.ts.
-      audit.warn("decision_not_readable_back", {
-        workspaceId,
-        projectId,
-        userId: user.id,
-        gateId: lookup.gate.gate_id,
-        decision,
-      });
-      return insertNotReadableBackResponse({ subject: "stage-gate decision" });
     }
 
     audit.info("decision_recorded", {

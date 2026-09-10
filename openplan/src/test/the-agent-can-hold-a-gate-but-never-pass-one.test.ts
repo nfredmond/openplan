@@ -236,9 +236,36 @@ describe("an approved agent hold reaches the decision log", () => {
 
     const ledger = ledgerRows[0];
     expect(ledger.action_kind).toBe("record_stage_gate_hold");
+    expect(ledgerRows).toHaveLength(1);
+    expect(ledger.outcome).toBe("succeeded");
+    expect(decisionInsertSelectMock).toHaveBeenCalledWith(
+      "id, workspace_id, project_id, run_id, model_run_id, county_run_id, template_id, gate_id, decision, rationale, missing_artifacts, metadata, decided_by, decided_at"
+    );
     expect(ledger.actor_kind).toBe("planner_agent");
     expect(ledger.approved_by_user_id).toBe(USER_ID);
     expect(ledger.approved_at).toBe(APPROVED_AT);
+  });
+
+  it.each([
+    { data: null, error: { code: "23514", message: "synthetic constraint refusal" } },
+    { data: null, error: { code: "PGRST116", message: "singular response rejected", details: "The result contains 0 rows" } },
+    { data: null, error: null },
+  ])("records a failed action when the decision write is unconfirmed: %j", async (result) => {
+    const hash = approvedHash();
+    armApproval(hash);
+    decisionInsertSingleMock.mockResolvedValueOnce(result);
+    const response = await postDecision(agentRequest({
+      workspaceId: WORKSPACE_ID, projectId: PROJECT_ID, gateId: GATE_ID,
+      decision: "HOLD", rationale: RATIONALE,
+    }, agentHeaders(hash)));
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: "Failed to record the stage-gate decision" });
+    expect(decisionInsertMock).toHaveBeenCalledTimes(1);
+    expect(ledgerRows).toHaveLength(1);
+    expect(ledgerRows[0]).toMatchObject({
+      outcome: "failed", action_kind: "record_stage_gate_hold", approval_id: APPROVAL_ID,
+      error_message: "Failed to record the stage-gate decision",
+    });
   });
 
   it("refuses when the approved payload is not the payload that arrived", async () => {

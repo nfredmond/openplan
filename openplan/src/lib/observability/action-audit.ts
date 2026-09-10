@@ -167,60 +167,49 @@ export async function withAssistantActionAudit<T>(
   const record = getActionMetadata(meta.actionKind);
   const startedAt = new Date().toISOString();
 
+  // Decide the action outcome before attempting its separate audit write.
+  // A rejected audit request must never turn a completed action into a failure.
+  const persist = async (outcome: AssistantActionExecutionOutcome, errorMessage: string | null) => {
+    try {
+      const { error } = await recordAssistantActionExecution(supabase, {
+        workspaceId: meta.workspaceId,
+        userId: meta.userId,
+        actionKind: meta.actionKind,
+        auditEvent: record.auditEvent,
+        approval: record.approval,
+        regrounding: record.regrounding,
+        outcome,
+        errorMessage,
+        inputSummary: meta.inputSummary ?? null,
+        approvalId: meta.approvalId ?? null,
+        inputHash: meta.inputHash ?? null,
+        executionSource: meta.executionSource ?? "manual",
+        authorship: meta.authorship,
+        startedAt,
+        completedAt: new Date().toISOString(),
+      });
+      if (error) {
+        console.warn(`[action-audit] ${outcome}-row insert failed`, {
+          actionKind: meta.actionKind,
+          message: error.message,
+          code: error.code,
+        });
+      }
+    } catch (error) {
+      console.warn(`[action-audit] ${outcome}-row insert threw`, {
+        actionKind: meta.actionKind,
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  };
+
+  let result: T;
   try {
-    const result = await body();
-    const completedAt = new Date().toISOString();
-    const { error } = await recordAssistantActionExecution(supabase, {
-      workspaceId: meta.workspaceId,
-      userId: meta.userId,
-      actionKind: meta.actionKind,
-      auditEvent: record.auditEvent,
-      approval: record.approval,
-      regrounding: record.regrounding,
-      outcome: "succeeded",
-      inputSummary: meta.inputSummary ?? null,
-      approvalId: meta.approvalId ?? null,
-      inputHash: meta.inputHash ?? null,
-      executionSource: meta.executionSource ?? "manual",
-      authorship: meta.authorship,
-      startedAt,
-      completedAt,
-    });
-    if (error) {
-      console.warn("[action-audit] succeeded-row insert failed", {
-        actionKind: meta.actionKind,
-        message: error.message,
-        code: error.code,
-      });
-    }
-    return result;
-  } catch (err) {
-    const completedAt = new Date().toISOString();
-    const errorMessage = err instanceof Error ? err.message : String(err);
-    const { error } = await recordAssistantActionExecution(supabase, {
-      workspaceId: meta.workspaceId,
-      userId: meta.userId,
-      actionKind: meta.actionKind,
-      auditEvent: record.auditEvent,
-      approval: record.approval,
-      regrounding: record.regrounding,
-      outcome: "failed",
-      errorMessage,
-      inputSummary: meta.inputSummary ?? null,
-      approvalId: meta.approvalId ?? null,
-      inputHash: meta.inputHash ?? null,
-      executionSource: meta.executionSource ?? "manual",
-      authorship: meta.authorship,
-      startedAt,
-      completedAt,
-    });
-    if (error) {
-      console.warn("[action-audit] failed-row insert failed", {
-        actionKind: meta.actionKind,
-        message: error.message,
-        code: error.code,
-      });
-    }
-    throw err;
+    result = await body();
+  } catch (error) {
+    await persist("failed", error instanceof Error ? error.message : String(error));
+    throw error;
   }
+  await persist("succeeded", null);
+  return result;
 }

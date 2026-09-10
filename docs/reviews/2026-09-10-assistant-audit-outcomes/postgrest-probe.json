@@ -1,0 +1,38 @@
+[
+  {
+    "scenario": "hidden",
+    "mode": "minimal",
+    "status": 201,
+    "error": null,
+    "retained": 1
+  },
+  {
+    "scenario": "hidden",
+    "mode": "single",
+    "status": 403,
+    "error": {
+      "code": "42501",
+      "message": "new row violates row-level security policy for table \"codex_audit_write_probe_20260910\"",
+      "details": null
+    },
+    "retained": 0
+  },
+  {
+    "scenario": "visible",
+    "mode": "single",
+    "status": 201,
+    "error": null,
+    "retained": 1
+  },
+  {
+    "scenario": "visible",
+    "mode": "multiple-single",
+    "status": 406,
+    "error": {
+      "code": "PGRST116",
+      "message": "Cannot coerce the result to a single JSON object",
+      "details": "The result contains 2 rows"
+    },
+    "retained": 0
+  }
+]

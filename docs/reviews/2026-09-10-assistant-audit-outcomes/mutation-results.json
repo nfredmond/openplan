@@ -1,0 +1,22 @@
+[
+  {
+    "name": "harmless-comments",
+    "exitCode": 0,
+    "expected": "survive"
+  },
+  {
+    "name": "audit-exception-masks-effect",
+    "exitCode": 1,
+    "expected": "reject"
+  },
+  {
+    "name": "rejected-write-logs-success",
+    "exitCode": 1,
+    "expected": "reject"
+  },
+  {
+    "name": "empty-write-claims-success",
+    "exitCode": 1,
+    "expected": "reject"
+  }
+]

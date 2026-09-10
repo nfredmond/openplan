@@ -422,15 +422,14 @@ describe("POST /api/stage-gates/decisions records a human gate decision", () => 
     expect(decisionInsertMock).not.toHaveBeenCalled();
   });
 
-  it("treats an insert that cannot be read back as created, not as failed", async () => {
-    // The row exists; only the `.select()` after it came back empty. Answering an
-    // error here would make the client retry and record the decision twice.
+  it("does not claim a decision was created when its write returns no row", async () => {
+    // A malformed empty response is not evidence that this decision exists.
     decisionInsertSingleMock.mockResolvedValueOnce({ data: null, error: null });
 
     const response = await postDecision(jsonRequest(validDecisionBody()));
 
-    expect(response.status).toBe(201);
-    expect(await response.json()).toMatchObject({ created: true, record: null });
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ error: "Failed to record the stage-gate decision" });
   });
 
   it("answers 500 when the insert genuinely fails", async () => {
