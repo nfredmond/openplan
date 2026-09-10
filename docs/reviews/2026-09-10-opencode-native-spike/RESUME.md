@@ -11,9 +11,9 @@ v0.53 are already published.
 
 Worktree: /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10
 Branch: work/planner-agent-opencode-connection
-Last pushed source before release metadata:1b5ba8bee0b2ec7122fa559e31578f694e42cb0f.
-Use git status/log and ls-remote to find the release checkpoint following it.
-Package metadata is being prepared for0.54.0. OpenCode implementation, connector
+Release source: 4e9de713c87ed4141ee88c917cd6e88be9641b70, pushed directly to main
+and the work branch. Remote main was checked at this exact SHA on September 10.
+Package metadata is 0.54.0. OpenCode implementation, connector
 registration, app routes/UI, additive migration and relevant browser acceptance
 are complete. Publication and final release-commit CI are not yet confirmed.
 
@@ -34,9 +34,14 @@ endpoints, broader tasks and durable assignments remain open A0/A1 work.
 
 ## Immediate next step
 
-Finish the release inventory guard challenge and restored check, inspect the
-metadata diff and commit/push the verified release checkpoint directly to main.
-Check current remote main first. Inspect successful final CI, shuffled tests,
+The release inventory guard challenge and restored check passed; the release
+checkpoint is committed and pushed. At the usage-reset checkpoint, Upgrade Path
+34525575469 succeeded on the release SHA. CI 34525575454 still had QA and shuffled
+tests running, with all three Python jobs successful. RLS Isolation 34525575421
+was running. No v0.54.0 tag existed. Recheck these exact runs; this is a snapshot,
+not a prediction of their final outcome. No local QA or browser jobs need resuming.
+
+Inspect successful final CI, shuffled tests,
 RLS Isolation and populated v0.53.0 Upgrade Path on that exact SHA before making
 an annotated v0.54.0 tag and a normal public GitHub release. Record the actual
 publication and CI receipt afterward. No draft PR or human review is needed.
