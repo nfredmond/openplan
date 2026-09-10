@@ -93,4 +93,4 @@ history; this consolidation does not repeat a mass deletion.
 Contract management: [operator workflow](ops/CONTRACT_RECONCILIATION.md) and [v0.46 engineering evidence](reviews/2026-09-07-contract-reconciliation/VERIFICATION.md). Full M11 remains open.
 
 - [OWP reimbursement operation](ops/OWP_REIMBURSEMENT.md): reviewed supporting packets, source sharing and correction boundaries.
-- [OWP closeout reconciliation](ops/OWP_CLOSEOUT_RECONCILIATION.md): private saved assessments, approval/reopening and bounded next-cycle carryover.
+- [OWP closeout reconciliation](ops/OWP_CLOSEOUT_RECONCILIATION.md): private saved assessments, accounting-period closure/reopening and bounded next-cycle carryover.

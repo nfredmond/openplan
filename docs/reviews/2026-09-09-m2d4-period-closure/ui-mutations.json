@@ -1,0 +1,68 @@
+[
+  {
+    "name": "harmless comment",
+    "exit": 0,
+    "expected": "survived",
+    "matched": true
+  },
+  {
+    "name": "closed reconciliation action",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "close decision command",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "closure expected version",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "closure restore schema",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "missing closure history",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "closure projection",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "closure wrong scope",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "closure RPC dispatch",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "closure failed read hidden",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "closure missing version allowed",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  }
+]

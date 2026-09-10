@@ -1,0 +1,26 @@
+[
+  {
+    "name": "harmless SQL comment",
+    "exit": 0,
+    "expected": "survived",
+    "matched": true
+  },
+  {
+    "name": "unregistered table",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "missing policy",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "missing live closure coverage",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  }
+]

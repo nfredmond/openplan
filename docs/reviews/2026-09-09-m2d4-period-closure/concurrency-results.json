@@ -1,0 +1,16 @@
+[
+  {
+    "name": "harmless comment",
+    "writeDenied": true,
+    "seconds": 2.87,
+    "mutationDetected": false,
+    "testMatchedExpected": true
+  },
+  {
+    "name": "removed program lock",
+    "writeDenied": false,
+    "seconds": 0.12,
+    "mutationDetected": true,
+    "testMatchedExpected": true
+  }
+]

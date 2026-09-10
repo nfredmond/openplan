@@ -1,0 +1,12 @@
+[
+  {
+    "name": "harmless late-receipt control",
+    "exit": 0,
+    "matched": true
+  },
+  {
+    "name": "late receipt protection removed",
+    "exit": 1,
+    "matched": true
+  }
+]

@@ -1,0 +1,31 @@
+[
+  {
+    "width": 1440,
+    "commit": "d9e7ea2851b9",
+    "closedVersion": 13,
+    "reopenedVersion": 14,
+    "originalDecisionSha256": "bf22d76edb43920e2c26001b167d433a537ca3ef30535791d5464175f98b747f",
+    "sourceWriteRefused": 409,
+    "claimWriteRefused": 409,
+    "oldApprovalReclosureRefused": 409,
+    "keyboard": true,
+    "console": [
+      {
+        "text": "Failed to load resource: net::ERR_FAILED",
+        "expected": true
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "commit": "d9e7ea2851b9",
+    "closedVersion": 15,
+    "reopenedVersion": 16,
+    "originalDecisionSha256": "bf22d76edb43920e2c26001b167d433a537ca3ef30535791d5464175f98b747f",
+    "sourceWriteRefused": 409,
+    "claimWriteRefused": 409,
+    "oldApprovalReclosureRefused": 409,
+    "keyboard": true,
+    "console": []
+  }
+]

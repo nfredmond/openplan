@@ -1,0 +1,7 @@
+Instance:  http://127.0.0.1:3261
+Version:   0.47.0
+Commit:    d9e7ea2851b9
+Checkout:  /home/nathaniel/.local/state/openplan/m2d4-period-closure-2026-09-09 @ d9e7ea28
+
+Serving from: /home/nathaniel/.local/state/openplan/m2d4-period-closure-2026-09-09/openplan
+[32mMATCH — this instance is serving the checkout you are working in.[0m

@@ -253,3 +253,7 @@ CORE-OWP-01/M2d.4 has a [preparatory closeout review](../reviews/2026-09-09-m2d4
 ### September 9 saved reconciliation increment (unreleased)
 
 CORE-OWP-01/M2d.4 now extends the preparatory review with [saved reconciliation and carryover evidence](../reviews/2026-09-09-m2d4-settlement/VERIFICATION.md). It retains exact source/successor baselines, current claim receipts, assessed refunds and commitments, approved single-fund successor mappings and immutable reopening history. It creates no second expense and does not close a period. Actual closure/source-write guards, multi-target mappings, refund payment matching, independent reconstruction and practicing-finance acceptance remain unfinished; the full requirement stays partial.
+
+### September 9 accounting-period closure increment, unreleased
+
+CORE-OWP-01/M2d.4 extends saved reconciliation with [accounting-period closure and authorized reopening](../reviews/2026-09-09-m2d4-period-closure/VERIFICATION.md). Cumulative dates and linked sources are protected while later-period work can continue. Outstanding balances remain visible. Multi-target carryover, outbound-refund matching, independent reconstruction/restore and practicing-finance acceptance remain open. The full administration requirement stays partial.

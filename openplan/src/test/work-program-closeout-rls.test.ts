@@ -10,7 +10,7 @@ live("OWP saved reconciliation and carryover custody", () => {
   if (!process.env.CI && !process.env.OPENPLAN_SUPABASE_WORKDIR) throw new Error("An explicitly identified disposable Supabase workdir is required");
   container = resolveLocalDbContainer();
  });
- function exercise(body: string, replacement = "", extraSource = "", progress = "Review remains") {
+ function exercise(body: string, replacement = "", extraSource = "", progress = "Review remains", paymentDate = "2026-08-01") {
   const mutation = process.env.M2D4_SQL_REPLACEMENT;
   if (mutation) replacement = readFileSync(mutation, "utf8");
   return execFileSync("docker", ["exec", "-i", container, "psql", "-X", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1", "-At"], { encoding: "utf8", stdio: ["pipe", "pipe", "pipe"], input: `BEGIN; ${replacement}
@@ -41,7 +41,7 @@ live("OWP saved reconciliation and carryover custody", () => {
    PERFORM public.work_program_reimbursement_command(p,o,c);
    result:=public.work_program_reimbursement_command(p,o,jsonb_build_object('kind','review','requestId',gen_random_uuid(),'claimId',cid,'expectedVersion',1,'note','Synthetic review'));
    packet_id:=(result->>'reportId')::uuid;
-   PERFORM public.record_work_program_actual(p,o,(SELECT detail FROM public.work_program_actual_versions WHERE entry_id=entry)||jsonb_build_object('requestId',gen_random_uuid(),'entryId',payment,'kind','payment','sourceKey','synthetic-receipt','amount','7.00','hours',NULL,'staffId',NULL));
+   PERFORM public.record_work_program_actual(p,o,(SELECT detail FROM public.work_program_actual_versions WHERE entry_id=entry)||jsonb_build_object('requestId',gen_random_uuid(),'entryId',payment,'entryDate','${paymentDate}','kind','payment','sourceKey','synthetic-receipt','amount','7.00','hours',NULL,'staffId',NULL));
    INSERT INTO public.programs(id,workspace_id,title,program_type,cycle_name) VALUES(next_program,w,'Synthetic overlapping successor','other','Next');
    SELECT * INTO next_revision FROM public.save_program_work_program_revision(next_program,o,0,gen_random_uuid(),jsonb_build_object('schemaVersion',1,'currency','USD','agency','Synthetic agency','periodStart','2027-01-01','periodEnd','2027-12-31','preparation',jsonb_build_object('funds',jsonb_build_array(jsonb_build_object('id',next_fund,'name','Carryover authority','kind','carryover','amount',30))),'elements',jsonb_build_array(jsonb_build_object('id',next_element,'title','Finish old work','tasks','[]'::jsonb))));
    INSERT INTO public.program_work_program_events(program_id,workspace_id,sequence,revision_id,revision_hash,kind,actor_id,payload,evidence,request_id) VALUES(next_program,w,1,next_revision.id,next_revision.content_sha256,'adoption',o,'{}','[]',gen_random_uuid());
@@ -53,7 +53,7 @@ live("OWP saved reconciliation and carryover custody", () => {
   END $test$;
   SELECT 'OWP_REPORT_ASSERTIONS_REACHED'; ROLLBACK;` });
  }
- const marker = (body: string, replacement = "", extraSource = "", progress = "Review remains") => expect(exercise(body, replacement, extraSource, progress)).toContain("OWP_REPORT_ASSERTIONS_REACHED");
+ const marker = (body: string, replacement = "", extraSource = "", progress = "Review remains", paymentDate = "2026-08-01") => expect(exercise(body, replacement, extraSource, progress, paymentDate)).toContain("OWP_REPORT_ASSERTIONS_REACHED");
  const save = "result:=public.work_program_closeout_command(p,o,close_command); saved_id:=(result->>'id')::uuid;";
  const approve = "result:=public.work_program_closeout_command(p,o,close_command-'assessment'||jsonb_build_object('kind','approve','requestId',gen_random_uuid(),'expectedVersion',1,'note','Synthetic authority evidence'));";
  it("retains exact retries, overlapping baselines, open balances and source identity through approval and reopening", () => marker(`${save}
@@ -199,13 +199,16 @@ live("OWP saved reconciliation and carryover custody", () => {
  IF (SELECT count(*) FROM public.work_program_period_closures WHERE program_id=p)<>2 THEN RAISE EXCEPTION 'Closure history lost'; END IF;
  `));
  it("period closure refuses missing authority, stale approval, foreign access and stale closure versions", () => marker(`
- BEGIN PERFORM public.work_program_period_closure_command(p,o,close_command||'{"kind":"close_period","expectedClosureVersion":0,"note":""}'); RAISE EXCEPTION 'Missing closure evidence accepted'; EXCEPTION WHEN invalid_parameter_value THEN IF SQLERRM NOT LIKE 'Record the period closure%' THEN RAISE; END IF; END;
- BEGIN PERFORM public.work_program_period_closure_command(p,m,close_command); RAISE EXCEPTION 'Member closed'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
- BEGIN PERFORM public.work_program_period_closure_command(p,foreign_user,close_command); RAISE EXCEPTION 'Foreign user closed'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
  BEGIN PERFORM public.work_program_period_closure_command(p,o,close_command||'{"kind":"close_period","expectedClosureVersion":0,"note":"Synthetic"}'); RAISE EXCEPTION 'Unsaved closure accepted'; EXCEPTION WHEN SQLSTATE 'PT409' THEN IF SQLERRM NOT LIKE 'Approve a current reconciliation%' THEN RAISE; END IF; END;
  ${save} ${approve}
+ close_command:=close_command-'assessment'||jsonb_build_object('kind','close_period','requestId',gen_random_uuid(),'expectedVersion',2,'expectedClosureVersion',0,'note','Synthetic authority');
+ BEGIN PERFORM public.work_program_period_closure_command(p,o,close_command||'{"note":""}'); RAISE EXCEPTION 'Missing closure evidence accepted'; EXCEPTION WHEN invalid_parameter_value THEN IF SQLERRM NOT LIKE 'Record the period closure%' THEN RAISE; END IF; END;
+ BEGIN PERFORM public.work_program_period_closure_command(p,m,close_command); RAISE EXCEPTION 'Member closed'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+ BEGIN PERFORM public.work_program_period_closure_command(p,foreign_user,close_command); RAISE EXCEPTION 'Foreign user closed'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
  BEGIN PERFORM public.work_program_period_closure_command(p,o,close_command||jsonb_build_object('requestId',gen_random_uuid())||'{"kind":"close_period","expectedClosureVersion":0,"expectedVersion":2,"sourceHash":"stale","note":"Synthetic"}'); RAISE EXCEPTION 'Stale sources closed'; EXCEPTION WHEN SQLSTATE 'PT409' THEN IF SQLERRM NOT LIKE 'Approve a current reconciliation%' THEN RAISE; END IF; END;
  ${periodClose}
+ BEGIN PERFORM public.work_program_period_closure_command(p,m,close_command||jsonb_build_object('kind','reopen_period','expectedClosureVersion',1,'requestId',gen_random_uuid())); RAISE EXCEPTION 'Member reopened'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+ BEGIN PERFORM public.work_program_period_closure_command(p,foreign_user,close_command||jsonb_build_object('kind','reopen_period','expectedClosureVersion',1,'requestId',gen_random_uuid())); RAISE EXCEPTION 'Foreign user reopened'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
  BEGIN PERFORM public.work_program_period_closure_command(p,o,close_command||jsonb_build_object('kind','reopen_period','requestId',gen_random_uuid())); RAISE EXCEPTION 'Stale closure version accepted'; EXCEPTION WHEN SQLSTATE 'PT409' THEN IF SQLERRM NOT LIKE 'Period closure changed%' THEN RAISE; END IF; END;
  `));
  for (const [name, statement] of [
@@ -233,9 +236,9 @@ live("OWP saved reconciliation and carryover custody", () => {
  PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',o,'role','authenticated')::text,true); SET LOCAL ROLE authenticated;
  IF NOT EXISTS(SELECT 1 FROM public.work_program_period_closures WHERE program_id=p) THEN RAISE EXCEPTION 'RLS hid owner closure'; END IF;
  BEGIN PERFORM public.work_program_period_closure_command(p,o,close_command); RAISE EXCEPTION 'Direct closure execution granted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
- BEGIN INSERT INTO public.work_program_period_closures SELECT * FROM public.work_program_period_closures; RAISE EXCEPTION 'Direct closure insert granted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END; RESET ROLE;
+ BEGIN INSERT INTO public.work_program_period_closures(program_id,workspace_id,period_id,version,kind,starts_on,ends_on,reconciliation_id,content,content_hash,actor_id) SELECT c0.program_id,c0.workspace_id,c0.period_id,c0.version+10000,c0.kind,c0.starts_on,c0.ends_on,c0.reconciliation_id,c0.content,c0.content_hash,c0.actor_id FROM public.work_program_period_closures c0 WHERE c0.program_id=p; RAISE EXCEPTION 'Direct closure insert granted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END; RESET ROLE;
  SET LOCAL ROLE service_role;
- BEGIN INSERT INTO public.work_program_period_closures SELECT * FROM public.work_program_period_closures; RAISE EXCEPTION 'Service direct closure insert granted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END; RESET ROLE;
+ BEGIN INSERT INTO public.work_program_period_closures(program_id,workspace_id,period_id,version,kind,starts_on,ends_on,reconciliation_id,content,content_hash,actor_id) SELECT c0.program_id,c0.workspace_id,c0.period_id,c0.version+10000,c0.kind,c0.starts_on,c0.ends_on,c0.reconciliation_id,c0.content,c0.content_hash,c0.actor_id FROM public.work_program_period_closures c0 WHERE c0.program_id=p; RAISE EXCEPTION 'Service direct closure insert granted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END; RESET ROLE;
  `));
  it("period closure protects opening ranges and mapped expenses", () => marker(`${save} ${approve} ${periodClose}
  BEGIN INSERT INTO public.work_program_actual_versions(entry_id,version,program_id,workspace_id,revision_id,source_key,entry_date,kind,amount,valuation_basis,status,detail,created_by)
@@ -260,4 +263,7 @@ live("OWP saved reconciliation and carryover custody", () => {
  PERFORM public.work_program_closeout_command(p,o,close_command-'assessment'||jsonb_build_object('kind','approve','requestId',gen_random_uuid(),'expectedVersion',3,'note','Synthetic next period approval'));
  IF (SELECT count(*) FROM public.work_program_period_closures WHERE program_id=p)<>1 THEN RAISE EXCEPTION 'Old period reopened'; END IF;
  `));
+ it("period closure protects a matched receipt dated after the closed period", () => marker(`${save} ${approve} ${periodClose}
+ BEGIN PERFORM public.record_work_program_actual(p,o,(SELECT detail FROM public.work_program_actual_versions WHERE entry_id=payment)||jsonb_build_object('requestId',gen_random_uuid(),'expectedVersion',1,'amount','6.00','correctionNote','Synthetic late receipt correction')); RAISE EXCEPTION 'Matched late receipt changed'; EXCEPTION WHEN SQLSTATE 'PT409' THEN IF SQLERRM NOT LIKE 'This accounting period is closed.%' THEN RAISE; END IF; END;
+ `, "", "", "Review remains", "2026-09-15"));
 });
