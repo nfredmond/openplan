@@ -22,6 +22,24 @@ stable enough to promise smooth upgrades indefinitely.
 
 No changes yet.
 
+## 0.49.0 — 2026-09-09
+
+Development candidate until final engineering checks pass and the tag is published.
+[Recovery evidence](docs/reviews/2026-09-09-owp-full-recovery/VERIFICATION.md)
+records completed checks and remaining limits. No new database migration.
+
+- Add `npm run ops:restore-drill -- --full-archive` for complete database and
+  Storage recovery between fresh, matching local Supabase stacks. Preserve database
+  ownership, grants and settings, Auth identities, original approval history,
+  sequence positions and file bytes. Keep the target bootstrap database intact.
+- Independently reconstruct overlapping OWP cycles before and after recovery,
+  including unpaid claims, outstanding commitments, refunds and corrected
+  carryover without duplicating costs. Restore checks use synthetic records;
+  prescribed agency forms and real bank/eligibility verification remain separate.
+- Run the full archive drill and repeatable failure probes in the Restore Drill
+  workflow. External worker files, protected configuration, custom roles, hosted
+  topology and production cutover remain outside this bounded recovery procedure.
+
 ## 0.48.0 — 2026-09-09
 
 Development release. [Engineering evidence](docs/reviews/2026-09-09-v048-release/VERIFICATION.md) covers saved OWP reconciliation, closure, refund matching and multiple successor allocations. No human review or finance sign-off is required for this release.
