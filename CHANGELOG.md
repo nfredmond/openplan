@@ -36,6 +36,9 @@ records completed checks and remaining limits. No new database migration.
   including unpaid claims, outstanding commitments, refunds and corrected
   carryover without duplicating costs. Restore checks use synthetic records;
   prescribed agency forms and real bank/eligibility verification remain separate.
+- Fix Documents hiding the download link for reports retained as inline HTML.
+  It now offers the existing private report download route; missing or malformed
+  content does not acquire a download link.
 - Run the full archive drill and repeatable failure probes in the Restore Drill
   workflow. External worker files, protected configuration, custom roles, hosted
   topology and production cutover remain outside this bounded recovery procedure.

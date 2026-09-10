@@ -21,7 +21,8 @@
  * does not need and no entry ever carries one — `downloadHref` is always the
  * owning module's download ROUTE, which re-verifies scope on dereference.
  * (`report_artifacts.storage_path` is selected ONLY to distinguish "bytes
- * exist" from "no artifact was stored"; the value itself goes nowhere.)
+ * exist" from "no artifact was stored"; inline HTML is checked too. Neither
+ * the path nor the HTML content is returned in library entries.)
  */
 
 import type { AerialArtifactCustodyState } from "@/lib/aerial/artifact-custody";
@@ -164,7 +165,7 @@ const reportArtifactsSource: DocumentLibrarySource = {
   readLabel: "report files",
   table: "report_artifacts",
   select:
-    "id, report_id, artifact_kind, storage_path, generated_at, reports!inner(workspace_id, project_id, title)",
+    "id, report_id, artifact_kind, storage_path, inline_html:metadata_json->htmlContent, generated_at, reports!inner(workspace_id, project_id, title)",
   workspaceFilterColumn: "reports.workspace_id",
   projectFilterColumn: "reports.project_id",
   orderColumn: "generated_at",
@@ -173,7 +174,10 @@ const reportArtifactsSource: DocumentLibrarySource = {
   toEntry: (row) => {
     const report = embedded(row.reports);
     const kind = asString(row.artifact_kind) ?? "pdf";
-    const hasBytes = asString(row.storage_path) !== null;
+    // The report producer also retains HTML inline, without a Storage path.
+    // Match the download route's content test; metadata alone is not PDF bytes.
+    const hasBytes = asString(row.storage_path) !== null ||
+      (kind === "html" && asString(row.inline_html) !== null);
     return {
       sourceId: "report_artifacts",
       id: String(row.id),

@@ -1,0 +1,26 @@
+[
+  {
+    "name": "harmless comment",
+    "result": "survived"
+  },
+  {
+    "name": "missing inline projection",
+    "result": "targeted failure"
+  },
+  {
+    "name": "missing inline availability",
+    "result": "targeted failure"
+  },
+  {
+    "name": "wrong kind accepted",
+    "result": "targeted failure"
+  },
+  {
+    "name": "nonstring accepted",
+    "result": "targeted failure"
+  },
+  {
+    "name": "body leaked into index",
+    "result": "targeted failure"
+  }
+]

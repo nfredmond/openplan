@@ -70,3 +70,36 @@ Focused restoration tests currently pass 27 tests. Full local ops tests passed
 all runnable suites; native layout could not run because `xvfb-run` is absent.
 That unchanged suite remains mandatory in final CI. Full QA and browser acceptance
 are still in progress; none of these partial results counts as release completion.
+
+## Browser-discovered library defect
+
+At identified v0.49 candidate `56ce1ac5825446d1418211e5b55cb7a0ccbebf91`, the
+1440px browser journey restored the old balances/history, downloaded original and
+corrected approvals, refused a closed-period write, recovered an interrupted
+history read, and resumed successor work after an accepted-but-lost save response.
+The retry retained one new draft and left old approvals unchanged. KB file bytes
+also downloaded correctly. The journey then failed to find the report download
+link in Documents. This is a real existing product defect: the library checked
+only `storage_path`, while the report producer and download route also support
+inline `metadata_json.htmlContent`.
+
+The adapter now selects that JSON field through the existing scoped parent join
+and checks the same string/kind condition as the owning download route. It returns
+only the route in library entries; the HTML never becomes an index entry field or
+citable text. Tests exercise actual projection, malformed/non-string content,
+wrong artifact kind and accidental body exposure. One harmless mutation survives;
+removing the projection/availability/type/kind protection or leaking the body
+fails the corresponding query tests. The library still fetches retained HTML to
+check availability; its existing per-source count cap is not a byte-size bound.
+Large artifact listing cost remains an M2 library scaling concern.
+
+The locked-dependency representative restore rerun completed all stages,
+including restored sign-in, file/relationship checks and live RLS. The earlier
+representative run's CLI lookup failed while the worktree dependency link was
+being replaced; that timing is a plausible cause, not a proved diagnosis. The
+failed run is retained as failed. The v0.49 bump initially missed four product
+version markers and caused six direction-guard failures in both test orders.
+After those markers were aligned, shuffled seed `651414` passed 1,232 files and
+13,451 tests (33 files/299 tests skipped, chiefly separately run live suites).
+Production build at `56ce1ac5` passed using Next 16.3.4. That build's incomplete
+browser journey does not establish acceptance of the subsequent library repair.

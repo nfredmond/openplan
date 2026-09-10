@@ -128,7 +128,14 @@ function projectRow(
   const out: Row = {};
   for (const node of nodes) {
     if (node.kind === "column") {
-      out[node.name] = row[node.name];
+      const jsonField = /^(\w+):(\w+)->(\w+)$/.exec(node.name);
+      if (jsonField) {
+        const [, alias, column, key] = jsonField;
+        const value = row[column];
+        out[alias] = value && typeof value === "object" ? (value as Row)[key] : null;
+      } else {
+        out[node.name] = row[node.name];
+      }
       continue;
     }
     if (nulledEmbeds.has(node.name)) {
@@ -538,6 +545,32 @@ function entryIds(entries: Array<{ id: string }>): string[] {
 // ── Tests ───────────────────────────────────────────────────────────────────
 
 describe("loadDocumentLibrary", () => {
+  it("offers private downloads for retained inline HTML without leaking its contents", async () => {
+    const db = buildDb();
+    const html = "<!doctype html><h1>Retained synthetic report</h1>";
+    db.report_artifacts.push({ id: "inline", report_id: "rep-a", artifact_kind: "html",
+      storage_path: null, generated_at: "2026-08-06T10:00:00Z", metadata_json: { htmlContent: html } });
+    const { client } = createFakeSupabase(db);
+    const result = await loadDocumentLibrary(client, { workspaceId: WS_A, sources: ["report_artifacts"] });
+    const entry = result.entries.find(row => row.id === "inline");
+    expect(entry?.hasBytes).toBe(true);
+    expect(entry?.downloadHref).toBe("/api/reports/rep-a/artifacts/inline/download");
+    expect(JSON.stringify(result)).not.toContain(html);
+    expect(JSON.stringify(result)).not.toContain("inline_html");
+  });
+
+  it.each([
+    ["html", ""], ["html", null], ["html", 123], ["html", { body: "not HTML bytes" }],
+    ["pdf", "<!doctype html><h1>Not a PDF</h1>"],
+  ])("does not invent stored bytes for %s with invalid inline content %j", async (kind, content) => {
+    const db = buildDb();
+    db.report_artifacts.push({ id: "invalid-inline", report_id: "rep-a", artifact_kind: kind,
+      storage_path: null, generated_at: "2026-08-06T10:00:00Z", metadata_json: { htmlContent: content } });
+    const { client } = createFakeSupabase(db);
+    const result = await loadDocumentLibrary(client, { workspaceId: WS_A, sources: ["report_artifacts"] });
+    expect(result.entries.find(row => row.id === "invalid-inline")).toMatchObject({ hasBytes: false, downloadHref: null });
+  });
+
   it("lists every phase-1 source for the workspace, and NO cross-workspace row survives — including the two tables whose only tenancy is the !inner parent join", async () => {
     const { client } = createFakeSupabase(buildDb());
     const result = await loadDocumentLibrary(client, { workspaceId: WS_A });
