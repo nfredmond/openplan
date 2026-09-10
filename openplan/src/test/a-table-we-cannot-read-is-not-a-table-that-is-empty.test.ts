@@ -33,6 +33,9 @@ type Row = { count: number | null; error: { message: string; code?: string } | n
 function fakeSupabase(answers: Record<string, Row>, fallback: Row = { count: 0, error: null }) {
   const read: string[] = [];
   const client = {
+    rpc: async () => ({ data: Object.fromEntries(PROJECT_DELETE_RELATIONS.filter(relation => relation.privateProviderHistory).map(relation => {
+      read.push(relation.table);return [relation.table,(answers[relation.table] ?? fallback).count];
+    })), error: PROJECT_DELETE_RELATIONS.filter(relation => relation.privateProviderHistory).map(relation => (answers[relation.table] ?? fallback).error).find(Boolean) ?? null }),
     from(table: string) {
       read.push(table);
       const answer = answers[table] ?? fallback;
@@ -45,12 +48,36 @@ function fakeSupabase(answers: Record<string, Row>, fallback: Row = { count: 0, 
       return chain;
     },
   };
-  return { client: client as never, read };
+  return { client: client as never, rawClient: client, read };
 }
 
 describe("what deleting a project would cost", () => {
+  it("counts hidden provider history through the scoped RPC rather than owner-only row visibility", async () => {
+    const { rawClient, read } = fakeSupabase({});
+    const rpc = async (name: string, args: unknown) => {
+      expect(name).toBe("read_project_provider_retention_counts");expect(args).toEqual({p_project_id:"p1"});
+      return {data:{assistant_provider_connections:1,assistant_provider_turns:2},error:null};
+    };
+    const outcome=await readProjectDeleteOutcome({supabase:{...rawClient,rpc} as never,projectId:"p1"});
+    expect(read).not.toContain("assistant_provider_connections");expect(read).not.toContain("assistant_provider_turns");
+    expect(outcome.kind).toBe("refused");if(outcome.kind!=="refused")throw new Error("Expected retention refusal");
+    expect(outcome.assessment.blockers.map(blocker=>[blocker.table,blocker.count]).sort()).toEqual([["assistant_provider_connections",1],["assistant_provider_turns",2]]);
+  });
+
+  it.each([
+    {name:"refused",data:null,error:{message:"Private query refused",code:"42501"}},
+    {name:"missing",data:{assistant_provider_connections:0},error:null},
+    {name:"negative",data:{assistant_provider_connections:-1,assistant_provider_turns:0},error:null},
+    {name:"fractional",data:{assistant_provider_connections:0,assistant_provider_turns:0.5},error:null},
+  ])("never treats a $name private count as empty", async ({data,error}) => {
+    const {rawClient}=fakeSupabase({});
+    const outcome=await readProjectDeleteOutcome({supabase:{...rawClient,rpc:async()=>({data,error})} as never,projectId:"p1"});
+    expect(outcome.kind).toBe("unreadable");if(outcome.kind!=="unreadable")throw new Error("Expected unreadable history");
+    expect(outcome.tables.length).toBeGreaterThan(0);expect(outcome.messages.join(" ")).toContain("Private Planner Agent history could not be counted.");
+  });
+
   it("refuses to answer at all when a referencing table cannot be read", async () => {
-    const blind = PROJECT_DELETE_RELATIONS[0].table;
+    const blind = PROJECT_DELETE_RELATIONS.find(relation => !relation.privateProviderHistory)!.table;
     const { client } = fakeSupabase({
       [blind]: { count: null, error: { message: "permission denied for table", code: "42501" } },
     });
@@ -111,7 +138,7 @@ describe("what deleting a project would cost", () => {
     // they cannot navigate to is a refusal they have to go and hunt for.
     const blocker = body.blockers.find((candidate) => candidate.table === populated)!;
     expect(blocker.href).toBe(
-      PROJECT_DELETE_RELATIONS.find((relation) => relation.table === populated)!.href
+      PROJECT_DELETE_RELATIONS.find((relation) => relation.table === populated)!.href.replaceAll("{projectId}", "p1")
     );
     expect(blocker.href).not.toBe("");
     expect(blocker.reason).toEqual(expect.any(String));

@@ -74,6 +74,7 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   reason: string;
 }> = [
   { column: "assistant_action_executions.result_receipt", category: "READ_IN_SQL", reason: "read_assistant_hold_receipt returns the original committed decision to the recovery UI after checking original consent and current membership. Live HOLD receipt and concurrency tests exercise exact recovery and isolation." },
+  { column: "assistant_provider_turns.request_hash", category: "READ_IN_SQL", reason: "The create-turn transaction compares the frozen request digest on duplicate request IDs; concurrent native/API retries exercise it. It is intentionally omitted from route responses." },
   { column: "work_program_reimbursement_sources.source_identity", category: "READ_IN_SQL", reason: "The reimbursement transaction reserves physical time/spend identities across all workspace packets. Live duplicate packet and correction tests exercise this boundary." },
   { column: "contract_source_changes.transaction_id", category: "READ_IN_SQL", reason: "The visibility guard distinguishes inputs known inside the issuing transaction from changes first observed after another transaction commits; the two-session visibility probe covers the latter." },
   { column: "contract_source_observations.source_change_id", category: "READ_IN_SQL", reason: "The management reader joins an immutable first-observation receipt to each journaled source change without exposing private change timing." },

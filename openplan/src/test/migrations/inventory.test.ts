@@ -471,16 +471,17 @@ const EXPECTED = {
   // Confirmed on the disposable stack: contract_source_observations has RLS and zero policies.
   // 20261004000001: one private SELECT-only closeout history table; live catalog confirms +1.
   // 20261005000001: one private SELECT-only period decision table; no direct writes.
-  policies: 748,
-  permissive: 497,
+  // Two owner-readable provider tables add two SELECT policies; no direct writes.
+  policies: 750,
+  permissive: 499,
   restrictive: 251,
   permissiveWrites: 280,
   expanded: 286,
-  tablesWithPolicies: 214,
-  relations: 247,
-  tables: 234,
+  tablesWithPolicies: 216,
+  relations: 249,
+  tables: 236,
   views: 13,
-  rlsEnabledTables: 234,
+  rlsEnabledTables: 236,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

@@ -20,7 +20,17 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No changes yet.
+Projects now offer a narrow Planner Agent task using installed Codex or a selected
+Anthropic API model, with private retained answers, draft submittals, revocable
+computer connections and interruption recovery. The initial native connector
+supports standalone Codex 0.154.0 on Linux. Broader chat, additional backends and
+full assignments remain unfinished. API integration evidence uses a local scripted
+transport; actual native ChatGPT-account journeys cover desktop and 390px.
+
+Apply `20261010000001_assistant_provider_connections.sql` before the new app.
+It adds private connection/request tables, scoped transaction functions and project
+history retention guards. It does not execute business actions or supply agency
+approvals. Release verification is still in progress.
 
 ## 0.51.0 — 2026-09-10
 

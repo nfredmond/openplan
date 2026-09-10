@@ -1,3 +1,4 @@
+import type { createClient } from "@/lib/supabase/server";
 import {
   assessProjectDelete,
   PROJECT_DELETE_RELATIONS,
@@ -38,7 +39,7 @@ export type ProjectDeleteOutcome =
   | { kind: "refused"; assessment: ProjectDeleteAssessment }
   | { kind: "deletable"; assessment: ProjectDeleteAssessment };
 
-type CountingClient = Parameters<typeof countReferences>[0]["supabase"];
+type CountingClient = Pick<Awaited<ReturnType<typeof createClient>>, "from" | "rpc">;
 
 export async function readProjectDeleteOutcome({
   supabase,
@@ -52,9 +53,18 @@ export async function readProjectDeleteOutcome({
 }): Promise<ProjectDeleteOutcome> {
   const { counts, unreadable } = await countReferences({
     supabase,
-    targets: PROJECT_DELETE_RELATIONS,
+    targets: PROJECT_DELETE_RELATIONS.filter(relation => !relation.privateProviderHistory),
     value: projectId,
   });
+
+  const retained = await supabase.rpc("read_project_provider_retention_counts", { p_project_id: projectId });
+  const privateRelations = PROJECT_DELETE_RELATIONS.filter(relation => relation.privateProviderHistory);
+  for (const relation of privateRelations) {
+    const count = retained.data?.[relation.table];
+    if (retained.error || typeof count !== "number" || !Number.isSafeInteger(count) || count < 0) {
+      unreadable.push({ table: relation.table, message: "Private Planner Agent history could not be counted.", code: retained.error?.code ?? null });
+    } else counts[relation.table] = count;
+  }
 
   if (unreadable.length > 0) {
     return {

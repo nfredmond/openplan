@@ -152,6 +152,9 @@ const UNGATED_BY_DESIGN: Record<string, string> = {
   // /api/assistant/actions/approvals, which uses canAccessWorkspaceAction).
   "assistant/route.ts": "reads context and answers; performs no workspace write",
   "assistant/chat/route.ts": "reads context and answers; performs no workspace write",
+  "assistant/providers/connections/route.ts": "personal scoped connection state only; current project membership checked in SQL; no business effect",
+  "assistant/providers/turns/route.ts": "personal retained answers and draft proposals only; current project membership checked in SQL; effects require the existing separately authorized action route",
+  "assistant/providers/native/route.ts": "project-scoped bearer capability with current membership checks; retains private answers, never executes business actions",
 
   // Public participation. These are the resident-facing surfaces of a published
   // engagement campaign, reached by share token with no session at all — the

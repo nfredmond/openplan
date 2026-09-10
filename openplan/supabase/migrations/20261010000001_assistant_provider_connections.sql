@@ -308,3 +308,36 @@ BEGIN
 END $$;
 REVOKE ALL ON FUNCTION public.read_assistant_provider_turn_for_user(uuid,uuid) FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.read_assistant_provider_turn_for_user(uuid,uuid) TO service_role;
+
+-- Project managers need retention counts, never another person's question,
+-- connection identity or answer. Ordinary SELECT remains owner-only.
+CREATE FUNCTION public.read_project_provider_retention_counts(p_project_id uuid)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
+DECLARE project_workspace uuid;
+BEGIN
+  SELECT workspace_id INTO project_workspace FROM public.projects WHERE id=p_project_id;
+  IF NOT FOUND OR NOT EXISTS(SELECT 1 FROM public.workspace_members WHERE workspace_id=project_workspace
+      AND user_id=auth.uid() AND lower(trim(coalesce(role,''))) IN ('owner','admin','member')) THEN
+    RAISE EXCEPTION 'Project retention access denied' USING ERRCODE='42501';
+  END IF;
+  RETURN jsonb_build_object(
+    'assistant_provider_connections',(SELECT count(*) FROM public.assistant_provider_connections WHERE project_id=p_project_id),
+    'assistant_provider_turns',(SELECT count(*) FROM public.assistant_provider_turns WHERE project_id=p_project_id));
+END $$;
+REVOKE ALL ON FUNCTION public.read_project_provider_retention_counts(uuid) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.read_project_provider_retention_counts(uuid) TO authenticated;
+
+-- The dialog is advisory. Keep private history safe if another person cannot
+-- see it, or a request races the reference count. Retiring a project is reversible.
+CREATE FUNCTION public.preserve_project_provider_history()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
+BEGIN
+  IF EXISTS(SELECT 1 FROM public.assistant_provider_connections WHERE project_id=OLD.id)
+    OR EXISTS(SELECT 1 FROM public.assistant_provider_turns WHERE project_id=OLD.id) THEN
+    RAISE EXCEPTION 'Retained Planner Agent history prevents project deletion; retire the project instead' USING ERRCODE='23503';
+  END IF;
+  RETURN OLD;
+END $$;
+REVOKE ALL ON FUNCTION public.preserve_project_provider_history() FROM PUBLIC,anon,authenticated,service_role;
+CREATE TRIGGER preserve_project_provider_history BEFORE DELETE ON public.projects
+  FOR EACH ROW EXECUTE FUNCTION public.preserve_project_provider_history();

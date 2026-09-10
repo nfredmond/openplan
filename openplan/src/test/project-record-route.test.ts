@@ -3,13 +3,14 @@ import { NextRequest } from "next/server";
 
 const authGetUserMock = vi.fn();
 const fromMock = vi.fn();
+const retentionCountsMock = vi.fn();
 const projectUpdateMock = vi.fn();
 const loadProjectAccessMock = vi.fn();
 
 const mockAudit = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 
 vi.mock("@/lib/supabase/server", () => ({
-  createClient: async () => ({ auth: { getUser: authGetUserMock }, from: fromMock }),
+  createClient: async () => ({ auth: { getUser: authGetUserMock }, from: fromMock, rpc: retentionCountsMock }),
   createServiceRoleClient: () => {
     throw new Error("the project record route must not use the service-role client");
   },
@@ -44,6 +45,10 @@ function deleteRequest() {
 
 /** Counts returned for every relation, overridable per table. */
 function withCounts(counts: Record<string, number>, options: { failing?: string[] } = {}) {
+  retentionCountsMock.mockImplementation(async (name: string, args: unknown) => {
+    expect(name).toBe("read_project_provider_retention_counts");expect(args).toEqual({p_project_id:PROJECT_ID});
+    return {data:{assistant_provider_connections:counts.assistant_provider_connections ?? 0,assistant_provider_turns:counts.assistant_provider_turns ?? 0},error:options.failing?.some(table=>table.startsWith("assistant_provider_"))?{message:"Synthetic private count refusal"}:null};
+  });
   fromMock.mockImplementation((table: string) => {
     if (table === "projects") {
       return {
@@ -303,7 +308,8 @@ describe("project record route", () => {
 
       await deleteProject(deleteRequest(), params);
 
-      expect(counted.sort()).toEqual(PROJECT_DELETE_RELATIONS.map((r) => r.table).sort());
+      expect(counted.sort()).toEqual(PROJECT_DELETE_RELATIONS.filter(r => !r.privateProviderHistory).map((r) => r.table).sort());
+      expect(retentionCountsMock).toHaveBeenCalledWith("read_project_provider_retention_counts", {p_project_id:PROJECT_ID});
     });
 
     it("does not claim success when the delete removed no rows", async () => {

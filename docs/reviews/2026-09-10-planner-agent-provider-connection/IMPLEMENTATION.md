@@ -338,3 +338,48 @@ upgrade evidence; prepare a bounded v0.52.0 release, merge directly to main and 
 its final CI before tagging. A0a remains partial beyond the tested narrow project
 record task; API evidence uses a scripted transport and broader chat/provider work,
 additional native backends and durable assignments remain ahead.
+
+## Full-suite integration findings
+
+At c4026ed2, full QA and shuffled seed910052 each reached13741 passed,349 skipped
+and seven failed tests in six files. Failures identified the new two-table/policy
+inventory, omitted SQL-only request digest documentation, missing Unreleased
+migration instructions, explicit private-provider route classifications, one copy
+label, and missing project-deletion dependencies. No green full-suite claim was
+made. The full isolated RLS run passed378 tests in46 files in396.86seconds. All52
+Python worker suites and all33 connector tests (including actual-native fixtures)
+passed. The ordinary QA connector suite remains separately default-skipped for the
+two opt-in native cases when no binary is supplied.
+
+The deletion finding required a code fix, not just inventory bookkeeping. Ordinary
+user SELECT hides other users' personal provider rows. A narrow authenticated RPC
+now checks current writer membership and returns only per-project counts; no
+personal IDs, questions, tokens or answers. The existing preflight/DELETE count
+helper uses it and refuses missing, malformed or denied results. The registry
+explains preservation and retirement. A database BEFORE DELETE trigger separately
+blocks deletion when private provider history exists, even if the caller bypasses
+the dialog. Empty project deletion remains allowed. No existing row or constraint
+was dropped. Both named disposable stacks received the new function/trigger tail
+of the unreleased provider migration; the migration count remains314.
+
+The new live case confirms another project owner's SELECT sees zero private rows,
+but the administrative RPC returns exactly two counts; viewers and outsiders are
+refused. It proves empty deletion and retained-history refusal. The first mutation
+run exposed a surviving unreadable-private-count-as-zero mutant. Four explicit
+refused/missing/negative/fractional count cases were added; preserve the first result
+and record the rerun instead of erasing that coverage gap. Test fixture assumptions
+about first table order, count sorting and substituted URLs were corrected without
+weakening the app protections.
+
+Pending: inspect the final mutation rerun, restored focused/RLS/lint/type checks,
+commit/freeze/rebuild and desktop390px deletion-dialog acceptance, then fullQA and
+shuffle again. Prepare0.52release metadata only after those checks. Merge main,
+inspect exact-SHA CI and populated upgrade before tagging. No human gate.
+
+The strengthened count tests initially compared a table-prefixed message array to
+an unprefixed exact string; the harmless control correctly failed. Corrected that
+assertion, checked the restored baseline first, then reran every mutation. All ten
+outcomes now match: both harmless controls pass, and hidden/unreadable counts,
+missing role classification/digest inventory, missing table count, copy regression,
+delete cascade and viewer-count access fail the intended checks. Source and SQL
+were restored. Initial failures and final results are retained separately.

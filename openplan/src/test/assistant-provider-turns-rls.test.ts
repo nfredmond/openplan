@@ -164,4 +164,30 @@ live("scoped provider connections and retained turns", () => {
       job:=public.finish_assistant_provider_turn((job->>'id')::uuid,(job->>'attempt_id')::uuid,'@owner',NULL,NULL,NULL,NULL,'api_interrupted');
       IF job->>'state'<>'failed' OR job->'result'<>'null'::jsonb THEN RAISE EXCEPTION 'API failure reported success'; END IF;
     END $$;`));
+  it("reveals only private retention counts to project writers and blocks project deletion", () => exercise(`
+    SELECT pg_temp.make_turn();
+    SET LOCAL ROLE authenticated;
+    SELECT set_config('request.jwt.claim.sub','@custodian',true);
+    DO $$ DECLARE counts jsonb; BEGIN
+      IF EXISTS(SELECT 1 FROM public.assistant_provider_turns WHERE project_id='@project')
+        OR EXISTS(SELECT 1 FROM public.assistant_provider_connections WHERE project_id='@project') THEN RAISE EXCEPTION 'Other owner read private provider contents'; END IF;
+      counts:=public.read_project_provider_retention_counts('@project');
+      IF counts<>jsonb_build_object('assistant_provider_connections',1,'assistant_provider_turns',1) THEN RAISE EXCEPTION 'Private history count missing or disclosing extra fields'; END IF;
+    END $$;
+    SELECT set_config('request.jwt.claim.sub','@viewer',true);
+    DO $$ BEGIN
+      BEGIN PERFORM public.read_project_provider_retention_counts('@project'); RAISE EXCEPTION 'Viewer read administrative counts'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+    END $$;
+    SELECT set_config('request.jwt.claim.sub','@outsider',true);
+    DO $$ BEGIN
+      BEGIN PERFORM public.read_project_provider_retention_counts('@project'); RAISE EXCEPTION 'Outsider read private history counts'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+    END $$;
+    RESET ROLE;
+    DELETE FROM public.projects WHERE id='@otherProject';
+    DO $$ BEGIN
+      BEGIN DELETE FROM public.projects WHERE id='@project'; RAISE EXCEPTION 'Project deletion destroyed private history'; EXCEPTION WHEN foreign_key_violation THEN NULL; END;
+      IF (SELECT count(*) FROM public.assistant_provider_turns WHERE project_id='@project')<>1 THEN RAISE EXCEPTION 'Private history was lost'; END IF;
+    END $$;
+  `));
+
 });

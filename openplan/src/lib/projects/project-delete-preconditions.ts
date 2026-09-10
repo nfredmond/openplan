@@ -38,6 +38,8 @@ export type ProjectDeleteCascadeBehavior = "cascade" | "orphan" | "restrict";
 export type ProjectDeleteRelation = {
   /** Table holding the reference. */
   table: string;
+  /** Count through the permission-checked retention RPC, not owner-only RLS. */
+  privateProviderHistory?: boolean;
   /** Column holding it. Naming it keeps the inventory and count query checkable. */
   column: string;
   /** What a planner calls these records. */
@@ -79,6 +81,8 @@ export type ProjectDeleteAssessment = {
  * hang off a project would be destroyed by a delete that never mentioned it.
  */
 export const PROJECT_DELETE_RELATIONS: readonly ProjectDeleteRelation[] = [
+  { table: "assistant_provider_connections", column: "project_id", label: "Planner Agent computer connections", severity: "evidence", behavior: "cascade", privateProviderHistory: true, href: "/projects/{projectId}", describeLoss: () => "Retained Planner Agent connections prevent deletion. Retire this project to preserve its history." },
+  { table: "assistant_provider_turns", column: "project_id", label: "saved Planner Agent requests", severity: "evidence", behavior: "cascade", privateProviderHistory: true, href: "/projects/{projectId}", describeLoss: () => "Saved Planner Agent questions and answers must remain available. Retire this project to preserve its history." },
   { table: "contract_source_deletions", column: "project_id", label: "retained contract source history", severity: "blocking", behavior: "restrict", href: "/invoicing" },
   { table: "contract_tasks", column: "project_id", label: "retained contract tasks", severity: "blocking", behavior: "restrict", href: "/invoicing" },
   // External commitments. These outlive the project by design.
