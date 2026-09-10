@@ -93,3 +93,30 @@ All 52 worker suites passed. The browser-stack migration preserved all captured
 The read-only comparison survived a comment change and rejected a corrupted
 returned hash without changing the database. Full RLS, corrected full QA,
 shuffled order and browser acceptance remain pending at this checkpoint.
+
+## Browser-led display correction
+
+At729fc8e2, corrected full QA/build and shuffled seed510091 passed13,656 tests
+in1,245files (329tests in37files skipped). Clean live RLS passed358tests in44files.
+The first server start omitted OPENPLAN_COMMIT_SHA; the identity guard refused its
+unknown commit. Restarting the same frozen, just-built source with the recorded
+729fc8e2c293da8be5b81bbb3166e443b260b1a8 stamp established identity before navigation.
+No browser claim is based on the unidentified start.
+
+Desktop1440 and390px journeys reached submittal proposals from real Projects
+navigation, approved with keyboard controls, recovered a response interrupted
+after201 without another effect, and resumed a request interrupted before reaching
+the server with the same approval. Each produced one original record and audit
+receipt per consent, replayed with200, and denied anonymous recovery with401.
+A keyboard manual status advance changed the current submittal to internal review;
+its original receipt stayed draft. Only the deliberate connection-failure console
+entries appeared, and document/panel widths stayed within each viewport.
+
+Screenshot inspection found that the card said it retained the original result
+without displaying its status or type, and the project-name line broke numbers
+across lines on phones. Stopped the identified server before editing. The card now
+shows original status/type and separates the readable name from the exact ID.
+The affected17 UI tests and scoped lint pass; harmless whitespace survives and
+substituting accepted for the original status fails the intended assertion.
+A new frozen build and repeated browser journey are still required for this display
+correction. Initial screenshots/results remain in the scratch first-journey folder.

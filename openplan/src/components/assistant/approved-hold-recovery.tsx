@@ -91,12 +91,13 @@ function ApprovedActionRecovery({ workspaceId, kind }: { workspaceId: string; ki
             <p className="mt-1 text-xs text-muted-foreground">Approved {new Date(item.approvedAt).toLocaleString()}</p>
             {item.action ? <p className="mt-3 whitespace-pre-wrap break-words text-sm">{item.action.kind === "record_stage_gate_hold" ? item.action.rationale : item.action.notes}</p> : null}
             {item.action?.kind === "record_stage_gate_hold" && item.action.missingArtifacts?.length ? <p className="mt-2 break-words text-sm">Missing evidence: {item.action.missingArtifacts.join(", ")}</p> : null}
-            {item.action ? <dl className="mt-2 space-y-1 break-all text-xs text-muted-foreground">
-              <div><dt className="inline">Project: </dt><dd className="inline">{"projectName" in item && item.projectName ? `${item.projectName} (name at approval) — ` : ""}{item.action.projectId}</dd></div>
+            {item.action ? <dl className="mt-2 space-y-1 break-words text-xs text-muted-foreground">
+              <div><dt className="inline">Project: </dt><dd className="inline">{"projectName" in item && item.projectName ? <span>{item.projectName} (name at approval)<br /></span> : null}<span className="break-all">{item.action.projectId}</span></dd></div>
               {item.action.kind === "record_stage_gate_hold" && item.action.runId ? <div><dt className="inline">Analysis run: </dt><dd className="inline">{item.action.runId}</dd></div> : null}
               {item.action.kind === "record_stage_gate_hold" && item.action.modelRunId ? <div><dt className="inline">Model run: </dt><dd className="inline">{item.action.modelRunId}</dd></div> : null}
               {item.action.kind === "record_stage_gate_hold" && item.action.countyRunId ? <div><dt className="inline">County run: </dt><dd className="inline">{item.action.countyRunId}</dd></div> : null}
             </dl> : null}
+            {item.receipt && "record" in item.receipt ? <p className="mt-3 break-words text-sm">Original status: {item.receipt.record.status.replace(/_/g, " ")}. Submittal type: {item.receipt.record.submittal_type.replace(/_/g, " ")}.</p> : null}
             {item.issue ? <p className="mt-3 text-sm">{item.issue}</p> : item.receipt ? (
               <p className="mt-3 text-sm font-medium">{kind === "HOLD" ? "HOLD" : "Submittal"} saved {new Date("decision" in item.receipt ? item.receipt.decision.decided_at : item.receipt.record.created_at).toLocaleString()}. Its original receipt is retained.{"record" in item.receipt ? " This is the result at creation; later project or record edits do not change it." : ""}</p>
             ) : (

@@ -1,0 +1,12 @@
+[
+  {
+    "name": "status-harmless",
+    "exit": 0,
+    "expectedOutcome": true
+  },
+  {
+    "name": "status-wrong-result",
+    "exit": 1,
+    "expectedOutcome": true
+  }
+]
