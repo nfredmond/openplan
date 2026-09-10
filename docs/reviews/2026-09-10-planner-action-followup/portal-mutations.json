@@ -1,0 +1,12 @@
+[
+  {
+    "name": "portal-harmless",
+    "exitCode": 0,
+    "expectedFailure": false
+  },
+  {
+    "name": "portal-inside-shell",
+    "exitCode": 1,
+    "expectedFailure": true
+  }
+]

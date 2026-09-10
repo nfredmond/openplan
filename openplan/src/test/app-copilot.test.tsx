@@ -521,6 +521,12 @@ describe("AppCopilot", () => {
     expect(executeCall).toBeUndefined();
   });
 
+  it("places the modal outside shell stacking contexts and gives conversation its own scroll region", async () => {
+    await openPanel();
+    expect(screen.getByRole("dialog").parentElement).toBe(document.body);
+    expect(screen.getByRole("region", { name: "Planner Agent conversation" })).toHaveAttribute("tabindex", "0");
+  });
+
   it.each(["effect", "prompt"] as const)("distinguishes a refused %s from a completed request", async (failureAt) => {
     const baseFetch = fetchMock.getMockImplementation()!;
     let writes = 0;

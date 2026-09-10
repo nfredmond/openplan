@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { ArrowUpRight, Bot, ChevronDown, ChevronRight, Eye, EyeOff, Loader2, Pin, Send, Sparkles, User, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
@@ -28,7 +29,6 @@ import {
   type AssistantLocalConsoleViewMode,
 } from "@/lib/assistant/local-console-state";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Textarea } from "@/components/ui/textarea";
 import { ActionFollowUpError, executeAction as dispatchRegistryAction } from "@/lib/runtime/action-registry";
@@ -2143,7 +2143,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         <span>Planner Agent</span>
       </Button>
 
-      {open ? (
+      {open ? createPortal(
         <div className="fixed inset-0 z-[110] flex justify-end bg-slate-950/55 backdrop-blur-[2px]" role="dialog" aria-modal="true">
           <button type="button" className="flex-1 cursor-default" aria-label="Close Planner Agent overlay" onClick={() => setOpen(false)} />
           <aside className="relative flex h-full w-full max-w-[560px] flex-col border-l border-white/10 bg-[linear-gradient(180deg,rgba(6,12,18,0.98),rgba(9,16,24,0.985))] text-slate-100 shadow-[-24px_0_60px_rgba(2,8,15,0.34)]">
@@ -2177,8 +2177,8 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
             </div>
 
-            <div className="grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)_auto]">
-              <ScrollArea className="min-h-0 px-5 py-4 sm:px-6">
+            <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 grid-rows-[minmax(0,1fr)_auto]">
+              <div role="region" aria-label="Planner Agent conversation" tabIndex={0} className="min-h-0 min-w-0 overflow-y-auto px-5 py-4 sm:px-6">
                 <div className="space-y-4 pb-2">
                   {loadingContext ? (
                     <div className="flex items-center gap-2 rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-slate-300/82">
@@ -2627,7 +2627,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                     </div>
                   ) : null}
                 </div>
-              </ScrollArea>
+              </div>
 
               <div className="border-t border-white/8 px-5 py-4 sm:px-6">
                 <label className="mb-2 block text-[0.66rem] font-semibold uppercase tracking-[0.22em] text-slate-400">
@@ -2726,7 +2726,8 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
               </div>
             ) : null}
           </aside>
-        </div>
+        </div>,
+        document.body
       ) : null}
     </>
   );

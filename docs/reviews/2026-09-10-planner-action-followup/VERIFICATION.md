@@ -102,3 +102,19 @@ control. The earlier offscreen-control probe initially survived because it sampl
 a CSS transition before displacement; restoration also animated. The instrument
 now disables transitions for both movements, rather than treating those results
 as an application defect or accepted control evidence.
+
+Desktop acceptance then completed both entry points, including real saves,
+checksum checks and layout controls, but 390px failed: an implicit grid column
+expanded to 518px. A narrow browser probe isolated Radix's inner `display: table`
+minimum width; changing it to ordinary block flow restored text wrapping.
+The same probe showed the mobile navigation covering part of Send because the
+modal inherited the launcher's z-index-35 stacking context beneath the rail.
+
+The conversation now uses native vertical overflow, an explicit single flexible
+column, and a focusable named region. The modal uses a React portal into the
+body, leaving the launcher in its existing slot. The narrow live layout probe
+showed 389px content inside the 390px viewport and an unobstructed composer.
+A harmless portal comment survives; replacing the portal with in-place rendering
+fails its focused regression test. Four focused suites pass 41 tests. The last
+full local QA at `8708b92d` passed 13,467 tests plus build/audit; final CI must cover
+these subsequent layout changes and the additional portal test before tagging.
