@@ -1,0 +1,37 @@
+[
+  {
+    "name": "harmless-comment",
+    "exitCode": 0,
+    "expectedFailure": false
+  },
+  {
+    "name": "erase-followup-boundary",
+    "exitCode": 1,
+    "expectedFailure": true
+  },
+  {
+    "name": "misclassify-write-failure",
+    "exitCode": 1,
+    "expectedFailure": true
+  },
+  {
+    "name": "quick-link-loses-success",
+    "exitCode": 1,
+    "expectedFailure": true
+  },
+  {
+    "name": "proposal-loses-success",
+    "exitCode": 1,
+    "expectedFailure": true
+  },
+  {
+    "name": "swallow-prompt-failure",
+    "exitCode": 1,
+    "expectedFailure": true
+  },
+  {
+    "name": "recovery-skips-read",
+    "exitCode": 1,
+    "expectedFailure": true
+  }
+]

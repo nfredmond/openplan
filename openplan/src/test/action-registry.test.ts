@@ -10,6 +10,9 @@ vi.mock("@/lib/reports/client", () => ({
 
 import {
   ACTION_REGISTRY,
+  ActionFollowUpError,
+  type ActionExecutionHost,
+  type ActionFollowUpStage,
   executeAction,
   getActionRecord,
   MAX_REGROUNDING_DEPTH,
@@ -281,5 +284,52 @@ describe("executeAction regrounding depth guard", () => {
     expect(effectInvocations.length).toBe(MAX_REGROUNDING_DEPTH + 1);
     expect(submitPostActionPrompt).toHaveBeenCalledTimes(MAX_REGROUNDING_DEPTH);
     expect(skipEvents).toEqual([{ depth: MAX_REGROUNDING_DEPTH, maxDepth: MAX_REGROUNDING_DEPTH }]);
+  });
+});
+
+
+describe("successful effect with failed follow-up", () => {
+  it.each([
+    ["onCompleted", "completion", 0],
+    ["refreshAssistantPreview", "context_refresh", 0],
+    ["onRegroundingResult", "context_result", 0],
+    ["submitPostActionPrompt", "post_action_prompt", 0],
+    ["onPostActionPromptSkipped", "depth_notice", MAX_REGROUNDING_DEPTH],
+  ] as const)("preserves success when %s fails", async (callback, stage: ActionFollowUpStage, depth) => {
+    generateReportArtifactMock.mockClear();
+    generateReportArtifactMock.mockResolvedValueOnce({});
+    const cause = new Error("synthetic follow-up failure");
+    const host: ActionExecutionHost = {
+      onCompleted: vi.fn(),
+      refreshAssistantPreview: vi.fn().mockResolvedValue({ quickLinks: [] }),
+      onRegroundingResult: vi.fn(),
+      submitPostActionPrompt: vi.fn(),
+      onPostActionPromptSkipped: vi.fn(),
+      [callback]: vi.fn().mockRejectedValue(cause),
+    };
+    const failure = await executeAction(
+      { kind: "generate_report_artifact", reportId: "report-1", postActionPrompt: "Follow up" },
+      host,
+      { regroundingDepth: depth }
+    ).catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(ActionFollowUpError);
+    expect(failure).toMatchObject({ stage, cause });
+    expect(generateReportArtifactMock).toHaveBeenCalledTimes(1);
+    if (callback !== "submitPostActionPrompt") expect(host.submitPostActionPrompt).not.toHaveBeenCalled();
+  });
+
+  it("does not classify an unsuccessful effect as a follow-up failure", async () => {
+    const cause = new Error("write refused");
+    generateReportArtifactMock.mockRejectedValueOnce(cause);
+    const onCompleted = vi.fn();
+    const refreshAssistantPreview = vi.fn();
+    const failure = await executeAction(
+      { kind: "generate_report_artifact", reportId: "report-1" },
+      { onCompleted, refreshAssistantPreview }
+    ).catch((error: unknown) => error);
+    expect(failure).toBe(cause);
+    expect(failure).not.toBeInstanceOf(ActionFollowUpError);
+    expect(onCompleted).not.toHaveBeenCalled();
+    expect(refreshAssistantPreview).not.toHaveBeenCalled();
   });
 });

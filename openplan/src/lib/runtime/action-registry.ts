@@ -351,6 +351,18 @@ export type ExecuteActionOptions = {
   approvalEvidence?: AssistantActionApprovalEvidence | null;
 };
 
+export type ActionFollowUpStage = "completion" | "context_refresh" | "context_result" | "depth_notice" | "post_action_prompt";
+
+// The action endpoint has succeeded; callers must preserve that outcome even
+// when later UI/context work fails. Retrying this error must not repeat the effect.
+export class ActionFollowUpError extends Error {
+  constructor(readonly stage: ActionFollowUpStage, cause: unknown) {
+    const detail = cause instanceof Error ? cause.message : "Unknown follow-up error";
+    super(`The action request succeeded, but its follow-up failed (${stage.replaceAll("_", " ")}). ${detail}`, { cause });
+    this.name = "ActionFollowUpError";
+  }
+}
+
 export async function executeAction<K extends AssistantQuickLinkExecuteAction["kind"]>(
   action: Extract<AssistantQuickLinkExecuteAction, { kind: K }>,
   host: ActionExecutionHost,
@@ -365,36 +377,45 @@ export async function executeAction<K extends AssistantQuickLinkExecuteAction["k
 
   await record.effect(action, { approvalEvidence: options.approvalEvidence });
 
-  await host.onCompleted({ regrounding: record.regrounding });
+  let stage: ActionFollowUpStage = "completion";
+  try {
+    await host.onCompleted({ regrounding: record.regrounding });
 
-  let refreshedPreviewQuickLinks: unknown = null;
-  if (record.regrounding === "refresh_preview" && host.refreshAssistantPreview) {
-    const refreshed = await host.refreshAssistantPreview();
-    refreshedPreviewQuickLinks = refreshed?.quickLinks ?? null;
-    if (host.onRegroundingResult) {
-      await host.onRegroundingResult(refreshedPreviewQuickLinks);
+    let refreshedPreviewQuickLinks: unknown = null;
+    if (record.regrounding === "refresh_preview" && host.refreshAssistantPreview) {
+      stage = "context_refresh";
+      const refreshed = await host.refreshAssistantPreview();
+      refreshedPreviewQuickLinks = refreshed?.quickLinks ?? null;
+      if (host.onRegroundingResult) {
+        stage = "context_result";
+        await host.onRegroundingResult(refreshedPreviewQuickLinks);
+      }
     }
-  }
 
-  const hasPostPrompt = Boolean(action.postActionWorkflowId || action.postActionPrompt);
-  if (!hasPostPrompt || !host.submitPostActionPrompt) return;
+    const hasPostPrompt = Boolean(action.postActionWorkflowId || action.postActionPrompt);
+    if (!hasPostPrompt || !host.submitPostActionPrompt) return;
 
-  if (regroundingDepth >= MAX_REGROUNDING_DEPTH) {
-    if (host.onPostActionPromptSkipped) {
-      await host.onPostActionPromptSkipped({
-        reason: "depth_exceeded",
-        depth: regroundingDepth,
-        maxDepth: MAX_REGROUNDING_DEPTH,
-      });
+    if (regroundingDepth >= MAX_REGROUNDING_DEPTH) {
+      if (host.onPostActionPromptSkipped) {
+        stage = "depth_notice";
+        await host.onPostActionPromptSkipped({
+          reason: "depth_exceeded",
+          depth: regroundingDepth,
+          maxDepth: MAX_REGROUNDING_DEPTH,
+        });
+      }
+      return;
     }
-    return;
-  }
 
-  await host.submitPostActionPrompt({
-    postActionWorkflowId: action.postActionWorkflowId,
-    postActionPrompt: action.postActionPrompt,
-    postActionPromptLabel: action.postActionPromptLabel,
-    refreshedPreviewQuickLinks,
-    regroundingDepth: regroundingDepth + 1,
-  });
+    stage = "post_action_prompt";
+    await host.submitPostActionPrompt({
+      postActionWorkflowId: action.postActionWorkflowId,
+      postActionPrompt: action.postActionPrompt,
+      postActionPromptLabel: action.postActionPromptLabel,
+      refreshedPreviewQuickLinks,
+      regroundingDepth: regroundingDepth + 1,
+    });
+  } catch (cause) {
+    throw new ActionFollowUpError(stage, cause);
+  }
 }

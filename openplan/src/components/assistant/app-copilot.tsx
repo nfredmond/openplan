@@ -31,7 +31,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Textarea } from "@/components/ui/textarea";
-import { executeAction as dispatchRegistryAction } from "@/lib/runtime/action-registry";
+import { ActionFollowUpError, executeAction as dispatchRegistryAction } from "@/lib/runtime/action-registry";
 import type { AssistantQuickLinkExecuteAction } from "@/lib/assistant/catalog";
 import { getActionMetadata, resolveQuickLinkApproval } from "@/lib/runtime/action-metadata";
 import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
@@ -60,6 +60,7 @@ type ChatProposalEntry = {
   proposal: AssistantChatProposal;
   state: "pending" | "executing" | "executed" | "failed" | "dismissed";
   error?: string;
+  followUpWarning?: string;
 };
 
 type ConversationEntry =
@@ -122,6 +123,7 @@ type OperationInvocationState = {
   startedAt: number;
   finishedAt?: number;
   error?: string;
+  followUpWarning?: string;
 };
 
 const OPERATION_FILTER_STORAGE_KEY = "openplan:planner-agent:operation-filter";
@@ -677,8 +679,11 @@ function ChatProposalCard({
       ) : null}
       {entry.state === "executed" ? (
         <p className="mt-2 text-xs font-semibold leading-relaxed text-emerald-100/92">
-          Approved and executed. The change is recorded in the action log.
+          Approved and executed. Check the record or job for its result.
         </p>
+      ) : null}
+      {entry.followUpWarning ? (
+        <p role="status" className="mt-2 text-xs leading-relaxed text-amber-100/92">{entry.followUpWarning}</p>
       ) : null}
       {entry.state === "failed" ? (
         <p className="mt-2 text-xs leading-relaxed text-rose-100/92">
@@ -1448,6 +1453,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
   const [loadingContext, setLoadingContext] = useState(true);
   const [responding, setResponding] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [contextRecovery, setContextRecovery] = useState<"needed" | "refreshing" | "refreshed" | null>(null);
   const [aiOffline, setAiOffline] = useState(false);
   const [pendingApproval, setPendingApproval] = useState<PendingApprovalState | null>(null);
 
@@ -1465,6 +1471,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
     async function loadContext() {
       setLoadingContext(true);
       setError(null);
+      setContextRecovery(null);
 
       const params = new URLSearchParams();
       params.set("kind", target.kind);
@@ -1535,6 +1542,18 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
     setLiveConsoleState(null);
     setBasePreview(payload.preview);
     return payload.preview;
+  }
+
+  async function recoverActionContext() {
+    setContextRecovery("refreshing");
+    try {
+      await refreshAssistantPreview();
+      setContextRecovery("refreshed");
+      setError(null);
+    } catch (refreshError) {
+      setContextRecovery("needed");
+      setError(refreshError instanceof Error ? refreshError.message : "Context refresh failed");
+    }
   }
 
   function cancelPendingApproval() {
@@ -1907,6 +1926,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         setOperationStatus(nextOperationStatus);
         setOperationHistory((current) => upsertOperationHistory(current, nextOperationStatus));
       }
+      if (options?.suppressOperationTracking) throw submitError;
       setError(submitError instanceof Error ? submitError.message : "Failed to build Planner Agent response");
     } finally {
       setResponding(false);
@@ -1961,7 +1981,6 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
             };
             setOperationStatus(completedStatus);
             setOperationHistory((current) => upsertOperationHistory(current, completedStatus));
-            setResponding(false);
           },
           onPostActionPromptSkipped: ({ depth, maxDepth }) => {
             setError(
@@ -1996,19 +2015,23 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
       );
       return;
     } catch (executeError) {
+      const effectSucceeded = executeError instanceof ActionFollowUpError;
+      if (effectSucceeded) setContextRecovery("needed");
       const failedStatus: OperationInvocationState = {
         linkId: link.id,
         label: link.label,
         workflowId: link.workflowId,
         auditEvent: link.auditEvent,
-        status: "failed",
+        status: effectSucceeded ? "completed" : "failed",
         startedAt: operationStartedAt,
         finishedAt: Date.now(),
+        followUpWarning: effectSucceeded ? executeError.message : undefined,
         error: executeError instanceof Error ? executeError.message : "Failed to execute Planner Agent action",
       };
       setOperationStatus(failedStatus);
       setOperationHistory((current) => upsertOperationHistory(current, failedStatus));
-      setError(executeError instanceof Error ? executeError.message : "Failed to execute Planner Agent action");
+      if (!effectSucceeded) setError(executeError instanceof Error ? executeError.message : "Failed to execute Planner Agent action");
+    } finally {
       setResponding(false);
     }
   }
@@ -2069,7 +2092,6 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         {
           onCompleted: () => {
             patchChatProposal(chatEntryId, proposalEntry.id, (proposal) => ({ ...proposal, state: "executed" }));
-            setResponding(false);
           },
           refreshAssistantPreview: async () => {
             const refreshed = await refreshAssistantPreview();
@@ -2081,11 +2103,16 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
     } catch (proposalError) {
       const message =
         proposalError instanceof Error ? proposalError.message : "Failed to execute the approved Planner Agent proposal";
-      const wasCancelled = message.includes("cancelled");
+      const effectSucceeded = proposalError instanceof ActionFollowUpError;
+      if (effectSucceeded) setContextRecovery("needed");
+      const wasCancelled = !effectSucceeded && message.includes("cancelled");
       patchChatProposal(chatEntryId, proposalEntry.id, (proposal) =>
-        wasCancelled ? { ...proposal, state: "pending", error: undefined } : { ...proposal, state: "failed", error: message }
+        effectSucceeded
+          ? { ...proposal, state: "executed", error: undefined, followUpWarning: message }
+          : wasCancelled ? { ...proposal, state: "pending", error: undefined } : { ...proposal, state: "failed", error: message }
       );
-      setError(message);
+      if (!effectSucceeded) setError(message);
+    } finally {
       setResponding(false);
     }
   }
@@ -2191,7 +2218,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                     {operationStatus.status === "running"
                       ? "Planner Agent is running this grounded workflow in panel now."
                       : operationStatus.status === "completed"
-                        ? "This grounded workflow completed in panel and posted its response below."
+                        ? operationStatus.followUpWarning ?? "The operation request completed. Check its record or job for the result."
                         : operationStatus.error ?? "This grounded workflow failed before a response could be posted."}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -2252,7 +2279,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                               {entry.status === "running"
                                 ? "Currently running in panel."
                                 : entry.status === "completed"
-                                  ? "Completed and posted below."
+                                  ? entry.followUpWarning ?? "Operation request completed."
                                   : entry.error ?? "Failed before a grounded response was posted."}
                             </p>
                           </div>
@@ -2335,6 +2362,20 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                     </div>
                   ) : null}
 
+                  {contextRecovery ? (
+                    <div role="status" className="rounded-[0.5rem] border border-amber-300/28 bg-amber-400/12 px-4 py-3 text-sm text-amber-100">
+                      {contextRecovery === "refreshed" ? (
+                        <p>Context refreshed. The completed action was not repeated. Any unfinished follow-up still needs to be requested separately.</p>
+                      ) : (
+                        <>
+                          <p>Refresh context to read the latest records without repeating the completed action. This does not rerun its follow-up.</p>
+                          <Button type="button" variant="outline" className="mt-2" disabled={responding || contextRecovery === "refreshing"} onClick={() => void recoverActionContext()}>
+                            {contextRecovery === "refreshing" ? "Refreshing context…" : "Refresh context"}
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  ) : null}
                   {error ? (
                     <div className="rounded-[0.5rem] border border-rose-300/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-100/92">
                       {error}

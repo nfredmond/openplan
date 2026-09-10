@@ -521,6 +521,89 @@ describe("AppCopilot", () => {
     expect(executeCall).toBeUndefined();
   });
 
+  it.each(["effect", "prompt"] as const)("distinguishes a refused %s from a completed request", async (failureAt) => {
+    const baseFetch = fetchMock.getMockImplementation()!;
+    let writes = 0;
+    fetchMock.mockImplementation(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.startsWith("/api/reports/synthetic-report/generate")) {
+        writes += 1;
+        return jsonResponse(failureAt === "effect" ? { error: "synthetic effect refused" } : {}, failureAt === "effect" ? 409 : 200);
+      }
+      if (url.startsWith("/api/assistant/context")) return jsonResponse({ preview: { ...previewFixture,
+        quickLinks: [{ ...approvalQuickLink, id: "generate-report", executeAction: {
+          kind: "generate_report_artifact", reportId: "synthetic-report", postActionPrompt: "Review result" } }] } });
+      if (url === "/api/assistant") return jsonResponse({ error: "synthetic prompt unavailable" }, 503);
+      return baseFetch(input, init);
+    });
+    await openPanel();
+    fireEvent.click(screen.getByRole("button", { name: /Execute now · generate-report/ }));
+    if (failureAt === "effect") {
+      await waitFor(() => expect(screen.getAllByText("Failed", { exact: true })).toHaveLength(2));
+      expect(screen.queryByRole("button", { name: "Refresh context" })).not.toBeInTheDocument();
+    } else {
+      expect(await screen.findByRole("button", { name: "Refresh context" })).toBeEnabled();
+      expect(screen.getAllByText(/follow-up failed \(post action prompt\)/)).toHaveLength(2);
+      expect(screen.getAllByText("Completed", { exact: true })).toHaveLength(2);
+    }
+    expect(writes).toBe(1);
+  });
+
+  it.each(["quick link", "chat proposal"] as const)("keeps the %s completed and retries only context after refresh failure", async (entryPoint) => {
+    let writes = 0;
+    let failRefresh = false;
+    const action = { kind: "generate_report_artifact", reportId: "synthetic-report" };
+    const baseFetch = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.startsWith("/api/reports/synthetic-report/generate")) {
+        writes += 1;
+        failRefresh = true;
+        return jsonResponse({ warnings: [] });
+      }
+      if (url.startsWith("/api/assistant/context")) {
+        if (failRefresh) return jsonResponse({ error: "synthetic cancelled context read" }, 503);
+        return jsonResponse({ preview: { ...previewFixture, quickLinks: [{ ...approvalQuickLink,
+          id: "generate-report", label: "Generate synthetic report", executeAction: action }] } });
+      }
+      return baseFetch(input, init);
+    });
+    await openPanel();
+    if (entryPoint === "quick link") {
+      fireEvent.click(screen.getByRole("button", { name: /Execute now · generate-report/ }));
+    } else {
+      chatRoute = () => sseResponse([
+        { type: "start" },
+        { type: "tool-input-start", toolCallId: "report-call", toolName: "propose_generate_report_artifact" },
+        { type: "tool-output-available", toolCallId: "report-call", output: {
+          status: "proposed", kind: action.kind, payload: action, approval: "safe", description: "Generate the synthetic report." } },
+        { type: "finish" },
+      ]);
+      fireEvent.change(screen.getByPlaceholderText(/Ask about project status/), { target: { value: "Generate report" } });
+      fireEvent.click(screen.getByRole("button", { name: /Send/ }));
+      fireEvent.click(await screen.findByRole("button", { name: "Approve & run" }));
+      const sheet = within(await screen.findByRole("dialog", { name: "Approve Planner Agent action" }));
+      fireEvent.click(sheet.getByRole("button", { name: "Approve action" }));
+    }
+    const retry = await screen.findByRole("button", { name: "Refresh context" });
+    expect(writes).toBe(1);
+    expect(screen.getAllByText(/The action request succeeded, but its follow-up failed/).length).toBeGreaterThan(0);
+    expect(screen.queryByText("Failed", { exact: true })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Approve & run" })).not.toBeInTheDocument();
+    if (entryPoint === "quick link") expect(screen.getAllByText("Completed", { exact: true })).toHaveLength(2);
+    else expect(screen.getByText(/Approved and executed/)).toBeInTheDocument();
+
+    // Another unavailable context read must leave recovery available, without a write.
+    fireEvent.click(retry);
+    await waitFor(() => expect(screen.getByRole("button", { name: "Refresh context" })).toBeEnabled());
+    expect(writes).toBe(1);
+    failRefresh = false;
+    fireEvent.click(screen.getByRole("button", { name: "Refresh context" }));
+    expect(await screen.findByText(/Context refreshed. The completed action was not repeated/)).toBeInTheDocument();
+    expect(writes).toBe(1);
+    expect(screen.queryByRole("button", { name: "Approve & run" })).not.toBeInTheDocument();
+  });
+
   it("dismissing a proposal records the dismissal and executes nothing", async () => {
     await streamProposalReply();
 
