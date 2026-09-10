@@ -1,0 +1,9 @@
+{
+  "isDraft": false,
+  "isPrerelease": false,
+  "publishedAt": "2026-09-10T04:53:59Z",
+  "tagName": "v0.48.0",
+  "targetCommitish": "main",
+  "url": "https://github.com/nfredmond/openplan/releases/tag/v0.48.0",
+  "peeledCommit": "e39258b92f119d5b7d8326155f99188d43a7eaf3"
+}

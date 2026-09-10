@@ -34,3 +34,9 @@ Production build `16fab60f9d93bed7fa8d5d5fbc31364995fd9ff0` identifies itself as
 The release-build browser journey passed at desktop and 390px from real navigation, including keyboard save/download, three allocations across two successors, original and corrected JSON downloads, retained previous approvals and four unchanged physical entries. Interrupted save/reload/retry created one draft, the excess successor allocation was refused, and interrupted history reads hid exports until recovery. Expected injected errors were the only console errors. Both screenshots were inspected. See `browser-results.json` for exact approval versions and original/corrected checksums.
 
 [Desktop](split-funding-1440.png) · [390px](split-funding-390.png). Raw downloads and synthetic credentials remain outside git. Later release-evidence commits change only documentation; the accepted application is unchanged. Tag and GitHub publication follow successful CI, shuffled tests, RLS and populated upgrade on the final release commit.
+
+## Published
+
+[v0.48.0](https://github.com/nfredmond/openplan/releases/tag/v0.48.0) was published September 9, 2026 Pacific time, at 2026-09-10T04:53:59Z. The remote annotated tag resolves to `e39258b92f119d5b7d8326155f99188d43a7eaf3`. GitHub confirms a published, non-draft release.
+
+Before tagging, that exact commit passed [full QA, shuffled tests and worker/modeling/ops CI](https://github.com/nfredmond/openplan/actions/runs/34437609808), [RLS isolation](https://github.com/nfredmond/openplan/actions/runs/34437609795) and [the populated upgrade from v0.47.0](https://github.com/nfredmond/openplan/actions/runs/34437609604). All jobs completed successfully. The release contains the accepted application above; the final evidence commit changes only documentation. Continuous development proceeds under the current v1 contract.
