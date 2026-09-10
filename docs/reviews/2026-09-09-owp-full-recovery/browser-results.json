@@ -1,0 +1,61 @@
+{
+  "results": [
+    {
+      "width": 1440,
+      "commit": "ae97ef2f46e1",
+      "apiOrigin": "http://127.0.0.1:22301",
+      "approvalHashes": {
+        "2": "2b58cc7980ee411052016e7930aaa0d590cd6164c5d094cb371ff0efd6fda14b",
+        "5": "0b659cf7968263d93ae057737f2d437f4fb6b064020ec119528994f8d0306605"
+      },
+      "closureHash": "e11723dc41f8cb63899640f9f36e4f6f1f1adf2c374d5fc9a1f18d6a261a367d",
+      "documentHash": "55c476765b439eb99748445793a2c8aefbd95012460b43fbaccec5c458d41cc9",
+      "inlineReportHash": "906bc41efad68092ec5f060c6b3fc115710592e03fdf257b60695b852472f883",
+      "oldApprovalsUnchanged": true,
+      "closedPeriodRefusal": 409,
+      "resumedDraftVersion": 5,
+      "unknownsRetained": true,
+      "interruptedRetry": true,
+      "historyInterruptionRecovered": true,
+      "keyboard": true,
+      "console": [
+        {
+          "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+          "expected": true
+        },
+        {
+          "text": "Failed to load resource: net::ERR_FAILED",
+          "expected": true
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "commit": "ae97ef2f46e1",
+      "apiOrigin": "http://127.0.0.1:22301",
+      "approvalHashes": {
+        "2": "2b58cc7980ee411052016e7930aaa0d590cd6164c5d094cb371ff0efd6fda14b",
+        "5": "0b659cf7968263d93ae057737f2d437f4fb6b064020ec119528994f8d0306605"
+      },
+      "closureHash": "e11723dc41f8cb63899640f9f36e4f6f1f1adf2c374d5fc9a1f18d6a261a367d",
+      "documentHash": "55c476765b439eb99748445793a2c8aefbd95012460b43fbaccec5c458d41cc9",
+      "inlineReportHash": "906bc41efad68092ec5f060c6b3fc115710592e03fdf257b60695b852472f883",
+      "oldApprovalsUnchanged": true,
+      "closedPeriodRefusal": 409,
+      "resumedDraftVersion": 6,
+      "unknownsRetained": true,
+      "interruptedRetry": false,
+      "historyInterruptionRecovered": true,
+      "keyboard": true,
+      "console": [
+        {
+          "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+          "expected": true
+        }
+      ]
+    }
+  ],
+  "anonymousDenied": 401,
+  "foreignOwnerDenied": 404,
+  "scope": "Synthetic full restore, resumed work and private artifacts; no agency acceptance"
+}

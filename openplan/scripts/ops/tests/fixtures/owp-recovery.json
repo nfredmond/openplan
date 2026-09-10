@@ -269,7 +269,7 @@
       "physicalEntries": 5,
       "priorUnpaidClaim": "3.00",
       "refundRemaining": "1.00",
-      "successorUnpaidClaim": "8.00"
+      "successorClaimRequest": "8.00"
     },
     "originalApproval": "ad531235-e1e6-4e0a-94f7-a1603029b19a",
     "correctedApproval": "1854a7c1-5941-43a6-9be7-53bd8189725a"

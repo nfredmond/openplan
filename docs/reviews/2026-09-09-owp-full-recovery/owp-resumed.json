@@ -1,0 +1,15 @@
+{
+  "priorUnpaidClaim": "3.00",
+  "successorClaimRequest": "8.00",
+  "refundRemaining": "1.00",
+  "outstandingCommitment": "15.00",
+  "incurredAcrossCycles": "20.35",
+  "retainedRecordsSha256": "d83eb894c087fe50e5c727df46b0f10f49be826c9e03e6e8ae33f8164ea6c949",
+  "physicalEntries": 5,
+  "originalApproval": "2880a7c3-3154-4ef1-812f-e3241207e1e2",
+  "currentApproval": "a4c5b390-9d58-46be-b05a-16d92e5f86f6",
+  "originalCarryover": "20.00",
+  "currentCarryover": "19.00",
+  "overlappingCycles": true,
+  "oldPeriodClosed": true
+}

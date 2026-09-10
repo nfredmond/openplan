@@ -1,0 +1,227 @@
+[
+  {
+    "name": "harmless comment",
+    "module": "full_restore.py",
+    "result": "survived"
+  },
+  {
+    "name": "project name",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "container label",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "service images",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "nonempty target",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "existing recovery names",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "scheduled jobs",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "role mismatch",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "missing discovered table",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "missing source consistency call",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "missing storage comparison",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "pgsodium excluded",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "large objects omitted",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "sequence positions omitted",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "unhealthy service accepted",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "database properties omitted",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "wrong database owner",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "missing property restoration call",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "private settings error ignored",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "database settings hash ignored",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "missing target comparison call",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "failed snapshot process",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "ignored inventory differences",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "unsafe storage entries",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "duplicate storage paths",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "ignored storage contents",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "ignored schema changes",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "delegated grantor",
+    "module": "full_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "harmless comment",
+    "module": "reconstruct_owp_restore.py",
+    "result": "survived"
+  },
+  {
+    "name": "changed cost accepted",
+    "module": "reconstruct_owp_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "duplicate entry accepted",
+    "module": "reconstruct_owp_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "duplicate source accepted",
+    "module": "reconstruct_owp_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "old approval changed",
+    "module": "reconstruct_owp_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "cash overmatch accepted",
+    "module": "reconstruct_owp_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "lost authorship accepted",
+    "module": "reconstruct_owp_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "mixed currency accepted",
+    "module": "reconstruct_owp_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "truncated query accepted",
+    "module": "reconstruct_owp_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "optimized Python accepted",
+    "module": "reconstruct_owp_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "refund subtraction reversed",
+    "module": "reconstruct_owp_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "receipt subtraction reversed",
+    "module": "reconstruct_owp_restore.py",
+    "result": "targeted failure"
+  },
+  {
+    "name": "harmless comment",
+    "module": "disposable-restore-drill.sh",
+    "result": "survived"
+  },
+  {
+    "name": "existing project guard",
+    "module": "disposable-restore-drill.sh",
+    "result": "targeted failure"
+  },
+  {
+    "name": "cleanup ownership",
+    "module": "disposable-restore-drill.sh",
+    "result": "targeted failure"
+  },
+  {
+    "name": "unknown argument refusal",
+    "module": "disposable-restore-drill.sh",
+    "result": "targeted failure"
+  },
+  {
+    "name": "keep ignored",
+    "module": "disposable-restore-drill.sh",
+    "result": "targeted failure"
+  }
+]

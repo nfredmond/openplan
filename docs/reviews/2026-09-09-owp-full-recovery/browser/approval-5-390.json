@@ -1,0 +1,1647 @@
+{
+  "id": "a4c5b390-9d58-46be-b05a-16d92e5f86f6",
+  "state": "approved",
+  "content": {
+    "note": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+    "limits": "Human-recorded reconciliation and carryover evidence only. This does not close a period, post expenses, establish funder acceptance, or prove all external obligations were recorded.",
+    "source": {
+      "report": {
+        "id": "4c3ac69d-e4f2-421a-9d60-a3af95511b0d",
+        "version": 1,
+        "snapshot": {
+          "period": {
+            "id": "974838a9-269a-4d44-b744-17084c9dfdc9",
+            "name": "Synthetic retained reporting period",
+            "note": "",
+            "state": "draft",
+            "ends_on": "2026-08-31",
+            "version": 1,
+            "progress": [
+              {
+                "asOf": "2026-08-31",
+                "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                "completed": "Draft work retained",
+                "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e",
+                "outstanding": "Unfinished analysis remains",
+                "estimateBasis": "Unassessed synthetic remainder",
+                "remainingCost": null,
+                "remainingHours": null
+              }
+            ],
+            "starts_on": "2026-08-01",
+            "created_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+            "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+            "updated_at": "2026-09-10T05:51:43.397288+00:00",
+            "baseline_id": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+            "workspace_id": "00000000-0000-4000-8000-00000000000a",
+            "source_cutoff": "2026-09-10T05:51:43.395+00:00"
+          },
+          "actuals": [
+            {
+              "id": "f44ba743-0fea-4bdd-8fb1-a5c7452b6f6f",
+              "kind": "labor",
+              "hours": "1.00",
+              "amount": "12.35",
+              "detail": {
+                "kind": "labor",
+                "basis": "recorded",
+                "hours": "1.00",
+                "amount": "12.35",
+                "status": "approved",
+                "entryId": "40aa445b-84a0-4f38-93aa-b75a200668a2",
+                "staffId": "8c00b676-d3b6-427a-a56f-e82a7d2196b6",
+                "entryDate": "2026-08-01",
+                "projectId": "00000000-0000-4000-8000-00000000000b",
+                "requestId": "2962d215-a775-418e-8423-d52aea685430",
+                "sourceKey": "restore-old-cost",
+                "contractId": null,
+                "revisionId": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+                "allocations": [
+                  {
+                    "share": 10000,
+                    "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                    "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e"
+                  }
+                ],
+                "description": "Synthetic old-cost",
+                "expectedVersion": 0,
+                "sourceReference": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction."
+              },
+              "status": "approved",
+              "version": 1,
+              "costRate": null,
+              "entry_id": "40aa445b-84a0-4f38-93aa-b75a200668a2",
+              "staff_id": "8c00b676-d3b6-427a-a56f-e82a7d2196b6",
+              "staffName": "Synthetic restore staff",
+              "created_at": "2026-09-10T05:51:43.34149+00:00",
+              "created_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+              "entry_date": "2026-08-01",
+              "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+              "source_key": "restore-old-cost",
+              "allocations": [
+                {
+                  "id": "15286a1b-616f-4f89-8d1d-ec3c3b4d239d",
+                  "hours": "1.00",
+                  "share": 10000,
+                  "amount": "12.35",
+                  "task_id": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                  "element_id": "4fc4dfca-bb89-42f2-8790-d702476ed22e",
+                  "deliverable_id": null,
+                  "actual_version_id": "f44ba743-0fea-4bdd-8fb1-a5c7452b6f6f"
+                }
+              ],
+              "revision_id": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+              "cost_rate_id": null,
+              "workspace_id": "00000000-0000-4000-8000-00000000000a",
+              "time_entry_id": "7ff49e91-648e-497b-a8ec-337b775cc1bd",
+              "spend_entry_id": null,
+              "valuation_basis": "recorded"
+            },
+            {
+              "id": "fe591486-f0ab-4470-89e6-d9232c2af68d",
+              "kind": "commitment",
+              "hours": null,
+              "amount": "40.00",
+              "detail": {
+                "kind": "commitment",
+                "basis": "recorded",
+                "hours": null,
+                "amount": "40.00",
+                "status": "approved",
+                "entryId": "4f1778a4-0819-445f-b970-a7b1d208b071",
+                "staffId": null,
+                "entryDate": "2026-08-01",
+                "projectId": "00000000-0000-4000-8000-00000000000b",
+                "requestId": "74f9caa7-c5ad-4259-91dc-229958135093",
+                "sourceKey": "restore-commitment",
+                "contractId": null,
+                "revisionId": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+                "allocations": [
+                  {
+                    "share": 10000,
+                    "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                    "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e"
+                  }
+                ],
+                "description": "Synthetic commitment",
+                "expectedVersion": 0,
+                "sourceReference": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction."
+              },
+              "status": "approved",
+              "version": 1,
+              "costRate": null,
+              "entry_id": "4f1778a4-0819-445f-b970-a7b1d208b071",
+              "staff_id": null,
+              "staffName": null,
+              "created_at": "2026-09-10T05:51:43.362322+00:00",
+              "created_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+              "entry_date": "2026-08-01",
+              "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+              "source_key": "restore-commitment",
+              "allocations": [
+                {
+                  "id": "ef94c677-54c8-4e42-b677-e7cc4530ded7",
+                  "hours": null,
+                  "share": 10000,
+                  "amount": "40.00",
+                  "task_id": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                  "element_id": "4fc4dfca-bb89-42f2-8790-d702476ed22e",
+                  "deliverable_id": null,
+                  "actual_version_id": "fe591486-f0ab-4470-89e6-d9232c2af68d"
+                }
+              ],
+              "revision_id": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+              "cost_rate_id": null,
+              "workspace_id": "00000000-0000-4000-8000-00000000000a",
+              "time_entry_id": null,
+              "spend_entry_id": null,
+              "valuation_basis": "recorded"
+            },
+            {
+              "id": "fd46602c-d00e-4c9a-ad1a-109f4e546507",
+              "kind": "payment",
+              "hours": null,
+              "amount": "7.00",
+              "detail": {
+                "kind": "payment",
+                "basis": "recorded",
+                "hours": null,
+                "amount": "7.00",
+                "status": "approved",
+                "entryId": "f5badc0b-e4f8-4711-b450-2cacdf12fb34",
+                "staffId": null,
+                "entryDate": "2026-08-15",
+                "projectId": "00000000-0000-4000-8000-00000000000b",
+                "requestId": "ce36cfe3-9c04-43e0-af8b-48a67ec77186",
+                "sourceKey": "restore-receipt",
+                "contractId": null,
+                "revisionId": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+                "allocations": [
+                  {
+                    "share": 10000,
+                    "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                    "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e"
+                  }
+                ],
+                "description": "Synthetic receipt",
+                "expectedVersion": 0,
+                "sourceReference": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction."
+              },
+              "status": "approved",
+              "version": 1,
+              "costRate": null,
+              "entry_id": "f5badc0b-e4f8-4711-b450-2cacdf12fb34",
+              "staff_id": null,
+              "staffName": null,
+              "created_at": "2026-09-10T05:51:43.374432+00:00",
+              "created_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+              "entry_date": "2026-08-15",
+              "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+              "source_key": "restore-receipt",
+              "allocations": [
+                {
+                  "id": "87d82757-b79b-4712-b6ed-e06f999473cc",
+                  "hours": null,
+                  "share": 10000,
+                  "amount": "7.00",
+                  "task_id": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                  "element_id": "4fc4dfca-bb89-42f2-8790-d702476ed22e",
+                  "deliverable_id": null,
+                  "actual_version_id": "fd46602c-d00e-4c9a-ad1a-109f4e546507"
+                }
+              ],
+              "revision_id": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+              "cost_rate_id": null,
+              "workspace_id": "00000000-0000-4000-8000-00000000000a",
+              "time_entry_id": null,
+              "spend_entry_id": null,
+              "valuation_basis": "recorded"
+            }
+          ],
+          "baseline": {
+            "id": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+            "revision": 1,
+            "created_at": "2026-09-10T05:51:43.284694+00:00",
+            "created_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+            "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+            "request_id": "12b37f49-0a70-42ae-ac96-6306fb81ea8f",
+            "source_ids": [],
+            "content_json": {
+              "agency": "Synthetic restore agency",
+              "currency": "USD",
+              "elements": [
+                {
+                  "id": "4fc4dfca-bb89-42f2-8790-d702476ed22e",
+                  "code": "WE-01",
+                  "tasks": [
+                    {
+                      "id": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                      "schedule": "2027-06-30",
+                      "description": "Finish the synthetic analysis",
+                      "responsible": "Synthetic staff"
+                    }
+                  ],
+                  "title": "Retained unfinished work",
+                  "budget": [],
+                  "source": null,
+                  "products": [],
+                  "schedule": "2026-07-01 through 2027-06-30",
+                  "objective": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                  "projectId": "00000000-0000-4000-8000-00000000000b",
+                  "discussion": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                  "disposition": "new",
+                  "responsible": "Synthetic test agency",
+                  "decisionNote": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                  "personMonths": null,
+                  "budgetTreatment": "included",
+                  "budgetTreatmentNote": ""
+                }
+              ],
+              "staffing": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+              "periodEnd": "2027-06-30",
+              "periodStart": "2026-07-01",
+              "preparation": {
+                "costs": [
+                  {
+                    "id": "810c379a-2c1e-40ff-94b8-40f0d1f00efa",
+                    "note": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                    "label": "Synthetic work allowance",
+                    "amount": 120,
+                    "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                    "category": "direct",
+                    "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e",
+                    "contractId": null,
+                    "sourceRefs": [],
+                    "indirectPoolId": null
+                  }
+                ],
+                "funds": [
+                  {
+                    "id": "243a4009-00d8-4cc8-96ea-e0e6d0ff6eee",
+                    "kind": "carryover",
+                    "name": "Synthetic fund 1",
+                    "note": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                    "basis": "proposed",
+                    "amount": 100,
+                    "vintage": "2026",
+                    "periodEnd": "2027-06-30",
+                    "sourceRefs": [],
+                    "periodStart": "2026-07-01"
+                  },
+                  {
+                    "id": "5b8a9e6f-f671-4daa-ac76-e0ba17076eaa",
+                    "kind": "match",
+                    "name": "Synthetic fund 2",
+                    "note": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                    "basis": "proposed",
+                    "amount": 20,
+                    "vintage": "2026",
+                    "periodEnd": "2027-06-30",
+                    "sourceRefs": [],
+                    "periodStart": "2026-07-01"
+                  }
+                ],
+                "mappings": [],
+                "staffing": [],
+                "conflicts": [],
+                "amendments": [],
+                "allocations": [
+                  {
+                    "id": "42d4c146-590b-4321-859d-5e94302eefb1",
+                    "note": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                    "amount": 100,
+                    "fundId": "243a4009-00d8-4cc8-96ea-e0e6d0ff6eee",
+                    "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                    "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e",
+                    "sourceRefs": [],
+                    "matchForFundId": null
+                  },
+                  {
+                    "id": "c1c62603-d5f1-4bf6-ac77-799e92587d92",
+                    "note": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                    "amount": 20,
+                    "fundId": "5b8a9e6f-f671-4daa-ac76-e0ba17076eaa",
+                    "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                    "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e",
+                    "sourceRefs": [],
+                    "matchForFundId": null
+                  }
+                ],
+                "formatVersion": 2,
+                "indirectPools": [],
+                "sourceSections": [],
+                "referenceFigures": [],
+                "extractionSelections": []
+              },
+              "documentKind": "agency_work_program",
+              "introduction": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+              "priorBalance": null,
+              "schemaVersion": 1,
+              "authorityBasis": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+              "financialNotes": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+              "priorBalanceBasis": "Unassessed in synthetic fixture",
+              "responsibleAuthority": "Synthetic test authority"
+            },
+            "workspace_id": "00000000-0000-4000-8000-00000000000a",
+            "content_sha256": "46b8e3068277f5d940b1e7886a09a2103b65c5da63c6e9465da67c824435f6a8",
+            "previous_revision_id": null,
+            "amendment_baseline_id": null
+          },
+          "issueNote": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+          "reviewNote": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+          "reviewedAt": "2026-09-10T05:51:43.403585+00:00",
+          "reviewedBy": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+          "schemaVersion": 1,
+          "baselineAdoption": {
+            "id": "987b52ed-add4-4696-b84f-9384a6edb53b",
+            "kind": "adoption",
+            "payload": {
+              "kind": "adoption",
+              "note": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+              "scope": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+              "authority": "Synthetic test board",
+              "requestId": "db4115f4-3ff0-4222-9601-c346b9270db6",
+              "revisionId": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+              "visibility": "internal",
+              "documentIds": [
+                "00000000-0000-4000-8000-00000000000d"
+              ],
+              "reviewerIds": [],
+              "evidenceDate": "2026-09-01",
+              "revisionHash": "46b8e3068277f5d940b1e7886a09a2103b65c5da63c6e9465da67c824435f6a8",
+              "expectedRevision": 1,
+              "expectedSequence": 2
+            },
+            "actor_id": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+            "evidence": [
+              {
+                "id": "00000000-0000-4000-8000-00000000000d",
+                "title": "Recovery evidence",
+                "checksum": "55c476765b439eb99748445793a2c8aefbd95012460b43fbaccec5c458d41cc9"
+              }
+            ],
+            "sequence": 3,
+            "created_at": "2026-09-10T05:51:43.308182+00:00",
+            "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+            "request_id": "db4115f4-3ff0-4222-9601-c346b9270db6",
+            "revision_id": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+            "workspace_id": "00000000-0000-4000-8000-00000000000a",
+            "revision_hash": "46b8e3068277f5d940b1e7886a09a2103b65c5da63c6e9465da67c824435f6a8"
+          },
+          "valuationHistory": [
+            {
+              "id": "f44ba743-0fea-4bdd-8fb1-a5c7452b6f6f",
+              "kind": "labor",
+              "hours": "1.00",
+              "amount": "12.35",
+              "detail": {
+                "kind": "labor",
+                "basis": "recorded",
+                "hours": "1.00",
+                "amount": "12.35",
+                "status": "approved",
+                "entryId": "40aa445b-84a0-4f38-93aa-b75a200668a2",
+                "staffId": "8c00b676-d3b6-427a-a56f-e82a7d2196b6",
+                "entryDate": "2026-08-01",
+                "projectId": "00000000-0000-4000-8000-00000000000b",
+                "requestId": "2962d215-a775-418e-8423-d52aea685430",
+                "sourceKey": "restore-old-cost",
+                "contractId": null,
+                "revisionId": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+                "allocations": [
+                  {
+                    "share": 10000,
+                    "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                    "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e"
+                  }
+                ],
+                "description": "Synthetic old-cost",
+                "expectedVersion": 0,
+                "sourceReference": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction."
+              },
+              "status": "approved",
+              "version": 1,
+              "entry_id": "40aa445b-84a0-4f38-93aa-b75a200668a2",
+              "staff_id": "8c00b676-d3b6-427a-a56f-e82a7d2196b6",
+              "created_at": "2026-09-10T05:51:43.34149+00:00",
+              "created_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+              "entry_date": "2026-08-01",
+              "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+              "source_key": "restore-old-cost",
+              "revision_id": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+              "cost_rate_id": null,
+              "workspace_id": "00000000-0000-4000-8000-00000000000a",
+              "time_entry_id": "7ff49e91-648e-497b-a8ec-337b775cc1bd",
+              "spend_entry_id": null,
+              "valuation_basis": "recorded"
+            },
+            {
+              "id": "fe591486-f0ab-4470-89e6-d9232c2af68d",
+              "kind": "commitment",
+              "hours": null,
+              "amount": "40.00",
+              "detail": {
+                "kind": "commitment",
+                "basis": "recorded",
+                "hours": null,
+                "amount": "40.00",
+                "status": "approved",
+                "entryId": "4f1778a4-0819-445f-b970-a7b1d208b071",
+                "staffId": null,
+                "entryDate": "2026-08-01",
+                "projectId": "00000000-0000-4000-8000-00000000000b",
+                "requestId": "74f9caa7-c5ad-4259-91dc-229958135093",
+                "sourceKey": "restore-commitment",
+                "contractId": null,
+                "revisionId": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+                "allocations": [
+                  {
+                    "share": 10000,
+                    "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                    "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e"
+                  }
+                ],
+                "description": "Synthetic commitment",
+                "expectedVersion": 0,
+                "sourceReference": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction."
+              },
+              "status": "approved",
+              "version": 1,
+              "entry_id": "4f1778a4-0819-445f-b970-a7b1d208b071",
+              "staff_id": null,
+              "created_at": "2026-09-10T05:51:43.362322+00:00",
+              "created_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+              "entry_date": "2026-08-01",
+              "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+              "source_key": "restore-commitment",
+              "revision_id": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+              "cost_rate_id": null,
+              "workspace_id": "00000000-0000-4000-8000-00000000000a",
+              "time_entry_id": null,
+              "spend_entry_id": null,
+              "valuation_basis": "recorded"
+            },
+            {
+              "id": "fd46602c-d00e-4c9a-ad1a-109f4e546507",
+              "kind": "payment",
+              "hours": null,
+              "amount": "7.00",
+              "detail": {
+                "kind": "payment",
+                "basis": "recorded",
+                "hours": null,
+                "amount": "7.00",
+                "status": "approved",
+                "entryId": "f5badc0b-e4f8-4711-b450-2cacdf12fb34",
+                "staffId": null,
+                "entryDate": "2026-08-15",
+                "projectId": "00000000-0000-4000-8000-00000000000b",
+                "requestId": "ce36cfe3-9c04-43e0-af8b-48a67ec77186",
+                "sourceKey": "restore-receipt",
+                "contractId": null,
+                "revisionId": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+                "allocations": [
+                  {
+                    "share": 10000,
+                    "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                    "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e"
+                  }
+                ],
+                "description": "Synthetic receipt",
+                "expectedVersion": 0,
+                "sourceReference": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction."
+              },
+              "status": "approved",
+              "version": 1,
+              "entry_id": "f5badc0b-e4f8-4711-b450-2cacdf12fb34",
+              "staff_id": null,
+              "created_at": "2026-09-10T05:51:43.374432+00:00",
+              "created_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+              "entry_date": "2026-08-15",
+              "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+              "source_key": "restore-receipt",
+              "revision_id": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+              "cost_rate_id": null,
+              "workspace_id": "00000000-0000-4000-8000-00000000000a",
+              "time_entry_id": null,
+              "spend_entry_id": null,
+              "valuation_basis": "recorded"
+            }
+          ]
+        },
+        "issued_at": "2026-09-10T05:51:43.411083+00:00",
+        "issued_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+        "period_id": "974838a9-269a-4d44-b744-17084c9dfdc9",
+        "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+        "report_kind": "management",
+        "workspace_id": "00000000-0000-4000-8000-00000000000a",
+        "snapshot_hash": "543894d34f2bc7d7374e48b2c278d0876d781fcac57e8acd2f3cdcfb58870c7a",
+        "corrects_report_id": null
+      },
+      "actuals": [
+        {
+          "id": "6e51d534-43e4-44db-b915-4fb9b42ab3cf",
+          "kind": "payment",
+          "hours": null,
+          "amount": "5.00",
+          "detail": {
+            "kind": "payment",
+            "basis": "recorded",
+            "hours": null,
+            "amount": "5.00",
+            "status": "approved",
+            "entryId": "0e294533-3750-4d85-a201-de55c482ab50",
+            "staffId": null,
+            "entryDate": "2026-09-05",
+            "projectId": "00000000-0000-4000-8000-00000000000b",
+            "requestId": "c685c67c-73d3-409b-8349-cdc70c5e24a8",
+            "sourceKey": "restore-refund",
+            "contractId": null,
+            "revisionId": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+            "allocations": [
+              {
+                "share": 10000,
+                "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e"
+              }
+            ],
+            "description": "Synthetic refund",
+            "expectedVersion": 0,
+            "sourceReference": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction."
+          },
+          "status": "approved",
+          "version": 1,
+          "currency": "USD",
+          "entry_id": "0e294533-3750-4d85-a201-de55c482ab50",
+          "staff_id": null,
+          "created_at": "2026-09-10T05:51:43.384728+00:00",
+          "created_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+          "entry_date": "2026-09-05",
+          "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+          "source_key": "restore-refund",
+          "revision_id": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+          "cost_rate_id": null,
+          "workspace_id": "00000000-0000-4000-8000-00000000000a",
+          "time_entry_id": null,
+          "spend_entry_id": null,
+          "valuation_basis": "recorded"
+        },
+        {
+          "id": "f44ba743-0fea-4bdd-8fb1-a5c7452b6f6f",
+          "kind": "labor",
+          "hours": "1.00",
+          "amount": "12.35",
+          "detail": {
+            "kind": "labor",
+            "basis": "recorded",
+            "hours": "1.00",
+            "amount": "12.35",
+            "status": "approved",
+            "entryId": "40aa445b-84a0-4f38-93aa-b75a200668a2",
+            "staffId": "8c00b676-d3b6-427a-a56f-e82a7d2196b6",
+            "entryDate": "2026-08-01",
+            "projectId": "00000000-0000-4000-8000-00000000000b",
+            "requestId": "2962d215-a775-418e-8423-d52aea685430",
+            "sourceKey": "restore-old-cost",
+            "contractId": null,
+            "revisionId": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+            "allocations": [
+              {
+                "share": 10000,
+                "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e"
+              }
+            ],
+            "description": "Synthetic old-cost",
+            "expectedVersion": 0,
+            "sourceReference": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction."
+          },
+          "status": "approved",
+          "version": 1,
+          "currency": "USD",
+          "entry_id": "40aa445b-84a0-4f38-93aa-b75a200668a2",
+          "staff_id": "8c00b676-d3b6-427a-a56f-e82a7d2196b6",
+          "created_at": "2026-09-10T05:51:43.34149+00:00",
+          "created_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+          "entry_date": "2026-08-01",
+          "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+          "source_key": "restore-old-cost",
+          "revision_id": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+          "cost_rate_id": null,
+          "workspace_id": "00000000-0000-4000-8000-00000000000a",
+          "time_entry_id": "7ff49e91-648e-497b-a8ec-337b775cc1bd",
+          "spend_entry_id": null,
+          "valuation_basis": "recorded"
+        },
+        {
+          "id": "fe591486-f0ab-4470-89e6-d9232c2af68d",
+          "kind": "commitment",
+          "hours": null,
+          "amount": "40.00",
+          "detail": {
+            "kind": "commitment",
+            "basis": "recorded",
+            "hours": null,
+            "amount": "40.00",
+            "status": "approved",
+            "entryId": "4f1778a4-0819-445f-b970-a7b1d208b071",
+            "staffId": null,
+            "entryDate": "2026-08-01",
+            "projectId": "00000000-0000-4000-8000-00000000000b",
+            "requestId": "74f9caa7-c5ad-4259-91dc-229958135093",
+            "sourceKey": "restore-commitment",
+            "contractId": null,
+            "revisionId": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+            "allocations": [
+              {
+                "share": 10000,
+                "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e"
+              }
+            ],
+            "description": "Synthetic commitment",
+            "expectedVersion": 0,
+            "sourceReference": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction."
+          },
+          "status": "approved",
+          "version": 1,
+          "currency": "USD",
+          "entry_id": "4f1778a4-0819-445f-b970-a7b1d208b071",
+          "staff_id": null,
+          "created_at": "2026-09-10T05:51:43.362322+00:00",
+          "created_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+          "entry_date": "2026-08-01",
+          "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+          "source_key": "restore-commitment",
+          "revision_id": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+          "cost_rate_id": null,
+          "workspace_id": "00000000-0000-4000-8000-00000000000a",
+          "time_entry_id": null,
+          "spend_entry_id": null,
+          "valuation_basis": "recorded"
+        },
+        {
+          "id": "fd46602c-d00e-4c9a-ad1a-109f4e546507",
+          "kind": "payment",
+          "hours": null,
+          "amount": "7.00",
+          "detail": {
+            "kind": "payment",
+            "basis": "recorded",
+            "hours": null,
+            "amount": "7.00",
+            "status": "approved",
+            "entryId": "f5badc0b-e4f8-4711-b450-2cacdf12fb34",
+            "staffId": null,
+            "entryDate": "2026-08-15",
+            "projectId": "00000000-0000-4000-8000-00000000000b",
+            "requestId": "ce36cfe3-9c04-43e0-af8b-48a67ec77186",
+            "sourceKey": "restore-receipt",
+            "contractId": null,
+            "revisionId": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+            "allocations": [
+              {
+                "share": 10000,
+                "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e"
+              }
+            ],
+            "description": "Synthetic receipt",
+            "expectedVersion": 0,
+            "sourceReference": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction."
+          },
+          "status": "approved",
+          "version": 1,
+          "currency": "USD",
+          "entry_id": "f5badc0b-e4f8-4711-b450-2cacdf12fb34",
+          "staff_id": null,
+          "created_at": "2026-09-10T05:51:43.374432+00:00",
+          "created_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+          "entry_date": "2026-08-15",
+          "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+          "source_key": "restore-receipt",
+          "revision_id": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+          "cost_rate_id": null,
+          "workspace_id": "00000000-0000-4000-8000-00000000000a",
+          "time_entry_id": null,
+          "spend_entry_id": null,
+          "valuation_basis": "recorded"
+        }
+      ],
+      "successors": [
+        {
+          "id": "effecd27-42f7-4c0a-927d-7e1b18b392e3",
+          "title": "Synthetic overlapping calendar cycle",
+          "revision": 1,
+          "created_at": "2026-09-10T05:51:43.320317+00:00",
+          "created_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+          "program_id": "d089fb0e-b022-46ae-b4d3-477dd1cda55e",
+          "request_id": "8cc2c5ba-e1a6-447d-aa2b-07c9129f43bf",
+          "source_ids": [],
+          "content_json": {
+            "agency": "Synthetic restore agency",
+            "currency": "USD",
+            "elements": [
+              {
+                "id": "0356573f-5205-4967-86bb-cb6cde1885eb",
+                "code": "WE-01",
+                "tasks": [
+                  {
+                    "id": "df69442c-8a47-4a2f-aeda-993c890b527c",
+                    "schedule": "2027-12-31",
+                    "description": "Finish the synthetic analysis",
+                    "responsible": "Synthetic staff"
+                  }
+                ],
+                "title": "Retained unfinished work",
+                "budget": [],
+                "source": null,
+                "products": [],
+                "schedule": "2027-01-01 through 2027-12-31",
+                "objective": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                "projectId": "00000000-0000-4000-8000-00000000000b",
+                "discussion": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                "disposition": "new",
+                "responsible": "Synthetic test agency",
+                "decisionNote": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                "personMonths": null,
+                "budgetTreatment": "included",
+                "budgetTreatmentNote": ""
+              }
+            ],
+            "staffing": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+            "periodEnd": "2027-12-31",
+            "periodStart": "2027-01-01",
+            "preparation": {
+              "costs": [
+                {
+                  "id": "e6ef304a-dbb1-4b6f-82cf-a262489f3d6d",
+                  "note": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                  "label": "Synthetic work allowance",
+                  "amount": 30,
+                  "taskId": "df69442c-8a47-4a2f-aeda-993c890b527c",
+                  "category": "direct",
+                  "elementId": "0356573f-5205-4967-86bb-cb6cde1885eb",
+                  "contractId": null,
+                  "sourceRefs": [],
+                  "indirectPoolId": null
+                }
+              ],
+              "funds": [
+                {
+                  "id": "9fa1882d-57a0-4f7d-8a1a-01dd6b6ef0f5",
+                  "kind": "carryover",
+                  "name": "Synthetic fund 1",
+                  "note": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                  "basis": "proposed",
+                  "amount": 30,
+                  "vintage": "2027",
+                  "periodEnd": "2027-12-31",
+                  "sourceRefs": [],
+                  "periodStart": "2027-01-01"
+                }
+              ],
+              "mappings": [],
+              "staffing": [],
+              "conflicts": [],
+              "amendments": [],
+              "allocations": [
+                {
+                  "id": "f047fc87-fb34-4c15-8983-152d38ed251b",
+                  "note": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                  "amount": 30,
+                  "fundId": "9fa1882d-57a0-4f7d-8a1a-01dd6b6ef0f5",
+                  "taskId": "df69442c-8a47-4a2f-aeda-993c890b527c",
+                  "elementId": "0356573f-5205-4967-86bb-cb6cde1885eb",
+                  "sourceRefs": [],
+                  "matchForFundId": null
+                }
+              ],
+              "formatVersion": 2,
+              "indirectPools": [],
+              "sourceSections": [],
+              "referenceFigures": [],
+              "extractionSelections": []
+            },
+            "documentKind": "agency_work_program",
+            "introduction": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+            "priorBalance": null,
+            "schemaVersion": 1,
+            "authorityBasis": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+            "financialNotes": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+            "priorBalanceBasis": "Unassessed in synthetic fixture",
+            "responsibleAuthority": "Synthetic test authority"
+          },
+          "workspace_id": "00000000-0000-4000-8000-00000000000a",
+          "content_sha256": "17a95268a2da1ab59ab4da7ddfb6758d3fed9ea95e906bfdeef69ca21ae1e562",
+          "authorityEvidence": [
+            {
+              "id": "f6761ae7-fb03-4eb3-9c89-2519bad26be9",
+              "kind": "submit",
+              "payload": {
+                "kind": "submit",
+                "note": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                "requestId": "a3f9bbee-6218-46b7-ba58-87a2017a8308",
+                "revisionId": "effecd27-42f7-4c0a-927d-7e1b18b392e3",
+                "visibility": "internal",
+                "documentIds": [],
+                "reviewerIds": [
+                  "4247545b-02a0-4976-ae7e-1b4db6d8080c"
+                ],
+                "revisionHash": "17a95268a2da1ab59ab4da7ddfb6758d3fed9ea95e906bfdeef69ca21ae1e562",
+                "expectedRevision": 1,
+                "expectedSequence": 0
+              },
+              "actor_id": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+              "evidence": [],
+              "sequence": 1,
+              "created_at": "2026-09-10T05:51:43.325181+00:00",
+              "program_id": "d089fb0e-b022-46ae-b4d3-477dd1cda55e",
+              "request_id": "a3f9bbee-6218-46b7-ba58-87a2017a8308",
+              "revision_id": "effecd27-42f7-4c0a-927d-7e1b18b392e3",
+              "workspace_id": "00000000-0000-4000-8000-00000000000a",
+              "revision_hash": "17a95268a2da1ab59ab4da7ddfb6758d3fed9ea95e906bfdeef69ca21ae1e562"
+            },
+            {
+              "id": "89a352b2-34b7-4295-b68b-190481093787",
+              "kind": "approve",
+              "payload": {
+                "kind": "approve",
+                "note": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                "requestId": "187fd713-1b08-4067-98aa-46d0745d1dd1",
+                "revisionId": "effecd27-42f7-4c0a-927d-7e1b18b392e3",
+                "visibility": "internal",
+                "documentIds": [],
+                "reviewerIds": [],
+                "revisionHash": "17a95268a2da1ab59ab4da7ddfb6758d3fed9ea95e906bfdeef69ca21ae1e562",
+                "expectedRevision": 1,
+                "expectedSequence": 1
+              },
+              "actor_id": "4247545b-02a0-4976-ae7e-1b4db6d8080c",
+              "evidence": [],
+              "sequence": 2,
+              "created_at": "2026-09-10T05:51:43.330452+00:00",
+              "program_id": "d089fb0e-b022-46ae-b4d3-477dd1cda55e",
+              "request_id": "187fd713-1b08-4067-98aa-46d0745d1dd1",
+              "revision_id": "effecd27-42f7-4c0a-927d-7e1b18b392e3",
+              "workspace_id": "00000000-0000-4000-8000-00000000000a",
+              "revision_hash": "17a95268a2da1ab59ab4da7ddfb6758d3fed9ea95e906bfdeef69ca21ae1e562"
+            },
+            {
+              "id": "fa13983e-0419-4a50-a381-1f1b62a1f938",
+              "kind": "adoption",
+              "payload": {
+                "kind": "adoption",
+                "note": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                "scope": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                "authority": "Synthetic test board",
+                "requestId": "125c9964-3c11-4195-aa8a-87389c11086e",
+                "revisionId": "effecd27-42f7-4c0a-927d-7e1b18b392e3",
+                "visibility": "internal",
+                "documentIds": [
+                  "00000000-0000-4000-8000-00000000000d"
+                ],
+                "reviewerIds": [],
+                "evidenceDate": "2026-09-01",
+                "revisionHash": "17a95268a2da1ab59ab4da7ddfb6758d3fed9ea95e906bfdeef69ca21ae1e562",
+                "expectedRevision": 1,
+                "expectedSequence": 2
+              },
+              "actor_id": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+              "evidence": [
+                {
+                  "id": "00000000-0000-4000-8000-00000000000d",
+                  "title": "Recovery evidence",
+                  "checksum": "55c476765b439eb99748445793a2c8aefbd95012460b43fbaccec5c458d41cc9"
+                }
+              ],
+              "sequence": 3,
+              "created_at": "2026-09-10T05:51:43.33615+00:00",
+              "program_id": "d089fb0e-b022-46ae-b4d3-477dd1cda55e",
+              "request_id": "125c9964-3c11-4195-aa8a-87389c11086e",
+              "revision_id": "effecd27-42f7-4c0a-927d-7e1b18b392e3",
+              "workspace_id": "00000000-0000-4000-8000-00000000000a",
+              "revision_hash": "17a95268a2da1ab59ab4da7ddfb6758d3fed9ea95e906bfdeef69ca21ae1e562"
+            }
+          ],
+          "previous_revision_id": null,
+          "amendment_baseline_id": null
+        }
+      ],
+      "reimbursement": {
+        "claims": [
+          {
+            "id": "5693eca7-802f-4e64-a09a-38eea59d8433",
+            "draft": {
+              "costs": [
+                {
+                  "shares": [
+                    {
+                      "amount": "10.00",
+                      "fundId": "243a4009-00d8-4cc8-96ea-e0e6d0ff6eee",
+                      "evidence": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                      "treatment": "reimbursement"
+                    },
+                    {
+                      "amount": "2.35",
+                      "fundId": "5b8a9e6f-f671-4daa-ac76-e0ba17076eaa",
+                      "evidence": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                      "treatment": "match"
+                    }
+                  ],
+                  "eligibleAmount": "12.35",
+                  "actualVersionId": "f44ba743-0fea-4bdd-8fb1-a5c7452b6f6f",
+                  "eligibilityEvidence": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction."
+                }
+              ],
+              "title": "Synthetic recovery claim",
+              "reportId": "4c3ac69d-e4f2-421a-9d60-a3af95511b0d",
+              "formEvidence": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+              "authorityEvidence": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction."
+            },
+            "state": "reviewed",
+            "version": 2,
+            "created_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+            "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+            "updated_at": "2026-09-10T05:51:43.430258+00:00",
+            "workspace_id": "00000000-0000-4000-8000-00000000000a",
+            "current_report_id": "967941d6-0640-4f69-b5d0-2450baea9bf2"
+          }
+        ],
+        "events": [
+          {
+            "id": "b071b586-b71a-4c43-ac14-dd2ef66a84b2",
+            "kind": "save",
+            "note": "Draft saved",
+            "actor_id": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+            "claim_id": "5693eca7-802f-4e64-a09a-38eea59d8433",
+            "sequence": 1,
+            "report_id": null,
+            "created_at": "2026-09-10T05:51:43.423919+00:00",
+            "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+            "workspace_id": "00000000-0000-4000-8000-00000000000a"
+          },
+          {
+            "id": "c5882351-1e4c-41a1-8f46-92744a8732a2",
+            "kind": "review",
+            "note": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+            "actor_id": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+            "claim_id": "5693eca7-802f-4e64-a09a-38eea59d8433",
+            "sequence": 2,
+            "report_id": "967941d6-0640-4f69-b5d0-2450baea9bf2",
+            "created_at": "2026-09-10T05:51:43.430258+00:00",
+            "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+            "workspace_id": "00000000-0000-4000-8000-00000000000a"
+          }
+        ],
+        "reports": [
+          {
+            "id": "967941d6-0640-4f69-b5d0-2450baea9bf2",
+            "version": 2,
+            "snapshot": {
+              "period": {
+                "id": "974838a9-269a-4d44-b744-17084c9dfdc9",
+                "name": "Synthetic retained reporting period",
+                "note": "",
+                "state": "draft",
+                "ends_on": "2026-08-31",
+                "version": 1,
+                "progress": [
+                  {
+                    "asOf": "2026-08-31",
+                    "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                    "completed": "Draft work retained",
+                    "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e",
+                    "outstanding": "Unfinished analysis remains",
+                    "estimateBasis": "Unassessed synthetic remainder",
+                    "remainingCost": null,
+                    "remainingHours": null
+                  }
+                ],
+                "starts_on": "2026-08-01",
+                "created_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+                "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+                "updated_at": "2026-09-10T05:51:43.397288+00:00",
+                "baseline_id": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+                "workspace_id": "00000000-0000-4000-8000-00000000000a",
+                "source_cutoff": "2026-09-10T05:51:43.395+00:00"
+              },
+              "actuals": [
+                {
+                  "id": "f44ba743-0fea-4bdd-8fb1-a5c7452b6f6f",
+                  "kind": "labor",
+                  "hours": "1.00",
+                  "amount": "12.35",
+                  "detail": {
+                    "kind": "labor",
+                    "basis": "recorded",
+                    "hours": "1.00",
+                    "amount": "12.35",
+                    "status": "approved",
+                    "entryId": "40aa445b-84a0-4f38-93aa-b75a200668a2",
+                    "staffId": "8c00b676-d3b6-427a-a56f-e82a7d2196b6",
+                    "entryDate": "2026-08-01",
+                    "projectId": "00000000-0000-4000-8000-00000000000b",
+                    "requestId": "2962d215-a775-418e-8423-d52aea685430",
+                    "sourceKey": "restore-old-cost",
+                    "contractId": null,
+                    "revisionId": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+                    "allocations": [
+                      {
+                        "share": 10000,
+                        "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                        "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e"
+                      }
+                    ],
+                    "description": "Synthetic old-cost",
+                    "expectedVersion": 0,
+                    "sourceReference": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction."
+                  },
+                  "status": "approved",
+                  "version": 1,
+                  "costRate": null,
+                  "entry_id": "40aa445b-84a0-4f38-93aa-b75a200668a2",
+                  "staff_id": "8c00b676-d3b6-427a-a56f-e82a7d2196b6",
+                  "staffName": "Synthetic restore staff",
+                  "created_at": "2026-09-10T05:51:43.34149+00:00",
+                  "created_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+                  "entry_date": "2026-08-01",
+                  "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+                  "source_key": "restore-old-cost",
+                  "allocations": [
+                    {
+                      "id": "15286a1b-616f-4f89-8d1d-ec3c3b4d239d",
+                      "hours": "1.00",
+                      "share": 10000,
+                      "amount": "12.35",
+                      "task_id": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                      "element_id": "4fc4dfca-bb89-42f2-8790-d702476ed22e",
+                      "deliverable_id": null,
+                      "actual_version_id": "f44ba743-0fea-4bdd-8fb1-a5c7452b6f6f"
+                    }
+                  ],
+                  "revision_id": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+                  "cost_rate_id": null,
+                  "workspace_id": "00000000-0000-4000-8000-00000000000a",
+                  "time_entry_id": "7ff49e91-648e-497b-a8ec-337b775cc1bd",
+                  "spend_entry_id": null,
+                  "valuation_basis": "recorded"
+                },
+                {
+                  "id": "fe591486-f0ab-4470-89e6-d9232c2af68d",
+                  "kind": "commitment",
+                  "hours": null,
+                  "amount": "40.00",
+                  "detail": {
+                    "kind": "commitment",
+                    "basis": "recorded",
+                    "hours": null,
+                    "amount": "40.00",
+                    "status": "approved",
+                    "entryId": "4f1778a4-0819-445f-b970-a7b1d208b071",
+                    "staffId": null,
+                    "entryDate": "2026-08-01",
+                    "projectId": "00000000-0000-4000-8000-00000000000b",
+                    "requestId": "74f9caa7-c5ad-4259-91dc-229958135093",
+                    "sourceKey": "restore-commitment",
+                    "contractId": null,
+                    "revisionId": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+                    "allocations": [
+                      {
+                        "share": 10000,
+                        "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                        "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e"
+                      }
+                    ],
+                    "description": "Synthetic commitment",
+                    "expectedVersion": 0,
+                    "sourceReference": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction."
+                  },
+                  "status": "approved",
+                  "version": 1,
+                  "costRate": null,
+                  "entry_id": "4f1778a4-0819-445f-b970-a7b1d208b071",
+                  "staff_id": null,
+                  "staffName": null,
+                  "created_at": "2026-09-10T05:51:43.362322+00:00",
+                  "created_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+                  "entry_date": "2026-08-01",
+                  "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+                  "source_key": "restore-commitment",
+                  "allocations": [
+                    {
+                      "id": "ef94c677-54c8-4e42-b677-e7cc4530ded7",
+                      "hours": null,
+                      "share": 10000,
+                      "amount": "40.00",
+                      "task_id": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                      "element_id": "4fc4dfca-bb89-42f2-8790-d702476ed22e",
+                      "deliverable_id": null,
+                      "actual_version_id": "fe591486-f0ab-4470-89e6-d9232c2af68d"
+                    }
+                  ],
+                  "revision_id": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+                  "cost_rate_id": null,
+                  "workspace_id": "00000000-0000-4000-8000-00000000000a",
+                  "time_entry_id": null,
+                  "spend_entry_id": null,
+                  "valuation_basis": "recorded"
+                },
+                {
+                  "id": "fd46602c-d00e-4c9a-ad1a-109f4e546507",
+                  "kind": "payment",
+                  "hours": null,
+                  "amount": "7.00",
+                  "detail": {
+                    "kind": "payment",
+                    "basis": "recorded",
+                    "hours": null,
+                    "amount": "7.00",
+                    "status": "approved",
+                    "entryId": "f5badc0b-e4f8-4711-b450-2cacdf12fb34",
+                    "staffId": null,
+                    "entryDate": "2026-08-15",
+                    "projectId": "00000000-0000-4000-8000-00000000000b",
+                    "requestId": "ce36cfe3-9c04-43e0-af8b-48a67ec77186",
+                    "sourceKey": "restore-receipt",
+                    "contractId": null,
+                    "revisionId": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+                    "allocations": [
+                      {
+                        "share": 10000,
+                        "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                        "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e"
+                      }
+                    ],
+                    "description": "Synthetic receipt",
+                    "expectedVersion": 0,
+                    "sourceReference": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction."
+                  },
+                  "status": "approved",
+                  "version": 1,
+                  "costRate": null,
+                  "entry_id": "f5badc0b-e4f8-4711-b450-2cacdf12fb34",
+                  "staff_id": null,
+                  "staffName": null,
+                  "created_at": "2026-09-10T05:51:43.374432+00:00",
+                  "created_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+                  "entry_date": "2026-08-15",
+                  "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+                  "source_key": "restore-receipt",
+                  "allocations": [
+                    {
+                      "id": "87d82757-b79b-4712-b6ed-e06f999473cc",
+                      "hours": null,
+                      "share": 10000,
+                      "amount": "7.00",
+                      "task_id": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                      "element_id": "4fc4dfca-bb89-42f2-8790-d702476ed22e",
+                      "deliverable_id": null,
+                      "actual_version_id": "fd46602c-d00e-4c9a-ad1a-109f4e546507"
+                    }
+                  ],
+                  "revision_id": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+                  "cost_rate_id": null,
+                  "workspace_id": "00000000-0000-4000-8000-00000000000a",
+                  "time_entry_id": null,
+                  "spend_entry_id": null,
+                  "valuation_basis": "recorded"
+                }
+              ],
+              "baseline": {
+                "id": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+                "revision": 1,
+                "created_at": "2026-09-10T05:51:43.284694+00:00",
+                "created_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+                "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+                "request_id": "12b37f49-0a70-42ae-ac96-6306fb81ea8f",
+                "source_ids": [],
+                "content_json": {
+                  "agency": "Synthetic restore agency",
+                  "currency": "USD",
+                  "elements": [
+                    {
+                      "id": "4fc4dfca-bb89-42f2-8790-d702476ed22e",
+                      "code": "WE-01",
+                      "tasks": [
+                        {
+                          "id": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                          "schedule": "2027-06-30",
+                          "description": "Finish the synthetic analysis",
+                          "responsible": "Synthetic staff"
+                        }
+                      ],
+                      "title": "Retained unfinished work",
+                      "budget": [],
+                      "source": null,
+                      "products": [],
+                      "schedule": "2026-07-01 through 2027-06-30",
+                      "objective": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                      "projectId": "00000000-0000-4000-8000-00000000000b",
+                      "discussion": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                      "disposition": "new",
+                      "responsible": "Synthetic test agency",
+                      "decisionNote": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                      "personMonths": null,
+                      "budgetTreatment": "included",
+                      "budgetTreatmentNote": ""
+                    }
+                  ],
+                  "staffing": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                  "periodEnd": "2027-06-30",
+                  "periodStart": "2026-07-01",
+                  "preparation": {
+                    "costs": [
+                      {
+                        "id": "810c379a-2c1e-40ff-94b8-40f0d1f00efa",
+                        "note": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                        "label": "Synthetic work allowance",
+                        "amount": 120,
+                        "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                        "category": "direct",
+                        "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e",
+                        "contractId": null,
+                        "sourceRefs": [],
+                        "indirectPoolId": null
+                      }
+                    ],
+                    "funds": [
+                      {
+                        "id": "243a4009-00d8-4cc8-96ea-e0e6d0ff6eee",
+                        "kind": "carryover",
+                        "name": "Synthetic fund 1",
+                        "note": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                        "basis": "proposed",
+                        "amount": 100,
+                        "vintage": "2026",
+                        "periodEnd": "2027-06-30",
+                        "sourceRefs": [],
+                        "periodStart": "2026-07-01"
+                      },
+                      {
+                        "id": "5b8a9e6f-f671-4daa-ac76-e0ba17076eaa",
+                        "kind": "match",
+                        "name": "Synthetic fund 2",
+                        "note": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                        "basis": "proposed",
+                        "amount": 20,
+                        "vintage": "2026",
+                        "periodEnd": "2027-06-30",
+                        "sourceRefs": [],
+                        "periodStart": "2026-07-01"
+                      }
+                    ],
+                    "mappings": [],
+                    "staffing": [],
+                    "conflicts": [],
+                    "amendments": [],
+                    "allocations": [
+                      {
+                        "id": "42d4c146-590b-4321-859d-5e94302eefb1",
+                        "note": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                        "amount": 100,
+                        "fundId": "243a4009-00d8-4cc8-96ea-e0e6d0ff6eee",
+                        "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                        "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e",
+                        "sourceRefs": [],
+                        "matchForFundId": null
+                      },
+                      {
+                        "id": "c1c62603-d5f1-4bf6-ac77-799e92587d92",
+                        "note": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                        "amount": 20,
+                        "fundId": "5b8a9e6f-f671-4daa-ac76-e0ba17076eaa",
+                        "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                        "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e",
+                        "sourceRefs": [],
+                        "matchForFundId": null
+                      }
+                    ],
+                    "formatVersion": 2,
+                    "indirectPools": [],
+                    "sourceSections": [],
+                    "referenceFigures": [],
+                    "extractionSelections": []
+                  },
+                  "documentKind": "agency_work_program",
+                  "introduction": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                  "priorBalance": null,
+                  "schemaVersion": 1,
+                  "authorityBasis": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                  "financialNotes": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                  "priorBalanceBasis": "Unassessed in synthetic fixture",
+                  "responsibleAuthority": "Synthetic test authority"
+                },
+                "workspace_id": "00000000-0000-4000-8000-00000000000a",
+                "content_sha256": "46b8e3068277f5d940b1e7886a09a2103b65c5da63c6e9465da67c824435f6a8",
+                "previous_revision_id": null,
+                "amendment_baseline_id": null
+              },
+              "issueNote": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+              "reviewNote": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+              "reviewedAt": "2026-09-10T05:51:43.403585+00:00",
+              "reviewedBy": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+              "reimbursement": {
+                "costs": [
+                  {
+                    "shares": [
+                      {
+                        "amount": "10.00",
+                        "fundId": "243a4009-00d8-4cc8-96ea-e0e6d0ff6eee",
+                        "evidence": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                        "treatment": "reimbursement"
+                      },
+                      {
+                        "amount": "2.35",
+                        "fundId": "5b8a9e6f-f671-4daa-ac76-e0ba17076eaa",
+                        "evidence": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                        "treatment": "match"
+                      }
+                    ],
+                    "eligibleAmount": "12.35",
+                    "actualVersionId": "f44ba743-0fea-4bdd-8fb1-a5c7452b6f6f",
+                    "eligibilityEvidence": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction."
+                  }
+                ],
+                "title": "Synthetic recovery claim",
+                "claimId": "5693eca7-802f-4e64-a09a-38eea59d8433",
+                "history": [
+                  {
+                    "id": "b071b586-b71a-4c43-ac14-dd2ef66a84b2",
+                    "kind": "save",
+                    "note": "Draft saved",
+                    "actor_id": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+                    "claim_id": "5693eca7-802f-4e64-a09a-38eea59d8433",
+                    "sequence": 1,
+                    "report_id": null,
+                    "created_at": "2026-09-10T05:51:43.423919+00:00",
+                    "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+                    "workspace_id": "00000000-0000-4000-8000-00000000000a"
+                  }
+                ],
+                "reportId": "4c3ac69d-e4f2-421a-9d60-a3af95511b0d",
+                "totalCost": "12.35",
+                "matchTotal": "2.35",
+                "reviewNote": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                "reviewedAt": "2026-09-10T05:51:43.430258+00:00",
+                "reviewedBy": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+                "deliverables": [],
+                "formEvidence": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                "contractCosts": [],
+                "eligibleTotal": "12.35",
+                "packetVersion": 1,
+                "sourceReportHash": "543894d34f2bc7d7374e48b2c278d0876d781fcac57e8acd2f3cdcfb58870c7a",
+                "authorityEvidence": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                "deliverableEvents": [],
+                "reimbursementTotal": "10.00"
+              },
+              "schemaVersion": 1,
+              "baselineAdoption": {
+                "id": "987b52ed-add4-4696-b84f-9384a6edb53b",
+                "kind": "adoption",
+                "payload": {
+                  "kind": "adoption",
+                  "note": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                  "scope": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+                  "authority": "Synthetic test board",
+                  "requestId": "db4115f4-3ff0-4222-9601-c346b9270db6",
+                  "revisionId": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+                  "visibility": "internal",
+                  "documentIds": [
+                    "00000000-0000-4000-8000-00000000000d"
+                  ],
+                  "reviewerIds": [],
+                  "evidenceDate": "2026-09-01",
+                  "revisionHash": "46b8e3068277f5d940b1e7886a09a2103b65c5da63c6e9465da67c824435f6a8",
+                  "expectedRevision": 1,
+                  "expectedSequence": 2
+                },
+                "actor_id": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+                "evidence": [
+                  {
+                    "id": "00000000-0000-4000-8000-00000000000d",
+                    "title": "Recovery evidence",
+                    "checksum": "55c476765b439eb99748445793a2c8aefbd95012460b43fbaccec5c458d41cc9"
+                  }
+                ],
+                "sequence": 3,
+                "created_at": "2026-09-10T05:51:43.308182+00:00",
+                "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+                "request_id": "db4115f4-3ff0-4222-9601-c346b9270db6",
+                "revision_id": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+                "workspace_id": "00000000-0000-4000-8000-00000000000a",
+                "revision_hash": "46b8e3068277f5d940b1e7886a09a2103b65c5da63c6e9465da67c824435f6a8"
+              },
+              "valuationHistory": [
+                {
+                  "id": "f44ba743-0fea-4bdd-8fb1-a5c7452b6f6f",
+                  "kind": "labor",
+                  "hours": "1.00",
+                  "amount": "12.35",
+                  "detail": {
+                    "kind": "labor",
+                    "basis": "recorded",
+                    "hours": "1.00",
+                    "amount": "12.35",
+                    "status": "approved",
+                    "entryId": "40aa445b-84a0-4f38-93aa-b75a200668a2",
+                    "staffId": "8c00b676-d3b6-427a-a56f-e82a7d2196b6",
+                    "entryDate": "2026-08-01",
+                    "projectId": "00000000-0000-4000-8000-00000000000b",
+                    "requestId": "2962d215-a775-418e-8423-d52aea685430",
+                    "sourceKey": "restore-old-cost",
+                    "contractId": null,
+                    "revisionId": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+                    "allocations": [
+                      {
+                        "share": 10000,
+                        "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                        "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e"
+                      }
+                    ],
+                    "description": "Synthetic old-cost",
+                    "expectedVersion": 0,
+                    "sourceReference": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction."
+                  },
+                  "status": "approved",
+                  "version": 1,
+                  "entry_id": "40aa445b-84a0-4f38-93aa-b75a200668a2",
+                  "staff_id": "8c00b676-d3b6-427a-a56f-e82a7d2196b6",
+                  "created_at": "2026-09-10T05:51:43.34149+00:00",
+                  "created_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+                  "entry_date": "2026-08-01",
+                  "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+                  "source_key": "restore-old-cost",
+                  "revision_id": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+                  "cost_rate_id": null,
+                  "workspace_id": "00000000-0000-4000-8000-00000000000a",
+                  "time_entry_id": "7ff49e91-648e-497b-a8ec-337b775cc1bd",
+                  "spend_entry_id": null,
+                  "valuation_basis": "recorded"
+                },
+                {
+                  "id": "fe591486-f0ab-4470-89e6-d9232c2af68d",
+                  "kind": "commitment",
+                  "hours": null,
+                  "amount": "40.00",
+                  "detail": {
+                    "kind": "commitment",
+                    "basis": "recorded",
+                    "hours": null,
+                    "amount": "40.00",
+                    "status": "approved",
+                    "entryId": "4f1778a4-0819-445f-b970-a7b1d208b071",
+                    "staffId": null,
+                    "entryDate": "2026-08-01",
+                    "projectId": "00000000-0000-4000-8000-00000000000b",
+                    "requestId": "74f9caa7-c5ad-4259-91dc-229958135093",
+                    "sourceKey": "restore-commitment",
+                    "contractId": null,
+                    "revisionId": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+                    "allocations": [
+                      {
+                        "share": 10000,
+                        "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                        "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e"
+                      }
+                    ],
+                    "description": "Synthetic commitment",
+                    "expectedVersion": 0,
+                    "sourceReference": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction."
+                  },
+                  "status": "approved",
+                  "version": 1,
+                  "entry_id": "4f1778a4-0819-445f-b970-a7b1d208b071",
+                  "staff_id": null,
+                  "created_at": "2026-09-10T05:51:43.362322+00:00",
+                  "created_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+                  "entry_date": "2026-08-01",
+                  "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+                  "source_key": "restore-commitment",
+                  "revision_id": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+                  "cost_rate_id": null,
+                  "workspace_id": "00000000-0000-4000-8000-00000000000a",
+                  "time_entry_id": null,
+                  "spend_entry_id": null,
+                  "valuation_basis": "recorded"
+                },
+                {
+                  "id": "fd46602c-d00e-4c9a-ad1a-109f4e546507",
+                  "kind": "payment",
+                  "hours": null,
+                  "amount": "7.00",
+                  "detail": {
+                    "kind": "payment",
+                    "basis": "recorded",
+                    "hours": null,
+                    "amount": "7.00",
+                    "status": "approved",
+                    "entryId": "f5badc0b-e4f8-4711-b450-2cacdf12fb34",
+                    "staffId": null,
+                    "entryDate": "2026-08-15",
+                    "projectId": "00000000-0000-4000-8000-00000000000b",
+                    "requestId": "ce36cfe3-9c04-43e0-af8b-48a67ec77186",
+                    "sourceKey": "restore-receipt",
+                    "contractId": null,
+                    "revisionId": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+                    "allocations": [
+                      {
+                        "share": 10000,
+                        "taskId": "b4f839bf-ab83-4636-be53-dbae9a69b758",
+                        "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e"
+                      }
+                    ],
+                    "description": "Synthetic receipt",
+                    "expectedVersion": 0,
+                    "sourceReference": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction."
+                  },
+                  "status": "approved",
+                  "version": 1,
+                  "entry_id": "f5badc0b-e4f8-4711-b450-2cacdf12fb34",
+                  "staff_id": null,
+                  "created_at": "2026-09-10T05:51:43.374432+00:00",
+                  "created_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+                  "entry_date": "2026-08-15",
+                  "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+                  "source_key": "restore-receipt",
+                  "revision_id": "64bf090a-eb52-4508-b62b-b0957c4eb39b",
+                  "cost_rate_id": null,
+                  "workspace_id": "00000000-0000-4000-8000-00000000000a",
+                  "time_entry_id": null,
+                  "spend_entry_id": null,
+                  "valuation_basis": "recorded"
+                }
+              ]
+            },
+            "issued_at": "2026-09-10T05:51:43.430258+00:00",
+            "issued_by": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+            "period_id": "974838a9-269a-4d44-b744-17084c9dfdc9",
+            "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+            "report_kind": "reimbursement",
+            "workspace_id": "00000000-0000-4000-8000-00000000000a",
+            "snapshot_hash": "70a2abd647cf06f4582ac0e28b760b1ad42909e9f29739141aed26502293b2f9",
+            "corrects_report_id": null
+          }
+        ]
+      }
+    },
+    "assessment": {
+      "work": [
+        {
+          "amount": null,
+          "evidence": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+          "elementId": "4fc4dfca-bb89-42f2-8790-d702476ed22e",
+          "allocations": [
+            {
+              "amount": "19.00",
+              "sourceFundId": "243a4009-00d8-4cc8-96ea-e0e6d0ff6eee",
+              "successorFundId": "9fa1882d-57a0-4f7d-8a1a-01dd6b6ef0f5",
+              "successorElementId": "0356573f-5205-4967-86bb-cb6cde1885eb",
+              "successorRevisionId": "effecd27-42f7-4c0a-927d-7e1b18b392e3"
+            }
+          ],
+          "disposition": "carryover",
+          "sourceFundId": null,
+          "successorFundId": null,
+          "successorElementId": null,
+          "successorRevisionId": null
+        }
+      ],
+      "claims": [
+        {
+          "claimId": "5693eca7-802f-4e64-a09a-38eea59d8433",
+          "evidence": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+          "receipts": [
+            {
+              "amount": "7.00",
+              "actualVersionId": "fd46602c-d00e-4c9a-ad1a-109f4e546507"
+            }
+          ],
+          "refundDue": "6.00",
+          "refundPayments": [
+            {
+              "amount": "5.00",
+              "actualVersionId": "6e51d534-43e4-44db-b915-4fb9b42ab3cf"
+            }
+          ]
+        }
+      ],
+      "commitments": [
+        {
+          "evidence": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction.",
+          "actualVersionId": "fe591486-f0ab-4470-89e6-d9232c2af68d",
+          "outstandingAmount": "15.00"
+        }
+      ],
+      "registerEvidence": "SYNTHETIC recovery fixture. No actual agency decision, eligibility or bank transaction."
+    }
+  },
+  "version": 5,
+  "actor_id": "d856d35d-02d5-454a-bb6b-8d16bcde6c07",
+  "report_id": "4c3ac69d-e4f2-421a-9d60-a3af95511b0d",
+  "created_at": "2026-09-10T05:51:43.498041+00:00",
+  "program_id": "768b773f-f7d5-48df-814a-036c82d7a11d",
+  "source_hash": "942fe6928a2d75d3bc16931bfd9127a00c0bf34595bd1689ce7d3a92e100dcad",
+  "content_hash": "70cefa7a80db7329df3439beb3639ac0a0e1c7458489d2379ca245d5323481b3",
+  "workspace_id": "00000000-0000-4000-8000-00000000000a"
+}

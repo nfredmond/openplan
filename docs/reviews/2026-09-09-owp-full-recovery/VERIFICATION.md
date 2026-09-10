@@ -1,10 +1,10 @@
 # OWP full recovery implementation
 
-Status: implementation and verification in progress. This is not a completed recovery or v1 claim. v0.48.0 is [published](https://github.com/nfredmond/openplan/releases/tag/v0.48.0) at `e39258b92f119d5b7d8326155f99188d43a7eaf3`; its final QA, shuffled, RLS and upgrade checks passed before tagging. Development continues under Nathaniel's September 9 direction without human-review gates.
+Status: bounded engineering acceptance complete; final main CI and v0.49 publication pending. This is not a complete installation-recovery or v1 claim. v0.48.0 is [published](https://github.com/nfredmond/openplan/releases/tag/v0.48.0) at `e39258b92f119d5b7d8326155f99188d43a7eaf3`; its final QA, shuffled, RLS and upgrade checks passed before tagging. Development continues under Nathaniel's September 9 direction without human-review gates.
 
 ## Scope and ownership
 
-The isolated checkout is `/home/nathaniel/.local/state/openplan/owp-full-recovery-2026-09-09`, branch `work/owp-full-recovery`, based on main `aed2f3d3`. This work owns the existing disposable restore drill, its supporting scripts/tests, recovery documentation and this evidence. No application workflow, migration, financial guard or pending reminder constraint has changed. No other active coding session was observed at takeover.
+The isolated checkout is `/home/nathaniel/.local/state/openplan/owp-full-recovery-2026-09-09`, branch `work/owp-full-recovery`, based on main `aed2f3d3`. This work owns the existing disposable restore drill, its supporting scripts/tests, recovery documentation and this evidence. The later browser run also established and repaired two Document Library defects, recorded below. No migration, financial guard or pending reminder constraint has changed. No other active coding session was observed at takeover.
 
 Extend the existing M2d.4/M3 recovery path. `--full-archive` uses a fresh source and target, captures the complete custom PostgreSQL archive and the Storage volume, restores into a new database made from `template0`, retains the target's bootstrap database, and compares table data, large objects, materialized views, sequence positions, schema, database ownership/ACL/settings and file bytes. Source API/Auth/Storage writers stop during capture. The drill creates no workers or scheduled SQL jobs. Runtime images and cluster role definitions must match. Settings values and credentials remain private; evidence contains their hashes.
 
@@ -103,3 +103,93 @@ After those markers were aligned, shuffled seed `651414` passed 1,232 files and
 13,451 tests (33 files/299 tests skipped, chiefly separately run live suites).
 Production build at `56ce1ac5` passed using Next 16.3.4. That build's incomplete
 browser journey does not establish acceptance of the subsequent library repair.
+
+## Final bounded acceptance
+
+Identified application build: `ae97ef2f46e1b381e54adc38bd8bf12254eb06a6`, version
+0.49.0, Next 16.3.4, served at `http://127.0.0.1:3271` from the isolated checkout.
+`which-openplan.sh` reported MATCH. Its API used the owned restored target at
+`http://127.0.0.1:22301`. The final desktop and 390px journeys entered through the
+front door, signed in, used real Programming Cycles and Documents navigation,
+and used keyboard selection, retry and native downloads. The acceptance scripts
+are retained here with their case-specific local dependency/scratch paths; they
+require the named private fixture directory and expected commit environment.
+They create synthetic resumed drafts and a foreign test account, so are not
+read-only instruments or production probes.
+
+- Original approval version 2 and corrected version 5 saved as separate JSON
+  files, matched the retained records and had identical per-file checksums at
+  both widths. The original stayed unchanged. The closed-period decision also
+  downloaded exactly, and the old cost correction was refused with HTTP 409.
+- Forced history HTTP 503 removed unavailable download controls and recovered on
+  reload. A successful successor save with its response deliberately lost
+  survived reload and exact retry with one new draft. Direct reads of the
+  restored target confirmed the new record. Final browser attempts produced
+  draft versions 5 and 6; earlier instrument attempts produced versions 1–4.
+  Those are distinct test requests, not duplicated financial entries.
+- The restored TXT and inline HTML report downloaded from Documents through
+  keyboard activation and matched their retained bytes. The downloaded HTML was
+  opened in Chrome and inspected. Anonymous requests were refused with 401 and
+  an authenticated owner of a different workspace received 404 for both files
+  and the reconciliation API. Console inspection found only the deliberately
+  injected 503 and lost-response errors, with no unexpected warnings/errors.
+- Visual inspection found that the old side-by-side date inputs extended beyond
+  a clipping ancestor at both widths. The date pair now stacks within its
+  column. The live geometry check accepts the corrected and harmless-control
+  layouts, rejects reproduction of the old layout, and accepts the restored
+  layout. Both dates are visible and keyboard-focusable in the retained images.
+
+One earlier retry journey timed out waiting for a save control after reload.
+It did not create an extra financial entry. A later run on unchanged app code
+completed at both widths, so the original timeout is not a demonstrated app
+regression. Its exact cause remains unproved. The final instrument waits for the
+retained version to load and asserts that the enabled retry button owns focus
+before sending Enter. It then completed both journeys. Preserve that diagnostic
+limit rather than silently calling the earlier run a pass.
+
+**Meaning correction:** the initial verifier called the successor's 8.00 claim
+request `successorUnpaidClaim`. That label overstated what its calculation read:
+the new settlement assessment remains unknown in the app. The verifier, producer
+fixture and tests now use `successorClaimRequest`. Original `owp-source.json` and
+`owp-target.json` remain as historical outputs with that incorrect label; use the
+`*-reviewed.json` outputs for the corrected meaning. They were recomputed from
+the original captured inputs and still match byte-for-byte. The after-browser
+`owp-resumed.json` confirms 20.35 incurred in five physical entries, the same old
+approvals, 3.00 prior matched balance, 15.00 commitment and 1.00 refund remainder.
+Its record hash changes because resumed drafts legitimately extend the history.
+Neither an absent match nor this synthetic request proves a real unpaid balance.
+
+Local full QA at `4b4c13a9` passed: lint, dead-code checking, 1,232 test files /
+13,457 tests, production dependency audit with zero vulnerabilities and webpack
+build. The separate shuffled run at seed 651414 passed the same counts. There
+were 33 skipped files / 299 skipped tests; live RLS was explicitly run separately
+in both disposable restore modes. The only later application edit is the date
+layout, checked with focused lint, a successful identified production build and
+both browser sizes. Final main CI must cover the complete release commit.
+
+Restoration verification has 28 focused Python tests and 45 repeatable mutation
+probes, including three harmless survivors. The library change has 23 focused
+query/confinement tests and a harmless survivor plus five targeted failures.
+The final default-local archive procedure also passed on GitHub's fresh runner
+at `56ce1ac5`: [Restore Drill 34444365112](https://github.com/nfredmond/openplan/actions/runs/34444365112).
+Its downloaded custody summaries match source/target exactly; it predates the
+library repair and successor-request label correction. The final release run
+will be recorded separately.
+
+The guards have bounded reach: table/schema/file custody does not cover external
+worker directories or configuration; matching roles/images is not a migration
+of arbitrary production clusters; synthetic arithmetic does not establish bank,
+agency or form correctness; query tests model only declared projections/joins;
+Chrome journeys do not establish screen-reader, touch-device or field usefulness.
+No human review is a development or release gate. Remaining full OWP administration,
+M3 installation recovery and the complete nationwide v1 contract remain open.
+
+## Following software priority
+
+Continue into the roadmap's early A0a/A1a provider-choice foundation. Current
+`action-registry.ts` awaits context refresh after recording completion, while
+both action callers in `app-copilot.tsx` catch that later error as a failed action.
+Reproduce that boundary before expanding provider execution: a completed write
+must not look unsaved merely because follow-up context failed. Preserve the same
+approval and action registry; extend existing provider/CLI work instead of a new
+agent module. Full Codex, Claude Code and OpenCode support remains the A0 scope.

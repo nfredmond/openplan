@@ -24,8 +24,7 @@ No changes yet.
 
 ## 0.49.0 — 2026-09-09
 
-Development candidate until final engineering checks pass and the tag is published.
-[Recovery evidence](docs/reviews/2026-09-09-owp-full-recovery/VERIFICATION.md)
+Development release. [Recovery evidence](docs/reviews/2026-09-09-owp-full-recovery/VERIFICATION.md)
 records completed checks and remaining limits. No new database migration.
 
 - Add `npm run ops:restore-drill -- --full-archive` for complete database and

@@ -117,7 +117,7 @@ async function main() {
   const nextClaim = await claim(next, nextReport.reportId, newCost, "8.00", "8.00");
   const retained = await rpc<CloseoutData>("read_work_program_closeout", closeArgs);
   assert.deepEqual(retained.records, corrected.records);
-  writeFileSync(process.argv[2], JSON.stringify({ synthetic: true, workspace, owner, old, next, oldReport, nextReport, oldClaim, nextClaim, actuals, originalApproval: original.id, correctedApproval: corrected.records.at(-1)!.id, expected: { originalCarryover: "20.00", currentCarryover: "19.00", priorUnpaidClaim: "3.00", successorUnpaidClaim: "8.00", outstandingCommitment: "15.00", refundRemaining: "1.00", incurredAcrossCycles: "20.35", physicalEntries: 5 }, sourceDuplicateRefused: true }, null, 2)+"\n", { mode: 0o600 });
+  writeFileSync(process.argv[2], JSON.stringify({ synthetic: true, workspace, owner, old, next, oldReport, nextReport, oldClaim, nextClaim, actuals, originalApproval: original.id, correctedApproval: corrected.records.at(-1)!.id, expected: { originalCarryover: "20.00", currentCarryover: "19.00", priorUnpaidClaim: "3.00", successorClaimRequest: "8.00", outstandingCommitment: "15.00", refundRemaining: "1.00", incurredAcrossCycles: "20.35", physicalEntries: 5 }, sourceDuplicateRefused: true }, null, 2)+"\n", { mode: 0o600 });
   console.log("[restore-drill] two overlapping OWP cycles seeded through workflow commands; old approval and unresolved claim retained");
 }
 main().catch(error=>{ console.error(error); process.exitCode=1; });

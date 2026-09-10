@@ -22,7 +22,7 @@ class ReconstructionTests(unittest.TestCase):
         result = reconstruction.reconstruct(**self.data)
         self.assertEqual(result['incurredAcrossCycles'], '20.35')
         self.assertEqual(result['priorUnpaidClaim'], '3.00')
-        self.assertEqual(result['successorUnpaidClaim'], '8.00')
+        self.assertEqual(result['successorClaimRequest'], '8.00')
         self.assertEqual(result['outstandingCommitment'], '15.00')
         self.assertEqual(result['refundRemaining'], '1.00')
         self.assertEqual((result['originalCarryover'], result['currentCarryover']), ('20.00', '19.00'))

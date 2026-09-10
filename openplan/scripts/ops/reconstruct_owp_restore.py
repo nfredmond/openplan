@@ -66,7 +66,8 @@ def reconstruct(fixture, old, successor, physical):
     assert receipt_entries.isdisjoint(refund_entries)
     requested = lambda data, claim: Decimal(next(packet for packet in data['source']['reimbursement']['reports'] if packet['id'] == claim['packetId'])['snapshot']['reimbursement']['reimbursementTotal'])
     prior_unpaid = requested(old, fixture['oldClaim']) - sum((Decimal(match['amount']) for match in row['receipts']), Decimal(0))
-    new_unpaid = requested(successor, fixture['nextClaim'])
+    # The successor has no settlement assessment; its request is not proof of an unpaid balance.
+    new_requested = requested(successor, fixture['nextClaim'])
     refund_remaining = Decimal(row['refundDue']) - sum((Decimal(match['amount']) for match in row['refundPayments']), Decimal(0))
     outstanding = Decimal(assessment['commitments'][0]['outstandingAmount'])
     obligation = source_actuals[assessment['commitments'][0]['actualVersionId']]
@@ -80,7 +81,7 @@ def reconstruct(fixture, old, successor, physical):
     assert len({row['entry_id'] for row in physical}) == len(physical), 'Physical source entry duplicated'
     assert len({row['source_key'] for row in physical}) == len(physical), 'Physical source key duplicated'
     result = {name: format(value, '.2f') for name, value in [
-        ('priorUnpaidClaim', prior_unpaid), ('successorUnpaidClaim', new_unpaid),
+        ('priorUnpaidClaim', prior_unpaid), ('successorClaimRequest', new_requested),
         ('refundRemaining', refund_remaining), ('outstandingCommitment', outstanding),
         ('incurredAcrossCycles', incurred)]}
     for name, value in result.items():
@@ -107,7 +108,7 @@ def main(fixture_path, destination):
     Path(destination).with_suffix('.inputs.json').write_text(json.dumps({'fixture': fixture, 'old': old, 'successor': successor, 'physical': physical}, sort_keys=True)+'\n')
     result = reconstruct(fixture, old, successor, physical)
     Path(destination).write_text(json.dumps(result, indent=2)+'\n')
-    print('[restore-drill] independently reconstructed two cycles, old approvals, unpaid claims, commitment and refund')
+    print('[restore-drill] independently reconstructed two cycles, old approvals, claim request, matched prior balance, commitment and refund')
 
 
 if __name__ == '__main__':
