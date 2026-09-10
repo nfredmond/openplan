@@ -20,11 +20,13 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- Split unfinished OWP work among adopted successor elements and funds, or combine old elements in a successor. Saved reconciliation retains each allocation, original approval and correction history without copying expenses. Combined source/successor funding limits include earlier approved mappings. Apply `work_program_multi_carryover` (`20261007000001`). Independent two-cycle reconstruction, restore and finance acceptance remain open.
+
 - Match outgoing OWP refunds to existing approved payments, preserving unknown, partial and excess refund balances. Receipt/refund conflicts and over-allocation across approved baselines are refused by physical entry identity, including after correction. Matched late refunds remain protected by period closure. Apply `work_program_refund_matches` (`20261006000001`). Payment direction is a reviewer decision with evidence; this does not verify a bank transfer or add a cost.
 
 - Close an OWP accounting period against its current approved reconciliation, with retained authority/reason and authorized reopening. Closed dates, linked claims and matched receipts reject later changes; a later reporting period can proceed. Open balances remain open. Apply `work_program_period_closure` (`20261005000001`) after the reconciliation migration. Browser and final CI acceptance are recorded with the implementation evidence.
 
-- OWP closeout now retains private reconciliation drafts, approval evidence and reopening history. Match receipts to current claims, assess commitments/refunds and map approved carryover to exact adopted successor work and funding without copying costs. Unresolved balances stay visible. This records human review; multi-target carryover, prescribed forms and agency usefulness remain unfinished. Apply `work_program_closeout_reconciliation` (`20261004000001`) before using it.
+- OWP closeout now retains private reconciliation drafts, approval evidence and reopening history. Match receipts to current claims, assess commitments/refunds and map approved carryover to exact adopted successor work and funding without copying costs. Unresolved balances stay visible. This records human review; prescribed forms and agency usefulness remain unfinished. Apply `work_program_closeout_reconciliation` (`20261004000001`) before using it.
 
 - Begin OWP closeout review from an issued management report: inspect the retained baseline, corrected claim requests, unresolved settlement and unfinished work, and save a private JSON review with its source records. This preparatory review does not approve carryover, settle obligations or close a cycle.
 

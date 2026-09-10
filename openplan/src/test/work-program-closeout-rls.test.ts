@@ -10,7 +10,7 @@ live("OWP saved reconciliation and carryover custody", () => {
   if (!process.env.CI && !process.env.OPENPLAN_SUPABASE_WORKDIR) throw new Error("An explicitly identified disposable Supabase workdir is required");
   container = resolveLocalDbContainer();
  });
- function exercise(body: string, replacement = "", extraSource = "", progress = "Review remains", paymentDate = "2026-08-01") {
+ function exercise(body: string, replacement = "", extraSource = "", progress = "Review remains", paymentDate = "2026-08-01", multiSource = false) {
   const mutation = process.env.M2D4_SQL_REPLACEMENT;
   if (mutation) replacement = readFileSync(mutation, "utf8");
   return execFileSync("docker", ["exec", "-i", container, "psql", "-X", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1", "-At"], { encoding: "utf8", stdio: ["pipe", "pipe", "pipe"], input: `BEGIN; ${replacement}
@@ -25,7 +25,7 @@ live("OWP saved reconciliation and carryover custody", () => {
    INSERT INTO public.projects(id,workspace_id,name) VALUES(project,w,'Synthetic OWP project');
    INSERT INTO public.programs(id,workspace_id,title,program_type,cycle_name) VALUES(p,w,'Synthetic reporting, no real agency costs','other','Test');
    INSERT INTO public.invoicing_staff(id,workspace_id,name,user_id) VALUES(staff,w,'Synthetic staff',m);
-   SELECT * INTO r FROM public.save_program_work_program_revision(p,o,0,gen_random_uuid(),jsonb_build_object('schemaVersion',1,'currency','USD','agency','Synthetic agency','periodStart','2026-07-01','periodEnd','2027-06-30','preparation',jsonb_build_object('funds',jsonb_build_array(jsonb_build_object('id',fund,'name','Synthetic fund','amount',100,'vintage','2026','periodStart','2026-07-01','periodEnd','2027-06-30'),jsonb_build_object('id',match_fund,'name','Synthetic local match','vintage','2026','periodStart','2026-07-01','periodEnd','2027-06-30'))),'elements',jsonb_build_array(jsonb_build_object('id',element,'projectId',project,'tasks',jsonb_build_array(jsonb_build_object('id',task))))));
+   SELECT * INTO r FROM public.save_program_work_program_revision(p,o,0,gen_random_uuid(),jsonb_build_object('schemaVersion',1,'currency','USD','agency','Synthetic agency','periodStart','2026-07-01','periodEnd','2027-06-30','preparation',jsonb_build_object('funds',jsonb_build_array(jsonb_build_object('id',fund,'name','Synthetic fund','amount',100,'vintage','2026','periodStart','2026-07-01','periodEnd','2027-06-30'),jsonb_build_object('id',match_fund,'name','Synthetic local match','amount',${multiSource ? '100' : 'NULL'},'vintage','2026','periodStart','2026-07-01','periodEnd','2027-06-30'))),'elements',jsonb_build_array(jsonb_build_object('id',element,'projectId',project,'tasks',jsonb_build_array(jsonb_build_object('id',task))))||CASE WHEN ${multiSource} THEN jsonb_build_array(jsonb_build_object('id',deliverable,'title','Second unfinished work','tasks','[]'::jsonb)) ELSE '[]'::jsonb END));
    c:=jsonb_build_object('requestId',gen_random_uuid(),'entryId',entry,'expectedVersion',0,'revisionId',r.id,'kind','labor','status','draft','entryDate','2026-08-01','sourceKey','synthetic-source-1','sourceReference','Synthetic payroll reference','description','Synthetic time, not actual agency spending','staffId',staff,'projectId',project,'contractId',NULL,'hours','1.00','amount',NULL,'basis','unvalued','allocations',jsonb_build_array(jsonb_build_object('elementId',element,'taskId',task,'share',10000)));
    c:=c||jsonb_build_object('status','approved','basis','recorded','amount','12.35');
    PERFORM public.record_work_program_actual(p,o,c);
@@ -56,6 +56,51 @@ live("OWP saved reconciliation and carryover custody", () => {
  const marker = (body: string, replacement = "", extraSource = "", progress = "Review remains", paymentDate = "2026-08-01") => expect(exercise(body, replacement, extraSource, progress, paymentDate)).toContain("OWP_REPORT_ASSERTIONS_REACHED");
  const save = "result:=public.work_program_closeout_command(p,o,close_command); saved_id:=(result->>'id')::uuid;";
  const approve = "result:=public.work_program_closeout_command(p,o,close_command-'assessment'||jsonb_build_object('kind','approve','requestId',gen_random_uuid(),'expectedVersion',1,'note','Synthetic authority evidence'));";
+
+ const splitSource = `
+ SELECT * INTO next_revision FROM public.save_program_work_program_revision(next_program,o,1,gen_random_uuid(),jsonb_set(jsonb_set(next_revision.content_json,'{elements}',(next_revision.content_json->'elements')||jsonb_build_array(jsonb_build_object('id',document,'title','Second successor work','tasks','[]'::jsonb))),'{preparation,funds}',(next_revision.content_json->'preparation'->'funds')||jsonb_build_array(jsonb_build_object('id',client,'name','Second carryover fund','kind','carryover','amount',80))));
+ INSERT INTO public.program_work_program_events(program_id,workspace_id,sequence,revision_id,revision_hash,kind,actor_id,payload,evidence,request_id) VALUES(next_program,w,2,next_revision.id,next_revision.content_sha256,'adoption',o,'{}','[]',gen_random_uuid());
+ close_data:=public.read_work_program_closeout(p,o,report_id);
+ assessment:=jsonb_set(assessment,'{work,0}',(assessment->'work'->0)||jsonb_build_object('successorRevisionId',NULL,'successorElementId',NULL,'sourceFundId',NULL,'successorFundId',NULL,'amount',NULL,'allocations',jsonb_build_array(jsonb_build_object('successorRevisionId',next_revision.id,'successorElementId',next_element,'sourceFundId',fund,'successorFundId',next_fund,'amount','10.00'),jsonb_build_object('successorRevisionId',next_revision.id,'successorElementId',document,'sourceFundId',fund,'successorFundId',client,'amount','10.00'))));
+ close_command:=close_command||jsonb_build_object('sourceHash',close_data->>'sourceHash','assessment',assessment);
+ `;
+ it("multi carryover splits destinations and funds, retains exact retries and preserves the old approval on correction", () => marker(`${splitSource}${save}${approve}
+ SELECT content INTO original FROM public.work_program_closeout_records WHERE program_id=p AND version=2;
+ IF jsonb_array_length(original->'assessment'->'work'->0->'allocations')<>2 OR original->'source'->'report'->'snapshot'->'baseline'->>'content_sha256'<>r.content_sha256 THEN RAISE EXCEPTION 'Split allocation or baseline lost'; END IF;
+ IF public.work_program_closeout_command(p,o,close_command)->>'id'<>saved_id::text THEN RAISE EXCEPTION 'Split retry duplicated'; END IF;
+ PERFORM public.work_program_closeout_command(p,o,close_command-'assessment'||jsonb_build_object('kind','reopen','requestId',gen_random_uuid(),'expectedVersion',2,'note','Synthetic split correction authority'));
+ close_command:=close_command||jsonb_build_object('requestId',gen_random_uuid(),'expectedVersion',3,'assessment',jsonb_set(assessment,'{work,0,allocations,1,amount}','"9.00"')); ${save}
+ IF (SELECT content FROM public.work_program_closeout_records WHERE program_id=p AND version=2)<>original THEN RAISE EXCEPTION 'Original split approval changed'; END IF;
+ IF (SELECT count(*) FROM public.work_program_actual_versions)<>physical_count THEN RAISE EXCEPTION 'Carryover duplicated expense'; END IF;
+ `));
+ it("multi carryover combines two source elements and source funds into one successor without duplicating costs", () => {
+  expect(exercise(`${splitSource}
+  assessment:=jsonb_set(assessment,'{work,0,allocations,1,sourceFundId}',to_jsonb(match_fund));
+  assessment:=jsonb_set(assessment,'{work}',(assessment->'work')||jsonb_build_array((assessment->'work'->0)||jsonb_build_object('elementId',deliverable,'allocations',jsonb_build_array(assessment->'work'->0->'allocations'->0))));
+  close_command:=close_command||jsonb_build_object('assessment',assessment);${save}${approve}
+  IF jsonb_array_length((SELECT content->'assessment'->'work' FROM public.work_program_closeout_records WHERE id=(result->>'id')::uuid))<>2 OR (SELECT count(*) FROM public.work_program_actual_versions)<>physical_count THEN RAISE EXCEPTION 'Merged source work or physical costs changed'; END IF;
+  `,"","","Review remains","2026-08-01",true)).toContain("OWP_REPORT_ASSERTIONS_REACHED");
+ });
+ for (const [name,change,error] of [
+  ["ambiguous legacy fields", "jsonb_set(assessment,'{work,0,amount}','\"1.00\"')", "Use allocation rows%"],
+  ["invalid allocation list", "jsonb_set(assessment,'{work,0,allocations}','null')", "List the carryover%"],
+  ["empty allocation list", "jsonb_set(assessment,'{work,0,allocations}','[]')", "Carryover requires at least%"],
+  ["fractional cents", "jsonb_set(assessment,'{work,0,allocations,1,amount}','\"0.001\"')", "Carryover requires an explicit%"],
+  ["unknown amount", "jsonb_set(assessment,'{work,0,allocations,1,amount}','null')", "Carryover requires an explicit%"],
+  ["completed work with allocations", "jsonb_set(assessment,'{work,0,disposition}','\"completed\"')", "Only carryover work%"],
+  ["foreign successor", "jsonb_set(assessment,'{work,0,allocations,1,successorRevisionId}',to_jsonb(gen_random_uuid()))", "Carryover requires an adopted%"],
+  ["foreign element", "jsonb_set(assessment,'{work,0,allocations,1,successorElementId}',to_jsonb(gen_random_uuid()))", "Carryover requires an adopted%"],
+  ["unknown source fund", "jsonb_set(assessment,'{work,0,allocations,1,sourceFundId}',to_jsonb(match_fund))", "Carryover source fund%"],
+  ["foreign successor fund", "jsonb_set(assessment,'{work,0,allocations,1,successorFundId}',to_jsonb(gen_random_uuid()))", "Select an assessed carryover%"],
+  ["combined source ceiling", "jsonb_set(jsonb_set(assessment,'{work,0,allocations,0,amount}','\"30.00\"'),'{work,0,allocations,1,amount}','\"71.00\"')", "Carryover exceeds the source%"],
+  ["combined successor ceiling", "jsonb_set(jsonb_set(assessment,'{work,0,allocations,1,successorFundId}',to_jsonb(next_fund)),'{work,0,allocations,1,amount}','\"21.00\"')", "Carryover exceeds the successor%"],
+ ] as const) it(`multi carryover refuses ${name}`, () => marker(`${splitSource}
+ BEGIN PERFORM public.work_program_closeout_command(p,o,close_command||jsonb_build_object('assessment',${change})); RAISE EXCEPTION 'Invalid split accepted: ${name}'; EXCEPTION WHEN invalid_parameter_value THEN IF SQLERRM NOT LIKE '${error}' THEN RAISE; END IF; END;
+ `));
+ it("multi carryover refuses excessive allocation rows", () => marker(`${splitSource}
+ assessment:=jsonb_set(assessment,'{work,0,allocations}',(SELECT jsonb_agg(assessment->'work'->0->'allocations'->0) FROM generate_series(1,101)));
+ BEGIN PERFORM public.work_program_closeout_command(p,o,close_command||jsonb_build_object('assessment',assessment)); RAISE EXCEPTION 'Excessive list accepted'; EXCEPTION WHEN invalid_parameter_value THEN IF SQLERRM NOT LIKE 'Use at most 100%' THEN RAISE; END IF; END;
+ `));
  const refundSource = `
  PERFORM public.record_work_program_actual(p,o,(SELECT detail FROM public.work_program_actual_versions WHERE entry_id=payment)||jsonb_build_object('requestId',gen_random_uuid(),'entryId',expense_entry,'expectedVersion',0,'entryDate','2026-09-05','sourceKey','synthetic-outgoing-refund','amount','5.00','sourceReference','Synthetic outgoing bank transfer to funder'));
  close_data:=public.read_work_program_closeout(p,o,report_id);
@@ -229,7 +274,7 @@ live("OWP saved reconciliation and carryover custody", () => {
  SELECT p,w,2,r.id,r.content_sha256,'withdraw_authority',o,jsonb_build_object('targetEventId',id),'[]',gen_random_uuid() FROM public.program_work_program_events WHERE program_id=p AND kind='adoption';
  BEGIN ${approve} RAISE EXCEPTION 'Withdrawn adoption approved'; EXCEPTION WHEN SQLSTATE 'PT409' THEN IF SQLERRM NOT LIKE 'The retained baseline%' THEN RAISE; END IF; END;
  `));
- it("retains approved funding through reopening, across source cycles and successor amendments", () => marker(`
+ for (const representation of ["legacy", "allocations"] as const) it(`multi carryover reserves ${representation} approved funding through reopening, across source cycles and successor amendments`, () => marker(`
  original:=to_jsonb(next_revision.id);
  SELECT * INTO next_revision FROM public.save_program_work_program_revision(next_program,o,1,gen_random_uuid(),next_revision.content_json||'{"financialNotes":"Synthetic successor amendment"}');
  INSERT INTO public.program_work_program_events(program_id,workspace_id,sequence,revision_id,revision_hash,kind,actor_id,payload,evidence,request_id) VALUES(next_program,w,2,next_revision.id,next_revision.content_sha256,'adoption',o,'{}','[]',gen_random_uuid());
@@ -246,6 +291,7 @@ live("OWP saved reconciliation and carryover custody", () => {
  other_report:=(public.work_program_management_command(other_program,o,jsonb_build_object('kind','issue','requestId',gen_random_uuid(),'periodId',other_period,'expectedVersion',2,'note','Synthetic'))->>'reportId')::uuid;
  other_data:=public.read_work_program_closeout(other_program,o,other_report);
  other_command:=jsonb_build_object('kind','save','requestId',gen_random_uuid(),'reportId',other_report,'expectedVersion',0,'sourceHash',other_data->>'sourceHash','assessment',jsonb_set(jsonb_set(assessment||'{"claims":[],"commitments":[]}','{work,0,amount}','"15.00"'),'{work,0,successorRevisionId}',original));
+ ${representation === "allocations" ? `other_command:=jsonb_set(other_command,'{assessment,work,0}',(other_command->'assessment'->'work'->0)||jsonb_build_object('successorRevisionId',NULL,'successorElementId',NULL,'sourceFundId',NULL,'successorFundId',NULL,'amount',NULL,'allocations',jsonb_build_array((other_command->'assessment'->'work'->0)-'elementId'-'disposition'-'evidence')));` : ""}
  PERFORM public.work_program_closeout_command(other_program,o,other_command);
  PERFORM public.work_program_closeout_command(other_program,o,other_command-'assessment'||jsonb_build_object('kind','approve','requestId',gen_random_uuid(),'expectedVersion',1,'note','Synthetic second source authority'));
  PERFORM public.work_program_closeout_command(other_program,o,other_command-'assessment'||jsonb_build_object('kind','reopen','requestId',gen_random_uuid(),'expectedVersion',2,'note','Review is reopened; approved carryover remains reserved until replacement approval'));

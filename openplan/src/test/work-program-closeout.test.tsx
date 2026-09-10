@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { randomUUID } from "node:crypto";
 import { packetFixture } from "./helpers/owp-reimbursement-fixture";
-import { closeoutRefundBalance, closeoutClaimBalance, closeoutCommandSchema, initialCloseoutAssessment, type CloseoutData, type CloseoutSource } from "@/lib/programs/work-program/closeout";
+import { carryoverAllocations, closeoutRefundBalance, closeoutClaimBalance, closeoutCommandSchema, initialCloseoutAssessment, type CloseoutData, type CloseoutSource } from "@/lib/programs/work-program/closeout";
 import { CloseoutPanel } from "@/components/programs/work-program/closeout-panel";
 
 function example(): CloseoutData {
@@ -24,6 +24,53 @@ describe("saved closeout evidence and recovery", () => {
     expect(closeoutClaimBalance(source, source.reimbursement.claims[0].id, assessment)).toBe("2.97");
     assessment.claims[0].receipts[0].amount = "11.00";
     expect(closeoutClaimBalance(source, source.reimbursement.claims[0].id, assessment)).toBe("-1.00");
+  });
+  it("multi carryover reads legacy mappings without changing retry identity and validates allocation amounts", () => {
+    const data = example(), assessment = initialCloseoutAssessment(data.source), row = assessment.work[0];
+    expect(carryoverAllocations(row)).toEqual([]);
+    Object.assign(row, { disposition: "carryover", successorRevisionId: randomUUID(), successorElementId: randomUUID(), sourceFundId: randomUUID(), successorFundId: randomUUID(), amount: "12.30" });
+    const before = JSON.stringify(row), allocations = carryoverAllocations(row);
+    expect(allocations).toEqual([{ successorRevisionId: row.successorRevisionId, successorElementId: row.successorElementId, sourceFundId: row.sourceFundId, successorFundId: row.successorFundId, amount: "12.30" }]);
+    expect(JSON.stringify(row)).toBe(before);
+    const command = { kind: "save", requestId: randomUUID(), reportId: data.source.report.id, expectedVersion: 0, sourceHash: data.sourceHash, assessment };
+    expect(closeoutCommandSchema.parse(command)).toEqual(command);
+    row.allocations = [{ ...allocations[0], amount: "0.001" }];
+    expect(closeoutCommandSchema.safeParse(command).success).toBe(false);
+    row.allocations[0].amount = "0.00";
+    expect(closeoutCommandSchema.parse(command)).toEqual(command);
+    expect(carryoverAllocations(row)).toEqual(row.allocations);
+    row.allocations = Array.from({ length: 101 }, () => ({ ...allocations[0] }));
+    expect(closeoutCommandSchema.safeParse(command).success).toBe(false);
+    row.allocations = [];
+    expect(carryoverAllocations(row)).toEqual([]);
+  });
+  it("multi carryover form saves distinct rows, clears dependent choices and supports removal", async () => {
+    const data = example(), bodies: unknown[] = [], baseline = data.source.report.snapshot.baseline;
+    data.source.successors = [1, 2].map(revision => ({ ...baseline, id: randomUUID(), program_id: randomUUID(), revision, title: `Successor ${revision}`, content_json: { ...baseline.content_json, preparation: { ...baseline.content_json.preparation!, funds: baseline.content_json.preparation!.funds.map(f => ({ ...f, kind: "carryover" as const })) } } }));
+    vi.stubGlobal("fetch", vi.fn(async (_url: string, options?: RequestInit) => {
+      if (options?.method === "POST") { bodies.push(JSON.parse(String(options.body))); return Response.json({ error: "Synthetic retained uncertain save" }, { status: 503 }); }
+      return Response.json(data);
+    }));
+    render(<CloseoutPanel programId={randomUUID()} userId={randomUUID()} reports={[data.source.report]}/>);
+    await act(async () => {});
+    fireEvent.change(screen.getByLabelText("Reconciliation source report"), { target: { value: data.source.report.id } });
+    await screen.findByLabelText("Work 1 disposition");
+    fireEvent.change(screen.getByLabelText("Work 1 disposition"), { target: { value: "carryover" } });
+    const set = (n: number, label: string, value: string) => fireEvent.change(screen.getByLabelText(`Work 1 allocation ${n} ${label}`), { target: { value } });
+    const target = data.source.successors[0], fund = target.content_json.preparation!.funds[0], element = target.content_json.elements[0];
+    set(1, "successor baseline", target.id); set(1, "successor element", element.id); set(1, "source fund", fund.id); set(1, "successor fund", fund.id); set(1, "carryover amount", "12.30");
+    fireEvent.click(screen.getByRole("button", { name: "Add carryover allocation to work 1" }));
+    set(2, "successor baseline", target.id); set(2, "successor element", element.id); set(2, "source fund", fund.id); set(2, "successor fund", fund.id); set(2, "carryover amount", "7.70");
+    set(2, "successor baseline", data.source.successors[1].id);
+    expect(screen.getByLabelText("Work 1 allocation 2 successor element")).toHaveValue("");
+    expect(screen.getByLabelText("Work 1 allocation 2 successor fund")).toHaveValue("");
+    set(2, "successor element", element.id); set(2, "successor fund", fund.id);
+    fireEvent.click(screen.getByRole("button", { name: "Add carryover allocation to work 1" }));
+    fireEvent.click(screen.getByRole("button", { name: "Remove allocation 3 from work 1" }));
+    expect(screen.queryByLabelText("Work 1 allocation 3 successor baseline")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Save reconciliation draft" }));
+    await waitFor(() => expect(bodies).toHaveLength(1));
+    expect(bodies[0]).toMatchObject({ assessment: { work: [{ successorRevisionId: null, successorElementId: null, sourceFundId: null, successorFundId: null, amount: null, allocations: [{ successorRevisionId: target.id, successorElementId: element.id, sourceFundId: fund.id, successorFundId: fund.id, amount: "12.30" }, { successorRevisionId: data.source.successors[1].id, successorElementId: element.id, sourceFundId: fund.id, successorFundId: fund.id, amount: "7.70" }] }] } });
   });
   it("refund matching preserves unknown, partial and excess disbursements separately from receipts", () => {
     const { source } = example(), assessment = initialCloseoutAssessment(source), row = assessment.claims[0];

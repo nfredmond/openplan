@@ -5,11 +5,12 @@ import type { WorkProgramDraft } from "./schema";
 
 const id = z.string().uuid();
 const evidence = z.string().trim().max(12000);
+const carryoverAllocationSchema = z.object({ successorRevisionId: id.nullable(), successorElementId: id.nullable(), sourceFundId: id.nullable(), successorFundId: id.nullable(), amount: decimal.nullable() }).strict();
 export const closeoutAssessmentSchema = z.object({
   registerEvidence: evidence,
   claims: z.array(z.object({ claimId: id, receipts: z.array(z.object({ actualVersionId: id, amount: decimal }).strict()).max(300), refundDue: decimal.nullable(), refundPayments: z.array(z.object({ actualVersionId: id, amount: decimal }).strict()).max(300).optional(), evidence }).strict()).max(300),
   commitments: z.array(z.object({ actualVersionId: id, outstandingAmount: decimal.nullable(), evidence }).strict()).max(1000),
-  work: z.array(z.object({ elementId: id, disposition: z.enum(["unassessed", "completed", "carryover"]), successorRevisionId: id.nullable(), successorElementId: id.nullable(), sourceFundId: id.nullable(), successorFundId: id.nullable(), amount: decimal.nullable(), evidence }).strict()).max(500),
+  work: z.array(z.object({ elementId: id, disposition: z.enum(["unassessed", "completed", "carryover"]), successorRevisionId: id.nullable(), successorElementId: id.nullable(), sourceFundId: id.nullable(), successorFundId: id.nullable(), amount: decimal.nullable(), allocations: z.array(carryoverAllocationSchema).max(100).optional(), evidence }).strict()).max(500),
 }).strict();
 export type CloseoutAssessment = z.infer<typeof closeoutAssessmentSchema>;
 const base = { requestId: id, reportId: id, expectedVersion: z.number().int().nonnegative(), sourceHash: z.string().regex(/^[a-f0-9]{64}$/) };
@@ -50,4 +51,11 @@ export function closeoutClaimBalance(source: CloseoutSource, claimId: string, as
 export function closeoutRefundBalance(row: CloseoutAssessment["claims"][number]) {
   if (row.refundDue === null || !row.evidence.trim()) return null;
   return decimalText(cents(row.refundDue) - (row.refundPayments ?? []).reduce((total, payment) => total + cents(payment.amount), BigInt(0)));
+}
+
+/** Read legacy evidence without rewriting retained approvals or pending command payloads. */
+export function carryoverAllocations(row: CloseoutAssessment["work"][number]) {
+  if (row.allocations !== undefined) return row.allocations;
+  const { successorRevisionId, successorElementId, sourceFundId, successorFundId, amount } = row;
+  return row.disposition === "carryover" ? [{ successorRevisionId, successorElementId, sourceFundId, successorFundId, amount }] : [];
 }

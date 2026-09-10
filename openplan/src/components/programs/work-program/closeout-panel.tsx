@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { downloadText } from "@/lib/export/download";
-import { closeoutRefundBalance, closeoutClaimBalance, closeoutCommandSchema, initialCloseoutAssessment, type CloseoutAssessment, type CloseoutCommand, type CloseoutData } from "@/lib/programs/work-program/closeout";
+import { carryoverAllocations, closeoutRefundBalance, closeoutClaimBalance, closeoutCommandSchema, initialCloseoutAssessment, type CloseoutAssessment, type CloseoutCommand, type CloseoutData } from "@/lib/programs/work-program/closeout";
 import type { PeriodReport } from "@/lib/programs/work-program/reporting";
 import { Field, SelectField } from "./fields";
 
@@ -101,18 +101,29 @@ export function CloseoutPanel({ programId, userId, reports }: { programId: strin
             <Field label={`Commitment ${index + 1} discharge and remaining obligation evidence`} multiline value={row.evidence} onChange={evidence => setAssessment({ ...assessment, commitments: assessment.commitments.map((c, i) => i === index ? { ...c, evidence } : c) })}/>
           </article>)}
           <h3 className="font-semibold">Completion and next-cycle carryover</h3>
-          <p>Amounts describe reviewed carryover authority, not a calculation of available cash. Create and adopt the successor cycle through Programming Cycles first. Fund periods, conditions and external approval must be checked in the evidence. Reopening keeps the previous approved carryover reserved until a replacement is approved.</p>
+          <p>Amounts describe reviewed carryover authority, not a calculation of available cash. Create and adopt the successor cycle through Programming Cycles first. Add an allocation for each source fund and successor work element. Several old elements may share a successor. Fund periods, conditions and external approval must be checked in the evidence. Reopening keeps the previous approved carryover reserved until a replacement is approved.</p>
           {assessment.work.map((row, index) => {
-            const target = data.source.successors.find(b => b.id === row.successorRevisionId);
+            const allocations = carryoverAllocations(row);
+            const updateAllocations = (next: typeof allocations) => workChange(index, { allocations: next, successorRevisionId: null, successorElementId: null, sourceFundId: null, successorFundId: null, amount: null });
             return <article key={row.elementId} className="min-w-0 space-y-3 rounded-lg border p-3">
               <h4 className="font-semibold">{data.source.report.snapshot.baseline.content_json.elements.find(e => e.id === row.elementId)?.title}</h4>
-              <SelectField label={`Work ${index + 1} disposition`} value={row.disposition} onChange={value => workChange(index, { disposition: value as typeof row.disposition, successorRevisionId: null, successorElementId: null, sourceFundId: null, successorFundId: null, amount: null })}><option value="unassessed">Unassessed</option><option value="completed">Completed</option><option value="carryover">Carry into successor</option></SelectField>
+              <SelectField label={`Work ${index + 1} disposition`} value={row.disposition} onChange={value => workChange(index, { disposition: value as typeof row.disposition, allocations: value === "carryover" ? [{ successorRevisionId: null, successorElementId: null, sourceFundId: null, successorFundId: null, amount: null }] : [], successorRevisionId: null, successorElementId: null, sourceFundId: null, successorFundId: null, amount: null })}><option value="unassessed">Unassessed</option><option value="completed">Completed</option><option value="carryover">Carry into successor</option></SelectField>
               {row.disposition === "carryover" && <>
-                <SelectField label={`Work ${index + 1} successor baseline`} value={row.successorRevisionId ?? ""} onChange={successorRevisionId => workChange(index, { successorRevisionId: successorRevisionId || null, successorElementId: null, successorFundId: null })}><option value="">Select an adopted successor</option>{data.source.successors.map(b => <option key={b.id} value={b.id}>{b.title} · {b.content_json.periodStart} to {b.content_json.periodEnd} · revision {b.revision}</option>)}</SelectField>
-                <SelectField label={`Work ${index + 1} successor element`} value={row.successorElementId ?? ""} onChange={value => workChange(index, { successorElementId: value || null })}><option value="">Select successor work</option>{target?.content_json.elements.map(e => <option key={e.id} value={e.id}>{e.code} {e.title}</option>)}</SelectField>
-                <SelectField label={`Work ${index + 1} source fund`} value={row.sourceFundId ?? ""} onChange={value => workChange(index, { sourceFundId: value || null })}><option value="">Select source funding</option>{data.source.report.snapshot.baseline.content_json.preparation?.funds.map(f => <option key={f.id} value={f.id}>{f.name} · {f.vintage}</option>)}</SelectField>
-                <SelectField label={`Work ${index + 1} successor fund`} value={row.successorFundId ?? ""} onChange={value => workChange(index, { successorFundId: value || null })}><option value="">Select successor carryover funding</option>{target?.content_json.preparation?.funds.filter(f => f.kind === "carryover").map(f => <option key={f.id} value={f.id}>{f.name} · {f.vintage}</option>)}</SelectField>
-                <Field label={`Work ${index + 1} carryover amount`} value={row.amount ?? ""} onChange={value => workChange(index, { amount: value || null })}/>
+                {allocations.map((allocation, allocationIndex) => {
+                  const target = data.source.successors.find(b => b.id === allocation.successorRevisionId);
+                  const update = (change: Partial<typeof allocation>) => updateAllocations(allocations.map((a, i) => i === allocationIndex ? { ...a, ...change } : a));
+                  return <div key={allocationIndex} className="min-w-0 space-y-2 rounded-lg border p-3">
+                    <h5 className="font-semibold">Allocation {allocationIndex + 1}</h5>
+                <SelectField label={`Work ${index + 1} allocation ${allocationIndex + 1} successor baseline`} value={allocation.successorRevisionId ?? ""} onChange={successorRevisionId => update({ successorRevisionId: successorRevisionId || null, successorElementId: null, successorFundId: null })}><option value="">Select an adopted successor</option>{data.source.successors.map(b => <option key={b.id} value={b.id}>{b.title} · {b.content_json.periodStart} to {b.content_json.periodEnd} · revision {b.revision}</option>)}</SelectField>
+                <SelectField label={`Work ${index + 1} allocation ${allocationIndex + 1} successor element`} value={allocation.successorElementId ?? ""} onChange={value => update({ successorElementId: value || null })}><option value="">Select successor work</option>{target?.content_json.elements.map(e => <option key={e.id} value={e.id}>{e.code} {e.title}</option>)}</SelectField>
+                <SelectField label={`Work ${index + 1} allocation ${allocationIndex + 1} source fund`} value={allocation.sourceFundId ?? ""} onChange={value => update({ sourceFundId: value || null })}><option value="">Select source funding</option>{data.source.report.snapshot.baseline.content_json.preparation?.funds.map(f => <option key={f.id} value={f.id}>{f.name} · {f.vintage}</option>)}</SelectField>
+                <SelectField label={`Work ${index + 1} allocation ${allocationIndex + 1} successor fund`} value={allocation.successorFundId ?? ""} onChange={value => update({ successorFundId: value || null })}><option value="">Select successor carryover funding</option>{target?.content_json.preparation?.funds.filter(f => f.kind === "carryover").map(f => <option key={f.id} value={f.id}>{f.name} · {f.vintage}</option>)}</SelectField>
+                <Field label={`Work ${index + 1} allocation ${allocationIndex + 1} carryover amount`} value={allocation.amount ?? ""} onChange={value => update({ amount: value || null })}/>
+                    {target && <p className="break-words text-sm">Successor: {target.title} · {target.content_json.periodStart} to {target.content_json.periodEnd} · revision {target.revision}. Work: {target.content_json.elements.find(e => e.id === allocation.successorElementId)?.title ?? "Select work"}. Fund: {target.content_json.preparation?.funds.find(f => f.id === allocation.successorFundId)?.name ?? "Select funding"}.</p>}
+                    <Button type="button" className={buttonClass} variant="outline" onClick={() => updateAllocations(allocations.filter((_, i) => i !== allocationIndex))}>Remove allocation {allocationIndex + 1} from work {index + 1}</Button>
+                  </div>;
+                })}
+                <Button type="button" className={buttonClass} variant="outline" onClick={() => updateAllocations([...allocations, { successorRevisionId: null, successorElementId: null, sourceFundId: null, successorFundId: null, amount: null }])}>Add carryover allocation to work {index + 1}</Button>
               </>}
               <Field label={`Work ${index + 1} completion or carryover approval evidence`} multiline value={row.evidence} onChange={evidence => workChange(index, { evidence })}/>
             </article>;
