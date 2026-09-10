@@ -1,0 +1,93 @@
+{
+  "release": "v0.52.1",
+  "commit": "5d7ccdb067bb4db639132889f8efd5db160dfc6b",
+  "publishedAt": "2026-09-10T16:24:55Z",
+  "url": "https://github.com/nfredmond/openplan/releases/tag/v0.52.1",
+  "remoteTagObject": "079f38aab61c0b608be9d4864c19ad12ddb1fde6",
+  "checks": [
+    {
+      "name": "previous release -> seed -> HEAD migration up",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "5d7ccdb067bb4db639132889f8efd5db160dfc6b",
+      "html_url": "https://github.com/nfredmond/openplan/actions/runs/34500010507/job/102948127383",
+      "completed_at": "2026-09-10T16:10:19Z"
+    },
+    {
+      "name": "live RLS isolation",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "5d7ccdb067bb4db639132889f8efd5db160dfc6b",
+      "html_url": "https://github.com/nfredmond/openplan/actions/runs/34499946172/job/102947906135",
+      "completed_at": "2026-09-10T16:13:45Z"
+    },
+    {
+      "name": "worker (python unit tests)",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "5d7ccdb067bb4db639132889f8efd5db160dfc6b",
+      "html_url": "https://github.com/nfredmond/openplan/actions/runs/34499946033/job/102947905751",
+      "completed_at": "2026-09-10T16:06:46Z"
+    },
+    {
+      "name": "verify (qa gate)",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "5d7ccdb067bb4db639132889f8efd5db160dfc6b",
+      "html_url": "https://github.com/nfredmond/openplan/actions/runs/34499946033/job/102947905537",
+      "completed_at": "2026-09-10T16:22:25Z"
+    },
+    {
+      "name": "ops scripts (python unit tests)",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "5d7ccdb067bb4db639132889f8efd5db160dfc6b",
+      "html_url": "https://github.com/nfredmond/openplan/actions/runs/34499946033/job/102947905411",
+      "completed_at": "2026-09-10T16:07:53Z"
+    },
+    {
+      "name": "order independence (shuffled vitest)",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "5d7ccdb067bb4db639132889f8efd5db160dfc6b",
+      "html_url": "https://github.com/nfredmond/openplan/actions/runs/34499946033/job/102947905292",
+      "completed_at": "2026-09-10T16:18:32Z"
+    },
+    {
+      "name": "modeling scripts (python unit tests)",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "5d7ccdb067bb4db639132889f8efd5db160dfc6b",
+      "html_url": "https://github.com/nfredmond/openplan/actions/runs/34499946033/job/102947905102",
+      "completed_at": "2026-09-10T16:07:29Z"
+    }
+  ],
+  "qa": {
+    "passed": 13748,
+    "skipped": 357,
+    "connectorPassed": 31,
+    "connectorNativeSkips": 2,
+    "completeAuditVulnerabilities": 0
+  },
+  "shuffle": {
+    "seed": 406370,
+    "passed": 13748,
+    "skipped": 357
+  },
+  "rls": {
+    "passed": 379,
+    "files": 46
+  },
+  "upgrade": {
+    "from": "v0.52.0",
+    "rowsBefore": "2:2:1:1:1:1:1",
+    "rowsAfter": "2:2:1:1:1:1:1",
+    "custodyHashes": "passed"
+  },
+  "privateLogHashes": {
+    "qa-final-5d7ccdb0.log": "b828369d8e71405968f057dc1dab5c8ce26ffe576c57e0948579d5949a8b3c8b",
+    "shuffle-final-5d7ccdb0.log": "3cd2cd01e6a6c0eaf56413e420c8984e8e2826a770f2ab43c163c54227cc1f74",
+    "rls-final-5d7ccdb0.log": "5dea740d292b2d33980ddfd060272e8cebf755216122a9433570a6dfff66275e",
+    "upgrade-final-5d7ccdb0.log": "7c2e3c32f3074f644e38f40155a06e658327fbc067f5e04e844ea70e937e6f34"
+  }
+}

@@ -1,4 +1,4 @@
-# Development dependency patch candidate
+# Development dependency patch, v0.52.1
 
 v0.52.0 was published before this increment. Its production audit passed; the
 complete audit reported 14 affected development packages at publication, including
@@ -63,4 +63,14 @@ clean; the only captured error was the injected 503. The owned server was stoppe
 before this evidence was added. These journeys check the rebuilt shared layout;
 they do not re-establish all product workflows or add a native backend.
 
-Final main CI and the upgrade from v0.52.0 must pass before tagging v0.52.1.
+## Published release
+
+[v0.52.1](https://github.com/nfredmond/openplan/releases/tag/v0.52.1) was published
+at 2026-09-10 16:24:55 UTC from `5d7ccdb067bb4db639132889f8efd5db160dfc6b`.
+All seven exact-commit checks passed before tagging. Full QA and shuffled seed
+406370 each passed 13,748 tests with 357 named skips; connector checks passed 31
+with two separately exercised native skips. The complete dependency audit reported
+zero vulnerabilities. RLS passed 379 tests in 46 files. All Python CI jobs passed.
+The populated upgrade from v0.52.0 preserved custody hashes and row counts
+`2:2:1:1:1:1:1` before and after. The remote annotated tag resolves to the same
+commit. [Publication receipt](release-ci.json) retains check links and log hashes.
