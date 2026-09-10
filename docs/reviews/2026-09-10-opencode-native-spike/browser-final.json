@@ -1,0 +1,111 @@
+{
+  "sourceCommit": "1b5ba8bee0b2ec7122fa559e31578f694e42cb0f",
+  "transport": "Actual OpenCode 1.18.30; synthetic native OpenAI API credentials and local scripted Responses fixture. No real provider calls.",
+  "journeys": [
+    {
+      "width": 1440,
+      "build": {
+        "commit": "1b5ba8bee0b2",
+        "version": "0.53.0"
+      },
+      "realNavigation": true,
+      "keyboardUsed": true,
+      "connectionDownloadedAndConfigured": true,
+      "nativeVersion": "1.18.30",
+      "offlineCatalogModels": 49,
+      "nativeRequests": {
+        "answer": 1,
+        "lostDeliveryRetry": 0,
+        "cancel": 1,
+        "revoke": 1
+      },
+      "oldCodexUnchanged": true,
+      "oldClaudeUnchanged": true,
+      "exactDeliveryRetry": true,
+      "reloadUnchanged": true,
+      "draftApproved": true,
+      "cancellation": "cancelled",
+      "revokedAccessHttpStatus": 403,
+      "nativeStartupMs": [
+        4007,
+        4108
+      ],
+      "console": {
+        "unexpectedErrors": 0,
+        "injectedPostAbort": 1,
+        "injectedRetention503": 1
+      },
+      "retention": {
+        "deletionRequests": 0,
+        "answerUnchanged": true,
+        "layoutFits": true,
+        "harmlessLayoutFits": true
+      },
+      "privateScreenshotSha256": {
+        "opencode-connection-1440.png": "d3be66ba22587792437c47751dcd0be2c9fb9c2f4cc1833570882b3088a6b200",
+        "opencode-answer-1440.png": "8b792cb8cd613e7541244a87d9d87aee8a85c475c9be10609572c1a063fc6a02",
+        "opencode-draft-approval-1440.png": "60c0200de0e849fa90d3c3509bf855d08873353d01c8431b8ecaac37308b428a",
+        "opencode-cancelled-1440.png": "8eb01ad49ae7c6d5762b3b56a93bef0f7759480eea5e1748f68a2d4e34f78926",
+        "opencode-revoked-1440.png": "c147bd411593555d6fbcf5007f719c706d14543db2d38e2d6371e66384436567",
+        "provider-history-delete-refusal-1440.png": "14559ae389c171b86b9f9299567d0887af63dc969b9d9cbefd8971d95ee8cdfe",
+        "provider-history-count-unavailable-1440.png": "3a5ca6fec0a5a8f9fc152da8f3833493764e3af35aa95349620a322f0d5c1ed6"
+      }
+    },
+    {
+      "width": 390,
+      "build": {
+        "commit": "1b5ba8bee0b2",
+        "version": "0.53.0"
+      },
+      "realNavigation": true,
+      "keyboardUsed": true,
+      "connectionDownloadedAndConfigured": true,
+      "nativeVersion": "1.18.30",
+      "offlineCatalogModels": 49,
+      "nativeRequests": {
+        "answer": 1,
+        "lostDeliveryRetry": 0,
+        "cancel": 1,
+        "revoke": 1
+      },
+      "oldCodexUnchanged": true,
+      "oldClaudeUnchanged": true,
+      "exactDeliveryRetry": true,
+      "reloadUnchanged": true,
+      "draftApproved": true,
+      "cancellation": "cancelled",
+      "revokedAccessHttpStatus": 403,
+      "nativeStartupMs": [
+        4106,
+        4006
+      ],
+      "console": {
+        "unexpectedErrors": 0,
+        "injectedPostAbort": 1,
+        "injectedRetention503": 1
+      },
+      "retention": {
+        "deletionRequests": 0,
+        "answerUnchanged": true,
+        "layoutFits": true,
+        "harmlessLayoutFits": true,
+        "brokenLayoutFits": false,
+        "restoredLayoutFits": true
+      },
+      "privateScreenshotSha256": {
+        "opencode-connection-390.png": "6c702c6fc5c1f72a57a381a3da45cff4c27ae1fb9e4e22c3be6b2e89176e10ef",
+        "opencode-answer-390.png": "b4a1a5367b3fee88a1dc39332fa0626e8d38a1ae81f7ed917fdc13b9f8054eb3",
+        "opencode-draft-approval-390.png": "e953482f8eb574c127233e0be53c5c1de3fd3016570f61637dffa55f807a59cd",
+        "opencode-cancelled-390.png": "0b2abfea55f76a5e544a9150fbbe5162e23dfd2f646171b77b47e1415492a43f",
+        "opencode-revoked-390.png": "cf487c36c6f2535a77cf6f9023f18d70eb566881dbed9f1c9b79e3f1e93c2aee",
+        "provider-history-delete-refusal-390.png": "2bd2a882605a6f55f642617c873bb1ab04dba3b8de6fa427982cbc6602073e1f",
+        "provider-history-count-unavailable-390.png": "32ae9eecf7579ce0d1529412ba7cd7598d37d1fa032b442fd8bc8ad47176afc4"
+      }
+    }
+  ],
+  "limits": [
+    "No real provider availability, entitlement, billing or model usefulness claim",
+    "Same existing narrow project-record and draft-submittal task only",
+    "Original desktop harness stopped after10 seconds waiting for native startup; ready arrived afterward. Its failed run is retained privately; bounded90-second observation replaced it. Production time limits were unchanged."
+  ]
+}

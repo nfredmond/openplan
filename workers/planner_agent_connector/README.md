@@ -144,10 +144,10 @@ account-status inspection and interruption behavior. It does not establish live
 Claude model availability, output quality, account allowance or extra-usage
 settings. See [Claude verification](../../docs/reviews/2026-09-10-claude-native-spike/VERIFICATION.md).
 
-## OpenCode extension, development candidate
+## OpenCode extension
 
-The candidate extends the same project task to installed OpenCode **1.18.30** on
-Linux. App/browser and release acceptance are still in progress. Version-two
+The v0.54 increment extends the same project task to installed OpenCode **1.18.30**
+on Linux, with desktop and 390px transport acceptance. Version-two
 connection files explicitly bind provider opencode and account mode opencode_api.
 Only the native OpenAI API credential is supported in this increment. OAuth,
 subscription sign-in and other OpenCode providers remain unfinished scope.
@@ -196,4 +196,4 @@ OPENPLAN_OPENCODE_NATIVE_BINARY=/absolute/path/to/opencode \
 
 Native evidence uses synthetic credentials and local scripted Responses data.
 It does not establish real account access, provider billing or professional
-usefulness. See the [OpenCode implementation checkpoint](../../docs/reviews/2026-09-10-opencode-native-spike/CHECKPOINT.md).
+usefulness. See the [OpenCode verification](../../docs/reviews/2026-09-10-opencode-native-spike/VERIFICATION.md).

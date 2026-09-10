@@ -20,6 +20,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+No changes yet.
+
+## 0.54.0 — 2026-09-10
+
 The existing project task adds an installed OpenCode 1.18.30 Linux connection
 using native OpenAI API credentials. The selected provider, account mode and
 model remain bound to each saved request. API requests require explicit charge
@@ -30,8 +34,12 @@ Apply `20261011000002_assistant_opencode_connections.sql` before running this ap
 It extends the existing provider/account constraints and request-creation lock
 checks while preserving prior connections, answers and their composite identity.
 No native binary, provider credit or paid service is installed automatically.
-Browser and final release acceptance are in progress; see the
-[implementation checkpoint](docs/reviews/2026-09-10-opencode-native-spike/CHECKPOINT.md).
+Desktop and 390px journeys through the actual native executable cover connection
+files, frozen answers, exact retries, approved drafts, cancellation, revocation
+and retained history. Native tests use synthetic credentials and local scripted
+Responses data; live model availability, billing and usefulness remain unmeasured.
+See [verification](docs/reviews/2026-09-10-opencode-native-spike/VERIFICATION.md).
+Final commit CI and publication are recorded separately.
 
 ## 0.53.0 — 2026-09-10
 

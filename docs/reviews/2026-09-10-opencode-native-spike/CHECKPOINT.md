@@ -312,3 +312,37 @@ They reuse prior real-UI-created project fixtures and must preserve both Codex
 and Claude retained results. Browser stack still needs the new migration;
 record existing-history hashes before and after it. No app server currently
 serves this worktree. Full QA/shuffle/RLS/worker/upgrade/release remain pending.
+
+## v0.54 engineering acceptance and release preparation
+
+OpenCode is now wired through the existing connector, app and database. Actual
+production Chrome journeys at1440 and390px passed on1b5ba8bee0b2, including native
+answers, private setup downloads, exact retries, approved drafts, cancellation,
+revocation and preserved Codex/Claude histories. The separate retention journeys
+blocked deletion and handled a preflight503 with zero DELETE requests. Screenshots
+were inspected. Only injected HTTP errors appeared in the browser consoles.
+The owned server was stopped before metadata edits. See VERIFICATION.md and
+browser-final.json; raw captures and synthetic credentials remain private.
+
+Full QA and shuffled seed811348 each passed13800 tests with401 skips. The default
+connector suite passed374 with4 opt-in skips; the native filesystem check passed
+separately. Full isolated RLS passed430 tests in46 files, and all52 Python worker
+suites passed. Candidate QA records distinguish passing evidence from skips.
+The populated browser upgrade retained identical hashes for16 existing connection
+rows and25 turns while adding migration316. Final CI's generic populated release
+upgrade remains required before tagging.
+
+Corrections are explicit: first full QA found a missing Unreleased migration
+reference, fixed in1b5ba8be and followed by a complete successful gate rerun.
+The first desktop browser wait allowed only10 seconds for native readiness under
+concurrent test load; readiness arrived afterward. The harness now observes up
+to90 seconds with terminal-fixture detection; no production timeout was widened.
+Final native start waits were about4 seconds. A direction check was accidentally
+invoked at repository root once, then passed from the correct app package.
+
+Package/changelog, current-release metadata and migration inventory are prepared
+for0.54.0. The ledger/known-issue record now recognizes the bounded OpenCode task
+while preserving unimplemented OpenCode modes/providers, extensible API endpoints
+and broader agent work. No human usefulness or scientific claim was promoted.
+Next: commit and fast-forward main, inspect exact-source CI/RLS/upgrade, then tag
+and publish. A release commit is not itself evidence that publication occurred.

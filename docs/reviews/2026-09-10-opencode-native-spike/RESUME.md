@@ -1,163 +1,95 @@
-# Resume after the weekly allowance reset
+# Resume OpenCode release work, then continue through v1
 
-User requested continuous development through v1.0, direct main with no PRs and
-no human release-review gates. The active goal remains through v1.0; do not mark it
-complete. Resume in this thread when Nathaniel says continue. No paid infrastructure
-or provider calls. Leave the pending reminder-constraint change untouched.
+Nathaniel wants continuous development through the full v1 contract, direct main,
+no PRs and no human engineering release-review gates. The active goal remains
+unfinished. Use local/free operation and synthetic provider fixtures; no real
+OpenCode API calls or paid infrastructure. Leave the pending reminder constraint
+untouched. Do not start the old OWP/contract release work again: v0.48 through
+v0.53 are already published.
 
-## Released and safe
-
-v0.53.0 is published: https://github.com/nfredmond/openplan/releases/tag/v0.53.0
-Release source e1618aa1cac020d2957816dbe747dbf59bd719e5, annotated tag
-1a023eeb6c166b3e44d9c25fa8ed7601a8aaa455, published2026-09-10T18:01:25Z.
-CI34509829077, RLS34509829003 and upgrade34509829115 all passed before tagging.
-Full QA/shuffle13760pass378skip; RLS400pass; populated v0.52.1 upgrade passed.
-Main publication receipt de01ce9b176d31752af44e0afd0245f505c9ae1f also has green CI/RLS.
-Recheck remote state before acting. Claude evidence and limits live in the adjacent
-2026-09-10-claude-native-spike review. No unfinished Claude release work remains.
-
-## Current isolated lane
+## Current lane
 
 Worktree: /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10
 Branch: work/planner-agent-opencode-connection
-Package remains0.53.0. OpenCode work is not merged into main or released.
-Latest implementation checkpoint:5f1a5cff2e0fa3aa1b7654e685a04a90a539f769.
-It is pushed to the matching origin branch. The worktree was clean when checked
-for Nathaniel's weekly-allowance pause. This documentation checkpoint follows it.
-Use git log/status and the remote branch to verify the current state on return.
-Ownership: workers/planner_agent_connector/opencode-*.mjs, their tests and this review.
-No subagents. Do not alter another session's checkout/server. Root has a preexisting
-app server that is not ours; do not kill it or build/install over it. Owned3219
-browser server was stopped after Claude acceptance. No native fixture needs to
-survive the allowance reset.
+Last pushed source before release metadata:1b5ba8bee0b2ec7122fa559e31578f694e42cb0f.
+Use git status/log and ls-remote to find the release checkpoint following it.
+Package metadata is being prepared for0.54.0. OpenCode implementation, connector
+registration, app routes/UI, additive migration and relevant browser acceptance
+are complete. Publication and final release-commit CI are not yet confirmed.
 
-Read CHECKPOINT.md, relay-checks.json, launch-checks.json and mutation receipts.
-First product-direction check: npm run product:direction:check from this worktree's
-openplan/ package. Read current roadmap A0/A1 and contract. This is existing A0b
-provider work, not a new module. A0/A1 remain partial; all broader v1 obligations
-remain in the roadmap. Do not restart previously completed OWP/contract work.
+Read VERIFICATION.md, browser-final.json, candidate-qa.json, upgrade-local.json
+and the last CHECKPOINT.md section. Older checkpoint statements are historical.
+Full QA and shuffled seed811348 passed13800 with401 skips. Default connector
+suite passed374 with4 opt-in skips. Full isolated RLS passed430 in46 files;
+52 Python worker suites and the opt-in OpenCode filesystem fixture passed.
+Desktop1440 and390px actual-native journeys covered connection downloads,
+identical POST/delivery retries, reloads, approved drafts, cancellation and
+revocation. Prior Codex and Claude results stayed unchanged. Separate retention
+journeys blocked deletion and preflight503 recovery sent zero DELETEs.
 
-## Implemented, not yet wired
+Actual OpenCode1.18.30 used synthetic native API keys and local scripted Responses
+data only. Live availability, entitlement, billing and usefulness remain unmeasured.
+OpenCode OAuth/subscription modes, further native providers, extensible API
+endpoints, broader tasks and durable assignments remain open A0/A1 work.
 
-opencode-relay.mjs enforces one upstream OpenAI Responses call, exact model,
-store=false, only StructuredOutput, fixed upstream, no redirects, byte/time limits.
-28 relay tests,21 targeted unit mutation failures and harmless survivor; actual
-native relay control and second-request mutation passed/failed as intended.
+## Immediate next step
 
-opencode-launch.mjs pins installed1.18.30 and mounts an inspected private API
-credential snapshot read-only, with fresh private runtime directories.30 launch tests,
-34 targeted mutation failures and harmless survivor. First inadequate file-type
-fixture is retained separately. Positive native mount/launch/schema/assistant
-readback proof passed. Default full connector suite151pass3native opt-in skips.
+Finish the release inventory guard challenge and restored check, inspect the
+metadata diff and commit/push the verified release checkpoint directly to main.
+Check current remote main first. Inspect successful final CI, shuffled tests,
+RLS Isolation and populated v0.53.0 Upgrade Path on that exact SHA before making
+an annotated v0.54.0 tag and a normal public GitHub release. Record the actual
+publication and CI receipt afterward. No draft PR or human review is needed.
+If main already contains this release checkpoint when resumed, do not repeat the
+merge or fabricate a new release commit; inspect its live Actions state.
 
-Account/model projection, bounded credential snapshots, owned server and model
-command, exact turn validation and provider adapter are implemented. Default
-connector suite now passes339 with4 native opt-in skips. Not implemented:
-app routes/types, migration, UI, RLS and
-browser journeys. Do not advertise
-OpenCode support yet. First supported
-mode will be native OpenAI API credentials; OAuth/subscription and other providers
-remain explicit unimplemented scope. Use an unambiguous mode such as opencode_api
-or explicit backend binding; existing apiKey claim inference currently means Codex.
+The only post-browser code-area metadata edit is the release-ordering inventory.
+App/worker implementation is unchanged from the browser-tested1b5ba8be. Keep
+this distinction in release evidence. Product direction check passed with normal
+review reminders; no review dates were refreshed as a substitute for evidence.
 
-## Next concrete steps
+## Processes and databases
 
-1. Native physical guard mutations are complete. The private production probe
-   passed its harmless control and failed both writable-credential and exposed
-   scratch mutations. A committed opt-in filesystem test independently passed
-   its harmless control and failed five targeted mutations. See
-   native-physical-mutations.json and native-filesystem-test-mutations.json.
-   Run it with OPENPLAN_OPENCODE_NATIVE_BINARY pointing to the pinned binary:
-   node --test workers/planner_agent_connector/test/opencode-native-filesystem.test.mjs.
-   It uses only synthetic credentials, no model requests. Continue at step 2.
-2. The pure account projection and native model parser are implemented in
-   opencode-account.mjs with 38 tests and 19 targeted mutation failures plus a
-   harmless survivor. The native auth-list approach proved ambiguous: exact ID
-   openai and custom ID OpenAI print identical output; all four API/OAuth/missing/
-   display-collision cases return the same 49 model IDs. See account-checks.json.
-   The bounded reader and snapshot binding are now implemented in
-   opencode-credentials.mjs and opencode-launch.mjs, with17 reader tests and
-   an actual native request using the original inspected key after the source
-   auth file changed. Only the exact openai record
-   may establish opencode_api mode. Do not expose credentials, raw GET/provider
-   or account metadata. Native gpt-6 is absent; gpt-6-astra exists in this catalog.
-   Catalog presence is not account availability. opencode-process.mjs now owns
-   authenticated startup, bounded private requests, cancellation and shutdown.
-   It rejects non-connected launch.account before spawning and waits for child
-   exit before close resolves. Real native success and cancellation proofs passed.
-   The caller must remove scratch/snapshots only after close and close the relay
-   on every failure. Snapshot creation never changes the original native profile.
-   The bounded non-generating command, exact turn validator and provider adapter
-   are now implemented in opencode-models.mjs, opencode-result.mjs and
-   opencode-provider.mjs. Native success, absent-model refusal and cancellation
-   passed. See provider-checks.json and the later CHECKPOINT.md section.
-   The provider adapter is now registered in connector setup/dispatch. See
-   registration-checks.json. Continue with app routes, migration and UI.
-3. Native POST structured response and exact assistant-message GET work. The
-   validator binds every part to the requested session/parent, selected model
-   and agent, one completed StructuredOutput call and exact readback. General
-   list-message GET rejects stored OutputFormat in this version. Use exact supplied
-   parent message ID and assistant ID for the bounded verification; preserve this
-   upstream limitation. Do not patch native DB or claim native history parity.
-4. Challenge malformed/partial/native wrong-tool outputs, account/model changes,
-   missing credentials, cancellation, private-file canaries and duplicate recovery.
-   Then extend existing connector/SQL/UI with provider/account binding. Use the
-   same retained project task and journal. No new orchestration stack needed.
-   Relevant registration files are connector-client.mjs, native-provider.mjs,
-   connector-worker.mjs, the app assistant provider-server.ts, provider API routes
-   and project-provider-panel.tsx. Add a migration after the Claude connection
-   migration; do not change the pending reminder constraint.
-5. Real desktop/390px navigation and downloads, keyboard, console, interruption,
-   revocation, private histories, QA/shuffle/RLS/worker/upgrade, then direct main,
-   final CI and a coherent minor release. Continue remaining v1 work afterward.
+The owned production acceptance server on127.0.0.1:3219 was identified as this
+worktree, then stopped before release metadata edits. PID750966 exited through
+SIGTERM; its session ended143. No browser/native fixture processes remained.
+Other checkout/demo servers are not ours and were left running. Recheck live
+ownership before any changes; do not kill them or build over the root app server.
 
-## Private artifacts and commands
+QA stack workdir:
+/home/nathaniel/.local/state/openplan/openplan-restore-target-2026091050
+container supabase_db_openplan-restore-target-2026091050, API29821/DB29822.
+Browser stack workdir:
+/tmp/openplan-restore-drill.yBEWX9/openplan-restore-target-3390964
+container supabase_db_openplan-restore-target-3390964, API22301/DB22302.
+Both now have316 migrations. Browser upgrade preserved all16 pre-existing
+connection hashes and25 retained-turn hashes. No reset/drop of data was used.
+The app .env.local selects the browser stack; never print its secrets.
 
-Evidence: /home/nathaniel/.local/state/openplan/opencode-native-evidence-2026-09-10
-Native binary: <evidence>/native/opencode (not installed on PATH).
-Archive SHA25655007246858165496ff85ba1c2b648f7421e8e2013bf4189a680c9ff8e699d17.
-Native source tag v1.18.30 at3104c1428ec91f809e5ab86631300de41eb6952e; MIT license read.
-Source/API snapshots and protocol scripts are in that evidence directory.
-- probe-production-physical.mjs: production launch + physical boundary checks +
-  actual OpenAI Responses through relay + exact assistant readback. Fresh synthetic
-  profiles per run; script now closes relay/fixture if physical probe fails early.
-- probe-turn-openai-relay-failure.mjs: forced extra native request, strict budget.
-- mutate-relay.py and mutate-launch.py: source mutation runners; finally restores.
-- production-launch-turn.json / production-launch-assistant-readback.json: latest
-  positive synthetic native output. Raw provider catalog is private, synthetic only.
-- DESIGN-NOTES.md records earlier exploration. Do not commit private credentials.
+## Private evidence and commands
 
-Worker checks run from repo root:
-node --test workers/planner_agent_connector/test/*.test.mjs
-App tests/builds run from openplan/. Never use Vitest --root from repo root;
-some tests inspect process cwd. The app .env.local points at the owned browser
-fixture stack22301; don't print it. Named QA stack workdir is
-/home/nathaniel/.local/state/openplan/openplan-restore-target-2026091050 (API29821,
-DB29822). Both stacks have315 migrations. RLS fixtures only on that named QA stack
-with OPENPLAN_RLS_LIVE_TEST=1 and OPENPLAN_SUPABASE_WORKDIR set. No reset or DROP.
+/home/nathaniel/.local/state/openplan/opencode-native-evidence-2026-09-10
+contains all logs, screenshots, native protocol probes, synthetic credentials
+and browser scripts. Do not commit private connection files or raw histories.
+Pinned native binary:that directory/native/opencode, not installed on PATH.
 
-Browser evidence uses repository Playwright; authorized without asking. Read local
-browser skill and identify the served build with scripts/ops/which-openplan.sh.
-The earlier Claude private harness/evidence is in the sibling
-claude-native-evidence-2026-09-10 directory. Never edit while an acceptance server
-is collecting evidence. Original native Codex and Claude histories must survive.
+browser-opencode.cjs runs actual native acceptance with WIDTH=1440 or390 and
+EXPECTED_SHA set to the serving full commit. browser-retention.cjs covers deletion
+and interrupted preflight. browser-native-fixture.mjs owns synthetic Responses
+transport. The first desktop startup wait was too short under concurrent load;
+its failed evidence is retained. Current harness observes native readiness for
+up to90 seconds and recognizes a terminal fixture. Production bounds did not
+change. Final measured cancellation/revocation startup was about4 seconds.
 
-## Immediate restart point after the allowance pause
+App commands run from this worktree's openplan/ package. Worker node tests run
+from the worktree root. RLS needs OPENPLAN_RLS_LIVE_TEST=1 and the explicit
+OPENPLAN_SUPABASE_WORKDIR above. Repository Playwright/Chrome is authorized.
+Read the browser skill and run openplan/scripts/ops/which-openplan.sh before
+acceptance. Do not edit a served acceptance checkout during collection.
 
-Connector setup/dispatch is implemented with374 default worker passes and4
-native opt-in skips. Start app registration for the completed native OpenCode
-adapter. No app edits have begun. Before editing app
-files, map live Next processes to their checkout and identify the served build.
-The last product-direction check passed. Rerun it and check current ownership on
-return. Do not rely on development servers, databases or native processes having
-survived the pause; inspect them and restart only owned resources as needed.
-The last completed default connector suite had339 passes,4 opt-in skips and no
-failures. Its receipt is provider-checks.json; it does not establish app support.
-
-## Latest app checkpoint supersedes the earlier registration to-do
-
-App routes/types, project provider panel and additive migration are implemented.
-Read app-registration-checks.json and the final CHECKPOINT.md section.136 focused
-app checks and72 live database checks passed; browser acceptance and full release
-checks remain pending. Start at the identified production build and real browser
-journeys described there. The candidate is not merged or released.
+After v0.54, run product:direction:check and continue current roadmap A0/A1,
+including extensible provider/API choice. The native spike also recorded a
+bounded follow-up to investigate older Codex scratch-root/reciprocal-overlap
+checks; no public exploit was demonstrated because the connector creates fresh
+scratch directories. Keep all other v1 planning and separate scientific
+validation obligations intact.

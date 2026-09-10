@@ -32,6 +32,7 @@ pointer to AGENTS.md, not a second rulebook.
 - [Team commissioning](../openplan/docs/FIRST_DEPLOYMENT.md): what an independent
   operator must establish before real team use.
 - [Runbook](../openplan/docs/ops/RUNBOOK.md): diagnosis and recovery boundaries.
+- [Installed OpenCode project task](reviews/2026-09-10-opencode-native-spike/VERIFICATION.md): bounded native transport, exact retries, private history and release evidence.
 - [OWP reporting-period guide](ops/OWP_REPORTING.md): agency time, source costs, private valuations and corrected internal management reports.
 - [September 7 OWP review and amendments](reviews/2026-09-07-owp-review/VERIFICATION.md): exact-version decisions, retained baselines, inspected exports and bounded engineering acceptance.
 - [September 9 desktop Control repair](reviews/2026-09-09-control-main/VERIFICATION.md): visible demo/main commits and backed-up local database upgrades.

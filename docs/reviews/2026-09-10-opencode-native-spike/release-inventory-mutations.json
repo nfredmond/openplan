@@ -1,0 +1,17 @@
+[
+  {
+    "mutation": "harmless-release-comment",
+    "exitCode": 0,
+    "expectationMet": true,
+    "failures": []
+  },
+  {
+    "mutation": "wrong-release-count",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "released migration ordering no migration has been inserted at or below a shipped high-water mark",
+      "released migration ordering new work sorts strictly after the latest release (no version collisions)"
+    ]
+  }
+]

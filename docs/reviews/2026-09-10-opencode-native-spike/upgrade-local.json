@@ -1,0 +1,11 @@
+{
+  "database": "supabase_db_openplan-restore-target-3390964",
+  "fromMigrations": 315,
+  "toMigrations": 316,
+  "unchangedConnectionHashes": 16,
+  "unchangedTurnHashes": 25,
+  "comparison": "SHA256 of each full persisted row before and after additive migration; nonempty controls asserted",
+  "limits": [
+    "Representative existing native connection and turn history; generic populated release upgrade remains a final CI gate"
+  ]
+}

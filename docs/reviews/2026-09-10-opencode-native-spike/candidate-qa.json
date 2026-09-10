@@ -1,0 +1,38 @@
+{
+  "sourceCommit": "1b5ba8bee0b2ec7122fa559e31578f694e42cb0f",
+  "qaGate": {
+    "exitCode": 0,
+    "appPassed": 13800,
+    "appSkipped": 401,
+    "connectorPassed": 374,
+    "connectorNativeOptInSkipped": 4,
+    "dependencyVulnerabilities": 0,
+    "productionBuild": true
+  },
+  "shuffled": {
+    "exitCode": 0,
+    "seed": 811348,
+    "passed": 13800,
+    "skipped": 401
+  },
+  "liveRls": {
+    "exitCode": 0,
+    "files": 46,
+    "passed": 430,
+    "database": "supabase_db_openplan-restore-target-2026091050"
+  },
+  "pythonWorkers": {
+    "passedSuites": 52,
+    "failed": 0,
+    "notRun": 0
+  },
+  "nativePhysicalFilesystem": {
+    "passed": 1,
+    "skipped": 0
+  },
+  "initialQaFailure": "Missing migration reference in Unreleased. Fixed in1b5ba8be; release ordering and full QA rerun passed.",
+  "limits": [
+    "Local candidate evidence; final release commit CI and populated upgrade still required before tagging",
+    "Skipped tests are not passing evidence; OpenCode native transport exercised separately in browser and filesystem fixtures"
+  ]
+}
