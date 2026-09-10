@@ -4,7 +4,7 @@ import { join, isAbsolute } from "node:path";
 import { randomUUID } from "node:crypto";
 import { once } from "node:events";
 import { connectorRequest, checkedConnectorJob, ConnectorError, readPrivateJson } from "./connector-client.mjs";
-import { inspectCodexConnection, runCodexProjectTurn } from "./codex-provider.mjs";
+import { connectorProviderAdapter } from "./native-provider.mjs";
 
 export async function privateConnectorDirectory(path) {
   if (!isAbsolute(path)) throw new ConnectorError("connector_path_invalid");
@@ -52,8 +52,9 @@ async function pendingJournal(directory) {
 // model call whose cost or duplicate answer the planner did not choose.
 export async function connectorCycle(config, directory, options = {}) {
   const request = options.request ?? connectorRequest;
-  const inspect = options.inspect ?? inspectCodexConnection;
-  const generate = options.generate ?? runCodexProjectTurn;
+  const adapter = connectorProviderAdapter(config.setup);
+  const inspect = options.inspect ?? adapter.inspect;
+  const generate = options.generate ?? adapter.generate;
   const signal = options.signal;
   const report = options.report ?? (() => {});
   let pending = await pendingJournal(directory);
@@ -74,7 +75,7 @@ export async function connectorCycle(config, directory, options = {}) {
     catch { account = { status: "unavailable", authMode: null }; }
     finally { await rm(inspectWork, { recursive: true, force: true }); }
     const status = account.status === "connected" ? "connected" : account.status === "needs_login" ? "needs_login" : "unavailable";
-    const claimed = await request(config.setup, { operation: "claim", status, authMode: ["chatgpt", "apiKey"].includes(account.authMode) ? account.authMode : null }, { signal });
+    const claimed = await request(config.setup, { operation: "claim", status, authMode: ["chatgpt", "apiKey", "claude_subscription"].includes(account.authMode) ? account.authMode : null }, { signal });
     if (!claimed || typeof claimed.status !== "string" || !("turn" in claimed)) throw new ConnectorError("connector_response_invalid");
     report(claimed.status);
     if (!claimed.turn) return { state: "idle", connectionStatus: claimed.status };
@@ -105,10 +106,10 @@ export async function connectorCycle(config, directory, options = {}) {
           model: job.model, expectedAuthMode: job.authMode, instructions: job.instructions, prompt: job.prompt, outputSchema: job.outputSchema, signal: runningSignal });
       } finally { await rm(scratchPath, { recursive: true, force: true }); }
       runningSignal.throwIfAborted();
-      if (generated.provider !== "codex" || generated.model !== job.model || generated.authMode !== job.authMode ||
+      if (generated.provider !== adapter.provider || generated.model !== job.model || generated.authMode !== job.authMode ||
         typeof generated.answer !== "string" || Buffer.byteLength(generated.answer) > 64_000) throw new ConnectorError("native_result_mismatch");
       delivery = { operation: "finish", turnId: job.id, attemptId: job.attemptId, answer: generated.answer, failureCode: null,
-        receipt: { schemaVersion: 1, provider: "codex", model: generated.model, authMode: generated.authMode,
+        receipt: { schemaVersion: 1, provider: adapter.provider, model: generated.model, authMode: generated.authMode,
           planType: generated.planType, threadId: generated.threadId, turnId: generated.turnId } };
     } catch (error) {
       delivery = { operation: "finish", turnId: job.id, attemptId: job.attemptId, answer: null, receipt: null,

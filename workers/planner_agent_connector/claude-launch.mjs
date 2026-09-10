@@ -12,13 +12,25 @@ export async function claudeLaunch({ binaryPath, providerHome, scratchPath, mode
   if (![binaryPath, providerHome, scratchPath].every(path => typeof path === "string" && isAbsolute(path))) {
     throw new Error("native_path_invalid");
   }
+  let fixtureOrigin;
+  if (modelProvider !== undefined) {
+    // The public config has no endpoint override. Native tests can supply only
+    // an explicit loopback origin, checked before touching the profile.
+    let url;
+    try { url = typeof modelProvider === "string" ? new URL(modelProvider) : null; }
+    catch { throw new Error("native_fixture_origin_invalid"); }
+    if (!url || url.protocol !== "http:" || url.hostname !== "127.0.0.1" || url.username || url.password || url.pathname !== "/" || url.search || url.hash) {
+      throw new Error("native_fixture_origin_invalid");
+    }
+    fixtureOrigin = url.origin;
+  }
   const binary = await realpath(binaryPath);
   const version = await promisify(execFile)(binary, ["--version"], {
     timeout: 5000, maxBuffer: 8192, env: { PATH: "/usr/bin:/bin" },
   }).catch(() => { throw new Error("native_version_unavailable"); });
   if (version.stdout.trim() !== `${CLAUDE_PROTOCOL_VERSION} (Claude Code)`) throw new Error("native_version_unsupported");
   const profile = await realpath(providerHome), scratch = await realpath(scratchPath);
-  if (profile === parse(profile).root || scratch === profile || scratch.startsWith(`${profile}/`) || profile.startsWith(`${scratch}/`)) {
+  if (profile === parse(profile).root || scratch === parse(scratch).root || scratch === profile || scratch.startsWith(`${profile}/`) || profile.startsWith(`${scratch}/`)) {
     throw new Error("native_path_invalid");
   }
   const credential = await lstat(join(profile, ".credentials.json")).catch(() => null);
@@ -55,15 +67,7 @@ export async function claudeLaunch({ binaryPath, providerHome, scratchPath, mode
   const env = { PATH: "/usr/bin:/bin", HOME: "/home/openplan", CLAUDE_CONFIG_DIR: "/provider",
     LANG: "C.UTF-8", TMPDIR: "/tmp", DISABLE_AUTOUPDATER: "1", CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1",
     CLAUDE_CODE_DISABLE_FAST_MODE: "1" };
-  if (modelProvider) {
-    // Only installed-native tests supply a loopback response fixture. Public
-    // connector configuration has no endpoint or environment override field.
-    const url = new URL(modelProvider);
-    if (url.protocol !== "http:" || url.hostname !== "127.0.0.1" || url.username || url.password || url.pathname !== "/" || url.search || url.hash) {
-      throw new Error("native_fixture_origin_invalid");
-    }
-    env.ANTHROPIC_BASE_URL = url.origin;
-  }
+  if (fixtureOrigin) env.ANTHROPIC_BASE_URL = fixtureOrigin;
   return { command: "/usr/bin/bwrap", args, options: {
     cwd: scratch, shell: false, stdio: ["pipe", "pipe", "pipe"],
     env,

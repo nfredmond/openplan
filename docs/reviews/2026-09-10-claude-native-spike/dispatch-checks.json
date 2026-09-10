@@ -1,0 +1,10 @@
+{
+  "tests": 96,
+  "passed": 96,
+  "failed": 0,
+  "skipped": 0,
+  "codexNativeVersion": "0.154.0",
+  "claudeNativeVersion": "2.1.263",
+  "claudeModelTransport": "synthetic OAuth and loopback Messages responses",
+  "realClaudeGeneration": false
+}

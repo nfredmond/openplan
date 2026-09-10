@@ -176,3 +176,80 @@ test("a conflict for a different attempt preserves the completed delivery", asyn
   await assert.rejects(connectorCycle(config, f.directory, f.options), /connector_request_refused/);
   assert.equal((await readPrivateJson(join(f.directory, "pending.json"))).phase, "completed");
 });
+
+const claudeSetup = { ...setup, version: 2, provider: "claude", expectedAuthMode: "claude_subscription" };
+const claudeJob = change => job({ provider: "claude", authMode: "claude_subscription", model: "claude-sonnet-4-6", ...change });
+
+test("versioned setup binds the provider and keeps legacy Codex setup readable", () => {
+  assert.deepEqual(checkedConnectorSetup(setup), setup);
+  assert.deepEqual(checkedConnectorSetup(claudeSetup), claudeSetup);
+  assert.deepEqual(checkedConnectorSetup({ ...setup, version: 2, provider: "codex" }), { ...setup, version: 2, provider: "codex" });
+  for (const change of [{ version: 3 }, { provider: "opencode" }, { provider: "codex" }, { expectedAuthMode: "chatgpt" }, { expectedAuthMode: "apiKey" }, { modelProvider: "http://127.0.0.1" }]) {
+    assert.throws(() => checkedConnectorSetup({ ...claudeSetup, ...change }), /connector_config_invalid/);
+  }
+  assert.throws(() => checkedConnectorSetup({ ...setup, provider: "claude" }), /connector_config_invalid/);
+});
+
+test("versioned jobs require their exact provider while legacy jobs remain Codex only", () => {
+  assert.deepEqual(checkedConnectorJob(claudeJob(), claudeSetup), claudeJob());
+  assert.deepEqual(checkedConnectorJob(job(), setup), job());
+  for (const provider of [undefined, null, "codex", "anthropic"]) {
+    assert.throws(() => checkedConnectorJob(claudeJob({ provider }), claudeSetup), /connector_job_invalid/);
+  }
+  assert.throws(() => checkedConnectorJob(job({ provider: "claude" }), setup), /connector_job_invalid/);
+});
+
+async function claudeFixture() {
+  const f = await fixture(), request = f.options.request;
+  f.options.inspect = async () => ({ status: "connected", authMode: "claude_subscription" });
+  f.options.request = async (scope, body) => {
+    if (body.operation === "claim") {
+      assert.equal(body.authMode, "claude_subscription");
+      return { status: "connected", turn: claudeJob() };
+    }
+    return request(scope, body);
+  };
+  let generates = 0;
+  f.options.generate = async options => {
+    generates++;
+    assert.equal(options.model, "claude-sonnet-4-6");
+    assert.equal(options.expectedAuthMode, "claude_subscription");
+    assert.equal((await readPrivateJson(join(f.directory, "pending.json"))).phase, "running");
+    return { ...generated(), provider: "claude", model: options.model, authMode: options.expectedAuthMode };
+  };
+  return { ...f, get generates() { return generates; } };
+}
+
+test("Claude delivery retains its provider and resends the identical answer after response loss", async () => {
+  const f = await claudeFixture(), request = f.options.request;
+  let attempted;
+  f.options.request = async (scope, body) => {
+    if (body.operation === "finish") { attempted = structuredClone(body); throw new Error("synthetic_response_loss"); }
+    return request(scope, body);
+  };
+  const claudeConfig = { ...config, setup: claudeSetup };
+  await assert.rejects(connectorCycle(claudeConfig, f.directory, f.options), /synthetic_response_loss/);
+  assert.equal(attempted.receipt.provider, "claude");
+  assert.equal(attempted.receipt.authMode, "claude_subscription");
+  assert.equal(attempted.answer, generated().answer);
+  f.options.inspect = async () => { assert.fail("Retry inspected another account"); };
+  f.options.request = async (_scope, body) => { assert.deepEqual(body, attempted); return { id, attemptId, state: "succeeded" }; };
+  assert.equal((await connectorCycle(claudeConfig, f.directory, f.options)).state, "succeeded");
+  assert.equal(f.generates, 1);
+});
+
+test("Claude refuses another provider result without saving its answer", async () => {
+  const f = await claudeFixture();
+  f.options.generate = async () => ({ ...generated(), authMode: "claude_subscription", model: "claude-sonnet-4-6" });
+  assert.equal((await connectorCycle({ ...config, setup: claudeSetup }, f.directory, f.options)).state, "failed");
+  const finish = f.calls.at(-1);
+  assert.equal(finish.failureCode, "native_result_mismatch");
+  assert.equal(finish.answer, null); assert.equal(finish.receipt, null);
+});
+
+test("changing the provider cannot replay a saved Claude journal through a Codex connection", async () => {
+  const f = await fixture();
+  await writeConnectorJournal(f.directory, { version: 1, connectionId, appUrl: setup.appUrl, phase: "running", job: claudeJob() });
+  await assert.rejects(connectorCycle(config, f.directory, f.options), /connector_job_invalid/);
+  assert.equal(f.generates, 0); assert.equal(f.calls.length, 0);
+});

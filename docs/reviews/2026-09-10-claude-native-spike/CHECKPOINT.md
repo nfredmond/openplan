@@ -4,7 +4,7 @@ v0.52.0 is published at 914a9d966bbf1ea344b4d9ccd0762dbfa184aeea.
 v0.52.1 dependency maintenance is published at 5d7ccdb067bb4db639132889f8efd5db160dfc6b.
 The current main publication receipt is 00a650ab4b4db77c22e9626f69c6a3d6f4e4d077.
 This separate work/planner-agent-claude-connection branch is not another released
-backend. No app route, schema, connection configuration or UI accepts Claude yet.
+backend. The worker now accepts version 2 provider-bound connection files and dispatches Claude. App routes, SQL and the project panel still need integration.
 
 ## Implemented transport boundary
 
@@ -53,11 +53,9 @@ wrapper, not just the stream parser.
 
 ## Remaining work
 
-Before merging as supported functionality, complete launch-path/version/credential
-permission and loopback-fixture guard tests and their mutations. Then extend the
-existing connection and frozen-request schema additively, retain v1 Codex setup
-files and all original saved results, add provider-aware connector dispatch and
-integrate the existing project panel. Prove wrong-provider refusal, exact retry,
+Before merging as supported functionality, extend the existing connection and
+frozen-request schema additively and integrate the existing project panel. Keep
+v1 Codex setup files and all original saved results readable. Prove wrong-provider refusal, exact retry,
 revocation, cancellation and private history in the database and from real desktop
 and 390px navigation. No silent provider or billing fallback. Additional native
 backends, broader grounded tasks, MCP and assignments remain roadmap obligations.
@@ -74,3 +72,29 @@ future terms, unlimited use or whether a particular account has enabled paid ext
 usage. No real generation should assume an extra-usage setting. T3's prior MIT
 source review remains the reuse reference. Direct native CLI streaming avoids
 importing its entire editor/SDK/orchestration stack for this narrow task.
+
+## Launch and connector checkpoint
+
+The restored connector suite now passes 96 tests with both installed native flags,
+zero failures and zero skips. The extra launch tests exposed a missing scratch
+filesystem-root guard, now fixed. Invalid fixture URLs are normalized to the
+specific refusal before filesystem access. One harmless launch mutation survived;
+16 targeted changes failed. Root-path mutation runs used a read-only outer mount
+namespace so broken code could not write outside disposable /tmp fixtures.
+
+Version 1 setup files and provider-less legacy jobs remain Codex. Version 2 binds
+Codex or Claude to its permitted account mode and requires the claimed job's exact
+provider. Generation dispatch, result checking and retained receipts use that
+choice. A lost Claude delivery response resends the identical saved answer without
+inspection or regeneration. Wrong-provider output and journal replay are refused.
+One harmless dispatch control survived and eight targeted changes failed, including
+actual native CLI inspection and generation being incorrectly sent through Codex.
+The native fixture now runs the public CLI models command with a private v2 config;
+it reports Claude subscription mode and explicit catalog unavailability.
+
+Blind categories: synthetic native responses do not establish live Claude model
+availability, allowance, paid extra-usage settings or provider outages. Launch
+fixtures test permissions and symlinks as the current user, not a distinct UID or
+an installed /etc managed policy. The sandbox does not prove independent failure
+of safe mode; that earlier surviving mutation remains recorded. Worker tests do
+not establish database isolation or browser reachability. Those are next.

@@ -1,0 +1,107 @@
+[
+  {
+    "name": "harmless comment",
+    "exitCode": 0,
+    "outcome": "survived",
+    "failureLines": []
+  },
+  {
+    "name": "unsupported setup accepted",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 connector configuration pins the project and refuses public HTTP, secrets in URL and arbitrary runtime endpoints (1.622791ms)",
+      "\u2716 versioned setup binds the provider and keeps legacy Codex setup readable (0.272514ms)",
+      "\u2716 failing tests:",
+      "\u2716 connector configuration pins the project and refuses public HTTP, secrets in URL and arbitrary runtime endpoints (1.622791ms)",
+      "  AssertionError [ERR_ASSERTION]: Missing expected exception.",
+      "\u2716 versioned setup binds the provider and keeps legacy Codex setup readable (0.272514ms)",
+      "  AssertionError [ERR_ASSERTION]: Missing expected exception."
+    ]
+  },
+  {
+    "name": "job provider mismatch accepted",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 versioned jobs require their exact provider while legacy jobs remain Codex only (0.572409ms)",
+      "\u2716 failing tests:",
+      "\u2716 versioned jobs require their exact provider while legacy jobs remain Codex only (0.572409ms)",
+      "  AssertionError [ERR_ASSERTION]: Missing expected exception."
+    ]
+  },
+  {
+    "name": "claude claim loses mode",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 Claude delivery retains its provider and resends the identical answer after response loss (1.839569ms)",
+      "\u2716 Claude refuses another provider result without saving its answer (1.372048ms)",
+      "\u2716 failing tests:",
+      "\u2716 Claude delivery retains its provider and resends the identical answer after response loss (1.839569ms)",
+      "  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /synthetic_response_loss/. Input:",
+      "  'AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\\n' +",
+      "    actual: AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:",
+      "\u2716 Claude refuses another provider result without saving its answer (1.372048ms)",
+      "  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "name": "wrong provider output accepted",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 Claude refuses another provider result without saving its answer (2.209196ms)",
+      "\u2716 failing tests:",
+      "\u2716 Claude refuses another provider result without saving its answer (2.209196ms)",
+      "  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "name": "receipt changed to Codex",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 Claude delivery retains its provider and resends the identical answer after response loss (2.349281ms)",
+      "\u2716 failing tests:",
+      "\u2716 Claude delivery retains its provider and resends the identical answer after response loss (2.349281ms)",
+      "  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "name": "Claude inspection uses Codex",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 installed Claude refuses host tools and inherited context (61.294159ms)",
+      "\u2716 failing tests:",
+      "\u2716 installed Claude refuses host tools and inherited context (61.294159ms)",
+      "  Error: Command failed: /usr/bin/node /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/workers/planner_agent_connector/connector.mjs models --config /tmp/openplan-claude-isolation-8Ha9Kp/connection.json",
+      "      at genericNodeError (node:internal/errors:986:15)"
+    ]
+  },
+  {
+    "name": "Claude generation uses Codex",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 installed Claude refuses host tools and inherited context (1163.571543ms)",
+      "\u2716 failing tests:",
+      "\u2716 installed Claude refuses host tools and inherited context (1163.571543ms)",
+      "  Error [NativeProviderError]: native_request_invalid",
+      "    code: 'native_request_invalid'"
+    ]
+  },
+  {
+    "name": "CLI models uses Codex",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 installed Claude refuses host tools and inherited context (57.757198ms)",
+      "\u2716 failing tests:",
+      "\u2716 installed Claude refuses host tools and inherited context (57.757198ms)",
+      "  Error: Command failed: /usr/bin/node /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/workers/planner_agent_connector/connector.mjs models --config /tmp/openplan-claude-isolation-CLr7sS/connection.json",
+      "      at genericNodeError (node:internal/errors:986:15)"
+    ]
+  }
+]

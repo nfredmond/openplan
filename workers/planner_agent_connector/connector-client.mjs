@@ -15,9 +15,11 @@ function exactKeys(value, keys) {
 // Pairing fixes the destination and project audience. There is no caller-supplied
 // model endpoint, browser cookie, environment-key field or arbitrary tool config.
 export function checkedConnectorSetup(raw) {
-  exactKeys(raw, ["version", "appUrl", "connectionId", "workspaceId", "projectId", "expectedAuthMode", "token"]);
-  if (raw.version !== 1 || ![raw.connectionId, raw.workspaceId, raw.projectId].every(value => typeof value === "string" && uuid.test(value)) ||
-    !["chatgpt", "apiKey"].includes(raw.expectedAuthMode) || typeof raw.token !== "string" || !new RegExp(`^op_pc_${raw.connectionId}\\.[A-Za-z0-9_-]{43}$`).test(raw.token)) {
+  exactKeys(raw, ["version", "appUrl", "connectionId", "workspaceId", "projectId", "expectedAuthMode", "token", ...(raw?.version === 2 ? ["provider"] : [])]);
+  const validProvider = raw.version === 1 ? ["chatgpt", "apiKey"].includes(raw.expectedAuthMode)
+    : raw.version === 2 && (raw.provider === "codex" && ["chatgpt", "apiKey"].includes(raw.expectedAuthMode) || raw.provider === "claude" && raw.expectedAuthMode === "claude_subscription");
+  if (!validProvider || ![raw.connectionId, raw.workspaceId, raw.projectId].every(value => typeof value === "string" && uuid.test(value)) ||
+    typeof raw.token !== "string" || !new RegExp(`^op_pc_${raw.connectionId}\\.[A-Za-z0-9_-]{43}$`).test(raw.token)) {
     throw new ConnectorError("connector_config_invalid");
   }
   let url;
@@ -76,6 +78,7 @@ export function checkedConnectorJob(raw, setup) {
   const checked = checkedConnectorSetup(setup);
   if (!raw || typeof raw !== "object" || !uuid.test(raw.id ?? "") || !uuid.test(raw.attemptId ?? "") ||
     raw.workspaceId !== checked.workspaceId || raw.projectId !== checked.projectId || raw.authMode !== checked.expectedAuthMode ||
+    (raw.provider ?? (checked.version === 1 ? "codex" : null)) !== (checked.provider ?? "codex") ||
     typeof raw.model !== "string" || !raw.model.trim() || raw.model.length > 160 ||
     typeof raw.packetCanonical !== "string" || Buffer.byteLength(raw.packetCanonical) > 200_000 ||
     createHash("sha256").update(raw.packetCanonical).digest("hex") !== raw.packetHash ||

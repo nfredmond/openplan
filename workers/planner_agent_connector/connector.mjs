@@ -5,15 +5,15 @@ import { pathToFileURL } from "node:url";
 import { setTimeout as delay } from "node:timers/promises";
 import { checkedConnectorSetup, ConnectorError, readConnectorConfig } from "./connector-client.mjs";
 import { acquireConnectorLock, connectorCycle, privateConnectorDirectory } from "./connector-worker.mjs";
-import { inspectCodexConnection } from "./codex-provider.mjs";
+import { connectorProviderAdapter } from "./native-provider.mjs";
 
-const usage = `OpenPlan project connector (Linux, installed Codex 0.154.0)
-configure --config /private/directory/connection.json --setup /download/connection.json --binary /installed/bin/codex --profile /native/profile
+const usage = `OpenPlan project connector (Linux, Codex 0.154.0 or Claude Code 2.1.263)
+configure --config /private/directory/connection.json --setup /download/connection.json --binary /installed/bin/provider --profile /native/profile
 models --config /private/directory/connection.json
 run --config /private/directory/connection.json [--once]
 
 Download a project connection from Planner Agent first. Native sign-in remains in
-Codex. API keys and browser sessions are not accepted by this connector. The
+the selected native application. API keys and browser sessions are not accepted by this connector. The
 selected native account may have usage limits or API charges; no fallback occurs.
 `;
 
@@ -61,7 +61,7 @@ export async function connectorMain(argv) {
     if (command === "models") {
       const scratchPath = await mkdtemp(join(directory, "models-"));
       try {
-        const account = await inspectCodexConnection({ binaryPath: config.binaryPath, providerHome: config.providerHome, scratchPath, signal, includeModels: true });
+        const account = await connectorProviderAdapter(config.setup).inspect({ binaryPath: config.binaryPath, providerHome: config.providerHome, scratchPath, signal, includeModels: true });
         process.stdout.write(`${JSON.stringify(account, null, 2)}\n`);
       } finally { await rm(scratchPath, { recursive: true, force: true }); }
       return;

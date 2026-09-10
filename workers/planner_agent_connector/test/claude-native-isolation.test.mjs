@@ -6,7 +6,16 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { claudeLaunch, claudeTurnArgs } from "../claude-launch.mjs";
 import { runClaudeCommand, claudeTurnResult, claudeAccountSummary } from "../claude-process.mjs";
-import { inspectClaudeConnection, runClaudeProjectTurn } from "../claude-provider.mjs";
+import { connectorProviderAdapter } from "../native-provider.mjs";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { fileURLToPath } from "node:url";
+
+const connectionId = "11111111-1111-4111-8111-111111111111";
+const setup = { version: 2, provider: "claude", appUrl: "http://127.0.0.1:3219", connectionId,
+  workspaceId: "22222222-2222-4222-8222-222222222222", projectId: "33333333-3333-4333-8333-333333333333",
+  expectedAuthMode: "claude_subscription", token: `op_pc_${connectionId}.${"s".repeat(43)}` };
+const { inspect: inspectClaudeConnection, generate: runClaudeProjectTurn } = connectorProviderAdapter(setup);
 
 const binary = process.env.OPENPLAN_CLAUDE_NATIVE_BINARY;
 
@@ -22,6 +31,12 @@ test("installed Claude refuses host tools and inherited context", { skip: !binar
     accessToken: "SYNTHETIC_NATIVE_OAUTH_CANARY", refreshToken: "SYNTHETIC_REFRESH_CANARY", expiresAt: Date.now() + 86_400_000,
     scopes: ["user:inference", "user:profile"], subscriptionType: "pro", rateLimitTier: "default_claude_pro",
   } }), { mode: 0o600 });
+  const configPath = join(root, "connection.json");
+  await writeFile(configPath, JSON.stringify({ setup, binaryPath: binary, providerHome: profile }), { mode: 0o600 });
+  const cli = fileURLToPath(new URL("../connector.mjs", import.meta.url));
+  const cliStatus = await promisify(execFile)(process.execPath, [cli, "models", "--config", configPath], { timeout: 5000 });
+  assert.deepEqual(JSON.parse(cliStatus.stdout), { status: "connected", authMode: "claude_subscription", planType: "pro", nativeVersion: "2.1.263", models: [], modelsUnavailable: true });
+  assert.ok(!cliStatus.stdout.includes(setup.token));
   const settings = JSON.stringify({ hooks: { SessionStart: [{ hooks: [{ type: "command", command: "printf ran > /work/hook-ran" }] }] } });
   await writeFile(join(profile, "settings.json"), settings);
   const nativeConfig = JSON.stringify({ customInstructions: "PRIVATE_NATIVE_CONFIG_CANARY" });

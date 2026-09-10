@@ -1,0 +1,220 @@
+[
+  {
+    "name": "harmless comment",
+    "exitCode": 0,
+    "outcome": "survived",
+    "failureLines": []
+  },
+  {
+    "name": "relative path accepted",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 refuses relative launch paths before execution (3.389553ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses relative launch paths before execution (3.389553ms)",
+      "  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:",
+      "  +   message: \"ENOENT: no such file or directory, realpath 'claude'\"",
+      "    actual: Error: ENOENT: no such file or directory, realpath 'claude'"
+    ]
+  },
+  {
+    "name": "fixture validation omitted",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 refuses fixture endpoint \"broken\" before filesystem access (7.737673ms)",
+      "\u2716 refuses fixture endpoint \"https://127.0.0.1:1234\" before filesystem access (2.004911ms)",
+      "\u2716 refuses fixture endpoint \"http://localhost:1234\" before filesystem access (0.768921ms)",
+      "\u2716 refuses fixture endpoint \"http://example.com\" before filesystem access (0.649736ms)",
+      "\u2716 refuses fixture endpoint \"http://127.0.0.1/path\" before filesystem access (0.642812ms)",
+      "\u2716 refuses fixture endpoint \"http://u:p@127.0.0.1\" before filesystem access (0.531773ms)",
+      "\u2716 refuses fixture endpoint \"http://127.0.0.1?x=1\" before filesystem access (0.690964ms)",
+      "\u2716 refuses fixture endpoint \"http://127.0.0.1#x\" before filesystem access (0.473273ms)",
+      "\u2716 refuses fixture endpoint \"\" before filesystem access (0.598279ms)",
+      "\u2716 refuses fixture endpoint null before filesystem access (0.656828ms)",
+      "\u2716 refuses fixture endpoint false before filesystem access (0.565125ms)",
+      "\u2716 refuses fixture endpoint 3 before filesystem access (0.524038ms)"
+    ]
+  },
+  {
+    "name": "fixture protocol accepted",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 refuses fixture endpoint \"https://127.0.0.1:1234\" before filesystem access (3.417846ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses fixture endpoint \"https://127.0.0.1:1234\" before filesystem access (3.417846ms)",
+      "  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:",
+      "  +   message: \"ENOENT: no such file or directory, realpath '/missing/claude'\"",
+      "    actual: Error: ENOENT: no such file or directory, realpath '/missing/claude'"
+    ]
+  },
+  {
+    "name": "fixture hostname accepted",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 refuses fixture endpoint \"http://example.com\" before filesystem access (3.702462ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses fixture endpoint \"http://example.com\" before filesystem access (3.702462ms)",
+      "  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:",
+      "  +   message: \"ENOENT: no such file or directory, realpath '/missing/claude'\"",
+      "    actual: Error: ENOENT: no such file or directory, realpath '/missing/claude'"
+    ]
+  },
+  {
+    "name": "fixture path accepted",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 refuses fixture endpoint \"http://127.0.0.1/path\" before filesystem access (3.309361ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses fixture endpoint \"http://127.0.0.1/path\" before filesystem access (3.309361ms)",
+      "  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:",
+      "  +   message: \"ENOENT: no such file or directory, realpath '/missing/claude'\"",
+      "    actual: Error: ENOENT: no such file or directory, realpath '/missing/claude'"
+    ]
+  },
+  {
+    "name": "fixture credentials accepted",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 refuses fixture endpoint \"http://u:p@127.0.0.1\" before filesystem access (3.523496ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses fixture endpoint \"http://u:p@127.0.0.1\" before filesystem access (3.523496ms)",
+      "  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:",
+      "  +   message: \"ENOENT: no such file or directory, realpath '/missing/claude'\"",
+      "    actual: Error: ENOENT: no such file or directory, realpath '/missing/claude'"
+    ]
+  },
+  {
+    "name": "fixture query accepted",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 refuses fixture endpoint \"http://127.0.0.1?x=1\" before filesystem access (3.476477ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses fixture endpoint \"http://127.0.0.1?x=1\" before filesystem access (3.476477ms)",
+      "  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:",
+      "  +   message: \"ENOENT: no such file or directory, realpath '/missing/claude'\"",
+      "    actual: Error: ENOENT: no such file or directory, realpath '/missing/claude'"
+    ]
+  },
+  {
+    "name": "fixture fragment accepted",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 refuses fixture endpoint \"http://127.0.0.1#x\" before filesystem access (3.665823ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses fixture endpoint \"http://127.0.0.1#x\" before filesystem access (3.665823ms)",
+      "  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:",
+      "  +   message: \"ENOENT: no such file or directory, realpath '/missing/claude'\"",
+      "    actual: Error: ENOENT: no such file or directory, realpath '/missing/claude'"
+    ]
+  },
+  {
+    "name": "version guard removed",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 refuses an unsupported native version (11.828779ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses an unsupported native version (11.828779ms)",
+      "  AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "name": "scratch root guard removed",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 refuses unsafe directory layout: scratch root (9.460452ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unsafe directory layout: scratch root (9.460452ms)",
+      "  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:",
+      "  +   message: \"EROFS: read-only file system, mkdir '/profile-masks'\"",
+      "    actual: Error: EROFS: read-only file system, mkdir '/profile-masks'"
+    ]
+  },
+  {
+    "name": "overlap guard removed",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 refuses unsafe directory layout: same (9.67131ms)",
+      "\u2716 refuses unsafe directory layout: scratch within profile (3.964507ms)",
+      "\u2716 refuses unsafe directory layout: profile within scratch (3.234941ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses unsafe directory layout: same (9.67131ms)",
+      "  AssertionError [ERR_ASSERTION]: Missing expected rejection.",
+      "\u2716 refuses unsafe directory layout: scratch within profile (3.964507ms)",
+      "  AssertionError [ERR_ASSERTION]: Missing expected rejection.",
+      "\u2716 refuses unsafe directory layout: profile within scratch (3.234941ms)",
+      "  AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "name": "credentials guard removed",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 refuses public credential file (9.101665ms)",
+      "\u2716 refuses symlink credential file (3.721348ms)",
+      "\u2716 refuses directory credential file (3.257113ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses public credential file (9.101665ms)",
+      "  AssertionError [ERR_ASSERTION]: Missing expected rejection.",
+      "\u2716 refuses symlink credential file (3.721348ms)",
+      "  AssertionError [ERR_ASSERTION]: Missing expected rejection.",
+      "\u2716 refuses directory credential file (3.257113ms)",
+      "  AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "name": "profile size guard removed",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 refuses an unbounded inherited profile (134.223541ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses an unbounded inherited profile (134.223541ms)",
+      "  AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "name": "unsupported profile entry accepted",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 refuses profile symlinks instead of following them (9.605736ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses profile symlinks instead of following them (9.605736ms)",
+      "  AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "name": "json masks corrupted",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 launch preserves private credentials and masks inherited profile files with valid JSON (10.095479ms)",
+      "\u2716 failing tests:",
+      "\u2716 launch preserves private credentials and masks inherited profile files with valid JSON (10.095479ms)",
+      "  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "name": "fast mode enabled",
+    "exitCode": 1,
+    "outcome": "failed",
+    "failureLines": [
+      "\u2716 launch preserves private credentials and masks inherited profile files with valid JSON (10.046338ms)",
+      "\u2716 failing tests:",
+      "\u2716 launch preserves private credentials and masks inherited profile files with valid JSON (10.046338ms)",
+      "  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  }
+]
