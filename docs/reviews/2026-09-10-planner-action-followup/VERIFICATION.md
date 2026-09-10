@@ -58,3 +58,7 @@ RTP-cycle and report APIs in the explicitly retained disposable target
 `openplan-restore-target-3390964` (API 22301), in a new workspace and account.
 They do not alter the original OWP fixture. No AI provider is used for the
 deterministic report generation/context recovery journey.
+
+Release preparation initially missed the JSON capability-registry version while
+updating the three Markdown authorities. The direction check caught the mismatch;
+only the current-release marker was corrected, without re-dating reviews.
