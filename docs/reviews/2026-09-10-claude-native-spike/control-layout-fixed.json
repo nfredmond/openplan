@@ -1,0 +1,88 @@
+{
+  "fixed": true,
+  "console": [],
+  "build": {
+    "commit": "2d43ab89995f",
+    "version": "0.52.1"
+  },
+  "layout": {
+    "fits": true,
+    "button": {
+      "left": 43,
+      "right": 348,
+      "width": 305,
+      "height": 102
+    },
+    "container": {
+      "left": 43,
+      "right": 348
+    },
+    "span": {
+      "left": 43,
+      "right": 348
+    }
+  },
+  "normalContrast": {
+    "ratio": 16.275922755447212,
+    "foreground": [
+      241,
+      245,
+      249,
+      255
+    ],
+    "background": [
+      15,
+      23,
+      43,
+      255
+    ]
+  },
+  "hoverContrast": {
+    "ratio": 14.615794797908471,
+    "foreground": [
+      255,
+      255,
+      255,
+      255
+    ],
+    "background": [
+      29,
+      41,
+      61,
+      255
+    ]
+  },
+  "brokenLayout": {
+    "fits": false,
+    "button": {
+      "left": 43,
+      "right": 1150.859375,
+      "width": 1107.859375,
+      "height": 40
+    },
+    "container": {
+      "left": 43,
+      "right": 348
+    },
+    "span": {
+      "left": 43,
+      "right": 348
+    }
+  },
+  "brokenContrast": {
+    "ratio": 1.4237185439140705,
+    "foreground": [
+      167,
+      223,
+      187,
+      255
+    ],
+    "background": [
+      239,
+      251,
+      247,
+      255
+    ]
+  },
+  "revoked": true
+}

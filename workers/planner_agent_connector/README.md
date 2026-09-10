@@ -3,8 +3,9 @@
 The native transport, scoped connection routes, saved requests, outbound connector
 and project controls are implemented. Desktop and 390px browser journeys exercise
 actual native answers and a scripted direct API transport on the same narrow task.
-That is the published v0.52 evidence. The Claude extension below is an unreleased
-development candidate until its browser and release checks are recorded. Broader
+That is the v0.52 evidence. The v0.53 Claude extension below has desktop and 390px
+transport journeys using the installed CLI with synthetic OAuth and local scripted
+responses. Live Claude quality and account allowance remain unmeasured. Broader
 A0a/A1 work remains open.
 
 The initial native transport uses installed standalone Codex **0.154.0** on Linux,
@@ -98,7 +99,7 @@ live Anthropic quality or general agent assignments.
 
 ## Claude Code extension
 
-The candidate also supports installed Claude Code **2.1.263** on Linux through
+The connector also supports installed Claude Code **2.1.263** on Linux through
 version 2 connection files. Choose Installed Claude Code in the project task
 panel, create a connection and download its file. Use the same configure command,
 with the Claude binary and native profile instead:
@@ -139,4 +140,4 @@ This fixture runs the installed CLI with synthetic OAuth and local scripted
 Messages responses. It proves native refusals, bounded structured output, dispatch,
 account-status inspection and interruption behavior. It does not establish live
 Claude model availability, output quality, account allowance or extra-usage
-settings. See [the Claude checkpoint](../../docs/reviews/2026-09-10-claude-native-spike/CHECKPOINT.md).
+settings. See [Claude verification](../../docs/reviews/2026-09-10-claude-native-spike/VERIFICATION.md).

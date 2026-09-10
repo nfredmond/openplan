@@ -1,0 +1,99 @@
+{
+  "sourceCommit": "2d43ab89995fea373d91da6789736c16f5e34f5f",
+  "transport": "Installed Claude Code 2.1.263, synthetic OAuth, local scripted Messages responses; no live Claude generation",
+  "journeys": [
+    {
+      "width": 1440,
+      "build": {
+        "commit": "2d43ab89995f",
+        "version": "0.52.1"
+      },
+      "navigation": "Sign-in, Dashboard, Projects, project Planner Agent; keyboard activation",
+      "connectionFileDownloadedAndConfigured": true,
+      "requestRetryIdentical": true,
+      "answerSha256": "5b5956880be460e57676ffbd24abc1f14bbafeb9244fc606c63a615acf56c318",
+      "identicalDeliveryRetry": true,
+      "reloadUnchanged": true,
+      "draftApproved": true,
+      "cancelState": "cancelled",
+      "revokeDeliveryStatus": 403,
+      "originalCodexUnchanged": true,
+      "console": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        }
+      ],
+      "retention": {
+        "build": {
+          "commit": "2d43ab89995f",
+          "version": "0.52.1"
+        },
+        "originalNativeUnchanged": true,
+        "deletionRequests": 0,
+        "console": [
+          "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+        ]
+      }
+    },
+    {
+      "width": 390,
+      "build": {
+        "commit": "2d43ab89995f",
+        "version": "0.52.1"
+      },
+      "navigation": "Sign-in, Dashboard, Projects, project Planner Agent; keyboard activation",
+      "connectionFileDownloadedAndConfigured": true,
+      "requestRetryIdentical": true,
+      "answerSha256": "1ef893425f799e549661a4f370bd58d66542424e475c69289c9930aa81ce42ab",
+      "identicalDeliveryRetry": true,
+      "reloadUnchanged": true,
+      "draftApproved": true,
+      "cancelState": "cancelled",
+      "revokeDeliveryStatus": 403,
+      "originalCodexUnchanged": true,
+      "console": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        }
+      ],
+      "retention": {
+        "build": {
+          "commit": "2d43ab89995f",
+          "version": "0.52.1"
+        },
+        "originalNativeUnchanged": true,
+        "deletionRequests": 0,
+        "console": [
+          "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+        ]
+      }
+    }
+  ],
+  "cleanup": [
+    {
+      "width": 1440,
+      "revoked": [],
+      "console": [],
+      "build": {
+        "commit": "2d43ab89995f",
+        "version": "0.52.1"
+      },
+      "remainingActive": 0
+    },
+    {
+      "width": 390,
+      "revoked": [
+        "7140b263-bd70-45ab-b6ae-390227e39a6b",
+        "fcabe8f6-35c3-40ac-9200-34977992bf19"
+      ],
+      "console": [],
+      "build": {
+        "commit": "2d43ab89995f",
+        "version": "0.52.1"
+      },
+      "remainingActive": 0
+    }
+  ]
+}

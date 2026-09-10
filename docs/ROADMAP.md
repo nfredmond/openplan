@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: e6d25edd
-current_release: v0.52.1
+current_release: v0.53.0
 review_by: 2026-10-05
 paths:
 - AGENTS.md
@@ -610,6 +610,8 @@ Stage the outcome as follows:
 - **Risks/questions/cost:** CLI and protocol churn, local support burden, subscription limits, data-sharing policies and session storage. T3's trusted-computer/code-editor permissions cannot define OpenPlan case access. Personal connections do not automatically run public moderation or unattended agency jobs. No required paid connector/cloud sandbox; users bring optional provider accounts. Engineering owns the adapter and security architecture.
 
 The [v0.52.0 scoped project-task increment](reviews/2026-09-10-planner-agent-provider-connection/VERIFICATION.md) adds revocable personal Codex connections, a selected Anthropic API path, frozen answers/draft submittals and recovery inside the existing project Planner Agent. Actual native ChatGPT-account journeys and scripted API transport journeys cover desktop and 390px; live Anthropic service acceptance remains unmeasured. The first adapter supports only standalone Codex 0.154.0 on Linux. This is partial A0a/A1a progress; broader grounded context/tools, API/provider breadth and external MCP remain open.
+
+The [v0.53.0 Claude increment](reviews/2026-09-10-claude-native-spike/VERIFICATION.md) extends this same task to installed Claude Code 2.1.263 on Linux, preserving exact provider/account binding, private history and interrupted delivery. Desktop and 390px acceptance uses the actual CLI with synthetic OAuth and scripted local responses. Live Claude quality, availability and account allowance remain unmeasured. OpenCode, extensible API endpoints, broader grounded tasks and durable assignments remain open; A0 and A1 stay partial.
 
 A0a proves one direct API choice and one local CLI backend on the same existing planning task. A0b completes Codex, Claude Code and OpenCode support, extensible API endpoints, recovery and provider switching. Both belong early; the full requested backend scope is not reduced to the first adapter. Other AI surfaces adopt the shared provider abstraction deliberately after their separate workload/privacy tests.
 

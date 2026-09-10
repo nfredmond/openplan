@@ -20,6 +20,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+No changes yet.
+
+## 0.53.0 — 2026-09-10
+
 The existing project task now offers installed Claude Code 2.1.263 on Linux in
 addition to Codex and the direct Anthropic API. New connection files bind their
 provider and native account mode explicitly; existing Codex files remain readable.
@@ -36,8 +40,10 @@ original connection RPC remain valid. No native binary or paid service is instal
 Claude transport checks use the installed CLI with synthetic OAuth and a local
 scripted response server. They do not establish live model quality, availability
 or account allowance. Subscription limits apply, and OpenPlan cannot inspect paid
-extra-usage settings. Full browser/release verification is in progress; see the
-[Claude checkpoint](docs/reviews/2026-09-10-claude-native-spike/CHECKPOINT.md).
+extra-usage settings. Desktop and 390px journeys cover connection downloads, exact retries, saved
+answers, approved drafts, cancellation, revocation and private-history retention.
+See [verification](docs/reviews/2026-09-10-claude-native-spike/VERIFICATION.md);
+final commit CI and publication are recorded separately.
 Additional providers, broader grounded tasks and MCP remain roadmap work.
 
 ## 0.52.1 — 2026-09-10

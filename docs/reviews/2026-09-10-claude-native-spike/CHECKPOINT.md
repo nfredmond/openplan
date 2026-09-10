@@ -1,4 +1,9 @@
-# Claude Code native adapter, integration in progress
+Current status: implementation and identified desktop/390px acceptance are complete.
+The v0.53.0 release candidate awaits final main CI and populated upgrade checks.
+See [current verification](VERIFICATION.md). Earlier pending statements below are
+checkpoint history and retain the actual failures and corrections.
+
+# Claude Code native adapter, integration history
 
 v0.52.0 is published at 914a9d966bbf1ea344b4d9ccd0762dbfa184aeea.
 v0.52.1 dependency maintenance is published at 5d7ccdb067bb4db639132889f8efd5db160dfc6b.
