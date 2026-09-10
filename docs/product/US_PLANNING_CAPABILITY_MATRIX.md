@@ -3,7 +3,7 @@
 <!-- openplan-planning-capability-matrix
 review_date: 2026-09-06
 review_by: 2026-10-05
-current_release: v0.49.2
+current_release: v0.49.3
 capabilities:
 - long-range-transportation-and-regional-planning
 - land-use-comprehensive-and-community-planning

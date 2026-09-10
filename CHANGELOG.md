@@ -22,6 +22,18 @@ stable enough to promise smooth upgrades indefinitely.
 
 No changes yet.
 
+## 0.49.3 — 2026-09-10
+
+Development candidate. [Verification](docs/reviews/2026-09-10-write-outcome-truth/VERIFICATION.md)
+tracks outstanding checks. No new database migration.
+
+- Stop claiming creation when measure, RTP or VMT-determination inserts return
+  no confirmed result. Ask users to check saved state before retrying.
+- Distinguish explicit zero-row database responses from ambiguous or multiple-row
+  singular-response errors, preserving established update/delete refusals.
+- Require a matching `next dev` launch process before accepting an unstamped
+  local listener as live source during browser verification.
+
 ## 0.49.2 — 2026-09-10
 
 Development release. [Verification](docs/reviews/2026-09-10-assistant-audit-outcomes/VERIFICATION.md)
