@@ -49,12 +49,14 @@ beforeEach(() => {
   turnQuery = query(turn()); connectionQuery = query([{ id: token.connectionId }]);
   mocks.userFrom.mockImplementation(table => table === "workspace_members" ? memberQuery : table === "projects" ? projectQuery : table === "assistant_provider_connections" ? connectionQuery : query([turn()]));
   mocks.serviceFrom.mockImplementation(() => turnQuery);
+  let cancelled = false;
   mocks.rpc.mockImplementation(async (name, args) => {
     if (name === "claim_assistant_provider_turn") return { data: { status: "connected", turn: turn() }, error: null };
     if (name === "create_assistant_provider_connection") return { data: { id: args.p_id }, error: null };
     if (name === "create_assistant_provider_turn") return { data: { created: true, turn: turn({ state: "queued", attempt_id: null }) }, error: null };
     if (name === "finish_assistant_provider_turn") return { data: turn({ state: args.p_failure_code ? "failed" : "succeeded", result: args.p_result, provider_receipt: args.p_provider_receipt, failure_code: args.p_failure_code, finished_at: "2026-09-10T01:01:00Z" }), error: null };
-    if (name === "read_assistant_provider_turn_for_user") return { data: turn(), error: null };
+    if (name === "cancel_assistant_provider_turn") { cancelled = true; return { data: null, error: null }; }
+    if (name === "read_assistant_provider_turn_for_user") return { data: turn(cancelled ? { state: "cancelled", finished_at: "2026-09-10T01:01:00Z" } : {}), error: null };
     return { data: { id, state: "running", attemptId: attempt }, error: null };
   });
 });
@@ -79,6 +81,18 @@ describe("personal project connection routes", () => {
     expect(response.status).toBe(200); expect(connectionQuery.select).toHaveBeenCalledWith(PROVIDER_CONNECTION_COLUMNS);
     expect(PROVIDER_CONNECTION_COLUMNS).not.toContain("token_hash");
     expect(connectionQuery.eq).toHaveBeenCalledWith("user_id", owner); expect(connectionQuery.eq).toHaveBeenCalledWith("project_id", project);
+  });
+  it("uses the browser's addressed host when Next supplies an internal localhost URL", async () => {
+    const body = { workspaceId: workspace, projectId: project, label: "Local fixture", authMode: "chatgpt" };
+    const response = await connections.POST(browserRequest("connections", body, "POST", { host: "127.0.0.1:3219", origin: "http://127.0.0.1:3219", "sec-fetch-site": "same-origin" }));
+    expect(response.status).toBe(201); expect((await response.json()).setup.appUrl).toBe("http://127.0.0.1:3219");
+    expect((await connections.POST(browserRequest("connections", body, "POST", { host: "127.0.0.1:3219", origin }))).status).toBe(403);
+  });
+  it("supports the proxy's HTTPS scheme without trusting a different forwarded host", async () => {
+    const body = { workspaceId: workspace, projectId: project, label: "Local fixture", authMode: "chatgpt" };
+    const response = await connections.POST(browserRequest("connections", body, "POST", { host: "planning.example", origin: "https://planning.example", "x-forwarded-proto": "https" }));
+    expect(response.status).toBe(201); expect((await response.json()).setup.appUrl).toBe("https://planning.example");
+    expect((await connections.POST(browserRequest("connections", body, "POST", { host: "planning.example", origin: "https://other.example", "x-forwarded-proto": "https", "x-forwarded-host": "other.example" }))).status).toBe(403);
   });
   it.each(["https://evil.example", "null", ""])("denies a foreign or missing mutation origin %s before issuing tokens", async value => {
     const response = await connections.POST(browserRequest("connections", { workspaceId: workspace, projectId: project, label: "Device", authMode: "chatgpt" }, "POST", { origin: value }));
@@ -199,8 +213,14 @@ describe("saved browser provider requests", () => {
     expect(mocks.rpc).toHaveBeenCalledWith("read_assistant_provider_turn_for_user", { p_turn_id: id, p_user_id: owner });
   });
   it("cancels only as the current user and refuses body-selected identities", async () => {
-    expect((await turns.DELETE(browserRequest("turns", { turnId: id }, "DELETE"))).status).toBe(200);
+    const response = await turns.DELETE(browserRequest("turns", { turnId: id }, "DELETE"));
+    expect(response.status).toBe(200); expect(await response.json()).toEqual({ cancelled: true, state: "cancelled", turnId: id });
     expect(mocks.rpc).toHaveBeenCalledWith("cancel_assistant_provider_turn", { p_turn_id: id, p_user_id: owner });
     expect((await turns.DELETE(browserRequest("turns", { turnId: id, userId: project }, "DELETE"))).status).toBe(400);
+  });
+  it("preserves an already completed request rather than reporting a cancellation", async () => {
+    mocks.rpc.mockImplementation(async name => name === "read_assistant_provider_turn_for_user" ? { data: turn({ state: "succeeded", result: parseProviderProjectAnswer(packet(), answer()) }), error: null } : { data: null, error: null });
+    const response = await turns.DELETE(browserRequest("turns", { turnId: id }, "DELETE"));
+    expect(response.status).toBe(200); expect(await response.json()).toEqual({ cancelled: false, state: "succeeded", turnId: id });
   });
 });

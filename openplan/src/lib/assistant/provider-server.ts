@@ -23,8 +23,19 @@ export function providerError(error: unknown) {
   // Database/provider messages may include packet text or credentials.
   return providerJson({ error: "provider_request_unavailable" }, 503);
 }
+// Next can construct handler URLs with its internal localhost hostname. Host is
+// the browser's addressed authority; forwarded-host is deliberately not used.
+export function providerBrowserOrigin(request: Request): string {
+  const internal = new URL(request.url);
+  const host = request.headers.get("host") ?? internal.host;
+  const scheme = request.headers.get("x-forwarded-proto") ?? internal.protocol.slice(0, -1);
+  if (!host || /[\s/@?#,\\]/.test(host) || !["http", "https"].includes(scheme)) throw new ProviderRequestError("provider_origin_denied", 403);
+  let addressed: URL;
+  try { addressed = new URL(`${scheme}://${host}`); } catch { throw new ProviderRequestError("provider_origin_denied", 403); }
+  return addressed.origin;
+}
 export function requireProviderBrowserOrigin(request: Request) {
-  if (request.headers.get("origin") !== new URL(request.url).origin || request.headers.get("sec-fetch-site") === "cross-site") {
+  if (request.headers.get("origin") !== providerBrowserOrigin(request) || request.headers.get("sec-fetch-site") === "cross-site") {
     throw new ProviderRequestError("provider_origin_denied", 403);
   }
 }

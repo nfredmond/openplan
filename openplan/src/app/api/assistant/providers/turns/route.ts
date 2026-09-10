@@ -72,9 +72,14 @@ export async function DELETE(request: NextRequest) {
     requireProviderBrowserOrigin(request);
     const body = await providerBody(request, cancelSchema);
     const { userId } = await providerUser();
-    const { error } = await createServiceRoleClient().rpc("cancel_assistant_provider_turn", { p_turn_id: body.turnId, p_user_id: userId });
+    const service = createServiceRoleClient();
+    const { error } = await service.rpc("cancel_assistant_provider_turn", { p_turn_id: body.turnId, p_user_id: userId });
     providerRpcError(error);
-    audit.info("request_cancelled", { turnId: body.turnId });
-    return providerJson({ cancelled: true });
+    const read = await service.rpc("read_assistant_provider_turn_for_user", { p_turn_id: body.turnId, p_user_id: userId });
+    providerRpcError(read.error);
+    const saved = checkedProviderTurn(read.data).turn;
+    if (saved.id !== body.turnId || ["queued", "running"].includes(saved.state)) throw new ProviderRequestError("provider_cancellation_unconfirmed", 409);
+    audit.info("cancellation_checked", { turnId: saved.id, state: saved.state });
+    return providerJson({ cancelled: saved.state === "cancelled", state: saved.state, turnId: saved.id });
   } catch (error) { const response = providerError(error); audit.warn("request_refused", { status: response.status }); return response; }
 }

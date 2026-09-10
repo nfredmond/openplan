@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { z } from "zod";
 import { createServiceRoleClient } from "@/lib/supabase/server";
-import { loadProviderProjectPacket, newProviderConnectionToken, PROVIDER_CONNECTION_COLUMNS, providerBody, providerError, providerJson, providerRpcError, providerScopeSchema, providerUser, requireProviderBrowserOrigin } from "@/lib/assistant/provider-server";
+import { loadProviderProjectPacket, newProviderConnectionToken, PROVIDER_CONNECTION_COLUMNS, providerBody, providerBrowserOrigin, providerError, providerJson, providerRpcError, providerScopeSchema, providerUser, requireProviderBrowserOrigin } from "@/lib/assistant/provider-server";
 
 const createSchema = providerScopeSchema.extend({ label: z.string().trim().min(1).max(120), authMode: z.enum(["chatgpt", "apiKey"]) }).strict();
 const revokeSchema = z.object({ connectionId: z.string().uuid() }).strict();
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     // The token is shown once. Losing this response requires revoking that
     // connection and issuing another; the server cannot recover its plaintext.
     audit.info("connection_issued", { connectionId });
-    return providerJson({ connection: data, setup: { version: 1, appUrl: new URL(request.url).origin,
+    return providerJson({ connection: data, setup: { version: 1, appUrl: providerBrowserOrigin(request),
       connectionId, workspaceId: body.workspaceId, projectId: body.projectId, expectedAuthMode: body.authMode, token } }, 201);
   } catch (error) { const response = providerError(error); audit.warn("request_refused", { status: response.status }); return response; }
 }

@@ -231,3 +231,25 @@ additive provider migration (314 total). No reset or demo database change occurr
 Next: freeze this candidate, identify the served build, exercise desktop and 390px
 navigation, downloads, provider delivery, cancellation, retries and proposal approval;
 then run full QA/shuffle, isolated RLS/concurrency and applicable upgrade checks.
+
+## First browser findings and correction
+
+Identified candidate 2e70bed4c0d7 failed at real connection creation: Chrome sent
+Origin and Host 127.0.0.1:3219 while Next supplied an internal localhost handler
+URL. The old origin check rejected the legitimate same-origin request with 403.
+A controlled alternate-Origin probe reproduced that mismatch; its two synthetic
+connections were revoked. No provider generation occurred. The corrected check
+uses the addressed Host and scheme, ignores forwarded-host, and still refuses
+cross-site requests. The setup download now uses that same addressed origin.
+
+Cancellation remains available while the original save response is outstanding.
+Its response reads the retained terminal state so an already completed request is
+not falsely called cancelled. A confirmed terminal result aborts only the matching
+held browser request and does not offer an unnecessary resend. Two DOM cases hold
+the original response and check both cancelled and already-succeeded outcomes.
+
+The 37 route and 18 panel tests pass. Harmless comments survive; reverting origin
+handling, trusting a forged forwarded host, falsely reporting cancellation, or
+disabling cancellation each fails the intended assertion. Mutation sources were
+restored. Scoped lint and TypeScript pass. These checks do not establish rendered
+browser usability; the rebuilt candidate still requires desktop and 390px journeys.

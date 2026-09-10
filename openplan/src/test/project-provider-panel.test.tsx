@@ -14,7 +14,7 @@ let writeHandler: (url: string, body: Record<string, unknown>, method: string) =
 beforeEach(() => {
   vi.clearAllMocks(); vi.stubGlobal("fetch", fetchMock); connectionRows = [connection]; turnRows = []; writes = [];
   writeHandler = async (_url, body, method) => {
-    if (method === "DELETE") return response({ cancelled: true });
+    if (method === "DELETE") return response({ cancelled: true, state: "cancelled", turnId: body.turnId });
     const turn = { ...savedTurn(), request_id: body.requestId, question: body.question, provider: body.provider, model_id: body.model, auth_mode: body.authMode, state: "queued", result: null };
     turnRows = [turn]; return response({ created: true, turn }, 201);
   };
@@ -120,6 +120,36 @@ describe("project provider controls", () => {
     turnRows = [{ ...savedTurn(), state: "running", result: null }]; await openPanel();
     fireEvent.click(await screen.findByRole("button", { name: "Cancel request" }));
     await waitFor(() => expect(writes).toEqual([{ url: "/api/assistant/providers/turns", body: { turnId } }]));
+  });
+  it.each(["cancelled", "succeeded"])("can cancel while the original response is held and reports the actual %s state", async finalState => {
+    const originalFetch = fetchMock.getMockImplementation()!;
+    let release: (() => void) | undefined;
+    fetchMock.mockImplementation((url: string, init?: RequestInit) => {
+      if (init?.method === "POST") {
+        const body = JSON.parse(String(init.body)); writes.push({ url, body });
+        turnRows = [{ ...savedTurn(), request_id: body.requestId, state: "running", result: null }];
+        return new Promise<Response>((resolve, reject) => {
+          const timer = setTimeout(() => reject(new Error("Cancellation did not end the held response")), 8000);
+          release = () => { clearTimeout(timer); resolve(response({ turn: turnRows[0] })); };
+          init.signal?.addEventListener("abort", () => { clearTimeout(timer); reject(new DOMException("Aborted", "AbortError")); }, { once: true });
+        });
+      }
+      if (init?.method === "DELETE") {
+        writes.push({ url, body: JSON.parse(String(init.body)) });
+        turnRows = [{ ...savedTurn(), request_id: writes[0].body.requestId, state: finalState, result: finalState === "succeeded" ? savedTurn().result : null }];
+        return Promise.resolve(response({ cancelled: finalState === "cancelled", state: finalState, turnId }));
+      }
+      return originalFetch(url, init);
+    });
+    try {
+      await openPanel(); await fillNative(); fireEvent.click(screen.getByRole("button", { name: "Send project request" }));
+      const cancel = await screen.findByRole("button", { name: "Cancel request" }, { timeout: 5000 });
+      expect(cancel).toBeEnabled(); fireEvent.click(cancel);
+      await screen.findByText(finalState === "cancelled" ? "Request cancelled. No automatic retry will start." : "The request had already finished. Its saved result was kept.");
+      expect(writes).toHaveLength(2); expect(screen.queryByRole("button", { name: "Retry same request" })).not.toBeInTheDocument();
+      expect(screen.getByLabelText("Project question")).toHaveValue("");
+      if (finalState === "succeeded") await screen.findByText("The cost is not supplied.");
+    } finally { release?.(); }
   });
   it("issues a project connection but refuses a setup file for another app or project", async () => {
     writeHandler = async () => response({ connection: { id: connectionId }, setup: { version: 1, appUrl: window.location.origin, workspaceId, projectId: connectionId,

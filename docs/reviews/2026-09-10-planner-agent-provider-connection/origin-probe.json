@@ -1,0 +1,14 @@
+{
+  "clientPageOrigin": "http://127.0.0.1:3219",
+  "requestMeta": {
+    "url": "http://127.0.0.1:3219/api/assistant/providers/connections",
+    "origin": "http://127.0.0.1:3219",
+    "host": "127.0.0.1:3219",
+    "fetchSite": "same-origin"
+  },
+  "status": 403,
+  "error": "provider_origin_denied",
+  "alternateOriginStatus": 201,
+  "alternateSetupOrigin": "http://localhost:3219",
+  "cleanup": 200
+}

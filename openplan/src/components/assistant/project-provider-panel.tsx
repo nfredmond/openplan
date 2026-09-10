@@ -35,6 +35,8 @@ function readableError(code: unknown): string {
     case "provider_access_denied": case "provider_token_required": return "This connection or project is no longer accessible. Check the project and connection.";
     case "provider_rate_limited": return "The workspace AI request limit was reached. Wait before sending a new request.";
     case "provider_retry_conflict": return "The saved request or result differs from this retry. Check the retained request before making a new one.";
+    case "cancelled_by_user": return "The request was cancelled. No automatic retry will start.";
+    case "connection_revoked": return "The project connection was revoked. No automatic retry will start.";
     case "native_connector_interrupted": case "provider_interrupted": case "provider_attempt_expired": case "native_attempt_expired": return "The attempt was interrupted. It will not restart automatically.";
     default: return "The request could not be confirmed. Check saved requests before retrying; no different provider was selected.";
   }
@@ -66,12 +68,16 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
   const [turns, setTurns] = useState<Turn[]>([]);
   const [pending, setPending] = useState<RequestBody | null>(null);
   const [saving, setSaving] = useState(false);
+  const [cancelling, setCancelling] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const readVersion = useRef(0);
   const invalidateReads = useCallback(() => { readVersion.current++; }, []);
   const mounted = useRef(true);
-  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  const activeRequest = useRef<{ requestId: string; controller: AbortController } | null>(null);
+  const settledRequests = useRef(new Map<string, string>());
+  const stopClientRequest = useCallback(() => activeRequest.current?.controller.abort(), []);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; stopClientRequest(); }; }, [stopClientRequest]);
   const query = `workspaceId=${workspaceId}&projectId=${projectId}`;
 
   const refresh = useCallback(async () => {
@@ -125,19 +131,42 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
   }
   async function send(body: RequestBody) {
     setPending(body); setSaving(true); setError(null); setNotice(null);
+    const controller = new AbortController(); activeRequest.current = { requestId: body.requestId, controller };
     let confirmed = false;
     try {
-      const data = z.object({ turn: turnSchema }).parse(await requestJson("/api/assistant/providers/turns", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }));
+      const data = z.object({ turn: turnSchema }).parse(await requestJson("/api/assistant/providers/turns", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal: controller.signal }));
       if (!mounted.current) return;
       if (data.turn.request_id !== body.requestId || data.turn.project_id !== projectId || data.turn.workspace_id !== workspaceId ||
         data.turn.provider !== body.provider || data.turn.model_id !== body.model || data.turn.auth_mode !== body.authMode || data.turn.question !== body.question) throw new Error("The returned request did not match this project.");
-      confirmed = true; setPending(null); setQuestion(""); setNotice("Request saved. Its original packet and result remain available after reloading."); await refresh();
-    } catch (failure) { setError(confirmed ? "The request was saved, but its history could not be refreshed. Reopen this panel to read the retained result; do not send it again." : failure instanceof Error ? failure.message : "The request could not be confirmed."); }
-    finally { setSaving(false); }
+      confirmed = true; setPending(current => current?.requestId === body.requestId ? null : current); setQuestion(""); setNotice("Request saved. Its original packet and result remain available after reloading."); await refresh();
+    } catch (failure) {
+      if (!mounted.current) return;
+      const settled = settledRequests.current.get(body.requestId);
+      if (settled) {
+        setPending(current => current?.requestId === body.requestId ? null : current); setError(null);
+        setNotice(settled === "cancelled" ? "Request cancelled. No automatic retry will start." : "The request had already finished. Its saved result was kept.");
+      } else setError(confirmed ? "The request was saved, but its history could not be refreshed. Reopen this panel to read the retained result; do not send it again." : failure instanceof Error ? failure.message : "The request could not be confirmed.");
+    } finally { if (activeRequest.current?.requestId === body.requestId) { activeRequest.current = null; setSaving(false); } }
+  }
+  async function cancelTurn(turn: Turn) {
+    setCancelling(turn.id); setError(null);
+    let confirmed = false;
+    try {
+      const result = z.object({ cancelled: z.boolean(), state: z.enum(["cancelled", "succeeded", "failed", "interrupted"]), turnId: z.literal(turn.id) }).parse(await requestJson("/api/assistant/providers/turns", {
+        method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify({ turnId: turn.id }),
+      }));
+      if (result.cancelled !== (result.state === "cancelled")) throw new Error("Cancellation could not be confirmed.");
+      confirmed = true; settledRequests.current.set(turn.request_id, result.state);
+      if (activeRequest.current?.requestId === turn.request_id) { activeRequest.current.controller.abort(); setQuestion(""); }
+      setPending(current => current?.requestId === turn.request_id ? null : current);
+      setNotice(result.cancelled ? "Request cancelled. No automatic retry will start." : "The request had already finished. Its saved result was kept.");
+      await refresh();
+    } catch (failure) { setError(confirmed ? "The final request state was confirmed, but its history could not be refreshed. Reopen this panel to read it." : failure instanceof Error ? failure.message : "Cancellation could not be confirmed."); }
+    finally { setCancelling(null); }
   }
   const active = connections.filter(connection => !connection.revoked_at && Date.parse(connection.expires_at) > Date.now());
   const selected = active.find(connection => connection.id === connectionId);
-  const canSend = !busy && !saving && !pending && question.trim().length > 0 && model.trim().length > 0 &&
+  const canSend = !busy && !saving && !cancelling && !pending && question.trim().length > 0 && model.trim().length > 0 &&
     (provider === "codex" ? Boolean(selected) && (selected?.expected_auth_mode !== "apiKey" || charges) : charges);
   function sendNew() {
     if (!canSend) return;
@@ -201,7 +230,7 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
           <p className="break-words text-xs">{turn.provider === "codex" ? "Installed Codex" : "Anthropic API"} · {turn.model_id} · {authLabels[turn.auth_mode] ?? turn.auth_mode}</p>
           <p role="status" className="text-xs">Status: {turn.state}</p>
           {turn.failure_code && <p className="text-sm">{readableError(turn.failure_code)}</p>}
-          {["queued", "running"].includes(turn.state) && <Button type="button" variant="outline" size="sm" disabled={saving} onClick={() => void mutate("/api/assistant/providers/turns", { turnId: turn.id })}>Cancel request</Button>}
+          {["queued", "running"].includes(turn.state) && <Button type="button" variant="outline" size="sm" disabled={busy || cancelling === turn.id} onClick={() => void cancelTurn(turn)}>Cancel request</Button>}
           {turn.state === "succeeded" && turn.result && <>
             <p className="whitespace-pre-wrap break-words text-sm">{turn.result.answer}</p>
             <a className="text-xs underline" href={turn.result.citations[0].href}>{turn.result.citations[0].label} · stored project source</a>
