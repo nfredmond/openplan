@@ -100,3 +100,19 @@ A harmless comment survives; removing padding fails the spacing assertion, and
 removing either print-break rule fails its computed-style assertion. These checks
 cannot prove pagination or long-document readability. Actual regenerated PDF page
 inspection remains necessary. Twenty-two existing export/component tests pass.
+
+At eeec5606, both fresh native PDF downloads matched retained Storage and both
+older HTML/PDF versions remained byte-identical after regeneration. All eight pages
+of each new PDF were opened and inspected. Financial headings are separated,
+chapter cards stay intact, and section headings keep following content. The cost
+is eight pages instead of seven, with some whitespace before a kept-together card.
+These are synthetic draft cases, not completed agency plans or prescribed forms.
+Poppler rasterization emitted Type 3 glyph bounding-box warnings; inspected pages
+and text extraction showed no missing text. This is not PDF/A validation.
+
+The first production launch omitted OPENPLAN_COMMIT_SHA. Identity verification
+refused it before browser work. The frozen build was restarted with eeec5606 and
+positively identified. The mobile history screenshot then exposed 411px content
+in a 292px grid, despite reachable download links. Both nested grids now use a
+shrinkable single column below the existing desktop breakpoint. A final measured
+browser pass and targeted restored-auto-grid mutation remain to run.

@@ -394,7 +394,7 @@ export function RtpReportDetail({
   const changedDriftItems = driftItems.filter((item) => item.status !== "unchanged");
 
   return (
-    <section className="module-page">
+    <section className="module-page grid-cols-1">
       <header className="module-header-grid">
         <article className="module-intro-card">
           <div className="module-intro-kicker">
@@ -462,7 +462,7 @@ export function RtpReportDetail({
         </article>
       </header>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]">
+      <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]">
         <div className="space-y-6">
           <ReportDetailControls
             report={{
