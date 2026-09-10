@@ -51,7 +51,8 @@ function buildFundingSnapshot(overrides: Partial<NonNullable<Parameters<typeof R
 }
 
 describe("RtpReportDetail", () => {
-  it("prefers the latest artifact timestamp for packet freshness", () => {
+  it("isolates packet HTML and prefers the latest artifact timestamp for freshness", () => {
+    const html = "<style>.grid { grid-template-columns: repeat(2, 1fr); }</style><p>Synthetic packet preview</p><script>window.packetScriptRan = true</script>";
     render(
       <RtpReportDetail
         report={{
@@ -97,7 +98,7 @@ describe("RtpReportDetail", () => {
           },
         ]}
         comparisonDigest={null}
-        latestHtml={null}
+        latestHtml={html}
         generationContext={{
           generatedAt: "2026-03-28T18:00:00.000Z",
           enabledSectionKeys: ["project_pipeline"],
@@ -153,6 +154,12 @@ describe("RtpReportDetail", () => {
         operationsSummary={{} as WorkspaceOperationsSummary}
       />
     );
+    const frame = screen.getByTitle("Latest report artifact preview");
+    expect(frame).toHaveAttribute("srcdoc", html);
+    expect(frame).toHaveAttribute("sandbox", "allow-same-origin");
+    expect(document.querySelector("style")).toBeNull();
+    expect(screen.queryByText("Synthetic packet preview")).not.toBeInTheDocument();
+
 
     expect(screen.getAllByText("Packet current").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Release review ready").length).toBeGreaterThan(0);

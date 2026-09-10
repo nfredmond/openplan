@@ -33,6 +33,9 @@ tracks the checks required before publishing. No new database migration.
 - Offer a context-only refresh that does not execute the completed action again.
   Unfinished follow-up requests remain explicit; launched background jobs still
   need their own result checks.
+- Keep Planner Agent status/history in the scrollable conversation so recovery
+  and Send remain reachable. Isolate RTP report previews so exported document
+  styles cannot change the surrounding application layout.
 - This repairs browser follow-up handling. It does not establish server-side
   exactly-once execution, durable assignments or complete provider choice.
 

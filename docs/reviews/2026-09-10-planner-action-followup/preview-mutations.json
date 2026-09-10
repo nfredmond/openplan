@@ -1,0 +1,12 @@
+[
+  {
+    "name": "preview-harmless",
+    "exitCode": 0,
+    "expectedFailure": false
+  },
+  {
+    "name": "preview-styles-escape",
+    "exitCode": 1,
+    "expectedFailure": true
+  }
+]

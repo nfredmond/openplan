@@ -85,3 +85,20 @@ status, history and suggested actions, with the composer in the remaining fixed
 row. The title can shrink on a narrow screen. Outdated composer text claiming
 all actions occur on another page was corrected. Focused UI/dispatcher/copy
 checks pass 38 tests after this layout fix; full rerun and browser checks pending.
+
+The first layout screenshots still showed two columns. Initial computed style
+looked correct before preview loading; after the report preview loaded, its
+`.grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }`
+overrode the application. `RtpReportDetail` inserted the entire exported document
+into the host DOM. It now uses the existing `ReportArtifactPreview` scriptless
+iframe, as other report previews already do. This preserves exported bytes and
+existing parent-owned link handling while isolating document styles.
+
+The expanded focused run passes 41 tests across five suites. A harmless comment
+survives; restoring the direct HTML insertion fails the RTP preview test. Browser
+layout checks now require one column, composer below conversation, and a visible
+composer. They also inject/remove the actual exported stylesheet as an adverse
+control. The earlier offscreen-control probe initially survived because it sampled
+a CSS transition before displacement; restoration also animated. The instrument
+now disables transitions for both movements, rather than treating those results
+as an application defect or accepted control evidence.

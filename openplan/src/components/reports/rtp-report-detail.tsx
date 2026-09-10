@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ReportArtifactPreview } from "@/app/(app)/reports/[reportId]/_components/report-artifact-preview";
 import { ArrowRight, BookOpenText, FileOutput, Route as RouteIcon, ScrollText } from "lucide-react";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { ReportDetailControls } from "@/components/reports/report-detail-controls";
@@ -880,7 +881,7 @@ export function RtpReportDetail({
             </div>
             {latestHtml ? (
               <div className="overflow-hidden rounded-[0.5rem] border border-border/70 bg-background">
-                <div className="max-h-[70vh] overflow-auto p-0" dangerouslySetInnerHTML={{ __html: latestHtml }} />
+                <ReportArtifactPreview html={latestHtml} />
               </div>
             ) : (
               <EmptyState title="No generated HTML yet" description="Generate the report to attach an HTML packet preview here." compact />
