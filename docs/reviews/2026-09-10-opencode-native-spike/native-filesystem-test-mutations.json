@@ -1,0 +1,38 @@
+[
+  {
+    "mutation": "harmless-comment",
+    "exitCode": 0,
+    "expectedReason": null,
+    "expectationMet": true
+  },
+  {
+    "mutation": "readonly-credential",
+    "exitCode": 1,
+    "expectedReason": "native credential became writable",
+    "expectationMet": true
+  },
+  {
+    "mutation": "private-runtime",
+    "exitCode": 1,
+    "expectedReason": "private scratch canary became readable",
+    "expectationMet": true
+  },
+  {
+    "mutation": "profile-exposed",
+    "exitCode": 1,
+    "expectedReason": "private profile became readable",
+    "expectationMet": true
+  },
+  {
+    "mutation": "task-context-exposed",
+    "exitCode": 1,
+    "expectedReason": "private task context became readable",
+    "expectationMet": true
+  },
+  {
+    "mutation": "credential-unmounted",
+    "exitCode": 1,
+    "expectedReason": "native credential mount is missing",
+    "expectationMet": true
+  }
+]

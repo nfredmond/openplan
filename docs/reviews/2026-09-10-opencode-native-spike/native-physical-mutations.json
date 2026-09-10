@@ -1,0 +1,46 @@
+{
+  "sourceSha256": "3ecaa792146fac1afed70df881818b861abc34241a0b43fe383869732403f1be",
+  "syntheticOnly": true,
+  "results": [
+    {
+      "mutation": "harmless-comment",
+      "exitCode": 0,
+      "expectationMet": true,
+      "expectedFailure": null,
+      "edits": [
+        [
+          "// Exclusive mkdir",
+          "// Harmless control. Exclusive mkdir"
+        ]
+      ]
+    },
+    {
+      "mutation": "readonly-credential",
+      "exitCode": 1,
+      "expectationMet": true,
+      "expectedFailure": "Missing expected exception",
+      "edits": [
+        [
+          "args.push(\"--ro-bind\", authPath",
+          "args.push(\"--bind\", authPath"
+        ]
+      ]
+    },
+    {
+      "mutation": "private-runtime",
+      "exitCode": 1,
+      "expectationMet": true,
+      "expectedFailure": "Missing expected exception",
+      "edits": [
+        [
+          "\"--bind\", runtime, \"/work\"",
+          "\"--bind\", scratch, \"/work\""
+        ],
+        [
+          "\"--chdir\", \"/work/task\"",
+          "\"--chdir\", \"/work/opencode-runtime/task\""
+        ]
+      ]
+    }
+  ]
+}

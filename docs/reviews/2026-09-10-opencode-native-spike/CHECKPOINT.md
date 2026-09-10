@@ -100,3 +100,27 @@ See [RESUME.md](RESUME.md) for the precise next boundary and local commands. Thi
 checkpoint intentionally stops before account/result/process wrapper and SQL/UI
 integration. Native physical guard mutations are next; generated-option mutations
 and one positive native launch do not independently prove every runtime restriction.
+
+## Physical filesystem verification continued, September 10
+
+The next physical checks are now complete. The production native probe passed
+with a harmless comment change and failed when credentials became writable or
+the whole scratch directory became visible. The scratch mutation also corrected
+its working directory so the failure came from reading the private canary,
+not from failing to start the process. Source was restored after each series.
+
+The committed `opencode-native-filesystem.test.mjs` repeats the physical mount
+checks using the pinned native binary for version inspection and Node inside
+the generated sandbox to attempt reads and writes. It uses generated synthetic
+credentials and makes no model request. One harmless mutation survived. Five
+targeted mutations failed with distinct assertions for writable credentials,
+exposed scratch, exposed profile, inherited task context and missing credentials.
+The restored test passes. The default connector suite passes 151 tests with four
+explicit native opt-in skips, including this new test.
+
+Blind categories remain native account parsing, actual provider account access,
+native model behavior, network egress beyond the relay, and app reachability.
+This physical test does not execute native generation; the separate production
+probe supplies the bounded synthetic native-generation evidence. No OpenCode
+user-facing support or release is claimed. Continue with sanitized account/model
+parsing and the owned server lifecycle in RESUME.md.

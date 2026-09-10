@@ -57,11 +57,14 @@ or explicit backend binding; existing apiKey claim inference currently means Cod
 
 ## Next concrete steps
 
-1. Native physical guard mutations for read-only credentials and private runtime:
-   use the private production-physical probe below, with harmless control and
-   targeted changes. Restore source by editing, never git checkout. Fixtures are
-   synthetic; native launch tests that remove root guards run in an outer read-only
-   bwrap with only /tmp writable. Keep all source edits separate from browser runs.
+1. Native physical guard mutations are complete. The private production probe
+   passed its harmless control and failed both writable-credential and exposed
+   scratch mutations. A committed opt-in filesystem test independently passed
+   its harmless control and failed five targeted mutations. See
+   native-physical-mutations.json and native-filesystem-test-mutations.json.
+   Run it with OPENPLAN_OPENCODE_NATIVE_BINARY pointing to the pinned binary:
+   node --test workers/planner_agent_connector/test/opencode-native-filesystem.test.mjs.
+   It uses only synthetic credentials, no model requests. Continue at step 2.
 2. Implement sanitized native auth/model parsing and bounded owned server lifecycle.
    Let CLI read credentials. Never expose raw GET/provider: it contains keys.
    Bind model selection to actual native models output. Native gpt-6 is absent;
