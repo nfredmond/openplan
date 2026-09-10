@@ -23,18 +23,23 @@ def request(path, body=None):
 
 
 def reconstruct(fixture, old, successor, physical):
+    if not __debug__:
+        raise RuntimeError('Recovery verification requires assertions enabled')
     expected = fixture['expected']
     assert fixture['synthetic'] is True
     records = old['records']
     original = next(row for row in records if row['id'] == fixture['originalApproval'])
     current = next(row for row in records if row['id'] == fixture['correctedApproval'])
-    assert original['state'] == current['state'] == 'approved'
+    assert original['state'] == current['state'] == 'approved', 'Approval state changed'
+    for approval in (original, current):
+        assert approval['actor_id'] == fixture['owner'] and approval['content']['note'], 'Approval actor or evidence lost'
+        assert approval['content']['source']['report']['snapshot']['baseline']['content_sha256'] == fixture['old']['revision']['content_sha256']
     assert records[-1]['id'] == current['id']
     assert [row['version'] for row in records] == [1, 2, 3, 4, 5]
     assessment = current['content']['assessment']
     initial = original['content']['assessment']
-    assert initial['work'][0]['allocations'][0]['amount'] == expected['originalCarryover']
-    assert assessment['work'][0]['allocations'][0]['amount'] == expected['currentCarryover']
+    assert initial['work'][0]['allocations'][0]['amount'] == expected['originalCarryover'], 'Original carryover changed'
+    assert assessment['work'][0]['allocations'][0]['amount'] == expected['currentCarryover'], 'Corrected carryover changed'
     mapping = assessment['work'][0]['allocations'][0]
     assert mapping['successorRevisionId'] == fixture['next']['revision']['id']
     assert mapping['successorElementId'] == fixture['next']['element']
@@ -46,6 +51,7 @@ def reconstruct(fixture, old, successor, physical):
         assert data['source']['report']['snapshot']['baseline']['content_sha256'] == cycle['revision']['content_sha256']
     old_baseline = old['source']['report']['snapshot']['baseline']['content_json']
     next_baseline = successor['source']['report']['snapshot']['baseline']['content_json']
+    assert old_baseline['currency'] == next_baseline['currency'] == 'USD', 'Different currencies cannot be added'
     assert old_baseline['periodStart'] < next_baseline['periodStart'] <= old_baseline['periodEnd'] < next_baseline['periodEnd']
     source_actuals = {row['id']: row for row in old['source']['actuals']}
     row = assessment['claims'][0]
@@ -55,7 +61,7 @@ def reconstruct(fixture, old, successor, physical):
         for match in row[field]:
             source = source_actuals[match['actualVersionId']]
             assert source['kind'] == 'payment' and source['status'] == 'approved'
-            assert Decimal('0') < Decimal(match['amount']) <= Decimal(str(source['amount']))
+            assert Decimal('0') < Decimal(match['amount']) <= Decimal(str(source['amount'])), 'Cash match exceeds physical payment'
             entries.add(source['entry_id'])
     assert receipt_entries.isdisjoint(refund_entries)
     requested = lambda data, claim: Decimal(next(packet for packet in data['source']['reimbursement']['reports'] if packet['id'] == claim['packetId'])['snapshot']['reimbursement']['reimbursementTotal'])
@@ -71,8 +77,8 @@ def reconstruct(fixture, old, successor, physical):
     assert {row['entry_id'] for row in old_costs}.isdisjoint(row['entry_id'] for row in new_costs)
     incurred = sum((Decimal(str(row['amount'])) for row in old_costs+new_costs), Decimal(0))
     assert len(physical) == expected['physicalEntries']
-    assert len({row['entry_id'] for row in physical}) == len(physical)
-    assert len({row['source_key'] for row in physical}) == len(physical)
+    assert len({row['entry_id'] for row in physical}) == len(physical), 'Physical source entry duplicated'
+    assert len({row['source_key'] for row in physical}) == len(physical), 'Physical source key duplicated'
     result = {name: format(value, '.2f') for name, value in [
         ('priorUnpaidClaim', prior_unpaid), ('successorUnpaidClaim', new_unpaid),
         ('refundRemaining', refund_remaining), ('outstandingCommitment', outstanding),

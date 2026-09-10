@@ -294,7 +294,7 @@ SQL
 test "$RESTORED_STORAGE" = "1"
 
 RESTORED=$(docker exec "$TARGET_DB" psql -U postgres -d postgres -tA -v ON_ERROR_STOP=1 -c \
-  "SELECT count(*) || ':' || bool_and(k.checksum = r.metadata_json #>> '{evidenceCustody,sha256}')
+  "SELECT count(*) || ':' || coalesce(bool_and(k.checksum = r.metadata_json #>> '{evidenceCustody,sha256}'),false)
    FROM workspaces w
    JOIN workspace_members wm ON wm.workspace_id = w.id
    JOIN projects p ON p.workspace_id = w.id
@@ -302,8 +302,11 @@ RESTORED=$(docker exec "$TARGET_DB" psql -U postgres -d postgres -tA -v ON_ERROR
    JOIN kb_document_chunks c ON c.document_id = k.id
    JOIN reports x ON x.project_id = p.id
    JOIN report_artifacts r ON r.report_id = x.id
-   WHERE w.id = '00000000-0000-4000-8000-00000000000a';")
-test "$RESTORED" = "1:true"
+   WHERE w.id = '00000000-0000-4000-8000-00000000000a' AND wm.user_id=k.uploaded_by;")
+if [[ "$RESTORED" != "1:true" ]]; then
+  echo "[restore-drill] restored uploader/evidence relationships differ: $RESTORED" >&2
+  exit 1
+fi
 
 RESTORED_V032=$(docker exec "$TARGET_DB" psql -U postgres -d postgres -tA -v ON_ERROR_STOP=1 -c \
   "SELECT
