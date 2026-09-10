@@ -1,0 +1,20 @@
+[
+  {
+    "name": "harmless comment",
+    "exit": 0,
+    "expected": "survived",
+    "matched": true
+  },
+  {
+    "name": "refund list shape",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "refund source identity",
+    "exit": 0,
+    "expected": "detected",
+    "matched": false
+  }
+]

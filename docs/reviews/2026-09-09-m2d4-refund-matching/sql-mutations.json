@@ -1,0 +1,92 @@
+[
+  {
+    "name": "harmless comment",
+    "exit": 0,
+    "expected": "survived",
+    "matched": true
+  },
+  {
+    "name": "refund list shape",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "refund source identity lookup",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "refund source kind",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "refund approved source",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "refund currency",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "whole cents",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "positive refund",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "refund evidence",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "direction conflict",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "other baseline direction",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "physical ceiling",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "reservation through reopening",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "version independent reservation",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "late refund closure protection",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  }
+]

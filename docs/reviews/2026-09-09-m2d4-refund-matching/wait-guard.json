@@ -1,0 +1,12 @@
+[
+  {
+    "case": "native disabled state with harmless comment",
+    "result": "survived",
+    "failure": null
+  },
+  {
+    "case": "own disabled property ignores fieldset",
+    "result": "targeted defect detected",
+    "failure": "Disabled fieldset must prevent a readiness signal\n\ntrue !== false\n"
+  }
+]

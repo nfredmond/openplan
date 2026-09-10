@@ -1,0 +1,7 @@
+Instance:  http://127.0.0.1:3263
+Version:   0.47.0
+Commit:    f1d13f4ffdf7
+Checkout:  /home/nathaniel/.local/state/openplan/m2d4-refund-matching-2026-09-09 @ f1d13f4f
+
+Serving from: /home/nathaniel/.local/state/openplan/m2d4-refund-matching-2026-09-09/openplan
+[32mMATCH — this instance is serving the checkout you are working in.[0m

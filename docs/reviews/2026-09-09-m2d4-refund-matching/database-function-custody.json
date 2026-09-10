@@ -1,0 +1,12 @@
+[
+  {
+    "function": "guard_work_program_cash_matches",
+    "migrationBodyMatchesDatabase": true,
+    "bodySha256": "9b781ba83caba650be304eed7eaa15af9ba56ca76b23e7c87f16d7a9a651fbef"
+  },
+  {
+    "function": "guard_closed_work_program_period",
+    "migrationBodyMatchesDatabase": true,
+    "bodySha256": "25622851c9722bb49fe802c845681f36004952ed921f91aeb468ff8df02bd040"
+  }
+]

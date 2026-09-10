@@ -1,0 +1,5 @@
+{
+  "expected": "000000000000",
+  "observed": "f1d13f4ffdf7",
+  "result": "identity assertion failed before financial navigation or writes"
+}

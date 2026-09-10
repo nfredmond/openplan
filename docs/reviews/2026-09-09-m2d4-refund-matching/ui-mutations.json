@@ -1,0 +1,68 @@
+[
+  {
+    "name": "harmless comment",
+    "exit": 0,
+    "expected": "survived",
+    "matched": true
+  },
+  {
+    "name": "unknown refund",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "refund evidence",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "refund subtraction",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "legacy payload identity",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "refund amount validation",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "UI refund identity",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "UI refund amount",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "UI remove refund",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "UI payment reference",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  },
+  {
+    "name": "UI refund currency",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true
+  }
+]

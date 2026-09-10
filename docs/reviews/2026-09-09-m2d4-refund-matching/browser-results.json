@@ -1,0 +1,45 @@
+[
+  {
+    "width": 1440,
+    "commit": "f1d13f4ffdf7",
+    "approvalVersion": 43,
+    "refundDue": "6.00",
+    "matchedRefund": "4.00",
+    "remainingRefund": "2.00",
+    "unpaidClaim": "3.00",
+    "originalRefundApprovalSha256": "fe54eba2950d426cab9a5dad373656e15bd8c3d23984c21fb956b99244c03d4c",
+    "currentRefundApprovalSha256": "fe54eba2950d426cab9a5dad373656e15bd8c3d23984c21fb956b99244c03d4c",
+    "oldApprovalUnchanged": true,
+    "baselineHash": "25ed9baeebed4a314a636a526d54dfffaddef6531a315378440c32a50637e8e6",
+    "physicalEntries": 4,
+    "directionConflictRefused": 400,
+    "closedLateRefundRefused": 409,
+    "keyboard": true,
+    "interruptedRetry": true,
+    "console": [
+      {
+        "text": "Failed to load resource: net::ERR_FAILED",
+        "expected": true
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "commit": "f1d13f4ffdf7",
+    "approvalVersion": 46,
+    "refundDue": "6.00",
+    "matchedRefund": "5.00",
+    "remainingRefund": "1.00",
+    "unpaidClaim": "3.00",
+    "originalRefundApprovalSha256": "fe54eba2950d426cab9a5dad373656e15bd8c3d23984c21fb956b99244c03d4c",
+    "currentRefundApprovalSha256": "6295b5b4274ff0d3c971f04a69000b12c783c242cce6a8b5fb5ce0084525ea3f",
+    "oldApprovalUnchanged": true,
+    "baselineHash": "25ed9baeebed4a314a636a526d54dfffaddef6531a315378440c32a50637e8e6",
+    "physicalEntries": 4,
+    "directionConflictRefused": 400,
+    "closedLateRefundRefused": 409,
+    "keyboard": true,
+    "interruptedRetry": false,
+    "console": []
+  }
+]
