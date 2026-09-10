@@ -8,6 +8,10 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     globals: true,
+    // Live suites temporarily change shared policies and functions. Run files
+    // serially so catalog locks cannot deadlock with another suite's fixtures.
+    // Concurrency exercised explicitly inside an individual test is unchanged.
+    fileParallelism: process.env.OPENPLAN_RLS_LIVE_TEST !== '1',
     // Never discover tests inside a nested checkout. A `git worktree` created
     // from this directory instead of the repo root lands at
     // `openplan/.claude/worktrees/<name>/`, and vitest would then run THAT

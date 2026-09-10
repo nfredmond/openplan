@@ -1,0 +1,20 @@
+[
+  {
+    "case": "harmless comment",
+    "exitCode": 0,
+    "result": "survived",
+    "failureEvidence": ""
+  },
+  {
+    "case": "live files overlap",
+    "exitCode": 1,
+    "result": "targeted defect detected",
+    "failureEvidence": "EEXIST"
+  },
+  {
+    "case": "ordinary suites serialized",
+    "exitCode": 1,
+    "result": "targeted defect detected",
+    "failureEvidence": "ordinary-parallel=false"
+  }
+]

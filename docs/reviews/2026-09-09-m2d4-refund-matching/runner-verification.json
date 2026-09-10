@@ -1,0 +1,17 @@
+{
+  "live": {
+    "tests": 305,
+    "files": 40,
+    "seconds": 308.36,
+    "exitCode": 0,
+    "container": "supabase_db_m2d3-reimbursement-verification"
+  },
+  "shuffled": {
+    "testsPassed": 13449,
+    "testsSkipped": 283,
+    "filesPassed": 1232,
+    "exitCode": 0
+  },
+  "targetedLintExitCode": 0,
+  "applicationChangedAfterBrowserAcceptance": false
+}

@@ -43,3 +43,11 @@ Owner access succeeded. Anonymous, member and foreign-workspace reads/writes ret
 - [390px matching controls and evidence](refund-reference-390.png)
 
 The next M2d.4 increment is split/merged, multiple-fund successor carryover, followed by independent two-cycle reconstruction and exact restore. Practicing-finance acceptance remains separate. Other early roadmap obligations remain in the active queue.
+
+## CI scheduling correction
+
+The first main CI run passed full QA and shuffled tests, and its separate upgrade workflow passed. [RLS run 34430744896](https://github.com/nfredmond/openplan/actions/runs/34430744896) failed with a PostgreSQL deadlock during the temporary `CREATE POLICY owp_storage_test_control` in the existing reporting guard test. Its other 304 tests, including all refund cases, passed. The log identifies an exclusive catalog lock and another backend's row lock; the live files were running concurrently against their shared database.
+
+`vitest.config.ts` now runs live database files serially when `OPENPLAN_RLS_LIVE_TEST=1`. Ordinary tests remain parallel, and explicit concurrency inside an individual test remains available. This removes cross-file catalog-mutation contention; it does not claim to prevent production database deadlocks. A regression invokes the actual Vitest configuration with two files contending for an owned resource, and separately checks ordinary scheduling. Its harmless control survives; forcing live overlap produces `EEXIST`, and forcing all tests serial fails the ordinary-parallel assertion. The final local shuffled suite passes 13,449 tests. The serialized local live suite passes all 305 tests in 40 files, exits zero in 308.36 seconds and retains the existing targeted mutation cases. Final pushed-commit CI is inspected separately before the task is reported complete.
+
+Application components, routes, libraries and migrations are unchanged by this test-runner correction. The identified browser build remains the application accepted above.
