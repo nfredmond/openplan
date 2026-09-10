@@ -2,11 +2,12 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { realpath, lstat, mkdir } from "node:fs/promises";
 import { join, isAbsolute, parse } from "node:path";
+import { prepareOpenCodeCredentials } from "./opencode-credentials.mjs";
 
 export const OPENCODE_PROTOCOL_VERSION = "1.18.30";
 
 // This first adapter supports native OpenAI API credentials only. Mount the
-// native auth file read-only; OAuth refresh and other account modes are refused.
+// inspected native auth snapshot read-only; OAuth refresh is unsupported.
 // History, project files, configuration, plugins and caches are never mounted.
 export async function openCodeLaunch({ binaryPath, providerHome, scratchPath, relayUrl, serverPassword }) {
   if (process.platform !== "linux") throw new Error("native_platform_unsupported");
@@ -27,26 +28,20 @@ export async function openCodeLaunch({ binaryPath, providerHome, scratchPath, re
   if (profile === parse(profile).root || scratch === parse(scratch).root || profile === scratch ||
     profile.startsWith(`${scratch}/`) || scratch.startsWith(`${profile}/`) ||
     !(await lstat(profile)).isDirectory() || !(await lstat(scratch)).isDirectory()) throw new Error("native_path_invalid");
-  const authPath = join(profile, "auth.json"), auth = await lstat(authPath).catch(error => {
-    if (error.code === "ENOENT") return null;
-    throw error;
-  });
-  if (auth && (!auth.isFile() || auth.isSymbolicLink() || auth.uid !== process.getuid() || (auth.mode & 0o077) !== 0 || auth.size > 256_000)) {
-    throw new Error("native_credentials_not_private");
-  }
   // Exclusive mkdir refuses reused runtime state even if the caller supplied a
   // populated scratch directory. Only this new child is visible to the native CLI.
   const runtime = join(scratch, "opencode-runtime");
   await mkdir(runtime, { mode: 0o700 });
   await mkdir(join(runtime, "data/opencode"), { recursive: true, mode: 0o700 });
   await mkdir(join(runtime, "task"), { mode: 0o700 });
+  const credentials = await prepareOpenCodeCredentials(join(profile, "auth.json"), join(scratch, "opencode-credentials"));
   const args = ["--die-with-parent", "--unshare-pid", "--unshare-ipc", "--unshare-uts",
     "--ro-bind", "/usr", "/usr", "--symlink", "usr/bin", "/bin",
     "--symlink", "usr/lib", "/lib", "--symlink", "usr/lib64", "/lib64",
     "--proc", "/proc", "--dev", "/dev", "--tmpfs", "/tmp",
     "--ro-bind", binary, "/runtime/opencode", "--bind", runtime, "/work",
     "--dir", "/home/openplan", "--chdir", "/work/task"];
-  if (auth) args.push("--ro-bind", authPath, "/work/data/opencode/auth.json");
+  if (credentials.snapshotPath) args.push("--ro-bind", credentials.snapshotPath, "/work/data/opencode/auth.json");
   for (const path of ["/etc/ssl", "/etc/resolv.conf", "/etc/hosts", "/etc/nsswitch.conf", "/etc/passwd", "/etc/group", "/etc/localtime"]) {
     if (await lstat(path).catch(() => null)) args.push("--ro-bind", path, path);
   }
@@ -60,7 +55,7 @@ export async function openCodeLaunch({ binaryPath, providerHome, scratchPath, re
     agent: { title: { disable: true }, summary: { disable: true }, compaction: { disable: true },
       openplan: { mode: "primary", prompt: "Use only the frozen OpenPlan project packet. Proposals do not change records.", permission, steps: 2 } },
   };
-  return { command: "/usr/bin/bwrap", args, options: {
+  return { account: credentials.account, command: "/usr/bin/bwrap", args, options: {
     cwd: runtime, shell: false, stdio: ["pipe", "pipe", "pipe"],
     env: { PATH: "/usr/bin:/bin", HOME: "/home/openplan", LANG: "C.UTF-8", TMPDIR: "/tmp",
       XDG_DATA_HOME: "/work/data", XDG_CONFIG_HOME: "/work/config", XDG_CACHE_HOME: "/work/cache", XDG_STATE_HOME: "/work/state",

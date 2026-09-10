@@ -26,6 +26,9 @@ test("native launch physically hides private files and refuses credential writes
     binaryPath: process.env.OPENPLAN_OPENCODE_NATIVE_BINARY, providerHome, scratchPath,
     relayUrl: `http://127.0.0.1:12345/${"a".repeat(64)}`, serverPassword: "b".repeat(64),
   });
+  // A native login update after inspection must affect only a later run.
+  const changedCredential = JSON.stringify({ openai: { type: "api", key: "SYNTHETIC_CHANGED_SOURCE" } });
+  await writeFile(authPath, changedCredential);
   const script = `
     const fs = require('node:fs');
     function read(path) {
@@ -53,5 +56,5 @@ test("native launch physically hides private files and refuses credential writes
   assert.deepEqual(result.profile, { error: "ENOENT" }, "private profile became readable");
   assert.deepEqual(result.credential, { value: credential }, "native credential mount is missing");
   assert.equal(result.write, "EROFS", "native credential became writable");
-  assert.equal(await readFile(authPath, "utf8"), credential, "host credential changed");
+  assert.equal(await readFile(authPath, "utf8"), changedCredential, "native write altered the host credential");
 });

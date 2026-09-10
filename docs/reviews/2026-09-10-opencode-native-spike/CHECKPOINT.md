@@ -153,3 +153,39 @@ provider labels into this projection or treat a local configured status as prove
 remote access. The four native catalogs were parsed successfully against retained
 synthetic command output; no live account or model call was used. Private probe:
 `probe-account-identity.mjs` in the evidence directory recorded in RESUME.md.
+
+## Credential snapshot binding, September 10
+
+The bounded reader now opens the native auth file without following symlinks or
+blocking on a FIFO. It checks the opened descriptor's type, owner and privacy,
+reads at most 256001 bytes and closes the descriptor even when JSON is invalid.
+Only the inspected OpenAI API record and known native fields enter an exclusive
+private directory. Other providers and unknown fields stay out. The launcher
+mounts that fixed 0400 snapshot read-only and returns only its nonidentifying
+account summary. The user profile remains unchanged. Missing and unsupported
+credentials produce no snapshot; the upcoming process wrapper must refuse
+generation unless the returned status is connected.
+
+Seventeen reader tests cover source changes, private modes, symlinks, unsupported
+accounts, bounds, short reads, descriptor cleanup and FIFO interruption. The
+native filesystem test changes the original auth file after launch preparation
+and verifies the sandbox still reads the inspected snapshot. One harmless change
+survived and 18 targeted mutations failed. The first directory-reuse mutation
+survived because the existing file's exclusive creation also refused reuse. A
+preexisting-directory-without-auth fixture now isolates the directory guard;
+the initial and corrected receipts both remain. Bounds are enforced on actual
+bytes, independent of a potentially stale stat size.
+
+`probe-production-snapshot.mjs` ran the installed 1.18.30 binary with synthetic
+credentials and local Responses output. It changed the original credential after
+preparation, then asserted that the single relayed request still used the
+inspected credential. The assistant readback matched exactly. Source-copy and
+writable-mount mutations also failed the physical sandbox test. The restored
+default connector suite passes 206 tests with four explicit native opt-in skips.
+
+Limits: no real provider account or billing call was used. The reader does not
+claim remote account access. This API-only snapshot does not refresh OAuth tokens.
+It is protected against native-process writes and subsequent native login changes,
+not a malicious local owner changing permissions or kernel compromise. Runtime
+startup, cancellation and removal of owned credential snapshots after child exit
+remain the next implementation boundary before adapter/app integration.

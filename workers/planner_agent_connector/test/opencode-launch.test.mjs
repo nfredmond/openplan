@@ -15,13 +15,15 @@ async function fixture(version = "1.18.30") {
 
 test("mounts only the private credential file and fresh runtime", async () => {
   const options = await fixture();
-  await writeFile(join(options.providerHome, "auth.json"), "synthetic", { mode: 0o600 });
+  await writeFile(join(options.providerHome, "auth.json"), JSON.stringify({ openai: { type: "api", key: "SYNTHETIC" } }), { mode: 0o600 });
   await writeFile(join(options.providerHome, "history.json"), "private history");
   await writeFile(join(options.scratchPath, "AGENTS.md"), "private context");
   const launch = await openCodeLaunch(options);
-  const authIndex = launch.args.indexOf(join(options.providerHome, "auth.json"));
+  const authIndex = launch.args.indexOf(join(options.scratchPath, "opencode-credentials/auth.json"));
   assert.equal(launch.args[authIndex - 1], "--ro-bind");
   assert.equal(launch.args[authIndex + 1], "/work/data/opencode/auth.json");
+  assert.ok(!launch.args.includes(join(options.providerHome, "auth.json")));
+  assert.deepEqual(launch.account, { status: "connected", authMode: "opencode_api", planType: null });
   assert.ok(!launch.args.includes(options.providerHome)); assert.ok(!launch.args.includes(options.scratchPath));
   assert.ok(launch.args.includes(join(options.scratchPath, "opencode-runtime")));
   assert.ok(launch.args.includes("--pure"));

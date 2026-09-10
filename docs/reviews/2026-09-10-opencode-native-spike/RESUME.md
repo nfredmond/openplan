@@ -42,15 +42,17 @@ store=false, only StructuredOutput, fixed upstream, no redirects, byte/time limi
 28 relay tests,21 targeted unit mutation failures and harmless survivor; actual
 native relay control and second-request mutation passed/failed as intended.
 
-opencode-launch.mjs pins installed1.18.30 and mounts native auth.json read-only
-for API credentials, with fresh private runtime directories.30 launch tests,
+opencode-launch.mjs pins installed1.18.30 and mounts an inspected private API
+credential snapshot read-only, with fresh private runtime directories.30 launch tests,
 34 targeted mutation failures and harmless survivor. First inadequate file-type
 fixture is retained separately. Positive native mount/launch/schema/assistant
 readback proof passed. Default full connector suite151pass3native opt-in skips.
 
-Not implemented: native account/model parsers, bounded owned server/process wrapper,
-exact parent/result validation, adapter dispatch, app routes/types, migration, UI,
-RLS and browser journeys. Do not advertise OpenCode support yet. First supported
+Account/model projection and bounded credential snapshots are implemented. Default
+connector suite now passes206 with4 native opt-in skips. Not implemented: bounded
+owned server/process wrapper, exact parent/result validation, adapter dispatch,
+app routes/types, migration, UI, RLS and browser journeys. Do not advertise
+OpenCode support yet. First supported
 mode will be native OpenAI API credentials; OAuth/subscription and other providers
 remain explicit unimplemented scope. Use an unambiguous mode such as opencode_api
 or explicit backend binding; existing apiKey claim inference currently means Codex.
@@ -70,11 +72,16 @@ or explicit backend binding; existing apiKey claim inference currently means Cod
    harmless survivor. The native auth-list approach proved ambiguous: exact ID
    openai and custom ID OpenAI print identical output; all four API/OAuth/missing/
    display-collision cases return the same 49 model IDs. See account-checks.json.
-   Next implement the bounded private credential reader and bind the inspected
-   credential snapshot to the owned native process. Only the exact openai record
+   The bounded reader and snapshot binding are now implemented in
+   opencode-credentials.mjs and opencode-launch.mjs, with17 reader tests and
+   an actual native request using the original inspected key after the source
+   auth file changed. Only the exact openai record
    may establish opencode_api mode. Do not expose credentials, raw GET/provider
    or account metadata. Native gpt-6 is absent; gpt-6-astra exists in this catalog.
    Catalog presence is not account availability. Server lifecycle remains next.
+   It must reject non-connected launch.account before generation, stop the owned
+   process before removing private scratch/snapshot files, and close the relay on
+   every failure. Snapshot creation never changes the original native profile.
 3. Native POST structured response and exact assistant-message GET work. General
    list-message GET rejects stored OutputFormat in this version. Use exact supplied
    parent message ID and assistant ID for the bounded verification; preserve this
