@@ -1,0 +1,12 @@
+{
+  "allConnectors": {
+    "passed": 64,
+    "failed": 0,
+    "skipped": 0,
+    "nativeCodex": "0.154.0",
+    "nativeClaude": "2.1.263"
+  },
+  "logSha256": "949c352eaea60f301c9b7a8b64b067ff7b63d17f83749c79f866a8c166acf87b",
+  "lastNativeFixture": "/tmp/openplan-claude-isolation-CdvUvT",
+  "scope": "Transport spike only; not app integration or live Claude model acceptance."
+}

@@ -1,0 +1,47 @@
+[
+  {
+    "name": "harmless-provider-comment",
+    "exit": 0,
+    "expected": 0
+  },
+  {
+    "name": "request-mode-check-removed",
+    "exit": 1,
+    "expected": 1
+  },
+  {
+    "name": "question-byte-limit",
+    "exit": 1,
+    "expected": 1
+  },
+  {
+    "name": "instruction-byte-limit",
+    "exit": 1,
+    "expected": 1
+  },
+  {
+    "name": "empty-question",
+    "exit": 1,
+    "expected": 1
+  },
+  {
+    "name": "schema-limit-check",
+    "exit": 1,
+    "expected": 1
+  },
+  {
+    "name": "harmless-repeated-native-comment",
+    "exit": 0,
+    "expected": 0
+  },
+  {
+    "name": "empty-native-json-mask",
+    "exit": 1,
+    "expected": 1
+  },
+  {
+    "name": "native-turn-budget-raised",
+    "exit": 1,
+    "expected": 1
+  }
+]

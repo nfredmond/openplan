@@ -1,0 +1,12 @@
+[
+  {
+    "name": "harmless-native-comment",
+    "exit": 0,
+    "expected": 0
+  },
+  {
+    "name": "native-home-context-enabled",
+    "exit": 0,
+    "expected": 1
+  }
+]

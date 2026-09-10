@@ -1,0 +1,27 @@
+[
+  {
+    "name": "harmless-native-comment",
+    "exit": 0,
+    "expected": 0
+  },
+  {
+    "name": "native-profile-mask-removed",
+    "exit": 1,
+    "expected": 1
+  },
+  {
+    "name": "native-inherited-context-enabled",
+    "exit": 1,
+    "expected": 1
+  },
+  {
+    "name": "native-tools-enabled",
+    "exit": 1,
+    "expected": 1
+  },
+  {
+    "name": "native-api-mode-accepted",
+    "exit": 1,
+    "expected": 1
+  }
+]

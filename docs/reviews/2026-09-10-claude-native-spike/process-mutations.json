@@ -1,0 +1,81 @@
+{
+  "results": [
+    {
+      "name": "harmless-comment",
+      "exit": 0
+    },
+    {
+      "name": "changed-model",
+      "exit": 1
+    },
+    {
+      "name": "fallback-model",
+      "exit": 1
+    },
+    {
+      "name": "host-capabilities",
+      "exit": 1
+    },
+    {
+      "name": "duplicate-final",
+      "exit": 1
+    },
+    {
+      "name": "failed-completion",
+      "exit": 1
+    },
+    {
+      "name": "missing-result-id",
+      "exit": 1
+    },
+    {
+      "name": "unstructured-text-fallback",
+      "exit": 1
+    },
+    {
+      "name": "answer-size",
+      "exit": 1
+    },
+    {
+      "name": "account-mode",
+      "exit": 1
+    },
+    {
+      "name": "personal-identifier-leak",
+      "exit": 1
+    },
+    {
+      "name": "failed-exit-success",
+      "exit": 1
+    },
+    {
+      "name": "signed-out-exit-on-any-command",
+      "exit": 1
+    },
+    {
+      "name": "deadline-removed",
+      "exit": 1
+    },
+    {
+      "name": "cancellation-ignored",
+      "exit": 1
+    },
+    {
+      "name": "stdout-limit",
+      "exit": 1
+    },
+    {
+      "name": "stderr-limit",
+      "exit": 1
+    },
+    {
+      "name": "tools-enabled",
+      "exit": 1
+    },
+    {
+      "name": "mcp-discovery-enabled",
+      "exit": 1
+    }
+  ],
+  "blindCategory": "Unit process/stream contract only. Does not establish installed-native host isolation, actual provider responses or app reachability."
+}
