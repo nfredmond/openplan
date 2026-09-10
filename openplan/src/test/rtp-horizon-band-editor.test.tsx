@@ -190,7 +190,7 @@ describe("RtpHorizonBandEditor", () => {
     expect(alert).toHaveTextContent("Apply the latest Supabase migrations, then try again.");
   });
 
-  it("discloses a legacy server response that claims creation without a returned row", async () => {
+  it("keeps the form open when a legacy server claims creation without a returned row", async () => {
     mockFetchOnce({
       status: 201,
       body: {
@@ -214,9 +214,11 @@ describe("RtpHorizonBandEditor", () => {
     fireEvent.click(screen.getByRole("button", { name: /^next$/i }));
     fireEvent.click(screen.getByRole("button", { name: /add period/i }));
 
-    const status = await screen.findByRole("status");
-    expect(status).toHaveTextContent(/retrying would create a second one/i);
-    await waitFor(() => expect(routerRefresh).toHaveBeenCalled());
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent(/server reported creation without a returned period/i);
+    expect(alert).toHaveTextContent(/Check the saved list before adding another period/);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(routerRefresh).not.toHaveBeenCalled();
   });
 
   it("sends an emptied escalation year as null, never as 0", async () => {

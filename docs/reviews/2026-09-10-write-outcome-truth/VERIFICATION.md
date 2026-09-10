@@ -77,3 +77,15 @@ mutations before launching tests.
 The VMT change only alters persistence-result reporting; its arithmetic, engine
 choice, source evidence and jurisdiction/tier gates stay intact. Missing rows and
 malformed returned rows cannot acquire a saved determination claim.
+
+## Editor compatibility correction
+
+The horizon editor also accepted the legacy201/no-record payload, closed the
+form and asserted creation. It now keeps the form open and asks the planner to
+check saved state. Eighteen focused editor/copy tests pass. A harmless comment
+survives; disabling the legacy-response refusal fails because the alert disappears.
+This client check cannot establish database persistence or network delivery.
+The current500 server response still uses the existing error/form-retention path.
+
+v0.49.2 was published after its declared final CI checks passed; its publication
+receipt is in the preceding audit-outcome evidence directory.

@@ -174,37 +174,6 @@ function describeWriteRefusal(
 }
 
 /**
- * A create that LANDED and could not be read back — a success that must not be
- * silent.
- *
- * `insertNotReadableBackResponse` answers **201** with `{ created: true,
- * record: null, details }` when the table granted the INSERT and denied this
- * reader the SELECT. `response.ok` is true for 201, so treating it as an
- * ordinary success took the planner straight to `router.refresh()` — which
- * re-reads through the very path that just proved it cannot see the row. The
- * form closes, no new period appears, and the planner concludes the save failed
- * and adds it again. The route wrote a sentence for precisely this moment
- * ("Nothing needs to be retried; retrying would create a second one") and it
- * was being thrown away because the status was in the 2xx range.
- *
- * Returns null for an ordinary create, so the caller adds no noise to the
- * common path.
- */
-function describeUnreadableCreate(payload: {
-  created?: unknown;
-  record?: unknown;
-  details?: unknown;
-}): string | null {
-  if (payload.created !== true || payload.record !== null) return null;
-  const details = typeof payload.details === "string" ? payload.details.trim() : "";
-  if (details) return details;
-  return (
-    "The planning period was created, but this deployment could not read it back, so it may not " +
-    "appear in the list below. Do not add it again — a second one would be created."
-  );
-}
-
-/**
  * What a SUCCESSFUL removal cost, disclosed rather than left to be discovered.
  *
  * `project_rtp_cycle_links.horizon_band_id` is ON DELETE SET NULL, not RESTRICT,
@@ -561,6 +530,11 @@ export function RtpHorizonBandEditor({ rtpCycleId, bands, canWrite }: RtpHorizon
       // name. Both are surfaced word-for-word.
       throw new Error(describeWriteRefusal(payload, response.status, "Saving this planning period"));
     }
+    // Older servers claimed creation without returning a period. Keep the form
+    // available rather than treating that unconfirmed response as a saved item.
+    if (payload.created === true && payload.record === null) {
+      throw new Error("The server reported creation without a returned period. Check the saved list before adding another period.");
+    }
     return payload;
   }
 
@@ -571,12 +545,7 @@ export function RtpHorizonBandEditor({ rtpCycleId, bands, canWrite }: RtpHorizon
     setPendingBandId(bandId);
 
     try {
-      const payload = await writeBand(values, bandId);
-
-      // A 201 that wrote the row and could not read it back is a SUCCESS whose
-      // consequence is invisible — the refresh below cannot show what the
-      // database will not hand over. Say so, or the planner adds it twice.
-      setNotice(describeUnreadableCreate(payload));
+      await writeBand(values, bandId);
 
       setEditingBandId(null);
       router.refresh();
@@ -839,7 +808,7 @@ export function RtpHorizonBandEditor({ rtpCycleId, bands, canWrite }: RtpHorizon
       if (startYear === null || endYear === null) {
         return "Enter both a first year and a last year for this period.";
       }
-      const payload = await writeBand(
+      await writeBand(
         {
           label: draft.label.trim(),
           startYear,
@@ -849,7 +818,7 @@ export function RtpHorizonBandEditor({ rtpCycleId, bands, canWrite }: RtpHorizon
         },
         null
       );
-      setNotice(describeUnreadableCreate(payload));
+      setNotice(null);
       router.refresh();
     },
   });
