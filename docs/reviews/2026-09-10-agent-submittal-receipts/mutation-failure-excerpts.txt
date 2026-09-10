@@ -1,0 +1,52 @@
+mutation-normalization.log
+ FAIL  src/test/assistant-submittal-approval-route.test.ts > Submittal consent captures current context > hashes and retains normalized text and defaults consistently
+AssertionError: expected "vi.fn()" to be called with arguments: [ ObjectContaining{…} ]
+ FAIL  src/test/project-submittal-receipt.test.ts > approved submittal context and canonical consent > normalizes persisted text and defaults, while retaining changes that alter the effect
+AssertionError: expected { kind: 'create_project_record', …(4) } to deeply equal { kind: 'create_project_record', …(3) }
+
+mutation-project-name-projection.log
+ FAIL  src/test/project-submittal-receipt.test.ts > approved submittal context and canonical consent > retains exact project identity and name using an asserted projection and scope
+AssertionError: expected "vi.fn()" to be called with arguments: [ 'id, workspace_id, name' ]
+
+mutation-read-access.log
+ FAIL  src/test/assistant-submittal-recovery-route.test.ts > approved submittal read access > refuses missing or unsupported membership null
+ FAIL  src/test/assistant-submittal-recovery-route.test.ts > approved submittal read access > refuses missing or unsupported membership {"role":"unknown"}
+AssertionError: expected 200 to be 403 // Object.is equality
+
+mutation-receipt-identity.log
+ FAIL  src/test/project-submittal-receipt.test.ts > submittal receipt dispatch > refuses missing or mismatched original result {"workspaceId":"11111111-1111-4111-8111-111111111111","receipt":{"schemaVersion":1,"recordType":"submittal","record":{"id":"55555555-5555-4555-8555-555555555555","project_id":"33333333-3333-4333-8333-333333333333","title":"Synthetic invoice backup","submittal_type":"other","status":"draft","notes":null,"created_by":"33333333-3333-4333-8333-333333333333","created_at":"2026-09-10T10:00:00Z","agency_label":null,"assignee_user_id":null,"reference_number":null,"due_date":null,"submitted_at":null,"review_cycle":1}}}
+AssertionError: promise resolved "{ …(2) }" instead of rejecting
+
+mutation-recovery-hash.log
+ FAIL  src/test/assistant-submittal-recovery.test.ts > server retained submittal recovery > refuses changed retained action {"kind":"create_project_record","projectId":"44444444-4444-4444-8444-444444444444","recordType":"submittal","title":"Changed request"}
+AssertionError: expected [Function] to throw error including 'retained scope or hash' but got 'Approved submittal hash does not matc…'
+
+mutation-recovery-project-scope.log
+ FAIL  src/test/assistant-submittal-recovery.test.ts > server retained submittal recovery > refuses a relabeled retained project {"id":"22222222-2222-4222-8222-222222222222","workspaceId":"11111111-1111-4111-8111-111111111111","name":"Synthetic original project"}
+AssertionError: promise resolved "{ items: [ { …(8) } ], …(1) }" instead of rejecting
+
+mutation-resume-consent.log
+ FAIL  src/test/approved-hold-recovery.test.tsx > approved HOLD recovery controls > explicit resume reuses the exact consent and confirms its older receipt by ID
+AssertionError: expected "vi.fn()" to be called with arguments: [ { …(6) }, Any<Object>, { …(1) } ]
+ FAIL  src/test/approved-submittal-recovery.test.tsx > approved submittal recovery controls > explicit resume reuses the exact consent and confirms its older receipt by ID
+AssertionError: expected "vi.fn()" to be called with arguments: [ { …(5) }, Any<Object>, { …(1) } ]
+
+mutation-route-receipt.log
+ FAIL  src/test/assistant-submittal-route.test.ts > approved submittal route > recovers the original record without current-project reads, insert, audit or consent writes
+AssertionError: expected 503 to be 200 // Object.is equality
+
+mutation-source-call.log
+ FAIL  src/test/every-action-route-verifies-its-own-approval.test.ts > every registered action's route enforces the seam itself > create_project_record (approval_required) reaches a route that verifies approval and writes an audit row
+AssertionError: /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/app/api/projects/[projectId]/records/route.ts is the execution path for create_project_record, but it never CALLS an approval verifier or a transactional receipt verifier. The approval tier would be enforced only in the browser.: expected false to be true // Object.is equality
+
+mutation-sql-audit-suppression.log
+ FAIL  src/test/assistant-submittal-receipt-rls.test.ts > transactional approved project submittals > a suppressed assistant_action_executions write rolls everything back
+ERROR:  Suppressed write reported success
+
+mutation-sql-project-lock.log
+ FAIL  src/test/assistant-submittal-receipt-concurrency.test.ts > approved submittal concurrency and connection loss > waits for an in-flight project move and refuses the old scope
+Error: Competing execution never waited on a database lock
+
+mutation-sql-receipt-identity.log
+ FAIL  src/test/assistant-submittal-receipt-rls.test.ts > transactional approved project submittals > the shared receipt identity check preserves historical rows and refuses wrong kind or shape
+ERROR:  Wrong receipt kind accepted

@@ -1,0 +1,12 @@
+[
+  {
+    "name": "copilot-harmless",
+    "exit": 0,
+    "expectedOutcome": true
+  },
+  {
+    "name": "copilot-recovery-link",
+    "exit": 1,
+    "expectedOutcome": true
+  }
+]

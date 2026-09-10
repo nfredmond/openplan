@@ -690,6 +690,8 @@ function ChatProposalCard({
           <p>{entry.error ?? "The action response could not be confirmed."} Check the saved record before trying again.</p>
           {entry.proposal.kind === "record_stage_gate_hold" ? (
             <a href="/assistant-activity#approved-holds" className="font-semibold underline">Check approved HOLD result</a>
+          ) : entry.proposal.kind === "create_project_record" ? (
+            <a href="/assistant-activity#approved-submittals" className="font-semibold underline">Check approved submittal result</a>
           ) : null}
         </div>
       ) : null}

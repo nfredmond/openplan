@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { assistantActionAuditIdentity, withAssistantActionAudit } from "@/lib/observability/action-audit";
+import { withAssistantActionAudit } from "@/lib/observability/action-audit";
 import {
-  type AssistantApprovalVerification,
-  readAssistantExecutionSource, verifyAssistantActionApproval,
+  readAssistantExecutionSource,
 } from "@/lib/assistant/action-approval-server";
+import { HoldReceiptError } from "@/lib/assistant/stage-gate-hold-receipt";
+import { submittalApprovalHeaders, readSubmittalReceipt, recordSubmittalWithReceipt, type ProjectSubmittalAction } from "@/lib/assistant/project-submittal-receipt";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { requireWorkspaceWriteAccess } from "@/lib/auth/workspace-write-gate";
 import { refuseOutOfScopeAgentRequest } from "@/lib/assistant/agent-request-scope";
@@ -173,6 +174,52 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Recovery uses the original approval scope. A moved project or viewer
+    // downgrade may prevent new work without hiding an already saved result.
+    const serviceSupabase = createServiceRoleClient();
+    const executionSource = readAssistantExecutionSource(request);
+
+    if (executionSource === "planner_agent_quick_link" && parsed.data.recordType !== "submittal") {
+      return NextResponse.json(
+        { error: "Planner Agent project-record execution only supports submittals" },
+        { status: 403 }
+      );
+    }
+
+    // A narrow action may not ride a wide route. Assigning a person is the
+    // field this closes today, but the check is over the whole body on purpose:
+    // anything the endpoint accepts and the action does not send is something a
+    // planner did not approve.
+    const outOfScope = refuseOutOfScopeAgentRequest({
+      executionSource,
+      body: payload,
+      allowedKeys: CREATE_PROJECT_RECORD_ACTION_KEYS,
+      actionKind: "create_project_record",
+    });
+    if (outOfScope) {
+      audit.warn("agent_request_out_of_scope", { rejectedKeys: outOfScope.rejectedKeys });
+      return NextResponse.json(
+        { error: outOfScope.error, details: outOfScope.details },
+        { status: 403 }
+      );
+    }
+
+    if (executionSource === "planner_agent_quick_link" && parsed.data.recordType === "submittal") {
+      const action: ProjectSubmittalAction = {
+        kind: "create_project_record", projectId: parsedParams.data.projectId,
+        recordType: "submittal", title: parsed.data.title,
+        ...(parsed.data.submittalType ? { submittalType: parsed.data.submittalType } : {}),
+        ...(parsed.data.status ? { status: parsed.data.status } : {}),
+        ...(parsed.data.notes ? { notes: parsed.data.notes } : {}),
+      };
+      const proof = submittalApprovalHeaders(request, action);
+      const params = { supabase: serviceSupabase, userId: user.id, action, ...proof };
+      const recovered = await readSubmittalReceipt(params);
+      if (recovered.receipt) return NextResponse.json({ ...recovered.receipt, replayed: true }, { status: 200 });
+      const result = await recordSubmittalWithReceipt({ ...params, workspaceId: recovered.workspaceId });
+      return NextResponse.json({ ...result.receipt, replayed: result.replayed }, { status: result.replayed ? 200 : 201 });
+    }
+
     const { data: project, error: projectError } = await supabase
       .from("projects")
       .select("id, workspace_id, name")
@@ -189,8 +236,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     // The project-record tables inherit the project's role-blind write policy,
     // so RLS admits any member — including a viewer. Authorize explicitly, and
-    // before the assistant-approval path, so a viewer cannot reach the write
-    // through the Planner Agent either.
+    // before manual inserts. The approved path checks roles under SQL locks.
     const writeAccess = await requireWorkspaceWriteAccess(supabase, user.id, project.workspace_id);
     if (!writeAccess.ok) return writeAccess.response;
 
@@ -336,35 +382,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return { recordType: "meeting", record: data };
     };
 
-    const serviceSupabase = createServiceRoleClient();
-    let approval: AssistantApprovalVerification | null = null;
-    const executionSource = readAssistantExecutionSource(request);
-
-    if (executionSource === "planner_agent_quick_link" && parsed.data.recordType !== "submittal") {
-      return NextResponse.json(
-        { error: "Planner Agent project-record execution only supports reimbursement submittals" },
-        { status: 403 }
-      );
-    }
-
-    // A narrow action may not ride a wide route. Assigning a person is the
-    // field this closes today, but the check is over the whole body on purpose:
-    // anything the endpoint accepts and the action does not send is something a
-    // planner did not approve.
-    const outOfScope = refuseOutOfScopeAgentRequest({
-      executionSource,
-      body: payload,
-      allowedKeys: CREATE_PROJECT_RECORD_ACTION_KEYS,
-      actionKind: "create_project_record",
-    });
-    if (outOfScope) {
-      audit.warn("agent_request_out_of_scope", { rejectedKeys: outOfScope.rejectedKeys });
-      return NextResponse.json(
-        { error: outOfScope.error, details: outOfScope.details },
-        { status: 403 }
-      );
-    }
-
     // An assignee has to be a member of THIS project's workspace. Only asked
     // when one was actually sent — an unassigned record costs no lookup.
     const assigneeUserId =
@@ -405,31 +422,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
     }
 
-    if (parsed.data.recordType === "submittal") {
-      try {
-        approval = await verifyAssistantActionApproval({
-          request,
-          serviceSupabase,
-          userId: user.id,
-          workspaceId: project.workspace_id,
-          action: {
-            kind: "create_project_record",
-            projectId: project.id,
-            recordType: "submittal",
-            title: parsed.data.title,
-            ...(parsed.data.submittalType ? { submittalType: parsed.data.submittalType } : {}),
-            ...(parsed.data.status ? { status: parsed.data.status } : {}),
-            ...(parsed.data.notes ? { notes: parsed.data.notes } : {}),
-          },
-        });
-      } catch (approvalError) {
-        return NextResponse.json(
-          { error: approvalError instanceof Error ? approvalError.message : "Planner Agent approval failed" },
-          { status: 403 }
-        );
-      }
-    }
-
     let result: { recordType: string; record: unknown };
     try {
       result = await withAssistantActionAudit(
@@ -438,7 +430,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
           actionKind: "create_project_record",
           workspaceId: project.workspace_id,
           userId: user.id,
-          ...(approval ? assistantActionAuditIdentity(approval) : {}),
           inputSummary: {
             projectId: project.id,
             recordType: parsed.data.recordType,
@@ -462,6 +453,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
+    if (error instanceof HoldReceiptError) return NextResponse.json({ error: error.message }, { status: error.status });
     audit.error("projects_records_create_unhandled_error", {
       durationMs: Date.now() - startedAt,
       error,

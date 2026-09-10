@@ -11,6 +11,7 @@ import {
 import { getActionMetadata } from "@/lib/runtime/action-metadata";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { HoldReceiptError, prepareHoldExecutionContext } from "@/lib/assistant/stage-gate-hold-receipt";
+import { prepareSubmittalExecutionContext } from "@/lib/assistant/project-submittal-receipt";
 import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 
 const approvalRequestSchema = z.object({
@@ -90,7 +91,9 @@ export async function POST(request: NextRequest) {
     if (needsApproval) {
       const executionContext = parsed.data.action.kind === "record_stage_gate_hold"
         ? await prepareHoldExecutionContext(supabase, parsed.data.workspaceId, parsed.data.action)
-        : null;
+        : parsed.data.action.kind === "create_project_record"
+          ? await prepareSubmittalExecutionContext(supabase, parsed.data.workspaceId, parsed.data.action)
+          : null;
       approvalId = newAssistantApprovalId();
       const serviceSupabase = createServiceRoleClient();
       const { error: insertError } = await serviceSupabase.from("assistant_action_approvals").insert({

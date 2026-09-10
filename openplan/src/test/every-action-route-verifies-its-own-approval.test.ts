@@ -62,12 +62,13 @@ describe("every registered action's route enforces the seam itself", () => {
 
         expect(
           callsFunction(source, "verifyAssistantActionApproval") ||
-            (callsFunction(source, "holdApprovalHeaders") && callsFunction(source, "recordHoldWithReceipt")),
+            (callsFunction(source, "holdApprovalHeaders") && callsFunction(source, "recordHoldWithReceipt")) ||
+            (callsFunction(source, "submittalApprovalHeaders") && callsFunction(source, "readSubmittalReceipt") && callsFunction(source, "recordSubmittalWithReceipt")),
           `${routeFile} is the execution path for ${kind}, but it never CALLS ` +
-            "an approval verifier or the transactional HOLD verifier. The approval tier would be enforced only in the browser."
+            "an approval verifier or a transactional receipt verifier. The approval tier would be enforced only in the browser."
         ).toBe(true);
 
-        // The HOLD transaction verifies and audits inside the database. These
+        // The receipt transactions verify and audits inside the database. These
         // source checks establish calls, not their ordering or SQL behavior;
         // route and live transaction tests cover those separate boundaries.
         // Otherwise, either the wrapper or the row writer it wraps. `POST /api/reports`
@@ -78,7 +79,7 @@ describe("every registered action's route enforces the seam itself", () => {
         expect(
           callsFunction(source, "withAssistantActionAudit") ||
             callsFunction(source, "recordAssistantActionExecution") ||
-            callsFunction(source, "recordHoldWithReceipt"),
+            callsFunction(source, "recordHoldWithReceipt") || callsFunction(source, "recordSubmittalWithReceipt"),
           `${routeFile} is the execution path for ${kind}, but it never CALLS ` +
             "an audit writer or transactional receipt writer. The action would " +
             "execute with no row in the ledger."

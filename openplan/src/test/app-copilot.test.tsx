@@ -552,6 +552,29 @@ describe("AppCopilot", () => {
     expect(fetchMock.mock.calls.filter(call => String(call[0]) === "/api/stage-gates/decisions")).toHaveLength(1);
   });
 
+  it("directs an interrupted approved submittal to its retained result without claiming rollback", async () => {
+    const payload = { kind: "create_project_record", projectId: "33333333-3333-4333-8333-333333333333", recordType: "submittal", title: "Synthetic invoice backup" };
+    chatRoute = () => sseResponse([
+      { type: "start" },
+      { type: "tool-input-start", toolCallId: "hold", toolName: "propose_create_project_record" },
+      { type: "tool-output-available", toolCallId: "hold", output: { status: "proposed", kind: payload.kind, payload, approval: "approval_required", description: "Create a synthetic submittal." } },
+      { type: "finish" },
+    ]);
+    const originalFetch = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation((input, init) => String(input) === "/api/projects/33333333-3333-4333-8333-333333333333/records" ? Promise.reject(new Error("Response connection lost")) : originalFetch(input, init));
+    await openPanel();
+    fireEvent.change(screen.getByPlaceholderText(/Ask about project status/), { target: { value: "Create a project submittal" } });
+    fireEvent.click(screen.getByRole("button", { name: /Send/ }));
+    fireEvent.click(await screen.findByRole("button", { name: "Approve & run" }));
+    const sheet = within(await screen.findByRole("dialog", { name: "Approve Planner Agent action" }));
+    fireEvent.click(sheet.getByRole("button", { name: "Approve action" }));
+    expect(await screen.findByRole("link", { name: "Check approved submittal result" })).toHaveAttribute("href", "/assistant-activity#approved-submittals");
+    expect(screen.getByText(/Check the saved record before trying again/)).toHaveTextContent("Response connection lost");
+    expect(screen.queryByText(/Nothing further was changed/)).toBeNull();
+    expect(screen.queryByRole("button", { name: "Approve & run" })).toBeNull();
+    expect(fetchMock.mock.calls.filter(call => String(call[0]) === "/api/projects/33333333-3333-4333-8333-333333333333/records")).toHaveLength(1);
+  });
+
   it("leaves no execution behind a rejected proposal approval", async () => {
     await streamProposalReply();
 

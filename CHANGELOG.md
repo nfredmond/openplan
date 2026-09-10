@@ -20,7 +20,16 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No changes yet.
+Approved project submittals are being extended with atomic result receipts and
+same-consent recovery from Planner Agent Activity. Implementation verification is
+in progress; this is not a release declaration.
+
+Apply `20261009000001_assistant_submittal_receipts.sql` before running this build.
+It extends the existing receipt constraint and adds service-only receipt read and
+submittal transaction functions. No historical records are rewritten. Earlier
+approvals without retained context cannot be resumed; inspect the existing record
+before reviewing a new request. The registered action still creates only a
+submittal on an existing project, with no assignments or extra record fields.
 
 ## 0.50.0 — 2026-09-10
 

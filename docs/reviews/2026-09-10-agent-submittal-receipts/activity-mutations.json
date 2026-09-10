@@ -1,0 +1,12 @@
+[
+  {
+    "name": "activity-harmless",
+    "exit": 0,
+    "expectedOutcome": true
+  },
+  {
+    "name": "activity-wrong-scope",
+    "exit": 1,
+    "expectedOutcome": true
+  }
+]

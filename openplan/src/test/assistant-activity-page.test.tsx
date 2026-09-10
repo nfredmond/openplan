@@ -46,7 +46,7 @@ vi.mock("@/lib/workspaces/current", async () => {
   };
 });
 
-vi.mock("@/components/assistant/approved-hold-recovery", () => ({ ApprovedHoldRecovery: ({ workspaceId }: { workspaceId: string }) => <div data-testid="hold-recovery" data-workspace={workspaceId} /> }));
+vi.mock("@/components/assistant/approved-hold-recovery", () => ({ ApprovedHoldRecovery: ({ workspaceId }: { workspaceId: string }) => <div data-testid="hold-recovery" data-workspace={workspaceId} />, ApprovedSubmittalRecovery: ({ workspaceId }: { workspaceId: string }) => <div data-testid="submittal-recovery" data-workspace={workspaceId} /> }));
 
 import AssistantActivityPage from "@/app/(app)/assistant-activity/page";
 
@@ -124,6 +124,7 @@ describe("AssistantActivityPage", () => {
     await renderPage();
 
     expect(screen.getByRole("heading", { name: "Planner Agent Activity" })).toBeInTheDocument();
+    expect(screen.getByTestId("submittal-recovery")).toHaveAttribute("data-workspace", WORKSPACE_ID);
 
     // Summary line above the list.
     expect(screen.getByText(/2 actions · 1 approval-gated · 1 failed/)).toBeInTheDocument();

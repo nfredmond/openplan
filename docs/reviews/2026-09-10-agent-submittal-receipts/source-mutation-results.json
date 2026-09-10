@@ -1,0 +1,74 @@
+[
+  {
+    "name": "comment-control",
+    "file": "src/lib/assistant/project-submittal-receipt.ts",
+    "expected": "survived",
+    "exit": 0,
+    "assertionFailure": false,
+    "expectedOutcome": true
+  },
+  {
+    "name": "normalization",
+    "file": "src/lib/assistant/action-approval-server.ts",
+    "expected": "killed",
+    "exit": 1,
+    "assertionFailure": true,
+    "expectedOutcome": true
+  },
+  {
+    "name": "project-name-projection",
+    "file": "src/lib/assistant/project-submittal-receipt.ts",
+    "expected": "killed",
+    "exit": 1,
+    "assertionFailure": true,
+    "expectedOutcome": true
+  },
+  {
+    "name": "receipt-identity",
+    "file": "src/lib/assistant/project-submittal-receipt.ts",
+    "expected": "killed",
+    "exit": 1,
+    "assertionFailure": true,
+    "expectedOutcome": true
+  },
+  {
+    "name": "route-receipt",
+    "file": "src/app/api/projects/[projectId]/records/route.ts",
+    "expected": "killed",
+    "exit": 1,
+    "assertionFailure": true,
+    "expectedOutcome": true
+  },
+  {
+    "name": "recovery-project-scope",
+    "file": "src/lib/assistant/project-submittal-recovery.ts",
+    "expected": "killed",
+    "exit": 1,
+    "assertionFailure": true,
+    "expectedOutcome": true
+  },
+  {
+    "name": "read-access",
+    "file": "src/app/api/assistant/actions/submittals/route.ts",
+    "expected": "killed",
+    "exit": 1,
+    "assertionFailure": true,
+    "expectedOutcome": true
+  },
+  {
+    "name": "resume-consent",
+    "file": "src/components/assistant/approved-hold-recovery.tsx",
+    "expected": "killed",
+    "exit": 1,
+    "assertionFailure": true,
+    "expectedOutcome": true
+  },
+  {
+    "name": "source-call",
+    "file": "src/app/api/projects/[projectId]/records/route.ts",
+    "expected": "killed",
+    "exit": 1,
+    "assertionFailure": true,
+    "expectedOutcome": true
+  }
+]

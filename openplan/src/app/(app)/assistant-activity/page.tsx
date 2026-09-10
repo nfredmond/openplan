@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { ApprovedHoldRecovery } from "@/components/assistant/approved-hold-recovery";
+import { ApprovedHoldRecovery, ApprovedSubmittalRecovery } from "@/components/assistant/approved-hold-recovery";
 import { Activity, ShieldCheck } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState, ErrorState } from "@/components/ui/state-block";
@@ -195,7 +195,8 @@ export default async function AssistantActivityPage() {
         </article>
       </header>
 
-      <ApprovedHoldRecovery key={membership.workspace_id} workspaceId={membership.workspace_id} />
+      <ApprovedHoldRecovery key={`holds-${membership.workspace_id}`} workspaceId={membership.workspace_id} />
+      <ApprovedSubmittalRecovery key={`submittals-${membership.workspace_id}`} workspaceId={membership.workspace_id} />
 
       <article className="module-section-surface">
         <div className="module-section-header">

@@ -221,6 +221,16 @@ export function executedActionPayload(action: unknown): unknown {
     if (executed.generateAfterCreate === false) delete executed.generateAfterCreate;
     if (executed.modelingCountyRunId === null) delete executed.modelingCountyRunId;
   }
+  if (executed.kind === "create_project_record") {
+    // Match the submittal route's persisted text and implicit defaults.
+    if (typeof executed.title === "string") executed.title = executed.title.trim();
+    if (typeof executed.notes === "string") {
+      executed.notes = executed.notes.trim();
+      if (!executed.notes) delete executed.notes;
+    }
+    if (executed.submittalType === "other") delete executed.submittalType;
+    if (executed.status === "draft") delete executed.status;
+  }
   return executed;
 }
 

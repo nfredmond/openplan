@@ -1,0 +1,37 @@
+[
+  {
+    "name": "sql-comment-control",
+    "expected": "survived",
+    "exit": 0,
+    "testFailure": false,
+    "expectedOutcome": true
+  },
+  {
+    "name": "sql-consent-hash",
+    "expected": "survived",
+    "exit": 0,
+    "testFailure": false,
+    "expectedOutcome": true
+  },
+  {
+    "name": "sql-audit-suppression",
+    "expected": "killed",
+    "exit": 1,
+    "testFailure": true,
+    "expectedOutcome": true
+  },
+  {
+    "name": "sql-receipt-identity",
+    "expected": "killed",
+    "exit": 1,
+    "testFailure": true,
+    "expectedOutcome": true
+  },
+  {
+    "name": "sql-project-lock",
+    "expected": "killed",
+    "exit": 1,
+    "testFailure": true,
+    "expectedOutcome": true
+  }
+]
