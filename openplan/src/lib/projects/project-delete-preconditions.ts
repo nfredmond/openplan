@@ -323,7 +323,9 @@ export function assessProjectDelete(
           blockers.reduce((total, blocker) => total + blocker.count, 0),
           "attached records"
         )} across ${pluralize(blockers.length, "modules")}, so deleting it would take real work with it.`,
-    alternative: hasCommitments
+    alternative: blockers.some(blocker => blocker.privateProviderHistory)
+      ? "Set the project's status to complete to retire it. Its attached records and private Planner Agent history stay intact."
+      : hasCommitments
       ? "Set the project's status to complete to retire it. Its funding and invoicing history stays intact and attributable."
       : "Set the project's status to complete to retire it — that is reversible — or remove the attached records from the modules listed above and delete the empty project afterwards.",
   };

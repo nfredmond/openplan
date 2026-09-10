@@ -78,6 +78,12 @@ describe("project delete preconditions", () => {
     expect(assessment.alternative).toContain("status to complete");
   });
 
+  it.each(["assistant_provider_connections", "assistant_provider_turns"])("preserves %s without suggesting the history can be deleted", table => {
+    const outcome = assessProjectDelete({[table]:1}, {projectId:"p1"});
+    expect(outcome.deletable).toBe(false);expect(outcome.alternative).toContain("private Planner Agent history stay intact");
+    expect(outcome.alternative).not.toContain("remove the attached records");
+  });
+
   it("distinguishes work that would be destroyed from work that would be orphaned", () => {
     const assessment = assessProjectDelete({ reports: 1, model_runs: 1 }, { projectId: "p1" });
 

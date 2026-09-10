@@ -1,0 +1,14 @@
+[
+  {
+    "case": "retirement-comment",
+    "exitCode": 0,
+    "expectedOutcome": true,
+    "tail": "\n RUN  v4.1.10 /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan\n\n\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\n\n Test Files  1 passed (1)\n      Tests  14 passed (14)\n   Start at  08:23:39\n   Duration  607ms (transform 43ms, setup 56ms, import 27ms, tests 24ms, environment 346ms)\n\n"
+  },
+  {
+    "case": "suggest-history-removal",
+    "exitCode": 1,
+    "expectedOutcome": true,
+    "tail": "\n RUN  v4.1.10 /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan\n\n\u00b7\u00b7\u00b7\u00b7xx\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\n\n Test Files  1 failed (1)\n      Tests  2 failed | 12 passed (14)\n   Start at  08:23:40\n   Duration  598ms (transform 41ms, setup 54ms, import 27ms, tests 29ms, environment 336ms)\n\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 2 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/test/project-delete-preconditions.test.ts > project delete preconditions > preserves assistant_provider_connections without suggesting the history can be deleted\n FAIL  src/test/project-delete-preconditions.test.ts > project delete preconditions > preserves assistant_provider_turns without suggesting the history can be deleted\nAssertionError: expected 'Set the project\\'s status to complete\u2026' to contain 'private Planner Agent history stay in\u2026'\n\nExpected: \"private Planner Agent history stay intact\"\nReceived: \"Set the project's status to complete to retire it \u2014 that is reversible \u2014 or remove the attached records from the modules listed above and delete the empty project afterwards.\"\n\n \u276f src/test/project-delete-preconditions.test.ts:83:71\n     81|   it.each([\"assistant_provider_connections\", \"assistant_provider_turns\u2026\n     82|     const outcome = assessProjectDelete({[table]:1}, {projectId:\"p1\"});\n     83|     expect(outcome.deletable).toBe(false);expect(outcome.alternative).\u2026\n       |                                                                       ^\n     84|     expect(outcome.alternative).not.toContain(\"remove the attached rec\u2026\n     85|   });\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/2]\u23af\n\n"
+  }
+]

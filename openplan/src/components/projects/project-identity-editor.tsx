@@ -636,16 +636,16 @@ export function ProjectIdentityEditor({
           </div>
 
           {refusal ? (
-            <div className="mt-4 rounded-xl border border-border bg-muted/20 p-4">
+            <div role="region" aria-label="Project deletion details" className="mt-4 rounded-xl border border-border bg-muted/20 p-4">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="mt-0.5 h-5 w-5 text-[color:var(--amber,#b45309)]" />
-                <div className="space-y-3">
+                <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[color:var(--amber,#b45309)]" />
+                <div className="min-w-0 flex-1 space-y-3">
                   <p className="text-sm font-medium text-foreground">{refusal.headline}</p>
                   <ul className="space-y-2">
                     {refusal.blockers.map((blocker) => (
                       <li key={blocker.table} className="text-sm">
                         <div className="flex flex-wrap items-center gap-2">
-                          <StatusBadge tone={blocker.severity === "blocking" ? "danger" : "warning"}>
+                          <StatusBadge className="max-w-full whitespace-normal break-words text-left" tone={blocker.severity === "blocking" ? "danger" : "warning"}>
                             {blocker.count} {blocker.label}
                           </StatusBadge>
                           <Link href={blocker.href} className="font-medium text-foreground hover:underline">

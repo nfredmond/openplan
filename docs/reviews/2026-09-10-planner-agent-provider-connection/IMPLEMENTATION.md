@@ -383,3 +383,31 @@ outcomes now match: both harmless controls pass, and hidden/unreadable counts,
 missing role classification/digest inventory, missing table count, copy regression,
 delete cascade and viewer-count access fail the intended checks. Source and SQL
 were restored. Initial failures and final results are retained separately.
+
+## Full QA restored; narrow refusal layout finding
+
+Candidate cba17d556e82 passed full QA (lint, unused-code check, 13,753 tests with
+350 named skips, connector defaults, explicit RLS opt-in guard, dependency audit
+and production build). Shuffled seed910052 passed the same 13,753/350. Full
+isolated RLS passed379 tests in46 files. The earlier52 worker and33 explicitly
+native-enabled connector results apply to unchanged worker code.
+
+The identified production build then showed private retention counts in the real
+project deletion control and refused to open deletion confirmation at both widths.
+A deliberately unavailable preflight showed an error and issued no DELETE; reload
+kept the exact original native answer. Its only console error was injected503.
+However, inspecting the390px screenshot found horizontal clipping inside the
+refusal container. The document-width assertion had missed nested overflow. This
+is a failed narrow-layout acceptance, not a complete browser pass. The original
+clipped screenshot is retained as retention-mobile-before-wrap.png.
+
+The refusal text column now permits shrinking, its labels wrap within available
+width, and the icon keeps its size. The shared explanation no longer offers removal
+of attached records when private provider history must be retained; it tells the
+planner to retire the project. Focused component/route/count/copy tests, TypeScript
+and scoped lint pass. Harmless retirement copy control survives; restoring the
+misleading alternative fails both private-history cases. The next browser harness
+checks each refusal text/label against its own container and viewport, with a
+harmless attribute and deliberate removal of wrapping at390px. It must detect the
+broken layout, restore it, and then pass. Stop the owned server before changes;
+final release metadata and exact-main CI remain pending.
