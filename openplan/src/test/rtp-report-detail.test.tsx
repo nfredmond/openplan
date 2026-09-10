@@ -96,6 +96,7 @@ describe("RtpReportDetail", () => {
             artifact_kind: "html",
             generated_at: "2026-03-28T18:00:00.000Z",
           },
+          { id: "artifact-old", artifact_kind: "pdf", generated_at: "2026-03-27T18:00:00.000Z" },
         ]}
         comparisonDigest={null}
         latestHtml={html}
@@ -168,6 +169,8 @@ describe("RtpReportDetail", () => {
     expect(screen.getAllByText(/Packet generated/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Latest packet artifact")).toBeInTheDocument();
     expect(screen.getByText("Artifact artifact-1")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Download HTML" })).toHaveAttribute("href", "/api/reports/report-1/artifacts/artifact-1/download");
+    expect(screen.getByRole("link", { name: "Download PDF" })).toHaveAttribute("href", "/api/reports/report-1/artifacts/artifact-old/download");
     expect(screen.getByText("Live comment-response posture")).toBeInTheDocument();
     expect(screen.getAllByText("Comment-response foundation ready").length).toBeGreaterThan(0);
     expect(screen.getByText("Approved categorized items ready for packet handoff.")).toBeInTheDocument();

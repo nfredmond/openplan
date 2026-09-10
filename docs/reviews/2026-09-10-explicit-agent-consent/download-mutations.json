@@ -1,0 +1,14 @@
+[
+  {
+    "name": "download-harmless",
+    "exitCode": 0
+  },
+  {
+    "name": "download-history-replaced",
+    "exitCode": 1
+  },
+  {
+    "name": "download-link-missing",
+    "exitCode": 1
+  }
+]

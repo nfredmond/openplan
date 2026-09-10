@@ -31,6 +31,7 @@ tracks outstanding checks. No new database migration.
   optional. Validate consent before creating a report or generating an artifact.
 - Record RTP artifact actions with their verified consent. Preserve completed
   report results when separate audit persistence throws.
+- Add download links to each retained RTP report artifact, including older versions.
 - Require separate explicit approvals for packet-record creation and artifact
   generation. Existing quick links without separate approval keep their behavior.
 

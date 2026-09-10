@@ -60,3 +60,27 @@ Eighteen approval/hash tests pass. A harmless comment survives; failing to
 normalize false/null defaults, erasing a second requested effect, permitting a
 compound approval or refusing an existing non-approval quick link each fails its
 intended assertion. Final full QA and browser evidence remain outstanding.
+
+## Production and browser checkpoint
+
+At5df4ffe8, full QA/build and shuffled seed914095 pass13,509 tests in1,234 files;
+33 files/299 tests are explicitly skipped. Dependency audit reports no findings.
+The identified production server at3279 uses the owned disposable target API22301.
+Desktop1440px and390px real navigation, synthetic proposal streams, actual approval
+UI and live report/generation routes retain separate approver/time/hash records.
+Both creation and generation replays return403 and preserve one effect each.
+No paid model was called; proposal text was a labeled deterministic test stream.
+Console review found no browser errors. Screenshots were opened and inspected.
+
+The initial desktop report-link selector required an exact URL, but the actual
+Reports link includes a release-review anchor. Its consent/effect evidence remains
+valid. The corrected navigation was used for mobile without recreating the desktop
+report. Synthetic report IDs511fb9bb-67dc-4731-8732-79a7477b6258 and
+9961f412-156e-4a4e-ace8-6a051eea9d54 remain available for final readback.
+
+Mobile report inspection confirmed the RTP generation-history cards had no saved
+artifact download link, although the authenticated download route already existed.
+Each card now links its exact retained artifact, including older versions. Eighteen
+focused component/download-route tests pass. A harmless comment survives; removing
+the link or substituting the newest artifact for a historical one fails the intended
+assertion. Final rebuilt browser download/PDF inspection remains outstanding.

@@ -823,6 +823,12 @@ export function RtpReportDetail({
                     </div>
                     <p className="text-sm font-medium text-foreground">Artifact {artifact.id.slice(0, 12)}</p>
                     <p className="text-sm text-muted-foreground">Generated {formatDateTime(artifact.generated_at)}</p>
+                    <a
+                      href={`/api/reports/${report.id}/artifacts/${artifact.id}/download`}
+                      className="module-inline-action w-fit"
+                    >
+                      Download {artifact.artifact_kind.toUpperCase()}
+                    </a>
                   </div>
                 ))}
               </div>
