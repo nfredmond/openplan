@@ -21,8 +21,10 @@ Recheck remote state before acting. Claude evidence and limits live in the adjac
 Worktree: /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10
 Branch: work/planner-agent-opencode-connection
 Package remains0.53.0. OpenCode work is not merged into main or released.
-Latest committed relay checkpoint before this handoff:1f57ff87. This handoff commit
-adds the tested launch helper and receipts. Use git log/status to find its SHA.
+Latest implementation checkpoint:5f1a5cff2e0fa3aa1b7654e685a04a90a539f769.
+It is pushed to the matching origin branch. The worktree was clean when checked
+for Nathaniel's weekly-allowance pause. This documentation checkpoint follows it.
+Use git log/status and the remote branch to verify the current state on return.
 Ownership: workers/planner_agent_connector/opencode-*.mjs, their tests and this review.
 No subagents. Do not alter another session's checkout/server. Root has a preexisting
 app server that is not ours; do not kill it or build/install over it. Owned3219
@@ -139,3 +141,14 @@ browser skill and identify the served build with scripts/ops/which-openplan.sh.
 The earlier Claude private harness/evidence is in the sibling
 claude-native-evidence-2026-09-10 directory. Never edit while an acceptance server
 is collecting evidence. Original native Codex and Claude histories must survive.
+
+## Immediate restart point after the allowance pause
+
+Start connector setup/dispatch and app registration for the completed native
+OpenCode adapter. No registration or app edits have begun. Before editing app
+files, map live Next processes to their checkout and identify the served build.
+The last product-direction check passed. Rerun it and check current ownership on
+return. Do not rely on development servers, databases or native processes having
+survived the pause; inspect them and restart only owned resources as needed.
+The last completed default connector suite had339 passes,4 opt-in skips and no
+failures. Its receipt is provider-checks.json; it does not establish app support.
