@@ -1,0 +1,362 @@
+[
+  {
+    "name": "harmless comment",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "SERVICES =",
+    "after": "# Harmless mutation control\nSERVICES =",
+    "survive": true
+  },
+  {
+    "name": "project name",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "if not re.fullmatch(r'openplan-restore-' + kind + r'-[0-9]+', project):",
+    "after": "if False:",
+    "survive": false
+  },
+  {
+    "name": "container label",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "if info['Config']['Labels'].get('com.supabase.cli.project') != project:",
+    "after": "if False:",
+    "survive": false
+  },
+  {
+    "name": "service images",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "if any(source[s]['imageId'] != target[s]['imageId'] for s in SERVICES):",
+    "after": "if False:",
+    "survive": false
+  },
+  {
+    "name": "nonempty target",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "if sql(db, f'SELECT count(*) FROM {name}') != '0':",
+    "after": "if False:",
+    "survive": false
+  },
+  {
+    "name": "existing recovery names",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "if sql(db, \"SELECT count(*) FROM pg_database WHERE datname IN \"\n               \"('openplan_recovered','openplan_bootstrap_preserved')\") != '0':",
+    "after": "if False:",
+    "survive": false
+  },
+  {
+    "name": "scheduled jobs",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "if sql(db, 'SELECT count(*) FROM cron.job') != '0':",
+    "after": "if False:",
+    "survive": false
+  },
+  {
+    "name": "role mismatch",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "if role_inventory(source_db) != role_inventory(target_db):",
+    "after": "if False:",
+    "survive": false
+  },
+  {
+    "name": "missing discovered table",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "for name in names:",
+    "after": "for name in names[:-1]:",
+    "survive": false
+  },
+  {
+    "name": "missing source consistency call",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "    compare_inventory(before, database_inventory(source_db))",
+    "after": "    database_inventory(source_db)",
+    "survive": false
+  },
+  {
+    "name": "missing storage comparison",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "if storage_inventory(destination/'restored-storage.tgz') != objects:",
+    "after": "if False:",
+    "survive": false
+  },
+  {
+    "name": "pgsodium excluded",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "n.nspname !~ '^pg_'",
+    "after": "n.nspname NOT LIKE 'pg_%'",
+    "survive": false
+  },
+  {
+    "name": "large objects omitted",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "names += ['pg_catalog.pg_largeobject', 'pg_catalog.pg_largeobject_metadata']",
+    "after": "names += []",
+    "survive": false
+  },
+  {
+    "name": "sequence positions omitted",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "'sequences': sequence_state",
+    "after": "'sequences': {}",
+    "survive": false
+  },
+  {
+    "name": "unhealthy service accepted",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "if status == 'healthy':",
+    "after": "if True:",
+    "survive": false
+  },
+  {
+    "name": "database properties omitted",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "'databaseProperties': database_properties(db)",
+    "after": "'databaseProperties': {}",
+    "survive": false
+  },
+  {
+    "name": "wrong database owner",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "'--owner', before['databaseProperties']['owner'], 'openplan_recovered'",
+    "after": "'--owner', 'supabase_admin', 'openplan_recovered'",
+    "survive": false
+  },
+  {
+    "name": "missing property restoration call",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "    restore_database_properties(source_db, target_db, destination)",
+    "after": "    # property restoration removed",
+    "survive": false
+  },
+  {
+    "name": "private settings error ignored",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "if result.returncode:",
+    "after": "if False:",
+    "survive": false
+  },
+  {
+    "name": "database settings hash ignored",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "hashlib.sha256(json.dumps(normalized_settings, sort_keys=True).encode()).hexdigest()",
+    "after": "'constant'",
+    "survive": false
+  },
+  {
+    "name": "missing target comparison call",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "    compare_inventory(before, after)",
+    "after": "    # comparison removed",
+    "survive": false
+  },
+  {
+    "name": "failed snapshot process",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "if process.wait() != 0:",
+    "after": "if False:",
+    "survive": false
+  },
+  {
+    "name": "ignored inventory differences",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "if before != after:",
+    "after": "if False:",
+    "survive": false
+  },
+  {
+    "name": "unsafe storage entries",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "if path.is_absolute() or '..' in path.parts or not (member.isfile() or member.isdir()):",
+    "after": "if False:",
+    "survive": false
+  },
+  {
+    "name": "duplicate storage paths",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "if name in seen:",
+    "after": "if False:",
+    "survive": false
+  },
+  {
+    "name": "ignored storage contents",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "hashlib.file_digest(handle, 'sha256').hexdigest()",
+    "after": "'constant'",
+    "survive": false
+  },
+  {
+    "name": "ignored schema changes",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "hashlib.sha256(stable.encode()).hexdigest()",
+    "after": "'constant'",
+    "survive": false
+  },
+  {
+    "name": "delegated grantor",
+    "module": "full_restore.py",
+    "test": "test_full_restore.py",
+    "before": "      WHERE d.datname=current_database() AND a.grantor<>d.datdba\"\"\") != '0':",
+    "after": "      WHERE d.datname=current_database() AND a.grantor<>d.datdba\"\"\") != '1':",
+    "survive": false
+  },
+  {
+    "name": "harmless comment",
+    "module": "reconstruct_owp_restore.py",
+    "test": "test_reconstruct_owp_restore.py",
+    "before": "def reconstruct(",
+    "after": "# Harmless comment\ndef reconstruct(",
+    "survive": true
+  },
+  {
+    "name": "changed cost accepted",
+    "module": "reconstruct_owp_restore.py",
+    "test": "test_reconstruct_owp_restore.py",
+    "before": "assert value == expected[name], f'{name}: expected {expected[name]}, reconstructed {value}'",
+    "after": "pass",
+    "survive": false
+  },
+  {
+    "name": "duplicate entry accepted",
+    "module": "reconstruct_owp_restore.py",
+    "test": "test_reconstruct_owp_restore.py",
+    "before": "assert len({row['entry_id'] for row in physical}) == len(physical), 'Physical source entry duplicated'",
+    "after": "pass",
+    "survive": false
+  },
+  {
+    "name": "duplicate source accepted",
+    "module": "reconstruct_owp_restore.py",
+    "test": "test_reconstruct_owp_restore.py",
+    "before": "assert len({row['source_key'] for row in physical}) == len(physical), 'Physical source key duplicated'",
+    "after": "pass",
+    "survive": false
+  },
+  {
+    "name": "old approval changed",
+    "module": "reconstruct_owp_restore.py",
+    "test": "test_reconstruct_owp_restore.py",
+    "before": "assert initial['work'][0]['allocations'][0]['amount'] == expected['originalCarryover'], 'Original carryover changed'",
+    "after": "pass",
+    "survive": false
+  },
+  {
+    "name": "cash overmatch accepted",
+    "module": "reconstruct_owp_restore.py",
+    "test": "test_reconstruct_owp_restore.py",
+    "before": "assert Decimal('0') < Decimal(match['amount']) <= Decimal(str(source['amount'])), 'Cash match exceeds physical payment'",
+    "after": "pass",
+    "survive": false
+  },
+  {
+    "name": "lost authorship accepted",
+    "module": "reconstruct_owp_restore.py",
+    "test": "test_reconstruct_owp_restore.py",
+    "before": "assert approval['actor_id'] == fixture['owner'] and approval['content']['note'], 'Approval actor or evidence lost'",
+    "after": "pass",
+    "survive": false
+  },
+  {
+    "name": "mixed currency accepted",
+    "module": "reconstruct_owp_restore.py",
+    "test": "test_reconstruct_owp_restore.py",
+    "before": "assert old_baseline['currency'] == next_baseline['currency'] == 'USD', 'Different currencies cannot be added'",
+    "after": "pass",
+    "survive": false
+  },
+  {
+    "name": "truncated query accepted",
+    "module": "reconstruct_owp_restore.py",
+    "test": "test_reconstruct_owp_restore.py",
+    "before": "if not total.isdigit() or int(total) != len(data):",
+    "after": "if False:",
+    "survive": false
+  },
+  {
+    "name": "optimized Python accepted",
+    "module": "reconstruct_owp_restore.py",
+    "test": "test_reconstruct_owp_restore.py",
+    "before": "if not __debug__:",
+    "after": "if False:",
+    "survive": false
+  },
+  {
+    "name": "refund subtraction reversed",
+    "module": "reconstruct_owp_restore.py",
+    "test": "test_reconstruct_owp_restore.py",
+    "before": "Decimal(row['refundDue']) - sum",
+    "after": "Decimal(row['refundDue']) + sum",
+    "survive": false
+  },
+  {
+    "name": "receipt subtraction reversed",
+    "module": "reconstruct_owp_restore.py",
+    "test": "test_reconstruct_owp_restore.py",
+    "before": "requested(old, fixture['oldClaim']) - sum",
+    "after": "requested(old, fixture['oldClaim']) + sum",
+    "survive": false
+  },
+  {
+    "name": "harmless comment",
+    "module": "disposable-restore-drill.sh",
+    "test": "test_restore_drill_ownership.py",
+    "before": "set -euo pipefail",
+    "after": "set -euo pipefail\n# harmless shell control",
+    "survive": true
+  },
+  {
+    "name": "existing project guard",
+    "module": "disposable-restore-drill.sh",
+    "test": "test_restore_drill_ownership.py",
+    "before": "if docker inspect \"supabase_db_$(basename \"$workdir\")\" >/dev/null 2>&1; then",
+    "after": "if false; then",
+    "survive": false
+  },
+  {
+    "name": "cleanup ownership",
+    "module": "disposable-restore-drill.sh",
+    "test": "test_restore_drill_ownership.py",
+    "before": "for project in \"${OWNED_PROJECTS[@]}\"; do",
+    "after": "for project in \"$SOURCE_PROJECT\" \"$TARGET_PROJECT\"; do",
+    "survive": false
+  },
+  {
+    "name": "unknown argument refusal",
+    "module": "disposable-restore-drill.sh",
+    "test": "test_restore_drill_ownership.py",
+    "before": "elif [[ $# != 0 ]]; then",
+    "after": "elif false; then",
+    "survive": false
+  },
+  {
+    "name": "keep ignored",
+    "module": "disposable-restore-drill.sh",
+    "test": "test_restore_drill_ownership.py",
+    "before": "if [[ \"${OPENPLAN_RESTORE_KEEP:-0}\" == 1 ]]; then",
+    "after": "if false; then",
+    "survive": false
+  }
+]

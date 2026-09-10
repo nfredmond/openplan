@@ -44,3 +44,29 @@ Run 5 retained `openplan-restore-source-3112923` and `openplan-restore-target-31
 The combined script then stopped on an inherited one-member assumption in its evidence relationship count. The additional independent reviewer made that count two. The query now binds membership to the document uploader; it accepts both legitimate members and rejects absent uploader membership. The first adverse attempt hit the existing last-owner protection, so it was not counted. A corrected rolled-back probe first supplied a second owner and then removed the uploader membership; the actual query returned `0:false`, while baseline and harmless control return `1:true`. No source or durable membership change remains. The restored-target RLS suite is running separately. Complete script rerun and browser/QA acceptance are still pending.
 
 Database metadata includes the original owner, normalized grants, locale/encoding, connection limit and a hash of database/role settings. Private settings are applied over stdin and excluded from public evidence. This repairs the `pg_database_owner` defect rather than granting broad public-schema access. A producer-derived fixture supports adversarial reconstruction tests, including lost approval authorship, changed costs, duplicate physical identities, overmatched cash and mixed currencies. Optimized Python is refused so assertion removal cannot turn the verifier green.
+
+## Completed archive drill and local environment correction
+
+Full drill 6 completed end to end using owned projects
+`openplan-restore-source-3390964` and `openplan-restore-target-3390964`, retained at
+`/tmp/openplan-restore-drill.yBEWX9`. It restored 287 tables and one Storage file,
+matched the full inventory and independent two-cycle reconstruction, signed in,
+verified bytes and uploader relationships, and passed live RLS. Run 5's separately
+invoked restored-target RLS also passed all 321 tests in 40 files.
+
+The older report fixture referenced a nonexistent, out-of-scope Storage path and
+the KB fixture advertised zero chunks despite retaining one. Those were test
+fixture defects, not demonstrated production losses. Run 6 uses the actual
+supported inline HTML artifact shape and correct KB metadata.
+
+The first full local QA attempt stopped at ESLint: shared main `node_modules`
+contained Next/eslint-config-next/plugin 16.2.11 while this checkout's lockfile
+requires 16.3.4. Its missing newer rule is an environment mismatch, not a reason
+to remove the source's download exception. The worktree's dependency symlink was
+removed and replaced with its own `npm ci` installation. Earlier browser
+inspection against 16.2.11 is exploratory; acceptance will use locked dependencies.
+
+Focused restoration tests currently pass 27 tests. Full local ops tests passed
+all runnable suites; native layout could not run because `xvfb-run` is absent.
+That unchanged suite remains mandatory in final CI. Full QA and browser acceptance
+are still in progress; none of these partial results counts as release completion.

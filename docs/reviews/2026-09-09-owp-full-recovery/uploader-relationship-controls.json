@@ -1,0 +1,20 @@
+[
+  {
+    "case": "baseline",
+    "guardValue": "1:true",
+    "result": "accepted",
+    "transaction": "rolled back"
+  },
+  {
+    "case": "harmless comment",
+    "guardValue": "1:true",
+    "result": "accepted",
+    "transaction": "rolled back"
+  },
+  {
+    "case": "missing uploader membership",
+    "guardValue": "0:false",
+    "result": "refused",
+    "transaction": "rolled back"
+  }
+]

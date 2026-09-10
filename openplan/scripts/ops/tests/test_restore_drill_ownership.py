@@ -10,7 +10,7 @@ OPS = Path(__file__).resolve().parents[1]
 
 
 class RestoreDrillOwnershipTests(unittest.TestCase):
-    def exercise(self, args=()):
+    def exercise(self, args=(), keep="0"):
         with tempfile.TemporaryDirectory(prefix='restore-entry-test-') as directory:
             root = Path(directory)
             app = root/'app'
@@ -33,7 +33,7 @@ class RestoreDrillOwnershipTests(unittest.TestCase):
                 script.chmod(0o700)
             result = subprocess.run(['bash', str(app/'scripts/ops/disposable-restore-drill.sh'), *args], cwd=root,
                                     env={**os.environ, 'PATH': str(binaries)+os.pathsep+os.environ['PATH'],
-                                         'PROBE_LOG': str(log), 'TMPDIR': str(root), 'OPENPLAN_RESTORE_KEEP': '0'}, text=True,
+                                         'PROBE_LOG': str(log), 'TMPDIR': str(root), 'OPENPLAN_RESTORE_KEEP': keep}, text=True,
                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             return result, log.read_text(), list(root.glob('openplan-restore-drill.*'))
 
@@ -44,6 +44,13 @@ class RestoreDrillOwnershipTests(unittest.TestCase):
         self.assertIn('docker inspect supabase_db_openplan-restore-source-', calls)
         self.assertNotIn('npm ', calls, 'An existing project reached start or cleanup')
         self.assertFalse(leftovers)
+
+    def test_keep_preserves_private_scratch_without_stopping_existing_project(self):
+        result, calls, leftovers = self.exercise(keep="1")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('retained owned projects', result.stdout)
+        self.assertTrue(leftovers)
+        self.assertNotIn('npm ', calls)
 
     def test_unknown_argument_is_refused_before_tools(self):
         result, calls, leftovers = self.exercise(('--unknown',))

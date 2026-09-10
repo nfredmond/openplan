@@ -1,0 +1,27 @@
+[
+  {
+    "name": "harmless comment",
+    "exitCode": 0,
+    "result": "survived"
+  },
+  {
+    "name": "existing project guard",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "cleanup ownership",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "unknown argument refusal",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "keep ignored",
+    "exitCode": 1,
+    "result": "targeted failure"
+  }
+]

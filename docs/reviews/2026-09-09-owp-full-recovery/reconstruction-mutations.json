@@ -1,0 +1,62 @@
+[
+  {
+    "name": "harmless comment",
+    "exitCode": 0,
+    "result": "survived"
+  },
+  {
+    "name": "changed cost accepted",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "duplicate entry accepted",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "duplicate source accepted",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "old approval changed",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "cash overmatch accepted",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "lost authorship accepted",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "mixed currency accepted",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "truncated query accepted",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "optimized Python accepted",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "refund subtraction reversed",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "receipt subtraction reversed",
+    "exitCode": 1,
+    "result": "targeted failure"
+  }
+]

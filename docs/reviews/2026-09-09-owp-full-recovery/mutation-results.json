@@ -1,0 +1,142 @@
+[
+  {
+    "name": "harmless comment",
+    "exitCode": 0,
+    "result": "survived"
+  },
+  {
+    "name": "project name",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "container label",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "service images",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "nonempty target",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "existing recovery names",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "scheduled jobs",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "role mismatch",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "missing discovered table",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "missing source consistency call",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "missing storage comparison",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "pgsodium excluded",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "large objects omitted",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "sequence positions omitted",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "unhealthy service accepted",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "database properties omitted",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "wrong database owner",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "missing property restoration call",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "private settings error ignored",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "database settings hash ignored",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "missing target comparison call",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "failed snapshot process",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "ignored inventory differences",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "unsafe storage entries",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "duplicate storage paths",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "ignored storage contents",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "ignored schema changes",
+    "exitCode": 1,
+    "result": "targeted failure"
+  },
+  {
+    "name": "delegated grantor",
+    "exitCode": 1,
+    "result": "targeted failure"
+  }
+]
