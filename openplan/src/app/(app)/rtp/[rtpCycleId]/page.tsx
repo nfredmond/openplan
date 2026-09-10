@@ -165,7 +165,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
   // genuine absence still 404s; a read that failed says it failed.
   if (cycleResult.error) {
     return (
-      <section className="module-page">
+      <section className="module-page grid-cols-1">
         <div className="mx-auto w-full max-w-2xl px-2 py-10">
           <StateBlock
             tone="danger"
@@ -624,7 +624,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
   const activeTab = resolvePageTab(cycleTabs, resolvedSearchParams[PAGE_TAB_QUERY_KEY], "overview");
 
   return (
-    <section className="module-page">
+    <section className="module-page grid-cols-1">
       <CartographicSurfaceWide />
 
       {/*

@@ -24,9 +24,11 @@ No changes yet.
 
 ## 0.49.3 — 2026-09-10
 
-Development candidate. [Verification](docs/reviews/2026-09-10-write-outcome-truth/VERIFICATION.md)
-tracks outstanding checks. No new database migration.
+[Verification](docs/reviews/2026-09-10-write-outcome-truth/VERIFICATION.md)
+records the engineering checks and remaining limits. No new database migration.
 
+- Keep the RTP planning-period form open for unconfirmed saves, and keep saved
+  period controls within the page at narrow widths.
 - Stop claiming creation when measure, RTP or VMT-determination inserts return
   no confirmed result. Ask users to check saved state before retrying.
 - Distinguish explicit zero-row database responses from ambiguous or multiple-row

@@ -1,0 +1,547 @@
+[
+  {
+    "width": 1440,
+    "id": "fc8d8969-f99c-4dae-95ee-6794bbe6e997",
+    "retained": [
+      {
+        "id": "25367376-a8e0-45ae-b031-e532ffcc1020",
+        "label": "SYNTHETIC retained 1440",
+        "start_year": 2026,
+        "end_year": 2035
+      },
+      {
+        "id": "6addeebe-e686-43b9-90d8-d33663af2121",
+        "label": "SYNTHETIC retained 1440 second period",
+        "start_year": 2036,
+        "end_year": 2046
+      }
+    ],
+    "controls": [
+      {
+        "index": 0,
+        "selector": "button.inline-flex.items-center.justify-center",
+        "tag": "button",
+        "text": "Add a period",
+        "ariaLabel": null,
+        "href": null,
+        "resolvedHref": null,
+        "rect": {
+          "left": 1226.28125,
+          "top": 364.421875,
+          "width": 139.71875,
+          "height": 36
+        },
+        "aim": {
+          "x": 1296.140625,
+          "y": 382.421875
+        },
+        "visibleFraction": 1,
+        "display": "flex",
+        "visibility": "visible",
+        "pointerEvents": "auto",
+        "effectiveOpacity": 1,
+        "hitTopIsSelfOrDescendant": true,
+        "hitTopDescription": "button.inline-flex.items-center.justify-center",
+        "hitTopRoot": null,
+        "disabled": false,
+        "ariaHidden": false,
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "visible": true,
+        "hitTestable": true,
+        "reachable": true,
+        "reason": null
+      },
+      {
+        "index": 0,
+        "selector": "button.inline-flex.items-center.justify-center",
+        "tag": "button",
+        "text": "Edit",
+        "ariaLabel": null,
+        "href": null,
+        "resolvedHref": null,
+        "rect": {
+          "left": 1153.3125,
+          "top": 429.421875,
+          "width": 80.796875,
+          "height": 36
+        },
+        "aim": {
+          "x": 1193.7109375,
+          "y": 447.421875
+        },
+        "visibleFraction": 1,
+        "display": "flex",
+        "visibility": "visible",
+        "pointerEvents": "auto",
+        "effectiveOpacity": 1,
+        "hitTopIsSelfOrDescendant": true,
+        "hitTopDescription": "button.inline-flex.items-center.justify-center",
+        "hitTopRoot": null,
+        "disabled": false,
+        "ariaHidden": false,
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "visible": true,
+        "hitTestable": true,
+        "reachable": true,
+        "reason": null
+      },
+      {
+        "index": 0,
+        "selector": "button.inline-flex.items-center.justify-center",
+        "tag": "button",
+        "text": "Remove",
+        "ariaLabel": null,
+        "href": null,
+        "resolvedHref": null,
+        "rect": {
+          "left": 1242.109375,
+          "top": 429.421875,
+          "width": 106.890625,
+          "height": 36
+        },
+        "aim": {
+          "x": 1295.5546875,
+          "y": 447.421875
+        },
+        "visibleFraction": 1,
+        "display": "flex",
+        "visibility": "visible",
+        "pointerEvents": "auto",
+        "effectiveOpacity": 1,
+        "hitTopIsSelfOrDescendant": true,
+        "hitTopDescription": "button.inline-flex.items-center.justify-center",
+        "hitTopRoot": null,
+        "disabled": false,
+        "ariaHidden": false,
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "visible": true,
+        "hitTestable": true,
+        "reachable": true,
+        "reason": null
+      },
+      {
+        "index": 0,
+        "selector": "button.inline-flex.items-center.justify-center",
+        "tag": "button",
+        "text": "Edit",
+        "ariaLabel": null,
+        "href": null,
+        "resolvedHref": null,
+        "rect": {
+          "left": 1153.3125,
+          "top": 549.421875,
+          "width": 80.796875,
+          "height": 36
+        },
+        "aim": {
+          "x": 1193.7109375,
+          "y": 567.421875
+        },
+        "visibleFraction": 1,
+        "display": "flex",
+        "visibility": "visible",
+        "pointerEvents": "auto",
+        "effectiveOpacity": 1,
+        "hitTopIsSelfOrDescendant": true,
+        "hitTopDescription": "button.inline-flex.items-center.justify-center",
+        "hitTopRoot": null,
+        "disabled": false,
+        "ariaHidden": false,
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "visible": true,
+        "hitTestable": true,
+        "reachable": true,
+        "reason": null
+      },
+      {
+        "index": 0,
+        "selector": "button.inline-flex.items-center.justify-center",
+        "tag": "button",
+        "text": "Remove",
+        "ariaLabel": null,
+        "href": null,
+        "resolvedHref": null,
+        "rect": {
+          "left": 1242.109375,
+          "top": 549.421875,
+          "width": 106.890625,
+          "height": 36
+        },
+        "aim": {
+          "x": 1295.5546875,
+          "y": 567.421875
+        },
+        "visibleFraction": 1,
+        "display": "flex",
+        "visibility": "visible",
+        "pointerEvents": "auto",
+        "effectiveOpacity": 1,
+        "hitTopIsSelfOrDescendant": true,
+        "hitTopDescription": "button.inline-flex.items-center.justify-center",
+        "hitTopRoot": null,
+        "disabled": false,
+        "ariaHidden": false,
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "visible": true,
+        "hitTestable": true,
+        "reachable": true,
+        "reason": null
+      },
+      {
+        "index": 0,
+        "selector": "button.inline-flex.items-center.justify-center",
+        "tag": "button",
+        "text": "Add a line",
+        "ariaLabel": null,
+        "href": null,
+        "resolvedHref": null,
+        "rect": {
+          "left": 1228.96875,
+          "top": 828.265625,
+          "width": 120.03125,
+          "height": 36
+        },
+        "aim": {
+          "x": 1288.984375,
+          "y": 846.265625
+        },
+        "visibleFraction": 1,
+        "display": "flex",
+        "visibility": "visible",
+        "pointerEvents": "auto",
+        "effectiveOpacity": 1,
+        "hitTopIsSelfOrDescendant": true,
+        "hitTopDescription": "button.inline-flex.items-center.justify-center",
+        "hitTopRoot": null,
+        "disabled": false,
+        "ariaHidden": false,
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "visible": true,
+        "hitTestable": true,
+        "reachable": true,
+        "reason": null
+      },
+      {
+        "index": 0,
+        "selector": "button.inline-flex.items-center.justify-center",
+        "tag": "button",
+        "text": "Add a line",
+        "ariaLabel": null,
+        "href": null,
+        "resolvedHref": null,
+        "rect": {
+          "left": 1228.96875,
+          "top": 485.953125,
+          "width": 120.03125,
+          "height": 36
+        },
+        "aim": {
+          "x": 1288.984375,
+          "y": 503.953125
+        },
+        "visibleFraction": 1,
+        "display": "flex",
+        "visibility": "visible",
+        "pointerEvents": "auto",
+        "effectiveOpacity": 1,
+        "hitTopIsSelfOrDescendant": true,
+        "hitTopDescription": "button.inline-flex.items-center.justify-center",
+        "hitTopRoot": null,
+        "disabled": false,
+        "ariaHidden": false,
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "visible": true,
+        "hitTestable": true,
+        "reachable": true,
+        "reason": null
+      },
+      {
+        "index": 0,
+        "selector": "button.inline-flex.items-center.justify-center",
+        "tag": "button",
+        "text": "Add performance measure",
+        "ariaLabel": null,
+        "href": null,
+        "resolvedHref": null,
+        "rect": {
+          "left": 355,
+          "top": 816.734375,
+          "width": 226.859375,
+          "height": 36
+        },
+        "aim": {
+          "x": 468.4296875,
+          "y": 834.734375
+        },
+        "visibleFraction": 1,
+        "display": "inline-flex",
+        "visibility": "visible",
+        "pointerEvents": "auto",
+        "effectiveOpacity": 1,
+        "hitTopIsSelfOrDescendant": true,
+        "hitTopDescription": "button.inline-flex.items-center.justify-center",
+        "hitTopRoot": null,
+        "disabled": false,
+        "ariaHidden": false,
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "visible": true,
+        "hitTestable": true,
+        "reachable": true,
+        "reason": null
+      }
+    ],
+    "errors": [
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    ],
+    "responses": [
+      {
+        "url": "http://127.0.0.1:3277/api/rtp-cycles/fc8d8969-f99c-4dae-95ee-6794bbe6e997/horizon-bands",
+        "status": 500
+      }
+    ],
+    "layout": {
+      "baseline": true,
+      "harmless": true,
+      "automaticTrackRejected": false
+    },
+    "url": "http://127.0.0.1:3277/rtp/fc8d8969-f99c-4dae-95ee-6794bbe6e997?tab=financial"
+  },
+  {
+    "width": 390,
+    "id": "3200df28-a2a4-4e40-bd14-65824f341936",
+    "retained": [
+      {
+        "id": "d5c8444c-d6c1-4772-ab60-c4dc146d84fa",
+        "label": "SYNTHETIC retained 390",
+        "start_year": 2026,
+        "end_year": 2035
+      }
+    ],
+    "controls": [
+      {
+        "index": 0,
+        "selector": "button.inline-flex.items-center.justify-center",
+        "tag": "button",
+        "text": "Add a period",
+        "ariaLabel": null,
+        "href": null,
+        "resolvedHref": null,
+        "rect": {
+          "left": 74,
+          "top": 442.046875,
+          "width": 139.71875,
+          "height": 36
+        },
+        "aim": {
+          "x": 143.859375,
+          "y": 460.046875
+        },
+        "visibleFraction": 1,
+        "display": "flex",
+        "visibility": "visible",
+        "pointerEvents": "auto",
+        "effectiveOpacity": 1,
+        "hitTopIsSelfOrDescendant": true,
+        "hitTopDescription": "button.inline-flex.items-center.justify-center",
+        "hitTopRoot": null,
+        "disabled": false,
+        "ariaHidden": false,
+        "viewport": {
+          "width": 390,
+          "height": 1000
+        },
+        "visible": true,
+        "hitTestable": true,
+        "reachable": true,
+        "reason": null
+      },
+      {
+        "index": 0,
+        "selector": "button.inline-flex.items-center.justify-center",
+        "tag": "button",
+        "text": "Edit",
+        "ariaLabel": null,
+        "href": null,
+        "resolvedHref": null,
+        "rect": {
+          "left": 91,
+          "top": 645.046875,
+          "width": 80.796875,
+          "height": 36
+        },
+        "aim": {
+          "x": 131.3984375,
+          "y": 663.046875
+        },
+        "visibleFraction": 1,
+        "display": "flex",
+        "visibility": "visible",
+        "pointerEvents": "auto",
+        "effectiveOpacity": 1,
+        "hitTopIsSelfOrDescendant": true,
+        "hitTopDescription": "button.inline-flex.items-center.justify-center",
+        "hitTopRoot": null,
+        "disabled": false,
+        "ariaHidden": false,
+        "viewport": {
+          "width": 390,
+          "height": 1000
+        },
+        "visible": true,
+        "hitTestable": true,
+        "reachable": true,
+        "reason": null
+      },
+      {
+        "index": 0,
+        "selector": "button.inline-flex.items-center.justify-center",
+        "tag": "button",
+        "text": "Remove",
+        "ariaLabel": null,
+        "href": null,
+        "resolvedHref": null,
+        "rect": {
+          "left": 179.796875,
+          "top": 645.046875,
+          "width": 106.890625,
+          "height": 36
+        },
+        "aim": {
+          "x": 233.2421875,
+          "y": 663.046875
+        },
+        "visibleFraction": 1,
+        "display": "flex",
+        "visibility": "visible",
+        "pointerEvents": "auto",
+        "effectiveOpacity": 1,
+        "hitTopIsSelfOrDescendant": true,
+        "hitTopDescription": "button.inline-flex.items-center.justify-center",
+        "hitTopRoot": null,
+        "disabled": false,
+        "ariaHidden": false,
+        "viewport": {
+          "width": 390,
+          "height": 1000
+        },
+        "visible": true,
+        "hitTestable": true,
+        "reachable": true,
+        "reason": null
+      },
+      {
+        "index": 0,
+        "selector": "button.inline-flex.items-center.justify-center",
+        "tag": "button",
+        "text": "Add a line",
+        "ariaLabel": null,
+        "href": null,
+        "resolvedHref": null,
+        "rect": {
+          "left": 203.859375,
+          "top": 504.265625,
+          "width": 120.03125,
+          "height": 36
+        },
+        "aim": {
+          "x": 263.875,
+          "y": 522.265625
+        },
+        "visibleFraction": 1,
+        "display": "flex",
+        "visibility": "visible",
+        "pointerEvents": "auto",
+        "effectiveOpacity": 1,
+        "hitTopIsSelfOrDescendant": true,
+        "hitTopDescription": "button.inline-flex.items-center.justify-center",
+        "hitTopRoot": null,
+        "disabled": false,
+        "ariaHidden": false,
+        "viewport": {
+          "width": 390,
+          "height": 1000
+        },
+        "visible": true,
+        "hitTestable": true,
+        "reachable": true,
+        "reason": null
+      },
+      {
+        "index": 0,
+        "selector": "button.inline-flex.items-center.justify-center",
+        "tag": "button",
+        "text": "Add performance measure",
+        "ariaLabel": null,
+        "href": null,
+        "resolvedHref": null,
+        "rect": {
+          "left": 88,
+          "top": 777.015625,
+          "width": 226.859375,
+          "height": 36
+        },
+        "aim": {
+          "x": 201.4296875,
+          "y": 795.015625
+        },
+        "visibleFraction": 1,
+        "display": "inline-flex",
+        "visibility": "visible",
+        "pointerEvents": "auto",
+        "effectiveOpacity": 1,
+        "hitTopIsSelfOrDescendant": true,
+        "hitTopDescription": "button.inline-flex.items-center.justify-center",
+        "hitTopRoot": null,
+        "disabled": false,
+        "ariaHidden": false,
+        "viewport": {
+          "width": 390,
+          "height": 1000
+        },
+        "visible": true,
+        "hitTestable": true,
+        "reachable": true,
+        "reason": null
+      }
+    ],
+    "errors": [
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    ],
+    "responses": [
+      {
+        "url": "http://127.0.0.1:3277/api/rtp-cycles/3200df28-a2a4-4e40-bd14-65824f341936/horizon-bands",
+        "status": 500
+      }
+    ],
+    "layout": {
+      "baseline": true,
+      "harmless": true,
+      "automaticTrackRejected": true
+    },
+    "url": "http://127.0.0.1:3277/rtp/3200df28-a2a4-4e40-bd14-65824f341936?tab=financial"
+  }
+]
