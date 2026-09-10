@@ -481,19 +481,18 @@ describe("/api/rtp-cycles/[rtpCycleId]/horizon-bands", () => {
     });
   });
 
-  it("reports an insert that could not be read back as created, never as failed", async () => {
+  it("does not claim creation after a zero-row INSERT response", async () => {
     queueResult("rtp_cycles", { data: { id: RTP_CYCLE_ID, workspace_id: WORKSPACE_A }, error: null });
-    // PGRST116 after an INSERT means the row WAS written and the select could
-    // not see it. Answering 4xx/5xx here is how a retry creates a second band.
-    queueResult("rtp_horizon_bands", { data: null, error: { code: "PGRST116", message: "no rows" } });
+    // The live PostgREST probe returned this shape with no inserted row.
+    queueResult("rtp_horizon_bands", { data: null, error: { code: "PGRST116", message: "no rows", details: "The result contains 0 rows" } });
 
     const response = await postBand(
       request("POST", { label: "First ten years", startYear: 2026, endYear: 2035 }),
       routeContext
     );
 
-    expect(response.status).toBe(201);
-    expect(await response.json()).toMatchObject({ created: true, record: null });
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ error: "Could not confirm creation of the horizon period" });
   });
 
   it("does not report a delete that matched no rows as a success", async () => {

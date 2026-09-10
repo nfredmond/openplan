@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { unconfirmedInsertResponse } from "@/lib/http/write-outcome";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
@@ -658,22 +659,11 @@ export async function POST(req: NextRequest, context: RouteContext): Promise<Nex
 
   const record = parseVmtSignificanceScreeningRow(saved);
   if (!record) {
-    // The INSERT succeeded (no error) but the row could not be read back or
-    // parsed. Reporting a failure here would invite a retry that stores a second
-    // determination — see `insertNotReadableBackResponse` for the same reasoning.
-    audit.warn("vmt_significance_insert_not_readable_back", {
+    // An absent or malformed returned row cannot establish a saved determination.
+    audit.warn("vmt_significance_insert_unconfirmed", {
       modelRunId: parsedParams.data.modelRunId,
     });
-    return NextResponse.json(
-      {
-        created: true,
-        screening: null,
-        details:
-          "The determination was saved, but this request could not read it back. Nothing needs to be " +
-          "retried; retrying would store a second determination. Reopen the screen to see the saved history.",
-      },
-      { status: 201 }
-    );
+    return unconfirmedInsertResponse({ subject: "determination" });
   }
 
   audit.info("vmt_significance_determination_saved", {

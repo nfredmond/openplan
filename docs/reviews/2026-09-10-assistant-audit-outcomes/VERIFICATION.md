@@ -121,3 +121,13 @@ claim to finish A1a or any scientific validation requirement.
 Case-specific harness paths require local dependencies, an explicitly disposable
 stack and separate private login/environment files. Those private files are not
 included in this evidence. All retained UI data is synthetic.
+
+## Published receipt
+
+[v0.49.2](https://github.com/nfredmond/openplan/releases/tag/v0.49.2) was published
+2026-09-10T08:43:43Z, neither draft nor prerelease. Annotated tag object
+`c79486619639bf94dac75bd6e7dd1ce21baa2d23` peels to release commit
+`d87a04d4271ee7e46e21d09e4fc63cd3fec6f5b3`; both remote refs were checked.
+All jobs succeeded on that exact commit before tagging: CI34455454601, RLS34455454729,
+and upgrade34455454518 from v0.49.1. Full QA, shuffled, worker, operations and
+modeling jobs are included in the retained final-ci.json receipt.

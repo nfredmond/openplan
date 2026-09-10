@@ -516,7 +516,7 @@ const ZERO_ROW_HELPERS = [
   "noRowsMatchedResponse",
   "noRowsMatchedBody",
   "noRowsMatchedStatus",
-  "insertNotReadableBackResponse",
+  "unconfirmedInsertResponse",
   "POSTGREST_NO_ROWS_MATCHED",
 ] as const;
 

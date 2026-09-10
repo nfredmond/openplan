@@ -127,7 +127,7 @@ describe("project record route", () => {
         if (table === "kb_documents") {
           const chain = {
             eq: () => chain,
-            single: async () => ({ data: null, error: { code: "PGRST116", message: "no rows" } }),
+            single: async () => ({ data: null, error: { details: "The result contains 0 rows", code: "PGRST116", message: "no rows" } }),
           };
           return { select: () => chain };
         }
@@ -228,7 +228,7 @@ describe("project record route", () => {
             update: () => ({
               eq: () => ({
                 select: () => ({
-                  single: async () => ({ data: null, error: { code: "PGRST116", message: "no rows returned" } }),
+                  single: async () => ({ data: null, error: { details: "The result contains 0 rows", code: "PGRST116", message: "no rows returned" } }),
                 }),
               }),
             }),

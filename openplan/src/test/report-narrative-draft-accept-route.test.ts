@@ -247,7 +247,7 @@ describe("/api/reports/[reportId]/narrative-draft/[draftId]", () => {
     installClient(draftRow());
     updateSingleMock.mockResolvedValue({
       data: null,
-      error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+      error: { details: "The result contains 0 rows", code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
     });
 
     const response = await patchDraft(patchRequest({ action: "dismiss" }), routeContext());

@@ -21,7 +21,7 @@ import { z } from "zod";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import {
-  insertNotReadableBackResponse,
+  unconfirmedInsertResponse,
   isWriteFailure,
   noRowsMatchedResponse,
   writeMatchedNoRows,
@@ -131,7 +131,7 @@ export async function POST(
     }
 
     if (writeMatchedNoRows({ data, error })) {
-      return insertNotReadableBackResponse({ subject: "attachment" });
+      return unconfirmedInsertResponse({ subject: "attachment" });
     }
 
     audit.info("attached", {

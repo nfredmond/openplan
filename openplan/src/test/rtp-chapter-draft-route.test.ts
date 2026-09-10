@@ -634,7 +634,7 @@ describe("/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft PATCH", () => 
     // honest answer names the refusal instead of "Failed to update".
     updateSingleMock.mockResolvedValue({
       data: null,
-      error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+      error: { details: "The result contains 0 rows", code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
     });
 
     const response = await patchChapterDraft(

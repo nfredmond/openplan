@@ -37,7 +37,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import {
-  insertNotReadableBackResponse,
+  unconfirmedInsertResponse,
   isWriteFailure,
   noRowsMatchedResponse,
   writeMatchedNoRows,
@@ -425,11 +425,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to create the horizon period" }, { status: 500 });
     }
 
-    // An INSERT that answers PGRST116 WROTE THE ROW and could not read it back.
-    // Reporting failure here is how duplicates get made.
+    // Without a returned row, creation cannot be confirmed from this response.
     if (writeMatchedNoRows({ data, error })) {
-      audit.warn("insert_not_readable_back", { rtpCycleId: parsedParams.data.rtpCycleId });
-      return insertNotReadableBackResponse({ subject: "horizon period" });
+      audit.warn("insert_unconfirmed", { rtpCycleId: parsedParams.data.rtpCycleId });
+      return unconfirmedInsertResponse({ subject: "horizon period" });
     }
 
     const acceptance = await completeExtractionAcceptance({

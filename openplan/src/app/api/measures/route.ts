@@ -23,7 +23,7 @@ import { z } from "zod";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
-import { insertNotReadableBackResponse, isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
+import { unconfirmedInsertResponse, isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
@@ -182,8 +182,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (writeMatchedNoRows({ data, error })) {
-      audit.warn("insert_not_readable_back", { programId: program.id });
-      return insertNotReadableBackResponse({ subject: "measure fund" });
+      audit.warn("insert_unconfirmed", { programId: program.id });
+      return unconfirmedInsertResponse({ subject: "measure fund" });
     }
 
     audit.info("created", {

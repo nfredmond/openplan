@@ -19,7 +19,7 @@ import { z } from "zod";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import {
-  insertNotReadableBackResponse,
+  unconfirmedInsertResponse,
   isWriteFailure,
   noRowsMatchedResponse,
   writeMatchedNoRows,
@@ -102,8 +102,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ me
     }
 
     if (writeMatchedNoRows({ data, error })) {
-      audit.warn("insert_not_readable_back", { measureId: parsedParams.data.measureId });
-      return insertNotReadableBackResponse({ subject: "recipient" });
+      audit.warn("insert_unconfirmed", { measureId: parsedParams.data.measureId });
+      return unconfirmedInsertResponse({ subject: "recipient" });
     }
 
     audit.info("created", {

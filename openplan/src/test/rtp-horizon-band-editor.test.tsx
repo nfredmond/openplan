@@ -190,7 +190,7 @@ describe("RtpHorizonBandEditor", () => {
     expect(alert).toHaveTextContent("Apply the latest Supabase migrations, then try again.");
   });
 
-  it("discloses a create that was written and could not be read back", async () => {
+  it("discloses a legacy server response that claims creation without a returned row", async () => {
     mockFetchOnce({
       status: 201,
       body: {

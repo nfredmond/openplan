@@ -276,7 +276,7 @@ describe("POST /api/county-runs/[countyRunId]/validate/refresh", () => {
     // write the application had already allowed.
     countyRunUpdateSingleMock.mockResolvedValueOnce({
       data: null,
-      error: { message: "JSON object requested, multiple (or no) rows returned", code: "PGRST116" },
+      error: { details: "The result contains 0 rows", message: "JSON object requested, multiple (or no) rows returned", code: "PGRST116" },
     });
 
     const response = await refreshCountyRunValidation(request(), {

@@ -837,7 +837,7 @@ describe("PATCH /api/invoicing/rate-tables/[rateTableId]", () => {
   it("reports a zero-row header update as a refused write, and leaves the entries alone", async () => {
     rateTableUpdateSingleMock.mockResolvedValueOnce({
       data: null,
-      error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+      error: { details: "The result contains 0 rows", code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
     });
 
     const response = await patchRateTable(

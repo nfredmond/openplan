@@ -520,7 +520,7 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
     // the honest report is that the database refused the write.
     countyRunUpdateSingleMock.mockResolvedValueOnce({
       data: null,
-      error: { message: "JSON object requested, multiple (or no) rows returned", code: "PGRST116" },
+      error: { details: "The result contains 0 rows", message: "JSON object requested, multiple (or no) rows returned", code: "PGRST116" },
     });
 
     const response = await postCountyRunManifest(jsonRequest({ status: "completed", manifest }), {
@@ -547,7 +547,7 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
     authGetUserMock.mockResolvedValue({ data: { user: null } });
     countyRunUpdateSingleMock.mockResolvedValueOnce({
       data: null,
-      error: { message: "JSON object requested, multiple (or no) rows returned", code: "PGRST116" },
+      error: { details: "The result contains 0 rows", message: "JSON object requested, multiple (or no) rows returned", code: "PGRST116" },
     });
 
     const response = await postCountyRunManifest(

@@ -288,7 +288,7 @@ describe("POST /api/county-runs/[countyRunId]/scaffold", () => {
     // database refusing the write instead of an unexplained 500.
     countyRunUpdateSingleMock.mockResolvedValueOnce({
       data: null,
-      error: { message: "JSON object requested, multiple (or no) rows returned", code: "PGRST116" },
+      error: { details: "The result contains 0 rows", message: "JSON object requested, multiple (or no) rows returned", code: "PGRST116" },
     });
 
     const response = await postCountyRunScaffold(

@@ -1,0 +1,57 @@
+[
+  {
+    "databaseId": 34455454601,
+    "headSha": "d87a04d4271ee7e46e21d09e4fc63cd3fec6f5b3",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/nfredmond/openplan/actions/runs/34455454601",
+    "jobs": [
+      {
+        "name": "worker (python unit tests)",
+        "conclusion": "success"
+      },
+      {
+        "name": "ops scripts (python unit tests)",
+        "conclusion": "success"
+      },
+      {
+        "name": "modeling scripts (python unit tests)",
+        "conclusion": "success"
+      },
+      {
+        "name": "verify (qa gate)",
+        "conclusion": "success"
+      },
+      {
+        "name": "order independence (shuffled vitest)",
+        "conclusion": "success"
+      }
+    ]
+  },
+  {
+    "databaseId": 34455454729,
+    "headSha": "d87a04d4271ee7e46e21d09e4fc63cd3fec6f5b3",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/nfredmond/openplan/actions/runs/34455454729",
+    "jobs": [
+      {
+        "name": "live RLS isolation",
+        "conclusion": "success"
+      }
+    ]
+  },
+  {
+    "databaseId": 34455454518,
+    "headSha": "d87a04d4271ee7e46e21d09e4fc63cd3fec6f5b3",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/nfredmond/openplan/actions/runs/34455454518",
+    "jobs": [
+      {
+        "name": "previous release -> seed -> HEAD migration up",
+        "conclusion": "success"
+      }
+    ]
+  }
+]

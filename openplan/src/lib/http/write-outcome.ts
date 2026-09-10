@@ -46,16 +46,14 @@ import { NextResponse } from "next/server";
  *     SAYS SO, so the next person reads a sentence about policy instead of
  *     guessing at "Failed to update".
  *
- * WHAT THIS DOES NOT COVER. An INSERT can also answer PGRST116, and it means
- * something different again: the row was written, and the `.select()` that
- * followed could not read it back, because the table has an INSERT policy and
- * no matching SELECT policy. The write SUCCEEDED. Answering 4xx or 5xx there
- * tells the client to retry a write that already landed, which is how duplicates
- * get made. Call `insertNotReadableBack` for that case rather than reusing the
- * update path, and never report it as a failed write.
+ * INSERT responses are different: an empty response does not prove creation.
+ * PostgREST singular-response errors can roll back the request, and an INSERT
+ * requesting a representation must satisfy SELECT policy too. An absent returned
+ * row must not be promoted to "created". Use unconfirmedInsertResponse when this
+ * route lacks a retained row or another independent commit receipt.
  */
 
-/** PostgREST's code for "the result did not contain exactly one row". */
+/** Singular-response error code; details must distinguish zero from multiple rows. */
 export const POSTGREST_NO_ROWS_MATCHED = "PGRST116";
 
 /** The shape both supabase-js and its typed wrappers hand back. */
@@ -73,10 +71,12 @@ export type WriteResultLike<T> = {
 /**
  * Whether this error is PostgREST reporting zero matched rows rather than a
  * failure. Nothing else in the PGRST1xx family means this, so the code is
- * matched exactly rather than by prefix.
+ * matched exactly rather than by prefix, with explicit zero-row details. A
+ * missing or different cardinality remains an error, not an inferred zero.
  */
 export function isNoRowsMatchedError(error: PostgrestLikeError): boolean {
-  return error?.code === POSTGREST_NO_ROWS_MATCHED;
+  return error?.code === POSTGREST_NO_ROWS_MATCHED &&
+    /^The result contains 0 rows\.?$/.test(error.details ?? "");
 }
 
 /**
@@ -166,26 +166,17 @@ export function noRowsMatchedResponse(options: NoRowsMatchedOptions): NextRespon
 }
 
 /**
- * An INSERT that landed and could not be read back.
- *
- * Distinct from every case above because the write SUCCEEDED. The row exists;
- * only the `.select()` after it came back empty, which happens when a table
- * grants INSERT and no matching SELECT. Reporting failure here is worse than
- * reporting nothing: the client retries, and the retry inserts a second row.
- *
- * So this answers 201 with no record and says why, letting the caller treat the
- * write as done and re-read through whatever path it normally reads through.
+ * An INSERT without a confirmed result. This is not proof of either creation
+ * or absence; callers must check retained state before deciding whether to retry.
  */
-export function insertNotReadableBackResponse(options: { subject: string }): NextResponse {
+export function unconfirmedInsertResponse(options: { subject: string }): NextResponse {
   return NextResponse.json(
     {
-      created: true,
-      record: null,
+      error: `Could not confirm creation of the ${options.subject}`,
       details:
-        `The ${options.subject} was created, but this request could not read it back — ` +
-        "the table allows the insert and does not allow this reader to select the row. " +
-        "Nothing needs to be retried; retrying would create a second one.",
+        "The database did not return a confirmed result. Check the saved state before retrying; " +
+        "this response does not establish that a new item was created.",
     },
-    { status: 201 },
+    { status: 500 },
   );
 }

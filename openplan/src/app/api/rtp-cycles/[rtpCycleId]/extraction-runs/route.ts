@@ -54,7 +54,7 @@ import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
-import { insertNotReadableBackResponse } from "@/lib/http/write-outcome";
+import { unconfirmedInsertResponse } from "@/lib/http/write-outcome";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate-limit";
 import { authorizeRtpCycleWrite } from "@/lib/rtp/cycle-write-authorization";
@@ -555,7 +555,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           );
         }
         if (!data) {
-          return insertNotReadableBackResponse({ subject: "transcribed proposals" });
+          return unconfirmedInsertResponse({ subject: "transcribed proposals" });
         }
         insertedCandidates = data;
       }

@@ -7,7 +7,7 @@ import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import {
-  insertNotReadableBackResponse,
+  unconfirmedInsertResponse,
   isWriteFailure,
   noRowsMatchedResponse,
   writeMatchedNoRows,
@@ -424,11 +424,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     if (writeMatchedNoRows({ data, error })) {
-      // The INSERT landed and the read-back could not see it. Reporting a
-      // failure here would have the caller retry a write that already
-      // succeeded, and the retry would then 409 against its own row.
-      audit.warn("insert_not_readable_back", { rtpCycleId: cycleId, measureKey: payload.data.measureKey });
-      return insertNotReadableBackResponse({ subject: "performance measure" });
+      // An absent result does not establish that the INSERT committed.
+      audit.warn("insert_unconfirmed", { rtpCycleId: cycleId, measureKey: payload.data.measureKey });
+      return unconfirmedInsertResponse({ subject: "performance measure" });
     }
 
     const acceptance = await completeExtractionAcceptance({

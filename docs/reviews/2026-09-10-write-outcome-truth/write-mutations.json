@@ -1,0 +1,26 @@
+[
+  {
+    "name": "write-harmless",
+    "exitCode": 0
+  },
+  {
+    "name": "write-false-created",
+    "exitCode": 1
+  },
+  {
+    "name": "write-cardinality-ignored",
+    "exitCode": 1
+  },
+  {
+    "name": "write-zero-is-error",
+    "exitCode": 1
+  },
+  {
+    "name": "vmt-false-created",
+    "exitCode": 1
+  },
+  {
+    "name": "vmt-projection-dropped",
+    "exitCode": 1
+  }
+]

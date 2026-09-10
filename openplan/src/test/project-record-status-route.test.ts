@@ -363,7 +363,7 @@ describe("PATCH /api/projects/[projectId]/records/[recordId]", () => {
   it("treats a PGRST116 'no rows' error as a missing record, not a server failure", async () => {
     projectMilestonesMaybeSingleMock.mockResolvedValueOnce({
       data: null,
-      error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+      error: { details: "The result contains 0 rows", code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
     });
 
     const response = await patchRecord(

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   POSTGREST_NO_ROWS_MATCHED,
-  insertNotReadableBackResponse,
+  unconfirmedInsertResponse,
   isNoRowsMatchedError,
   isWriteFailure,
   noRowsMatchedBody,
@@ -35,6 +35,15 @@ describe("recognising a write that changed nothing", () => {
     expect(isNoRowsMatchedError(NO_ROWS_ERROR)).toBe(true);
     expect(isWriteFailure(NO_ROWS_ERROR)).toBe(false);
   });
+
+  it.each([undefined, null, "The result contains 2 rows", "The result contains 10 rows"])(
+    "does not classify unknown or multiple cardinality as zero: %s", (details) => {
+      const error = { code: POSTGREST_NO_ROWS_MATCHED, details };
+      expect(isNoRowsMatchedError(error)).toBe(false);
+      expect(isWriteFailure(error)).toBe(true);
+      expect(writeMatchedNoRows({ data: null, error })).toBe(false);
+    }
+  );
 
   it("reads any other error as a real failure", () => {
     expect(isNoRowsMatchedError(REAL_FAILURE)).toBe(false);
@@ -129,21 +138,14 @@ describe("answering a write that changed nothing", () => {
   });
 });
 
-describe("an insert that landed and could not be read back", () => {
-  it("reports success, because the row exists", async () => {
-    const response = insertNotReadableBackResponse({ subject: "narrative draft" });
-
-    expect(response.status).toBe(201);
-
-    const body = (await response.json()) as {
-      created: boolean;
-      record: unknown;
-      details: string;
-    };
-
-    expect(body.created).toBe(true);
-    expect(body.record).toBeNull();
-    // The instruction that stops a client turning one row into two.
-    expect(body.details).toMatch(/retrying would create a second one/i);
+describe("an insert without a confirmed result", () => {
+  it("does not claim creation or instruct a blind retry", async () => {
+    const response = unconfirmedInsertResponse({ subject: "narrative draft" });
+    expect(response.status).toBe(500);
+    const body = await response.json();
+    expect(body).not.toHaveProperty("created");
+    expect(body).not.toHaveProperty("record");
+    expect(body.error).toBe("Could not confirm creation of the narrative draft");
+    expect(body.details).toMatch(/Check the saved state before retrying/);
   });
 });

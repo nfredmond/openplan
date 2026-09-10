@@ -46,13 +46,9 @@ import {
  *
  * DELIBERATELY NOT ASSERTED, and why each is a separate change:
  *
- *   - INSERT. An insert can also answer PGRST116, and it means something
- *     different: the row was WRITTEN and the `.select()` after it could not read
- *     it back, because the table grants INSERT and no matching SELECT. Reporting
- *     failure there is worse than reporting nothing — the client retries, and
- *     the retry inserts a second row. `insertNotReadableBackResponse` exists for
- *     it, but retrofitting ~68 insert sites changes success-path contracts, not
- *     just an error branch.
+ *   - INSERT. An empty/singular response does not prove creation. The shared
+ *     unconfirmedInsertResponse refuses that claim, but this AST guard does not
+ *     establish insert persistence or recovery semantics at every call site.
  *   - SERVICE-ROLE writes. Two of them update by id with RLS bypassed, so zero
  *     rows there means the row truly is absent and the answer is a plain 404.
  *     Correct, and a different argument from this one, which is about a write

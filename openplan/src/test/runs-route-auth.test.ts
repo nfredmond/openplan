@@ -370,7 +370,7 @@ describe("/api/runs auth + membership guards", () => {
   it("DELETE treats PGRST116 as zero rows rather than a delete failure", async () => {
     runsDeleteMaybeSingleMock.mockResolvedValueOnce({
       data: null,
-      error: { code: "PGRST116", message: "no rows returned" },
+      error: { details: "The result contains 0 rows", code: "PGRST116", message: "no rows returned" },
     });
 
     const response = await deleteRun(

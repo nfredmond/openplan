@@ -782,7 +782,7 @@ describe("DELETE /api/projects/[projectId]/rtp-links — a delete that changed n
     // written with `.single()`. A route that tests `if (error)` alone collapses
     // it into "Failed to remove RTP link" — an authorization or concurrency
     // outcome wearing a server error's clothes.
-    linkDeleteResult = { data: null, error: { message: "JSON object requested, multiple (or no) rows returned", code: "PGRST116" } };
+    linkDeleteResult = { data: null, error: { details: "The result contains 0 rows", message: "JSON object requested, multiple (or no) rows returned", code: "PGRST116" } };
 
     const response = await deleteRtpLink(deleteRequest({ linkId: LINK_ID }), routeContext);
     const body = await response.json();

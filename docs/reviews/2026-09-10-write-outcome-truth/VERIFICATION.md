@@ -54,3 +54,26 @@ Still required: complete affected route and UI coverage, meaningful failure prob
 full QA/shuffled checks on final source, browser navigation at desktop/390px,
 release metadata and final CI/upgrade before publication. v0.49.2 at base main has
 its own running CI and must be released when those declared checks pass.
+
+## Regression and mutation checkpoint
+
+The first broad scan failed26 checks (19 files). Twenty-three expected explicit
+zero-row outcomes but omitted the cardinality details that distinguish zero from
+multiple rows; fixtures now carry the exact observed `The result contains 0 rows`
+shape. Their existing refusal/status assertions were retained. Three VMT successes
+relied on the old created-without-row fallback; the corrected positive mock and
+returned-ID assertion resolve that false confidence. Twenty-one focused files now
+pass398 tests. This scan preceded the corrected fixture checkpoint, so it is not
+reported as final full-suite acceptance.
+
+A harmless shared-helper comment survives. False201 creation, ignoring cardinality,
+misclassifying explicit zero rows, the VMT false-created fallback and removal of
+its INSERT projection all fail intended assertions. The initial projection probe
+modified the GET occurrence and survived: read-query projection coverage remains
+a separate gap. The corrected probe targets `.insert(row).select(...)` and is
+caught by an exact projection assertion. The mutation runner now refuses unchanged
+mutations before launching tests.
+
+The VMT change only alters persistence-result reporting; its arithmetic, engine
+choice, source evidence and jurisdiction/tier gates stay intact. Missing rows and
+malformed returned rows cannot acquire a saved determination claim.

@@ -19,6 +19,7 @@ import { NextRequest } from "next/server";
 
 const createClientMock = vi.fn();
 const authGetUserMock = vi.fn();
+const vmtSelectMock = vi.fn();
 const mockAudit = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -57,6 +58,7 @@ type State = {
   claimDecisionsError: { message: string } | null;
   savedRows: Array<Record<string, unknown>>;
   savedError: { message: string } | null;
+  insertReturnsRow: boolean;
   insertError: { message: string; code?: string } | null;
 };
 
@@ -68,13 +70,15 @@ let insertedRows: Array<Record<string, unknown>>;
  * resolves to the table's canned result. That mirrors supabase-js closely enough
  * for a route test without pinning the exact chain order.
  */
-function builder(result: { data: unknown; error: unknown }, onInsert?: (row: unknown) => void) {
+function builder(result: { data: unknown; error: unknown }, onInsert?: (row: unknown) => unknown, onSelect?: (columns: string) => void) {
   const self: Record<string, unknown> = {};
   for (const method of ["select", "eq", "in", "order", "limit"]) {
     self[method] = () => self;
   }
+  if (onSelect) self.select = (columns: string) => { onSelect(columns); return self; };
   self.insert = (row: unknown) => {
-    onInsert?.(row);
+    const returned = onInsert?.(row);
+    if (returned !== undefined) result.data = returned;
     return self;
   };
   self.maybeSingle = async () => result;
@@ -114,7 +118,12 @@ function supabaseMock() {
             state.insertError
               ? { data: null, error: state.insertError }
               : { data: state.savedRows[0] ?? null, error: state.savedError },
-            (row) => insertedRows.push(row as Record<string, unknown>)
+            (row) => {
+              insertedRows.push(row as Record<string, unknown>);
+              if (!state.insertReturnsRow || state.insertError) return null;
+              return { ...row as Record<string, unknown>, id: "55555555-5555-4555-8555-555555555555", created_at: "2026-09-10T00:00:00Z" };
+            },
+            vmtSelectMock
           );
         default:
           throw new Error(`Unexpected table: ${table}`);
@@ -176,6 +185,7 @@ describe("/api/models/[modelId]/runs/[modelRunId]/vmt-significance", () => {
       claimDecisionsError: null,
       savedRows: [],
       savedError: null,
+      insertReturnsRow: true,
       insertError: null,
     };
     authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
@@ -263,6 +273,10 @@ describe("/api/models/[modelId]/runs/[modelRunId]/vmt-significance", () => {
   it("stores the determination with its framework, jurisdiction, tier, and basis", async () => {
     const response = await POST(postRequest(VALID_BODY), routeContext());
     expect(response.status).toBe(201);
+    expect((await response.json()).screening).toMatchObject({ id: "55555555-5555-4555-8555-555555555555" });
+    expect(vmtSelectMock).toHaveBeenCalledWith(
+      "id, workspace_id, model_run_id, county_run_id, framework_id, framework_name, framework_version, jurisdiction_country, jurisdiction_subdivision, jurisdiction_label, jurisdiction_basis, claim_status, claim_status_source, input_basis, vmt_kpi_name, population_kpi_name, scenario_id, determination, mitigation_required, vmt_per_capita, threshold_vmt_per_capita, reference_vmt_per_capita, threshold_pct, reference_label, project_type, engine_version, created_at"
+    );
 
     expect(insertedRows).toHaveLength(1);
     const row = insertedRows[0];
@@ -467,18 +481,15 @@ describe("/api/models/[modelId]/runs/[modelRunId]/vmt-significance", () => {
     expect(insertedRows[0].scenario_id).toBe(MODEL_RUN_ID);
   });
 
-  it("does not report a saved-but-unreadable determination as a failure", async () => {
-    // The write landed; only the read-back did not. Answering 4xx/5xx here would
-    // invite a retry that stores a second determination.
-    state.savedRows = [];
-
+  it("does not claim a determination was saved without a confirmed result", async () => {
+    state.insertReturnsRow = false;
     const response = await POST(postRequest(VALID_BODY), routeContext());
-    expect(response.status).toBe(201);
-    const payload = (await response.json()) as { created: boolean; screening: unknown; details: string };
-    expect(payload.created).toBe(true);
-    expect(payload.screening).toBeNull();
-    expect(payload.details).toMatch(/could not read it back/i);
-    expect(payload.details).toMatch(/retrying would store a second determination/i);
+    expect(response.status).toBe(500);
+    const payload = await response.json();
+    expect(payload).not.toHaveProperty("created");
+    expect(payload).not.toHaveProperty("screening");
+    expect(payload.error).toBe("Could not confirm creation of the determination");
+    expect(payload.details).toMatch(/Check the saved state before retrying/);
   });
 
   it("returns the gate, the tier, and the saved history to a reader", async () => {

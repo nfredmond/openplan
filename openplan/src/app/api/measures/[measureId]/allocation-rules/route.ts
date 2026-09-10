@@ -25,7 +25,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
-import { insertNotReadableBackResponse, isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
+import { unconfirmedInsertResponse, isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient } from "@/lib/supabase/server";
 import { parseMeasureAllocationRule } from "@/lib/measures/allocation";
@@ -115,8 +115,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ me
     }
 
     if (writeMatchedNoRows({ data, error })) {
-      audit.warn("insert_not_readable_back", { measureId: parsedParams.data.measureId });
-      return insertNotReadableBackResponse({ subject: "allocation rule" });
+      audit.warn("insert_unconfirmed", { measureId: parsedParams.data.measureId });
+      return unconfirmedInsertResponse({ subject: "allocation rule" });
     }
 
     audit.info("created", {

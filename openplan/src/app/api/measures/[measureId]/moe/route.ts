@@ -33,7 +33,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
-import { insertNotReadableBackResponse, isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
+import { unconfirmedInsertResponse, isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient } from "@/lib/supabase/server";
 import { MEASURE_MOE_COLUMNS } from "@/lib/measures/claims";
@@ -154,7 +154,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ me
     }
 
     if (writeMatchedNoRows({ data, error })) {
-      return insertNotReadableBackResponse({ subject: "maintenance-of-effort record" });
+      return unconfirmedInsertResponse({ subject: "maintenance-of-effort record" });
     }
 
     audit.info("recorded", {

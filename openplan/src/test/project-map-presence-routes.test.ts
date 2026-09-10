@@ -313,7 +313,7 @@ describe("PATCH /api/projects/[projectId]/location", () => {
    */
   it("names the refused write when the update matched no rows", async () => {
     const { client } = buildSupabase({
-      projectUpdateResult: { data: null, error: { code: "PGRST116", message: "no rows returned" } },
+      projectUpdateResult: { data: null, error: { details: "The result contains 0 rows", code: "PGRST116", message: "no rows returned" } },
     });
     createClientMock.mockResolvedValue(client);
 
@@ -455,7 +455,7 @@ describe("PATCH /api/projects/[projectId]/corridors/[corridorId]", () => {
    */
   it("names the refused write when the update matched no rows", async () => {
     const { client } = buildSupabase({
-      corridorUpdateResult: { data: null, error: { code: "PGRST116", message: "no rows returned" } },
+      corridorUpdateResult: { data: null, error: { details: "The result contains 0 rows", code: "PGRST116", message: "no rows returned" } },
     });
     createClientMock.mockResolvedValue(client);
 
@@ -525,7 +525,7 @@ describe("DELETE /api/projects/[projectId]/corridors/[corridorId]", () => {
   /** The other zero-row shape: `.maybeSingle()` can also report it as PGRST116. */
   it("treats PGRST116 as zero rows, not as a server failure", async () => {
     const { client } = buildSupabase({
-      corridorDeleteResult: { data: null, error: { code: "PGRST116", message: "no rows returned" } },
+      corridorDeleteResult: { data: null, error: { details: "The result contains 0 rows", code: "PGRST116", message: "no rows returned" } },
     });
     createClientMock.mockResolvedValue(client);
 

@@ -181,7 +181,7 @@ describe("workspace invitation helpers", () => {
     const { client, singleMock } = createInvitationClient("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
     singleMock.mockResolvedValue({
       data: null,
-      error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+      error: { details: "The result contains 0 rows", code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
     });
 
     const result = await createWorkspaceInvitation({

@@ -177,7 +177,7 @@ describe("PATCH /api/invoicing/invoices/[invoiceId]", () => {
   it("reports a PGRST116 update the same way, without retrying against the legacy select", async () => {
     billingInvoicesUpdateSingleMock.mockResolvedValueOnce({
       data: null,
-      error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+      error: { details: "The result contains 0 rows", code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
     });
 
     const response = await patchInvoice(

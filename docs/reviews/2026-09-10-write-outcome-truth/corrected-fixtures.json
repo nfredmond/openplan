@@ -1,0 +1,74 @@
+[
+  {
+    "file": "src/test/billing-invoice-detail-route.test.ts",
+    "fixtures": 1
+  },
+  {
+    "file": "src/test/county-run-manifest-route.test.ts",
+    "fixtures": 2
+  },
+  {
+    "file": "src/test/county-run-scaffold-post-route.test.ts",
+    "fixtures": 1
+  },
+  {
+    "file": "src/test/county-run-validation-refresh-route.test.ts",
+    "fixtures": 1
+  },
+  {
+    "file": "src/test/funding-opportunity-detail-route.test.ts",
+    "fixtures": 1
+  },
+  {
+    "file": "src/test/grant-application-routes.test.ts",
+    "fixtures": 2
+  },
+  {
+    "file": "src/test/invoicing-time-and-rates-routes.test.ts",
+    "fixtures": 1
+  },
+  {
+    "file": "src/test/model-detail-route.test.ts",
+    "fixtures": 1
+  },
+  {
+    "file": "src/test/project-map-presence-routes.test.ts",
+    "fixtures": 3
+  },
+  {
+    "file": "src/test/project-record-route.test.ts",
+    "fixtures": 2
+  },
+  {
+    "file": "src/test/project-record-status-route.test.ts",
+    "fixtures": 1
+  },
+  {
+    "file": "src/test/project-rtp-links-route.test.ts",
+    "fixtures": 1
+  },
+  {
+    "file": "src/test/project-spend-entries-route.test.ts",
+    "fixtures": 1
+  },
+  {
+    "file": "src/test/receivable-invoicing-routes.test.ts",
+    "fixtures": 2
+  },
+  {
+    "file": "src/test/report-narrative-draft-accept-route.test.ts",
+    "fixtures": 1
+  },
+  {
+    "file": "src/test/rtp-chapter-draft-route.test.ts",
+    "fixtures": 1
+  },
+  {
+    "file": "src/test/runs-route-auth.test.ts",
+    "fixtures": 1
+  },
+  {
+    "file": "src/test/workspace-invitations.test.ts",
+    "fixtures": 1
+  }
+]

@@ -144,7 +144,7 @@ describe("/api/funding-opportunities/[opportunityId]", () => {
     // application — the answer names that instead of "Failed to update".
     fundingOpportunitiesSingleMock.mockResolvedValue({
       data: null,
-      error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+      error: { details: "The result contains 0 rows", code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
     });
 
     const response = await patchFundingOpportunity(jsonRequest({ decisionState: "skip" }), {

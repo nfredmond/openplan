@@ -717,7 +717,7 @@ describe("PATCH /api/funding-opportunities/[opportunityId]/sections/[sectionId]"
     const loadChain = makeQuery({ data: { ...baseSectionRow, status: "drafting" }, error: null });
     const updateChain = makeQuery({
       data: null,
-      error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+      error: { details: "The result contains 0 rows", code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
     });
     installTables({
       funding_opportunity_application_sections: tableSequence(loadChain, updateChain),
@@ -864,7 +864,7 @@ describe("PATCH /api/funding-opportunities/[opportunityId]/attachments/[attachme
     const loadChain = makeQuery({ data: baseAttachmentRow, error: null });
     const updateChain = makeQuery({
       data: null,
-      error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+      error: { details: "The result contains 0 rows", code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
     });
     installTables({
       funding_opportunity_attachments: tableSequence(loadChain, updateChain),

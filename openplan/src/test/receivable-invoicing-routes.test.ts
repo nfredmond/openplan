@@ -413,7 +413,7 @@ describe("PATCH /api/invoicing/clients/[clientId]", () => {
     // write the application had already allowed — a 500 that says so.
     clientUpdateSingleMock.mockResolvedValueOnce({
       data: null,
-      error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+      error: { details: "The result contains 0 rows", code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
     });
 
     const response = await patchClient(
@@ -1003,7 +1003,7 @@ describe("PATCH /api/invoicing/client-invoices/[invoiceId]", () => {
   it("names a policy refusal when the status update matches no rows, rather than 'Failed to update invoice'", async () => {
     invoiceUpdateSingleMock.mockResolvedValueOnce({
       data: null,
-      error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+      error: { details: "The result contains 0 rows", code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
     });
 
     const response = await patchClientInvoice(

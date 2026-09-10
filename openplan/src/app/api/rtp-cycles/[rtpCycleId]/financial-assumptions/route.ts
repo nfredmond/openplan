@@ -54,7 +54,7 @@ import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import {
-  insertNotReadableBackResponse,
+  unconfirmedInsertResponse,
   isWriteFailure,
   noRowsMatchedResponse,
   writeMatchedNoRows,
@@ -480,11 +480,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
       // An INSERT that reads back nothing means the row LANDED and the select
       // after it could not see it. Reporting a failure here is how duplicate
       // revenue lines get made.
-      audit.warn("insert_not_readable_back", {
+      audit.warn("insert_unconfirmed", {
         rtpCycleId: cycle.value.cycleId,
         workspaceId: cycle.value.workspaceId,
       });
-      return insertNotReadableBackResponse({ subject: "financial assumption" });
+      return unconfirmedInsertResponse({ subject: "financial assumption" });
     }
 
     const acceptance = await completeExtractionAcceptance({
