@@ -56,7 +56,7 @@ describe("saved closeout evidence and recovery", () => {
   it("requires a saved current assessment for approval and hides private exports after a failed reload", async () => {
     const data = example();
     data.records = [{ id: randomUUID(), version: 1, state: "draft", report_id: data.source.report.id, source_hash: data.sourceHash, content_hash: "b".repeat(64), actor_id: randomUUID(), created_at: "2026-09-09T00:00:00Z", content: { source: data.source, assessment: initialCloseoutAssessment(data.source), note: "" } }];
-    const fetcher = vi.fn().mockResolvedValueOnce(Response.json(data)).mockResolvedValue(Response.json({ error: "Synthetic history unavailable" }, { status: 503 })); vi.stubGlobal("fetch", fetcher);
+    const fetcher = vi.fn().mockResolvedValueOnce(Response.json(data)).mockResolvedValueOnce(Response.json({ error: "Synthetic history unavailable" }, { status: 503 })).mockImplementation(async () => Response.json(data)); vi.stubGlobal("fetch", fetcher);
     render(<CloseoutPanel programId={randomUUID()} userId={randomUUID()} reports={[data.source.report]}/>);
     await act(async () => {});
     fireEvent.change(screen.getByLabelText("Reconciliation source report"), { target: { value: data.source.report.id } });
@@ -72,5 +72,8 @@ describe("saved closeout evidence and recovery", () => {
     await screen.findByText("Synthetic history unavailable");
     expect(screen.queryByRole("button", { name: "Save reconciliation version 1 JSON" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Save reconciliation approval" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Reload reconciliation" }));
+    await screen.findByRole("button", { name: "Save reconciliation version 1 JSON" });
+    expect(screen.queryByText("Synthetic history unavailable")).not.toBeInTheDocument();
   });
 });

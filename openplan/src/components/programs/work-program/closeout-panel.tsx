@@ -54,7 +54,7 @@ export function CloseoutPanel({ programId, userId, reports }: { programId: strin
     <h2 className="text-xl font-semibold">Saved closeout reconciliation</h2>
     <p className="text-sm">Reconcile receipts, commitments and refunds, then retain approval evidence for unfinished work carried into an adopted successor cycle. This review does not close a period or post costs. Missing amounts remain unknown.</p>
     <fieldset disabled={busy || !!pending} className="min-w-0"><SelectField label="Reconciliation source report" value={reportId} onChange={setReportId}><option value="">Select an issued management report</option>{reports.map(report => <option key={report.id} value={report.id}>{report.snapshot.period.name} · version {report.version}</option>)}</SelectField></fieldset>
-    <Button className={buttonClass} variant="outline" disabled={busy || !reportId} onClick={() => { setBusy(true); void load(reportId).catch(error => setMessage(error.message)).finally(() => setBusy(false)); }}>Reload reconciliation</Button>
+    <Button className={buttonClass} variant="outline" disabled={busy || !reportId} onClick={() => { setBusy(true); setMessage(""); void load(reportId).catch(error => setMessage(error.message)).finally(() => setBusy(false)); }}>Reload reconciliation</Button>
     {message && <p role="status" className="break-words rounded-lg border p-3">{message}</p>}
     {pending && <div role="alert" className="space-y-2"><p>A save may have reached the server. Retry its retained request before another action.</p><Button className={buttonClass} disabled={busy} onClick={() => send(pending)}>Retry reconciliation save</Button></div>}
     {data && assessment && <>
