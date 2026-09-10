@@ -7,8 +7,10 @@ on:
   pull_request:
     paths:
       - "openplan/scripts/ops/disposable-restore-drill.sh"
-      - "openplan/scripts/ops/restore_ports.py"
-      - "openplan/scripts/ops/tests/test_restore_ports.py"
+      - "openplan/scripts/ops/*restore*.py"
+      - "openplan/scripts/ops/seed-owp-restore.ts"
+      - "openplan/scripts/ops/tests/test_*restore*.py"
+      - "openplan/scripts/ops/tests/fixtures/owp-recovery.json"
       - "openplan/src/test/local-supabase-env.ts"
       - "openplan/supabase/migrations/**"
       - ".github/workflows/restore-drill.yml"
@@ -31,4 +33,14 @@ jobs:
           cache: npm
           cache-dependency-path: openplan/package-lock.json
       - run: npm ci
-      - run: npm run ops:restore-drill
+      - run: python3 -B -m unittest discover -s scripts/ops/tests -p 'test_*restore*.py'
+      - run: npm run ops:restore-drill -- --full-archive
+        env:
+          OPENPLAN_RESTORE_EVIDENCE_DIR: ${{ runner.temp }}/openplan-restore-evidence
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-restore-custody
+          path: ${{ runner.temp }}/openplan-restore-evidence/
+          if-no-files-found: ignore
+          retention-days: 14

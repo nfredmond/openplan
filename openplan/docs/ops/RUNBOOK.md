@@ -188,7 +188,7 @@ indicators that an action is read-only.
 | Worker launch/Compose commands | Start or recreate compute services that can claim queued work and write results. |
 | Migration application, configuration edits, credential rotation | Change deployment behavior or durable schema; require identified targets and a release/incident plan. |
 | `npm run test:rls-live`, `npm run qa:gate` | Test/build activity; live checks may create records. Use explicitly selected test environments, not an unexamined production environment. |
-| `npm run ops:restore-drill` | Creates and removes disposable services/data; exercises only the representative recovery path documented below. |
+| `npm run ops:restore-drill` | Creates and removes disposable services/data; exercises the selected-row sample; add `-- --full-archive` for complete default-local database/Storage restoration. |
 | Walkthrough refresh helper | Fetches/builds/restarts an already configured service. Unverified migration state blocks build/restart; a served-commit mismatch fails after restart and may require recovery. It is not a generic diagnosis or installer command. |
 
 Reproduce a defect with non-sensitive data in an isolated environment before
@@ -211,12 +211,17 @@ can describe different moments. The original routine also omits separately store
 worker files from its executable capture steps. Archive hashes and readable
 indexes cannot establish complete coverage or working recovery.
 
-The current disposable drill restores selected SQL rows into a migration-created
-schema and transfers one object through the Storage API. It does not restore the
-full custom-format dump, the whole Storage filesystem, all Auth/roles/configuration
-or local model artifacts. Its successful sample result must not be presented as
-proof of that full archive procedure. Exact complete restore and cutover commands
-remain a deliverable to test for the selected topology.
+The disposable drill's `--full-archive` mode restores a complete default-local
+PostgreSQL custom archive and Storage filesystem into a fresh, matching-image
+target. It preserves database ownership, grants and settings, compares complete
+data/schema/file inventories, independently reconstructs overlapping OWP cycles,
+and checks password sign-in and live access isolation. The default mode retains
+the smaller selected-row sample. See the [recovery evidence](../../../docs/reviews/2026-09-09-owp-full-recovery/VERIFICATION.md)
+for the current accepted scope and browser results.
+
+External worker files, protected configuration, custom cluster roles, hosted
+layouts and production cutover remain outside the executable full-archive drill.
+It does not make the whole installation recoverable by itself.
 
 A restore that replaces durable state needs the deployment owner's explicit
 approval. Restore into an isolated target first, verify tenant boundaries,

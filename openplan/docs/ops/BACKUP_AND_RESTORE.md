@@ -9,8 +9,9 @@ acceptance.
 
 The archive example below is specific to the default Supabase CLI local stack.
 It is not a tested universal procedure for hosted Supabase or an independently
-self-hosted production stack. The checked-in disposable drill proves a smaller
-sample path; it does not prove restoration of these full archives.
+self-hosted production stack. The disposable drill has a full database and
+Storage mode for matching default-local images, alongside the older selected-row
+sample. Neither mode captures external worker files or protected configuration.
 
 ## Inventory and consistency before capture
 
@@ -93,33 +94,51 @@ by restoring and reopening the actual saved work.
 From the app directory:
 
 ```bash
-npm run ops:restore-drill
+npm run ops:restore-drill -- --full-archive
 ```
 
-This command creates and removes disposable local services and test data. Inspect
-[its script](../../scripts/ops/disposable-restore-drill.sh) and confirm its
-project names before running it.
-It starts two temporary Supabase projects, applies migrations, populates selected
-tenant/evidence rows, dumps selected tables as SQL, imports those rows into the
-second project's migration-created schema, transfers one private object through
-the Storage API, checks relationships and hashes, and runs live RLS tests against
-the restored target. On Linux, the script selects unused six-port blocks between 20000 and 31987,
+This creates two fresh disposable Supabase projects, seeds synthetic saved work,
+quiesces the source API/Auth/Storage writers, captures the full PostgreSQL custom
+archive and Storage volume, and restores both into the isolated target. It creates
+no app workers and refuses scheduled SQL jobs. Never point this test at a working
+agency database. The script verifies project ownership and matching runtime images
+before capture and refuses existing target records or incompatible cluster roles.
+
+The recovered database is built from `template0` with the original database owner,
+grants and settings. The target bootstrap database is retained under a separate
+name with connections disabled. Schema, all discovered non-system tables, large
+objects, materialized views, sequence positions, database properties and Storage
+file hashes are compared. A schema-only replay accounts for PostgreSQL's own
+normalization of SQL expressions. Private settings are hashed in evidence.
+
+The drill independently reconstructs two overlapping OWP cycles from retained
+records, including old and corrected approvals, unpaid claims, commitments,
+refund matches and separate costs. It also checks restored password sign-in,
+private document bytes and live RLS. Its synthetic prior reporting period is an
+interim closed period; this is not proof of a completed real agency year-end.
+
+The implementation is in [disposable-restore-drill.sh](../../scripts/ops/disposable-restore-drill.sh),
+[full_restore.py](../../scripts/ops/full_restore.py) and
+[the independent reconstruction](../../scripts/ops/reconstruct_owp_restore.py).
+[Current evidence](../../../docs/reviews/2026-09-09-owp-full-recovery/VERIFICATION.md)
+records the accepted build and remaining checks. The scheduled Restore Drill
+workflow runs the full mode. `npm run ops:restore-drill` without arguments retains
+the smaller selected-row and Storage API sample for comparison.
+
+On Linux, both modes select unused six-port blocks between 20000 and 31987,
 excluding the kernel outbound connection range and the source stack's ports.
-It probes existing listeners without stopping them. Selection cannot prevent an
-unrelated service from taking a port before Docker binds it; a collision fails
-the drill rather than replacing that service. The script cleans up only its
-temporary projects and files on exit.
+They do not stop existing listeners. A later port collision fails the drill.
+Cleanup stops only projects created by the current invocation. Set
+`OPENPLAN_RESTORE_KEEP=1` to retain those projects and private scratch files for
+browser follow-up; the output identifies both. Set
+`OPENPLAN_RESTORE_EVIDENCE_DIR` to a protected output directory to retain sanitized
+inventory and reconstruction summaries. Raw archives, Auth responses, passwords
+and settings must remain private.
 
-It does **not** restore the full custom-format database archive or the `/mnt`
-tar archive above, preserve all local model artifacts, test complete Auth/role
-recovery, or perform a production cutover. A historical result is recorded in
-[the August 24 operational proof](../../../docs/ops/V032_OPERATIONAL_HEALTH_PROOF_2026-08-24.md);
-that result applies to its recorded candidate and representative sample only.
-
-Run the sample drill for schema/recovery changes and periodically as part of
-operations. Pair it with an actual full-backup restoration rehearsal for the
-selected deployment. A failed rehearsal leaves recovery unproved and must be
-resolved before relying on that procedure for an upgrade.
+This mode does not restore external worker artifacts, custom cluster roles,
+delegated database grants, encryption configuration, external Auth providers or
+outgoing services. It does not implement a production cutover. Rehearse the whole
+inventory for the selected deployment before relying on that recovery procedure.
 
 ## Rehearse and perform a real recovery
 
@@ -149,6 +168,6 @@ a restoration recipe against the only working copy.
    callbacks, and verified application/worker access. Keep the previous stack
    intact until the owner accepts recovery.
 
-The representative drill is not an executable implementation of this complete
+The disposable drill is not an executable implementation of this complete
 incident procedure. Exact full restore and cutover commands, across all durable
 state, remain an operational deliverable to prove before production dependence.

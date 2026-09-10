@@ -167,6 +167,22 @@ class FullRestoreTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'Delegated database grantors'):
                 recovery.restore_database_properties('source', 'target', Path('/unused'))
 
+    def test_private_settings_failure_is_not_reported_as_restored(self):
+        from subprocess import CompletedProcess
+        for failed in (False, True):
+            with tempfile.TemporaryDirectory() as root:
+                with patch.object(recovery, 'sql', side_effect=['0', 'SET ROLE postgres;', 'GRANT CONNECT;', 'ALTER DATABASE;', 'ALTER ROLE settings;']), patch.object(recovery.subprocess, 'run', return_value=CompletedProcess([], 1 if failed else 0, stderr='synthetic settings failure')) as command:
+                    if failed:
+                        with self.assertRaisesRegex(RuntimeError, 'Database configuration restore failed'):
+                            recovery.restore_database_properties('source', 'target', Path(root))
+                        self.assertEqual((Path(root)/'private-settings-error.log').read_text(), 'synthetic settings failure')
+                    else:
+                        recovery.restore_database_properties('source', 'target', Path(root))
+                    args = command.call_args.args[0]
+                    self.assertIn('--single-transaction', args)
+                    self.assertNotIn('ALTER ROLE settings;', args)
+                    self.assertIn('ALTER ROLE settings;', command.call_args.kwargs['input'])
+
     def archive(self, entries):
         root = tempfile.TemporaryDirectory()
         self.addCleanup(root.cleanup)

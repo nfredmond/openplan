@@ -150,7 +150,7 @@ INSERT INTO projects (id, workspace_id, name)
 VALUES ('00000000-0000-4000-8000-00000000000b', '00000000-0000-4000-8000-00000000000a', 'Restore Probe Project');
 INSERT INTO kb_documents (
   id, workspace_id, project_id, uploaded_by, title, doc_kind, source_kind,
-  original_filename, content_type, byte_size, storage_ref, checksum, status, citation_label
+  original_filename, content_type, byte_size, storage_ref, checksum, status, citation_label, chunk_count, char_count, extraction_source
 ) VALUES (
   '00000000-0000-4000-8000-00000000000d',
   '00000000-0000-4000-8000-00000000000a',
@@ -159,14 +159,14 @@ INSERT INTO kb_documents (
   'Recovery evidence', 'prior_study', 'uploaded_txt', 'recovery-evidence.txt',
   'text/plain', :'object_size',
   'storage://kb-documents/00000000-0000-4000-8000-00000000000a/00000000-0000-4000-8000-00000000000d/recovery-evidence.txt',
-  :'object_hash', 'ready', 'Recovery evidence'
+  :'object_hash', 'ready', 'Recovery evidence', 1, 37, 'text_layer'
 );
 INSERT INTO kb_document_chunks (
   id, document_id, workspace_id, chunk_index, char_start, char_end, content, token_estimate
 ) VALUES (
   '00000000-0000-4000-8000-00000000000e',
   '00000000-0000-4000-8000-00000000000d',
-  '00000000-0000-4000-8000-00000000000a', 0, 0, 36,
+  '00000000-0000-4000-8000-00000000000a', 0, 0, 37,
   'OpenPlan disposable recovery evidence', 5
 );
 INSERT INTO reports (id, workspace_id, project_id, title, report_type, status, created_by)
@@ -182,9 +182,9 @@ INSERT INTO report_artifacts (
 ) VALUES (
   '00000000-0000-4000-8000-000000000010',
   '00000000-0000-4000-8000-00000000000f', 'html',
-  'report-artifacts/restore-probe.html',
+  NULL,
   :'owner_id',
-  jsonb_build_object('evidenceCustody', jsonb_build_object('sha256', :'object_hash', 'documentId', '00000000-0000-4000-8000-00000000000d'))
+  jsonb_build_object('htmlContent', '<!doctype html><html lang="en"><meta charset="utf-8"><title>Synthetic recovery report</title><h1>Synthetic recovery report</h1><p>OpenPlan disposable recovery evidence. This is a test artifact, not an agency report.</p></html>', 'evidenceCustody', jsonb_build_object('sha256', :'object_hash', 'documentId', '00000000-0000-4000-8000-00000000000d'))
 );
 SQL
 
