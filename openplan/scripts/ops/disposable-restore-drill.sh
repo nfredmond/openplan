@@ -1,9 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
+umask 077
+FULL_ARCHIVE=false
+if [[ "${1:-}" == "--full-archive" && $# == 1 ]]; then
+  FULL_ARCHIVE=true
+elif [[ $# != 0 ]]; then
+  echo "Usage: disposable-restore-drill.sh [--full-archive]" >&2
+  exit 2
+fi
 
 # Builds two temporary local Supabase projects with different ports. It never
 # stops, resets, migrates, or restores into the working `openplan` stack.
 APP_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+cd "$APP_ROOT"
 DRILL_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/openplan-restore-drill.XXXXXX")
 SOURCE_ROOT="$DRILL_ROOT/openplan-restore-source-$$"
 TARGET_ROOT="$DRILL_ROOT/openplan-restore-target-$$"
@@ -11,9 +20,16 @@ BACKUP_ROOT="$DRILL_ROOT/backup"
 SOURCE_PROJECT=$(basename "$SOURCE_ROOT")
 TARGET_PROJECT=$(basename "$TARGET_ROOT")
 
+OWNED_PROJECTS=()
 cleanup() {
-  npm exec -- supabase stop --project-id "$SOURCE_PROJECT" --no-backup >/dev/null 2>&1 || true
-  npm exec -- supabase stop --project-id "$TARGET_PROJECT" --no-backup >/dev/null 2>&1 || true
+  local result=$?
+  if [[ "${OPENPLAN_RESTORE_KEEP:-0}" == 1 ]]; then
+    echo "[restore-drill] retained owned projects ${OWNED_PROJECTS[*]} and private files at $DRILL_ROOT"
+    return "$result"
+  fi
+  for project in "${OWNED_PROJECTS[@]}"; do
+    npm exec -- supabase stop --project-id "$project" --no-backup >/dev/null 2>&1 || true
+  done
   case "$DRILL_ROOT" in
     "${TMPDIR:-/tmp}"/openplan-restore-drill.*)
       find "$DRILL_ROOT" -depth -mindepth 1 -delete 2>/dev/null || true
@@ -64,6 +80,11 @@ db_container() {
 
 start_project() {
   local workdir=$1
+  if docker inspect "supabase_db_$(basename "$workdir")" >/dev/null 2>&1; then
+    echo "[restore-drill] refused an existing project" >&2
+    return 1
+  fi
+  OWNED_PROJECTS+=("$(basename "$workdir")")
   npm exec -- supabase start --workdir "$workdir" \
     --exclude realtime,imgproxy,postgres-meta,studio,edge-runtime,logflare,vector,supavisor \
     --yes >/dev/null
@@ -88,14 +109,22 @@ printf '%s\n' 'OpenPlan disposable recovery evidence' > "$OBJECT_FILE"
 OBJECT_HASH=$(sha256sum "$OBJECT_FILE" | cut -d' ' -f1)
 OBJECT_SIZE=$(wc -c < "$OBJECT_FILE" | tr -d ' ')
 
+RESTORE_EMAIL="recovery-$SOURCE_PROJECT@openplan.test"
+RESTORE_PASSWORD=$(python3 -c 'import secrets; print(secrets.token_urlsafe(24))')
+printf '{"email":"%s","password":"%s","email_confirm":true}' "$RESTORE_EMAIL" "$RESTORE_PASSWORD" \
+  | curl --fail --silent --show-error -X POST "$SOURCE_API/auth/v1/admin/users" \
+    -H "Authorization: Bearer $SOURCE_SERVICE_KEY" -H "apikey: $SOURCE_SERVICE_KEY" \
+    -H 'Content-Type: application/json' --data-binary @- > "$BACKUP_ROOT/auth-fixture.json"
+OWNER_ID=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["id"])' "$BACKUP_ROOT/auth-fixture.json")
+printf '{"email":"%s","password":"%s","ownerId":"%s"}\n' "$RESTORE_EMAIL" "$RESTORE_PASSWORD" "$OWNER_ID" > "$BACKUP_ROOT/browser-login.json"
+
 docker exec -i "$SOURCE_DB" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+  -v owner_id="$OWNER_ID" \
   -v object_hash="$OBJECT_HASH" -v object_size="$OBJECT_SIZE" <<'SQL'
-INSERT INTO auth.users (id, email)
-VALUES ('00000000-0000-4000-8000-000000000001', 'restore-probe@openplan.test');
 INSERT INTO workspaces (id, name, slug)
 VALUES ('00000000-0000-4000-8000-00000000000a', 'Restore Probe Workspace', 'restore-probe');
 INSERT INTO workspace_members (workspace_id, user_id, role)
-VALUES ('00000000-0000-4000-8000-00000000000a', '00000000-0000-4000-8000-000000000001', 'owner');
+VALUES ('00000000-0000-4000-8000-00000000000a', :'owner_id', 'owner');
 INSERT INTO workspace_reminder_preferences (workspace_id, advance_days, email_digest_enabled)
 VALUES ('00000000-0000-4000-8000-00000000000a', 14, false);
 INSERT INTO modeling_worker_heartbeats (
@@ -126,7 +155,7 @@ INSERT INTO kb_documents (
   '00000000-0000-4000-8000-00000000000d',
   '00000000-0000-4000-8000-00000000000a',
   '00000000-0000-4000-8000-00000000000b',
-  '00000000-0000-4000-8000-000000000001',
+  :'owner_id',
   'Recovery evidence', 'prior_study', 'uploaded_txt', 'recovery-evidence.txt',
   'text/plain', :'object_size',
   'storage://kb-documents/00000000-0000-4000-8000-00000000000a/00000000-0000-4000-8000-00000000000d/recovery-evidence.txt',
@@ -146,7 +175,7 @@ VALUES (
   '00000000-0000-4000-8000-00000000000a',
   '00000000-0000-4000-8000-00000000000b',
   'Recovery evidence report', 'analysis_summary', 'generated',
-  '00000000-0000-4000-8000-000000000001'
+  :'owner_id'
 );
 INSERT INTO report_artifacts (
   id, report_id, artifact_kind, storage_path, generated_by, metadata_json
@@ -154,7 +183,7 @@ INSERT INTO report_artifacts (
   '00000000-0000-4000-8000-000000000010',
   '00000000-0000-4000-8000-00000000000f', 'html',
   'report-artifacts/restore-probe.html',
-  '00000000-0000-4000-8000-000000000001',
+  :'owner_id',
   jsonb_build_object('evidenceCustody', jsonb_build_object('sha256', :'object_hash', 'documentId', '00000000-0000-4000-8000-00000000000d'))
 );
 SQL
@@ -166,9 +195,17 @@ curl --fail --silent --show-error \
   -H "Content-Type: text/plain" \
   --data-binary "@$OBJECT_FILE" >/dev/null
 
+if $FULL_ARCHIVE; then
+  RESTORE_API_URL="$SOURCE_API" RESTORE_SERVICE_KEY="$SOURCE_SERVICE_KEY" RESTORE_OWNER_ID="$OWNER_ID" \
+    npm exec --no -- tsx scripts/ops/seed-owp-restore.ts "$BACKUP_ROOT/owp-fixture.json"
+  RESTORE_API_URL="$SOURCE_API" RESTORE_SERVICE_KEY="$SOURCE_SERVICE_KEY" \
+    python3 "$APP_ROOT/scripts/ops/reconstruct_owp_restore.py" "$BACKUP_ROOT/owp-fixture.json" "$BACKUP_ROOT/owp-source.json"
+fi
+
 docker exec "$SOURCE_DB" pg_dump -U postgres -d postgres \
   --data-only --inserts --column-inserts --on-conflict-do-nothing \
   --table=auth.users \
+  --table=auth.identities \
   --table=public.workspaces \
   --table=public.workspace_members \
   --table=public.workspace_reminder_preferences \
@@ -201,6 +238,14 @@ TARGET_API=$(status_value "$TARGET_ROOT" API_URL)
 TARGET_SERVICE_KEY=$(status_value "$TARGET_ROOT" SERVICE_ROLE_KEY)
 test -n "$TARGET_DB" && test -n "$TARGET_API" && test -n "$TARGET_SERVICE_KEY"
 
+if $FULL_ARCHIVE; then
+  python3 "$APP_ROOT/scripts/ops/full_restore.py" "$SOURCE_PROJECT" "$TARGET_PROJECT" "$BACKUP_ROOT/full"
+  if [[ -n "${OPENPLAN_RESTORE_EVIDENCE_DIR:-}" ]]; then
+    install -d -m 700 "$OPENPLAN_RESTORE_EVIDENCE_DIR"
+    test ! -e "$OPENPLAN_RESTORE_EVIDENCE_DIR/full-restore-manifest.json"
+    cp "$BACKUP_ROOT/full/manifest.json" "$OPENPLAN_RESTORE_EVIDENCE_DIR/full-restore-manifest.json"
+  fi
+else
 {
   printf '%s\n' 'SET session_replication_role = replica;'
   cat "$BACKUP_ROOT/representative-data.sql"
@@ -212,7 +257,26 @@ curl --fail --silent --show-error \
   -H "apikey: $TARGET_SERVICE_KEY" \
   -H "Content-Type: text/plain" \
   --data-binary "@$OBJECT_FILE" >/dev/null
-curl --fail --silent --show-error \
+fi
+
+# A restored password must create a new authenticated session on the target.
+printf '{"email":"%s","password":"%s"}' "$RESTORE_EMAIL" "$RESTORE_PASSWORD" \
+  | curl --fail --silent --show-error --retry 8 --retry-connrefused --retry-delay 1 \
+    "$TARGET_API/auth/v1/token?grant_type=password" -H "apikey: $TARGET_SERVICE_KEY" \
+    -H 'Content-Type: application/json' --data-binary @- > "$BACKUP_ROOT/restored-login.json"
+python3 -c 'import json,sys; assert json.load(open(sys.argv[1]))["user"]["id"] == sys.argv[2]' \
+  "$BACKUP_ROOT/restored-login.json" "$OWNER_ID"
+echo "[restore-drill] restored account signed in"
+if $FULL_ARCHIVE; then
+  RESTORE_API_URL="$TARGET_API" RESTORE_SERVICE_KEY="$TARGET_SERVICE_KEY" \
+    python3 "$APP_ROOT/scripts/ops/reconstruct_owp_restore.py" "$BACKUP_ROOT/owp-fixture.json" "$BACKUP_ROOT/owp-target.json"
+  cmp "$BACKUP_ROOT/owp-source.json" "$BACKUP_ROOT/owp-target.json"
+  if [[ -n "${OPENPLAN_RESTORE_EVIDENCE_DIR:-}" ]]; then
+    cp "$BACKUP_ROOT/owp-source.json" "$OPENPLAN_RESTORE_EVIDENCE_DIR/owp-source.json"
+    cp "$BACKUP_ROOT/owp-target.json" "$OPENPLAN_RESTORE_EVIDENCE_DIR/owp-target.json"
+  fi
+fi
+curl --fail --silent --show-error --retry 8 --retry-connrefused --retry-delay 1 \
   "$TARGET_API/storage/v1/object/authenticated/kb-documents/$OBJECT_PATH" \
   -H "Authorization: Bearer $TARGET_SERVICE_KEY" \
   -H "apikey: $TARGET_SERVICE_KEY" \
