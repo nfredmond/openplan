@@ -61,21 +61,26 @@ describe("every registered action's route enforces the seam itself", () => {
         const source = readFileSync(routeFile as string, "utf8");
 
         expect(
-          callsFunction(source, "verifyAssistantActionApproval"),
+          callsFunction(source, "verifyAssistantActionApproval") ||
+            (callsFunction(source, "holdApprovalHeaders") && callsFunction(source, "recordHoldWithReceipt")),
           `${routeFile} is the execution path for ${kind}, but it never CALLS ` +
-            "verifyAssistantActionApproval. The approval tier would be enforced only in the browser."
+            "an approval verifier or the transactional HOLD verifier. The approval tier would be enforced only in the browser."
         ).toBe(true);
 
-        // Either the wrapper or the row writer it wraps. `POST /api/reports`
+        // The HOLD transaction verifies and audits inside the database. These
+        // source checks establish calls, not their ordering or SQL behavior;
+        // route and live transaction tests cover those separate boundaries.
+        // Otherwise, either the wrapper or the row writer it wraps. `POST /api/reports`
         // calls `recordAssistantActionExecution` directly because its write is
         // not a single awaited body it can hand to a wrapper; the ledger row is
         // written either way, and requiring the wrapper specifically would be a
         // guard about code shape rather than about the ledger.
         expect(
           callsFunction(source, "withAssistantActionAudit") ||
-            callsFunction(source, "recordAssistantActionExecution"),
+            callsFunction(source, "recordAssistantActionExecution") ||
+            callsFunction(source, "recordHoldWithReceipt"),
           `${routeFile} is the execution path for ${kind}, but it never CALLS ` +
-            "withAssistantActionAudit or recordAssistantActionExecution. The action would " +
+            "an audit writer or transactional receipt writer. The action would " +
             "execute with no row in the ledger."
         ).toBe(true);
       }

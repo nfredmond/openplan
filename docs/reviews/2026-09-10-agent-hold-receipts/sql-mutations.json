@@ -1,0 +1,42 @@
+[
+  {
+    "name": "harmless",
+    "status": 0,
+    "result": "survived"
+  },
+  {
+    "name": "payload-mismatch",
+    "status": 1,
+    "result": "failed"
+  },
+  {
+    "name": "workspace-context",
+    "status": 1,
+    "result": "failed"
+  },
+  {
+    "name": "prior-decision-context",
+    "status": 1,
+    "result": "failed"
+  },
+  {
+    "name": "unconfirmed-audit",
+    "status": 1,
+    "result": "failed"
+  },
+  {
+    "name": "revoked-receipt-reader",
+    "status": 1,
+    "result": "failed"
+  },
+  {
+    "name": "caller-privilege",
+    "status": 1,
+    "result": "failed"
+  },
+  {
+    "name": "no-effect-success",
+    "status": 1,
+    "result": "failed"
+  }
+]

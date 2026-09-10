@@ -1,0 +1,62 @@
+[
+  {
+    "name": "harmless",
+    "result": "survived",
+    "status": 0
+  },
+  {
+    "name": "missing-project-projection",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "missing-template-filter",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "ignore-workspace-scope",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "ignore-prior-read-failure",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "ignore-header-hash",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "ignore-receipt-project",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "hash-unexecuted-fields",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "ignore-rpc-failure",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "omit-route-header-verifier",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "omit-route-transaction",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "omit-receipt-recovery",
+    "result": "failed",
+    "status": 1
+  }
+]

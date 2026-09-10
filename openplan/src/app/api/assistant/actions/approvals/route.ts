@@ -10,6 +10,7 @@ import {
 } from "@/lib/assistant/action-approval-server";
 import { getActionMetadata } from "@/lib/runtime/action-metadata";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { HoldReceiptError, prepareHoldExecutionContext } from "@/lib/assistant/stage-gate-hold-receipt";
 import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 
 const approvalRequestSchema = z.object({
@@ -87,6 +88,9 @@ export async function POST(request: NextRequest) {
     let approvalId: string | null = null;
 
     if (needsApproval) {
+      const executionContext = parsed.data.action.kind === "record_stage_gate_hold"
+        ? await prepareHoldExecutionContext(supabase, parsed.data.workspaceId, parsed.data.action)
+        : null;
       approvalId = newAssistantApprovalId();
       const serviceSupabase = createServiceRoleClient();
       const { error: insertError } = await serviceSupabase.from("assistant_action_approvals").insert({
@@ -96,6 +100,7 @@ export async function POST(request: NextRequest) {
         action_kind: parsed.data.action.kind,
         input_hash: inputHash,
         expires_at: expiresAt,
+        ...(executionContext ? { execution_context: executionContext } : {}),
       });
 
       if (insertError) {
@@ -128,6 +133,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
+    if (error instanceof HoldReceiptError) return NextResponse.json({ error: error.message }, { status: error.status });
     audit.error("assistant_action_approval_unhandled_error", {
       durationMs: Date.now() - startedAt,
       error,

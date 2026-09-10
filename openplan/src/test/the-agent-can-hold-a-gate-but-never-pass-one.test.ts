@@ -61,39 +61,10 @@ const fromMock = vi.fn((table: string) => {
   throw new Error(`Unexpected table: ${table}`);
 });
 
-/** The service-role side: the approval row, and the ledger it writes to. */
-const approvalRow: { value: Record<string, unknown> | null } = { value: null };
-const ledgerRows: Array<Record<string, unknown>> = [];
-const consumedIds: string[] = [];
-
-const serviceFromMock = vi.fn((table: string) => {
-  if (table === "assistant_action_approvals") {
-    return {
-      select: () => ({
-        eq: () => ({ maybeSingle: async () => ({ data: approvalRow.value, error: null }) }),
-      }),
-      update: () => ({
-        eq: (_column: string, value: string) => ({
-          is: () => ({
-            select: async () => {
-              consumedIds.push(value);
-              return { data: [{ id: value }], error: null };
-            },
-          }),
-        }),
-      }),
-    };
-  }
-  if (table === "assistant_action_executions") {
-    return {
-      insert: async (row: Record<string, unknown>) => {
-        ledgerRows.push(row);
-        return { error: null };
-      },
-    };
-  }
-  throw new Error(`Unexpected service table: ${table}`);
-});
+// Database transaction behavior is exercised separately in the live receipt suite.
+// This stub tests route dispatch, canonical payloads and response validation.
+const serviceRpcMock = vi.fn();
+const transactionResult: { value: unknown } = { value: undefined };
 
 const mockAudit = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 
@@ -108,7 +79,6 @@ vi.mock("@/lib/observability/audit", () => ({
 
 import { POST as postDecision } from "@/app/api/stage-gates/decisions/route";
 import { hashAssistantActionPayload } from "@/lib/assistant/action-approval-server";
-import { PLANNER_AGENT_PRINCIPAL_ID } from "@/lib/assistant/agent-principal";
 import { ACTION_METADATA } from "@/lib/runtime/action-metadata";
 import { ACTION_REGISTRY, executeAction } from "@/lib/runtime/action-registry";
 import { buildAssistantOperations } from "@/lib/assistant/operations";
@@ -129,7 +99,20 @@ function armHappyPath() {
   createApiAuditLoggerMock.mockReturnValue(mockAudit);
   authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
   createClientMock.mockResolvedValue({ auth: { getUser: authGetUserMock }, from: fromMock });
-  createServiceRoleClientMock.mockReturnValue({ from: serviceFromMock });
+  createServiceRoleClientMock.mockReturnValue({ rpc: serviceRpcMock });
+  transactionResult.value = undefined;
+  serviceRpcMock.mockImplementation(async (name: string, args: Record<string, string>) => {
+    if (name === "read_assistant_hold_receipt") return { data: null, error: null };
+    if (name !== "record_assistant_stage_gate_hold") throw new Error(`Unexpected RPC ${name}`);
+    if (transactionResult.value !== undefined) return transactionResult.value;
+    const action = JSON.parse(args.p_action_canonical);
+    return { data: { replayed: false, receipt: { schemaVersion: 1, decision: {
+      id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd", workspace_id: action.workspaceId,
+      project_id: action.projectId, gate_id: action.gateId, decision: "HOLD",
+      rationale: action.rationale, missing_artifacts: action.missingArtifacts ?? [],
+      decided_by: USER_ID, decided_at: APPROVED_AT, run_id: action.runId ?? null, model_run_id: action.modelRunId ?? null, county_run_id: action.countyRunId ?? null,
+    } } }, error: null };
+  });
   membershipMaybeSingleMock.mockResolvedValue({
     data: { workspace_id: WORKSPACE_ID, role: "member" },
     error: null,
@@ -160,19 +143,6 @@ function approvedHash(extra: Record<string, unknown> = {}) {
   });
 }
 
-function armApproval(hash: string) {
-  approvalRow.value = {
-    id: APPROVAL_ID,
-    workspace_id: WORKSPACE_ID,
-    user_id: USER_ID,
-    action_kind: "record_stage_gate_hold",
-    input_hash: hash,
-    expires_at: new Date(Date.now() + 60_000).toISOString(),
-    consumed_at: null,
-    created_at: APPROVED_AT,
-  };
-}
-
 function agentHeaders(hash: string) {
   return {
     "x-openplan-assistant-execution-source": "planner_agent_quick_link",
@@ -183,9 +153,6 @@ function agentHeaders(hash: string) {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  ledgerRows.length = 0;
-  consumedIds.length = 0;
-  approvalRow.value = null;
   armHappyPath();
 });
 
@@ -201,9 +168,8 @@ describe("the registered action itself", () => {
 });
 
 describe("an approved agent hold reaches the decision log", () => {
-  it("verifies the hash, consumes the approval, writes the HOLD, and records both principals", async () => {
+  it("passes the exact approved action to one transaction and validates its returned decision", async () => {
     const hash = approvedHash();
-    armApproval(hash);
 
     const response = await postDecision(
       agentRequest(
@@ -219,57 +185,33 @@ describe("an approved agent hold reaches the decision log", () => {
     );
 
     expect(response.status).toBe(201);
-    expect(consumedIds).toEqual([APPROVAL_ID]);
-
-    const written = (decisionInsertMock.mock.calls as unknown as unknown[][])[0]?.[0] as Record<string, unknown>;
-    expect(written.decision).toBe("HOLD");
-    expect(written.gate_id).toBe(GATE_ID);
-    // The person stays accountable on the row...
-    expect(written.decided_by).toBe(USER_ID);
-    // ...and the row itself can now say a model drafted it.
-    const authorship = (written.metadata as Record<string, unknown>).authorship as Record<string, unknown>;
-    expect(authorship.actorKind).toBe("planner_agent");
-    expect(authorship.agentId).toBe(PLANNER_AGENT_PRINCIPAL_ID);
-    expect(authorship.approvedByUserId).toBe(USER_ID);
-    expect(authorship.approvedAt).toBe(APPROVED_AT);
-    expect(authorship.inputHash).toBe(hash);
-
-    const ledger = ledgerRows[0];
-    expect(ledger.action_kind).toBe("record_stage_gate_hold");
-    expect(ledgerRows).toHaveLength(1);
-    expect(ledger.outcome).toBe("succeeded");
-    expect(decisionInsertSelectMock).toHaveBeenCalledWith(
-      "id, workspace_id, project_id, run_id, model_run_id, county_run_id, template_id, gate_id, decision, rationale, missing_artifacts, metadata, decided_by, decided_at"
-    );
-    expect(ledger.actor_kind).toBe("planner_agent");
-    expect(ledger.approved_by_user_id).toBe(USER_ID);
-    expect(ledger.approved_at).toBe(APPROVED_AT);
+    expect(decisionInsertMock).not.toHaveBeenCalled();
+    const transaction = serviceRpcMock.mock.calls.find(([name]) => name === "record_assistant_stage_gate_hold");
+    expect(transaction?.[1]).toMatchObject({ p_approval_id: APPROVAL_ID, p_user_id: USER_ID, p_workspace_id: WORKSPACE_ID });
+    const action = JSON.parse(transaction?.[1].p_action_canonical);
+    expect(action).toEqual({ kind: "record_stage_gate_hold", workspaceId: WORKSPACE_ID, projectId: PROJECT_ID, gateId: GATE_ID, rationale: RATIONALE });
+    expect(hashAssistantActionPayload(action)).toBe(hash);
+    expect(await response.json()).toMatchObject({ decision: { decision: "HOLD", rationale: RATIONALE, decided_by: USER_ID }, recovered: false });
   });
 
   it.each([
     { data: null, error: { code: "23514", message: "synthetic constraint refusal" } },
     { data: null, error: { code: "PGRST116", message: "singular response rejected", details: "The result contains 0 rows" } },
     { data: null, error: null },
-  ])("records a failed action when the decision write is unconfirmed: %j", async (result) => {
+  ])("does not claim success or fall back to a separate write when the transaction is unconfirmed: %j", async (result) => {
     const hash = approvedHash();
-    armApproval(hash);
-    decisionInsertSingleMock.mockResolvedValueOnce(result);
+    transactionResult.value = result;
     const response = await postDecision(agentRequest({
       workspaceId: WORKSPACE_ID, projectId: PROJECT_ID, gateId: GATE_ID,
       decision: "HOLD", rationale: RATIONALE,
     }, agentHeaders(hash)));
-    expect(response.status).toBe(500);
-    expect(await response.json()).toEqual({ error: "Failed to record the stage-gate decision" });
-    expect(decisionInsertMock).toHaveBeenCalledTimes(1);
-    expect(ledgerRows).toHaveLength(1);
-    expect(ledgerRows[0]).toMatchObject({
-      outcome: "failed", action_kind: "record_stage_gate_hold", approval_id: APPROVAL_ID,
-      error_message: "Failed to record the stage-gate decision",
-    });
+    expect(response.status).toBe(503);
+    expect(await response.json()).toHaveProperty("error");
+    expect(decisionInsertMock).not.toHaveBeenCalled();
+    expect(serviceRpcMock.mock.calls.filter(([name]) => name === "record_assistant_stage_gate_hold")).toHaveLength(1);
   });
 
   it("refuses when the approved payload is not the payload that arrived", async () => {
-    armApproval(approvedHash());
 
     const response = await postDecision(
       agentRequest(
@@ -290,9 +232,33 @@ describe("an approved agent hold reaches the decision log", () => {
   });
 });
 
+describe("a retained HOLD receipt is read before new-work checks", () => {
+  const savedReceipt = { schemaVersion: 1, decision: {
+    id: "dddddddd-dddd-4ddd-8ddd-dddddddddddd", workspace_id: WORKSPACE_ID, project_id: PROJECT_ID,
+    gate_id: GATE_ID, decision: "HOLD", rationale: RATIONALE, decided_by: USER_ID, decided_at: APPROVED_AT, missing_artifacts: [], run_id: null, model_run_id: null, county_run_id: null,
+  } };
+  it("recovers completed work after downgrade without reading the new gate binding or inserting again", async () => {
+    membershipMaybeSingleMock.mockResolvedValue({ data: { workspace_id: WORKSPACE_ID, role: "viewer" }, error: null });
+    serviceRpcMock.mockResolvedValueOnce({ data: savedReceipt, error: null });
+    const response = await postDecision(agentRequest({ workspaceId: WORKSPACE_ID, projectId: PROJECT_ID, gateId: GATE_ID, decision: "HOLD", rationale: RATIONALE }, agentHeaders(approvedHash())));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ decision: savedReceipt.decision, recovered: true });
+    expect(projectSelectMock).not.toHaveBeenCalled();
+    expect(workspaceSelectMock).not.toHaveBeenCalled();
+    expect(decisionInsertMock).not.toHaveBeenCalled();
+    expect(serviceRpcMock.mock.calls.map(([name]) => name)).toEqual(["read_assistant_hold_receipt"]);
+  });
+  it("does not execute when receipt readback fails", async () => {
+    serviceRpcMock.mockResolvedValueOnce({ data: null, error: { code: "XX000", message: "Synthetic readback unavailable" } });
+    const response = await postDecision(agentRequest({ workspaceId: WORKSPACE_ID, projectId: PROJECT_ID, gateId: GATE_ID, decision: "HOLD", rationale: RATIONALE }, agentHeaders(approvedHash())));
+    expect(response.status).toBe(503);
+    expect(decisionInsertMock).not.toHaveBeenCalled();
+    expect(serviceRpcMock.mock.calls.map(([name]) => name)).toEqual(["read_assistant_hold_receipt"]);
+  });
+});
+
 describe("an agent may not sign a PASS", () => {
   it("refuses an agent-sourced PASS before it touches the database", async () => {
-    armApproval(approvedHash());
 
     const response = await postDecision(
       agentRequest(
@@ -344,7 +310,7 @@ describe("an agent may not sign a PASS", () => {
     });
     // A manual decision writes no ledger row: `action_kind` would claim a
     // stage-gate HOLD about a PASS a person signed.
-    expect(ledgerRows).toHaveLength(0);
+    expect(serviceRpcMock).not.toHaveBeenCalled();
   });
 });
 
@@ -413,7 +379,6 @@ describe("the quick link a planner clicks reaches the route it approved", () => 
     // Exactly what POST /api/assistant/actions/approvals stores: the hash of the
     // whole executeAction the planner was shown.
     const mintedHash = hashAssistantActionPayload(action);
-    armApproval(mintedHash);
 
     const originalFetch = globalThis.fetch;
     const responses: Response[] = [];
@@ -445,15 +410,16 @@ describe("the quick link a planner clicks reaches the route it approved", () => 
     }
 
     expect(responses[0]?.status).toBe(201);
-    const written = (decisionInsertMock.mock.calls as unknown as unknown[][])[0]?.[0] as Record<string, unknown>;
-    expect(written.decision).toBe("HOLD");
-    expect(written.missing_artifacts).toEqual(action.missingArtifacts);
+    const transaction = serviceRpcMock.mock.calls.find(([name]) => name === "record_assistant_stage_gate_hold");
+    const submitted = JSON.parse(transaction?.[1].p_action_canonical);
+    expect(submitted.kind).toBe("record_stage_gate_hold");
+    expect(submitted.missingArtifacts).toEqual(action.missingArtifacts);
+    expect(hashAssistantActionPayload(submitted)).toBe(mintedHash);
   });
 });
 
 describe("a narrow action may not ride the wide endpoint", () => {
   it("refuses an agent request carrying a field outside the action's payload", async () => {
-    armApproval(approvedHash());
 
     const response = await postDecision(
       agentRequest(

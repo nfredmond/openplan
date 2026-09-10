@@ -5,10 +5,9 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import {
   readAssistantExecutionSource,
-  verifyAssistantActionApproval,
-  type AssistantApprovalVerification,
+  type AssistantApprovalAction,
 } from "@/lib/assistant/action-approval-server";
-import { assistantActionAuditIdentity, withAssistantActionAudit } from "@/lib/observability/action-audit";
+import { HoldReceiptError, holdApprovalHeaders, holdBindingSnapshot, readHoldReceipt, recordHoldWithReceipt } from "@/lib/assistant/stage-gate-hold-receipt";
 import { refuseOutOfScopeAgentRequest } from "@/lib/assistant/agent-request-scope";
 import { USER_AUTHORED } from "@/lib/assistant/agent-principal";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
@@ -356,6 +355,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
     }
 
+    const missingArtifacts = (parsed.data.missingArtifacts ?? []).filter((artifact) => artifact.trim().length > 0);
+    const agentSourced = executionSource === "planner_agent_quick_link";
+    const serviceSupabase = agentSourced ? createServiceRoleClient() : null;
+    const holdAction: Extract<AssistantApprovalAction, { kind: "record_stage_gate_hold" }> = {
+      kind: "record_stage_gate_hold", workspaceId, projectId, gateId, rationale,
+      ...(missingArtifacts.length > 0 ? { missingArtifacts } : {}),
+      ...(parsed.data.runId ? { runId: parsed.data.runId } : {}),
+      ...(parsed.data.modelRunId ? { modelRunId: parsed.data.modelRunId } : {}),
+      ...(parsed.data.countyRunId ? { countyRunId: parsed.data.countyRunId } : {}),
+    };
+    const consentHeaders = agentSourced ? holdApprovalHeaders(request, holdAction) : null;
+    // Recover a prior effect before asking whether changed context permits NEW work.
+    if (serviceSupabase && consentHeaders) {
+      const receipt = await readHoldReceipt({ supabase: serviceSupabase, ...consentHeaders, userId: user.id, action: holdAction });
+      if (receipt) return NextResponse.json({ decision: receipt.decision, recovered: true }, { status: 200 });
+    }
+
     // The role matrix already has an action for this; it simply had no writer.
     // Viewers are additionally denied at the database by the restrictive gate
     // 20260728000006 installed on this table, so this is the readable refusal
@@ -526,69 +542,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const missingArtifacts = (parsed.data.missingArtifacts ?? []).filter(
-      (artifact) => artifact.trim().length > 0
-    );
-
-    /**
-     * Approval evidence, verified against the action this route rebuilds from
-     * its OWN parsed data — never from the header. The hash therefore covers the
-     * exact wording that is about to be written, so an approval minted for one
-     * rationale cannot execute a different one.
-     *
-     * `missingArtifacts` is hashed in its FILTERED form, matching what the chat
-     * proposal trims before validation; an unfiltered list here would hash
-     * differently from the payload the planner approved and 403 inexplicably.
-     */
-    const agentSourced = executionSource === "planner_agent_quick_link";
-    const serviceSupabase = agentSourced ? createServiceRoleClient() : null;
-    let approval: AssistantApprovalVerification = {
-      approvalId: null,
-      inputHash: null,
-      executionSource: "manual",
-      authorship: USER_AUTHORED,
-    };
-
-    if (agentSourced && serviceSupabase) {
-      try {
-        approval = await verifyAssistantActionApproval({
-          request,
-          serviceSupabase,
-          userId: user.id,
-          workspaceId,
-          action: {
-            kind: "record_stage_gate_hold",
-            workspaceId,
-            projectId,
-            gateId,
-            rationale,
-            ...(missingArtifacts.length > 0 ? { missingArtifacts } : {}),
-            ...(parsed.data.runId ? { runId: parsed.data.runId } : {}),
-            ...(parsed.data.modelRunId ? { modelRunId: parsed.data.modelRunId } : {}),
-            ...(parsed.data.countyRunId ? { countyRunId: parsed.data.countyRunId } : {}),
-          },
-        });
-      } catch (approvalError) {
-        audit.warn("agent_approval_rejected", { workspaceId, projectId, gateId });
-        return NextResponse.json(
-          { error: approvalError instanceof Error ? approvalError.message : "Planner Agent approval failed" },
-          { status: 403 }
-        );
-      }
+    if (serviceSupabase && consentHeaders) {
+      const result = await recordHoldWithReceipt({
+        supabase: serviceSupabase, approvalId: consentHeaders.approvalId, userId: user.id,
+        action: holdAction, binding: holdBindingSnapshot(binding, gateId),
+      });
+      audit.info("decision_recorded_with_receipt", { workspaceId, projectId, gateId, decisionId: result.receipt.decision.id, recovered: result.replayed });
+      return NextResponse.json({ decision: result.receipt.decision, recovered: result.replayed }, { status: result.replayed ? 200 : 201 });
     }
 
-    /**
-     * WHO WROTE THIS VERDICT, on the verdict itself.
-     *
-     * `decided_by` stays the person: they are accountable for it, and the
-     * database's own policies are written around that column. What was missing
-     * is that a decision a model drafted looked byte-identical to one a planner
-     * typed. When a gate decision is challenged — and a gate decision is exactly
-     * the kind of record that gets challenged — the answer to "who wrote this"
-     * has to come off the row, not out of a separate ledger somebody has to know
-     * to join.
-     */
-    const authorship = approval.authorship;
+    const authorship = USER_AUTHORED;
 
     const insertDecision = async () => {
       const result = await supabase
@@ -622,8 +585,8 @@ export async function POST(request: NextRequest) {
               agentId: authorship.actorAgentId,
               approvedByUserId: authorship.approvedByUserId,
               approvedAt: authorship.approvedAt,
-              approvalId: approval.approvalId,
-              inputHash: approval.inputHash,
+              approvalId: null,
+              inputHash: null,
             },
           },
           decided_by: user.id,
@@ -647,41 +610,9 @@ export async function POST(request: NextRequest) {
       return result;
     };
 
-    /**
-     * The ledger row is written for the AGENT path only, and that asymmetry is
-     * deliberate rather than an omission.
-     *
-     * `assistant_action_executions.action_kind` is a claim about what happened.
-     * This endpoint records PASS as well as HOLD, and only the agent path is
-     * pinned to HOLD — so wrapping a manual decision would stamp
-     * `record_stage_gate_hold` on rows describing a PASS a person signed. A
-     * mislabelled audit row is worse than an absent one. A manual decision is
-     * already recorded twice over: in `stage_gate_decisions` itself, which is
-     * append-only, and in this route's `decision_recorded` audit line.
-     */
     let insertResult: Awaited<ReturnType<typeof insertDecision>>;
     try {
-      insertResult =
-        agentSourced && serviceSupabase
-          ? await withAssistantActionAudit(
-              serviceSupabase,
-              {
-                actionKind: "record_stage_gate_hold",
-                workspaceId,
-                userId: user.id,
-                ...assistantActionAuditIdentity(approval),
-                inputSummary: {
-                  projectId: project.id,
-                  gateId: lookup.gate.gate_id,
-                  decision,
-                  citedRun: citedRunKeys[0] ?? null,
-                  missingArtifactCount: missingArtifacts.length,
-                },
-              },
-              insertDecision
-            )
-          : await insertDecision();
-
+      insertResult = await insertDecision();
     } catch {
       return NextResponse.json({ error: "Failed to record the stage-gate decision" }, { status: 500 });
     }
@@ -703,6 +634,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ decision: insertResult.data }, { status: 201 });
   } catch (error) {
+    if (error instanceof HoldReceiptError) return NextResponse.json({ error: error.message }, { status: error.status });
     audit.error("decision_create_unhandled_error", {
       durationMs: Date.now() - startedAt,
       error,

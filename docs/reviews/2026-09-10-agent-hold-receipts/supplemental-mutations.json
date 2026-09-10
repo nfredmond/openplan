@@ -1,0 +1,30 @@
+[
+  {
+    "name": "harmless",
+    "result": "survived"
+  },
+  {
+    "name": "receipt-missing-artifacts",
+    "result": "failed"
+  },
+  {
+    "name": "receipt-run-citation",
+    "result": "failed"
+  },
+  {
+    "name": "omit-stored-context",
+    "result": "failed"
+  },
+  {
+    "name": "expire-unused-approval",
+    "result": "failed"
+  },
+  {
+    "name": "receipt-original-user",
+    "result": "failed"
+  },
+  {
+    "name": "receipt-cross-workspace-rls",
+    "result": "failed"
+  }
+]
