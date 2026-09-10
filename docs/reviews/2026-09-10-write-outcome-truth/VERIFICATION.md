@@ -1,4 +1,4 @@
-# Write-outcome truth and serving identity — in progress
+# v0.49.3 write outcomes and serving identity
 
 Base main `d87a04d4`; checkout
 `~/.local/state/openplan/write-outcome-truth-2026-09-10`.
@@ -117,3 +117,37 @@ using one minmax(0,1fr) track reduced the page scroll width to292px. The RTP det
 page now explicitly uses that one-column track. This is scoped to RTP detail;
 it does not claim all module grids are repaired. Final rebuilt layout verification
 is pending, so the earlier successful interaction is not complete mobile acceptance.
+
+
+## Final browser and release evidence
+
+The rebuilt production edc03864 is positively identified at3277. At1440px and
+390px, real sign-in and Regional Plan navigation reach the saved periods. The
+narrow editor shows its full text and Add/Edit/Remove controls. Keyboard editing
+and cancellation preserve rows. Actual trigger-suppressed saves answer500, retain
+form inputs and leave the complete baseline unchanged. Control saves from the
+preceding ad8aecfe production build each retained one row; the only subsequent
+product change is RTP grid sizing. Final baseline is two non-overlapping desktop
+periods and one mobile period. Screenshots were opened and inspected.
+
+The layout guard initially measured a hidden panel during navigation and falsely
+accepted zero width. It now waits for a visible panel and requires nonzero width.
+A harmless CSS comment survives. Restoring the automatic grid track makes the
+390px guard fail, then removing that mutation restores the pass. The broader
+control probe also sampled before scroll completion; the corrected probe scrolls
+each visible enabled financial control into view before measuring. All sampled
+controls are reachable. This does not prove contrast, screen-reader behavior or
+all financial planning outcomes. The former failed measurements remain in local
+scratch logs; they are not reported as successful verification.
+
+Final product build at edc03864 passes. The preceding complete suite/shuffle,
+89 focused tests after fixture type corrections,92 ops tests and final browser
+records support the declared changes. Live RLS, worker and populated upgrade
+checks are required on the final pushed release commit before tagging. Their
+GitHub receipt will be retained separately. No human review gates publication.
+
+Blind categories remain: exact VMT GET projection coverage, durable assistant
+effect/audit recovery, real agency usefulness, prescribed reimbursement forms,
+provider expansion and the full independent scientific/v1 contract. No reminder
+constraint or scientific method changed. Browser fixtures are explicitly synthetic
+and restricted to the owned disposable restore target at API22301.

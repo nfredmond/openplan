@@ -1,0 +1,70 @@
+[
+  {
+    "width": 1440,
+    "id": "fc8d8969-f99c-4dae-95ee-6794bbe6e997",
+    "baseline": 1,
+    "start": "2036",
+    "end": "2046",
+    "refusedStatus": 500,
+    "refusedBody": {
+      "error": "Could not confirm creation of the horizon period",
+      "details": "The database did not return a confirmed result. Check the saved state before retrying; this response does not establish that a new item was created."
+    },
+    "retained": [
+      {
+        "id": "25367376-a8e0-45ae-b031-e532ffcc1020",
+        "label": "SYNTHETIC retained 1440",
+        "start_year": 2026,
+        "end_year": 2035
+      },
+      {
+        "id": "6addeebe-e686-43b9-90d8-d33663af2121",
+        "label": "SYNTHETIC retained 1440 second period",
+        "start_year": 2036,
+        "end_year": 2046
+      }
+    ],
+    "controls": [],
+    "errors": [
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    ],
+    "responses": [
+      {
+        "url": "http://127.0.0.1:3277/api/rtp-cycles/fc8d8969-f99c-4dae-95ee-6794bbe6e997/horizon-bands",
+        "status": 500
+      }
+    ],
+    "url": "http://127.0.0.1:3277/rtp/fc8d8969-f99c-4dae-95ee-6794bbe6e997?tab=financial"
+  },
+  {
+    "width": 390,
+    "id": "3200df28-a2a4-4e40-bd14-65824f341936",
+    "baseline": 0,
+    "start": "2026",
+    "end": "2035",
+    "refusedStatus": 500,
+    "refusedBody": {
+      "error": "Could not confirm creation of the horizon period",
+      "details": "The database did not return a confirmed result. Check the saved state before retrying; this response does not establish that a new item was created."
+    },
+    "retained": [
+      {
+        "id": "d5c8444c-d6c1-4772-ab60-c4dc146d84fa",
+        "label": "SYNTHETIC retained 390",
+        "start_year": 2026,
+        "end_year": 2035
+      }
+    ],
+    "controls": [],
+    "errors": [
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    ],
+    "responses": [
+      {
+        "url": "http://127.0.0.1:3277/api/rtp-cycles/3200df28-a2a4-4e40-bd14-65824f341936/horizon-bands",
+        "status": 500
+      }
+    ],
+    "url": "http://127.0.0.1:3277/rtp/3200df28-a2a4-4e40-bd14-65824f341936?tab=financial"
+  }
+]
