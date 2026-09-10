@@ -22,6 +22,19 @@ stable enough to promise smooth upgrades indefinitely.
 
 No changes yet.
 
+## 0.52.1 — 2026-09-10
+
+Development dependencies now use patched versions of Vitest, filesystem/URL/YAML
+parsers, Browserslist and its support data, esbuild, and the component CLI's HTTP
+parsers. The complete dependency audit is included in QA, so development-tool
+advisories can no longer pass through the production-only audit.
+
+No new migration is required. Install the locked dependencies with `npm ci` and
+rebuild. The scoped provider task and all agency/scientific authority boundaries
+remain as released in v0.52.0. This is dependency maintenance, not another provider
+backend. [Verification](docs/reviews/2026-09-10-development-dependency-patch/VERIFICATION.md)
+records dependency changes, challenged audit behavior and applicable checks.
+
 ## 0.52.0 — 2026-09-10
 
 Projects now offer a narrow Planner Agent task using installed Codex or a selected

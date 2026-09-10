@@ -1,6 +1,6 @@
 {
   "name": "openplan",
-  "version": "0.52.0",
+  "version": "0.52.1",
   "private": true,
   "license": "Apache-2.0",
   "packageManager": "npm@11.11.0",
@@ -26,7 +26,7 @@
     "ops:check-prod-health": "node scripts/ops/check-prod-health.mjs",
     "ops:log-prod-health-evidence": "node scripts/ops/log-prod-health-evidence.mjs",
     "ops:check-public-demo-preflight": "node scripts/ops/check-public-demo-preflight.mjs",
-    "qa:gate": "npm run lint && npm run deadcode && npm test && npm run test:provider-connector && node scripts/ops/rls-gate.mjs && npm audit --omit=dev --audit-level=moderate && npm run build",
+    "qa:gate": "npm run lint && npm run deadcode && npm test && npm run test:provider-connector && node scripts/ops/rls-gate.mjs && npm run audit:dependencies && npm run build",
     "qa:gate:log": "mkdir -p ../docs/ops/2026-03-01-test-output && (npm run qa:gate) | tee ../docs/ops/2026-03-01-test-output/2026-03-01-clean-gate.log",
     "ops:check-local-supabase-status": "node scripts/ops/check-local-supabase-status.mjs",
     "ops:check-migration-inventory": "node scripts/ops/check-migration-inventory.mjs",
@@ -43,7 +43,8 @@
     "product:direction:packet": "node scripts/ops/product-direction-review.mjs --packet",
     "worker:document-exports": "node --env-file=.env.local --conditions=react-server --import tsx scripts/workers/document-exports.ts",
     "worker:contract-calculations": "node --env-file=.env.local --conditions=react-server --import tsx scripts/workers/contract-calculations.ts",
-    "test:provider-connector": "node --test ../workers/planner_agent_connector/test/*.test.mjs"
+    "test:provider-connector": "node --test ../workers/planner_agent_connector/test/*.test.mjs",
+    "audit:dependencies": "npm audit --audit-level=low"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.46",
@@ -106,7 +107,7 @@
     "postcss": "8.5.23",
     "protocol-buffers-schema": "3.6.1",
     "ws": "8.21.1",
-    "qs": "6.15.3"
+    "qs": "6.16.0"
   },
   "pnpm": {
     "overrides": {

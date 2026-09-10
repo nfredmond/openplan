@@ -1,0 +1,41 @@
+{
+  "results": [
+    {
+      "name": "patched-harmless-description",
+      "exit": 0,
+      "vulnerabilities": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      }
+    },
+    {
+      "name": "old-vulnerable-lock",
+      "exit": 1,
+      "vulnerabilities": {
+        "info": 0,
+        "low": 2,
+        "moderate": 9,
+        "high": 3,
+        "critical": 0,
+        "total": 14
+      }
+    },
+    {
+      "name": "old-production-only-guard",
+      "exit": 0,
+      "vulnerabilities": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      }
+    }
+  ],
+  "blindCategory": "Registry-reported advisories only; does not establish exploitation or undisclosed vulnerability absence."
+}

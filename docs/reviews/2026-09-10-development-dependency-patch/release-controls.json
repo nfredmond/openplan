@@ -1,0 +1,10 @@
+[
+  {
+    "name": "harmless-release-comment",
+    "exit": 0
+  },
+  {
+    "name": "wrong-release-count",
+    "exit": 1
+  }
+]
