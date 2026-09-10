@@ -153,3 +153,11 @@ return. Do not rely on development servers, databases or native processes having
 survived the pause; inspect them and restart only owned resources as needed.
 The last completed default connector suite had339 passes,4 opt-in skips and no
 failures. Its receipt is provider-checks.json; it does not establish app support.
+
+## Latest app checkpoint supersedes the earlier registration to-do
+
+App routes/types, project provider panel and additive migration are implemented.
+Read app-registration-checks.json and the final CHECKPOINT.md section.136 focused
+app checks and72 live database checks passed; browser acceptance and full release
+checks remain pending. Start at the identified production build and real browser
+journeys described there. The candidate is not merged or released.

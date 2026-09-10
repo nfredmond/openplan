@@ -7,14 +7,14 @@ import { Textarea } from "@/components/ui/textarea";
 import type { AssistantChatProposal } from "@/lib/assistant/chat-tools";
 
 const connectionSchema = z.object({ id: z.string().uuid(), workspace_id: z.string().uuid(), project_id: z.string().uuid(),
-  provider: z.enum(["codex", "claude"]), device_label: z.string(), expected_auth_mode: z.enum(["chatgpt", "apiKey", "claude_subscription"]), expires_at: z.string(), revoked_at: z.string().nullable(), last_status: z.string() });
+  provider: z.enum(["codex", "claude", "opencode"]), device_label: z.string(), expected_auth_mode: z.enum(["chatgpt", "apiKey", "claude_subscription", "opencode_api"]), expires_at: z.string(), revoked_at: z.string().nullable(), last_status: z.string() });
 const proposalSchema = z.object({ status: z.literal("proposed"), kind: z.literal("create_project_record"),
   approval: z.literal("approval_required"), description: z.string(),
   payload: z.object({ kind: z.literal("create_project_record"), recordType: z.literal("submittal"), projectId: z.string().uuid(),
     title: z.string().min(1).max(160), submittalType: z.enum(["authorization_packet", "invoice_backup", "environmental_package", "hearing_record", "ps_e", "reimbursement", "progress_report", "other"]),
     status: z.literal("draft").optional(), notes: z.string().max(4000).optional() }).strict() }).strict();
 const turnSchema = z.object({ id: z.string().uuid(), request_id: z.string().uuid(), workspace_id: z.string().uuid(), project_id: z.string().uuid(),
-  provider: z.enum(["codex", "claude", "anthropic"]), model_id: z.string(), auth_mode: z.string(), question: z.string(), packet_hash: z.string().regex(/^[a-f0-9]{64}$/),
+  provider: z.enum(["codex", "claude", "opencode", "anthropic"]), model_id: z.string(), auth_mode: z.string(), question: z.string(), packet_hash: z.string().regex(/^[a-f0-9]{64}$/),
   state: z.enum(["queued", "running", "succeeded", "failed", "cancelled", "interrupted"]), failure_code: z.string().nullable(), created_at: z.string(),
   result: z.object({ answer: z.string(), citations: z.array(z.object({ id: z.string(), label: z.string(), href: z.string() })).length(1), proposal: proposalSchema.nullable() }).strict().nullable() });
 type Connection = z.infer<typeof connectionSchema>;
@@ -23,12 +23,12 @@ const setupBase = z.object({ appUrl: z.string().url(), connectionId: z.string().
   token: z.string().regex(/^op_pc_[a-f0-9-]{36}\.[A-Za-z0-9_-]{43}$/) });
 const setupSchema = z.discriminatedUnion("version", [
   setupBase.extend({ version: z.literal(1), expectedAuthMode: z.enum(["chatgpt", "apiKey"]) }).strict(),
-  setupBase.extend({ version: z.literal(2), provider: z.enum(["codex", "claude"]), expectedAuthMode: z.enum(["chatgpt", "apiKey", "claude_subscription"]) }).strict(),
+  setupBase.extend({ version: z.literal(2), provider: z.enum(["codex", "claude", "opencode"]), expectedAuthMode: z.enum(["chatgpt", "apiKey", "claude_subscription", "opencode_api"]) }).strict(),
 ]);
-type RequestBody = { workspaceId: string; projectId: string; requestId: string; question: string; model: string; provider: "codex" | "claude" | "anthropic";
+type RequestBody = { workspaceId: string; projectId: string; requestId: string; question: string; model: string; provider: "codex" | "claude" | "opencode" | "anthropic";
   connectionId: string | null; authMode: string; acceptApiCharges?: true };
 export type ProviderProposalReview = { id: string; question: string; answer: string; proposal: AssistantChatProposal };
-const authLabels: Record<string, string> = { chatgpt: "Native ChatGPT account", claude_subscription: "Native Claude subscription", apiKey: "Native API key (provider charges)", workspace_api_key: "Workspace API key (provider charges)", deployment_api_key: "Deployment API key (provider charges)" };
+const authLabels: Record<string, string> = { chatgpt: "Native ChatGPT account", claude_subscription: "Native Claude subscription", opencode_api: "OpenCode OpenAI API key (provider charges)", apiKey: "Native API key (provider charges)", workspace_api_key: "Workspace API key (provider charges)", deployment_api_key: "Deployment API key (provider charges)" };
 const inputClass = "mt-1 w-full min-w-0 rounded border border-white/20 bg-slate-900 px-3 py-2 text-sm text-white";
 const outlineButtonClass = "h-auto min-h-10 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] border-white/30 bg-slate-900 text-slate-100 hover:border-sky-300 hover:bg-slate-800 hover:text-white";
 
@@ -60,7 +60,7 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
   workspaceId: string; projectId: string; busy: boolean; onReview: (review: ProviderProposalReview) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const [provider, setProvider] = useState<"codex" | "claude" | "anthropic">("codex");
+  const [provider, setProvider] = useState<"codex" | "claude" | "opencode" | "anthropic">("codex");
   const [connections, setConnections] = useState<Connection[]>([]);
   const [connectionId, setConnectionId] = useState("");
   const [apiMode, setApiMode] = useState("workspace_api_key");
@@ -112,7 +112,7 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
   }, [expanded, refresh, invalidateReads]);
 
   const nativeProvider = provider !== "anthropic";
-  const connectionMode = provider === "claude" ? "claude_subscription" : nativeMode;
+  const connectionMode = provider === "opencode" ? "opencode_api" : provider === "claude" ? "claude_subscription" : nativeMode;
   async function createConnection() {
     setSaving(true); setError(null); setNotice(null);
     let confirmed = false;
@@ -176,12 +176,12 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
   const active = providerConnections.filter(connection => !connection.revoked_at && Date.parse(connection.expires_at) > Date.now());
   const selected = active.find(connection => connection.id === connectionId);
   const canSend = !busy && !saving && !cancelling && !pending && question.trim().length > 0 && model.trim().length > 0 &&
-    (nativeProvider ? Boolean(selected) && (selected?.expected_auth_mode !== "apiKey" || charges) : charges);
+    (nativeProvider ? Boolean(selected) && (!["apiKey", "opencode_api"].includes(selected?.expected_auth_mode ?? "") || charges) : charges);
   function sendNew() {
     if (!canSend) return;
     void send({ workspaceId, projectId, requestId: crypto.randomUUID(), question: question.trim(), model: model.trim(), provider,
       connectionId: nativeProvider ? connectionId : null, authMode: nativeProvider ? selected!.expected_auth_mode : apiMode,
-      ...(provider === "anthropic" || selected?.expected_auth_mode === "apiKey" ? { acceptApiCharges: true } : {}) });
+      ...(provider === "anthropic" || ["apiKey", "opencode_api"].includes(selected?.expected_auth_mode ?? "") ? { acceptApiCharges: true } : {}) });
   }
 
   return <section className="rounded-lg border border-sky-300/25 bg-sky-950/25 p-3 text-slate-100" aria-label="Project provider task">
@@ -190,8 +190,8 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
       <p className="text-sm">Ask about this project&apos;s stored name, summary and status, or draft a submittal. Only that project record and your question go to the selected provider. Documents and other project records are outside this task.</p>
       {error && <p role="alert" className="rounded border border-rose-300/30 p-2 text-sm text-rose-100">{error}</p>}
       {notice && <p role="status" className="text-sm text-sky-100">{notice}</p>}
-      <label className="block text-sm">Provider<select className={inputClass} value={provider} disabled={saving || Boolean(pending)} onChange={event => { setProvider(event.target.value as "codex" | "claude" | "anthropic"); setModel(""); setCharges(false); setConnectionId(""); setSetup(null); }}>
-        <option value="codex">Installed Codex</option><option value="claude">Installed Claude Code</option><option value="anthropic">Anthropic API</option>
+      <label className="block text-sm">Provider<select className={inputClass} value={provider} disabled={saving || Boolean(pending)} onChange={event => { setProvider(event.target.value as "codex" | "claude" | "opencode" | "anthropic"); setModel(""); setCharges(false); setConnectionId(""); setSetup(null); }}>
+        <option value="codex">Installed Codex</option><option value="claude">Installed Claude Code</option><option value="opencode">Installed OpenCode</option><option value="anthropic">Anthropic API</option>
       </select></label>
       {nativeProvider ? <>
         <label className="block text-sm">Project connection<select className={inputClass} value={connectionId} disabled={saving || Boolean(pending)} onChange={event => { setConnectionId(event.target.value); setCharges(false); }}>
@@ -199,9 +199,9 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
         </select></label>
         {selected && <p className="text-xs">{authLabels[selected.expected_auth_mode]} · Expires {new Date(selected.expires_at).toLocaleDateString()}. Native account limits still apply.</p>}
         <details className="rounded border border-white/15 p-2"><summary className="cursor-pointer text-sm font-semibold">Connect or revoke a computer</summary><div className="mt-3 space-y-3">
-          <p className="text-xs">Use {provider === "claude" ? "Claude Code 2.1.263" : "Codex 0.154.0"} on Linux. Sign in through that application itself. The connector uses your existing native account and does not switch billing modes.</p>
+          <p className="text-xs">Use {provider === "opencode" ? "OpenCode 1.18.30" : provider === "claude" ? "Claude Code 2.1.263" : "Codex 0.154.0"} on Linux. Sign in through that application itself. The connector uses your existing native account and does not switch billing modes.</p>
           <label className="block text-sm">Computer label<input className={inputClass} maxLength={120} value={label} onChange={event => setLabel(event.target.value)} /></label>
-          {provider === "claude" ? <p className="text-xs">Expected account: Claude subscription. Subscription limits apply. Disable paid extra usage in Claude to prevent additional charges. OpenPlan cannot inspect that setting.</p> : <label className="block text-sm">Expected native account<select className={inputClass} value={nativeMode} onChange={event => setNativeMode(event.target.value as "chatgpt" | "apiKey")}><option value="chatgpt">ChatGPT account</option><option value="apiKey">Native API key (provider charges)</option></select></label>}
+          {provider === "opencode" ? <p className="text-xs">Expected account: OpenAI API key configured in OpenCode. Provider charges apply. OpenCode subscription sign-in and other providers are not supported by this connector yet.</p> : provider === "claude" ? <p className="text-xs">Expected account: Claude subscription. Subscription limits apply. Disable paid extra usage in Claude to prevent additional charges. OpenPlan cannot inspect that setting.</p> : <label className="block text-sm">Expected native account<select className={inputClass} value={nativeMode} onChange={event => setNativeMode(event.target.value as "chatgpt" | "apiKey")}><option value="chatgpt">ChatGPT account</option><option value="apiKey">Native API key (provider charges)</option></select></label>}
           <Button type="button" onClick={() => void createConnection()} disabled={saving || !label.trim()}>Create project connection</Button>
           {setup !== null && <Button type="button" variant="outline" className={outlineButtonClass} onClick={() => {
             const url = URL.createObjectURL(new Blob([JSON.stringify(setup, null, 2)], { type: "application/json" }));
@@ -216,8 +216,8 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
         </div></details>
       </> : <label className="block text-sm">API key source<select className={inputClass} value={apiMode} disabled={saving || Boolean(pending)} onChange={event => { setApiMode(event.target.value); setCharges(false); }}><option value="workspace_api_key">Team API key</option><option value="deployment_api_key">Deployment API key</option></select></label>}
       <label className="block text-sm">Model ID<input className={inputClass} maxLength={160} value={model} disabled={saving || Boolean(pending)} onChange={event => setModel(event.target.value)} placeholder="Exact model ID from your provider" /></label>
-      <p className="text-xs">Use a model your account can access. Unsupported models fail without substitution. For Codex, the connector&apos;s models command lists current choices. For Claude, it checks sign-in but does not list models; use an exact claude- model ID supported by your account.</p>
-      {(provider === "anthropic" || selected?.expected_auth_mode === "apiKey") && <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={charges} disabled={saving || Boolean(pending)} onChange={event => setCharges(event.target.checked)} />I authorize this request to use the selected API key and incur provider charges.</label>}
+      <p className="text-xs">Use a model your account can access. Unsupported models fail without substitution. For Codex, the connector&apos;s models command lists current choices. For Claude, it checks sign-in but does not list models; use an exact claude- model ID supported by your account. For OpenCode, the command reads its offline OpenAI catalog. Those IDs do not establish account access or current availability; use the ID without the openai/ prefix.</p>
+      {(provider === "anthropic" || ["apiKey", "opencode_api"].includes(selected?.expected_auth_mode ?? "")) && <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={charges} disabled={saving || Boolean(pending)} onChange={event => setCharges(event.target.checked)} />I authorize this request to use the selected API key and incur provider charges.</label>}
       <label className="block text-sm">Project question<Textarea className={`${inputClass} min-h-24`} maxLength={2000} value={question} disabled={saving || Boolean(pending)} onChange={event => setQuestion(event.target.value)} onKeyDown={event => {
         if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing && canSend) { event.preventDefault(); sendNew(); }
       }} /></label>
@@ -236,7 +236,7 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
         {turns.length === 0 && <p className="text-sm">No saved requests for this project.</p>}
         {turns.map(turn => <article className="space-y-2 rounded border border-white/15 p-3" key={turn.id} aria-label={`Provider request: ${turn.question}`}>
           <p className="whitespace-pre-wrap break-words text-sm font-semibold">{turn.question}</p>
-          <p className="break-words text-xs">{turn.provider === "codex" ? "Installed Codex" : turn.provider === "claude" ? "Installed Claude Code" : "Anthropic API"} · {turn.model_id} · {authLabels[turn.auth_mode] ?? turn.auth_mode}</p>
+          <p className="break-words text-xs">{turn.provider === "codex" ? "Installed Codex" : turn.provider === "claude" ? "Installed Claude Code" : turn.provider === "opencode" ? "Installed OpenCode" : "Anthropic API"} · {turn.model_id} · {authLabels[turn.auth_mode] ?? turn.auth_mode}</p>
           <p role="status" className="text-xs">Status: {turn.state}</p>
           {turn.failure_code && <p className="text-sm">{readableError(turn.failure_code)}</p>}
           {["queued", "running"].includes(turn.state) && <Button type="button" variant="outline" className={outlineButtonClass} size="sm" disabled={busy || cancelling === turn.id} onClick={() => void cancelTurn(turn)}>Cancel request</Button>}

@@ -6,9 +6,9 @@ import { LIVE_RLS } from "./local-supabase-env";
 import { resolveLocalDbContainer } from "./helpers/live-catalog";
 
 const live = LIVE_RLS ? describe : describe.skip;
-live.each(["codex", "claude"] as const)("scoped %s connections and retained turns", provider => {
-  const authMode = provider === "claude" ? "claude_subscription" : "chatgpt";
-  const model = provider === "claude" ? "claude-sonnet-4-6" : "fixture-model";
+live.each(["codex", "claude", "opencode"] as const)("scoped %s connections and retained turns", provider => {
+  const authMode = provider === "opencode" ? "opencode_api" : provider === "claude" ? "claude_subscription" : "chatgpt";
+  const model = provider === "opencode" ? "gpt-6-astra" : provider === "claude" ? "claude-sonnet-4-6" : "fixture-model";
   let container: string;
   beforeAll(() => {
     if (process.env.GITHUB_ACTIONS !== "true" && !isAbsolute(process.env.OPENPLAN_SUPABASE_WORKDIR ?? "")) {
@@ -28,7 +28,7 @@ live.each(["codex", "claude"] as const)("scoped %s connections and retained turn
           'project',jsonb_build_object('id','@project','name','Synthetic provider project','summary',NULL,'status','active','planType','corridor','deliveryPhase','planning','updatedAt','2026-09-10T00:00:00Z'),
           'source',jsonb_build_object('id','project:@project','href','/projects/@project','label','Synthetic provider project'))::text;
       $p$;
-      SELECT public.create_assistant_provider_connection${provider === 'claude' ? '_v2' : ''}('@connection','@owner','@workspace','@project','Synthetic device',repeat('a',64),'${authMode}'${provider === 'claude' ? ",'claude'" : ''});
+      SELECT public.create_assistant_provider_connection${provider !== 'codex' ? '_v2' : ''}('@connection','@owner','@workspace','@project','Synthetic device',repeat('a',64),'${authMode}'${provider !== 'codex' ? `,'${provider}'` : ''});
       CREATE FUNCTION pg_temp.make_turn(p_request uuid DEFAULT '@request',p_question text DEFAULT 'What is known?') RETURNS jsonb LANGUAGE sql AS $p$
         SELECT public.create_assistant_provider_turn(p_request,'@owner','@workspace','@project','@connection','${provider}','${model}','${authMode}',p_question,pg_temp.packet());
       $p$;
@@ -247,11 +247,43 @@ live.each(["codex", "claude"] as const)("scoped %s connections and retained turn
     END $$;
     RESET ROLE;`));
 
-  it("enforces exact Claude model identifiers without changing Codex model names", () => exercise(`
+  it.each(["revoked", "expired"])("refuses a new request on a %s connection before inserting work", state => exercise(`
+    ${state === "revoked" ? "SELECT public.revoke_assistant_provider_connection('@connection','@owner');" : "UPDATE public.assistant_provider_connections SET created_at=now()-interval '2 days',expires_at=now()-interval '1 day' WHERE id='@connection';"}
+    DO $$ BEGIN
+      BEGIN PERFORM pg_temp.make_turn(); RAISE EXCEPTION 'Inactive connection queued a new request'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+      IF EXISTS(SELECT 1 FROM public.assistant_provider_turns WHERE connection_id='@connection') THEN RAISE EXCEPTION 'Inactive connection retained new work'; END IF;
+    END $$;`));
+
+  if (provider === "opencode") {
+    it.each(["openai/gpt-6-astra", "gpt model", "-bad", "x".repeat(141)])("refuses malformed OpenCode model %s at the database", invalidModel => exercise(`
+      DO $$ DECLARE constraint_name text; BEGIN
+        BEGIN
+          PERFORM public.create_assistant_provider_turn('@request','@owner','@workspace','@project','@connection','opencode','${invalidModel}','opencode_api','Model check',pg_temp.packet());
+          RAISE EXCEPTION 'Invalid OpenCode model accepted';
+        EXCEPTION WHEN check_violation THEN
+          GET STACKED DIAGNOSTICS constraint_name=CONSTRAINT_NAME;
+          IF constraint_name<>'assistant_provider_opencode_model' THEN RAISE EXCEPTION 'Wrong OpenCode model guard failed'; END IF;
+        END;
+        PERFORM pg_temp.make_turn();
+      END $$;`));
+    it.each(["chatgpt", "apiKey", "claude_subscription"])("refuses OpenCode account pair %s at the database", wrongMode => exercise(`
+      DO $$ DECLARE constraint_name text; BEGIN
+        BEGIN
+          PERFORM public.create_assistant_provider_connection_v2('@secondRequest','@owner','@workspace','@project','Bad OpenCode pair',repeat('b',64),'${wrongMode}','opencode');
+          RAISE EXCEPTION 'Wrong OpenCode account pair accepted';
+        EXCEPTION WHEN check_violation THEN
+          GET STACKED DIAGNOSTICS constraint_name=CONSTRAINT_NAME;
+          IF constraint_name<>'assistant_provider_connection_mode' THEN RAISE EXCEPTION 'Wrong OpenCode account guard failed'; END IF;
+        END;
+        PERFORM pg_temp.make_turn();
+      END $$;`));
+  }
+
+  it("enforces exact Claude model identifiers without changing other native model names", () => exercise(`
     DO $$ DECLARE constraint_name text; saved jsonb; BEGIN
       ${provider === "claude" ? "BEGIN" : ""}
         saved:=public.create_assistant_provider_turn('@request','@owner','@workspace','@project','@connection','${provider}','sonnet','${authMode}','Model check',pg_temp.packet());
-        ${provider === "claude" ? "RAISE EXCEPTION 'Claude model alias accepted'; EXCEPTION WHEN check_violation THEN GET STACKED DIAGNOSTICS constraint_name=CONSTRAINT_NAME; IF constraint_name<>'assistant_provider_claude_model' THEN RAISE EXCEPTION 'Wrong model guard failed'; END IF; END;" : "IF saved->'turn'->>'model_id'<>'sonnet' THEN RAISE EXCEPTION 'Codex model name was changed'; END IF;"}
+        ${provider === "claude" ? "RAISE EXCEPTION 'Claude model alias accepted'; EXCEPTION WHEN check_violation THEN GET STACKED DIAGNOSTICS constraint_name=CONSTRAINT_NAME; IF constraint_name<>'assistant_provider_claude_model' THEN RAISE EXCEPTION 'Wrong model guard failed'; END IF; END;" : "IF saved->'turn'->>'model_id'<>'sonnet' THEN RAISE EXCEPTION 'Other native model name was changed'; END IF;"}
     END $$;`));
 
 });

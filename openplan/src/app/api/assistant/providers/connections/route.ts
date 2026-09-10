@@ -4,8 +4,9 @@ import { z } from "zod";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { loadProviderProjectPacket, newProviderConnectionToken, PROVIDER_CONNECTION_COLUMNS, providerBody, providerBrowserOrigin, providerError, providerJson, providerRpcError, providerScopeSchema, providerUser, requireProviderBrowserOrigin } from "@/lib/assistant/provider-server";
 
-const createSchema = providerScopeSchema.extend({ label: z.string().trim().min(1).max(120), provider: z.enum(["codex", "claude"]).optional(), authMode: z.enum(["chatgpt", "apiKey", "claude_subscription"]) }).strict()
-  .refine(body => (body.provider ?? "codex") === "claude" ? body.authMode === "claude_subscription" : body.authMode !== "claude_subscription");
+const createSchema = providerScopeSchema.extend({ label: z.string().trim().min(1).max(120), provider: z.enum(["codex", "claude", "opencode"]).optional(), authMode: z.enum(["chatgpt", "apiKey", "claude_subscription", "opencode_api"]) }).strict()
+  .refine(body => body.provider === "opencode" ? body.authMode === "opencode_api" :
+    body.provider === "claude" ? body.authMode === "claude_subscription" : ["chatgpt", "apiKey"].includes(body.authMode));
 const revokeSchema = z.object({ connectionId: z.string().uuid() }).strict();
 
 export async function GET(request: NextRequest) {

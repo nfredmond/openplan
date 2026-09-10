@@ -285,3 +285,30 @@ Next: app connection/turn/native routes, retained-turn schema, additive migratio
 and existing project provider panel. No app edits have begun at this checkpoint.
 No Next server currently serves this worktree. Other checkout servers remain
 untouched. Product direction check passed with review reminders.
+
+## App registration checkpoint, browser acceptance pending
+
+The existing project panel and connection/turn/native routes now accept OpenCode
+with opencode_api. Requests require explicit API charge acknowledgement. Native
+claims use the same Draft7 output schema already exercised through OpenCode.
+Retained-turn parsing accepts the new provider while preserving old history.
+The additive316th migration extends provider/account constraints and request
+creation locks; composite connection identity and old rows stay intact. The
+pending reminder constraint remains untouched. The candidate README documents
+OpenCode's API-only mode, private listeners, offline catalog and history limit.
+
+136 focused app checks,64 live provider parity checks and8 existing concurrency
+checks pass. TypeScript and changed-file lint pass.28 targeted app mutations and
+10 transaction-scoped SQL mutations failed for their expected reasons;3 harmless
+controls survived. The first SQL mutation runner missed a function terminator;
+it rejected that false failure and its receipt is retained separately. SQL
+changes used only the named disposable QA stack and were rolled back per test.
+
+Next build the committed candidate, identify owned port3219 and run real desktop
+and390px navigation with the actual installed OpenCode1.18.30 and synthetic
+OpenAI credentials/local Responses fixture. Private browser-opencode.cjs and
+browser-native-fixture.mjs are prepared in the OpenCode evidence directory.
+They reuse prior real-UI-created project fixtures and must preserve both Codex
+and Claude retained results. Browser stack still needs the new migration;
+record existing-history hashes before and after it. No app server currently
+serves this worktree. Full QA/shuffle/RLS/worker/upgrade/release remain pending.

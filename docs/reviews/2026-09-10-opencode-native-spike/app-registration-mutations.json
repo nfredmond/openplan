@@ -1,0 +1,267 @@
+[
+  {
+    "mutation": "harmless-route",
+    "exitCode": 0,
+    "expectationMet": true,
+    "failures": []
+  },
+  {
+    "mutation": "connection-mode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode project task registration refuses an OpenCode connection account/provider mismatch {\"provider\":\"opencode\",\"authMode\":\"apiKey\"}",
+      "OpenCode project task registration refuses an OpenCode connection account/provider mismatch {\"provider\":\"opencode\",\"authMode\":\"chatgpt\"}",
+      "OpenCode project task registration refuses an OpenCode connection account/provider mismatch {\"provider\":\"opencode\",\"authMode\":\"claude_subscription\"}"
+    ]
+  },
+  {
+    "mutation": "connection-codex-mode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode project task registration refuses an OpenCode connection account/provider mismatch {\"provider\":\"codex\",\"authMode\":\"opencode_api\"}",
+      "OpenCode project task registration refuses an OpenCode connection account/provider mismatch {\"authMode\":\"opencode_api\"}"
+    ]
+  },
+  {
+    "mutation": "connection-provider-rpc",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode project task registration issues OpenCode setup with the exact provider, account mode and scoped token"
+    ]
+  },
+  {
+    "mutation": "request-charge",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode project task registration refuses an unapproved or malformed OpenCode request before saving {}",
+      "OpenCode project task registration refuses an unapproved or malformed OpenCode request before saving {\"acceptApiCharges\":false}"
+    ]
+  },
+  {
+    "mutation": "request-mode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode project task registration refuses an unapproved or malformed OpenCode request before saving {\"authMode\":\"apiKey\"}",
+      "OpenCode project task registration refuses an unapproved or malformed OpenCode request before saving {\"authMode\":\"chatgpt\"}",
+      "OpenCode project task registration refuses an unapproved or malformed OpenCode request before saving {\"authMode\":\"claude_subscription\"}"
+    ]
+  },
+  {
+    "mutation": "request-connection",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode project task registration refuses an unapproved or malformed OpenCode request before saving {\"connectionId\":null}"
+    ]
+  },
+  {
+    "mutation": "request-model",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode project task registration refuses an unapproved or malformed OpenCode request before saving {\"model\":\"openai/gpt-6-astra\"}",
+      "OpenCode project task registration refuses an unapproved or malformed OpenCode request before saving {\"model\":\"gpt model\"}",
+      "OpenCode project task registration refuses an unapproved or malformed OpenCode request before saving {\"model\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}",
+      "OpenCode project task registration refuses an unapproved or malformed OpenCode request before saving {\"model\":\"-bad\"}"
+    ]
+  },
+  {
+    "mutation": "claim-mode-mapping",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode project task registration claims OpenCode with the exact native-tested structured output schema",
+      "OpenCode project task registration rejects a misbound OpenCode claim {\"provider\":\"codex\"}"
+    ]
+  },
+  {
+    "mutation": "claim-provider-check",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode project task registration rejects a misbound OpenCode claim {\"provider\":\"codex\"}",
+      "OpenCode project task registration rejects a misbound OpenCode claim {\"provider\":\"claude\"}"
+    ]
+  },
+  {
+    "mutation": "claim-mode-check",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode project task registration rejects a misbound OpenCode claim {\"auth_mode\":\"apiKey\"}"
+    ]
+  },
+  {
+    "mutation": "claim-schema",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode project task registration claims OpenCode with the exact native-tested structured output schema"
+    ]
+  },
+  {
+    "mutation": "finish-provider",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode project task registration rejects an altered OpenCode delivery receipt {\"provider\":\"codex\"}"
+    ]
+  },
+  {
+    "mutation": "finish-mode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode project task registration rejects an altered OpenCode delivery receipt {\"authMode\":\"apiKey\"}"
+    ]
+  },
+  {
+    "mutation": "finish-model",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode project task registration rejects an altered OpenCode delivery receipt {\"model\":\"other-model\"}"
+    ]
+  },
+  {
+    "mutation": "retained-provider",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode project task registration queues an explicitly acknowledged OpenCode API request without calling the app API transport",
+      "OpenCode project task registration claims OpenCode with the exact native-tested structured output schema",
+      "OpenCode project task registration rejects a misbound OpenCode claim {\"auth_mode\":\"apiKey\"}",
+      "OpenCode project task registration rejects a misbound OpenCode claim {\"connection_id\":\"66666666-6666-4666-8666-666666666666\"}",
+      "OpenCode project task registration retains OpenCode output through the common project answer validator and exact database projection",
+      "OpenCode project task registration rejects an altered OpenCode delivery receipt {\"provider\":\"codex\"}",
+      "OpenCode project task registration rejects an altered OpenCode delivery receipt {\"authMode\":\"apiKey\"}",
+      "OpenCode project task registration rejects an altered OpenCode delivery receipt {\"model\":\"other-model\"}"
+    ]
+  },
+  {
+    "mutation": "retained-mode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode project task registration queues an explicitly acknowledged OpenCode API request without calling the app API transport",
+      "OpenCode project task registration claims OpenCode with the exact native-tested structured output schema",
+      "OpenCode project task registration rejects a misbound OpenCode claim {\"provider\":\"codex\"}",
+      "OpenCode project task registration rejects a misbound OpenCode claim {\"provider\":\"claude\"}",
+      "OpenCode project task registration rejects a misbound OpenCode claim {\"connection_id\":\"66666666-6666-4666-8666-666666666666\"}",
+      "OpenCode project task registration retains OpenCode output through the common project answer validator and exact database projection",
+      "OpenCode project task registration rejects an altered OpenCode delivery receipt {\"provider\":\"codex\"}",
+      "OpenCode project task registration rejects an altered OpenCode delivery receipt {\"authMode\":\"apiKey\"}",
+      "OpenCode project task registration rejects an altered OpenCode delivery receipt {\"model\":\"other-model\"}"
+    ]
+  },
+  {
+    "mutation": "harmless-panel",
+    "exitCode": 0,
+    "expectationMet": true,
+    "failures": []
+  },
+  {
+    "mutation": "panel-mode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode connection setup fixes its native API mode and clears the secret download after switching providers",
+      "refuses a changed OpenCode setup binding {\"expectedAuthMode\":\"apiKey\"}"
+    ]
+  },
+  {
+    "mutation": "panel-charge-gate",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode requires charge acknowledgement even for keyboard submission and retains it on an exact retry"
+    ]
+  },
+  {
+    "mutation": "panel-charge-send",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode requires charge acknowledgement even for keyboard submission and retains it on an exact retry"
+    ]
+  },
+  {
+    "mutation": "panel-charge-visible",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode requires charge acknowledgement even for keyboard submission and retains it on an exact retry",
+      "OpenCode provider changes clear prior charge acknowledgement, connection and model"
+    ]
+  },
+  {
+    "mutation": "panel-provider-filter",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode requires charge acknowledgement even for keyboard submission and retains it on an exact retry"
+    ]
+  },
+  {
+    "mutation": "panel-setup-mode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "refuses a changed OpenCode setup binding {\"expectedAuthMode\":\"apiKey\"}"
+    ]
+  },
+  {
+    "mutation": "panel-setup-provider",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "refuses a changed OpenCode setup binding {\"provider\":\"codex\"}"
+    ]
+  },
+  {
+    "mutation": "panel-secret-switch",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode connection setup fixes its native API mode and clears the secret download after switching providers"
+    ]
+  },
+  {
+    "mutation": "panel-model-switch",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode provider changes clear prior charge acknowledgement, connection and model"
+    ]
+  },
+  {
+    "mutation": "panel-connection-switch",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode provider changes clear prior charge acknowledgement, connection and model"
+    ]
+  },
+  {
+    "mutation": "panel-history-label",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode requires charge acknowledgement even for keyboard submission and retains it on an exact retry",
+      "saved OpenCode answers retain the explicit provider and existing proposal review boundary"
+    ]
+  },
+  {
+    "mutation": "panel-retry",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "OpenCode requires charge acknowledgement even for keyboard submission and retains it on an exact retry"
+    ]
+  }
+]

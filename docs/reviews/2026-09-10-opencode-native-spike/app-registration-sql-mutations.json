@@ -1,0 +1,198 @@
+[
+  {
+    "mutation": "harmless-sql",
+    "exitCode": 0,
+    "expectationMet": true,
+    "assertion": null,
+    "failures": []
+  },
+  {
+    "mutation": "account-pair",
+    "exitCode": 1,
+    "expectationMet": true,
+    "assertion": "Wrong OpenCode account pair accepted",
+    "failures": [
+      "scoped opencode connections and retained turns v2 creation requires a valid provider account pair and service authority",
+      "scoped opencode connections and retained turns refuses OpenCode account pair chatgpt at the database",
+      "scoped opencode connections and retained turns refuses OpenCode account pair apiKey at the database",
+      "scoped opencode connections and retained turns refuses OpenCode account pair claude_subscription at the database"
+    ]
+  },
+  {
+    "mutation": "model-shape",
+    "exitCode": 1,
+    "expectationMet": true,
+    "assertion": "Invalid OpenCode model accepted",
+    "failures": [
+      "scoped opencode connections and retained turns refuses malformed OpenCode model openai/gpt-6-astra at the database",
+      "scoped opencode connections and retained turns refuses malformed OpenCode model gpt model at the database",
+      "scoped opencode connections and retained turns refuses malformed OpenCode model -bad at the database",
+      "scoped opencode connections and retained turns refuses malformed OpenCode model xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx at the database"
+    ]
+  },
+  {
+    "mutation": "connection-identity",
+    "exitCode": 1,
+    "expectationMet": true,
+    "assertion": "Existing history was rebound to another provider",
+    "failures": [
+      "scoped opencode connections and retained turns binds retained turns to their connection provider and account even for direct service writes"
+    ]
+  },
+  {
+    "mutation": "assistant_provider_connections_provider_check-omits-opencode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "assertion": "assistant_provider_connections_provider_check",
+    "failures": [
+      "scoped opencode connections and retained turns retains the original packet and result; duplicate delivery does not launch or rewrite work",
+      "scoped opencode connections and retained turns isolates tokens, projects and native account modes before claim",
+      "scoped opencode connections and retained turns revocation cancels waiting and running requests and denies late delivery",
+      "scoped opencode connections and retained turns denies a previously valid connection after membership changes",
+      "scoped opencode connections and retained turns denies a previously valid connection after project changes",
+      "scoped opencode connections and retained turns denies a previously valid connection after expiry changes",
+      "scoped opencode connections and retained turns expired attempts become interrupted without automatic re-execution",
+      "scoped opencode connections and retained turns browser recovery persists expiry without exposing another user's saved request",
+      "scoped opencode connections and retained turns refuses forged attempt, source and provider receipt identities",
+      "scoped opencode connections and retained turns authenticated clients can read only their permitted turns and cannot issue or consume native credentials directly",
+      "scoped opencode connections and retained turns project movement also removes direct user access to the retained packet",
+      "scoped opencode connections and retained turns API requests use their own attempt identity and cannot be claimed by a native connection",
+      "scoped opencode connections and retained turns reveals only private retention counts to project writers and blocks project deletion",
+      "scoped opencode connections and retained turns binds retained turns to their connection provider and account even for direct service writes",
+      "scoped opencode connections and retained turns refuses cross-provider creation and wrong receipt provider while preserving the original request",
+      "scoped opencode connections and retained turns v2 creation requires a valid provider account pair and service authority",
+      "scoped opencode connections and retained turns refuses a new request on a revoked connection before inserting work",
+      "scoped opencode connections and retained turns refuses a new request on a expired connection before inserting work",
+      "scoped opencode connections and retained turns refuses malformed OpenCode model openai/gpt-6-astra at the database",
+      "scoped opencode connections and retained turns refuses malformed OpenCode model gpt model at the database",
+      "scoped opencode connections and retained turns refuses malformed OpenCode model -bad at the database",
+      "scoped opencode connections and retained turns refuses malformed OpenCode model xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx at the database",
+      "scoped opencode connections and retained turns refuses OpenCode account pair chatgpt at the database",
+      "scoped opencode connections and retained turns refuses OpenCode account pair apiKey at the database",
+      "scoped opencode connections and retained turns refuses OpenCode account pair claude_subscription at the database",
+      "scoped opencode connections and retained turns enforces exact Claude model identifiers without changing other native model names"
+    ]
+  },
+  {
+    "mutation": "assistant_provider_connections_expected_auth_mode_check-omits-opencode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "assertion": "assistant_provider_connections_expected_auth_mode_check",
+    "failures": [
+      "scoped opencode connections and retained turns retains the original packet and result; duplicate delivery does not launch or rewrite work",
+      "scoped opencode connections and retained turns isolates tokens, projects and native account modes before claim",
+      "scoped opencode connections and retained turns revocation cancels waiting and running requests and denies late delivery",
+      "scoped opencode connections and retained turns denies a previously valid connection after membership changes",
+      "scoped opencode connections and retained turns denies a previously valid connection after project changes",
+      "scoped opencode connections and retained turns denies a previously valid connection after expiry changes",
+      "scoped opencode connections and retained turns expired attempts become interrupted without automatic re-execution",
+      "scoped opencode connections and retained turns browser recovery persists expiry without exposing another user's saved request",
+      "scoped opencode connections and retained turns refuses forged attempt, source and provider receipt identities",
+      "scoped opencode connections and retained turns authenticated clients can read only their permitted turns and cannot issue or consume native credentials directly",
+      "scoped opencode connections and retained turns project movement also removes direct user access to the retained packet",
+      "scoped opencode connections and retained turns API requests use their own attempt identity and cannot be claimed by a native connection",
+      "scoped opencode connections and retained turns reveals only private retention counts to project writers and blocks project deletion",
+      "scoped opencode connections and retained turns binds retained turns to their connection provider and account even for direct service writes",
+      "scoped opencode connections and retained turns refuses cross-provider creation and wrong receipt provider while preserving the original request",
+      "scoped opencode connections and retained turns v2 creation requires a valid provider account pair and service authority",
+      "scoped opencode connections and retained turns refuses a new request on a revoked connection before inserting work",
+      "scoped opencode connections and retained turns refuses a new request on a expired connection before inserting work",
+      "scoped opencode connections and retained turns refuses malformed OpenCode model openai/gpt-6-astra at the database",
+      "scoped opencode connections and retained turns refuses malformed OpenCode model gpt model at the database",
+      "scoped opencode connections and retained turns refuses malformed OpenCode model -bad at the database",
+      "scoped opencode connections and retained turns refuses malformed OpenCode model xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx at the database",
+      "scoped opencode connections and retained turns refuses OpenCode account pair chatgpt at the database",
+      "scoped opencode connections and retained turns refuses OpenCode account pair apiKey at the database",
+      "scoped opencode connections and retained turns refuses OpenCode account pair claude_subscription at the database",
+      "scoped opencode connections and retained turns enforces exact Claude model identifiers without changing other native model names"
+    ]
+  },
+  {
+    "mutation": "assistant_provider_turns_provider_check-omits-opencode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "assertion": "assistant_provider_turns_provider_check",
+    "failures": [
+      "scoped opencode connections and retained turns retains the original packet and result; duplicate delivery does not launch or rewrite work",
+      "scoped opencode connections and retained turns isolates tokens, projects and native account modes before claim",
+      "scoped opencode connections and retained turns revocation cancels waiting and running requests and denies late delivery",
+      "scoped opencode connections and retained turns denies a previously valid connection after membership changes",
+      "scoped opencode connections and retained turns denies a previously valid connection after project changes",
+      "scoped opencode connections and retained turns denies a previously valid connection after expiry changes",
+      "scoped opencode connections and retained turns expired attempts become interrupted without automatic re-execution",
+      "scoped opencode connections and retained turns browser recovery persists expiry without exposing another user's saved request",
+      "scoped opencode connections and retained turns refuses forged attempt, source and provider receipt identities",
+      "scoped opencode connections and retained turns authenticated clients can read only their permitted turns and cannot issue or consume native credentials directly",
+      "scoped opencode connections and retained turns project movement also removes direct user access to the retained packet",
+      "scoped opencode connections and retained turns reveals only private retention counts to project writers and blocks project deletion",
+      "scoped opencode connections and retained turns binds retained turns to their connection provider and account even for direct service writes",
+      "scoped opencode connections and retained turns refuses cross-provider creation and wrong receipt provider while preserving the original request",
+      "scoped opencode connections and retained turns refuses malformed OpenCode model openai/gpt-6-astra at the database",
+      "scoped opencode connections and retained turns refuses malformed OpenCode model gpt model at the database",
+      "scoped opencode connections and retained turns refuses malformed OpenCode model -bad at the database",
+      "scoped opencode connections and retained turns refuses malformed OpenCode model xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx at the database",
+      "scoped opencode connections and retained turns refuses OpenCode account pair chatgpt at the database",
+      "scoped opencode connections and retained turns refuses OpenCode account pair apiKey at the database",
+      "scoped opencode connections and retained turns refuses OpenCode account pair claude_subscription at the database",
+      "scoped opencode connections and retained turns enforces exact Claude model identifiers without changing other native model names"
+    ]
+  },
+  {
+    "mutation": "assistant_provider_turns_auth_mode_check-omits-opencode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "assertion": "assistant_provider_turns_auth_mode_check",
+    "failures": [
+      "scoped opencode connections and retained turns retains the original packet and result; duplicate delivery does not launch or rewrite work",
+      "scoped opencode connections and retained turns isolates tokens, projects and native account modes before claim",
+      "scoped opencode connections and retained turns revocation cancels waiting and running requests and denies late delivery",
+      "scoped opencode connections and retained turns denies a previously valid connection after membership changes",
+      "scoped opencode connections and retained turns denies a previously valid connection after project changes",
+      "scoped opencode connections and retained turns denies a previously valid connection after expiry changes",
+      "scoped opencode connections and retained turns expired attempts become interrupted without automatic re-execution",
+      "scoped opencode connections and retained turns browser recovery persists expiry without exposing another user's saved request",
+      "scoped opencode connections and retained turns refuses forged attempt, source and provider receipt identities",
+      "scoped opencode connections and retained turns authenticated clients can read only their permitted turns and cannot issue or consume native credentials directly",
+      "scoped opencode connections and retained turns project movement also removes direct user access to the retained packet",
+      "scoped opencode connections and retained turns reveals only private retention counts to project writers and blocks project deletion",
+      "scoped opencode connections and retained turns binds retained turns to their connection provider and account even for direct service writes",
+      "scoped opencode connections and retained turns refuses cross-provider creation and wrong receipt provider while preserving the original request",
+      "scoped opencode connections and retained turns refuses malformed OpenCode model openai/gpt-6-astra at the database",
+      "scoped opencode connections and retained turns refuses malformed OpenCode model gpt model at the database",
+      "scoped opencode connections and retained turns refuses malformed OpenCode model -bad at the database",
+      "scoped opencode connections and retained turns refuses malformed OpenCode model xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx at the database",
+      "scoped opencode connections and retained turns refuses OpenCode account pair chatgpt at the database",
+      "scoped opencode connections and retained turns refuses OpenCode account pair apiKey at the database",
+      "scoped opencode connections and retained turns refuses OpenCode account pair claude_subscription at the database",
+      "scoped opencode connections and retained turns enforces exact Claude model identifiers without changing other native model names"
+    ]
+  },
+  {
+    "mutation": "request-lock-omits-opencode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "assertion": "Inactive connection queued a new request",
+    "failures": [
+      "scoped opencode connections and retained turns refuses a new request on a revoked connection before inserting work",
+      "scoped opencode connections and retained turns refuses a new request on a expired connection before inserting work"
+    ]
+  },
+  {
+    "mutation": "request-revocation",
+    "exitCode": 1,
+    "expectationMet": true,
+    "assertion": "Inactive connection queued a new request",
+    "failures": [
+      "scoped opencode connections and retained turns refuses a new request on a revoked connection before inserting work"
+    ]
+  },
+  {
+    "mutation": "request-expiry",
+    "exitCode": 1,
+    "expectationMet": true,
+    "assertion": "Inactive connection queued a new request",
+    "failures": [
+      "scoped opencode connections and retained turns refuses a new request on a expired connection before inserting work"
+    ]
+  }
+]

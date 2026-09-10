@@ -1,0 +1,39 @@
+{
+  "sourceSha256": {
+    "src/app/api/assistant/providers/connections/route.ts": "552bb08c8710057b5a6c35da28c2ad0bfe2fac4782312e5498e4cad5b93b2e99",
+    "src/app/api/assistant/providers/turns/route.ts": "2f93d1c3a8ce6f10282f0c2b5b9ddf5357013d4871a6e1ad413c5af665cdaeaf",
+    "src/app/api/assistant/providers/native/route.ts": "f3f935e7c966ddbd58891a6dded6adc422f9c73b396192415024eb3b1be991a3",
+    "src/components/assistant/project-provider-panel.tsx": "aad027ae11b0c7e224c124d3cd63533d45da42f08b25cd25fb6f0d547cbe261a",
+    "src/lib/assistant/provider-server.ts": "07dfbee710b25fb650610ac1a5fb9a8badded23236c4f9beb647d06589fb2b9e",
+    "src/test/provider-routes.test.ts": "82956cb5f266737ecbacd6d27679a1ec81b2ddf0187c139aebaf8835f6c22ede",
+    "src/test/project-provider-panel.test.tsx": "51a845649c49ba0dac2e55febaa119069a501e4c05b1e2b37e8005e2437f9dc6",
+    "src/test/assistant-provider-turns-rls.test.ts": "86363828274bfbbc048e12f4e2abad6bf5c19852e845fd3a4ba4fdbfcd185f32",
+    "supabase/migrations/20261011000002_assistant_opencode_connections.sql": "b2732b8938b7a9b3630745956f7706ba19e3f2286989815263d5e57e4278c9f1"
+  },
+  "tests": {
+    "appFocusedPassed": 136,
+    "rlsProviderParityPassed": 64,
+    "existingConcurrencyPassed": 8,
+    "failed": 0,
+    "typecheckPassed": true,
+    "changedAppFilesLintPassed": true
+  },
+  "mutations": {
+    "app": {
+      "harmlessSurvivors": 2,
+      "targetedFailures": 28
+    },
+    "sql": {
+      "harmlessSurvivors": 1,
+      "targetedFailures": 10,
+      "scope": "Changes injected within each synthetic test transaction and rolled back; no global database mutation remained"
+    }
+  },
+  "database": "supabase_db_openplan-restore-target-2026091050",
+  "limits": [
+    "Browser journeys, full QA, shuffled tests, full RLS, upgrade and release CI remain pending",
+    "SQL parity covers Codex, Claude and OpenCode; existing transaction competition tests cover Codex and Anthropic",
+    "Route and UI fixtures do not establish real native execution or provider availability",
+    "The first SQL mutation harness omitted a function terminator; it failed its expected-error check and is retained separately, not counted as a successful mutation"
+  ]
+}

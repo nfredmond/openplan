@@ -275,3 +275,72 @@ it("queues Claude through its native connection without invoking the API transpo
   expect((await turns.POST(browserRequest("turns", { ...body, authMode: "apiKey" }))).status).toBe(400);
   expect(mocks.rpc).not.toHaveBeenCalled(); expect(mocks.api).not.toHaveBeenCalled();
 });
+
+describe("OpenCode project task registration", () => {
+  const openCodeTurn = (changes: Record<string, unknown> = {}) => turn({ provider: "opencode", auth_mode: "opencode_api", model_id: "gpt-6-astra", ...changes });
+  const openCodeBody = () => ({ ...createBody(), provider: "opencode", authMode: "opencode_api", model: "gpt-6-astra", acceptApiCharges: true });
+  it("issues OpenCode setup with the exact provider, account mode and scoped token", async () => {
+    mocks.rpc.mockImplementation(async (_name, args) => ({ data: { id: args.p_id }, error: null }));
+    const response = await connections.POST(browserRequest("connections", { workspaceId: workspace, projectId: project, provider: "opencode", label: "OpenCode fixture", authMode: "opencode_api" }));
+    expect(response.status).toBe(201);
+    const saved = await response.json();
+    expect(saved.setup).toMatchObject({ version: 2, provider: "opencode", workspaceId: workspace, projectId: project, expectedAuthMode: "opencode_api" });
+    expect(mocks.rpc).toHaveBeenCalledWith("create_assistant_provider_connection_v2", expect.objectContaining({ p_provider: "opencode", p_auth_mode: "opencode_api", p_user_id: owner, p_workspace_id: workspace, p_project_id: project }));
+    expect(mocks.rpc.mock.calls[0][1].p_token_hash).toBe(createHash("sha256").update(saved.setup.token).digest("hex"));
+  });
+  it.each([
+    { provider: "opencode", authMode: "apiKey" }, { provider: "opencode", authMode: "chatgpt" }, { provider: "opencode", authMode: "claude_subscription" },
+    { provider: "codex", authMode: "opencode_api" }, { provider: "claude", authMode: "opencode_api" }, { authMode: "opencode_api" },
+  ])("refuses an OpenCode connection account/provider mismatch %j", async changed => {
+    const response = await connections.POST(browserRequest("connections", { workspaceId: workspace, projectId: project, label: "Bad pair", ...changed }));
+    expect(response.status).toBe(400); expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+  it("queues an explicitly acknowledged OpenCode API request without calling the app API transport", async () => {
+    mocks.rpc.mockResolvedValue({ data: { created: true, turn: openCodeTurn({ state: "queued", attempt_id: null }) }, error: null });
+    const response = await turns.POST(browserRequest("turns", openCodeBody()));
+    expect(response.status).toBe(201);
+    expect((await response.json()).turn).toMatchObject({ provider: "opencode", auth_mode: "opencode_api", model_id: "gpt-6-astra" });
+    expect(mocks.rpc).toHaveBeenCalledWith("create_assistant_provider_turn", expect.objectContaining({ p_provider: "opencode", p_auth_mode: "opencode_api", p_connection_id: token.connectionId, p_model_id: "gpt-6-astra" }));
+    expect(mocks.api).not.toHaveBeenCalled();
+  });
+  it.each([{ acceptApiCharges: undefined }, { acceptApiCharges: false }, { authMode: "apiKey" }, { authMode: "chatgpt" }, { authMode: "claude_subscription" },
+    { connectionId: null }, { model: "openai/gpt-6-astra" }, { model: "gpt model" }, { model: "x".repeat(141) }, { model: "-bad" }])("refuses an unapproved or malformed OpenCode request before saving %j", async changed => {
+    const response = await turns.POST(browserRequest("turns", { ...openCodeBody(), ...changed }));
+    expect(response.status).toBe(400); expect(mocks.rpc).not.toHaveBeenCalled(); expect(mocks.api).not.toHaveBeenCalled();
+  });
+  it("claims OpenCode with the exact native-tested structured output schema", async () => {
+    mocks.rpc.mockResolvedValue({ data: { status: "connected", turn: openCodeTurn() }, error: null });
+    const response = await native.POST(nativeRequest({ operation: "claim", authMode: "opencode_api", status: "connected" }));
+    expect(response.status).toBe(200);
+    const claimed = (await response.json()).turn;
+    expect(claimed).toMatchObject({ provider: "opencode", authMode: "opencode_api", model: "gpt-6-astra" });
+    expect(claimed.outputSchema).toEqual(JSON.parse(readFileSync(resolve(process.cwd(), "../workers/planner_agent_connector/test/project-output-schema.json"), "utf8")));
+    expect(mocks.rpc).toHaveBeenCalledWith("claim_assistant_provider_turn", { p_connection_id: token.connectionId, p_token_hash: token.tokenHash, p_auth_mode: "opencode_api", p_status: "connected" });
+  });
+  it.each([{ provider: "codex" }, { provider: "claude" }, { auth_mode: "apiKey" }, { connection_id: owner }])("rejects a misbound OpenCode claim %j", async change => {
+    mocks.rpc.mockResolvedValue({ data: { status: "connected", turn: openCodeTurn(change) }, error: null });
+    const response = await native.POST(nativeRequest({ operation: "claim", authMode: "opencode_api", status: "connected" }));
+    expect(response.status).toBe(409); expect(await response.json()).toEqual({ error: "provider_claim_mismatch" });
+  });
+  const delivery = () => ({ operation: "finish", turnId: id, attemptId: attempt, answer: JSON.stringify(answer()),
+    receipt: { ...receipt(), provider: "opencode", authMode: "opencode_api", model: "gpt-6-astra", planType: null }, failureCode: null });
+  function finishFixture() {
+    turnQuery = query(openCodeTurn());
+    mocks.rpc.mockImplementation(async (name, args) => ({ data: name === "finish_assistant_provider_turn"
+      ? openCodeTurn({ state: "succeeded", result: args.p_result, provider_receipt: args.p_provider_receipt }) : { id, attemptId: attempt, state: "running" }, error: null }));
+  }
+  it("retains OpenCode output through the common project answer validator and exact database projection", async () => {
+    finishFixture();
+    const response = await native.POST(nativeRequest(delivery()));
+    expect(response.status).toBe(200); expect(await response.json()).toEqual({ id, attemptId: attempt, state: "succeeded" });
+    expect(turnQuery.select).toHaveBeenCalledWith(PROVIDER_TURN_COLUMNS);
+    expect(turnQuery.eq).toHaveBeenCalledWith("id", id); expect(turnQuery.eq).toHaveBeenCalledWith("connection_id", token.connectionId);
+    expect(mocks.rpc).toHaveBeenCalledWith("finish_assistant_provider_turn", expect.objectContaining({ p_result: parseProviderProjectAnswer(packet(), answer()), p_provider_receipt: delivery().receipt }));
+  });
+  it.each([{ provider: "codex" }, { authMode: "apiKey" }, { model: "other-model" }])("rejects an altered OpenCode delivery receipt %j", async changed => {
+    finishFixture(); const body = delivery();
+    const response = await native.POST(nativeRequest({ ...body, receipt: { ...body.receipt, ...changed } }));
+    expect(response.status).toBe(409); expect(await response.json()).toEqual({ error: "provider_receipt_mismatch" });
+    expect(mocks.rpc.mock.calls.some(([name]) => name === "finish_assistant_provider_turn")).toBe(false);
+  });
+});

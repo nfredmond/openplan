@@ -47,8 +47,10 @@ From the repository root:
 node --test workers/planner_agent_connector/test/*.test.mjs
 ```
 
-The connector never opens a local HTTP listener. A project connection file from
-Planner Agent fixes its app origin, project and expected native account mode.
+The connection to OpenPlan uses outbound HTTP. OpenCode also uses private
+loopback listeners for its owned native server and bounded provider relay, as
+described below. A project connection file from Planner Agent fixes its app
+origin, project and expected native account mode.
 Import that downloaded file using:
 
 ```sh
@@ -141,3 +143,57 @@ Messages responses. It proves native refusals, bounded structured output, dispat
 account-status inspection and interruption behavior. It does not establish live
 Claude model availability, output quality, account allowance or extra-usage
 settings. See [Claude verification](../../docs/reviews/2026-09-10-claude-native-spike/VERIFICATION.md).
+
+## OpenCode extension, development candidate
+
+The candidate extends the same project task to installed OpenCode **1.18.30** on
+Linux. App/browser and release acceptance are still in progress. Version-two
+connection files explicitly bind provider opencode and account mode opencode_api.
+Only the native OpenAI API credential is supported in this increment. OAuth,
+subscription sign-in and other OpenCode providers remain unfinished scope.
+OpenPlan supplies no provider credit, and each API request requires explicit
+charge acknowledgement in the app.
+
+Choose Installed OpenCode in the project task and download its connection file.
+Configure a fresh private directory using the installed binary and the directory
+containing OpenCode's private auth.json. For a default Linux XDG data location:
+
+```sh
+node workers/planner_agent_connector/connector.mjs configure \
+  --config "$HOME/.local/state/openplan-connectors/opencode-project/connection.json" \
+  --setup "$HOME/Downloads/openplan-connection.json" \
+  --binary /absolute/path/to/opencode \
+  --profile "$HOME/.local/share/opencode"
+node workers/planner_agent_connector/connector.mjs models \
+  --config "$HOME/.local/state/openplan-connectors/opencode-project/connection.json"
+node workers/planner_agent_connector/connector.mjs run \
+  --config "$HOME/.local/state/openplan-connectors/opencode-project/connection.json"
+```
+
+Sign in through OpenCode itself. The connector reads only its exact openai API
+record from a regular, private, current-user-owned auth.json and creates a
+read-only snapshot for that attempt. It leaves the source profile unchanged.
+Missing, malformed, public-readable or unsupported credentials are refused.
+The models command runs without network access and reports the pinned native
+catalog, not live model availability or account entitlement. In the app, enter
+the model ID without the openai/ prefix. No substitute model is selected.
+
+The native process has a fresh private filesystem, fixed instructions and only
+the StructuredOutput tool. Existing native histories, plugins, MCP servers,
+shell tools and user configuration are unavailable to the task. An authenticated
+loopback server owns the session. A separate private loopback relay permits one
+bounded OpenAI Responses request to the fixed official endpoint; neither endpoint
+can be supplied through a connection file. The connector validates the exact
+assistant message and its native readback, then waits for process exit before
+removing its temporary files. Native list-message history has an upstream schema
+failure in this version; OpenPlan retains its own validated answer and exact
+request identity. It does not claim general OpenCode history integration.
+
+```sh
+OPENPLAN_OPENCODE_NATIVE_BINARY=/absolute/path/to/opencode \
+  node --test workers/planner_agent_connector/test/opencode-native-filesystem.test.mjs
+```
+
+Native evidence uses synthetic credentials and local scripted Responses data.
+It does not establish real account access, provider billing or professional
+usefulness. See the [OpenCode implementation checkpoint](../../docs/reviews/2026-09-10-opencode-native-spike/CHECKPOINT.md).

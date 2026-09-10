@@ -5,10 +5,10 @@ import { createServiceRoleClient } from "@/lib/supabase/server";
 import { checkedProviderTurn, PROVIDER_TURN_COLUMNS, ProviderRequestError, providerBearer, providerBody, providerError, providerJson, providerRpcError } from "@/lib/assistant/provider-server";
 import { parseProviderProjectAnswer, PROVIDER_PROJECT_INSTRUCTIONS, providerProjectOutputSchema, providerProjectPrompt } from "@/lib/assistant/provider-project-task";
 
-const receiptSchema = z.object({ schemaVersion: z.literal(1), provider: z.enum(["codex", "claude"]), model: z.string().min(1).max(160),
-  authMode: z.enum(["chatgpt", "apiKey", "claude_subscription"]), planType: z.string().max(120).nullable(), threadId: z.string().min(1).max(160), turnId: z.string().min(1).max(160) }).strict();
+const receiptSchema = z.object({ schemaVersion: z.literal(1), provider: z.enum(["codex", "claude", "opencode"]), model: z.string().min(1).max(160),
+  authMode: z.enum(["chatgpt", "apiKey", "claude_subscription", "opencode_api"]), planType: z.string().max(120).nullable(), threadId: z.string().min(1).max(160), turnId: z.string().min(1).max(160) }).strict();
 const requestSchema = z.discriminatedUnion("operation", [
-  z.object({ operation: z.literal("claim"), authMode: z.enum(["chatgpt", "apiKey", "claude_subscription"]).nullable(), status: z.enum(["connected", "needs_login", "unavailable"]) }).strict(),
+  z.object({ operation: z.literal("claim"), authMode: z.enum(["chatgpt", "apiKey", "claude_subscription", "opencode_api"]).nullable(), status: z.enum(["connected", "needs_login", "unavailable"]) }).strict(),
   z.object({ operation: z.literal("status"), turnId: z.string().uuid() }).strict(),
   z.object({ operation: z.literal("finish"), turnId: z.string().uuid(), attemptId: z.string().uuid(),
     answer: z.string().max(64_000).nullable(), receipt: receiptSchema.nullable(), failureCode: z.string().regex(/^[a-z_]{1,120}$/).nullable() }).strict(),
@@ -29,14 +29,14 @@ export async function POST(request: NextRequest) {
       const claimed = z.object({ status: z.string(), turn: z.unknown().nullable() }).parse(data);
       if (!claimed.turn) { audit.info("connector_idle"); return providerJson({ status: claimed.status, turn: null }); }
       const { turn, packet } = checkedProviderTurn({ ...z.record(z.string(), z.unknown()).parse(claimed.turn), result: null, provider_receipt: null });
-      if (turn.connection_id !== connectionId || turn.provider !== (body.authMode === "claude_subscription" ? "claude" : "codex") || turn.auth_mode !== body.authMode || turn.state !== "running" || !turn.attempt_id) {
+      if (turn.connection_id !== connectionId || turn.provider !== (body.authMode === "opencode_api" ? "opencode" : body.authMode === "claude_subscription" ? "claude" : "codex") || turn.auth_mode !== body.authMode || turn.state !== "running" || !turn.attempt_id) {
         throw new ProviderRequestError("provider_claim_mismatch", 409);
       }
       audit.info("request_claimed", { turnId: turn.id, attemptId: turn.attempt_id });
       return providerJson({ status: claimed.status, turn: { id: turn.id, attemptId: turn.attempt_id, workspaceId: turn.workspace_id,
         projectId: turn.project_id, provider: turn.provider, model: turn.model_id, authMode: turn.auth_mode, packetCanonical: turn.packet_canonical, packetHash: turn.packet_hash,
         question: turn.question, leaseExpiresAt: turn.lease_expires_at, instructions: PROVIDER_PROJECT_INSTRUCTIONS,
-        prompt: providerProjectPrompt(packet, turn.question), outputSchema: z.toJSONSchema(providerProjectOutputSchema(packet), { target: turn.provider === "claude" ? "draft-07" : "draft-2020-12" }) } });
+        prompt: providerProjectPrompt(packet, turn.question), outputSchema: z.toJSONSchema(providerProjectOutputSchema(packet), { target: turn.provider === "codex" ? "draft-2020-12" : "draft-07" }) } });
     }
     // This locked RPC validates the bearer and current project access before
     // any service read; final delivery repeats the check in its own transaction.
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     providerRpcError(error);
     if (!data) throw new ProviderRequestError("provider_access_denied", 403);
     const { turn, packet } = checkedProviderTurn(data);
-    if (turn.connection_id !== connectionId || turn.id !== body.turnId || turn.attempt_id !== body.attemptId || !["codex", "claude"].includes(turn.provider)) throw new ProviderRequestError("provider_attempt_mismatch", 403);
+    if (turn.connection_id !== connectionId || turn.id !== body.turnId || turn.attempt_id !== body.attemptId || !["codex", "claude", "opencode"].includes(turn.provider)) throw new ProviderRequestError("provider_attempt_mismatch", 403);
     if (body.receipt && (body.receipt.provider !== turn.provider || body.receipt.model !== turn.model_id || body.receipt.authMode !== turn.auth_mode)) throw new ProviderRequestError("provider_receipt_mismatch", 409);
     const result = body.answer === null ? null : parseProviderProjectAnswer(packet, JSON.parse(body.answer));
     const finished = await service.rpc("finish_assistant_provider_turn", { p_turn_id: body.turnId, p_attempt_id: body.attemptId,

@@ -239,3 +239,83 @@ it("a returned setup cannot silently change the chosen native provider", async (
   await screen.findByText("The connection file did not match this project and app.");
   expect(screen.queryByRole("button", { name: "Download connection file" })).not.toBeInTheDocument();
 });
+
+const openCodeConnectionId = "88888888-8888-4888-8888-888888888888";
+const openCodeConnection = { ...connection, id: openCodeConnectionId, provider: "opencode", device_label: "Synthetic OpenCode computer", expected_auth_mode: "opencode_api" };
+async function fillOpenCode() {
+  fireEvent.change(screen.getByLabelText("Provider"), { target: { value: "opencode" } });
+  fireEvent.change(screen.getByLabelText("Project connection"), { target: { value: openCodeConnectionId } });
+  fireEvent.change(screen.getByLabelText("Model ID"), { target: { value: "gpt-6-astra" } });
+  fireEvent.change(screen.getByLabelText("Project question"), { target: { value: "SYNTHETIC OpenCode question" } });
+}
+
+it("OpenCode requires charge acknowledgement even for keyboard submission and retains it on an exact retry", async () => {
+  connectionRows = [connection, claudeConnection, openCodeConnection];
+  const normal = writeHandler; let attempts = 0;
+  writeHandler = async (...args) => { if (++attempts === 1) throw new Error("Synthetic OpenCode response loss"); return normal(...args); };
+  await openPanel(); await fillOpenCode();
+  expect(screen.queryByRole("option", { name: "Synthetic computer · connected" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("option", { name: "Synthetic Claude computer · connected" })).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Send project request" })).toBeDisabled();
+  fireEvent.keyDown(screen.getByLabelText("Project question"), { key: "Enter" });
+  expect(writes).toEqual([]);
+  fireEvent.click(screen.getByRole("checkbox", { name: /I authorize this request/ }));
+  fireEvent.keyDown(screen.getByLabelText("Project question"), { key: "Enter" });
+  await screen.findByRole("button", { name: "Retry same request" });
+  expect(writes).toHaveLength(1);
+  expect(writes[0].body).toMatchObject({ provider: "opencode", connectionId: openCodeConnectionId, authMode: "opencode_api", model: "gpt-6-astra", acceptApiCharges: true });
+  expect(screen.getByLabelText("Provider")).toBeDisabled(); expect(screen.getByLabelText("Project connection")).toBeDisabled();
+  fireEvent.click(screen.getByRole("button", { name: "Retry same request" }));
+  await waitFor(() => expect(writes).toHaveLength(2)); expect(writes[1]).toEqual(writes[0]);
+  await screen.findByText("Status: queued");
+  expect(screen.getByText(/Installed OpenCode · gpt-6-astra · OpenCode OpenAI API key/)).toBeInTheDocument();
+});
+
+it("OpenCode connection setup fixes its native API mode and clears the secret download after switching providers", async () => {
+  const secret = `op_pc_${openCodeConnectionId}.${"s".repeat(43)}`;
+  writeHandler = async () => response({ connection: { id: openCodeConnectionId }, setup: { version: 2, provider: "opencode", appUrl: window.location.origin,
+    workspaceId, projectId, connectionId: openCodeConnectionId, expectedAuthMode: "opencode_api", token: secret } }, 201);
+  await openPanel(); fireEvent.change(screen.getByLabelText("Provider"), { target: { value: "opencode" } });
+  fireEvent.click(screen.getByText("Connect or revoke a computer"));
+  expect(screen.getByText(/OpenCode 1.18.30/)).toBeInTheDocument();
+  expect(screen.getByText(/Expected account: OpenAI API key configured in OpenCode/)).toBeInTheDocument();
+  expect(screen.queryByLabelText("Expected native account")).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Create project connection" }));
+  await screen.findByRole("button", { name: "Download connection file" });
+  expect(writes[0].body).toEqual({ workspaceId, projectId, label: "My computer", provider: "opencode", authMode: "opencode_api" });
+  expect(document.body.textContent).not.toContain(secret);
+  fireEvent.change(screen.getByLabelText("Provider"), { target: { value: "codex" } });
+  expect(screen.queryByRole("button", { name: "Download connection file" })).not.toBeInTheDocument();
+});
+
+it.each([{ provider: "codex" }, { expectedAuthMode: "apiKey" }])("refuses a changed OpenCode setup binding %j", async changed => {
+  writeHandler = async () => response({ connection: { id: openCodeConnectionId }, setup: { version: 2, provider: "opencode", appUrl: window.location.origin,
+    workspaceId, projectId, connectionId: openCodeConnectionId, expectedAuthMode: "opencode_api", token: `op_pc_${openCodeConnectionId}.${"s".repeat(43)}`, ...changed } }, 201);
+  await openPanel(); fireEvent.change(screen.getByLabelText("Provider"), { target: { value: "opencode" } });
+  fireEvent.click(screen.getByText("Connect or revoke a computer")); fireEvent.click(screen.getByRole("button", { name: "Create project connection" }));
+  await screen.findByText("The connection file did not match this project and app.");
+  expect(screen.queryByRole("button", { name: "Download connection file" })).not.toBeInTheDocument();
+});
+
+it("OpenCode provider changes clear prior charge acknowledgement, connection and model", async () => {
+  connectionRows = [connection, openCodeConnection]; await openPanel(); await fillOpenCode();
+  fireEvent.click(screen.getByRole("checkbox", { name: /I authorize this request/ }));
+  expect(screen.getByRole("button", { name: "Send project request" })).toBeEnabled();
+  fireEvent.change(screen.getByLabelText("Provider"), { target: { value: "codex" } });
+  fireEvent.change(screen.getByLabelText("Provider"), { target: { value: "opencode" } });
+  expect(screen.getByLabelText("Project connection")).toHaveValue(""); expect(screen.getByLabelText("Model ID")).toHaveValue("");
+  fireEvent.change(screen.getByLabelText("Project connection"), { target: { value: openCodeConnectionId } });
+  expect(screen.getByRole("checkbox", { name: /I authorize this request/ })).not.toBeChecked();
+  expect(screen.getByRole("button", { name: "Send project request" })).toBeDisabled(); expect(writes).toEqual([]);
+});
+
+it("saved OpenCode answers retain the explicit provider and existing proposal review boundary", async () => {
+  const saved = { ...savedTurn(), provider: "opencode", model_id: "gpt-6-astra", auth_mode: "opencode_api" };
+  turnRows = [saved];
+  const view = await openPanel();
+  expect(screen.getByText(/Installed OpenCode · gpt-6-astra · OpenCode OpenAI API key/)).toBeInTheDocument();
+  expect(writes).toEqual([]); expect(view.review).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Review draft submittal in conversation" }));
+  expect(view.review).toHaveBeenCalledWith({ id: saved.id, question: saved.question, answer: saved.result.answer, proposal });
+  expect(writes).toEqual([]);
+});
