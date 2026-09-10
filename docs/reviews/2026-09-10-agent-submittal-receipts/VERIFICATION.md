@@ -1,5 +1,17 @@
 # Approved project-submittal recovery — v0.51.0 verification
 
+Published [v0.51.0](https://github.com/nfredmond/openplan/releases/tag/v0.51.0)
+on September 10, 2026 at 12:30:29 UTC from
+`38f951ebc9d2db14594c1f01847de686f157cde6`. The final commit passed
+[CI](https://github.com/nfredmond/openplan/actions/runs/34475387543),
+[live RLS](https://github.com/nfredmond/openplan/actions/runs/34475387610), and
+[upgrade](https://github.com/nfredmond/openplan/actions/runs/34475387565)
+before tagging. Machine-readable final CI and publication receipts are retained
+beside this file. CI full QA and shuffled tests each passed 13,649 tests with
+336 skipped; local runs passed 13,656 with 329 skipped. Live RLS passed 358 tests
+in 44 files. The populated upgrade from v0.50.0 retained counts
+`2:2:1:1:1:1:1`. The historical preparation checkpoints below remain unchanged.
+
 Based on released v0.50.0 at0df7a50a. The current branch is
 work/agent-submittal-receipts in the existing isolated agent-hold-receipts checkout;
 no app server is running there. v0.50.0's final CI receipts are retained beside its
