@@ -19,7 +19,7 @@ describe("HOLD consent captures current context",()=>{
   it("stores the context alongside the exact action hash",async()=>{
     const response=await POST(request({workspaceId,action}));
     expect(response.status).toBe(201);
-    expect(fixture.insert).toHaveBeenCalledWith(expect.objectContaining({user_id:userId,workspace_id:workspaceId,input_hash:hashAssistantActionPayload(action),execution_context:{version:1,workspace:fixture.rows.workspaces,priorDecisionId:null,binding:expect.objectContaining({templateId:"ca_stage_gates_v0_1",gateId:action.gateId})}}));
+    expect(fixture.insert).toHaveBeenCalledWith(expect.objectContaining({user_id:userId,workspace_id:workspaceId,input_hash:hashAssistantActionPayload(action),execution_context:{version:1,action,workspace:fixture.rows.workspaces,priorDecisionId:null,binding:expect.objectContaining({templateId:"ca_stage_gates_v0_1",gateId:action.gateId})}}));
   });
   it("does not mint consent for another action workspace",async()=>{const response=await POST(request({workspaceId,action:{...action,workspaceId:projectId}}));expect(response.status).toBe(403);expect(fixture.insert).not.toHaveBeenCalled()});
   it("does not mint consent for a missing project",async()=>{fixture.rows.projects=null;const response=await POST(request({workspaceId,action}));expect(response.status).toBe(404);expect(fixture.insert).not.toHaveBeenCalled()});

@@ -1,0 +1,18 @@
+[
+  {
+    "name": "harmless",
+    "result": "survived"
+  },
+  {
+    "name": "approval-lock",
+    "result": "failed"
+  },
+  {
+    "name": "project-lock",
+    "result": "failed"
+  },
+  {
+    "name": "false-success-after-loss",
+    "result": "failed"
+  }
+]

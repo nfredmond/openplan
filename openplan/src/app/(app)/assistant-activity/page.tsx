@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { ApprovedHoldRecovery } from "@/components/assistant/approved-hold-recovery";
 import { Activity, ShieldCheck } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState, ErrorState } from "@/components/ui/state-block";
@@ -131,7 +132,7 @@ export default async function AssistantActivityPage() {
   const summary = buildAssistantActivitySummary(executions);
 
   return (
-    <section className="module-page">
+    <section className="module-page grid-cols-1">
       <header className="module-header-grid">
         <article className="module-intro-card">
           <div className="module-intro-kicker">
@@ -193,6 +194,8 @@ export default async function AssistantActivityPage() {
           </div>
         </article>
       </header>
+
+      <ApprovedHoldRecovery key={membership.workspace_id} workspaceId={membership.workspace_id} />
 
       <article className="module-section-surface">
         <div className="module-section-header">

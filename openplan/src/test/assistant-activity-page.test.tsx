@@ -46,6 +46,8 @@ vi.mock("@/lib/workspaces/current", async () => {
   };
 });
 
+vi.mock("@/components/assistant/approved-hold-recovery", () => ({ ApprovedHoldRecovery: ({ workspaceId }: { workspaceId: string }) => <div data-testid="hold-recovery" data-workspace={workspaceId} /> }));
+
 import AssistantActivityPage from "@/app/(app)/assistant-activity/page";
 
 const WORKSPACE_ID = "workspace-1";

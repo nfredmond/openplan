@@ -1,0 +1,132 @@
+[
+  {
+    "name": "harmless",
+    "result": "survived",
+    "status": 0
+  },
+  {
+    "name": "drop-user-filter",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "drop-workspace-filter",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "drop-action-filter",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "drop-retained-projection",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "drop-stable-order",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "wrong-page",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "drop-exact-approval",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "ignore-returned-scope",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "ignore-retained-hash",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "ignore-read-error",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "empty-on-receipt-error",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "drop-current-access",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "ignore-membership-error",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "drop-authentication",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "cache-private-results",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "lose-exact-action",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "check-executes",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "replace-consent",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "lose-old-result",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "claim-unconfirmed-success",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "resume-expired",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "resume-completed",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "discard-current-page",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "lose-chat-recovery",
+    "result": "failed",
+    "status": 1
+  },
+  {
+    "name": "claim-rollback",
+    "result": "failed",
+    "status": 1
+  }
+]

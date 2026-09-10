@@ -63,3 +63,30 @@ Activity page. Prefer server-retained exact approved action data over an unscope
 browser-storage queue. A result lookup must never mint new approval or silently
 re-execute work. An explicit resume may reuse valid unchanged consent; expired or
 stale consent must return to review. Keep historical uncertain executions visible.
+
+
+## Recovery interface checkpoint
+
+The existing Planner Agent Activity page now lists the current user's retained
+HOLD approvals. Checking saved results is read-only. An explicit resume dispatches
+the same exact action and approval, then reads that approval by ID, including
+records older than the first page. Expired consent and historical requests without
+retained exact action data cannot be resumed. A lost chat response links to this
+page and no longer claims that nothing changed.
+
+Three live concurrency tests passed against the same disposable stack: concurrent
+uses serialize and return one receipt; a concurrent manual decision makes the old
+approval stale; terminating only the test's observed database backend rolls back
+all writes and allows the original approval to execute afterward. The harmless
+locking mutation survived. Removing the approval lock, project lock, or actual
+write failed the relevant race/count assertion. Functions were restored. This is
+database connection-loss evidence, not browser or Next-process interruption proof.
+
+Recovery tests cover query projections, current user/workspace/action filters,
+stable paging, exact older approval reads, changed retained data, current access,
+read failures, read-only refresh, explicit same-consent resume, expired/completed
+controls and truthful interrupted-chat guidance. The harmless source mutation
+survived; 25 targeted mutations failed the intended assertions. Logs were inspected
+for assertion failures rather than runner startup failures. These mocked tests
+cannot establish database RLS, transaction correctness or browser reachability.
+Browser acceptance and full release checks remain outstanding at this checkpoint.

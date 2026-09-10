@@ -686,9 +686,12 @@ function ChatProposalCard({
         <p role="status" className="mt-2 text-xs leading-relaxed text-amber-100/92">{entry.followUpWarning}</p>
       ) : null}
       {entry.state === "failed" ? (
-        <p className="mt-2 text-xs leading-relaxed text-rose-100/92">
-          {entry.error ?? "The approved action failed before completing."} Nothing further was changed.
-        </p>
+        <div className="mt-2 space-y-2 text-xs leading-relaxed text-rose-100/92">
+          <p>{entry.error ?? "The action response could not be confirmed."} Check the saved record before trying again.</p>
+          {entry.proposal.kind === "record_stage_gate_hold" ? (
+            <a href="/assistant-activity#approved-holds" className="font-semibold underline">Check approved HOLD result</a>
+          ) : null}
+        </div>
       ) : null}
       {entry.state === "dismissed" ? (
         <p className="mt-2 text-xs leading-relaxed text-slate-400/88">Dismissed — no change was made.</p>

@@ -42,7 +42,7 @@ export async function prepareHoldExecutionContext(supabase: Pick<SupabaseClient,
     .eq("workspace_id", workspaceId).eq("project_id", action.projectId).eq("gate_id", action.gateId).eq("template_id", binding.templateId)
     .order("decided_at", { ascending: false }).order("id", { ascending: false }).limit(1).maybeSingle();
   if (priorError) throw new HoldReceiptError("Cannot read the current stage-gate decision.", 503);
-  return { version: 1, workspace, binding, priorDecisionId: prior?.id ?? null };
+  return { version: 1, workspace, binding, priorDecisionId: prior?.id ?? null, action: executedActionPayload(action) };
 }
 
 const receiptSchema = z.object({

@@ -494,6 +494,29 @@ describe("AppCopilot", () => {
     expect(headers["x-openplan-assistant-execution-source"]).toBe("planner_agent_quick_link");
   });
 
+  it("directs an interrupted approved HOLD to its retained result without claiming rollback", async () => {
+    const payload = { kind: "record_stage_gate_hold", workspaceId: WORKSPACE_ID, projectId: "33333333-3333-4333-8333-333333333333", gateId: "G01_INITIATION_AUTHORIZATION", rationale: "Synthetic missing approval" };
+    chatRoute = () => sseResponse([
+      { type: "start" },
+      { type: "tool-input-start", toolCallId: "hold", toolName: "propose_record_stage_gate_hold" },
+      { type: "tool-output-available", toolCallId: "hold", output: { status: "proposed", kind: payload.kind, payload, approval: "approval_required", description: "Record a HOLD for missing approval." } },
+      { type: "finish" },
+    ]);
+    const originalFetch = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation((input, init) => String(input) === "/api/stage-gates/decisions" ? Promise.reject(new Error("Response connection lost")) : originalFetch(input, init));
+    await openPanel();
+    fireEvent.change(screen.getByPlaceholderText(/Ask about project status/), { target: { value: "Hold the project gate" } });
+    fireEvent.click(screen.getByRole("button", { name: /Send/ }));
+    fireEvent.click(await screen.findByRole("button", { name: "Approve & run" }));
+    const sheet = within(await screen.findByRole("dialog", { name: "Approve Planner Agent action" }));
+    fireEvent.click(sheet.getByRole("button", { name: "Approve action" }));
+    expect(await screen.findByRole("link", { name: "Check approved HOLD result" })).toHaveAttribute("href", "/assistant-activity#approved-holds");
+    expect(screen.getByText(/Check the saved record before trying again/)).toHaveTextContent("Response connection lost");
+    expect(screen.queryByText(/Nothing further was changed/)).toBeNull();
+    expect(screen.queryByRole("button", { name: "Approve & run" })).toBeNull();
+    expect(fetchMock.mock.calls.filter(call => String(call[0]) === "/api/stage-gates/decisions")).toHaveLength(1);
+  });
+
   it("leaves no execution behind a rejected proposal approval", async () => {
     await streamProposalReply();
 
