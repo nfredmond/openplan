@@ -1,0 +1,260 @@
+[
+  {
+    "mutation": "harmless-comment",
+    "exitCode": 0,
+    "expectationMet": true,
+    "failures": []
+  },
+  {
+    "mutation": "opencode-pair-disabled",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 setup provider/account binding: opencode/opencode_api (0.153179ms)",
+      "\u2716 dispatch selects the actual OpenCode functions and preserves Codex and Claude adapters (0.114907ms)",
+      "\u2716 OpenCode packets cannot omit or switch provider or account mode (0.162427ms)",
+      "\u2716 OpenCode claim and saved delivery retain exact mode, model and answer through response loss (10.927697ms)",
+      "\u2716 OpenCode rejects a changed result provider without retaining its answer (0.858751ms)",
+      "\u2716 OpenCode rejects a changed result authMode without retaining its answer (0.654014ms)",
+      "\u2716 OpenCode rejects a changed result model without retaining its answer (0.513409ms)",
+      "\u2716 OpenCode refuses a changed inspected account before starting generation (1.819515ms)",
+      "\u2716 OpenCode crash recovery reports interruption without another account inspection or generation (1.901008ms)",
+      "\u2716 failing tests:",
+      "\u2716 setup provider/account binding: opencode/opencode_api (0.153179ms)",
+      "\u2716 dispatch selects the actual OpenCode functions and preserves Codex and Claude adapters (0.114907ms)",
+      "\u2716 OpenCode packets cannot omit or switch provider or account mode (0.162427ms)",
+      "\u2716 OpenCode claim and saved delivery retain exact mode, model and answer through response loss (10.927697ms)",
+      "\u2716 OpenCode rejects a changed result provider without retaining its answer (0.858751ms)",
+      "\u2716 OpenCode rejects a changed result authMode without retaining its answer (0.654014ms)",
+      "\u2716 OpenCode rejects a changed result model without retaining its answer (0.513409ms)",
+      "\u2716 OpenCode refuses a changed inspected account before starting generation (1.819515ms)",
+      "\u2716 OpenCode crash recovery reports interruption without another account inspection or generation (1.901008ms)"
+    ]
+  },
+  {
+    "mutation": "opencode-provider-unbound",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 setup provider/account binding: codex/opencode_api (0.420264ms)",
+      "\u2716 setup provider/account binding: claude/opencode_api (0.157948ms)",
+      "\u2716 setup provider/account binding: anthropic/opencode_api (0.132681ms)",
+      "\u2716 setup provider/account binding: unknown/opencode_api (0.113103ms)",
+      "\u2716 failing tests:",
+      "\u2716 setup provider/account binding: codex/opencode_api (0.420264ms)",
+      "\u2716 setup provider/account binding: claude/opencode_api (0.157948ms)",
+      "\u2716 setup provider/account binding: anthropic/opencode_api (0.132681ms)",
+      "\u2716 setup provider/account binding: unknown/opencode_api (0.113103ms)"
+    ]
+  },
+  {
+    "mutation": "opencode-mode-unbound",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 setup provider/account binding: opencode/chatgpt (0.459017ms)",
+      "\u2716 setup provider/account binding: opencode/apiKey (0.131468ms)",
+      "\u2716 setup provider/account binding: opencode/claude_subscription (0.110699ms)",
+      "\u2716 setup provider/account binding: opencode/automatic (0.110428ms)",
+      "\u2716 dispatch selects the actual OpenCode functions and preserves Codex and Claude adapters (0.265301ms)",
+      "\u2716 failing tests:",
+      "\u2716 setup provider/account binding: opencode/chatgpt (0.459017ms)",
+      "\u2716 setup provider/account binding: opencode/apiKey (0.131468ms)",
+      "\u2716 setup provider/account binding: opencode/claude_subscription (0.110699ms)",
+      "\u2716 setup provider/account binding: opencode/automatic (0.110428ms)",
+      "\u2716 dispatch selects the actual OpenCode functions and preserves Codex and Claude adapters (0.265301ms)"
+    ]
+  },
+  {
+    "mutation": "legacy-opencode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode requires version two and explicit provider identity (0.520533ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode requires version two and explicit provider identity (0.520533ms)"
+    ]
+  },
+  {
+    "mutation": "dispatch-validation",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 dispatch selects the actual OpenCode functions and preserves Codex and Claude adapters (0.534158ms)",
+      "\u2716 failing tests:",
+      "\u2716 dispatch selects the actual OpenCode functions and preserves Codex and Claude adapters (0.534158ms)"
+    ]
+  },
+  {
+    "mutation": "dispatch-selection",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 dispatch selects the actual OpenCode functions and preserves Codex and Claude adapters (0.932059ms)",
+      "\u2716 failing tests:",
+      "\u2716 dispatch selects the actual OpenCode functions and preserves Codex and Claude adapters (0.932059ms)"
+    ]
+  },
+  {
+    "mutation": "dispatch-inspect",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 dispatch selects the actual OpenCode functions and preserves Codex and Claude adapters (0.947739ms)",
+      "\u2716 failing tests:",
+      "\u2716 dispatch selects the actual OpenCode functions and preserves Codex and Claude adapters (0.947739ms)"
+    ]
+  },
+  {
+    "mutation": "dispatch-generate",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 dispatch selects the actual OpenCode functions and preserves Codex and Claude adapters (0.990559ms)",
+      "\u2716 failing tests:",
+      "\u2716 dispatch selects the actual OpenCode functions and preserves Codex and Claude adapters (0.990559ms)"
+    ]
+  },
+  {
+    "mutation": "claim-opencode-mode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode claim and saved delivery retain exact mode, model and answer through response loss (12.729288ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode claim and saved delivery retain exact mode, model and answer through response loss (12.729288ms)"
+    ]
+  },
+  {
+    "mutation": "job-provider",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode packets cannot omit or switch provider or account mode (0.691044ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode packets cannot omit or switch provider or account mode (0.691044ms)"
+    ]
+  },
+  {
+    "mutation": "job-mode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode packets cannot omit or switch provider or account mode (0.69909ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode packets cannot omit or switch provider or account mode (0.69909ms)"
+    ]
+  },
+  {
+    "mutation": "inspection-mode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode refuses a changed inspected account before starting generation (2.214771ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode refuses a changed inspected account before starting generation (2.214771ms)"
+    ]
+  },
+  {
+    "mutation": "result-provider",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode rejects a changed result provider without retaining its answer (4.439049ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode rejects a changed result provider without retaining its answer (4.439049ms)"
+    ]
+  },
+  {
+    "mutation": "result-model",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode rejects a changed result model without retaining its answer (2.22471ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode rejects a changed result model without retaining its answer (2.22471ms)"
+    ]
+  },
+  {
+    "mutation": "result-mode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode rejects a changed result authMode without retaining its answer (2.341931ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode rejects a changed result authMode without retaining its answer (2.341931ms)"
+    ]
+  },
+  {
+    "mutation": "saved-provider",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode claim and saved delivery retain exact mode, model and answer through response loss (13.55661ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode claim and saved delivery retain exact mode, model and answer through response loss (13.55661ms)"
+    ]
+  },
+  {
+    "mutation": "saved-mode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode claim and saved delivery retain exact mode, model and answer through response loss (14.400483ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode claim and saved delivery retain exact mode, model and answer through response loss (14.400483ms)"
+    ]
+  },
+  {
+    "mutation": "saved-answer",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode claim and saved delivery retain exact mode, model and answer through response loss (12.603871ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode claim and saved delivery retain exact mode, model and answer through response loss (12.603871ms)"
+    ]
+  },
+  {
+    "mutation": "completed-retry",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode claim and saved delivery retain exact mode, model and answer through response loss (15.6018ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode claim and saved delivery retain exact mode, model and answer through response loss (15.6018ms)"
+    ]
+  },
+  {
+    "mutation": "running-recovery",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode crash recovery reports interruption without another account inspection or generation (2.838609ms)",
+      "\u2716 OpenCode cannot replay a saved request through a different native provider (2.24112ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode crash recovery reports interruption without another account inspection or generation (2.838609ms)",
+      "\u2716 OpenCode cannot replay a saved request through a different native provider (2.24112ms)"
+    ]
+  },
+  {
+    "mutation": "journal-provider",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode cannot replay a saved request through a different native provider (2.461657ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode cannot replay a saved request through a different native provider (2.461657ms)"
+    ]
+  },
+  {
+    "mutation": "scratch-cleanup",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode claim and saved delivery retain exact mode, model and answer through response loss (14.802852ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode claim and saved delivery retain exact mode, model and answer through response loss (14.802852ms)"
+    ]
+  }
+]

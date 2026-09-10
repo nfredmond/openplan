@@ -265,3 +265,23 @@ Private scripts are probe-provider.mjs and probe-provider-cancel.mjs. Next regis
 OpenCode/opencode_api in the connector and app, preserve retained journal recovery,
 then complete SQL/RLS, desktop/390px browser evidence and release checks. Main and
 the package remain at the published v0.53.0 boundary until that integration lands.
+
+## Connector registration checkpoint
+
+OpenCode now registers through version-two setup with opencode_api only. Exact
+provider/account pairs are validated before dispatch to its native adapter. The
+worker reports this mode when claiming, preserves it in the saved delivery and
+reuses the existing journal for response-loss retries and crash interruption.
+The CLI names the pinned version and distinguishes offline catalog from access.
+
+Focused connector checks:60 passed. Full default worker suite:374 passed,4 native
+opt-in skips,0 failed. A harmless comment mutation survived;22 targeted changes
+failed for setup binding, dispatch functions, claim mode, result identity, saved
+answer, retry/crash recovery and scratch cleanup. See registration-checks.json
+and registration-mutations.json. Fixtures inject native generation and server
+responses, so these checks do not prove live app, RLS or native runtime behavior.
+
+Next: app connection/turn/native routes, retained-turn schema, additive migration
+and existing project provider panel. No app edits have begun at this checkpoint.
+No Next server currently serves this worktree. Other checkout servers remain
+untouched. Product direction check passed with review reminders.

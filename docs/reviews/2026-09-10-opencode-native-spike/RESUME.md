@@ -53,7 +53,7 @@ readback proof passed. Default full connector suite151pass3native opt-in skips.
 Account/model projection, bounded credential snapshots, owned server and model
 command, exact turn validation and provider adapter are implemented. Default
 connector suite now passes339 with4 native opt-in skips. Not implemented:
-connector setup/dispatch registration, app routes/types, migration, UI, RLS and
+app routes/types, migration, UI, RLS and
 browser journeys. Do not advertise
 OpenCode support yet. First supported
 mode will be native OpenAI API credentials; OAuth/subscription and other providers
@@ -91,8 +91,8 @@ or explicit backend binding; existing apiKey claim inference currently means Cod
    are now implemented in opencode-models.mjs, opencode-result.mjs and
    opencode-provider.mjs. Native success, absent-model refusal and cancellation
    passed. See provider-checks.json and the later CHECKPOINT.md section.
-   Next wire the provider adapter into existing connector setup/dispatch and
-   cleanup. Preserve the saved-request journal and retry semantics.
+   The provider adapter is now registered in connector setup/dispatch. See
+   registration-checks.json. Continue with app routes, migration and UI.
 3. Native POST structured response and exact assistant-message GET work. The
    validator binds every part to the requested session/parent, selected model
    and agent, one completed StructuredOutput call and exact readback. General
@@ -144,8 +144,9 @@ is collecting evidence. Original native Codex and Claude histories must survive.
 
 ## Immediate restart point after the allowance pause
 
-Start connector setup/dispatch and app registration for the completed native
-OpenCode adapter. No registration or app edits have begun. Before editing app
+Connector setup/dispatch is implemented with374 default worker passes and4
+native opt-in skips. Start app registration for the completed native OpenCode
+adapter. No app edits have begun. Before editing app
 files, map live Next processes to their checkout and identify the served build.
 The last product-direction check passed. Rerun it and check current ownership on
 return. Do not rely on development servers, databases or native processes having

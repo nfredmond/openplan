@@ -75,7 +75,7 @@ export async function connectorCycle(config, directory, options = {}) {
     catch { account = { status: "unavailable", authMode: null }; }
     finally { await rm(inspectWork, { recursive: true, force: true }); }
     const status = account.status === "connected" ? "connected" : account.status === "needs_login" ? "needs_login" : "unavailable";
-    const claimed = await request(config.setup, { operation: "claim", status, authMode: ["chatgpt", "apiKey", "claude_subscription"].includes(account.authMode) ? account.authMode : null }, { signal });
+    const claimed = await request(config.setup, { operation: "claim", status, authMode: ["chatgpt", "apiKey", "claude_subscription", "opencode_api"].includes(account.authMode) ? account.authMode : null }, { signal });
     if (!claimed || typeof claimed.status !== "string" || !("turn" in claimed)) throw new ConnectorError("connector_response_invalid");
     report(claimed.status);
     if (!claimed.turn) return { state: "idle", connectionStatus: claimed.status };

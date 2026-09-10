@@ -7,7 +7,7 @@ import { checkedConnectorSetup, ConnectorError, readConnectorConfig } from "./co
 import { acquireConnectorLock, connectorCycle, privateConnectorDirectory } from "./connector-worker.mjs";
 import { connectorProviderAdapter } from "./native-provider.mjs";
 
-const usage = `OpenPlan project connector (Linux, Codex 0.154.0 or Claude Code 2.1.263)
+const usage = `OpenPlan project connector (Linux, Codex 0.154.0, Claude Code 2.1.263 or OpenCode 1.18.30)
 configure --config /private/directory/connection.json --setup /download/connection.json --binary /installed/bin/provider --profile /native/profile
 models --config /private/directory/connection.json
 run --config /private/directory/connection.json [--once]
@@ -15,6 +15,8 @@ run --config /private/directory/connection.json [--once]
 Download a project connection from Planner Agent first. Native sign-in remains in
 the selected native application. API keys and browser sessions are not accepted by this connector. The
 selected native account may have usage limits or API charges; no fallback occurs.
+OpenCode currently supports its native OpenAI API credentials only. Its offline
+model catalog does not establish account access or model availability.
 `;
 
 export async function connectorMain(argv) {
@@ -46,7 +48,7 @@ export async function connectorMain(argv) {
     const file = await open(flags.config, "wx", 0o600);
     try { await file.writeFile(JSON.stringify({ setup, binaryPath: flags.binary, providerHome: flags.profile }, null, 2)); await file.sync(); }
     finally { await file.close(); }
-    process.stdout.write("Project connection saved. Use models to check native sign-in and model access, then run to receive project requests.\n");
+    process.stdout.write("Project connection saved. Use models to inspect native account configuration and the model catalog, then run to receive project requests.\n");
     return;
   }
   const config = await readConnectorConfig(flags.config);

@@ -1,0 +1,24 @@
+{
+  "sourceSha256": {
+    "connector-client.mjs": "6a26291c3ed01de49e46096024e3caf753e73532659556b4cab3b735e44bf4ce",
+    "native-provider.mjs": "0ce2c8d9e0e328b4e35d42dbb7c10c3916cceb66cc9a67469c489b90b1f548d8",
+    "connector-worker.mjs": "1d34fb296e2ea7c762ca1f871c7858d496a761534e5a5eac3d0df048f0a046f1",
+    "connector.mjs": "2a4833bb111f75ab9a070f0d8dc191ab3b9b77d2a403be2f9a6a6dae81d40dfe",
+    "test/opencode-connector.test.mjs": "fca024b071e6c104beec20dd32f8bbb0775d0c94aa40912b45478ce78c96cd6f"
+  },
+  "tests": {
+    "focusedPassed": 60,
+    "defaultPassed": 374,
+    "failed": 0,
+    "nativeOptInSkipped": 4
+  },
+  "mutations": {
+    "harmlessSurvivors": 1,
+    "targetedFailures": 22
+  },
+  "limits": [
+    "Worker setup and dispatch only; app and SQL registration are not implemented at this checkpoint",
+    "Injected worker fixtures prove queue, journal and delivery behavior, not native execution or live database isolation",
+    "Native runtime behavior is covered separately in provider-checks.json; real account access and model usefulness remain unmeasured"
+  ]
+}

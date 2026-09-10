@@ -17,7 +17,9 @@ function exactKeys(value, keys) {
 export function checkedConnectorSetup(raw) {
   exactKeys(raw, ["version", "appUrl", "connectionId", "workspaceId", "projectId", "expectedAuthMode", "token", ...(raw?.version === 2 ? ["provider"] : [])]);
   const validProvider = raw.version === 1 ? ["chatgpt", "apiKey"].includes(raw.expectedAuthMode)
-    : raw.version === 2 && (raw.provider === "codex" && ["chatgpt", "apiKey"].includes(raw.expectedAuthMode) || raw.provider === "claude" && raw.expectedAuthMode === "claude_subscription");
+    : raw.version === 2 && (raw.provider === "codex" && ["chatgpt", "apiKey"].includes(raw.expectedAuthMode) ||
+      raw.provider === "claude" && raw.expectedAuthMode === "claude_subscription" ||
+      raw.provider === "opencode" && raw.expectedAuthMode === "opencode_api");
   if (!validProvider || ![raw.connectionId, raw.workspaceId, raw.projectId].every(value => typeof value === "string" && uuid.test(value)) ||
     typeof raw.token !== "string" || !new RegExp(`^op_pc_${raw.connectionId}\\.[A-Za-z0-9_-]{43}$`).test(raw.token)) {
     throw new ConnectorError("connector_config_invalid");
