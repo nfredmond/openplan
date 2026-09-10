@@ -253,3 +253,50 @@ handling, trusting a forged forwarded host, falsely reporting cancellation, or
 disabling cancellation each fails the intended assertion. Mutation sources were
 restored. Scoped lint and TypeScript pass. These checks do not establish rendered
 browser usability; the rebuilt candidate still requires desktop and 390px journeys.
+
+## Identified browser acceptance: 5d831adcc61c
+
+Chrome 152 ran the production build from this isolated worktree at 127.0.0.1:3219;
+which-openplan and the listening process cwd matched the candidate. Each width
+(1440 and 390px) entered through home, sign-in, dashboard and Projects, then the
+existing project's Planner Agent. Keyboard use covered navigation, request sending,
+cancellation, retry and approval. Screenshots were inspected at both widths; the
+controls and wrapped answers remain reachable without document-width overflow.
+
+Connection creation and downloaded JSON now preserve the addressed app origin.
+Cancellation stays enabled while a native request's original response is held,
+then persists across a fresh browser session. Those connections were revoked.
+The first screenshot captured the revoke click before its response; a subsequent
+fresh session confirmed the retained revoked status rather than relying on that
+premature screenshot. The visible cancelled records are retained in this bundle.
+
+Both widths configured the outbound connector from a real UI download, inspected
+the installed native account/model list, and completed one actual gpt-5.6-luna
+ChatGPT-account turn. Each returned a scoped answer and draft proposal, kept costs
+unknown, and retained the exact original packet/result/receipt after reload. No
+second generation occurred on reload. The desktop harness initially stopped on an
+incorrect exact-label selector after native recovery; it resumed from the saved
+result without repeating native generation. Both native connections were revoked.
+
+Both widths also exercised the production Anthropic SDK/route/SQL with a dedicated
+process-local scripted transport and literal synthetic deployment key. No Anthropic
+request left that process, and no API charges were incurred. These are API transport
+integration results, not live Anthropic model-quality evidence. Returned proposals
+entered the existing action approval sheet, and keyboard approval created one draft
+submittal per project. Read-only SQL confirmed record IDs
+2d389c10-68c6-4791-a4ea-294d08841149 (desktop) and
+7811aa5f-654e-4960-a764-77e306157d13 (390px), matching consumed approval hashes,
+planner_agent authorship and retained draft receipts.
+
+For each width, deliberately severing a successful API response exposed Retry same
+request. The retry sent the identical body, returned the identical saved row, and
+made exactly one scripted provider call in total. Cancelling a delayed API attempt
+kept a null-result cancelled row after reload, with one provider call and no restart.
+Normal journeys had no console warnings/errors. Recovery journeys had only the
+injected ERR_CONNECTION_RESET. The owned acceptance server was stopped before
+further source changes.
+
+Blind categories: these are synthetic project engineering journeys, not practicing
+planner usefulness or live Anthropic service acceptance. Native-account success does
+not prove all models/accounts/platforms. Concurrency and final full release QA are
+still pending; no A0a completion or release declaration is made at this checkpoint.

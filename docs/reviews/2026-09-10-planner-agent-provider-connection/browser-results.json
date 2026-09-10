@@ -1,0 +1,136 @@
+[
+  {
+    "width": 1440,
+    "build": {
+      "commit": "5d831adcc61c",
+      "version": "0.51.0"
+    },
+    "projectId": "daea1aad-c1ea-4a74-94da-89e512ea86fe",
+    "native": {
+      "id": "26f43a45-1988-4479-82e1-30034ccb419b",
+      "request_id": "bfed4d70-e057-4df9-801e-2c20862d5274",
+      "model_id": "gpt-5.6-luna",
+      "auth_mode": "chatgpt",
+      "packet_hash": "617467ba4b262f976e3bd5d2f71019e6066729d1a5c216a6dcee2d8b23637375",
+      "state": "succeeded",
+      "provider_receipt": {
+        "model": "gpt-5.6-luna",
+        "turnId": "01a08bc7-d9e4-7252-98dc-e2c4e52c0b70",
+        "authMode": "chatgpt",
+        "planType": "pro",
+        "provider": "codex",
+        "threadId": "01a08bc7-d9c9-7070-86f9-7342d6676af6",
+        "schemaVersion": 1
+      }
+    },
+    "nativeReloadUnchanged": true,
+    "api": {
+      "id": "83cdc087-a9c5-4e4d-a363-5179f8ae8edd",
+      "request_id": "77d71429-3f16-400a-9856-a161cc893cfd",
+      "model_id": "claude-fixture-acceptance",
+      "auth_mode": "deployment_api_key",
+      "packet_hash": "e6c9fe3d8429dccec86c5fd0a64f5befd7294f5acc72b50be13dd911db34bee6",
+      "state": "succeeded",
+      "provider_receipt": {
+        "model": "claude-fixture-acceptance",
+        "authMode": "deployment_api_key",
+        "provider": "anthropic",
+        "responseId": "msg_fixture_8853698a-4754-4a7c-8faf-4c61a6026d3c",
+        "inputTokens": 120,
+        "outputTokens": 80,
+        "schemaVersion": 1
+      }
+    },
+    "approvalCompleted": true,
+    "connectionRevoked": true,
+    "console": [],
+    "retry": {
+      "turnId": "5e15f764-e904-4911-8668-f233b5334b54",
+      "requestId": "339b5a3c-1f74-4d02-a1e7-37dbd40041c1",
+      "packetHash": "3033fc095e153b5d177d5bdb85b1bd9acb7a7ff81be427384da9ebacab238aad",
+      "state": "succeeded",
+      "identical": true
+    },
+    "fixtureCalls": {
+      "retry": 1,
+      "cancelled": 1
+    },
+    "cancelled": {
+      "id": "04b2eb32-6e71-459a-9c2a-0b705f4ca9c2",
+      "request_id": "6bafcd02-7e71-4e83-a376-8963159f649c",
+      "state": "cancelled",
+      "failure_code": "cancelled_by_user",
+      "result": null
+    },
+    "recoveryConsole": [
+      "Failed to load resource: net::ERR_CONNECTION_RESET"
+    ]
+  },
+  {
+    "width": 390,
+    "build": {
+      "commit": "5d831adcc61c",
+      "version": "0.51.0"
+    },
+    "projectId": "c8b59371-a3a0-4df3-b633-581f7555e4b7",
+    "native": {
+      "id": "ba6e53ff-2d49-4cb3-a1fc-20f311075450",
+      "request_id": "c311447f-7d94-41a7-bec6-0a7dbeaf5a24",
+      "model_id": "gpt-5.6-luna",
+      "auth_mode": "chatgpt",
+      "packet_hash": "2faa126bb5e96458b399b8d83e76dc18b6221fbd357a8980fe112134c9ef22cf",
+      "state": "succeeded",
+      "provider_receipt": {
+        "model": "gpt-5.6-luna",
+        "turnId": "01a08bc9-8e93-7712-a63a-9b4ffe29cff2",
+        "authMode": "chatgpt",
+        "planType": "pro",
+        "provider": "codex",
+        "threadId": "01a08bc9-8e79-7fe3-8b50-6c1ded6014a0",
+        "schemaVersion": 1
+      }
+    },
+    "nativeReloadUnchanged": true,
+    "api": {
+      "id": "b76e26de-3d68-4b28-bacf-f38719928b16",
+      "request_id": "d60545d1-c7c1-4931-9bf1-ae47090939d6",
+      "model_id": "claude-fixture-acceptance",
+      "auth_mode": "deployment_api_key",
+      "packet_hash": "faf653594fdfba129ee26ac698e10cc6eadc9c6b7d4ab63ee97717653c0c552d",
+      "state": "succeeded",
+      "provider_receipt": {
+        "model": "claude-fixture-acceptance",
+        "authMode": "deployment_api_key",
+        "provider": "anthropic",
+        "responseId": "msg_fixture_b41c40d7-b354-458f-8f3b-4754e779d2ae",
+        "inputTokens": 120,
+        "outputTokens": 80,
+        "schemaVersion": 1
+      }
+    },
+    "approvalCompleted": true,
+    "connectionRevoked": true,
+    "console": [],
+    "retry": {
+      "turnId": "3334bbae-80b2-4d7d-bbda-d3f10b17f51a",
+      "requestId": "623863fd-33a5-4e03-adc3-9cfd4460d92d",
+      "packetHash": "ee21016757847f2b7ec5ae4187662fef4cd127237ed68424d76cb9dee8430327",
+      "state": "succeeded",
+      "identical": true
+    },
+    "fixtureCalls": {
+      "retry": 1,
+      "cancelled": 1
+    },
+    "cancelled": {
+      "id": "d3ceccce-14bd-4b38-b7a3-16aa68f03230",
+      "request_id": "58816a05-49c3-4c7c-bd27-7783aeccf5b5",
+      "state": "cancelled",
+      "failure_code": "cancelled_by_user",
+      "result": null
+    },
+    "recoveryConsole": [
+      "Failed to load resource: net::ERR_CONNECTION_RESET"
+    ]
+  }
+]
