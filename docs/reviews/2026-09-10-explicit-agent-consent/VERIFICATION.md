@@ -1,4 +1,4 @@
-# Optional Planner Agent consent, in progress
+# Explicit Planner Agent consent and retained RTP packets
 
 Own checkout: `~/.local/state/openplan/explicit-agent-consent-2026-09-10`.
 Base ad8aecfe from the pending v0.49.3 work. No release is declared here.
@@ -24,7 +24,7 @@ projection each fail their named assertions. Query projections and consume filte
 are asserted. These unit fixtures cannot establish live RLS, browser delivery,
 process-loss recovery or atomicity between the domain effect and the audit.
 
-Remaining: full QA/shuffled/isolated RLS, actual UI/API approval retention and
+At this early checkpoint, remaining work was full QA/shuffled/isolated RLS, actual UI/API approval retention and
 replay rejection, browser desktop/390px and console inspection, final CI/upgrade.
 Current business effect, approval consumption and audit persistence remain separate
 operations; this change does not solve durable effect receipts or recovery.
@@ -116,3 +116,30 @@ positively identified. The mobile history screenshot then exposed 411px content
 in a 292px grid, despite reachable download links. Both nested grids now use a
 shrinkable single column below the existing desktop breakpoint. A final measured
 browser pass and targeted restored-auto-grid mutation remain to run.
+
+## Final browser and landing evidence
+
+At 383642aa, the frozen production build passed desktop and 390px real navigation
+to Reports and the retained packet history. The mobile panel measures 292px and
+fits within the viewport, with no internal horizontal overflow. A harmless style
+comment survives. Removing both explicit single-column grid rules expands the
+panel beyond the viewport and fails the same measured check. The page is visible
+and nonzero before measurement. Both screenshots were opened and inspected.
+
+Native keyboard downloads of the original HTML, original PDF and corrected PDF
+match the hashes retained in packet-downloads.json at both widths. There are no
+browser console/page errors. Consent and generation behavior remains evidenced
+at 5df4ffe8; the subsequent changes affect artifact links and presentation only.
+Full QA/shuffled results are recorded above; the final styles passed focused tests,
+ESLint and a fresh production build. Product direction passes with review-age
+reminders. Final-main CI, isolated RLS and upgrade from v0.49.3 are required before
+tagging, and will be recorded in final-ci.json after publication.
+
+The changed tests and browser probes do not establish authenticated external agent
+identity, durable approval/effect/audit recovery, compound action approval, every
+possible long-document layout, PDF/A conformance, prescribed agency forms, agency
+usefulness or scientific accuracy. Those claims remain outside this patch.
+
+![Retained packet history at 390px](history-390.png)
+![Retained packet history at desktop width](history-1440.png)
+![Corrected financial table in the saved PDF](pdf-financial-page.png)

@@ -1,0 +1,40 @@
+[
+  {
+    "width": 1440,
+    "reportId": "511fb9bb-67dc-4731-8732-79a7477b6258",
+    "health": {
+      "commit": "eeec560644a2",
+      "version": "0.49.4"
+    },
+    "htmlId": "e2af0302-2518-4952-a9c4-03e4fd91a369",
+    "htmlHash": "c72b2d137a98c08c821048f8f3e7bc2194f161e1ee171cfa70bdfdedffbb6089",
+    "pdfId": "aafbbc20-1eaf-433e-9873-09dcf5eec15e",
+    "pdfHash": "6e5240024533ae751f6d211c6cb1688069eeb697ac78796fa72dc96da0f1916f",
+    "oldPdfId": "53d8f3b8-3f4a-4868-930d-2ca4d8842f71",
+    "oldPdfHash": "b2ca1916cb19c2209a0781c143aab696c0b583dd788ad2ea4ff59475885bbf6b",
+    "originalHtmlBytes": 14949,
+    "pdfBytes": 157403,
+    "anonymousStatus": 401,
+    "errors": [],
+    "failures": []
+  },
+  {
+    "width": 390,
+    "reportId": "9961f412-156e-4a4e-ace8-6a051eea9d54",
+    "health": {
+      "commit": "eeec560644a2",
+      "version": "0.49.4"
+    },
+    "htmlId": "a870d081-c1c1-4092-9d10-b45a2d628a70",
+    "htmlHash": "f493f7c8d30136947714eae7823d7627f24f8698db678b852a96cb38cdf031b3",
+    "pdfId": "8254d271-d151-45a9-9b0e-d9da8fe2d1a0",
+    "pdfHash": "a3b60416bb9f7174003080b77bb278a6afd773e67384f74adac0fb129871a2aa",
+    "oldPdfId": "4cfbc425-7814-4104-aeae-9240a702b1c4",
+    "oldPdfHash": "2cb657eb1e4fe8b6b2c4377c55cbd5a1b8e9c64ad7af5db63cc965cd9eedee4b",
+    "originalHtmlBytes": 15038,
+    "pdfBytes": 155550,
+    "anonymousStatus": 401,
+    "errors": [],
+    "failures": []
+  }
+]

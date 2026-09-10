@@ -1,0 +1,161 @@
+[
+  {
+    "width": 1440,
+    "health": {
+      "commit": "383642aa6da5",
+      "version": "0.49.4"
+    },
+    "measure": {
+      "viewport": 1440,
+      "panel": {
+        "left": 305,
+        "right": 657,
+        "width": 352,
+        "scroll": 350,
+        "client": 350
+      },
+      "overflow": [
+        {
+          "class": "module-page grid-cols-1",
+          "width": 1086,
+          "grid": "1086px"
+        },
+        {
+          "class": "mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]",
+          "width": 1086,
+          "grid": "352px 710px"
+        }
+      ]
+    },
+    "downloads": [
+      {
+        "id": "e2af0302-2518-4952-a9c4-03e4fd91a369",
+        "sha256": "c72b2d137a98c08c821048f8f3e7bc2194f161e1ee171cfa70bdfdedffbb6089"
+      },
+      {
+        "id": "53d8f3b8-3f4a-4868-930d-2ca4d8842f71",
+        "sha256": "b2ca1916cb19c2209a0781c143aab696c0b583dd788ad2ea4ff59475885bbf6b"
+      },
+      {
+        "id": "aafbbc20-1eaf-433e-9873-09dcf5eec15e",
+        "sha256": "6e5240024533ae751f6d211c6cb1688069eeb697ac78796fa72dc96da0f1916f"
+      }
+    ],
+    "harmless": {
+      "viewport": 1440,
+      "panel": {
+        "left": 305,
+        "right": 657,
+        "width": 352,
+        "scroll": 350,
+        "client": 350
+      },
+      "overflow": [
+        {
+          "class": "module-page grid-cols-1",
+          "width": 1086,
+          "grid": "1086px"
+        },
+        {
+          "class": "mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]",
+          "width": 1086,
+          "grid": "352px 710px"
+        }
+      ]
+    },
+    "mutation": null,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "health": {
+      "commit": "383642aa6da5",
+      "version": "0.49.4"
+    },
+    "measure": {
+      "viewport": 390,
+      "panel": {
+        "left": 49,
+        "right": 341,
+        "width": 292,
+        "scroll": 290,
+        "client": 290
+      },
+      "overflow": [
+        {
+          "class": "module-page grid-cols-1",
+          "width": 292,
+          "grid": "292px"
+        },
+        {
+          "class": "mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]",
+          "width": 292,
+          "grid": "292px"
+        }
+      ]
+    },
+    "downloads": [
+      {
+        "id": "a870d081-c1c1-4092-9d10-b45a2d628a70",
+        "sha256": "f493f7c8d30136947714eae7823d7627f24f8698db678b852a96cb38cdf031b3"
+      },
+      {
+        "id": "4cfbc425-7814-4104-aeae-9240a702b1c4",
+        "sha256": "2cb657eb1e4fe8b6b2c4377c55cbd5a1b8e9c64ad7af5db63cc965cd9eedee4b"
+      },
+      {
+        "id": "8254d271-d151-45a9-9b0e-d9da8fe2d1a0",
+        "sha256": "a3b60416bb9f7174003080b77bb278a6afd773e67384f74adac0fb129871a2aa"
+      }
+    ],
+    "harmless": {
+      "viewport": 390,
+      "panel": {
+        "left": 49,
+        "right": 341,
+        "width": 292,
+        "scroll": 290,
+        "client": 290
+      },
+      "overflow": [
+        {
+          "class": "module-page grid-cols-1",
+          "width": 292,
+          "grid": "292px"
+        },
+        {
+          "class": "mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]",
+          "width": 292,
+          "grid": "292px"
+        }
+      ]
+    },
+    "mutation": {
+      "name": "restore implicit auto tracks",
+      "result": "failed measured width guard",
+      "measure": {
+        "viewport": 390,
+        "panel": {
+          "left": 49,
+          "right": 460.453125,
+          "width": 411.453125,
+          "scroll": 409,
+          "client": 409
+        },
+        "overflow": [
+          {
+            "class": "module-page",
+            "width": 292,
+            "grid": "411.453px"
+          },
+          {
+            "class": "mt-6 grid gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]",
+            "width": 411.453125,
+            "grid": "411.453px"
+          }
+        ]
+      }
+    },
+    "errors": []
+  }
+]
