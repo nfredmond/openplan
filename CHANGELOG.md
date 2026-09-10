@@ -22,6 +22,18 @@ stable enough to promise smooth upgrades indefinitely.
 
 No changes yet.
 
+## 0.49.4 — 2026-09-10
+
+Development candidate. [Verification](docs/reviews/2026-09-10-explicit-agent-consent/VERIFICATION.md)
+tracks outstanding checks. No new database migration.
+
+- Retain explicit Planner Agent approval on actions whose tier makes approval
+  optional. Validate consent before creating a report or generating an artifact.
+- Record RTP artifact actions with their verified consent. Preserve completed
+  report results when separate audit persistence throws.
+- Require separate explicit approvals for packet-record creation and artifact
+  generation. Existing quick links without separate approval keep their behavior.
+
 ## 0.49.3 — 2026-09-10
 
 [Verification](docs/reviews/2026-09-10-write-outcome-truth/VERIFICATION.md)

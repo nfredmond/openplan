@@ -43,3 +43,20 @@ writes. Audit transport throws preserve successful effects at every target.
 A harmless comment survives; removing request approval headers, propagating audit
 throws and omitting the RTP audit each fail the intended assertions. These tests
 use database fixtures and do not prove live persistence or cross-workspace RLS.
+
+
+## Single-effect consent boundary
+
+The existing create-and-generate quick link performs two requests, but a single
+approval cannot be consumed by both, and the report ID for the second does not
+exist when the first is approved. Explicit approval preparation now refuses that
+compound request with instructions to create the record and approve generation
+separately. Existing non-approval quick links remain supported. Explicit false
+and null defaults normalize to the same single-record action; a true generation
+request stays distinct in the hash. This does not implement compound approvals
+or durable delegated assignments.
+
+Eighteen approval/hash tests pass. A harmless comment survives; failing to
+normalize false/null defaults, erasing a second requested effect, permitting a
+compound approval or refusing an existing non-approval quick link each fails its
+intended assertion. Final full QA and browser evidence remain outstanding.

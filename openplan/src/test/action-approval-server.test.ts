@@ -136,6 +136,16 @@ describe("post-action chaining fields do not enter the approval hash", () => {
     });
   }
 
+  it("normalizes explicit RTP defaults while retaining a second requested effect", () => {
+    const action = { kind: "create_rtp_packet_record", rtpCycleId: "cycle-1" };
+    expect(hashAssistantActionPayload({ ...action, generateAfterCreate: false, modelingCountyRunId: null }))
+      .toBe(hashAssistantActionPayload(action));
+    expect(hashAssistantActionPayload({ ...action, generateAfterCreate: true }))
+      .not.toBe(hashAssistantActionPayload(action));
+    expect(hashAssistantActionPayload({ ...action, modelingCountyRunId: "run-1" }))
+      .not.toBe(hashAssistantActionPayload(action));
+  });
+
   it("still distinguishes a payload field that IS written", () => {
     // The exclusion must be narrow. Changing anything the route reconstructs has
     // to change the hash, or the single-use evidence stops meaning anything.

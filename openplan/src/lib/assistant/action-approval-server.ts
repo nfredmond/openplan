@@ -215,7 +215,13 @@ export function executedActionPayload(action: unknown): unknown {
   const entries = Object.entries(action as Record<string, unknown>).filter(
     ([key]) => !(NON_EXECUTED_ACTION_FIELDS as readonly string[]).includes(key)
   );
-  return Object.fromEntries(entries);
+  const executed = Object.fromEntries(entries);
+  if (executed.kind === "create_rtp_packet_record") {
+    // Explicit defaults do not change the record written by the report route.
+    if (executed.generateAfterCreate === false) delete executed.generateAfterCreate;
+    if (executed.modelingCountyRunId === null) delete executed.modelingCountyRunId;
+  }
+  return executed;
 }
 
 export function hashAssistantActionPayload(action: unknown): string {

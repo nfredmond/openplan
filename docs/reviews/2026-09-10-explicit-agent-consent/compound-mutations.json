@@ -1,0 +1,26 @@
+[
+  {
+    "name": "compound-harmless",
+    "exitCode": 0
+  },
+  {
+    "name": "default-not-normalized",
+    "exitCode": 1
+  },
+  {
+    "name": "null-model-not-normalized",
+    "exitCode": 1
+  },
+  {
+    "name": "second-effect-erased",
+    "exitCode": 1
+  },
+  {
+    "name": "compound-permitted",
+    "exitCode": 1
+  },
+  {
+    "name": "quick-link-refused",
+    "exitCode": 1
+  }
+]

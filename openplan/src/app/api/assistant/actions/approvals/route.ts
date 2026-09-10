@@ -75,6 +75,14 @@ export async function POST(request: NextRequest) {
     const metadata = getActionMetadata(parsed.data.action.kind);
     const inputHash = hashAssistantActionPayload(parsed.data.action);
     const needsApproval = metadata.approval === "approval_required" || parsed.data.requireApproval;
+    // The generated report ID does not exist yet, so a second effect cannot
+    // spend this record-creation approval. Keep explicit consent single-use.
+    if (needsApproval && parsed.data.action.kind === "create_rtp_packet_record" && parsed.data.action.generateAfterCreate) {
+      return NextResponse.json(
+        { error: "Create the packet record first, then approve artifact generation separately." },
+        { status: 400 }
+      );
+    }
     const expiresAt = new Date(Date.now() + ASSISTANT_ACTION_APPROVAL_TTL_MS).toISOString();
     let approvalId: string | null = null;
 
