@@ -187,7 +187,7 @@ export default async function AssistantActivityPage() {
             server-computed input hash, expires on a timer, and is consumed on first use.
           </p>
           <div className="module-operator-list">
-            <div className="module-operator-item">Every execution writes one audit row — success or failure.</div>
+            <div className="module-operator-item">Retained entries show the reported outcome of each audited execution.</div>
             <div className="module-operator-item">Approval-gated actions verify the input hash before running.</div>
             <div className="module-operator-item">Only members of this workspace can see these records.</div>
           </div>
@@ -198,7 +198,7 @@ export default async function AssistantActivityPage() {
         <div className="module-section-header">
           <div className="module-section-heading">
             <p className="module-section-label">Audit trail</p>
-            <h2 className="module-section-title">Executed actions in this workspace</h2>
+            <h2 className="module-section-title">Recorded executions in this workspace</h2>
             <p className="module-section-description">
               {summary.total} action{summary.total === 1 ? "" : "s"} · {summary.approvalGated} approval-gated ·{" "}
               {summary.failed} failed
@@ -210,9 +210,8 @@ export default async function AssistantActivityPage() {
         </div>
 
         <p className="module-note mt-4 text-sm leading-relaxed text-muted-foreground">
-          Every Planner Agent action is recorded here with a server-computed input hash of exactly what was
-          executed. Approval-gated actions additionally require a single-use, time-limited operator approval
-          that is verified against that hash before the action runs.
+          Entries show the available approval and input-hash evidence. Approval-gated actions require
+          a single-use, time-limited approval that is verified against the submitted action before it runs.
         </p>
 
         {executionsError ? (
@@ -225,8 +224,8 @@ export default async function AssistantActivityPage() {
         ) : executions.length === 0 ? (
           <div className="mt-5">
             <EmptyState
-              title="No Planner Agent actions yet"
-              description="Actions executed from the copilot will appear here as audit rows — including the input hash, approval class, and outcome — as soon as the first one runs."
+              title="No retained Planner Agent executions"
+              description="No execution entries are available in this view. An empty list does not establish that no actions ran; check the affected project or document to confirm its state."
             />
           </div>
         ) : (

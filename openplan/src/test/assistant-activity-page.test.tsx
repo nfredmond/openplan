@@ -126,9 +126,9 @@ describe("AssistantActivityPage", () => {
     // Summary line above the list.
     expect(screen.getByText(/2 actions · 1 approval-gated · 1 failed/)).toBeInTheDocument();
 
-    // Guarantee paragraph (the phrase also appears in the operator card).
+    // Approval evidence describes retained entries without promising completeness.
     expect(screen.getAllByText(/server-computed input hash/).length).toBeGreaterThan(0);
-    expect(screen.getByText(/single-use, time-limited operator approval/)).toBeInTheDocument();
+    expect(screen.getByText(/single-use, time-limited approval/)).toBeInTheDocument();
 
     // Rows: human-readable action kinds.
     expect(screen.getByText("Generate report artifact")).toBeInTheDocument();
@@ -160,8 +160,8 @@ describe("AssistantActivityPage", () => {
 
     await renderPage();
 
-    expect(screen.getByText("No Planner Agent actions yet")).toBeInTheDocument();
-    expect(screen.getByText(/Actions executed from the copilot will appear here/)).toBeInTheDocument();
+    expect(screen.getByText("No retained Planner Agent executions")).toBeInTheDocument();
+    expect(screen.getByText(/An empty list does not establish that no actions ran/)).toBeInTheDocument();
     expect(screen.getByText(/0 actions · 0 approval-gated · 0 failed/)).toBeInTheDocument();
   });
 
