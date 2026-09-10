@@ -91,7 +91,8 @@ by restoring and reopening the actual saved work.
 
 ## What the disposable drill exercises
 
-From the app directory:
+Use Python 3.11 or newer, the repository Node/npm setup and Docker. The first
+launch may download the Supabase service images. From the app directory:
 
 ```bash
 npm run ops:restore-drill -- --full-archive

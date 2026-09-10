@@ -1,6 +1,6 @@
 # OWP full recovery implementation
 
-Status: bounded engineering acceptance complete; final main CI and v0.49 publication pending. This is not a complete installation-recovery or v1 claim. v0.48.0 is [published](https://github.com/nfredmond/openplan/releases/tag/v0.48.0) at `e39258b92f119d5b7d8326155f99188d43a7eaf3`; its final QA, shuffled, RLS and upgrade checks passed before tagging. Development continues under Nathaniel's September 9 direction without human-review gates.
+Status: v0.49.0 published after final main CI passed. This is not a complete installation-recovery or v1 claim. v0.48.0 is [published](https://github.com/nfredmond/openplan/releases/tag/v0.48.0) at `e39258b92f119d5b7d8326155f99188d43a7eaf3`; its final QA, shuffled, RLS and upgrade checks passed before tagging. Development continues under Nathaniel's September 9 direction without human-review gates.
 
 ## Scope and ownership
 
@@ -193,3 +193,28 @@ Reproduce that boundary before expanding provider execution: a completed write
 must not look unsaved merely because follow-up context failed. Preserve the same
 approval and action registry; extend existing provider/CLI work instead of a new
 agent module. Full Codex, Claude Code and OpenCode support remains the A0 scope.
+
+## Published release
+
+[v0.49.0](https://github.com/nfredmond/openplan/releases/tag/v0.49.0) was published
+at **2026-09-10T07:02:33Z** (September 10 Pacific), non-draft and non-prerelease.
+The remote annotated tag peels to `051b735fa444fab5287357b30dc2eaafe6783bcf`.
+Its source/changelog entry was prepared September 9; the current changelog date
+now reflects actual publication. The tag is unchanged.
+
+Before tagging, exact-run inspection confirmed success on that same commit:
+[CI 34446536544](https://github.com/nfredmond/openplan/actions/runs/34446536544)
+(full QA, shuffled, worker, operations including native layout, and modeling unit
+checks), [RLS 34446536545](https://github.com/nfredmond/openplan/actions/runs/34446536545),
+[upgrade from v0.48.0, 34446587225](https://github.com/nfredmond/openplan/actions/runs/34446587225),
+and [full archive restore 34446566120](https://github.com/nfredmond/openplan/actions/runs/34446566120).
+The final restore artifacts match before/after and use the corrected
+`successorClaimRequest` label; all 45 mutations include three harmless survivors.
+The first upgrade dispatch used an incorrect input name and was rejected without
+starting a job; it was corrected to `base_tag`. One run-list response returned old
+history, so final verification used exact run IDs and independently confirmed
+remote main/tag hashes. No old successful run was accepted for this release.
+Publication and remote tag were both confirmed immediately after publishing.
+A later redundant API reread timed out; the receipt preserves the already
+observed publication response and does not invent a second successful read.
+`release-receipt.json` retains the verified release and final checks.

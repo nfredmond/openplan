@@ -22,7 +22,7 @@ stable enough to promise smooth upgrades indefinitely.
 
 No changes yet.
 
-## 0.49.0 — 2026-09-09
+## 0.49.0 — 2026-09-10
 
 Development release. [Recovery evidence](docs/reviews/2026-09-09-owp-full-recovery/VERIFICATION.md)
 records completed checks and remaining limits. No new database migration.
