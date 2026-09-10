@@ -99,3 +99,21 @@ tests pass. The production compiler passed, then TypeScript caught four fixture
 errors across three files because their mocked error types omitted `details`.
 Those mock types now accept optional details. This is not a completed build;
 the corrected production build and browser journey remain required.
+
+## Browser findings and correction
+
+Production ad8aecfe at3277 passed both adverse saves, retained form values,
+keyboard submission and normal database-backed save at1440px/390px. The first
+harness expected201 from the normal route, which actually returns200. That save
+created period25367376-a8e0-45ae-b031-e532ffcc1020; it was preserved. The repeated
+desktop case used2036–2046 rather than duplicating its2026–2035 baseline. Mobile
+started empty. Failed/suppressed attempts retained no rows; normal attempts each
+retained exactly one. Only the expected500 appeared in console/network errors.
+
+Screenshot inspection then exposed a separate narrow-layout defect: the financial
+table's intrinsic width expanded the RTP page grid to594px inside a292px content
+area. The form fit, but saved text and controls were clipped. A browser CSS probe
+using one minmax(0,1fr) track reduced the page scroll width to292px. The RTP detail
+page now explicitly uses that one-column track. This is scoped to RTP detail;
+it does not claim all module grids are repaired. Final rebuilt layout verification
+is pending, so the earlier successful interaction is not complete mobile acceptance.
