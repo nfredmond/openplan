@@ -1,0 +1,6 @@
+{
+  "expected": "000000000000",
+  "served": "e8c3d7f25e52",
+  "result": "rejected before financial navigation",
+  "exitCode": 1
+}

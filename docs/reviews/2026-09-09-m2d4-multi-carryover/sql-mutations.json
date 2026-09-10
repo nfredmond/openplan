@@ -1,0 +1,121 @@
+[
+  {
+    "name": "harmless comment",
+    "exit": 0,
+    "expected": "survived",
+    "matched": true,
+    "failureExcerpt": null
+  },
+  {
+    "name": "read allocation arrays",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true,
+    "failureExcerpt": "Error: Command failed: docker exec -i supabase_db_m2d3-reimbursement-verification psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At"
+  },
+  {
+    "name": "list shape",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true,
+    "failureExcerpt": "Error: Command failed: docker exec -i supabase_db_m2d3-reimbursement-verification psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At"
+  },
+  {
+    "name": "mixed legacy mapping",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true,
+    "failureExcerpt": "Error: Command failed: docker exec -i supabase_db_m2d3-reimbursement-verification psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At"
+  },
+  {
+    "name": "list limit",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true,
+    "failureExcerpt": "Error: Command failed: docker exec -i supabase_db_m2d3-reimbursement-verification psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At"
+  },
+  {
+    "name": "empty carryover",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true,
+    "failureExcerpt": "Error: Command failed: docker exec -i supabase_db_m2d3-reimbursement-verification psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At"
+  },
+  {
+    "name": "whole cents",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true,
+    "failureExcerpt": "Error: Command failed: docker exec -i supabase_db_m2d3-reimbursement-verification psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At"
+  },
+  {
+    "name": "completed allocations",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true,
+    "failureExcerpt": "Error: Command failed: docker exec -i supabase_db_m2d3-reimbursement-verification psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At"
+  },
+  {
+    "name": "successor identity",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true,
+    "failureExcerpt": "Error: Command failed: docker exec -i supabase_db_m2d3-reimbursement-verification psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At"
+  },
+  {
+    "name": "successor element",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true,
+    "failureExcerpt": "Error: Command failed: docker exec -i supabase_db_m2d3-reimbursement-verification psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At"
+  },
+  {
+    "name": "source assessment",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true,
+    "failureExcerpt": "Error: Command failed: docker exec -i supabase_db_m2d3-reimbursement-verification psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At"
+  },
+  {
+    "name": "successor fund",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true,
+    "failureExcerpt": "Error: Command failed: docker exec -i supabase_db_m2d3-reimbursement-verification psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At"
+  },
+  {
+    "name": "source ceiling",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true,
+    "failureExcerpt": "Error: Command failed: docker exec -i supabase_db_m2d3-reimbursement-verification psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At"
+  },
+  {
+    "name": "successor ceiling",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true,
+    "failureExcerpt": "Error: Command failed: docker exec -i supabase_db_m2d3-reimbursement-verification psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At"
+  },
+  {
+    "name": "history allocation arrays",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true,
+    "failureExcerpt": "Error: Command failed: docker exec -i supabase_db_m2d3-reimbursement-verification psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At"
+  },
+  {
+    "name": "reserve through reopening",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true,
+    "failureExcerpt": "Error: Command failed: docker exec -i supabase_db_m2d3-reimbursement-verification psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At"
+  },
+  {
+    "name": "reserve across amendments",
+    "exit": 1,
+    "expected": "detected",
+    "matched": true,
+    "failureExcerpt": "Error: Command failed: docker exec -i supabase_db_m2d3-reimbursement-verification psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At"
+  }
+]

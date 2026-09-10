@@ -1,0 +1,38 @@
+{
+  "container": "supabase_db_m11-contract-verification-upgrade",
+  "transaction": "rolled back; original stack retained at 306 migrations",
+  "baseline": "v0.47.0 plus merged reconciliation and closure schemas with approved synthetic reconciliation and closure applied inside transaction",
+  "newMigration": "20261007000001_work_program_multi_carryover.sql",
+  "migrationSha256": "621cb6eb416293e1216985cbcdae7200d3bcf83b49959b194cd01883722d3c9a",
+  "tables": [
+    "work_program_period_closures",
+    "work_program_closeout_records",
+    "work_program_reporting_periods",
+    "programs",
+    "program_work_program_revisions",
+    "program_work_program_events",
+    "work_program_actual_versions",
+    "work_program_actual_allocations",
+    "work_program_period_reports",
+    "work_program_reimbursement_claims",
+    "work_program_reimbursement_sources",
+    "work_program_reimbursement_events"
+  ],
+  "results": [
+    {
+      "name": "baseline",
+      "exitCode": 0,
+      "result": "retained"
+    },
+    {
+      "name": "harmless comment",
+      "exitCode": 0,
+      "result": "retained"
+    },
+    {
+      "name": "changed saved program",
+      "exitCode": 3,
+      "result": "targeted mutation detected"
+    }
+  ]
+}

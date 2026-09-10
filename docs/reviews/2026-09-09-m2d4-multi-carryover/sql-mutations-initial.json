@@ -1,0 +1,8 @@
+[
+  {
+    "name": "harmless comment",
+    "exit": 1,
+    "expected": "survived",
+    "matched": false
+  }
+]
