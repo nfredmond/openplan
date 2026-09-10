@@ -127,8 +127,10 @@ describe("the verifier reports authorship, not just transport", () => {
     // generate_report_artifact is tier `safe`, so no approval row exists. The
     // agent still authored it. Recording this as user-authored would be the
     // exact impersonation the seam exists to end.
+    const request = agentRequest("unused");
+    request.headers.delete("x-openplan-assistant-approval-id");
     const verification = await verifyAssistantActionApproval({
-      request: agentRequest("unused"),
+      request,
       serviceSupabase: approvalClient(null),
       userId: USER_ID,
       workspaceId: WORKSPACE_ID,

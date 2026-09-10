@@ -1,0 +1,34 @@
+[
+  {
+    "name": "harmless",
+    "exitCode": 0
+  },
+  {
+    "name": "ignore-optional",
+    "exitCode": 1
+  },
+  {
+    "name": "require-all",
+    "exitCode": 1
+  },
+  {
+    "name": "ignore-hash",
+    "exitCode": 1
+  },
+  {
+    "name": "ignore-row-scope",
+    "exitCode": 1
+  },
+  {
+    "name": "ignore-consume-count",
+    "exitCode": 1
+  },
+  {
+    "name": "spoof-human",
+    "exitCode": 1
+  },
+  {
+    "name": "omit-read-projection",
+    "exitCode": 1
+  }
+]

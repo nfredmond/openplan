@@ -49,7 +49,7 @@ export type AssistantActionAuthorship = {
   actorKind: AssistantActorKind;
   /** Non-null exactly when `actorKind` is not `"user"`. */
   actorAgentId: string | null;
-  /** The person who approved, when the action's tier required approval. */
+  /** The person whose explicit approval was verified, when supplied. */
   approvedByUserId: string | null;
   /** When they approved — not when the action executed. */
   approvedAt: string | null;
@@ -66,9 +66,8 @@ export const USER_AUTHORED: AssistantActionAuthorship = {
 /**
  * Authorship for a write the Planner Agent composed.
  *
- * `approvedByUserId`/`approvedAt` are null for the `safe` and `review` tiers,
- * and that null is the honest answer rather than a gap: nobody approved it,
- * because the tier did not ask anyone to.
+ * `approvedByUserId`/`approvedAt` are null when no explicit approval was
+ * supplied. Optional consent on safe/review actions is retained when verified.
  */
 export function plannerAgentAuthored(approval: {
   approvedByUserId: string | null;

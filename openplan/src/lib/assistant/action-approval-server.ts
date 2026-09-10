@@ -275,13 +275,13 @@ export async function verifyAssistantActionApproval(params: {
 
   const metadata = getActionMetadata(params.action.kind);
   const headerHash = params.request.headers.get("x-openplan-assistant-input-hash")?.trim() ?? null;
-  if (metadata.approval !== "approval_required") {
+  const approvalId = params.request.headers.get("x-openplan-assistant-approval-id")?.trim() ?? null;
+  if (metadata.approval !== "approval_required" && !approvalId) {
     // Always record the server-computed hash — the client header is unverified
     // and must not be able to write a spoofed hash into the audit row.
     //
-    // Authorship is still the agent's: a `safe` or `review` tier means nobody
-    // was asked to approve, NOT that a person wrote it. Recording it as
-    // user-authored here is exactly the impersonation this seam exists to end.
+    // No approval evidence was supplied on this permissive path. The agent
+    // still authored the action, so it must retain its own attribution.
     return {
       approvalId: null,
       inputHash,
@@ -290,11 +290,12 @@ export async function verifyAssistantActionApproval(params: {
     };
   }
 
+  // Supplied consent has the same scope, payload and single-use requirements
+  // at every tier. A permissive tier must not silently discard that evidence.
   if (headerHash !== inputHash) {
     throw new Error("Planner Agent approval hash mismatch.");
   }
 
-  const approvalId = params.request.headers.get("x-openplan-assistant-approval-id")?.trim() ?? null;
   if (!approvalId) {
     throw new Error("Planner Agent approval evidence is missing.");
   }
