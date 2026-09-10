@@ -118,3 +118,10 @@ A harmless portal comment survives; replacing the portal with in-place rendering
 fails its focused regression test. Four focused suites pass 41 tests. The last
 full local QA at `8708b92d` passed 13,467 tests plus build/audit; final CI must cover
 these subsequent layout changes and the additional portal test before tagging.
+
+The stricter final overflow check also found existing quick-link cards forcing
+713px of content into the desktop panel: two cards per row, nonwrapping preference
+controls, and raw audit identifiers. Cards now use one column inside the bounded
+panel, controls wrap, and audit identifiers break across lines. A read-only live
+CSS probe measured content fitting both 559px and 389px panel widths; screenshots
+were inspected at desktop and 390px. Final production acceptance remains required.

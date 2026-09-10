@@ -1290,7 +1290,7 @@ function QuickLinkGrid({
             </button>
 
             {expanded ? (
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div className="grid min-w-0 grid-cols-1 gap-2">
                 {group.items.map((link) => {
                   const operationKey = getOperationStorageKey(link);
                   const badge = quickLinkBadge(link);
@@ -1304,9 +1304,9 @@ function QuickLinkGrid({
                   return (
                     <div
                       key={`${group.key}-${link.label}-${link.href}`}
-                      className={`rounded-[0.5rem] border px-3.5 py-3 text-left transition ${operationCardClasses(link)}`}
+                      className={`min-w-0 break-words rounded-[0.5rem] border px-3.5 py-3 text-left transition ${operationCardClasses(link)}`}
                     >
-                      <div className="flex items-start justify-between gap-3">
+                      <div className="flex min-w-0 flex-col gap-3">
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-slate-50">{link.label}</p>
                           <p className="mt-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-400/88">
@@ -1346,8 +1346,8 @@ function QuickLinkGrid({
                             {link.auditNote ?? "You still review it on the page this opens."}
                           </p>
                         </div>
-                        <div className="flex shrink-0 flex-col items-end gap-2">
-                          <div className="flex items-center gap-1.5">
+                        <div className="flex flex-col items-start gap-2">
+                          <div className="flex flex-wrap items-center gap-1.5">
                             <button
                               type="button"
                               onClick={() =>
@@ -1403,7 +1403,7 @@ function QuickLinkGrid({
                           </span>
                         </div>
                       </div>
-                      <div className="mt-3 flex items-center justify-between gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-emerald-200/82">
+                      <div className="mt-3 flex min-w-0 flex-col items-start gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-emerald-200/82">
                         <div className="flex flex-wrap items-center gap-2">
                           {link.executionMode === "future_agent_action" && (link.workflowId || link.executeAction) ? (
                             <button
@@ -1425,7 +1425,7 @@ function QuickLinkGrid({
                             Open surface · {link.id}
                           </Link>
                         </div>
-                        {link.auditEvent ? <span className="text-slate-400/82">{link.auditEvent}</span> : null}
+                        {link.auditEvent ? <span className="max-w-full break-all text-slate-400/82">{link.auditEvent}</span> : null}
                       </div>
                     </div>
                   );
@@ -2300,7 +2300,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                       </StatusBadge>
                     ) : null}
                     {operationStatus.auditEvent ? (
-                      <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
+                      <StatusBadge tone="neutral" className="max-w-full whitespace-normal break-all border-white/10 bg-white/[0.05] text-slate-200/85">
                         Audit · {operationStatus.auditEvent}
                       </StatusBadge>
                     ) : null}
@@ -2384,7 +2384,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                             </StatusBadge>
                           ) : null}
                           {entry.auditEvent ? (
-                            <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
+                            <StatusBadge tone="neutral" className="max-w-full whitespace-normal break-all border-white/10 bg-white/[0.05] text-slate-200/85">
                               Audit · {entry.auditEvent}
                             </StatusBadge>
                           ) : null}
@@ -2429,7 +2429,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                                   </StatusBadge>
                                 ) : null}
                                 {message.operation.auditEvent ? (
-                                  <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-100">
+                                  <StatusBadge tone="neutral" className="max-w-full whitespace-normal break-all border-white/10 bg-white/[0.05] text-slate-100">
                                     Audit · {message.operation.auditEvent}
                                   </StatusBadge>
                                 ) : null}
