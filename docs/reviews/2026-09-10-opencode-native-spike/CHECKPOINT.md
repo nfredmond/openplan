@@ -189,3 +189,38 @@ It is protected against native-process writes and subsequent native login change
 not a malicious local owner changing permissions or kernel compromise. Runtime
 startup, cancellation and removal of owned credential snapshots after child exit
 remain the next implementation boundary before adapter/app integration.
+
+## Owned native server lifecycle, September 10
+
+`opencode-process.mjs` now starts only a connected OpenCode API launch, reads the
+exact loopback startup banner and authenticates native health/version before
+returning. It bounds startup, lifetime, requests and output; refuses redirects,
+unexpected endpoints and malformed responses; preserves cancellation and process
+failure; and waits for the owned child to exit when closing. A child that ignores
+SIGTERM is killed after a grace period. Raw diagnostics and credential-bearing
+provider endpoints are never returned. The caller owns snapshot cleanup after
+close resolves. This module does not remove user files.
+
+Thirty-one local process tests pass. Across the main and supplemental mutation
+sets, two harmless controls survived and 29 targeted changes failed. Removing
+deadlines or shutdown protections causes named test watchdog failures; mutation
+runs use a separate PID namespace and cleanup of owned fixture children. The
+first pre-cancel mutation survived because an absent fixture receipt did not
+prove no spawn occurred. That test now observes the spawn call directly. The
+second run timed out after an unexpected successful startup stranded a fixture;
+per-test deadlines and cleanup corrected the harness. Earlier receipts and the
+recovery explanation remain alongside the completed runs.
+
+The installed 1.18.30 binary also completed a synthetic project request through
+this wrapper and the existing one-request relay. Exact assistant readback matched
+and closing refused subsequent connections to the listener. A separate native
+probe held the synthetic provider stream, cancelled the request, observed
+`native_cancelled` and confirmed listener shutdown. No real account generation
+or provider billing occurred. The restored connector suite passes 237 tests with
+four native opt-in skips. `process-checks.json` records the source digest and
+sanitized native receipts. Private probes are `probe-owned-process.mjs` and
+`probe-owned-cancel.mjs` in the existing evidence directory.
+
+Next: bounded model-inspection command, exact parent/model/tool/result validation,
+provider dispatch and existing connector cleanup integration. Then SQL/UI/RLS
+and real browser acceptance. No user-facing OpenCode support is claimed yet.

@@ -1,0 +1,18 @@
+[
+  {
+    "mutation": "harmless-comment",
+    "exitCode": 0,
+    "expectationMet": true,
+    "failures": []
+  },
+  {
+    "mutation": "pre-cancel",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 already-cancelled startup does not spawn (3.193305ms)",
+      "\u2716 failing tests:",
+      "\u2716 already-cancelled startup does not spawn (3.193305ms)"
+    ]
+  }
+]

@@ -1,0 +1,35 @@
+{
+  "nativeVersion": "1.18.30",
+  "sourceSha256": "311001782c59b3c622a1628f6c1cc5b30c7f6e2a841f415163182980b0fbc42f",
+  "processTests": 31,
+  "connectorDefault": {
+    "passed": 237,
+    "failed": 0,
+    "nativeOptInSkipped": 4
+  },
+  "mutations": {
+    "harmlessSurvived": 2,
+    "targetedFailed": 29
+  },
+  "nativeSuccess": {
+    "nativeVersion": "1.18.30",
+    "syntheticOnly": true,
+    "requests": 1,
+    "assistantReadbackIdentical": true,
+    "closedListenerRefusedConnection": true
+  },
+  "nativeCancellation": {
+    "nativeVersion": "1.18.30",
+    "syntheticOnly": true,
+    "requests": 1,
+    "cancelledRequest": "native_cancelled",
+    "closedListenerRefusedConnection": true
+  },
+  "limits": [
+    "Native generation used only synthetic credentials and local Responses fixtures",
+    "No real provider account or billing acceptance",
+    "Exact turn validator, native command/model inspection, adapter dispatch and app integration remain unfinished",
+    "Snapshot removal is the callers responsibility after close resolves; full connector cleanup integration remains untested",
+    "Fixture tests do not establish browser reachability or all native platform behavior"
+  ]
+}

@@ -48,9 +48,9 @@ credential snapshot read-only, with fresh private runtime directories.30 launch 
 fixture is retained separately. Positive native mount/launch/schema/assistant
 readback proof passed. Default full connector suite151pass3native opt-in skips.
 
-Account/model projection and bounded credential snapshots are implemented. Default
-connector suite now passes206 with4 native opt-in skips. Not implemented: bounded
-owned server/process wrapper, exact parent/result validation, adapter dispatch,
+Account/model projection, bounded credential snapshots and the owned server
+wrapper are implemented. Default connector suite now passes237 with4 native
+opt-in skips. Not implemented: bounded model-inspection command, exact parent/result validation, adapter dispatch,
 app routes/types, migration, UI, RLS and browser journeys. Do not advertise
 OpenCode support yet. First supported
 mode will be native OpenAI API credentials; OAuth/subscription and other providers
@@ -78,10 +78,14 @@ or explicit backend binding; existing apiKey claim inference currently means Cod
    auth file changed. Only the exact openai record
    may establish opencode_api mode. Do not expose credentials, raw GET/provider
    or account metadata. Native gpt-6 is absent; gpt-6-astra exists in this catalog.
-   Catalog presence is not account availability. Server lifecycle remains next.
-   It must reject non-connected launch.account before generation, stop the owned
-   process before removing private scratch/snapshot files, and close the relay on
-   every failure. Snapshot creation never changes the original native profile.
+   Catalog presence is not account availability. opencode-process.mjs now owns
+   authenticated startup, bounded private requests, cancellation and shutdown.
+   It rejects non-connected launch.account before spawning and waits for child
+   exit before close resolves. Real native success and cancellation proofs passed.
+   The caller must remove scratch/snapshots only after close and close the relay
+   on every failure. Snapshot creation never changes the original native profile.
+   Next implement the bounded non-generating models command and exact turn
+   validation, then wire the provider adapter into existing connector cleanup.
 3. Native POST structured response and exact assistant-message GET work. General
    list-message GET rejects stored OutputFormat in this version. Use exact supplied
    parent message ID and assistant ID for the bounded verification; preserve this

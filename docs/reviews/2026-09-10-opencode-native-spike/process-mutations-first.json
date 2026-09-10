@@ -1,0 +1,14 @@
+[
+  {
+    "mutation": "harmless-comment",
+    "exitCode": 0,
+    "expectationMet": true,
+    "failures": []
+  },
+  {
+    "mutation": "pre-cancel",
+    "exitCode": 0,
+    "expectationMet": false,
+    "failures": []
+  }
+]

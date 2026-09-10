@@ -1,0 +1,38 @@
+[
+  {
+    "mutation": "harmless-comment",
+    "exitCode": 0,
+    "expectationMet": true,
+    "failures": []
+  },
+  {
+    "mutation": "port-limit",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 startup refusal: invalidPort (44.089645ms)",
+      "\u2716 failing tests:",
+      "\u2716 startup refusal: invalidPort (44.089645ms)"
+    ]
+  },
+  {
+    "mutation": "port-zero",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 startup refusal: zeroPort (47.374743ms)",
+      "\u2716 failing tests:",
+      "\u2716 startup refusal: zeroPort (47.374743ms)"
+    ]
+  },
+  {
+    "mutation": "http-status",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 request refusal: errorStatus (48.661169ms)",
+      "\u2716 failing tests:",
+      "\u2716 request refusal: errorStatus (48.661169ms)"
+    ]
+  }
+]

@@ -1,0 +1,6 @@
+{
+  "firstAttempt": "Removing pre-cancel check survived: fixture receipt absence did not prove absence of spawn",
+  "secondAttempt": "account-status mutation allowed a server to start; expected-rejection test did not clean it up and outer run timed out after 12 seconds",
+  "correction": "Observe pre-cancel spawn directly; per-test two-second watchdog and owned fixture cleanup; mutation commands run in isolated PID namespace",
+  "terminalCleanup": "Process inspection found no retained fixture or native server after the attempts"
+}

@@ -1,0 +1,311 @@
+[
+  {
+    "mutation": "harmless-comment",
+    "exitCode": 0,
+    "expectationMet": true,
+    "failures": []
+  },
+  {
+    "mutation": "pre-cancel",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 already-cancelled startup does not spawn (3.359107ms)",
+      "\u2716 failing tests:",
+      "\u2716 already-cancelled startup does not spawn (3.359107ms)"
+    ]
+  },
+  {
+    "mutation": "account-status",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses account before spawning: needs_login (51.031682ms)",
+      "\u2716 refuses account before spawning: unsupported_auth_mode (50.372459ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses account before spawning: needs_login (51.031682ms)",
+      "\u2716 refuses account before spawning: unsupported_auth_mode (50.372459ms)"
+    ]
+  },
+  {
+    "mutation": "account-mode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses account before spawning: wrong_backend (47.127838ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses account before spawning: wrong_backend (47.127838ms)"
+    ]
+  },
+  {
+    "mutation": "server-password",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses weak native server configuration: OPENCODE_SERVER_PASSWORD (47.519305ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses weak native server configuration: OPENCODE_SERVER_PASSWORD (47.519305ms)"
+    ]
+  },
+  {
+    "mutation": "server-user",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses weak native server configuration: OPENCODE_SERVER_USERNAME (49.826008ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses weak native server configuration: OPENCODE_SERVER_USERNAME (49.826008ms)"
+    ]
+  },
+  {
+    "mutation": "abort-listener",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 cancellation terminates a held request and waits for child exit (2000.645409ms)",
+      "\u2716 failing tests:",
+      "\u2716 cancellation terminates a held request and waits for child exit (2000.645409ms)",
+      "  'test timed out after 2000ms'"
+    ]
+  },
+  {
+    "mutation": "startup-deadline",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 startup refusal: noBanner (2001.07466ms)",
+      "\u2716 failing tests:",
+      "\u2716 startup refusal: noBanner (2001.07466ms)",
+      "  'test timed out after 2000ms'"
+    ]
+  },
+  {
+    "mutation": "lifetime-deadline",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 lifetime expiry stops an otherwise healthy server (301.206282ms)",
+      "\u2716 failing tests:",
+      "\u2716 lifetime expiry stops an otherwise healthy server (301.206282ms)"
+    ]
+  },
+  {
+    "mutation": "kill-escalation",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 shutdown escalates when the owned child ignores termination (2000.431294ms)",
+      "\u2716 failing tests:",
+      "\u2716 shutdown escalates when the owned child ignores termination (2000.431294ms)",
+      "  'test timed out after 2000ms'"
+    ]
+  },
+  {
+    "mutation": "stdout-bound",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 startup refusal: stdoutOverflow (52.35513ms)",
+      "\u2716 failing tests:",
+      "\u2716 startup refusal: stdoutOverflow (52.35513ms)"
+    ]
+  },
+  {
+    "mutation": "stderr-bound",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 startup refusal: stderrOverflow (48.674225ms)",
+      "\u2716 failing tests:",
+      "\u2716 startup refusal: stderrOverflow (48.674225ms)"
+    ]
+  },
+  {
+    "mutation": "duplicate-origin",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 startup refusal: duplicateBanner (52.090991ms)",
+      "\u2716 failing tests:",
+      "\u2716 startup refusal: duplicateBanner (52.090991ms)"
+    ]
+  },
+  {
+    "mutation": "origin-host",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 startup refusal: wrongOrigin (45.442237ms)",
+      "\u2716 failing tests:",
+      "\u2716 startup refusal: wrongOrigin (45.442237ms)"
+    ]
+  },
+  {
+    "mutation": "unexpected-exit",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 startup refusal: earlyExit (2001.038952ms)",
+      "\u2716 unexpected exit remains a failure after startup (196.244178ms)",
+      "\u2716 failing tests:",
+      "\u2716 startup refusal: earlyExit (2001.038952ms)",
+      "  'test timed out after 2000ms'",
+      "\u2716 unexpected exit remains a failure after startup (196.244178ms)"
+    ]
+  },
+  {
+    "mutation": "wait-for-close",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 authenticates startup and requests, then waits for owned child exit (96.376495ms)",
+      "\u2716 startup refusal: noBanner (502.903227ms)",
+      "\u2716 startup refusal: wrongOrigin (43.707564ms)",
+      "\u2716 startup refusal: unhealthy (47.353884ms)",
+      "\u2716 startup refusal: wrongVersion (51.985673ms)",
+      "\u2716 shutdown escalates when the owned child ignores termination (51.267738ms)",
+      "\u2716 failing tests:",
+      "\u2716 authenticates startup and requests, then waits for owned child exit (96.376495ms)",
+      "\u2716 startup refusal: noBanner (502.903227ms)",
+      "\u2716 startup refusal: wrongOrigin (43.707564ms)",
+      "\u2716 startup refusal: unhealthy (47.353884ms)",
+      "\u2716 startup refusal: wrongVersion (51.985673ms)",
+      "\u2716 shutdown escalates when the owned child ignores termination (51.267738ms)"
+    ]
+  },
+  {
+    "mutation": "private-endpoint",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 unrelated routes and oversized input never reach the native server (54.159434ms)",
+      "\u2716 failing tests:",
+      "\u2716 unrelated routes and oversized input never reach the native server (54.159434ms)"
+    ]
+  },
+  {
+    "mutation": "get-body",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 unrelated routes and oversized input never reach the native server (51.288878ms)",
+      "\u2716 failing tests:",
+      "\u2716 unrelated routes and oversized input never reach the native server (51.288878ms)"
+    ]
+  },
+  {
+    "mutation": "post-body",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 unrelated routes and oversized input never reach the native server (51.399247ms)",
+      "\u2716 failing tests:",
+      "\u2716 unrelated routes and oversized input never reach the native server (51.399247ms)"
+    ]
+  },
+  {
+    "mutation": "input-bound",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 unrelated routes and oversized input never reach the native server (57.884913ms)",
+      "\u2716 failing tests:",
+      "\u2716 unrelated routes and oversized input never reach the native server (57.884913ms)"
+    ]
+  },
+  {
+    "mutation": "request-deadline",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 request refusal: stall (2001.151113ms)",
+      "\u2716 failing tests:",
+      "\u2716 request refusal: stall (2001.151113ms)",
+      "  'test timed out after 2000ms'"
+    ]
+  },
+  {
+    "mutation": "redirects",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 request refusal: redirect (51.367606ms)",
+      "\u2716 failing tests:",
+      "\u2716 request refusal: redirect (51.367606ms)"
+    ]
+  },
+  {
+    "mutation": "authentication",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 authenticates startup and requests, then waits for owned child exit (97.303504ms)",
+      "\u2716 startup refusal: unhealthy (47.317725ms)",
+      "\u2716 startup refusal: wrongVersion (47.563419ms)",
+      "\u2716 cancellation terminates a held request and waits for child exit (48.551683ms)",
+      "\u2716 shutdown escalates when the owned child ignores termination (81.731495ms)",
+      "\u2716 unexpected exit remains a failure after startup (47.792601ms)",
+      "\u2716 lifetime expiry stops an otherwise healthy server (53.612973ms)",
+      "\u2716 request refusal: redirect (51.575318ms)",
+      "\u2716 request refusal: wrongType (52.243329ms)",
+      "\u2716 request refusal: badJson (52.533476ms)",
+      "\u2716 request refusal: oversized (48.802216ms)",
+      "\u2716 request refusal: stall (47.218638ms)",
+      "\u2716 unrelated routes and oversized input never reach the native server (51.933273ms)",
+      "\u2716 failing tests:",
+      "\u2716 authenticates startup and requests, then waits for owned child exit (97.303504ms)",
+      "\u2716 startup refusal: unhealthy (47.317725ms)",
+      "\u2716 startup refusal: wrongVersion (47.563419ms)",
+      "\u2716 cancellation terminates a held request and waits for child exit (48.551683ms)",
+      "\u2716 shutdown escalates when the owned child ignores termination (81.731495ms)",
+      "\u2716 unexpected exit remains a failure after startup (47.792601ms)",
+      "\u2716 lifetime expiry stops an otherwise healthy server (53.612973ms)",
+      "\u2716 request refusal: redirect (51.575318ms)",
+      "\u2716 request refusal: wrongType (52.243329ms)",
+      "\u2716 request refusal: badJson (52.533476ms)",
+      "\u2716 request refusal: oversized (48.802216ms)",
+      "\u2716 request refusal: stall (47.218638ms)",
+      "\u2716 unrelated routes and oversized input never reach the native server (51.933273ms)"
+    ]
+  },
+  {
+    "mutation": "content-type",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 request refusal: wrongType (53.549403ms)",
+      "\u2716 failing tests:",
+      "\u2716 request refusal: wrongType (53.549403ms)"
+    ]
+  },
+  {
+    "mutation": "response-bound",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 request refusal: oversized (50.329558ms)",
+      "\u2716 failing tests:",
+      "\u2716 request refusal: oversized (50.329558ms)"
+    ]
+  },
+  {
+    "mutation": "health-state",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 startup refusal: unhealthy (48.501819ms)",
+      "\u2716 failing tests:",
+      "\u2716 startup refusal: unhealthy (48.501819ms)"
+    ]
+  },
+  {
+    "mutation": "health-version",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 startup refusal: wrongVersion (49.160993ms)",
+      "\u2716 failing tests:",
+      "\u2716 startup refusal: wrongVersion (49.160993ms)"
+    ]
+  }
+]
