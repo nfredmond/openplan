@@ -712,7 +712,7 @@ export function buildRtpExportHtml(input: RtpExportHtmlInput): string {
     <p>${esc(describeRtpFiscalConstraint(fiscal))}</p>
     ${
       fiscal.bands.length > 0
-        ? `<table><thead><tr><th>Period</th><th>Revenue</th><th>Projects</th><th>O&amp;M</th><th>Balance</th></tr></thead><tbody>${fiscal.bands
+        ? `<table class="financial-table"><thead><tr><th>Period</th><th>Revenue</th><th>Projects</th><th>O&amp;M</th><th>Balance</th></tr></thead><tbody>${fiscal.bands
             .map(
               (band) => `<tr><td>${esc(band.label)} (${band.startYear}–${band.endYear})</td><td>${esc(
                 formatRtpExportCurrency(band.revenue)
@@ -958,6 +958,10 @@ export function buildRtpExportHtml(input: RtpExportHtmlInput): string {
     .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
     .card { border: 1px solid #d8dee4; border-radius: 16px; padding: 16px; background: #fff; }
     .section { margin-top: 28px; }
+    .financial-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+    .financial-table th, .financial-table td { padding: 8px; border-bottom: 1px solid #d8dee4; text-align: right; vertical-align: top; }
+    .financial-table th:first-child, .financial-table td:first-child { text-align: left; overflow-wrap: anywhere; }
+    .financial-table th { background: #f4f4f5; }
     .pill { display: inline-block; padding: 4px 10px; border-radius: 999px; border: 1px solid #d8dee4; font-size: 12px; margin-right: 8px; }
     .eyebrow { margin: 0 0 4px; color: #3e4a55; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
     .packet-scan-summary { margin-top: 18px; padding: 18px; border: 1px solid #d8dee4; border-radius: 18px; background: #f8fafc; }
@@ -1009,6 +1013,11 @@ export function buildRtpExportHtml(input: RtpExportHtmlInput): string {
     .chapter-markdown a { color: #34404a; text-decoration: underline; text-underline-offset: 2px; }
     .chapter-markdown strong { font-weight: 600; color: #16202a; }
     .chapter-markdown hr { border: 0; border-top: 1px solid #dadfe4; margin: 1.2em 0; }
+    @media print {
+      h1, h2, h3, h4 { break-after: avoid; }
+      .card, .scan-card, .packet-scan-summary, tr { break-inside: avoid; }
+      p, li { orphans: 3; widows: 3; }
+    }
   </style>
 </head>
 <body>

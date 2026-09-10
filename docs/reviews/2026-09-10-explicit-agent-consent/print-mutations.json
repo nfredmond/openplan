@@ -1,0 +1,35 @@
+[
+  {
+    "name": "baseline",
+    "result": "survived",
+    "gaps": [
+      16,
+      16,
+      16
+    ]
+  },
+  {
+    "name": "harmless",
+    "result": "survived",
+    "gaps": [
+      16,
+      16,
+      16
+    ]
+  },
+  {
+    "name": "crowded-columns",
+    "result": "failed",
+    "reason": "financial header spacing: 7.78125,4.59375,7.578125"
+  },
+  {
+    "name": "orphan-heading",
+    "result": "failed",
+    "reason": "print heading keeps following content\n\n'auto' !== 'avoid'\n"
+  },
+  {
+    "name": "split-card",
+    "result": "failed",
+    "reason": "short cards stay together in print\n\n'auto' !== 'avoid'\n"
+  }
+]

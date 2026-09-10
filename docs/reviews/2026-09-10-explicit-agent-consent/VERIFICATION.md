@@ -84,3 +84,19 @@ Each card now links its exact retained artifact, including older versions. Eight
 focused component/download-route tests pass. A harmless comment survives; removing
 the link or substituting the newest artifact for a historical one fails the intended
 assertion. Final rebuilt browser download/PDF inspection remains outstanding.
+
+## Download and print correction
+
+At 7b577acf, desktop and 390px native keyboard downloads saved the original HTML,
+a new PDF and the original HTML again. Both originals remained byte-identical.
+PDF bytes matched retained Storage bytes; anonymous requests returned 401. Console
+inspection found no errors. PDF inspection then found crowded financial headings,
+orphan section headings and short chapter cards split over pages.
+
+The RTP export stylesheet now spaces financial columns and asks print layout to
+keep headings with following content and short cards together. Oversized cards can
+still fragment. A browser style probe measures financial heading gaps of 16px.
+A harmless comment survives; removing padding fails the spacing assertion, and
+removing either print-break rule fails its computed-style assertion. These checks
+cannot prove pagination or long-document readability. Actual regenerated PDF page
+inspection remains necessary. Twenty-two existing export/component tests pass.

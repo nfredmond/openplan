@@ -32,6 +32,7 @@ tracks outstanding checks. No new database migration.
 - Record RTP artifact actions with their verified consent. Preserve completed
   report results when separate audit persistence throws.
 - Add download links to each retained RTP report artifact, including older versions.
+  Space financial table columns and improve heading/card breaks in printed packets.
 - Require separate explicit approvals for packet-record creation and artifact
   generation. Existing quick links without separate approval keep their behavior.
 
