@@ -1,0 +1,56 @@
+[
+  {
+    "width": 1440,
+    "build": {
+      "commit": "de5065d61342",
+      "version": "0.52.1"
+    },
+    "transport": "installed Claude Code, synthetic OAuth, loopback Messages fixture",
+    "requestState": "succeeded",
+    "deliveryRetryWithoutGeneration": true,
+    "reloadUnchanged": true,
+    "draftApproved": true,
+    "originalCodexUnchanged": true,
+    "cancelled": "cancelled",
+    "revokedConnectorStatus": 403,
+    "console": [
+      {
+        "type": "error",
+        "text": "Failed to load resource: net::ERR_FAILED"
+      }
+    ],
+    "retentionDeletionRequests": 0,
+    "retentionOriginalUnchanged": true,
+    "retentionConsole": [
+      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    ],
+    "visualAcceptance": "needs narrow control wrapping and hover contrast fix"
+  },
+  {
+    "width": 390,
+    "build": {
+      "commit": "de5065d61342",
+      "version": "0.52.1"
+    },
+    "transport": "installed Claude Code, synthetic OAuth, loopback Messages fixture",
+    "requestState": "succeeded",
+    "deliveryRetryWithoutGeneration": true,
+    "reloadUnchanged": true,
+    "draftApproved": true,
+    "originalCodexUnchanged": true,
+    "cancelled": "cancelled",
+    "revokedConnectorStatus": 403,
+    "console": [
+      {
+        "type": "error",
+        "text": "Failed to load resource: net::ERR_FAILED"
+      }
+    ],
+    "retentionDeletionRequests": 0,
+    "retentionOriginalUnchanged": true,
+    "retentionConsole": [
+      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    ],
+    "visualAcceptance": "needs narrow control wrapping and hover contrast fix"
+  }
+]

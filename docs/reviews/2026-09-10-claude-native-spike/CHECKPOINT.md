@@ -169,3 +169,36 @@ owned failed connection through the UI before issuing a fresh one. Native result
 failure did not trigger automatic regeneration. The private fixture initially
 simulated response loss for that failed delivery too; generation/request counters
 caught the absence of a successful native answer.
+
+
+## Desktop/mobile workflow and remaining control styling
+
+On identified build de5065d6, desktop and 390px journeys completed from sign-in,
+Dashboard and Projects with keyboard controls. Both downloaded and imported v2
+Claude connection files, detected the synthetic native subscription, recovered an
+aborted browser POST identically, retained a native structured answer, retried a
+lost delivery without another generation, reloaded the same result and created an
+explicitly approved draft. Cancellation and revocation each stopped a held native
+request. Original Codex answers were unchanged. Console review found only the
+intentionally aborted browser POST. The fixture recorded HEAD /api/hello probes;
+its initial strict POST assertion caused a harness-only failure after cancellation
+had already been saved. Returning 404 for auxiliary requests matches the native
+fixture's existing behavior and keeps model requests separately counted.
+
+Separate desktop/390px retirement journeys preserved private history, issued no
+DELETE, survived an injected retention-read 503 and reloaded the original native
+answer. The 390px retention-layout harmless control passed, removed wrapping
+failed, and restoring it passed. The only console error there was the injected 503.
+
+Screenshot inspection still found provider-panel control defects. With a valid
+120-character device label, the revoke button measured 1111.9px inside a 305px row;
+the label also escaped its row. The download button's settled hover contrast was
+1.49:1 against its light hover background. The first color probe measured before
+the CSS transition settled; waiting for actual animations reproduced the visible
+failure. Canvas probe warnings were eliminated with willReadFrequently. These were
+fixture refinements, not app fixes or permission changes.
+
+The panel now gives outline controls explicit dark colors and allows long labels
+to wrap inside the available width. The reusable global Button component is
+unchanged. All 67 panel/route checks pass. The owned server was stopped first;
+rebuild and new browser layout/contrast controls and workflow acceptance are next.

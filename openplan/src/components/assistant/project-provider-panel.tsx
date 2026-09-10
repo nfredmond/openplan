@@ -30,6 +30,7 @@ type RequestBody = { workspaceId: string; projectId: string; requestId: string; 
 export type ProviderProposalReview = { id: string; question: string; answer: string; proposal: AssistantChatProposal };
 const authLabels: Record<string, string> = { chatgpt: "Native ChatGPT account", claude_subscription: "Native Claude subscription", apiKey: "Native API key (provider charges)", workspace_api_key: "Workspace API key (provider charges)", deployment_api_key: "Deployment API key (provider charges)" };
 const inputClass = "mt-1 w-full min-w-0 rounded border border-white/20 bg-slate-900 px-3 py-2 text-sm text-white";
+const outlineButtonClass = "h-auto min-h-10 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] border-white/30 bg-slate-900 text-slate-100 hover:border-sky-300 hover:bg-slate-800 hover:text-white";
 
 function readableError(code: unknown): string {
   switch (code) {
@@ -184,7 +185,7 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
   }
 
   return <section className="rounded-lg border border-sky-300/25 bg-sky-950/25 p-3 text-slate-100" aria-label="Project provider task">
-    <Button type="button" variant="outline" className="w-full whitespace-normal" aria-expanded={expanded} onClick={() => setExpanded(value => !value)}>Project task · choose provider</Button>
+    <Button type="button" variant="outline" className={`${outlineButtonClass} w-full`} aria-expanded={expanded} onClick={() => setExpanded(value => !value)}>Project task · choose provider</Button>
     {expanded && <div className="mt-3 space-y-4">
       <p className="text-sm">Ask about this project&apos;s stored name, summary and status, or draft a submittal. Only that project record and your question go to the selected provider. Documents and other project records are outside this task.</p>
       {error && <p role="alert" className="rounded border border-rose-300/30 p-2 text-sm text-rose-100">{error}</p>}
@@ -202,15 +203,15 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
           <label className="block text-sm">Computer label<input className={inputClass} maxLength={120} value={label} onChange={event => setLabel(event.target.value)} /></label>
           {provider === "claude" ? <p className="text-xs">Expected account: Claude subscription. Subscription limits apply. Disable paid extra usage in Claude to prevent additional charges. OpenPlan cannot inspect that setting.</p> : <label className="block text-sm">Expected native account<select className={inputClass} value={nativeMode} onChange={event => setNativeMode(event.target.value as "chatgpt" | "apiKey")}><option value="chatgpt">ChatGPT account</option><option value="apiKey">Native API key (provider charges)</option></select></label>}
           <Button type="button" onClick={() => void createConnection()} disabled={saving || !label.trim()}>Create project connection</Button>
-          {setup !== null && <Button type="button" variant="outline" onClick={() => {
+          {setup !== null && <Button type="button" variant="outline" className={outlineButtonClass} onClick={() => {
             const url = URL.createObjectURL(new Blob([JSON.stringify(setup, null, 2)], { type: "application/json" }));
             const anchor = document.createElement("a"); anchor.href = url; anchor.download = "openplan-connection.json"; anchor.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
           }}>Download connection file</Button>}
           <p className="text-xs">Keep the connection file private. From your OpenPlan checkout, use the connector README to configure this file, check native sign-in and start receiving requests.</p>
           <a className="text-xs underline" href="https://github.com/nfredmond/openplan/blob/main/workers/planner_agent_connector/README.md" target="_blank" rel="noreferrer">Local connector instructions</a>
           {providerConnections.map(connection => <div className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-2" key={connection.id}>
-            <span className="break-words text-xs">{connection.device_label} · {connection.last_status.replaceAll("_", " ")}</span>
-            {!connection.revoked_at && <Button type="button" variant="outline" size="sm" disabled={saving} onClick={() => void mutate("/api/assistant/providers/connections", { connectionId: connection.id })}>Revoke {connection.device_label}</Button>}
+            <span className="min-w-0 max-w-full [overflow-wrap:anywhere] text-xs">{connection.device_label} · {connection.last_status.replaceAll("_", " ")}</span>
+            {!connection.revoked_at && <Button type="button" variant="outline" className={outlineButtonClass} size="sm" disabled={saving} onClick={() => void mutate("/api/assistant/providers/connections", { connectionId: connection.id })}>Revoke {connection.device_label}</Button>}
           </div>)}
         </div></details>
       </> : <label className="block text-sm">API key source<select className={inputClass} value={apiMode} disabled={saving || Boolean(pending)} onChange={event => { setApiMode(event.target.value); setCharges(false); }}><option value="workspace_api_key">Team API key</option><option value="deployment_api_key">Deployment API key</option></select></label>}
@@ -222,8 +223,8 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
       }} /></label>
       <Button type="button" disabled={!canSend} onClick={sendNew}>{saving ? "Saving request…" : "Send project request"}</Button>
       {pending && !saving && <div className="space-y-2 text-sm"><p>The response was interrupted. This retry uses the original question, model and request identity.</p>
-        <Button type="button" variant="outline" disabled={busy} onClick={() => void send(pending)}>Retry same request</Button>
-        <Button type="button" variant="outline" onClick={() => { void requestJson(`/api/assistant/providers/turns?${query}&requestId=${pending.requestId}`).then(data => {
+        <Button type="button" variant="outline" className={outlineButtonClass} disabled={busy} onClick={() => void send(pending)}>Retry same request</Button>
+        <Button type="button" variant="outline" className={outlineButtonClass} onClick={() => { void requestJson(`/api/assistant/providers/turns?${query}&requestId=${pending.requestId}`).then(data => {
           const rows = z.object({ turns: z.array(turnSchema) }).parse(data).turns;
           const saved = rows.find(row => row.request_id === pending.requestId && row.project_id === projectId && row.workspace_id === workspaceId && row.question === pending.question && row.provider === pending.provider && row.model_id === pending.model && row.auth_mode === pending.authMode);
           if (saved) { setPending(null); setQuestion(""); setNotice("The original request was recovered without another generation."); setError(null); void refresh().catch(() => setError("The request was recovered, but the recent history could not be refreshed.")); }
@@ -238,11 +239,11 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
           <p className="break-words text-xs">{turn.provider === "codex" ? "Installed Codex" : turn.provider === "claude" ? "Installed Claude Code" : "Anthropic API"} · {turn.model_id} · {authLabels[turn.auth_mode] ?? turn.auth_mode}</p>
           <p role="status" className="text-xs">Status: {turn.state}</p>
           {turn.failure_code && <p className="text-sm">{readableError(turn.failure_code)}</p>}
-          {["queued", "running"].includes(turn.state) && <Button type="button" variant="outline" size="sm" disabled={busy || cancelling === turn.id} onClick={() => void cancelTurn(turn)}>Cancel request</Button>}
+          {["queued", "running"].includes(turn.state) && <Button type="button" variant="outline" className={outlineButtonClass} size="sm" disabled={busy || cancelling === turn.id} onClick={() => void cancelTurn(turn)}>Cancel request</Button>}
           {turn.state === "succeeded" && turn.result && <>
             <p className="whitespace-pre-wrap break-words text-sm">{turn.result.answer}</p>
             <a className="text-xs underline" href={turn.result.citations[0].href}>{turn.result.citations[0].label} · stored project source</a>
-            {turn.result.proposal && <Button type="button" variant="outline" disabled={busy || saving} onClick={() => { onReview({ id: turn.id, question: turn.question, answer: turn.result!.answer, proposal: turn.result!.proposal! }); setExpanded(false); }}>Review draft submittal in conversation</Button>}
+            {turn.result.proposal && <Button type="button" variant="outline" className={outlineButtonClass} disabled={busy || saving} onClick={() => { onReview({ id: turn.id, question: turn.question, answer: turn.result!.answer, proposal: turn.result!.proposal! }); setExpanded(false); }}>Review draft submittal in conversation</Button>}
           </>}
           <details className="text-xs"><summary className="cursor-pointer">Retained request identity</summary><p className="mt-1 break-all">Request {turn.request_id}<br />Packet SHA-256 {turn.packet_hash}</p></details>
         </article>)}

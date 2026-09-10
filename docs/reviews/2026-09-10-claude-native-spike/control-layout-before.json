@@ -1,0 +1,57 @@
+{
+  "label": "SYNTHETIC control 1789061250603 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "fixed": false,
+  "console": [],
+  "build": {
+    "commit": "de5065d61342",
+    "version": "0.52.1"
+  },
+  "layout": {
+    "fits": false,
+    "button": {
+      "left": 1,
+      "right": 1112.890625,
+      "width": 1111.890625,
+      "height": 36
+    },
+    "container": {
+      "left": 1,
+      "right": 306
+    },
+    "span": {
+      "left": 1,
+      "right": 674.71875
+    }
+  },
+  "normalContrast": {
+    "ratio": 15.594337122672478,
+    "foreground": [
+      240,
+      237,
+      230,
+      255
+    ],
+    "background": [
+      17,
+      22,
+      24,
+      255
+    ]
+  },
+  "hoverContrast": {
+    "ratio": 1.4947088380629059,
+    "foreground": [
+      168,
+      217,
+      184,
+      255
+    ],
+    "background": [
+      243,
+      250,
+      249,
+      255
+    ]
+  },
+  "revoked": true
+}
