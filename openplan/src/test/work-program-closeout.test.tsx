@@ -59,6 +59,7 @@ describe("saved closeout evidence and recovery", () => {
     fireEvent.click(screen.getByRole("button", { name: "Match refund payment to claim 1" }));
     expect(screen.queryByRole("option", { name: /synthetic-EUR-receipt/ })).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Claim 1 refund payment 1"), { target: { value: data.source.actuals[1].id } });
+    expect(screen.getByText(`Payment reference: ${data.source.actuals[1].detail.sourceReference}`)).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Claim 1 refund payment 1 amount"), { target: { value: "4.00" } });
     fireEvent.change(screen.getByLabelText("Claim 1 refund due (blank means unknown)"), { target: { value: "6.00" } });
     fireEvent.change(screen.getByLabelText("Claim 1 reconciliation evidence"), { target: { value: "Synthetic outgoing reference" } });
