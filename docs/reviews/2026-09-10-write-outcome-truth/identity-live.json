@@ -1,0 +1,18 @@
+[
+  {
+    "name": "unstamped-listener-refused",
+    "exitCode": 1
+  },
+  {
+    "name": "stamped-listener-control",
+    "exitCode": 0
+  },
+  {
+    "name": "identity-harmless-comment",
+    "exitCode": 1
+  },
+  {
+    "name": "identity-unsafe-mutation-exposed",
+    "exitCode": 0
+  }
+]

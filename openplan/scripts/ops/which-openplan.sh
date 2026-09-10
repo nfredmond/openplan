@@ -71,18 +71,9 @@ echo
 # covers the case a commit stamp cannot — `next dev`, which compiles from source
 # and therefore has no build to stamp, and whose commit would go stale within
 # minutes of being written down.
-serving_dir_for_local_port() {
-  local port="$1" pid
-  pid="$(ss -ltnp 2>/dev/null | grep -E "[:.]${port}[[:space:]]" | grep -oE 'pid=[0-9]+' | head -1 | cut -d= -f2)"
-  [ -n "$pid" ] || return 1
-  readlink "/proc/$pid/cwd" 2>/dev/null
-}
-
-PORT="$(printf '%s' "$URL" | grep -oE ':[0-9]+' | head -1 | tr -d ':')"
-SERVING_DIR=""
-case "$URL" in
-  *localhost*|*127.0.0.1*) [ -n "$PORT" ] && SERVING_DIR="$(serving_dir_for_local_port "$PORT" || true)" ;;
-esac
+PROCESS_INFO="$(python3 "$(dirname "${BASH_SOURCE[0]}")/serving-process.py" "$URL" 2>/dev/null || true)"
+SERVING_DIR="$(printf '%s' "$PROCESS_INFO" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("directory", ""))' 2>/dev/null || true)"
+NEXT_DEV="$(printf '%s' "$PROCESS_INFO" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("nextDev") is True)' 2>/dev/null || true)"
 
 # A DIFFERENT CHECKOUT IS NOT BY ITSELF A PROBLEM.
 #
@@ -123,11 +114,11 @@ fi
 # "unknown" is the honest answer from an instance whose operator never stamped
 # OPENPLAN_COMMIT_SHA. It is not a match, and it must not be reported as one.
 if [ -z "$REPORTED_COMMIT" ] || [ "$REPORTED_COMMIT" = "unknown" ]; then
-  if [ -n "$SERVING_DIR" ] && [ "${SERVING_REPO:-}" = "$REPO_ROOT" ]; then
-    green "Serving your checkout live (a dev server compiles from source)."
+  if [ -n "$SERVING_DIR" ] && [ "${SERVING_REPO:-}" = "$REPO_ROOT" ] && [ "$NEXT_DEV" = "True" ]; then
+    green "Serving your checkout live (confirmed next dev launch process)."
     echo "No commit is reported, and none should be: a dev server has no build to stamp,"
     echo "and a stamped SHA would be stale the moment you commit. The directory above is"
-    echo "the identity that matters here, and it is yours."
+    echo "the identity that matters here. The listener belongs to this app's next dev launch."
     exit 0
   fi
   red "This instance does not report a commit, so it CANNOT be identified."

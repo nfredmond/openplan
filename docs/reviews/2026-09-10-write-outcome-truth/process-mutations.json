@@ -1,0 +1,22 @@
+[
+  {
+    "name": "process-harmless",
+    "exitCode": 0
+  },
+  {
+    "name": "process-start-as-dev",
+    "exitCode": 1
+  },
+  {
+    "name": "process-remote-host",
+    "exitCode": 1
+  },
+  {
+    "name": "process-ambiguous-listener",
+    "exitCode": 1
+  },
+  {
+    "name": "process-reuse-ignored",
+    "exitCode": 1
+  }
+]
