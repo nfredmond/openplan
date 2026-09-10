@@ -1,0 +1,45 @@
+{
+  "results": [
+    {
+      "actor": "owner",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "actor": "anonymous",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "actor": "anonymous",
+      "method": "POST",
+      "status": 401
+    },
+    {
+      "actor": "foreign workspace owner",
+      "method": "GET",
+      "status": 404
+    },
+    {
+      "actor": "foreign workspace owner",
+      "method": "POST",
+      "status": 404
+    },
+    {
+      "actor": "workspace member",
+      "method": "GET",
+      "status": 403
+    },
+    {
+      "actor": "workspace member",
+      "method": "POST",
+      "status": 403
+    }
+  ],
+  "originalApprovalUnchanged": true,
+  "physicalActualRows": 3,
+  "physicalEntries": 3,
+  "privateCaching": true,
+  "baselineHash": "25ed9baeebed4a314a636a526d54dfffaddef6531a315378440c32a50637e8e6",
+  "blindCategory": "Synthetic browser identities; actual agency authority and usefulness unproved."
+}

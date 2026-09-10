@@ -1,0 +1,32 @@
+[
+  {
+    "name": "harmless comment",
+    "exitCode": 0,
+    "expected": "survived",
+    "result": "survived"
+  },
+  {
+    "name": "missing source table",
+    "exitCode": 1,
+    "expected": "killed",
+    "result": "killed"
+  },
+  {
+    "name": "undeclared inline editor",
+    "exitCode": 1,
+    "expected": "killed",
+    "result": "killed"
+  },
+  {
+    "name": "live suite omitted",
+    "exitCode": 1,
+    "expected": "killed",
+    "result": "killed"
+  },
+  {
+    "name": "private navigation exposed",
+    "exitCode": 1,
+    "expected": "killed",
+    "result": "killed"
+  }
+]

@@ -1,0 +1,43 @@
+{
+  "applicationCommit": "c2ab479f9cb1d4f1f267962ad60284dfb8910a6c",
+  "fullQa": {
+    "commit": "992c7600b2b71e16f12cdf5a7f71462bed7379cb",
+    "exitCode": 0,
+    "testsPassed": 13449,
+    "testsSkipped": 246,
+    "rlsPassed": 275,
+    "rlsFiles": 40,
+    "auditVulnerabilities": 0,
+    "build": "passed"
+  },
+  "lateBrowserFix": {
+    "commit": "c2ab479f9cb1d4f1f267962ad60284dfb8910a6c",
+    "change": "Clear the old error when reloading reconciliation history",
+    "focusedTestsPassed": 23,
+    "lint": "passed",
+    "types": "passed",
+    "productionBuild": "passed",
+    "browser": "passed desktop and 390px"
+  },
+  "shuffled": {
+    "commit": "35249a538377f707b002882587efa8c9b0f70c18",
+    "seed": 957256,
+    "passed": 13449,
+    "skipped": 246,
+    "exitCode": 0
+  },
+  "workers": {
+    "suitesPassed": 52,
+    "failed": 0,
+    "notRun": 0,
+    "changedWorkerFilesSinceRun": false
+  },
+  "mutationProof": {
+    "harmlessControlsSurvived": 4,
+    "targetedFailuresDetected": 66,
+    "upgradeControl": "survived; changed program title detected",
+    "checksumControl": "survived; altered hashes detected; exact rollback restored",
+    "browserIdentityControl": "wrong expected SHA refused before financial actions"
+  },
+  "github": "Inspect the pushed main commit separately; local evidence is not CI."
+}

@@ -1,0 +1,49 @@
+[
+  {
+    "width": 1440,
+    "commit": "c2ab479f9cb1",
+    "beforeVersions": 3,
+    "afterVersions": 6,
+    "approvalVersion": 6,
+    "originalHash": "dc7e8a7cd61cf2e3bd337f25b02086764ee12147f891f2ac185cc4e318e1ec00",
+    "oldBaselineHash": "25ed9baeebed4a314a636a526d54dfffaddef6531a315378440c32a50637e8e6",
+    "successorHash": "6bfe5d71795baa5d04774cf325ce1fc86b5bc9ea6ad300ed949a75cbaafd50e8",
+    "console": [
+      {
+        "text": "Failed to load resource: net::ERR_FAILED",
+        "url": "http://127.0.0.1:3259/api/programs/6e5b2589-b3e3-4e19-8f59-b25dfb2d6ad7/work-program/closeout",
+        "expected": true
+      },
+      {
+        "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+        "url": "http://127.0.0.1:3259/api/programs/6e5b2589-b3e3-4e19-8f59-b25dfb2d6ad7/work-program/closeout?reportId=db8aa3c2-b41b-4d13-90d7-a443949264f5",
+        "expected": true
+      }
+    ],
+    "keyboard": true,
+    "unpaidClaim": "3.00",
+    "commitment": "15.00",
+    "carryover": "20.00"
+  },
+  {
+    "width": 390,
+    "commit": "c2ab479f9cb1",
+    "beforeVersions": 6,
+    "afterVersions": 9,
+    "approvalVersion": 9,
+    "originalHash": "dc7e8a7cd61cf2e3bd337f25b02086764ee12147f891f2ac185cc4e318e1ec00",
+    "oldBaselineHash": "25ed9baeebed4a314a636a526d54dfffaddef6531a315378440c32a50637e8e6",
+    "successorHash": "6bfe5d71795baa5d04774cf325ce1fc86b5bc9ea6ad300ed949a75cbaafd50e8",
+    "console": [
+      {
+        "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+        "url": "http://127.0.0.1:3259/api/programs/6e5b2589-b3e3-4e19-8f59-b25dfb2d6ad7/work-program/closeout?reportId=db8aa3c2-b41b-4d13-90d7-a443949264f5",
+        "expected": true
+      }
+    ],
+    "keyboard": true,
+    "unpaidClaim": "3.00",
+    "commitment": "15.00",
+    "carryover": "19.00"
+  }
+]

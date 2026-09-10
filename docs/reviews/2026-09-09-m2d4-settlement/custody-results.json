@@ -1,0 +1,56 @@
+{
+  "baseline": {
+    "total": 9,
+    "valid": 9,
+    "records": [
+      {
+        "id": "0e3edd03-989f-42bf-97f1-fb798119d795",
+        "hash": "f7ebd5f3a7a7e100965c60ae5d9f2d1b45010d4ff0ca00e10e7c0009731877a7",
+        "version": 1
+      },
+      {
+        "id": "abb55dba-78a8-4699-aa7e-554ad9b2bc45",
+        "hash": "f7ebd5f3a7a7e100965c60ae5d9f2d1b45010d4ff0ca00e10e7c0009731877a7",
+        "version": 2
+      },
+      {
+        "id": "d87fd343-41b4-42b9-b494-f95029b8393e",
+        "hash": "e66fc1d020f03a27dfb17db30732c24eeead1d124df41eaf6df873b829b82607",
+        "version": 3
+      },
+      {
+        "id": "3c614234-2b68-4dca-9672-05b96e8e6663",
+        "hash": "915b4e354002c29ec5c2e9ced56661e1b68a092517646dbe2631e38887168b84",
+        "version": 4
+      },
+      {
+        "id": "e004fd5f-8769-42c4-9633-b99333a84c25",
+        "hash": "f7ebd5f3a7a7e100965c60ae5d9f2d1b45010d4ff0ca00e10e7c0009731877a7",
+        "version": 5
+      },
+      {
+        "id": "eb0670a7-a3d3-4ca4-87e4-bf07436ba94d",
+        "hash": "e66fc1d020f03a27dfb17db30732c24eeead1d124df41eaf6df873b829b82607",
+        "version": 6
+      },
+      {
+        "id": "9359166b-48e9-4716-b314-61ff79dc48f3",
+        "hash": "915b4e354002c29ec5c2e9ced56661e1b68a092517646dbe2631e38887168b84",
+        "version": 7
+      },
+      {
+        "id": "19a481d5-01c7-4fc8-98f6-3ad9efec4b28",
+        "hash": "e398edb4c50ac6e1e4acf143895b93ff6931128b4e24921017a71e9d5af81d18",
+        "version": 8
+      },
+      {
+        "id": "0bcef8e2-ed8e-41e5-bf39-a63d35aa6866",
+        "hash": "eb51b25f7cada474e8eff909d9ee86ce75f2eae0ec5a28aa8b72c56267d43d0e",
+        "version": 9
+      }
+    ]
+  },
+  "harmlessControl": "survived",
+  "changedChecksum": "detected",
+  "rollbackRestored": true
+}

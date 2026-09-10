@@ -1,0 +1,14 @@
+# OWP closeout reconciliation
+
+This is a private owner/administrator workflow in Programs. It retains review and carryover evidence without closing a period, posting expenses or establishing funder approval. Apply `20261004000001_work_program_closeout_reconciliation.sql` before using it.
+
+1. Open a program, choose **Administer a reporting period**, then **Saved reconciliation**. Select an issued management report. Its baseline and source cutoff remain fixed; an interim report is labelled as such.
+2. Describe the claim register and reconciliation evidence. Match each receipt to an approved **payment** already entered through Actual work. Use the same currency as the report. Combined matches cannot exceed that physical payment. Acceptance alone never means cash was received.
+3. Assess refunds due and each retained commitment's outstanding amount, with the evidence for its discharge or remaining obligation. Blank means unknown; enter zero only when the responsible reviewer has established zero. Unknown assessments can remain drafts but cannot be approved.
+4. For unfinished work, prepare and adopt the successor cycle through Programming Cycles first. Select its exact baseline, work element and a carryover fund, then the source fund, amount and authority evidence. The successor may overlap the old cycle but must start later and use the same currency/workspace. Each work element currently supports one fund/successor mapping. Fund ceilings are checked across source cycles and successor amendments; they do not calculate available cash or interpret funding conditions.
+5. Save the draft. Add approval evidence, then choose **Save reconciliation approval**. The server checks current source identity and retains the exact assessment. To correct it, provide reopening evidence and choose **Reopen approved reconciliation**. Earlier approvals remain downloadable. Approved carryover stays reserved during reopening and draft changes until the replacement is approved.
+6. If a save's outcome is uncertain, **Retry reconciliation save** uses the retained request, including after reloading the page. A conflict means reload and reconcile current evidence. A failed history read hides exports until recovery. Save any retained version as private JSON to review its source, successor, approval and earlier claim evidence.
+
+The unpaid claim and outstanding obligations remain with the old cycle. Carryover links work and funding; it creates no second expense. This workflow does not yet close a period, block later source writes, match outbound refunds or implement split/merged, multiple-fund carryover. The JSON is retained evidence, not a general import/restore command. Agency-form compatibility, actual authority and practicing-finance usefulness require separate acceptance.
+
+[Engineering evidence and limits](../reviews/2026-09-09-m2d4-settlement/VERIFICATION.md) · [Reimbursement operation](OWP_REIMBURSEMENT.md) · [Roadmap](../ROADMAP.md).

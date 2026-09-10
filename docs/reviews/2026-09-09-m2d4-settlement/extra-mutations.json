@@ -1,0 +1,32 @@
+[
+  {
+    "name": "currency control",
+    "exitCode": 0,
+    "expected": "survived",
+    "result": "survived"
+  },
+  {
+    "name": "successor currency",
+    "exitCode": 1,
+    "expected": "killed",
+    "result": "killed"
+  },
+  {
+    "name": "successor starts later",
+    "exitCode": 1,
+    "expected": "killed",
+    "result": "killed"
+  },
+  {
+    "name": "payment currency",
+    "exitCode": 1,
+    "expected": "killed",
+    "result": "killed"
+  },
+  {
+    "name": "reopening releases approved funds prematurely",
+    "exitCode": 1,
+    "expected": "killed",
+    "result": "killed"
+  }
+]

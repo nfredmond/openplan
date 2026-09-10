@@ -1,0 +1,289 @@
+[
+  {
+    "name": "harmless comment",
+    "expected": "survived",
+    "result": "survived",
+    "exitCode": 0,
+    "log": "mutation-0.log"
+  },
+  {
+    "name": "Invalid closeout command",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-1.log"
+  },
+  {
+    "name": "Complete the reconciliation lists",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-2.log"
+  },
+  {
+    "name": "List the matched receipts",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-3.log"
+  },
+  {
+    "name": "Closeout retry differs from saved command",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-4.log"
+  },
+  {
+    "name": "Closeout changed; reload retained history",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-5.log"
+  },
+  {
+    "name": "Closeout sources changed; reload and reconcile again",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-6.log"
+  },
+  {
+    "name": "Reopen the current approved reconciliation",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-7.log"
+  },
+  {
+    "name": "Reopen the approved reconciliation before changing it",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-8.log"
+  },
+  {
+    "name": "Save a current reconciliation before approval",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-9.log"
+  },
+  {
+    "name": "Reconciliation repeats a source",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-10.log"
+  },
+  {
+    "name": "Reconcile every retained claim, commitment and work element",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-11.log"
+  },
+  {
+    "name": "Claim is outside the retained baseline",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-12.log"
+  },
+  {
+    "name": "Match a positive amount to a current approved payment",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-13.log"
+  },
+  {
+    "name": "Receipt allocations exceed the physical payment",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-14.log"
+  },
+  {
+    "name": "Enter refunds in whole cents or leave unknown",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-15.log"
+  },
+  {
+    "name": "Assess each current claim and refund with evidence before approval",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-16.log"
+  },
+  {
+    "name": "Commitment is outside the retained report",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-17.log"
+  },
+  {
+    "name": "Outstanding commitment exceeds its recorded value",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-18.log"
+  },
+  {
+    "name": "Assess each commitment with evidence before approval",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-19.log"
+  },
+  {
+    "name": "Select a retained work element and disposition",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-20.log"
+  },
+  {
+    "name": "Carryover requires an adopted successor work element in this workspace and currency",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-21.log"
+  },
+  {
+    "name": "Carryover requires an explicit amount in whole cents",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-22.log"
+  },
+  {
+    "name": "Carryover source fund has no assessed baseline amount",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-23.log"
+  },
+  {
+    "name": "Carryover exceeds the source fund baseline",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-24.log"
+  },
+  {
+    "name": "Select an assessed carryover fund in the adopted successor",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-25.log"
+  },
+  {
+    "name": "Carryover exceeds the successor fund baseline",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-26.log"
+  },
+  {
+    "name": "Only carryover work may name a successor or amount",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-27.log"
+  },
+  {
+    "name": "Assess completion or carryover authority for each element before approval",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-28.log"
+  },
+  {
+    "name": "Record the approval or reopening evidence",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-29.log"
+  },
+  {
+    "name": "Record the register completeness and reconciliation evidence",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-30.log"
+  },
+  {
+    "name": "The retained baseline no longer has adoption authority",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-31.log"
+  },
+  {
+    "name": "Issue a current management report before approving changed costs or commitments",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-32.log"
+  },
+  {
+    "name": "Select a retained management report in this program",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-33.log"
+  },
+  {
+    "name": "role guard 0",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-34.log"
+  },
+  {
+    "name": "role guard 1",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-35.log"
+  },
+  {
+    "name": "private RLS",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-36.log"
+  },
+  {
+    "name": "immutable history",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-37.log"
+  },
+  {
+    "name": "direct reader execution",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-38.log"
+  },
+  {
+    "name": "direct command execution",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-39.log"
+  },
+  {
+    "name": "successor amendment bypass",
+    "expected": "killed",
+    "result": "killed",
+    "exitCode": 1,
+    "log": "mutation-40.log"
+  }
+]

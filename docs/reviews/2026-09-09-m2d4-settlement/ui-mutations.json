@@ -1,0 +1,135 @@
+[
+  {
+    "name": "harmless comment",
+    "expected": "survived",
+    "result": "survived",
+    "log": "ui-mutation-0.log",
+    "exitCode": 0
+  },
+  {
+    "name": "unknown refund becomes zero",
+    "expected": "killed",
+    "result": "killed",
+    "log": "ui-mutation-1.log",
+    "exitCode": 1
+  },
+  {
+    "name": "unknown work becomes completed",
+    "expected": "killed",
+    "result": "killed",
+    "log": "ui-mutation-2.log",
+    "exitCode": 1
+  },
+  {
+    "name": "missing reconciliation evidence treated as cash",
+    "expected": "killed",
+    "result": "killed",
+    "log": "ui-mutation-3.log",
+    "exitCode": 1
+  },
+  {
+    "name": "add receipts instead of subtract",
+    "expected": "killed",
+    "result": "killed",
+    "log": "ui-mutation-4.log",
+    "exitCode": 1
+  },
+  {
+    "name": "refund allows fractional cents",
+    "expected": "killed",
+    "result": "killed",
+    "log": "ui-mutation-5.log",
+    "exitCode": 1
+  },
+  {
+    "name": "approval accepts empty note",
+    "expected": "killed",
+    "result": "killed",
+    "log": "ui-mutation-6.log",
+    "exitCode": 1
+  },
+  {
+    "name": "pending commands not locked",
+    "expected": "killed",
+    "result": "killed",
+    "log": "ui-mutation-7.log",
+    "exitCode": 1
+  },
+  {
+    "name": "uncertain request lost on reload",
+    "expected": "killed",
+    "result": "killed",
+    "log": "ui-mutation-8.log",
+    "exitCode": 1
+  },
+  {
+    "name": "retry changes identity",
+    "expected": "killed",
+    "result": "killed",
+    "log": "ui-mutation-9.log",
+    "exitCode": 1
+  },
+  {
+    "name": "unsaved approval allowed",
+    "expected": "killed",
+    "result": "killed",
+    "log": "ui-mutation-10.log",
+    "exitCode": 1
+  },
+  {
+    "name": "private history retained on failed read",
+    "expected": "killed",
+    "result": "killed",
+    "log": "ui-mutation-11.log",
+    "exitCode": 1
+  },
+  {
+    "name": "HTTP role check removed",
+    "expected": "killed",
+    "result": "killed",
+    "log": "ui-mutation-12.log",
+    "exitCode": 1
+  },
+  {
+    "name": "HTTP agent refusal removed",
+    "expected": "killed",
+    "result": "killed",
+    "log": "ui-mutation-13.log",
+    "exitCode": 1
+  },
+  {
+    "name": "HTTP private caching removed",
+    "expected": "killed",
+    "result": "killed",
+    "log": "ui-mutation-14.log",
+    "exitCode": 1
+  },
+  {
+    "name": "HTTP scope projection omitted",
+    "expected": "killed",
+    "result": "killed",
+    "log": "ui-mutation-15.log",
+    "exitCode": 1
+  },
+  {
+    "name": "HTTP actor replaced",
+    "expected": "killed",
+    "result": "killed",
+    "log": "ui-mutation-16.log",
+    "exitCode": 1
+  },
+  {
+    "name": "payment currency selector",
+    "expected": "killed",
+    "result": "killed",
+    "log": "ui-mutation-17.log",
+    "exitCode": 1
+  },
+  {
+    "name": "successful reload clears old failure",
+    "expected": "killed",
+    "result": "killed",
+    "log": "ui-mutation-18.log",
+    "exitCode": 1
+  }
+]
