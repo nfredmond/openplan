@@ -2147,14 +2147,14 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         <div className="fixed inset-0 z-[110] flex justify-end bg-slate-950/55 backdrop-blur-[2px]" role="dialog" aria-modal="true">
           <button type="button" className="flex-1 cursor-default" aria-label="Close Planner Agent overlay" onClick={() => setOpen(false)} />
           <aside className="relative flex h-full w-full max-w-[560px] flex-col border-l border-white/10 bg-[linear-gradient(180deg,rgba(6,12,18,0.98),rgba(9,16,24,0.985))] text-slate-100 shadow-[-24px_0_60px_rgba(2,8,15,0.34)]">
-            <div className="border-b border-white/8 px-5 py-4 sm:px-6">
+            <div className="shrink-0 border-b border-white/8 px-5 py-4 sm:px-6">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="flex h-10 w-10 items-center justify-center rounded-[0.5rem] bg-emerald-400/12 text-emerald-200">
                       <Sparkles className="h-5 w-5" />
                     </span>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-[0.66rem] font-semibold uppercase tracking-[0.22em] text-slate-400">Planner Agent</p>
                       <h2 className="truncate text-lg font-semibold text-white">{summaryLabel}</h2>
                     </div>
@@ -2173,6 +2173,78 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                 >
                   <X className="h-4 w-4" />
                 </Button>
+              </div>
+
+            </div>
+
+            <div className="grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)_auto]">
+              <ScrollArea className="min-h-0 px-5 py-4 sm:px-6">
+                <div className="space-y-4 pb-2">
+                  {loadingContext ? (
+                    <div className="flex items-center gap-2 rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-slate-300/82">
+                      <Loader2 className="h-4 w-4 animate-spin text-emerald-300" />
+                      Loading Planner Agent context…
+                    </div>
+                  ) : null}
+
+                  {contextRecovery ? (
+                    <div role="status" className="rounded-[0.5rem] border border-amber-300/28 bg-amber-400/12 px-4 py-3 text-sm text-amber-100">
+                      {contextRecovery === "refreshed" ? (
+                        <p>Context refreshed. The completed action was not repeated. Any unfinished follow-up still needs to be requested separately.</p>
+                      ) : (
+                        <>
+                          <p>Refresh context to read the latest records without repeating the completed action. This does not rerun its follow-up.</p>
+                          <Button type="button" variant="outline" className="mt-2" disabled={responding || contextRecovery === "refreshing"} onClick={() => void recoverActionContext()}>
+                            {contextRecovery === "refreshing" ? "Refreshing context…" : "Refresh context"}
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  ) : null}
+                  {error ? (
+                    <div className="rounded-[0.5rem] border border-rose-300/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-100/92">
+                      {error}
+                    </div>
+                  ) : null}
+
+                  {aiOffline ? (
+                    <div
+                      role="status"
+                      className="rounded-[0.5rem] border border-amber-300/28 bg-amber-400/12 px-4 py-3 text-sm text-amber-100"
+                    >
+                      <p className="font-semibold">
+                        The Planner Agent can&apos;t chat yet because no AI key is set up for this
+                        workspace.
+                      </p>
+                      <p className="mt-1">
+                        <Link
+                          href="/dashboard#workspace-ai-key"
+                          className="font-semibold underline underline-offset-2 hover:text-white"
+                        >
+                          Turn on your AI assistant from the dashboard checklist
+                        </Link>{" "}
+                        — a workspace owner or admin adds the key there. Suggested actions below
+                        still work.
+                      </p>
+                    </div>
+                  ) : null}
+
+              <div className="border-b border-white/8 px-5 py-3 sm:px-6">
+                <div className="flex flex-wrap gap-2">
+                  {(preview?.suggestedActions ?? []).map((action) => (
+                    <button
+                      key={action.id}
+                      type="button"
+                      className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-xs font-semibold tracking-[0.04em] text-slate-100 transition hover:border-emerald-300/35 hover:bg-emerald-400/12 hover:text-white disabled:opacity-60"
+                      onClick={() => submitPrompt({ workflowId: action.id, question: action.prompt, promptLabel: actionLabel(action) })}
+                      disabled={responding || loadingContext}
+                      title={action.description}
+                    >
+                      <Sparkles className="h-3.5 w-3.5 text-emerald-300" />
+                      {action.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
@@ -2332,77 +2404,6 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                   </div>
                 </div>
               ) : null}
-            </div>
-
-            <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)_auto]">
-              <div className="border-b border-white/8 px-5 py-3 sm:px-6">
-                <div className="flex flex-wrap gap-2">
-                  {(preview?.suggestedActions ?? []).map((action) => (
-                    <button
-                      key={action.id}
-                      type="button"
-                      className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-xs font-semibold tracking-[0.04em] text-slate-100 transition hover:border-emerald-300/35 hover:bg-emerald-400/12 hover:text-white disabled:opacity-60"
-                      onClick={() => submitPrompt({ workflowId: action.id, question: action.prompt, promptLabel: actionLabel(action) })}
-                      disabled={responding || loadingContext}
-                      title={action.description}
-                    >
-                      <Sparkles className="h-3.5 w-3.5 text-emerald-300" />
-                      {action.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <ScrollArea className="min-h-0 px-5 py-4 sm:px-6">
-                <div className="space-y-4 pb-2">
-                  {loadingContext ? (
-                    <div className="flex items-center gap-2 rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-slate-300/82">
-                      <Loader2 className="h-4 w-4 animate-spin text-emerald-300" />
-                      Loading Planner Agent context…
-                    </div>
-                  ) : null}
-
-                  {contextRecovery ? (
-                    <div role="status" className="rounded-[0.5rem] border border-amber-300/28 bg-amber-400/12 px-4 py-3 text-sm text-amber-100">
-                      {contextRecovery === "refreshed" ? (
-                        <p>Context refreshed. The completed action was not repeated. Any unfinished follow-up still needs to be requested separately.</p>
-                      ) : (
-                        <>
-                          <p>Refresh context to read the latest records without repeating the completed action. This does not rerun its follow-up.</p>
-                          <Button type="button" variant="outline" className="mt-2" disabled={responding || contextRecovery === "refreshing"} onClick={() => void recoverActionContext()}>
-                            {contextRecovery === "refreshing" ? "Refreshing context…" : "Refresh context"}
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  ) : null}
-                  {error ? (
-                    <div className="rounded-[0.5rem] border border-rose-300/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-100/92">
-                      {error}
-                    </div>
-                  ) : null}
-
-                  {aiOffline ? (
-                    <div
-                      role="status"
-                      className="rounded-[0.5rem] border border-amber-300/28 bg-amber-400/12 px-4 py-3 text-sm text-amber-100"
-                    >
-                      <p className="font-semibold">
-                        The Planner Agent can&apos;t chat yet because no AI key is set up for this
-                        workspace.
-                      </p>
-                      <p className="mt-1">
-                        <Link
-                          href="/dashboard#workspace-ai-key"
-                          className="font-semibold underline underline-offset-2 hover:text-white"
-                        >
-                          Turn on your AI assistant from the dashboard checklist
-                        </Link>{" "}
-                        — a workspace owner or admin adds the key there. Suggested actions below
-                        still work.
-                      </p>
-                    </div>
-                  ) : null}
 
                   {!loadingContext && messages.length === 0 ? (
                     <div className="rounded-[0.75rem] border border-white/10 bg-white/[0.04] px-4 py-4 text-sm text-slate-300/82">
@@ -2662,7 +2663,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                 <div className="mt-3 flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-xs text-slate-400">
-                      Working from {preview?.title ?? workspaceName}. Typed questions go to the AI; the suggested actions above are fixed, not generated, and any change still happens on the page it opens.
+                      Working from {preview?.title ?? workspaceName}. Typed questions go to the AI; suggested actions use existing OpenPlan workflows.
                     </p>
                     <Link
                       href="/assistant-activity"

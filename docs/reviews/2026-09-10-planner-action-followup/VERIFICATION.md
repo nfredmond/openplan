@@ -62,3 +62,26 @@ deterministic report generation/context recovery journey.
 Release preparation initially missed the JSON capability-registry version while
 updating the three Markdown authorities. The direction check caught the mismatch;
 only the current-release marker was corrected, without re-dating reviews.
+
+## Browser findings before acceptance
+
+The first browser assertion rejected an unstamped production server (commit
+`unknown`). It made no action writes. The server was restarted with the known
+build's commit, then health and serving directory matched `ff52db9f62f4`. The
+identity helper wrongly treated the same-directory unstamped production process
+as a live dev server; that helper defect is recorded for follow-up, not accepted
+as proof. The independent browser SHA assertion caught it.
+
+The initial Reports link locator omitted the existing `#packet-release-review`
+anchor. It was corrected to follow the actual catalog link. Desktop generation
+then succeeded and the context-only retry produced one artifact after repeated
+503 context reads. However, the subsequent Send click was outside the viewport:
+status/history expanded an unbounded fixed header, pushing the composer and
+recovery area offscreen. Keyboard activation alone had hidden this layout defect.
+This is a real acceptance failure, not an approved browser pass.
+
+The panel now keeps its title/close control above a scrollable body containing
+status, history and suggested actions, with the composer in the remaining fixed
+row. The title can shrink on a narrow screen. Outdated composer text claiming
+all actions occur on another page was corrected. Focused UI/dispatcher/copy
+checks pass 38 tests after this layout fix; full rerun and browser checks pending.
