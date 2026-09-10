@@ -1,0 +1,96 @@
+[
+  {
+    "width": 1440,
+    "commit": "16fab60f9d93",
+    "approvalVersion": 64,
+    "allocations": [
+      {
+        "amount": "10.00",
+        "sourceFundId": "27528c44-fc8f-4ed2-8984-916f5c3e6a45",
+        "successorFundId": "d09c4193-46c2-4d23-9c81-4f53415345ed",
+        "successorElementId": "2bec16ef-5a00-4eb4-bc93-3cae329d9a94",
+        "successorRevisionId": "e8164c53-ef10-4176-8be3-3c21fee2fd21"
+      },
+      {
+        "amount": "5.00",
+        "sourceFundId": "27528c44-fc8f-4ed2-8984-916f5c3e6a45",
+        "successorFundId": "ae4ef090-b6ce-453a-a24c-d8c806f69949",
+        "successorElementId": "ae2c9e84-f918-4cbb-88e8-7520447ccbc2",
+        "successorRevisionId": "9e9b2f4f-4708-4265-9c22-eb64212fc865"
+      },
+      {
+        "amount": "4.00",
+        "sourceFundId": "27528c44-fc8f-4ed2-8984-916f5c3e6a45",
+        "successorFundId": "5da9d7d4-b54c-42f7-aac8-365a99e1a11d",
+        "successorElementId": "c78bd30a-5f94-48c3-96c3-7df94c4877de",
+        "successorRevisionId": "9e9b2f4f-4708-4265-9c22-eb64212fc865"
+      }
+    ],
+    "oldBaselineHash": "25ed9baeebed4a314a636a526d54dfffaddef6531a315378440c32a50637e8e6",
+    "originalApprovalSha256": "68a76e8ebd2e72da38d1a96e70a77646357f77f437d6f386140a3e72206f7360",
+    "currentApprovalSha256": "68a76e8ebd2e72da38d1a96e70a77646357f77f437d6f386140a3e72206f7360",
+    "priorRecordsUnchanged": 61,
+    "physicalEntries": 4,
+    "unpaidClaim": "3.00",
+    "refundRemaining": "1.00",
+    "overallocatedSuccessorRefused": 400,
+    "historyFailureHidesExports": true,
+    "keyboard": true,
+    "interruptedRetry": true,
+    "console": [
+      {
+        "text": "Failed to load resource: net::ERR_FAILED",
+        "expected": true
+      },
+      {
+        "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+        "expected": true
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "commit": "16fab60f9d93",
+    "approvalVersion": 67,
+    "allocations": [
+      {
+        "amount": "10.00",
+        "sourceFundId": "27528c44-fc8f-4ed2-8984-916f5c3e6a45",
+        "successorFundId": "d09c4193-46c2-4d23-9c81-4f53415345ed",
+        "successorElementId": "2bec16ef-5a00-4eb4-bc93-3cae329d9a94",
+        "successorRevisionId": "e8164c53-ef10-4176-8be3-3c21fee2fd21"
+      },
+      {
+        "amount": "5.00",
+        "sourceFundId": "27528c44-fc8f-4ed2-8984-916f5c3e6a45",
+        "successorFundId": "ae4ef090-b6ce-453a-a24c-d8c806f69949",
+        "successorElementId": "ae2c9e84-f918-4cbb-88e8-7520447ccbc2",
+        "successorRevisionId": "9e9b2f4f-4708-4265-9c22-eb64212fc865"
+      },
+      {
+        "amount": "3.00",
+        "sourceFundId": "27528c44-fc8f-4ed2-8984-916f5c3e6a45",
+        "successorFundId": "5da9d7d4-b54c-42f7-aac8-365a99e1a11d",
+        "successorElementId": "c78bd30a-5f94-48c3-96c3-7df94c4877de",
+        "successorRevisionId": "9e9b2f4f-4708-4265-9c22-eb64212fc865"
+      }
+    ],
+    "oldBaselineHash": "25ed9baeebed4a314a636a526d54dfffaddef6531a315378440c32a50637e8e6",
+    "originalApprovalSha256": "68a76e8ebd2e72da38d1a96e70a77646357f77f437d6f386140a3e72206f7360",
+    "currentApprovalSha256": "5c9290e0138fd3dbd7012da889d0a026a0f2c21602f62b36415447592914d94b",
+    "priorRecordsUnchanged": 64,
+    "physicalEntries": 4,
+    "unpaidClaim": "3.00",
+    "refundRemaining": "1.00",
+    "overallocatedSuccessorRefused": 400,
+    "historyFailureHidesExports": true,
+    "keyboard": true,
+    "interruptedRetry": false,
+    "console": [
+      {
+        "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+        "expected": true
+      }
+    ]
+  }
+]

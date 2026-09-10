@@ -26,3 +26,11 @@ Independent two-cycle reconstruction and exact restore evidence remain unfinishe
 ## Release metadata checks
 
 The package and lockfile, roadmap, contract, capability matrix and registry identify v0.48.0 without changing review dates or capability ratings. The first direction check caught the still-v0.47 contract field; aligning it corrected the release metadata. Direction and all 11 migration-ordering/document checks pass. A harmless comment survives the ordering check; changing the release migration count from 311 to 310 fails. The check cannot prove a populated database upgrade, which is covered separately above.
+
+## Release-build browser acceptance
+
+Production build `16fab60f9d93bed7fa8d5d5fbc31364995fd9ff0` identifies itself as v0.48.0 from the isolated release checkout at loopback 3267. Its webpack build passed. The named disposable database remains `supabase_db_m2d3-reimbursement-verification`; no migration or database reset was needed for the metadata-only release preparation.
+
+The release-build browser journey passed at desktop and 390px from real navigation, including keyboard save/download, three allocations across two successors, original and corrected JSON downloads, retained previous approvals and four unchanged physical entries. Interrupted save/reload/retry created one draft, the excess successor allocation was refused, and interrupted history reads hid exports until recovery. Expected injected errors were the only console errors. Both screenshots were inspected. See `browser-results.json` for exact approval versions and original/corrected checksums.
+
+[Desktop](split-funding-1440.png) · [390px](split-funding-390.png). Raw downloads and synthetic credentials remain outside git. Later release-evidence commits change only documentation; the accepted application is unchanged. Tag and GitHub publication follow successful CI, shuffled tests, RLS and populated upgrade on the final release commit.

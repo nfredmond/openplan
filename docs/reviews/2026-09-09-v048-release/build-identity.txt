@@ -1,0 +1,7 @@
+Instance:  http://127.0.0.1:3267
+Version:   0.48.0
+Commit:    16fab60f9d93
+Checkout:  /home/nathaniel/.local/state/openplan/v048-release-2026-09-09 @ 16fab60f
+
+Serving from: /home/nathaniel/.local/state/openplan/v048-release-2026-09-09/openplan
+[32mMATCH — this instance is serving the checkout you are working in.[0m

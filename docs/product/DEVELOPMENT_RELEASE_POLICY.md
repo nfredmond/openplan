@@ -80,3 +80,12 @@ requires an explicit target. Pilot preflight skips unconfigured hosted targets.
 Re-enabling hosted deployment requires Nathaniel's direction and concrete spend
 authorization before any paid provisioning. Optional hosting configuration is
 retained for future use, without presenting inactive hosting as a broken app.
+
+## Continuous development direction
+
+On September 9, 2026 Nathaniel directed continuous work through the current
+software gaps until v1.0. Complete the current release, then continue from the
+active roadmap without waiting for another request to proceed. Preserve the
+full v1 contract, land verified increments directly on main, inspect final CI
+and tag coherent releases. Human review does not gate that work. Keep expensive
+findings and the next unfinished implementation boundary in repository notes.
