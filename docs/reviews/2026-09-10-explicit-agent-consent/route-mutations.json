@@ -1,0 +1,26 @@
+[
+  {
+    "name": "route-harmless",
+    "exitCode": 0
+  },
+  {
+    "name": "create-approval-headers-omitted",
+    "exitCode": 1
+  },
+  {
+    "name": "generation-approval-headers-omitted",
+    "exitCode": 1
+  },
+  {
+    "name": "create-audit-throw-propagates",
+    "exitCode": 1
+  },
+  {
+    "name": "generation-audit-throw-propagates",
+    "exitCode": 1
+  },
+  {
+    "name": "rtp-generation-audit-omitted",
+    "exitCode": 1
+  }
+]

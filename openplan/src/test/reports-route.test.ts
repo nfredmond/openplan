@@ -5,6 +5,8 @@ const createClientMock = vi.fn();
 const createServiceRoleClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
+const rtpCycleMaybeSingleMock = vi.fn();
+const executionInsertMock = vi.fn();
 
 const reportsOrderMock = vi.fn();
 const reportsSelectMock = vi.fn(() => ({ order: reportsOrderMock }));
@@ -48,6 +50,7 @@ const mockAudit = {
 };
 
 const fromMock = vi.fn((table: string) => {
+  if (table === "rtp_cycles") return { select: vi.fn(() => ({ eq: vi.fn(() => ({ maybeSingle: rtpCycleMaybeSingleMock })) })) };
   if (table === "reports") {
     return {
       select: reportsSelectMock,
@@ -105,7 +108,7 @@ const fromMock = vi.fn((table: string) => {
 
   if (table === "assistant_action_executions") {
     return {
-      insert: vi.fn().mockResolvedValue({ error: null }),
+      insert: executionInsertMock,
     };
   }
 
@@ -134,6 +137,11 @@ function jsonRequest(payload: unknown) {
 describe("/api/reports", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    executionInsertMock.mockReset().mockResolvedValue({ error: null });
+    rtpCycleMaybeSingleMock.mockResolvedValue({ data: {
+      id: "77777777-7777-4777-8777-777777777777", workspace_id: "44444444-4444-4444-8444-444444444444",
+      title: "Synthetic RTP", status: "draft",
+    }, error: null });
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
     authGetUserMock.mockResolvedValue({
@@ -222,12 +230,35 @@ describe("/api/reports", () => {
       from: vi.fn((table: string) => {
         if (table === "assistant_action_executions") {
           return {
-            insert: vi.fn().mockResolvedValue({ error: null }),
+            insert: executionInsertMock,
           };
         }
         throw new Error(`Unexpected service table: ${table}`);
       }),
     });
+  });
+
+  it("rejects invalid optional RTP approval before creating a report or its sections", async () => {
+    const request = jsonRequest({ rtpCycleId: "77777777-7777-4777-8777-777777777777", reportType: "board_packet" });
+    request.headers.set("x-openplan-assistant-execution-source", "planner_agent_quick_link");
+    request.headers.set("x-openplan-assistant-approval-id", "approval-1");
+    request.headers.set("x-openplan-assistant-input-hash", "changed");
+    const response = await postReports(request);
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({ error: "Planner Agent approval hash mismatch." });
+    expect(reportsInsertMock).not.toHaveBeenCalled();
+    expect(reportSectionsInsertMock).not.toHaveBeenCalled();
+    expect(reportRunsInsertMock).not.toHaveBeenCalled();
+    expect(executionInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("preserves a created RTP report when its separate audit insert throws", async () => {
+    executionInsertMock.mockRejectedValueOnce(new Error("audit transport unavailable"));
+    const response = await postReports(jsonRequest({ rtpCycleId: "77777777-7777-4777-8777-777777777777", reportType: "board_packet" }));
+    expect(response.status).toBe(201);
+    expect(reportsInsertMock).toHaveBeenCalledOnce();
+    expect(executionInsertMock).toHaveBeenCalledOnce();
+    expect(mockAudit.warn).toHaveBeenCalledWith("assistant_action_execution_audit_failed", expect.objectContaining({ message: "audit transport unavailable" }));
   });
 
   it("GET returns 401 when unauthenticated", async () => {

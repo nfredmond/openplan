@@ -8,6 +8,7 @@ const createClientMock = vi.fn();
 const createServiceRoleClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
+const executionInsertMock = vi.fn();
 
 const reportMaybeSingleMock = vi.fn();
 const reportEqMock = vi.fn(() => ({ maybeSingle: reportMaybeSingleMock }));
@@ -526,7 +527,7 @@ const fromMock = vi.fn((table: string) => {
 
   if (table === "assistant_action_executions") {
     return {
-      insert: vi.fn().mockResolvedValue({ error: null }),
+      insert: executionInsertMock,
     };
   }
 
@@ -613,6 +614,7 @@ function reportNamesCountyRun(overrides: Record<string, unknown> = {}) {
 describe("POST /api/reports/[reportId]/generate", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    executionInsertMock.mockReset().mockResolvedValue({ error: null });
 
     modelingDiagnosisOrderMock.mockResolvedValue({ data: [], error: null });
     comparableCustodyOrderMock.mockResolvedValue({ data: [], error: null });
@@ -967,7 +969,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       from: vi.fn((table: string) => {
         if (table === "assistant_action_executions") {
           return {
-            insert: vi.fn().mockResolvedValue({ error: null }),
+            insert: executionInsertMock,
           };
         }
         throw new Error(`Unexpected service table: ${table}`);
@@ -975,6 +977,46 @@ describe("POST /api/reports/[reportId]/generate", () => {
       storage: { from: serviceStorageFromMock },
     });
   });
+
+  for (const target of ["project", "rtp", "campaign"] as const) {
+    function selectTarget() {
+      reportNamesCountyRun({
+        project_id: target === "project" ? "44444444-4444-4444-8444-444444444444" : null,
+        rtp_cycle_id: target === "rtp" ? "77777777-7777-4777-8777-777777777777" : null,
+        engagement_campaign_id: target === "campaign" ? "99999999-9999-4999-8999-999999999999" : null,
+        modeling_county_run_id: null,
+      });
+    }
+    it(`rejects invalid optional ${target} generation approval before any artifact write`, async () => {
+      selectTarget();
+      const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST", headers: {
+          "content-type": "application/json",
+          "x-openplan-assistant-execution-source": "planner_agent_quick_link",
+          "x-openplan-assistant-approval-id": "approval-1",
+          "x-openplan-assistant-input-hash": "changed",
+        }, body: JSON.stringify({ format: "html" }),
+      }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+      expect(response.status).toBe(403);
+      expect(await response.json()).toMatchObject({ error: "Planner Agent approval hash mismatch." });
+      expect(storageUploadMock).not.toHaveBeenCalled();
+      expect(artifactsInsertMock).not.toHaveBeenCalled();
+      expect(reportUpdateMock).not.toHaveBeenCalled();
+      expect(executionInsertMock).not.toHaveBeenCalled();
+    });
+
+    it(`retains a generated ${target} artifact when its audit transport throws`, async () => {
+      selectTarget();
+      executionInsertMock.mockRejectedValueOnce(new Error("audit transport unavailable"));
+      const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ format: "html" }),
+      }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+      expect(response.status).toBe(200);
+      expect(artifactsInsertMock).toHaveBeenCalledOnce();
+      expect(executionInsertMock).toHaveBeenCalledOnce();
+      expect(mockAudit.warn).toHaveBeenCalledWith("assistant_action_execution_audit_failed", expect.objectContaining({ message: "audit transport unavailable" }));
+    });
+  }
 
   it("freezes the planner-selected held orthophoto into packet metadata and rendered HTML", async () => {
     const previewBytes = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 1]);

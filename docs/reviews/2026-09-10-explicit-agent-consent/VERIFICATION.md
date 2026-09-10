@@ -28,3 +28,18 @@ Remaining: full QA/shuffled/isolated RLS, actual UI/API approval retention and
 replay rejection, browser desktop/390px and console inspection, final CI/upgrade.
 Current business effect, approval consumption and audit persistence remain separate
 operations; this change does not solve durable effect receipts or recovery.
+
+## Report-route integration checkpoint
+
+Reading the two permissive action routes found verification after the report or
+artifact write. It now runs before any write. The RTP generation branch formerly
+returned without auditing; it now records the same verified identity as project
+and campaign generation. Returned or thrown audit persistence errors warn without
+changing an already completed report/artifact response into a failure.
+
+Seventy-four report-route tests pass. Invalid optional approval at report creation
+and all three generation targets refuses before report/section/upload/artifact
+writes. Audit transport throws preserve successful effects at every target.
+A harmless comment survives; removing request approval headers, propagating audit
+throws and omitting the RTP audit each fail the intended assertions. These tests
+use database fixtures and do not prove live persistence or cross-workspace RLS.

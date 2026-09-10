@@ -542,6 +542,23 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: runCap.message }, { status: 429 });
     }
 
+    const serviceSupabase = createServiceRoleClient();
+    let approval: Awaited<ReturnType<typeof verifyAssistantActionApproval>>;
+    try {
+      approval = await verifyAssistantActionApproval({
+        request,
+        serviceSupabase,
+        userId: user.id,
+        workspaceId: report.workspace_id,
+        action: { kind: "generate_report_artifact", reportId: report.id },
+      });
+    } catch (error) {
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : "Planner Agent approval could not be verified." },
+        { status: 403 }
+      );
+    }
+
     if (report.rtp_cycle_id) {
       const [workspaceResult, cycleResult, sectionsResult] = await Promise.all([
         supabase.from("workspaces").select("id, name").eq("id", report.workspace_id).maybeSingle(),
@@ -815,6 +832,27 @@ export async function POST(request: NextRequest, context: RouteContext) {
         modelingEvidenceClaimStatuses,
         durationMs: Date.now() - startedAt,
       });
+
+      const { error: executionAuditError } = await recordAssistantActionExecution(serviceSupabase, {
+        workspaceId: report.workspace_id,
+        userId: user.id,
+        actionKind: "generate_report_artifact",
+        auditEvent: "planner_agent.generate_report_artifact",
+        approval: "safe",
+        regrounding: "refresh_preview",
+        outcome: "succeeded",
+        ...assistantActionAuditIdentity(approval),
+        inputSummary: { reportId: report.id, artifactId: artifact.id, rtpCycleId: report.rtp_cycle_id },
+        startedAt: new Date(startedAt).toISOString(),
+        completedAt: new Date().toISOString(),
+      }).catch((error: unknown) => ({
+        error: { message: error instanceof Error ? error.message : "The report action audit could not be saved.", code: null },
+      }));
+      if (executionAuditError) {
+        audit.warn("assistant_action_execution_audit_failed", {
+          reportId: report.id, artifactId: artifact.id, message: executionAuditError.message,
+        });
+      }
 
       return NextResponse.json(
         {
@@ -1269,17 +1307,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
       const executionCompletedAt = new Date().toISOString();
       const executionStartedAt = new Date(startedAt).toISOString();
-      const serviceSupabase = createServiceRoleClient();
-      const approval = await verifyAssistantActionApproval({
-        request,
-        serviceSupabase,
-        userId: user.id,
-        workspaceId: report.workspace_id,
-        action: {
-          kind: "generate_report_artifact",
-          reportId: report.id,
-        },
-      });
       const { error: executionAuditError } = await recordAssistantActionExecution(serviceSupabase, {
         workspaceId: report.workspace_id,
         userId: user.id,
@@ -1296,7 +1323,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
         },
         startedAt: executionStartedAt,
         completedAt: executionCompletedAt,
-      });
+      }).catch((error: unknown) => ({
+        error: { message: error instanceof Error ? error.message : "The report action audit could not be saved.", code: null },
+      }));
 
       if (executionAuditError) {
         audit.warn("assistant_action_execution_audit_failed", {
@@ -1920,7 +1949,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const format = parsed.data.format;
     const generatedAt = new Date().toISOString();
     const artifactId = crypto.randomUUID();
-    const serviceSupabase = createServiceRoleClient();
     const aerialSelections = readReportAerialOrthoSelections(report.metadata_json);
     const frozenAerial = aerialSelections.length === 1
       ? await freezeSelectedReportAerialOrtho({
@@ -2693,16 +2721,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const executionCompletedAt = new Date().toISOString();
     const executionStartedAt = new Date(startedAt).toISOString();
-    const approval = await verifyAssistantActionApproval({
-      request,
-      serviceSupabase,
-      userId: user.id,
-      workspaceId: report.workspace_id,
-      action: {
-        kind: "generate_report_artifact",
-        reportId: report.id,
-      },
-    });
     const { error: executionAuditError } = await recordAssistantActionExecution(serviceSupabase, {
       workspaceId: report.workspace_id,
       userId: user.id,
@@ -2719,7 +2737,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       },
       startedAt: executionStartedAt,
       completedAt: executionCompletedAt,
-    });
+    }).catch((error: unknown) => ({
+      error: { message: error instanceof Error ? error.message : "The report action audit could not be saved.", code: null },
+    }));
 
     if (executionAuditError) {
       audit.warn("assistant_action_execution_audit_failed", {

@@ -424,6 +424,28 @@ export async function POST(request: NextRequest) {
 
     const reportTitle = parsed.data.title?.trim() || defaultTargetedReportTitle(target.title, parsed.data.reportType as ReportType);
 
+    let approval: Awaited<ReturnType<typeof verifyAssistantActionApproval>> | null = null;
+    if (target.kind === "rtp_cycle") {
+      try {
+        approval = await verifyAssistantActionApproval({
+          request,
+          serviceSupabase: createServiceRoleClient(),
+          userId: user.id,
+          workspaceId: target.workspaceId,
+          action: {
+            kind: "create_rtp_packet_record",
+            rtpCycleId: target.id,
+            ...(parsed.data.modelingCountyRunId ? { modelingCountyRunId: parsed.data.modelingCountyRunId } : {}),
+          },
+        });
+      } catch (error) {
+        return NextResponse.json(
+          { error: error instanceof Error ? error.message : "Planner Agent approval could not be verified." },
+          { status: 403 }
+        );
+      }
+    }
+
     const reportInsertPayload = {
       workspace_id: target.workspaceId,
       project_id: target.kind === "project" ? target.id : null,
@@ -592,21 +614,10 @@ export async function POST(request: NextRequest) {
       durationMs: Date.now() - startedAt,
     });
 
-    if (target.kind === "rtp_cycle") {
+    if (target.kind === "rtp_cycle" && approval) {
       const executionCompletedAt = new Date().toISOString();
       const executionStartedAt = new Date(startedAt).toISOString();
       const serviceSupabase = createServiceRoleClient();
-      const approval = await verifyAssistantActionApproval({
-        request,
-        serviceSupabase,
-        userId: user.id,
-        workspaceId: target.workspaceId,
-        action: {
-          kind: "create_rtp_packet_record",
-          rtpCycleId: target.id,
-          ...(parsed.data.modelingCountyRunId ? { modelingCountyRunId: parsed.data.modelingCountyRunId } : {}),
-        },
-      });
       const { error: executionAuditError } = await recordAssistantActionExecution(serviceSupabase, {
         workspaceId: target.workspaceId,
         userId: user.id,
@@ -623,7 +634,9 @@ export async function POST(request: NextRequest) {
         },
         startedAt: executionStartedAt,
         completedAt: executionCompletedAt,
-      });
+      }).catch((error: unknown) => ({
+        error: { message: error instanceof Error ? error.message : "The report action audit could not be saved.", code: null },
+      }));
 
       if (executionAuditError) {
         audit.warn("assistant_action_execution_audit_failed", {
