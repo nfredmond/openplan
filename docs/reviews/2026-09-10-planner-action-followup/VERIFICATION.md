@@ -41,3 +41,20 @@ finished or that an audit record was independently inspected.
 - Seven mutation runs: harmless comment survives; six targeted failures detected
   (erased boundary, misclassified effect, either caller loses success, swallowed
   prompt failure, and recovery skips its read). Failure logs inspected separately.
+
+## Additional findings during QA
+
+The deterministic follow-up prompt helper caught its own HTTP errors, so the
+dispatcher could not report that stage. It now propagates only when called as
+an action follow-up; ordinary standalone prompts retain their existing error
+display. A refused-effect and failed-prompt UI test distinguish the outcomes.
+
+The first full QA run found the copy ratchet increased `record` from 265 to 266.
+The new success sentence was rewritten; the existing guard and baseline were
+not relaxed. The historical first-run failure remains in local logs.
+
+Synthetic browser fixtures were created through current workspace bootstrap,
+RTP-cycle and report APIs in the explicitly retained disposable target
+`openplan-restore-target-3390964` (API 22301), in a new workspace and account.
+They do not alter the original OWP fixture. No AI provider is used for the
+deterministic report generation/context recovery journey.

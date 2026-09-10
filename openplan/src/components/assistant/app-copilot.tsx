@@ -679,7 +679,7 @@ function ChatProposalCard({
       ) : null}
       {entry.state === "executed" ? (
         <p className="mt-2 text-xs font-semibold leading-relaxed text-emerald-100/92">
-          Approved and executed. Check the record or job for its result.
+          Approved and executed. Open the result page to check any background job.
         </p>
       ) : null}
       {entry.followUpWarning ? (

@@ -22,6 +22,20 @@ stable enough to promise smooth upgrades indefinitely.
 
 No changes yet.
 
+## 0.49.1 — 2026-09-10
+
+Development candidate. [Verification](docs/reviews/2026-09-10-planner-action-followup/VERIFICATION.md)
+tracks the checks required before publishing. No new database migration.
+
+- Keep Planner Agent actions marked completed when their request succeeds but a
+  later context read or follow-up fails. Both quick links and approved chat
+  proposals retain a warning instead of presenting the successful write as failed.
+- Offer a context-only refresh that does not execute the completed action again.
+  Unfinished follow-up requests remain explicit; launched background jobs still
+  need their own result checks.
+- This repairs browser follow-up handling. It does not establish server-side
+  exactly-once execution, durable assignments or complete provider choice.
+
 ## 0.49.0 — 2026-09-10
 
 Development release. [Recovery evidence](docs/reviews/2026-09-09-owp-full-recovery/VERIFICATION.md)
