@@ -1,0 +1,72 @@
+[
+  {
+    "width": 1440,
+    "health": {
+      "commit": "6f804210f8b5",
+      "version": "0.49.1"
+    },
+    "reportId": "1cdf1222-1a9a-4963-ae76-8bc9f16deae4",
+    "artifactId": "bd2221ac-14ba-4afb-aba2-96814cecedcd",
+    "writes": 2,
+    "refreshFailures": 3,
+    "artifactSha256": "d96a79a78bf7fdd3e340c361d9db0484e686dc3d9397e280ae7f9ddd4f4c99b1",
+    "baselineArtifactCount": 7,
+    "finalArtifactCount": 9,
+    "layoutControls": {
+      "harmlessOutline": "survived",
+      "offscreenSend": "rejected",
+      "previewOutline": "survived",
+      "escapedPacketStyles": "rejected"
+    },
+    "proposalSource": "synthetic SSE fixture; real approval and effect endpoints",
+    "console": [
+      {
+        "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+        "expected": true
+      },
+      {
+        "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+        "expected": true
+      },
+      {
+        "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+        "expected": true
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "health": {
+      "commit": "6f804210f8b5",
+      "version": "0.49.1"
+    },
+    "reportId": "ef6639cf-2182-47a1-a3d0-0547d1bd9717",
+    "artifactId": "fc9c3946-f2dc-4328-ad43-f4cb20770caa",
+    "writes": 2,
+    "refreshFailures": 3,
+    "artifactSha256": "0f1b76b15f80ae5715fdbdbf34a8b8d056ffceddce2257ae792faadf62313528",
+    "baselineArtifactCount": 1,
+    "finalArtifactCount": 3,
+    "layoutControls": {
+      "harmlessOutline": "survived",
+      "offscreenSend": "rejected",
+      "previewOutline": "survived",
+      "escapedPacketStyles": "rejected"
+    },
+    "proposalSource": "synthetic SSE fixture; real approval and effect endpoints",
+    "console": [
+      {
+        "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+        "expected": true
+      },
+      {
+        "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+        "expected": true
+      },
+      {
+        "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+        "expected": true
+      }
+    ]
+  }
+]

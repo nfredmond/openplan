@@ -1,4 +1,4 @@
-# Planner Agent action follow-up recovery — in progress
+# Planner Agent action follow-up recovery
 
 Continuation after published v0.49.0; A1a prerequisite for A0 provider choice.
 This is a bounded client-dispatch repair, not completion of A1a or A0.
@@ -14,7 +14,7 @@ then an ordinary exception. No real writes were made by that initial probe.
 The first funding-opportunity probe did not reproduce because that action's
 metadata specifies no context refresh; that boundary remains intentional.
 
-## Implementation under verification
+## Implementation
 
 A typed follow-up error records which post-effect step failed. The action effect
 and approval refusal remain outside this boundary. Both UI callers preserve the
@@ -23,7 +23,7 @@ reads the current records without repeating the effect or follow-up prompt.
 Completion wording describes the request; it does not assert a launched job has
 finished or that an audit record was independently inspected.
 
-## Evidence and remaining work
+## Initial evidence and remaining boundaries
 
 - Focused regression run: 34 tests across the existing dispatcher and
   AppCopilot suites. New tests exercise all five follow-up callback failures,
@@ -31,7 +31,7 @@ finished or that an audit record was independently inspected.
   successful context recovery with one effect call. Cancellation text inside a
   failed context read must not return an already executed proposal to pending.
 - These tests mock HTTP. They cannot establish database persistence, endpoint
-  idempotency, real navigation or browser usability. Browser acceptance, full QA and CI remain outstanding; this is unreleased work.
+  idempotency, real navigation or browser usability. At that initial checkpoint browser acceptance, full QA and CI were outstanding; the final results below supersede that status.
 - Exact approvals, route-local authorization, audit persistence, server-side
   idempotency and durable assignment gaps are not repaired by this client change.
 - Worktree: `~/.local/state/openplan/planner-action-followup-recovery-2026-09-10`.
@@ -125,3 +125,51 @@ controls, and raw audit identifiers. Cards now use one column inside the bounded
 panel, controls wrap, and audit identifiers break across lines. A read-only live
 CSS probe measured content fitting both 559px and 389px panel widths; screenshots
 were inspected at desktop and 390px. Final production acceptance remains required.
+
+## Final local acceptance
+
+Production build `6f804210f8b5`, version 0.49.1, Next 16.3.4, served from the
+identified worktree at `http://127.0.0.1:3273`. Independent browser health assertions
+matched the build SHA before mutation. The final application source remained clean.
+
+Both real-navigation journeys passed at 1440×1000 and 390×844: public landing,
+sign-in, Dashboard, Reports (keyboard module search on narrow screens), actual
+report link and Planner Agent. Each exercised a quick-link action and an approved
+chat proposal with real approval/effect endpoints. The chat stream was explicitly
+synthetic; no provider or model capability is claimed.
+
+Each journey deliberately generated two artifacts. Three injected context HTTP
+503 failures, including a failed retry, added no artifacts. Keyboard recovery read
+context without repeating the effect. Both original and subsequent artifacts
+downloaded through the authenticated application route with HTTP 200 and SHA-256
+matching retained HTML. The first artifact remained byte-identical after the second
+save. Counts were 7→9 desktop and 1→3 narrow; earlier instrument attempts explain
+the nonzero baselines and were not deleted. `artifact-recheck.json` records an
+independent read-only re-download of both new artifacts at each width.
+
+Final screenshots were visually inspected, including the narrow exported HTML.
+The conversation fits one column without horizontal overflow, the composer stays
+in the viewport, and sampled control corners are unobstructed. Harmless outlines
+survive; moving Send offscreen and leaking the exported stylesheet into the host
+are rejected for the intended reasons. Console inspection found only the three
+injected 503 messages per journey; no unexpected warning/error or page error.
+This is bounded keyboard/pointer evidence, not comprehensive accessibility proof.
+
+Final shuffled seed 914092 passed 1,232 files / 13,468 tests (33 files / 299 tests
+skipped). Full local QA at `8708b92d` passed 13,467 tests, build and dependency audit;
+subsequent portal/card changes passed their focused suites, final production build
+and final shuffled run. Live isolated RLS passed 40 files / 321 tests against the
+owned disposable target. Final-main CI must cover the combined release before tag.
+
+The checked-in harness uses case-specific local paths and synthetic fixtures.
+Private login and environment files are intentionally absent; running it requires
+an explicitly disposable stack and a separately provisioned synthetic account.
+No credentials, real client records or production data are included.
+
+## Release checkpoint and following work
+
+Engineering browser acceptance is complete. Publication still awaits the final
+main commit's CI and upgrade checks; no human sign-off is a release gate.
+A1a remains incomplete: server audit outcome truthfulness, optional-consent,
+durable recovery and scoped external-agent/MCP behavior are separate work.
+The unstamped production identity-helper defect remains a concrete follow-up.

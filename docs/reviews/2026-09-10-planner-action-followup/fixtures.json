@@ -1,0 +1,18 @@
+{
+  "workspaceId": "e5d07b22-4ee6-41dc-828f-0dbfc93383f1",
+  "userId": "f5a71ef2-4dfa-44f6-860d-61fb24b3dcb6",
+  "reports": [
+    {
+      "width": 1440,
+      "cycleId": "c10a207e-32eb-4ad3-82c6-df72f035795f",
+      "reportId": "1cdf1222-1a9a-4963-ae76-8bc9f16deae4",
+      "baselineArtifactCount": 7
+    },
+    {
+      "width": 390,
+      "cycleId": "4da551c3-d1cc-4f1b-8be1-62d20309038c",
+      "reportId": "ef6639cf-2182-47a1-a3d0-0547d1bd9717",
+      "baselineArtifactCount": 1
+    }
+  ]
+}

@@ -24,8 +24,8 @@ No changes yet.
 
 ## 0.49.1 — 2026-09-10
 
-Development candidate. [Verification](docs/reviews/2026-09-10-planner-action-followup/VERIFICATION.md)
-tracks the checks required before publishing. No new database migration.
+Development release. [Verification](docs/reviews/2026-09-10-planner-action-followup/VERIFICATION.md)
+records browser acceptance, checks and remaining limits. No new database migration.
 
 - Keep Planner Agent actions marked completed when their request succeeds but a
   later context read or follow-up fails. Both quick links and approved chat
