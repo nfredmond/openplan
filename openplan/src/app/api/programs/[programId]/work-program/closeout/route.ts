@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authorizeWorkProgram } from "@/lib/programs/work-program/server";
-import { reportingError } from "@/lib/programs/work-program/reporting-server";
+import { reportingError, reportingRows } from "@/lib/programs/work-program/reporting-server";
 import { closeoutCommandSchema } from "@/lib/programs/work-program/closeout";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { readJsonOrNullWithLimit } from "@/lib/http/body-limit";
@@ -24,7 +24,11 @@ export async function GET(request: NextRequest, context: Context) {
   const reportId = request.nextUrl.searchParams.get("reportId");
   if (!reportId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(reportId)) return NextResponse.json({ error: "Select a retained source report" }, { status: 400 });
   const result = await createServiceRoleClient().rpc("read_work_program_closeout", { p_program_id: access.programId, p_actor_id: access.user!.id, p_report_id: reportId });
-  return result.error ? reportingError(result.error) : NextResponse.json(result.data, { headers: { "Cache-Control": "private, no-store" } });
+  if (result.error) return reportingError(result.error);
+  try {
+    const closures = await reportingRows(access.supabase!, "work_program_period_closures", "id, period_id, version, kind, starts_on, ends_on, reconciliation_id, content, content_hash, actor_id, created_at", ["program_id", access.programId]);
+    return NextResponse.json({ ...result.data, closures: closures.sort((a, b) => Number(a.version) - Number(b.version)) }, { headers: { "Cache-Control": "private, no-store" } });
+  } catch { return NextResponse.json({ error: "Could not read period closure history. Reload reconciliation." }, { status: 503 }); }
 }
 
 export async function POST(request: NextRequest, context: Context) {
@@ -36,7 +40,8 @@ export async function POST(request: NextRequest, context: Context) {
   if (!body.ok) return body.response;
   const command = closeoutCommandSchema.safeParse(body.data);
   if (!command.success) return NextResponse.json({ error: "Complete the reconciliation fields using whole cents.", issues: command.error.issues }, { status: 400 });
-  const result = await createServiceRoleClient().rpc("work_program_closeout_command", { p_program_id: access.programId, p_actor_id: access.user!.id, p_command: command.data });
+  const rpc = ["close_period", "reopen_period"].includes(command.data.kind) ? "work_program_period_closure_command" : "work_program_closeout_command";
+  const result = await createServiceRoleClient().rpc(rpc, { p_program_id: access.programId, p_actor_id: access.user!.id, p_command: command.data });
   if (result.error) audit.warn("closeout_refused", { programId: access.programId, code: result.error.code });
   else audit.info("closeout_saved", { programId: access.programId, kind: command.data.kind, version: result.data.version });
   return result.error ? reportingError(result.error) : NextResponse.json(result.data, { headers: { "Cache-Control": "private, no-store" } });

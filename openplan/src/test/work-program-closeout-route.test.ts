@@ -14,12 +14,12 @@ const context = { params: Promise.resolve({ programId }) };
 const request = (body?: unknown) => new NextRequest(`http://localhost/api/example?reportId=${reportId}`, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {});
 describe("private closeout HTTP boundary", () => {
  beforeEach(() => { vi.clearAllMocks(); mocks.source.mockReturnValue("manual"); });
- function access(role = "owner", failure = false) {
+ function access(role = "owner", failure = false, closureFailure = false) {
   const calls: { table: string; columns: string; filters: [string, unknown][] }[] = [];
   const client = { from: (table: string) => {
    const call = { table, columns: "", filters: [] as [string, unknown][] }; calls.push(call);
    const data = table === "workspace_members" ? { role } : table === "work_program_period_reports" ? [{ snapshot: {} }, { snapshot: { reimbursement: { title: "Retained packet" } } }] : [];
-   const result = { data, error: failure ? { message: "Synthetic query failure" } : null };
+   const result = { data, error: (failure || (closureFailure && table === "work_program_period_closures")) ? { message: "Synthetic query failure" } : null };
    const query = { select: (columns: string) => { call.columns = columns; return query; }, eq: (column: string, value: unknown) => { call.filters.push([column, value]); return query; }, order: () => query, range: () => query, single: async () => result, then: (resolve: (value: typeof result) => unknown) => Promise.resolve(result).then(resolve) };
    return query;
   } };
@@ -40,8 +40,8 @@ describe("private closeout HTTP boundary", () => {
   const calls = access(); const rpc = vi.fn().mockResolvedValue({ data: { records: [] }, error: null }); mocks.service.mockReturnValue({ rpc });
   const response = await GET(request(), context);
   expect(response.status).toBe(200); expect(response.headers.get("cache-control")).toBe("private, no-store");
-  expect(await response.json()).toEqual({ records: [] });
-  expect(calls).toEqual([{ table: "workspace_members", columns: "role", filters: [["workspace_id", workspace], ["user_id", actor]] }]);
+  expect(await response.json()).toEqual({ records: [], closures: [] });
+  expect(calls).toEqual([{ table: "workspace_members", columns: "role", filters: [["workspace_id", workspace], ["user_id", actor]] }, { table: "work_program_period_closures", columns: "id, period_id, version, kind, starts_on, ends_on, reconciliation_id, content, content_hash, actor_id, created_at", filters: [["program_id", programId]] }]);
   expect(rpc).toHaveBeenCalledWith("read_work_program_closeout", { p_program_id: programId, p_actor_id: actor, p_report_id: reportId });
   expect((await GET(new NextRequest("http://localhost/api/example?reportId=bad"), context)).status).toBe(400);
  });
@@ -55,5 +55,20 @@ describe("private closeout HTTP boundary", () => {
   expect(rpc).toHaveBeenCalledWith("work_program_closeout_command", { p_program_id: programId, p_actor_id: actor, p_command: command });
   rpc.mockResolvedValue({ data: { version: 2 }, error: null });
   const response = await POST(request(command), context); expect(response.status).toBe(200); expect(await response.json()).toEqual({ version: 2 });
+ });
+ it("routes period decisions through the dedicated command with exact version and actor", async () => {
+  access(); const rpc = vi.fn().mockResolvedValue({ data: { version: 1 }, error: null }); mocks.service.mockReturnValue({ rpc });
+  for (const kind of ["close_period", "reopen_period"]) {
+   const command = { kind, requestId: randomUUID(), reportId, expectedVersion: 2, expectedClosureVersion: 0, sourceHash: "a".repeat(64), note: "Synthetic period authority" };
+   expect((await POST(request(command), context)).status).toBe(200);
+   expect(rpc).toHaveBeenLastCalledWith("work_program_period_closure_command", { p_program_id: programId, p_actor_id: actor, p_command: command });
+   expect((await POST(request({ ...command, expectedClosureVersion: undefined }), context)).status).toBe(400);
+  }
+ });
+ it("fails closed when private period history cannot be read", async () => {
+  access("owner", false, true); mocks.service.mockReturnValue({ rpc: vi.fn().mockResolvedValue({ data: { records: [] }, error: null }) });
+  const response = await GET(request(), context);
+  expect(response.status).toBe(503);
+  expect(await response.json()).toEqual({ error: "Could not read period closure history. Reload reconciliation." });
  });
 });

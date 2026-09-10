@@ -76,4 +76,42 @@ describe("saved closeout evidence and recovery", () => {
     await screen.findByRole("button", { name: "Save reconciliation version 1 JSON" });
     expect(screen.queryByText("Synthetic history unavailable")).not.toBeInTheDocument();
   });
+  it("closes separately from approval, retains uncertain decisions and requires period reopening before correction", async () => {
+    const data = example(), programId = randomUUID(), userId = randomUUID(), bodies: Record<string, unknown>[] = [];
+    const record = { id: randomUUID(), version: 2, state: "approved" as const, report_id: data.source.report.id, source_hash: data.sourceHash, content_hash: "b".repeat(64), actor_id: userId, created_at: "2026-09-09T00:00:00Z", content: { source: data.source, assessment: initialCloseoutAssessment(data.source), note: "Synthetic approval" } };
+    data.records = [record]; data.closures = [];
+    let loseResponse = true;
+    vi.stubGlobal("fetch", vi.fn(async (_url: string, options?: RequestInit) => {
+      if (options?.method === "POST") {
+        const command = JSON.parse(String(options.body)); bodies.push(command);
+        if (loseResponse) { loseResponse = false; return Response.json({ error: "Synthetic lost closure response" }, { status: 503 }); }
+        data.closures = [{ id: randomUUID(), period_id: data.source.report.period_id, version: 1, kind: "close_period", starts_on: "2026-07-01", ends_on: "2026-08-31", reconciliation_id: record.id, content: { note: "Synthetic closure authority" }, content_hash: "c".repeat(64), actor_id: userId, created_at: "2026-09-09T00:00:00Z" }];
+        return Response.json({ version: 1 });
+      }
+      return Response.json(data);
+    }));
+    const view = render(<CloseoutPanel programId={programId} userId={userId} reports={[data.source.report]}/>);
+    await act(async () => {});
+    fireEvent.change(screen.getByLabelText("Reconciliation source report"), { target: { value: data.source.report.id } });
+    await screen.findByRole("button", { name: "Close accounting period" });
+    expect(screen.getByRole("button", { name: "Close accounting period" })).toBeDisabled();
+    fireEvent.change(screen.getByLabelText("Reconciliation approval or reopening evidence"), { target: { value: "Synthetic closure authority" } });
+    fireEvent.click(screen.getByRole("button", { name: "Close accounting period" }));
+    await screen.findByText("Synthetic lost closure response");
+    expect(screen.getByRole("button", { name: "Close accounting period" })).toBeDisabled();
+    expect(bodies[0]).toMatchObject({ kind: "close_period", expectedClosureVersion: 0, expectedVersion: 2, sourceHash: data.sourceHash, reportId: record.report_id });
+    view.unmount();
+    render(<CloseoutPanel programId={programId} userId={userId} reports={[data.source.report]}/>);
+    await waitFor(() => expect(screen.getByRole("button", { name: "Retry reconciliation save" })).not.toBeDisabled());
+    fireEvent.click(screen.getByRole("button", { name: "Retry reconciliation save" }));
+    await screen.findByRole("button", { name: "Reopen accounting period" });
+    expect(bodies[1]).toEqual(bodies[0]);
+    expect(screen.getByRole("button", { name: "Reopen approved reconciliation" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Save reconciliation draft" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Save period decision 1 JSON" })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Reconciliation approval or reopening evidence"), { target: { value: "Synthetic authorized correction" } });
+    expect(screen.getByRole("button", { name: "Reopen approved reconciliation" })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Reopen accounting period" }));
+    await waitFor(() => expect(bodies[2]).toMatchObject({ kind: "reopen_period", expectedClosureVersion: 1, note: "Synthetic authorized correction" }));
+  });
 });

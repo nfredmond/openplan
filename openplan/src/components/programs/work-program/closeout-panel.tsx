@@ -40,19 +40,20 @@ export function CloseoutPanel({ programId, userId, reports }: { programId: strin
         throw new Error(body.error);
       }
       localStorage.removeItem(recoveryKey); setPending(null); setNote("");
-      setMessage(`Saved reconciliation version ${body.version}. Earlier versions remain retained.`);
+      setMessage(command.kind === "close_period" ? "Accounting period closed. Earlier records and open balances remain retained." : command.kind === "reopen_period" ? "Accounting period reopened. Record corrections and obtain a new reconciliation approval before closing again." : `Saved reconciliation version ${body.version}. Earlier versions remain retained.`);
       try { await load(command.reportId); } catch { setMessage("Save succeeded. Reload reconciliation to read the retained version."); }
     } catch (error) { setMessage(error instanceof Error ? error.message : "Save could not be confirmed. Retry the retained request."); }
     finally { setBusy(false); }
   }
-  const latest = data?.records.at(-1), approved = latest?.state === "approved";
+  const latest = data?.records.at(-1), approved = latest?.state === "approved" && latest.report_id === reportId;
+  const closure = data?.closures?.filter(row => row.period_id === data.source.report.period_id).at(-1), closed = closure?.kind === "close_period";
   const dirty = JSON.stringify(assessment) !== JSON.stringify(latest?.content.assessment);
   const base = () => ({ requestId: crypto.randomUUID(), reportId, expectedVersion: latest?.version ?? 0, sourceHash: data!.sourceHash });
   const claimChange = (index: number, change: Partial<CloseoutAssessment["claims"][number]>) => setAssessment(current => current && ({ ...current, claims: current.claims.map((row, i) => i === index ? { ...row, ...change } : row) }));
   const workChange = (index: number, change: Partial<CloseoutAssessment["work"][number]>) => setAssessment(current => current && ({ ...current, work: current.work.map((row, i) => i === index ? { ...row, ...change } : row) }));
   return <section id="closeout-reconciliation" className="min-w-0 space-y-4 rounded-xl border p-4">
     <h2 className="text-xl font-semibold">Saved closeout reconciliation</h2>
-    <p className="text-sm">Reconcile receipts, commitments and refunds, then retain approval evidence for unfinished work carried into an adopted successor cycle. This review does not close a period or post costs. Missing amounts remain unknown.</p>
+    <p className="text-sm">Reconcile receipts, commitments and refunds, then retain approval evidence for unfinished work carried into an adopted successor cycle. Approval records the reconciliation. Period closure below protects its accounting sources. Neither action posts costs. Missing amounts remain unknown.</p>
     <fieldset disabled={busy || !!pending} className="min-w-0"><SelectField label="Reconciliation source report" value={reportId} onChange={setReportId}><option value="">Select an issued management report</option>{reports.map(report => <option key={report.id} value={report.id}>{report.snapshot.period.name} · version {report.version}</option>)}</SelectField></fieldset>
     <Button className={buttonClass} variant="outline" disabled={busy || !reportId} onClick={() => { setBusy(true); setMessage(""); void load(reportId).catch(error => setMessage(error.message)).finally(() => setBusy(false)); }}>Reload reconciliation</Button>
     {message && <p role="status" className="break-words rounded-lg border p-3">{message}</p>}
@@ -62,7 +63,7 @@ export function CloseoutPanel({ programId, userId, reports }: { programId: strin
       {data.source.report.snapshot.period.ends_on !== data.source.report.snapshot.baseline.content_json.periodEnd && <p role="status">This is an interim reconciliation. The report does not reach the cycle end.</p>}
       {latest && latest.source_hash !== data.sourceHash && <p role="status">Sources changed since the retained reconciliation. Its approval applies to the saved evidence only. Reopen if approved, reconcile again and save a new version.</p>}
       <form onSubmit={event => { event.preventDefault(); void send({ ...base(), kind: "save", assessment }); }}>
-        <fieldset disabled={busy || !!pending || approved} className="min-w-0 space-y-4">
+        <fieldset disabled={busy || !!pending || approved || closed} className="min-w-0 space-y-4">
           <Field label="Register completeness and reconciliation evidence" multiline value={assessment.registerEvidence} onChange={registerEvidence => setAssessment({ ...assessment, registerEvidence })}/>
           <h3 className="font-semibold">Claim receipts and refunds</h3>
           {!assessment.claims.length && <p>No claims in this baseline. Document whether the external claim register is complete above.</p>}
@@ -111,7 +112,21 @@ export function CloseoutPanel({ programId, userId, reports }: { programId: strin
         </fieldset>
       </form>
       <Field label="Reconciliation approval or reopening evidence" multiline value={note} onChange={setNote}/>
-      <Button className={buttonClass} variant="outline" disabled={busy || !!pending || !note.trim() || (!approved && (!latest || dirty || latest.source_hash !== data.sourceHash))} onClick={() => send({ ...base(), kind: approved ? "reopen" : "approve", note })}>{approved ? "Reopen approved reconciliation" : "Save reconciliation approval"}</Button>
+      <Button className={buttonClass} variant="outline" disabled={busy || !!pending || closed || !note.trim() || (!approved && (!latest || dirty || latest.source_hash !== data.sourceHash))} onClick={() => send({ ...base(), kind: approved ? "reopen" : "approve", note })}>{approved ? "Reopen approved reconciliation" : "Save reconciliation approval"}</Button>
+      <section aria-label="Accounting period closure" className="space-y-3 rounded-lg border p-3">
+        <h3 className="font-semibold">Accounting period closure</h3>
+        <p>{closed ? `Closed from ${closure.starts_on} through ${closure.ends_on}. Reopen this accounting period before correcting its sources or reconciliation.` : `Open. Closing protects cumulative accounting from ${data.source.report.snapshot.baseline.content_json.periodStart} through ${data.source.report.snapshot.period.ends_on}, including linked receipts and claim records.`}</p>
+        <p>Outstanding claims, commitments and refunds remain recorded. Closure does not mean payment or funder acceptance. Use the evidence field above to record the responsible authority and reason. Later-period work remains available.</p>
+        <Button className={buttonClass} variant="outline" disabled={busy || !!pending || !note.trim() || (!closed && (!approved || dirty || latest?.report_id !== reportId || latest?.source_hash !== data.sourceHash))}
+          onClick={() => send({ ...base(), kind: closed ? "reopen_period" : "close_period", expectedClosureVersion: data.closures?.at(-1)?.version ?? 0, note })}>
+          {closed ? "Reopen accounting period" : "Close accounting period"}
+        </Button>
+        {data.closures?.map(row => <article key={row.id} className="space-y-2 border-t pt-3 text-sm">
+          <p>Period decision {row.version} · {row.kind === "close_period" ? "Closed" : "Reopened"} · {row.starts_on} to {row.ends_on}</p>
+          <p className="break-words">{row.content.note}</p>
+          <Button className={buttonClass} variant="outline" onClick={() => downloadText(JSON.stringify(row, null, 2), `owp-period-decision-${row.version}-${row.id}.json`, "application/json")}>Save period decision {row.version} JSON</Button>
+        </article>)}
+      </section>
       <h3 className="font-semibold">Retained reconciliation history</h3>
       {data.records.map(record => <article key={record.id} className="space-y-2 rounded-lg border p-3 text-sm">
         <p>Version {record.version} · {record.state} · {record.created_at}</p><p className="break-words">{record.content.note}</p>

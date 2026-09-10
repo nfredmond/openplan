@@ -17,12 +17,15 @@ export const closeoutCommandSchema = z.discriminatedUnion("kind", [
   z.object({ ...base, kind: z.literal("save"), assessment: closeoutAssessmentSchema }).strict(),
   z.object({ ...base, kind: z.literal("approve"), note: evidence.min(1) }).strict(),
   z.object({ ...base, kind: z.literal("reopen"), note: evidence.min(1) }).strict(),
+  z.object({ ...base, kind: z.literal("close_period"), expectedClosureVersion: z.number().int().nonnegative(), note: evidence.min(1) }).strict(),
+  z.object({ ...base, kind: z.literal("reopen_period"), expectedClosureVersion: z.number().int().nonnegative(), note: evidence.min(1) }).strict(),
 ]);
 export type CloseoutCommand = z.infer<typeof closeoutCommandSchema>;
 export type SuccessorBaseline = { id: string; program_id: string; revision: number; content_sha256: string; content_json: WorkProgramDraft; title: string };
 export type CloseoutSource = { report: PeriodReport; reimbursement: CloseoutHistory; actuals: (ActualVersion & { currency: string | null })[]; successors: SuccessorBaseline[] };
 export type CloseoutRecord = { id: string; version: number; state: "draft" | "approved" | "reopened"; report_id: string; source_hash: string; content_hash: string; content: { source: CloseoutSource; assessment: CloseoutAssessment; note: string }; actor_id: string; created_at: string };
-export type CloseoutData = { source: CloseoutSource; sourceHash: string; records: CloseoutRecord[] };
+export type PeriodClosure = { id: string; period_id: string; version: number; kind: "close_period" | "reopen_period"; starts_on: string; ends_on: string; reconciliation_id: string; content: { note: string }; content_hash: string; actor_id: string; created_at: string };
+export type CloseoutData = { source: CloseoutSource; sourceHash: string; records: CloseoutRecord[]; closures?: PeriodClosure[] };
 
 /** Start unknown; recorded acceptance and general payments never imply a settled claim. */
 export function initialCloseoutAssessment(source: CloseoutSource): CloseoutAssessment {
