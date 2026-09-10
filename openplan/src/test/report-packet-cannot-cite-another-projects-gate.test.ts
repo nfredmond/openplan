@@ -67,6 +67,11 @@ function filtersOnProject(chain: string): boolean {
 }
 
 function classifyCall(call: DecisionTableCall): string | null {
+  if (call.filePath === "src/lib/assistant/stage-gate-hold-receipt.ts" && filtersOnProject(call.chain) && /\.eq\(["']workspace_id["']\s*,/.test(call.chain)) {
+    // Consent captures this project's prior decision; execution compares it under a database lock.
+    return "hold-consent-context";
+  }
+
   if (call.filePath === "src/lib/stage-gates/decision-queries.ts" && filtersOnProject(call.chain)) {
     // The one read that builds a PROJECT'S board. Every surface that shows a
     // board — the project page, the assistant, the report detail page — goes
@@ -129,6 +134,10 @@ describe("a report packet cannot assert another project's gate decision", () => 
       {
         filePath: "src/app/api/stage-gates/decisions/route.ts",
         classification: "decision-recorder-insert",
+      },
+      {
+        filePath: "src/lib/assistant/stage-gate-hold-receipt.ts",
+        classification: "hold-consent-context",
       },
       {
         filePath: "src/lib/stage-gates/decision-queries.ts",

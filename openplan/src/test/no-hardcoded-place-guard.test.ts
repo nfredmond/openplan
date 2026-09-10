@@ -104,6 +104,7 @@ function shippedSourceFiles(): string[] {
  * which is the defect. Every addition here must be a real SQLSTATE, named.
  */
 const NON_PLACE_FIVE_DIGIT_CODES: readonly string[] = [
+  "42883", // undefined_function — pending HOLD receipt migration (PostgreSQL 17 errcodes appendix)
   "42703", // undefined_column — the deploy/migrate degradation path matches it
   "23514", // check_violation
   "23505", // unique_violation
@@ -153,6 +154,7 @@ describe("no hardcoded place in shipped product code", () => {
     // A SQLSTATE match is code, not a place, and must stay silent.
     expect(fipsBranchesIn('if (error.code === "42703") return false;')).toEqual([]);
     expect(fipsBranchesIn('if (error.code === "40001") return stale;')).toEqual([]);
+    expect(fipsBranchesIn('if (error.code === "42883") return upgradeRequired;')).toEqual([]);
     // A comment naming a FIPS is prose. A placeholder or a lookup key is data.
     expect(fipsBranchesIn('// e.g. county FIPS "06057"')).toEqual([]);
     expect(fipsBranchesIn('<Input placeholder="12500" />')).toEqual([]);

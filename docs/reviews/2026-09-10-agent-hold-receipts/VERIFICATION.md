@@ -90,3 +90,31 @@ survived; 25 targeted mutations failed the intended assertions. Logs were inspec
 for assertion failures rather than runner startup failures. These mocked tests
 cannot establish database RLS, transaction correctness or browser reachability.
 Browser acceptance and full release checks remain outstanding at this checkpoint.
+
+
+## Full-suite integration corrections
+
+The first full QA and shuffled seed540087 each found six failures: the new receipt
+column and project-scoped consent read needed inventory classification; the new
+copy added an unnecessary workspace term; the concurrency tests had timeouts below
+the global limit; the migration lacked an Unreleased note; and the geography guard
+mistook SQLSTATE42883 for a county code. PostgreSQL17 identifies it as
+[undefined_function](https://www.postgresql.org/docs/17/errcodes-appendix.html).
+These were missed at the focused checkpoint and are corrected here.
+
+The migration note exposed a separate guard defect: it accepted a standalone slug
+but rejected the exact full migration filename. It now accepts either, with
+positive and wrong-name controls. Harmless integration/reference mutations survive;
+missing consent project/workspace filters, an actual county branch, missing SQLSTATE
+classification, an unclassified receipt column, ignored full filename and a
+wrong-name match fail the intended assertions. These source inventories cannot
+prove the SQL read itself; live receipt tests do that.
+
+The first worker invocation refused to pass because the fresh checkout lacked
+Python environments. Linking each worker to its existing local environment allowed
+all52 suites to run and pass. The reused-stack RLS suite ran338 tests:335passed,
+three schema-inventory assertions correctly found the retained
+codex_audit_write_probe_20260910 fixture from earlier work. It was not an isolation
+failure. A fresh named disposable stack, hold-release-rls-2026-09-10 on API29821 and
+DB29822, is being prepared for a clean full run. The older fixture and its evidence
+are preserved. No database reset or drop was used.

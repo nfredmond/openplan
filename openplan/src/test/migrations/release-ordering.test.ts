@@ -378,9 +378,19 @@ function version(name: string): string {
 
 function sectionNamesMigration(section: string, file: string): boolean {
   const slug = file.replace(/^\d+_/, "").replace(/\.sql$/, "");
-  const escaped = slug.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return new RegExp(`(^|[^a-z0-9_])${escaped}(?=$|[^a-z0-9_])`, "i").test(section);
+  const escaped = [slug, file].map(name => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+  return new RegExp(`(^|[^a-z0-9_])(?:${escaped})(?=$|[^a-z0-9_])`, "i").test(section);
 }
+
+describe("migration references", () => {
+  it("recognizes exact filenames and standalone slugs without accepting another name", () => {
+    const file = "20261008000001_assistant_hold_receipts.sql";
+    expect(sectionNamesMigration(`Apply \`${file}\` before startup.`, file)).toBe(true);
+    expect(sectionNamesMigration("Apply assistant_hold_receipts before startup.", file)).toBe(true);
+    expect(sectionNamesMigration("Apply unrelated_assistant_hold_receipts instead.", file)).toBe(false);
+    expect(sectionNamesMigration("Apply 20261008000002_assistant_hold_receipts.sql instead.", file)).toBe(false);
+  });
+});
 
 describe("released migration ordering", () => {
   const files = migrationFiles();

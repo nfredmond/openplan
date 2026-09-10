@@ -1,0 +1,26 @@
+[
+  {
+    "name": "harmless",
+    "result": "survived"
+  },
+  {
+    "name": "unscoped-project",
+    "result": "failed"
+  },
+  {
+    "name": "unscoped-workspace",
+    "result": "failed"
+  },
+  {
+    "name": "real-place-branch",
+    "result": "failed"
+  },
+  {
+    "name": "drop-sqlstate-exemption",
+    "result": "failed"
+  },
+  {
+    "name": "unclassified-receipt",
+    "result": "failed"
+  }
+]

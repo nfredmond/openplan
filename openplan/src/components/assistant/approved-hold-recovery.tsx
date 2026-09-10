@@ -78,7 +78,7 @@ export function ApprovedHoldRecovery({ workspaceId }: { workspaceId: string }) {
       {error ? <p role="alert" className="mb-4 break-words text-sm text-destructive">{error}</p> : null}
       {message ? <p role="status" className="mb-4 text-sm">{message}</p> : null}
       {busy ? <p role="status" className="text-sm text-muted-foreground">Checking approved requests…</p> : null}
-      {!busy && !error && items.length === 0 ? <p className="text-sm text-muted-foreground">No approved HOLD requests were found for your account in this workspace.</p> : null}
+      {!busy && !error && items.length === 0 ? <p className="text-sm text-muted-foreground">No approved HOLD requests were found for your account here.</p> : null}
       <div className="space-y-4">
         {items.map(item => (
           <section key={item.approvalId} aria-label={`Approved HOLD: ${item.gateLabel}`} className="min-w-0 rounded-lg border border-border p-4">

@@ -83,7 +83,7 @@ live("approved HOLD concurrency and connection loss", () => {
       expect(original.replayed).toBe(false);expect(replay.replayed).toBe(true);expect(replay.receipt).toEqual(original.receipt);
       expect(f.count()).toEqual({decisions:1,receipts:1,consumed:true});
     } finally { first.finish(false); }
-  },15_000);
+  });
 
   it("waits for an in-flight manual decision and refuses the now-stale approval", async () => {
     const f=fixture(), manual=transaction(`INSERT INTO public.stage_gate_decisions(workspace_id,project_id,gate_id,template_id,decision,rationale,decided_by) VALUES(${quote(f.workspace)},${quote(f.project)},'SYNTHETIC_GATE','synthetic_template','PASS','Synthetic concurrent manual decision',${quote(f.user)})`);
@@ -97,7 +97,7 @@ live("approved HOLD concurrency and connection loss", () => {
       expect(result.code).toBe(1);expect(result.output).toContain('Stage-gate decision changed');
       expect(f.count()).toEqual({decisions:1,receipts:0,consumed:false});
     } finally { manual.finish(false); }
-  },15_000);
+  });
 
   it("rolls back a lost database connection and safely executes the same approval afterward", async () => {
     const f=fixture(), interrupted=transaction(f.call);
@@ -113,5 +113,5 @@ live("approved HOLD concurrency and connection loss", () => {
       const retry=JSON.parse(sql(f.call));expect(retry.replayed).toBe(false);
       expect(f.count()).toEqual({decisions:1,receipts:1,consumed:true});
     } finally { interrupted.finish(false); }
-  },15_000);
+  });
 });

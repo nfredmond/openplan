@@ -1,0 +1,14 @@
+[
+  {
+    "name": "harmless",
+    "result": "survived"
+  },
+  {
+    "name": "ignore-full-filename",
+    "result": "failed"
+  },
+  {
+    "name": "accept-wrong-migration",
+    "result": "failed"
+  }
+]

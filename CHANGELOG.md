@@ -20,7 +20,20 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No changes yet.
+Approved Planner Agent HOLD decisions now retain their exact request and a durable
+result receipt. Planner Agent Activity can check the original result after an
+interrupted response or explicitly resume unchanged, unexpired consent. The HOLD,
+its receipt and approval consumption commit together; concurrent retries return
+the same decision. Other actions retain their existing recovery limits.
+
+Apply `20261008000001_assistant_hold_receipts.sql` before running this version.
+It adds retained context and result columns plus service-only transaction/read
+functions; historical audit rows remain unchanged. Older approvals without the
+exact request cannot be resumed through the recovery screen.
+
+Engineering acceptance is in progress. No external agent identity, delegated
+assignment, provider adapter, prescribed agency form or scientific validation is
+claimed by this increment.
 
 ## 0.49.4 — 2026-09-10
 
