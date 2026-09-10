@@ -1,0 +1,26 @@
+[
+  {
+    "name": "harmless route comment",
+    "exitCode": 0,
+    "outcome": "survived",
+    "tail": "\n RUN  v4.1.11 /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan\n\n\n Test Files  1 passed (1)\n      Tests  2 passed | 43 skipped (45)\n   Start at  10:16:05\n   Duration  777ms (transform 145ms, setup 58ms, import 205ms, tests 20ms, environment 341ms)\n\n"
+  },
+  {
+    "name": "Claude sent unsupported schema",
+    "exitCode": 1,
+    "outcome": "failed",
+    "tail": "\n RUN  v4.1.11 /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan\n\n \u276f src/test/provider-routes.test.ts (45 tests | 1 failed | 43 skipped) 24ms\n     \u00d7 claims Claude with its exact provider and refuses a different provider carrying that mode 20ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 1 passed | 43 skipped (45)\n   Start at  10:16:06\n   Duration  785ms (transform 144ms, setup 58ms, import 205ms, tests 24ms, environment 338ms)\n\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/test/provider-routes.test.ts > connector bearer routes > claims Claude with its exact provider and refuses a different provider carrying that mode\nAssertionError: expected { \u2026(5) } to deeply equal { \u2026(5) }\n\n- Expected\n+ Received\n\n@@ -1,7 +1,7 @@\n  {\n-   \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n+   \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n    \"additionalProperties\": false,\n    \"properties\": {\n      \"answer\": {\n        \"maxLength\": 12000,\n        \"minLength\": 1,\n\n \u276f src/test/provider-routes.test.ts:142:34\n    140|     const claimed = (await response.json()).turn;\n    141|     expect(claimed).toMatchObject({ provider: \"claude\", authMode: \"cla\u2026\n    142|     expect(claimed.outputSchema).toEqual(JSON.parse(readFileSync(resol\u2026\n       |                                  ^\n    143|     mocks.rpc.mockResolvedValue({ data: { status: \"connected\", turn: t\u2026\n    144|     expect((await native.POST(nativeRequest({ operation: \"claim\", auth\u2026\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/1]\u23af\n\n"
+  },
+  {
+    "name": "harmless native fixture description",
+    "exitCode": 0,
+    "outcome": "survived",
+    "tail": "Native Claude fixture: /tmp/openplan-claude-isolation-VPMKPz\n\u2714 installed Claude refuses host tools and inherited context (2601.434134ms)\n\u2139 tests 1\n\u2139 suites 0\n\u2139 pass 1\n\u2139 fail 0\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 2668.566058\n"
+  },
+  {
+    "name": "native receives unsupported schema",
+    "exitCode": 1,
+    "outcome": "failed",
+    "tail": "Native Claude fixture: /tmp/openplan-claude-isolation-KWzw6X\n\u2716 installed Claude refuses host tools and inherited context (831.405914ms)\n\u2139 tests 1\n\u2139 suites 0\n\u2139 pass 0\n\u2139 fail 1\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 898.16258\n\n\u2716 failing tests:\n\ntest at workers/planner_agent_connector/test/claude-native-isolation.test.mjs:25:1\n\u2716 installed Claude refuses host tools and inherited context (831.405914ms)\n  Error: native_process_failed\n      at ChildProcess.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/workers/planner_agent_connector/claude-process.mjs:43:65)\n      at ChildProcess.emit (node:events:514:28)\n      at maybeClose (node:internal/child_process:1141:16)\n      at Socket.<anonymous> (node:internal/child_process:498:11)\n      at Socket.emit (node:events:514:28)\n      at Pipe.<anonymous> (node:net:362:12) {\n    code: 'native_process_failed'\n  }\n"
+  }
+]

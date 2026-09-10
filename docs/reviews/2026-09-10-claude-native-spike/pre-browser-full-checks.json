@@ -1,0 +1,17 @@
+{
+  "source": "6e3ed6e9d10d8033bcabad9919dae4fe1a6f5585",
+  "qa": "passed including build",
+  "testsPassed": 13767,
+  "testsSkipped": 371,
+  "shuffledSeed": 9100531,
+  "shuffled": "passed with same counts",
+  "rlsTests": 400,
+  "rlsFiles": 46,
+  "rls": "passed",
+  "dependencyAuditVulnerabilities": 0,
+  "connectorDefault": {
+    "passed": 93,
+    "skipped": 3
+  },
+  "browser": "failed: Claude rejected output schema version; superseded by schema fix"
+}

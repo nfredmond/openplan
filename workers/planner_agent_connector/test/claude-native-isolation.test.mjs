@@ -23,6 +23,7 @@ const binary = process.env.OPENPLAN_CLAUDE_NATIVE_BINARY;
 // No real credential or provider call is used. The fixture grants extra turns
 // only to inspect several forced refusals in one native process.
 test("installed Claude refuses host tools and inherited context", { skip: !binary, timeout: 30_000 }, async () => {
+  const outputSchema = JSON.parse(await readFile(new URL("./project-output-schema.json", import.meta.url), "utf8"));
   const root = await mkdtemp(join(tmpdir(), "openplan-claude-isolation-"));
   console.log(`Native Claude fixture: ${root}`);
   const profile = join(root, "profile"), work = join(root, "work");
@@ -73,7 +74,7 @@ test("installed Claude refuses host tools and inherited context", { skip: !binar
       if (index > forced.length) throw new Error("unexpected_extra_model_request");
       const content = index < forced.length
         ? { type: "tool_use", id: `tool_${index}`, name: forced[index][0], input: forced[index][1] }
-        : { type: "tool_use", id: "structured_final", name: "StructuredOutput", input: { answer: "SYNTHETIC selected project answer" } };
+        : { type: "tool_use", id: "structured_final", name: "StructuredOutput", input: { answer: "SYNTHETIC selected project answer", citations: ["project:33333333-3333-4333-8333-333333333333"], submittal: null } };
       const message = { id: `msg_${index}`, type: "message", role: "assistant", model: body.model, content: [], stop_reason: null, stop_sequence: null, usage: { input_tokens: 20, output_tokens: 0 } };
       const events = [{ type: "message_start", message },
         { type: "content_block_start", index: 0, content_block: { ...content, input: {} } },
@@ -88,7 +89,7 @@ test("installed Claude refuses host tools and inherited context", { skip: !binar
   await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
   try {
     const model = "claude-sonnet-4-6", args = claudeTurnArgs({ model, instructions: "Use only the supplied selected project record.",
-      outputSchema: { type: "object", properties: { answer: { type: "string" } }, required: ["answer"], additionalProperties: false } });
+      outputSchema });
     args[args.indexOf("--max-turns") + 1] = "12";
     const fixtureLaunch = { ...launch, args: [...launch.args, ...args], options: { ...launch.options,
       env: { ...launch.options.env, ANTHROPIC_BASE_URL: `http://127.0.0.1:${server.address().port}` } } };
@@ -115,7 +116,7 @@ test("installed Claude refuses host tools and inherited context", { skip: !binar
     assert.equal(await readFile(join(profile, ".claude.json"), "utf8"), nativeConfig);
     await writeFile(join(root, "requests.json"), JSON.stringify(requests, null, 2), { mode: 0o600 });
     await writeFile(join(root, "stdout.jsonl"), stdout, { mode: 0o600 });
-    const schema = { type: "object", properties: { answer: { type: "string" } }, required: ["answer"], additionalProperties: false };
+    const schema = outputSchema;
     const options = { binaryPath: binary, providerHome: profile, modelProvider: `http://127.0.0.1:${server.address().port}`,
       model, expectedAuthMode: "claude_subscription", instructions: "Use only the selected record.", prompt: "SYNTHETIC selected project.", outputSchema: schema };
     const nextWork = async name => { const path = join(root, name); await mkdir(path, { mode: 0o700 }); return path; };

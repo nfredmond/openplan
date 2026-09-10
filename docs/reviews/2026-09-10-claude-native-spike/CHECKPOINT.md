@@ -137,3 +137,35 @@ The first full QA/shuffled runs each found one release-ordering failure: this
 checkpoint initially omitted the new migration from CHANGELOG Unreleased. The
 13,766 other tests passed and 371 were skipped. The migration entry is now present;
 the guard was unchanged. Both full runs will be repeated on the corrected source.
+
+
+## Browser-discovered schema failure and correction
+
+Full QA on 6e3ed6e9 passed 13,767 tests, skipped 371, ran 93 default connector tests
+with three native opt-in skips, audited zero dependency vulnerabilities and built
+successfully. The same shuffled counts passed with seed 9100531. Isolated RLS
+passed 400 tests in 46 files. Those checks preceded the following real browser
+failure and are not proof that this earlier candidate completed a Claude task.
+
+Desktop navigation reached the new connection controls, saved a private v2 file,
+checked native subscription status and recovered an interrupted request using its
+identical identity. The installed CLI then exited before any local Messages call.
+The failed request was retained. Native diagnostics with the same synthetic profile
+and frozen task showed: --json-schema rejected the 2020-12 meta-schema as unknown.
+The earlier native test used a simpler schema without that version declaration.
+
+The native claim route now emits JSON Schema Draft 7 for Claude and leaves Codex
+on 2020-12. The full project-output schema is exercised by the native test and
+compared with the actual generated claim schema in the route test. Harmless route
+and fixture-description changes survive; reverting the route or native fixture to
+the unsupported schema version fails. After restoration, 103 app/task/transport
+checks and all 96 connector checks pass, with both installed CLIs enabled.
+No real Claude model request or paid API call was made.
+
+The owned browser server was stopped before source edits. Rebuild and fresh
+identified desktop/390px acceptance remain required. The failed request and its
+original connection are retained; the next browser journey revokes only that
+owned failed connection through the UI before issuing a fresh one. Native result
+failure did not trigger automatic regeneration. The private fixture initially
+simulated response loss for that failed delivery too; generation/request counters
+caught the absence of a successful native answer.

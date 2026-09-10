@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "answer": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 12000
+    },
+    "citations": {
+      "minItems": 1,
+      "maxItems": 1,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "const": "project:33333333-3333-4333-8333-333333333333"
+      }
+    },
+    "submittal": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "projectId": {
+              "type": "string",
+              "const": "33333333-3333-4333-8333-333333333333"
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160
+            },
+            "submittalType": {
+              "type": "string",
+              "enum": [
+                "authorization_packet",
+                "invoice_backup",
+                "environmental_package",
+                "hearing_record",
+                "ps_e",
+                "reimbursement",
+                "progress_report",
+                "other"
+              ]
+            },
+            "notes": {
+              "type": "string",
+              "maxLength": 4000
+            }
+          },
+          "required": [
+            "projectId",
+            "title",
+            "submittalType",
+            "notes"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "answer",
+    "citations",
+    "submittal"
+  ],
+  "additionalProperties": false
+}

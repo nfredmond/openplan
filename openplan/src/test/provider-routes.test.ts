@@ -1,4 +1,6 @@
 import { NextRequest } from "next/server";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { createHash } from "node:crypto";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { newProviderConnectionToken, PROVIDER_CONNECTION_COLUMNS, PROVIDER_TURN_COLUMNS } from "@/lib/assistant/provider-server";
@@ -135,7 +137,9 @@ describe("connector bearer routes", () => {
     mocks.rpc.mockResolvedValue({ data: { status: "connected", turn: turn({ provider: "claude", auth_mode: "claude_subscription", model_id: "claude-sonnet-4-6" }) }, error: null });
     const response = await native.POST(nativeRequest({ operation: "claim", authMode: "claude_subscription", status: "connected" }));
     expect(response.status).toBe(200);
-    expect((await response.json()).turn).toMatchObject({ provider: "claude", authMode: "claude_subscription", model: "claude-sonnet-4-6" });
+    const claimed = (await response.json()).turn;
+    expect(claimed).toMatchObject({ provider: "claude", authMode: "claude_subscription", model: "claude-sonnet-4-6" });
+    expect(claimed.outputSchema).toEqual(JSON.parse(readFileSync(resolve(process.cwd(), "../workers/planner_agent_connector/test/project-output-schema.json"), "utf8")));
     mocks.rpc.mockResolvedValue({ data: { status: "connected", turn: turn({ provider: "codex", auth_mode: "claude_subscription" }) }, error: null });
     expect((await native.POST(nativeRequest({ operation: "claim", authMode: "claude_subscription", status: "connected" }))).status).toBe(409);
   });
@@ -156,6 +160,7 @@ describe("connector bearer routes", () => {
     expect(response.status).toBe(200); const body = await response.json();
     expect(body.turn).toMatchObject({ id, attemptId: attempt, workspaceId: workspace, projectId: project, model: "fixture-model", authMode: "chatgpt", packetHash: turn().packet_hash });
     expect(body.turn.outputSchema.properties.submittal).toBeDefined();
+    expect(body.turn.outputSchema.$schema).toBe("https://json-schema.org/draft/2020-12/schema");
     expect(JSON.stringify(body)).not.toContain(owner); expect(JSON.stringify(body)).not.toContain(token.token);
     expect(mocks.getUser).not.toHaveBeenCalled();
     expect(mocks.rpc).toHaveBeenCalledWith("claim_assistant_provider_turn", { p_connection_id: token.connectionId, p_token_hash: token.tokenHash, p_auth_mode: "chatgpt", p_status: "connected" });

@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       return providerJson({ status: claimed.status, turn: { id: turn.id, attemptId: turn.attempt_id, workspaceId: turn.workspace_id,
         projectId: turn.project_id, provider: turn.provider, model: turn.model_id, authMode: turn.auth_mode, packetCanonical: turn.packet_canonical, packetHash: turn.packet_hash,
         question: turn.question, leaseExpiresAt: turn.lease_expires_at, instructions: PROVIDER_PROJECT_INSTRUCTIONS,
-        prompt: providerProjectPrompt(packet, turn.question), outputSchema: z.toJSONSchema(providerProjectOutputSchema(packet)) } });
+        prompt: providerProjectPrompt(packet, turn.question), outputSchema: z.toJSONSchema(providerProjectOutputSchema(packet), { target: turn.provider === "claude" ? "draft-07" : "draft-2020-12" }) } });
     }
     // This locked RPC validates the bearer and current project access before
     // any service read; final delivery repeats the check in its own transaction.
