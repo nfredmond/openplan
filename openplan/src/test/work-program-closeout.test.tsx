@@ -65,6 +65,8 @@ describe("saved closeout evidence and recovery", () => {
     expect(screen.getByLabelText("Work 1 allocation 2 successor element")).toHaveValue("");
     expect(screen.getByLabelText("Work 1 allocation 2 successor fund")).toHaveValue("");
     set(2, "successor element", element.id); set(2, "successor fund", fund.id);
+    expect(screen.getAllByText(`Source funding: ${fund.name} · ${fund.vintage}.`)).toHaveLength(2);
+    expect(screen.getAllByText((_content, node) => node?.tagName === "P" && node.textContent?.includes(`Fund: ${fund.name} · ${fund.vintage}.`) === true)).toHaveLength(2);
     fireEvent.click(screen.getByRole("button", { name: "Add carryover allocation to work 1" }));
     fireEvent.click(screen.getByRole("button", { name: "Remove allocation 3 from work 1" }));
     expect(screen.queryByLabelText("Work 1 allocation 3 successor baseline")).not.toBeInTheDocument();

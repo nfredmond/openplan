@@ -111,6 +111,8 @@ export function CloseoutPanel({ programId, userId, reports }: { programId: strin
               {row.disposition === "carryover" && <>
                 {allocations.map((allocation, allocationIndex) => {
                   const target = data.source.successors.find(b => b.id === allocation.successorRevisionId);
+                  const sourceFund = data.source.report.snapshot.baseline.content_json.preparation?.funds.find(f => f.id === allocation.sourceFundId);
+                  const targetFund = target?.content_json.preparation?.funds.find(f => f.id === allocation.successorFundId);
                   const update = (change: Partial<typeof allocation>) => updateAllocations(allocations.map((a, i) => i === allocationIndex ? { ...a, ...change } : a));
                   return <div key={allocationIndex} className="min-w-0 space-y-2 rounded-lg border p-3">
                     <h5 className="font-semibold">Allocation {allocationIndex + 1}</h5>
@@ -119,7 +121,8 @@ export function CloseoutPanel({ programId, userId, reports }: { programId: strin
                 <SelectField label={`Work ${index + 1} allocation ${allocationIndex + 1} source fund`} value={allocation.sourceFundId ?? ""} onChange={value => update({ sourceFundId: value || null })}><option value="">Select source funding</option>{data.source.report.snapshot.baseline.content_json.preparation?.funds.map(f => <option key={f.id} value={f.id}>{f.name} · {f.vintage}</option>)}</SelectField>
                 <SelectField label={`Work ${index + 1} allocation ${allocationIndex + 1} successor fund`} value={allocation.successorFundId ?? ""} onChange={value => update({ successorFundId: value || null })}><option value="">Select successor carryover funding</option>{target?.content_json.preparation?.funds.filter(f => f.kind === "carryover").map(f => <option key={f.id} value={f.id}>{f.name} · {f.vintage}</option>)}</SelectField>
                 <Field label={`Work ${index + 1} allocation ${allocationIndex + 1} carryover amount`} value={allocation.amount ?? ""} onChange={value => update({ amount: value || null })}/>
-                    {target && <p className="break-words text-sm">Successor: {target.title} · {target.content_json.periodStart} to {target.content_json.periodEnd} · revision {target.revision}. Work: {target.content_json.elements.find(e => e.id === allocation.successorElementId)?.title ?? "Select work"}. Fund: {target.content_json.preparation?.funds.find(f => f.id === allocation.successorFundId)?.name ?? "Select funding"}.</p>}
+                    {sourceFund && <p className="break-words text-sm">Source funding: {sourceFund.name} · {sourceFund.vintage}.</p>}
+                    {target && <p className="break-words text-sm">Successor: {target.title} · {target.content_json.periodStart} to {target.content_json.periodEnd} · revision {target.revision}. Work: {target.content_json.elements.find(e => e.id === allocation.successorElementId)?.title ?? "Select work"}. Fund: {targetFund ? `${targetFund.name} · ${targetFund.vintage}` : "Select funding"}.</p>}
                     <Button type="button" className={buttonClass} variant="outline" onClick={() => updateAllocations(allocations.filter((_, i) => i !== allocationIndex))}>Remove allocation {allocationIndex + 1} from work {index + 1}</Button>
                   </div>;
                 })}
