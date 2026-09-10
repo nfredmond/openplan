@@ -38,7 +38,8 @@ records completed checks and remaining limits. No new database migration.
   prescribed agency forms and real bank/eligibility verification remain separate.
 - Fix Documents hiding the download link for reports retained as inline HTML.
   It now offers the existing private report download route; missing or malformed
-  content does not acquire a download link.
+  content does not acquire a download link. Stack the date filters so both remain
+  visible in narrow library columns.
 - Run the full archive drill and repeatable failure probes in the Restore Drill
   workflow. External worker files, protected configuration, custom roles, hosted
   topology and production cutover remain outside this bounded recovery procedure.

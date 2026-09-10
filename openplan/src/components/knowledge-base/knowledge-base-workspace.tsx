@@ -950,11 +950,12 @@ export function KnowledgeBaseWorkspace({
           </label>
           <div className="grid gap-1 text-sm">
             <span className="text-foreground/70">Added between</span>
-            <div className="flex items-center gap-2">
+            <div className="grid min-w-0 gap-2">
               <Input
                 type="date"
                 value={addedFrom}
                 onChange={(event) => setAddedFrom(event.target.value)}
+                className="min-w-0"
                 aria-label="Added on or after"
                 disabled={listLoading}
               />
@@ -962,6 +963,7 @@ export function KnowledgeBaseWorkspace({
                 type="date"
                 value={addedTo}
                 onChange={(event) => setAddedTo(event.target.value)}
+                className="min-w-0"
                 aria-label="Added on or before"
                 disabled={listLoading}
               />
