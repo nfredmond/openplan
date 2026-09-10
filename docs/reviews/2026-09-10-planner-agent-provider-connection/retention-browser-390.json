@@ -1,0 +1,381 @@
+{
+  "width": 390,
+  "projectId": "c8b59371-a3a0-4df3-b633-581f7555e4b7",
+  "suffix": 1789053928320,
+  "console": [
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+  ],
+  "build": {
+    "commit": "29271e1443d9",
+    "version": "0.51.0"
+  },
+  "preflight": {
+    "deletable": false,
+    "headline": "This project has 15 attached records across 4 modules, so deleting it would take real work with it.",
+    "alternative": "Set the project's status to complete to retire it. Its attached records and private Planner Agent history stay intact.",
+    "blockers": [
+      {
+        "table": "assistant_provider_turns",
+        "label": "saved Planner Agent requests",
+        "count": 5,
+        "severity": "evidence",
+        "behavior": "cascade",
+        "reason": "Saved Planner Agent questions and answers must remain available. Retire this project to preserve its history.",
+        "href": "/projects/c8b59371-a3a0-4df3-b633-581f7555e4b7"
+      },
+      {
+        "table": "project_submittals",
+        "label": "submittals",
+        "count": 5,
+        "severity": "evidence",
+        "behavior": "cascade",
+        "reason": "5 submittals would be deleted along with the project.",
+        "href": "/projects/c8b59371-a3a0-4df3-b633-581f7555e4b7"
+      },
+      {
+        "table": "stage_gate_decisions",
+        "label": "stage-gate decisions",
+        "count": 3,
+        "severity": "evidence",
+        "behavior": "cascade",
+        "reason": "3 stage-gate decisions would be deleted along with the project.",
+        "href": "/projects/c8b59371-a3a0-4df3-b633-581f7555e4b7#project-governance"
+      },
+      {
+        "table": "assistant_provider_connections",
+        "label": "Planner Agent computer connections",
+        "count": 2,
+        "severity": "evidence",
+        "behavior": "cascade",
+        "reason": "Retained Planner Agent connections prevent deletion. Retire this project to preserve its history.",
+        "href": "/projects/c8b59371-a3a0-4df3-b633-581f7555e4b7"
+      }
+    ]
+  },
+  "layout": {
+    "fits": true,
+    "container": {
+      "left": 74,
+      "right": 316,
+      "scrollWidth": 240,
+      "clientWidth": 240
+    },
+    "children": [
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      },
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      },
+      {
+        "left": 123,
+        "right": 158.1875,
+        "width": 35.1875
+      },
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      },
+      {
+        "left": 123,
+        "right": 231.703125,
+        "width": 108.703125
+      },
+      {
+        "left": 239.703125,
+        "right": 274.890625,
+        "width": 35.1875
+      },
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      },
+      {
+        "left": 123,
+        "right": 296.96875,
+        "width": 173.96875
+      },
+      {
+        "left": 123,
+        "right": 158.1875,
+        "width": 35.1875
+      },
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      },
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      },
+      {
+        "left": 123,
+        "right": 158.1875,
+        "width": 35.1875
+      },
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      },
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      }
+    ]
+  },
+  "harmlessLayout": {
+    "fits": true,
+    "container": {
+      "left": 74,
+      "right": 316,
+      "scrollWidth": 240,
+      "clientWidth": 240
+    },
+    "children": [
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      },
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      },
+      {
+        "left": 123,
+        "right": 158.1875,
+        "width": 35.1875
+      },
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      },
+      {
+        "left": 123,
+        "right": 231.703125,
+        "width": 108.703125
+      },
+      {
+        "left": 239.703125,
+        "right": 274.890625,
+        "width": 35.1875
+      },
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      },
+      {
+        "left": 123,
+        "right": 296.96875,
+        "width": 173.96875
+      },
+      {
+        "left": 123,
+        "right": 158.1875,
+        "width": 35.1875
+      },
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      },
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      },
+      {
+        "left": 123,
+        "right": 158.1875,
+        "width": 35.1875
+      },
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      },
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      }
+    ]
+  },
+  "brokenLayout": {
+    "fits": false,
+    "container": {
+      "left": 74,
+      "right": 316,
+      "scrollWidth": 334,
+      "clientWidth": 240
+    },
+    "children": [
+      {
+        "left": 123,
+        "right": 408.765625,
+        "width": 285.765625
+      },
+      {
+        "left": 123,
+        "right": 359.734375,
+        "width": 236.734375
+      },
+      {
+        "left": 367.734375,
+        "right": 402.921875,
+        "width": 35.1875
+      },
+      {
+        "left": 123,
+        "right": 408.765625,
+        "width": 285.765625
+      },
+      {
+        "left": 123,
+        "right": 231.703125,
+        "width": 108.703125
+      },
+      {
+        "left": 239.703125,
+        "right": 274.890625,
+        "width": 35.1875
+      },
+      {
+        "left": 123,
+        "right": 408.765625,
+        "width": 285.765625
+      },
+      {
+        "left": 123,
+        "right": 296.96875,
+        "width": 173.96875
+      },
+      {
+        "left": 304.96875,
+        "right": 340.15625,
+        "width": 35.1875
+      },
+      {
+        "left": 123,
+        "right": 408.765625,
+        "width": 285.765625
+      },
+      {
+        "left": 123,
+        "right": 408.765625,
+        "width": 285.765625
+      },
+      {
+        "left": 123,
+        "right": 158.1875,
+        "width": 35.1875
+      },
+      {
+        "left": 123,
+        "right": 408.765625,
+        "width": 285.765625
+      },
+      {
+        "left": 123,
+        "right": 408.765625,
+        "width": 285.765625
+      }
+    ]
+  },
+  "restoredLayout": {
+    "fits": true,
+    "container": {
+      "left": 74,
+      "right": 316,
+      "scrollWidth": 240,
+      "clientWidth": 240
+    },
+    "children": [
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      },
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      },
+      {
+        "left": 123,
+        "right": 158.1875,
+        "width": 35.1875
+      },
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      },
+      {
+        "left": 123,
+        "right": 231.703125,
+        "width": 108.703125
+      },
+      {
+        "left": 239.703125,
+        "right": 274.890625,
+        "width": 35.1875
+      },
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      },
+      {
+        "left": 123,
+        "right": 296.96875,
+        "width": 173.96875
+      },
+      {
+        "left": 123,
+        "right": 158.1875,
+        "width": 35.1875
+      },
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      },
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      },
+      {
+        "left": 123,
+        "right": 158.1875,
+        "width": 35.1875
+      },
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      },
+      {
+        "left": 123,
+        "right": 299,
+        "width": 176
+      }
+    ]
+  },
+  "originalNativeUnchanged": true,
+  "deletionRequests": 0
+}

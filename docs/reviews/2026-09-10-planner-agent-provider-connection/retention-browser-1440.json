@@ -1,0 +1,219 @@
+{
+  "width": 1440,
+  "projectId": "daea1aad-c1ea-4a74-94da-89e512ea86fe",
+  "suffix": 1789053957794,
+  "console": [
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+  ],
+  "build": {
+    "commit": "29271e1443d9",
+    "version": "0.51.0"
+  },
+  "preflight": {
+    "deletable": false,
+    "headline": "This project has 18 attached records across 4 modules, so deleting it would take real work with it.",
+    "alternative": "Set the project's status to complete to retire it. Its attached records and private Planner Agent history stay intact.",
+    "blockers": [
+      {
+        "table": "assistant_provider_turns",
+        "label": "saved Planner Agent requests",
+        "count": 5,
+        "severity": "evidence",
+        "behavior": "cascade",
+        "reason": "Saved Planner Agent questions and answers must remain available. Retire this project to preserve its history.",
+        "href": "/projects/daea1aad-c1ea-4a74-94da-89e512ea86fe"
+      },
+      {
+        "table": "project_submittals",
+        "label": "submittals",
+        "count": 5,
+        "severity": "evidence",
+        "behavior": "cascade",
+        "reason": "5 submittals would be deleted along with the project.",
+        "href": "/projects/daea1aad-c1ea-4a74-94da-89e512ea86fe"
+      },
+      {
+        "table": "assistant_provider_connections",
+        "label": "Planner Agent computer connections",
+        "count": 4,
+        "severity": "evidence",
+        "behavior": "cascade",
+        "reason": "Retained Planner Agent connections prevent deletion. Retire this project to preserve its history.",
+        "href": "/projects/daea1aad-c1ea-4a74-94da-89e512ea86fe"
+      },
+      {
+        "table": "stage_gate_decisions",
+        "label": "stage-gate decisions",
+        "count": 4,
+        "severity": "evidence",
+        "behavior": "cascade",
+        "reason": "4 stage-gate decisions would be deleted along with the project.",
+        "href": "/projects/daea1aad-c1ea-4a74-94da-89e512ea86fe#project-governance"
+      }
+    ]
+  },
+  "layout": {
+    "fits": true,
+    "container": {
+      "left": 330,
+      "right": 1366,
+      "scrollWidth": 1034,
+      "clientWidth": 1034
+    },
+    "children": [
+      {
+        "left": 379,
+        "right": 1349,
+        "width": 970
+      },
+      {
+        "left": 379,
+        "right": 615.734375,
+        "width": 236.734375
+      },
+      {
+        "left": 623.734375,
+        "right": 658.921875,
+        "width": 35.1875
+      },
+      {
+        "left": 379,
+        "right": 1349,
+        "width": 970
+      },
+      {
+        "left": 379,
+        "right": 487.703125,
+        "width": 108.703125
+      },
+      {
+        "left": 495.703125,
+        "right": 530.890625,
+        "width": 35.1875
+      },
+      {
+        "left": 379,
+        "right": 1349,
+        "width": 970
+      },
+      {
+        "left": 379,
+        "right": 665.125,
+        "width": 286.125
+      },
+      {
+        "left": 673.125,
+        "right": 708.3125,
+        "width": 35.1875
+      },
+      {
+        "left": 379,
+        "right": 1349,
+        "width": 970
+      },
+      {
+        "left": 379,
+        "right": 553.21875,
+        "width": 174.21875
+      },
+      {
+        "left": 561.21875,
+        "right": 596.40625,
+        "width": 35.1875
+      },
+      {
+        "left": 379,
+        "right": 1349,
+        "width": 970
+      },
+      {
+        "left": 379,
+        "right": 1349,
+        "width": 970
+      }
+    ]
+  },
+  "harmlessLayout": {
+    "fits": true,
+    "container": {
+      "left": 330,
+      "right": 1366,
+      "scrollWidth": 1034,
+      "clientWidth": 1034
+    },
+    "children": [
+      {
+        "left": 379,
+        "right": 1349,
+        "width": 970
+      },
+      {
+        "left": 379,
+        "right": 615.734375,
+        "width": 236.734375
+      },
+      {
+        "left": 623.734375,
+        "right": 658.921875,
+        "width": 35.1875
+      },
+      {
+        "left": 379,
+        "right": 1349,
+        "width": 970
+      },
+      {
+        "left": 379,
+        "right": 487.703125,
+        "width": 108.703125
+      },
+      {
+        "left": 495.703125,
+        "right": 530.890625,
+        "width": 35.1875
+      },
+      {
+        "left": 379,
+        "right": 1349,
+        "width": 970
+      },
+      {
+        "left": 379,
+        "right": 665.125,
+        "width": 286.125
+      },
+      {
+        "left": 673.125,
+        "right": 708.3125,
+        "width": 35.1875
+      },
+      {
+        "left": 379,
+        "right": 1349,
+        "width": 970
+      },
+      {
+        "left": 379,
+        "right": 553.21875,
+        "width": 174.21875
+      },
+      {
+        "left": 561.21875,
+        "right": 596.40625,
+        "width": 35.1875
+      },
+      {
+        "left": 379,
+        "right": 1349,
+        "width": 970
+      },
+      {
+        "left": 379,
+        "right": 1349,
+        "width": 970
+      }
+    ]
+  },
+  "originalNativeUnchanged": true,
+  "deletionRequests": 0
+}

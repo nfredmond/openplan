@@ -1,4 +1,4 @@
-# Planner Agent local connector (implementation in progress)
+# Planner Agent local connector — v0.52.0
 
 The native transport, scoped connection routes, saved requests, outbound connector
 and project controls are implemented. Desktop and 390px browser journeys exercise

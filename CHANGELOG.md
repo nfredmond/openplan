@@ -20,17 +20,40 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+No changes yet.
+
+## 0.52.0 — 2026-09-10
+
 Projects now offer a narrow Planner Agent task using installed Codex or a selected
-Anthropic API model, with private retained answers, draft submittals, revocable
-computer connections and interruption recovery. The initial native connector
-supports standalone Codex 0.154.0 on Linux. Broader chat, additional backends and
-full assignments remain unfinished. API integration evidence uses a local scripted
-transport; actual native ChatGPT-account journeys cover desktop and 390px.
+Anthropic API model. It shares the selected project's stored name, summary and
+status fields plus the user's question. Answers retain the original source packet
+and can propose a draft submittal through the existing approval flow.
+
+Personal computer connections are project-scoped, revocable and time-limited.
+The outbound connector uses native authentication and retains completed delivery
+for an identical retry. Interrupted execution never automatically generates again.
+Saved requests survive reload; cancellation reports the actual retained state.
+Account/model changes fail without switching providers or billing modes. API
+requests require explicit acknowledgement of provider charges.
 
 Apply `20261010000001_assistant_provider_connections.sql` before the new app.
 It adds private connection/request tables, scoped transaction functions and project
-history retention guards. It does not execute business actions or supply agency
-approvals. Release verification is still in progress.
+history retention guards. Project deletion counts private history without revealing
+its contents; the database preserves that history if a deletion bypasses the dialog.
+The optional connector requires Linux, Node 24, bubblewrap and standalone Codex 0.154.0.
+See [connector setup](workers/planner_agent_connector/README.md).
+
+[Engineering evidence](docs/reviews/2026-09-10-planner-agent-provider-connection/VERIFICATION.md)
+covers desktop/390px keyboard journeys, actual native ChatGPT-account answers,
+retained retries, cancellation, private access and competing database transactions.
+Direct API integration used a local scripted Anthropic transport with no API charges;
+it does not establish live Anthropic model quality or availability. Full QA/shuffle,
+isolated RLS and worker checks accompany the release. Final main CI and the populated
+previous-release upgrade are inspected before tagging.
+
+Broader chat, additional native/API backends, MCP clients, full assignments and
+professional usefulness remain unfinished. This increment does not change agency
+authority, prescribed forms, automatic reminders or scientific validation claims.
 
 ## 0.51.0 — 2026-09-10
 

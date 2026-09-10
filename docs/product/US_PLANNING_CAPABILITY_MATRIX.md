@@ -3,7 +3,7 @@
 <!-- openplan-planning-capability-matrix
 review_date: 2026-09-06
 review_by: 2026-10-05
-current_release: v0.51.0
+current_release: v0.52.0
 capabilities:
 - long-range-transportation-and-regional-planning
 - land-use-comprehensive-and-community-planning
@@ -159,7 +159,7 @@ Nathaniel explicitly prioritizes engagement mapping superior to Social Pinpoint,
 | Priority | Current foundation and limit | Required evidence |
 |---|---|---|
 | Better public mapping input | Existing geometry/survey/moderation/public-response code; superiority unproved. | Real campaign setup and participation through decision response; comparable current-platform human tasks; accessible geometry/non-map parity and portable exports. |
-| User-selected agent backend | Current Planner Agent chat is Anthropic API-specific; existing grounding/proposal/approval system should be reused. T3 has actual native Codex/Claude/OpenCode adapters. | Same planning task across supported API and all three installed CLIs; correct account mode, installation discovery, scoped data/actions, interrupt/recovery and no silent billed fallback. |
+| User-selected agent backend | v0.52 adds a narrow project-record task with actual installed Codex 0.154.0 ChatGPT-account journeys and scripted Anthropic API transport parity, private retained requests and recovery. Broader chat remains Anthropic-specific; additional backends and live API service acceptance remain open. T3 has native adapter reuse references. | Same planning task across supported API and all three installed CLIs; correct account mode, installation discovery, scoped data/actions, interrupt/recovery and no silent billed fallback. |
 | Full capital delivery | Project delivery, documents, stage gates, funding and reimbursement foundations; exact Caltrans forms/lifecycle not established. | Actual case from planning or mid-project intake through environmental, ROW/utilities, PS&E, procurement, construction, payments/reimbursement, acceptance and closeout; dated applicable rules and practitioner/finance review. |
 
 Detailed primary-source findings live in the dated pre-handoff priority reports. California office bulletins and inactive exhibits must be checked alongside manuals. Native CLI authentication and optional provider charges are distinct from OpenPlan's free software license. Personal CLI access must not become an unattended public-engagement account pool.

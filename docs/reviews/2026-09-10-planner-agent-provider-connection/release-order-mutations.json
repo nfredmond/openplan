@@ -1,0 +1,14 @@
+[
+  {
+    "case": "release-comment",
+    "exitCode": 0,
+    "expectedOutcome": true,
+    "tail": "\n RUN  v4.1.10 /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan\n\n\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\n\n Test Files  1 passed (1)\n      Tests  6 passed (6)\n   Start at  08:29:54\n   Duration  585ms (transform 42ms, setup 51ms, import 28ms, tests 8ms, environment 345ms)\n\n"
+  },
+  {
+    "case": "wrong-release-count",
+    "exitCode": 1,
+    "expectedOutcome": true,
+    "tail": "\n RUN  v4.1.10 /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan\n\n\u00b7\u00b7xx\u00b7\u00b7\n\n Test Files  1 failed (1)\n      Tests  2 failed | 4 passed (6)\n   Start at  08:29:55\n   Duration  596ms (transform 44ms, setup 57ms, import 28ms, tests 14ms, environment 344ms)\n\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 2 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/test/migrations/release-ordering.test.ts > released migration ordering > no migration has been inserted at or below a shipped high-water mark\nAssertionError: migrations at or below the 0.52.0 mark must equal the count recorded at release \u2014 an inserted file there is silently skipped by every deployment already on 0.52.0: expected { tag: '0.52.0', \u2026(1) } to deeply equal { tag: '0.52.0', \u2026(1) }\n\n- Expected\n+ Received\n\n  {\n-   \"migrationsAtOrBelowMark\": 315,\n+   \"migrationsAtOrBelowMark\": 314,\n    \"tag\": \"0.52.0\",\n  }\n\n \u276f src/test/migrations/release-ordering.test.ts:430:9\n    428|         `migrations at or below the ${release.tag} mark must equal the\u2026\n    429|           `an inserted file there is silently skipped by every deploym\u2026\n    430|       ).toEqual({ tag: release.tag, migrationsAtOrBelowMark: release.m\u2026\n       |         ^\n    431|     }\n    432|   });\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/2]\u23af\n\n FAIL  src/test/migrations/release-ordering.test.ts > released migration ordering > new work sorts strictly after the latest release (no version collisions)\nAssertionError: expected 315 to be 314 // Object.is equality\n\n- Expected\n+ Received\n\n- 314\n+ 315\n\n \u276f src/test/migrations/release-ordering.test.ts:442:58\n    440|     expect(new Set(versions).size).toBe(versions.length);\n    441|     // Sanity: the split accounts for every file.\n    442|     expect(newFiles.length + latest.migrationsAtRelease).toBe(files.le\u2026\n       |                                                          ^\n    443|   });\n    444|\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[2/2]\u23af\n\n"
+  }
+]

@@ -330,3 +330,16 @@ September 6 control visual inspection: the native window clips the output footer
 September 6 follow-on control checkpoint: the [housekeeping record](../reviews/2026-09-06-housekeeping/VERIFICATION.md) supersedes the clipping finding for the tested native sizes and scales. Controls scroll, keyboard focus reveals actions, and output/footer remain visible. The desktop update action now uses a separate candidate and retained-directory recovery, with isolated Git/file/HTTP exercises. Actual runtime database identity, accepted-release selection and an observed full application demo update remain unproved. The low-level shell builder alone still lacks the coordinator recovery behavior.
 
 Independent follow-up rejected the first housekeeping coordinator's whole-directory replacement because it detached concurrent local artifacts. Selective source/runtime promotion now retains the instance root and artifact paths; backup-content verification and managed-settings refusal repair two additional reproduced defects. The [preserved review and correction](../reviews/2026-09-06-housekeeping/VERIFICATION.md#independent-review-correction) gives exact boundaries. It does not complete M3a. The product review also establishes undated/action-version continuity and shared-campaign omissions across exports/grant/assistant consumers as source findings awaiting the queued live cases.
+
+## v0.52 provider connection limits
+
+The project Planner Agent can retain answers and draft submittals using installed
+standalone Codex 0.154.0 on Linux or a selected Anthropic API model. The first task
+shares only the selected project's own stored fields and question. Broader chat,
+other CLI/API adapters, MCP clients and durable assignments remain on A0/A1.
+Actual native ChatGPT-account journeys were exercised; API integration used a local
+scripted transport and does not prove live Anthropic availability or model quality.
+No automatic provider/account fallback or restart is supported. Personal connection
+files stay private and expire/revoke separately from native sign-in. Provider history
+prevents project deletion; retire the project to preserve it. See the
+[verification record](../reviews/2026-09-10-planner-agent-provider-connection/VERIFICATION.md).
