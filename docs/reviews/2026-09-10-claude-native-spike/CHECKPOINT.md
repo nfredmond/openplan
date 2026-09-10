@@ -131,3 +131,9 @@ revocation and console review. Claude generation will use installed native CLI
 plus synthetic OAuth/local responses unless actual paid-extra-usage settings are
 known. The local fixture is engineering transport evidence, not live model quality
 or a zero-cost promise for users' provider accounts.
+
+
+The first full QA/shuffled runs each found one release-ordering failure: this
+checkpoint initially omitted the new migration from CHANGELOG Unreleased. The
+13,766 other tests passed and 371 were skipped. The migration entry is now present;
+the guard was unchanged. Both full runs will be repeated on the corrected source.

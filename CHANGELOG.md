@@ -20,7 +20,25 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No changes yet.
+The existing project task now offers installed Claude Code 2.1.263 on Linux in
+addition to Codex and the direct Anthropic API. New connection files bind their
+provider and native account mode explicitly; existing Codex files remain readable.
+Saved questions, frozen packets, answers, delivery retries and draft-submittal
+review use the existing private project workflow. Provider switching clears the
+previous connection choice. Claude's native adapter requires subscription sign-in
+and an exact model ID; it never substitutes a different provider or billing mode.
+
+Apply `20261011000001_assistant_claude_connections.sql` before running this app.
+It extends the existing provider/account checks and adds a foreign key binding
+retained requests to the connection's provider and account. Existing rows and the
+original connection RPC remain valid. No native binary or paid service is installed.
+
+Claude transport checks use the installed CLI with synthetic OAuth and a local
+scripted response server. They do not establish live model quality, availability
+or account allowance. Subscription limits apply, and OpenPlan cannot inspect paid
+extra-usage settings. Full browser/release verification is in progress; see the
+[Claude checkpoint](docs/reviews/2026-09-10-claude-native-spike/CHECKPOINT.md).
+Additional providers, broader grounded tasks and MCP remain roadmap work.
 
 ## 0.52.1 — 2026-09-10
 
