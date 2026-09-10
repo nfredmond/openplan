@@ -48,10 +48,11 @@ credential snapshot read-only, with fresh private runtime directories.30 launch 
 fixture is retained separately. Positive native mount/launch/schema/assistant
 readback proof passed. Default full connector suite151pass3native opt-in skips.
 
-Account/model projection, bounded credential snapshots and the owned server
-wrapper are implemented. Default connector suite now passes237 with4 native
-opt-in skips. Not implemented: bounded model-inspection command, exact parent/result validation, adapter dispatch,
-app routes/types, migration, UI, RLS and browser journeys. Do not advertise
+Account/model projection, bounded credential snapshots, owned server and model
+command, exact turn validation and provider adapter are implemented. Default
+connector suite now passes339 with4 native opt-in skips. Not implemented:
+connector setup/dispatch registration, app routes/types, migration, UI, RLS and
+browser journeys. Do not advertise
 OpenCode support yet. First supported
 mode will be native OpenAI API credentials; OAuth/subscription and other providers
 remain explicit unimplemented scope. Use an unambiguous mode such as opencode_api
@@ -84,9 +85,15 @@ or explicit backend binding; existing apiKey claim inference currently means Cod
    exit before close resolves. Real native success and cancellation proofs passed.
    The caller must remove scratch/snapshots only after close and close the relay
    on every failure. Snapshot creation never changes the original native profile.
-   Next implement the bounded non-generating models command and exact turn
-   validation, then wire the provider adapter into existing connector cleanup.
-3. Native POST structured response and exact assistant-message GET work. General
+   The bounded non-generating command, exact turn validator and provider adapter
+   are now implemented in opencode-models.mjs, opencode-result.mjs and
+   opencode-provider.mjs. Native success, absent-model refusal and cancellation
+   passed. See provider-checks.json and the later CHECKPOINT.md section.
+   Next wire the provider adapter into existing connector setup/dispatch and
+   cleanup. Preserve the saved-request journal and retry semantics.
+3. Native POST structured response and exact assistant-message GET work. The
+   validator binds every part to the requested session/parent, selected model
+   and agent, one completed StructuredOutput call and exact readback. General
    list-message GET rejects stored OutputFormat in this version. Use exact supplied
    parent message ID and assistant ID for the bounded verification; preserve this
    upstream limitation. Do not patch native DB or claim native history parity.
@@ -94,6 +101,10 @@ or explicit backend binding; existing apiKey claim inference currently means Cod
    missing credentials, cancellation, private-file canaries and duplicate recovery.
    Then extend existing connector/SQL/UI with provider/account binding. Use the
    same retained project task and journal. No new orchestration stack needed.
+   Relevant registration files are connector-client.mjs, native-provider.mjs,
+   connector-worker.mjs, the app assistant provider-server.ts, provider API routes
+   and project-provider-panel.tsx. Add a migration after the Claude connection
+   migration; do not change the pending reminder constraint.
 5. Real desktop/390px navigation and downloads, keyboard, console, interruption,
    revocation, private histories, QA/shuffle/RLS/worker/upgrade, then direct main,
    final CI and a coherent minor release. Continue remaining v1 work afterward.

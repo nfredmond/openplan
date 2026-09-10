@@ -1,0 +1,152 @@
+[
+  {
+    "mutation": "harmless-comment",
+    "exitCode": 0,
+    "expectationMet": true,
+    "failures": []
+  },
+  {
+    "mutation": "pre-cancel",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 pre-cancelled model inspection refuses before validating a launch (1.371979ms)",
+      "\u2716 failing tests:",
+      "\u2716 pre-cancelled model inspection refuses before validating a launch (1.371979ms)"
+    ]
+  },
+  {
+    "mutation": "account-status",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 catalog command requires OpenCode API mode: {\"status\":\"needs_login\",\"authMode\":\"opencode_api\"} (24.196402ms)",
+      "\u2716 failing tests:",
+      "\u2716 catalog command requires OpenCode API mode: {\"status\":\"needs_login\",\"authMode\":\"opencode_api\"} (24.196402ms)"
+    ]
+  },
+  {
+    "mutation": "account-mode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 catalog command requires OpenCode API mode: {\"status\":\"connected\",\"authMode\":\"apiKey\"} (23.106876ms)",
+      "\u2716 failing tests:",
+      "\u2716 catalog command requires OpenCode API mode: {\"status\":\"connected\",\"authMode\":\"apiKey\"} (23.106876ms)"
+    ]
+  },
+  {
+    "mutation": "offline-command",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 uses only the offline plain catalog command and waits for exit (22.833881ms)",
+      "\u2716 catalog command refuses stdout (19.51029ms)",
+      "\u2716 catalog command refuses stderr (19.539486ms)",
+      "\u2716 catalog command refuses malformed (19.347443ms)",
+      "\u2716 catalog command refuses hold (18.460139ms)",
+      "\u2716 cancelled catalog inspection cannot leave an owned child (18.402901ms)",
+      "\u2716 failing tests:",
+      "\u2716 uses only the offline plain catalog command and waits for exit (22.833881ms)",
+      "\u2716 catalog command refuses stdout (19.51029ms)",
+      "\u2716 catalog command refuses stderr (19.539486ms)",
+      "\u2716 catalog command refuses malformed (19.347443ms)",
+      "\u2716 catalog command refuses hold (18.460139ms)",
+      "\u2716 cancelled catalog inspection cannot leave an owned child (18.402901ms)"
+    ]
+  },
+  {
+    "mutation": "exact-command",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 uses only the offline plain catalog command and waits for exit (24.671619ms)",
+      "\u2716 catalog command refuses stdout (23.721776ms)",
+      "\u2716 catalog command refuses stderr (20.487394ms)",
+      "\u2716 catalog command refuses malformed (19.703415ms)",
+      "\u2716 catalog command refuses hold (20.510507ms)",
+      "\u2716 cancelled catalog inspection cannot leave an owned child (18.402921ms)",
+      "\u2716 failing tests:",
+      "\u2716 uses only the offline plain catalog command and waits for exit (24.671619ms)",
+      "\u2716 catalog command refuses stdout (23.721776ms)",
+      "\u2716 catalog command refuses stderr (20.487394ms)",
+      "\u2716 catalog command refuses malformed (19.703415ms)",
+      "\u2716 catalog command refuses hold (20.510507ms)",
+      "\u2716 cancelled catalog inspection cannot leave an owned child (18.402921ms)"
+    ]
+  },
+  {
+    "mutation": "deadline",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 catalog command refuses hold (2000.903395ms)",
+      "\u2716 failing tests:",
+      "\u2716 catalog command refuses hold (2000.903395ms)"
+    ]
+  },
+  {
+    "mutation": "cancel-listener",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 cancelled catalog inspection cannot leave an owned child (2002.02896ms)",
+      "\u2716 failing tests:",
+      "\u2716 cancelled catalog inspection cannot leave an owned child (2002.02896ms)"
+    ]
+  },
+  {
+    "mutation": "kill-owned",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 catalog command refuses hold (2001.28163ms)",
+      "\u2716 cancelled catalog inspection cannot leave an owned child (2002.802378ms)",
+      "\u2716 failing tests:",
+      "\u2716 catalog command refuses hold (2001.28163ms)",
+      "\u2716 cancelled catalog inspection cannot leave an owned child (2002.802378ms)"
+    ]
+  },
+  {
+    "mutation": "stdout-bound",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 catalog command refuses stdout (21.988977ms)",
+      "\u2716 failing tests:",
+      "\u2716 catalog command refuses stdout (21.988977ms)"
+    ]
+  },
+  {
+    "mutation": "stderr-bound",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 catalog command refuses stderr (25.171912ms)",
+      "\u2716 failing tests:",
+      "\u2716 catalog command refuses stderr (25.171912ms)"
+    ]
+  },
+  {
+    "mutation": "exit-status",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 catalog command refuses failed (24.276182ms)",
+      "\u2716 failing tests:",
+      "\u2716 catalog command refuses failed (24.276182ms)"
+    ]
+  },
+  {
+    "mutation": "model-parser",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 uses only the offline plain catalog command and waits for exit (29.616678ms)",
+      "\u2716 catalog command refuses malformed (23.745831ms)",
+      "\u2716 failing tests:",
+      "\u2716 uses only the offline plain catalog command and waits for exit (29.616678ms)",
+      "\u2716 catalog command refuses malformed (23.745831ms)"
+    ]
+  }
+]

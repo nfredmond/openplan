@@ -1,0 +1,64 @@
+[
+  {
+    "mutation": "harmless-comment",
+    "exitCode": 0,
+    "expectationMet": true,
+    "failures": []
+  },
+  {
+    "mutation": "message-entropy",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 generates compatible distinct parent message IDs (1.04425ms)",
+      "\u2716 failing tests:",
+      "\u2716 generates compatible distinct parent message IDs (1.04425ms)"
+    ]
+  },
+  {
+    "mutation": "requested-session",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 rejects missing requested sessionId (1.023361ms)",
+      "\u2716 failing tests:",
+      "\u2716 rejects missing requested sessionId (1.023361ms)"
+    ]
+  },
+  {
+    "mutation": "requested-parent",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 rejects missing requested parentId (0.926749ms)",
+      "\u2716 failing tests:",
+      "\u2716 rejects missing requested parentId (0.926749ms)"
+    ]
+  },
+  {
+    "mutation": "requested-model",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 rejects missing requested model (0.903234ms)",
+      "\u2716 failing tests:",
+      "\u2716 rejects missing requested model (0.903234ms)"
+    ]
+  },
+  {
+    "mutation": "parts-array",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with non-array parts (0.931828ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with non-array parts (0.931828ms)"
+    ]
+  },
+  {
+    "mutation": "assistant-id",
+    "exitCode": 0,
+    "expectationMet": false,
+    "failures": []
+  }
+]

@@ -1,0 +1,456 @@
+[
+  {
+    "mutation": "harmless-comment",
+    "exitCode": 0,
+    "expectationMet": true,
+    "failures": []
+  },
+  {
+    "mutation": "message-entropy",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 generates compatible distinct parent message IDs (1.022829ms)",
+      "\u2716 failing tests:",
+      "\u2716 generates compatible distinct parent message IDs (1.022829ms)"
+    ]
+  },
+  {
+    "mutation": "requested-session",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 rejects missing requested sessionId (0.886643ms)",
+      "\u2716 failing tests:",
+      "\u2716 rejects missing requested sessionId (0.886643ms)"
+    ]
+  },
+  {
+    "mutation": "requested-parent",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 rejects missing requested parentId (0.844594ms)",
+      "\u2716 failing tests:",
+      "\u2716 rejects missing requested parentId (0.844594ms)"
+    ]
+  },
+  {
+    "mutation": "requested-model",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 rejects missing requested model (0.855705ms)",
+      "\u2716 failing tests:",
+      "\u2716 rejects missing requested model (0.855705ms)"
+    ]
+  },
+  {
+    "mutation": "parts-array",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with non-array parts (0.916669ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with non-array parts (0.916669ms)"
+    ]
+  },
+  {
+    "mutation": "assistant-id",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with assistant ID (0.630119ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with assistant ID (0.630119ms)"
+    ]
+  },
+  {
+    "mutation": "parent-reuse",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with reused parent ID (0.521935ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with reused parent ID (0.521935ms)"
+    ]
+  },
+  {
+    "mutation": "session-binding",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with session (0.565397ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with session (0.565397ms)"
+    ]
+  },
+  {
+    "mutation": "parent-binding",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with parent (0.509381ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with parent (0.509381ms)"
+    ]
+  },
+  {
+    "mutation": "role",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with role (0.507778ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with role (0.507778ms)"
+    ]
+  },
+  {
+    "mutation": "provider",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with provider (0.488712ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with provider (0.488712ms)"
+    ]
+  },
+  {
+    "mutation": "model",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with model (3.718977ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with model (3.718977ms)"
+    ]
+  },
+  {
+    "mutation": "agent",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with agent (0.525231ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with agent (0.525231ms)"
+    ]
+  },
+  {
+    "mutation": "mode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with mode (0.491487ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with mode (0.491487ms)"
+    ]
+  },
+  {
+    "mutation": "cwd",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with working directory (0.525531ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with working directory (0.525531ms)"
+    ]
+  },
+  {
+    "mutation": "native-error",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with native error (0.477311ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with native error (0.477311ms)"
+    ]
+  },
+  {
+    "mutation": "created",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with invalid creation (0.546041ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with invalid creation (0.546041ms)"
+    ]
+  },
+  {
+    "mutation": "completed",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with missing completion (0.493231ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with missing completion (0.493231ms)"
+    ]
+  },
+  {
+    "mutation": "finish-reason",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with finish reason (0.485496ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with finish reason (0.485496ms)"
+    ]
+  },
+  {
+    "mutation": "structured",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with missing answer (0.95443ms)",
+      "\u2716 refuses native result with array answer (0.219555ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with missing answer (0.95443ms)",
+      "\u2716 refuses native result with array answer (0.219555ms)"
+    ]
+  },
+  {
+    "mutation": "answer-bound",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with oversized answer (0.752249ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with oversized answer (0.752249ms)"
+    ]
+  },
+  {
+    "mutation": "part-object",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with null part (0.947127ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with null part (0.947127ms)"
+    ]
+  },
+  {
+    "mutation": "part-id",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with part ID (0.477141ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with part ID (0.477141ms)"
+    ]
+  },
+  {
+    "mutation": "part-duplicate",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with duplicate part (0.488692ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with duplicate part (0.488692ms)"
+    ]
+  },
+  {
+    "mutation": "part-session",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with part session (0.465979ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with part session (0.465979ms)"
+    ]
+  },
+  {
+    "mutation": "part-message",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with part message (0.593099ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with part message (0.593099ms)"
+    ]
+  },
+  {
+    "mutation": "part-type",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with unknown part (0.473814ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with unknown part (0.473814ms)"
+    ]
+  },
+  {
+    "mutation": "start-count",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with extra start (0.516184ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with extra start (0.516184ms)"
+    ]
+  },
+  {
+    "mutation": "tool-count",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with missing tool (0.970401ms)",
+      "\u2716 refuses native result with extra tool (0.267475ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with missing tool (0.970401ms)",
+      "\u2716 refuses native result with extra tool (0.267475ms)"
+    ]
+  },
+  {
+    "mutation": "start-order",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with start ordering (0.557202ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with start ordering (0.557202ms)"
+    ]
+  },
+  {
+    "mutation": "finish-order",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with missing finish (0.954992ms)",
+      "\u2716 refuses native result with finish ordering (0.221568ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with missing finish (0.954992ms)",
+      "\u2716 refuses native result with finish ordering (0.221568ms)"
+    ]
+  },
+  {
+    "mutation": "step-reason",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with step reason (0.504221ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with step reason (0.504221ms)"
+    ]
+  },
+  {
+    "mutation": "tool-name",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with wrong tool (0.497308ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with wrong tool (0.497308ms)"
+    ]
+  },
+  {
+    "mutation": "call-type",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with numeric call ID (0.998273ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with numeric call ID (0.998273ms)"
+    ]
+  },
+  {
+    "mutation": "call-empty",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with empty call ID (0.568172ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with empty call ID (0.568172ms)"
+    ]
+  },
+  {
+    "mutation": "tool-status",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with failed tool (0.462242ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with failed tool (0.462242ms)"
+    ]
+  },
+  {
+    "mutation": "tool-validation",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with invalid tool (0.462352ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with invalid tool (0.462352ms)"
+    ]
+  },
+  {
+    "mutation": "tool-start",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with missing tool start (0.485275ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with missing tool start (0.485275ms)"
+    ]
+  },
+  {
+    "mutation": "tool-end",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with missing tool end (0.551621ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with missing tool end (0.551621ms)"
+    ]
+  },
+  {
+    "mutation": "tool-early",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with early tool (0.496597ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with early tool (0.496597ms)"
+    ]
+  },
+  {
+    "mutation": "tool-reversed",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with reversed tool time (0.468715ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with reversed tool time (0.468715ms)"
+    ]
+  },
+  {
+    "mutation": "tool-late",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with reversed completion (0.501927ms)",
+      "\u2716 refuses native result with late tool (0.163188ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with reversed completion (0.501927ms)",
+      "\u2716 refuses native result with late tool (0.163188ms)"
+    ]
+  },
+  {
+    "mutation": "input-equality",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses native result with tool input (0.462132ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses native result with tool input (0.462132ms)"
+    ]
+  },
+  {
+    "mutation": "readback",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 readback must match the whole native message (0.447294ms)",
+      "\u2716 failing tests:",
+      "\u2716 readback must match the whole native message (0.447294ms)"
+    ]
+  }
+]

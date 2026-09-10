@@ -1,0 +1,53 @@
+{
+  "sourceSha256": {
+    "opencode-result.mjs": "871bb62d4edaf93b900025ff1f4d9b139fce982e2d5e6d8a1969806b3a241c6f",
+    "opencode-models.mjs": "22cd10141ea0e72cf87bcca7c81ddfa0b6333725a7b1cf1952f029020a1fe61e",
+    "opencode-provider.mjs": "595577d4785633e8e1c74b06953ea9bcda3e452c83dd355472fa6bc7c4fd717b"
+  },
+  "tests": {
+    "result": 57,
+    "models": 11,
+    "providerInputs": 16,
+    "providerWiring": 18,
+    "connectorDefault": {
+      "passed": 339,
+      "failed": 0,
+      "nativeOptInSkipped": 4
+    }
+  },
+  "mutations": {
+    "result": {
+      "harmless": 1,
+      "targetedFailures": 44
+    },
+    "models": {
+      "harmless": 1,
+      "targetedFailures": 12
+    },
+    "provider": {
+      "harmless": 1,
+      "targetedFailures": 44
+    }
+  },
+  "native": {
+    "version": "1.18.30",
+    "syntheticOnly": true,
+    "modelCount": 49,
+    "unknownModelRefusedBeforeRequest": true,
+    "successfulRequests": 1,
+    "returnedProvider": "opencode",
+    "returnedAuthMode": "opencode_api",
+    "cancellation": {
+      "syntheticOnly": true,
+      "requests": 1,
+      "failureCode": "native_cancelled"
+    }
+  },
+  "limits": [
+    "OpenCode adapter is not yet registered in connector setup or dispatch",
+    "App routes, database constraints, UI, RLS and browser journeys remain unfinished",
+    "No real provider account access, billing or model usefulness acceptance",
+    "Application must still validate project answer schema and exact action approval",
+    "Component mocks test wiring only; separate native probes establish the installed-runtime behavior"
+  ]
+}

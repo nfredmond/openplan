@@ -1,0 +1,646 @@
+[
+  {
+    "mutation": "harmless-comment",
+    "exitCode": 0,
+    "expectationMet": true,
+    "failures": []
+  },
+  {
+    "mutation": "inspection-cancel",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 cancelled inspection does not read or launch the native profile (6.052084ms)",
+      "\u2716 failing tests:",
+      "\u2716 cancelled inspection does not read or launch the native profile (6.052084ms)"
+    ]
+  },
+  {
+    "mutation": "inspection-opt-in",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: inspectNoModels (33.267727ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: inspectNoModels (33.267727ms)"
+    ]
+  },
+  {
+    "mutation": "inspection-status",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: inspectMissing (32.85069ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: inspectMissing (32.85069ms)"
+    ]
+  },
+  {
+    "mutation": "inspection-version",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: inspectGood (34.049032ms)",
+      "\u2716 OpenCode provider joins retained components: inspectMissing (33.643657ms)",
+      "\u2716 OpenCode provider joins retained components: inspectNoModels (32.78166ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: inspectGood (34.049032ms)",
+      "\u2716 OpenCode provider joins retained components: inspectMissing (33.643657ms)",
+      "\u2716 OpenCode provider joins retained components: inspectNoModels (32.78166ms)"
+    ]
+  },
+  {
+    "mutation": "generation-pre-cancel",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 already-cancelled generation refuses before opening the relay or profile (1.299954ms)",
+      "\u2716 failing tests:",
+      "\u2716 already-cancelled generation refuses before opening the relay or profile (1.299954ms)"
+    ]
+  },
+  {
+    "mutation": "generation-error-cancel",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: callerCancellation (56.955751ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: callerCancellation (56.955751ms)"
+    ]
+  },
+  {
+    "mutation": "generation-close-cancel",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: lateCancellation (60.202981ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (60.202981ms)"
+    ]
+  },
+  {
+    "mutation": "model-type",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses missing model before native launch (2.421681ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses missing model before native launch (2.421681ms)"
+    ]
+  },
+  {
+    "mutation": "model-format",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses invalid model before native launch (1.18663ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses invalid model before native launch (1.18663ms)"
+    ]
+  },
+  {
+    "mutation": "requested-mode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses wrong backend mode before native launch (9.262104ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses wrong backend mode before native launch (9.262104ms)"
+    ]
+  },
+  {
+    "mutation": "prompt-type",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses nonstring prompt before native launch (0.983447ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses nonstring prompt before native launch (0.983447ms)"
+    ]
+  },
+  {
+    "mutation": "prompt-empty",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses empty prompt before native launch (10.017008ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses empty prompt before native launch (10.017008ms)"
+    ]
+  },
+  {
+    "mutation": "prompt-size",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses large prompt before native launch (10.01776ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses large prompt before native launch (10.01776ms)"
+    ]
+  },
+  {
+    "mutation": "instructions-type",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses nonstring instructions before native launch (1.030986ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses nonstring instructions before native launch (1.030986ms)"
+    ]
+  },
+  {
+    "mutation": "instructions-empty",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses empty instructions before native launch (9.487258ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses empty instructions before native launch (9.487258ms)"
+    ]
+  },
+  {
+    "mutation": "instructions-size",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses large instructions before native launch (9.687557ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses large instructions before native launch (9.687557ms)"
+    ]
+  },
+  {
+    "mutation": "schema-object",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses array schema before native launch (11.609404ms)",
+      "\u2716 refuses string schema before native launch (3.407543ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses array schema before native launch (11.609404ms)",
+      "\u2716 refuses string schema before native launch (3.407543ms)"
+    ]
+  },
+  {
+    "mutation": "schema-serialization",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses cyclic schemas with a fixed error (1.051665ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses cyclic schemas with a fixed error (1.051665ms)"
+    ]
+  },
+  {
+    "mutation": "schema-size",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 refuses large schema before native launch (12.352577ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses large schema before native launch (12.352577ms)"
+    ]
+  },
+  {
+    "mutation": "relay-abort",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: relayFailure (56.843849ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: relayFailure (56.843849ms)"
+    ]
+  },
+  {
+    "mutation": "configured-account",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: needsLogin (41.078941ms)",
+      "\u2716 OpenCode provider joins retained components: unsupported (38.544388ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: needsLogin (41.078941ms)",
+      "\u2716 OpenCode provider joins retained components: unsupported (38.544388ms)"
+    ]
+  },
+  {
+    "mutation": "configured-mode",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: changedMode (58.286664ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: changedMode (58.286664ms)"
+    ]
+  },
+  {
+    "mutation": "catalog-membership",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: unknownModel (55.251144ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: unknownModel (55.251144ms)"
+    ]
+  },
+  {
+    "mutation": "session-id",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: badSession (57.049799ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: badSession (57.049799ms)"
+    ]
+  },
+  {
+    "mutation": "message-id",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: badTurn (56.171632ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: badTurn (56.171632ms)"
+    ]
+  },
+  {
+    "mutation": "session-permission",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: good (61.416822ms)",
+      "\u2716 OpenCode provider joins retained components: badSession (58.159834ms)",
+      "\u2716 OpenCode provider joins retained components: badTurn (59.779512ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (55.496357ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (61.904843ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (54.766278ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (57.82896ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (58.588774ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (56.548522ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: good (61.416822ms)",
+      "\u2716 OpenCode provider joins retained components: badSession (58.159834ms)",
+      "\u2716 OpenCode provider joins retained components: badTurn (59.779512ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (55.496357ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (61.904843ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (54.766278ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (57.82896ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (58.588774ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (56.548522ms)"
+    ]
+  },
+  {
+    "mutation": "output-permission",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: good (65.624886ms)",
+      "\u2716 OpenCode provider joins retained components: badSession (57.725314ms)",
+      "\u2716 OpenCode provider joins retained components: badTurn (55.623587ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (58.7775ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (60.030896ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (60.955141ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (61.714574ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (66.820803ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (57.843147ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: good (65.624886ms)",
+      "\u2716 OpenCode provider joins retained components: badSession (57.725314ms)",
+      "\u2716 OpenCode provider joins retained components: badTurn (55.623587ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (58.7775ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (60.030896ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (60.955141ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (61.714574ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (66.820803ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (57.843147ms)"
+    ]
+  },
+  {
+    "mutation": "turn-provider",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: good (60.25576ms)",
+      "\u2716 OpenCode provider joins retained components: badTurn (59.843152ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (59.561801ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (62.688423ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (59.9744ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (61.238526ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (55.793247ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (59.668943ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: good (60.25576ms)",
+      "\u2716 OpenCode provider joins retained components: badTurn (59.843152ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (59.561801ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (62.688423ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (59.9744ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (61.238526ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (55.793247ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (59.668943ms)"
+    ]
+  },
+  {
+    "mutation": "turn-model",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: good (58.203968ms)",
+      "\u2716 OpenCode provider joins retained components: badTurn (55.429691ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (55.565867ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (63.56675ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (55.368084ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (60.410793ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (56.013393ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (60.706541ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: good (58.203968ms)",
+      "\u2716 OpenCode provider joins retained components: badTurn (55.429691ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (55.565867ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (63.56675ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (55.368084ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (60.410793ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (56.013393ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (60.706541ms)"
+    ]
+  },
+  {
+    "mutation": "turn-agent",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: good (62.536276ms)",
+      "\u2716 OpenCode provider joins retained components: badTurn (58.454761ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (58.962309ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (54.794922ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (59.575236ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (63.343389ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (59.825418ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (59.223011ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: good (62.536276ms)",
+      "\u2716 OpenCode provider joins retained components: badTurn (58.454761ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (58.962309ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (54.794922ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (59.575236ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (63.343389ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (59.825418ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (59.223011ms)"
+    ]
+  },
+  {
+    "mutation": "turn-instructions",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: good (62.010934ms)",
+      "\u2716 OpenCode provider joins retained components: badTurn (60.530539ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (64.771244ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (61.156692ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (57.093561ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (58.268339ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (57.790657ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (56.228449ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: good (62.010934ms)",
+      "\u2716 OpenCode provider joins retained components: badTurn (60.530539ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (64.771244ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (61.156692ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (57.093561ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (58.268339ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (57.790657ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (56.228449ms)"
+    ]
+  },
+  {
+    "mutation": "turn-schema",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: good (61.365817ms)",
+      "\u2716 OpenCode provider joins retained components: badTurn (59.521515ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (59.216078ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (61.341991ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (56.298631ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (57.358832ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (60.14383ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (58.121231ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: good (61.365817ms)",
+      "\u2716 OpenCode provider joins retained components: badTurn (59.521515ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (59.216078ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (61.341991ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (56.298631ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (57.358832ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (60.14383ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (58.121231ms)"
+    ]
+  },
+  {
+    "mutation": "native-retries",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: good (60.473301ms)",
+      "\u2716 OpenCode provider joins retained components: badTurn (56.37782ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (57.867502ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (59.680305ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (56.642881ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (54.059684ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (60.422716ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (57.561234ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: good (60.473301ms)",
+      "\u2716 OpenCode provider joins retained components: badTurn (56.37782ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (57.867502ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (59.680305ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (56.642881ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (54.059684ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (60.422716ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (57.561234ms)"
+    ]
+  },
+  {
+    "mutation": "turn-prompt",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: good (60.411284ms)",
+      "\u2716 OpenCode provider joins retained components: badTurn (57.988891ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (60.299914ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (61.610638ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (56.142826ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (57.599958ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (58.92028ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (55.435041ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: good (60.411284ms)",
+      "\u2716 OpenCode provider joins retained components: badTurn (57.988891ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (60.299914ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (61.610638ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (56.142826ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (57.599958ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (58.92028ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (55.435041ms)"
+    ]
+  },
+  {
+    "mutation": "exact-readback",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: good (62.077219ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (56.707934ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (58.159584ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (56.874207ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (62.052793ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (56.238848ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (60.547862ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: good (62.077219ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (56.707934ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (58.159584ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (56.874207ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (62.052793ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (56.238848ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (60.547862ms)"
+    ]
+  },
+  {
+    "mutation": "result-validator",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: changedReadback (55.528859ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: changedReadback (55.528859ms)"
+    ]
+  },
+  {
+    "mutation": "relay-failure-cause",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: relayFailure (60.156563ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: relayFailure (60.156563ms)"
+    ]
+  },
+  {
+    "mutation": "wait-server",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: good (45.656874ms)",
+      "\u2716 OpenCode provider joins retained components: badSession (39.577779ms)",
+      "\u2716 OpenCode provider joins retained components: badTurn (43.828201ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (41.762282ms)",
+      "\u2716 OpenCode provider joins retained components: relayFailure (42.234063ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (43.550097ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (39.903072ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (47.269558ms)",
+      "\u2716 OpenCode provider joins retained components: callerCancellation (43.362422ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (44.218018ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (44.000717ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: good (45.656874ms)",
+      "\u2716 OpenCode provider joins retained components: badSession (39.577779ms)",
+      "\u2716 OpenCode provider joins retained components: badTurn (43.828201ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (41.762282ms)",
+      "\u2716 OpenCode provider joins retained components: relayFailure (42.234063ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (43.550097ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (39.903072ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (47.269558ms)",
+      "\u2716 OpenCode provider joins retained components: callerCancellation (43.362422ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (44.218018ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (44.000717ms)"
+    ]
+  },
+  {
+    "mutation": "wait-relay",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: good (54.67159ms)",
+      "\u2716 OpenCode provider joins retained components: needsLogin (36.998339ms)",
+      "\u2716 OpenCode provider joins retained components: unsupported (37.373748ms)",
+      "\u2716 OpenCode provider joins retained components: changedMode (34.306037ms)",
+      "\u2716 OpenCode provider joins retained components: unknownModel (43.233028ms)",
+      "\u2716 OpenCode provider joins retained components: badSession (48.969988ms)",
+      "\u2716 OpenCode provider joins retained components: badTurn (56.80166ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (50.6237ms)",
+      "\u2716 OpenCode provider joins retained components: relayFailure (54.152991ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (53.220641ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (51.654985ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (53.154917ms)",
+      "\u2716 OpenCode provider joins retained components: callerCancellation (54.834327ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (54.340545ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (53.379952ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: good (54.67159ms)",
+      "\u2716 OpenCode provider joins retained components: needsLogin (36.998339ms)",
+      "\u2716 OpenCode provider joins retained components: unsupported (37.373748ms)",
+      "\u2716 OpenCode provider joins retained components: changedMode (34.306037ms)",
+      "\u2716 OpenCode provider joins retained components: unknownModel (43.233028ms)",
+      "\u2716 OpenCode provider joins retained components: badSession (48.969988ms)",
+      "\u2716 OpenCode provider joins retained components: badTurn (56.80166ms)",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (50.6237ms)",
+      "\u2716 OpenCode provider joins retained components: relayFailure (54.152991ms)",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (53.220641ms)",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (51.654985ms)",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (53.154917ms)",
+      "\u2716 OpenCode provider joins retained components: callerCancellation (54.834327ms)",
+      "\u2716 OpenCode provider joins retained components: lateCancellation (54.340545ms)",
+      "\u2716 OpenCode provider joins retained components: changedReadback (53.379952ms)"
+    ]
+  },
+  {
+    "mutation": "cleanup-after-error",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (49.10388ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: serverCloseFailure (49.10388ms)"
+    ]
+  },
+  {
+    "mutation": "request-count",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: zeroBudget (60.300155ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: zeroBudget (60.300155ms)"
+    ]
+  },
+  {
+    "mutation": "terminal-relay",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (58.318053ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: lateRelayFailure (58.318053ms)"
+    ]
+  },
+  {
+    "mutation": "terminal-server",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (58.152249ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: lateServerFailure (58.152249ms)"
+    ]
+  },
+  {
+    "mutation": "receipt-provider",
+    "exitCode": 1,
+    "expectationMet": true,
+    "failures": [
+      "\u2716 OpenCode provider joins retained components: good (64.501114ms)",
+      "\u2716 failing tests:",
+      "\u2716 OpenCode provider joins retained components: good (64.501114ms)"
+    ]
+  }
+]

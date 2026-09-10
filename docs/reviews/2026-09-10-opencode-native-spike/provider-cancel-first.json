@@ -1,0 +1,5 @@
+{
+  "syntheticOnly": true,
+  "requests": 1,
+  "failureCode": "native_relay_interrupted"
+}

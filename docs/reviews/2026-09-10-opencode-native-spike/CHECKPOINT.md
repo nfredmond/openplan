@@ -224,3 +224,44 @@ sanitized native receipts. Private probes are `probe-owned-process.mjs` and
 Next: bounded model-inspection command, exact parent/model/tool/result validation,
 provider dispatch and existing connector cleanup integration. Then SQL/UI/RLS
 and real browser acceptance. No user-facing OpenCode support is claimed yet.
+
+## Validated native provider adapter, September 10
+
+The new model command runs the plain OpenAI catalog with network isolation and
+bounded output, cancellation and child-exit handling. The result validator requires
+the requested session and parent, selected provider/model/agent, correctly bound
+message parts, one completed validated StructuredOutput call and an identical
+native readback. Narrative parts cannot replace the structured answer. The app
+still owns project-schema validation and exact action approval.
+
+The provider adapter joins those components with the existing fixed one-request
+relay. It checks the local credential mode and catalog membership before sending
+the frozen request. It closes the native server before the relay, including relay
+cleanup when server closure fails, and checks terminal failures before returning
+an answer. This adapter is not yet registered in connector setup or dispatch.
+
+Tests: 57 result cases, 11 catalog-command cases, 16 provider-input cases and
+18 component-wiring cases. Three harmless mutations survived; 44 result, 12 model
+command and 44 provider changes failed. The component mocks record actual request
+arguments and cleanup order, and assertions outside the adapter's catch prevent
+it from masking fixture failures. Separate native probes exercise the real runtime.
+Two result fixtures originally failed through different checks: bad assistant IDs
+left old part IDs behind, and an unknown part replaced the only tool. The corrected
+fixtures isolate ID shape and add the unknown part alongside the valid tool.
+The earlier survivor receipts remain. Completion order is enforced by the required
+tool start/end bounds; redundant chronology and finish-count checks were removed.
+
+The installed 1.18.30 runtime returned 49 offline model IDs, refused the absent
+gpt-6 ID before a provider request and completed one fully validated synthetic
+gpt-6-astra answer through the adapter. Actual native cancellation initially came
+back as native_relay_interrupted. The new adapter now preserves external cancellation
+before relay errors, including cancellation during cleanup. The corrected native
+probe returns native_cancelled. The failed receipt remains in provider-cancel-first.json.
+No real provider key, billing call or model-quality acceptance was used.
+
+The restored complete connector suite passes 339 tests with four explicit native
+skips. provider-checks.json retains source digests and sanitized native receipts.
+Private scripts are probe-provider.mjs and probe-provider-cancel.mjs. Next register
+OpenCode/opencode_api in the connector and app, preserve retained journal recovery,
+then complete SQL/RLS, desktop/390px browser evidence and release checks. Main and
+the package remain at the published v0.53.0 boundary until that integration lands.
