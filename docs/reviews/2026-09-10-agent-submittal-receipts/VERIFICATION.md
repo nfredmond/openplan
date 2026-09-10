@@ -1,9 +1,9 @@
-# Approved project-submittal recovery — implementation checkpoint
+# Approved project-submittal recovery — v0.51.0 verification
 
 Based on released v0.50.0 at0df7a50a. The current branch is
 work/agent-submittal-receipts in the existing isolated agent-hold-receipts checkout;
 no app server is running there. v0.50.0's final CI receipts are retained beside its
-verification history. Implementation is present and focused verification is underway. This increment is not released.
+verification history. The checkpoints below preserve implementation findings. The final engineering evidence is recorded at the end; final main CI and tagging remain pending at release preparation.
 
 Continue roadmap A1a by extending the existing receipt ledger to the registered
 create_project_record action, which creates a submittal on an existing project.
@@ -120,3 +120,46 @@ The affected17 UI tests and scoped lint pass; harmless whitespace survives and
 substituting accepted for the original status fails the intended assertion.
 A new frozen build and repeated browser journey are still required for this display
 correction. Initial screenshots/results remain in the scratch first-journey folder.
+
+
+## Final browser and release preparation
+
+The final browser build is a1cc1ae5f73a158348c00b2711aa7cdbba476364, served from
+the isolated agent-hold-receipts checkout on3282 and identified before navigation.
+The package still read0.50.0 during that frozen journey; the0.51.0 version bump
+follows acceptance and changes release metadata, not the accepted workflow.
+
+Repeated desktop1440 and390px journeys passed after the display correction. Both
+used real sign-in, Projects navigation, Planner Agent approval, Activity recovery
+and Delivery status controls. Only model proposal SSE was synthetic; delayed context
+responses retained their real contents, and all approval/effect/read/auth routes
+were real. Each after-response interruption recovered one committed result without
+another POST. Each before-server interruption resumed the original approval after
+reload and committed one record/receipt. Repeated POSTs returned200 and the same ID;
+anonymous recovery reads returned401. Manual keyboard status advance produced
+internal_review while both the retained receipt and visible original-status text
+remained draft. Original project names and invoice-backup types were visible.
+
+There were exactly two deliberately induced connection-failure console entries per
+viewport, no page errors, and no unexpected HTTP failures. Document width matched
+1440/390; recovery content matched panel widths1084/290. Screenshots were inspected
+for readable fields, reachable controls and wrapping. Browser servers are stopped.
+
+Full QA/build and shuffled seed510091 at729fc8e2 passed13,656 tests in1,245files;
+329tests in37files are intentionally skipped without their live environments.
+The subsequent display-only correction passed17 affected UI tests, scoped lint,
+its production build and the repeated browser journeys. Live RLS passed358tests in
+44files against openplan-restore-target-2026091050. All52 worker suites passed.
+Retained pre-upgrade approval/audit rows remain unchanged after the browser work;
+the comparison is limited to its original19+19 IDs, not later synthetic fixtures.
+
+v0.51.0 release metadata is now prepared. Final main CI and populated v0.50.0 upgrade
+results must be recorded and inspected before the tag. No human sign-off, paid
+service, reminder constraint change or demo deployment is required or claimed.
+
+Release ordering passed with313 migrations; a harmless comment survived and a
+wrong314 count failed the high-water-mark assertions. Product direction passed
+after correcting the registry's currentRelease field to match the package. Review
+dates and capability statuses were not promoted. The raw pre-upgrade snapshot
+stays in the local evidence directory; this repository retains its checksum,
+counts and comparison code rather than publishing the raw approval history.

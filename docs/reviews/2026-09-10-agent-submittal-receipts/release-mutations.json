@@ -1,0 +1,12 @@
+[
+  {
+    "name": "release-harmless",
+    "exit": 0,
+    "expectedOutcome": true
+  },
+  {
+    "name": "release-wrong-count",
+    "exit": 1,
+    "expectedOutcome": true
+  }
+]

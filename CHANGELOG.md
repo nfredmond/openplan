@@ -20,16 +20,30 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-Approved project submittals are being extended with atomic result receipts and
-same-consent recovery from Planner Agent Activity. Implementation verification is
-in progress; this is not a release declaration.
+No changes yet.
 
-Apply `20261009000001_assistant_submittal_receipts.sql` before running this build.
-It extends the existing receipt constraint and adds service-only receipt read and
-submittal transaction functions. No historical records are rewritten. Earlier
-approvals without retained context cannot be resumed; inspect the existing record
-before reviewing a new request. The registered action still creates only a
-submittal on an existing project, with no assignments or extra record fields.
+## 0.51.0 — 2026-09-10
+
+Approved project submittals now retain their exact approved request and original
+creation receipt. Planner Agent Activity can check a saved result after an
+interrupted response or explicitly resume the same unexpired consent. Concurrent
+retries return the same submittal. The recovery card shows the original project
+name, status and type even after a later manual status change.
+
+Apply `20261009000001_assistant_submittal_receipts.sql` before running this version.
+It extends the existing receipt constraint and adds service-only read and submittal
+transaction functions. Historical rows remain unchanged. Earlier approvals without
+retained context cannot be resumed; inspect existing work before reviewing a new
+request. Manual project-record controls retain their existing behavior.
+
+[Engineering verification](docs/reviews/2026-09-10-agent-submittal-receipts/VERIFICATION.md)
+records full QA/shuffle, isolated RLS, rollback/concurrency/connection-loss checks,
+workers, retained pre-upgrade records and desktop/390px keyboard browser recovery.
+Final main CI and the populated previous-release upgrade are checked before tagging.
+
+The action still creates only a submittal on an existing project. It does not assign
+staff, submit anything to an agency, add an external agent identity or provider
+adapter, supply prescribed forms, or change scientific validation claims.
 
 ## 0.50.0 — 2026-09-10
 

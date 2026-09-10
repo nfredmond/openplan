@@ -1,0 +1,308 @@
+[
+  {
+    "width": 1440,
+    "health": {
+      "commit": "a1cc1ae5f73a",
+      "version": "0.50.0"
+    },
+    "saved": {
+      "approvalId": "580f293a-5b17-4197-b3f4-be44aa358e33",
+      "approval": {
+        "id": "580f293a-5b17-4197-b3f4-be44aa358e33",
+        "input_hash": "5bc18e50a385aa39ffe9b386f29ba892c814c8f6ee1a0c49a75720e7d709c8c8",
+        "consumed_at": "2026-09-10T12:08:17.842031+00:00",
+        "execution_context": {
+          "action": {
+            "kind": "create_project_record",
+            "notes": "Synthetic recovery exercise; no real agency submission.",
+            "title": "SYNTHETIC after-response submittal 1440 1789042095595",
+            "projectId": "daea1aad-c1ea-4a74-94da-89e512ea86fe",
+            "recordType": "submittal",
+            "submittalType": "invoice_backup"
+          },
+          "project": {
+            "id": "daea1aad-c1ea-4a74-94da-89e512ea86fe",
+            "name": "SYNTHETIC audit retained 1440",
+            "workspaceId": "e5d07b22-4ee6-41dc-828f-0dbfc93383f1"
+          },
+          "version": 1
+        },
+        "user_id": "f5a71ef2-4dfa-44f6-860d-61fb24b3dcb6"
+      },
+      "records": [
+        {
+          "id": "c77a5a8c-a287-4db4-a9f1-bf11f63a31ce",
+          "title": "SYNTHETIC after-response submittal 1440 1789042095595",
+          "status": "draft",
+          "notes": "Synthetic recovery exercise; no real agency submission."
+        }
+      ],
+      "executions": [
+        {
+          "id": "e11e4030-d45d-4998-8fa2-eada5450f77e",
+          "result_receipt": {
+            "record": {
+              "id": "c77a5a8c-a287-4db4-a9f1-bf11f63a31ce",
+              "notes": "Synthetic recovery exercise; no real agency submission.",
+              "title": "SYNTHETIC after-response submittal 1440 1789042095595",
+              "status": "draft",
+              "due_date": null,
+              "created_at": "2026-09-10T12:08:17.838068+00:00",
+              "created_by": "f5a71ef2-4dfa-44f6-860d-61fb24b3dcb6",
+              "project_id": "daea1aad-c1ea-4a74-94da-89e512ea86fe",
+              "updated_at": "2026-09-10T12:08:17.838068+00:00",
+              "agency_label": null,
+              "review_cycle": 1,
+              "submitted_at": null,
+              "submittal_type": "invoice_backup",
+              "assignee_user_id": null,
+              "reference_number": null
+            },
+            "recordType": "submittal",
+            "schemaVersion": 1
+          },
+          "approval_id": "580f293a-5b17-4197-b3f4-be44aa358e33",
+          "input_hash": "5bc18e50a385aa39ffe9b386f29ba892c814c8f6ee1a0c49a75720e7d709c8c8"
+        }
+      ]
+    },
+    "resumed": {
+      "approvalId": "ff55434f-2669-41dd-9123-a67530cb9af7",
+      "approval": {
+        "id": "ff55434f-2669-41dd-9123-a67530cb9af7",
+        "input_hash": "45d51fea8ca6c19812996e37ef361c1725540b76e7fc0106735952f0921c6092",
+        "consumed_at": "2026-09-10T12:08:23.186171+00:00",
+        "execution_context": {
+          "action": {
+            "kind": "create_project_record",
+            "notes": "Synthetic recovery exercise; no real agency submission.",
+            "title": "SYNTHETIC before-response submittal 1440 1789042100025",
+            "projectId": "daea1aad-c1ea-4a74-94da-89e512ea86fe",
+            "recordType": "submittal",
+            "submittalType": "invoice_backup"
+          },
+          "project": {
+            "id": "daea1aad-c1ea-4a74-94da-89e512ea86fe",
+            "name": "SYNTHETIC audit retained 1440",
+            "workspaceId": "e5d07b22-4ee6-41dc-828f-0dbfc93383f1"
+          },
+          "version": 1
+        },
+        "user_id": "f5a71ef2-4dfa-44f6-860d-61fb24b3dcb6"
+      },
+      "records": [
+        {
+          "id": "efb03cce-f716-4b19-bcf1-2fb5398e2bb9",
+          "title": "SYNTHETIC before-response submittal 1440 1789042100025",
+          "status": "draft",
+          "notes": "Synthetic recovery exercise; no real agency submission."
+        }
+      ],
+      "executions": [
+        {
+          "id": "14c5296f-7651-478b-8ca6-2660a2bbbdbe",
+          "result_receipt": {
+            "record": {
+              "id": "efb03cce-f716-4b19-bcf1-2fb5398e2bb9",
+              "notes": "Synthetic recovery exercise; no real agency submission.",
+              "title": "SYNTHETIC before-response submittal 1440 1789042100025",
+              "status": "draft",
+              "due_date": null,
+              "created_at": "2026-09-10T12:08:23.182742+00:00",
+              "created_by": "f5a71ef2-4dfa-44f6-860d-61fb24b3dcb6",
+              "project_id": "daea1aad-c1ea-4a74-94da-89e512ea86fe",
+              "updated_at": "2026-09-10T12:08:23.182742+00:00",
+              "agency_label": null,
+              "review_cycle": 1,
+              "submitted_at": null,
+              "submittal_type": "invoice_backup",
+              "assignee_user_id": null,
+              "reference_number": null
+            },
+            "recordType": "submittal",
+            "schemaVersion": 1
+          },
+          "approval_id": "ff55434f-2669-41dd-9123-a67530cb9af7",
+          "input_hash": "45d51fea8ca6c19812996e37ef361c1725540b76e7fc0106735952f0921c6092"
+        }
+      ]
+    },
+    "laterStatus": "internal_review",
+    "originalStatus": "draft",
+    "postCount": 3,
+    "replay": 200,
+    "anonymous": 401,
+    "geometry": {
+      "viewport": 1440,
+      "scroll": 1440,
+      "left": 305,
+      "right": 1391,
+      "width": 1084,
+      "content": 1084
+    },
+    "errors": [
+      {
+        "type": "console",
+        "text": "Failed to load resource: net::ERR_CONNECTION_FAILED"
+      },
+      {
+        "type": "console",
+        "text": "Failed to load resource: net::ERR_CONNECTION_FAILED"
+      }
+    ],
+    "responses": []
+  },
+  {
+    "width": 390,
+    "health": {
+      "commit": "a1cc1ae5f73a",
+      "version": "0.50.0"
+    },
+    "saved": {
+      "approvalId": "d362fbb3-e8c9-42e6-9ae1-919a6a3414c2",
+      "approval": {
+        "id": "d362fbb3-e8c9-42e6-9ae1-919a6a3414c2",
+        "input_hash": "263eb9f5a804330908bf309d2d2b68ef81a526022939a3c415e454cb6ca7066f",
+        "consumed_at": "2026-09-10T12:08:29.674337+00:00",
+        "execution_context": {
+          "action": {
+            "kind": "create_project_record",
+            "notes": "Synthetic recovery exercise; no real agency submission.",
+            "title": "SYNTHETIC after-response submittal 390 1789042107805",
+            "projectId": "c8b59371-a3a0-4df3-b633-581f7555e4b7",
+            "recordType": "submittal",
+            "submittalType": "invoice_backup"
+          },
+          "project": {
+            "id": "c8b59371-a3a0-4df3-b633-581f7555e4b7",
+            "name": "SYNTHETIC audit retained 390",
+            "workspaceId": "e5d07b22-4ee6-41dc-828f-0dbfc93383f1"
+          },
+          "version": 1
+        },
+        "user_id": "f5a71ef2-4dfa-44f6-860d-61fb24b3dcb6"
+      },
+      "records": [
+        {
+          "id": "5f293e5f-77d1-4e15-aede-cf6b1f7c13d3",
+          "title": "SYNTHETIC after-response submittal 390 1789042107805",
+          "status": "draft",
+          "notes": "Synthetic recovery exercise; no real agency submission."
+        }
+      ],
+      "executions": [
+        {
+          "id": "97ee2329-9a07-46b0-8cad-208088f3f8c2",
+          "result_receipt": {
+            "record": {
+              "id": "5f293e5f-77d1-4e15-aede-cf6b1f7c13d3",
+              "notes": "Synthetic recovery exercise; no real agency submission.",
+              "title": "SYNTHETIC after-response submittal 390 1789042107805",
+              "status": "draft",
+              "due_date": null,
+              "created_at": "2026-09-10T12:08:29.670506+00:00",
+              "created_by": "f5a71ef2-4dfa-44f6-860d-61fb24b3dcb6",
+              "project_id": "c8b59371-a3a0-4df3-b633-581f7555e4b7",
+              "updated_at": "2026-09-10T12:08:29.670506+00:00",
+              "agency_label": null,
+              "review_cycle": 1,
+              "submitted_at": null,
+              "submittal_type": "invoice_backup",
+              "assignee_user_id": null,
+              "reference_number": null
+            },
+            "recordType": "submittal",
+            "schemaVersion": 1
+          },
+          "approval_id": "d362fbb3-e8c9-42e6-9ae1-919a6a3414c2",
+          "input_hash": "263eb9f5a804330908bf309d2d2b68ef81a526022939a3c415e454cb6ca7066f"
+        }
+      ]
+    },
+    "resumed": {
+      "approvalId": "1e09e870-ee97-4fb2-bf58-58d7be38ce70",
+      "approval": {
+        "id": "1e09e870-ee97-4fb2-bf58-58d7be38ce70",
+        "input_hash": "2cf0ce373e042e9aac24a0b7fb9eb9cec149ef7e9150aea26024c9b2342c31d7",
+        "consumed_at": "2026-09-10T12:08:34.705489+00:00",
+        "execution_context": {
+          "action": {
+            "kind": "create_project_record",
+            "notes": "Synthetic recovery exercise; no real agency submission.",
+            "title": "SYNTHETIC before-response submittal 390 1789042111588",
+            "projectId": "c8b59371-a3a0-4df3-b633-581f7555e4b7",
+            "recordType": "submittal",
+            "submittalType": "invoice_backup"
+          },
+          "project": {
+            "id": "c8b59371-a3a0-4df3-b633-581f7555e4b7",
+            "name": "SYNTHETIC audit retained 390",
+            "workspaceId": "e5d07b22-4ee6-41dc-828f-0dbfc93383f1"
+          },
+          "version": 1
+        },
+        "user_id": "f5a71ef2-4dfa-44f6-860d-61fb24b3dcb6"
+      },
+      "records": [
+        {
+          "id": "d859e437-d24c-46ab-82ee-e66f840f5100",
+          "title": "SYNTHETIC before-response submittal 390 1789042111588",
+          "status": "draft",
+          "notes": "Synthetic recovery exercise; no real agency submission."
+        }
+      ],
+      "executions": [
+        {
+          "id": "63cccd69-cd32-47e8-9ef0-5871d6956e8a",
+          "result_receipt": {
+            "record": {
+              "id": "d859e437-d24c-46ab-82ee-e66f840f5100",
+              "notes": "Synthetic recovery exercise; no real agency submission.",
+              "title": "SYNTHETIC before-response submittal 390 1789042111588",
+              "status": "draft",
+              "due_date": null,
+              "created_at": "2026-09-10T12:08:34.702011+00:00",
+              "created_by": "f5a71ef2-4dfa-44f6-860d-61fb24b3dcb6",
+              "project_id": "c8b59371-a3a0-4df3-b633-581f7555e4b7",
+              "updated_at": "2026-09-10T12:08:34.702011+00:00",
+              "agency_label": null,
+              "review_cycle": 1,
+              "submitted_at": null,
+              "submittal_type": "invoice_backup",
+              "assignee_user_id": null,
+              "reference_number": null
+            },
+            "recordType": "submittal",
+            "schemaVersion": 1
+          },
+          "approval_id": "1e09e870-ee97-4fb2-bf58-58d7be38ce70",
+          "input_hash": "2cf0ce373e042e9aac24a0b7fb9eb9cec149ef7e9150aea26024c9b2342c31d7"
+        }
+      ]
+    },
+    "laterStatus": "internal_review",
+    "originalStatus": "draft",
+    "postCount": 3,
+    "replay": 200,
+    "anonymous": 401,
+    "geometry": {
+      "viewport": 390,
+      "scroll": 390,
+      "left": 49,
+      "right": 341,
+      "width": 290,
+      "content": 290
+    },
+    "errors": [
+      {
+        "type": "console",
+        "text": "Failed to load resource: net::ERR_CONNECTION_FAILED"
+      },
+      {
+        "type": "console",
+        "text": "Failed to load resource: net::ERR_CONNECTION_FAILED"
+      }
+    ],
+    "responses": []
+  }
+]
