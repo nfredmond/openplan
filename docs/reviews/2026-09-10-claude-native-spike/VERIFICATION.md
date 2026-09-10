@@ -78,3 +78,23 @@ in Unreleased, which was corrected without weakening the guard. See the
 the current UID do not establish a separate-UID or installed managed-policy case.
 No scientific validation, agency authority, human usefulness or whole-product claim
 is promoted by this release.
+
+## Publication receipt
+
+Published [v0.53.0](https://github.com/nfredmond/openplan/releases/tag/v0.53.0)
+on September 10 at 18:01:25 UTC. Annotated tag object
+`1a023eeb6c166b3e44d9c25fa8ed7601a8aaa455` peels to release source
+`e1618aa1cac020d2957816dbe747dbf59bd719e5`; the remote tag was checked independently.
+The release is public, not a draft or prerelease. Main was fast-forwarded directly.
+
+[Final CI receipt](release-ci.json) records every successful job on that exact SHA:
+CI 34509829077, RLS Isolation 34509829003 and Upgrade Path 34509829115. Full QA and
+shuffled tests each passed 13,760 tests with 378 skips. CI's environment has seven
+more skips than the earlier local suite; skips are not passing evidence. Default
+connector tests passed 93 with three native opt-in skips; all 96 had separate local
+installed-native acceptance. The dependency audit reported zero vulnerabilities,
+production build succeeded, and Python worker/modeling/operations jobs passed.
+Live RLS passed 400 tests in 46 files. The populated v0.52.1-to-release upgrade
+preserved its seeded records; local migration receipts separately cover the actual
+existing native connection/turn rows. No human review or hosted deployment was a
+release prerequisite. Future provider work starts after this published boundary.

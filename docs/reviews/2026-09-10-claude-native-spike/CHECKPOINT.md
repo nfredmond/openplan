@@ -1,5 +1,5 @@
 Current status: implementation and identified desktop/390px acceptance are complete.
-The v0.53.0 release candidate awaits final main CI and populated upgrade checks.
+v0.53.0 is published at e1618aa1 after successful final CI, isolation and populated upgrade checks.
 See [current verification](VERIFICATION.md). Earlier pending statements below are
 checkpoint history and retain the actual failures and corrections.
 

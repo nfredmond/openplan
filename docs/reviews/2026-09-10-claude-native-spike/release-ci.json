@@ -1,0 +1,113 @@
+{
+  "sourceCommit": "e1618aa1cac020d2957816dbe747dbf59bd719e5",
+  "tagObject": "1a023eeb6c166b3e44d9c25fa8ed7601a8aaa455",
+  "release": {
+    "isDraft": false,
+    "isPrerelease": false,
+    "publishedAt": "2026-09-10T18:01:25Z",
+    "tagName": "v0.53.0",
+    "url": "https://github.com/nfredmond/openplan/releases/tag/v0.53.0"
+  },
+  "workflows": [
+    {
+      "headSha": "e1618aa1cac020d2957816dbe747dbf59bd719e5",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34509829077",
+      "workflowName": "CI",
+      "jobs": [
+        {
+          "name": "worker (python unit tests)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-09-10T17:42:16Z",
+          "completedAt": "2026-09-10T17:42:49Z"
+        },
+        {
+          "name": "order independence (shuffled vitest)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-09-10T17:42:16Z",
+          "completedAt": "2026-09-10T17:51:42Z"
+        },
+        {
+          "name": "ops scripts (python unit tests)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-09-10T17:42:16Z",
+          "completedAt": "2026-09-10T17:43:21Z"
+        },
+        {
+          "name": "verify (qa gate)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-09-10T17:42:19Z",
+          "completedAt": "2026-09-10T17:59:55Z"
+        },
+        {
+          "name": "modeling scripts (python unit tests)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-09-10T17:42:17Z",
+          "completedAt": "2026-09-10T17:43:33Z"
+        }
+      ]
+    },
+    {
+      "headSha": "e1618aa1cac020d2957816dbe747dbf59bd719e5",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34509829003",
+      "workflowName": "RLS Isolation",
+      "jobs": [
+        {
+          "name": "live RLS isolation",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-09-10T17:42:16Z",
+          "completedAt": "2026-09-10T17:49:58Z"
+        }
+      ]
+    },
+    {
+      "headSha": "e1618aa1cac020d2957816dbe747dbf59bd719e5",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34509829115",
+      "workflowName": "Upgrade Path",
+      "jobs": [
+        {
+          "name": "previous release -> seed -> HEAD migration up",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-09-10T17:42:17Z",
+          "completedAt": "2026-09-10T17:45:51Z"
+        }
+      ]
+    }
+  ],
+  "qa": {
+    "passed": 13760,
+    "skipped": 378,
+    "filesPassed": 1249,
+    "filesSkipped": 39,
+    "connectorPassed": 93,
+    "connectorNativeOptInSkipped": 3,
+    "auditVulnerabilities": 0,
+    "build": "success"
+  },
+  "shuffle": {
+    "passed": 13760,
+    "skipped": 378
+  },
+  "rls": {
+    "passed": 400,
+    "files": 46
+  },
+  "upgrade": {
+    "base": "v0.52.1",
+    "target": "e1618aa1cac020d2957816dbe747dbf59bd719e5",
+    "seededRecordCounts": "2:2:1:1:1:1:1",
+    "outcome": "success"
+  }
+}
