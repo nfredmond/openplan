@@ -34,5 +34,16 @@
       "details": "The result contains 2 rows"
     },
     "retained": 0
+  },
+  {
+    "scenario": "suppressed",
+    "mode": "single",
+    "status": 406,
+    "error": {
+      "code": "PGRST116",
+      "message": "Cannot coerce the result to a single JSON object",
+      "details": "The result contains 0 rows"
+    },
+    "retained": 0
   }
 ]

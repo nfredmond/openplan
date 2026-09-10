@@ -1,0 +1,22 @@
+[
+  {
+    "width": 1440,
+    "health": {
+      "commit": "ccae4cf7ca19",
+      "version": "0.49.2"
+    },
+    "decisionsAndAuditCountsUnchanged": true,
+    "activityOutcomesMatch": true,
+    "console": []
+  },
+  {
+    "width": 390,
+    "health": {
+      "commit": "ccae4cf7ca19",
+      "version": "0.49.2"
+    },
+    "decisionsAndAuditCountsUnchanged": true,
+    "activityOutcomesMatch": true,
+    "console": []
+  }
+]

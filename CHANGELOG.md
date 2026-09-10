@@ -24,8 +24,8 @@ No changes yet.
 
 ## 0.49.2 — 2026-09-10
 
-Development candidate. [Verification](docs/reviews/2026-09-10-assistant-audit-outcomes/VERIFICATION.md)
-tracks the outstanding release checks. No new database migration.
+Development release. [Verification](docs/reviews/2026-09-10-assistant-audit-outcomes/VERIFICATION.md)
+records the tested outcomes and remaining boundaries. No new database migration.
 
 - Stop marking a rejected stage-gate decision as a successful Planner Agent
   action. Missing decision responses no longer claim a saved decision.

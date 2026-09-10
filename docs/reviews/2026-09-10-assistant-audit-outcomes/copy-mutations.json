@@ -1,0 +1,10 @@
+[
+  {
+    "name": "copy-final-harmless",
+    "exitCode": 0
+  },
+  {
+    "name": "copy-final-old-wording",
+    "exitCode": 1
+  }
+]

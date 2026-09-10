@@ -1,0 +1,42 @@
+{
+  "workspaceId": "e5d07b22-4ee6-41dc-828f-0dbfc93383f1",
+  "userId": "f5a71ef2-4dfa-44f6-860d-61fb24b3dcb6",
+  "projects": [
+    {
+      "width": 1440,
+      "scenario": "refused",
+      "name": "SYNTHETIC audit refused 1440",
+      "id": "87b2e543-d5bd-4fe9-96e4-c212472bdd17"
+    },
+    {
+      "width": 1440,
+      "scenario": "missing",
+      "name": "SYNTHETIC audit missing 1440",
+      "id": "332062cf-cba1-425d-af4b-bb1b2a2324b3"
+    },
+    {
+      "width": 1440,
+      "scenario": "retained",
+      "name": "SYNTHETIC audit retained 1440",
+      "id": "daea1aad-c1ea-4a74-94da-89e512ea86fe"
+    },
+    {
+      "width": 390,
+      "scenario": "refused",
+      "name": "SYNTHETIC audit refused 390",
+      "id": "fc91e076-dfc5-4c3a-a937-c55b8445e9ac"
+    },
+    {
+      "width": 390,
+      "scenario": "missing",
+      "name": "SYNTHETIC audit missing 390",
+      "id": "b6d50c4b-d9b0-45ad-a294-3ed8c83fe5e7"
+    },
+    {
+      "width": 390,
+      "scenario": "retained",
+      "name": "SYNTHETIC audit retained 390",
+      "id": "c8b59371-a3a0-4df3-b633-581f7555e4b7"
+    }
+  ]
+}

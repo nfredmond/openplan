@@ -168,8 +168,18 @@ No credentials, real client records or production data are included.
 
 ## Release checkpoint and following work
 
-Engineering browser acceptance is complete. Publication still awaits the final
-main commit's CI and upgrade checks; no human sign-off is a release gate.
+Engineering browser acceptance is complete. Published v0.49.1 on September 10
+after final-main CI and upgrade checks passed; no human sign-off was required.
 A1a remains incomplete: server audit outcome truthfulness, optional-consent,
 durable recovery and scoped external-agent/MCP behavior are separate work.
 The unstamped production identity-helper defect remains a concrete follow-up.
+
+## Published receipt
+
+[v0.49.1](https://github.com/nfredmond/openplan/releases/tag/v0.49.1) was published
+2026-09-10T08:22:34Z, neither draft nor prerelease. Annotated tag object
+`31b0362106ec8d696940c052e1661a61074e435a` peels to release commit
+`3ffd2a415f6561cfb37f52e2ce1eeef251522db5`; remote refs were independently checked.
+All jobs on that commit succeeded before tagging: CI `34453426007` (full QA,
+shuffled tests, workers, operations and modeling), RLS `34453426002`, upgrade
+`34453425580` from v0.49.0. `final-ci.json` retains the exact-commit receipt.

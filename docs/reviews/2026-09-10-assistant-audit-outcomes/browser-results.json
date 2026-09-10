@@ -1,0 +1,126 @@
+[
+  {
+    "width": 1440,
+    "scenario": "refused",
+    "projectId": "87b2e543-d5bd-4fe9-96e4-c212472bdd17",
+    "health": {
+      "commit": "3f1d010b9ed6",
+      "version": "0.49.2"
+    },
+    "httpStatus": 500,
+    "writes": 1,
+    "decisionCount": 0,
+    "baselineDecisionCount": 0,
+    "auditCount": 1,
+    "baselineAuditCount": 0,
+    "auditOutcome": "failed",
+    "approvalId": "a09ad65e-6228-4dba-bc88-579c90384364",
+    "inputHash": "ffc2e1e2a545b021413fae5ce023ec5d711245eaa950ba0409cb4848324dcdf0",
+    "console": [
+      {
+        "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "expected": true
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "scenario": "missing",
+    "projectId": "332062cf-cba1-425d-af4b-bb1b2a2324b3",
+    "health": {
+      "commit": "3f1d010b9ed6",
+      "version": "0.49.2"
+    },
+    "httpStatus": 201,
+    "writes": 1,
+    "decisionCount": 1,
+    "baselineDecisionCount": 0,
+    "auditCount": 0,
+    "baselineAuditCount": 0,
+    "auditOutcome": "missing",
+    "approvalId": "f5d18b3f-1f47-47c0-b462-83cb86a20037",
+    "inputHash": "c79b59bf081e1b5001558705e8e491516f6cb44bf8036fe8e7c54c92900617ed",
+    "console": []
+  },
+  {
+    "width": 1440,
+    "scenario": "retained",
+    "projectId": "daea1aad-c1ea-4a74-94da-89e512ea86fe",
+    "health": {
+      "commit": "3f1d010b9ed6",
+      "version": "0.49.2"
+    },
+    "httpStatus": 201,
+    "writes": 1,
+    "decisionCount": 1,
+    "baselineDecisionCount": 0,
+    "auditCount": 1,
+    "baselineAuditCount": 0,
+    "auditOutcome": "succeeded",
+    "approvalId": "cfd78dcb-4b20-4131-94f9-60af8fc2f6fe",
+    "inputHash": "5a7f1eba4ce3d26240e81d22a9eaa489b4f1a64d702db525d9771e594f9f8583",
+    "console": []
+  },
+  {
+    "width": 390,
+    "scenario": "refused",
+    "projectId": "fc91e076-dfc5-4c3a-a937-c55b8445e9ac",
+    "health": {
+      "commit": "3f1d010b9ed6",
+      "version": "0.49.2"
+    },
+    "httpStatus": 500,
+    "writes": 1,
+    "decisionCount": 0,
+    "baselineDecisionCount": 0,
+    "auditCount": 1,
+    "baselineAuditCount": 0,
+    "auditOutcome": "failed",
+    "approvalId": "3ced0352-ca6f-402c-9736-bb9b28b44333",
+    "inputHash": "57642b2f54040ca1659382ba3a37bcdcf98db3018be50f2202634756874ef062",
+    "console": [
+      {
+        "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "expected": true
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "scenario": "missing",
+    "projectId": "b6d50c4b-d9b0-45ad-a294-3ed8c83fe5e7",
+    "health": {
+      "commit": "3f1d010b9ed6",
+      "version": "0.49.2"
+    },
+    "httpStatus": 201,
+    "writes": 1,
+    "decisionCount": 1,
+    "baselineDecisionCount": 0,
+    "auditCount": 0,
+    "baselineAuditCount": 0,
+    "auditOutcome": "missing",
+    "approvalId": "c416ca76-568a-4bc0-8886-7d83ae23b721",
+    "inputHash": "7ac6a4231826761470ac35db9e2695de96c60dc5fd92df0e81df025295bd0980",
+    "console": []
+  },
+  {
+    "width": 390,
+    "scenario": "retained",
+    "projectId": "c8b59371-a3a0-4df3-b633-581f7555e4b7",
+    "health": {
+      "commit": "3f1d010b9ed6",
+      "version": "0.49.2"
+    },
+    "httpStatus": 201,
+    "writes": 1,
+    "decisionCount": 1,
+    "baselineDecisionCount": 0,
+    "auditCount": 1,
+    "baselineAuditCount": 0,
+    "auditOutcome": "succeeded",
+    "approvalId": "ba6af4da-b631-4c28-8105-8215002ca71e",
+    "inputHash": "d441c915b528ac2f10663393885fe51ed0a69eafc197f6bd1c718ec44d7106c2",
+    "console": []
+  }
+]
