@@ -27,7 +27,7 @@ function createInvitationClient(existingId?: string) {
   // things PostgREST says: an error, or zero matched rows.
   type WriteResult = {
     data: Record<string, unknown> | null;
-    error: { code?: string; message: string } | null;
+    error: { code?: string; details?: string; message: string } | null;
   };
   const singleMock = vi.fn(
     async (): Promise<WriteResult> => ({

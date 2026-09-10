@@ -48,7 +48,7 @@ import {
 import { POST as createAttachment } from "@/app/api/funding-opportunities/[opportunityId]/attachments/route";
 import { PATCH as patchAttachment } from "@/app/api/funding-opportunities/[opportunityId]/attachments/[attachmentId]/route";
 
-type QueryResult = { data: unknown; error: { message: string; code?: string } | null };
+type QueryResult = { data: unknown; error: { message: string; code?: string; details?: string } | null };
 type QueryChain = Record<string, ReturnType<typeof vi.fn>> & {
   then: (resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) => unknown;
 };

@@ -89,3 +89,13 @@ The current500 server response still uses the existing error/form-retention path
 
 v0.49.2 was published after its declared final CI checks passed; its publication
 receipt is in the preceding audit-outcome evidence directory.
+
+## Final-source QA checkpoint
+
+At f55226eb, lint/deadcode,13,477 tests in1,232 files, shuffled seed914094
+with the same counts, and dependency audit passed. Both test runs explicitly
+skip33 files/299 tests; live RLS is a separate isolated job. All92 ops Python
+tests pass. The production compiler passed, then TypeScript caught four fixture
+errors across three files because their mocked error types omitted `details`.
+Those mock types now accept optional details. This is not a completed build;
+the corrected production build and browser journey remain required.

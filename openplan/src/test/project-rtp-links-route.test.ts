@@ -50,7 +50,7 @@ import {
   POST as postRtpLink,
 } from "@/app/api/projects/[projectId]/rtp-links/route";
 
-type QueryResult = { data: unknown; error: { message: string; code?: string } | null };
+type QueryResult = { data: unknown; error: { message: string; code?: string; details?: string } | null };
 
 const dbCalls: Array<{ table: string; method: string; args: unknown[] }> = [];
 
