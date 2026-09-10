@@ -1,0 +1,35 @@
+{
+  "commit": "63bb31e42b9326e412089f488ecda8cd2fa3a4dd",
+  "qa": {
+    "exit": 0,
+    "passed": 13748,
+    "skipped": 357,
+    "filesPassed": 1249,
+    "filesSkipped": 39,
+    "connectorPassed": 31,
+    "connectorNativeSkips": 2,
+    "completeAuditVulnerabilities": 0,
+    "productionBuild": "passed"
+  },
+  "shuffle": {
+    "exit": 0,
+    "seed": 9100521,
+    "passed": 13748,
+    "skipped": 357
+  },
+  "rls": {
+    "exit": 0,
+    "passed": 379,
+    "files": 46,
+    "disposableStack": "openplan-restore-target-2026091050"
+  },
+  "sourceReuse": {
+    "workers": "Unchanged from v0.52.0; its 52 local Python suites and 33 explicitly native-enabled connector tests remain separate evidence."
+  },
+  "privateLogHashes": {
+    "qa.log": "26eacefd9d41a236d020dbcd61b18d0e4ea5802be5cd310db76ff0fd13c8d457",
+    "shuffle.log": "a1ac31c328b3463a1edaa4a1a103579c5732c850c66b99948bc24f48cd73903e",
+    "rls.log": "49605da7cca198fc51fef6de51a812c2859df72ab380bec82a9fdbf0d8182596",
+    "install.log": "d44016b5ce000a3c62af32f9854aeea4bc93dc94114d7941f3c114bd4c22f586"
+  }
+}

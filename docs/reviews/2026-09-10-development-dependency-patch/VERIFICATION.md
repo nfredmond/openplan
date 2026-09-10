@@ -26,3 +26,41 @@ The npm registry supplied compatible versions. Relevant upstream advisories incl
 [js-yaml merge limits](https://github.com/advisories/GHSA-2883-xcg3-v3hh).
 Original audit JSON and lockfiles are retained in the private dependency-patch
 evidence directory. Mutation, QA, browser and final CI results follow below.
+
+## Local acceptance at 63bb31e42b93
+
+A fresh `npm ci` completed and the complete audit reported zero vulnerabilities.
+Full QA passed lint, unused-code checks, 13,748 tests with 357 named skips,
+31 connector tests with two named native-only skips, the audit and production
+build. Shuffled seed 9100521 passed the same 13,748 tests. The 379 live RLS tests
+passed on the explicitly named disposable openplan-restore-target-2026091050
+stack. This fresh checkout does not have the optional Python runtime environments;
+its seven additional named main-suite skips match the CI environment. Worker
+source is unchanged from v0.52.0, which retains its separate worker/native evidence.
+[Local receipt](local-checks.json) records hashes of the original private logs.
+
+The [audit controls](audit-controls.json) passed with a harmless package description,
+failed on the actual v0.52.0 manifest and lockfile with 14 findings, and demonstrated
+that the old production-only audit incorrectly stayed green for that same fixture.
+The [release guard](release-controls.json) survived a harmless comment, failed for
+a wrong migration count and passed again after restoration. The final manifest
+still has 314 migrations and this patch adds none.
+
+Chrome 152 entered through home, sign-in, Dashboard and Projects at desktop and
+390px, including keyboard navigation. The first launch omitted the commit stamp;
+the identity guard refused it. A short eight-character stamp was also refused.
+Both owned attempts were stopped. The final launch used the full source SHA,
+matched the build checkout and listening process, and only then collected browser
+evidence. No source changed during the build or browser collection.
+
+Both journeys preserved the original native answer, showed private-history counts
+without exposing content, and issued no deletion or provider request. The narrow
+refusal fitted its own container and remained readable in inspected screenshots.
+A harmless attribute preserved the layout; deliberately removing wrapping failed
+the geometry check, and restoration passed. The injected unavailable preflight
+showed a visible refusal and no deletion dialog/request. Normal console output was
+clean; the only captured error was the injected 503. The owned server was stopped
+before this evidence was added. These journeys check the rebuilt shared layout;
+they do not re-establish all product workflows or add a native backend.
+
+Final main CI and the upgrade from v0.52.0 must pass before tagging v0.52.1.
