@@ -99,6 +99,19 @@ live("scoped provider connections and retained turns", () => {
       IF pg_temp.claim()->'turn'<>'null'::jsonb OR (SELECT count(*) FROM public.assistant_provider_turns WHERE connection_id='@connection')<>1 THEN RAISE EXCEPTION 'Expired attempt restarted automatically'; END IF;
     END $$;`));
 
+  it("browser recovery persists expiry without exposing another user's saved request", () => exercise(`
+    DO $$ DECLARE claimed jsonb; saved jsonb; job_id uuid; BEGIN
+      PERFORM pg_temp.make_turn(); claimed:=pg_temp.claim(); job_id:=(claimed->'turn'->>'id')::uuid;
+      BEGIN PERFORM public.read_assistant_provider_turn_for_user(job_id,'@viewer'); RAISE EXCEPTION 'Another user recovered private request'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+      saved:=public.read_assistant_provider_turn_for_user(job_id,'@owner');
+      IF saved->>'state'<>'running' OR saved->>'packet_canonical' IS DISTINCT FROM pg_temp.packet() THEN RAISE EXCEPTION 'Recovery lost original running request'; END IF;
+      UPDATE public.assistant_provider_turns SET lease_expires_at=now()-interval '1 second' WHERE id=job_id;
+      saved:=public.read_assistant_provider_turn_for_user(job_id,'@owner');
+      IF saved->>'state'<>'interrupted' OR (SELECT state FROM public.assistant_provider_turns WHERE id=job_id)<>'interrupted' THEN RAISE EXCEPTION 'Browser recovery failed to persist expiry'; END IF;
+      UPDATE public.projects SET workspace_id='@other' WHERE id='@project';
+      BEGIN PERFORM public.read_assistant_provider_turn_for_user(job_id,'@owner'); RAISE EXCEPTION 'Moved project recovered private request'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+    END $$;`));
+
   it("refuses forged attempt, source and provider receipt identities", () => exercise(`
     DO $$ DECLARE claimed jsonb; job_id uuid; attempt uuid; BEGIN
       PERFORM pg_temp.make_turn(); claimed:=pg_temp.claim(); job_id:=(claimed->'turn'->>'id')::uuid; attempt:=(claimed->'turn'->>'attempt_id')::uuid;

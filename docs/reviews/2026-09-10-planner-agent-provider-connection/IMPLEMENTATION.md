@@ -141,3 +141,55 @@ No provider route, connector polling loop or visible selector consumes this stor
 yet. This foundation is unreleased; full QA, browser journeys, upgrade and final CI
 are still required for a coherent provider-choice release. Local raw native records
 and credentials remain outside the repository.
+
+## Routes and outbound connector checkpoint
+
+Added authenticated project connection issuance/revocation, retained turn creation,
+recovery and cancellation, and a separate scoped-bearer native endpoint. Browser
+mutations require the same origin. Connection metadata projections exclude token
+hashes. Native claims return only the original checked project packet and one
+attempt. Completion checks current access before reading the packet and repeats
+that check inside the final SQL transaction. No native cookie-auth fallback or
+business-action dispatcher exists.
+
+The API path uses the existing Anthropic integration and same project answer
+schema. It requires explicit credential-source/charge selection; stored-key metadata
+and actual loaded source must match, so an unreadable workspace key cannot silently
+use deployment billing. A newly saved API request has one generation, zero SDK
+retries, a 55-second deadline and cancellation/access polling. Retries recover the
+original result without making another call. These API tests use a stub provider;
+no real API charge was made. Interface reference checked against the installed SDK
+and [official generateText documentation](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-text).
+
+The local connector now has configure/models/run commands, private token/config
+files, an OS lock and outbound-only polling. It pins the app origin, refuses
+redirects, bounds responses and verifies the packet hash and project audience.
+An actual two-server loopback test proves a redirect destination receives no bearer.
+The native process receives neither the connection token nor browser credentials.
+It syncs the pending attempt before generation and the completed answer before
+HTTP delivery. Restart resends that exact completed delivery; a crash during
+execution records interruption without another model call. Confirmed cancellation
+or expiry retires only the matching attempt. Its own temporary native directories
+are removed after the owned process closes; retained result delivery stays private.
+
+Focused app suites pass 69 cases (17 project-format, 33 routes, 19 API). Live SQL
+now passes 12 cases with explicit disposable workdir, including owner-only browser
+recovery and durable expiry. The connector has 19 configuration/CLI/recovery tests,
+plus the earlier 11 protocol tests and two separately enabled actual-native cases.
+Harmless controls and targeted route, API, recovery SQL and connector mutations are
+retained in the accompanying receipts. TypeScript and scoped ESLint pass.
+
+Harness corrections: the first cancellation mutation hit the suite timeout; an
+independent observation deadline now fails the cancellation assertion directly.
+The first CLI harmless comment was inserted before its executable header and was
+not harmless; moved it below that header. The first weakened-lock test leaked its
+unexpectedly acquired competing handle until the harness timed out; the test now
+releases that handle before reporting the failed exclusion assertion. All source
+and SQL mutations were restored and no fixture process remained after inspection.
+
+Blind categories: mocked route queries do not establish PostgREST grants or real
+navigation. Sequential live SQL does not prove competing transaction lock order.
+Journal write-order and OS-lock tests do not simulate physical power loss. The
+browser selector, proposal handoff and desktop/390px journeys are still unfinished.
+The CLI setup path is tested with synthetic downloaded credentials. No release or
+complete A0a/A1a capability claim is made at this checkpoint.

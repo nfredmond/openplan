@@ -1,8 +1,8 @@
 # Planner Agent local connector (implementation in progress)
 
-The native transport is implemented; device pairing, saved requests and the app
-controls are still being connected. This is not yet an end-user launch command or
-an A0a completion claim.
+The native transport, scoped connection routes, saved requests and outbound
+connector are implemented. The app controls and browser acceptance are still
+being connected. This is not an A0a completion claim.
 
 The initial native transport uses installed standalone Codex **0.154.0** on Linux,
 Node 24 and `/usr/bin/bwrap`. It accepts a resolved native binary in a `bin`
@@ -42,6 +42,38 @@ From the repository root:
 ```sh
 node --test workers/planner_agent_connector/test/*.test.mjs
 ```
+
+The connector never opens a local HTTP listener. A project connection file from
+Planner Agent fixes its app origin, project and expected native account mode.
+After the browser controls are available, import that downloaded file using:
+
+```sh
+node workers/planner_agent_connector/connector.mjs configure \
+  --config "$HOME/.local/state/openplan-connectors/project/connection.json" \
+  --setup "$HOME/Downloads/openplan-connection.json" \
+  --binary /absolute/path/to/standalone/bin/codex --profile "$HOME/.codex"
+node workers/planner_agent_connector/connector.mjs models \
+  --config "$HOME/.local/state/openplan-connectors/project/connection.json"
+node workers/planner_agent_connector/connector.mjs run \
+  --config "$HOME/.local/state/openplan-connectors/project/connection.json"
+```
+
+Choose a new private configuration directory for each connection. Configuration
+refuses to overwrite an existing file and restricts both the imported download
+and saved config to the current user. Native sign-in remains in Codex's supported
+login flow. `models` prints only sanitized native account mode/plan and catalog.
+Ctrl+C stops the owned connector; rerun the same command to recover. One OS lock
+prevents two connector processes from consuming the same local journal.
+
+Completed output is synced before delivery and resent identically after a network
+interruption. A process loss during generation records interruption without
+another automatic model call. Cancellation or expiry discards that attempt's
+publication authority. Revoked/denied connections stop and retain undelivered
+output privately. Reconnect from the app using a new connection if access was
+revoked. The connector removes only its own temporary native directories after
+the native process exits; the saved request/result remains in OpenPlan and its
+pending-delivery journal. No daemon, paid service, API fallback or global process
+termination is installed by these commands.
 
 The no-cost native isolation tests are named skips unless a tested standalone
 binary is explicitly supplied:

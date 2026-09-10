@@ -291,3 +291,20 @@ BEGIN
 END $$;
 REVOKE ALL ON FUNCTION public.read_assistant_provider_turn_status(uuid,uuid,text) FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.read_assistant_provider_turn_status(uuid,uuid,text) TO service_role;
+
+-- Browser recovery reads never start another generation. They make process-loss
+-- expiry durable even when the native connector or original HTTP caller is gone.
+CREATE FUNCTION public.read_assistant_provider_turn_for_user(p_turn_id uuid,p_user_id uuid)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
+DECLARE job public.assistant_provider_turns;
+BEGIN
+  SELECT * INTO job FROM public.assistant_provider_turns WHERE id=p_turn_id AND user_id=p_user_id FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Provider request not found' USING ERRCODE='42501'; END IF;
+  PERFORM public.assert_assistant_provider_scope(job.user_id,job.workspace_id,job.project_id);
+  IF job.state='running' AND job.lease_expires_at<=clock_timestamp() THEN
+    UPDATE public.assistant_provider_turns SET state='interrupted',finished_at=clock_timestamp(),failure_code='provider_attempt_expired' WHERE id=job.id RETURNING * INTO job;
+  END IF;
+  RETURN to_jsonb(job)-'request_hash';
+END $$;
+REVOKE ALL ON FUNCTION public.read_assistant_provider_turn_for_user(uuid,uuid) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.read_assistant_provider_turn_for_user(uuid,uuid) TO service_role;

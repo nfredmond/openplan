@@ -67,6 +67,7 @@ import { stripSourceComments } from "./helpers/source-text";
  * `src/`. Every entry is a claim that can be checked by reading the route.
  */
 const EXTERNAL_CALLERS: Record<string, string> = {
+  "api/assistant/providers/native": "workers/planner_agent_connector/connector-client.mjs calls this scoped-bearer endpoint for claims, status and retained result delivery; connector-worker.test.mjs exercises its actual HTTP redirect boundary and delivery recovery.",
   "api/knowledge-base/extraction-dispatch": "workers/ocr_worker/main.py polls its configured OPENPLAN_KB_OCR_DISPATCH_URL to recover queued documents and cancellation requests.",
   "api/health":
     "Uptime monitoring and container orchestration probe this; it exists to be called from outside.",

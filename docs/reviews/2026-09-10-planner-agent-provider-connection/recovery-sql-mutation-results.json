@@ -1,0 +1,30 @@
+[
+  {
+    "case": "recovery-comment",
+    "expectedOutcome": true,
+    "exitCode": 0,
+    "assertion": null,
+    "tail": "\n RUN  v4.1.10 /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan\n\n\n Test Files  1 passed (1)\n      Tests  12 passed (12)\n   Start at  06:47:51\n   Duration  2.75s (transform 43ms, setup 56ms, import 46ms, tests 2.17s, environment 338ms)\n\n"
+  },
+  {
+    "case": "recovery-owner",
+    "expectedOutcome": true,
+    "exitCode": 1,
+    "assertion": "Another user recovered private request",
+    "tail": "\n RUN  v4.1.10 /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan\n\n \u276f src/test/assistant-provider-turns-rls.test.ts (12 tests | 1 failed) 2126ms\n     \u00d7 browser recovery persists expiry without exposing another user's saved request 60ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 11 passed (12)\n   Start at  06:47:55\n   Duration  2.72s (transform 44ms, setup 56ms, import 47ms, tests 2.13s, environment 337ms)\n\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/test/assistant-provider-turns-rls.test.ts > scoped provider connections and retained turns > browser recovery persists expiry without exposing another user's saved request\nError: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Another user recovered private request\nCONTEXT:  PL/pgSQL function inline_code_block line 3 at RAISE\n\n \u276f exercise src/test/assistant-provider-turns-rls.test.ts:44:20\n\n \u276f src/test/assistant-provider-turns-rls.test.ts:102:94\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/1]\u23af\n\n"
+  },
+  {
+    "case": "recovery-expiry",
+    "expectedOutcome": true,
+    "exitCode": 1,
+    "assertion": "Browser recovery failed to persist expiry",
+    "tail": "\n RUN  v4.1.10 /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan\n\n \u276f src/test/assistant-provider-turns-rls.test.ts (12 tests | 1 failed) 2032ms\n     \u00d7 browser recovery persists expiry without exposing another user's saved request 59ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 11 passed (12)\n   Start at  06:47:58\n   Duration  2.63s (transform 43ms, setup 58ms, import 42ms, tests 2.03s, environment 344ms)\n\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/test/assistant-provider-turns-rls.test.ts > scoped provider connections and retained turns > browser recovery persists expiry without exposing another user's saved request\nError: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Browser recovery failed to persist expiry\nCONTEXT:  PL/pgSQL function inline_code_block line 8 at RAISE\n\n \u276f exercise src/test/assistant-provider-turns-rls.test.ts:44:20\n\n \u276f src/test/assistant-provider-turns-rls.test.ts:102:94\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/1]\u23af\n\n"
+  },
+  {
+    "case": "recovery-scope",
+    "expectedOutcome": true,
+    "exitCode": 1,
+    "assertion": "Moved project recovered private request",
+    "tail": "\n RUN  v4.1.10 /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan\n\n \u276f src/test/assistant-provider-turns-rls.test.ts (12 tests | 1 failed) 2034ms\n     \u00d7 browser recovery persists expiry without exposing another user's saved request 65ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 11 passed (12)\n   Start at  06:48:01\n   Duration  2.62s (transform 43ms, setup 56ms, import 45ms, tests 2.03s, environment 328ms)\n\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/test/assistant-provider-turns-rls.test.ts > scoped provider connections and retained turns > browser recovery persists expiry without exposing another user's saved request\nError: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Moved project recovered private request\nCONTEXT:  PL/pgSQL function inline_code_block line 10 at RAISE\n\n \u276f exercise src/test/assistant-provider-turns-rls.test.ts:44:20\n\n \u276f src/test/assistant-provider-turns-rls.test.ts:102:94\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/1]\u23af\n\n"
+  }
+]
