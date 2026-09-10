@@ -1,0 +1,32 @@
+{
+  "nativeVersion": "1.18.30",
+  "nativeSource": "3104c1428ec91f809e5ab86631300de41eb6952e",
+  "relayTests": {
+    "passed": 28,
+    "failed": 0
+  },
+  "defaultConnectorTests": {
+    "passed": 121,
+    "failed": 0,
+    "nativeOptInSkipped": 3
+  },
+  "nativeFixture": {
+    "transport": "Actual native OpenAI Responses through per-turn relay; synthetic API key and local scripted responses",
+    "validRequests": 1,
+    "model": "gpt-6",
+    "provider": "openai",
+    "outputTools": [
+      "StructuredOutput"
+    ],
+    "outputHash": "474d6d9cdb91f64b7b8649576f26e0d40a78e8a22a87df5dd0a802ab6346fd94",
+    "brokenCounterRequests": 2,
+    "brokenCounterCompletedExtraTurn": true
+  },
+  "blindCategories": [
+    "Not app or browser integration",
+    "No real account/provider/paid request",
+    "Private native mount restrictions still need the production launch helper and canary challenges",
+    "Native retry/tool failure was tested for the model-call bound, not independent proof of every denied native tool",
+    "Relay fixed upstream ignores custom provider endpoints and headers; arbitrary native providers remain unsupported"
+  ]
+}

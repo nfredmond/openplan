@@ -1,0 +1,260 @@
+[
+  {
+    "mutation": "harmless-comment",
+    "exitCode": 0,
+    "expectedExitCode": 0,
+    "failures": []
+  },
+  {
+    "mutation": "model-shape",
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "failures": [
+      "\u2716 refuses invalid model null (0.74196ms)",
+      "\u2716 refuses invalid model \"\" (0.628516ms)",
+      "\u2716 refuses invalid model \"openai/gpt-6\" (0.390787ms)",
+      "\u2716 refuses invalid model \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\" (0.365038ms)",
+      "\u2716 refuses invalid model \"gpt\\n6\" (0.349239ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses invalid model null (0.74196ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection.",
+      "\u2716 refuses invalid model \"\" (0.628516ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection.",
+      "\u2716 refuses invalid model \"openai/gpt-6\" (0.390787ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection.",
+      "\u2716 refuses invalid model \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\" (0.365038ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection.",
+      "\u2716 refuses invalid model \"gpt\\n6\" (0.349239ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "http-method",
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "failures": [
+      "\u2716 unrelated origin, method and secret-path probes cannot consume a turn (8.248942ms)",
+      "\u2716 failing tests:",
+      "\u2716 unrelated origin, method and secret-path probes cannot consume a turn (8.248942ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "secret-path",
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "failures": [
+      "\u2716 unrelated origin, method and secret-path probes cannot consume a turn (9.239911ms)",
+      "\u2716 failing tests:",
+      "\u2716 unrelated origin, method and secret-path probes cannot consume a turn (9.239911ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "browser-origin",
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "failures": [
+      "\u2716 unrelated origin, method and secret-path probes cannot consume a turn (6.35523ms)",
+      "\u2716 failing tests:",
+      "\u2716 unrelated origin, method and secret-path probes cannot consume a turn (6.35523ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "native-auth",
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "failures": [
+      "\u2716 refuses missing native authentication (4.86595ms)",
+      "\u2716 refuses wrong authentication scheme (2.227833ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses missing native authentication (4.86595ms)",
+      "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:",
+      "\u2716 refuses wrong authentication scheme (2.227833ms)",
+      "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:"
+    ]
+  },
+  {
+    "mutation": "json-media",
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "failures": [
+      "\u2716 refuses wrong media type (4.596401ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses wrong media type (4.596401ms)",
+      "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:"
+    ]
+  },
+  {
+    "mutation": "reserve-budget",
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "failures": [
+      "\u2716 forwards one frozen model request without exposing a provider URL option (27.476837ms)",
+      "\u2716 concurrent native retries cannot forward a second model request (23.872747ms)",
+      "\u2716 failing tests:",
+      "\u2716 forwards one frozen model request without exposing a provider URL option (27.476837ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:",
+      "\u2716 concurrent native retries cannot forward a second model request (23.872747ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "model-binding",
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "failures": [
+      "\u2716 refuses different model before an upstream request (3.02184ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses different model before an upstream request (3.02184ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "storage-refusal",
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "failures": [
+      "\u2716 refuses provider storage before an upstream request (2.74019ms)",
+      "\u2716 refuses missing storage disposition before an upstream request (2.597059ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses provider storage before an upstream request (2.74019ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:",
+      "\u2716 refuses missing storage disposition before an upstream request (2.597059ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "stream-refusal",
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "failures": [
+      "\u2716 refuses nonstreaming before an upstream request (2.921632ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses nonstreaming before an upstream request (2.921632ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "tool-count",
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "failures": [
+      "\u2716 refuses extra tool before an upstream request (2.449852ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses extra tool before an upstream request (2.449852ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "tool-type",
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "failures": [
+      "\u2716 refuses wrong tool type before an upstream request (3.017542ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses wrong tool type before an upstream request (3.017542ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "tool-name",
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "failures": [
+      "\u2716 refuses wrong tool before an upstream request (2.638087ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses wrong tool before an upstream request (2.638087ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "request-size",
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "failures": [
+      "\u2716 refuses oversized request (6.332467ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses oversized request (6.332467ms)",
+      "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:"
+    ]
+  },
+  {
+    "mutation": "fixed-upstream",
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "failures": [
+      "\u2716 forwards one frozen model request without exposing a provider URL option (24.754591ms)",
+      "\u2716 failing tests:",
+      "\u2716 forwards one frozen model request without exposing a provider URL option (24.754591ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "redirect-policy",
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "failures": [
+      "\u2716 forwards one frozen model request without exposing a provider URL option (26.5244ms)",
+      "\u2716 failing tests:",
+      "\u2716 forwards one frozen model request without exposing a provider URL option (26.5244ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "response-type",
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "failures": [
+      "\u2716 refuses upstream wrong response type without a retry (2.241388ms)",
+      "\u2716 failing tests:",
+      "\u2716 refuses upstream wrong response type without a retry (2.241388ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "response-size",
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "failures": [
+      "\u2716 bounds streamed output independently of Content-Length (3.982302ms)",
+      "\u2716 failing tests:",
+      "\u2716 bounds streamed output independently of Content-Length (3.982302ms)",
+      "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    ]
+  },
+  {
+    "mutation": "upstream-deadline",
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "failures": [
+      "\u2716 upstream deadline interrupts a stalled provider (202.155265ms)",
+      "\u2716 failing tests:",
+      "\u2716 upstream deadline interrupts a stalled provider (202.155265ms)",
+      "AssertionError [ERR_ASSERTION]: Upstream deadline must fire before the independent watchdog"
+    ]
+  },
+  {
+    "mutation": "body-timeout",
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "failures": [
+      "\u2716 idle request body expires before reaching the provider (201.959145ms)",
+      "\u2716 failing tests:",
+      "\u2716 idle request body expires before reaching the provider (201.959145ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    ]
+  },
+  {
+    "mutation": "failure-notification",
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "failures": [
+      "\u2716 upstream deadline interrupts a stalled provider (34.450521ms)",
+      "\u2716 failing tests:",
+      "\u2716 upstream deadline interrupts a stalled provider (34.450521ms)",
+      "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:"
+    ]
+  }
+]

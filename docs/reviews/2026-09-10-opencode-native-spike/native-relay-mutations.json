@@ -1,0 +1,14 @@
+[
+  {
+    "mutation": "harmless-native-relay-comment",
+    "exitCode": 0,
+    "expected": 0,
+    "evidence": "native second model request blocked locally\n"
+  },
+  {
+    "mutation": "native-second-request-forwarded",
+    "exitCode": 1,
+    "expected": 1,
+    "evidence": "node:internal/modules/run_main:107\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ null\n- 'native_request_budget_exceeded'\n\n    at file:///home/nathaniel/.local/state/openplan/opencode-native-evidence-2026-09-10/probe-turn-openai-relay-failure.mjs:28:22 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: null,\n  expected: 'native_request_budget_exceeded',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v24.20.0\n"
+  }
+]

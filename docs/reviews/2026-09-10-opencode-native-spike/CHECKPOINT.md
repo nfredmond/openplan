@@ -30,3 +30,37 @@ Primary sources read September10:
 - https://github.com/anomalyco/opencode/blob/3104c1428ec91f809e5ab86631300de41eb6952e/packages/opencode/src/auth/index.ts
 
 Next: first bound transport for native OpenCode with an explicitly supported OpenAI API account. Production OpenAI uses Responses, so the initial compatible-provider Chat Completions probe is only exploratory; verify the actual native OpenAI provider path before support. Keep other OpenCode providers/account modes explicit remaining scope. Native inspection, model identity, bounded response delivery, unsupported tools, private profile masks and exact retry must be proved before any UI/migration integration.
+
+
+## Bounded relay checkpoint
+
+The worker now contains an unconnected OpenCode relay helper. A random per-turn
+loopback path forwards one OpenAI Responses request with the exact selected model,
+store=false, streaming output and only StructuredOutput. It refuses other origins,
+methods, paths, tools, redirects, oversized bodies/output and stalled IO. Native
+credentials travel in the request header to the fixed upstream; they are not read
+from disk, logged or sent to OpenPlan. Native retries cannot forward a second model
+request. This helper is not yet dispatched by any app/connector configuration.
+
+All28 relay tests pass. One harmless unit mutation survived;21 targeted defects
+failed their relevant assertions. With the actual installed OpenCode OpenAI adapter,
+one full-schema synthetic Responses call passed through the relay. A forced tool
+response prompted another native model request, which the relay blocked locally.
+A native harmless control passed; removing the reservation guard forwarded two
+requests and completed an extra result, failing the expected refusal. The guard
+was restored and all28 tests passed again. Default connector suite:121pass,
+3native opt-in skips. See adjacent receipts; no real provider request occurred.
+
+The exploratory Responses fixture first omitted function_call_arguments.done;
+the actual SDK retained a structured-output failure. Adding that required native
+stream event completed the structured result. The relay concurrency test initially
+expected an HTTP failure status when the socket was correctly closed; it now accepts
+that refusal while requiring exactly one upstream call. Deadline tests have separate
+watchdogs so removing the deadline fails an assertion without stranding a process.
+
+Next implement the native launch/account/result wrapper. For this first API-only
+path, bind only the private native auth.json file read-only, with fresh runtime/data,
+configuration, cache and session directories. API keys do not refresh; OAuth modes
+must refuse instead of pretending this mount supports native credential refresh.
+Do not mount the user's history or project directory. Broader native modes require
+separate acceptance. Then run actual-native canaries and cancellation before SQL/UI.
