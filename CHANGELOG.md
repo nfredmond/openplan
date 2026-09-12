@@ -22,8 +22,11 @@ stable enough to promise smooth upgrades indefinitely.
 
 Internal preparation for extensible Planner Agent APIs now checks exact request
 destinations, encrypted connection identity, raw model identity and cancellation.
-Saved API connections, their worker execution and visible controls are still in
-development; this does not add a usable provider option yet.
+Workspace settings now save API connections and preserve their revision history.
+The internal generation adapter binds the frozen project, exact saved revision,
+model and credential mode to one invocation, with cancellation and bounded output.
+Worker execution and selection in the project Planner Agent remain in development;
+this does not add a usable generation option yet.
 
 Migration `20261012000001_workspace_provider_api_revisions.sql` adds versioned
 workspace API configuration and separately protected credentials. Existing native

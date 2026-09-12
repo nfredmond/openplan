@@ -2,6 +2,11 @@
 
 Read-only follow-on analysis while settings QA runs. This is not implemented.
 
+The generation adapter is now implemented separately in
+`openplan/src/lib/assistant/provider-api-generation.ts`; its evidence lives in
+`../2026-09-12-api-provider-generation/VERIFICATION.md`. Reuse that implementation
+when joining the worker. The database lifecycle and worker below are still open.
+
 The canonical base migration is
 `20261010000001_assistant_provider_connections.sql`, followed by Claude/OpenCode
 wrappers. `finish_assistant_provider_turn` contains the common output and exact
