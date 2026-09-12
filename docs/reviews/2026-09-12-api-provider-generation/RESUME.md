@@ -25,8 +25,13 @@ They explicitly loaded `api-settings.env` for the named disposable stack on
 Source checkpoint is `b9e93348b4d425fa520883ffca0a24c6e0a0373b`.
 No browser server or acceptance collection is active. No SQL change was made.
 
-The evidence child is ready for direct main landing without a PR; inspect the
-remote and its exact CI runs before advancing. Do not tag this internal increment.
+The evidence child landed directly on remote main at
+`c858b89e7293ce90fb9afea67ce481b7bcd0a8fa`, without a PR. Exact main runs are
+CI `34722018877` and RLS Isolation `34722018874`, confirmed queued at this
+checkpoint. Inspect these exact runs for completion before advancing; the prior
+main passes do not prove this commit's CI. This resume-only follow-up stays on
+the work branch so it does not restart main checks. No new upgrade run was
+dispatched for this SQL-unchanged adapter. Do not tag this internal increment.
 Then implement the retained
 API turn references, connection-edit/revoke interruption, service claim/status
 and common completion validator described in
