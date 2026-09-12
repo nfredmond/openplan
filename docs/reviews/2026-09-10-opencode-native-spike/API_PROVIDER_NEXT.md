@@ -38,6 +38,13 @@ bounded raw response's model and response ID before letting the SDK normalize it
 Wrong, missing or aliased model identity must remain an explicit refusal unless
 an exact alias policy has separately been configured and bound to the request.
 
+The [executed SDK probe](api-model-identity-probe.json) now confirms this behavior
+with the actual pinned packages. Exact identity and a harmless extra field pass;
+missing model, wrong model and missing ID all produce SDK-successful structured
+answers but fail the raw identity comparison. Each case makes one injected
+transport call and no network request. This is adapter research, not acceptance
+of an implemented API connection.
+
 ## Connection and request custody
 
 Workspace owner/admin setup should name the endpoint, protocol, exact model IDs,

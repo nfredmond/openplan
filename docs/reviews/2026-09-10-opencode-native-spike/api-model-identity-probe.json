@@ -1,0 +1,67 @@
+{
+  "packages": {
+    "ai": "6.0.278",
+    "compatible": "2.0.75",
+    "zod": "4.4.3"
+  },
+  "network": "Injected in-process synthetic transport only. No external request or provider charge.",
+  "receipts": [
+    {
+      "case": "exact",
+      "calls": 1,
+      "structuredOutput": true,
+      "sdkCompleted": true,
+      "rawModelPresent": true,
+      "normalizedModel": "synthetic-model-a",
+      "rawIdPresent": true,
+      "normalizedIdPresent": true,
+      "exactRawIdentity": true
+    },
+    {
+      "case": "harmless-extra-field",
+      "calls": 1,
+      "structuredOutput": true,
+      "sdkCompleted": true,
+      "rawModelPresent": true,
+      "normalizedModel": "synthetic-model-a",
+      "rawIdPresent": true,
+      "normalizedIdPresent": true,
+      "exactRawIdentity": true
+    },
+    {
+      "case": "missing-model",
+      "calls": 1,
+      "structuredOutput": true,
+      "sdkCompleted": true,
+      "rawModelPresent": false,
+      "normalizedModel": "synthetic-model-a",
+      "rawIdPresent": true,
+      "normalizedIdPresent": true,
+      "exactRawIdentity": false
+    },
+    {
+      "case": "wrong-model",
+      "calls": 1,
+      "structuredOutput": true,
+      "sdkCompleted": true,
+      "rawModelPresent": true,
+      "normalizedModel": "synthetic-model-b",
+      "rawIdPresent": true,
+      "normalizedIdPresent": true,
+      "exactRawIdentity": false
+    },
+    {
+      "case": "missing-id",
+      "calls": 1,
+      "structuredOutput": true,
+      "sdkCompleted": true,
+      "rawModelPresent": true,
+      "normalizedModel": "synthetic-model-a",
+      "rawIdPresent": false,
+      "normalizedIdPresent": true,
+      "exactRawIdentity": false
+    }
+  ],
+  "finding": "SDK success and normalized response identity do not prove the provider supplied matching model and response IDs.",
+  "blindCategory": "This demonstrates SDK normalization only, not a network transport, real model capability or any new OpenPlan user workflow."
+}
