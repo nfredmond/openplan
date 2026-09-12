@@ -146,7 +146,7 @@ function ApiConnections({ workspaceId, canManage }: { workspaceId: string; canMa
   return <section className="mt-6 min-w-0 rounded-xl border border-border/70 p-5" aria-labelledby="api-connections-title">
     {confirmDialog}
     <div className="module-section-heading"><h2 id="api-connections-title" className="module-section-title">AI API connections</h2></div>
-    <p className="text-sm text-muted-foreground">Save named API destinations and exact model IDs for your workspace. Each edit retains the previous version. These settings are not yet available for Planner Agent generation.</p>
+    <p className="text-sm text-muted-foreground">Save named API destinations and exact model IDs for your team. Each edit retains the previous version. These settings are not yet available for Planner Agent generation.</p>
     <p className="mt-2 text-sm text-muted-foreground">Requires an OpenAI-compatible Chat Completions endpoint with structured JSON output. Saving does not test compatibility or make a model request. Workspace members can read destination details; saved keys are never shown.</p>
     {readError && <p role="alert" className="mt-3 text-sm text-destructive">{readError}</p>}
     <div className="my-4 flex flex-wrap items-center gap-3">
@@ -188,7 +188,7 @@ function ApiConnections({ workspaceId, canManage }: { workspaceId: string; canMa
       <h3 className="mb-3 font-semibold">{editing ? `New revision of ${editing.current_revision?.configuration.label}` : "Add an API connection"}</h3>
       <fieldset disabled={busy || !!pending} className="space-y-4">
         <label className="block text-sm">Connection name<Input required maxLength={120} value={draft.label} onChange={event => setDraft({ ...draft, label: event.target.value })} /></label>
-        <label className="block text-sm">API base URL<Input required type="url" autoComplete="off" placeholder="https://provider.example/v1/" value={draft.endpoint} onChange={event => setDraft({ ...draft, endpoint: event.target.value })} /><span className="text-muted-foreground">Use the base URL before /chat/completions. Local HTTP requires an operator-approved destination.</span></label>
+        <label className="block text-sm">API base URL<Input required type="url" autoComplete="off" placeholder="https://provider.example/v1/" value={draft.endpoint} onChange={event => setDraft({ ...draft, endpoint: event.target.value })} /><span className="text-muted-foreground">Use the base URL before /chat/completions. Local HTTP requires an destination approved by the server administrator.</span></label>
         <label className="block text-sm">Model IDs, one per line<Textarea required value={draft.models} onChange={event => setDraft({ ...draft, models: event.target.value })} /></label>
         <label className="block text-sm">Authentication<select className="mt-1 block w-full rounded-xl border bg-background p-3" value={draft.authMode} onChange={event => setDraft({ ...draft, authMode: event.target.value as Draft["authMode"], apiKey: "" })}><option value="api_key">API key</option><option value="none">No API key</option></select></label>
         {draft.authMode === "api_key" && <label className="block text-sm">{editing ? "API key for this revision" : "API key"}<Input required type="password" autoComplete="new-password" maxLength={8192} value={draft.apiKey} onChange={event => setDraft({ ...draft, apiKey: event.target.value })} /><span className="text-muted-foreground">Enter the key for this exact destination. Existing keys cannot be read back.</span></label>}
