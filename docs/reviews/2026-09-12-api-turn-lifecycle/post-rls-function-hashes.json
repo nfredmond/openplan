@@ -1,0 +1,11 @@
+{
+  "preserve_assistant_api_turn_identity": "73251dab7a9279476d0a84eb1b93aff77859d1eed56035085e04d05d612463a8",
+  "interrupt_changed_assistant_api_connection": "ce7695c275936206dcc9a196a0cce55e5f56e515711ba92acb50381b7bff010b",
+  "create_assistant_api_turn": "f313057bc519bf6f77e14546ae615cf7e0cf7220b2cd304911c56c079ffb912a",
+  "read_assistant_api_turn_status": "fde90213e9a7d116e1a331d13ba665b852793b61439c6d20ef8e761d0b47a760",
+  "read_assistant_provider_turn_for_user": "159993ba74960aaa56ebba74abb92de0dbd24dbbc38ac2cf19358af6a21ee63f",
+  "finish_assistant_provider_turn": "ea3f215555523082142f0506ad3e40be28279d3b79778f7d9b05ed691f4c4c91",
+  "cancel_assistant_provider_turn": "69237afc17cf62a7bd0b5e4bd2fb7c83198cf457932f8f3533aa4310d2baadfe",
+  "lock_assistant_api_turn": "d459fdfe3b8d59079ee7ba89e4233307e97a948a50b22e10e9e3f790a6ca73f8",
+  "claim_assistant_api_turn": "e3dee8a7bd3d1a44a2cac2a7b73c5e65f9e514c23abf7b4f814e8afb5840aadf"
+}

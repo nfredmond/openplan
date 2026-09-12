@@ -145,3 +145,22 @@ Vitest configuration serializes live files; explicit concurrency remains within
 one file. Before full RLS, both previously mutated database function hashes
 matched source and the active API queue was empty. Full RLS and full QA are in
 progress, with handles and private log paths in RESUME.md; no outcomes yet.
+
+## Final local evidence and branch upgrade
+
+Source dbed721eed6512540a7eeb7d4be4c5c0ec374ef7 passed full QA and shuffled
+seed 912544. Both passed 13,991 application tests with 439 skipped in 1,255
+passing files and 42 skipped files. QA also passed lint, deadcode, 382 native
+connector cases with four skipped, a zero-vulnerability dependency audit,
+TypeScript and webpack. Full explicit isolated RLS passed all 468 cases in 49
+files, including the complete 18-case provider concurrency file. The nine
+lifecycle function bodies matched the migration after that run; see
+post-rls-function-hashes.json. This supersedes the pending-gate statements above.
+
+Upgrade Path 34725125299 passed from v0.54.0 on the same source SHA. The inspected
+GitHub job completed its seed, nonempty-count, populated-schema migration,
+row-survival and operational-row assertions successfully. Main's CI still needs
+separate inspection after landing. local-checks.json retains counts, source and
+run identity. No Python worker code changed, so numerical worker suites were
+not rerun. No new browser path, external provider operation or model validation
+is established by these internal lifecycle checks.

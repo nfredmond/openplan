@@ -1,0 +1,58 @@
+{
+  "sourceCommit": "dbed721eed6512540a7eeb7d4be4c5c0ec374ef7",
+  "qa": {
+    "exitCode": 0,
+    "appPassed": 13991,
+    "appSkipped": 439,
+    "filesPassed": 1255,
+    "filesSkipped": 42,
+    "connectorPassed": 382,
+    "connectorSkipped": 4,
+    "dependencyVulnerabilities": 0,
+    "webpack": "passed",
+    "embeddedLiveRls": "skipped; separate explicit run below"
+  },
+  "shuffled": {
+    "exitCode": 0,
+    "seed": 912544,
+    "passed": 13991,
+    "skipped": 439,
+    "filesPassed": 1255,
+    "filesSkipped": 42
+  },
+  "isolatedRls": {
+    "exitCode": 0,
+    "passed": 468,
+    "filesPassed": 49,
+    "concurrencyCasesIncluded": 18,
+    "container": "supabase_db_openplan-restore-target-2026091050",
+    "restoredFunctionHashes": "post-rls-function-hashes.json"
+  },
+  "upgrade": {
+    "runId": 34725125299,
+    "baseTag": "v0.54.0",
+    "headSha": "dbed721eed6512540a7eeb7d4be4c5c0ec374ef7",
+    "conclusion": "success",
+    "url": "https://github.com/nfredmond/openplan/actions/runs/34725125299"
+  },
+  "mutations": {
+    "decoder": {
+      "harmlessSurvived": 1,
+      "targetedFailed": 27
+    },
+    "concurrency": {
+      "harmlessSurvived": 1,
+      "targetedFailed": 3
+    },
+    "transactionSql": {
+      "harmlessSurvived": 1,
+      "targetedFailed": 27
+    }
+  },
+  "limits": [
+    "Internal API job foundation only; worker and browser selection not implemented.",
+    "No new UI or saved-provider generation option claimed.",
+    "Python workers unchanged; their numerical suites were not rerun.",
+    "Separate model validation and remaining v1 contract obligations stay open."
+  ]
+}

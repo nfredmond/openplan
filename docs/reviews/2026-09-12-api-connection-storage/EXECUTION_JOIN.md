@@ -1,7 +1,7 @@
 # Execution join inspection, September 12
 
 Original follow-on analysis while settings QA ran. The lifecycle migration is
-now implemented on the work branch with concurrency and broader gates pending;
+now implemented with concurrency, decoder, full local gates and branch upgrade verified;
 see `../2026-09-12-api-turn-lifecycle/RESUME.md` for the current checkpoint.
 
 The generation adapter is now implemented separately in
