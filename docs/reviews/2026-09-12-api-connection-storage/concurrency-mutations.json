@@ -1,0 +1,17 @@
+{
+  "mutations": [
+    {
+      "mutation": "harmless-comment",
+      "outcome": "survived",
+      "failedTests": []
+    },
+    {
+      "mutation": "membership-lock",
+      "outcome": "failed",
+      "failedTests": [
+        "concurrent workspace API configuration serializes membership before a concurrent save"
+      ]
+    }
+  ],
+  "target": "Named disposable restore stack; original function restored in finally. No other local RLS campaign ran concurrently."
+}

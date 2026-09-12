@@ -1,0 +1,101 @@
+{
+  "mutations": [
+    {
+      "mutation": "harmless-comment",
+      "outcome": "survived",
+      "target": null,
+      "failedTests": []
+    },
+    {
+      "mutation": "browser-origin",
+      "outcome": "failed",
+      "target": "cross-origin",
+      "failedTests": [
+        "workspace API connection routes refuses cross-origin PUT",
+        "workspace API connection routes refuses cross-origin DELETE"
+      ]
+    },
+    {
+      "mutation": "manager-before-private-read",
+      "outcome": "failed",
+      "target": "refuses member PUT",
+      "failedTests": [
+        "workspace API connection routes stores encrypted credentials with exact identity and returns metadata only",
+        "workspace API connection routes refuses member PUT before any private read",
+        "workspace API connection routes refuses member DELETE before any private read",
+        "workspace API connection routes refuses viewer PUT before any private read",
+        "workspace API connection routes refuses viewer DELETE before any private read",
+        "workspace API connection routes refuses non-member PUT before any private read",
+        "workspace API connection routes refuses non-member DELETE before any private read"
+      ]
+    },
+    {
+      "mutation": "save-revision-identity",
+      "outcome": "failed",
+      "target": "different revision",
+      "failedTests": [
+        "workspace API connection routes refuses a save response naming a different revision"
+      ]
+    },
+    {
+      "mutation": "retry-key-binding",
+      "outcome": "failed",
+      "target": "changed retry apiKey",
+      "failedTests": [
+        "workspace API connection routes refuses changed retry apiKey"
+      ]
+    },
+    {
+      "mutation": "scoped-private-reads",
+      "outcome": "failed",
+      "target": "randomized encryption on retry",
+      "failedTests": [
+        "workspace API connection routes recovers the same plaintext key despite randomized encryption on retry"
+      ]
+    },
+    {
+      "mutation": "revision-projection",
+      "outcome": "failed",
+      "target": "randomized encryption on retry",
+      "failedTests": [
+        "workspace API connection routes recovers the same plaintext key despite randomized encryption on retry"
+      ]
+    },
+    {
+      "mutation": "credential-projection",
+      "outcome": "failed",
+      "target": "randomized encryption on retry",
+      "failedTests": [
+        "workspace API connection routes recovers the same plaintext key despite randomized encryption on retry"
+      ]
+    },
+    {
+      "mutation": "concurrent-save-recovery",
+      "outcome": "failed",
+      "target": "concurrent identical save",
+      "failedTests": [
+        "workspace API connection routes recovers a concurrent identical save by reading the winning ciphertext"
+      ]
+    },
+    {
+      "mutation": "revoke-identity",
+      "outcome": "failed",
+      "target": "exact revocation identity",
+      "failedTests": [
+        "workspace API connection routes checks exact revocation identity before reporting success"
+      ]
+    },
+    {
+      "mutation": "metadata-join",
+      "outcome": "failed",
+      "target": "narrow query projection",
+      "failedTests": [
+        "workspace API connection routes returns metadata with an explicit page count and narrow query projection"
+      ]
+    }
+  ],
+  "blindCategories": [
+    "Mocked queries assert projections and scope filters but do not execute RLS or SQL constraints.",
+    "No browser navigation or real provider generation is covered."
+  ]
+}

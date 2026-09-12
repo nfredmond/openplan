@@ -69,3 +69,5 @@ and 390px browser journeys remain required for the eventual integrated capabilit
 Keep the pending reminder constraint unchanged. Preserve the complete roadmap and
 separate AequilibraE/ActivitySim validation obligations. Re-run product direction
 and inspect current ownership, main, tags and CI before selecting further work.
+
+Newer storage implementation: [API connection storage resume note](../2026-09-12-api-connection-storage/RESUME.md). Its status supersedes the no-database/no-route boundary above.

@@ -1,0 +1,258 @@
+{
+  "mutations": [
+    {
+      "mutation": "harmless-comment",
+      "outcome": "survived",
+      "target": null,
+      "failedTests": []
+    },
+    {
+      "mutation": "manager-role",
+      "outcome": "failed",
+      "target": "refuses member management",
+      "failedTests": [
+        "workspace API revision storage retains immutable revisions, exact save retries and private ciphertext",
+        "workspace API revision storage refuses member management despite service RPC access",
+        "workspace API revision storage refuses viewer management despite service RPC access",
+        "workspace API revision storage refuses outsider management despite service RPC access",
+        "workspace API revision storage refuses stale edits, changed retry payloads and revival after revocation",
+        "workspace API revision storage refuses direct revision/key changes and cross-workspace references",
+        "workspace API revision storage reads metadata for members, hides other workspaces and refuses all direct credential access",
+        "workspace API revision storage validates protocol, capabilities, model identities, endpoint and key mode in storage"
+      ]
+    },
+    {
+      "mutation": "revision-immutability",
+      "outcome": "failed",
+      "target": "direct revision/key changes",
+      "failedTests": [
+        "workspace API revision storage retains immutable revisions, exact save retries and private ciphertext",
+        "workspace API revision storage refuses member management despite service RPC access",
+        "workspace API revision storage refuses viewer management despite service RPC access",
+        "workspace API revision storage refuses outsider management despite service RPC access",
+        "workspace API revision storage refuses stale edits, changed retry payloads and revival after revocation",
+        "workspace API revision storage refuses direct revision/key changes and cross-workspace references",
+        "workspace API revision storage reads metadata for members, hides other workspaces and refuses all direct credential access",
+        "workspace API revision storage validates protocol, capabilities, model identities, endpoint and key mode in storage"
+      ]
+    },
+    {
+      "mutation": "connection-identity",
+      "outcome": "failed",
+      "target": "direct revision/key changes",
+      "failedTests": [
+        "workspace API revision storage retains immutable revisions, exact save retries and private ciphertext",
+        "workspace API revision storage refuses member management despite service RPC access",
+        "workspace API revision storage refuses viewer management despite service RPC access",
+        "workspace API revision storage refuses outsider management despite service RPC access",
+        "workspace API revision storage refuses stale edits, changed retry payloads and revival after revocation",
+        "workspace API revision storage refuses direct revision/key changes and cross-workspace references",
+        "workspace API revision storage reads metadata for members, hides other workspaces and refuses all direct credential access",
+        "workspace API revision storage validates protocol, capabilities, model identities, endpoint and key mode in storage"
+      ]
+    },
+    {
+      "mutation": "revocation-monotonic",
+      "outcome": "failed",
+      "target": "revival after revocation",
+      "failedTests": [
+        "workspace API revision storage retains immutable revisions, exact save retries and private ciphertext",
+        "workspace API revision storage refuses member management despite service RPC access",
+        "workspace API revision storage refuses viewer management despite service RPC access",
+        "workspace API revision storage refuses outsider management despite service RPC access",
+        "workspace API revision storage refuses stale edits, changed retry payloads and revival after revocation",
+        "workspace API revision storage refuses direct revision/key changes and cross-workspace references",
+        "workspace API revision storage reads metadata for members, hides other workspaces and refuses all direct credential access",
+        "workspace API revision storage validates protocol, capabilities, model identities, endpoint and key mode in storage"
+      ]
+    },
+    {
+      "mutation": "revision-advance",
+      "outcome": "failed",
+      "target": "retains immutable revisions",
+      "failedTests": [
+        "workspace API revision storage retains immutable revisions, exact save retries and private ciphertext",
+        "workspace API revision storage refuses member management despite service RPC access",
+        "workspace API revision storage refuses viewer management despite service RPC access",
+        "workspace API revision storage refuses outsider management despite service RPC access",
+        "workspace API revision storage refuses stale edits, changed retry payloads and revival after revocation",
+        "workspace API revision storage refuses direct revision/key changes and cross-workspace references",
+        "workspace API revision storage reads metadata for members, hides other workspaces and refuses all direct credential access",
+        "workspace API revision storage validates protocol, capabilities, model identities, endpoint and key mode in storage"
+      ]
+    },
+    {
+      "mutation": "retry-author",
+      "outcome": "failed",
+      "target": "changed retry payloads",
+      "failedTests": [
+        "workspace API revision storage retains immutable revisions, exact save retries and private ciphertext",
+        "workspace API revision storage refuses member management despite service RPC access",
+        "workspace API revision storage refuses viewer management despite service RPC access",
+        "workspace API revision storage refuses outsider management despite service RPC access",
+        "workspace API revision storage refuses stale edits, changed retry payloads and revival after revocation",
+        "workspace API revision storage refuses direct revision/key changes and cross-workspace references",
+        "workspace API revision storage reads metadata for members, hides other workspaces and refuses all direct credential access",
+        "workspace API revision storage validates protocol, capabilities, model identities, endpoint and key mode in storage"
+      ]
+    },
+    {
+      "mutation": "retry-previous",
+      "outcome": "failed",
+      "target": "changed retry payloads",
+      "failedTests": [
+        "workspace API revision storage retains immutable revisions, exact save retries and private ciphertext",
+        "workspace API revision storage refuses member management despite service RPC access",
+        "workspace API revision storage refuses viewer management despite service RPC access",
+        "workspace API revision storage refuses outsider management despite service RPC access",
+        "workspace API revision storage refuses stale edits, changed retry payloads and revival after revocation",
+        "workspace API revision storage refuses direct revision/key changes and cross-workspace references",
+        "workspace API revision storage reads metadata for members, hides other workspaces and refuses all direct credential access",
+        "workspace API revision storage validates protocol, capabilities, model identities, endpoint and key mode in storage"
+      ]
+    },
+    {
+      "mutation": "retry-config",
+      "outcome": "failed",
+      "target": "changed retry payloads",
+      "failedTests": [
+        "workspace API revision storage retains immutable revisions, exact save retries and private ciphertext",
+        "workspace API revision storage refuses member management despite service RPC access",
+        "workspace API revision storage refuses viewer management despite service RPC access",
+        "workspace API revision storage refuses outsider management despite service RPC access",
+        "workspace API revision storage refuses stale edits, changed retry payloads and revival after revocation",
+        "workspace API revision storage refuses direct revision/key changes and cross-workspace references",
+        "workspace API revision storage reads metadata for members, hides other workspaces and refuses all direct credential access",
+        "workspace API revision storage validates protocol, capabilities, model identities, endpoint and key mode in storage"
+      ]
+    },
+    {
+      "mutation": "retry-key",
+      "outcome": "failed",
+      "target": "changed retry payloads",
+      "failedTests": [
+        "workspace API revision storage retains immutable revisions, exact save retries and private ciphertext",
+        "workspace API revision storage refuses member management despite service RPC access",
+        "workspace API revision storage refuses viewer management despite service RPC access",
+        "workspace API revision storage refuses outsider management despite service RPC access",
+        "workspace API revision storage refuses stale edits, changed retry payloads and revival after revocation",
+        "workspace API revision storage refuses direct revision/key changes and cross-workspace references",
+        "workspace API revision storage reads metadata for members, hides other workspaces and refuses all direct credential access",
+        "workspace API revision storage validates protocol, capabilities, model identities, endpoint and key mode in storage"
+      ]
+    },
+    {
+      "mutation": "stale-edit",
+      "outcome": "failed",
+      "target": "changed retry payloads",
+      "failedTests": [
+        "workspace API revision storage retains immutable revisions, exact save retries and private ciphertext",
+        "workspace API revision storage refuses member management despite service RPC access",
+        "workspace API revision storage refuses viewer management despite service RPC access",
+        "workspace API revision storage refuses outsider management despite service RPC access",
+        "workspace API revision storage refuses stale edits, changed retry payloads and revival after revocation",
+        "workspace API revision storage refuses direct revision/key changes and cross-workspace references",
+        "workspace API revision storage reads metadata for members, hides other workspaces and refuses all direct credential access",
+        "workspace API revision storage validates protocol, capabilities, model identities, endpoint and key mode in storage"
+      ]
+    },
+    {
+      "mutation": "stale-revoke",
+      "outcome": "failed",
+      "target": "changed retry payloads",
+      "failedTests": [
+        "workspace API revision storage retains immutable revisions, exact save retries and private ciphertext",
+        "workspace API revision storage refuses member management despite service RPC access",
+        "workspace API revision storage refuses viewer management despite service RPC access",
+        "workspace API revision storage refuses outsider management despite service RPC access",
+        "workspace API revision storage refuses stale edits, changed retry payloads and revival after revocation",
+        "workspace API revision storage refuses direct revision/key changes and cross-workspace references",
+        "workspace API revision storage reads metadata for members, hides other workspaces and refuses all direct credential access",
+        "workspace API revision storage validates protocol, capabilities, model identities, endpoint and key mode in storage"
+      ]
+    },
+    {
+      "mutation": "key-mode",
+      "outcome": "failed",
+      "target": "validates protocol",
+      "failedTests": [
+        "workspace API revision storage retains immutable revisions, exact save retries and private ciphertext",
+        "workspace API revision storage refuses member management despite service RPC access",
+        "workspace API revision storage refuses viewer management despite service RPC access",
+        "workspace API revision storage refuses outsider management despite service RPC access",
+        "workspace API revision storage refuses stale edits, changed retry payloads and revival after revocation",
+        "workspace API revision storage refuses direct revision/key changes and cross-workspace references",
+        "workspace API revision storage reads metadata for members, hides other workspaces and refuses all direct credential access",
+        "workspace API revision storage validates protocol, capabilities, model identities, endpoint and key mode in storage"
+      ]
+    },
+    {
+      "mutation": "keyless-mode",
+      "outcome": "failed",
+      "target": "validates protocol",
+      "failedTests": [
+        "workspace API revision storage retains immutable revisions, exact save retries and private ciphertext",
+        "workspace API revision storage refuses member management despite service RPC access",
+        "workspace API revision storage refuses viewer management despite service RPC access",
+        "workspace API revision storage refuses outsider management despite service RPC access",
+        "workspace API revision storage refuses stale edits, changed retry payloads and revival after revocation",
+        "workspace API revision storage refuses direct revision/key changes and cross-workspace references",
+        "workspace API revision storage reads metadata for members, hides other workspaces and refuses all direct credential access",
+        "workspace API revision storage validates protocol, capabilities, model identities, endpoint and key mode in storage"
+      ]
+    },
+    {
+      "mutation": "config-validation",
+      "outcome": "failed",
+      "target": "validates protocol",
+      "failedTests": [
+        "workspace API revision storage retains immutable revisions, exact save retries and private ciphertext",
+        "workspace API revision storage refuses member management despite service RPC access",
+        "workspace API revision storage refuses viewer management despite service RPC access",
+        "workspace API revision storage refuses outsider management despite service RPC access",
+        "workspace API revision storage refuses stale edits, changed retry payloads and revival after revocation",
+        "workspace API revision storage refuses direct revision/key changes and cross-workspace references",
+        "workspace API revision storage reads metadata for members, hides other workspaces and refuses all direct credential access",
+        "workspace API revision storage validates protocol, capabilities, model identities, endpoint and key mode in storage"
+      ]
+    },
+    {
+      "mutation": "connection-tenant-read",
+      "outcome": "failed",
+      "target": "hides other workspaces",
+      "failedTests": [
+        "workspace API revision storage reads metadata for members, hides other workspaces and refuses all direct credential access"
+      ]
+    },
+    {
+      "mutation": "revision-tenant-read",
+      "outcome": "failed",
+      "target": "hides other workspaces",
+      "failedTests": [
+        "workspace API revision storage reads metadata for members, hides other workspaces and refuses all direct credential access"
+      ]
+    },
+    {
+      "mutation": "credential-disclosure",
+      "outcome": "failed",
+      "target": "hides other workspaces",
+      "failedTests": [
+        "workspace API revision storage reads metadata for members, hides other workspaces and refuses all direct credential access"
+      ]
+    },
+    {
+      "mutation": "authenticated-rpc",
+      "outcome": "failed",
+      "target": "hides other workspaces",
+      "failedTests": [
+        "workspace API revision storage reads metadata for members, hides other workspaces and refuses all direct credential access"
+      ]
+    }
+  ],
+  "isolation": "Each mutation was applied inside each fixture transaction and rolled back. The named target is an explicitly disposable restore stack.",
+  "blindCategories": [
+    "No browser workflow or provider execution is exercised.",
+    "Concurrency requires separate simultaneous-session tests.",
+    "Service-role compromise is outside ordinary user/RLS authorization."
+  ]
+}
