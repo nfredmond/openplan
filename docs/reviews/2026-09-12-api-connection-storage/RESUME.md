@@ -31,45 +31,35 @@ and recovered the same revision with created:false. Editing then exposed unstabl
 accessible names on implicit textarea/select labels. Source 92b927fc fixes them
 with explicit labels; detached-label mutations fail. No source changes are pending.
 
-## Live work to resume, September 12 about 14:33 local
+## Settings accepted; land and inspect main CI
 
-- Corrected full QA: exec 67000, `api-settings-labels-qa.log`, last observed running.
-- Corrected shuffled seed 350666: exec 85865 completed exit 0, 13,944 passed,
-  413 skipped. `api-settings-labels-shuffled.log`.
-- Full RLS exec 95861 completed exit 0, 442 passed. `api-settings-rls.log`.
-  The later label-only changes do not alter database or route behavior.
-- Branch push exec 96881 completed exit 0 for 92b927fc.
-- Upgrade Path dispatch from v0.54.0 was requested on this branch, exec 50580.
-  Inspect its output/run ID and GitHub state before claiming it started or passed.
+Both corrected browser journeys passed on identified source 908b576c at desktop
+1440x1000 and 390x1000. Viewport captures were inspected. Original/corrected/revoked
+history, exact post-commit response-loss retry, failed refresh, private credential
+denial and keyboard navigation passed. See the retained browser JSON and PNGs.
+Only two deliberate abort errors occurred per journey, with no page errors and
+zero model requests. Our acceptance server is now stopped; no browser collection
+is active in this checkout.
 
-All private logs/scripts/environment files are under:
+Corrected full QA exec 67000 and shuffled exec 85865 both completed exit 0:
+13,944 passed, 413 skipped; QA includes 382 connector passes/four skipped, zero
+audit vulnerabilities and successful webpack build. Full RLS exec 95861 completed
+exit 0: 442 tests in 48 files. The final label-only correction does not change SQL.
+Upgrade Path 34720213220 succeeded on 92b927fc from v0.54.0.
+All old handles listed in earlier notes are terminal; do not poll or restart them.
+
+This evidence checkpoint is ready to push directly to main. Inspect remote main
+and CI/RLS/Upgrade Path for the final pushed SHA. Preserve the root checkout and
+its unrelated reminder change. No PR or tag is needed for this unfinished API
+execution increment. After main checks, continue the API turn/worker join in
+`EXECUTION_JOIN.md` and the existing scoped Planner Agent task, without duplicating
+configuration UI or creating a second job-state owner.
+
+Private evidence/environment/scripts remain under
 `/home/nathaniel/.local/state/openplan/api-provider-research-2026-09-12`.
-Poll these exact handles or authoritative logs/processes. Do not restart because
-an observation timed out. No browser acceptance server is currently running; our
-previous port 3248 server was stopped before the label edits.
-
-## Immediate next action
-
-Finish QA/build, then start the corrected identified production build on 3248:
-`node --env-file=<private root>/api-settings.env node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3248`.
-Set OPENPLAN_COMMIT_SHA to the FULL current source SHA, not eight characters.
-Run `bash scripts/ops/which-openplan.sh http://127.0.0.1:3248` from the package.
-The short-SHA launch was correctly refused; the full-SHA launch matched.
-
-Run `<private root>/api-settings-browser.cjs` with that environment, SOURCE_COMMIT
-and WIDTH=1440 then WIDTH=390. It uses the repository Playwright dependency at
-`/home/nathaniel/code/openplan/qa-harness/node_modules/playwright/test`, installed
-Chrome, real sign-in and navigation. The synthetic auth producer created the
-account/workspace; `api-settings-account.json` is private and must not be printed
-or committed. Configuration records must come from UI producers.
-
-The driver now uses the actual Work email label and exact explicit field names.
-It aborts the save response after route.fetch committed, checks exact retry,
-corrects the original, compares retained history, simulates failed refresh,
-revokes, checks credential denial, screenshots and console. Earlier failed
-selector runs are not completed browser evidence. Inspect new screenshots and
-console at both widths; adapt navigation from the actual UI if necessary.
-No model call should occur; the local fixture listener on 3217 counts them.
+The browser driver uses the actual Work email label and explicit form labels.
+The account file and environment contain synthetic account credentials/operator
+secrets and must not be printed or committed. All API connections came from the UI.
 
 The active disposable stack is API29821/DB29822, workdir
 `/home/nathaniel/.local/state/openplan/openplan-restore-target-2026091050`, container

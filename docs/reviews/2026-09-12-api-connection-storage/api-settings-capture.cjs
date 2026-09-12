@@ -1,0 +1,21 @@
+const {chromium,expect}=require('/home/nathaniel/code/openplan/qa-harness/node_modules/playwright/test');
+const fs=require('node:fs'),out='/home/nathaniel/.local/state/openplan/api-provider-research-2026-09-12';
+const account=JSON.parse(fs.readFileSync(`${out}/api-settings-account.json`));
+(async()=>{const browser=await chromium.launch({channel:'chrome'});try{for(const width of [1440,390]){
+ const context=await browser.newContext({viewport:{width,height:1000}}),page=await context.newPage();
+ await page.goto('http://127.0.0.1:3248');await page.getByRole('banner').getByRole('link',{name:'Sign in',exact:true}).click();await page.getByLabel('Work email',{exact:true}).fill(account.email);await page.getByLabel('Password',{exact:true}).fill(account.password);await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.waitForURL(url=>!url.pathname.includes('sign-in'));
+ await page.getByRole('link',{name:'Workspace setup & health',exact:true}).click();await page.waitForURL('**/workspace');
+ const panel=page.getByRole('region',{name:'AI API connections'});await expect(panel.getByRole('button',{name:'Refresh connections',exact:true})).toBeEnabled();
+ const report=JSON.parse(fs.readFileSync(`${out}/settings-${width}-browser.json`));
+ const data=await (await context.request.get(`http://127.0.0.1:3248/api/workspaces/provider-api-connections?workspaceId=${account.workspaceId}`)).json();const row=data.connections.find(row=>row.id===report.connectionId);expect(row.revoked_at).toBeTruthy();
+ await panel.getByRole('heading',{name:'AI API connections',exact:true}).scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/settings-${width}-overview-viewport.png`});
+ await panel.getByRole('button',{name:`History for ${row.current_revision.configuration.label}`,exact:true}).click();
+ const history=panel.getByRole('region',{name:'Revision history'});await expect(history).toBeVisible();await history.scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/settings-${width}-history-viewport.png`});
+ const bounds=await panel.evaluate(el=>({client:el.clientWidth,scroll:el.scrollWidth}));expect(bounds.scroll).toBeLessThanOrEqual(bounds.client);
+ await history.locator('summary').first().click();await history.locator('details').first().scrollIntoViewIfNeeded();await page.screenshot({path:`${out}/settings-${width}-evidence-viewport.png`});
+ const form=panel.locator('form');await form.getByLabel('Connection name',{exact:true}).focus();await page.screenshot({path:`${out}/settings-${width}-form-viewport.png`});
+ await form.getByRole('combobox',{name:'Authentication',exact:true}).focus();await page.keyboard.press('End');await page.keyboard.press('Tab');await expect(form.getByRole('spinbutton',{name:'Request timeout in seconds',exact:true})).toBeFocused();
+ await page.screenshot({path:`${out}/settings-${width}-keyboard-viewport.png`});
+ fs.writeFileSync(`${out}/settings-${width}-layout.json`,JSON.stringify({source:report.source,bounds,keyboardSelectAndTab:true}));
+ await context.close();console.log(width,'captured');
+ }}finally{await browser.close();}})().catch(error=>{console.error(error.message);process.exit(1)});

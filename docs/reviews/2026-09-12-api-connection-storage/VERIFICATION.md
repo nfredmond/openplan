@@ -136,3 +136,53 @@ checks name populated controls exactly; detached model/authentication labels eac
 fail mutation checks. The browser journey must be repeated on this corrected
 build before claiming the settings workflow accepted. Our acceptance server was
 stopped before editing; no other app or database was stopped.
+
+## Corrected settings acceptance
+
+Accepted product code `92b927fc`, identified serving checkout `908b576c` with
+only the resume/design documentation added. Full `qa:gate` and shuffled seed
+350666 again passed: 13,944 tests, 413 skipped; 382 native connector tests passed,
+four skipped, dependency audit zero and production webpack build successful.
+The separate 442-case RLS run covers the unchanged migration/route source.
+The Python worker implementations are unchanged from the verified foundation.
+
+Desktop 1440x1000 and 390x1000 journeys entered through the public homepage,
+real sign-in and Workspace setup navigation. A synthetic account was created by
+Supabase Auth, whose actual producer created its workspace. All connection and
+revision writes used the product UI. A local provider listener observed zero
+model requests in either journey.
+
+Both journeys committed a save, aborted its response, and retried the identical
+serialized body. Exactly one original revision remained. A keyed correction
+created a second revision with the original as predecessor; the original complete
+metadata object remained equal. Revocation preserved the two-revision history
+with identical before/after hashes. Saved credentials were absent from history,
+cleared from the password input and absent from local/session storage. Direct
+ordinary-user credential reads returned 403; foreign-workspace history returned
+404. A failed list refresh preserved its visible prior settings and displayed an
+error. These checks do not certify provider compatibility or generation.
+
+The only browser console errors were the intentionally aborted save response and
+refresh in each journey, both ERR_FAILED; there were no page errors. Keyboard
+navigation opened setup/history, submitted the save and confirmed revocation.
+A further viewport inspection selected keyless authentication using End and
+confirmed Tab reached the timeout field. The 390px panel measured 293px client
+and scroll width; the document width equaled the viewport at both sizes.
+
+The first element-sized screenshots included clipped portions of the app's
+scrolling container and blank space. They were not adequate layout evidence.
+The retained viewport captures were subsequently inspected at both widths,
+including history, expanded revision evidence and keyboard focus. The capture
+script's first homepage selector matched header and footer links; its final
+version selects the header's real Sign in link. This was a driver correction.
+
+Browser scripts, metadata/hash receipts and inspected viewport screenshots are
+retained here, with `BROWSER_SHA256SUMS`. Credentials, account bootstrap secrets,
+raw server logs and failed preliminary captures remain private. The named
+acceptance server was stopped after both journeys; the separate demo is untouched.
+
+GitHub Upgrade Path 34720213220 completed successfully for source `92b927fc`,
+upgrading populated v0.54.0 state. Final main CI/RLS still need separate inspection
+after this evidence checkpoint is pushed. No release tag or completed A0b claim
+is made; joining saved connections to the retained Planner Agent task/worker is
+next, as specified in `EXECUTION_JOIN.md`.

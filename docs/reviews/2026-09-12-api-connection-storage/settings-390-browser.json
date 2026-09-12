@@ -1,0 +1,54 @@
+{
+  "width": 390,
+  "credentialReadStatus": 403,
+  "foreignHistoryStatus": 404,
+  "source": "908b576ce21a65d570f1402f30b95f58ba79f5dc",
+  "workspaceId": "f02e465a-40bd-4304-b4af-d45daff29d3d",
+  "connectionId": "f0261f8e-b296-48a3-9e46-138cb7afede3",
+  "originalRevisionId": "222e1114-6036-428c-bf88-ac5e14c540aa",
+  "originalSha": "7803c956451d28146b0cce1c77e3750627cefa3e6a0c026c3cc380400469ca76",
+  "correctedHistorySha": "5e9b8b19504cecbb5800605448b67d3be877a72b2acb8e23b3848e6e10a45e72",
+  "revokedHistorySha": "5e9b8b19504cecbb5800605448b67d3be877a72b2acb8e23b3848e6e10a45e72",
+  "providerCalls": 0,
+  "overflow": {
+    "viewport": 390,
+    "document": 390
+  },
+  "writes": [
+    {
+      "method": "PUT",
+      "sha": "c780783ba5957073c01b9afc29f38756851366c85b1d136267f05d8dd846be8c",
+      "connectionId": "f0261f8e-b296-48a3-9e46-138cb7afede3",
+      "revisionId": "222e1114-6036-428c-bf88-ac5e14c540aa"
+    },
+    {
+      "method": "PUT",
+      "sha": "c780783ba5957073c01b9afc29f38756851366c85b1d136267f05d8dd846be8c",
+      "connectionId": "f0261f8e-b296-48a3-9e46-138cb7afede3",
+      "revisionId": "222e1114-6036-428c-bf88-ac5e14c540aa"
+    },
+    {
+      "method": "PUT",
+      "sha": "194a5f065bb04697c99c7d5a88dcf91e4605b19b370b86b99b37f83cdb7c5d6c",
+      "connectionId": "f0261f8e-b296-48a3-9e46-138cb7afede3",
+      "revisionId": "56de0010-c6e8-4782-af12-3bba5218ee8e"
+    },
+    {
+      "method": "DELETE",
+      "sha": "9999ddd49437a4e07a8fd8e8201d700189a082ec1062595c9d189a3e0aff8458",
+      "connectionId": "f0261f8e-b296-48a3-9e46-138cb7afede3",
+      "revisionId": "56de0010-c6e8-4782-af12-3bba5218ee8e"
+    }
+  ],
+  "consoleEvents": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    }
+  ],
+  "passed": true
+}
