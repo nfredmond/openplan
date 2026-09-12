@@ -1,0 +1,49 @@
+[
+  {
+    "name": "harmless-comment",
+    "outcome": "survived",
+    "expectedFailure": null,
+    "matched": true,
+    "failures": []
+  },
+  {
+    "name": "connection-lock",
+    "outcome": "killed",
+    "expectedFailure": "saved API status locks its connection",
+    "matched": true,
+    "failures": [
+      {
+        "name": "provider transaction competition saved API status locks its connection before reading the turn",
+        "message": "Error: Competing execution never waited on a database lock\n    at waitForLock (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-provider-concurrency.test.ts:49:11)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-provider-concurrency.test.ts:178:184\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "scope-lock",
+    "outcome": "killed",
+    "expectedFailure": "saved API claim waits for an in-flight membership",
+    "matched": false,
+    "failures": [
+      {
+        "name": "provider transaction competition saved API claim waits for an in-flight membership change",
+        "message": "AssertionError: expected '{\"id\": \"f5d985fe-bfbf-4f95-a8e7-62e53…' to be 'null' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-provider-concurrency.test.ts:151:144\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "provider transaction competition saved API claim waits for an in-flight project change",
+        "message": "Error: Competing execution never waited on a database lock\n    at waitForLock (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-provider-concurrency.test.ts:49:11)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-provider-concurrency.test.ts:150:99\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "reservation-lock",
+    "outcome": "killed",
+    "expectedFailure": "saved API budget serializes different connections",
+    "matched": true,
+    "failures": [
+      {
+        "name": "provider transaction competition saved API budget serializes different connections at the final reservation",
+        "message": "Error: Competing execution never waited on a database lock\n    at waitForLock (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-provider-concurrency.test.ts:49:11)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-provider-concurrency.test.ts:192:79\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  }
+]

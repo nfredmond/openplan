@@ -4,10 +4,11 @@ import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { providerProjectPacketSchema, providerProjectPacketHash, providerProjectPrompt } from "./provider-project-task";
+import { providerApiConfigurationSchema } from "@/lib/integrations/provider-api-credentials";
 
 export const providerScopeSchema = z.object({ workspaceId: z.string().uuid(), projectId: z.string().uuid() }).strict();
 export const PROVIDER_CONNECTION_COLUMNS = "id,workspace_id,project_id,provider,device_label,expected_auth_mode,created_at,expires_at,revoked_at,last_seen_at,last_status";
-export const PROVIDER_TURN_COLUMNS = "id,request_id,workspace_id,project_id,connection_id,provider,model_id,auth_mode,question,packet_canonical,packet_hash,state,attempt_id,lease_expires_at,result,provider_receipt,failure_code,created_at,started_at,finished_at";
+export const PROVIDER_TURN_COLUMNS = "id,request_id,user_id,workspace_id,project_id,connection_id,provider,model_id,auth_mode,question,packet_canonical,packet_hash,state,attempt_id,lease_expires_at,result,provider_receipt,failure_code,created_at,started_at,finished_at,api_connection_id,api_revision_id,api_configuration_canonical,api_configuration_hash,api_charge_ack";
 export type ProviderService = ReturnType<typeof createServiceRoleClient>;
 export type ProviderUserClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -92,8 +93,9 @@ export async function loadProviderProjectPacket(client: ProviderUserClient, user
   return packet;
 }
 
-export const retainedProviderTurnSchema = z.object({
+const retainedProviderTurnBaseSchema = z.object({
   id: z.string().uuid(), request_id: z.string().uuid(), workspace_id: z.string().uuid(), project_id: z.string().uuid(),
+  user_id: z.string().uuid().optional(),
   connection_id: z.string().uuid().nullable(), provider: z.enum(["codex", "claude", "opencode", "anthropic"]), model_id: z.string().min(1).max(160),
   auth_mode: z.enum(["chatgpt", "apiKey", "claude_subscription", "opencode_api", "workspace_api_key", "deployment_api_key"]), question: z.string().min(1).max(2000),
   packet_canonical: z.string().max(200_000), packet_hash: z.string().regex(/^[a-f0-9]{64}$/),
@@ -101,6 +103,13 @@ export const retainedProviderTurnSchema = z.object({
   lease_expires_at: z.string().nullable(), result: z.unknown().nullable(), provider_receipt: z.unknown().nullable(),
   failure_code: z.string().nullable(), created_at: z.string(), started_at: z.string().nullable(), finished_at: z.string().nullable(),
 });
+export const retainedProviderTurnSchema = z.discriminatedUnion("provider", [
+  retainedProviderTurnBaseSchema.extend({ api_connection_id: z.null().optional(), api_revision_id: z.null().optional(),
+    api_configuration_canonical: z.null().optional(), api_configuration_hash: z.null().optional(), api_charge_ack: z.null().optional() }),
+  retainedProviderTurnBaseSchema.extend({ provider: z.literal("api_connection"), user_id: z.string().uuid(), connection_id: z.null(),
+    auth_mode: z.enum(["connection_api_key", "connection_no_key"]), api_connection_id: z.string().uuid(), api_revision_id: z.string().uuid(),
+    api_configuration_canonical: z.string().max(32_000), api_configuration_hash: z.string().regex(/^[a-f0-9]{64}$/), api_charge_ack: z.literal(true) }),
+]);
 export type RetainedProviderTurn = z.infer<typeof retainedProviderTurnSchema>;
 export function checkedProviderTurn(raw: unknown) {
   const turn = retainedProviderTurnSchema.parse(raw);
@@ -110,5 +119,13 @@ export function checkedProviderTurn(raw: unknown) {
   }
   providerProjectPacketHash(packet);
   providerProjectPrompt(packet, turn.question);
+  if (turn.provider === "api_connection") {
+    try {
+      const configuration = providerApiConfigurationSchema.parse(JSON.parse(turn.api_configuration_canonical));
+      if (createHash("sha256").update(turn.api_configuration_canonical).digest("hex") !== turn.api_configuration_hash ||
+        !configuration.modelIds.includes(turn.model_id) || turn.auth_mode !==
+        (configuration.authMode === "api_key" ? "connection_api_key" : "connection_no_key")) throw new Error();
+    } catch { throw new ProviderRequestError("provider_api_snapshot_invalid", 409); }
+  }
   return { turn, packet };
 }

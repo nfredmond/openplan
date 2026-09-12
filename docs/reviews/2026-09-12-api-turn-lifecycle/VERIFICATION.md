@@ -38,7 +38,7 @@ The new focused suite has 16 live SQL cases. The final restored run passed all
 80 cases across this file and the existing 64 provider-history cases, exit zero.
 Changed-test ESLint and diff checks also passed. The shared completion path
 therefore has separate legacy regression evidence. Full isolated RLS,
-concurrency, upgrade and full QA remain to be run on the final implementation.
+upgrade and full QA remain to be run on the final implementation. The later concurrency checkpoint below supersedes the original concurrency TODO.
 
 Two test errors were corrected. A function call and state read combined in one
 SQL expression allowed PostgreSQL to read state before the function changed it;
@@ -66,10 +66,11 @@ ordinary-role execution denial after their mutation transactions rolled back.
 The SQL tests run transactions that roll back, using synthetic identities and
 SQL-level dummy encrypted envelopes. They do not retest encryption, network
 transport, SDK generation, process journals, PostgREST delivery or browser use.
-They do not prove lock behavior between two connections. Those need the
-concurrent transaction tests and worker integration below. No model was called.
+The rollback SQL cases alone do not prove lock behavior between two connections.
+The later concurrency campaign below supplies that separate evidence; worker
+integration remains pending. No model was called.
 
-## Next concurrency work
+## Original concurrency design, implemented below
 
 Extend `openplan/src/test/assistant-provider-concurrency.test.ts` using its real
 transaction/background/waitForLock helpers. Keep native tests intact. API fixtures
@@ -98,3 +99,27 @@ After SQL verification, extend the retained-turn TypeScript validator/projection
 then join `provider-api-generation.ts` to the worker and existing project panel.
 Reuse the native connector journal primitives. Settings must continue to disclose
 generation unavailability until that path is executable and browser-verified.
+
+## Usage reset checkpoint
+
+Ten API concurrency cases now cover identical creation, competing claims,
+membership/project changes, edit/revoke/cancel versus completion, exact completion
+replay, explicit connection locking and the separate-connection final-budget race.
+The API-only baseline passed ten cases with eight legacy cases skipped. The full
+18-case replay remains pending. The final four-case mutation campaign survived
+one harmless control and killed missing connection, scope and advisory locks.
+Both mutated function bodies were restored and checked against source hashes.
+
+The initial scope mutation failed with a claimed job after membership removal,
+rather than only the initially expected missing wait. The final campaign records
+that stronger assertion; the original report is retained. The independent lock
+that still caused a wait in that initial membership case was not identified.
+
+The retained API TypeScript decoder/projection and nineteen focused cases are
+implemented. Together with existing route/API cases, 110 tests passed. Mutation
+proof for the new decoder is pending. A fresh TypeScript check at the usage
+checkpoint failed with four fixture type errors in provider-api-turn.test.ts,
+lines 51, 59, 64 and 107. Changed-file ESLint passed. These are unfinished source
+changes, not accepted main or release evidence. RESUME.md has exact next steps.
+The explicit package test:rls-live list also still omits the new 16-case API SQL
+file; wire it in and inspect serialization before reporting full RLS coverage.
