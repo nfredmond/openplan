@@ -1,5 +1,17 @@
 # Resume API connection implementation
 
+## Usage-reset checkpoint
+
+Main `100216a32c458e0c1cc85c050fb088891565c5d0` now has completed,
+successful CI `34720524596`, RLS Isolation `34720524628`, and Upgrade Path
+`34720524696`, checked directly through GitHub. This supersedes the pending-run
+wording below. The checkout was clean before this note update; all product work
+is pushed. No API turn/worker implementation has begun. Continue with
+`EXECUTION_JOIN.md` after checking current ownership and checkout state.
+The full v1 goal remains active. If usage interrupts the session, resume this
+thread and recover from these repository notes; do not assume old process or
+browser handles survived the interruption.
+
 Active full v1 goal remains open. v0.54.0 is already published. Do not repeat
 v0.48 or v0.54 release work. Preserve all planning and separate model obligations.
 
