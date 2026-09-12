@@ -8,7 +8,7 @@ import { API_CONNECTION_COLUMNS, API_REVISION_COLUMNS, apiConnectionMetadataSche
 import { ProviderApiCredentialError } from "@/lib/integrations/provider-api-credentials";
 
 const scopeSchema = z.object({ workspaceId: z.string().uuid() }).strict();
-const listSchema = scopeSchema.extend({ offset: z.coerce.number().int().min(0).max(100_000).default(0) });
+const listSchema = scopeSchema.extend({ offset: z.coerce.number().int().min(0).max(100_000).default(0), connectionId: z.string().uuid().optional() });
 const saveSchema = scopeSchema.extend({ connectionId: z.string().uuid(), revisionId: z.string().uuid(),
   expectedRevisionId: z.string().uuid().nullable(), configuration: z.unknown(), apiKey: z.unknown() }).strict();
 const revokeSchema = scopeSchema.extend({ connectionId: z.string().uuid(), expectedRevisionId: z.string().uuid() }).strict();
@@ -21,6 +21,19 @@ export async function GET(request: NextRequest) {
     const member = await client.from("workspace_members").select("workspace_id,role").eq("workspace_id", scope.workspaceId).eq("user_id", userId).maybeSingle();
     providerRpcError(member.error);
     if (!member.data || member.data.workspace_id !== scope.workspaceId || !["owner", "admin", "member", "viewer"].includes(member.data.role)) return providerJson({ error: "workspace_not_found" }, 404);
+    if (scope.connectionId) {
+      const connection = await client.from("workspace_provider_api_connections").select("id")
+        .eq("workspace_id", scope.workspaceId).eq("id", scope.connectionId).maybeSingle();
+      providerRpcError(connection.error);
+      if (!connection.data) return providerJson({ error: "connection_not_found" }, 404);
+      const history = await client.from("workspace_provider_api_revisions").select(API_REVISION_COLUMNS, { count: "exact" })
+        .eq("workspace_id", scope.workspaceId).eq("connection_id", scope.connectionId)
+        .order("created_at", { ascending: false }).order("id", { ascending: false }).range(scope.offset, scope.offset + 49);
+      providerRpcError(history.error);
+      audit.info("connection_history_read", { workspaceId: scope.workspaceId, connectionId: scope.connectionId, count: history.data?.length ?? 0 });
+      return providerJson({ revisions: history.data ?? [], total: history.count, offset: scope.offset,
+        nextOffset: history.count !== null && scope.offset + 50 < history.count ? scope.offset + 50 : null });
+    }
     const listed = await client.from("workspace_provider_api_connections")
       .select(`${API_CONNECTION_COLUMNS},current_revision:workspace_provider_api_revisions!workspace_provider_api_current_revision(${API_REVISION_COLUMNS})`, { count: "exact" })
       .eq("workspace_id", scope.workspaceId).order("created_at", { ascending: false }).order("id", { ascending: false }).range(scope.offset, scope.offset + 49);

@@ -51,9 +51,7 @@ is retained. This was a fixture defect, not evidence of passing concurrency.
 The immutability case was strengthened to change recorded authorship directly;
 its original checksum-breaking input could have been caught by another constraint.
 
-TypeScript and changed-file ESLint passed before the final full campaigns. Full
-QA, shuffled seed 912055 and full isolated RLS are running; inspect their handles
-and logs before claiming those passed. No upgrade result is claimed yet.
+TypeScript and changed-file ESLint passed before the final full campaigns. The first full QA and shuffled seed 912055 each reported 13,923 passed, four failed and 413 skipped. Full isolated RLS completed with 442 passing tests across 48 files. The first QA failures are described below. No upgrade result is claimed yet.
 
 ## Scope limits and next work
 
@@ -82,3 +80,37 @@ table outside the source inventory. Inventory expectations now account for the
 three new tables and two SELECT policies, and Unreleased names the migration.
 The no-caller guard stays intact. Real configuration controls and their browser
 evidence must precede landing this increment; no route exception is justified.
+
+## Settings implementation checkpoint
+
+Workspace setup now mounts an API configuration panel alongside existing integration
+keys. Owners/admins can save, revise and revoke; members can inspect permitted
+metadata and paginated revision history. The history route uses the ordinary
+user client with explicit workspace/connection filters and metadata projections.
+No model call occurs when settings are opened or saved. The UI explicitly says
+Planner Agent generation is not wired to these connections yet.
+
+Unconfirmed writes retain the exact serialized request and freeze edits until
+retry or an explicitly confirmed local discard. A successful save clears the key.
+A workspace change remounts the form. Failed refreshes preserve earlier metadata
+with an error rather than claiming an empty workspace. Server authorization and
+expected-revision checks remain authoritative for stale or revoked records.
+
+Focused source checks: TypeScript, changed-file ESLint and 81 cases across the
+settings, routes, caller guard and migration inventory/release-ordering passed.
+The settings suite has 15 cases and route suite 22. Their first run exposed four
+accessible-name mismatches caused by adjacent text nodes; explicit action labels
+now name the relevant connection.
+
+Settings mutations retain one harmless control and 19 targeted failures. Removing
+one inner duplicate-click lock survived because the form handler and disabled
+button still block re-entry. An actual second dispatch failed the request-count
+assertion. Do not claim each redundant lock was independently necessary. Tests
+also reject leaked local keys, changed retry IDs, editable uncertain drafts,
+foreign returned identities, wrong predecessors, keyless credential leakage,
+erased metadata, wrong history scope/projection, missing-connection success,
+unconfirmed revocation, duplicate model IDs and lost pagination records.
+
+These component tests mock HTTP and cannot prove RLS, browser layout or actual
+server commit recovery. Identified desktop/390px browser evidence and final broad
+checks are still pending at this checkpoint.

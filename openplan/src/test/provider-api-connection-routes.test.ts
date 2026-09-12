@@ -157,4 +157,23 @@ describe("workspace API connection routes", () => {
     mocks.rpc.mockResolvedValueOnce({ data: { ...connection(), id: otherId, revoked_at: "2026-09-12T01:00:00Z" }, error: null });
     expect((await route.DELETE(request("DELETE", { workspaceId, connectionId, expectedRevisionId: revisionId }))).status).toBe(409);
   });
+  it("reads revision history with explicit workspace and connection projections", async () => {
+    const historyQuery = query([retainedRow(JSON.stringify(configuration))], null, 51);
+    const connectionQuery = query({ id: connectionId });
+    mocks.userFrom.mockImplementation(table => table === "workspace_members" ? memberQuery : table === "workspace_provider_api_connections" ? connectionQuery : historyQuery);
+    const response = await route.GET(new NextRequest(`${origin}/api/workspaces/provider-api-connections?workspaceId=${workspaceId}&connectionId=${connectionId}`));
+    expect(response.status).toBe(200); expect(await response.json()).toMatchObject({ total: 51, nextOffset: 50, revisions: [{ id: revisionId }] });
+    expect(connectionQuery.select).toHaveBeenCalledWith("id");
+    expect(connectionQuery.eq).toHaveBeenCalledWith("workspace_id", workspaceId); expect(connectionQuery.eq).toHaveBeenCalledWith("id", connectionId);
+    expect(historyQuery.select).toHaveBeenCalledWith("id,connection_id,workspace_id,previous_revision_id,configuration,configuration_canonical,configuration_hash,configured_by,created_at", { count: "exact" });
+    expect(historyQuery.eq).toHaveBeenCalledWith("workspace_id", workspaceId); expect(historyQuery.eq).toHaveBeenCalledWith("connection_id", connectionId);
+    expect(historyQuery.range).toHaveBeenCalledWith(0, 49); expect(mocks.serviceFrom).not.toHaveBeenCalled();
+  });
+  it("does not present a missing or inaccessible connection as empty history", async () => {
+    const connectionQuery = query(null);
+    mocks.userFrom.mockImplementation(table => table === "workspace_members" ? memberQuery : connectionQuery);
+    expect((await route.GET(new NextRequest(`${origin}/api/workspaces/provider-api-connections?workspaceId=${workspaceId}&connectionId=${connectionId}`))).status).toBe(404);
+    expect(mocks.userFrom).not.toHaveBeenCalledWith("workspace_provider_api_revisions");
+  });
+
 });

@@ -1,0 +1,128 @@
+[
+  {
+    "name": "control",
+    "exit": 0,
+    "expected": "survive",
+    "test": null
+  },
+  {
+    "name": "key-local-storage",
+    "exit": 1,
+    "expected": "fail",
+    "test": "without storing the key locally"
+  },
+  {
+    "name": "retry-changed-body",
+    "exit": 1,
+    "expected": "fail",
+    "test": "retries the exact body"
+  },
+  {
+    "name": "uncertain-form-enabled",
+    "exit": 1,
+    "expected": "fail",
+    "test": "freezes an uncertain save"
+  },
+  {
+    "name": "duplicate-generation",
+    "exit": 0,
+    "expected": "fail",
+    "test": "does not dispatch twice"
+  },
+  {
+    "name": "wire-duplicate",
+    "exit": 1,
+    "expected": "fail",
+    "test": "does not dispatch twice"
+  },
+  {
+    "name": "pagination-replaces",
+    "exit": 1,
+    "expected": "fail",
+    "test": "subsequent connection and history pages"
+  },
+  {
+    "name": "history-pagination-replaces",
+    "exit": 1,
+    "expected": "fail",
+    "test": "subsequent connection and history pages"
+  },
+  {
+    "name": "revoke-unconfirmed",
+    "exit": 1,
+    "expected": "fail",
+    "test": "response leaves the connection active"
+  },
+  {
+    "name": "duplicate-models",
+    "exit": 1,
+    "expected": "fail",
+    "test": "distinct model IDs"
+  },
+  {
+    "name": "save-foreign-revision",
+    "exit": 1,
+    "expected": "fail",
+    "test": "another workspace or revision identity"
+  },
+  {
+    "name": "edit-predecessor",
+    "exit": 1,
+    "expected": "fail",
+    "test": "new revision for edits"
+  },
+  {
+    "name": "keyless-key-leak",
+    "exit": 1,
+    "expected": "fail",
+    "test": "keyless operation"
+  },
+  {
+    "name": "refresh-erases-records",
+    "exit": 1,
+    "expected": "fail",
+    "test": "last successful list"
+  },
+  {
+    "name": "wrong-current-revision",
+    "exit": 1,
+    "expected": "fail",
+    "test": "different current revision"
+  },
+  {
+    "name": "history-other-connection",
+    "exit": 1,
+    "expected": "fail",
+    "test": "history from another connection"
+  },
+  {
+    "name": "revoke-predecessor",
+    "exit": 1,
+    "expected": "fail",
+    "test": "expected revision in retries"
+  },
+  {
+    "name": "history-projection",
+    "exit": 1,
+    "expected": "fail",
+    "test": "reads revision history"
+  },
+  {
+    "name": "history-workspace",
+    "exit": 1,
+    "expected": "fail",
+    "test": "reads revision history"
+  },
+  {
+    "name": "history-connection",
+    "exit": 1,
+    "expected": "fail",
+    "test": "reads revision history"
+  },
+  {
+    "name": "history-not-found",
+    "exit": 1,
+    "expected": "fail",
+    "test": "missing or inaccessible connection"
+  }
+]

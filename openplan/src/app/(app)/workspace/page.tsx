@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { BuildIdentityLine } from "@/components/dashboard/build-identity-line";
 import { DeploymentHealthPanel } from "@/components/dashboard/deployment-health-panel";
 import { WorkspaceGeographyPanel } from "@/components/workspaces/workspace-geography-panel";
+import { WorkspaceApiConnectionsPanel } from "@/components/workspaces/workspace-api-connections-panel";
 import { WorkspaceIntegrationKeysPanel } from "@/components/workspaces/workspace-integration-keys-panel";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { WorkspaceStageGatePanel } from "@/components/workspaces/workspace-stage-gate-panel";
@@ -135,6 +136,7 @@ export default async function WorkspacePage() {
 
       <div id="workspace-integrations">
         <WorkspaceIntegrationKeysPanel workspaceId={workspaceId} canManage={canManage} />
+        <WorkspaceApiConnectionsPanel workspaceId={workspaceId} canManage={canManage} />
       </div>
 
       <BuildIdentityLine />
