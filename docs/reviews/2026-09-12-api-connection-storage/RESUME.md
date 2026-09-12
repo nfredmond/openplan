@@ -1,83 +1,87 @@
 # Resume API connection implementation
 
-Active v1 goal remains open. Latest release is v0.54.0, already published. Do not
-repeat earlier releases. Full planning scope and separate model validation remain.
+Active full v1 goal remains open. v0.54.0 is already published. Do not repeat
+v0.48 or v0.54 release work. Preserve all planning and separate model obligations.
 
-Checkout: `/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10`.
-Package: `openplan/`. Branch: `work/planner-agent-api-connections`.
-Main foundation commit: `57a7b6aed1d0262ee847e1e80a6183b35728e142`; both CI34716932357
-and RLS34716932401 are successful. The new storage code is not yet on main.
-No other session was observed owning this checkout. No acceptance server is running
-from it; do not touch the separate demo or old browser stacks.
+Implementation checkout:
+`/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10`
+Package `openplan/`, branch `work/planner-agent-api-connections`.
+Remote main is `57a7b6aed1d0262ee847e1e80a6183b35728e142`; CI 34716932357 and
+RLS 34716932401 were confirmed green. Root checkout and demo are separate and
+must not be switched or modified. No other agent was observed owning this tree.
+No PR exists; land verified work directly to remote main.
 
-Read `VERIFICATION.md` here and the previous
-`../2026-09-12-api-provider-transport/RESUME.md` for transport context. The latter's
-statement that no API tables/routes exist is superseded by this checkpoint.
+## Current source and evidence
 
-Usage-reset checkpoint, September 12: source checkpoint `bbf0d4d0` is confirmed
-pushed to `origin/work/planner-agent-api-connections`; the working tree was clean.
-The test sessions have ended and their old handles are no longer available.
-Read the retained logs instead of polling those handles:
+Storage/routes are implemented. The real settings caller and paginated history
+are now implemented too, alongside existing integrations on `/workspace`.
+Current product source checkpoint: `92b927fc0e2e069be87f56eb51f44c578e3c58c5`,
+pushed. See `VERIFICATION.md` and `settings-mutations.json` in this folder.
+The original instruction to add a caller is superseded; do not duplicate the UI.
 
-- Full QA `api-storage-qa.log`: 13,923 passed, four failed, 413 skipped.
-- Shuffled seed 912055 `api-storage-shuffled.log`: the same four failures,
-  13,923 passed and 413 skipped.
-- Full isolated RLS `api-storage-full-rls.log`: 442 passed across 48 files.
+Settings have 15 focused component cases; routes have 22. Mutation evidence has
+one harmless control, 21 targeted failures and one explained redundant-lock
+survivor. Actual duplicate dispatch fails. Sources are restored. The existing
+storage SQL and route/concurrency campaigns remain separate evidence.
 
-The four QA failures are described below. Inventory and changelog fixes are in
-`bbf0d4d0`; those fixes have not yet received a fresh full run. The missing real
-UI caller remains unfinished. No test process was observed running at checkpoint.
-Resume at the configuration UI, then run the final gates. Do not declare this
-storage increment released or fully green.
+Source 6afabe2c passed full QA, shuffled seed 350666, connector 382/4 skipped,
+audit zero and webpack build. Full isolated RLS passed 442 cases in 48 files.
+A browser on that exact build committed an original save, discarded the response,
+and recovered the same revision with created:false. Editing then exposed unstable
+accessible names on implicit textarea/select labels. Source 92b927fc fixes them
+with explicit labels; detached-label mutations fail. No source changes are pending.
 
-All logs are under `/home/nathaniel/.local/state/openplan/api-provider-research-2026-09-12`.
-Mutation runs are finished and restored; concurrency controls and failures are in
-this review folder. The named disposable restore DB has 317 migrations. There is
-no need to reset it. No changed worker code or UI has been added yet.
+## Live work to resume, September 12 about 14:33 local
 
-The first full shuffled run failed four checks: the new route has no product
-caller, the policy/schema inventory counts were not updated, and the changelog
-omitted the new migration. Inventory counts are now reconciled with the live
-catalog, and the changelog names the migration. DO NOT exempt the orphan route
-or add a dummy caller. Its remaining failure requires the planned real UI join
-before this storage increment can land on main. The checkpoint's prior idea of
-landing routes before UI is superseded by this observed guard failure.
+- Corrected full QA: exec 67000, `api-settings-labels-qa.log`, last observed running.
+- Corrected shuffled seed 350666: exec 85865 completed exit 0, 13,944 passed,
+  413 skipped. `api-settings-labels-shuffled.log`.
+- Full RLS exec 95861 completed exit 0, 442 passed. `api-settings-rls.log`.
+  The later label-only changes do not alter database or route behavior.
+- Branch push exec 96881 completed exit 0 for 92b927fc.
+- Upgrade Path dispatch from v0.54.0 was requested on this branch, exec 50580.
+  Inspect its output/run ID and GitHub state before claiming it started or passed.
 
-Immediate next implementation: add configuration controls through the existing
-`/workspace` page's `workspace-integrations` area. Existing component:
-`openplan/src/components/workspaces/workspace-integration-keys-panel.tsx`;
-parent `openplan/src/app/(app)/workspace/page.tsx`. Keep that working integration
-panel intact; add the API connection controls alongside it. Owner/admin can save
-and revise exact endpoints/model IDs/key mode, inspect history and revoke. Members
-can read permitted destination metadata. Preserve ephemeral key inputs, one stable
-revision ID for a failed-save retry, truthful network/save outcomes and pagination.
-Saving configuration must not contact a model. Do not claim generation is wired.
+All private logs/scripts/environment files are under:
+`/home/nathaniel/.local/state/openplan/api-provider-research-2026-09-12`.
+Poll these exact handles or authoritative logs/processes. Do not restart because
+an observation timed out. No browser acceptance server is currently running; our
+previous port 3248 server was stopped before the label edits.
 
-The openplan-browser and look skills were read on this turn. Use the existing
-Playwright harness with installed Chrome. Before browser evidence, start an
-identified isolated build and use `which-openplan.sh`. This checkout's `.env.local`
-still points at the old browser stack on 22301; the active disposable QA/API stack
-is 29821/29822. Prepare a private environment file from that stack's status without
-printing keys. Use actual account/workspace creation and UI producers; do not
-hand-seed API connections. Never build/edit a served acceptance checkout while
-collecting evidence. No UI code or browser server has been started for this increment.
+## Immediate next action
 
-After reachable settings and their relevant browser tests, repeat final full QA,
-shuffled and isolated RLS on unchanged source. Land directly on main without a PR;
-inspect CI/RLS/Upgrade Path. No tag for the partial provider workflow.
+Finish QA/build, then start the corrected identified production build on 3248:
+`node --env-file=<private root>/api-settings.env node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3248`.
+Set OPENPLAN_COMMIT_SHA to the FULL current source SHA, not eight characters.
+Run `bash scripts/ops/which-openplan.sh http://127.0.0.1:3248` from the package.
+The short-SHA launch was correctly refused; the full-SHA launch matched.
 
-Then finish A0b API execution in existing `assistant_provider_turns`: immutable
-revision reference and request hash/charge acknowledgement, one queued attempt,
-operator-run Node worker for up-to-900-second calls, no browser-triggered duplicate
-generation, exact retained completion retry, cancellation/revocation and late-result
-refusal. Extend shared result/proposal validation, not a second job-state owner.
-Settle edit semantics explicitly: interrupt superseded active work or retain its
-old authorization, never move an old attempt to a new endpoint/key. Preserve
-membership/project/connection/turn lock order and exercise concurrency.
+Run `<private root>/api-settings-browser.cjs` with that environment, SOURCE_COMMIT
+and WIDTH=1440 then WIDTH=390. It uses the repository Playwright dependency at
+`/home/nathaniel/code/openplan/qa-harness/node_modules/playwright/test`, installed
+Chrome, real sign-in and navigation. The synthetic auth producer created the
+account/workspace; `api-settings-account.json` is private and must not be printed
+or committed. Configuration records must come from UI producers.
 
-Connect owner/admin configuration and ordinary member selection to the existing
-Planner Agent/provider UI. Run the browser skills, identify the served build, and
-exercise real navigation at desktop and 390px, keyboard, console, retry, provider
-switching, retained history and exact submittal approval. Free local fixture
-providers are authorized. No live provider spend or human engineering review gate.
-Keep the pending reminder constraint untouched and continue the full v1 roadmap.
+The driver now uses the actual Work email label and exact explicit field names.
+It aborts the save response after route.fetch committed, checks exact retry,
+corrects the original, compares retained history, simulates failed refresh,
+revokes, checks credential denial, screenshots and console. Earlier failed
+selector runs are not completed browser evidence. Inspect new screenshots and
+console at both widths; adapt navigation from the actual UI if necessary.
+No model call should occur; the local fixture listener on 3217 counts them.
+
+The active disposable stack is API29821/DB29822, workdir
+`/home/nathaniel/.local/state/openplan/openplan-restore-target-2026091050`, container
+`supabase_db_openplan-restore-target-2026091050`. Its 317 migrations include the
+new API storage migration. No reset is needed. The private environment explicitly
+targets this stack; checkout `.env.local` still targets an old stack on 22301.
+Do not print keys or touch the demo. Do not edit/rebuild during browser collection.
+
+After browser acceptance, update this note/evidence, push directly to main and
+inspect CI, RLS and Upgrade Path. Do not tag this partial provider workflow.
+Then join retained API turns and the local worker as described in
+`EXECUTION_JOIN.md` here and `../2026-09-10-opencode-native-spike/API_PROVIDER_NEXT.md`.
+Settings explicitly disclose that they are not yet selectable for generation.
+No human engineering review gate or paid provider service is needed. Keep the
+pending reminder constraint untouched and continue the complete v1 roadmap.
