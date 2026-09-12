@@ -27,7 +27,7 @@ function fill() {
   fireEvent.change(screen.getByLabelText("Connection name"), { target: { value: "Synthetic API" } });
   fireEvent.change(screen.getByLabelText(/API base URL/), { target: { value: "https://fixture.invalid/v1/" } });
   fireEvent.change(screen.getByLabelText("Model IDs, one per line"), { target: { value: "model-a\nmodel-b" } });
-  fireEvent.change(screen.getByLabelText(/^API keyEnter/), { target: { value: "SYNTHETIC-KEY" } });
+  fireEvent.change(screen.getByLabelText("API key"), { target: { value: "SYNTHETIC-KEY" } });
 }
 beforeEach(() => {
   listed = page([]); failRead = false; writes = []; mutate = async init => saved(init);
@@ -49,7 +49,7 @@ describe("API connection settings", () => {
     expect(writes).toHaveLength(1);
     expect(JSON.parse(String(writes[0].body))).toMatchObject({ workspaceId, expectedRevisionId: null, configuration: { label: "Synthetic API", endpoint: "https://fixture.invalid/v1/", modelIds: ["model-a", "model-b"], authMode: "api_key" }, apiKey: "SYNTHETIC-KEY" });
     expect(storage).not.toHaveBeenCalled();
-    expect(screen.getByLabelText(/^API keyEnter/)).toHaveValue("");
+    expect(screen.getByLabelText("API key")).toHaveValue("");
   });
   it("freezes an uncertain save and retries the exact body once without another revision", async () => {
     mutate = async () => { throw new Error("response lost after commit"); };
@@ -83,6 +83,8 @@ describe("API connection settings", () => {
     render(<WorkspaceApiConnectionsPanel workspaceId={workspaceId} canManage />);
     fireEvent.click(await screen.findByRole("button", { name: "Edit Local fixture" }));
     expect(screen.getByLabelText(/^API key for this revision/)).toHaveValue("");
+    expect(screen.getByRole("textbox", { name: "Model IDs, one per line" })).toHaveValue("fixture-model");
+    expect(screen.getByRole("combobox", { name: "Authentication" })).toHaveValue("api_key");
     fireEvent.change(screen.getByLabelText(/^API key for this revision/), { target: { value: "NEW-SYNTHETIC-KEY" } });
     fireEvent.click(screen.getByRole("button", { name: "Save configuration" }));
     await screen.findByText(/Revision saved/);
@@ -141,7 +143,7 @@ describe("API connection settings", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save configuration" })); await screen.findByText(/change could not be confirmed/);
     fireEvent.click(screen.getByRole("button", { name: "Discard local draft" })); await confirmDestructiveAction();
     await waitFor(() => expect(screen.getByLabelText("Connection name")).toHaveValue(""));
-    expect(screen.getByLabelText(/^API keyEnter/)).toHaveValue(""); expect(writes).toHaveLength(1);
+    expect(screen.getByLabelText("API key")).toHaveValue(""); expect(writes).toHaveLength(1);
   });
   it("loads subsequent connection and history pages without replacing earlier records", async () => {
     listed = { ...page([row]), total: 51, nextOffset: 50 };

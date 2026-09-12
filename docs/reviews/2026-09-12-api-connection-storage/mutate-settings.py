@@ -17,6 +17,8 @@ cases=[
 ('history-pagination-replaces',panel,'[...(prior?.revisions ?? []).filter(row => !page.revisions.some(next => next.id === row.id)), ...page.revisions]', 'page.revisions',test,'subsequent connection and history pages'),
 ('revoke-unconfirmed',panel,'|| !saved.revoked_at', '|| false',test,'response leaves the connection active'),
 ('duplicate-models',panel,'new Set(configuration.modelIds).size !== configuration.modelIds.length','false',test,'distinct model IDs'),
+('model-label-detached',panel,'htmlFor="api-connection-models"', 'htmlFor="not-this-field"',test,'new revision for edits'),
+('authentication-label-detached',panel,'htmlFor="api-connection-auth"', 'htmlFor="not-this-field"',test,'new revision for edits'),
 ('save-foreign-revision',panel,'saved.revision.workspace_id !== workspaceId ||','false ||',test,'another workspace or revision identity'),
 ('edit-predecessor',panel,'expectedRevisionId: editing?.current_revision_id ?? null','expectedRevisionId: null',test,'new revision for edits'),
 ('keyless-key-leak',panel,'apiKey: draft.authMode === "none" ? null : draft.apiKey','apiKey: draft.apiKey',test,'keyless operation'),

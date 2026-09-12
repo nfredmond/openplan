@@ -102,7 +102,7 @@ The settings suite has 15 cases and route suite 22. Their first run exposed four
 accessible-name mismatches caused by adjacent text nodes; explicit action labels
 now name the relevant connection.
 
-Settings mutations retain one harmless control and 19 targeted failures. Removing
+Settings mutations retain one harmless control and 21 targeted failures. Removing
 one inner duplicate-click lock survived because the form handler and disabled
 button still block re-entry. An actual second dispatch failed the request-count
 assertion. Do not claim each redundant lock was independently necessary. Tests
@@ -114,3 +114,25 @@ unconfirmed revocation, duplicate model IDs and lost pagination records.
 These component tests mock HTTP and cannot prove RLS, browser layout or actual
 server commit recovery. Identified desktop/390px browser evidence and final broad
 checks are still pending at this checkpoint.
+
+### Identified-browser correction
+
+The first full QA and corrected shuffled seed 350666 passed with 13,944 tests,
+413 skipped; the local connector suite passed 382 with four skipped, audit found
+zero vulnerabilities and the webpack build completed. The settings RLS run
+passed all 442 cases. The shuffled wrapper ignores the attempted environment seed;
+350666 was its actual printed seed and the successful replay explicitly used it.
+
+Build identity initially failed because the launch used an eight-character SHA.
+Restarting our own server with the full SHA produced a matching identity. The
+first browser driver also used `Email` where the product says `Work email`; that
+selector was corrected. The actual save committed, then its response was aborted.
+Retry returned the same revision with `created:false` and one historical revision.
+
+Browser editing exposed a real labeling defect: implicit labels around a select
+and populated textarea included option/content text in their accessible names.
+Controls now have explicit labels and help text uses `aria-describedby`. Unit
+checks name populated controls exactly; detached model/authentication labels each
+fail mutation checks. The browser journey must be repeated on this corrected
+build before claiming the settings workflow accepted. Our acceptance server was
+stopped before editing; no other app or database was stopped.

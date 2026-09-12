@@ -60,6 +60,18 @@
     "test": "distinct model IDs"
   },
   {
+    "name": "model-label-detached",
+    "exit": 1,
+    "expected": "fail",
+    "test": "new revision for edits"
+  },
+  {
+    "name": "authentication-label-detached",
+    "exit": 1,
+    "expected": "fail",
+    "test": "new revision for edits"
+  },
+  {
     "name": "save-foreign-revision",
     "exit": 1,
     "expected": "fail",
