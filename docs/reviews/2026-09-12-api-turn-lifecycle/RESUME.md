@@ -16,10 +16,17 @@ User direction is verified delivery directly to main, no PRs and no human
 engineering-release gate. The work branch is a recovery checkpoint.
 
 Product source `dbed721eed6512540a7eeb7d4be4c5c0ec374ef7` passed all checks below.
-This documentation checkpoint is ready to land directly on remote main. Remote
-main was still `c858b89e7293ce90fb9afea67ce481b7bcd0a8fa` at the last check.
-After pushing, inspect CI, RLS Isolation and Upgrade Path on the exact new main
-SHA. The successful branch upgrade does not establish main CI success.
+The verified foundation and evidence landed directly on main at
+`b6dbb8ca4d0a69986dd897285f2c6766184c4a42`. No PR or tag was created.
+The following exact main runs were observed in progress after the push:
+
+- CI 34725416835
+- RLS Isolation 34725416839
+- Upgrade Path 34725416832
+
+Poll these IDs. They are not yet proven successful. The successful branch
+upgrade does not establish main CI success. This resume-note-only follow-up
+stays on the working branch to avoid restarting the main checks.
 
 ## Completed checks
 
