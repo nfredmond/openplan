@@ -14,12 +14,21 @@ Read `VERIFICATION.md` here and the previous
 `../2026-09-12-api-provider-transport/RESUME.md` for transport context. The latter's
 statement that no API tables/routes exist is superseded by this checkpoint.
 
-Full campaigns started on final storage source, and must be polled by their exact
-live handles before restarting anything:
+Usage-reset checkpoint, September 12: source checkpoint `bbf0d4d0` is confirmed
+pushed to `origin/work/planner-agent-api-connections`; the working tree was clean.
+The test sessions have ended and their old handles are no longer available.
+Read the retained logs instead of polling those handles:
 
-- QA exec session 27903, `api-storage-qa.log`.
-- Shuffled seed 912055 exec session 21941, `api-storage-shuffled.log`.
-- Full isolated RLS exec session 48326, `api-storage-full-rls.log`.
+- Full QA `api-storage-qa.log`: 13,923 passed, four failed, 413 skipped.
+- Shuffled seed 912055 `api-storage-shuffled.log`: the same four failures,
+  13,923 passed and 413 skipped.
+- Full isolated RLS `api-storage-full-rls.log`: 442 passed across 48 files.
+
+The four QA failures are described below. Inventory and changelog fixes are in
+`bbf0d4d0`; those fixes have not yet received a fresh full run. The missing real
+UI caller remains unfinished. No test process was observed running at checkpoint.
+Resume at the configuration UI, then run the final gates. Do not declare this
+storage increment released or fully green.
 
 All logs are under `/home/nathaniel/.local/state/openplan/api-provider-research-2026-09-12`.
 Mutation runs are finished and restored; concurrency controls and failures are in
