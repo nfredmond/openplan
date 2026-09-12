@@ -18,15 +18,15 @@ engineering-release gate. The work branch is a recovery checkpoint.
 Product source `dbed721eed6512540a7eeb7d4be4c5c0ec374ef7` passed all checks below.
 The verified foundation and evidence landed directly on main at
 `b6dbb8ca4d0a69986dd897285f2c6766184c4a42`. No PR or tag was created.
-The following exact main runs were observed in progress after the push:
+The following exact main runs completed successfully and were inspected directly:
 
 - CI 34725416835
 - RLS Isolation 34725416839
 - Upgrade Path 34725416832
 
-Poll these IDs. They are not yet proven successful. The successful branch
-upgrade does not establish main CI success. This resume-note-only follow-up
-stays on the working branch to avoid restarting the main checks.
+CI passed all five jobs, including the full QA gate and shuffled suite. RLS and
+Upgrade Path also passed on the same main SHA. This supersedes the earlier
+in-progress checkpoint. Continue the worker integration below.
 
 ## Completed checks
 
@@ -79,8 +79,8 @@ process is left running; recheck actual process state when resuming.
 
 ## Next implementation
 
-1. Inspect final main CI before advancing. Preserve exact main SHA/run IDs in a
-   follow-on note so a process interruption cannot erase the release state.
+1. Final main CI is confirmed green above. Recheck ownership and continue the
+   worker integration; do not rerun those completed jobs.
 2. Join provider-api-generation.ts to a local service worker. Reuse the private
    directory, flock and synced journal functions from
    workers/planner_agent_connector/connector-worker.mjs and bounded private JSON
