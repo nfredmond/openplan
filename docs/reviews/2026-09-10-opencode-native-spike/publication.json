@@ -1,0 +1,54 @@
+{
+  "release": "v0.54.0",
+  "sourceCommit": "33a5fb0ced7e78dcf1d0bb1b566f95d9251d5224",
+  "annotatedTagObject": "ec54d19d15a8eccb838751c658c8a273556ad03b",
+  "publishedAt": "2026-09-12T19:30:00Z",
+  "url": "https://github.com/nfredmond/openplan/releases/tag/v0.54.0",
+  "draft": false,
+  "prerelease": false,
+  "checks": {
+    "ci": {
+      "runId": 34713463150,
+      "conclusion": "success",
+      "appTestsPassed": 13793,
+      "appTestsSkipped": 408,
+      "connectorTestsPassed": 382,
+      "connectorTestsSkipped": 4,
+      "dependencyVulnerabilities": 0,
+      "productionBuild": "success",
+      "shuffledSeed": 361151,
+      "shuffledPassed": 13793,
+      "shuffledSkipped": 408,
+      "pythonJobs": "all three successful"
+    },
+    "rls": {
+      "runId": 34713463159,
+      "conclusion": "success",
+      "passed": 430,
+      "files": 46
+    },
+    "upgrade": {
+      "runId": 34713492994,
+      "conclusion": "success",
+      "baseTag": "v0.53.0",
+      "migration": "20261011000002_assistant_opencode_connections.sql",
+      "seedCountsBefore": "2:2:1:1:1:1:1",
+      "seedCountsAfter": "2:2:1:1:1:1:1",
+      "custodyAssertions": "passed"
+    }
+  },
+  "browserSourceCommit": "1b5ba8bee0b2ec7122fa559e31578f694e42cb0f",
+  "postBrowserChanges": "Release metadata, catalog test fixture portability and Codex directory guard. No OpenCode app or native implementation changes.",
+  "failedCandidate": {
+    "source": "4e9de713c87ed4141ee88c917cd6e88be9641b70",
+    "ciRunId": 34525575454,
+    "tagged": false,
+    "reason": "Seven catalog fixtures could not launch the hardcoded Node path; reproduced and corrected."
+  },
+  "limitations": [
+    "Native OpenCode evidence uses actual executable with synthetic credentials and local scripted Responses data.",
+    "No live model availability, entitlement, billing or professional usefulness claim.",
+    "OpenCode OAuth/subscription modes, additional native providers, extensible API endpoints and broader assignments remain open.",
+    "Full all-state planning and separate nationwide model-validation obligations remain incomplete."
+  ]
+}

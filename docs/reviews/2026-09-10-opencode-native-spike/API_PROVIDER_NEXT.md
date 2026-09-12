@@ -1,9 +1,10 @@
 # Extensible API choice: implementation boundary, September 12
 
 This is preparation for roadmap A0b, not an implemented capability or a second
-queue. Finish the corrected v0.54.0 release at 33a5fb0c first. Its running checks
-are CI 34713463150, RLS 34713463159 and Upgrade Path 34713492994. Recheck them
-before publication; the failed 4e9de713 candidate remains historical evidence.
+queue. The corrected v0.54.0 release at 33a5fb0c is now published.
+[Publication receipt](publication.json) records successful CI 34713463150,
+RLS 34713463159 and Upgrade Path 34713492994. The failed 4e9de713 candidate
+remains historical evidence.
 
 ## Reuse and transport decision
 

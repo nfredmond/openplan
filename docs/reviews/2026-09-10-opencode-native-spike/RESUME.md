@@ -10,45 +10,46 @@ v0.53 are already published.
 ## Current lane
 
 Worktree: /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10
-Branch: work/planner-agent-opencode-connection
-Release source: 4e9de713c87ed4141ee88c917cd6e88be9641b70, pushed directly to main
-and the work branch. Remote main was checked at this exact SHA on September 10.
-Package metadata is 0.54.0. OpenCode implementation, connector
-registration, app routes/UI, additive migration and relevant browser acceptance
-are complete. Publication and final release-commit CI are not yet confirmed.
+Branch at publication: work/planner-agent-opencode-connection.
+v0.54.0 is published from 33a5fb0ced7e78dcf1d0bb1b566f95d9251d5224.
+Annotated tag object: ec54d19d15a8eccb838751c658c8a273556ad03b.
+Publication: https://github.com/nfredmond/openplan/releases/tag/v0.54.0
+Time: September 12, 2026, 19:30:00 UTC. Normal release, not a draft/prerelease.
 
-Read VERIFICATION.md, browser-final.json, candidate-qa.json, upgrade-local.json
-and the last CHECKPOINT.md section. Older checkpoint statements are historical.
-Full QA and shuffled seed811348 passed13800 with401 skips. Default connector
-suite passed374 with4 opt-in skips. Full isolated RLS passed430 in46 files;
-52 Python worker suites and the opt-in OpenCode filesystem fixture passed.
-Desktop1440 and390px actual-native journeys covered connection downloads,
-identical POST/delivery retries, reloads, approved drafts, cancellation and
-revocation. Prior Codex and Claude results stayed unchanged. Separate retention
-journeys blocked deletion and preflight503 recovery sent zero DELETEs.
+Read publication.json and VERIFICATION.md for final receipts. CI 34713463150,
+RLS 34713463159 and Upgrade Path 34713492994 all passed on the release source.
+Full QA/shuffled seed 361151 passed 13,793 with 408 skips; connector passed 382
+with four native opt-in skips. RLS passed 430. The first source 4e9de713 failed
+seven fixture launches and was never tagged; RELEASE_CORRECTION.md preserves
+that failure, the portable Node fixture and the Codex directory guard evidence.
+Actual native Codex isolation separately passed two synthetic transport cases.
 
-Actual OpenCode1.18.30 used synthetic native API keys and local scripted Responses
-data only. Live availability, entitlement, billing and usefulness remain unmeasured.
-OpenCode OAuth/subscription modes, further native providers, extensible API
-endpoints, broader tasks and durable assignments remain open A0/A1 work.
+OpenCode desktop/390px browser evidence remains bound to 1b5ba8be. OpenCode
+production implementation did not change afterward. The actual 1.18.30 binary
+used synthetic credentials and local Responses fixtures only; no provider spend.
+Live availability, entitlement, billing and usefulness remain unmeasured.
 
 ## Immediate next step
 
-September 12 resumption found CI 34525575454 failed on source 4e9de713.
-Seven catalog tests could not start their hardcoded /usr/bin/node fixture.
-RLS 34525575421, Upgrade Path 34525575469 and shuffled tests passed.
-No v0.54.0 tag exists. RELEASE_CORRECTION.md records the reproduced failure,
-portable fixture repair and tested Codex directory guard follow-up. Full connector
-suite passed 382 with four opt-in skips; separate native Codex fixture passed two.
-Commit and push this corrected candidate directly to main, then inspect final QA,
-shuffled tests, RLS and Upgrade Path on that exact commit before tagging/publishing.
-Do not rerun the failed old source expecting it to repair itself. Keep both
-failed and corrected evidence. No human review or draft PR is required.
+Continue roadmap A0b with the same retained project task and extensible API
+connections. API_PROVIDER_NEXT.md contains the source-traced implementation
+boundary and reuse decision. Its api-model-identity-probe.json is an actual
+AI SDK 6.0.278 / compatible adapter 2.0.75 fixture: absent model/response IDs are
+normalized into apparently complete SDK metadata, so inspect bounded raw replies.
+The existing outbound URL helper cannot pin DNS; reuse its address classifier
+with a transport that connects only to checked addresses. Preserve local operation
+through explicit operator endpoint policy, exact connection revisions, encrypted
+keys, cancellation and unchanged approvals. No new API production code is written.
 
-Post-browser changes include release metadata, the catalog test fixture and the
-Codex directory guard. OpenCode app/native implementation is unchanged from
-browser-tested 1b5ba8be. Keep this distinction in release evidence. Product direction check passed with normal
-review reminders; no review dates were refreshed as a substitute for evidence.
+Private API research lives at:
+/home/nathaniel/.local/state/openplan/api-provider-research-2026-09-12
+It includes the pinned Apache-2.0 package, integrity receipt and runnable synthetic
+SDK probe. Dependencies are installed only in sdk-fixture/ there, not in the app.
+
+The Codex directory follow-up is now included in v0.54.0; do not reopen it as
+unfinished. Broader native account modes, API breadth, durable assignments and
+all other v1 planning/scientific obligations remain open. No second release or
+new tag is needed for the publication-note checkpoint following 33a5fb0c.
 
 ## Processes and databases
 
@@ -90,8 +91,5 @@ Read the browser skill and run openplan/scripts/ops/which-openplan.sh before
 acceptance. Do not edit a served acceptance checkout during collection.
 
 After v0.54, run product:direction:check and continue current roadmap A0/A1,
-including extensible provider/API choice. The native spike also recorded a
-bounded follow-up to investigate older Codex scratch-root/reciprocal-overlap
-checks; no public exploit was demonstrated because the connector creates fresh
-scratch directories. Keep all other v1 planning and separate scientific
+including extensible provider/API choice. The Codex scratch-root/reciprocal-overlap follow-up is fixed in v0.54.0. Keep all other v1 planning and separate scientific
 validation obligations intact.

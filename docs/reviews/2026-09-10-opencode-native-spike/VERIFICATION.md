@@ -115,7 +115,16 @@ comparison. CI and local skip counts differ; neither counts skips as passes.
 
 The [September 12 correction](RELEASE_CORRECTION.md) fixes fixture portability and
 includes the separately tested Codex directory-boundary follow-up. Browser-tested
-OpenCode app and native implementation are unchanged. Final release-commit CI, shuffled tests, live RLS
-and the populated v0.53.0 upgrade must be inspected before tagging. A push or this
-document does not establish publication. No human review or paid deployment is a
-release prerequisite. Scientific accuracy and agency authority claims are unchanged.
+OpenCode app and native implementation are unchanged.
+
+[v0.54.0 was published](https://github.com/nfredmond/openplan/releases/tag/v0.54.0)
+on September 12 at 19:30:00 UTC from 33a5fb0ced7e78dcf1d0bb1b566f95d9251d5224.
+The annotated tag resolves to that exact source. [Publication receipt](publication.json)
+records successful CI 34713463150, RLS 34713463159 and Upgrade Path 34713492994.
+Full QA and shuffled seed 361151 each passed 13,793 app tests with 408 skips;
+382 connector tests passed with four opt-in skips. The dependency audit found
+zero vulnerabilities and the production build succeeded. RLS passed all 430
+tests in 46 files. The populated v0.53.0 upgrade preserved the seeded records and
+custody assertions. CI logs and remote tag/release metadata were inspected before
+recording this publication. Scientific accuracy and agency authority claims are
+unchanged; no human review or paid deployment was used as a release prerequisite.

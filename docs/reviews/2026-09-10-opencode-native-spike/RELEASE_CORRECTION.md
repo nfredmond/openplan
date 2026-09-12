@@ -43,3 +43,5 @@ OpenCode production change followed that acceptance. The Codex guard changes
 only refused directory layouts; the valid native path was exercised separately.
 All original failed CI and local logs remain in the private dated evidence
 directory. Final CI must pass on the corrected release commit before tagging.
+
+All final checks subsequently passed on 33a5fb0c; see the [publication receipt](publication.json).
