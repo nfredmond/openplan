@@ -64,3 +64,15 @@ not changed and retains its separately documented limitations.
 
 Private logs remain under
 `/home/nathaniel/.local/state/openplan/api-provider-research-2026-09-12`.
+
+## Final local checks
+
+Source `a86a1cd9` passed full QA: 13,907 app tests with 401 declared skips,
+382 connector tests with four native opt-in skips, lint/dead-code checks, zero
+dependency audit vulnerabilities and the production webpack build. Shuffled
+seed 912054 passed the same app counts. The named disposable restore stack
+passed 430 live database checks in 46 files. All 52 Python worker suites passed
+with none omitted. Final focused tests passed 157 cases including the repository
+minimum-timeout guard. `local-checks.json` binds counts and retained log hashes.
+No migration was added; an upgrade drill for new API tables remains part of the
+future integrated increment. Main/CI landing is separate from these local checks.

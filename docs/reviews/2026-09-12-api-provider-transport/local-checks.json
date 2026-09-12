@@ -1,0 +1,63 @@
+{
+  "testedSourceCommit": "a86a1cd9d5b2576a4ca81b1cebf7147923589872",
+  "status": "internal foundation verified locally; API connection workflow remains unimplemented",
+  "qaGate": {
+    "exitCode": 0,
+    "applicationPassed": 13907,
+    "applicationSkipped": 401,
+    "connectorPassed": 382,
+    "connectorSkipped": 4,
+    "dependencyVulnerabilities": 0,
+    "productionBuild": "passed"
+  },
+  "shuffled": {
+    "exitCode": 0,
+    "seed": 912054,
+    "passed": 13907,
+    "skipped": 401
+  },
+  "rls": {
+    "exitCode": 0,
+    "passed": 430,
+    "files": 46,
+    "stack": "openplan-restore-target-2026091050",
+    "apiPort": 29821,
+    "databasePort": 29822
+  },
+  "workers": {
+    "exitCode": 0,
+    "suitesPassed": 52,
+    "failed": 0,
+    "notRun": 0
+  },
+  "focused": {
+    "passed": 157,
+    "files": 4
+  },
+  "mutationCampaigns": {
+    "transport": {
+      "harmlessSurvived": 1,
+      "targetedFailed": 50
+    },
+    "finalCancellationRepeat": {
+      "harmlessSurvived": 1,
+      "targetedFailed": 5
+    },
+    "credentials": {
+      "harmlessSurvived": 1,
+      "targetedFailed": 22
+    }
+  },
+  "logSha256": {
+    "qa-gate-final.log": "279751aeb2549c2be3fd9c2e1642a9f51c272ea80c2bdb069abec97c44586621",
+    "shuffled-final.log": "bccd8ae14562c85aec41d6a8da3f82a3cac1b23b38960d065069a5596a2f6a3c",
+    "rls-live.log": "151e9041ef200a487c56a8521b3734d0136e187cb0a9a253602555b10525f098",
+    "workers.log": "18300220ab433f0d08b79d5d1a2b6229209a391f0a956782091a40aa89663557",
+    "focused-final.log": "b516548f58a85fffe6625973a5599ffe0a30a4abf3f8873555c8359055926a7d"
+  },
+  "limitations": [
+    "No API connection database/UI/worker integration yet.",
+    "No real provider availability or usefulness measured.",
+    "No release tag created."
+  ]
+}

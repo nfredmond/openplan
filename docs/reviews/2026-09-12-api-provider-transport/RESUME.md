@@ -26,13 +26,16 @@ See `VERIFICATION.md` and the three mutation JSON receipts. The original
 `checkpoint.json` is historical partial evidence and must not be treated as the
 latest state. Restored focused tests: 155 across three files.
 
-Full QA, shuffled tests (seed 912054), isolated RLS and workers were started after
-these changes. Their private logs are `qa-gate.log`, `shuffled.log`, `rls-live.log`
-and `workers.log` in the evidence directory above. Check current process/handle
-state rather than assuming a log means a job is alive. The selected disposable
-RLS stack is `/home/nathaniel/.local/state/openplan/openplan-restore-target-2026091050`,
-API 29821, DB 29822, container `supabase_db_openplan-restore-target-2026091050`.
-No migrations have been added by this increment.
+Source `a86a1cd9` passed full QA and shuffled seed 912054 with 13,907 app tests
+and 401 skips, 382 connector tests/four native opt-in skips, 430 isolated RLS
+checks, all 52 worker suites and the production build. Final focused count is
+157. See `local-checks.json`. The superseded shuffled failure and deliberately
+interrupted first QA remain in private logs. All of those local jobs are finished.
+The selected disposable RLS stack remains
+`/home/nathaniel/.local/state/openplan/openplan-restore-target-2026091050`, API
+29821, DB 29822, container `supabase_db_openplan-restore-target-2026091050`.
+No migrations have been added by this increment. Check GitHub's current main
+SHA and CI separately before resuming; do not infer remote success from the push.
 
 Next implement versioned workspace connection storage and the execution join.
 The exact endpoint canonicalizer is exported from `provider-api-transport.ts`;
