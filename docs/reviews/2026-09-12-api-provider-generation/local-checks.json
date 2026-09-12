@@ -1,0 +1,20 @@
+{
+  "sourceCommit": "b9e93348b4d425fa520883ffca0a24c6e0a0373b",
+  "sourceHashes": {
+    "openplan/src/lib/assistant/provider-api-generation.ts": "a1fd10939e7fc3e2c233ff143d6ec1b69d8392ff4f8abe75350f671bd4fdbd6e",
+    "openplan/src/test/provider-api-generation.test.ts": "afacb7886bd2b3b89deb661bc1e71e59b284fdeca1302eced8f2a2f1a9fc5ad6"
+  },
+  "focused": { "passed": 137, "files": 4 },
+  "mutations": { "harmlessSurvived": 1, "targetedFailed": 21, "unexpected": 0 },
+  "qa": {
+    "exitCode": 0, "appPassed": 13972, "appSkipped": 413,
+    "connectorPassed": 382, "connectorSkipped": 4, "auditVulnerabilities": 0,
+    "typeScript": "passed", "webpackBuild": "passed",
+    "logSha256": "da6d769159605344d69b8cbbcbcf0cc647e45273c69025f54b829d448195087f"
+  },
+  "shuffled": {
+    "exitCode": 0, "seed": 912128, "passed": 13972, "skipped": 413,
+    "logSha256": "f3ef53c08c296bd76239fcf2abf6be3d512a5f0afe6c73655ed7848a5bc79f31"
+  },
+  "limits": ["No SQL or Python worker changes", "No browser generation caller yet", "No live external provider call"]
+}

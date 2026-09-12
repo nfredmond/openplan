@@ -12,20 +12,22 @@ worker caller yet. See `VERIFICATION.md` for evidence and explicit limits.
 The final mutation run had one harmless survivor and 21 targeted failures;
 137 restored focused cases passed. Sources are not being mutated anymore.
 
-At this checkpoint two local jobs were confirmed live:
+Both local jobs are now terminal with exit zero:
 
-- Full QA exec session 69675, private `generation-full-qa.log`.
-- Shuffled seed 912128 exec session 54108, private `generation-shuffled.log`.
+- Full QA exec session 69675: 13,972 app passes/413 skips, 382 connector
+  passes/four skips, zero audit vulnerabilities, successful TypeScript and build.
+- Shuffled seed 912128 exec session 54108: 13,972 passes/413 skips.
 
 Both logs are under
 `/home/nathaniel/.local/state/openplan/api-provider-research-2026-09-12`.
-They explicitly load `api-settings.env` for the named disposable stack on
-29821/29822. Do not print that file. Poll existing handles and inspect terminal
-output before restarting; source changes are suspended during these suites.
+They explicitly loaded `api-settings.env` for the named disposable stack on
+29821/29822. Do not print that file. Do not restart these completed local jobs.
+Source checkpoint is `b9e93348b4d425fa520883ffca0a24c6e0a0373b`.
 No browser server or acceptance collection is active. No SQL change was made.
 
-After final gates, update the evidence, push directly to main without a PR and
-inspect its CI. Do not tag this internal increment. Then implement the retained
+The evidence child is ready for direct main landing without a PR; inspect the
+remote and its exact CI runs before advancing. Do not tag this internal increment.
+Then implement the retained
 API turn references, connection-edit/revoke interruption, service claim/status
 and common completion validator described in
 `../2026-09-12-api-connection-storage/EXECUTION_JOIN.md`.

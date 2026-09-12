@@ -47,8 +47,16 @@ identify the missing cancellation instead of merely relying on a runner timeout.
 The final 22-case campaign retained one harmless survivor and 21 targeted
 failures. `mutations.json` records assertion names and messages. Source was
 restored, then 137 focused cases passed across generation, transport,
-credentials and the repository timeout-policy guard. Full QA and shuffled seed
-912128 are running; they are not yet acceptance evidence.
+credentials and the repository timeout-policy guard.
+
+Source `b9e93348b4d425fa520883ffca0a24c6e0a0373b` passed full QA and shuffled
+seed 912128: 13,972 app tests with 413 declared skips in each run. QA also passed
+lint, the configured dead-code check, 382 connector tests with four opt-in skips,
+dependency audit with zero vulnerabilities, TypeScript and the webpack build.
+Both sessions exited zero. `local-checks.json` retains source and log hashes.
+No SQL or Python worker changed, so this adapter increment did not repeat their
+local suites. Main's last RLS/upgrade passes remain evidence for the unchanged
+database only. Final main CI is checked separately before the next increment.
 
 ## Boundaries and continuation
 
