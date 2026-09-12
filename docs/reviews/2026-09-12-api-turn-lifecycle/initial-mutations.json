@@ -1,0 +1,353 @@
+[
+  {
+    "name": "harmless-comment",
+    "outcome": "survived",
+    "expectedFailure": null,
+    "matched": true,
+    "failures": []
+  },
+  {
+    "name": "create-scope",
+    "outcome": "killed",
+    "expectedFailure": "Foreign author created work",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts allows a viewer read/draft request but keeps turns private to their author",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Foreign author created work\nCONTEXT:  PL/pgSQL function inline_code_block line 1 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:76:90\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "charge-ack",
+    "outcome": "killed",
+    "expectedFailure": "Missing acknowledgement accepted",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts rejects changed model, mode, acknowledgement and revision selection",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Missing acknowledgement accepted\nCONTEXT:  PL/pgSQL function inline_code_block line 4 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:93:83\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "changed-request",
+    "outcome": "killed",
+    "expectedFailure": "Changed request accepted",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts retains the original baseline and one attempt across request and completion retries",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Changed request accepted\nCONTEXT:  PL/pgSQL function inline_code_block line 11 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:61:99\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "stale-selection",
+    "outcome": "killed",
+    "expectedFailure": "New request used stale revision",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts interrupts queued and running old revisions while exact old saves leave new work intact",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  New request used stale revision\nCONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:102:103\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      },
+      {
+        "name": "retained saved-API attempts revokes active work, preserves completed history and refuses new dispatch",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Revoked connection dispatched\nCONTEXT:  PL/pgSQL function inline_code_block line 7 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:115:89\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "immutable-request",
+    "outcome": "killed",
+    "expectedFailure": "Question rewritten",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts keeps saved request routing and packet identities immutable",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Question rewritten\nCONTEXT:  PL/pgSQL function inline_code_block line 2 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:126:75\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "edit-interruption",
+    "outcome": "killed",
+    "expectedFailure": "Old active attempts survived correction",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts interrupts queued and running old revisions while exact old saves leave new work intact",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Old active attempts survived correction\nCONTEXT:  PL/pgSQL function inline_code_block line 4 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:102:103\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      },
+      {
+        "name": "retained saved-API attempts revokes active work, preserves completed history and refuses new dispatch",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Revoked queued work survived\nCONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:115:89\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "current-scope",
+    "outcome": "killed",
+    "expectedFailure": "Removed author received an answer",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts denies removed membership and returns only worker status for journal retirement",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Removed author received an answer\nCONTEXT:  PL/pgSQL function inline_code_block line 4 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:188:95\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      },
+      {
+        "name": "retained saved-API attempts moves an inaccessible queued request out of the queue",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Inaccessible queued work remained claimable\nCONTEXT:  PL/pgSQL function inline_code_block line 3 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:199:69\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "lease-expiry",
+    "outcome": "killed",
+    "expectedFailure": "Expiry was not durable",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts retires an expired claim and allows the new queued request to proceed once",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Lost process was reclaimed\nCONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:158:90\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      },
+      {
+        "name": "retained saved-API attempts expires process loss through status and never requeues or reserves twice",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Expiry was not durable\nCONTEXT:  PL/pgSQL function inline_code_block line 5 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:170:88\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "regenerate-expired",
+    "outcome": "killed",
+    "expectedFailure": "Lost process was reclaimed",
+    "matched": false,
+    "failures": [
+      {
+        "name": "retained saved-API attempts retires an expired claim and allows the new queued request to proceed once",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  duplicate key value violates unique constraint \"usage_events_idempotency_key_key\"\nDETAIL:  Key (idempotency_key)=(assistant_api_dispatch:8dd087bc-af35-440d-bc1b-d3c20697635c) already exists.\nCONTEXT:  SQL statement \"INSERT INTO public.usage_events(workspace_id,event_key,bucket_key,weight,idempotency_key,source_route,metadata_json)\n    VALUES(job.workspace_id,job.id::text,'assistant_chat',1,'assistant_api_dispatch:'||job.id::text,\n      '/api/assistant/providers/turns',jsonb_build_object('provider','api_connection','dispatchReservation',true))\"\nPL/pgSQL function claim_assistant_api_turn() line 27 at SQL statement\nPL/pgSQL function inline_code_block line 5 at assignment\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:158:90\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "dispatch-cap",
+    "outcome": "killed",
+    "expectedFailure": "Dispatch cap allowed excess work",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts reserves against staff use, keeps public use separate and refuses dispatch at the cap",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Dispatch cap allowed excess work\nCONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:220:101\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "dispatch-reservation",
+    "outcome": "killed",
+    "expectedFailure": "Dispatch reservation missing or repeated",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts retains the original baseline and one attempt across request and completion retries",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Dispatch reservation missing or repeated\nCONTEXT:  PL/pgSQL function inline_code_block line 10 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:61:99\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      },
+      {
+        "name": "retained saved-API attempts expires process loss through status and never requeues or reserves twice",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Recovery reserved another dispatch\nCONTEXT:  PL/pgSQL function inline_code_block line 7 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:170:88\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      },
+      {
+        "name": "retained saved-API attempts reserves against staff use, keeps public use separate and refuses dispatch at the cap",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Dispatch cap allowed excess work\nCONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:220:101\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      },
+      {
+        "name": "retained saved-API attempts rolls back the claim when dispatch accounting fails",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Expected accounting failure\nCONTEXT:  PL/pgSQL function inline_code_block line 2 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:232:67\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "status-attempt",
+    "outcome": "killed",
+    "expectedFailure": "Foreign attempt obtained status",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts checks every API receipt binding and the common citation/proposal boundary",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Foreign attempt obtained status\nCONTEXT:  PL/pgSQL function inline_code_block line 10 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:206:90\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "access-loss-retirement",
+    "outcome": "killed",
+    "expectedFailure": "Lost access was not durable",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts denies removed membership and returns only worker status for journal retirement",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Lost access was not durable\nCONTEXT:  PL/pgSQL function inline_code_block line 8 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:188:95\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "changed-completion",
+    "outcome": "killed",
+    "expectedFailure": "Changed completion accepted",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts retains the original baseline and one attempt across request and completion retries",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Changed completion accepted\nCONTEXT:  PL/pgSQL function inline_code_block line 12 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:61:99\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      },
+      {
+        "name": "retained saved-API attempts retains failed delivery exactly without another attempt",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Changed failure receipt accepted\nCONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:148:71\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "receipt-turnId",
+    "outcome": "killed",
+    "expectedFailure": "Mismatched receipt accepted: turnId",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts checks every API receipt binding and the common citation/proposal boundary",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Mismatched receipt accepted: turnId\nCONTEXT:  PL/pgSQL function inline_code_block line 5 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:206:90\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "receipt-attemptId",
+    "outcome": "killed",
+    "expectedFailure": "Mismatched receipt accepted: attemptId",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts checks every API receipt binding and the common citation/proposal boundary",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Mismatched receipt accepted: attemptId\nCONTEXT:  PL/pgSQL function inline_code_block line 5 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:206:90\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "receipt-connectionId",
+    "outcome": "killed",
+    "expectedFailure": "Mismatched receipt accepted: connectionId",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts checks every API receipt binding and the common citation/proposal boundary",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Mismatched receipt accepted: connectionId\nCONTEXT:  PL/pgSQL function inline_code_block line 5 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:206:90\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "receipt-revisionId",
+    "outcome": "killed",
+    "expectedFailure": "Mismatched receipt accepted: revisionId",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts checks every API receipt binding and the common citation/proposal boundary",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Mismatched receipt accepted: revisionId\nCONTEXT:  PL/pgSQL function inline_code_block line 5 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:206:90\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "receipt-configurationHash",
+    "outcome": "killed",
+    "expectedFailure": "Mismatched receipt accepted: configurationHash",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts checks every API receipt binding and the common citation/proposal boundary",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Mismatched receipt accepted: configurationHash\nCONTEXT:  PL/pgSQL function inline_code_block line 5 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:206:90\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "receipt-packetHash",
+    "outcome": "killed",
+    "expectedFailure": "Mismatched receipt accepted: packetHash",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts checks every API receipt binding and the common citation/proposal boundary",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Mismatched receipt accepted: packetHash\nCONTEXT:  PL/pgSQL function inline_code_block line 5 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:206:90\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "receipt-endpoint",
+    "outcome": "killed",
+    "expectedFailure": "Mismatched receipt accepted: endpoint",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts checks every API receipt binding and the common citation/proposal boundary",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Mismatched receipt accepted: endpoint\nCONTEXT:  PL/pgSQL function inline_code_block line 5 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:206:90\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "receipt-protocol",
+    "outcome": "killed",
+    "expectedFailure": "Mismatched receipt accepted: protocol",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts checks every API receipt binding and the common citation/proposal boundary",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Mismatched receipt accepted: protocol\nCONTEXT:  PL/pgSQL function inline_code_block line 5 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:206:90\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "ordinary-worker-status",
+    "outcome": "killed",
+    "expectedFailure": "Member used worker status",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts allows a viewer read/draft request but keeps turns private to their author",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Member used worker status\nCONTEXT:  PL/pgSQL function inline_code_block line 4 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:76:90\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "ordinary-create",
+    "outcome": "killed",
+    "expectedFailure": "Member impersonated an author",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts allows a viewer read/draft request but keeps turns private to their author",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Member impersonated an author\nCONTEXT:  PL/pgSQL function inline_code_block line 5 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:76:90\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "revision-foreign-key",
+    "outcome": "killed",
+    "expectedFailure": "Cross-workspace revision reference accepted",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts enforces the revision workspace and canonical hash on direct service inserts",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Cross-workspace revision reference accepted\nCONTEXT:  PL/pgSQL function inline_code_block line 7 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:134:92\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  },
+  {
+    "name": "snapshot-hash",
+    "outcome": "killed",
+    "expectedFailure": "Canonical snapshot hash mismatch accepted",
+    "matched": true,
+    "failures": [
+      {
+        "name": "retained saved-API attempts enforces the revision workspace and canonical hash on direct service inserts",
+        "message": "Error: Command failed: docker exec -i supabase_db_openplan-restore-target-2026091050 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 -At\nERROR:  Canonical snapshot hash mismatch accepted\nCONTEXT:  PL/pgSQL function inline_code_block line 10 at RAISE\n\n    at genericNodeError (node:internal/errors:986:15)\n    at wrappedFn (node:internal/errors:540:14)\n    at checkExecSyncError (node:child_process:942:11)\n    at execFileSync (node:child_process:978:15)\n    at exercise (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:56:20)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/assistant-api-turns-rls.test.ts:134:92\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+      }
+    ]
+  }
+]

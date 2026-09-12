@@ -32,6 +32,10 @@ Migration `20261012000001_workspace_provider_api_revisions.sql` adds versioned
 workspace API configuration and separately protected credentials. Existing native
 and Anthropic request history is unchanged.
 
+Migration `20261012000002_assistant_api_turns.sql` prepares retained API jobs,
+configuration-bound completion receipts and interrupted-attempt recovery. The
+local worker and project generation controls are still being integrated.
+
 ## 0.54.0 — 2026-09-12
 
 The existing project task adds an installed OpenCode 1.18.30 Linux connection

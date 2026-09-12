@@ -1,5 +1,9 @@
 # Resume API generation and worker join
 
+The main adapter CI and RLS runs below have now succeeded. The database lifecycle
+is implemented on the work branch, with concurrency and broader gates pending.
+Continue from `../2026-09-12-api-turn-lifecycle/RESUME.md`; do not duplicate it.
+
 Use checkout `/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10`,
 package `openplan/`, branch `work/planner-agent-api-connections`.
 The full v1 goal remains active; v0.54.0 is already released. Do not repeat old

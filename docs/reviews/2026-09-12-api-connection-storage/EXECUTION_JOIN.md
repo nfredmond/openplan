@@ -1,11 +1,13 @@
 # Execution join inspection, September 12
 
-Read-only follow-on analysis while settings QA runs. This is not implemented.
+Original follow-on analysis while settings QA ran. The lifecycle migration is
+now implemented on the work branch with concurrency and broader gates pending;
+see `../2026-09-12-api-turn-lifecycle/RESUME.md` for the current checkpoint.
 
 The generation adapter is now implemented separately in
 `openplan/src/lib/assistant/provider-api-generation.ts`; its evidence lives in
 `../2026-09-12-api-provider-generation/VERIFICATION.md`. Reuse that implementation
-when joining the worker. The database lifecycle and worker below are still open.
+when joining the worker. The worker and browser selection below remain open.
 
 The canonical base migration is
 `20261010000001_assistant_provider_connections.sql`, followed by Claude/OpenCode
