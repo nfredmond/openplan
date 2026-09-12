@@ -20,7 +20,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No changes yet.
+Internal preparation for extensible Planner Agent APIs now checks exact request
+destinations, encrypted connection identity, raw model identity and cancellation.
+Saved API connections, their worker execution and visible controls are still in
+development; this does not add a usable provider option yet.
 
 ## 0.54.0 — 2026-09-12
 

@@ -31,7 +31,7 @@ export function providerApiNetworkPolicy(env: NodeJS.ProcessEnv = process.env): 
   return { localEndpoints, allowedHosts: resolveOutboundAllowedHosts(env) };
 }
 
-function apiEndpointUrl(value: string): URL {
+export function apiEndpointUrl(value: string): URL {
   if (typeof value !== "string" || value.length > 2048 || /[\s\u0000-\u001f\u007f\\]/.test(value)) fail("api_endpoint_invalid");
   let url: URL;
   try { url = new URL(value); } catch { return fail("api_endpoint_invalid"); }

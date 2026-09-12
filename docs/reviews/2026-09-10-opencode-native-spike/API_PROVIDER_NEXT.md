@@ -107,3 +107,32 @@ these engineering fixtures; live availability and usefulness remain separate.
 
 This does not close broader A1 assignments, remaining native account modes or
 any of the planning/scientific requirements in the full v1 contract.
+
+## Execution join selected September 12
+
+Use an operator-run Node worker for new extensible API turns. A local model can
+need longer than the existing 60-second web route. Keep `assistant_provider_turns`
+as the state owner, queue the new API mode and have the worker claim one saved
+attempt with a bounded lease. The current configuration allows up to 900 seconds.
+A browser read must never dispatch a second generation. Process loss expires the
+attempt visibly; a fresh generation requires a new explicit request, while a
+lost completion response can retry the same retained result. No paid service is
+required for the worker.
+
+Store connection identity, immutable revisions and ciphertext separately so
+member metadata queries cannot select credentials. Scope revision foreign keys
+by workspace. Owner/admin configuration writes need fresh membership locks and
+an expected prior revision for concurrent edits; a new revision ID supports exact
+save retry. Editing a connection must not rewrite retained request identity.
+Revocation cancels queued/running turns and prevents late completion. Before
+implementation, settle the edit transition explicitly in the transaction: old
+queued/running requests must either remain bound to their old authorized revision
+or be visibly interrupted, never inherit the new endpoint/key. Do not leave that
+behavior as an implicit current-pointer lookup.
+
+The existing finish RPC currently accepts server-driven completion only for
+Anthropic, and its native branch verifies a personal connector token. Extend its
+API branch and shared proposal/result validation deliberately; do not bypass it
+with direct row updates from the worker. The current read/cancel functions also
+lock the turn before checking project membership, so establish and test a
+consistent lock order when adding connection edit/revoke operations.

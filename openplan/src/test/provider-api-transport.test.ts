@@ -25,6 +25,17 @@ const requestBody = () => ({ model: "synthetic-model", max_tokens: 4000,
   response_format: { type: "json_schema", json_schema: { name: "answer", schema: { type: "object" } } },
 });
 
+// Cancellation must complete before the independent generation deadline, not
+// merely before Vitest's global 20-second allowance for the whole test.
+async function settlesBeforeDeadline<T>(pending: Promise<T>): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([pending, new Promise<never>((_resolve, reject) => {
+      timer = setTimeout(() => reject(new Error("Provider did not settle within five seconds")), 5000);
+    })]);
+  } finally { if (timer) clearTimeout(timer); }
+}
+
 async function fixture(reply: (res: ServerResponse) => void = res => res.end(JSON.stringify(responseBody()))) {
   const calls: Array<{ host: string | undefined; path: string | undefined; auth: string | undefined; body: string }> = [];
   const arrived = Promise.withResolvers<void>();
@@ -263,14 +274,14 @@ describe("bounded raw response and interruption", () => {
   it("cancellation while DNS is pending returns without opening a socket", async () => {
     const f = await fixture(); f.args.timeoutMs = 30_000; f.lookup.mockImplementation(() => new Promise(() => {}));
     const pending = createProviderApiFetch(f.args)(f.url, f.init); f.controller.abort();
-    await expect(pending).rejects.toMatchObject({ code: "api_request_interrupted" });
+    await expect(settlesBeforeDeadline(pending)).rejects.toMatchObject({ code: "api_request_interrupted" });
     expect(f.calls).toHaveLength(0);
   });
   it("cancels an in-flight response without another generation", async () => {
     const f = await fixture(() => {}); f.args.timeoutMs = 30_000;
     const pending = createProviderApiFetch(f.args)(f.url, f.init);
     await f.arrived; f.controller.abort();
-    await expect(pending).rejects.toMatchObject({ code: "api_request_interrupted" });
+    await expect(settlesBeforeDeadline(pending)).rejects.toMatchObject({ code: "api_request_interrupted" });
     expect(f.calls).toHaveLength(1);
   });
   it("honors cancellation from the SDK request signal", async () => {
@@ -278,12 +289,12 @@ describe("bounded raw response and interruption", () => {
     const controller = new AbortController();
     const pending = createProviderApiFetch(f.args)(f.url, { ...f.init, signal: controller.signal });
     await f.arrived; controller.abort();
-    await expect(pending).rejects.toMatchObject({ code: "api_request_interrupted" });
+    await expect(settlesBeforeDeadline(pending)).rejects.toMatchObject({ code: "api_request_interrupted" });
     expect(f.calls).toHaveLength(1);
   });
   it("bounds an unresponsive provider", async () => {
     const f = await fixture(() => {});
-    await expect(createProviderApiFetch({ ...f.args, timeoutMs: 1000 })(f.url, f.init)).rejects.toMatchObject({ code: "api_request_interrupted" });
+    await expect(settlesBeforeDeadline(createProviderApiFetch({ ...f.args, timeoutMs: 1000 })(f.url, f.init))).rejects.toMatchObject({ code: "api_request_interrupted" });
     expect(f.calls).toHaveLength(1);
   });
   it("refuses a truncated response", async () => {

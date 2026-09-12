@@ -1,5 +1,5 @@
 from pathlib import Path
-import json, subprocess
+import json, subprocess, sys
 root=Path('/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan')
 p=root/'src/lib/assistant/provider-api-transport.ts'; original=p.read_text()
 e=Path('/home/nathaniel/.local/state/openplan/api-provider-research-2026-09-12')
@@ -58,13 +58,16 @@ cases.extend([
  ('socket-cancellation','autoSelectFamily: true, signal, maxHeaderSize:','autoSelectFamily: true, signal: undefined, maxHeaderSize:', 'in-flight response'),
  ('deadline','AbortSignal.timeout(timeoutMs)','AbortSignal.timeout(30_000)', 'bounds an unresponsive'),
 ])
+if len(sys.argv)>1:
+ cases=[case for case in cases if case[0] in sys.argv[1:]]
+ assert len(cases)==len(set(sys.argv[1:])), "Unknown mutation case"
 records=[]
 try:
  for index,(name,before,after,target) in enumerate(cases):
   assert original.count(before)==1,(name,original.count(before))
   p.write_text(original.replace(before,after))
   report=e/f'transport-mutation-{name}.json'
-  cmd=['bwrap','--die-with-parent','--unshare-net','--bind','/','/','--','npm','exec','--','vitest','run','src/test/provider-api-transport.test.ts','--reporter=json','--outputFile',str(report)]
+  cmd=['bwrap','--die-with-parent','--unshare-net','--bind','/','/','--','npm','exec','--','vitest','run','src/test/provider-api-transport.test.ts','--reporter=default','--reporter=json','--outputFile',str(report)]
   run=subprocess.run(cmd,cwd=root,text=True,capture_output=True,timeout=45)
   (e/f'transport-mutation-{name}.log').write_text(run.stdout+run.stderr)
   data=json.loads(report.read_text())
@@ -74,8 +77,8 @@ try:
   else:
    assert run.returncode!=0 and failures and any(target in f for f in failures),(name,failures,run.stdout+run.stderr)
   records.append({'mutation':name,'outcome':'survived' if target is None else 'failed','exitCode':run.returncode,'target':target,'failedTests':failures})
-  (e/'transport-mutations-progress.json').write_text(json.dumps(records,indent=2)+'\n')
+  (e/('transport-mutations-selected-progress.json' if len(sys.argv)>1 else 'transport-mutations-progress.json')).write_text(json.dumps(records,indent=2)+'\n')
   if index%5==0: print(f'{index+1}/{len(cases)} {name}: {records[-1]["outcome"]}',flush=True)
 finally:p.write_text(original)
-(e/'transport-mutations.json').write_text(json.dumps({'network':'Every run used an isolated network namespace; only owned loopback fixtures were reachable.','mutations':records,'blindCategories':['No real external provider or account was tested.','The transport does not establish user, workspace or connection-revision authority; those callers are not implemented yet.','Cancellation closes the local request but cannot undo a remote model request already accepted.','DNS resolution can finish after cancellation; no socket opens from that late result.']},indent=2)+'\n')
+(e/('transport-mutations-selected.json' if len(sys.argv)>1 else 'transport-mutations.json')).write_text(json.dumps({'network':'Every run used an isolated network namespace; only owned loopback fixtures were reachable.','mutations':records,'blindCategories':['No real external provider or account was tested.','The transport does not establish user, workspace or connection-revision authority; those callers are not implemented yet.','Cancellation closes the local request but cannot undo a remote model request already accepted.','DNS resolution can finish after cancellation; no socket opens from that late result.']},indent=2)+'\n')
 print(f'Completed {len(records)} checked mutations.',flush=True)

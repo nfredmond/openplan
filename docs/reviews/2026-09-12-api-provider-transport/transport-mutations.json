@@ -1,0 +1,509 @@
+{
+  "network": "Every run used an isolated network namespace; only owned loopback fixtures were reachable.",
+  "mutations": [
+    {
+      "mutation": "harmless-comment",
+      "outcome": "survived",
+      "exitCode": 0,
+      "target": null,
+      "failedTests": []
+    },
+    {
+      "mutation": "URL-credentials",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "unsafe endpoint https://user:",
+      "failedTests": [
+        "endpoint and request refusals refuses unsafe endpoint https://user:password@example.com/v1"
+      ]
+    },
+    {
+      "mutation": "URL-query",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "unsafe endpoint https://example.com/v1?",
+      "failedTests": [
+        "endpoint and request refusals refuses unsafe endpoint https://example.com/v1?key=secret",
+        "endpoint and request refusals refuses malformed operator configuration [\"http://example.com/?secret=yes\"]"
+      ]
+    },
+    {
+      "mutation": "URL-fragment",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "unsafe endpoint https://example.com/v1#",
+      "failedTests": [
+        "endpoint and request refusals refuses unsafe endpoint https://example.com/v1#fragment"
+      ]
+    },
+    {
+      "mutation": "URL-port-zero",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "unsafe endpoint https://example.com:0",
+      "failedTests": [
+        "endpoint and request refusals refuses unsafe endpoint https://example.com:0/v1"
+      ]
+    },
+    {
+      "mutation": "host-policy",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "narrowing operator host",
+      "failedTests": [
+        "endpoint and request refusals honors a narrowing operator host allowlist"
+      ]
+    },
+    {
+      "mutation": "HTTPS-default",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "unsafe endpoint http://example.com",
+      "failedTests": [
+        "endpoint and request refusals refuses unsafe endpoint http://example.com/v1"
+      ]
+    },
+    {
+      "mutation": "all-DNS-answers",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "ambiguous local DNS answers [{\"address\":\"127.0.0.1\",\"family\":4},{\"address\":\"93.",
+      "failedTests": [
+        "endpoint and request refusals refuses non-loopback or ambiguous local DNS answers [{\"address\":\"127.0.0.1\",\"family\":4},{\"address\":\"93.184.216.34\",\"family\":4}]"
+      ]
+    },
+    {
+      "mutation": "public-address-classification",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "private answers for an ordinary HTTPS",
+      "failedTests": [
+        "endpoint and request refusals refuses private answers for an ordinary HTTPS endpoint"
+      ]
+    },
+    {
+      "mutation": "local-loopback-boundary",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "ambiguous local DNS answers [{\"address\":\"127.0.0.1\",\"family\":4},{\"address\":\"93.",
+      "failedTests": [
+        "endpoint and request refusals refuses non-loopback or ambiguous local DNS answers [{\"address\":\"169.254.169.254\",\"family\":4}]",
+        "endpoint and request refusals refuses non-loopback or ambiguous local DNS answers [{\"address\":\"127.0.0.1\",\"family\":4},{\"address\":\"93.184.216.34\",\"family\":4}]",
+        "endpoint and request refusals refuses non-loopback or ambiguous local DNS answers [{\"address\":\"::ffff:a9fe:a9fe\",\"family\":6}]"
+      ]
+    },
+    {
+      "mutation": "DNS-family-binding",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "ambiguous local DNS answers [{\"address\":\"127.0.0.1\",\"family\":6}]",
+      "failedTests": [
+        "endpoint and request refusals refuses non-loopback or ambiguous local DNS answers [{\"address\":\"127.0.0.1\",\"family\":6}]"
+      ]
+    },
+    {
+      "mutation": "DNS-pin",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "single checked address",
+      "failedTests": [
+        "one approved API request runs the actual compatible SDK through the local transport",
+        "one approved API request prevents the SDK from filling in a missing provider model ID",
+        "one approved API request connects to the single checked address with original host/path and key",
+        "one approved API request does not follow changes to the caller's connection or network policy object",
+        "one approved API request can connect through an approved IPv4 answer when the local IPv6 address has no listener",
+        "one approved API request uses an explicit no-key local connection without ambient credentials or proxy",
+        "one approved API request keeps harmless provider metadata and strips response cookies",
+        "one approved API request accepts empty optional tool metadata without treating it as a tool call",
+        "TLS identity with a real local server keeps certificate verification: trusted",
+        "bounded raw response and interruption refuses missing-model without a second provider call",
+        "bounded raw response and interruption refuses wrong-model without a second provider call",
+        "bounded raw response and interruption refuses missing-id without a second provider call",
+        "bounded raw response and interruption refuses bad-id without a second provider call",
+        "bounded raw response and interruption refuses long-id without a second provider call",
+        "bounded raw response and interruption refuses incomplete without a second provider call",
+        "bounded raw response and interruption refuses multiple-choices without a second provider call",
+        "bounded raw response and interruption refuses tool-call without a second provider call",
+        "bounded raw response and interruption refuses function-call without a second provider call",
+        "bounded raw response and interruption refuses invalid-json without a second provider call",
+        "bounded raw response and interruption refuses invalid-utf8 without a second provider call",
+        "bounded raw response and interruption refuses body-limit without a second provider call",
+        "bounded raw response and interruption refuses unicode-body-limit without a second provider call",
+        "bounded raw response and interruption refuses header-limit without a second provider call",
+        "bounded raw response and interruption refuses encoding without a second provider call",
+        "bounded raw response and interruption refuses content-type without a second provider call",
+        "bounded raw response and interruption refuses redirect without a second provider call",
+        "bounded raw response and interruption refuses authentication without a second provider call",
+        "bounded raw response and interruption refuses rate-limit without a second provider call",
+        "bounded raw response and interruption cancels an in-flight response without another generation",
+        "bounded raw response and interruption honors cancellation from the SDK request signal",
+        "bounded raw response and interruption bounds an unresponsive provider",
+        "bounded raw response and interruption refuses a truncated response"
+      ]
+    },
+    {
+      "mutation": "IPv4-fallback",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "approved IPv4 answer",
+      "failedTests": [
+        "one approved API request can connect through an approved IPv4 answer when the local IPv6 address has no listener"
+      ]
+    },
+    {
+      "mutation": "local-policy-copy",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "caller's connection",
+      "failedTests": [
+        "one approved API request does not follow changes to the caller's connection or network policy object"
+      ]
+    },
+    {
+      "mutation": "host-policy-copy",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "caller's connection",
+      "failedTests": [
+        "one approved API request does not follow changes to the caller's connection or network policy object"
+      ]
+    },
+    {
+      "mutation": "endpoint-snapshot",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "caller's connection",
+      "failedTests": [
+        "one approved API request does not follow changes to the caller's connection or network policy object"
+      ]
+    },
+    {
+      "mutation": "model-snapshot",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "caller's connection",
+      "failedTests": [
+        "one approved API request does not follow changes to the caller's connection or network policy object"
+      ]
+    },
+    {
+      "mutation": "private-agent",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "ambient credentials or proxy",
+      "failedTests": [
+        "one approved API request uses an explicit no-key local connection without ambient credentials or proxy"
+      ]
+    },
+    {
+      "mutation": "TLS-verification",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "certificate verification: untrusted",
+      "failedTests": [
+        "TLS identity with a real local server keeps certificate verification: untrusted",
+        "TLS identity with a real local server keeps certificate verification: wrong-hostname"
+      ]
+    },
+    {
+      "mutation": "request-identity",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "single checked address",
+      "failedTests": [
+        "one approved API request connects to the single checked address with original host/path and key"
+      ]
+    },
+    {
+      "mutation": "request-target",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "changed destination",
+      "failedTests": [
+        "endpoint and request refusals refuses changed destination before DNS or network"
+      ]
+    },
+    {
+      "mutation": "request-method",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "changed method",
+      "failedTests": [
+        "endpoint and request refusals refuses changed method before DNS or network"
+      ]
+    },
+    {
+      "mutation": "request-model",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "changed model",
+      "failedTests": [
+        "endpoint and request refusals refuses changed model before DNS or network"
+      ]
+    },
+    {
+      "mutation": "request-byte-limit",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "changed unicode-body-limit",
+      "failedTests": [
+        "endpoint and request refusals refuses changed unicode-body-limit before DNS or network"
+      ]
+    },
+    {
+      "mutation": "request-tools",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "changed tools",
+      "failedTests": [
+        "endpoint and request refusals refuses changed tools before DNS or network"
+      ]
+    },
+    {
+      "mutation": "request-functions",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "changed functions",
+      "failedTests": [
+        "endpoint and request refusals refuses changed functions before DNS or network"
+      ]
+    },
+    {
+      "mutation": "request-tool-choice",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "changed tool-choice",
+      "failedTests": [
+        "endpoint and request refusals refuses changed tool-choice before DNS or network"
+      ]
+    },
+    {
+      "mutation": "request-stream",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "changed stream",
+      "failedTests": [
+        "endpoint and request refusals refuses changed stream before DNS or network"
+      ]
+    },
+    {
+      "mutation": "output-token-upper-limit",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "changed tokens",
+      "failedTests": [
+        "endpoint and request refusals refuses changed tokens before DNS or network"
+      ]
+    },
+    {
+      "mutation": "output-token-integer",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "changed fractional-tokens",
+      "failedTests": [
+        "endpoint and request refusals refuses changed fractional-tokens before DNS or network"
+      ]
+    },
+    {
+      "mutation": "output-token-minimum",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "changed zero-tokens",
+      "failedTests": [
+        "endpoint and request refusals refuses changed zero-tokens before DNS or network"
+      ]
+    },
+    {
+      "mutation": "one-output",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "changed multiple-answers",
+      "failedTests": [
+        "endpoint and request refusals refuses changed multiple-answers before DNS or network"
+      ]
+    },
+    {
+      "mutation": "output-schema",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "changed schema",
+      "failedTests": [
+        "endpoint and request refusals refuses changed schema before DNS or network"
+      ]
+    },
+    {
+      "mutation": "header-allowlist",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "changed cookie",
+      "failedTests": [
+        "endpoint and request refusals refuses changed cookie before DNS or network"
+      ]
+    },
+    {
+      "mutation": "credential-binding",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "changed authorization",
+      "failedTests": [
+        "endpoint and request refusals refuses changed authorization before DNS or network"
+      ]
+    },
+    {
+      "mutation": "response-model",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "missing-model",
+      "failedTests": [
+        "one approved API request prevents the SDK from filling in a missing provider model ID",
+        "bounded raw response and interruption refuses missing-model without a second provider call",
+        "bounded raw response and interruption refuses wrong-model without a second provider call"
+      ]
+    },
+    {
+      "mutation": "response-id-length",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "long-id",
+      "failedTests": [
+        "bounded raw response and interruption refuses long-id without a second provider call"
+      ]
+    },
+    {
+      "mutation": "one-response",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "multiple-choices",
+      "failedTests": [
+        "bounded raw response and interruption refuses multiple-choices without a second provider call"
+      ]
+    },
+    {
+      "mutation": "response-completion",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "incomplete without",
+      "failedTests": [
+        "bounded raw response and interruption refuses incomplete without a second provider call"
+      ]
+    },
+    {
+      "mutation": "response-tool-calls",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "tool-call without",
+      "failedTests": [
+        "bounded raw response and interruption refuses tool-call without a second provider call"
+      ]
+    },
+    {
+      "mutation": "response-function-call",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "function-call without",
+      "failedTests": [
+        "bounded raw response and interruption refuses function-call without a second provider call"
+      ]
+    },
+    {
+      "mutation": "response-byte-count",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "unicode-body-limit without",
+      "failedTests": [
+        "bounded raw response and interruption refuses unicode-body-limit without a second provider call"
+      ]
+    },
+    {
+      "mutation": "response-header-limit",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "header-limit without",
+      "failedTests": [
+        "bounded raw response and interruption refuses header-limit without a second provider call"
+      ]
+    },
+    {
+      "mutation": "response-compression",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "encoding without",
+      "failedTests": [
+        "bounded raw response and interruption refuses encoding without a second provider call"
+      ]
+    },
+    {
+      "mutation": "UTF8-fatal",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "invalid-utf8 without",
+      "failedTests": [
+        "bounded raw response and interruption refuses invalid-utf8 without a second provider call"
+      ]
+    },
+    {
+      "mutation": "response-header-projection",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "strips response cookies",
+      "failedTests": [
+        "one approved API request keeps harmless provider metadata and strips response cookies"
+      ]
+    },
+    {
+      "mutation": "attempt-cancellation",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "pre-cancelled requests",
+      "failedTests": [
+        "bounded raw response and interruption pre-cancelled requests never resolve DNS",
+        "bounded raw response and interruption cancellation while DNS is pending returns without opening a socket",
+        "bounded raw response and interruption cancels an in-flight response without another generation"
+      ]
+    },
+    {
+      "mutation": "SDK-cancellation",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "cancellation from the SDK",
+      "failedTests": [
+        "bounded raw response and interruption honors cancellation from the SDK request signal"
+      ]
+    },
+    {
+      "mutation": "pending-DNS-cancellation",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "cancellation while DNS",
+      "failedTests": [
+        "bounded raw response and interruption cancellation while DNS is pending returns without opening a socket"
+      ]
+    },
+    {
+      "mutation": "socket-cancellation",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "in-flight response",
+      "failedTests": [
+        "bounded raw response and interruption cancels an in-flight response without another generation",
+        "bounded raw response and interruption honors cancellation from the SDK request signal",
+        "bounded raw response and interruption bounds an unresponsive provider"
+      ]
+    },
+    {
+      "mutation": "deadline",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "bounds an unresponsive",
+      "failedTests": [
+        "bounded raw response and interruption bounds an unresponsive provider"
+      ]
+    }
+  ],
+  "blindCategories": [
+    "No real external provider or account was tested.",
+    "The transport does not establish user, workspace or connection-revision authority; those callers are not implemented yet.",
+    "Cancellation closes the local request but cannot undo a remote model request already accepted.",
+    "DNS resolution can finish after cancellation; no socket opens from that late result."
+  ]
+}

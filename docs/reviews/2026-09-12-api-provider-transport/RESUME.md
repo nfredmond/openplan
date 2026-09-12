@@ -18,22 +18,28 @@ release gate, local/free operation and no paid provider requests.
 
 ## Exact next action
 
-Finish cancellation mutation verification before further integration. The 51-case
-runner completed 49 cases, including one harmless survivor and 48 targeted failures,
-then `socket-cancellation` exceeded its 45-second subprocess timeout. The final
-`deadline` case was not reached. Do not call this a 51-case pass. The private
-`transport-mutations.json` is an older 46-case receipt; the progress JSON is newer.
-The runner restored production source in `finally`; the signal is present again
-in the Node request options. A restored run passed 73 transport and 48 shared
-outbound tests, TypeScript and changed-file ESLint. See `checkpoint.json`.
+The cancellation mutation timeout is resolved. The complete 51-case transport
+campaign and separate readable cancellation rerun passed their expected outcomes.
+Credential binding is now implemented and its 23-case mutation campaign passed
+its expected outcomes. Each campaign includes a surviving harmless comment.
+See `VERIFICATION.md` and the three mutation JSON receipts. The original
+`checkpoint.json` is historical partial evidence and must not be treated as the
+latest state. Restored focused tests: 155 across three files.
 
-Inspect cancellation test and fixture teardown so deliberately removing socket
-cancellation produces an attributable test failure and exits cleanly. A timeout
-alone is not sufficient mutation evidence. Preserve the earlier failure. The
-copied runner has explicit local paths; adapt them if resuming elsewhere. It runs
-in a network namespace with only loopback to keep broken SSRF mutations isolated.
-Recheck process ownership before running it, and never edit a served acceptance
-checkout. No need to wait for old exec session 32328; it exited with TimeoutExpired.
+Full QA, shuffled tests (seed 912054), isolated RLS and workers were started after
+these changes. Their private logs are `qa-gate.log`, `shuffled.log`, `rls-live.log`
+and `workers.log` in the evidence directory above. Check current process/handle
+state rather than assuming a log means a job is alive. The selected disposable
+RLS stack is `/home/nathaniel/.local/state/openplan/openplan-restore-target-2026091050`,
+API 29821, DB 29822, container `supabase_db_openplan-restore-target-2026091050`.
+No migrations have been added by this increment.
+
+Next implement versioned workspace connection storage and the execution join.
+The exact endpoint canonicalizer is exported from `provider-api-transport.ts`;
+`provider-api-credentials.ts` shares it and reuses existing integration encryption.
+Its credential envelope binds workspace, revision and the complete normalized
+configuration. Keyless connections need no operator encryption secret; keyed
+connections refuse missing/rotated secrets without fallback.
 
 ## Implementation and remaining scope
 

@@ -1,0 +1,67 @@
+{
+  "network": "Every run used an isolated network namespace; only owned loopback fixtures were reachable.",
+  "mutations": [
+    {
+      "mutation": "harmless-comment",
+      "outcome": "survived",
+      "exitCode": 0,
+      "target": null,
+      "failedTests": []
+    },
+    {
+      "mutation": "attempt-cancellation",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "pre-cancelled requests",
+      "failedTests": [
+        "bounded raw response and interruption pre-cancelled requests never resolve DNS",
+        "bounded raw response and interruption cancellation while DNS is pending returns without opening a socket",
+        "bounded raw response and interruption cancels an in-flight response without another generation"
+      ]
+    },
+    {
+      "mutation": "SDK-cancellation",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "cancellation from the SDK",
+      "failedTests": [
+        "bounded raw response and interruption honors cancellation from the SDK request signal"
+      ]
+    },
+    {
+      "mutation": "pending-DNS-cancellation",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "cancellation while DNS",
+      "failedTests": [
+        "bounded raw response and interruption cancellation while DNS is pending returns without opening a socket"
+      ]
+    },
+    {
+      "mutation": "socket-cancellation",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "in-flight response",
+      "failedTests": [
+        "bounded raw response and interruption cancels an in-flight response without another generation",
+        "bounded raw response and interruption honors cancellation from the SDK request signal",
+        "bounded raw response and interruption bounds an unresponsive provider"
+      ]
+    },
+    {
+      "mutation": "deadline",
+      "outcome": "failed",
+      "exitCode": 1,
+      "target": "bounds an unresponsive",
+      "failedTests": [
+        "bounded raw response and interruption bounds an unresponsive provider"
+      ]
+    }
+  ],
+  "blindCategories": [
+    "No real external provider or account was tested.",
+    "The transport does not establish user, workspace or connection-revision authority; those callers are not implemented yet.",
+    "Cancellation closes the local request but cannot undo a remote model request already accepted.",
+    "DNS resolution can finish after cancellation; no socket opens from that late result."
+  ]
+}
