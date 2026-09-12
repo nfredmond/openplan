@@ -1,0 +1,24 @@
+{
+  "checks": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "passed": 11,
+      "failed": 0
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "passed": 11,
+      "failed": 0
+    },
+    {
+      "case": "hardcoded-node",
+      "exitCode": 1,
+      "passed": 4,
+      "failed": 7
+    }
+  ],
+  "scope": "Read-only mount namespace; the suite runs via /tmp/node-runtime while /usr/bin/node is masked by a non-executable file. No host binary is changed.",
+  "blindCategory": "This reproduces an unavailable fixed Node path; final GitHub QA still has to pass on the release commit."
+}

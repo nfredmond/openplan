@@ -18,7 +18,7 @@ async function fixture(mode = "normal") {
   const root = await mkdtemp(join(tmpdir(), "openplan-opencode-models-"));
   const command = join(root, "fixture"), receipt = join(root, "pid");
   receipts.push(receipt);
-  await writeFile(command, `#!/usr/bin/node
+  await writeFile(command, `#!${process.execPath}
     const fs=require('node:fs');fs.writeFileSync(process.env.RECEIPT,String(process.pid));
     if(JSON.stringify(process.argv.slice(2))!==JSON.stringify(['--unshare-net','--pure','models','openai']))process.exit(2);
     const mode=process.env.MODE;

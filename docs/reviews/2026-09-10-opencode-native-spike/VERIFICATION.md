@@ -105,7 +105,17 @@ process fixtures remain documented in the chronological checkpoint.
 
 ## Publication
 
-Engineering release candidate. Final release-commit CI, shuffled tests, live RLS
+The first release commit, 4e9de713c87ed4141ee88c917cd6e88be9641b70, was not tagged.
+CI 34525575454 failed seven connector catalog tests because their fixture hardcoded
+`/usr/bin/node`. The app tests passed 13,793 with 408 skips. Shuffled tests,
+RLS 34525575421 (430 passed) and Upgrade Path 34525575469 succeeded. The latter
+applied the new migration from populated v0.53.0 and preserved its seeded counts
+and custody checks. This does not replace the separate local connection/turn hash
+comparison. CI and local skip counts differ; neither counts skips as passes.
+
+The [September 12 correction](RELEASE_CORRECTION.md) fixes fixture portability and
+includes the separately tested Codex directory-boundary follow-up. Browser-tested
+OpenCode app and native implementation are unchanged. Final release-commit CI, shuffled tests, live RLS
 and the populated v0.53.0 upgrade must be inspected before tagging. A push or this
 document does not establish publication. No human review or paid deployment is a
 release prerequisite. Scientific accuracy and agency authority claims are unchanged.

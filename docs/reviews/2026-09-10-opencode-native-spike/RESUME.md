@@ -34,23 +34,20 @@ endpoints, broader tasks and durable assignments remain open A0/A1 work.
 
 ## Immediate next step
 
-The release inventory guard challenge and restored check passed; the release
-checkpoint is committed and pushed. At the usage-reset checkpoint, Upgrade Path
-34525575469 succeeded on the release SHA. CI 34525575454 still had QA and shuffled
-tests running, with all three Python jobs successful. RLS Isolation 34525575421
-was running. No v0.54.0 tag existed. Recheck these exact runs; this is a snapshot,
-not a prediction of their final outcome. No local QA or browser jobs need resuming.
+September 12 resumption found CI 34525575454 failed on source 4e9de713.
+Seven catalog tests could not start their hardcoded /usr/bin/node fixture.
+RLS 34525575421, Upgrade Path 34525575469 and shuffled tests passed.
+No v0.54.0 tag exists. RELEASE_CORRECTION.md records the reproduced failure,
+portable fixture repair and tested Codex directory guard follow-up. Full connector
+suite passed 382 with four opt-in skips; separate native Codex fixture passed two.
+Commit and push this corrected candidate directly to main, then inspect final QA,
+shuffled tests, RLS and Upgrade Path on that exact commit before tagging/publishing.
+Do not rerun the failed old source expecting it to repair itself. Keep both
+failed and corrected evidence. No human review or draft PR is required.
 
-Inspect successful final CI, shuffled tests,
-RLS Isolation and populated v0.53.0 Upgrade Path on that exact SHA before making
-an annotated v0.54.0 tag and a normal public GitHub release. Record the actual
-publication and CI receipt afterward. No draft PR or human review is needed.
-If main already contains this release checkpoint when resumed, do not repeat the
-merge or fabricate a new release commit; inspect its live Actions state.
-
-The only post-browser code-area metadata edit is the release-ordering inventory.
-App/worker implementation is unchanged from the browser-tested1b5ba8be. Keep
-this distinction in release evidence. Product direction check passed with normal
+Post-browser changes include release metadata, the catalog test fixture and the
+Codex directory guard. OpenCode app/native implementation is unchanged from
+browser-tested 1b5ba8be. Keep this distinction in release evidence. Product direction check passed with normal
 review reminders; no review dates were refreshed as a substitute for evidence.
 
 ## Processes and databases

@@ -21,7 +21,8 @@ export async function codexLaunch({ binaryPath, providerHome, scratchPath, model
   }
   const profile = await realpath(providerHome);
   const scratch = await realpath(scratchPath);
-  if (profile === parse(profile).root || scratch === profile || scratch.startsWith(`${profile}/`)) {
+  if (profile === parse(profile).root || scratch === parse(scratch).root || scratch === profile ||
+    scratch.startsWith(`${profile}/`) || profile.startsWith(`${scratch}/`)) {
     throw new Error("native_path_invalid");
   }
   const auth = await lstat(join(profile, "auth.json")).catch(() => null);

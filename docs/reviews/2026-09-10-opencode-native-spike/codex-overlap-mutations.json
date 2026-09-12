@@ -1,0 +1,64 @@
+{
+  "mutations": [
+    {
+      "mutation": "harmless-comment",
+      "expected": "survived",
+      "exitCode": 0,
+      "assertionFailure": false
+    },
+    {
+      "mutation": "reverse-overlap",
+      "expected": "failed",
+      "exitCode": 1,
+      "assertionFailure": true
+    },
+    {
+      "mutation": "scratch-root",
+      "expected": "failed",
+      "exitCode": 1,
+      "assertionFailure": true
+    },
+    {
+      "mutation": "profile-root",
+      "expected": "failed",
+      "exitCode": 1,
+      "assertionFailure": true
+    },
+    {
+      "mutation": "same-directory",
+      "expected": "failed",
+      "exitCode": 1,
+      "assertionFailure": true
+    },
+    {
+      "mutation": "forward-overlap",
+      "expected": "failed",
+      "exitCode": 1,
+      "assertionFailure": true
+    },
+    {
+      "mutation": "profile-alias",
+      "expected": "failed",
+      "exitCode": 1,
+      "assertionFailure": true
+    },
+    {
+      "mutation": "scratch-alias",
+      "expected": "failed",
+      "exitCode": 1,
+      "assertionFailure": true
+    },
+    {
+      "mutation": "private-history-mask",
+      "expected": "failed",
+      "exitCode": 1,
+      "assertionFailure": true
+    }
+  ],
+  "restoredExitCode": 0,
+  "blindCategories": [
+    "Synthetic executable reports the pinned version; this unit suite does not run a native model or mount namespace.",
+    "Path resolution cannot protect against a hostile same-UID owner moving directories concurrently.",
+    "Root refusal tests require an unprivileged test user and explicitly skip under a root-writable account."
+  ]
+}
