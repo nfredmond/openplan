@@ -6,8 +6,9 @@ v0.48 or v0.54 release work. Preserve all planning and separate model obligation
 Implementation checkout:
 `/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10`
 Package `openplan/`, branch `work/planner-agent-api-connections`.
-Remote main is `57a7b6aed1d0262ee847e1e80a6183b35728e142`; CI 34716932357 and
-RLS 34716932401 were confirmed green. Root checkout and demo are separate and
+Settings code and browser evidence are on remote main at
+`100216a32c458e0c1cc85c050fb088891565c5d0`. The previous foundation CI/RLS were
+green; inspect the new main runs below before advancing the next increment. Root checkout and demo are separate and
 must not be switched or modified. No other agent was observed owning this tree.
 No PR exists; land verified work directly to remote main.
 
@@ -31,7 +32,7 @@ and recovered the same revision with created:false. Editing then exposed unstabl
 accessible names on implicit textarea/select labels. Source 92b927fc fixes them
 with explicit labels; detached-label mutations fail. No source changes are pending.
 
-## Settings accepted; land and inspect main CI
+## Settings landed; inspect main CI
 
 Both corrected browser journeys passed on identified source 908b576c at desktop
 1440x1000 and 390x1000. Viewport captures were inspected. Original/corrected/revoked
@@ -48,8 +49,12 @@ exit 0: 442 tests in 48 files. The final label-only correction does not change S
 Upgrade Path 34720213220 succeeded on 92b927fc from v0.54.0.
 All old handles listed in earlier notes are terminal; do not poll or restart them.
 
-This evidence checkpoint is ready to push directly to main. Inspect remote main
-and CI/RLS/Upgrade Path for the final pushed SHA. Preserve the root checkout and
+The evidence checkpoint was pushed directly to main successfully. Current final
+main runs for 100216a3: CI 34720524596, RLS Isolation 34720524628 and Upgrade Path
+34720524696. They were confirmed queued/running, not yet complete, at checkpoint.
+Poll these exact GitHub runs; do not mistake the earlier branch upgrade pass for
+a completed main run. This resume-note-only follow-up is saved on the work branch
+so it does not restart the main checks. Preserve the root checkout and
 its unrelated reminder change. No PR or tag is needed for this unfinished API
 execution increment. After main checks, continue the API turn/worker join in
 `EXECUTION_JOIN.md` and the existing scoped Planner Agent task, without duplicating
