@@ -25,6 +25,10 @@ destinations, encrypted connection identity, raw model identity and cancellation
 Saved API connections, their worker execution and visible controls are still in
 development; this does not add a usable provider option yet.
 
+Migration `20261012000001_workspace_provider_api_revisions.sql` adds versioned
+workspace API configuration and separately protected credentials. Existing native
+and Anthropic request history is unchanged.
+
 ## 0.54.0 — 2026-09-12
 
 The existing project task adds an installed OpenCode 1.18.30 Linux connection

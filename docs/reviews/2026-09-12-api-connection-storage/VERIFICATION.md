@@ -71,3 +71,14 @@ Private logs: `/home/nathaniel/.local/state/openplan/api-provider-research-2026-
 Disposable DB: `/home/nathaniel/.local/state/openplan/openplan-restore-target-2026091050`,
 container `supabase_db_openplan-restore-target-2026091050`, API 29821, DB 29822.
 It now has migration 20261012000001, for 317 migrations total.
+
+## First broad-check findings
+
+Shuffled seed 912055 reported four failures: one orphan-route guard, two outdated
+policy/relation inventory counts and the missing migration name in Unreleased.
+The remaining 13,923 tests passed; 413 live/opt-in cases were skipped. The catalog
+has 752 policies and 239 RLS application tables, with a separate PostGIS system
+table outside the source inventory. Inventory expectations now account for the
+three new tables and two SELECT policies, and Unreleased names the migration.
+The no-caller guard stays intact. Real configuration controls and their browser
+evidence must precede landing this increment; no route exception is justified.

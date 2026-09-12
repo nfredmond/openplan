@@ -26,9 +26,36 @@ Mutation runs are finished and restored; concurrency controls and failures are i
 this review folder. The named disposable restore DB has 317 migrations. There is
 no need to reset it. No changed worker code or UI has been added yet.
 
-After these gates, land the verified internal increment directly on main without
-a PR. Inspect the new CI/RLS/Upgrade Path runs; the migration push triggers the
-populated v0.54 upgrade automatically. Do not tag a release for storage alone.
+The first full shuffled run failed four checks: the new route has no product
+caller, the policy/schema inventory counts were not updated, and the changelog
+omitted the new migration. Inventory counts are now reconciled with the live
+catalog, and the changelog names the migration. DO NOT exempt the orphan route
+or add a dummy caller. Its remaining failure requires the planned real UI join
+before this storage increment can land on main. The checkpoint's prior idea of
+landing routes before UI is superseded by this observed guard failure.
+
+Immediate next implementation: add configuration controls through the existing
+`/workspace` page's `workspace-integrations` area. Existing component:
+`openplan/src/components/workspaces/workspace-integration-keys-panel.tsx`;
+parent `openplan/src/app/(app)/workspace/page.tsx`. Keep that working integration
+panel intact; add the API connection controls alongside it. Owner/admin can save
+and revise exact endpoints/model IDs/key mode, inspect history and revoke. Members
+can read permitted destination metadata. Preserve ephemeral key inputs, one stable
+revision ID for a failed-save retry, truthful network/save outcomes and pagination.
+Saving configuration must not contact a model. Do not claim generation is wired.
+
+The openplan-browser and look skills were read on this turn. Use the existing
+Playwright harness with installed Chrome. Before browser evidence, start an
+identified isolated build and use `which-openplan.sh`. This checkout's `.env.local`
+still points at the old browser stack on 22301; the active disposable QA/API stack
+is 29821/29822. Prepare a private environment file from that stack's status without
+printing keys. Use actual account/workspace creation and UI producers; do not
+hand-seed API connections. Never build/edit a served acceptance checkout while
+collecting evidence. No UI code or browser server has been started for this increment.
+
+After reachable settings and their relevant browser tests, repeat final full QA,
+shuffled and isolated RLS on unchanged source. Land directly on main without a PR;
+inspect CI/RLS/Upgrade Path. No tag for the partial provider workflow.
 
 Then finish A0b API execution in existing `assistant_provider_turns`: immutable
 revision reference and request hash/charge acknowledgement, one queued attempt,

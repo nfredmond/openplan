@@ -472,16 +472,18 @@ const EXPECTED = {
   // 20261004000001: one private SELECT-only closeout history table; live catalog confirms +1.
   // 20261005000001: one private SELECT-only period decision table; no direct writes.
   // Two owner-readable provider tables add two SELECT policies; no direct writes.
-  policies: 750,
-  permissive: 499,
+  // 20261012000001 adds three API configuration tables, all with RLS, and two
+  // metadata SELECT policies. Credentials have no ordinary-user grants/policies.
+  policies: 752,
+  permissive: 501,
   restrictive: 251,
   permissiveWrites: 280,
   expanded: 286,
-  tablesWithPolicies: 216,
-  relations: 249,
-  tables: 236,
+  tablesWithPolicies: 218,
+  relations: 252,
+  tables: 239,
   views: 13,
-  rlsEnabledTables: 236,
+  rlsEnabledTables: 239,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
