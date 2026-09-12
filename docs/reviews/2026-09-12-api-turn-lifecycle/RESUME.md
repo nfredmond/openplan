@@ -54,25 +54,46 @@ proof is still pending. No API POST selection, worker or project UI is joined.
 Settings must retain their generation-unavailable disclosure until that path is
 executable and browser-verified.
 
-A fresh checkpoint TypeScript check FAILED, exit one, with four fixture errors in
-`openplan/src/test/provider-api-turn.test.ts` at lines 51, 59, 64 and 107. The first
-three assign deployment_api_key where the narrowed API branch expects a connection
-auth mode; the fourth assigns codex where the fixture type became api_connection.
-Read the fixtures and preserve their actual legacy behavior when repairing typing.
-Do not cast away the error or weaken the production discriminator just to pass.
-Changed-file ESLint passed, exit zero. The earlier truncated command output was
-not recoverable; no corresponding process remained, so these checks were rerun.
+## Continued execution after the usage checkpoint
+
+The four fixture type errors are repaired: the legacy Anthropic fixture parses
+through the legacy schema branch. Production discrimination is unchanged.
+TypeScript exited zero. The 112 focused decoder, route, legacy API and command-
+environment tests passed. Changed-file ESLint passed from the package root; an
+initial invocation from the repository root failed to find its config and was
+corrected without changing lint configuration.
+
+`decoder-mutations.mjs` completed 28 cases: one harmless control survived and 27
+targeted faults failed at named assertions. The script restored the source and
+checked its SHA-256. Recovery state:
+`/tmp/openplan-api-decoder-mutations-F4TvPJ/state.json`. Source is restored, not
+currently mutated. Required-field tests inspect both the schema and decoder;
+legacy tests reject each non-null API field. Projection tests name all six fields.
+
+The explicit package test:rls-live command now includes the new 16-case SQL file.
+vitest.config.ts already serializes live files when OPENPLAN_RLS_LIVE_TEST=1.
+Actual database hashes still matched both restored functions before the run and
+there were zero active API jobs. The live file list has 49 files and no direct
+imports of the decoder mutated in the independent campaign.
+
+Current checks, launched on this resumed turn:
+
+- Full isolated RLS: exec 18337, log
+  `/home/nathaniel/.local/state/openplan/api-provider-research-2026-09-12/lifecycle-full-rls.log`.
+- Full QA: exec 83744, log
+  `/home/nathaniel/.local/state/openplan/api-provider-research-2026-09-12/lifecycle-full-qa.log`.
+
+Both were still live when this note was written. Poll authoritative handles;
+do not restart because output is quiet. No final outcome is claimed here.
 
 Immediate next work:
 
-1. Repair those fixture types, rerun TypeScript and the focused suites, and prove
-   the decoder/projection guards with harmless and targeted mutations.
-2. Replay all 18 concurrency cases. Wire the new assistant-api-turns-rls.test.ts
-   into the explicit package test:rls-live command, which currently omits it.
-   Inspect file parallelism before combining these suites: claim selects globally
-   and committed concurrency fixtures must not race other API fixtures.
-3. Run full isolated RLS, upgrade, applicable full QA and shuffled tests on the
-   final implementation. Do not claim the lifecycle main-ready before these pass.
+1. Inspect the full RLS and QA results. Full RLS includes all 18 concurrency cases.
+2. Run shuffled tests on the restored source. Confirm the full QA build uses the
+   private api-settings.env configuration for the named stack, not stale .env.local.
+3. Run Upgrade Path on the pushed branch from v0.54.0, then land this internal
+   increment directly on main once the applicable gates pass. Inspect main CI,
+   RLS and upgrade separately. No new generation option or tag yet.
 4. Join the existing provider-api-generation adapter to the local worker and
    project panel, reusing native connector private journal primitives. Claim once,
    reserve once, abort on lost access/cancellation, and retry delivery without
@@ -80,7 +101,8 @@ Immediate next work:
    keyboard, console, interrupted retry and immutable history evidence.
 5. Land verified increments directly on main and inspect CI before release tags.
 
-No compiler, linter, Vitest or mutation process remains running at this checkpoint.
+The compiler, changed-file linter and mutation campaign are terminal. Full RLS
+and QA are running as listed above.
 No new generation option or release is claimed. All fixtures stay synthetic and
 free; no external provider call is needed. Preserve the root checkout, demo,
 private credentials and unrelated reminder constraint.

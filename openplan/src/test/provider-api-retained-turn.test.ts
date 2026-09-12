@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { createHash, randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { checkedProviderTurn, PROVIDER_TURN_COLUMNS } from "@/lib/assistant/provider-server";
+import { checkedProviderTurn, retainedProviderTurnSchema, PROVIDER_TURN_COLUMNS } from "@/lib/assistant/provider-server";
 
 const hash=(text:string)=>createHash('sha256').update(text).digest('hex');
 function fixture() {
@@ -18,7 +18,7 @@ function fixture() {
 }
 
 describe('retained saved API turn decoding',()=>{
-  it('retains the exact saved configuration and owner in the public metadata projection',()=>{
+  it('retains the exact saved configuration and owner in the authenticated metadata projection',()=>{
     const row=fixture(),{turn,packet}=checkedProviderTurn(row);
     expect(turn).toEqual(row);expect(packet).toEqual(JSON.parse(row.packet_canonical));
     expect(PROVIDER_TURN_COLUMNS.split(',')).toEqual(expect.arrayContaining(['user_id','api_connection_id','api_revision_id','api_configuration_canonical','api_configuration_hash','api_charge_ack']));
@@ -28,16 +28,20 @@ describe('retained saved API turn decoding',()=>{
     const row=fixture(),configuration=JSON.parse(row.api_configuration_canonical);
     configuration.authMode='none';row.api_configuration_canonical=JSON.stringify(configuration);row.api_configuration_hash=hash(row.api_configuration_canonical);row.auth_mode='connection_no_key';
     expect(checkedProviderTurn(row).turn.auth_mode).toBe('connection_no_key');
+    expect(retainedProviderTurnSchema.safeParse({...row,auth_mode:'deployment_api_key'}).success).toBe(false);
     expect(()=>checkedProviderTurn({...row,auth_mode:'deployment_api_key'})).toThrow();
   });
   for(const field of ['user_id','api_connection_id','api_revision_id','api_configuration_canonical','api_configuration_hash','api_charge_ack']) {
     it(`refuses missing API ${field}`,()=>{
       const raw=Object.fromEntries(Object.entries(fixture()).filter(([key])=>key!==field));
+      expect(retainedProviderTurnSchema.safeParse(raw).success).toBe(false);
       expect(()=>checkedProviderTurn(raw)).toThrow();
     });
   }
   it('refuses a native connection token reference or false charge acknowledgement on an API turn',()=>{
+    expect(retainedProviderTurnSchema.safeParse({...fixture(),connection_id:randomUUID()}).success).toBe(false);
     expect(()=>checkedProviderTurn({...fixture(),connection_id:randomUUID()})).toThrow();
+    expect(retainedProviderTurnSchema.safeParse({...fixture(),api_charge_ack:false}).success).toBe(false);
     expect(()=>checkedProviderTurn({...fixture(),api_charge_ack:false})).toThrow();
   });
   for(const change of ['hash','model','mode','protocol','json']) {
@@ -62,7 +66,9 @@ describe('retained saved API turn decoding',()=>{
       expect(checkedProviderTurn(legacy).turn).toEqual(legacy);
       const withNulls={...legacy,api_connection_id:null,api_revision_id:null,api_configuration_canonical:null,api_configuration_hash:null,api_charge_ack:null};
       expect(checkedProviderTurn(withNulls).turn).toEqual(withNulls);
-      expect(()=>checkedProviderTurn({...legacy,api_revision_id:randomUUID()})).toThrow();
+      for (const [field, value] of Object.entries(row).filter(([key])=>key.startsWith('api_'))) {
+        expect(()=>checkedProviderTurn({...legacy,[field]:value})).toThrow();
+      }
     });
   }
   it('still rejects a foreign or tampered project packet for an API turn',()=>{

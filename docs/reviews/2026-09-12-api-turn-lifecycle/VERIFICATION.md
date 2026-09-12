@@ -123,3 +123,25 @@ lines 51, 59, 64 and 107. Changed-file ESLint passed. These are unfinished sourc
 changes, not accepted main or release evidence. RESUME.md has exact next steps.
 The explicit package test:rls-live list also still omits the new 16-case API SQL
 file; wire it in and inspect serialization before reporting full RLS coverage.
+
+## Decoder proof and resumed checks
+
+The fixture-only typing repair selects the existing legacy schema branch for the
+Anthropic test record. TypeScript then passed. The focused decoder, routes,
+legacy API and command-environment suites passed 112 cases. The updated decoder
+fault campaign exercised 28 cases: one harmless comment survived; 27 named
+projection, required-field, credential-mode, native-reference, acknowledgement,
+legacy-field, configuration and packet faults failed at assertions. Source was
+restored and hashed. See decoder-mutations.json for exact failures.
+
+These are in-process decoding and projection checks, not PostgREST authorization,
+credential decryption, worker delivery or browser evidence. Missing API schema
+fields are tested directly as well as through downstream decoding, so a later
+parse failure cannot mask an accidentally optional type contract. The unchanged
+legacy production schema validates the narrowed fixture.
+
+The package live command now explicitly includes the new SQL file. Existing
+Vitest configuration serializes live files; explicit concurrency remains within
+one file. Before full RLS, both previously mutated database function hashes
+matched source and the active API queue was empty. Full RLS and full QA are in
+progress, with handles and private log paths in RESUME.md; no outcomes yet.
