@@ -48,6 +48,7 @@
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.46",
+    "@ai-sdk/openai-compatible": "2.0.75",
     "@next/env": "16.2.11",
     "@sparticuz/chromium": "^129.0.0",
     "@supabase/ssr": "^0.8.0",

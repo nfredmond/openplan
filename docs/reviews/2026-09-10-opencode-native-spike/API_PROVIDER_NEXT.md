@@ -1,7 +1,8 @@
 # Extensible API choice: implementation boundary, September 12
 
-This is preparation for roadmap A0b, not an implemented capability or a second
-queue. The corrected v0.54.0 release at 33a5fb0c is now published.
+This records the roadmap A0b design, not a released capability or a second
+queue. An unfinished transport implementation is now checkpointed in
+[the September 12 resume note](../2026-09-12-api-provider-transport/RESUME.md). The corrected v0.54.0 release at 33a5fb0c is now published.
 [Publication receipt](publication.json) records successful CI 34713463150,
 RLS 34713463159 and Upgrade Path 34713492994. The failed 4e9de713 candidate
 remains historical evidence.
@@ -21,8 +22,8 @@ endpoint revision. Extend the integration system with versioned API connection
 records rather than overloading the native device token or rewriting old keys.
 
 The selected library is the AI SDK 6-compatible `@ai-sdk/openai-compatible`
-2.0.75. Its published archive was inspected locally without installing it into
-the app. It uses LanguageModelV3, permits an injected fetch and supports a
+2.0.75. Its published archive was inspected locally and the exact version is now
+installed in the isolated implementation checkout. It uses LanguageModelV3, permits an injected fetch and supports a
 declared structured-output mode. Its Apache-2.0 license is compatible with this
 repository. Package integrity:
 `sha512-W9w3tCoYrevct2Ips2X4EFOow8Kzrg0nqVJi9jm0lHiMlTmTON4nzaCv3Zkzg6eFCJJVH60kd4+t7tHgtOxx9Q==`.

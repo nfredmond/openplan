@@ -93,3 +93,5 @@ acceptance. Do not edit a served acceptance checkout during collection.
 After v0.54, run product:direction:check and continue current roadmap A0/A1,
 including extensible provider/API choice. The Codex scratch-root/reciprocal-overlap follow-up is fixed in v0.54.0. Keep all other v1 planning and separate scientific
 validation obligations intact.
+
+Newer unfinished API implementation checkpoint: [September 12 resume note](../2026-09-12-api-provider-transport/RESUME.md). Start there after a usage reset.
