@@ -56,3 +56,27 @@ with explicit TypeScript types; do not invent a second journaling convention.
 The API worker's journal identity additionally needs deployment/stack identity and
 workspace/connection/revision/turn/attempt binding, since it is not a single
 personal native-connection process.
+
+## Usage accounting inspection
+
+Current `openplan/src/lib/runtime/ai-rate-limit.ts` explicitly allows requests
+when its usage lookup fails. Its recording helper also swallows insert failures.
+These are documented existing behaviors, not proof of durable dispatch custody.
+Do not describe merely calling those helpers as a transactional reservation.
+
+For the new API queue, retain a conservative dispatch event in the same
+transaction that moves one queued turn to its running attempt. Reuse
+`usage_events` and its unique `idempotency_key`; no new billing ledger or software
+entitlement is needed. Serialize new API reservations per workspace without
+inverting membership -> project -> connection -> turn locks. The existing staff
+allowance is 20 events over 300 seconds across six named staff buckets. Other
+provider paths still use their documented best-effort counting, so a new API
+reservation cannot honestly promise a strict global cap across all AI callers.
+
+An event records a reserved dispatch, not a provider charge or proof that the
+network call occurred. A crash after claim but before dispatch must remain
+interrupted and may conservatively consume that window's reservation. Retries
+of saved completion delivery must neither reserve again nor generate again.
+Missing usage storage must roll the new claim back before dispatch. Keep the
+older provider behavior unchanged in this bounded integration and retain this
+distinction in its evidence.
