@@ -1,0 +1,26 @@
+{
+  "source": "ff65825be49ba2752b0dbed2c6aed96cf46610ab",
+  "width": 390,
+  "passed": true,
+  "campaignId": "8b9985c5-3a74-4c5a-91e4-a7688b24055e",
+  "originalHash": "765ba1a1d670dc6d5d80ecfb4b0fe4d42f70390b2709f1b60de769da77e077ad",
+  "retainedOriginalHash": "765ba1a1d670dc6d5d80ecfb4b0fe4d42f70390b2709f1b60de769da77e077ad",
+  "historyBeforeFault": "90cc12dc0e52ae23b6711a5961ac0de6221cabac0c96dff707fdad9414c1de48",
+  "historyAfterFault": "90cc12dc0e52ae23b6711a5961ac0de6221cabac0c96dff707fdad9414c1de48",
+  "refusedReads": 2,
+  "anonymousStatus": 401,
+  "overflow": {
+    "viewport": 390,
+    "document": 390
+  },
+  "console": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    }
+  ]
+}

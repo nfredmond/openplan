@@ -1,0 +1,86 @@
+{
+  "source": "ff65825be49ba2752b0dbed2c6aed96cf46610ab",
+  "width": 1440,
+  "passed": true,
+  "campaignId": "aad97026-1f6e-483d-9091-0b2d17737b3f",
+  "originalHash": "c99c5f4044c5eb3dbfef14946bd1892f5de239cade848139b0fdd69d8f2b6a29",
+  "retainedOriginalHash": "c99c5f4044c5eb3dbfef14946bd1892f5de239cade848139b0fdd69d8f2b6a29",
+  "historyBeforeFault": "4f1f79e672ccd2a5a914ffebc531edec385319bbc2f47e789f9706b467deb89e",
+  "historyAfterFault": "4f1f79e672ccd2a5a914ffebc531edec385319bbc2f47e789f9706b467deb89e",
+  "refusedReads": 2,
+  "anonymousStatus": 401,
+  "overflow": {
+    "viewport": 1440,
+    "document": 1440
+  },
+  "console": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_NETWORK_CHANGED"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_NETWORK_CHANGED"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_NETWORK_CHANGED"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_NETWORK_CHANGED"
+    },
+    {
+      "type": "warning",
+      "text": "[cartographic-backdrop] project-areas fetch failed TypeError: Failed to fetch"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_NETWORK_CHANGED"
+    },
+    {
+      "type": "warning",
+      "text": "[cartographic-backdrop] crashes fetch failed TypeError: Failed to fetch"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_NETWORK_CHANGED"
+    },
+    {
+      "type": "warning",
+      "text": "[cartographic-backdrop] engagement fetch failed TypeError: Failed to fetch"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_NETWORK_CHANGED"
+    },
+    {
+      "type": "warning",
+      "text": "[cartographic-backdrop] aerial-missions fetch failed TypeError: Failed to fetch"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_NETWORK_CHANGED"
+    },
+    {
+      "type": "warning",
+      "text": "[workspace-gis-binding] workspace GIS catalog fetch failed TypeError: Failed to fetch"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_NETWORK_CHANGED"
+    },
+    {
+      "type": "warning",
+      "text": "[cartographic-backdrop] projects fetch failed TypeError: Failed to fetch"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    }
+  ]
+}

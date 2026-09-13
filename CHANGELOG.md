@@ -20,15 +20,25 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-Response-history persistence is in development. The additive
-`20261014000001_engagement_response_history.sql` migration retains private source
-copies through correction, publication changes and removal, with explicitly
-labelled legacy baselines. The additional
-`20261014000002_engagement_response_history_reader.sql` migration supports a
-private staff history view, including removed responses, checksum validation and
-read retries. Browser acceptance is pending. Correction reasons, conflict/retry
-handling for writes and translation-version custody remain unfinished.
-This foundation is not part of v0.55.2.
+No additional changes yet.
+
+## 0.56.0 — 2026-09-12
+
+Engagement now retains private response copies through corrections, publication
+changes and removal. Open **Response history** in the campaign's You said / We did
+section to find prior words, recorded actors and source references, including
+responses removed from the current list. Reads verify each retained checksum and
+revision sequence; unavailable history offers a retry and never appears empty.
+
+Apply `20261014000001_engagement_response_history.sql` and
+`20261014000002_engagement_response_history_reader.sql` before running this version.
+Existing responses receive a labelled baseline; earlier edits are unknown.
+Desktop and 390px journeys covered correction, removal, preserved originals,
+failed reads, keyboard recovery and the complete 1,005-response history fixture.
+
+Correction reasons, prevention of stale overwrites, durable write retries and
+translation-version history remain unfinished. This increment does not complete
+M9b, establish agency usefulness or grant publication/adoption authority.
 
 ## 0.55.2 — 2026-09-12
 

@@ -1,0 +1,47 @@
+[
+  {
+    "name": "harmless-comment",
+    "status": 0,
+    "outcome": "survived",
+    "matched": true,
+    "expectedTest": null,
+    "sourceSha256": "015c07a6b4a80dace62d9d6fb36f59fc3d8aa1f25f33a3070af37b925c5b2432",
+    "diagnostic": null
+  },
+  {
+    "name": "fetch-before-open",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "loads on demand",
+    "sourceSha256": "015c07a6b4a80dace62d9d6fb36f59fc3d8aa1f25f33a3070af37b925c5b2432",
+    "diagnostic": null
+  },
+  {
+    "name": "hide-read-failure",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "keeps failed reads distinct",
+    "sourceSha256": "015c07a6b4a80dace62d9d6fb36f59fc3d8aa1f25f33a3070af37b925c5b2432",
+    "diagnostic": null
+  },
+  {
+    "name": "accept-foreign-history",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "refuses a foreign history",
+    "sourceSha256": "015c07a6b4a80dace62d9d6fb36f59fc3d8aa1f25f33a3070af37b925c5b2432",
+    "diagnostic": null
+  },
+  {
+    "name": "leave-interrupted-read",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "aborts interrupted reads",
+    "sourceSha256": "015c07a6b4a80dace62d9d6fb36f59fc3d8aa1f25f33a3070af37b925c5b2432",
+    "diagnostic": null
+  }
+]

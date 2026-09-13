@@ -1,0 +1,29 @@
+[
+  {
+    "name": "harmless-comment",
+    "status": 0,
+    "outcome": "survived",
+    "matched": true,
+    "expectedTest": null,
+    "sourceSha256": "015c07a6b4a80dace62d9d6fb36f59fc3d8aa1f25f33a3070af37b925c5b2432",
+    "diagnostic": null
+  },
+  {
+    "name": "fetch-before-open",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "loads on demand",
+    "sourceSha256": "015c07a6b4a80dace62d9d6fb36f59fc3d8aa1f25f33a3070af37b925c5b2432",
+    "diagnostic": null
+  },
+  {
+    "name": "hide-read-failure",
+    "status": 1,
+    "outcome": "killed",
+    "matched": false,
+    "expectedTest": "keeps failed reads distinct",
+    "sourceSha256": "015c07a6b4a80dace62d9d6fb36f59fc3d8aa1f25f33a3070af37b925c5b2432",
+    "diagnostic": "round border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,white)] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\u001b[39m\n        \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n        \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n        \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mClose response history\u001b[0m\n      \u001b[36m</button>\u001b[39m\n      \u001b[36m<section\u001b[39m\n        \u001b[33maria-label\u001b[39m=\u001b[32m\"Response history\"\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"mt-3 space-y-3 rounded-lg border border-border p-3\"\u001b[39m\n        \u001b[33mid\u001b[39m=\u001b[32m\"_r_4_\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<p>\u001b[39m\n          \u001b[0mNo response history has been retained for this campaign.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n      \u001b[36m</section>\u001b[39m\n    \u001b[36m</div>\u001b[39m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m\n \u276f waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27\n \u276f node_modules/@testing-library/dom/dist/query-helpers.js:86:33\n \u276f src/test/engagement-response-history-ui.test.tsx:35:23\n     33|   vi.stubGlobal(\"fetch\", vi.fn().mockResolvedValue({ ok: true, json: a\u2026\n     34|   render(<ResponseHistory campaignId={campaignId} />); open();\n     35|   expect(await screen.findByRole(\"alert\")).toBeVisible();\n       |                       ^\n     36|   expect(screen.queryByText(\"Original answer\")).toBeNull();\n     37| });\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[2/2]\u23af\n\n"
+  }
+]
