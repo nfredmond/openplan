@@ -20,6 +20,7 @@ import {
   type CampaignTranslatableField,
   type CampaignTranslationRow,
 } from "@/lib/engagement/campaign-translations";
+import type { TranslationSnapshot } from "@/lib/engagement/translation-snapshot";
 import { loadSurveyDefinition } from "@/lib/engagement/survey-responses";
 import { loadPublishedCloseLoopEntries } from "@/lib/engagement/close-loop";
 import { CampaignTranslationsPanel } from "@/components/engagement/campaign-translations-panel";
@@ -74,32 +75,53 @@ function sourceFixture() {
       public_description: "This campaign runs through the spring.",
     },
     categories: [
-      { id: "cat-1", label: "Crossings", description: "Anything about crossing the street" },
+      { id: "40000000-0000-4000-8000-000000000100", label: "Crossings", description: "Anything about crossing the street" },
       // A topic with no description contributes ONE string, not two: there is
       // nothing to translate, and counting it would make "complete" unreachable.
-      { id: "cat-2", label: "Lighting", description: "   " },
+      { id: "40000000-0000-4000-8000-000000000101", label: "Lighting", description: "   " },
     ],
     surveyQuestions: [
       {
-        id: "q-1",
+        id: "40000000-0000-4000-8000-000000000102",
         prompt: "How safe do you feel walking here after dark?",
         help_text: "Answer for the block you live on.",
         options: [
-          { id: "opt-1", label: "Very safe" },
-          { id: "opt-2", label: "Not safe at all" },
+          { id: "40000000-0000-4000-8000-000000000104", label: "Very safe" },
+          { id: "40000000-0000-4000-8000-000000000105", label: "Not safe at all" },
         ],
       },
-      { id: "q-2", prompt: "What would help most?", help_text: null, options: [] },
+      { id: "40000000-0000-4000-8000-000000000103", prompt: "What would help most?", help_text: null, options: [] },
     ],
     closeLoopEntries: [
       {
-        id: "loop-1",
+        id: "40000000-0000-4000-8000-000000000106",
         theme_title: "Lighting on the bridge",
         you_said: "The bridge is too dark at night.",
         we_did: "Lighting was added to the capital list.",
       },
     ],
   };
+}
+
+const WORKSPACE_ID = "40000000-0000-4000-8000-000000000001";
+const USER_ID = "40000000-0000-4000-8000-000000000002";
+function snapshotFixture(entries: Parameters<typeof CampaignTranslationsPanel>[0]["entries"] = []): TranslationSnapshot {
+  const source = sourceFixture();
+  const fields = buildCampaignTranslatableFields(source);
+  return { schema: 1, campaignId: CAMPAIGN_ID, campaign: { ...source.campaign, default_content_locale: null },
+    categories: source.categories.map(row => ({ ...row, campaign_id: CAMPAIGN_ID })),
+    questions: source.surveyQuestions.map(({ options: _options, ...row }) => ({ ...row, campaign_id: CAMPAIGN_ID, is_active: true, status: "published" })),
+    options: source.surveyQuestions.flatMap(question => question.options.map(row => ({ ...row, campaign_id: CAMPAIGN_ID, question_id: question.id, is_active: true }))),
+    responses: source.closeLoopEntries.map(row => ({ ...row, campaign_id: CAMPAIGN_ID, status: "published" })),
+    translations: entries.map((entry, index) => {
+      const field = fields.find(field => field.key === entry.fieldKey)!;
+      return { id: `40000000-0000-4000-8000-${String(200 + index).padStart(12, "0")}`, campaign_id: CAMPAIGN_ID, workspace_id: WORKSPACE_ID,
+        entity_type: field.entity, entity_id: field.entityId, field: field.field, locale: entry.locale, translated_text: entry.text,
+        source: entry.source, machine_model: entry.model, source_text_hash: hashTranslationSource(field.sourceText),
+        created_by: USER_ID, updated_at: "2026-09-13T00:00:00Z", revision: 1 };
+    }),
+    counts: { categories: source.categories.length, questions: source.surveyQuestions.length,
+      options: source.surveyQuestions.reduce((n, row) => n + row.options.length, 0), responses: source.closeLoopEntries.length, translations: entries.length } };
 }
 
 /** Every field key the fixture above produces, for the coverage arithmetic. */
@@ -131,18 +153,18 @@ describe("the translatable inventory is exactly what a participant reads", () =>
       campaignTranslationFieldKey("campaign", CAMPAIGN_ID, "title"),
       campaignTranslationFieldKey("campaign", CAMPAIGN_ID, "summary"),
       campaignTranslationFieldKey("campaign", CAMPAIGN_ID, "public_description"),
-      campaignTranslationFieldKey("category", "cat-1", "label"),
-      campaignTranslationFieldKey("category", "cat-1", "description"),
+      campaignTranslationFieldKey("category", "40000000-0000-4000-8000-000000000100", "label"),
+      campaignTranslationFieldKey("category", "40000000-0000-4000-8000-000000000100", "description"),
       // cat-2 contributes its label only — its description is whitespace.
-      campaignTranslationFieldKey("category", "cat-2", "label"),
-      campaignTranslationFieldKey("survey_question", "q-1", "prompt"),
-      campaignTranslationFieldKey("survey_question", "q-1", "help_text"),
-      campaignTranslationFieldKey("survey_question_option", "opt-1", "label"),
-      campaignTranslationFieldKey("survey_question_option", "opt-2", "label"),
-      campaignTranslationFieldKey("survey_question", "q-2", "prompt"),
-      campaignTranslationFieldKey("close_loop_entry", "loop-1", "theme_title"),
-      campaignTranslationFieldKey("close_loop_entry", "loop-1", "you_said"),
-      campaignTranslationFieldKey("close_loop_entry", "loop-1", "we_did"),
+      campaignTranslationFieldKey("category", "40000000-0000-4000-8000-000000000101", "label"),
+      campaignTranslationFieldKey("survey_question", "40000000-0000-4000-8000-000000000102", "prompt"),
+      campaignTranslationFieldKey("survey_question", "40000000-0000-4000-8000-000000000102", "help_text"),
+      campaignTranslationFieldKey("survey_question_option", "40000000-0000-4000-8000-000000000104", "label"),
+      campaignTranslationFieldKey("survey_question_option", "40000000-0000-4000-8000-000000000105", "label"),
+      campaignTranslationFieldKey("survey_question", "40000000-0000-4000-8000-000000000103", "prompt"),
+      campaignTranslationFieldKey("close_loop_entry", "40000000-0000-4000-8000-000000000106", "theme_title"),
+      campaignTranslationFieldKey("close_loop_entry", "40000000-0000-4000-8000-000000000106", "you_said"),
+      campaignTranslationFieldKey("close_loop_entry", "40000000-0000-4000-8000-000000000106", "we_did"),
     ]);
   });
 
@@ -150,16 +172,16 @@ describe("the translatable inventory is exactly what a participant reads", () =>
     const fields = fixtureFields();
     const byKey = new Map(fields.map((field) => [field.key, field]));
 
-    expect(byKey.get(campaignTranslationFieldKey("category", "cat-1", "label"))?.groupLabel).toBe(
+    expect(byKey.get(campaignTranslationFieldKey("category", "40000000-0000-4000-8000-000000000100", "label"))?.groupLabel).toBe(
       "Topic: Crossings"
     );
-    expect(byKey.get(campaignTranslationFieldKey("survey_question", "q-2", "prompt"))?.groupLabel).toBe(
+    expect(byKey.get(campaignTranslationFieldKey("survey_question", "40000000-0000-4000-8000-000000000103", "prompt"))?.groupLabel).toBe(
       "Question 2: What would help most?"
     );
     // An answer option belongs to its question's group, because translating a
     // prompt without its answers leaves a survey nobody can complete.
-    expect(byKey.get(campaignTranslationFieldKey("survey_question_option", "opt-1", "label"))?.groupKey).toBe(
-      "survey_question:q-1"
+    expect(byKey.get(campaignTranslationFieldKey("survey_question_option", "40000000-0000-4000-8000-000000000104", "label"))?.groupKey).toBe(
+      "survey_question:40000000-0000-4000-8000-000000000102"
     );
   });
 
@@ -280,7 +302,7 @@ describe("the translatable inventory is exactly what a participant reads", () =>
       title: "Downtown safety listening campaign",
     });
 
-    expect(state.translationsReadable).toBe(true);
+    expect(state.translationsReadable).toBe(false);
     expect(state.inventoryComplete).toBe(false);
     expect(state.coverage).toBeNull();
   });
@@ -343,6 +365,10 @@ function recordingClient(results: Record<string, { data: unknown[]; error: { mes
     client: {
       rpc: async (name: string, args: { p_campaign: string; p_published_only: boolean }) => {
         rpcCalls.push([name, args]);
+        if (name === "read_engagement_translation_snapshot") {
+          const error = Object.values(results).find(result => result.error)?.error;
+          return { data: snapshotFixture(), error: error ? { ...error, code: /does not exist|schema cache/.test(error.message) ? "PGRST202" : "XX000" } : null };
+        }
         const result = results.engagement_closeloop_entries ?? { data: [], error: null };
         return { data: { campaignId: args.p_campaign, publishedOnly: args.p_published_only, count: result.data.length, entries: result.data }, error: result.error };
       },
@@ -500,6 +526,9 @@ describe("the operator panel", () => {
   function panelProps(overrides: Partial<Parameters<typeof CampaignTranslationsPanel>[0]> = {}) {
     return {
       campaignId: CAMPAIGN_ID,
+      userId: USER_ID,
+      workspaceId: WORKSPACE_ID,
+      snapshot: snapshotFixture(overrides.entries),
       fields,
       entries: [],
       coverage: buildCampaignTranslationView({
@@ -523,6 +552,8 @@ describe("the operator panel", () => {
 
   beforeEach(() => {
     vi.restoreAllMocks();
+    window.localStorage.clear();
+    window.sessionStorage.clear();
   });
 
   it("imports its shared vocabulary type-only, keeping node:crypto out of the browser", () => {
@@ -642,7 +673,7 @@ describe("the operator panel", () => {
     expect(
       screen.getByText(/Accepting makes these words your agency's own\. The machine-translation caveat/)
     ).toBeInTheDocument();
-    expect(screen.getByText(/disappears, and the text is published as if someone here wrote it/)).toBeInTheDocument();
+    expect(screen.getByText(/history retains its machine origin/)).toBeInTheDocument();
   });
 
   it("asks again before promoting a machine translation, and sends the promotion the route expects", async () => {
@@ -660,6 +691,7 @@ describe("the operator panel", () => {
       />
     );
 
+    fireEvent.change(screen.getByLabelText("Reason for changing saved wording"), { target: { value: "SYNTHETIC reviewed wording" } });
     fireEvent.click(screen.getByRole("button", { name: /^accept as our wording$/i }));
 
     // Same consequence constant, now rendered where the operator can read it
@@ -671,10 +703,10 @@ describe("the operator panel", () => {
     await waitFor(() => expect(fetchSpy).toHaveBeenCalled());
 
     const [, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
-    expect(JSON.parse(String(init.body))).toEqual({
-      action: "accept",
-      locale: "es",
-      fieldKeys: [fields[0].key],
+    expect(JSON.parse(String(init.body))).toMatchObject({
+      operation: "accept", locale: "es", reason: "SYNTHETIC reviewed wording",
+      entries: [{ entityType: fields[0].entity, entityId: fields[0].entityId, field: fields[0].field,
+        expectedSource: { text: fields[0].sourceText, sourceLocale: null, available: true }, expectedTranslation: { revision: 1 } }],
     });
   });
 
@@ -853,14 +885,15 @@ describe("the operator panel", () => {
 
     render(<CampaignTranslationsPanel {...panelProps({ entries: machineEntries, acceptBatchMax: 2 })} />);
 
+    fireEvent.change(screen.getByLabelText("Reason for changing saved wording"), { target: { value: "SYNTHETIC batch review" } });
     // The button counts what will actually be sent, not what is on screen.
     fireEvent.click(screen.getByRole("button", { name: /Accept 2 machine translations as our wording/ }));
     await confirmDestructiveAction("Accept this wording");
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
     const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
-    expect(body.action).toBe("accept");
-    expect(body.fieldKeys).toHaveLength(2);
+    expect(body.operation).toBe("accept");
+    expect(body.entries).toHaveLength(2);
   });
 
   it("bounds the accept button by the same constant the route enforces", () => {
@@ -922,7 +955,7 @@ describe("the operator panel", () => {
     // which is the part an operator cannot work out from "are you sure?".
     const copy = await confirmDialogText();
     expect(copy).toMatch(/Spanish/i);
-    expect(copy).toMatch(/disclosure that it is not translated/i);
+    expect(copy).toMatch(/words and the reason remain in private history/i);
 
     await declineConfirmation();
     expect(fetchSpy).not.toHaveBeenCalled();

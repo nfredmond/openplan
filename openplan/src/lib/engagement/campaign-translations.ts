@@ -51,6 +51,7 @@ import { createHash } from "node:crypto";
 import { readEveryPage, type PagedReadPage } from "@/lib/supabase/paged-read";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { loadPublishedCloseLoopEntries } from "./close-loop";
+import { loadTranslationSnapshot, translationSnapshotSource, type TranslationSnapshot } from "./translation-snapshot";
 
 import { PORTAL_DEFAULT_LOCALE, PORTAL_LOCALES, isPortalLocale, type PortalLocale } from "./portal-i18n/locales";
 import type { PortalTranslatableEntity } from "./portal-i18n/operator-text";
@@ -129,6 +130,8 @@ export type CampaignTranslatableField = {
   label: string;
   /** The text as the agency wrote it, in the campaign's own language. */
   sourceText: string;
+  /** False for retained wording whose source is now blank or unpublished. Only withdrawal is allowed. */
+  available?: boolean;
   /** Whether the editor should be a textarea rather than a single line. */
   multiline: boolean;
   group: CampaignTranslatableGroup;
@@ -166,8 +169,7 @@ function snippet(text: string, max = 60): string {
 
 /** A field is only translatable if there is something there to translate. */
 function present(value: string | null | undefined): string | null {
-  const text = typeof value === "string" ? value.trim() : "";
-  return text ? text : null;
+  return typeof value === "string" && value.trim() ? value : null;
 }
 
 export type CampaignTranslatableSource = {
@@ -666,10 +668,10 @@ export function buildCampaignTranslationView(input: {
     const entityId = row.entity_id;
     const field = row.field;
     const locale = row.locale;
-    const text = typeof row.translated_text === "string" ? row.translated_text.trim() : "";
+    const text = typeof row.translated_text === "string" ? row.translated_text : "";
     const source = row.source === "machine" ? "machine" : row.source === "operator" ? "operator" : null;
 
-    if (!entity || !entityId || !field || !text || !source) continue;
+    if (!entity || !entityId || !field || !text.trim() || !source) continue;
     if (!isPortalLocale(locale)) continue;
 
     const key = campaignTranslationFieldKey(entity as PortalTranslatableEntity, entityId, field);
@@ -689,7 +691,8 @@ export function buildCampaignTranslationView(input: {
     });
   }
 
-  const total = input.fields.length;
+  const publicFields = new Set(input.fields.filter(field => field.available !== false).map(field => field.key));
+  const total = publicFields.size;
   const coverage = PORTAL_LOCALES.map((locale) => {
     // The default locale counts as the source language even when nobody stated
     // one, because that is exactly what the resolver does with it — see
@@ -699,7 +702,7 @@ export function buildCampaignTranslationView(input: {
       ? locale === input.sourceLocale.locale
       : locale === PORTAL_DEFAULT_LOCALE;
 
-    const forLocale = entries.filter((entry) => entry.locale === locale);
+    const forLocale = entries.filter((entry) => entry.locale === locale && publicFields.has(entry.fieldKey));
     const operatorCount = forLocale.filter((entry) => entry.source === "operator").length;
     const machineCount = forLocale.filter((entry) => entry.source === "machine").length;
     const staleCount = forLocale.filter((entry) => entry.stale).length;
@@ -722,101 +725,63 @@ export function buildCampaignTranslationView(input: {
   return { entries, coverage };
 }
 
-/**
- * The whole operator-side state of one campaign's translations, assembled from
- * the three reads above.
- *
- * THREE SEPARATE BOOLEANS, NOT ONE. Each names a different thing that may be
- * unknown, and the surface says a different sentence about each. They were one
- * derived flag once (`coverage !== null`), which quietly made "we could not read
- * the translations" and "we could not read the questions" the same fact — and a
- * render site that derives a prop is a render site where the prop drifts from
- * what it is named after. They are computed here, once, and passed through.
- *
- * `coverage` is NULL unless ALL THREE hold, and that is structural rather than
- * cosmetic. Coverage is a CLAIM — "we published this campaign in Spanish" is a
- * sentence an agency will say out loud from this screen and may be held to under
- * Title VI — and it is computed from all three reads at once: the inventory says
- * WHAT COUNTS, the translations say WHAT IS DONE, and the source locale says
- * WHICH LANGUAGE NEEDS NOTHING. Any one of them failing makes the claim
- * uncomputable, not zero, and each fails differently:
- *
- *   - translations unreadable → every language would read "not translated",
- *     which is a statement about the agency made out of a database error.
- *   - inventory incomplete → `total` SHRINKS, so a language missing every survey
- *     question can be badged "Complete — your wording". Inflating coverage is
- *     the one direction of error this module cannot forgive, and it is the more
- *     dangerous of the two because it reads as good news.
- *   - source locale unreadable → which language needs no translation at all is a
- *     guess, so both the language marked "the campaign's own" and the counts for
- *     every other language may be measured against the wrong baseline.
- *
- * Making the field nullable is what stops the false claim being made by
- * forgetting a branch.
- */
+/** One complete read supplies the editor's words, source state and saved versions. */
 export type CampaignTranslationState = {
+  snapshot: TranslationSnapshot | null;
   fields: CampaignTranslatableField[];
   entries: CampaignTranslationEntry[];
   coverage: CampaignLocaleCoverage[] | null;
   sourceLocale: PortalLocale;
   sourceLocaleStated: boolean;
-  /**
-   * The translations read itself succeeded. False means every editor below is
-   * empty because nothing could be READ — not because nothing is translated.
-   */
   translationsReadable: boolean;
-  /** Every inventory read succeeded, so `fields` is all of what a participant reads. */
   inventoryComplete: boolean;
-  /**
-   * FALSE when the campaign's recorded language could not be read at all.
-   *
-   * Distinct from `sourceLocaleStated`, and collapsing the two is exactly the
-   * `untranslated`-versus-`unreadable` error the resolver documents at length
-   * and then must not commit here: "nobody recorded which language this campaign
-   * is written in" is a finding about the AGENCY, and it may not be manufactured
-   * out of a failed query.
-   */
   sourceLocaleReadable: boolean;
-  /** Reads that failed. Anything absent below is unknown, not zero. */
   readFailures: CampaignTranslationReadFailure[];
 };
+
+/** Keep unavailable saved wording reachable for withdrawal, outside public coverage. */
+export function campaignTranslationStateFromSnapshot(snapshot: TranslationSnapshot): CampaignTranslationState {
+  const allFields = buildCampaignTranslatableFields({
+    campaign: snapshot.campaign,
+    categories: snapshot.categories,
+    surveyQuestions: snapshot.questions.map(question => ({ ...question, options: snapshot.options.filter(option => option.question_id === question.id) })),
+    closeLoopEntries: snapshot.responses,
+  });
+  const retained = new Set(snapshot.translations.map(row => campaignTranslationFieldKey(row.entity_type, row.entity_id, row.field)));
+  const fields = allFields.map(field => ({ ...field, available: translationSnapshotSource(snapshot, {
+    entityType: field.entity, entityId: field.entityId, field: field.field,
+  })?.available === true })).filter(field => field.available || retained.has(field.key));
+  const existing = new Set(fields.map(field => field.key));
+  const labels: Record<string, string> = { title: "Campaign title", summary: "Campaign summary", public_description: "Public description",
+    label: "Name", description: "Description", prompt: "Question", help_text: "Question help text", theme_title: "Theme", you_said: "You said", we_did: "We did" };
+  for (const row of snapshot.translations) {
+    const key = campaignTranslationFieldKey(row.entity_type, row.entity_id, row.field);
+    if (existing.has(key)) continue;
+    const source = translationSnapshotSource(snapshot, { entityType: row.entity_type, entityId: row.entity_id, field: row.field });
+    fields.push({ key, entity: row.entity_type, entityId: row.entity_id, field: row.field,
+      label: labels[row.field] ?? row.field, sourceText: source?.text ?? "", available: false, multiline: true,
+      group: row.entity_type === "survey_question_option" ? "survey_question" : row.entity_type,
+      groupKey: `retained:${row.entity_type}:${row.entity_id}`, groupLabel: "Retained wording with no published source" });
+    existing.add(key);
+  }
+  const recordedLocale = snapshot.campaign.default_content_locale;
+  const supported = isPortalLocale(recordedLocale);
+  const stated = recordedLocale !== null;
+  const sourceLocale = { locale: supported ? recordedLocale : PORTAL_DEFAULT_LOCALE, stated, failure: null };
+  const view = buildCampaignTranslationView({ fields, rows: snapshot.translations, sourceLocale });
+  return { snapshot, fields, entries: view.entries, coverage: stated && !supported ? null : view.coverage, sourceLocale: sourceLocale.locale, sourceLocaleStated: stated,
+    translationsReadable: true, inventoryComplete: true, sourceLocaleReadable: true, readFailures: [] };
+}
 
 export async function loadCampaignTranslationState(
   supabase: QueryClient,
   campaign: CampaignTranslatableSource["campaign"]
 ): Promise<CampaignTranslationState> {
-  const [inventory, translations, sourceLocale] = await Promise.all([
-    loadCampaignTranslatableFields(supabase, campaign),
-    loadCampaignTranslations(supabase, campaign.id),
-    loadCampaignSourceLocale(supabase, campaign.id),
-  ]);
-
-  const readFailures = [
-    ...inventory.readFailures,
-    ...(translations.failure ? [translations.failure] : []),
-    ...(sourceLocale.failure ? [sourceLocale.failure] : []),
-  ];
-
-  const view = buildCampaignTranslationView({
-    fields: inventory.fields,
-    rows: translations.rows,
-    sourceLocale,
-  });
-
-  const translationsReadable = translations.failure === null;
-  const inventoryComplete = inventory.readFailures.length === 0;
-  const sourceLocaleReadable = sourceLocale.failure === null;
-
-  return {
-    fields: inventory.fields,
-    entries: view.entries,
-    // Withheld, not zeroed, whenever any read the claim rests on failed.
-    coverage: translationsReadable && inventoryComplete && sourceLocaleReadable ? view.coverage : null,
-    sourceLocale: sourceLocale.locale,
-    sourceLocaleStated: sourceLocale.stated,
-    translationsReadable,
-    inventoryComplete,
-    sourceLocaleReadable,
-    readFailures,
+  const loaded = await loadTranslationSnapshot(supabase, campaign.id);
+  if (loaded.error) return {
+    snapshot: null, fields: [], entries: [], coverage: null, sourceLocale: PORTAL_DEFAULT_LOCALE, sourceLocaleStated: false,
+    translationsReadable: false, inventoryComplete: false, sourceLocaleReadable: false,
+    readFailures: [{ label: "this campaign's translation snapshot", ...loaded.error }],
   };
+  return campaignTranslationStateFromSnapshot(loaded.snapshot);
 }

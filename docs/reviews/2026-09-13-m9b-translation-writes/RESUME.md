@@ -1,3 +1,8 @@
+# Resume after usage reset
+
+Read [USAGE_RESET_HANDOFF.md](USAGE_RESET_HANDOFF.md) first. It records the newest
+unfinished editor implementation, browser failure, retained evidence and next checks.
+
 # Weekly usage checkpoint, September 13, 2026
 
 The latest continuation is [WRITE_BOUNDARY_PROGRESS.md](WRITE_BOUNDARY_PROGRESS.md).

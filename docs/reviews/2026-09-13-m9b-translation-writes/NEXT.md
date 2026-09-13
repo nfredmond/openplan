@@ -1,3 +1,8 @@
+# Latest checkpoint
+
+[Usage reset handoff](USAGE_RESET_HANDOFF.md) supersedes the editor integration
+status below. The complete remaining workflow below still applies.
+
 # Translation writes after the history release
 
 [Current inventory implementation and lock findings](READ_PROGRESS.md) continue

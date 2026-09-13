@@ -1,6 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslationWrites } from "./translation-write-recovery";
+import { useTranslationDrafts } from "./translation-draft-recovery";
+import { translationSnapshotSource, type TranslationSnapshot } from "@/lib/engagement/translation-snapshot";
+import { pendingTranslationSchema } from "@/lib/engagement/pending-translation";
 import { TranslationHistory } from "./translation-history";
 import { useRouter } from "next/navigation";
 import { Languages, Loader2 } from "lucide-react";
@@ -14,6 +18,7 @@ import {
   PORTAL_DEFAULT_LOCALE,
   PORTAL_LOCALE_DIRECTION,
   PORTAL_LOCALES,
+  isPortalLocale,
   resolvePortalLocale,
   type PortalLocale,
 } from "@/lib/engagement/portal-i18n/locales";
@@ -95,8 +100,8 @@ const STATE_LABELS: Record<CampaignLocaleCoverage["state"], { label: string; ton
  */
 const ACCEPT_CONSEQUENCE =
   "Accepting makes these words your agency's own. The machine-translation caveat that " +
-  "participants are reading right now disappears, and the text is published as if someone here " +
-  "wrote it. Only accept wording you have read.";
+  "participants are reading right now disappears. The history retains its machine origin. " +
+  "Only accept wording you have read.";
 
 const PUBLISH_MACHINE_CONSEQUENCE =
   "This publishes the model's wording to the public portal straight away, labelled as a machine " +
@@ -105,6 +110,9 @@ const PUBLISH_MACHINE_CONSEQUENCE =
 
 export function CampaignTranslationsPanel({
   campaignId,
+  userId,
+  workspaceId,
+  snapshot,
   fields,
   entries,
   coverage,
@@ -120,6 +128,9 @@ export function CampaignTranslationsPanel({
   canWrite,
 }: {
   campaignId: string;
+  userId: string;
+  workspaceId: string;
+  snapshot: TranslationSnapshot | null;
   /** Every string a participant reads, in the campaign's own language. */
   fields: CampaignTranslatableField[];
   /** What has already been translated. Empty when `translationsReadable` is false. */
@@ -166,22 +177,43 @@ export function CampaignTranslationsPanel({
 }) {
   const router = useRouter();
   const { confirm, confirmDialog } = useConfirmDialog();
+  const recordedSource = snapshot?.campaign.default_content_locale ?? null;
+  const unsupportedSource = recordedSource !== null && !isPortalLocale(recordedSource);
 
   const targetLocales = useMemo(
-    () => PORTAL_LOCALES.filter((locale) => locale !== sourceLocale),
-    [sourceLocale]
+    () => PORTAL_LOCALES.filter((locale) => unsupportedSource || locale !== sourceLocale),
+    [sourceLocale, unsupportedSource]
   );
 
   const [locale, setLocale] = useState<PortalLocale>(() => {
     const withWork = targetLocales.find((candidate) => entries.some((entry) => entry.locale === candidate));
     return withWork ?? targetLocales[0] ?? sourceLocale;
   });
-  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const draftStore = useTranslationDrafts({ userId, workspaceId, campaignId });
   const [historyRevision, setHistoryRevision] = useState(0);
   const [state, setState] = useState<FetchState>({ busy: null, error: null, notice: null });
+  const { reason, setReason } = draftStore;
+  const [needsRefresh, setNeedsRefresh] = useState(false);
+  useEffect(() => { setNeedsRefresh(false); }, [snapshot]);
+  const writes = useTranslationWrites({ userId, workspaceId, campaignId, canWrite,
+    onConfirmed: (_result, pending) => {
+      draftStore.clearConfirmed(pending);
+      setNeedsRefresh(true); setHistoryRevision(value => value + 1); router.refresh();
+    },
+    onReopen: (pending, reviewedSnapshot) => {
+      if (pending) {
+        if (isPortalLocale(pending.intent.locale)) setLocale(pending.intent.locale);
+        draftStore.reopen(pending, reviewedSnapshot);
+      }
+      setReason(""); setNeedsRefresh(true); router.refresh();
+    },
+  });
+
 
   const direction = PORTAL_LOCALE_DIRECTION[locale];
-  const sourceDirection = PORTAL_LOCALE_DIRECTION[sourceLocale];
+  const sourceDirection = unsupportedSource ? "auto" : PORTAL_LOCALE_DIRECTION[sourceLocale];
+  const sourceLanguage = recordedSource ?? sourceLocale;
+  const sourceLanguageName = unsupportedSource ? recordedSource : TRANSLATION_LANGUAGE_LABELS[sourceLocale];
   const nativeName = TRANSLATION_LANGUAGE_NATIVE_LABELS[locale];
   const englishName = TRANSLATION_LANGUAGE_LABELS[locale];
   /**
@@ -235,8 +267,8 @@ export function CampaignTranslationsPanel({
     return map;
   }, [entries, locale]);
 
-  const machineKeys = fields.filter((field) => entryByKey.get(field.key)?.source === "machine").map((f) => f.key);
-  const untranslatedKeys = fields.filter((field) => !entryByKey.has(field.key)).map((f) => f.key);
+  const machineKeys = fields.filter((field) => field.available !== false && entryByKey.get(field.key)?.source === "machine").map((f) => f.key);
+  const untranslatedKeys = fields.filter((field) => field.available !== false && !entryByKey.has(field.key)).map((f) => f.key);
 
   const groups = useMemo(() => {
     const ordered: Array<{ key: string; label: string; fields: CampaignTranslatableField[] }> = [];
@@ -249,22 +281,14 @@ export function CampaignTranslationsPanel({
   }, [fields]);
 
   function draftValue(field: CampaignTranslatableField): string {
-    const key = `${locale}::${field.key}`;
-    if (key in drafts) return drafts[key];
-    return entryByKey.get(field.key)?.text ?? "";
+    return draftStore.find(locale, field.key)?.text ?? entryByKey.get(field.key)?.text ?? "";
   }
 
   function setDraft(field: CampaignTranslatableField, value: string) {
-    setDrafts((current) => ({ ...current, [`${locale}::${field.key}`]: value }));
+    if (snapshot) draftStore.setText(snapshot, { entityType: field.entity, entityId: field.entityId, field: field.field }, locale, value);
   }
 
-  function clearDrafts(keys: string[]) {
-    setDrafts((current) => {
-      const next = { ...current };
-      for (const key of keys) delete next[`${locale}::${key}`];
-      return next;
-    });
-  }
+  function clearDrafts(keys: string[]) { draftStore.clear(keys, locale); }
 
   async function post(busyKey: string, payload: Record<string, unknown>): Promise<Record<string, unknown> | null> {
     setState({ busy: busyKey, error: null, notice: null });
@@ -301,26 +325,39 @@ export function CampaignTranslationsPanel({
     if (refresh) { setHistoryRevision(value => value + 1); router.refresh(); }
   }
 
-  async function save(keys: string[]) {
-    const payload = keys
-      .map((key) => fields.find((field) => field.key === key))
-      .filter((field): field is CampaignTranslatableField => field !== undefined)
-      .map((field) => ({ fieldKey: field.key, text: draftValue(field).trim() }))
-      .filter((entry) => entry.text.length > 0);
-    if (payload.length === 0) {
-      setState({
-        busy: null,
-        error: "There is nothing to save — write the translation first, or withdraw the existing one.",
-        notice: null,
+  async function submitManual(operation: "save" | "accept" | "withdraw", keys: string[], targetLocale: string = locale) {
+    if (!canWrite || !draftStore.ready || writes.blocked || needsRefresh || !snapshot || snapshot.campaignId !== campaignId) return;
+    try {
+      const before = keys.map(key => {
+        const field = fields.find(field => field.key === key);
+        if (!field) throw new Error("This source field is no longer available. Refresh and review the retained words.");
+        const draft = operation === "save" ? draftStore.find(targetLocale, key) : null;
+        if (draft) return draft.before;
+        const saved = snapshot.translations.find(row => row.entity_type === field.entity && row.entity_id === field.entityId && row.field === field.field && row.locale === targetLocale);
+        if (!saved) return null;
+        const { revision, ...entry } = saved;
+        return { entry, revision };
       });
-      return;
+      const entries = keys.map((key, index) => {
+        const field = fields.find(field => field.key === key)!;
+        const draft = operation === "save" ? draftStore.find(targetLocale, key) : null;
+        const expectedSource = draft?.source ?? translationSnapshotSource(snapshot, { entityType: field.entity, entityId: field.entityId, field: field.field });
+        if (!expectedSource) throw new Error("The original source is unavailable. Refresh before changing this translation.");
+        return { entityType: field.entity, entityId: field.entityId, field: field.field, expectedSource,
+          expectedTranslation: before[index] ? { id: before[index]!.entry.id, revision: before[index]!.revision } : null,
+          ...(operation === "save" ? { text: draftValue(field) } : {}) };
+      });
+      const pending = pendingTranslationSchema.parse({ version: 1, userId, workspaceId, campaignId,
+        createdAt: new Date().toISOString(), phase: "unconfirmed", before,
+        intent: { operation, requestId: crypto.randomUUID(), locale: targetLocale, reason: reason.trim() ? reason : null, entries } });
+      setState({ busy: null, error: null, notice: null });
+      await writes.submit(pending);
+    } catch {
+      setState({ busy: null, error: "No translation was sent. Enter nonblank wording of at most 8,000 characters and a reason for changing saved wording. Refresh if the source or saved copy is unavailable.", notice: null });
     }
-
-    const body = await post(`save:${keys.join(",")}`, { action: "save", locale, entries: payload });
-    if (!body) return;
-    clearDrafts(keys);
-    finish(typeof body.published === "string" ? body.published : null, true);
   }
+
+  async function save(keys: string[]) { await submitManual("save", keys); }
 
   async function suggest(keys: string[]) {
     const body = await post(`suggest:${keys.join(",")}`, {
@@ -339,15 +376,12 @@ export function CampaignTranslationsPanel({
     const suggestions = Array.isArray(body.suggestions)
       ? (body.suggestions as Array<{ fieldKey?: unknown; text?: unknown }>)
       : [];
-    setDrafts((current) => {
-      const next = { ...current };
-      for (const suggestion of suggestions) {
-        if (typeof suggestion.fieldKey === "string" && typeof suggestion.text === "string") {
-          next[`${locale}::${suggestion.fieldKey}`] = suggestion.text;
-        }
+    for (const suggestion of suggestions) {
+      if (typeof suggestion.fieldKey === "string" && typeof suggestion.text === "string") {
+        const field = fields.find(field => field.key === suggestion.fieldKey);
+        if (field) setDraft(field, suggestion.text);
       }
-      return next;
-    });
+    }
 
     const drafted = `${suggestions.length} draft ${suggestions.length === 1 ? "translation" : "translations"} placed in the boxes below. Nothing is saved yet — read them, correct them, then save them as your wording.`;
     finish(typeof body.partial === "string" && body.partial ? `${drafted} ${body.partial}` : drafted, false);
@@ -390,47 +424,20 @@ export function CampaignTranslationsPanel({
       tone: "caution",
     });
     if (!confirmed) return;
-    // Sliced to what the route accepts. The response reports how many were
-    // actually promoted, so a batch that ran into the cap tells the operator a
-    // true number rather than a hopeful one.
-    const batch = keys.slice(0, acceptBatchMax);
-    const body = await post(`accept:${keys.join(",")}`, { action: "accept", locale, fieldKeys: batch });
-    if (!body) return;
-    clearDrafts(keys);
-    finish(typeof body.published === "string" ? body.published : null, true);
+    await submitManual("accept", keys.slice(0, acceptBatchMax));
   }
 
-  async function withdraw(field: CampaignTranslatableField) {
+  async function withdraw(field: CampaignTranslatableField, targetLocale: string = locale) {
+    const languageName = isPortalLocale(targetLocale) ? TRANSLATION_LANGUAGE_LABELS[targetLocale] : targetLocale;
     const confirmed = await confirm({
-      headline: `Withdraw the ${englishName} translation of “${field.label}”?`,
-      consequence: `Participants reading ${englishName} will see it as the project team wrote it, with the disclosure that it is not translated.`,
+      headline: `Withdraw the ${languageName} translation of “${field.label}”?`,
+      consequence: `This removes the translation from the public portal. Its words and the reason remain in private history.`,
       confirmLabel: "Withdraw this translation",
     });
-    if (!confirmed) {
-      return;
-    }
-
-    setState({ busy: `delete:${field.key}`, error: null, notice: null });
-    try {
-      const query = new URLSearchParams({ locale, fieldKey: field.key });
-      const response = await fetch(
-        `/api/engagement/campaigns/${campaignId}/translations?${query.toString()}`,
-        { method: "DELETE" }
-      );
-      const body = (await response.json()) as { error?: string; details?: string; published?: string };
-      if (!response.ok) throw new Error(body.error || body.details || "The translation could not be withdrawn.");
-      clearDrafts([field.key]);
-      finish(body.published ?? null, true);
-    } catch (error) {
-      setState({
-        busy: null,
-        error: error instanceof Error ? error.message : "The translation could not be withdrawn.",
-        notice: null,
-      });
-    }
+    if (confirmed) await submitManual("withdraw", [field.key], targetLocale);
   }
 
-  const busy = state.busy !== null;
+  const busy = state.busy !== null || writes.busy || writes.blocked || needsRefresh || !draftStore.ready;
   /**
    * WRITING REQUIRES HAVING READ, in two different senses.
    *
@@ -447,7 +454,7 @@ export function CampaignTranslationsPanel({
    * Either way the controls come off and the reason is stated, rather than
    * offering an action whose effect nobody can predict.
    */
-  const editable = canWrite && translationsReadable && inventoryComplete;
+  const editable = canWrite && translationsReadable && inventoryComplete && snapshot !== null;
 
   return (
     <article className="module-section-surface">
@@ -468,6 +475,15 @@ export function CampaignTranslationsPanel({
       </div>
 
       {canWrite ? <TranslationHistory campaignId={campaignId} revision={historyRevision} /> : null}
+      {writes.recovery}
+      {draftStore.recovery}
+      {needsRefresh && <p role="status" className="mt-3 text-sm">Loading the current saved versions… <Button type="button" variant="outline" onClick={() => router.refresh()}>Refresh saved translations</Button></p>}
+      {editable && <label className="mt-4 block space-y-1 text-sm">
+        <span>Reason for changing saved wording</span>
+        <Textarea aria-label="Reason for changing saved wording" value={reason} onChange={event => setReason(event.target.value)} readOnly={busy} maxLength={4000} rows={2} />
+        <span className="text-muted-foreground">Required for corrections, acceptance and withdrawal. Retained with the change.</span>
+      </label>}
+
 
       {readFailures.length > 0 ? (
         <div className="mt-4 space-y-2">
@@ -505,13 +521,15 @@ export function CampaignTranslationsPanel({
       <p className="mt-4 text-sm text-muted-foreground">
         {!sourceLocaleReadable
           ? `Which language this campaign is written in could not be read, so OpenPlan is falling back to ${TRANSLATION_LANGUAGE_LABELS[sourceLocale]} to lay this screen out. That is a fallback, not a record — nobody has established what language this campaign is in, and the counts below are measured against a language that may be the wrong one.`
+          : unsupportedSource
+            ? `The recorded source language is ${recordedSource}. This editor does not support that source language, so language coverage is unassessed. The original wording and recorded language remain unchanged.`
           : sourceLocaleStated
             ? `This campaign is written in ${TRANSLATION_LANGUAGE_LABELS[sourceLocale]}, so that language needs no translation.`
             : `Nobody has recorded which language this campaign is written in, so OpenPlan presumes ${TRANSLATION_LANGUAGE_LABELS[sourceLocale]} and tells participants only that the text is “as the project team wrote it”. Everything below is measured against that presumption.`}
       </p>
 
       {/* ── What may be claimed, per language ───────────────────────────── */}
-      {coverage === null ? (
+      {unsupportedSource ? <p className="mt-4 text-sm">Coverage is unassessed for the recorded source language. This does not mean the campaign has no translations.</p> : coverage === null ? (
         <p className="mt-4 rounded-[0.5rem] border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-foreground">
           Which languages this campaign is complete in is <strong>unknown</strong> right now, because{" "}
           {readFailures.length > 0
@@ -711,7 +729,8 @@ export function CampaignTranslationsPanel({
                 {group.fields.map((field) => {
                   const entry = entryByKey.get(field.key);
                   const value = draftValue(field);
-                  const dirty = value.trim() !== (entry?.text ?? "");
+                  const startingCopy = draftStore.find(locale, field.key);
+                  const dirty = value !== (entry?.text ?? "");
 
                   return (
                     <li key={field.key} className="rounded-[0.5rem] border border-border/70 p-3">
@@ -729,16 +748,23 @@ export function CampaignTranslationsPanel({
                       </div>
 
                       <p className="mt-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                        As written ({TRANSLATION_LANGUAGE_LABELS[sourceLocale]})
+                        As written ({sourceLanguageName})
                       </p>
                       <p
-                        lang={sourceLocale}
+                        lang={sourceLanguage}
                         dir={sourceDirection}
                         className="mt-1 whitespace-pre-line text-sm text-muted-foreground"
                       >
                         {field.sourceText}
                       </p>
 
+                      {startingCopy && <details className="mt-2 rounded-lg border border-border p-2 text-sm">
+                        <summary>Draft starting copy</summary>
+                        <p className="whitespace-pre-wrap">Source at the start: {startingCopy.source.text ?? "Not recorded"}</p>
+                        <p className="whitespace-pre-wrap">Saved wording at the start: {startingCopy.before?.entry.translated_text ?? "No saved translation"}</p>
+                        <p>{startingCopy.before ? `Started from revision ${startingCopy.before.revision}.` : "Started without a saved translation."} Saving checks this original version even if the page refreshes.</p>
+                      </details>}
+                      {field.available === false && <p className="mt-2 text-sm text-amber-700 dark:text-amber-300">This source is blank or unpublished. Its saved translation can be withdrawn; it does not count toward public language coverage.</p>}
                       {entry?.stale ? (
                         <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">
                           The original changed after this was translated, so the{" "}
@@ -762,7 +788,7 @@ export function CampaignTranslationsPanel({
                         className="mt-1 text-start"
                         rows={field.multiline ? 3 : 1}
                         value={value}
-                        readOnly={!editable}
+                        readOnly={!editable || busy || field.available === false}
                         onChange={(event) => setDraft(field, event.target.value)}
                         placeholder={editable ? `${field.label} in ${englishName}` : undefined}
                       />
@@ -797,7 +823,7 @@ export function CampaignTranslationsPanel({
                           <Button
                             type="button"
                             size="sm"
-                            disabled={busy || !dirty || value.trim().length === 0}
+                            disabled={busy || field.available === false || !dirty || value.trim().length === 0}
                             onClick={() => void save([field.key])}
                           >
                             {state.busy === `save:${field.key}` ? (
@@ -805,7 +831,7 @@ export function CampaignTranslationsPanel({
                             ) : null}
                             Save as our wording
                           </Button>
-                          {entry?.source === "machine" ? (
+                          {entry?.source === "machine" && field.available !== false ? (
                             <Button
                               type="button"
                               size="sm"
@@ -816,7 +842,7 @@ export function CampaignTranslationsPanel({
                               Accept as our wording
                             </Button>
                           ) : null}
-                          {machineTranslationOffered ? (
+                          {machineTranslationOffered && field.available !== false ? (
                             <>
                               <Button
                                 type="button"
@@ -859,6 +885,18 @@ export function CampaignTranslationsPanel({
           ))}
         </div>
       )}
+      {snapshot && snapshot.translations.some(row => !isPortalLocale(row.locale) || !unsupportedSource && row.locale === sourceLocale) &&
+        <section aria-label="Other saved wording" className="mt-5 space-y-3">
+          <h3 className="font-semibold">Other saved wording</h3>
+          <p className="text-sm text-muted-foreground">These copies are in the source language or languages not supported by this editor. You can withdraw a copy while retaining its history.</p>
+          {snapshot.translations.filter(row => !isPortalLocale(row.locale) || !unsupportedSource && row.locale === sourceLocale).map(row => {
+            const field = fields.find(field => field.entity === row.entity_type && field.entityId === row.entity_id && field.field === row.field);
+            return <div key={row.id} className="space-y-2 rounded-lg border border-border p-3 text-sm">
+              <p>{field?.label ?? row.field} ({row.locale})</p><p lang={row.locale} dir="auto" className="whitespace-pre-wrap">{row.translated_text}</p>
+              {editable && field && <Button type="button" variant="outline" disabled={busy} onClick={() => void withdraw(field, row.locale)}>Withdraw saved {row.locale} wording</Button>}
+            </div>;
+          })}
+        </section>}
       {confirmDialog}
     </article>
   );

@@ -157,8 +157,8 @@ function contextLayerChain(): Record<string, unknown> {
 function contextLayerRow(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     id: "layer-1",
-    campaign_id: "campaign-1",
-    workspace_id: "workspace-1",
+    campaign_id: "50000000-0000-4000-8000-000000000001",
+    workspace_id: "50000000-0000-4000-8000-000000000002",
     name: "Proposed alignment",
     description: "Centreline as designed at 30% plans",
     source_format: "geojson",
@@ -211,6 +211,19 @@ let translationReadError: { message: string } | null = null;
  */
 let closeLoopReadError: { message: string } | null = null;
 const snapshotRpcMock = vi.fn(async (name: string, args: { p_campaign: string; p_published_only: boolean }) => {
+        if (name === "read_engagement_translation_snapshot") {
+          const error = translationReadError ?? surveyQuestionsReadError ?? sourceLocaleResult.error ?? closeLoopReadError;
+          return { data: { schema: 1, campaignId: args.p_campaign,
+            campaign: { id: args.p_campaign, title: "Downtown listening campaign", summary: "Collect downtown safety feedback.", public_description: null,
+              default_content_locale: (sourceLocaleResult.data as { default_content_locale?: string } | null)?.default_content_locale ?? null },
+            categories: [{ id: "50000000-0000-4000-8000-000000000004", campaign_id: args.p_campaign, label: "Safety", description: "Safety comments" }],
+            questions: [], options: [], responses: [],
+            translations: translationRows.map((row, index) => ({ id: `50000000-0000-4000-8000-${String(index + 100).padStart(12, "0")}`,
+              workspace_id: "50000000-0000-4000-8000-000000000002", campaign_id: args.p_campaign, created_by: "50000000-0000-4000-8000-000000000003",
+              updated_at: "2026-09-13T00:00:00Z", revision: 1, ...row })),
+            counts: { categories: 1, questions: 0, options: 0, responses: 0, translations: translationRows.length } },
+            error: error ? { ...error, code: /does not exist|schema cache/.test(error.message) ? "PGRST202" : "XX000" } : null };
+        }
         if (name === "read_engagement_response_snapshot") return {
           data: { campaignId: args.p_campaign, publishedOnly: args.p_published_only, count: 0, entries: [] }, error: closeLoopReadError,
         };
@@ -439,7 +452,7 @@ import EngagementCampaignDetailPage from "@/app/(app)/engagement/[campaignId]/pa
 async function renderPage(searchParams?: { created?: string; tab?: string }) {
   render(
     await EngagementCampaignDetailPage({
-      params: Promise.resolve({ campaignId: "campaign-1" }),
+      params: Promise.resolve({ campaignId: "50000000-0000-4000-8000-000000000001" }),
       searchParams: Promise.resolve(searchParams ?? {}),
     })
   );
@@ -449,8 +462,8 @@ describe("EngagementCampaignDetailPage", () => {
   it("shows a retry instead of an empty staff-response builder when the read fails", async () => {
     closeLoopReadError = { message: "SYNTHETIC connection lost" };
     await renderPage();
-    expect(snapshotRpcMock).toHaveBeenCalledWith("read_engagement_response_snapshot", { p_campaign: "campaign-1", p_published_only: false });
-    expect(snapshotRpcMock).toHaveBeenCalledWith("read_engagement_response_snapshot", { p_campaign: "campaign-1", p_published_only: true });
+    expect(snapshotRpcMock).toHaveBeenCalledWith("read_engagement_response_snapshot", { p_campaign: "50000000-0000-4000-8000-000000000001", p_published_only: false });
+    expect(snapshotRpcMock).toHaveBeenCalledWith("read_engagement_translation_snapshot", { p_campaign: "50000000-0000-4000-8000-000000000001" });
     expect(screen.getByRole("button", { name: "Retry loading responses" })).toBeEnabled();
     expect(screen.getByText(/Saved staff responses could not be loaded/)).toBeVisible();
     expect(screen.queryByText(/No entries yet/)).not.toBeInTheDocument();
@@ -459,7 +472,7 @@ describe("EngagementCampaignDetailPage", () => {
 
   it("passes every contribution to the paginated review workspace", async () => {
     itemsOrderMock.mockResolvedValue({ data: Array.from({ length: 1005 }, (_, index) => ({
-      id: `full-item-${index + 1}`, campaign_id: "campaign-1", category_id: null,
+      id: `full-item-${index + 1}`, campaign_id: "50000000-0000-4000-8000-000000000001", category_id: null,
       title: "Complete review feed", body: "Demonstration", status: "pending",
       source_type: "public_comment", updated_at: "2026-03-28T21:30:00.000Z",
     })), error: null });
@@ -496,6 +509,8 @@ describe("EngagementCampaignDetailPage", () => {
 
     contextLayerRows = [];
     contextLayerReadError = null;
+    window.localStorage.clear();
+    window.sessionStorage.clear();
     translationRows = [];
     translationReadError = null;
     sourceLocaleResult = { data: null, error: null };
@@ -503,22 +518,22 @@ describe("EngagementCampaignDetailPage", () => {
     surveyQuestionsReadError = null;
     closeLoopReadError = null;
     membershipMaybeSingleMock.mockResolvedValue({
-      data: { workspace_id: "workspace-1", role: "admin" },
+      data: { workspace_id: "50000000-0000-4000-8000-000000000002", role: "admin" },
       error: null,
     });
 
     authGetUserMock.mockResolvedValue({
       data: {
         user: {
-          id: "user-1",
+          id: "50000000-0000-4000-8000-000000000003",
         },
       },
     });
 
     campaignMaybeSingleMock.mockResolvedValue({
       data: {
-        id: "campaign-1",
-        workspace_id: "workspace-1",
+        id: "50000000-0000-4000-8000-000000000001",
+        workspace_id: "50000000-0000-4000-8000-000000000002",
         project_id: "project-1",
         rtp_cycle_id: null,
         rtp_cycle_chapter_id: null,
@@ -539,7 +554,7 @@ describe("EngagementCampaignDetailPage", () => {
     projectMaybeSingleMock.mockResolvedValue({
       data: {
         id: "project-1",
-        workspace_id: "workspace-1",
+        workspace_id: "50000000-0000-4000-8000-000000000002",
         name: "Downtown Mobility Plan",
         summary: "Planning effort focused on corridor safety and access.",
         status: "active",
@@ -558,8 +573,8 @@ describe("EngagementCampaignDetailPage", () => {
     categoriesOrderCreatedMock.mockResolvedValue({
       data: [
         {
-          id: "category-1",
-          campaign_id: "campaign-1",
+          id: "50000000-0000-4000-8000-000000000004",
+          campaign_id: "50000000-0000-4000-8000-000000000001",
           label: "Safety",
           slug: "safety",
           description: "Safety comments",
@@ -575,8 +590,8 @@ describe("EngagementCampaignDetailPage", () => {
       data: [
         {
           id: "item-1",
-          campaign_id: "campaign-1",
-          category_id: "category-1",
+          campaign_id: "50000000-0000-4000-8000-000000000001",
+          category_id: "50000000-0000-4000-8000-000000000004",
           title: "Safer crossings",
           body: "Add a protected crossing.",
           submitted_by: "Resident",
@@ -625,7 +640,7 @@ describe("EngagementCampaignDetailPage", () => {
           report_id: "report-1",
           section_key: "engagement_summary",
           enabled: true,
-          config_json: { campaignId: "campaign-1" },
+          config_json: { campaignId: "50000000-0000-4000-8000-000000000001" },
         },
       ],
       error: null,
@@ -714,8 +729,8 @@ describe("EngagementCampaignDetailPage", () => {
       data: [
         {
           id: "item-1",
-          campaign_id: "campaign-1",
-          category_id: "category-1",
+          campaign_id: "50000000-0000-4000-8000-000000000001",
+          category_id: "50000000-0000-4000-8000-000000000004",
           title: "Safer crossings",
           body: "Add a protected crossing.",
           submitted_by: "Resident",
@@ -730,8 +745,8 @@ describe("EngagementCampaignDetailPage", () => {
         },
         {
           id: "item-2",
-          campaign_id: "campaign-1",
-          category_id: "category-1",
+          campaign_id: "50000000-0000-4000-8000-000000000001",
+          category_id: "50000000-0000-4000-8000-000000000004",
           title: "Safer crossings",
           body: "Add a protected crossing.",
           submitted_by: "Resident 2",
@@ -746,8 +761,8 @@ describe("EngagementCampaignDetailPage", () => {
         },
         {
           id: "item-3",
-          campaign_id: "campaign-1",
-          category_id: "category-1",
+          campaign_id: "50000000-0000-4000-8000-000000000001",
+          category_id: "50000000-0000-4000-8000-000000000004",
           title: "Staff assignment note",
           body: "Follow up internally before the board packet.",
           submitted_by: "Planner",
@@ -790,8 +805,8 @@ describe("EngagementCampaignDetailPage", () => {
   it("keeps the create-success banner honest for a campaign with no live portal", async () => {
     campaignMaybeSingleMock.mockResolvedValueOnce({
       data: {
-        id: "campaign-1",
-        workspace_id: "workspace-1",
+        id: "50000000-0000-4000-8000-000000000001",
+        workspace_id: "50000000-0000-4000-8000-000000000002",
         project_id: "project-1",
         rtp_cycle_id: null,
         rtp_cycle_chapter_id: null,
@@ -874,7 +889,7 @@ describe("EngagementCampaignDetailPage", () => {
       // Driven through the same `loadCampaignAccess` gate the route uses, so the
       // console and the API cannot come to disagree about who gets a button.
       membershipMaybeSingleMock.mockResolvedValue({
-        data: { workspace_id: "workspace-1", role: "viewer" },
+        data: { workspace_id: "50000000-0000-4000-8000-000000000002", role: "viewer" },
         error: null,
       });
       contextLayerRows = [contextLayerRow()];
@@ -957,7 +972,7 @@ describe("EngagementCampaignDetailPage", () => {
       translationRows = [
         {
           entity_type: "campaign",
-          entity_id: "campaign-1",
+          entity_id: "50000000-0000-4000-8000-000000000001",
           field: "title",
           locale: "es",
           translated_text: "Campaña de escucha del centro",
@@ -980,7 +995,7 @@ describe("EngagementCampaignDetailPage", () => {
       translationRows = [
         {
           entity_type: "campaign",
-          entity_id: "campaign-1",
+          entity_id: "50000000-0000-4000-8000-000000000001",
           field: "title",
           locale: "es",
           translated_text: "Campaña de escucha del centro",
@@ -1001,7 +1016,7 @@ describe("EngagementCampaignDetailPage", () => {
 
     it("offers a viewer no translation control the route would refuse", async () => {
       membershipMaybeSingleMock.mockResolvedValue({
-        data: { workspace_id: "workspace-1", role: "viewer" },
+        data: { workspace_id: "50000000-0000-4000-8000-000000000002", role: "viewer" },
         error: null,
       });
 
@@ -1063,7 +1078,7 @@ describe("EngagementCampaignDetailPage", () => {
       await renderPage();
 
       expect(
-        screen.getByText(/report a language as complete while the strings that failed to load/)
+        screen.getByText(/That is not the same as none/)
       ).toBeInTheDocument();
       expect(screen.queryByText(/strings translated/)).not.toBeInTheDocument();
       expect(screen.queryByRole("button", { name: /save as our wording/i })).not.toBeInTheDocument();
@@ -1283,8 +1298,8 @@ describe("EngagementCampaignDetailPage", () => {
   describe("the campaign's RTP attachment", () => {
     function attachedCampaignRow(overrides: Record<string, unknown> = {}) {
       return {
-        id: "campaign-1",
-        workspace_id: "workspace-1",
+        id: "50000000-0000-4000-8000-000000000001",
+        workspace_id: "50000000-0000-4000-8000-000000000002",
         project_id: "project-1",
         rtp_cycle_id: "cycle-1",
         rtp_cycle_chapter_id: null,
@@ -1387,8 +1402,8 @@ describe("EngagementCampaignDetailPage", () => {
   describe("the guided publish flow", () => {
     function campaignRow(overrides: Record<string, unknown> = {}) {
       return {
-        id: "campaign-1",
-        workspace_id: "workspace-1",
+        id: "50000000-0000-4000-8000-000000000001",
+        workspace_id: "50000000-0000-4000-8000-000000000002",
         project_id: "project-1",
         rtp_cycle_id: null,
         rtp_cycle_chapter_id: null,
@@ -1414,7 +1429,7 @@ describe("EngagementCampaignDetailPage", () => {
       expect(within(flow).getByText(/This campaign is live/i)).toBeInTheDocument();
       expect(within(flow).getByRole("link", { name: /Preview the resident view/i })).toHaveAttribute(
         "href",
-        "/engagement/campaign-1/preview"
+        "/engagement/50000000-0000-4000-8000-000000000001/preview"
       );
       // No setup steps on a live campaign.
       expect(screen.queryByTestId("publish-step-share_token")).not.toBeInTheDocument();
@@ -1516,7 +1531,7 @@ describe("EngagementCampaignDetailPage", () => {
     function pendingItem(id: string, status = "pending") {
       return {
         id,
-        campaign_id: "campaign-1",
+        campaign_id: "50000000-0000-4000-8000-000000000001",
         category_id: null,
         title: null,
         body: `Comment ${id}`,
@@ -1558,8 +1573,8 @@ describe("EngagementCampaignDetailPage", () => {
     it("does not appear when the portal is not publicly reachable", async () => {
       campaignMaybeSingleMock.mockResolvedValueOnce({
         data: {
-          id: "campaign-1",
-          workspace_id: "workspace-1",
+          id: "50000000-0000-4000-8000-000000000001",
+          workspace_id: "50000000-0000-4000-8000-000000000002",
           project_id: "project-1",
           rtp_cycle_id: null,
           rtp_cycle_chapter_id: null,

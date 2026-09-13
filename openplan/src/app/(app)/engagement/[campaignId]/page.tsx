@@ -993,6 +993,10 @@ export default async function EngagementCampaignDetailPage({
         </article>
 
         <CampaignTranslationsPanel
+          key={`${user.id}:${campaign.workspace_id}:${campaign.id}`}
+          userId={user.id}
+          workspaceId={campaign.workspace_id}
+          snapshot={translationState.snapshot}
           campaignId={campaign.id}
           fields={translationState.fields}
           entries={translationState.entries}
