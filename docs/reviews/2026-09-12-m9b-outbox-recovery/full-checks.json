@@ -1,0 +1,62 @@
+[
+  {
+    "source": "6fbbd72b77b81e5369e34f20f54728429b3b64e9",
+    "kind": "qa",
+    "startedAt": "2026-09-13T05:52:36.881Z",
+    "finishedAt": "2026-09-13T05:57:24.780Z",
+    "status": 1,
+    "signal": null,
+    "stack": null,
+    "label": "qa-initial",
+    "log": "m9b-outbox-release-qa-initial.log",
+    "sha256": "60f514e1ec330f3c3d014cb7daa84ede3cf63c289860543827e38e270a00fa2b"
+  },
+  {
+    "source": "6fbbd72b77b81e5369e34f20f54728429b3b64e9",
+    "kind": "shuffled",
+    "startedAt": "2026-09-13T05:52:36.863Z",
+    "finishedAt": "2026-09-13T05:54:49.389Z",
+    "status": 1,
+    "signal": null,
+    "stack": null,
+    "label": "shuffled-initial",
+    "log": "m9b-outbox-release-shuffled-initial.log",
+    "sha256": "eb76acfda036a47708d8bd35f7379376d9345b948bf00702221128763665e93e"
+  },
+  {
+    "source": "6fbbd72b77b81e5369e34f20f54728429b3b64e9",
+    "kind": "workers",
+    "startedAt": "2026-09-13T05:52:36.903Z",
+    "finishedAt": "2026-09-13T05:52:37.020Z",
+    "status": 1,
+    "signal": null,
+    "stack": null,
+    "label": "workers-initial",
+    "log": "m9b-outbox-release-workers-initial.log",
+    "sha256": "490368f4579dbe2bb5b3efbbc850f461b974e0079788a367fc210b386120e595"
+  },
+  {
+    "source": "6fbbd72b77b81e5369e34f20f54728429b3b64e9",
+    "kind": "workers",
+    "startedAt": "2026-09-13T05:53:07.610Z",
+    "finishedAt": "2026-09-13T05:53:45.035Z",
+    "status": 1,
+    "signal": null,
+    "stack": null,
+    "label": "workers-missing-env",
+    "log": "m9b-outbox-release-workers-missing-env.log",
+    "sha256": "3b75b753ea6f696bf98c2f8e867e90322b6e3d2b3ade016447fc4154366344f5"
+  },
+  {
+    "source": "6fbbd72b77b81e5369e34f20f54728429b3b64e9",
+    "kind": "workers",
+    "startedAt": "2026-09-13T05:54:44.539Z",
+    "finishedAt": "2026-09-13T05:55:06.498Z",
+    "status": 0,
+    "signal": null,
+    "stack": null,
+    "label": "workers",
+    "log": "m9b-outbox-release-workers.log",
+    "sha256": "de0dc9b2f23facacb68cf1d867e0f92ad5b57289a4c84a5a79f9928c2424cbb7"
+  }
+]

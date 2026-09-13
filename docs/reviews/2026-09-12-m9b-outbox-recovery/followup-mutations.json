@@ -1,0 +1,50 @@
+[
+  {
+    "name": "harmless-comment",
+    "outcome": "survived",
+    "matched": true,
+    "sourceSha256": "8e4c52bc5b1ee8537fc07f53383ffd1b3a34edfd02bd79aa6f3c1c98744a59a5",
+    "expected": null,
+    "diagnostic": null
+  },
+  {
+    "name": "false-unsaved-count",
+    "outcome": "killed",
+    "matched": true,
+    "sourceSha256": "8e4c52bc5b1ee8537fc07f53383ffd1b3a34edfd02bd79aa6f3c1c98744a59a5",
+    "expected": "a publish tells the operator",
+    "diagnostic": null
+  },
+  {
+    "name": "discard-repaired-insert-error",
+    "outcome": "killed",
+    "matched": true,
+    "sourceSha256": "8e4c52bc5b1ee8537fc07f53383ffd1b3a34edfd02bd79aa6f3c1c98744a59a5",
+    "expected": "notifications/engagement.ts",
+    "diagnostic": null
+  },
+  {
+    "name": "incorrect-shipped-migration-count",
+    "outcome": "killed",
+    "matched": true,
+    "sourceSha256": "ec0e1af2d3c071ea3574915d2b50130718305110ee70db10d39e061ffb9c79ef",
+    "expected": "no migration has been inserted",
+    "diagnostic": null
+  },
+  {
+    "name": "worker-harmless-comment",
+    "outcome": "survived",
+    "matched": true,
+    "sourceSha256": "5f77726b617b18e073fdb8210351451cca3ff87a33f83cf39f57626486972b37",
+    "expected": null,
+    "diagnostic": null
+  },
+  {
+    "name": "lost-network-setup",
+    "outcome": "killed",
+    "matched": true,
+    "sourceSha256": "816ff0c8ae85a7fd1e30059c0b4a42154e1ce1b51e552edd7f9e676537c59587",
+    "expected": "AssertionError",
+    "diagnostic": null
+  }
+]

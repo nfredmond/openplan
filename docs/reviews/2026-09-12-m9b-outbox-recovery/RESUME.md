@@ -95,3 +95,13 @@ Package/release metadata now prepare v0.56.1, without new migrations. Full QA,
 shuffled tests and isolated RLS are next; the candidate is not on main or released.
 The previous publication-pending wording has been superseded and v0.56.0 final
 CI/publication is retained in the response-history review.
+
+## Full-check correction checkpoint
+
+6fbbd72b's full QA and shuffled tests ended with the same seven failures. They
+are corrected as described in VERIFICATION.md; 66 focused checks and the added
+mutation proof passed. Full QA and shuffle require a new run after this checkpoint.
+Live RLS session 99564, PID 3983051, remained running on source 6fbbd72b; it has
+not been restarted. Its schema and live test source are unchanged by the follow-up
+unit-test corrections. Poll the same handle; do not infer termination from quiet
+output. The private m9b-outbox-release-check.cjs records terminal receipts.

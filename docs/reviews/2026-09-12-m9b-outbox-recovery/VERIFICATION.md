@@ -75,3 +75,30 @@ replay, completeness of subscriber reads, correction reasons, prevention of stal
 response writes, translation custody, or measured participant/agency usefulness.
 No migration, RLS policy, geography, pending reminder constraint or scientific
 claim changed. M9b and the full v1 contract remain unfinished.
+
+## First full checks and corrections
+
+Full QA and seed-913561 shuffled tests on 6fbbd72b both ended with seven failures
+in four files, with 14,141 passed and 450 skipped. Four old broadcast assertions
+omitted the new unrecorded field; the read-error ceiling still allowed five
+unhandled reads after this helper reduced them to four; the static release ledger
+still ended at v0.55.2; and the ActivitySim file-copy test imported a worker that
+requires configuration. These are reproduced contract/fixture failures, not proof
+of test-order dependence despite the shuffle script's generic failure wording.
+
+The broadcast assertions now check unrecorded=0 in the existing healthy paths.
+The read-error ceiling is tightened to four. The v0.56.0 ledger entry records
+321 migrations through 20261014000002, independently counted from the published
+tag. The file-copy test supplies temporary local dummy configuration during
+import and restores the caller's environment. It does not contact Supabase.
+No application behavior changed in these follow-up corrections.
+
+All 66 focused checks in the four affected files passed. Followup-mutations.json
+records two harmless survivors and four intended failures: false unsaved count,
+reintroduced discarded insert error, wrong shipped migration count and lost
+network setup content. Sources were restored after each probe. Full QA and
+shuffle must be rerun on the corrected candidate; initial receipts remain in
+full-checks.json. Worker setup initially ran no suites without this checkout's
+environments, then 51/52 without configuration, then all 52 with explicit dummy
+configuration. Reused virtualenvs are local dependency symlinks. The corrected
+worker test also passes without that external configuration.

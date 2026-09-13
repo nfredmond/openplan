@@ -293,7 +293,7 @@ describe("the email outbox and the close-the-loop broadcast are reachable by a p
     const body = await publishTheEntry();
 
     expect(body.broadcastOutcome).toBe("attempted");
-    expect(body.broadcast).toEqual({ enqueued: 3, delivered: 0, skipped: 3, failed: 0, transport: "none" });
+    expect(body.broadcast).toEqual({ unrecorded: 0, enqueued: 3, delivered: 0, skipped: 3, failed: 0, transport: "none" });
 
     // And the outbox really has the three rows the count is claiming.
     expect(dbRef.current.rows("engagement_email_outbox")).toHaveLength(3);
@@ -313,7 +313,7 @@ describe("the email outbox and the close-the-loop broadcast are reachable by a p
   it("says no subscriptions were found rather than staying silent", async () => {
     dbRef.current = seedDatabase({ subscribers: 0 });
     const body = await publishTheEntry();
-    expect(body.broadcast).toEqual({ enqueued: 0, delivered: 0, skipped: 0, failed: 0, transport: "none" });
+    expect(body.broadcast).toEqual({ unrecorded: 0, enqueued: 0, delivered: 0, skipped: 0, failed: 0, transport: "none" });
 
     respondWith(body);
     render(<EngagementCloseLoopBuilder campaignId={CAMPAIGN.id} categories={[]} initialEntries={[draftEntry()]} />);
@@ -342,7 +342,7 @@ describe("the email outbox and the close-the-loop broadcast are reachable by a p
 
     // The read failed and the count still came back zero: proof the two are
     // indistinguishable in this payload, which is why the copy must hedge.
-    expect(body.broadcast).toEqual({ enqueued: 0, delivered: 0, skipped: 0, failed: 0, transport: "none" });
+    expect(body.broadcast).toEqual({ unrecorded: 0, enqueued: 0, delivered: 0, skipped: 0, failed: 0, transport: "none" });
     expect(dbRef.current.rows("engagement_email_outbox")).toHaveLength(0);
 
     respondWith(body);
@@ -434,7 +434,7 @@ describe("the email outbox and the close-the-loop broadcast are reachable by a p
 
     const body = await publishTheEntry();
     expect(sendSpy).toHaveBeenCalled(); // the transport was really exercised
-    expect(body.broadcast).toEqual({ enqueued: 3, delivered: 3, skipped: 0, failed: 0, transport: "resend" });
+    expect(body.broadcast).toEqual({ unrecorded: 0, enqueued: 3, delivered: 3, skipped: 0, failed: 0, transport: "resend" });
 
     sendSpy.mockResolvedValue({ ok: true, status: 200, json: async () => body } as unknown as Response);
     render(<EngagementCloseLoopBuilder campaignId={CAMPAIGN.id} categories={[]} initialEntries={[draftEntry()]} />);

@@ -3,10 +3,18 @@
 
 import csv
 import json
+import os
 import tempfile
 from pathlib import Path
+from unittest.mock import patch
 
-import supabase_poll as worker
+# This file-copy test never contacts Supabase; importing the worker still needs
+# configuration. Restore the caller's environment after importing it.
+with patch.dict(os.environ, {
+    "SUPABASE_URL": "http://127.0.0.1:1",
+    "SUPABASE_SERVICE_ROLE_KEY": "synthetic-unit-test-only",
+}):
+    import supabase_poll as worker
 
 
 def test_materialized_handoff_includes_exact_network_setup_summary() -> None:
