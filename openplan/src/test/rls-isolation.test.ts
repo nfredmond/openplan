@@ -1157,6 +1157,15 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
     seedSql:({engagementCampaignBId})=>`INSERT INTO engagement_item_history(campaign_id,item_id,event,record_json) SELECT campaign_id,id,'legacy_before_edit',to_jsonb(i) FROM engagement_items i WHERE campaign_id='${engagementCampaignBId}'`,
   },
   {
+    table: "engagement_response_history",
+    select: "id,campaign_id,response_id,revision",
+    expectedMemberReadable: true,
+    scope: { column: "campaign_id", value: context => context.engagementCampaignBId },
+    build: ({ engagementCampaignBId }) => ({ campaign_id: engagementCampaignBId }),
+    seedSql: ({ engagementCampaignBId }) =>
+      `INSERT INTO engagement_closeloop_entries(campaign_id,theme_title,we_did) VALUES('${engagementCampaignBId}','SYNTHETIC RLS response','SYNTHETIC retained response')`,
+  },
+  {
     table:"engagement_survey_review_history",select:"id,campaign_id",expectedMemberReadable:true,
     scope:{column:"campaign_id",value:context=>context.engagementCampaignBId},
     build:({engagementCampaignBId})=>({campaign_id:engagementCampaignBId}),
@@ -1624,7 +1633,7 @@ describe("workspace RLS isolation inventory", () => {
   it("covers every direct workspace-scoped table in the paid-access audit set", () => {
     const tables = WORKSPACE_RLS_PROBES.map((probe) => probe.table).sort();
 
-    expect(tables).toHaveLength(89);
+    expect(tables).toHaveLength(90);
     expect(new Set(tables).size).toBe(tables.length);
     expect(tables).toEqual([
       "aerial_evidence_packages",
@@ -1644,6 +1653,7 @@ describe("workspace RLS isolation inventory", () => {
       "engagement_item_history",
       "engagement_items",
       "engagement_report_jobs",
+      "engagement_response_history",
       "engagement_survey_question_options",
       "engagement_survey_questions",
       "engagement_survey_review_history",      "funding_awards",

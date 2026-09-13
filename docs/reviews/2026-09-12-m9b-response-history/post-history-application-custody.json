@@ -1,0 +1,10 @@
+{
+  "checkedAt": "2026-09-13T04:13:02.598951+00:00",
+  "migration": "20261014000001",
+  "campaignId": "a3c41566-bfd4-40f2-b467-96ee79054ec6",
+  "entryCount": 1005,
+  "currentResponseSha256": "2ffb63310e40d88fa290569cc94748d27dc03f29ac35ebfa738daac52b2d1ed7",
+  "priorBrowserSha256": "2ffb63310e40d88fa290569cc94748d27dc03f29ac35ebfa738daac52b2d1ed7",
+  "matched": true,
+  "loaderSha256": "34258ce001521f2a1e61643b3fcabf05bf6dbcf7299c96c1a4e95a53353cc3a2"
+}

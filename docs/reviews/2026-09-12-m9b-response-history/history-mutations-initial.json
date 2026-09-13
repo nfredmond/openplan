@@ -1,0 +1,49 @@
+{
+  "stack": "openplan-restore-target-2026091050",
+  "scope": "Transactional SQL, not HTTP or browser acceptance",
+  "migrationSha256": "e712c73d9fd868ab8c3e68003a028cad3c3a3f8637d0de0ef97ea8e3a2bde523",
+  "results": [
+    {
+      "name": "harmless-comment",
+      "outcome": "survived",
+      "matched": true,
+      "expected": null,
+      "stderr": ""
+    },
+    {
+      "name": "missing-legacy-baseline",
+      "outcome": "killed",
+      "matched": true,
+      "expected": "HISTORY: truthful legacy baseline",
+      "stderr": "ERROR:  HISTORY: truthful legacy baseline\nCONTEXT:  PL/pgSQL function inline_code_block line 9 at RAISE\n"
+    },
+    {
+      "name": "missing-update-capture",
+      "outcome": "killed",
+      "matched": true,
+      "expected": "HISTORY: complete ordered transitions",
+      "stderr": "ERROR:  HISTORY: complete ordered transitions\nCONTEXT:  PL/pgSQL function inline_code_block line 11 at RAISE\n"
+    },
+    {
+      "name": "missing-removal-copy",
+      "outcome": "killed",
+      "matched": true,
+      "expected": "HISTORY: removal retained",
+      "stderr": "ERROR:  HISTORY: removal retained\nCONTEXT:  PL/pgSQL function inline_code_block line 23 at RAISE\n"
+    },
+    {
+      "name": "mutable-history",
+      "outcome": "killed",
+      "matched": true,
+      "expected": "HISTORY: immutable even for privileged writers",
+      "stderr": "ERROR:  HISTORY: immutable even for privileged writers\nCONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE\n"
+    },
+    {
+      "name": "foreign-membership",
+      "outcome": "survived",
+      "matched": false,
+      "expected": "HISTORY: outsider denied",
+      "stderr": ""
+    }
+  ]
+}

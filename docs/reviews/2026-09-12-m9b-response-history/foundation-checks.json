@@ -1,0 +1,23 @@
+{
+  "offlineInventory": {
+    "exitCode": 0,
+    "passed": 40,
+    "skipped": 20,
+    "filesPassed": 4,
+    "logSha256": "f928d8c7b1a162c612736ddd163e54965952742819cd12c8e0461b167ab9abc1"
+  },
+  "liveInventory": {
+    "exitCode": 0,
+    "passed": 37,
+    "filesPassed": 3,
+    "stack": "openplan-restore-target-2026091050",
+    "logSha256": "29e24103c5db57036f7bc76d79f2123dae3d7ae27d619547ed7b7e1f5d35a3d1"
+  },
+  "typescript": {
+    "exitCode": 0,
+    "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "changedFileLint": {
+    "exitCode": 0
+  }
+}

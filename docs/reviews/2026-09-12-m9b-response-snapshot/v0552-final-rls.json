@@ -1,1 +1,108 @@
-{"conclusion":"success","headSha":"3455207b5723c6394ff95b9fbbd274c79e7d3c36","status":"completed","updatedAt":"2026-09-13T03:43:19Z","url":"https://github.com/nfredmond/openplan/actions/runs/34735821475"}
+{
+  "conclusion": "success",
+  "headSha": "3455207b5723c6394ff95b9fbbd274c79e7d3c36",
+  "jobs": [
+    {
+      "completedAt": "2026-09-13T03:43:19Z",
+      "conclusion": "success",
+      "databaseId": 103666944871,
+      "name": "live RLS isolation",
+      "startedAt": "2026-09-13T03:34:27Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-09-13T03:34:29Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-09-13T03:34:28Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:34:39Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@v6",
+          "number": 2,
+          "startedAt": "2026-09-13T03:34:29Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:34:40Z",
+          "conclusion": "success",
+          "name": "Setup Node",
+          "number": 3,
+          "startedAt": "2026-09-13T03:34:39Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:34:59Z",
+          "conclusion": "success",
+          "name": "Install",
+          "number": 4,
+          "startedAt": "2026-09-13T03:34:40Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:36:49Z",
+          "conclusion": "success",
+          "name": "Start Supabase",
+          "number": 5,
+          "startedAt": "2026-09-13T03:34:59Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:37:21Z",
+          "conclusion": "success",
+          "name": "Reset local database",
+          "number": 6,
+          "startedAt": "2026-09-13T03:36:49Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:42:58Z",
+          "conclusion": "success",
+          "name": "Run live RLS isolation proof",
+          "number": 7,
+          "startedAt": "2026-09-13T03:37:21Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:43:15Z",
+          "conclusion": "success",
+          "name": "Stop Supabase",
+          "number": 8,
+          "startedAt": "2026-09-13T03:42:58Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:43:16Z",
+          "conclusion": "success",
+          "name": "Post Setup Node",
+          "number": 15,
+          "startedAt": "2026-09-13T03:43:15Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:43:16Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v6",
+          "number": 16,
+          "startedAt": "2026-09-13T03:43:16Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:43:16Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 17,
+          "startedAt": "2026-09-13T03:43:16Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34735821475/job/103666944871"
+    }
+  ],
+  "status": "completed",
+  "updatedAt": "2026-09-13T03:43:19Z",
+  "url": "https://github.com/nfredmond/openplan/actions/runs/34735821475"
+}

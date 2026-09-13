@@ -1,1 +1,164 @@
-{"conclusion":"success","headSha":"3455207b5723c6394ff95b9fbbd274c79e7d3c36","status":"completed","updatedAt":"2026-09-13T03:38:00Z","url":"https://github.com/nfredmond/openplan/actions/runs/34735821483"}
+{
+  "conclusion": "success",
+  "headSha": "3455207b5723c6394ff95b9fbbd274c79e7d3c36",
+  "jobs": [
+    {
+      "completedAt": "2026-09-13T03:37:59Z",
+      "conclusion": "success",
+      "databaseId": 103666944852,
+      "name": "previous release -> seed -> HEAD migration up",
+      "startedAt": "2026-09-13T03:34:29Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completedAt": "2026-09-13T03:34:30Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "startedAt": "2026-09-13T03:34:29Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:34:44Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@v6",
+          "number": 2,
+          "startedAt": "2026-09-13T03:34:30Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:34:45Z",
+          "conclusion": "success",
+          "name": "Setup Node",
+          "number": 3,
+          "startedAt": "2026-09-13T03:34:44Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:34:45Z",
+          "conclusion": "success",
+          "name": "Resolve previous release tag",
+          "number": 4,
+          "startedAt": "2026-09-13T03:34:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:34:45Z",
+          "conclusion": "success",
+          "name": "Check out the previous release",
+          "number": 5,
+          "startedAt": "2026-09-13T03:34:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:35:08Z",
+          "conclusion": "success",
+          "name": "Install (previous release)",
+          "number": 6,
+          "startedAt": "2026-09-13T03:34:45Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:37:12Z",
+          "conclusion": "success",
+          "name": "Start Supabase and apply the previous release's migrations",
+          "number": 7,
+          "startedAt": "2026-09-13T03:35:08Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:37:12Z",
+          "conclusion": "success",
+          "name": "Seed representative workspace data",
+          "number": 8,
+          "startedAt": "2026-09-13T03:37:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:37:12Z",
+          "conclusion": "success",
+          "name": "Record the seeded row counts",
+          "number": 9,
+          "startedAt": "2026-09-13T03:37:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:37:12Z",
+          "conclusion": "success",
+          "name": "Check out HEAD",
+          "number": 10,
+          "startedAt": "2026-09-13T03:37:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:37:32Z",
+          "conclusion": "success",
+          "name": "Install (HEAD)",
+          "number": 11,
+          "startedAt": "2026-09-13T03:37:12Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:37:33Z",
+          "conclusion": "success",
+          "name": "Apply HEAD's migrations onto the populated previous-release schema",
+          "number": 12,
+          "startedAt": "2026-09-13T03:37:32Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:37:33Z",
+          "conclusion": "success",
+          "name": "Assert the seeded rows survived",
+          "number": 13,
+          "startedAt": "2026-09-13T03:37:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:37:33Z",
+          "conclusion": "success",
+          "name": "Exercise v0.32 operational rows on the upgraded database",
+          "number": 14,
+          "startedAt": "2026-09-13T03:37:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:37:54Z",
+          "conclusion": "success",
+          "name": "Stop Supabase",
+          "number": 15,
+          "startedAt": "2026-09-13T03:37:33Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:37:57Z",
+          "conclusion": "success",
+          "name": "Post Setup Node",
+          "number": 29,
+          "startedAt": "2026-09-13T03:37:54Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:37:57Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v6",
+          "number": 30,
+          "startedAt": "2026-09-13T03:37:57Z",
+          "status": "completed"
+        },
+        {
+          "completedAt": "2026-09-13T03:37:57Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 31,
+          "startedAt": "2026-09-13T03:37:57Z",
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34735821483/job/103666944852"
+    }
+  ],
+  "status": "completed",
+  "updatedAt": "2026-09-13T03:38:00Z",
+  "url": "https://github.com/nfredmond/openplan/actions/runs/34735821483"
+}

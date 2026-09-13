@@ -474,16 +474,18 @@ const EXPECTED = {
   // Two owner-readable provider tables add two SELECT policies; no direct writes.
   // 20261012000001 adds three API configuration tables, all with RLS, and two
   // metadata SELECT policies. Credentials have no ordinary-user grants/policies.
-  policies: 752,
-  permissive: 501,
+  // 20261014000001: one immutable response history table with staff SELECT only.
+  // The named isolated database catalog confirms each increment.
+  policies: 753,
+  permissive: 502,
   restrictive: 251,
   permissiveWrites: 280,
   expanded: 286,
-  tablesWithPolicies: 218,
-  relations: 252,
-  tables: 239,
+  tablesWithPolicies: 219,
+  relations: 253,
+  tables: 240,
   views: 13,
-  rlsEnabledTables: 239,
+  rlsEnabledTables: 240,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

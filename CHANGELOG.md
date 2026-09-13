@@ -20,6 +20,13 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Response-history persistence is in development. The additive
+`20261014000001_engagement_response_history.sql` migration retains private source
+copies through correction, publication changes and removal, with explicitly
+labelled legacy baselines. Staff history navigation, correction reasons,
+conflict/retry handling and translation-version custody remain unfinished.
+This foundation is not part of v0.55.2.
+
 ## 0.55.2 — 2026-09-12
 
 Engagement response lists could silently stop at the database API's 1,000-row

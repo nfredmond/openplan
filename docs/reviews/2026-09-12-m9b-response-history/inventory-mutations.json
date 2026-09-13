@@ -1,0 +1,23 @@
+[
+  {
+    "name": "harmless-comment",
+    "outcome": "survived",
+    "matched": true,
+    "failures": []
+  },
+  {
+    "name": "invalid-history-projection",
+    "outcome": "killed",
+    "matched": true,
+    "failures": [
+      {
+        "name": "workspace RLS live isolation seeds one fixture row per audited workspace table for tenant B",
+        "message": "AssertionError: expected [ { \u2026(3) } ] to deeply equal []\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/rls-isolation.test.ts:2364:54\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "workspace RLS live isolation keeps tenant B rows readable to tenant B members except service-only ledgers",
+        "message": "AssertionError: engagement_response_history member read error: expected 'column engagement_response_history.wo\u2026' to be null\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/rls-isolation.test.ts:2398:67\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  }
+]

@@ -1,0 +1,18 @@
+{
+  "before": {
+    "policies": 752,
+    "permissive": 501,
+    "tablesWithPolicies": 218,
+    "tables": 239,
+    "rlsEnabledTables": 239
+  },
+  "after": {
+    "policies": 753,
+    "permissive": 502,
+    "tablesWithPolicies": 219,
+    "tables": 240,
+    "rlsEnabledTables": 240
+  },
+  "migrationSha256": "e712c73d9fd868ab8c3e68003a028cad3c3a3f8637d0de0ef97ea8e3a2bde523",
+  "rolledBack": true
+}

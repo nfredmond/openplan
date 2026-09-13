@@ -224,3 +224,14 @@ mutation for the 0.55.2 high-water mark; the source was restored. The direction
 check passed with existing historical reminders. A metadata command initially
 used the repository root and ran no tests; the accepted run used openplan/.
 All retained browser manifest hashes were read back and matched.
+
+## Published v0.55.2
+
+The release is published at commit 3455207b5723c6394ff95b9fbbd274c79e7d3c36.
+Final CI 34735821419 completed successfully with all five jobs green, including
+full QA and shuffled tests. RLS 34735821475 and Upgrade Path 34735821483 also
+succeeded on that exact commit. The annotated tag's peeled remote commit was
+read back and matched. GitHub reports publishedAt 2026-09-13T03:54:12Z,
+isDraft false and isPrerelease false. See v0552-final-*.json and
+v0552-publication.json. The later response-history foundation is separate work
+and is not included in this tag.
