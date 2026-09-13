@@ -28,6 +28,20 @@ unavailable to ordinary callers until editor and durable generation integration
 is finished. Existing direct producers have not yet been retired. These are
 development migrations, not a released conflict-safe editor or generation claim.
 
+## 0.58.1 — 2026-09-13
+
+The workspace selector stays visible on narrow screens, and its open menu is no
+longer clipped by the workspace label. Long workspace names wrap in the menu.
+On phones the workspace card occupies its own header row, so invited members
+can choose a workspace without widening the browser.
+
+No new database migration is required. The existing 328 migrations through
+`20261014000009_engagement_translation_history.sql` remain unchanged. Workspace
+membership rules and the selection API are unchanged. This patch does not
+include the unfinished translation command or generation workflow.
+[Engineering verification](docs/reviews/2026-09-13-workspace-switch-patch/VERIFICATION.md)
+records the production browser and isolated release checks.
+
 ## 0.58.0 — 2026-09-13
 
 Translation history retains private original, corrected, accepted and withdrawn
