@@ -467,7 +467,7 @@ export function CampaignTranslationsPanel({
         </span>
       </div>
 
-      <TranslationHistory campaignId={campaignId} revision={historyRevision} />
+      {canWrite ? <TranslationHistory campaignId={campaignId} revision={historyRevision} /> : null}
 
       {readFailures.length > 0 ? (
         <div className="mt-4 space-y-2">

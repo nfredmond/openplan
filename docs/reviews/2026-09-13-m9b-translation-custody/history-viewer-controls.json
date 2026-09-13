@@ -1,0 +1,30 @@
+[
+  {
+    "case": "baseline",
+    "matched": true,
+    "outcome": "survived",
+    "failed": []
+  },
+  {
+    "case": "harmless-comment",
+    "matched": true,
+    "outcome": "survived",
+    "failed": []
+  },
+  {
+    "case": "show-to-viewer",
+    "matched": true,
+    "outcome": "killed",
+    "failed": [
+      "the operator panel offers private translation history only with staff access: false"
+    ]
+  },
+  {
+    "case": "hide-from-staff",
+    "matched": true,
+    "outcome": "killed",
+    "failed": [
+      "the operator panel offers private translation history only with staff access: true"
+    ]
+  }
+]

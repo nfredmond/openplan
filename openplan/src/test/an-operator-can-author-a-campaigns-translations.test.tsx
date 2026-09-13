@@ -536,6 +536,13 @@ describe("the operator panel", () => {
     expect(found[0][1], "the panel must use `import type` for campaign-translations").toBe("type ");
   });
 
+  it.each([true, false])("offers private translation history only with staff access: %s", (canWrite) => {
+    render(<CampaignTranslationsPanel {...panelProps({ canWrite })} />);
+    const history = screen.queryByRole("button", { name: "Translation history", exact: true });
+    if (canWrite) expect(history).toBeVisible();
+    else expect(history).not.toBeInTheDocument();
+  });
+
   it("gives a right-to-left language a right-to-left editor", () => {
     render(<CampaignTranslationsPanel {...panelProps()} />);
 
