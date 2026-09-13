@@ -1,0 +1,159 @@
+{
+  "scope": "Real loaders with a synthetic capped-query adapter; not live database evidence",
+  "results": [
+    {
+      "loader": "loadCloseLoopEntries",
+      "syntheticServerCap": 5,
+      "available": 5,
+      "returned": 5,
+      "error": null,
+      "calls": [
+        [
+          "from",
+          "engagement_closeloop_entries"
+        ],
+        [
+          "select",
+          "id, campaign_id, category_id, theme_title, you_said, we_did, status, ai_assisted, source_item_ids, sort_order, published_at, created_at, updated_at"
+        ],
+        [
+          "eq",
+          "campaign_id",
+          "synthetic-campaign"
+        ],
+        [
+          "order",
+          "sort_order",
+          {
+            "ascending": true
+          }
+        ],
+        [
+          "order",
+          "created_at",
+          {
+            "ascending": true
+          }
+        ]
+      ]
+    },
+    {
+      "loader": "loadCloseLoopEntries",
+      "syntheticServerCap": 2,
+      "available": 5,
+      "returned": 2,
+      "error": null,
+      "calls": [
+        [
+          "from",
+          "engagement_closeloop_entries"
+        ],
+        [
+          "select",
+          "id, campaign_id, category_id, theme_title, you_said, we_did, status, ai_assisted, source_item_ids, sort_order, published_at, created_at, updated_at"
+        ],
+        [
+          "eq",
+          "campaign_id",
+          "synthetic-campaign"
+        ],
+        [
+          "order",
+          "sort_order",
+          {
+            "ascending": true
+          }
+        ],
+        [
+          "order",
+          "created_at",
+          {
+            "ascending": true
+          }
+        ]
+      ]
+    },
+    {
+      "loader": "loadPublishedCloseLoopEntries",
+      "syntheticServerCap": 5,
+      "available": 5,
+      "returned": 5,
+      "error": null,
+      "calls": [
+        [
+          "from",
+          "engagement_closeloop_entries"
+        ],
+        [
+          "select",
+          "id, campaign_id, category_id, theme_title, you_said, we_did, status, ai_assisted, source_item_ids, sort_order, published_at, created_at, updated_at"
+        ],
+        [
+          "eq",
+          "campaign_id",
+          "synthetic-campaign"
+        ],
+        [
+          "eq",
+          "status",
+          "published"
+        ],
+        [
+          "order",
+          "sort_order",
+          {
+            "ascending": true
+          }
+        ],
+        [
+          "order",
+          "created_at",
+          {
+            "ascending": true
+          }
+        ]
+      ]
+    },
+    {
+      "loader": "loadPublishedCloseLoopEntries",
+      "syntheticServerCap": 2,
+      "available": 5,
+      "returned": 2,
+      "error": null,
+      "calls": [
+        [
+          "from",
+          "engagement_closeloop_entries"
+        ],
+        [
+          "select",
+          "id, campaign_id, category_id, theme_title, you_said, we_did, status, ai_assisted, source_item_ids, sort_order, published_at, created_at, updated_at"
+        ],
+        [
+          "eq",
+          "campaign_id",
+          "synthetic-campaign"
+        ],
+        [
+          "eq",
+          "status",
+          "published"
+        ],
+        [
+          "order",
+          "sort_order",
+          {
+            "ascending": true
+          }
+        ],
+        [
+          "order",
+          "created_at",
+          {
+            "ascending": true
+          }
+        ]
+      ]
+    }
+  ]
+}

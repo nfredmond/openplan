@@ -9,3 +9,13 @@ Existing queue_engagement_report in migration 20260908000004_engagement_report_j
 Current mutation route writes the same narrative row, has a prior-status read before publish notification and does not provide an expected revision. Database guards already check source scope/approval and unpublish linked responses when input is corrected. Do not claim those publication controls are absent. Response history and decision/commitment links remain distinct work beyond the v0.55.1 retry repair.
 
 No code, database, worker or fixture was changed by this inspection. Need an actual capped dataset/read and concurrent-change experiment before claiming the next implementation complete. Preserve existing Reports, Engagement and project decisions as the owning homes.
+
+## Executed capped-read probe
+
+The real staff and public loaders were called against a synthetic query adapter
+with five available rows. With cap five, each returned five rows and no error.
+With cap two, each returned two rows and no error. capped-read-probe.mjs/json
+retains this historical reproducer and its harmless uncapped control. This is
+not live PostgREST evidence. The checked-in Supabase configuration sets max_rows
+to 1000. The next implementation needs a live larger-than-cap fixture and must
+retain campaign/publication scope while refusing malformed or failed reads.
