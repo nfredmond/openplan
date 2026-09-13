@@ -49,6 +49,7 @@
 
 import { createHash } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { loadPublishedCloseLoopEntries } from "./close-loop";
 
 import { PORTAL_DEFAULT_LOCALE, PORTAL_LOCALES, isPortalLocale, type PortalLocale } from "./portal-i18n/locales";
 import type { PortalTranslatableEntity } from "./portal-i18n/operator-text";
@@ -67,7 +68,7 @@ import { looksLikePendingSurveyStatusColumn } from "./survey-responses";
  * reason `operator-text.ts` records: describing the overloaded chain explicitly
  * blows the compiler's instantiation depth at every call site.
  */
-type QueryClient = Pick<SupabaseClient, "from">;
+type QueryClient = Pick<SupabaseClient, "from" | "rpc">;
 
 /** Who produced a stored translation. The table's `source` domain. */
 export type CampaignTranslationSource = "operator" | "machine";
@@ -438,15 +439,7 @@ export async function loadCampaignTranslatableFields(
       .eq("campaign_id", campaign.id)
       .eq("is_active", true)
       .order("sort_order", { ascending: true }),
-    supabase
-      .from("engagement_closeloop_entries")
-      .select("id, theme_title, you_said, we_did")
-      .eq("campaign_id", campaign.id)
-      // Drafts never left the operator, so they are not part of what the public
-      // reads and not part of what "complete" measures.
-      .eq("status", "published")
-      .order("sort_order", { ascending: true })
-      .order("created_at", { ascending: true }),
+    loadPublishedCloseLoopEntries(supabase, campaign.id),
   ]);
 
   const readFailures: CampaignTranslationReadFailure[] = [];
@@ -469,7 +462,7 @@ export async function loadCampaignTranslatableFields(
     surveyQuestions: ((questions.data ?? []) as Array<{ id: string; prompt: string | null; help_text: string | null }>).map(
       (question) => ({ ...question, options: optionsByQuestion.get(question.id) ?? [] })
     ),
-    closeLoopEntries: (closeLoop.data ?? []) as CampaignTranslatableSource["closeLoopEntries"],
+    closeLoopEntries: closeLoop.rows,
   });
 
   return { fields, readFailures };

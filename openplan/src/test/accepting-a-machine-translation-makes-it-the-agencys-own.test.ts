@@ -61,11 +61,15 @@ function readChain(rows: () => Array<Record<string, unknown>>, table: string) {
 
 const fakeSupabase = {
   auth: { getUser },
+  rpc: vi.fn(async (name: string, args: { p_campaign: string; p_published_only: boolean }) => {
+    expect(name).toBe("read_engagement_response_snapshot");
+    expect(args).toEqual({ p_campaign: CAMPAIGN_ID, p_published_only: true });
+    return { data: { campaignId: args.p_campaign, publishedOnly: true, count: closeLoopRows.length, entries: closeLoopRows }, error: inventoryError.engagement_closeloop_entries ?? null };
+  }),
   from: vi.fn((table: string) => {
     if (table === "engagement_categories") return readChain(() => categoryRows, table);
     if (table === "engagement_survey_questions") return readChain(() => questionRows, table);
     if (table === "engagement_survey_question_options") return readChain(() => optionRows, table);
-    if (table === "engagement_closeloop_entries") return readChain(() => closeLoopRows, table);
     if (table === "engagement_campaigns") return readChain(() => [], table);
 
     if (table !== "engagement_content_translations") throw new Error(`Unexpected table: ${table}`);

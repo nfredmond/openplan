@@ -1,0 +1,269 @@
+[
+  {
+    "name": "harmless-comment",
+    "outcome": "survived",
+    "matched": true,
+    "expected": null,
+    "failures": []
+  },
+  {
+    "name": "lost-error",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "preserves the database error",
+    "failures": [
+      {
+        "name": "the translatable inventory is exactly what a participant reads withholds unreadable published-response translation fields: {\"message\":\"SYNTHETIC response read failed\"}",
+        "message": "AssertionError: expected [] to include 'this campaign\\'s published updates'\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1319:15)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/an-operator-can-author-a-campaigns-translations.test.tsx:207:63\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "complete response snapshot loaders preserves the database error and withholds even valid partial rows: false",
+        "message": "AssertionError: expected { rows: [], error: null } to deeply equal { rows: [], error: { …(2) } }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/close-loop.test.ts:87:54\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "complete response snapshot loaders preserves the database error and withholds even valid partial rows: true",
+        "message": "AssertionError: expected { rows: [], error: null } to deeply equal { rows: [], error: { …(2) } }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/close-loop.test.ts:87:54\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "EngagementCampaignDetailPage shows a retry instead of an empty staff-response builder when the read fails",
+        "message": "TestingLibraryElementError: Unable to find an accessible element with the role \"button\" and name \"Retry loading responses\"\n\nHere are the accessible roles:\n\n  link:\n\n  Name \"Engagement\":\n  \u001b[36m<a\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"transition hover:text-foreground\"\u001b[39m\n    \u001b[33mhref\u001b[39m=\u001b[32m\"/engagement\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Setup\":\n  \u001b[36m<a\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"module-tab-trigger inline-flex items-center whitespace-nowrap text-sm font-medium transition text-foreground/60 hover:text-foreground\"\u001b[39m\n    \u001b[33mdata-page-tab\u001b[39m=\u001b[32m\"setup\"\u001b[39m\n    \u001b[33mdata-state\u001b[39m=\u001b[32m\"inactive\"\u001b[39m\n    \u001b[33mhref\u001b[39m=\u001b[32m\"/engagement/campaign-1?tab=setup\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Responses\":\n  \u001b[36m<a\u001b[39m\n    \u001b[33maria-current\u001b[39m=\u001b[32m\"page\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"module-tab-trigger inline-flex items-center whitespace-nowrap text-sm font-medium transition text-foreground\"\u001b[39m\n    \u001b[33mdata-page-tab\u001b[39m=\u001b[32m\"responses\"\u001b[39m\n    \u001b[33mdata-state\u001b[39m=\u001b[32m\"activ"
+      },
+      {
+        "name": "PublicEngagementPage keeps the close-the-loop tab, and says so, when that read failed",
+        "message": "TestingLibraryElementError: Unable to find an element with the text: /You said \\/ We did/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<section\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"public-page mx-auto w-full max-w-[72rem] px-4 py-8 sm:px-6\"\u001b[39m\n      \u001b[33mdata-testid\u001b[39m=\u001b[32m\"portal-context-page\"\u001b[39m\n      \u001b[33mdir\u001b[39m=\u001b[32m\"ltr\"\u001b[39m\n      \u001b[33mlang\u001b[39m=\u001b[32m\"en\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"public-page-backdrop\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n      \u001b[36m<a\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-foreground underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring\"\u001b[39m\n        \u001b[33mdata-testid\u001b[39m=\u001b[32m\"portal-back-to-map\"\u001b[39m\n      "
+      },
+      {
+        "name": "PublicEngagementPage loadPublicPortalResult reports a failed close-the-loop read instead of an agency that never answered",
+        "message": "AssertionError: expected false to be true // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/public-engagement-page.test.tsx:1032:57\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "wrong-rpc",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "requests the exact campaign",
+    "failures": [
+      {
+        "name": "the translatable inventory is exactly what a participant reads asks the database for what a participant sees, with the portal's own filters",
+        "message": "AssertionError: expected [ [ 'wrong_snapshot', { …(2) } ] ] to deeply equal [ [ …(2) ] ]\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/an-operator-can-author-a-campaigns-translations.test.tsx:200:39\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "complete response snapshot loaders requests the exact campaign/publication snapshot: false",
+        "message": "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ …(2) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n-   \"read_engagement_response_snapshot\",\n+   \"wrong_snapshot\",\n    {\n      \"p_campaign\": \"camp-1\",\n      \"p_published_only\": false,\n    },\n  ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/close-loop.test.ts:68:17\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/a"
+      },
+      {
+        "name": "complete response snapshot loaders requests the exact campaign/publication snapshot: true",
+        "message": "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ …(2) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n-   \"read_engagement_response_snapshot\",\n+   \"wrong_snapshot\",\n    {\n      \"p_campaign\": \"camp-1\",\n      \"p_published_only\": true,\n    },\n  ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/close-loop.test.ts:68:17\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/ag"
+      },
+      {
+        "name": "EngagementCampaignDetailPage shows a retry instead of an empty staff-response builder when the read fails",
+        "message": "AssertionError: expected \"vi.fn()\" to be called with arguments: [ …(2) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n-   \"read_engagement_response_snapshot\",\n+   \"engagement_items_with_nearby_crashes\",\n    {\n-     \"p_campaign\": \"campaign-1\",\n-     \"p_published_only\": false,\n+     \"p_campaign_id\": \"campaign-1\",\n+     \"p_from_year\": null,\n+     \"p_radius_meters\": 100,\n+     \"p_to_year\": null,\n+     \"p_workspace_id\": \"workspace-1\",\n    },\n  ]\n\n  2nd vi.fn() call:\n\n  [\n-   \"read_engagement_response_snapshot\",\n+   \"wrong_snapshot\",\n    {\n      \"p_campaign\": \"campaign-1\",\n      \"p_published_only\": false,\n    },\n  ]\n\n  3rd vi.fn() call:\n\n  [\n-   \"read_engagement_response_snapshot\",\n+   \"engagement_sentiment_hotspots\",\n    {\n-     \"p_campaign\": \"campaign-1\",\n-     \"p_published_only\": false,\n+     \"p_campaign_id\": \"campaign-1\",\n+     \"p_eps_meters\": 250,\n+     \"p_min_points\": 5,\n+     \"p_negative_item_ids\": [],\n+     \"p_workspace_id\": \"workspace-1\",\n    },\n  ]\n\n  4th vi.fn() call:\n\n  [\n-   \"read_engag"
+      },
+      {
+        "name": "EngagementCampaignDetailPage the campaign's GIS context layers says the layer list could not be read instead of showing a campaign with none",
+        "message": "TestingLibraryElementError: Found multiple elements with the text: /could not be read/i\n\nHere are the matching elements:\n\nIgnored nodes: comments, script, style\n\u001b[36m<p\u001b[39m\n  \u001b[33mclass\u001b[39m=\u001b[32m\"mt-4 rounded-[0.5rem] border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-foreground\"\u001b[39m\n\u001b[36m>\u001b[39m\n  \u001b[0mThis campaign’s map layers could not be read, so none are listed below. That is not a finding that there are none. (\u001b[0m\n  \u001b[0mconnection reset\u001b[0m\n  \u001b[0m)\u001b[0m\n\u001b[36m</p>\u001b[39m\n\nIgnored nodes: comments, script, style\n\u001b[36m<span\u001b[39m\n  \u001b[33mclass\u001b[39m=\u001b[32m\"text-muted-foreground\"\u001b[39m\n\u001b[36m>\u001b[39m\n  \u001b[0m(\u001b[0m\n  \u001b[0mSaved responses could not be read completely\u001b[0m\n  \u001b[0m)\u001b[0m\n\u001b[36m</span>\u001b[39m\n\nIgnored nodes: comments, script, style\n\u001b[36m<p\u001b[39m\n  \u001b[33mclass\u001b[39m=\u001b[32m\"mt-4 rounded-[0.5rem] border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-foreground\"\u001b[39m\n\u001b[36m>\u001b[39m\n  \u001b[0mWhich languages this campaign is complete in is \u001b[0m\n  \u001b[36m<strong>\u001b[39m\n    \u001b[0munkno"
+      },
+      {
+        "name": "EngagementCampaignDetailPage the campaign's translations shows what a language can be claimed to be, per language",
+        "message": "TestingLibraryElementError: Unable to find an element with the text: /Your text: 1 of 4 strings translated/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.\n\nIgnored nodes: comments, script, style\n\u001b[36m<body\u001b[39m\n  \u001b[33mdata-surface-wide\u001b[39m=\u001b[32m\"true\"\u001b[39m\n\u001b[36m>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<section\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"module-page grid-cols-[minmax(0,1fr)]\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"mb-4 flex items-center gap-2 text-sm text-muted-foreground\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<a\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"transition hover:text-foreground\"\u001b[39m\n          \u001b[33mhref\u001b[39m=\u001b[32m\"/engagement\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mEngagement\u001b[0m\n        \u001b[36m</a>\u001b[39m\n        \u001b[36m<svg\u001b[39m\n          \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"lucide lucide-arrow-right h-3.5"
+      },
+      {
+        "name": "EngagementCampaignDetailPage the campaign's translations marks a machine translation as machine and says what accepting it does",
+        "message": "TestingLibraryElementError: Unable to find an accessible element with the role \"button\" and name `/accept as our wording/i`\n\nHere are the accessible roles:\n\n  link:\n\n  Name \"Engagement\":\n  \u001b[36m<a\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"transition hover:text-foreground\"\u001b[39m\n    \u001b[33mhref\u001b[39m=\u001b[32m\"/engagement\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Setup\":\n  \u001b[36m<a\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"module-tab-trigger inline-flex items-center whitespace-nowrap text-sm font-medium transition text-foreground/60 hover:text-foreground\"\u001b[39m\n    \u001b[33mdata-page-tab\u001b[39m=\u001b[32m\"setup\"\u001b[39m\n    \u001b[33mdata-state\u001b[39m=\u001b[32m\"inactive\"\u001b[39m\n    \u001b[33mhref\u001b[39m=\u001b[32m\"/engagement/campaign-1?tab=setup\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Responses\":\n  \u001b[36m<a\u001b[39m\n    \u001b[33maria-current\u001b[39m=\u001b[32m\"page\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"module-tab-trigger inline-flex items-center whitespace-nowrap text-sm font-medium transition text-foreground\"\u001b[39m\n    \u001b[33mdata-page-tab\u001b[39m=\u001b[32m\"responses\"\u001b[39m\n    \u001b[33mdata-state\u001b[39m=\u001b[32m\"acti"
+      },
+      {
+        "name": "EngagementCampaignDetailPage the campaign's translations offers a viewer no translation control the route would refuse",
+        "message": "TestingLibraryElementError: Unable to find an element with the text: /Your text: 0 of 4 strings translated/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.\n\nIgnored nodes: comments, script, style\n\u001b[36m<body\u001b[39m\n  \u001b[33mdata-surface-wide\u001b[39m=\u001b[32m\"true\"\u001b[39m\n\u001b[36m>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<section\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"module-page grid-cols-[minmax(0,1fr)]\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"mb-4 flex items-center gap-2 text-sm text-muted-foreground\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<a\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"transition hover:text-foreground\"\u001b[39m\n          \u001b[33mhref\u001b[39m=\u001b[32m\"/engagement\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mEngagement\u001b[0m\n        \u001b[36m</a>\u001b[39m\n        \u001b[36m<svg\u001b[39m\n          \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"lucide lucide-arrow-right h-3.5"
+      },
+      {
+        "name": "PublicEngagementPage asks the database whether this campaign refuses pins outside its area",
+        "message": "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ …(2) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n-   \"read_engagement_response_snapshot\",\n+   \"wrong_snapshot\",\n    {\n      \"p_campaign\": \"11111111-1111-4111-8111-111111111111\",\n      \"p_published_only\": true,\n    },\n  ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/public-engagement-page.test.tsx:439:30\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at fil"
+      },
+      {
+        "name": "PublicEngagementPage asks the database for the columns it renders",
+        "message": "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ …(2) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n-   \"read_engagement_response_snapshot\",\n+   \"wrong_snapshot\",\n    {\n      \"p_campaign\": \"11111111-1111-4111-8111-111111111111\",\n      \"p_published_only\": true,\n    },\n  ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/public-engagement-page.test.tsx:601:30\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at fil"
+      }
+    ]
+  },
+  {
+    "name": "missing-decoder",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "refuses malformed entry",
+    "failures": [
+      {
+        "name": "complete response snapshot loaders refuses malformed entry without returning a partial list",
+        "message": "AssertionError: expected { …(2) } to deeply equal { rows: [], …(1) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/close-loop.test.ts:102:20\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "malformed-pass-through",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "withholds unreadable published-response translation fields",
+    "failures": [
+      {
+        "name": "the translatable inventory is exactly what a participant reads withholds unreadable published-response translation fields: null",
+        "message": "AssertionError: expected [ { …(10) }, { …(10) }, { …(10) } ] to deeply equal []\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/an-operator-can-author-a-campaigns-translations.test.tsx:206:80\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "complete response snapshot loaders refuses null result without returning a partial list",
+        "message": "TypeError: Cannot read properties of null (reading 'entries')\n    at loadResponseSnapshot (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/lib/engagement/close-loop.ts:79:53)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)"
+      },
+      {
+        "name": "complete response snapshot loaders refuses missing envelope without returning a partial list",
+        "message": "AssertionError: expected { rows: [Function entries], …(1) } to deeply equal { rows: [], …(1) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/close-loop.test.ts:102:20\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "complete response snapshot loaders refuses malformed entry without returning a partial list",
+        "message": "AssertionError: expected { …(2) } to deeply equal { rows: [], …(1) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/close-loop.test.ts:102:20\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "missing-count",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "refuses count mismatch",
+    "failures": [
+      {
+        "name": "complete response snapshot loaders refuses count mismatch without returning a partial list",
+        "message": "AssertionError: expected { …(2) } to deeply equal { rows: [], …(1) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/close-loop.test.ts:102:20\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "foreign-receipt",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "refuses foreign receipt",
+    "failures": [
+      {
+        "name": "complete response snapshot loaders refuses foreign receipt without returning a partial list",
+        "message": "AssertionError: expected { …(2) } to deeply equal { rows: [], …(1) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/close-loop.test.ts:102:20\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "wrong-publication-receipt",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "refuses wrong publication receipt",
+    "failures": [
+      {
+        "name": "complete response snapshot loaders refuses wrong publication receipt without returning a partial list",
+        "message": "AssertionError: expected { …(2) } to deeply equal { rows: [], …(1) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/close-loop.test.ts:102:20\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "duplicate-row",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "refuses duplicate row",
+    "failures": [
+      {
+        "name": "complete response snapshot loaders refuses duplicate row without returning a partial list",
+        "message": "AssertionError: expected { Object (rows, error) } to deeply equal { rows: [], …(1) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/close-loop.test.ts:102:20\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "foreign-row",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "refuses foreign row",
+    "failures": [
+      {
+        "name": "complete response snapshot loaders refuses foreign row without returning a partial list",
+        "message": "AssertionError: expected { …(2) } to deeply equal { rows: [], …(1) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/close-loop.test.ts:102:20\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "draft-public-row",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "refuses a draft",
+    "failures": [
+      {
+        "name": "complete response snapshot loaders refuses a draft in a published-only snapshot",
+        "message": "AssertionError: expected { …(2) } to deeply equal { rows: [], …(1) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/close-loop.test.ts:107:77\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "public-scope-request",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "requests the exact campaign",
+    "failures": [
+      {
+        "name": "the translatable inventory is exactly what a participant reads asks the database for what a participant sees, with the portal's own filters",
+        "message": "AssertionError: expected [ [ …(2) ] ] to deeply equal [ [ …(2) ] ]\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/an-operator-can-author-a-campaigns-translations.test.tsx:200:39\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "complete response snapshot loaders requests the exact campaign/publication snapshot: true",
+        "message": "AssertionError: expected { rows: [], …(1) } to deeply equal { …(2) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/close-loop.test.ts:67:54\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "complete response snapshot loaders accepts a successful empty snapshot: true",
+        "message": "AssertionError: expected { rows: [], …(1) } to deeply equal { rows: [], error: null }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/close-loop.test.ts:80:54\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "EngagementCampaignDetailPage shows a retry instead of an empty staff-response builder when the read fails",
+        "message": "AssertionError: expected \"vi.fn()\" to be called with arguments: [ …(2) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n-   \"read_engagement_response_snapshot\",\n+   \"engagement_items_with_nearby_crashes\",\n    {\n-     \"p_campaign\": \"campaign-1\",\n-     \"p_published_only\": true,\n+     \"p_campaign_id\": \"campaign-1\",\n+     \"p_from_year\": null,\n+     \"p_radius_meters\": 100,\n+     \"p_to_year\": null,\n+     \"p_workspace_id\": \"workspace-1\",\n    },\n  ]\n\n  2nd vi.fn() call:\n\n  [\n    \"read_engagement_response_snapshot\",\n    {\n      \"p_campaign\": \"campaign-1\",\n-     \"p_published_only\": true,\n+     \"p_published_only\": false,\n    },\n  ]\n\n  3rd vi.fn() call:\n\n  [\n-   \"read_engagement_response_snapshot\",\n+   \"engagement_sentiment_hotspots\",\n    {\n-     \"p_campaign\": \"campaign-1\",\n-     \"p_published_only\": true,\n+     \"p_campaign_id\": \"campaign-1\",\n+     \"p_eps_meters\": 250,\n+     \"p_min_points\": 5,\n+     \"p_negative_item_ids\": [],\n+     \"p_workspace_id\": \"workspace-1\",\n    },\n  ]\n\n  4th vi.fn() call:\n\n  [\n    \"re"
+      },
+      {
+        "name": "PublicEngagementPage asks the database whether this campaign refuses pins outside its area",
+        "message": "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ …(2) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n    \"read_engagement_response_snapshot\",\n    {\n      \"p_campaign\": \"11111111-1111-4111-8111-111111111111\",\n-     \"p_published_only\": true,\n+     \"p_published_only\": false,\n    },\n  ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/public-engagement-page.test.tsx:439:30\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)"
+      },
+      {
+        "name": "PublicEngagementPage asks the database for the columns it renders",
+        "message": "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ …(2) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n    \"read_engagement_response_snapshot\",\n    {\n      \"p_campaign\": \"11111111-1111-4111-8111-111111111111\",\n-     \"p_published_only\": true,\n+     \"p_published_only\": false,\n    },\n  ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/public-engagement-page.test.tsx:601:30\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)"
+      },
+      {
+        "name": "PublicEngagementPage says the ordinary empty-state when the reads succeeded and there is simply nothing yet",
+        "message": "AssertionError: expected <div role=\"status\" …(1)></div> to be null\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/public-engagement-page.test.tsx:943:74\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "PublicEngagementPage loadPublicPortalResult claims no read failure when every read answered",
+        "message": "AssertionError: expected { comments: false, …(3) } to deeply equal { comments: false, …(3) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/public-engagement-page.test.tsx:1055:47\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "translation-scope",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "asks the database for what a participant sees",
+    "failures": [
+      {
+        "name": "the translatable inventory is exactly what a participant reads asks the database for what a participant sees, with the portal's own filters",
+        "message": "AssertionError: expected [ [ …(2) ] ] to deeply equal [ [ …(2) ] ]\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/an-operator-can-author-a-campaigns-translations.test.tsx:187:39\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "EngagementCampaignDetailPage shows a retry instead of an empty staff-response builder when the read fails",
+        "message": "AssertionError: expected \"vi.fn()\" to be called with arguments: [ …(2) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n-   \"read_engagement_response_snapshot\",\n+   \"engagement_items_with_nearby_crashes\",\n    {\n-     \"p_campaign\": \"campaign-1\",\n-     \"p_published_only\": true,\n+     \"p_campaign_id\": \"campaign-1\",\n+     \"p_from_year\": null,\n+     \"p_radius_meters\": 100,\n+     \"p_to_year\": null,\n+     \"p_workspace_id\": \"workspace-1\",\n    },\n  ]\n\n  2nd vi.fn() call:\n\n  [\n    \"read_engagement_response_snapshot\",\n    {\n      \"p_campaign\": \"campaign-1\",\n-     \"p_published_only\": true,\n+     \"p_published_only\": false,\n    },\n  ]\n\n  3rd vi.fn() call:\n\n  [\n-   \"read_engagement_response_snapshot\",\n+   \"engagement_sentiment_hotspots\",\n    {\n-     \"p_campaign\": \"campaign-1\",\n-     \"p_published_only\": true,\n+     \"p_campaign_id\": \"campaign-1\",\n+     \"p_eps_meters\": 250,\n+     \"p_min_points\": 5,\n+     \"p_negative_item_ids\": [],\n+     \"p_workspace_id\": \"workspace-1\",\n    },\n  ]\n\n  4th vi.fn() call:\n\n  [\n    \"re"
+      }
+    ]
+  },
+  {
+    "name": "translation-loses-error",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "withholds unreadable published-response translation fields",
+    "failures": [
+      {
+        "name": "the translatable inventory is exactly what a participant reads withholds unreadable published-response translation fields: null",
+        "message": "AssertionError: expected [] to include 'this campaign\\'s published updates'\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1319:15)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/an-operator-can-author-a-campaigns-translations.test.tsx:207:63\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "the translatable inventory is exactly what a participant reads withholds unreadable published-response translation fields: {\"message\":\"SYNTHETIC response read failed\"}",
+        "message": "AssertionError: expected [] to include 'this campaign\\'s published updates'\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1319:15)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/an-operator-can-author-a-campaigns-translations.test.tsx:207:63\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  }
+]

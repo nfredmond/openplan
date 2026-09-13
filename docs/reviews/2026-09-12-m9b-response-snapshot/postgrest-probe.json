@@ -1,0 +1,49 @@
+{
+  "stack": "openplan-restore-target-2026091050",
+  "api": "http://127.0.0.1:29821",
+  "campaign": "a3347a61-5c8c-4c88-bf0c-f3e56d31cfc3",
+  "sibling": "ec76b57b-eba7-46d4-aa97-75104212d5d2",
+  "checks": [
+    {
+      "name": "ordinary table read demonstrates the real silent cap",
+      "available": 1005,
+      "returned": 1000
+    },
+    {
+      "name": "real staff loader reads every response in unique total order",
+      "returned": 1005
+    },
+    {
+      "name": "member and service public reads exclude drafts and sibling campaign",
+      "returned": 502
+    },
+    {
+      "name": "real authenticated outsider sees no rows and anonymous RPC is denied",
+      "outsiderRows": 0,
+      "anonymousErrorCode": "42501"
+    },
+    {
+      "name": "a later read observes a correction while the earlier returned object is unchanged",
+      "beforeSha256": "ea7b5ea793dc98ebf617027bfab775d2be95376b08a097d207afdea8018d2a5b",
+      "afterSha256": "e609c76fa68b0d15f1833d3b67bff954883bf23a994b360363f737c727b4a24a",
+      "limit": "This is not retained server-side revision history or an in-flight concurrency probe"
+    }
+  ],
+  "outsiderId": "e737fbca-c318-4930-a19b-8084be03cfe9",
+  "archiveError": null,
+  "fixturesArchived": true,
+  "outsiderRetained": "e737fbca-c318-4930-a19b-8084be03cfe9",
+  "finishedAt": "2026-09-13T02:53:08.478Z",
+  "archivedCampaigns": [
+    {
+      "id": "a3347a61-5c8c-4c88-bf0c-f3e56d31cfc3",
+      "status": "archived",
+      "allow_public_submissions": false
+    },
+    {
+      "id": "ec76b57b-eba7-46d4-aa97-75104212d5d2",
+      "status": "archived",
+      "allow_public_submissions": false
+    }
+  ]
+}

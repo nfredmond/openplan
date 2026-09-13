@@ -1,0 +1,20 @@
+{
+  "stack": "openplan-restore-target-2026091050",
+  "restoredDefinitionSha256": "e36cd68d0a1bc3bdcf6a538064c0a8100c389a81e42554c8ea5a6dfb5e3b1cc4",
+  "results": [
+    {
+      "name": "harmless-comment",
+      "outcome": "survived",
+      "matched": true,
+      "expected": null,
+      "stderr": ""
+    },
+    {
+      "name": "volatile-read",
+      "outcome": "killed",
+      "matched": true,
+      "expected": "An overlapping edit changed the in-flight snapshot",
+      "stderr": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/docs/reviews/2026-09-12-m9b-response-snapshot/concurrent-read-probe.py\", line 52, in <module>\n    assert during == original['text'], 'An overlapping edit changed the in-flight snapshot'\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: An overlapping edit changed the in-flight snapshot\n"
+    }
+  ]
+}

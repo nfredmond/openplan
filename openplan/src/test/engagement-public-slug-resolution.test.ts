@@ -63,7 +63,11 @@ const fromMock = vi.fn((table: string) => ({
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
-  createServiceRoleClient: () => ({ from: fromMock }),
+  createServiceRoleClient: () => ({ from: fromMock, rpc: vi.fn(async (name: string, args: { p_campaign: string; p_published_only: boolean }) => {
+    expect(name).toBe("read_engagement_response_snapshot");
+    expect(args.p_published_only).toBe(true);
+    return { data: { campaignId: args.p_campaign, publishedOnly: true, count: 0, entries: [] }, error: null };
+  }) }),
 }));
 
 vi.mock("next/headers", () => ({

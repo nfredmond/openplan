@@ -184,9 +184,7 @@ describe("the translatable inventory is exactly what a participant reads", () =>
     expect(inventoryFilters.filtersFor("engagement_survey_question_options")).toEqual(
       portalSurvey.filtersFor("engagement_survey_question_options")
     );
-    expect(inventoryFilters.filtersFor("engagement_closeloop_entries")).toEqual(
-      portalCloseLoop.filtersFor("engagement_closeloop_entries")
-    );
+    expect(inventoryFilters.rpcCalls).toEqual(portalCloseLoop.rpcCalls);
 
     // Stated explicitly too, so a change to BOTH sides at once is still visible.
     // `status = published` was added on 2026-08-07 with the draft state, and
@@ -199,10 +197,14 @@ describe("the translatable inventory is exactly what a participant reads", () =>
       ["is_active", true],
       ["status", "published"],
     ]);
-    expect(inventoryFilters.filtersFor("engagement_closeloop_entries")).toEqual([
-      ["campaign_id", CAMPAIGN_ID],
-      ["status", "published"],
-    ]);
+    expect(inventoryFilters.rpcCalls).toEqual([["read_engagement_response_snapshot", { p_campaign: CAMPAIGN_ID, p_published_only: true }]]);
+  });
+
+  it.each([null, { message: "SYNTHETIC response read failed" }])("withholds unreadable published-response translation fields: %j", async error => {
+    const failing = recordingClient({ engagement_closeloop_entries: { data: [{ id: "broken", theme_title: "Unsafe partial theme", you_said: "Partial input", we_did: "Partial response" }], error } });
+    const result = await loadCampaignTranslatableFields(failing.client, { id: CAMPAIGN_ID, title: "x" });
+    expect(result.fields.filter(field => field.entity === "close_loop_entry")).toEqual([]);
+    expect(result.readFailures.map(failure => failure.label)).toContain("this campaign's published updates");
   });
 
   it("reports a failed inventory read instead of shrinking the thing it measures", async () => {
@@ -333,10 +335,17 @@ describe("the translatable inventory is exactly what a participant reads", () =>
  */
 function recordingClient(results: Record<string, { data: unknown[]; error: { message: string } | null }> = {}) {
   const filters = new Map<string, Array<[string, unknown]>>();
+  const rpcCalls: Array<[string, unknown]> = [];
 
   return {
     filtersFor: (table: string) => filters.get(table) ?? [],
+    rpcCalls,
     client: {
+      rpc: async (name: string, args: { p_campaign: string; p_published_only: boolean }) => {
+        rpcCalls.push([name, args]);
+        const result = results.engagement_closeloop_entries ?? { data: [], error: null };
+        return { data: { campaignId: args.p_campaign, publishedOnly: args.p_published_only, count: result.data.length, entries: result.data }, error: result.error };
+      },
       from: (table: string) => {
         const recorded: Array<[string, unknown]> = [];
         filters.set(table, recorded);

@@ -1,0 +1,170 @@
+[
+  {
+    "name": "harmless-comment",
+    "outcome": "survived",
+    "matched": true,
+    "failures": []
+  },
+  {
+    "name": "wrong-rpc",
+    "outcome": "killed",
+    "matched": true,
+    "failures": [
+      {
+        "file": "src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts",
+        "name": "a translation cannot be attached to something outside this campaign refuses a field this campaign does not show a participant",
+        "message": "AssertionError: expected 500 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts:300:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "file": "src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts",
+        "name": "a translation cannot be attached to something outside this campaign refuses an archived question's prompt, because a participant does not read it",
+        "message": "AssertionError: expected 500 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts:321:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "file": "src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts",
+        "name": "a translation cannot be attached to something outside this campaign refuses everything when the inventory itself could not be read",
+        "message": "AssertionError: the given combination of arguments (undefined and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1319:15)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/st"
+      },
+      {
+        "file": "src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts",
+        "name": "the operator's own wording stores it as the agency's statement, with no model and with what it translated",
+        "message": "AssertionError: expected 500 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts:354:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "file": "src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts",
+        "name": "the operator's own wording reports a failed save as a failure, naming the database's own message",
+        "message": "AssertionError: the given combination of arguments (undefined and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1319:15)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/st"
+      },
+      {
+        "file": "src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts",
+        "name": "machine translation drafts without saving anything, so a suggestion is not a publication",
+        "message": "AssertionError: expected 500 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts:412:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "file": "src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts",
+        "name": "machine translation publishes model output as machine, with the model recorded",
+        "message": "AssertionError: expected 500 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts:428:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "file": "src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts",
+        "name": "machine translation meters the spend it caused, in its own bucket",
+        "message": "AssertionError: expected \"vi.fn()\" to be called with arguments: [ ObjectContaining{…} ]\n\nNumber of calls: 0\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1487:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/accepting-a-machine-tran"
+      },
+      {
+        "file": "src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts",
+        "name": "machine translation stops at the rate limit instead of spending",
+        "message": "AssertionError: expected 500 to be 429 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts:461:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "file": "src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts",
+        "name": "machine translation says why the model is unavailable instead of showing an empty box",
+        "message": "AssertionError: expected 500 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts:472:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "file": "src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts",
+        "name": "machine translation refuses to machine-translate into a language it carries but never generates — even with a key",
+        "message": "AssertionError: expected 500 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts:492:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "file": "src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts",
+        "name": "machine translation reports a translation that failed as failed, not as one that came back empty",
+        "message": "AssertionError: expected 500 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts:519:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "file": "src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts",
+        "name": "accepting a machine translation promotes it to the agency's own wording and drops the model",
+        "message": "AssertionError: expected 500 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts:535:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "file": "src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts",
+        "name": "accepting a machine translation audits the promotion as a promotion, because who wrote a public sentence has legal weight",
+        "message": "AssertionError: expected \"vi.fn()\" to be called with arguments: [ …(2) ]\n\nNumber of calls: 0\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1487:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/accepting-a-machine-translation-makes-i"
+      },
+      {
+        "file": "src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts",
+        "name": "accepting a machine translation promotes only the fields asked for, never a cross product of them",
+        "message": "AssertionError: expected [] to have a length of 2 but got +0\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1389:20)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts:601:21\n"
+      },
+      {
+        "file": "src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts",
+        "name": "accepting a machine translation answers a promotion that matched nothing as no such translation, not as success",
+        "message": "AssertionError: expected 500 to be 404 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts:618:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "file": "src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts",
+        "name": "withdrawing a translation removes exactly one field's translation in one language",
+        "message": "AssertionError: expected 500 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts:631:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "file": "src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts",
+        "name": "withdrawing a translation answers a withdrawal that matched nothing as no such translation",
+        "message": "AssertionError: expected 500 to be 404 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts:649:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "file": "src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts",
+        "name": "withdrawing a translation refuses a withdrawal aimed outside this campaign",
+        "message": "AssertionError: expected 500 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts:659:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "file": "src/test/close-loop-route.test.ts",
+        "name": "close-loop operator routes GET returns the campaign's entries",
+        "message": "AssertionError: expected 500 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/close-loop-route.test.ts:126:24\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "file": "src/test/close-loop-route.test.ts",
+        "name": "close-loop operator routes GET refuses a failed read instead of returning an empty list: {\"message\":\"SYNTHETIC database connection lost\"}",
+        "message": "AssertionError: expected 'Unexpected error while listing close-…' to match /saved staff responses/i\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/close-loop-route.test.ts:139:24\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "file": "src/test/close-loop-route.test.ts",
+        "name": "close-loop operator routes GET refuses a failed read instead of returning an empty list: {\"message\":\"relation \\\"engagement_closeloop_entries\\\" does not exist\"}",
+        "message": "AssertionError: expected 500 to be 503 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/close-loop-route.test.ts:136:24\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "file": "src/test/close-loop-route.test.ts",
+        "name": "close-loop operator routes GET returns a successful empty list when the read actually succeeds",
+        "message": "AssertionError: expected 500 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/close-loop-route.test.ts:146:24\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "file": "src/test/engagement-portal-preview-page.test.tsx",
+        "name": "the operator portal preview — what a member sees renders a DRAFT campaign: the campaign read is scoped by id and deliberately carries no status filter",
+        "message": "AssertionError: expected 'wrong_snapshot' to be 'read_engagement_response_snapshot' // Object.is equality\n    at Object.<anonymous> (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/engagement-portal-preview-page.test.tsx:105:18)\n    at Object.Mock [as rpc] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/spy/dist/index.js:332:34)\n    at loadResponseSnapshot (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/lib/engagement/close-loop.ts:72:33)\n    at loadPublishedCloseLoopEntries (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/lib/"
+      },
+      {
+        "file": "src/test/engagement-portal-preview-page.test.tsx",
+        "name": "the operator portal preview — what a member sees tells the truth about a LIVE campaign instead of claiming residents cannot see it",
+        "message": "AssertionError: expected 'wrong_snapshot' to be 'read_engagement_response_snapshot' // Object.is equality\n    at Object.<anonymous> (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/engagement-portal-preview-page.test.tsx:105:18)\n    at Object.Mock [as rpc] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/spy/dist/index.js:332:34)\n    at loadResponseSnapshot (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/lib/engagement/close-loop.ts:72:33)\n    at loadPublishedCloseLoopEntries (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/lib/"
+      },
+      {
+        "file": "src/test/engagement-portal-preview-page.test.tsx",
+        "name": "the operator portal preview — what a member sees renders the surface RESIDENTS get, not a second page only operators see",
+        "message": "AssertionError: expected 'wrong_snapshot' to be 'read_engagement_response_snapshot' // Object.is equality\n    at Object.<anonymous> (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/engagement-portal-preview-page.test.tsx:105:18)\n    at Object.Mock [as rpc] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/spy/dist/index.js:332:34)\n    at loadResponseSnapshot (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/lib/engagement/close-loop.ts:72:33)\n    at loadPublishedCloseLoopEntries (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/lib/"
+      },
+      {
+        "file": "src/test/engagement-portal-preview-page.test.tsx",
+        "name": "the operator portal preview — what a member sees keeps every submission control inert: the send button never leaves preview mode",
+        "message": "AssertionError: expected 'wrong_snapshot' to be 'read_engagement_response_snapshot' // Object.is equality\n    at Object.<anonymous> (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/engagement-portal-preview-page.test.tsx:105:18)\n    at Object.Mock [as rpc] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/spy/dist/index.js:332:34)\n    at loadResponseSnapshot (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/lib/engagement/close-loop.ts:72:33)\n    at loadPublishedCloseLoopEntries (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/lib/"
+      },
+      {
+        "file": "src/test/engagement-public-slug-resolution.test.ts",
+        "name": "public portal resolution by token or slug resolves an active campaign by its slug, and the slug read itself requires status = 'active'",
+        "message": "AssertionError: expected 'wrong_snapshot' to be 'read_engagement_response_snapshot' // Object.is equality\n    at Object.<anonymous> (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/engagement-public-slug-resolution.test.ts:67:18)\n    at Object.Mock [as rpc] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/spy/dist/index.js:332:34)\n    at loadResponseSnapshot (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/lib/engagement/close-loop.ts:72:33)\n    at loadPublishedCloseLoopEntries (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/lib"
+      },
+      {
+        "file": "src/test/engagement-public-slug-resolution.test.ts",
+        "name": "public portal resolution by token or slug still resolves a token exactly as before, without ever consulting the slug column",
+        "message": "AssertionError: expected 'wrong_snapshot' to be 'read_engagement_response_snapshot' // Object.is equality\n    at Object.<anonymous> (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/engagement-public-slug-resolution.test.ts:67:18)\n    at Object.Mock [as rpc] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/spy/dist/index.js:332:34)\n    at loadResponseSnapshot (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/lib/engagement/close-loop.ts:72:33)\n    at loadPublishedCloseLoopEntries (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/lib"
+      },
+      {
+        "file": "src/test/engagement-public-slug-resolution.test.ts",
+        "name": "public portal resolution by token or slug disambiguates token-first: a slug that collides with a live token loses to the token",
+        "message": "AssertionError: expected 'wrong_snapshot' to be 'read_engagement_response_snapshot' // Object.is equality\n    at Object.<anonymous> (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/engagement-public-slug-resolution.test.ts:67:18)\n    at Object.Mock [as rpc] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/spy/dist/index.js:332:34)\n    at loadResponseSnapshot (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/lib/engagement/close-loop.ts:72:33)\n    at loadPublishedCloseLoopEntries (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/lib"
+      },
+      {
+        "file": "src/test/engagement-public-slug-resolution.test.ts",
+        "name": "public portal resolution by token or slug resolves a hand-typed slug case-insensitively — a flyer typed back as 'Downtown-Corridor-Plan' still lands",
+        "message": "AssertionError: expected 'wrong_snapshot' to be 'read_engagement_response_snapshot' // Object.is equality\n    at Object.<anonymous> (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/engagement-public-slug-resolution.test.ts:67:18)\n    at Object.Mock [as rpc] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/spy/dist/index.js:332:34)\n    at loadResponseSnapshot (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/lib/engagement/close-loop.ts:72:33)\n    at loadPublishedCloseLoopEntries (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/lib"
+      }
+    ]
+  }
+]

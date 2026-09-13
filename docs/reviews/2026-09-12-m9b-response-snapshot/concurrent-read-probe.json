@@ -1,0 +1,9 @@
+{
+  "stack": "openplan-restore-target-2026091050",
+  "campaign": "a3347a61-5c8c-4c88-bf0c-f3e56d31cfc3",
+  "entry": "0076f5ca-e3f1-48e2-8a6d-8726fe7c85f2",
+  "readerObservedWaiting": true,
+  "duringRead": "SYNTHETIC corrected response",
+  "nextRead": "SYNTHETIC concurrent correction",
+  "scope": "Actual PostgreSQL calling-query snapshot with a concurrent committed edit; HTTP cap proof is separate"
+}

@@ -209,6 +209,12 @@ let translationReadError: { message: string } | null = null;
  * because the list it would be measured against is short.
  */
 let closeLoopReadError: { message: string } | null = null;
+const snapshotRpcMock = vi.fn(async (name: string, args: { p_campaign: string; p_published_only: boolean }) => {
+        if (name === "read_engagement_response_snapshot") return {
+          data: { campaignId: args.p_campaign, publishedOnly: args.p_published_only, count: 0, entries: [] }, error: closeLoopReadError,
+        };
+        return { data: [], error: null };
+      });
 let surveyQuestionsReadError: { message: string } | null = null;
 
 /**
@@ -300,11 +306,6 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "engagement_survey_question_options") {
     return flexibleChain(() => ({ data: [], error: null }));
-  }
-  // Close-loop entries — `loadCloseLoopEntries` (all) and the translation
-  // inventory (published only).
-  if (table === "engagement_closeloop_entries") {
-    return flexibleChain(() => ({ data: [], error: closeLoopReadError }));
   }
   if (table === "engagement_content_translations") {
     return flexibleChain(() => ({
@@ -447,6 +448,8 @@ describe("EngagementCampaignDetailPage", () => {
   it("shows a retry instead of an empty staff-response builder when the read fails", async () => {
     closeLoopReadError = { message: "SYNTHETIC connection lost" };
     await renderPage();
+    expect(snapshotRpcMock).toHaveBeenCalledWith("read_engagement_response_snapshot", { p_campaign: "campaign-1", p_published_only: false });
+    expect(snapshotRpcMock).toHaveBeenCalledWith("read_engagement_response_snapshot", { p_campaign: "campaign-1", p_published_only: true });
     expect(screen.getByRole("button", { name: "Retry loading responses" })).toBeEnabled();
     expect(screen.getByText(/Saved staff responses could not be loaded/)).toBeVisible();
     expect(screen.queryByText(/No entries yet/)).not.toBeInTheDocument();
@@ -643,7 +646,7 @@ describe("EngagementCampaignDetailPage", () => {
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
       from: fromMock,
-      rpc: vi.fn().mockResolvedValue({ data: [], error: null }),
+      rpc: snapshotRpcMock,
     });
   });
 

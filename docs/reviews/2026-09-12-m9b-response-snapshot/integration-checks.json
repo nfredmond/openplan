@@ -1,0 +1,17 @@
+{
+  "logSha256": {
+    "m9b-snapshot-full-tests.log": "f62588aa9ca4be14997cc667e7fb9360dc9acb20cd25d47a076ce6978a9697cc",
+    "m9b-snapshot-types-all-consumers.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "m9b-snapshot-eslint-all-consumers.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "initialFullSuite": {
+    "passed": 14075,
+    "failed": 32,
+    "skipped": 450
+  },
+  "focusedLoaderGroup": 157,
+  "focusedAdditionalConsumers": 64,
+  "typescript": "exit 0",
+  "changedFileEslint": "exit 0",
+  "browser": "not yet run on the snapshot implementation"
+}

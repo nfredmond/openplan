@@ -1,0 +1,18 @@
+{
+  "initialFailure": "SQLSTATE 23503: retained configuration history prevented campaign deletion after all read probes completed",
+  "campaigns": [
+    {
+      "id": "eb9768c4-13e8-4590-80e1-e72f482d8686",
+      "status": "archived",
+      "allow_public_submissions": false
+    },
+    {
+      "id": "c9562e34-ddf6-43c5-933c-5463b620c231",
+      "status": "archived",
+      "allow_public_submissions": false
+    }
+  ],
+  "outsiderRetained": "e17c88c0-875b-450b-911d-cad956f961d0",
+  "accountCleanup": "Auth admin delete returned HTTP 500; cause unestablished; synthetic account retained",
+  "recoveredAt": "2026-09-13T02:53:07.647Z"
+}

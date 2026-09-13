@@ -174,12 +174,8 @@ const surveyOptionsEqActiveMock = vi.fn(() => ({ order: surveyOptionsOrderMock }
 const surveyOptionsEqCampaignMock = vi.fn(() => ({ eq: surveyOptionsEqActiveMock }));
 const surveyOptionsSelectMock = vi.fn(() => ({ eq: surveyOptionsEqCampaignMock }));
 
-// loadPublishedCloseLoopEntries — select → eq(campaign) → eq(status) → order → order.
-const closeLoopOrderCreatedMock = vi.fn().mockResolvedValue({ data: [], error: null });
-const closeLoopOrderSortMock = vi.fn(() => ({ order: closeLoopOrderCreatedMock }));
-const closeLoopEqStatusMock = vi.fn(() => ({ order: closeLoopOrderSortMock }));
-const closeLoopEqCampaignMock = vi.fn(() => ({ eq: closeLoopEqStatusMock }));
-const closeLoopSelectMock = vi.fn(() => ({ eq: closeLoopEqCampaignMock }));
+// The public response loader uses one complete, published-only snapshot RPC.
+const closeLoopRpcMock = vi.fn();
 
 // loadParticipantContextLayers — select → eq(campaign) → eq(visible_to_participants) → order → order.
 // The second `eq` is the one that decides what an anonymous reader may see, so
@@ -231,7 +227,7 @@ const fromMock = vi.fn((table: string) => {
     return { select: surveyOptionsSelectMock };
   }
   if (table === "engagement_closeloop_entries") {
-    return { select: closeLoopSelectMock };
+    throw new Error("Response reads must use the complete snapshot RPC");
   }
   if (table === "engagement_content_translations") {
     return { select: translationsSelectMock };
@@ -262,7 +258,7 @@ import {
 describe("PublicEngagementPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    createServiceRoleClientMock.mockReturnValue({ from: fromMock });
+    createServiceRoleClientMock.mockReturnValue({ from: fromMock, rpc: closeLoopRpcMock });
 
     campaignMaybeSingleMock.mockResolvedValue({
       data: {
@@ -350,7 +346,7 @@ describe("PublicEngagementPage", () => {
       shape of a green suite proving nothing, and it cost one wrong assertion in
       this file before it was noticed.
     */
-    closeLoopOrderCreatedMock.mockResolvedValue({ data: [], error: null });
+    closeLoopRpcMock.mockResolvedValue({ data: { campaignId: "11111111-1111-4111-8111-111111111111", publishedOnly: true, count: 0, entries: [] }, error: null });
   });
 
   /**
@@ -440,6 +436,9 @@ describe("PublicEngagementPage", () => {
     // flag would pass the two tests above.
     await PublicEngagementPage({ params: Promise.resolve({ shareToken: "share-token-12345" }) });
 
+    expect(closeLoopRpcMock).toHaveBeenCalledExactlyOnceWith("read_engagement_response_snapshot", {
+      p_campaign: "11111111-1111-4111-8111-111111111111", p_published_only: true,
+    });
     const projections = campaignSelectMock.mock.calls.map((call) => call[0] as string);
     expect(projections).toContain("submission_geofence_enabled");
 
@@ -599,6 +598,9 @@ describe("PublicEngagementPage", () => {
   it("asks the database for the columns it renders", async () => {
     await renderPage();
 
+    expect(closeLoopRpcMock).toHaveBeenCalledExactlyOnceWith("read_engagement_response_snapshot", {
+      p_campaign: "11111111-1111-4111-8111-111111111111", p_published_only: true,
+    });
     const projections = campaignSelectMock.mock.calls.map((call) => call[0] as string);
     const campaignProjection = projections.find((columns) => columns.includes("public_description"));
 
@@ -900,7 +902,7 @@ describe("PublicEngagementPage", () => {
     So: fail a NAMED read, then look at what a resident would actually see.
   */
   it("keeps the close-the-loop tab, and says so, when that read failed", async () => {
-    closeLoopOrderCreatedMock.mockResolvedValue({
+    closeLoopRpcMock.mockResolvedValue({
       data: null,
       error: { message: "permission denied for relation engagement_closeloop_entries" },
     });
@@ -1018,7 +1020,7 @@ describe("PublicEngagementPage", () => {
      * community and left nothing on screen to doubt.
      */
     it("reports a failed close-the-loop read instead of an agency that never answered", async () => {
-      closeLoopOrderCreatedMock.mockResolvedValue({
+      closeLoopRpcMock.mockResolvedValue({
         data: null,
         error: { message: "permission denied for relation engagement_closeloop_entries" },
       });

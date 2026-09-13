@@ -49,44 +49,61 @@ describe("buildCloseLoopDraftsFromSynthesis", () => {
   });
 });
 
-describe("close-loop loaders", () => {
-  it("loadCloseLoopEntries reads all entries scoped by campaign, ordered", async () => {
-    const order2 = vi.fn().mockResolvedValue({ data: [{ id: "e1" }], error: null });
-    const order1 = vi.fn(() => ({ order: order2 }));
-    const eq = vi.fn(() => ({ order: order1 }));
-    const select = vi.fn(() => ({ eq }));
-    const from = vi.fn(() => ({ select }));
+function responseRow(overrides = {}) {
+  return { id: "entry-1", campaign_id: "camp-1", category_id: null, theme_title: "Crossings",
+    you_said: "Crossing is difficult", we_did: "Review crossing options", status: "published",
+    ai_assisted: false, source_item_ids: [], sort_order: 0, published_at: "2026-09-12T00:00:00Z",
+    created_at: "2026-09-12T00:00:00Z", updated_at: "2026-09-12T00:00:00Z", ...overrides };
+}
+function responseSnapshot(publishedOnly = false, entries = [responseRow()]) {
+  return { campaignId: "camp-1", publishedOnly, count: entries.length, entries };
+}
 
-    const rows = await loadCloseLoopEntries({ from } as never, "camp-1");
-    expect(from).toHaveBeenCalledWith("engagement_closeloop_entries");
-    expect(eq).toHaveBeenCalledWith("campaign_id", "camp-1");
-    expect(select).toHaveBeenCalledWith("id, campaign_id, category_id, theme_title, you_said, we_did, status, ai_assisted, source_item_ids, sort_order, published_at, created_at, updated_at");
-    expect(order1).toHaveBeenCalledWith("sort_order", { ascending: true });
-    expect(order2).toHaveBeenCalledWith("created_at", { ascending: true });
-    expect(rows).toEqual({ rows: [{ id: "e1" }], error: null });
+describe("complete response snapshot loaders", () => {
+  it.each([false, true])("requests the exact campaign/publication snapshot: %s", async publishedOnly => {
+    const data = responseSnapshot(publishedOnly);
+    const rpc = vi.fn().mockResolvedValue({ data, error: null });
+    const loader = publishedOnly ? loadPublishedCloseLoopEntries : loadCloseLoopEntries;
+    expect(await loader({ rpc } as never, "camp-1")).toEqual({ rows: data.entries, error: null });
+    expect(rpc).toHaveBeenCalledExactlyOnceWith("read_engagement_response_snapshot", { p_campaign: "camp-1", p_published_only: publishedOnly });
   });
 
-  it("loadPublishedCloseLoopEntries additionally filters status=published", async () => {
-    const order2 = vi.fn().mockResolvedValue({ data: [], error: null });
-    const order1 = vi.fn(() => ({ order: order2 }));
-    const eqStatus = vi.fn(() => ({ order: order1 }));
-    const eqCampaign = vi.fn(() => ({ eq: eqStatus }));
-    const select = vi.fn(() => ({ eq: eqCampaign }));
-    const from = vi.fn(() => ({ select }));
-
-    await loadPublishedCloseLoopEntries({ from } as never, "camp-2");
-    expect(eqCampaign).toHaveBeenCalledWith("campaign_id", "camp-2");
-    expect(eqStatus).toHaveBeenCalledWith("status", "published");
+  it("retains more than one server page of responses", async () => {
+    const entries = Array.from({ length: 1005 }, (_, i) => responseRow({ id: `entry-${i}` }));
+    const rpc = vi.fn().mockResolvedValue({ data: responseSnapshot(false, entries), error: null });
+    expect((await loadCloseLoopEntries({ rpc } as never, "camp-1")).rows).toEqual(entries);
   });
-});
 
+  it.each([false, true])("accepts a successful empty snapshot: %s", async publishedOnly => {
+    const rpc = vi.fn().mockResolvedValue({ data: responseSnapshot(publishedOnly, []), error: null });
+    const loader = publishedOnly ? loadPublishedCloseLoopEntries : loadCloseLoopEntries;
+    expect(await loader({ rpc } as never, "camp-1")).toEqual({ rows: [], error: null });
+  });
 
-describe("staff response read failures", () => {
-  it.each([null, { message: "SYNTHETIC connection lost" }])("preserves the error independently of empty rows: %j", async error => {
-    const query = { select: vi.fn(), eq: vi.fn(), order: vi.fn() };
-    query.select.mockReturnValue(query); query.eq.mockReturnValue(query);
-    query.order.mockReturnValueOnce(query).mockResolvedValueOnce({ data: error ? [{ id: "partial" }] : [], error });
-    const result = await loadCloseLoopEntries({ from: () => query } as never, "camp-1");
-    expect(result).toEqual({ rows: [], error });
+  it.each([false, true])("preserves the database error and withholds even valid partial rows: %s", async publishedOnly => {
+    const error = { message: "SYNTHETIC database read failure", code: "08006" };
+    const rpc = vi.fn().mockResolvedValue({ data: responseSnapshot(publishedOnly), error });
+    const loader = publishedOnly ? loadPublishedCloseLoopEntries : loadCloseLoopEntries;
+    expect(await loader({ rpc } as never, "camp-1")).toEqual({ rows: [], error });
+  });
+
+  it.each([
+    ["null result", null],
+    ["missing envelope", []],
+    ["malformed entry", responseSnapshot(false, [responseRow({ status: "unreadable" })])],
+    ["count mismatch", { ...responseSnapshot(), count: 2 }],
+    ["foreign receipt", { ...responseSnapshot(), campaignId: "foreign" }],
+    ["wrong publication receipt", { ...responseSnapshot(), publishedOnly: true }],
+    ["foreign row", responseSnapshot(false, [responseRow({ campaign_id: "foreign" })])],
+    ["duplicate row", responseSnapshot(false, [responseRow(), responseRow()])],
+  ])("refuses %s without returning a partial list", async (_label, data) => {
+    const rpc = vi.fn().mockResolvedValue({ data, error: null });
+    const result = await loadCloseLoopEntries({ rpc } as never, "camp-1");
+    expect(result).toEqual({ rows: [], error: { message: "Saved responses could not be read completely" } });
+  });
+
+  it("refuses a draft in a published-only snapshot", async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: responseSnapshot(true, [responseRow({ status: "draft" })]), error: null });
+    expect(await loadPublishedCloseLoopEntries({ rpc } as never, "camp-1")).toEqual({ rows: [], error: { message: "Saved responses could not be read completely" } });
   });
 });

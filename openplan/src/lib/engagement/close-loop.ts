@@ -9,7 +9,7 @@ import type { EngagementSynthesis } from "./ai-synthesis";
 // survey reader-inventory confinement guard (those tables hold public-submitted
 // data; these do not).
 
-type QueryClient = Pick<SupabaseClient, "from">;
+type QueryClient = Pick<SupabaseClient, "rpc">;
 
 export type CloseLoopStatus = "draft" | "published";
 
@@ -56,37 +56,47 @@ export type CloseLoopEntriesResult = {
   error: { message: string } | null;
 };
 
-/** Staff responses for the builder, retaining read failures separately from an empty result. */
-export async function loadCloseLoopEntries(supabase: QueryClient, campaignId: string): Promise<CloseLoopEntriesResult> {
-  const { data, error } = await supabase
-    .from("engagement_closeloop_entries")
-    .select(CLOSE_LOOP_ENTRY_COLUMNS)
-    .eq("campaign_id", campaignId)
-    .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: true });
-  return { rows: error ? [] : (data ?? []) as CloseLoopEntryRow[], error: error ?? null };
+const responseSnapshotSchema = z.object({
+  campaignId: z.string().min(1),
+  publishedOnly: z.boolean(),
+  count: z.number().int().nonnegative(),
+  entries: closeLoopEntrySchema.array(),
+});
+
+/** Read a complete database snapshot, refusing any malformed, partial or foreign response. */
+async function loadResponseSnapshot(
+  supabase: QueryClient,
+  campaignId: string,
+  publishedOnly: boolean
+): Promise<CloseLoopEntriesResult> {
+  const result = await supabase.rpc("read_engagement_response_snapshot", {
+    p_campaign: campaignId,
+    p_published_only: publishedOnly,
+  });
+  if (result.error) return { rows: [], error: result.error };
+
+  const snapshot = responseSnapshotSchema.safeParse(result.data);
+  if (!snapshot.success) return { rows: [], error: { message: "Saved responses could not be read completely" } };
+  const { entries, count } = snapshot.data;
+  if (snapshot.data.campaignId !== campaignId || snapshot.data.publishedOnly !== publishedOnly
+    || entries.length !== count || new Set(entries.map(row => row.id)).size !== entries.length
+    || entries.some(row => row.campaign_id !== campaignId || (publishedOnly && row.status !== "published"))) {
+    return { rows: [], error: { message: "Saved responses could not be read completely" } };
+  }
+  return { rows: entries, error: null };
 }
 
-/** Published entries only — the public portal read (service-role, campaign-scoped). */
+/** Staff responses for the builder, retaining read failures separately from an empty result. */
+export async function loadCloseLoopEntries(supabase: QueryClient, campaignId: string): Promise<CloseLoopEntriesResult> {
+  return loadResponseSnapshot(supabase, campaignId, false);
+}
+
+/** Published entries only, from one complete campaign-scoped snapshot. */
 export async function loadPublishedCloseLoopEntries(
   supabase: QueryClient,
   campaignId: string
 ): Promise<CloseLoopEntriesResult> {
-  const result = await supabase
-    .from("engagement_closeloop_entries")
-    .select(CLOSE_LOOP_ENTRY_COLUMNS)
-    .eq("campaign_id", campaignId)
-    .eq("status", "published")
-    .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: true });
-
-  return {
-    // A failed read carries no rows, so the empty array is the absence of an
-    // ANSWER here, never the answer "there are none" — which is exactly what the
-    // `error` beside it exists to tell the caller.
-    rows: (result.data ?? []) as CloseLoopEntryRow[],
-    error: result.error ?? null,
-  };
+  return loadResponseSnapshot(supabase, campaignId, true);
 }
 
 // ── AI draft-assist (never auto-published) ───────────────────────────────────

@@ -21,15 +21,20 @@ const categoriesResolve = vi.fn();
 
 const fakeSupabase = {
   auth: { getUser },
+  rpc: vi.fn(async (name: string, args: { p_campaign: string; p_published_only: boolean }) => {
+    expect(name).toBe("read_engagement_response_snapshot");
+    expect(args).toEqual({ p_campaign: CAMPAIGN_ID, p_published_only: false });
+    const result = await entryListResolve();
+    return { data: { campaignId: args.p_campaign, publishedOnly: false, count: result.data?.length ?? 0, entries: result.data ?? [] }, error: result.error };
+  }),
   from: vi.fn((table: string) => {
     if (table === "engagement_closeloop_entries") {
       return {
         insert: () => ({ select: () => ({ single: entryInsertSingle }) }),
         update: () => ({ eq: () => ({ eq: () => ({ select: () => ({ maybeSingle: entryUpdateMaybeSingle }) }) }) }),
         delete: () => ({ eq: () => ({ eq: () => entryDelete() }) }),
-        // select() serves BOTH the GET list (eq -> order -> order) and the
-        // pre-publish status read (eq -> eq -> maybeSingle).
-        select: () => ({ eq: () => ({ order: () => ({ order: entryListResolve }), eq: () => ({ maybeSingle: entryPriorStatus }) }) }),
+        // The pre-publish status read remains a separately scoped table query.
+        select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: entryPriorStatus }) }) }),
       };
     }
     if (table === "engagement_items") {
@@ -116,7 +121,7 @@ describe("close-loop operator routes", () => {
   });
 
   it("GET returns the campaign's entries", async () => {
-    entryListResolve.mockResolvedValue({ data: [{ id: ENTRY_ID, theme_title: "T" }], error: null });
+    entryListResolve.mockResolvedValue({ data: [{ id: ENTRY_ID, campaign_id: CAMPAIGN_ID, category_id: null, theme_title: "T", you_said: "Input", we_did: "Response", status: "draft", ai_assisted: false, source_item_ids: [], sort_order: 0, published_at: null, created_at: "2026-09-12T00:00:00Z", updated_at: "2026-09-12T00:00:00Z" }], error: null });
     const res = await GET(new NextRequest(`http://localhost/x`), listCtx);
     expect(res.status).toBe(200);
     expect((await res.json()).entries).toHaveLength(1);

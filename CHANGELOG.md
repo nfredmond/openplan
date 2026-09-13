@@ -20,6 +20,12 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Complete Engagement response reads are in development. Apply
+`20261013000001_engagement_response_snapshot.sql` before the new loader code:
+it adds the scoped, read-only snapshot function used by staff, public and
+translation response readers. Browser acceptance and release checks remain
+pending; response revision history is separate unfinished work.
+
 ## 0.55.1 — 2026-09-12
 
 A failed staff-response read in Engagement used to look like an empty response
