@@ -45,8 +45,9 @@ existing boundaries; this release does not promote them.
   52 suites passed. Installed conflict HTTP baseline/control pass; targeted old
   error codes fail before starting a retry loop, then functions are restored.
 - Full shuffled suite seed 370816: 1265 files and 14306 tests passed, 451 skipped.
-- Full QA at f95e477e failed two inventory assertions. They are fixed and
-  mutation-proved; a new full QA through provider checks, audit and build is due.
+- Full QA at f95e477e failed two inventory assertions. They were fixed and
+  mutation-proved. Full QA on 0c1e7d70 then finished with exit 0, including
+  provider checks, zero dependency vulnerabilities and the optimized build.
 - Public parent/reply withdrawal passed desktop and 390px with stored withdrawal,
   public absence, private history custody and anonymous history refusal verified.
   The original and corrected reports are linked in CONFLICT_AND_RESTORE.md.

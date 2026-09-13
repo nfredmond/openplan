@@ -1,8 +1,16 @@
 # Weekly reset checkpoint, September 13, 2026
 
-> Later continuation: read [RELEASE_CANDIDATE.md](RELEASE_CANDIDATE.md) and [CONFLICT_AND_RESTORE.md](CONFLICT_AND_RESTORE.md). Version 0.57.0 is prepared, not tagged. Recovery and public source-withdrawal journeys passed at desktop and 390px, the full restored-target RLS suite passed, and shuffled seed 370816 passed. Full QA must rerun after its policy-inventory fix. Owned dev launcher 3326248 is stopped; port 3260 was empty. No unrelated container was stopped.
+> Later continuation: read [RELEASE_CANDIDATE.md](RELEASE_CANDIDATE.md) and [CONFLICT_AND_RESTORE.md](CONFLICT_AND_RESTORE.md). Version 0.57.0 is prepared, not tagged. Recovery and public source-withdrawal journeys passed at desktop and 390px, the full restored-target RLS suite passed, and shuffled seed 370816 passed. Full QA on 0c1e7d70 has now finished with exit 0. Read the final checkpoint below. Owned dev launcher 3326248 is stopped; port 3260 was empty. No unrelated container was stopped.
 
 This is the current recovery entry point. It supersedes the runtime, migration and next-step statements in USAGE_PAUSE.md; preserve that older record as history. Nathaniel asked whether this thread can resume after the weekly reset. Save work now; do not imply unfinished acceptance passed.
+
+## Final checkpoint before the usage reset
+
+Full QA on pushed candidate 0c1e7d70081ccbf6b63d256903463efbb210067d completed with exit 0, recovered from tool session 56986. Private log: /home/nathaniel/.local/state/openplan/response-write-probe-20260913/full-qa-0c1e7d70.log. Lint, Knip, 14306 tests with 451 skipped, provider checks, zero dependency vulnerabilities and the optimized production build completed, including all 135 static pages. Separate shuffled, restored-target live RLS and worker evidence is recorded in CONFLICT_AND_RESTORE.md. No owned QA/build process remains.
+
+Remote main remains 3f70af98e6fb06b4c0f932769e10f880711d46ec. Candidate code is pushed on work/engagement-response-writes, not yet main or tagged. Next: refresh ownership and remote state, land directly on main without a PR, inspect CI for that exact main commit, then tag/publish v0.57.0 after applicable gates pass. Continue the full v1 goal afterward. Translation correction custody is a possible remaining M9b gap, not yet implemented; recheck the current roadmap before choosing the next lane.
+
+Older failed-test and runtime statements below are historical wherever they conflict with this checkpoint and the linked current evidence. Saved files and commits are the recovery authority; do not assume old tool sessions or processes survive a usage reset. The owned dev server is stopped. Preserve named database stacks and the separate demo.
 
 ## Direction and ownership
 
