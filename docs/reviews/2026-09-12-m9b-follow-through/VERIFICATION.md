@@ -139,3 +139,13 @@ SQL, migrations, workers and scientific scripts are unchanged from v0.55.0.
 Local QA explicitly skipped live RLS; prior isolated SQL evidence remains in
 the v0.55 record, and the final main commit must pass its own CI/RLS workflows.
 No new upgrade migration is required or claimed by this patch.
+
+## Published v0.55.1
+
+v0.55.1 is published, not a draft or prerelease. The remote annotated tag peels
+to 0f61c3728b4ace3cc562f07fc90087e9e848f703. All five final CI jobs in
+34732984235 completed successfully, as did RLS Isolation 34732984209.
+v0551-final-ci.json, v0551-final-rls.json and v0551-publication.json retain
+the terminal and publication receipts. No pending historical observation below
+or above overrides those final results. The next response-snapshot migration
+is separate, unreleased work and was not included in this tag.

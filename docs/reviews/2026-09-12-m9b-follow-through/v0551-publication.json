@@ -1,0 +1,12 @@
+{
+  "isDraft": false,
+  "isPrerelease": false,
+  "publishedAt": "2026-09-13T02:38:07Z",
+  "tagName": "v0.55.1",
+  "targetCommitish": "0f61c3728b4ace3cc562f07fc90087e9e848f703",
+  "url": "https://github.com/nfredmond/openplan/releases/tag/v0.55.1",
+  "remoteTagRefs": [
+    "f37c01ac359db791656bad7869cf22e7c064a887\trefs/tags/v0.55.1",
+    "0f61c3728b4ace3cc562f07fc90087e9e848f703\trefs/tags/v0.55.1^{}"
+  ]
+}

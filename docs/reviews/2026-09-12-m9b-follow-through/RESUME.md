@@ -1,3 +1,13 @@
+# Published; continue M9b response snapshots
+
+v0.55.1 was published at 0f61c372 after final CI/RLS passed. Terminal receipts
+and the verified peeled remote tag are retained beside this file. Do not poll
+or recreate that release. The earlier pending-check sections are historical.
+Current branch is work/engagement-response-snapshots in the same worktree.
+Continue from ../2026-09-12-m9b-response-snapshot/VERIFICATION.md. The new SQL
+read foundation has transactional probes but no connected loader or browser
+acceptance yet. No persistent migration was applied during those probes.
+
 # Main CI checkpoint
 
 v0.55.1 implementation and passing local gate receipts are now on main at

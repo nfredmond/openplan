@@ -1,0 +1,63 @@
+{
+  "stack": "supabase_db_openplan-restore-target-2026091050",
+  "scope": "Transactional SQL; not PostgREST/browser proof",
+  "migrationSha256": "26a751c204388c1af54764e9df4418a5bedf40d96360c81e80cafbe84576c483",
+  "results": [
+    {
+      "name": "harmless-comment",
+      "outcome": "survived",
+      "matched": true,
+      "expected": null,
+      "stderr": ""
+    },
+    {
+      "name": "missing-campaign-scope",
+      "outcome": "killed",
+      "matched": true,
+      "expected": "M9B: complete scoped count",
+      "stderr": "ERROR:  M9B: complete scoped count\nCONTEXT:  PL/pgSQL function inline_code_block line 5 at RAISE\n"
+    },
+    {
+      "name": "missing-public-filter",
+      "outcome": "killed",
+      "matched": true,
+      "expected": "M9B: published-only scope",
+      "stderr": "ERROR:  M9B: published-only scope\nCONTEXT:  PL/pgSQL function inline_code_block line 13 at RAISE\n"
+    },
+    {
+      "name": "bypass-caller-rls",
+      "outcome": "killed",
+      "matched": true,
+      "expected": "M9B: caller RLS",
+      "stderr": "ERROR:  M9B: caller RLS\nCONTEXT:  PL/pgSQL function inline_code_block line 17 at RAISE\n"
+    },
+    {
+      "name": "missing-projection",
+      "outcome": "killed",
+      "matched": true,
+      "expected": "M9B: exact response projection",
+      "stderr": "ERROR:  M9B: exact response projection\nCONTEXT:  PL/pgSQL function inline_code_block line 11 at RAISE\n"
+    },
+    {
+      "name": "missing-id-order",
+      "outcome": "killed",
+      "matched": true,
+      "expected": "M9B: stable total order",
+      "stderr": "ERROR:  M9B: stable total order\nCONTEXT:  PL/pgSQL function inline_code_block line 9 at RAISE\n"
+    },
+    {
+      "name": "anonymous-execution",
+      "outcome": "killed",
+      "matched": true,
+      "expected": "M9B: anonymous execution refused",
+      "stderr": "ERROR:  M9B: anonymous execution refused\nCONTEXT:  PL/pgSQL function inline_code_block line 3 at RAISE\n"
+    },
+    {
+      "name": "volatile-snapshot",
+      "outcome": "killed",
+      "matched": true,
+      "expected": "M9B: stable snapshot declaration",
+      "stderr": "ERROR:  M9B: stable snapshot declaration\nCONTEXT:  PL/pgSQL function inline_code_block line 4 at RAISE\n"
+    }
+  ]
+}
