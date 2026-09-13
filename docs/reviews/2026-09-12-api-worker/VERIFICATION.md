@@ -85,3 +85,28 @@ credentials, completion-response recovery and real process interruption.
 They do not establish browser reachability or external-provider compatibility.
 A final restored live replay, full QA, shuffled tests and full isolated RLS on
 this increment remain pending. RESUME.md records the exact continuation.
+
+## Broader worker checks
+
+The restored real-process replay passed all 11 cases. The new live worker file
+is now included in the standard test:rls-live command and runs serially with
+other live suites against the explicit disposable stack.
+
+The first full QA and shuffled seed 912555 runs both failed the same existing
+documentation guard: SELF_HOSTING named OPENPLAN_PROVIDER_API_WORK_DIR without
+an entry in .env.example. Both otherwise passed 14,028 tests, with 450 skipped.
+The missing optional setting is now documented in .env.example. The focused
+mechanical documentation replay passed six tests without changing the guard.
+This was a real omission, not an order-dependent failure despite the generic
+shuffled runner's failure footer. Corrected full checks are in progress.
+
+The corrected full QA gate completed with exit zero: 14,029 tests passed,
+450 skipped; native connector 382 passed, four skipped; dependency audit zero
+vulnerabilities; webpack build and TypeScript passed. Shuffled seed 912555
+completed with the same 14,029 passes and 450 skips. The explicit isolated RLS
+run passed 479 cases in 50 files, including the eleven real worker cases.
+All nine API lifecycle function bodies still match their retained hashes and
+there are zero queued/running API fixture jobs. local-checks.json records counts,
+source baseline, named stack and private log hashes. No Python/model runtime
+changed in this increment; the native shared helper is covered above. API UI,
+its browser acceptance and a capability release remain outstanding.

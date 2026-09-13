@@ -1,0 +1,47 @@
+{
+  "baseCommit": "0e9f1cbf2eeb7a9c32a5223c0e33b4f238e0fbcd",
+  "changes": [
+    "openplan/package.json live worker inclusion",
+    "openplan/.env.example optional worker directory"
+  ],
+  "fullQa": {
+    "exitCode": 0,
+    "passed": 14029,
+    "skipped": 450,
+    "nativePassed": 382,
+    "nativeSkipped": 4,
+    "auditVulnerabilities": 0,
+    "webpackAndTypeScript": "passed"
+  },
+  "shuffled": {
+    "exitCode": 0,
+    "seed": 912555,
+    "passed": 14029,
+    "skipped": 450
+  },
+  "rls": {
+    "exitCode": 0,
+    "files": 50,
+    "passed": 479,
+    "workdir": "/home/nathaniel/.local/state/openplan/openplan-restore-target-2026091050",
+    "activeApiJobsAfter": 0,
+    "restoredFunctionHashes": "post-rls-function-hashes.json"
+  },
+  "liveWorker": {
+    "passed": 11,
+    "mutationControlSurvivors": 1,
+    "targetedFaultsCaught": 6
+  },
+  "privateLogs": {
+    "api-worker-live-restored.json": "0bd9449700d89d62dc1309b2167e379f7176a6696cd279a42c64ed819304ae4a",
+    "api-worker-full-qa-corrected.log": "186025a427a212e570fb3b285983ffa1d0cfb52606b5779593aa672775f87cd2",
+    "api-worker-shuffled-corrected.log": "085750741f8df0901b27493ad5d4a1b74799039d91fb82f107167285f24f5d39",
+    "api-worker-full-rls.log": "3ae3235060c86d4f3869e045df302bbe493ffdeb94c40a2813b4879bcb080211"
+  },
+  "limitations": [
+    "No API selection in project UI or POST yet",
+    "Loopback synthetic provider responses do not prove external provider account compatibility",
+    "No new scientific validation claim",
+    "No release tag at worker-only checkpoint"
+  ]
+}

@@ -77,23 +77,32 @@ loss, corrupt journals and changed destination. It creates no real business
 records and calls no external provider. Synthetic records remain only in the
 named disposable stack.
 
+## Worker gate completion
+
+Full QA and shuffled seed 912555 passed 14,029 tests, 450 skipped. Native
+connector passed 382, four skipped; audit zero vulnerabilities; webpack and
+TypeScript passed. Full isolated RLS passed 479 tests in 50 files, including the
+new eleven real-process cases now in test:rls-live. Nine lifecycle function
+hashes match the retained source, and no active API jobs remain. The initial
+full/shuffle failures exposed a missing .env.example entry for the documented
+optional worker directory; that omission is fixed. local-checks.json and
+VERIFICATION.md retain the results and limits. All local command handles are
+terminal: 94900 corrected QA, 62688 corrected shuffle, 37658 RLS, all exit zero.
+
 ## Immediate next
 
-1. Replay all 11 live cases on the restored source using explicit
-   OPENPLAN_RLS_LIVE_TEST=1 and OPENPLAN_SUPABASE_WORKDIR below. Run final
-   TypeScript and changed-file ESLint. Add the new live file to test:rls-live.
-2. Run full QA, shuffled tests and final full isolated RLS for the worker
-   increment, plus applicable native worker checks. Land directly on main and
-   inspect exact CI; no PRs. Existing main checks do not validate this increment.
-3. Join the api_connection POST discriminator and ProjectProviderPanel, including
+1. Land the verified worker increment directly on main, inspect exact GitHub CI,
+   RLS and upgrade jobs separately, and record the resulting commit/run IDs.
+   No PR, no worker-only capability tag. Main was b6dbb8ca before this landing.
+2. Join the api_connection POST discriminator and ProjectProviderPanel, including
    its browser-safe turn decoder. Exact saved revision/config hash/model/auth/
    charge acknowledgement must survive uncertain retries and history. Use the
    existing approval flow; generation only proposes. No inline web generation.
-4. Accept real navigation on an identified build at desktop and 390px with
+3. Accept real navigation on an identified build at desktop and 390px with
    keyboard and console evidence, response-loss recovery, config changes,
    private history and immutable original receipts. Only then remove settings'
    generation-unavailable wording. Inspect final main CI before a release tag.
-5. Continue the full v1 roadmap under the active goal. A usage reset is not a
+4. Continue the full v1 roadmap under the active goal. A usage reset is not a
    completed goal. Recheck processes, git and serving identity when resuming.
 
 ## Isolated environment
