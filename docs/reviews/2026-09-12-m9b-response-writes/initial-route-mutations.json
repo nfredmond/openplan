@@ -1,0 +1,202 @@
+[
+  {
+    "name": "baseline",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "sourceSha256": "f3998382ecdfd51304c73343247d6ad402b6187aa10e7ea4993b5bff69275ba6",
+    "expectedFailingTest": null,
+    "failedTests": [],
+    "passedTests": 83,
+    "failedTestCount": 0
+  },
+  {
+    "name": "harmless-comment",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "sourceSha256": "69aeedda8c97ffa82e1e4a34b2a66e4f7ea7e6815cd593763fee31771ac9c7d3",
+    "expectedFailingTest": null,
+    "failedTests": [],
+    "passedTests": 83,
+    "failedTestCount": 0
+  },
+  {
+    "name": "write-with-read-permission",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "49df8ed92ba8c7b1e79a600bc3cfd79aa14991df1118d590b1bd598f91274ed2",
+    "expectedFailingTest": "passes the caller",
+    "failedTests": [
+      "create response route boundary passes the caller's exact identity, version, reason and fields to the transaction",
+      "update response route boundary passes the caller's exact identity, version, reason and fields to the transaction",
+      "remove response route boundary passes the caller's exact identity, version, reason and fields to the transaction"
+    ],
+    "passedTests": 80,
+    "failedTestCount": 3
+  },
+  {
+    "name": "lost-entry-identity",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "70fd6318c621e8cf98a27d60106a75d57c982d6a3f9633238863ee66196c2d7a",
+    "expectedFailingTest": "passes the caller",
+    "failedTests": [
+      "update response route boundary passes the caller's exact identity, version, reason and fields to the transaction",
+      "update response route boundary reports a connection loss as unconfirmed and retries with the same payload",
+      "update response route boundary preserves a confirmed replay as the original save, including removal",
+      "remove response route boundary passes the caller's exact identity, version, reason and fields to the transaction",
+      "remove response route boundary reports a connection loss as unconfirmed and retries with the same payload",
+      "remove response route boundary preserves a confirmed replay as the original save, including removal",
+      "update publication reports durable status without inline email or a second write",
+      "keeps publication confirmed when its status report is missing",
+      "keeps publication confirmed when its status report is denied",
+      "keeps publication confirmed when its status report is throws",
+      "keeps publication confirmed when its status report is invalid",
+      "reads the original publication's current email outcomes on an exact replay"
+    ],
+    "passedTests": 71,
+    "failedTestCount": 12
+  },
+  {
+    "name": "no-body-limit",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "73ea4d0d8cbd5cd402189b1c104e7b948c3cc282e7dc337ab8004e325b5c0d1d",
+    "expectedFailingTest": "rejects oversize JSON",
+    "failedTests": [
+      "create response route boundary rejects oversize JSON before database access",
+      "update response route boundary rejects oversize JSON before database access",
+      "remove response route boundary rejects oversize JSON before database access"
+    ],
+    "passedTests": 80,
+    "failedTestCount": 3
+  },
+  {
+    "name": "write-with-denied-access",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "9600e76de90579207ae2234629ed8679ac5eef0749fc5e8911541846f63ef498",
+    "expectedFailingTest": "refuses denied campaign access",
+    "failedTests": [
+      "create response route boundary refuses denied campaign access without a write",
+      "update response route boundary refuses denied campaign access without a write",
+      "remove response route boundary refuses denied campaign access without a write"
+    ],
+    "passedTests": 80,
+    "failedTestCount": 3
+  },
+  {
+    "name": "ignored-access-read-failure",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "cda2b950c52097d33dc620a64b95911ddc913285235ba5ea323d7549dfe2b13c",
+    "expectedFailingTest": "refuses unreadable campaign access",
+    "failedTests": [
+      "create response route boundary refuses unreadable campaign access without a write",
+      "update response route boundary refuses unreadable campaign access without a write",
+      "remove response route boundary refuses unreadable campaign access without a write"
+    ],
+    "passedTests": 80,
+    "failedTestCount": 3
+  },
+  {
+    "name": "missing-campaign-write",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "17c0210b84dbddd70afb0312accac20d74e7e820e3913cde22523150bd5e6b6e",
+    "expectedFailingTest": "refuses missing campaign access",
+    "failedTests": [
+      "create response route boundary refuses missing campaign access without a write",
+      "update response route boundary refuses missing campaign access without a write",
+      "remove response route boundary refuses missing campaign access without a write"
+    ],
+    "passedTests": 80,
+    "failedTestCount": 3
+  },
+  {
+    "name": "lost-write-refusal",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "8ff4e26daa1acc88d6fda33b599e47ec4f64871be8c3abf9ea3702f2a288037f",
+    "expectedFailingTest": "preserves transaction refusal",
+    "failedTests": [
+      "create response route boundary preserves transaction refusal 40001 without pretending to save",
+      "create response route boundary preserves transaction refusal 23505 without pretending to save",
+      "create response route boundary preserves transaction refusal 42501 without pretending to save",
+      "create response route boundary preserves transaction refusal P0002 without pretending to save",
+      "create response route boundary preserves transaction refusal 22023 without pretending to save",
+      "create response route boundary preserves transaction refusal 42P01 without pretending to save",
+      "create response route boundary reports a connection loss as unconfirmed and retries with the same payload",
+      "create response route boundary does not acknowledge a receipt belonging to another request",
+      "update response route boundary preserves transaction refusal 40001 without pretending to save",
+      "update response route boundary preserves transaction refusal 23505 without pretending to save",
+      "update response route boundary preserves transaction refusal 42501 without pretending to save",
+      "update response route boundary preserves transaction refusal P0002 without pretending to save",
+      "update response route boundary preserves transaction refusal 22023 without pretending to save",
+      "update response route boundary preserves transaction refusal 42P01 without pretending to save",
+      "update response route boundary reports a connection loss as unconfirmed and retries with the same payload",
+      "update response route boundary does not acknowledge a receipt belonging to another request",
+      "remove response route boundary preserves transaction refusal 40001 without pretending to save",
+      "remove response route boundary preserves transaction refusal 23505 without pretending to save",
+      "remove response route boundary preserves transaction refusal 42501 without pretending to save",
+      "remove response route boundary preserves transaction refusal P0002 without pretending to save",
+      "remove response route boundary preserves transaction refusal 22023 without pretending to save",
+      "remove response route boundary preserves transaction refusal 42P01 without pretending to save",
+      "remove response route boundary reports a connection loss as unconfirmed and retries with the same payload",
+      "remove response route boundary does not acknowledge a receipt belonging to another request"
+    ],
+    "passedTests": 59,
+    "failedTestCount": 24
+  },
+  {
+    "name": "lost-replay-create-status",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "65133dacf95c767da3d717d7245637197bea37a96dda3ab05e847cacf987b60d",
+    "expectedFailingTest": "preserves a confirmed replay",
+    "failedTests": [
+      "create response route boundary preserves a confirmed replay as the original save, including removal"
+    ],
+    "passedTests": 82,
+    "failedTestCount": 1
+  },
+  {
+    "name": "unread-publication-status",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "933a24324d750619da371445c1f0ff270584ba02e3e1592ca923457ec184a008",
+    "expectedFailingTest": "publication reports durable status",
+    "failedTests": [
+      "create publication reports durable status without inline email or a second write",
+      "update publication reports durable status without inline email or a second write",
+      "keeps publication confirmed when its status report is missing",
+      "keeps publication confirmed when its status report is denied",
+      "keeps publication confirmed when its status report is throws",
+      "keeps publication confirmed when its status report is invalid",
+      "reads the original publication's current email outcomes on an exact replay"
+    ],
+    "passedTests": 76,
+    "failedTestCount": 7
+  },
+  {
+    "name": "lost-confirmed-save",
+    "matched": false,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "c4ee7cac399402fd067e98760835fbbc8d7e3a6e75c62c65177fae4d3fb9ba78",
+    "expectedFailingTest": "keeps publication confirmed",
+    "failedTests": [],
+    "passedTests": 0,
+    "failedTestCount": 0
+  }
+]

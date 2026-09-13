@@ -25,9 +25,12 @@ survivor and two semantic failures when the lock/isolation guards are removed.
 Initial failed probes are retained. No browser acceptance or app route integration
 exists yet. Read the precise limits, including public reader defense in depth.
 
-The next join is the actual app: create/PATCH/DELETE must call writeResponse from
+Read ROUTE_BOUNDARY.md for the new route boundary and broadcast reader evidence.
+The next join is still the actual editor: create/PATCH/DELETE must call writeResponse from
 openplan/src/lib/engagement/response-write.ts, and CloseLoopBuilder must supply and
-retain requestId, expectedUpdatedAt and reason. Those routes still do direct writes;
+retain requestId, expectedUpdatedAt and reason. Those routes still do direct writes. The shared responseWriteRoute factory now
+implements their next handlers, and closeloop/broadcasts/[requestId] exposes the
+validated private aggregate reader. Switch the route exports and editor together;
 do not apply the permission guard before replacing them. Keep unsaved words and the
 same pending request after an unknown network result. A conflict must display the
 current saved copy without discarding the draft before starting a fresh reviewed

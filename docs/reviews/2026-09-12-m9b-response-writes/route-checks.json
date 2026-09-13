@@ -1,0 +1,27 @@
+{
+  "date": "2026-09-13",
+  "tests": {
+    "success": true,
+    "numPassedTests": 189,
+    "numFailedTests": 0,
+    "numTotalTestSuites": 28
+  },
+  "mutations": {
+    "total": 27,
+    "matched": 27,
+    "targetedFailures": 25
+  },
+  "typecheckExit": 0,
+  "eslintExit": 0,
+  "sourceSha256": {
+    "openplan/src/lib/engagement/response-write-route.ts": "f3998382ecdfd51304c73343247d6ad402b6187aa10e7ea4993b5bff69275ba6",
+    "openplan/src/lib/engagement/response-broadcast.ts": "926fb635943f3c9b0a72d1c58844416b764e86f26fa781406c8df8645e5a0076",
+    "openplan/src/app/api/engagement/campaigns/[campaignId]/closeloop/broadcasts/[requestId]/route.ts": "32cce6b82ef1b5e37d73e52857af202d2bd49b37b029887a0a970c18985d927b",
+    "openplan/src/test/engagement-response-write-route.test.ts": "36f0f3a5c03f1f1538515914a11c0b287bef584a8134670e0917273b3596e511"
+  },
+  "limits": [
+    "Existing write route exports and editor have not switched to the new handler.",
+    "Database prototype is unapplied; no live browser or mail provider acceptance.",
+    "Full QA, shuffled suite, live RLS, worker and upgrade gates remain for the completed increment."
+  ]
+}

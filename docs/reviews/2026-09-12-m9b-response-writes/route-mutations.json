@@ -1,0 +1,436 @@
+[
+  {
+    "name": "baseline",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "sourceSha256": "f3998382ecdfd51304c73343247d6ad402b6187aa10e7ea4993b5bff69275ba6",
+    "expectedFailingTest": null,
+    "failedTests": [],
+    "passedTests": 83,
+    "failedTestCount": 0
+  },
+  {
+    "name": "harmless-comment",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "sourceSha256": "69aeedda8c97ffa82e1e4a34b2a66e4f7ea7e6815cd593763fee31771ac9c7d3",
+    "expectedFailingTest": null,
+    "failedTests": [],
+    "passedTests": 83,
+    "failedTestCount": 0
+  },
+  {
+    "name": "write-with-read-permission",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "49df8ed92ba8c7b1e79a600bc3cfd79aa14991df1118d590b1bd598f91274ed2",
+    "expectedFailingTest": "passes the caller",
+    "failedTests": [
+      "create response route boundary passes the caller's exact identity, version, reason and fields to the transaction",
+      "update response route boundary passes the caller's exact identity, version, reason and fields to the transaction",
+      "remove response route boundary passes the caller's exact identity, version, reason and fields to the transaction"
+    ],
+    "passedTests": 80,
+    "failedTestCount": 3
+  },
+  {
+    "name": "lost-entry-identity",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "70fd6318c621e8cf98a27d60106a75d57c982d6a3f9633238863ee66196c2d7a",
+    "expectedFailingTest": "passes the caller",
+    "failedTests": [
+      "update response route boundary passes the caller's exact identity, version, reason and fields to the transaction",
+      "update response route boundary reports a connection loss as unconfirmed and retries with the same payload",
+      "update response route boundary preserves a confirmed replay as the original save, including removal",
+      "remove response route boundary passes the caller's exact identity, version, reason and fields to the transaction",
+      "remove response route boundary reports a connection loss as unconfirmed and retries with the same payload",
+      "remove response route boundary preserves a confirmed replay as the original save, including removal",
+      "update publication reports durable status without inline email or a second write",
+      "keeps publication confirmed when its status report is missing",
+      "keeps publication confirmed when its status report is denied",
+      "keeps publication confirmed when its status report is throws",
+      "keeps publication confirmed when its status report is invalid",
+      "reads the original publication's current email outcomes on an exact replay"
+    ],
+    "passedTests": 71,
+    "failedTestCount": 12
+  },
+  {
+    "name": "no-body-limit",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "73ea4d0d8cbd5cd402189b1c104e7b948c3cc282e7dc337ab8004e325b5c0d1d",
+    "expectedFailingTest": "rejects oversize JSON",
+    "failedTests": [
+      "create response route boundary rejects oversize JSON before database access",
+      "update response route boundary rejects oversize JSON before database access",
+      "remove response route boundary rejects oversize JSON before database access"
+    ],
+    "passedTests": 80,
+    "failedTestCount": 3
+  },
+  {
+    "name": "write-with-denied-access",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "9600e76de90579207ae2234629ed8679ac5eef0749fc5e8911541846f63ef498",
+    "expectedFailingTest": "refuses denied campaign access",
+    "failedTests": [
+      "create response route boundary refuses denied campaign access without a write",
+      "update response route boundary refuses denied campaign access without a write",
+      "remove response route boundary refuses denied campaign access without a write"
+    ],
+    "passedTests": 80,
+    "failedTestCount": 3
+  },
+  {
+    "name": "ignored-access-read-failure",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "cda2b950c52097d33dc620a64b95911ddc913285235ba5ea323d7549dfe2b13c",
+    "expectedFailingTest": "refuses unreadable campaign access",
+    "failedTests": [
+      "create response route boundary refuses unreadable campaign access without a write",
+      "update response route boundary refuses unreadable campaign access without a write",
+      "remove response route boundary refuses unreadable campaign access without a write"
+    ],
+    "passedTests": 80,
+    "failedTestCount": 3
+  },
+  {
+    "name": "missing-campaign-write",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "17c0210b84dbddd70afb0312accac20d74e7e820e3913cde22523150bd5e6b6e",
+    "expectedFailingTest": "refuses missing campaign access",
+    "failedTests": [
+      "create response route boundary refuses missing campaign access without a write",
+      "update response route boundary refuses missing campaign access without a write",
+      "remove response route boundary refuses missing campaign access without a write"
+    ],
+    "passedTests": 80,
+    "failedTestCount": 3
+  },
+  {
+    "name": "lost-write-refusal",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "8ff4e26daa1acc88d6fda33b599e47ec4f64871be8c3abf9ea3702f2a288037f",
+    "expectedFailingTest": "preserves transaction refusal",
+    "failedTests": [
+      "create response route boundary preserves transaction refusal 40001 without pretending to save",
+      "create response route boundary preserves transaction refusal 23505 without pretending to save",
+      "create response route boundary preserves transaction refusal 42501 without pretending to save",
+      "create response route boundary preserves transaction refusal P0002 without pretending to save",
+      "create response route boundary preserves transaction refusal 22023 without pretending to save",
+      "create response route boundary preserves transaction refusal 42P01 without pretending to save",
+      "create response route boundary reports a connection loss as unconfirmed and retries with the same payload",
+      "create response route boundary does not acknowledge a receipt belonging to another request",
+      "update response route boundary preserves transaction refusal 40001 without pretending to save",
+      "update response route boundary preserves transaction refusal 23505 without pretending to save",
+      "update response route boundary preserves transaction refusal 42501 without pretending to save",
+      "update response route boundary preserves transaction refusal P0002 without pretending to save",
+      "update response route boundary preserves transaction refusal 22023 without pretending to save",
+      "update response route boundary preserves transaction refusal 42P01 without pretending to save",
+      "update response route boundary reports a connection loss as unconfirmed and retries with the same payload",
+      "update response route boundary does not acknowledge a receipt belonging to another request",
+      "remove response route boundary preserves transaction refusal 40001 without pretending to save",
+      "remove response route boundary preserves transaction refusal 23505 without pretending to save",
+      "remove response route boundary preserves transaction refusal 42501 without pretending to save",
+      "remove response route boundary preserves transaction refusal P0002 without pretending to save",
+      "remove response route boundary preserves transaction refusal 22023 without pretending to save",
+      "remove response route boundary preserves transaction refusal 42P01 without pretending to save",
+      "remove response route boundary reports a connection loss as unconfirmed and retries with the same payload",
+      "remove response route boundary does not acknowledge a receipt belonging to another request"
+    ],
+    "passedTests": 59,
+    "failedTestCount": 24
+  },
+  {
+    "name": "lost-replay-create-status",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "65133dacf95c767da3d717d7245637197bea37a96dda3ab05e847cacf987b60d",
+    "expectedFailingTest": "preserves a confirmed replay",
+    "failedTests": [
+      "create response route boundary preserves a confirmed replay as the original save, including removal"
+    ],
+    "passedTests": 82,
+    "failedTestCount": 1
+  },
+  {
+    "name": "unread-publication-status",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "933a24324d750619da371445c1f0ff270584ba02e3e1592ca923457ec184a008",
+    "expectedFailingTest": "publication reports durable status",
+    "failedTests": [
+      "create publication reports durable status without inline email or a second write",
+      "update publication reports durable status without inline email or a second write",
+      "keeps publication confirmed when its status report is missing",
+      "keeps publication confirmed when its status report is denied",
+      "keeps publication confirmed when its status report is throws",
+      "keeps publication confirmed when its status report is invalid",
+      "reads the original publication's current email outcomes on an exact replay"
+    ],
+    "passedTests": 76,
+    "failedTestCount": 7
+  },
+  {
+    "name": "lost-confirmed-save",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "59193cd8ef503afee7f6c476a3e84bf3a83ae9af63a9d7f928fc04d317aefd32",
+    "expectedFailingTest": "keeps publication confirmed",
+    "failedTests": [
+      "create publication reports durable status without inline email or a second write",
+      "update publication reports durable status without inline email or a second write",
+      "keeps publication confirmed when its status report is missing",
+      "keeps publication confirmed when its status report is denied",
+      "keeps publication confirmed when its status report is throws",
+      "keeps publication confirmed when its status report is invalid",
+      "reads the original publication's current email outcomes on an exact replay"
+    ],
+    "passedTests": 76,
+    "failedTestCount": 7
+  },
+  {
+    "name": "report-read-invented-success",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "865ff0026c16c358b3a1c9ea451041a933351d73ad92305b84cf2f11a48e5481",
+    "expectedFailingTest": "keeps publication confirmed",
+    "failedTests": [
+      "keeps publication confirmed when its status report is missing",
+      "keeps publication confirmed when its status report is denied",
+      "keeps publication confirmed when its status report is throws",
+      "keeps publication confirmed when its status report is invalid"
+    ],
+    "passedTests": 79,
+    "failedTestCount": 4
+  },
+  {
+    "name": "ignored-report-campaign",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "85b11fcd2c3e22303e1f5ffd8766b6d7609ef690c34788a8a53e34e93af45a81",
+    "expectedFailingTest": "refuses incomplete, foreign or unsafe report",
+    "failedTests": [
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"44444444-4444-4444-8444-444444444444\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"queued\",\"preparedCount\":null,\"counts\":{}}"
+    ],
+    "passedTests": 82,
+    "failedTestCount": 1
+  },
+  {
+    "name": "ignored-report-request",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "d5e071392dce1b203a06fbdc022c26435048267790018198763b3c01e9a4db18",
+    "expectedFailingTest": "refuses incomplete, foreign or unsafe report",
+    "failedTests": [
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"44444444-4444-4444-8444-444444444444\",\"state\":\"queued\",\"preparedCount\":null,\"counts\":{}}"
+    ],
+    "passedTests": 82,
+    "failedTestCount": 1
+  },
+  {
+    "name": "leaked-extra-report-data",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "f7d1cfdf4f5441076146386c760cbe4269c52a42f0509c118f526313f7dbf0eb",
+    "expectedFailingTest": "refuses incomplete, foreign or unsafe report",
+    "failedTests": [
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"queued\",\"preparedCount\":null,\"counts\":{},\"to_email\":\"PRIVATE@example.org\"}"
+    ],
+    "passedTests": 82,
+    "failedTestCount": 1
+  },
+  {
+    "name": "ignored-report-shape",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "2616d094eaff796d8029326618a125be47661697518a46d7acefb1b5c1e1a951",
+    "expectedFailingTest": "refuses incomplete, foreign or unsafe report",
+    "failedTests": [
+      "keeps publication confirmed when its status report is invalid",
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"queued\",\"preparedCount\":null,\"counts\":{},\"to_email\":\"PRIVATE@example.org\"}",
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"queued\",\"preparedCount\":null,\"counts\":{\"to_email\":1}}",
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"queued\",\"preparedCount\":0,\"counts\":{}}",
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"prepared\",\"preparedCount\":null,\"counts\":{}}",
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"prepared\",\"preparedCount\":1,\"counts\":{}}",
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"prepared\",\"preparedCount\":1,\"counts\":{\"queued\":-1,\"accepted\":2}}",
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"queued\",\"preparedCount\":null,\"counts\":{\"queued\":1}}",
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"delivered\",\"preparedCount\":null,\"counts\":{}}"
+    ],
+    "passedTests": 74,
+    "failedTestCount": 9
+  },
+  {
+    "name": "ignored-report-total",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "52244f176ad891380fcb54140bca49f42a34ddd75560f7b778d57d529bf2bae8",
+    "expectedFailingTest": "refuses incomplete, foreign or unsafe report",
+    "failedTests": [
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"prepared\",\"preparedCount\":1,\"counts\":{}}"
+    ],
+    "passedTests": 82,
+    "failedTestCount": 1
+  },
+  {
+    "name": "invented-queued-count",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "8651c90e9a43425675e48cfbc07905e0e760e4081cb2888a2e74e1c90b95f869",
+    "expectedFailingTest": "refuses incomplete, foreign or unsafe report",
+    "failedTests": [
+      "keeps publication confirmed when its status report is invalid",
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"queued\",\"preparedCount\":0,\"counts\":{}}",
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"queued\",\"preparedCount\":null,\"counts\":{\"queued\":1}}"
+    ],
+    "passedTests": 80,
+    "failedTestCount": 3
+  },
+  {
+    "name": "negative-outcome-count",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "d0007bd75c3d182f3bbd77adc103298a70031b0e2599a83d38c608481ef92643",
+    "expectedFailingTest": "refuses incomplete, foreign or unsafe report",
+    "failedTests": [
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"prepared\",\"preparedCount\":1,\"counts\":{\"queued\":-1,\"accepted\":2}}"
+    ],
+    "passedTests": 82,
+    "failedTestCount": 1
+  },
+  {
+    "name": "read-with-read-permission",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "41494ab52fc1dc87351465cffb740c33dd4edea629f78512444c663073a7b49e",
+    "expectedFailingTest": "returns a validated complete report",
+    "failedTests": [
+      "private broadcast status reader returns a validated complete report: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"queued\",\"preparedCount\":null,\"counts\":{}}",
+      "private broadcast status reader returns a validated complete report: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"prepared\",\"preparedCount\":0,\"counts\":{}}",
+      "private broadcast status reader returns a validated complete report: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"prepared\",\"preparedCount\":7,\"counts\":{\"queued\":1,\"attempting\":1,\"accepted\":1,\"skipped\":1,\"failed\":1,\"uncertain\":1,\"cancelled\":1}}",
+      "private broadcast status reader returns a validated complete report: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"cancelled\",\"preparedCount\":null,\"counts\":{}}",
+      "private broadcast status reader returns a validated complete report: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"no_share_token\",\"preparedCount\":null,\"counts\":{}}"
+    ],
+    "passedTests": 78,
+    "failedTestCount": 5
+  },
+  {
+    "name": "private-read-with-denied-access",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "54fd61e804d7e2f69188d38fb153a286cfd5adb6d6e3f93367aef5b8a217373b",
+    "expectedFailingTest": "refuses denied access before a private read",
+    "failedTests": [
+      "private broadcast status reader refuses denied access before a private read"
+    ],
+    "passedTests": 82,
+    "failedTestCount": 1
+  },
+  {
+    "name": "private-read-after-access-error",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "d418519006517ce99ff307fb0258f227b9b28b7878478d322440abe371afe7ec",
+    "expectedFailingTest": "refuses unreadable access before a private read",
+    "failedTests": [
+      "private broadcast status reader refuses unreadable access before a private read"
+    ],
+    "passedTests": 82,
+    "failedTestCount": 1
+  },
+  {
+    "name": "private-read-missing-campaign",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "add9c844fd3d5ecf882161d2d5fb094731256a8c4bf00fe8c36f5b513b0294df",
+    "expectedFailingTest": "refuses missing access before a private read",
+    "failedTests": [
+      "private broadcast status reader refuses missing access before a private read"
+    ],
+    "passedTests": 82,
+    "failedTestCount": 1
+  },
+  {
+    "name": "lost-private-cache",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "b3e55fbcc2af9f712d8e912a5eb1299a4df61f135c0762fd56cf42a4b6677053",
+    "expectedFailingTest": "returns a validated complete report",
+    "failedTests": [
+      "private broadcast status reader returns a validated complete report: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"queued\",\"preparedCount\":null,\"counts\":{}}",
+      "private broadcast status reader returns a validated complete report: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"prepared\",\"preparedCount\":0,\"counts\":{}}",
+      "private broadcast status reader returns a validated complete report: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"prepared\",\"preparedCount\":7,\"counts\":{\"queued\":1,\"attempting\":1,\"accepted\":1,\"skipped\":1,\"failed\":1,\"uncertain\":1,\"cancelled\":1}}",
+      "private broadcast status reader returns a validated complete report: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"cancelled\",\"preparedCount\":null,\"counts\":{}}",
+      "private broadcast status reader returns a validated complete report: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"no_share_token\",\"preparedCount\":null,\"counts\":{}}"
+    ],
+    "passedTests": 78,
+    "failedTestCount": 5
+  },
+  {
+    "name": "missing-report-as-zero",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "313ceadabf222c8269dd267c7b243da47fa9ef6376cb28eb2eabdf0530eff07f",
+    "expectedFailingTest": "distinguishes a missing record from known zero",
+    "failedTests": [
+      "private broadcast status reader distinguishes a missing record from known zero recipients"
+    ],
+    "passedTests": 82,
+    "failedTestCount": 1
+  },
+  {
+    "name": "ignored-private-permission-refusal",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "4ced7d9b5bf0a5ed728e7dd14158da446d8d9e0e74854f0e7e66845724a0f111",
+    "expectedFailingTest": "preserves a database permission refusal",
+    "failedTests": [
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"44444444-4444-4444-8444-444444444444\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"queued\",\"preparedCount\":null,\"counts\":{}}",
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"44444444-4444-4444-8444-444444444444\",\"state\":\"queued\",\"preparedCount\":null,\"counts\":{}}",
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"queued\",\"preparedCount\":null,\"counts\":{},\"to_email\":\"PRIVATE@example.org\"}",
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"queued\",\"preparedCount\":null,\"counts\":{\"to_email\":1}}",
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"queued\",\"preparedCount\":0,\"counts\":{}}",
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"prepared\",\"preparedCount\":null,\"counts\":{}}",
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"prepared\",\"preparedCount\":1,\"counts\":{}}",
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"prepared\",\"preparedCount\":1,\"counts\":{\"queued\":-1,\"accepted\":2}}",
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"queued\",\"preparedCount\":null,\"counts\":{\"queued\":1}}",
+      "private broadcast status reader refuses incomplete, foreign or unsafe report data: {\"campaignId\":\"11111111-1111-4111-8111-111111111111\",\"requestId\":\"33333333-3333-4333-8333-333333333333\",\"state\":\"delivered\",\"preparedCount\":null,\"counts\":{}}",
+      "private broadcast status reader preserves a database permission refusal after the preliminary access check"
+    ],
+    "passedTests": 72,
+    "failedTestCount": 11
+  }
+]
