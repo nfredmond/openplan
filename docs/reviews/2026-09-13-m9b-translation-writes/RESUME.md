@@ -1,3 +1,7 @@
+# Latest usage-reset checkpoint
+
+Read [GENERATION_CATALOG_RESET_CHECKPOINT.md](GENERATION_CATALOG_RESET_CHECKPOINT.md) first. The catalog increment is saved but unverified; the preceding queue API checkpoint remains the last verified implementation.
+
 # Latest staff queue API checkpoint
 
 Read [GENERATION_QUEUE_API_PROGRESS.md](GENERATION_QUEUE_API_PROGRESS.md) first. Staff queue creation and verified request reads are implemented and fault-tested. Request discovery, retained publication and editor integration remain unfinished.

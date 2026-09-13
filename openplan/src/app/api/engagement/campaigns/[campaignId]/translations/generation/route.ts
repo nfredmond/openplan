@@ -8,6 +8,7 @@ import { readBytesWithLimitStreaming } from "@/lib/http/body-limit";
 import { TRANSLATION_GENERATION_BODY_LIMIT, translationGenerationRequestSchema } from "@/lib/engagement/translation-generation-request";
 import { queueTranslationGeneration, TranslationQueueError } from "@/lib/engagement/translation-generation-queue";
 
+import { loadTranslationGenerationCatalog, translationGenerationCursorSchema } from "@/lib/engagement/translation-generation-catalog";
 import { loadTranslationGenerationRequest } from "@/lib/engagement/translation-generation-read";
 
 const headers = { "Cache-Control": "private, no-store" };
@@ -59,7 +60,11 @@ export async function GET(request: NextRequest, context: { params: Promise<{ cam
   const audit = createApiAuditLogger("engagement.translation-generation-read", request);
   try {
     const params = z.object({ campaignId: z.string().uuid() }).safeParse(await context.params);
-    const requestId = z.string().uuid().safeParse(request.nextUrl.searchParams.get("requestId"));
+    const requestId = z.string().uuid().optional().safeParse(request.nextUrl.searchParams.get("requestId") ?? undefined);
+    const beforeCreatedAt = request.nextUrl.searchParams.get("beforeCreatedAt");
+    const beforeId = request.nextUrl.searchParams.get("beforeId");
+    const cursor = beforeCreatedAt === null && beforeId === null ? null : translationGenerationCursorSchema.safeParse({ createdAt: beforeCreatedAt, id: beforeId });
+    if (cursor !== null && (!cursor.success || (requestId.success && requestId.data !== undefined))) return refused("invalid", 400);
     if (!params.success || !requestId.success) return refused("invalid", 400);
     const client = await createClient();
     const { data: { user } } = await client.auth.getUser();
@@ -68,6 +73,11 @@ export async function GET(request: NextRequest, context: { params: Promise<{ cam
     if (access.error) return refused("unavailable", 503);
     if (!access.campaign) return refused("forbidden", 404);
     if (!access.allowed) return refused("forbidden", 403);
+    if (requestId.data === undefined) {
+      const listed = await loadTranslationGenerationCatalog(client, { campaignId: params.data.campaignId, workspaceId: access.campaign.workspace_id }, cursor?.data ?? null);
+      if (!listed.page) return refused(listed.forbidden ? "forbidden" : "unavailable", listed.forbidden ? 403 : 503);
+      return NextResponse.json(listed.page, { headers });
+    }
     const result = await loadTranslationGenerationRequest(client, { campaignId: params.data.campaignId,
       workspaceId: access.campaign.workspace_id, requestId: requestId.data });
     return NextResponse.json(result, { headers });
