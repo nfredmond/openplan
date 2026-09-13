@@ -10,7 +10,7 @@ const row = {
     source_item_ids: [], sort_order: 0, published_at: null, created_at: "2026-09-12T00:00:00Z", updated_at: "2026-09-12T00:00:00Z" },
 };
 afterEach(() => vi.unstubAllGlobals());
-const open = () => fireEvent.click(screen.getByRole("button", { name: "Response history", exact: true }));
+const open = () => fireEvent.click(screen.getByRole("button", { name: "Response history" }));
 it("loads on demand, exposes retained removed copies and states the unknown baseline", async () => {
   const fetcher = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ history: [row, { ...row, id: "30000000-0000-4000-8000-000000000002", revision: 2, event: "removed" }] }) });
   vi.stubGlobal("fetch", fetcher); render(<ResponseHistory campaignId={campaignId} />);

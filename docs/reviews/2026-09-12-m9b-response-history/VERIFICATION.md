@@ -103,3 +103,15 @@ and 43 skipped. Full-checks.json retains the earlier failures and terminal RLS
 (479 tests/50 files) and worker (52 suites) receipts with private log hashes.
 Full QA replay on 03c1fe38 is running. Source/migrations must stay fixed until it
 finishes. Main remains the published v0.55.2 commit; v0.56.0 is not yet released.
+
+The corrected full QA run on 03c1fe38 passed lint, tests, connector, dependency
+checks and webpack compilation, then TypeScript rejected an invalid `exact` option
+in the new Testing Library UI test. That option belongs to Playwright, not this
+query API. Removing it preserves the default exact string-name match. This is a
+test typing error, not a passed full QA gate. Runtime source and browser evidence
+are unchanged; targeted UI/type checks and a fresh final QA run follow.
+
+After restoring all mutation edits, a fresh TypeScript run, changed-test lint and
+all four UI tests exited 0. The UI mutation replay still produced one harmless
+survivor and four targeted failures. A fresh full QA run is required on this
+corrected test commit; the preceding failure receipt remains in full-checks.json.
