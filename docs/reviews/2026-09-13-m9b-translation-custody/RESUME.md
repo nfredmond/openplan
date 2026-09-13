@@ -1,5 +1,10 @@
 # Resume after the weekly usage reset
 
+> Latest: initial v0.58.0 candidate1b0783ca passed CI but was NOT tagged.
+> A viewer-control mismatch requires the3397252c correction and final acceptance.
+> Read VIEWER_CONTROL.md before release actions. Earlier pending-tag instructions
+> below are superseded by this correction.
+
 > Later continuation: browser acceptance is complete at desktop1440 and390;
 > restored database2731143 is now328 and passed482 live tests. All52 worker
 > suites, full QA and shuffled seed913328 passed. The owned dev server was

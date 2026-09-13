@@ -1,0 +1,123 @@
+{
+  "passed": true,
+  "source": "3397252ce4dd53432d6a8a9690c932f890681c08",
+  "campaignId": "ef6f2052-02f3-495e-b18a-5f6d1321c18c",
+  "fixture": "Account signup and manual viewer invitation accepted through real UI; no existing role changed.",
+  "results": [
+    {
+      "width": 1440,
+      "viewerHistoryControlAbsent": true,
+      "directViewerReadStatus": 403,
+      "staffHistoryReachable": true,
+      "overflow": {
+        "viewport": 1440,
+        "document": 1440
+      }
+    },
+    {
+      "width": 390,
+      "viewerHistoryControlAbsent": true,
+      "directViewerReadStatus": 403,
+      "staffHistoryReachable": true,
+      "overflow": {
+        "viewport": 390,
+        "document": 390
+      }
+    }
+  ],
+  "console": [
+    {
+      "page": "staff",
+      "type": "warning",
+      "text": "The resource http://localhost:3260/_next/static/css/app/(app)/layout.css?v=1789311404213 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "page": "staff",
+      "type": "warning",
+      "text": "The resource http://localhost:3260/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789311402860 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "page": "staff",
+      "type": "warning",
+      "text": "The resource http://localhost:3260/_next/static/media/36966cca54120369-s.p.woff2?v=1789311402860 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "page": "viewer",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "page": "viewer",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    }
+  ],
+  "network": [
+    {
+      "url": "http://localhost:3260/api/map-layers/aerial-orthos",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3260/api/map-features/project-areas",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3260/api/map-features/crashes",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3260/api/map-features/engagement",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3260/api/map-layers/aerial-orthos",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3260/api/map-features/project-areas",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3260/api/map-features/crashes",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3260/api/map-features/engagement",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3260/api/engagement/campaigns/ef6f2052-02f3-495e-b18a-5f6d1321c18c/translations/history",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3260/api/engagement/campaigns/ef6f2052-02f3-495e-b18a-5f6d1321c18c/translations/history",
+      "error": "net::ERR_ABORTED"
+    }
+  ],
+  "captures": [
+    {
+      "file": "history-staff-1440.png",
+      "sha256": "58702b518b285a1402195363bbd8a05ed36ccc091b922cadba08c40d5c900cae"
+    },
+    {
+      "file": "history-staff-390.png",
+      "sha256": "e0858e21ce47bea2982ed6f91f6d89e4fc34450948a349526986ebb6353bb59f"
+    },
+    {
+      "file": "history-viewer-1440.png",
+      "sha256": "2dfb1cb2498aecfb73f7f59c7f38401c5fe98c782f97144b08efa076e3791ada"
+    },
+    {
+      "file": "history-viewer-390.png",
+      "sha256": "fc7e980bbede64852e07092ee50fe20f5c696f2551e2e39e93ab9b70a63335f5"
+    },
+    {
+      "file": "history-viewer-permission-1440.png",
+      "sha256": "2f95a641b3bbfdad3e86d0b21f72d579303c0a2f996e350a47438bc2037c5fe9"
+    },
+    {
+      "file": "history-viewer-permission-390.png",
+      "sha256": "798f194384a7932dbccf85110295004b6b41160c41fff4e098ed865cf119e8a2"
+    }
+  ]
+}
