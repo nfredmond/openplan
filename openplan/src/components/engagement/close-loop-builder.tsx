@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useResponseWrites } from "./response-write-recovery";
+import { ResponseBroadcastNotice } from "./response-broadcast-notice";
+import type { PendingResponse } from "@/lib/engagement/pending-response";
+import type { ResponseWriteIntent } from "@/lib/engagement/response-write";
 import { ResponseHistory } from "./response-history";
 import { Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,102 +19,7 @@ const SELECT_CLASS =
 const ERROR_CLASS =
   "rounded-[0.5rem] border border-red-300/80 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200";
 
-const NOTICE_CLASS =
-  "rounded-[0.5rem] border border-border/70 bg-muted/40 px-3 py-2 text-xs text-muted-foreground";
-const NOTICE_WARNING_CLASS =
-  "rounded-[0.5rem] border border-amber-300/80 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200";
-
 type Category = { id: string; label: string };
-
-/**
- * What the PATCH route reports about the subscriber broadcast a publish owed.
- * `outcome: null` means this PATCH was not a draft->published transition, so no
- * broadcast was owed and there is nothing to say.
- */
-type BroadcastResult = { unrecorded?: number; enqueued: number; delivered: number; skipped: number; failed: number; transport: string };
-type BroadcastReport = { outcome: "attempted" | "no_share_token" | "unknown" | null; result: BroadcastResult | null };
-
-function plural(count: number, one: string, many: string): string {
-  return `${count} ${count === 1 ? one : many}`;
-}
-
-/**
- * Turn the route's broadcast report into sentences an operator can act on.
- *
- * The distinctions here are the whole point of the panel: "nobody is subscribed",
- * "queued but this deployment cannot send email", "the provider refused" and "we
- * do not know" are four different facts, and the enqueue count alone conflates
- * all of them. `unknown` is never rendered as "nobody was emailed" — a step that
- * did not report back is not evidence that no one was reached.
- *
- * KNOWN GAP, and the reason the zero branch below hedges. A FIFTH fact — "the
- * subscriber list could not be read" — has no representation in this payload:
- * `enqueueCampaignSubscriberEmails` (src/lib/notifications/engagement.ts) selects
- * from the engagement_subscriptions table destructuring only `data`, and drops
- * the error, so a permission or connectivity failure arrives here as
- * `enqueued: 0`. Verified 2026-08-04 by calling it with a client that answers
- * `{ data: null, error }`: the result is `{ enqueued: 0, … }`, byte-identical to
- * a campaign nobody subscribed to. The durable fix belongs in that lib (report
- * the read failure alongside the counts and give this function a
- * `subscribers_unreadable` outcome); until then this component may only say what
- * OpenPlan FOUND, never what is true.
- */
-export function describeBroadcast(report: BroadcastReport): { tone: "neutral" | "warning"; lines: string[] } | null {
-  if (!report.outcome) return null;
-
-  if (report.outcome === "no_share_token") {
-    return {
-      tone: "warning",
-      lines: [
-        "No update emails were sent: this campaign has no public share link, so there is no working unsubscribe link to put in them.",
-        "Publish the share link first if you want subscribers notified of future updates.",
-      ],
-    };
-  }
-
-  if (report.outcome === "unknown" || !report.result) {
-    return {
-      tone: "warning",
-      lines: [
-        "The entry was published, but OpenPlan could not determine whether subscriber update emails were queued — the notification step did not report back.",
-        "This is not the same as nobody being emailed. Check Activity → Email delivery for what actually reached the outbox.",
-      ],
-    };
-  }
-
-  const { enqueued, delivered, skipped, failed, transport, unrecorded = 0 } = report.result;
-
-  // A zero here is NOT evidence that nobody subscribed.
-  // enqueueCampaignSubscriberEmails() reads engagement_subscriptions with the
-  // error discarded, so a subscriber list that could not be read arrives as an
-  // empty one and lands in this exact branch. Until that read reports its own
-  // failure (see the note above describeBroadcast), this branch may report what
-  // OpenPlan FOUND and must not assert what is TRUE of the world.
-  if (enqueued === 0 && unrecorded === 0) {
-    return {
-      tone: "neutral",
-      lines: [
-        "No update emails were queued: OpenPlan found no confirmed email subscriptions for this campaign.",
-        "If you know people have subscribed, tell whoever runs this deployment — OpenPlan cannot yet tell an empty subscriber list apart from one it failed to read, so this is “none found”, not a confirmed count.",
-      ],
-    };
-  }
-
-  const lines: string[] = [];
-  if (unrecorded > 0) lines.push(`${plural(unrecorded, "update email could", "update emails could")} not be saved to the outbox. Delivery was not attempted for those emails.`);
-  if (delivered > 0) lines.push(`${plural(delivered, "update email", "update emails")} delivered via ${transport}.`);
-  if (skipped > 0) {
-    lines.push(
-      `${plural(skipped, "update email was", "update emails were")} recorded in the outbox but not delivered — this deployment has no email service configured (transport: ${transport}).`
-    );
-  }
-  if (failed > 0) {
-    lines.push(
-      `${plural(failed, "update email", "update emails")} could not be delivered — the email service refused them. See Activity → Email delivery for the reason.`
-    );
-  }
-  return { tone: delivered === enqueued && unrecorded === 0 ? "neutral" : "warning", lines };
-}
 
 type Draft = { themeTitle: string; youSaid: string; sourceItemIds: string[] };
 type DraftResponse = {
@@ -133,18 +42,11 @@ async function api(url: string, method: string, body?: unknown): Promise<Record<
   return payload;
 }
 
-function CloseLoopCard({
-  campaignId,
-  entry,
-  categories,
-  onUpdate,
-  onRemove,
-}: {
-  campaignId: string;
+function CloseLoopCard({ entry, categories, submit, broadcast }: {
   entry: CloseLoopEntryRow;
   categories: Category[];
-  onUpdate: (next: CloseLoopEntryRow) => void;
-  onRemove: (id: string) => void;
+  submit: (intent: ResponseWriteIntent, before: CloseLoopEntryRow | null, origin: PendingResponse["origin"]) => Promise<boolean>;
+  broadcast?: { requestId: string; report: unknown };
 }) {
   const [editing, setEditing] = useState(false);
   const [themeTitle, setThemeTitle] = useState(entry.theme_title);
@@ -153,31 +55,20 @@ function CloseLoopCard({
   const [categoryId, setCategoryId] = useState(entry.category_id ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [broadcast, setBroadcast] = useState<BroadcastReport | null>(null);
+  const [reason, setReason] = useState("");
 
   const categoryLabel = entry.category_id ? categories.find((c) => c.id === entry.category_id)?.label ?? null : null;
-  const broadcastNotice = broadcast ? describeBroadcast(broadcast) : null;
 
-  async function patch(body: Record<string, unknown>) {
+
+  async function patch(body: Partial<Extract<ResponseWriteIntent, { operation: "update" }>["body"]>) {
+    if (!reason.trim()) { setError("Record a reason for this change."); return false; }
     setBusy(true);
     setError(null);
-    try {
-      const payload = await api(`/api/engagement/campaigns/${campaignId}/closeloop/${entry.id}`, "PATCH", body);
-      onUpdate(payload.entry as CloseLoopEntryRow);
-      // Publishing broadcasts to confirmed subscribers. The route now reports
-      // what became of that; anything else (an edit, an unpublish) reports a
-      // null outcome and clears whatever the last publish said.
-      setBroadcast({
-        outcome: (payload.broadcastOutcome as BroadcastReport["outcome"]) ?? null,
-        result: (payload.broadcast as BroadcastResult | null) ?? null,
-      });
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Update failed");
-      return false;
-    } finally {
-      setBusy(false);
-    }
+    const ok = await submit({ operation: "update", entryId: entry.id, body: {
+      ...body, requestId: crypto.randomUUID(), expectedUpdatedAt: entry.updated_at, reason: reason.trim(),
+    } }, entry, "entry");
+    setBusy(false);
+    return ok;
   }
 
   async function save() {
@@ -196,15 +87,13 @@ function CloseLoopCard({
   }
 
   async function remove() {
+    if (!reason.trim()) { setError("Record a reason for this removal."); return; }
     setBusy(true);
     setError(null);
-    try {
-      await api(`/api/engagement/campaigns/${campaignId}/closeloop/${entry.id}`, "DELETE");
-      onRemove(entry.id);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Delete failed");
-      setBusy(false);
-    }
+    await submit({ operation: "remove", entryId: entry.id, body: {
+      requestId: crypto.randomUUID(), expectedUpdatedAt: entry.updated_at, reason: reason.trim(),
+    } }, entry, "entry");
+    setBusy(false);
   }
 
   return (
@@ -216,6 +105,11 @@ function CloseLoopCard({
         {categoryLabel ? <StatusBadge tone="info">{categoryLabel}</StatusBadge> : null}
         {entry.ai_assisted ? <StatusBadge tone="warning">AI-assisted draft</StatusBadge> : null}
       </div>
+
+      <label className="mt-3 flex flex-col gap-1 text-sm">
+        <span>Reason for this change</span>
+        <Textarea value={reason} onChange={event => setReason(event.target.value)} maxLength={2000} rows={2} placeholder="Why are you correcting, publishing or removing this response?" />
+      </label>
 
       {editing ? (
         <div className="mt-2 space-y-3">
@@ -271,31 +165,7 @@ function CloseLoopCard({
             </p>
           ) : null}
           {error ? <p className={ERROR_CLASS}>{error}</p> : null}
-          {/*
-            The anchor carries the entry id, and is what the campaign console's
-            Setup tab claims through its `closeloop-broadcast-notice-` prefix.
-            Per-entry rather than bare because this card is rendered once for
-            every close-the-loop entry; a bare, unsuffixed
-            closeloop-broadcast-notice would repeat down the page as soon
-            as a second entry was published, and a duplicated id sends every
-            deep link to whichever copy comes first. `data-testid` stays bare on
-            purpose — it is not an anchor, and nothing resolves a fragment
-            through it.
-          */}
-          {broadcastNotice ? (
-            <div
-              className={broadcastNotice.tone === "warning" ? NOTICE_WARNING_CLASS : NOTICE_CLASS}
-              id={`closeloop-broadcast-notice-${entry.id}`}
-              data-testid="closeloop-broadcast-notice"
-            >
-              <p className="font-semibold">Subscriber update emails</p>
-              {broadcastNotice.lines.map((line) => (
-                <p key={line} className="mt-1">
-                  {line}
-                </p>
-              ))}
-            </div>
-          ) : null}
+          {broadcast && <ResponseBroadcastNotice key={broadcast.requestId} campaignId={entry.campaign_id} entryId={entry.id} requestId={broadcast.requestId} initialReport={broadcast.report} />}
           <div className="flex flex-wrap gap-2">
             <Button type="button" variant="outline" size="sm" onClick={() => setEditing(true)} disabled={busy}>
               Edit
@@ -315,12 +185,14 @@ function CloseLoopCard({
 }
 
 export function EngagementCloseLoopBuilder({
+  userId,
   campaignId,
   categories,
   initialEntries,
   initialReadError = false,
   sourceItems = [],
 }: {
+  userId: string;
   campaignId: string;
   categories: Category[];
   initialEntries: CloseLoopEntryRow[];
@@ -360,6 +232,21 @@ export function EngagementCloseLoopBuilder({
   const [draftLoading, setDraftLoading] = useState(false);
   const [draftError, setDraftError] = useState<string | null>(null);
 
+  const [broadcasts, setBroadcasts] = useState<Record<string, { requestId: string; report: unknown }>>({});
+  const writes = useResponseWrites({ userId, campaignId, categories, sourceItems, onAbsent(id) { setEntries(previous => previous.filter(row => row.id !== id)); }, onConfirmed(result, pending, payload) {
+    setEntries(previous => result.removed ? previous.filter(row => row.id !== result.entryId)
+      : previous.some(row => row.id === result.entryId) ? previous.map(row => row.id === result.entryId ? result.entry : row)
+        : [...previous, result.entry]);
+    if (result.becamePublished) setBroadcasts(previous => ({ ...previous, [result.entryId]: { requestId: result.requestId, report: payload.broadcast } }));
+    if (pending.origin === "manual") {
+      setSourceItemIds([]); setThemeTitle(""); setYouSaid(""); setWeDid(""); setCategoryId("");
+    }
+    if (pending.origin === "suggestion" && pending.intent.operation === "create") {
+      const body = pending.intent.body;
+      setDrafts(previous => previous.filter(draft => draft.themeTitle !== body.themeTitle || draft.youSaid !== (body.youSaid ?? "") || JSON.stringify(draft.sourceItemIds) !== JSON.stringify(body.sourceItemIds ?? [])));
+    }
+  } });
+
   const publishedCount = entries.filter((e) => e.status === "published").length;
 
   async function addEntry(event: React.FormEvent) {
@@ -368,20 +255,10 @@ export function EngagementCloseLoopBuilder({
     setBusy(true);
     setError(null);
     try {
-      const payload = await api(`/api/engagement/campaigns/${campaignId}/closeloop`, "POST", {
-        themeTitle: themeTitle.trim(),
-        youSaid: youSaid.trim() || undefined,
-        weDid: weDid.trim() || undefined,
-        categoryId: categoryId || undefined,
-        ...(sourceItemIds.length ? {sourceItemIds} : {}),
-        sortOrder: entries.length,
-      });
-      setEntries((prev) => [...prev, payload.entry as CloseLoopEntryRow]);
-      setSourceItemIds([]);
-      setThemeTitle("");
-      setYouSaid("");
-      setWeDid("");
-      setCategoryId("");
+      await writes.submit({ operation: "create", body: {
+        requestId: crypto.randomUUID(), themeTitle: themeTitle.trim(), youSaid: youSaid.trim(), weDid: weDid.trim(),
+        categoryId: categoryId || null, sourceItemIds, sortOrder: entries.length,
+      } }, null, "manual");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add entry");
     } finally {
@@ -413,15 +290,10 @@ export function EngagementCloseLoopBuilder({
     setBusy(true);
     setError(null);
     try {
-      const payload = await api(`/api/engagement/campaigns/${campaignId}/closeloop`, "POST", {
-        themeTitle: draft.themeTitle,
-        youSaid: draft.youSaid || undefined,
-        sourceItemIds: draft.sourceItemIds.length ? draft.sourceItemIds : undefined,
-        aiAssisted: true,
-        sortOrder: entries.length,
-      });
-      setEntries((prev) => [...prev, payload.entry as CloseLoopEntryRow]);
-      setDrafts((prev) => prev.filter((d) => d !== draft));
+      await writes.submit({ operation: "create", body: {
+        requestId: crypto.randomUUID(), themeTitle: draft.themeTitle, youSaid: draft.youSaid,
+        sourceItemIds: draft.sourceItemIds, aiAssisted: true, sortOrder: entries.length,
+      } }, null, "suggestion");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to add draft entry");
     } finally {
@@ -451,19 +323,19 @@ export function EngagementCloseLoopBuilder({
           {readLoading ? "Loading responses…" : "Retry loading responses"}
         </Button>
       </div>}
-      <fieldset disabled={readError || readLoading} className="min-w-0">
+      {writes.recovery}
+      <fieldset disabled={readError || readLoading || !writes.ready || writes.busy || Boolean(writes.pending)} className="min-w-0">
       <div className="mt-5 space-y-3">
         {entries.length === 0 ? (
           !readError && <p className="text-sm text-muted-foreground">No entries yet. Draft from community input or add one below.</p>
         ) : (
           entries.map((entry) => (
             <CloseLoopCard
-              key={entry.id}
-              campaignId={campaignId}
+              key={`${entry.id}:${entry.updated_at}`}
               entry={entry}
               categories={categories}
-              onUpdate={(next) => setEntries((prev) => prev.map((e) => (e.id === next.id ? next : e)))}
-              onRemove={(id) => setEntries((prev) => prev.filter((e) => e.id !== id))}
+              submit={writes.submit}
+              broadcast={broadcasts[entry.id]}
             />
           ))
         )}

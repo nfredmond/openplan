@@ -1,5 +1,9 @@
 # Response route integration checkpoint
 
+Historical status at 95eae82a. The later app/editor join is described in
+[EDITOR_JOIN.md](EDITOR_JOIN.md); the unwired-handler statements below describe
+that earlier checkpoint.
+
 September 13, 2026. This continues the unreleased response-write work. It does
 not enable the prototype SQL or replace the released editor's request contract.
 

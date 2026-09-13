@@ -1,0 +1,8 @@
+{
+  "date": "2026-09-13",
+  "failedBeforeFix": 1,
+  "observed": "Expected no pending recovery panel for an unsent invalid edit; a panel existed and the form was disabled.",
+  "test": "leaves an invalid unsent edit editable instead of trapping it as an unknown save",
+  "resolvedBy": "Validate before entering pending state; preserve editable input and send nothing.",
+  "afterFixEvidence": "editor-checks.json and editor-additional-mutations.json"
+}

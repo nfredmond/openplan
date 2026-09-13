@@ -1,0 +1,89 @@
+[
+  {
+    "name": "baseline",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "sourceSha256": "146196d7b172cf3192c993a2283fadfe44f050c63dc07fabf092eebddb177a33",
+    "expectedFailingTest": null,
+    "failedTests": [],
+    "passedTests": 73,
+    "failedTestCount": 0
+  },
+  {
+    "name": "harmless-comment",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "sourceSha256": "1c417b1cf3a3a43e247784c2e075ced6bceeb11db037ef3be953c57356ffaf60",
+    "expectedFailingTest": null,
+    "failedTests": [],
+    "passedTests": 73,
+    "failedTestCount": 0
+  },
+  {
+    "name": "uneditable-invalid-unsent-request",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "91aaacb63049a7a06f00f22ad1c39e32268c71bdf432a7cefa388eb0d750b3dc",
+    "expectedFailingTest": "leaves an invalid unsent edit editable",
+    "failedTests": [
+      "leaves an invalid unsent edit editable instead of trapping it as an unknown save"
+    ],
+    "passedTests": 72,
+    "failedTestCount": 1
+  },
+  {
+    "name": "lost-retry-focus",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "acd9ee912653bba0e311da4ea27b47a776854d463f4c2329ad88e7879f1c9b05",
+    "expectedFailingTest": "recovers an interrupted correction",
+    "failedTests": [
+      "recovers an interrupted correction after reload with exactly the same body"
+    ],
+    "passedTests": 72,
+    "failedTestCount": 1
+  },
+  {
+    "name": "lost-confirmed-focus",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "82fb3453161c71eb0588149fbbc4f6a14cd30a0ce1186acb3c7efec1ff58ac76",
+    "expectedFailingTest": "retains before transport",
+    "failedTests": [
+      "retains before transport, refuses duplicate clicks, and clears only after a confirmed receipt"
+    ],
+    "passedTests": 72,
+    "failedTestCount": 1
+  },
+  {
+    "name": "ignored-history-anchor",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "473feca408037731d353357de86247750d5eb84d0f3f29d2bac4b110842fe275",
+    "expectedFailingTest": "reopens a retained publication",
+    "failedTests": [
+      "reopens a retained publication's email status from history after a reload"
+    ],
+    "passedTests": 72,
+    "failedTestCount": 1
+  },
+  {
+    "name": "lost-history-publication-report",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "7b262c638d42f5775a347c7f0d4e094bd4284b3ed14d5c4d40e2a21d2d6b41b4",
+    "expectedFailingTest": "reopens a retained publication",
+    "failedTests": [
+      "reopens a retained publication's email status from history after a reload"
+    ],
+    "passedTests": 72,
+    "failedTestCount": 1
+  }
+]

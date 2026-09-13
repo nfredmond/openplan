@@ -1,0 +1,370 @@
+[
+  {
+    "name": "baseline",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "sourceSha256": "fb861e9dea1a7fd111115847a689f421e0c9a7672afabf5eda66e28749864e33",
+    "expectedFailingTest": null,
+    "failedTests": [],
+    "passedTests": 72,
+    "failedTestCount": 0
+  },
+  {
+    "name": "harmless-comment",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "sourceSha256": "8dd6861bebdf584759902a24692f47e1dc7bdb319372a2bd6f24eed512d41e8e",
+    "expectedFailingTest": null,
+    "failedTests": [],
+    "passedTests": 72,
+    "failedTestCount": 0
+  },
+  {
+    "name": "no-preflight-retention",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "f1161b26bf9c192c4b3c7ce3212f298c08f6e2742d41cc7d161f3822937789fa",
+    "expectedFailingTest": "retains before transport",
+    "failedTests": [
+      "retains before transport, refuses duplicate clicks, and clears only after a confirmed receipt",
+      "does not contact the server when the tab cannot retain the request",
+      "recovers an interrupted correction after reload with exactly the same body",
+      "keeps the pending draft after a successful HTTP response with foreign request",
+      "keeps the pending draft after a successful HTTP response with missing receipt",
+      "keeps the pending draft after a successful HTTP response with malformed entry",
+      "requires current-copy review before replacing a conflicted intent, then keeps the new version and reason",
+      "does not overwrite an intervening text correction when reviewing only a publication change",
+      "can correct a rejected theme tag without losing retained contribution provenance"
+    ],
+    "passedTests": 63,
+    "failedTestCount": 9
+  },
+  {
+    "name": "new-identity-on-retry",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "d7bca517d38e7d4707a0c795b8b26a5af4f235fa07416496c1883e5f33f6910a",
+    "expectedFailingTest": "recovers an interrupted correction",
+    "failedTests": [
+      "EngagementCloseLoopBuilder publishes a draft via PATCH and reflects the returned status",
+      "EngagementCloseLoopBuilder labels an offline AI draft honestly and can add it as a draft entry",
+      "retains before transport, refuses duplicate clicks, and clears only after a confirmed receipt",
+      "recovers an interrupted correction after reload with exactly the same body",
+      "keeps a committed removal retry available when the current card is absent after reload",
+      "requires current-copy review before replacing a conflicted intent, then keeps the new version and reason",
+      "does not overwrite an intervening text correction when reviewing only a publication change",
+      "recovers a created response after reload without appending a duplicate",
+      "can correct a rejected theme tag without losing retained contribution provenance"
+    ],
+    "passedTests": 63,
+    "failedTestCount": 9
+  },
+  {
+    "name": "premature-clear",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "b79f6d3b848991b86e96246c93db9b2e511618b4dda5782139750cd881f0b559",
+    "expectedFailingTest": "keeps the pending draft after a successful HTTP response",
+    "failedTests": [
+      "keeps the pending draft after a successful HTTP response with foreign request",
+      "keeps the pending draft after a successful HTTP response with missing receipt",
+      "keeps the pending draft after a successful HTTP response with malformed entry"
+    ],
+    "passedTests": 69,
+    "failedTestCount": 3
+  },
+  {
+    "name": "forgotten-reload-intent",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "6736f9248339e1acf04d1c10d12fd4facad2e5a0517811f52a98e1700639f104",
+    "expectedFailingTest": "keeps a committed removal retry available",
+    "failedTests": [
+      "recovers an interrupted correction after reload with exactly the same body",
+      "keeps a committed removal retry available when the current card is absent after reload",
+      "does not overwrite an intervening text correction when reviewing only a publication change",
+      "keeps the draft and refuses replacement when current-copy review is incomplete or foreign",
+      "resolves a confirmed absent current response without inventing a removal receipt",
+      "recovers a created response after reload without appending a duplicate",
+      "can correct a rejected theme tag without losing retained contribution provenance"
+    ],
+    "passedTests": 65,
+    "failedTestCount": 7
+  },
+  {
+    "name": "lost-review-scope",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "2d7d93b90f73f06201bb576622ac4a6077c078c22c42c266c1dc1fc4e841a9ec",
+    "expectedFailingTest": "keeps the draft and refuses replacement",
+    "failedTests": [
+      "keeps the draft and refuses replacement when current-copy review is incomplete or foreign"
+    ],
+    "passedTests": 71,
+    "failedTestCount": 1
+  },
+  {
+    "name": "stale-reviewed-version",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "beb9848f03380f147d6b702a6f977f75f3f68cebc6f1f7531949d61fd93be028",
+    "expectedFailingTest": "requires current-copy review before replacing",
+    "failedTests": [
+      "requires current-copy review before replacing a conflicted intent, then keeps the new version and reason",
+      "does not overwrite an intervening text correction when reviewing only a publication change"
+    ],
+    "passedTests": 70,
+    "failedTestCount": 2
+  },
+  {
+    "name": "overwritten-intervening-text",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "813f95c75f1386c80a218675ef6c7e13e8a997a2ab557c24a937620203e647e2",
+    "expectedFailingTest": "does not overwrite an intervening text correction",
+    "failedTests": [
+      "does not overwrite an intervening text correction when reviewing only a publication change"
+    ],
+    "passedTests": 71,
+    "failedTestCount": 1
+  },
+  {
+    "name": "lost-reviewed-tag-clear",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "daa897e6f56f981991ea65f15e35f18232f446ade99163525424e1e9aa379a03",
+    "expectedFailingTest": "can correct a rejected theme tag",
+    "failedTests": [
+      "can correct a rejected theme tag without losing retained contribution provenance"
+    ],
+    "passedTests": 71,
+    "failedTestCount": 1
+  },
+  {
+    "name": "unbounded-save",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "b31d1d56531823c94efadbe575df1cda0839cd0867bf9ffe5aac8c1e87d6bbb7",
+    "expectedFailingTest": "retains before transport",
+    "failedTests": [
+      "retains before transport, refuses duplicate clicks, and clears only after a confirmed receipt"
+    ],
+    "passedTests": 71,
+    "failedTestCount": 1
+  },
+  {
+    "name": "discarded-absent-before-review",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "5f8c32135f9b3b8a53db5a03b7b43f843d69a97ede001e4098d08d47a76a4ad0",
+    "expectedFailingTest": "resolves a confirmed absent current response",
+    "failedTests": [
+      "resolves a confirmed absent current response without inventing a removal receipt"
+    ],
+    "passedTests": 71,
+    "failedTestCount": 1
+  },
+  {
+    "name": "ignored-storage-readback",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "f2ebd4278f2a08bda9b0db6197a1e85c72653de47cd24f0deba5664f4cd59c87",
+    "expectedFailingTest": "detects a storage write that returned",
+    "failedTests": [
+      "pending response custody detects a storage write that returned without retaining the request"
+    ],
+    "passedTests": 71,
+    "failedTestCount": 1
+  },
+  {
+    "name": "ignored-storage-owner",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "708c84661cc6687530ae734352fe30345daf33576da71b4ecd7f5f881c577ae6",
+    "expectedFailingTest": "refuses a foreign scope or baseline",
+    "failedTests": [
+      "pending response custody refuses a foreign scope or baseline instead of rebinding another person's intent"
+    ],
+    "passedTests": 71,
+    "failedTestCount": 1
+  },
+  {
+    "name": "ignored-baseline-version",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "b2232a20bc3beb8d6cfb45763c213738f165ea5111a637fa1177efd3518df797",
+    "expectedFailingTest": "refuses a foreign scope or baseline",
+    "failedTests": [
+      "pending response custody refuses a foreign scope or baseline instead of rebinding another person's intent"
+    ],
+    "passedTests": 71,
+    "failedTestCount": 1
+  },
+  {
+    "name": "cleared-newer-request",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "d9137d776daabf6456efe09ea7b7c6a384245f7e776a1297147da16f133683c6",
+    "expectedFailingTest": "does not clear a newer pending request",
+    "failedTests": [
+      "pending response custody does not clear a newer pending request"
+    ],
+    "passedTests": 71,
+    "failedTestCount": 1
+  },
+  {
+    "name": "duplicate-created-row",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "d6bc79770aadc330e2e9d8ae9da96e0081c1a0ae680ad18393153574fc7558e4",
+    "expectedFailingTest": "recovers a created response after reload",
+    "failedTests": [
+      "recovers an interrupted correction after reload with exactly the same body",
+      "recovers a created response after reload without appending a duplicate"
+    ],
+    "passedTests": 70,
+    "failedTestCount": 2
+  },
+  {
+    "name": "lost-write-inhibition",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "053f73b591fa2ec73be6606065d4eff24133f009adbb1f5c5f5eb07de501b452",
+    "expectedFailingTest": "keeps the pending draft after a successful HTTP response",
+    "failedTests": [
+      "retains before transport, refuses duplicate clicks, and clears only after a confirmed receipt",
+      "keeps the pending draft after a successful HTTP response with foreign request",
+      "keeps the pending draft after a successful HTTP response with missing receipt",
+      "keeps the pending draft after a successful HTTP response with malformed entry"
+    ],
+    "passedTests": 68,
+    "failedTestCount": 4
+  },
+  {
+    "name": "unrecorded-change-reason",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "a7f770e9c550fd9bb5f6cfe8e7b5c5fe4bbd08c8677e890b332430b353e68169",
+    "expectedFailingTest": "requires a recorded reason",
+    "failedTests": [
+      "requires a recorded reason before publication or removal"
+    ],
+    "passedTests": 71,
+    "failedTestCount": 1
+  },
+  {
+    "name": "lost-history-reason",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "eb19bf08958145482b8757998cf7cb335943398b7eecc603d1eabb9652b9c3df",
+    "expectedFailingTest": "shows retained staff and source-withdrawal reasons",
+    "failedTests": [
+      "shows retained staff and source-withdrawal reasons while leaving older reasons unknown"
+    ],
+    "passedTests": 71,
+    "failedTestCount": 1
+  },
+  {
+    "name": "lost-withdrawal-origin",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "89f19c3e5990403b21b85eed3fa6236b93c7c6100d34bc6df1e2704c7a084ee3",
+    "expectedFailingTest": "shows retained staff and source-withdrawal reasons",
+    "failedTests": [
+      "shows retained staff and source-withdrawal reasons while leaving older reasons unknown"
+    ],
+    "passedTests": 71,
+    "failedTestCount": 1
+  },
+  {
+    "name": "false-inbox-delivery",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "267debf5184be57d9e98ec262502712de421239115f52e8def64133f1efe122d",
+    "expectedFailingTest": "refreshes complete email states",
+    "failedTests": [
+      "refreshes complete email states without turning provider acceptance into inbox delivery"
+    ],
+    "passedTests": 71,
+    "failedTestCount": 1
+  },
+  {
+    "name": "ignored-notice-scope",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "8713629a8fe63c5247ac88540549a189114d4f8e2c27a6101ec4f8863ecf3f7b",
+    "expectedFailingTest": "refreshes complete email states",
+    "failedTests": [
+      "refreshes complete email states without turning provider acceptance into inbox delivery"
+    ],
+    "passedTests": 71,
+    "failedTestCount": 1
+  },
+  {
+    "name": "fixed-repeated-anchor",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "62529db4abac388031d6c556b4c2b9a946a353e7ecb59502d5b849d3a749a467",
+    "expectedFailingTest": "gives repeated cards unique anchors",
+    "failedTests": [
+      "reopens a retained publication's email status from history after a reload",
+      "shows prepared distinctly and gives repeated cards unique anchors",
+      "shows no_share_token distinctly and gives repeated cards unique anchors",
+      "shows cancelled distinctly and gives repeated cards unique anchors"
+    ],
+    "passedTests": 68,
+    "failedTestCount": 4
+  },
+  {
+    "name": "unsafe-direct-delete",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "4d66d4995fdd9509ea9fa9a6a4c842ee0dbbde59867170238e1556a8b92b894a",
+    "expectedFailingTest": "adds no new UPDATE or DELETE",
+    "failedTests": [
+      "write policy coverage adds no new UPDATE or DELETE that cannot see whether it changed anything"
+    ],
+    "passedTests": 71,
+    "failedTestCount": 1
+  },
+  {
+    "name": "unchecked-browser-receipt",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "b0d0fb420509ac934a12e4b1dbedf2e92031b765d9343b51157a3b0ee4672368",
+    "expectedFailingTest": "keeps the pending draft after a successful HTTP response",
+    "failedTests": [
+      "keeps the pending draft after a successful HTTP response with malformed entry",
+      "response transaction client refuses an invalid or mismatched receipt without reporting an unsaved action",
+      "response transaction client refuses an invalid or mismatched receipt without reporting an unsaved action"
+    ],
+    "passedTests": 69,
+    "failedTestCount": 3
+  }
+]

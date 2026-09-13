@@ -75,22 +75,13 @@ vi.mock("@/lib/runtime/ai-rate-limit", () => ({
   recordAiUsageEvent: (...args: unknown[]) => recordAiUsageEvent(...args),
 }));
 
-import { GET, POST } from "@/app/api/engagement/campaigns/[campaignId]/closeloop/route";
-import { PATCH, DELETE } from "@/app/api/engagement/campaigns/[campaignId]/closeloop/[entryId]/route";
+import { GET } from "@/app/api/engagement/campaigns/[campaignId]/closeloop/route";
 import { POST as DRAFT_POST } from "@/app/api/engagement/campaigns/[campaignId]/closeloop/draft/route";
 
 const CAMPAIGN_ID = "11111111-1111-4111-8111-111111111111";
 const ENTRY_ID = "22222222-2222-4222-8222-222222222222";
 
-function jsonRequest(body: unknown) {
-  return new NextRequest(`http://localhost/api/engagement/campaigns/${CAMPAIGN_ID}/closeloop`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
-  });
-}
 const listCtx = { params: Promise.resolve({ campaignId: CAMPAIGN_ID }) };
-const entryCtx = { params: Promise.resolve({ campaignId: CAMPAIGN_ID, entryId: ENTRY_ID }) };
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -147,116 +138,6 @@ describe("close-loop operator routes", () => {
     expect(await res.json()).toEqual({ entries: [] });
   });
 
-  it("POST creates a draft entry (201)", async () => {
-    entryInsertSingle.mockResolvedValue({ data: { id: ENTRY_ID, theme_title: "Crossings", status: "draft" }, error: null });
-    const res = await POST(jsonRequest({ themeTitle: "Crossings", youSaid: "safer" }), listCtx);
-    expect(res.status).toBe(201);
-    expect((await res.json()).entryId).toBe(ENTRY_ID);
-  });
-
-  it("POST 400 when themeTitle is missing", async () => {
-    const res = await POST(jsonRequest({ youSaid: "no title" }), listCtx);
-    expect(res.status).toBe(400);
-  });
-
-  it("PATCH double-scopes by id AND campaign_id and 404s a foreign entry, saying nothing was saved", async () => {
-    entryUpdateMaybeSingle.mockResolvedValue({ data: null, error: null }); // no row matched both scopes
-    const req = new NextRequest("http://localhost/x", {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ status: "published" }),
-    });
-    const res = await PATCH(req, entryCtx);
-    // 404, not 500: the route verified the CAMPAIGN, never this entry, so zero
-    // matched rows is the ordinary "no such entry you can change" — and the body
-    // says so rather than implying the server broke.
-    expect(res.status).toBe(404);
-    const body = await res.json();
-    expect(body.error).toBe("No such close-loop entry");
-    expect(body.details).toContain("nothing was saved");
-  });
-
-  it("PATCH still 500s when the update fails for a real reason", async () => {
-    entryUpdateMaybeSingle.mockResolvedValue({ data: null, error: { code: "42501", message: "permission denied" } });
-    const req = new NextRequest("http://localhost/x", {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ status: "published" }),
-    });
-    const res = await PATCH(req, entryCtx);
-    expect(res.status).toBe(500);
-    expect((await res.json()).error).toBe("Failed to update close-loop entry");
-  });
-
-  it("PATCH publishes and returns the updated row", async () => {
-    entryUpdateMaybeSingle.mockResolvedValue({ data: { id: ENTRY_ID, status: "published" }, error: null });
-    const req = new NextRequest("http://localhost/x", {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ status: "published" }),
-    });
-    const res = await PATCH(req, entryCtx);
-    expect(res.status).toBe(200);
-    expect((await res.json()).entry.status).toBe("published");
-    // A draft -> published transition must notify the operator inbox and enqueue
-    // subscriber emails exactly once. Inverting the transition check (so a real
-    // publish notifies nobody) previously survived this whole file.
-    expect(recordOperatorNotificationMock).toHaveBeenCalledTimes(1);
-    expect(enqueueCampaignSubscriberEmailsMock).toHaveBeenCalledTimes(1);
-    // ...and the broadcast must carry the unsubscribe context (origin + share
-    // token) so every recipient gets a working opt-out link. Broadcasts to the
-    // public shipped without one until 2026-08-04.
-    expect(enqueueCampaignSubscriberEmailsMock).toHaveBeenCalledWith(
-      expect.anything(),
-      CAMPAIGN_ID,
-      expect.objectContaining({ template: "closeloop_published" }),
-      expect.objectContaining({ shareToken: "share-abc", origin: expect.stringContaining("http") })
-    );
-  });
-
-  it("refuses to broadcast when the campaign has no share token (no reachable opt-out link)", async () => {
-    loadCampaignAccess.mockResolvedValue({
-      campaign: { id: CAMPAIGN_ID, workspace_id: "ws-1", title: "Campaign", share_token: null },
-      membership: { role: "editor" },
-      error: null,
-      allowed: true,
-    });
-    entryUpdateMaybeSingle.mockResolvedValue({ data: { id: ENTRY_ID, status: "published" }, error: null });
-    const req = new NextRequest("http://localhost/x", {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ status: "published" }),
-    });
-    const res = await PATCH(req, entryCtx);
-    // The publish itself succeeds; only the bulk email is refused, because a
-    // broadcast without a per-recipient unsubscribe URL may not be sent at all.
-    expect(res.status).toBe(200);
-    expect(recordOperatorNotificationMock).toHaveBeenCalledTimes(1);
-    expect(enqueueCampaignSubscriberEmailsMock).not.toHaveBeenCalled();
-  });
-
-  it("still returns 200 on publish when the best-effort notify path throws (e.g. missing service-role key)", async () => {
-    entryUpdateMaybeSingle.mockResolvedValue({ data: { id: ENTRY_ID, status: "published", theme_title: "T", you_said: "", we_did: "" }, error: null });
-    // Simulate createServiceRoleClient() throwing synchronously AFTER the publish committed.
-    createServiceRoleClientMock.mockImplementation(() => {
-      throw new Error("SUPABASE_SERVICE_ROLE_KEY is not set");
-    });
-    const req = new NextRequest("http://localhost/x", {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ status: "published" }),
-    });
-    const res = await PATCH(req, entryCtx);
-    expect(res.status).toBe(200); // the committed publish is NOT turned into a false 500
-    expect((await res.json()).entry.status).toBe("published");
-  });
-
-  it("DELETE removes the entry (ok:true)", async () => {
-    entryDelete.mockResolvedValue({ error: null });
-    const res = await DELETE(new NextRequest("http://localhost/x", { method: "DELETE" }), entryCtx);
-    expect(res.status).toBe(200);
-    expect((await res.json()).ok).toBe(true);
-  });
 });
 
 describe("close-loop draft route", () => {

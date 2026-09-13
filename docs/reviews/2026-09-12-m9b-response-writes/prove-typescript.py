@@ -32,7 +32,7 @@ cases = [
     ('foreign-campaign-receipt', 'write', '|| result.entry.campaign_id !== campaignId', '|| false', 'refuses an invalid or mismatched receipt'),
     ('foreign-entry-receipt', 'write', '|| (intent.operation !== "create" && result.entryId !== intent.entryId)', '|| false', 'refuses an invalid or mismatched receipt'),
     ('foreign-request-receipt', 'write', 'result.requestId !== intent.body.requestId ||', 'false ||', 'refuses an invalid or mismatched receipt'),
-    ('unchecked-receipt-shape', 'write', 'responseWriteResultSchema.parse(response.data)', 'response.data as ResponseWriteResult', 'refuses an invalid or mismatched receipt'),
+    ('unchecked-receipt-shape', 'write', 'responseWriteResultSchema.parse(data)', 'data as ResponseWriteResult', 'refuses an invalid or mismatched receipt'),
     ('invented-validation-failure', 'write', '&& message === "Review and publish linked contributions before publishing the staff response"', '&& true', 'distinguishes database P0001'),
     ('lost-conflict-state', 'write', 'if (code === "40001" || code === "23505")', 'if (false)', 'distinguishes database 40001'),
     ('lost-history-reason', 'history', 'change_reason: z.string().nullable().default(null),', 'change_reason: z.string().nullable().default(null).transform(() => null),', 'keeps old reasons unknown'),

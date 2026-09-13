@@ -45,3 +45,31 @@ it("aborts interrupted reads and reads again when reopened", async () => {
   fetcher.mockResolvedValueOnce({ ok: true, json: async () => ({ history: [row] }) }); open();
   expect(await screen.findByText("Revision 1: Retained baseline")).toBeVisible();
 });
+
+it("shows retained staff and source-withdrawal reasons while leaving older reasons unknown", async () => {
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ history: [row,
+    { ...row, id: "30000000-0000-4000-8000-000000000002", revision: 2, event: "corrected", change_origin: "staff", change_reason: "Correct the adopted reference", write_request_id: "40000000-0000-4000-8000-000000000001" },
+    { ...row, id: "30000000-0000-4000-8000-000000000003", revision: 3, event: "unpublished", change_origin: "source_withdrawal", change_reason: "A linked contribution was withdrawn", write_request_id: "40000000-0000-4000-8000-000000000002" },
+  ] }) }));
+  render(<ResponseHistory campaignId={campaignId} />); open();
+  expect(await screen.findByText(/Correct the adopted reference/)).toBeVisible();
+  expect(screen.getByText(/A linked contribution was withdrawn/)).toBeVisible();
+  expect(screen.getByText("Staff-reviewed change.")).toBeVisible();
+  expect(screen.getByText(/Automatically withdrawn following/)).toBeVisible();
+  expect(screen.getByText(/Earlier changes are unknown/)).toBeVisible();
+  expect(screen.getByText(/Earlier reasons remain unknown/i)).toBeVisible();
+});
+
+it("reopens a retained publication's email status from history after a reload", async () => {
+  const publicationRequest = "40000000-0000-4000-8000-000000000003";
+  const fetcher = vi.fn().mockImplementation(async (url: string) => ({ ok: true, json: async () => url.endsWith("/history")
+    ? { history: [{ ...row, event: "published", write_request_id: publicationRequest }] }
+    : { broadcast: { campaignId, requestId: publicationRequest, state: "prepared", preparedCount: 1, counts: { uncertain: 1 } } } }));
+  vi.stubGlobal("fetch", fetcher);
+  render(<ResponseHistory campaignId={campaignId} />); open();
+  const refresh = await screen.findByRole("button", { name: "Refresh email status" });
+  fireEvent.click(refresh);
+  expect(await screen.findByText(/automatic resend is disabled/)).toBeVisible();
+  expect(fetcher).toHaveBeenCalledWith(`/api/engagement/campaigns/${campaignId}/closeloop/broadcasts/${publicationRequest}`, expect.objectContaining({ cache: "no-store" }));
+  expect(screen.getByTestId("closeloop-broadcast-notice").id).toBe(`response-history-broadcast-${row.id}`);
+});

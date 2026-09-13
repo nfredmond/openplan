@@ -22,20 +22,20 @@ snapshots by requiring READ COMMITTED. Existing history/checksums remain intact.
 Current evidence: rolled-back baseline, one harmless survivor and fifteen targeted
 failures; five actual separate-connection scenarios; one harmless concurrency
 survivor and two semantic failures when the lock/isolation guards are removed.
-Initial failed probes are retained. No browser acceptance or app route integration
+Initial failed probes are retained. The app routes and editor are now joined, but no browser acceptance
 exists yet. Read the precise limits, including public reader defense in depth.
 
-Read ROUTE_BOUNDARY.md for the new route boundary and broadcast reader evidence.
-The next join is still the actual editor: create/PATCH/DELETE must call writeResponse from
-openplan/src/lib/engagement/response-write.ts, and CloseLoopBuilder must supply and
-retain requestId, expectedUpdatedAt and reason. Those routes still do direct writes. The shared responseWriteRoute factory now
-implements their next handlers, and closeloop/broadcasts/[requestId] exposes the
-validated private aggregate reader. Switch the route exports and editor together;
-do not apply the permission guard before replacing them. Keep unsaved words and the
-same pending request after an unknown network result. A conflict must display the
-current saved copy without discarding the draft before starting a fresh reviewed
-intent. Preserve accepted AI source IDs and authorship. Add reason display to
-ResponseHistory; the reader/types now retain metadata, but its UI is unchanged.
+Read EDITOR_JOIN.md and editor-checks.json for the current app join and evidence.
+The actual POST/PATCH/DELETE exports now use responseWriteRoute; the editor supplies
+and retains requestId, expectedUpdatedAt and reason under user/campaign scope.
+Unknown results retry the same body. Conflicts require a complete current-copy read
+and explicit reviewed save before a new request/version. Review preserves proposed
+words and source references without overwriting an unrelated intervening text edit.
+History displays retained reasons and reopens publication email status after reload.
+Browser acceptance, the additive migration and the Activity outcome join remain.
+Do not enable this checkout against the original demo or main database. The named
+source test stack still lacks the RPCs: promote/probe the complete additive migration
+there before starting the identified app and local worker.
 
 The new response-broadcast-queue.sql is unapplied. Publication queues a private
 intent atomically; the queue prepares every outbox recipient, then claims/checks

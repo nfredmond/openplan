@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { responseWriteRoute } from "@/lib/engagement/response-write-route";
+import { POST } from "@/app/api/engagement/campaigns/[campaignId]/closeloop/route";
+import { PATCH, DELETE } from "@/app/api/engagement/campaigns/[campaignId]/closeloop/[entryId]/route";
+const handlers = { create: POST, update: PATCH, remove: DELETE };
 import { GET as readBroadcast } from "@/app/api/engagement/campaigns/[campaignId]/closeloop/broadcasts/[requestId]/route";
 import { loadResponseBroadcast } from "@/lib/engagement/response-broadcast";
 import type { ResponseWriteIntent } from "@/lib/engagement/response-write";
@@ -59,7 +61,7 @@ beforeEach(() => {
 });
 
 describe.each(["create", "update", "remove"] as const)("%s response route boundary", operation => {
-  const handle = responseWriteRoute(operation);
+  const handle = handlers[operation];
   it("passes the caller's exact identity, version, reason and fields to the transaction", async () => {
     const response = await handle(request(operation), context);
     expect(response.status).toBe(operation === "create" ? 201 : 200);
@@ -147,15 +149,15 @@ describe.each(["create", "update", "remove"] as const)("%s response route bounda
 it.each(["update", "remove"] as const)("%s requires both version and review reason, and a valid entry id", async operation => {
   for (const field of ["expectedUpdatedAt", "reason"] as const) {
     const body = { ...bodies[operation], [field]: "" };
-    expect((await responseWriteRoute(operation)(request(operation, body), context)).status).toBe(400);
+    expect((await handlers[operation](request(operation, body), context)).status).toBe(400);
   }
-  expect((await responseWriteRoute(operation)(request(operation), { params: Promise.resolve({ campaignId }) })).status).toBe(400);
+  expect((await handlers[operation](request(operation), { params: Promise.resolve({ campaignId }) })).status).toBe(400);
   expect(mocks.rpc).not.toHaveBeenCalled();
 });
 
 it.each(["create", "update"] as const)("%s publication reports durable status without inline email or a second write", async operation => {
   mocks.rpc.mockResolvedValueOnce({ data: publishReceipt(), error: null });
-  const response = await responseWriteRoute(operation)(request(operation, { ...bodies[operation], status: "published" }), context);
+  const response = await handlers[operation](request(operation, { ...bodies[operation], status: "published" }), context);
   expect(response.status).toBe(operation === "create" ? 201 : 200);
   expect(await response.json()).toMatchObject({ becamePublished: true, broadcast: report, broadcastStatus: "available" });
   expect(mocks.rpc.mock.calls.map(call => call[0])).toEqual(["write_engagement_response", "read_engagement_response_broadcast"]);
@@ -171,7 +173,7 @@ it.each(["missing", "denied", "throws", "invalid"])("keeps publication confirmed
     data: failure === "invalid" ? { ...report, counts: { uncertain: 12 } } : null,
     error: failure === "denied" ? { code: "42501", message: "PRIVATE" } : null,
   });
-  const response = await responseWriteRoute("update")(request("update", { ...review, status: "published" }), context);
+  const response = await handlers.update(request("update", { ...review, status: "published" }), context);
   expect(response.status).toBe(200);
   expect(await response.json()).toMatchObject({ entryId, requestId, becamePublished: true, broadcast: null, broadcastStatus: "unknown" });
 });
@@ -179,7 +181,7 @@ it.each(["missing", "denied", "throws", "invalid"])("keeps publication confirmed
 it("reads the original publication's current email outcomes on an exact replay", async () => {
   mocks.rpc.mockResolvedValueOnce({ data: publishReceipt({ replayed: true }), error: null });
   mocks.rpc.mockResolvedValueOnce({ data: { ...report, state: "prepared", preparedCount: 3, counts: { accepted: 1, uncertain: 1, skipped: 1 } }, error: null });
-  const response = await responseWriteRoute("update")(request("update", { ...review, status: "published" }), context);
+  const response = await handlers.update(request("update", { ...review, status: "published" }), context);
   expect(response.status).toBe(200);
   expect(await response.json()).toMatchObject({ replayed: true, broadcast: { counts: { accepted: 1, uncertain: 1, skipped: 1 } } });
   expect(mocks.rpc).toHaveBeenCalledTimes(2);

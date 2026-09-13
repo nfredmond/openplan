@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
+import { ResponseBroadcastNotice } from "./response-broadcast-notice";
 import { Button } from "@/components/ui/button";
 import { responseHistoryEntrySchema, type ResponseHistoryEntry } from "@/lib/engagement/response-history";
 
@@ -61,17 +62,21 @@ function HistoryRecords({ campaignId }: { campaignId: string }) {
         {row.record.theme_title || "Untitled response"}{row.event === "removed" ? " (removed)" : ""} · {row.response_id}
       </option>)}
     </select>
-    <p className="text-xs text-muted-foreground">{revisions.length} retained revisions. These copies preserve the response text and source references. Translation history and reasons for changes are not recorded here. Withdrawal may follow a source correction.</p>
+    <p className="text-xs text-muted-foreground">{revisions.length} retained revisions. These copies preserve the response text and source references. Translation history is not recorded here. Reasons are shown when retained; earlier reasons remain unknown.</p>
     <ol className="space-y-4">
       {revisions.map(row => <li key={row.id} className="space-y-2 rounded-lg border border-border p-3 text-sm break-words">
         <h3 className="font-semibold">Revision {row.revision}: {eventLabels[row.event]}</h3>
         <p><time dateTime={row.recorded_at}>{new Date(row.recorded_at).toLocaleString()}</time></p>
         <p className="text-xs text-muted-foreground">{row.actor_id ? `Recorded actor: ${row.actor_id}` : "Actor not recorded"}</p>
+        <p className="whitespace-pre-wrap"><strong>Reason: </strong>{row.change_reason || "Not recorded"}</p>
+        {row.change_origin === "source_withdrawal" && <p>Automatically withdrawn following a linked contribution change.</p>}
+        {row.change_origin === "staff" && <p>Staff-reviewed change.</p>}
         {row.event === "legacy_baseline" && <p>This is the copy present when history retention began. Earlier changes are unknown.</p>}
         <p className="font-medium">{row.record.theme_title}</p>
         <p className="whitespace-pre-wrap"><strong>You said: </strong>{row.record.you_said || "Not recorded"}</p>
         <p className="whitespace-pre-wrap"><strong>We did: </strong>{row.record.we_did || "Not recorded"}</p>
         <p>Saved status: {row.record.status}</p>
+        {row.event === "published" && row.write_request_id && <ResponseBroadcastNotice campaignId={campaignId} entryId={row.response_id} requestId={row.write_request_id} initialReport={null} anchorId={`response-history-broadcast-${row.id}`} />}
         <p className="text-xs">Source contribution IDs: {row.record.source_item_ids.join(", ") || "None recorded"}</p>
         <details className="text-xs text-muted-foreground"><summary>Retained checksum verified</summary><p className="mt-2 break-all">SHA-256: {row.record_sha256}</p></details>
       </li>)}

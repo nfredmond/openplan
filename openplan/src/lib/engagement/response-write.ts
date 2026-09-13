@@ -70,14 +70,7 @@ export async function writeResponse(client: Pick<SupabaseClient, "rpc">, campaig
       p_changes: changes,
     });
     if (response.error) return { result: null, error: responseWriteFailure(response.error.code, response.error.message) };
-    const result = responseWriteResultSchema.parse(response.data);
-    if (result.requestId !== intent.body.requestId || result.entryId !== result.entry.id
-      || result.entry.campaign_id !== campaignId
-      || (intent.operation !== "create" && result.entryId !== intent.entryId)
-      || result.removed !== (intent.operation === "remove")
-      || (result.becamePublished && (result.removed || result.entry.status !== "published"))) {
-      throw new Error("Response receipt does not match the request");
-    }
+    const result = readResponseWriteResult(response.data, campaignId, intent);
     return { result, error: null };
   } catch {
     return { result: null, error: responseWriteFailure() };
@@ -96,4 +89,17 @@ function responseWriteFailure(code?: string, message?: string): ResponseWriteFai
     kind: "invalid", status: 400, message: "The response could not be saved. Review its fields and linked contributions before trying again.",
   };
   return { kind: "unavailable", status: 503, message: "OpenPlan could not confirm this save. Keep your words and retry the same request." };
+}
+
+/** Validate the acknowledgement at both the database and browser boundaries. */
+export function readResponseWriteResult(data: unknown, campaignId: string, intent: ResponseWriteIntent): ResponseWriteResult {
+    const result = responseWriteResultSchema.parse(data);
+    if (result.requestId !== intent.body.requestId || result.entryId !== result.entry.id
+      || result.entry.campaign_id !== campaignId
+      || (intent.operation !== "create" && result.entryId !== intent.entryId)
+      || result.removed !== (intent.operation === "remove")
+      || (result.becamePublished && (result.removed || result.entry.status !== "published"))) {
+      throw new Error("Response receipt does not match the request");
+    }
+  return result;
 }

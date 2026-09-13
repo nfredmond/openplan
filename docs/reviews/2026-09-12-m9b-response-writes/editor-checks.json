@@ -1,0 +1,52 @@
+{
+  "date": "2026-09-13",
+  "testFiles": 14,
+  "tests": {
+    "success": true,
+    "numPassedTests": 210,
+    "numFailedTests": 0
+  },
+  "mutations": {
+    "route-mutations.json": {
+      "cases": 27,
+      "matched": true,
+      "targetedFailures": 25
+    },
+    "typescript-mutations.json": {
+      "cases": 27,
+      "matched": true,
+      "targetedFailures": 25
+    },
+    "editor-mutations.json": {
+      "cases": 26,
+      "matched": true,
+      "targetedFailures": 24
+    },
+    "editor-additional-mutations.json": {
+      "cases": 7,
+      "matched": true,
+      "targetedFailures": 5
+    }
+  },
+  "typecheckExit": 0,
+  "eslintExit": 0,
+  "sourceSha256": {
+    "openplan/src/components/engagement/close-loop-builder.tsx": "ef6c019a78a114c6a4b458c05123fb7496352423217bc95507a0183f75e5f5f6",
+    "openplan/src/components/engagement/response-write-recovery.tsx": "146196d7b172cf3192c993a2283fadfe44f050c63dc07fabf092eebddb177a33",
+    "openplan/src/components/engagement/response-broadcast-notice.tsx": "95eabe165d3b53dddb562fdfeac135a5dab0b964335f7d92d0dd58f0754b3e99",
+    "openplan/src/components/engagement/response-history.tsx": "becde2ab5f2e92b46dc7ecd7b7d3fb05c4de08241dfe883343aeabca379f7414",
+    "openplan/src/lib/engagement/pending-response.ts": "cd878fc29a5613c77e381bf05f8ab748d590d8d0832d2d62fb6b272eaa33c95b",
+    "openplan/src/lib/engagement/response-write.ts": "df98023d12cd6120bd568f6a4770af3f5924d73326ea30b269f0aa82485d08c9",
+    "openplan/src/app/api/engagement/campaigns/[campaignId]/closeloop/route.ts": "ef03393ec04f509243fdcb45f9a75dfa9238197f811425912d73487e260bd7f8",
+    "openplan/src/app/api/engagement/campaigns/[campaignId]/closeloop/[entryId]/route.ts": "b0158f86be9f4fb138e0feb27b0e6dd23f15d1dc276a0358c4bccf7a30711ae4",
+    "openplan/src/test/engagement-response-recovery.test.tsx": "4b4af4ec68cda4c4647723ec2f27bd3822fea39105aab026fa47725fc67e2eed",
+    "openplan/src/test/engagement-response-write-route.test.ts": "69225e0cfc87c165cbe09a0b2c08e34235a7ceb28b53050f85db7bbabcefce25",
+    "openplan/src/app/(app)/engagement/[campaignId]/page.tsx": "65450078a02e7ccbd3281d1ba478c2f8550993d4d2b4cb2ba8d69ab7c1f54ee3"
+  },
+  "browserPreflight": "Isolated installed Chrome launched about:blank and closed; this is not application acceptance.",
+  "limits": [
+    "SQL prototype is not yet promoted/applied. Source disposable stack still cannot serve the new write RPC.",
+    "No browser acceptance, full QA, shuffled suite, live RLS, live worker/REST recovery, upgrade or final release CI for this increment.",
+    "Mutation batches cover their named faults; jsdom has no real CSS/layout and RPC mocks do not prove database authorization or queue concurrency."
+  ]
+}

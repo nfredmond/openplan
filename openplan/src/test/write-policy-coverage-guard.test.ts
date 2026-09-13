@@ -222,7 +222,7 @@ const UNVERIFIED_CALLER_WRITES: Record<string, number> = {
   "src/app/api/county-runs/[countyRunId]/manifest/route.ts": 2,
   "src/app/api/county-runs/[countyRunId]/scaffold/route.ts": 1,
   "src/app/api/county-runs/[countyRunId]/validate/refresh/route.ts": 1,
-  "src/app/api/engagement/campaigns/[campaignId]/closeloop/[entryId]/route.ts": 1,
+  // Response removal now uses a validated transaction receipt; the route has no unverified direct delete.
   "src/app/api/engagement/campaigns/[campaignId]/moderation-scan/route.ts": 1,
   "src/app/api/engagement/campaigns/[campaignId]/representativeness/route.ts": 1,
   // 1 -> 0: the campaign PATCH now chains `.select("id").maybeSingle()` and

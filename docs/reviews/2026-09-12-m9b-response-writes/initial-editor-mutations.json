@@ -1,0 +1,254 @@
+[
+  {
+    "name": "baseline",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "sourceSha256": "a9833372392b6f5d12011235de36ff63f77d9e4d62143bc56c45da1e880091b3",
+    "expectedFailingTest": null,
+    "failedTests": [],
+    "passedTests": 70,
+    "failedTestCount": 0
+  },
+  {
+    "name": "harmless-comment",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "sourceSha256": "9c9f55d052427e541265e4656d5019a482e394c3825c23a6e2305f477b5f208b",
+    "expectedFailingTest": null,
+    "failedTests": [],
+    "passedTests": 70,
+    "failedTestCount": 0
+  },
+  {
+    "name": "no-preflight-retention",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "85e70dca34181b5fb908b5e133c1eaa0a8fcab3e419980e0e1354199827161e5",
+    "expectedFailingTest": "retains before transport",
+    "failedTests": [
+      "retains before transport, refuses duplicate clicks, and clears only after a confirmed receipt",
+      "does not contact the server when the tab cannot retain the request",
+      "recovers an interrupted correction after reload with exactly the same body",
+      "keeps the pending draft after a successful HTTP response with foreign request",
+      "keeps the pending draft after a successful HTTP response with missing receipt",
+      "requires current-copy review before replacing a conflicted intent, then keeps the new version and reason",
+      "does not overwrite an intervening text correction when reviewing only a publication change",
+      "can correct a rejected theme tag without losing retained contribution provenance"
+    ],
+    "passedTests": 62,
+    "failedTestCount": 8
+  },
+  {
+    "name": "new-identity-on-retry",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "f114b7aaea2fe2a7e53d4f37d302331d962a10431542c757fd6f454addaf9ddf",
+    "expectedFailingTest": "recovers an interrupted correction",
+    "failedTests": [
+      "EngagementCloseLoopBuilder publishes a draft via PATCH and reflects the returned status",
+      "EngagementCloseLoopBuilder labels an offline AI draft honestly and can add it as a draft entry",
+      "retains before transport, refuses duplicate clicks, and clears only after a confirmed receipt",
+      "recovers an interrupted correction after reload with exactly the same body",
+      "keeps a committed removal retry available when the current card is absent after reload",
+      "requires current-copy review before replacing a conflicted intent, then keeps the new version and reason",
+      "does not overwrite an intervening text correction when reviewing only a publication change",
+      "recovers a created response after reload without appending a duplicate",
+      "can correct a rejected theme tag without losing retained contribution provenance"
+    ],
+    "passedTests": 61,
+    "failedTestCount": 9
+  },
+  {
+    "name": "premature-clear",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "02db8ab62b17f51c808d220870005e612154fceb66ad86dc73698871db506d27",
+    "expectedFailingTest": "keeps the pending draft after a successful HTTP response",
+    "failedTests": [
+      "keeps the pending draft after a successful HTTP response with foreign request",
+      "keeps the pending draft after a successful HTTP response with missing receipt"
+    ],
+    "passedTests": 68,
+    "failedTestCount": 2
+  },
+  {
+    "name": "forgotten-reload-intent",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "f4c9f464371ee85e92a76461522ae69dcf47868e10ab012067c78ee235b32d2d",
+    "expectedFailingTest": "keeps a committed removal retry available",
+    "failedTests": [
+      "recovers an interrupted correction after reload with exactly the same body",
+      "keeps a committed removal retry available when the current card is absent after reload",
+      "does not overwrite an intervening text correction when reviewing only a publication change",
+      "keeps the draft and refuses replacement when current-copy review is incomplete or foreign",
+      "resolves a confirmed absent current response without inventing a removal receipt",
+      "recovers a created response after reload without appending a duplicate",
+      "can correct a rejected theme tag without losing retained contribution provenance"
+    ],
+    "passedTests": 63,
+    "failedTestCount": 7
+  },
+  {
+    "name": "lost-review-scope",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "6fdce0227098f3280b1351825c2796b16fbd1794ed222ad345424cc822dc4542",
+    "expectedFailingTest": "keeps the draft and refuses replacement",
+    "failedTests": [
+      "keeps the draft and refuses replacement when current-copy review is incomplete or foreign"
+    ],
+    "passedTests": 69,
+    "failedTestCount": 1
+  },
+  {
+    "name": "stale-reviewed-version",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "d64bde0aba019cc61f53d11cc518546bd026998bf93d6d954abb73bd0db6f85f",
+    "expectedFailingTest": "requires current-copy review before replacing",
+    "failedTests": [
+      "requires current-copy review before replacing a conflicted intent, then keeps the new version and reason",
+      "does not overwrite an intervening text correction when reviewing only a publication change"
+    ],
+    "passedTests": 68,
+    "failedTestCount": 2
+  },
+  {
+    "name": "overwritten-intervening-text",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "37040cbcc92b30a875da0a7888ff94510628f4f894098a023a89d41168589cf3",
+    "expectedFailingTest": "does not overwrite an intervening text correction",
+    "failedTests": [
+      "does not overwrite an intervening text correction when reviewing only a publication change"
+    ],
+    "passedTests": 69,
+    "failedTestCount": 1
+  },
+  {
+    "name": "lost-reviewed-tag-clear",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "e585efa57cef1bf19b20f7b71ac887f45a3007e51c707a27ad30aad41817bdd1",
+    "expectedFailingTest": "can correct a rejected theme tag",
+    "failedTests": [
+      "can correct a rejected theme tag without losing retained contribution provenance"
+    ],
+    "passedTests": 69,
+    "failedTestCount": 1
+  },
+  {
+    "name": "unbounded-save",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "e3ee3762315d4e6ab25c1d82c7b101f3316c6f641e9a4162d40c178de9fe9bf1",
+    "expectedFailingTest": "retains before transport",
+    "failedTests": [
+      "retains before transport, refuses duplicate clicks, and clears only after a confirmed receipt"
+    ],
+    "passedTests": 69,
+    "failedTestCount": 1
+  },
+  {
+    "name": "discarded-absent-before-review",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "87fc9dbcc6fdb9ec6bee984e26398e4d6357159ede61399ea05e0ccdcc7bc502",
+    "expectedFailingTest": "resolves a confirmed absent current response",
+    "failedTests": [
+      "resolves a confirmed absent current response without inventing a removal receipt"
+    ],
+    "passedTests": 69,
+    "failedTestCount": 1
+  },
+  {
+    "name": "ignored-storage-readback",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "f2ebd4278f2a08bda9b0db6197a1e85c72653de47cd24f0deba5664f4cd59c87",
+    "expectedFailingTest": "detects a storage write that returned",
+    "failedTests": [
+      "pending response custody detects a storage write that returned without retaining the request"
+    ],
+    "passedTests": 69,
+    "failedTestCount": 1
+  },
+  {
+    "name": "ignored-storage-owner",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "708c84661cc6687530ae734352fe30345daf33576da71b4ecd7f5f881c577ae6",
+    "expectedFailingTest": "refuses a foreign scope or baseline",
+    "failedTests": [
+      "pending response custody refuses a foreign scope or baseline instead of rebinding another person's intent"
+    ],
+    "passedTests": 69,
+    "failedTestCount": 1
+  },
+  {
+    "name": "ignored-baseline-version",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "b2232a20bc3beb8d6cfb45763c213738f165ea5111a637fa1177efd3518df797",
+    "expectedFailingTest": "refuses a foreign scope or baseline",
+    "failedTests": [
+      "pending response custody refuses a foreign scope or baseline instead of rebinding another person's intent"
+    ],
+    "passedTests": 69,
+    "failedTestCount": 1
+  },
+  {
+    "name": "cleared-newer-request",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "d9137d776daabf6456efe09ea7b7c6a384245f7e776a1297147da16f133683c6",
+    "expectedFailingTest": "does not clear a newer pending request",
+    "failedTests": [
+      "pending response custody does not clear a newer pending request"
+    ],
+    "passedTests": 69,
+    "failedTestCount": 1
+  },
+  {
+    "name": "duplicate-created-row",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "d6bc79770aadc330e2e9d8ae9da96e0081c1a0ae680ad18393153574fc7558e4",
+    "expectedFailingTest": "recovers a created response after reload",
+    "failedTests": [
+      "recovers an interrupted correction after reload with exactly the same body",
+      "recovers a created response after reload without appending a duplicate"
+    ],
+    "passedTests": 68,
+    "failedTestCount": 2
+  },
+  {
+    "name": "lost-write-inhibition",
+    "matched": false,
+    "status": 0,
+    "outcome": "survived",
+    "sourceSha256": "053f73b591fa2ec73be6606065d4eff24133f009adbb1f5c5f5eb07de501b452",
+    "expectedFailingTest": "keeps the pending draft after a successful HTTP response",
+    "failedTests": [],
+    "passedTests": 70,
+    "failedTestCount": 0
+  }
+]

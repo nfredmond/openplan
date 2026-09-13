@@ -771,6 +771,8 @@ export default async function EngagementCampaignDetailPage({
         />
 
         <EngagementCloseLoopBuilder
+          key={`${user.id}:${campaign.id}`}
+          userId={user.id}
           campaignId={campaign.id}
           categories={builderCategories}
           initialEntries={closeLoopEntries.rows}

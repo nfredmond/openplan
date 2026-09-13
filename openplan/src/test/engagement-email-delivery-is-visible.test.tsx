@@ -1,22 +1,8 @@
-/**
- * SHIPPED-INVISIBLE: the email outbox had status rows nothing displayed, and the
- * close-the-loop broadcast count was computed and thrown away.
- *
- * Since 2026-07-22 every message OpenPlan queued for a campaign has been recorded
- * in `engagement_email_outbox` with a real status (queued / sent / skipped /
- * failed), and `enqueueCampaignSubscriberEmails` has known exactly how many
- * subscribers a "You said / We did" publish reached. Neither fact was reachable
- * by any human: no page, component or API response carried it. An operator who
- * published an update could not tell 0 subscribers from 400 subscribers whose
- * mail was recorded and never sent, because at $0 the transport no-ops.
- *
- * WHY THIS TEST IS BUILT, NOT DESCRIBED. Nothing here is a hand-written fixture
- * of what the product "would" produce. A single in-memory database is written by
- * the REAL notifications lib, read back by the REAL summary loader, served by the
- * REAL route handlers, and the routes' OWN JSON bodies are handed to the REAL
- * components. A fixture would prove the assertion; this proves the path.
+/** Legacy outbox records remain visible in Activity after publication moves to the durable queue.
+ * This suite exercises the real legacy writer, summary loader, notifications route and Activity panel
+ * over a query double. Durable publication and response UI have separate tests and live SQL evidence.
  */
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -195,39 +181,12 @@ const dbRef = vi.hoisted(() => ({ current: null as unknown as { rows: (t: string
 dbRef.current = db;
 
 // The modules under test are imported AFTER the mocks above are declared.
-import { PATCH as closeLoopPatch } from "@/app/api/engagement/campaigns/[campaignId]/closeloop/[entryId]/route";
 import { GET as notificationsGet } from "@/app/api/engagement/campaigns/[campaignId]/notifications/route";
-import { EngagementCloseLoopBuilder } from "@/components/engagement/close-loop-builder";
 import { EngagementNotificationsInbox } from "@/components/engagement/notifications-inbox";
-import { EMAIL_OUTBOX_SUMMARY_COLUMNS, loadCampaignEmailDeliverySummary } from "@/lib/notifications/engagement";
-import type { CloseLoopEntryRow } from "@/lib/engagement/close-loop";
-
-const ENTRY_ID = "33333333-3333-4333-8333-333333333333";
-
-/**
- * The row as it stands BEFORE the publish, captured at seed time — the component
- * has to be handed the draft it would really be showing, and `publishTheEntry`
- * mutates the shared row in place exactly as the route does.
- */
-let draftSnapshot: Row;
+import { enqueueCampaignSubscriberEmails, EMAIL_OUTBOX_SUMMARY_COLUMNS, loadCampaignEmailDeliverySummary } from "@/lib/notifications/engagement";
 
 function seedDatabase(options: { subscribers: number }): FakeDb {
   const fresh = new FakeDb();
-  fresh.rows("engagement_closeloop_entries").push({
-    id: ENTRY_ID,
-    campaign_id: CAMPAIGN.id,
-    category_id: null,
-    theme_title: "Safer crossings",
-    you_said: "Add a crosswalk at Fifth.",
-    we_did: "Funded a crossing in the next cycle.",
-    status: "draft",
-    ai_assisted: false,
-    source_item_ids: [],
-    sort_order: 0,
-    published_at: null,
-    created_at: "2026-08-01T00:00:00.000Z",
-    updated_at: "2026-08-01T00:00:00.000Z",
-  });
   for (let index = 0; index < options.subscribers; index += 1) {
     fresh.rows("engagement_subscriptions").push({
       id: `sub-${index}`,
@@ -238,21 +197,13 @@ function seedDatabase(options: { subscribers: number }): FakeDb {
       unsubscribed_at: null,
     });
   }
-  draftSnapshot = JSON.parse(JSON.stringify(fresh.rows("engagement_closeloop_entries")[0])) as Row;
   return fresh;
 }
 
-async function publishTheEntry(): Promise<Record<string, unknown>> {
-  const request = new NextRequest("https://agency.example/api/engagement/campaigns/x/closeloop/y", {
-    method: "PATCH",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ status: "published" }),
-  });
-  const response = await closeLoopPatch(request, {
-    params: Promise.resolve({ campaignId: CAMPAIGN.id, entryId: ENTRY_ID }),
-  });
-  expect(response.status).toBe(200);
-  return (await response.json()) as Record<string, unknown>;
+async function recordLegacyOutbox() {
+  return enqueueCampaignSubscriberEmails(fakeClient(dbRef.current) as never, CAMPAIGN.id,
+    { subject: "Legacy update", text: "Retained legacy message", template: "closeloop_published" },
+    { origin: "https://agency.example", shareToken: CAMPAIGN.share_token });
 }
 
 async function readNotifications(): Promise<Record<string, unknown>> {
@@ -267,11 +218,7 @@ function respondWith(body: unknown) {
   return vi.spyOn(global, "fetch").mockResolvedValue({ ok: true, status: 200, json: async () => body } as unknown as Response);
 }
 
-function draftEntry(): CloseLoopEntryRow {
-  return JSON.parse(JSON.stringify(draftSnapshot)) as CloseLoopEntryRow;
-}
-
-describe("the email outbox and the close-the-loop broadcast are reachable by a person", () => {
+describe("legacy outbox records remain visible in Activity", () => {
   const originalKey = process.env.RESEND_API_KEY;
 
   beforeEach(() => {
@@ -287,85 +234,6 @@ describe("the email outbox and the close-the-loop broadcast are reachable by a p
     vi.restoreAllMocks();
   });
 
-  it("a publish tells the operator how many subscribers it reached and that nothing was delivered", async () => {
-    // The route runs the REAL enqueueCampaignSubscriberEmails against the REAL
-    // outbox writer; the counts below are whatever that produced, not a fixture.
-    const body = await publishTheEntry();
-
-    expect(body.broadcastOutcome).toBe("attempted");
-    expect(body.broadcast).toEqual({ unrecorded: 0, enqueued: 3, delivered: 0, skipped: 3, failed: 0, transport: "none" });
-
-    // And the outbox really has the three rows the count is claiming.
-    expect(dbRef.current.rows("engagement_email_outbox")).toHaveLength(3);
-
-    // Now the operator surface, fed the route's own body.
-    respondWith(body);
-    render(<EngagementCloseLoopBuilder campaignId={CAMPAIGN.id} categories={[]} initialEntries={[draftEntry()]} />);
-    fireEvent.click(screen.getByRole("button", { name: /^publish$/i }));
-
-    const notice = await screen.findByTestId("closeloop-broadcast-notice");
-    expect(notice.textContent).toMatch(/3 update emails were recorded in the outbox but not delivered/i);
-    expect(notice.textContent).toMatch(/no email service configured/i);
-    // The honest failure mode this replaces: silence, or a bare "3 emailed".
-    expect(notice.textContent).not.toMatch(/3 update emails delivered/i);
-  });
-
-  it("says no subscriptions were found rather than staying silent", async () => {
-    dbRef.current = seedDatabase({ subscribers: 0 });
-    const body = await publishTheEntry();
-    expect(body.broadcast).toEqual({ unrecorded: 0, enqueued: 0, delivered: 0, skipped: 0, failed: 0, transport: "none" });
-
-    respondWith(body);
-    render(<EngagementCloseLoopBuilder campaignId={CAMPAIGN.id} categories={[]} initialEntries={[draftEntry()]} />);
-    fireEvent.click(screen.getByRole("button", { name: /^publish$/i }));
-
-    const notice = await screen.findByTestId("closeloop-broadcast-notice");
-    expect(notice.textContent).toMatch(/found no confirmed email subscriptions/i);
-  });
-
-  /**
-   * THE ZERO IS NOT A FACT ABOUT THE WORLD.
-   *
-   * `enqueueCampaignSubscriberEmails` reads engagement_subscriptions with the
-   * error discarded, so a subscriber list the database refused arrives as an
-   * empty one. Surfacing the count (which is what this lane did) turned an
-   * invisible bad read into a sentence on an operator's screen, so the sentence
-   * may report what was FOUND and may not claim that nobody subscribed.
-   *
-   * The route below runs against a database that answers the subscriptions read
-   * with an error and every other read normally — the failure the product would
-   * really hit, not a hand-built payload.
-   */
-  it("a subscriber list that could not be read is never reported as 'nobody subscribed'", async () => {
-    dbRef.current.failReads.add("engagement_subscriptions");
-    const body = await publishTheEntry();
-
-    // The read failed and the count still came back zero: proof the two are
-    // indistinguishable in this payload, which is why the copy must hedge.
-    expect(body.broadcast).toEqual({ unrecorded: 0, enqueued: 0, delivered: 0, skipped: 0, failed: 0, transport: "none" });
-    expect(dbRef.current.rows("engagement_email_outbox")).toHaveLength(0);
-
-    respondWith(body);
-    render(<EngagementCloseLoopBuilder campaignId={CAMPAIGN.id} categories={[]} initialEntries={[draftEntry()]} />);
-    fireEvent.click(screen.getByRole("button", { name: /^publish$/i }));
-
-    const notice = await screen.findByTestId("closeloop-broadcast-notice");
-    // No claim about people: "nobody has/is subscribed", "no subscribers", "no
-    // one has subscribed" are all assertions a failed read cannot support.
-    expect(notice.textContent).not.toMatch(/nobody (has|is|was)/i);
-    expect(notice.textContent).not.toMatch(/no ?(one|body) (has|had) subscribed/i);
-    // What it may say instead, plus the disclosure that a failed read looks the same.
-    expect(notice.textContent).toMatch(/found no confirmed email subscriptions/i);
-    expect(notice.textContent).toMatch(/failed to read/i);
-  });
-
-  /**
-   * The outbox `error` column is the transport's reply verbatim, and a provider
-   * that rejects a recipient echoes the address back. Operators are deliberately
-   * never given participant email addresses — the table is REVOKEd from
-   * `authenticated` and the panel's projection excludes `to_email` — so the
-   * address must not arrive through the diagnostic string instead.
-   */
   it("an address inside a provider's error never reaches the operator panel", async () => {
     dbRef.current.rows("engagement_email_outbox").push({
       id: "outbox-failed",
@@ -391,61 +259,8 @@ describe("the email outbox and the close-the-loop broadcast are reachable by a p
     expect(panel.textContent).toMatch(/are masked/i);
   });
 
-  it("a campaign with no share link says WHY no update emails went out", async () => {
-    campaignAccess.mockResolvedValue({ error: null, allowed: true, campaign: { ...CAMPAIGN, share_token: null } });
-    const body = await publishTheEntry();
-    expect(body.broadcastOutcome).toBe("no_share_token");
-    expect(body.broadcast).toBeNull();
-
-    respondWith(body);
-    render(<EngagementCloseLoopBuilder campaignId={CAMPAIGN.id} categories={[]} initialEntries={[draftEntry()]} />);
-    fireEvent.click(screen.getByRole("button", { name: /^publish$/i }));
-
-    const notice = await screen.findByTestId("closeloop-broadcast-notice");
-    expect(notice.textContent).toMatch(/no public share link/i);
-    expect(notice.textContent).toMatch(/unsubscribe link/i);
-  });
-
-  it("a broadcast step that could not report back says UNKNOWN, never 'nobody'", async () => {
-    // A deployment missing its service-role key: createServiceRoleClient throws,
-    // the publish still commits, and the operator must not be told zero.
-    serviceClientFactory.mockImplementation(() => {
-      throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY");
-    });
-    const body = await publishTheEntry();
-    expect(body.broadcastOutcome).toBe("unknown");
-    expect((body.entry as { status: string }).status).toBe("published"); // the publish itself survived
-
-    respondWith(body);
-    render(<EngagementCloseLoopBuilder campaignId={CAMPAIGN.id} categories={[]} initialEntries={[draftEntry()]} />);
-    fireEvent.click(screen.getByRole("button", { name: /^publish$/i }));
-
-    const notice = await screen.findByTestId("closeloop-broadcast-notice");
-    expect(notice.textContent).toMatch(/could not determine whether subscriber update emails were queued/i);
-    expect(notice.textContent).toMatch(/not the same as nobody being emailed/i);
-    expect(notice.textContent).not.toMatch(/found no confirmed email subscriptions/i);
-  });
-
-  it("delivered mail is reported as delivered, with the transport named", async () => {
-    process.env.RESEND_API_KEY = "test-key";
-    const sendSpy = vi
-      .spyOn(global, "fetch")
-      .mockResolvedValue({ ok: true, status: 200, text: async () => "", json: async () => ({}) } as unknown as Response);
-
-    const body = await publishTheEntry();
-    expect(sendSpy).toHaveBeenCalled(); // the transport was really exercised
-    expect(body.broadcast).toEqual({ unrecorded: 0, enqueued: 3, delivered: 3, skipped: 0, failed: 0, transport: "resend" });
-
-    sendSpy.mockResolvedValue({ ok: true, status: 200, json: async () => body } as unknown as Response);
-    render(<EngagementCloseLoopBuilder campaignId={CAMPAIGN.id} categories={[]} initialEntries={[draftEntry()]} />);
-    fireEvent.click(screen.getByRole("button", { name: /^publish$/i }));
-
-    const notice = await screen.findByTestId("closeloop-broadcast-notice");
-    expect(notice.textContent).toMatch(/3 update emails delivered via resend/i);
-  });
-
-  it("the outbox rows a publish wrote become a delivery panel a planner can read", async () => {
-    await publishTheEntry(); // writes three real outbox rows
+  it("legacy outbox rows become a delivery panel a planner can read", async () => {
+    await recordLegacyOutbox(); // writes three real outbox rows
 
     // The REAL loader over the REAL rows, then the REAL route, then the REAL panel.
     const summary = await loadCampaignEmailDeliverySummary(fakeClient(dbRef.current) as never, CAMPAIGN.id);
@@ -466,7 +281,7 @@ describe("the email outbox and the close-the-loop broadcast are reachable by a p
   });
 
   it("the delivery panel never asks the database for participant email addresses", async () => {
-    await publishTheEntry();
+    await recordLegacyOutbox();
     dbRef.current.projections.length = 0;
     await loadCampaignEmailDeliverySummary(fakeClient(dbRef.current) as never, CAMPAIGN.id);
 
@@ -482,7 +297,7 @@ describe("the email outbox and the close-the-loop broadcast are reachable by a p
   });
 
   it("a failed outbox read is disclosed as a failed read, not as an empty outbox", async () => {
-    await publishTheEntry();
+    await recordLegacyOutbox();
     dbRef.current.failReads.add("engagement_email_outbox");
 
     const summary = await loadCampaignEmailDeliverySummary(fakeClient(dbRef.current) as never, CAMPAIGN.id);

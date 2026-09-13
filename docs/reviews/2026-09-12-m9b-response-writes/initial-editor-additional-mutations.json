@@ -1,0 +1,15 @@
+[
+  {
+    "name": "baseline",
+    "matched": false,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "146196d7b172cf3192c993a2283fadfe44f050c63dc07fabf092eebddb177a33",
+    "expectedFailingTest": null,
+    "failedTests": [
+      "recovers an interrupted correction after reload with exactly the same body"
+    ],
+    "passedTests": 72,
+    "failedTestCount": 1
+  }
+]

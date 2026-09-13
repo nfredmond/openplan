@@ -4,7 +4,7 @@
     "matched": true,
     "status": 0,
     "outcome": "survived",
-    "changedSourceSha256": "1e7721d0bfaa675b5b36256f6b99a8937fa2eedd368b97963bf4129afe18f508",
+    "changedSourceSha256": "df98023d12cd6120bd568f6a4770af3f5924d73326ea30b269f0aa82485d08c9",
     "expectedFailingTest": null,
     "failedTests": [],
     "passedTests": 65,
@@ -15,7 +15,7 @@
     "matched": true,
     "status": 0,
     "outcome": "survived",
-    "changedSourceSha256": "e633a9cc85cc045f42465096a5c4b1069c3f81dc496ad790dac46cd15745d7c7",
+    "changedSourceSha256": "cd14020e7673ebdc7bbceb3dae371b37b3959e1297263e83157d88b027fdcfce",
     "expectedFailingTest": null,
     "failedTests": [],
     "passedTests": 65,
@@ -26,7 +26,7 @@
     "matched": true,
     "status": 1,
     "outcome": "killed",
-    "changedSourceSha256": "83fb61b149752d9b84002e57c03943a189190aaed27efa5fdc90e663e98cea51",
+    "changedSourceSha256": "4561045c8bb0a98c77105e86277d719e71eb6d42416a07fc1ed5188066c59ca8",
     "expectedFailingTest": "requires caller-retained request identity",
     "failedTests": [
       "response write intents requires caller-retained request identity for creates, including accepted AI drafts",
@@ -40,7 +40,7 @@
     "matched": true,
     "status": 1,
     "outcome": "killed",
-    "changedSourceSha256": "2ebd05dcf88012bae9ec0b8d62b49a39362c363aa3c65f8b121c9f08bd880b1c",
+    "changedSourceSha256": "6ca0abd3ead37abb39299438a843cdd529d68578c438ee539231e49aff8b5506",
     "expectedFailingTest": "requires a reason and original microsecond version",
     "failedTests": [
       "response write intents requires a reason and original microsecond version for correction and removal"
@@ -53,7 +53,7 @@
     "matched": true,
     "status": 1,
     "outcome": "killed",
-    "changedSourceSha256": "c08e5df8f5632c648f0497c123e757f4a727d8727a2c75bd5c05bc151268ebac",
+    "changedSourceSha256": "d85ec1621ae39a8f619eabfa90f405d6ee02b49b9275c7d5b9df144f926809dc",
     "expectedFailingTest": "requires a reason and original microsecond version",
     "failedTests": [
       "response write intents requires a reason and original microsecond version for correction and removal"
@@ -66,7 +66,7 @@
     "matched": true,
     "status": 1,
     "outcome": "killed",
-    "changedSourceSha256": "f4dd0907d40bb4a8fbc48b91d508138d0c4bd25c11a2199b2c1d70608d55ad59",
+    "changedSourceSha256": "47c7afb00bc1f44c3716cd1d33fe877441358a254ba511e40a203c2d599638cf",
     "expectedFailingTest": "refuses extra authority and identity fields",
     "failedTests": [
       "response write intents refuses extra authority and identity fields instead of silently dropping them"
@@ -79,7 +79,7 @@
     "matched": true,
     "status": 1,
     "outcome": "killed",
-    "changedSourceSha256": "8a08e09111b2d3d4b3922240185a984bf86a0f555a3a9d92ea1113c8e71fd664",
+    "changedSourceSha256": "5d4ab135b4afaa047d76aa126f6ba896a8b4f5a4c9c87eae01bf6197e5a6084f",
     "expectedFailingTest": "sends create provenance to the RPC",
     "failedTests": [
       "response transaction client sends create provenance to the RPC without direct table writes",
@@ -94,7 +94,7 @@
     "matched": true,
     "status": 1,
     "outcome": "killed",
-    "changedSourceSha256": "bf917c2c0d70546c3b3cc7fb59a1747fbc48cad3d7471f1b597ae6c1e932574b",
+    "changedSourceSha256": "afe650da94e264d7db07490705887554001a924fa83c4f7d0dab457ce22683af",
     "expectedFailingTest": "keeps exact correction identity",
     "failedTests": [
       "response transaction client keeps exact correction identity, original timestamp and explicit null on retry",
@@ -108,7 +108,7 @@
     "matched": true,
     "status": 1,
     "outcome": "killed",
-    "changedSourceSha256": "e73042b7bdaf179280c5077563d2025f90008756f0ae3639d0927f5573d775e7",
+    "changedSourceSha256": "a3aaccd0e39e1af52f20d55cd829efa4f6229a3e6e7b620b17fe1748ae201fef",
     "expectedFailingTest": "keeps exact correction identity",
     "failedTests": [
       "response transaction client keeps exact correction identity, original timestamp and explicit null on retry"
@@ -121,7 +121,7 @@
     "matched": true,
     "status": 1,
     "outcome": "killed",
-    "changedSourceSha256": "93679b037e6dbecfe52ab302c68211cf7a4b210b23ab108c243043b7dfb958a5",
+    "changedSourceSha256": "ada1fc8fa6209e042a4b1653cfc621fa3b70a00e42d4f721a1e1622014290040",
     "expectedFailingTest": "refuses an invalid or mismatched receipt",
     "failedTests": [
       "response transaction client refuses an invalid or mismatched receipt without reporting an unsaved action"
@@ -134,7 +134,7 @@
     "matched": true,
     "status": 1,
     "outcome": "killed",
-    "changedSourceSha256": "ae0aa0a475ef9419b13880ca72390acc551cd20a4bac9317db6801be20af7e7f",
+    "changedSourceSha256": "b5ca5aa03c69a63c303cd910eaa0dec53f48f0feed60c7592cc94df2ac5d0dc9",
     "expectedFailingTest": "refuses an invalid or mismatched receipt",
     "failedTests": [
       "response transaction client refuses an invalid or mismatched receipt without reporting an unsaved action"
@@ -147,7 +147,7 @@
     "matched": true,
     "status": 1,
     "outcome": "killed",
-    "changedSourceSha256": "de4d3d5cde9689d7953be84089eca01cab81e7274bc8d967d10e0cb7dc2c7090",
+    "changedSourceSha256": "1314da325b484406db91d7973f571d9ca1f9c87fb623d4bdc0e83d494469667a",
     "expectedFailingTest": "refuses an invalid or mismatched receipt",
     "failedTests": [
       "response transaction client refuses an invalid or mismatched receipt without reporting an unsaved action"
@@ -160,7 +160,7 @@
     "matched": true,
     "status": 1,
     "outcome": "killed",
-    "changedSourceSha256": "7a085db6a9b37c22231e76b3e8dd7b02a566a5cd64504dc93365eada929738d0",
+    "changedSourceSha256": "b0d0fb420509ac934a12e4b1dbedf2e92031b765d9343b51157a3b0ee4672368",
     "expectedFailingTest": "refuses an invalid or mismatched receipt",
     "failedTests": [
       "response transaction client refuses an invalid or mismatched receipt without reporting an unsaved action",
@@ -174,7 +174,7 @@
     "matched": true,
     "status": 1,
     "outcome": "killed",
-    "changedSourceSha256": "a644e8fdc1f231dfc5aa14ab6886ed6e2faf219a000c921a63d4ff74ba7920cf",
+    "changedSourceSha256": "d0f9b96d3d030a981507ff0b44e95b8c2f37cbbaab49453769dbd381b7b64fc1",
     "expectedFailingTest": "distinguishes database P0001",
     "failedTests": [
       "response transaction client distinguishes database P0001 from an unconfirmed save"
@@ -187,7 +187,7 @@
     "matched": true,
     "status": 1,
     "outcome": "killed",
-    "changedSourceSha256": "5fb4ff2a81b8c21ad8428c59d54700111b730eacceae2a0e8f1820781de448f6",
+    "changedSourceSha256": "41fc1a9060abceb736986c272bf14bec0a07b33640db8d6d1b2c8b10845d232e",
     "expectedFailingTest": "distinguishes database 40001",
     "failedTests": [
       "response transaction client distinguishes database 40001 from an unconfirmed save",
