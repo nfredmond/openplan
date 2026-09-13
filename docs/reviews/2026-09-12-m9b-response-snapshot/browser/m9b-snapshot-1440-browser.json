@@ -1,0 +1,53 @@
+{
+  "source": "206d0edb43bf808f1648695d6f5df6e9753c307d",
+  "width": 1440,
+  "passed": true,
+  "campaignId": "cc3d9dbf-7c6f-447a-8ba0-15dbf5eebc2a",
+  "originalHash": "74d99478c8929e0576a8b154eb5278262c6b2d965f2961ff3d96b23a939562aa",
+  "retainedHash": "74d99478c8929e0576a8b154eb5278262c6b2d965f2961ff3d96b23a939562aa",
+  "refusedReads": 3,
+  "failedRetryStatus": 500,
+  "anonymousStatus": 401,
+  "overflow": {
+    "viewport": 1440,
+    "document": 1440
+  },
+  "console": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_NETWORK_CHANGED"
+    },
+    {
+      "type": "warning",
+      "text": "[workspace-gis-binding] workspace GIS catalog fetch failed TypeError: Failed to fetch"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_NETWORK_CHANGED"
+    },
+    {
+      "type": "warning",
+      "text": "[cartographic-backdrop] census-tracts fetch failed TypeError: Failed to fetch"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_NETWORK_CHANGED"
+    },
+    {
+      "type": "warning",
+      "text": "[cartographic-backdrop] rtp-cycles fetch failed TypeError: Failed to fetch"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_NETWORK_CHANGED"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_NETWORK_CHANGED"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    }
+  ]
+}

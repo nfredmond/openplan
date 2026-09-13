@@ -409,6 +409,11 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20261012000002_assistant_api_turns.sql",
     migrationsAtRelease: 318,
   },
+  {
+    tag: "0.55.2",
+    lastMigration: "20261013000001_engagement_response_snapshot.sql",
+    migrationsAtRelease: 319,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

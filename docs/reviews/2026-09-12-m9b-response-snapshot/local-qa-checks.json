@@ -16,7 +16,7 @@
     "typescript": true,
     "webpackBuild": true,
     "deadcode": "exit 0 with existing advisories",
-    "liveRls": "separate run still pending"
+    "liveRls": "separate successful run"
   },
   "shuffled": {
     "status": 0,
@@ -28,5 +28,14 @@
     "filesPassed": 1258,
     "filesSkipped": 43,
     "seed": 912558
+  },
+  "liveRls": {
+    "status": 0,
+    "signal": null,
+    "finishedAt": "2026-09-13T03:18:59.605Z",
+    "stack": "openplan-restore-target-2026091050",
+    "testsPassed": 479,
+    "filesPassed": 50,
+    "logSha256": "b0b516351e53bcd74b96bff10088fb7aa398b0623d27efe0fc8d986ea3d79a8b"
   }
 }

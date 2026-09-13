@@ -1,0 +1,23 @@
+[
+  {
+    "name": "harmless-comment",
+    "outcome": "survived",
+    "matched": true,
+    "failures": []
+  },
+  {
+    "name": "wrong-v0552-count",
+    "outcome": "killed",
+    "matched": true,
+    "failures": [
+      {
+        "name": "released migration ordering no migration has been inserted at or below a shipped high-water mark",
+        "message": "AssertionError: migrations at or below the 0.55.2 mark must equal the count recorded at release \u2014 an inserted file there is silently skipped by every deployment already on 0.55.2: expected { tag: '0.55.2', \u2026(1) } to deeply equal { tag: '0.55.2', \u2026(1) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/migrations/release-ordering.test.ts:461:9\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vites"
+      },
+      {
+        "name": "released migration ordering new work sorts strictly after the latest release (no version collisions)",
+        "message": "AssertionError: expected 318 to be 319 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/migrations/release-ordering.test.ts:473:58\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+      }
+    ]
+  }
+]

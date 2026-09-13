@@ -1,0 +1,39 @@
+{
+  "source": "206d0edb43bf808f1648695d6f5df6e9753c307d",
+  "width": 1440,
+  "passed": true,
+  "campaignId": "a3c41566-bfd4-40f2-b467-96ee79054ec6",
+  "refusedReads": 1,
+  "originalHash": "2ffb63310e40d88fa290569cc94748d27dc03f29ac35ebfa738daac52b2d1ed7",
+  "retainedHash": "2ffb63310e40d88fa290569cc94748d27dc03f29ac35ebfa738daac52b2d1ed7",
+  "console": [
+    {
+      "type": "warning",
+      "text": "[cartographic-backdrop] corridors fetch failed TypeError: Failed to fetch"
+    },
+    {
+      "type": "warning",
+      "text": "[cartographic-backdrop] engagement fetch failed TypeError: Failed to fetch"
+    },
+    {
+      "type": "warning",
+      "text": "[cartographic-backdrop] aerial-missions fetch failed TypeError: Failed to fetch"
+    },
+    {
+      "type": "warning",
+      "text": "[cartographic-backdrop] rtp-cycles fetch failed TypeError: Failed to fetch"
+    },
+    {
+      "type": "warning",
+      "text": "[cartographic-backdrop] projects fetch failed TypeError: Failed to fetch"
+    },
+    {
+      "type": "warning",
+      "text": "[cartographic-backdrop] census-tracts fetch failed TypeError: Failed to fetch"
+    },
+    {
+      "type": "warning",
+      "text": "[workspace-gis-binding] workspace GIS catalog fetch failed TypeError: Failed to fetch"
+    }
+  ]
+}

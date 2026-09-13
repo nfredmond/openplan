@@ -20,11 +20,24 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-Complete Engagement response reads are in development. Apply
-`20261013000001_engagement_response_snapshot.sql` before the new loader code:
-it adds the scoped, read-only snapshot function used by staff, public and
-translation response readers. Browser acceptance and release checks remain
-pending; response revision history is separate unfinished work.
+## 0.55.2 — 2026-09-12
+
+Engagement response lists could silently stop at the database API's 1,000-row
+limit. Staff, resident and translation response readers now retrieve a complete,
+campaign-scoped snapshot in a stable order. Invalid or failed reads remain errors;
+private drafts stay out of the published response list.
+
+Apply `20261013000001_engagement_response_snapshot.sql` before this app. The
+additive migration installs a read-only function and preserves caller access rules.
+Desktop and 390px browser journeys recovered 1,005 unchanged staff responses and
+showed all 1,001 published responses in the resident preview. Interrupted staff
+and preview reads showed warnings and recovered without changing saved records.
+See [verification](docs/reviews/2026-09-12-m9b-response-snapshot/VERIFICATION.md).
+
+This repairs existing response reads. Retained correction/publication history,
+decision links and broader campaign administration remain unfinished. The snapshot
+uses database/app memory; it does not establish unlimited campaign size or a
+performance benchmark. Final main CI and release publication are recorded separately.
 
 ## 0.55.1 — 2026-09-12
 
