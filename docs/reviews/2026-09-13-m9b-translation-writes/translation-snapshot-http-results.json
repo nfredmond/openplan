@@ -1,0 +1,20 @@
+{
+  "database": "openplan_translation_command_proof_20260913",
+  "container": "openplan_translation_snapshot_rest_20260913",
+  "image": "public.ecr.aws/supabase/postgrest:v14.15",
+  "binding": "127.0.0.1:38961",
+  "configuredMaxRows": 1000,
+  "controlRowsetCount": 1000,
+  "scalarCounts": {
+    "options": 2,
+    "questions": 2,
+    "responses": 2,
+    "categories": 1005,
+    "translations": 1005
+  },
+  "ownerAndViewerCurrentRead": true,
+  "outsiderAndAnonymousRefused": true,
+  "viewerPrivateHistoryAndReceiptsEmpty": true,
+  "snapshotSha256": "67a1907926183168df0a529f4b44db6bc3629395a497a15b88070546c7f8047f",
+  "limits": "Real local HTTP snapshot and cap/access controls. No app navigation or browser write acceptance."
+}

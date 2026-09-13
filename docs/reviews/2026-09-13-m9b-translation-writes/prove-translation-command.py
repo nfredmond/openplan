@@ -3,7 +3,7 @@ from pathlib import Path
 import json,subprocess
 
 review=Path(__file__).parent
-source=review/'translation-command-candidate.sql'
+source=review.resolve().parents[2]/'openplan/supabase/migrations/20261014000010_engagement_translation_commands.sql'
 original=source.read_text()
 private=Path('/home/nathaniel/.local/state/openplan/response-write-probe-20260913/translation-command-controls')
 private.mkdir(exist_ok=True)
@@ -38,5 +38,5 @@ try:
   assert matched,results[-1]
 finally:
  source.write_text(original)
-(review/'translation-command-controls.json').write_text(json.dumps(results,indent=2)+'\n')
+(review/'translation-command-migration-controls.json').write_text(json.dumps(results,indent=2)+'\n')
 print(json.dumps(results))

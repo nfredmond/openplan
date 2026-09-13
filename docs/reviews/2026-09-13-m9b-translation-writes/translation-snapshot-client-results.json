@@ -1,0 +1,121 @@
+{
+  "sourceSha256": "2fe4e45bc95aa4decdcb023838051dd049cac8459115307a8afb495ab7e1c39b",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived",
+      "expectedFailure": null
+    },
+    {
+      "case": "skip-envelope-scope",
+      "outcome": "killed",
+      "expectedFailure": "campaign row"
+    },
+    {
+      "case": "skip-row-scope",
+      "outcome": "killed",
+      "expectedFailure": "foreign source row"
+    },
+    {
+      "case": "ignore-census",
+      "outcome": "killed",
+      "expectedFailure": "partial inventory"
+    },
+    {
+      "case": "allow-duplicate-identity",
+      "outcome": "killed",
+      "expectedFailure": "duplicate identity"
+    },
+    {
+      "case": "allow-orphan-option",
+      "outcome": "killed",
+      "expectedFailure": "orphan option"
+    },
+    {
+      "case": "allow-duplicate-address",
+      "outcome": "killed",
+      "expectedFailure": "duplicate translation address"
+    },
+    {
+      "case": "allow-missing-source",
+      "outcome": "killed",
+      "expectedFailure": "missing translation source"
+    },
+    {
+      "case": "allow-zero-revision",
+      "outcome": "killed",
+      "expectedFailure": "unavailable revision"
+    },
+    {
+      "case": "allow-unsafe-revision",
+      "outcome": "killed",
+      "expectedFailure": "unsafe integer revision"
+    },
+    {
+      "case": "ignore-unknown-columns",
+      "outcome": "killed",
+      "expectedFailure": "unknown source column"
+    },
+    {
+      "case": "allow-malformed-id",
+      "outcome": "killed",
+      "expectedFailure": "malformed source identifier"
+    },
+    {
+      "case": "lose-raw-source",
+      "outcome": "killed",
+      "expectedFailure": "retains raw source and saved words"
+    },
+    {
+      "case": "lose-raw-wording",
+      "outcome": "killed",
+      "expectedFailure": "retains raw source and saved words"
+    },
+    {
+      "case": "ignore-parent-publication",
+      "outcome": "killed",
+      "expectedFailure": "resolves publication through question parents"
+    },
+    {
+      "case": "ignore-parent-active",
+      "outcome": "killed",
+      "expectedFailure": "resolves publication through question parents"
+    },
+    {
+      "case": "ignore-question-publication",
+      "outcome": "killed",
+      "expectedFailure": "resolves publication through question parents"
+    },
+    {
+      "case": "ignore-response-publication",
+      "outcome": "killed",
+      "expectedFailure": "resolves publication through question parents"
+    },
+    {
+      "case": "blank-source-is-available",
+      "outcome": "killed",
+      "expectedFailure": "retains raw source and saved words"
+    },
+    {
+      "case": "ignore-error-with-data",
+      "outcome": "killed",
+      "expectedFailure": "withholds a partial reply with an error"
+    },
+    {
+      "case": "ignore-pending-schema",
+      "outcome": "killed",
+      "expectedFailure": "withholds a partial reply with an error"
+    },
+    {
+      "case": "omit-required-column",
+      "outcome": "killed",
+      "expectedFailure": "withholds missing source columns"
+    }
+  ],
+  "limits": "Consumer contract and source visibility. SQL/HTTP scope and transaction behavior are exercised separately; no editor navigation or generation acceptance."
+}

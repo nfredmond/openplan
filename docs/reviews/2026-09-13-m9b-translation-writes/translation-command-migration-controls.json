@@ -1,0 +1,86 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "matched": true,
+    "expectedFailure": null
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived",
+    "matched": true,
+    "expectedFailure": null
+  },
+  {
+    "case": "accept-stale-version",
+    "outcome": "killed",
+    "matched": true,
+    "expectedFailure": "Request reuse or stale-version guard failed"
+  },
+  {
+    "case": "accept-stale-source",
+    "outcome": "killed",
+    "matched": true,
+    "expectedFailure": "Source-version guard failed"
+  },
+  {
+    "case": "overwrite-absent-address",
+    "outcome": "killed",
+    "matched": true,
+    "expectedFailure": "existing address presented as absent"
+  },
+  {
+    "case": "allow-duplicate-address",
+    "outcome": "killed",
+    "matched": true,
+    "expectedFailure": "duplicate address"
+  },
+  {
+    "case": "lose-raw-source",
+    "outcome": "killed",
+    "matched": true,
+    "expectedFailure": "Exact raw source/receipt custody failed"
+  },
+  {
+    "case": "accept-stale-machine",
+    "outcome": "killed",
+    "matched": true,
+    "expectedFailure": "stale machine source"
+  },
+  {
+    "case": "viewer-can-write",
+    "outcome": "killed",
+    "matched": true,
+    "expectedFailure": "viewer fresh write"
+  },
+  {
+    "case": "viewer-can-read-receipts",
+    "outcome": "killed",
+    "matched": true,
+    "expectedFailure": "Viewer read receipt"
+  },
+  {
+    "case": "rewrite-completed-receipt",
+    "outcome": "killed",
+    "matched": true,
+    "expectedFailure": "Receipt immutability failed"
+  },
+  {
+    "case": "forge-completed-context",
+    "outcome": "killed",
+    "matched": true,
+    "expectedFailure": "Completed receipt context was forged"
+  },
+  {
+    "case": "partial-batch",
+    "outcome": "killed",
+    "matched": true,
+    "expectedFailure": "Whole-batch rollback failed"
+  },
+  {
+    "case": "drop-source-whitespace",
+    "outcome": "killed",
+    "matched": true,
+    "expectedFailure": "Compatibility hash differs from JavaScript"
+  }
+]

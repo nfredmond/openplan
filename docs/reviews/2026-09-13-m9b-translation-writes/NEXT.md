@@ -6,6 +6,9 @@ exact-version write guarantee.
 
 [Transaction and concurrency progress](COMMAND_PROGRESS.md) records the staged
 command, repaired probes, real competing sessions and remaining application join.
+[Exact snapshot progress](SNAPSHOT_PROGRESS.md) is the newest continuation: actual
+development migrations, complete HTTP reads and the application source/version
+contract are tested; editor and generation integration remain.
 
 Continue the existing M9b editor and translation services. The complete V1
 contract and roadmap remain binding. No PRs or human-review release gate; local

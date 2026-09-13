@@ -21,7 +21,7 @@ console.log(JSON.stringify(samples.map(x=>({...x,hash:createHash('sha256').updat
 assert len(hash_cases) == 26
 encoded = json.dumps(hash_cases).replace("'", "''")
 hash_probe = "DO $hash$ DECLARE item jsonb; BEGIN FOR item IN SELECT value FROM jsonb_array_elements('" + encoded + "'::jsonb) LOOP IF public.translation_source_compatibility_hash(item->>'text') IS DISTINCT FROM item->>'hash' THEN RAISE EXCEPTION 'Compatibility hash differs from JavaScript at %',item->>'cp'; END IF; END LOOP; END $hash$;"
-sql = "BEGIN; SET LOCAL statement_timeout='25s';\n" + (review/'translation-command-candidate.sql').read_text() + '\n' + hash_probe + '\n' + (review/'translation-command-probe.sql').read_text() + '\nROLLBACK;'
+sql = "BEGIN; SET LOCAL statement_timeout='25s';\n" + (review.resolve().parents[2]/'openplan/supabase/migrations/20261014000010_engagement_translation_commands.sql').read_text() + '\n' + hash_probe + '\n' + (review/'translation-command-probe.sql').read_text() + '\nROLLBACK;'
 
 run = subprocess.run(base, input=sql, text=True, capture_output=True, timeout=60)
 print(run.stdout)

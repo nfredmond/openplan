@@ -1,0 +1,31 @@
+{
+  "base": "328:20261014000009",
+  "container": "supabase_db_openplan-restore-target-2731143",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "rolledBack": true
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "rolledBack": true
+    },
+    {
+      "case": "expose-unfinished-command",
+      "outcome": "killed",
+      "expectedFailure": "Unfinished command exposed before producer integration",
+      "rolledBack": true
+    },
+    {
+      "case": "expose-private-snapshot",
+      "outcome": "killed",
+      "expectedFailure": "Private snapshot exposed anonymously",
+      "rolledBack": true
+    }
+  ],
+  "limits": "Rollback migration installation and privilege controls; not a release upgrade/restore drill or a grant for unfinished application writes."
+}

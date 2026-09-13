@@ -1,0 +1,18 @@
+{
+  "sourceVersions": 2025,
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived"
+    },
+    {
+      "case": "harmless-metadata",
+      "outcome": "survived"
+    },
+    {
+      "case": "changed-source",
+      "outcome": "killed"
+    }
+  ],
+  "scope": "Client resolver over actual HTTP snapshot compared to the installed transaction source resolver for every fixture field."
+}

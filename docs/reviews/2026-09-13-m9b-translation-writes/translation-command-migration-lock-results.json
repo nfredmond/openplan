@@ -1,0 +1,70 @@
+{
+  "fixture": {
+    "actor": "eacafeaf-7508-4156-9607-fad16f4bea47",
+    "workspace": "81da2556-1e3d-4f4d-bb78-2c5931b9201e",
+    "campaign": "6b8cb644-8d84-4d27-a1b8-bf66a299e84c",
+    "category": "26345983-ed64-44a0-be5e-467b511b527c",
+    "otherCategory": "ed0f57f0-d9c1-4b8d-ba7c-75fde7b13180",
+    "container": "supabase_db_openplan-restore-target-2731143",
+    "purpose": "SYNTHETIC retained source fixture for rollback-only translation command lock probes"
+  },
+  "results": [
+    {
+      "case": "unrelated-source-lock",
+      "exit": 0,
+      "seconds": 0.068,
+      "passed": true
+    },
+    {
+      "case": "foreign-key-target-lock",
+      "exit": 0,
+      "seconds": 0.161,
+      "passed": true
+    },
+    {
+      "case": "actual-source-delete",
+      "exit": 0,
+      "seconds": 0.055,
+      "passed": true
+    },
+    {
+      "case": "campaign-row-lock",
+      "exit": 0,
+      "seconds": 0.052,
+      "passed": true
+    },
+    {
+      "case": "unrelated-advisory-lock",
+      "exit": 0,
+      "seconds": 0.067,
+      "passed": true
+    },
+    {
+      "case": "source-advisory-lock",
+      "exit": 0,
+      "seconds": 0.054,
+      "passed": true
+    },
+    {
+      "case": "harmless-comment",
+      "exit": 0,
+      "seconds": 0.161,
+      "passed": true
+    },
+    {
+      "case": "remove-bounded-fk-wait",
+      "exit": 3,
+      "seconds": 3.053,
+      "passed": false,
+      "expectedMutationFailure": true
+    },
+    {
+      "case": "ignore-source-advisory",
+      "exit": 3,
+      "seconds": 0.066,
+      "passed": false,
+      "expectedMutationFailure": true
+    }
+  ],
+  "limits": "Actual row/advisory contention and rolled-back category deletion. No simultaneous successful corrections, real PostgREST, generation or browser-write acceptance yet."
+}

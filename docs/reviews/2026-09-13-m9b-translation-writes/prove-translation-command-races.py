@@ -20,7 +20,7 @@ def literal(value):
 def query(sql):
     return subprocess.check_output(base,input=sql,text=True,timeout=15).strip()
 assert query("SELECT to_regprocedure('public.write_engagement_translations(uuid,uuid,text,text,text,jsonb)') IS NOT NULL;")=='t'
-candidate=(review/'translation-command-candidate.sql').read_text()
+candidate=(review.resolve().parents[2]/'openplan/supabase/migrations/20261014000010_engagement_translation_commands.sql').read_text()
 definition=candidate[candidate.index('CREATE FUNCTION public.write_engagement_translations('):]
 definition=definition[:definition.index('REVOKE ALL ON FUNCTION public.write_engagement_translations')]
 definition=definition.replace('CREATE FUNCTION','CREATE OR REPLACE FUNCTION',1)
@@ -184,5 +184,5 @@ finally:
     (private/'retained-fixtures.json').write_text(json.dumps(fixtures,indent=2)+'\n')
 report={'database':manifest['database'],'candidateSha256':hashlib.sha256(candidate.encode()).hexdigest(),
         'results':results,'limits':'Real SQL roles and concurrent sessions. No PostgREST, browser, worker, billable generation or all-producer retirement acceptance.'}
-(review/'translation-command-race-results.json').write_text(json.dumps(report,indent=2)+'\n')
+(review/'translation-command-migration-race-results.json').write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps(report))

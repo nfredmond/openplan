@@ -1,0 +1,27 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "expectedFailure": null
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived",
+    "expectedFailure": null
+  },
+  {
+    "case": "omit-receipt-policy",
+    "outcome": "killed",
+    "expectedFailure": "counts what the database actually has"
+  },
+  {
+    "case": "omit-receipt-rls",
+    "outcome": "killed",
+    "expectedFailure": "reads every relation the migrations declare"
+  },
+  {
+    "case": "omit-migration-note",
+    "outcome": "killed",
+    "expectedFailure": "Missing: 20261014000011"
+  }
+]

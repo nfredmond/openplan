@@ -30,7 +30,7 @@ INSERT INTO engagement_campaigns(id,workspace_id,title,created_by) VALUES('{camp
 INSERT INTO engagement_categories(id,campaign_id,label,slug) VALUES('{category}','{campaign}','SYNTHETIC target source','command-target'),('{other}','{campaign}','SYNTHETIC other source','command-other');
 COMMIT;""")
 assert query(f"SELECT count(*) FROM engagement_categories WHERE campaign_id='{campaign}' AND id IN ('{category}','{other}');")=='2'
-source=(review/'translation-command-candidate.sql').read_text()
+source=(review.resolve().parents[2]/'openplan/supabase/migrations/20261014000010_engagement_translation_commands.sql').read_text()
 private=Path('/home/nathaniel/.local/state/openplan/response-write-probe-20260913/translation-command-lock-controls')
 private.mkdir(exist_ok=True)
 
@@ -108,5 +108,5 @@ for name,old,new,target_case,expected_failure in [
     result=probe(name,target_case[1],True,source.replace(old,new,1))
     assert not result['passed'] and expected_failure in result['output'],result
     result.pop('output');result['expectedMutationFailure']=True;results.append(result)
-(review/'translation-command-lock-results.json').write_text(json.dumps({'fixture':fixture,'results':results,'limits':'Actual row/advisory contention and rolled-back category deletion. No simultaneous successful corrections, real PostgREST, generation or browser-write acceptance yet.'},indent=2)+'\n')
+(review/'translation-command-migration-lock-results.json').write_text(json.dumps({'fixture':fixture,'results':results,'limits':'Actual row/advisory contention and rolled-back category deletion. No simultaneous successful corrections, real PostgREST, generation or browser-write acceptance yet.'},indent=2)+'\n')
 print(json.dumps(results))

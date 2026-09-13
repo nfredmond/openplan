@@ -1,8 +1,9 @@
 # Weekly usage checkpoint, September 13, 2026
 
-Continuation after this checkpoint repaired the runner and exercised actual
-competing database sessions. Start with [COMMAND_PROGRESS.md](COMMAND_PROGRESS.md)
-for that newer result and next action. The original stopping point below is
+Continuation after this checkpoint repaired the runner, exercised competing
+database sessions and added a complete snapshot reader. Start with
+[SNAPSHOT_PROGRESS.md](SNAPSHOT_PROGRESS.md) for the newest result and next action.
+The original stopping point below is
 retained as history, not the current test status.
 
 The user is approaching the weekly usage limit and asked whether this thread

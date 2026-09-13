@@ -1,0 +1,51 @@
+{
+  "sourceCheckpoint": "a369f7d4",
+  "fileSha256": {
+    "openplan/src/lib/engagement/translation-snapshot.ts": "2fe4e45bc95aa4decdcb023838051dd049cac8459115307a8afb495ab7e1c39b",
+    "openplan/src/test/engagement-translation-snapshot.test.ts": "4630dbdd7aa2533828f4f71e9f1be2fbe631675904fdb9d3831311e05f017036",
+    "openplan/src/test/migrations/inventory.test.ts": "a3612b8e82d15c4c462d695560cb236ca9ea94e7bd78e53f75542949c4ffe237",
+    "openplan/supabase/migrations/20261014000010_engagement_translation_commands.sql": "a412defaa6b0436f965e504f428e3e22cb88defc1cd904a9878c29fa3b96ca74",
+    "openplan/supabase/migrations/20261014000011_engagement_translation_snapshot.sql": "356abae21f596df1738e39d194b845bcd6c04607c710570901af803af5a6415a",
+    "CHANGELOG.md": "67efdab2d9cad2025e29c775c72c314467e197e07a874f8f17570e8528e466e6"
+  },
+  "resultSha256": {
+    "translation-command-migration-controls.json": "d4a3b1fa7ab3485c976c62d1165c8ad34d52e2ee18ee5fdbf88775df68407d8f",
+    "translation-command-migration-lock-results.json": "6632556a0c1dd3170797eafa0b8f3b4ae320d176dd8d7d4e9a87c2b0e0481d1a",
+    "translation-command-migration-race-results.json": "3240f1e472d870f1332f088ca55b8cb1fd19150f3b5b4c023397a6354a9392a4",
+    "translation-snapshot-client-results.json": "eeaa257c326024567b45131c3b1945539c6f4a60254758c7d5cb8d660c9adf10",
+    "translation-snapshot-sql-results.json": "43ab27eddf88bdc2cc48efa59e9ad8ad9924d96bfae3a63919f1089ecc47b0c3",
+    "translation-snapshot-http-results.json": "ccb21b73dc55d3428f46df298eab3066371c7ea4284ed52159cbcbbece3f2da5",
+    "translation-snapshot-concurrency-results.json": "b9393fbf5113a4e1acf533e87a1329ce33f5e3eb5f6814800734e484f28b9b1b",
+    "translation-snapshot-source-join-results.json": "ad1d4684c7ae1ae2795812020b1cc1a4d9f488469743712481ad54417fafdfa0",
+    "translation-migration-install-results.json": "ddb25628a24eae052175203610d8708ce62a728c9662d1086348c6f1af58acc0",
+    "translation-inventory-controls.json": "ed3108325a2df1b38bf8603c3c1c75030f0c47811522b7bc4145e374fc315712"
+  },
+  "privateLogSha256": {
+    "translation-snapshot-focused-final.log": "20ceaa33dc9a312a7dc4b7f6e5ca71e1a020c38d765031987608bde0d849beb9",
+    "translation-snapshot-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "translation-snapshot-client-controls.log": "8654ed3069a7b532d37da5d7f5b49370c1af032ea9c7c12ae8af5cc764efe128",
+    "translation-snapshot-sql-final.log": "fe2a232bc7da5c20c1bf0e322165344953fcef9aba680fdc53ca83967dd272d6",
+    "translation-snapshot-http-ready.log": "39f380a545247e932b76187a8978dd7aad78185a48289afc29a87f4b490c7bb4",
+    "translation-snapshot-concurrency.log": "84d82754fe62c655a889fcbd584c1a9306846095d9232170d28072d0034e94b8",
+    "translation-command-migration-controls.log": "c96326cb99437625581d01ec5f53309ddaeeae966e91a755e1efdf75054a2d9c",
+    "translation-command-migration-races.log": "6268b9b1791683e2305cd2cc72a45c695a56742f2f178c728c6a21808c610db5",
+    "translation-command-migration-locks.log": "3f59df756aa37c12ddedefa71b786de5f76362f12b1b506c64755cfd8bb1f8f4",
+    "translation-migration-install.log": "fd4b7687d2a27bedfafbac1101ff75d33c5cd9c47d3950aa297ceb05c5b7a6a3"
+  },
+  "checks": {
+    "focusedTests": {
+      "exit": 0,
+      "passed": 56
+    },
+    "typescript": {
+      "exit": 0
+    },
+    "changedFileLint": {
+      "exit": 0
+    },
+    "sourceStackMigrations": "328:20261014000009",
+    "installedProofFunctionsMatchSource": true,
+    "httpProofContainerState": "exited"
+  },
+  "limits": "Staged migrations and direct snapshot consumer; existing editor/route/generation not converted. No full QA, shuffled, standard RLS/worker, release upgrade/restore or new app browser acceptance claim."
+}

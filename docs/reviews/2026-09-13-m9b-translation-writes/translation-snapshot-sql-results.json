@@ -1,0 +1,42 @@
+{
+  "database": "openplan_translation_command_proof_20260913",
+  "migrationSha256": "356abae21f596df1738e39d194b845bcd6c04607c710570901af803af5a6415a",
+  "counts": {
+    "options": 2,
+    "questions": 2,
+    "responses": 2,
+    "categories": 1005,
+    "translations": 1005
+  },
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived"
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived"
+    },
+    {
+      "case": "truncate-categories",
+      "outcome": "killed",
+      "expectedFailure": "Snapshot rows truncated: categories"
+    },
+    {
+      "case": "omit-translation-revision",
+      "outcome": "killed",
+      "expectedFailure": "revision"
+    },
+    {
+      "case": "trim-raw-source",
+      "outcome": "killed",
+      "expectedFailure": "Raw source was changed"
+    },
+    {
+      "case": "omit-snapshot-authority",
+      "outcome": "killed",
+      "expectedFailure": "Outsider snapshot was not refused"
+    }
+  ],
+  "limits": "Installed scalar SQL through real roles, not HTTP row-cap or concurrent snapshot acceptance yet."
+}

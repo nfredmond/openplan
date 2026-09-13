@@ -479,16 +479,18 @@ const EXPECTED = {
   // 20261014000003 adds three RLS tables and one staff receipt SELECT policy.
   // 20261014000006 retires three obsolete direct-write policies after RPC-only writes.
   // 20261014000009 adds one immutable translation history table with staff SELECT only.
-  policies: 752,
-  permissive: 501,
+  // 20261014000010 adds one RLS receipt table and one staff SELECT policy.
+  // Confirmed in openplan_translation_command_proof_20260913; no direct write policy.
+  policies: 753,
+  permissive: 502,
   restrictive: 251,
   permissiveWrites: 277,
   expanded: 286,
-  tablesWithPolicies: 221,
-  relations: 257,
-  tables: 244,
+  tablesWithPolicies: 222,
+  relations: 258,
+  tables: 245,
   views: 13,
-  rlsEnabledTables: 244,
+  rlsEnabledTables: 245,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

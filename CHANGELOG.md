@@ -20,6 +20,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Translation workflow integration is in progress. The staged database changes are
+`20261014000010_engagement_translation_commands.sql` and
+`20261014000011_engagement_translation_snapshot.sql`. They add retained command
+receipts and a complete source/current-version snapshot. The command remains
+unavailable to ordinary callers until editor and durable generation integration
+is finished. Existing direct producers have not yet been retired. These are
+development migrations, not a released conflict-safe editor or generation claim.
+
 ## 0.58.0 — 2026-09-13
 
 Translation history retains private original, corrected, accepted and withdrawn

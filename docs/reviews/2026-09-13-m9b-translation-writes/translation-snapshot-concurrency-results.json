@@ -1,0 +1,25 @@
+{
+  "database": "openplan_translation_command_proof_20260913",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "campaign": "e6341eb5-d506-43dd-a941-d81a3ded5310",
+      "originalReadRevision": 1,
+      "freshReadRevision": 2
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived",
+      "campaign": "1c03b342-a4b2-4f4d-9d52-c873cbef46d7",
+      "originalReadRevision": 1,
+      "freshReadRevision": 2
+    },
+    {
+      "case": "volatile-snapshot",
+      "outcome": "killed",
+      "expectedFailure": "Statement snapshot changed after a later commit"
+    }
+  ],
+  "limits": "A controlled advisory barrier pauses the actual read after access checking. No arbitrary scheduler, HTTP concurrency or browser acceptance claim."
+}
