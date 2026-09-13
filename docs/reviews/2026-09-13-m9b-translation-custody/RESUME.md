@@ -1,5 +1,26 @@
 # Resume after the weekly usage reset
 
+> Latest checkpoint, September 13, after the final viewer checks finished:
+> owned checkout and remote work/engagement-response-writes were clean at
+> b0929e3cae07ae56b4707ec4b457dc468f40a7ec. Remote main remains
+> 1b0783caa6ea0b0fea97c11962935a74d88afcdb. No v0.58.0 tag exists.
+> Final shuffled seed580913 completed: 14,347 passed, 453 skipped.
+> Final QA FAILED during build TypeScript checking. At
+> openplan/src/test/an-operator-can-author-a-campaigns-translations.test.tsx:541,
+> queryByRole receives unsupported `exact: true` in ByRoleOptions (TS2769).
+> Fix that test option without weakening the exact accessible-name assertion,
+> run appropriate verification, then rerun the full release gate. The preceding
+> green QA and CI are for older source and do not establish this candidate passes.
+> Logs: private response-write-probe-20260913/history-viewer-qa-final.log and
+> history-viewer-shuffled-final.log. Neither QA nor shuffle process was still
+> running when inspected. Do not depend on old tool session handles surviving.
+> Real viewer/staff browser acceptance is saved in VIEWER_CONTROL.md. Preserve
+> that evidence; do not repeat it solely because a session reset happened.
+> After correction and checks, push directly to main, inspect the exact final
+> commit's CI and RLS, then tag and publish v0.58.0. Do not tag initial1b0783ca.
+> Continue the full remaining workflow in ../2026-09-13-m9b-translation-writes/NEXT.md.
+> This checkpoint supersedes all earlier current-status and running-job claims below.
+
 > Latest: initial v0.58.0 candidate1b0783ca passed CI but was NOT tagged.
 > A viewer-control mismatch requires the3397252c correction and final acceptance.
 > Read VIEWER_CONTROL.md before release actions. Earlier pending-tag instructions
