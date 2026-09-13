@@ -105,3 +105,20 @@ acceptance remains running. Prepared patch version 0.55.1 because this repairs
 an existing workflow; 318 migrations are unchanged. Product metadata is aligned
 without changing review dates/statuses. Full QA, shuffle and final CI remain
 required before landing/releasing this patch.
+
+## Read-error ratchet correction
+
+Both full QA and shuffled seed 912557 failed the same obsolete exception:
+close-loop.ts was still listed as discarding one read error, but the corrected
+loader discards zero. Each application suite finished with 14092 passed, one
+failed and 450 skipped. The shuffle runner's generic order-dependence text is
+not evidence of an ordering defect here. Removed the obsolete exception and
+its stale prose, including an already-removed public-photo allowance in that
+comment. The remaining allowance is six sites across two files.
+
+read-ratchet-mutations.mjs/json records the 36-test detector suite surviving
+a harmless comment and rejecting a restored data-only read in close-loop.ts
+for the missing exception. Source was restored byte-for-byte. This static
+guard does not prove runtime recovery or catch every possible way of ignoring
+an error; the separate runtime and browser evidence cover this changed loader.
+Full QA and shuffle are being repeated after this correction.

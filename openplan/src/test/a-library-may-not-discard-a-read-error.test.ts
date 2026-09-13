@@ -163,15 +163,8 @@ function libFiles(): string[] {
 /**
  * R1 — `const { data } = await …`, or the same binding behind a ternary. The
  * error is not bound, so it cannot be checked even in principle. Was 20 sites /
- * 6 files; now 8 / 4, each looked at rather than counted:
+ * 6 files; now 6 / 2, each looked at rather than counted:
  *
- *   close-loop.ts          `loadCloseLoopEntries`, the OPERATOR builder read.
- *                          Its header says why it is still here: its three
- *                          callers are outside the lane that fixed the public
- *                          read, and the harm is lesser — a planner shown an
- *                          empty builder may re-author entries that exist.
- *   public-portal-data.ts  the signed-URL mint for approved photos. Not a table
- *                          read; a failure drops the photo, not the item.
  *   run-reconcile.ts       an "is the worker alive" probe inside a try/catch
  *                          whose whole contract is best-effort — a failed probe
  *                          means "assume not alive", which is the safe answer.
@@ -180,7 +173,6 @@ function libFiles(): string[] {
  *                          read sends nobody an update and reports nothing.
  */
 const KNOWN_DATA_ONLY: ReadonlyArray<readonly [string, number]> = [
-  ["src/lib/engagement/close-loop.ts", 1],
   ["src/lib/models/run-reconcile.ts", 1],
   ["src/lib/notifications/engagement.ts", 5],
 ];
