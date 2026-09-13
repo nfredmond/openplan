@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: e6d25edd
-current_release: v0.56.1
+current_release: v0.57.0
 review_by: 2026-10-05
 paths:
 - AGENTS.md
@@ -344,6 +344,13 @@ Deliver in these useful increments without reducing the end state:
 | M9a: publish and participate | Repair feed/thread completeness, durable receipt and comment-draft continuity first. A planner starts from the project, tailors an editable template or blank map to its planning context, previews and publishes a real campaign, then reviews contributions in a usable queue before public release; participants contribute points/routes/areas or an equivalent non-map response, with understandable receipt and privacy. | Agency setup and public submission observed; captured question/version and geometry survive recovery and export. Selected M1/M4/M5 foundations in place. |
 | M9b: moderate, interpret and respond | Staff use linked response map/list/detail, scoped counts and filters, moderate with reasons and review history, review grounded themes, answer contributions and connect issues to alternative/project decisions. | Trace source-to-theme-to-response-to-decision; conflicting/minority input retained; no unsupported representativeness claim; appropriate recipient approves output. |
 | M9c: demonstrate superiority and repeatability | An agency reuses the workflow with less effort and better public understanding across contexts, with migration/portability. | Comparative human task evidence, accessibility review, independent install/operation and complete export; disclose competitor version/access limits. No marketing claim substitutes for this gate. |
+
+September 13 response-write checkpoint: retained retries, reviewed concurrent
+corrections, reasoned private history, parent/reply withdrawal and complete local
+email status now have [engineering evidence](reviews/2026-09-12-m9b-response-writes/CONFLICT_AND_RESTORE.md).
+The [v0.57 candidate record](reviews/2026-09-12-m9b-response-writes/RELEASE_CANDIDATE.md)
+tracks its release checks. Translation-version custody and the complete
+source-to-decision chain remain M9b work; this checkpoint does not close M9b.
 
 ### M9a setup requirement. Project-specific maps without developer help
 

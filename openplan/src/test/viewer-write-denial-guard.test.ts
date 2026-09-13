@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { readMigration } from "./migrations/read-migrations";
+import { loadGrantInventory } from "./migrations/grant-inventory";
 import {
   WRITE_COMMANDS,
   classifyRoleAwareness,
@@ -75,6 +76,9 @@ const WRITER_GATE_MIGRATIONS = [
 // alternative was `workspace_member_can_write` at the permissive layer, which
 // would have moved neither number and would have made this the one table where
 // a viewer writes.
+// Response writes now use the recovery RPC. Keep its restrictive gates as defense
+// if a future migration reintroduces direct access; prove that access is absent.
+const RETAINED_RPC_ONLY_GATES = ["engagement_closeloop_entries"];
 const EXPECTED_GATED_TABLES = 82;
 const EXPECTED_RESTRICTIVE_POLICIES = 251;
 // 198 rather than 197 since 20260728000012 added `vmt_significance_screenings`.
@@ -219,7 +223,7 @@ const EXPECTED_RESTRICTIVE_POLICIES = 251;
 // finalize a bundle. The exact guided-run link table and the two governed-
 // package tables add three role-aware INSERT policies, so no restrictive gate
 // is needed.
-const EXPECTED_PERMISSIVE_WRITE_POLICIES = 280;
+const EXPECTED_PERMISSIVE_WRITE_POLICIES = 277;
 
 /** The three tables whose policies exist only as runtime-built SQL. */
 const DYNAMIC_POLICY_TABLES = [
@@ -332,18 +336,19 @@ describe("viewer write denial", () => {
     ).toEqual([]);
   });
 
-  it("keeps the gate list honest — nothing is gated for a reason that no longer exists", () => {
+  it("accounts for retained RPC-only gates only while every direct write stays closed", () => {
     const needing = tablesNeedingGate();
     const orphaned = [...gatedCommands().keys()].filter((table) => !needing.has(table)).sort();
-
-    expect(
-      orphaned,
-      "These tables carry a restrictive writer gate but no role-blind workspace write policy " +
-        "this guard can see. Two possibilities, and the second is the dangerous one: either the " +
-        "permissive policies were removed and the gate is now dead weight, OR the inventory " +
-        "cannot read them. Until 20260728000006's dynamic policies were expanded, the three " +
-        "scenario_* tables sat in exactly this state and nothing said so."
-    ).toEqual([]);
+    expect(orphaned, "A retained gate needs an explicit, verified RPC-only boundary").toEqual(RETAINED_RPC_ONLY_GATES);
+    const grants = loadGrantInventory();
+    for (const table of RETAINED_RPC_ONLY_GATES) {
+      for (const command of WRITE_COMMANDS) {
+        expect(inventory.permissiveGrants(table, command), `${table} ${command} has a direct-write policy`).toEqual([]);
+        for (const role of ["anon", "authenticated", "public"] as const) {
+          expect(grants.holds(table, role, command), `${table} ${role} ${command} has a direct-write grant`).toBe("none");
+        }
+      }
+    }
   });
 
   it("installs the writer predicate as one shared, fail-closed helper", () => {
@@ -388,7 +393,7 @@ describe("viewer write denial", () => {
     // shape of the defect this file exists to prevent. When a legitimately new
     // workspace table lands, these numbers move in the same commit as its
     // migration, and the diff is the record of it.
-    expect(needing.size).toBe(EXPECTED_GATED_TABLES);
+    expect(needing.size).toBe(EXPECTED_GATED_TABLES - RETAINED_RPC_ONLY_GATES.length);
     expect(gated.size).toBe(EXPECTED_GATED_TABLES);
     expect(inventory.all().filter((p) => p.kind === "RESTRICTIVE")).toHaveLength(EXPECTED_RESTRICTIVE_POLICIES);
     expect(permissiveWritePolicies()).toHaveLength(EXPECTED_PERMISSIVE_WRITE_POLICIES);

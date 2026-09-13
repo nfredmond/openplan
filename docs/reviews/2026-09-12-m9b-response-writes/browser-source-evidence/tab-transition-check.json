@@ -1,0 +1,54 @@
+[
+  {
+    "width": 1440,
+    "url": "http://localhost:3260/engage/76cmih9js3sny328qao2nj6vnjpj/about",
+    "tabs": [
+      {
+        "text": "Share your input",
+        "border": "rgba(0, 0, 0, 0)",
+        "color": "rgb(144, 149, 156)"
+      },
+      {
+        "text": "You said / We did(1)",
+        "border": "rgb(109, 198, 181)",
+        "color": "rgb(240, 237, 230)"
+      },
+      {
+        "text": "Community feedback(1)",
+        "border": "rgba(0, 0, 0, 0)",
+        "color": "rgb(144, 149, 156)"
+      }
+    ],
+    "overflow": {
+      "viewport": 1440,
+      "document": 1440
+    },
+    "note": "Separate read-only inspection of an earlier synthetic published response after CSS transitions finish; not a new withdrawal journey."
+  },
+  {
+    "width": 390,
+    "url": "http://localhost:3260/engage/76cmih9js3sny328qao2nj6vnjpj/about",
+    "tabs": [
+      {
+        "text": "Share your input",
+        "border": "rgba(0, 0, 0, 0)",
+        "color": "rgb(144, 149, 156)"
+      },
+      {
+        "text": "You said / We did(1)",
+        "border": "rgb(109, 198, 181)",
+        "color": "rgb(240, 237, 230)"
+      },
+      {
+        "text": "Community feedback(1)",
+        "border": "rgba(0, 0, 0, 0)",
+        "color": "rgb(144, 149, 156)"
+      }
+    ],
+    "overflow": {
+      "viewport": 390,
+      "document": 390
+    },
+    "note": "Separate read-only inspection of an earlier synthetic published response after CSS transitions finish; not a new withdrawal journey."
+  }
+]

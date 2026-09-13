@@ -94,3 +94,51 @@ failed the preflight before HTTP, avoiding a new retry loop. Both original
 function definitions were restored and hash-checked. See conflict-http-mutations.json
 and conflict-http-restoration.json. TypeScript checking exited 0. Full QA, shuffled tests,
 remaining changed-workflow acceptance and final release CI remain outstanding.
+
+## Full QA follow-up
+
+The full gate on f95e477e completed lint and Knip, then failed two assertions in
+viewer-write-denial-guard.test.ts. It passed 14304 tests, with 451 skipped.
+The gate had not accounted for the deliberately retained restrictive response
+writer policies after migration 06 removed their permissive partners.
+
+The revised inventory recognizes exactly that one RPC-only table, proves that
+all direct write policies are absent, checks table and column privileges for
+anon, authenticated and PUBLIC, and retains all three restrictive writer gates.
+Its baseline and harmless comment passed; restoring an authenticated UPDATE,
+a PUBLIC column UPDATE, or a permissive INSERT policy failed the new boundary.
+See retained-gate-mutations.json. No database policy or privilege changed.
+
+The full shuffled suite subsequently passed 1265 files and 14306 tests, with
+43 files and 451 tests skipped, seed 370816, exit 0, in 130.98 seconds. This run
+includes the corrected gate. Full QA still needs a new run through the remaining
+provider, dependency and build stages. These outcomes do not establish release CI.
+
+## Public source withdrawal
+
+Both desktop and 390px journeys now pass public input through the real submission
+form, staff approval, a public reply, approval of that reply, and a response linked
+to it through the editor's Contributions addressed selector. A notes-only parent
+edit keeps publication. Changing the approved parent's wording withdraws the
+reply-linked response. Republishing after review and then flagging the parent
+withdraws the response again and hides the reply from the public feed. Both
+journeys assert stored draft status as well as public absence, preserve all five
+response revisions and the original checksum, and deny anonymous history reads.
+No rows were hand-seeded. The native worker was not started for these journeys.
+
+The script initially used the wrong moderation-list name and assumed the public
+entry page was the full feedback portal. Actual receipt navigation leads to the
+about page; its link label depends on whether approved comments were loaded.
+Those script mistakes are preserved privately. Another run stopped on an aborted
+reload. The final script allows one recorded navigation retry after ERR_ABORTED
+or ERR_NETWORK_CHANGED, preserving all content assertions. Neither final run
+needed that retry. Their consoles contain only font-preload warnings; no page
+exceptions or network-change errors were recorded.
+
+Artifacts are under browser-source-evidence. Immediate published screenshots
+caught the prior tab color during its CSS transition. A separate read-only check
+on an earlier synthetic published response waited for the actual animations to
+finish, verified the selected tab's computed colors and no horizontal overflow,
+and captured settled desktop/390px images. This was an animation timing issue,
+not a product correction or a new withdrawal journey. Those images and the
+separate tab-transition-check.json preserve that distinction.

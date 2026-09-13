@@ -1,6 +1,6 @@
 # Weekly reset checkpoint, September 13, 2026
 
-> Later continuation: read [CONFLICT_AND_RESTORE.md](CONFLICT_AND_RESTORE.md). Both extended browser journeys and the full restored-target RLS suite now pass their workflow assertions; desktop background network errors are disclosed there. The receipt census and stale review warning are fixed. Owned dev launcher 2704541 is being stopped for full QA; recheck runtime before resuming.
+> Later continuation: read [RELEASE_CANDIDATE.md](RELEASE_CANDIDATE.md) and [CONFLICT_AND_RESTORE.md](CONFLICT_AND_RESTORE.md). Version 0.57.0 is prepared, not tagged. Recovery and public source-withdrawal journeys passed at desktop and 390px, the full restored-target RLS suite passed, and shuffled seed 370816 passed. Full QA must rerun after its policy-inventory fix. Owned dev launcher 3326248 is stopped; port 3260 was empty. No unrelated container was stopped.
 
 This is the current recovery entry point. It supersedes the runtime, migration and next-step statements in USAGE_PAUSE.md; preserve that older record as history. Nathaniel asked whether this thread can resume after the weekly reset. Save work now; do not imply unfinished acceptance passed.
 

@@ -1,0 +1,44 @@
+[
+  {
+    "name": "baseline",
+    "matched": true,
+    "outcome": "survived",
+    "passed": 7,
+    "failed": []
+  },
+  {
+    "name": "harmless-comment",
+    "matched": true,
+    "outcome": "survived",
+    "passed": 7,
+    "failed": []
+  },
+  {
+    "name": "authenticated-write-restored",
+    "matched": true,
+    "outcome": "killed",
+    "passed": 6,
+    "failed": [
+      "viewer write denial accounts for retained RPC-only gates only while every direct write stays closed"
+    ]
+  },
+  {
+    "name": "public-column-write-restored",
+    "matched": true,
+    "outcome": "killed",
+    "passed": 6,
+    "failed": [
+      "viewer write denial accounts for retained RPC-only gates only while every direct write stays closed"
+    ]
+  },
+  {
+    "name": "permissive-write-restored",
+    "matched": true,
+    "outcome": "killed",
+    "passed": 5,
+    "failed": [
+      "viewer write denial accounts for retained RPC-only gates only while every direct write stays closed",
+      "viewer write denial guards the guard"
+    ]
+  }
+]

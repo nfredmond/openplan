@@ -1,0 +1,9 @@
+{
+  "openplan/src/components/engagement/response-write-recovery.tsx": "352f09927b5a2560101cb041eef02adf888c65613a110aa06876d08204c6e4f8",
+  "openplan/src/components/engagement/close-loop-builder.tsx": "3a0a580bd4202e06d893abb09ad33f30837c691ac07bee96559805871aab1fc5",
+  "openplan/src/components/engagement/response-history.tsx": "f144b9df5321ad2decf242faa6c9debc84c8d4b201de9af4587551063bec294e",
+  "openplan/src/components/engagement/public-engagement-portal.tsx": "955b8d54c304c86418364d6dca5324b4958dce75d29fce79a1685b78422ff3f9",
+  "openplan/supabase/migrations/20261014000003_engagement_response_recovery.sql": "4601df9e40867a60606d8832f2ad5faa74ae1cda0c916c4ff3c6c939ee917d23",
+  "openplan/supabase/migrations/20261014000007_engagement_conflicts_without_transaction_retry.sql": "baf8589be49dc0507d547e743048d6112d85bdaba7d82a25f3e74e7e6818b089",
+  "docs/reviews/2026-09-12-m9b-response-writes/response-source-browser.cjs": "5e9dee51c0cf112d94880f6ebc0b4f38d96a427c012c7c62d357bf357d8070de"
+}

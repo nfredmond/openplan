@@ -1,0 +1,72 @@
+{
+  "source": "f95e477e0d98ef2e4199f6656adbe37487a18af5",
+  "width": 1440,
+  "passed": true,
+  "campaignId": "e7dec9f4-1ae7-4607-93c8-0bfd65429bd6",
+  "parent": "a673ed68-a175-44b0-a4f0-9c1355e6b97d",
+  "child": "590d1e77-d7dd-4767-bed7-07659cca119e",
+  "response": "de830010-1835-4e3b-bf7f-3e44a2d5d850",
+  "harmlessNotesPreservedPublication": true,
+  "parentWordingWithdrewReplyResponse": true,
+  "parentWithholdingHidReplyAndResponse": true,
+  "anonymousHistoryDenied": true,
+  "originalChecksum": "6bfeeb537013fe029a8f6a71b35505905d76549f0b177d7a0299499d6bb57f1d",
+  "historyRevisions": 5,
+  "navigationRetries": [],
+  "overflow": {
+    "viewport": 1440,
+    "document": 1440
+  },
+  "console": [
+    {
+      "page": "public",
+      "type": "warning",
+      "text": "The resource http://localhost:3260/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789298899860 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "page": "public",
+      "type": "warning",
+      "text": "The resource http://localhost:3260/_next/static/media/36966cca54120369-s.p.woff2?v=1789298899860 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "page": "public",
+      "type": "warning",
+      "text": "The resource http://localhost:3260/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789298906164 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "page": "public",
+      "type": "warning",
+      "text": "The resource http://localhost:3260/_next/static/media/36966cca54120369-s.p.woff2?v=1789298906164 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "page": "public",
+      "type": "warning",
+      "text": "The resource http://localhost:3260/_next/static/media/36966cca54120369-s.p.woff2?v=1789298914435 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "page": "public",
+      "type": "warning",
+      "text": "The resource http://localhost:3260/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789298914435 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "page": "public",
+      "type": "warning",
+      "text": "The resource http://localhost:3260/_next/static/media/36966cca54120369-s.p.woff2?v=1789298924154 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "page": "public",
+      "type": "warning",
+      "text": "The resource http://localhost:3260/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789298924154 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "page": "public",
+      "type": "warning",
+      "text": "The resource http://localhost:3260/_next/static/media/36966cca54120369-s.p.woff2?v=1789298933605 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "page": "public",
+      "type": "warning",
+      "text": "The resource http://localhost:3260/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789298933605 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    }
+  ]
+}

@@ -20,6 +20,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+No changes yet.
+
+## 0.57.0 — 2026-09-13
+
 Engagement response saves retain exact retry requests, reject stale corrections,
 and record change reasons in private history. Publication queues subscriber updates
 for the local email worker. Activity shows complete preparation and delivery
@@ -39,7 +43,10 @@ The worker serializes claims with unsubscribe and campaign closure. A message
 already claimed may be in flight; provider acceptance does not prove inbox delivery.
 Recovery copies remain in the browser tab, which can be lost when that tab closes.
 Translation-version history and broader engagement workflow completion remain
-unfinished. Final release verification is still in progress.
+unfinished. Source-linked responses are withdrawn when a linked contribution or
+its parent changes; private history retains the original copy and withdrawal reason.
+Stale save conflicts return promptly through PostgREST, and a successful review
+retry clears its previous read-failure warning.
 
 ## 0.56.1 — 2026-09-12
 
