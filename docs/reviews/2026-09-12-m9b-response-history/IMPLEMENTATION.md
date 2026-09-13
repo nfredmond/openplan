@@ -89,3 +89,8 @@ gaps and the full remaining product scope. No human review gates block engineeri
 After applying history and finishing live mutations, the actual HTTP response
 loader again returned all 1005 records with the original browser checksum.
 post-history-application-custody.json records that fresh comparison.
+
+Full QA, shuffled seed 913562 and full isolated RLS were launched on pushed
+source 5d8268a1. Upgrade Path 34737449570 was dispatched on that source from
+v0.55.2. They remain pending at this checkpoint; exact handles and receipt paths
+are in the sibling response-snapshot RESUME.md. No fresh browser claim is made.

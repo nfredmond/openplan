@@ -23,7 +23,8 @@ The named disposable stack openplan-restore-target-2026091050 now has 320
 migrations through 20261014000001, API 29821 / DB 29822. Do not reset or reapply
 that migration. The pre-apply history-mutations.py intentionally expects the
 history table absent and must not be rerun unchanged against this stack.
-All owned browser/proxy/app and test processes finished; recheck live ownership.
+No owned app/browser remains. Current validation processes are listed below;
+recheck their actual handles before restarting anything.
 
 Private directory /home/nathaniel/.local/state/openplan/api-provider-research-2026-09-12
 contains full logs and account/config files. Never print api-settings.env or
@@ -35,3 +36,27 @@ boundaries are separate from actual agency usefulness or complete v1 capability.
 Continue directly to main after verification; no PR or human-review gate. Preserve
 the pending reminder constraint, local/free operation, the full all-state planning
 contract, and separate AequilibraE/ActivitySim validation. The v1 goal remains active.
+
+## Running foundation checks at 5d8268a1
+
+Source 5d8268a177e4761676f3e34a2a1be8e7a08787ee is committed and pushed on
+work/engagement-response-snapshots. Main still names published v0.55.2 at 3455207b.
+The following checks were confirmed live after launch:
+
+- Full QA: tool session 26373.
+- Shuffled tests, seed 913562: tool session 76272.
+- Full RLS: tool session 47166, explicitly targeting only the named restore stack.
+- Upgrade Path: run 34737449570 on source 5d8268a1, dispatched from v0.55.2.
+
+The private m9b-history-check.cjs wrapper writes m9b-history-full-qa.log,
+m9b-history-full-shuffled.log and m9b-history-full-rls.log, plus terminal
+.result.json files. A missing tool handle requires checking real processes and
+these receipts. Do not infer completion or restart from a polling timeout.
+The upgrade run must be polled, not duplicated. Avoid changing runtime/schema
+source while these checks collect evidence, and do not collect browser evidence
+against the shared isolated DB during full RLS function mutations.
+
+Once these gates are green, land the verified foundation directly on main and
+continue the staff history/read/write/conflict interface. This does not authorize
+a new release claim before the complete promised workflow works. v0.55.2 is
+already published; its full verification must not be repeated as pending work.
