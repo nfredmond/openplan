@@ -31,6 +31,8 @@ No new database migration is required. The existing 328 migrations through
 `20261014000009_engagement_translation_history.sql` remain unchanged. Workspace
 membership rules and the selection API are unchanged. This patch does not
 include the unfinished translation command or generation workflow.
+[Engineering verification](docs/reviews/2026-09-13-workspace-switch-patch/VERIFICATION.md)
+records the production browser and isolated release checks.
 
 ## 0.58.0 — 2026-09-13
 

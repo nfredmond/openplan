@@ -1,0 +1,33 @@
+{
+  "candidate": "1eef5f49162a34407202a3589c37b31953b41666",
+  "qa": {
+    "exit": 0,
+    "filesPassed": 1268,
+    "filesSkipped": 45,
+    "testsPassed": 14347,
+    "testsSkipped": 453,
+    "dependencyAuditVulnerabilities": 0,
+    "productionBuild": "passed"
+  },
+  "shuffled": {
+    "exit": 0,
+    "seed": 580113,
+    "testsPassed": 14347,
+    "testsSkipped": 453,
+    "initialRun": "failed six release metadata checks; retained separately"
+  },
+  "isolatedRls": {
+    "exit": 0,
+    "filesPassed": 52,
+    "testsPassed": 482,
+    "container": "supabase_db_openplan-restore-target-2731143"
+  },
+  "workers": {
+    "exit": 0,
+    "suitesPassed": 52,
+    "notRun": 0
+  },
+  "releaseRecordControls": "baseline and harmless survived; incorrect new migration count killed",
+  "browserControls": "baseline and harmless passed all four widths; hidden and clipped failures matched",
+  "limits": "Unit skips remain explicit; live database suite is separate. No scientific or full-product acceptance claim."
+}

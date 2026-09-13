@@ -1,3 +1,13 @@
+# Latest checkpoint: local acceptance complete
+
+Read [VERIFICATION.md](VERIFICATION.md). All local QA, shuffled, isolated RLS,
+worker and browser checks have terminal successful results, with expected
+adverse controls. Production browser candidate is 1eef5f49 on localhost:3261.
+The owned translation dev server on 3260 was stopped; its source and database
+remain retained. Next: land this verified patch directly on main, inspect exact
+main CI/RLS and dispatched upgrade results, then publish v0.58.1. No PR.
+The older preparation record below is historical, not current job status.
+
 # Workspace selector patch, v0.58.1 candidate
 
 Owned checkout: `/home/nathaniel/.local/state/openplan/workspace-switch-v0581-2026-09-13`, branch `fix/workspace-switch-v0581`, based on remote main `88fb20b6`. Only the independent header commit `05aa194b` was cherry-picked as `6b14e74a`. The unfinished translation branch remains separately committed and pushed through `702e2449`.

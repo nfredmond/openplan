@@ -2,7 +2,7 @@ const {chromium,expect:baseExpect}=require('/home/nathaniel/code/openplan/qa-har
 const expect=baseExpect.configure({timeout:10000});
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),crypto=require('node:crypto'),{execFileSync}=require('node:child_process');
-const root=require('node:path').resolve(__dirname,'../../..'),base='http://127.0.0.1:3261',evidence='/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence';
+const root=require('node:path').resolve(__dirname,'../../..'),base='http://localhost:3261',evidence='/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence';
 const account=JSON.parse(fs.readFileSync(evidence+'/viewer-account.json'));
 const targetName=JSON.parse(fs.readFileSync(evidence+'/owner-account.json')).organization,ownName=account.organization;
 const mode=process.env.OPENPLAN_WORKSPACE_SWITCH_CONTROL??'baseline',prefix=evidence+'/workspace-switch-'+mode+'-'+Date.now();

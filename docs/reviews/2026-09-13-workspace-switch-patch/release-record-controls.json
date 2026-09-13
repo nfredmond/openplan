@@ -1,0 +1,33 @@
+{
+  "sourceSha256": "522b46960f64970532ee434f10dca2f47ac0406426fbf12a4e5895795421c4dc",
+  "results": [
+    {
+      "case": "baseline",
+      "matched": true,
+      "exit": 0,
+      "outcome": "survived",
+      "passed": 6,
+      "failed": []
+    },
+    {
+      "case": "harmless-comment",
+      "matched": true,
+      "exit": 0,
+      "outcome": "survived",
+      "passed": 6,
+      "failed": []
+    },
+    {
+      "case": "wrong-patch-count",
+      "matched": true,
+      "exit": 1,
+      "outcome": "killed",
+      "passed": 4,
+      "failed": [
+        "released migration ordering no migration has been inserted at or below a shipped high-water mark",
+        "released migration ordering new work sorts strictly after the latest release (no version collisions)"
+      ]
+    }
+  ],
+  "limits": "Checks release migration accounting; does not execute migrations or verify browser behavior."
+}

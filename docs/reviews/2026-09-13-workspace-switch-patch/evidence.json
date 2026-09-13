@@ -1,0 +1,231 @@
+{
+  "candidate": "1eef5f49162a34407202a3589c37b31953b41666",
+  "build": "Next.js production webpack on localhost:3261; serving directory and full commit checked",
+  "sourceHashes": {
+    "openplan/src/app/cartographic.css": "d729c683a2c883a45ebc91a691a0b9557bb574ba13d13f26d2e28ed359e99d70",
+    "openplan/src/components/workspaces/workspace-switcher.tsx": "edd4dd99b062be8126a605085a72d59221b7d09c3f5f87860ad80694bf4b62ef",
+    "openplan/src/components/cartographic/cartographic-header.tsx": "56fc525bace7f32373b5b50b8f043d128c3cdfafebd2d259692b23ac514a109e"
+  },
+  "fixture": "Fresh synthetic signup and manual invitation explicitly accepted through UI on retained isolated 328-migration stack",
+  "artifacts": [
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/browser-baseline.log",
+      "sha256": "a7718e898c6b7bc27efdd009dd5cd0f2d4840f4aa49386d2348a9e255c4f7b6b",
+      "bytes": 553
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/browser-controls.log",
+      "sha256": "9913ec4cfdfa180ec3eb13fd8cbe1953bc2c3d3975874771c273598e2bd355d4",
+      "bytes": 75
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/fixture-accepted.png",
+      "sha256": "fb94a708e5dd39751d55e094f586ad54f19106c7a4d8a0fd5b2dbcdc44113921",
+      "bytes": 264140
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/fixture-canonical.log",
+      "sha256": "9c8e452be47d1cc2d0c3d93d5fde9c7df0bbeae783c3f74aff097ab839f36f27",
+      "bytes": 57
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/fixture-corrected.log",
+      "sha256": "a170d6d57c73cd866862e047f8dd3bb7df800e0ffe874abdc455df7918cc0d48",
+      "bytes": 123
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/fixture-identity.log",
+      "sha256": "b4b0a78b112cb91d962675524c4158e62ff0f66753e95d535008277ae479fb53",
+      "bytes": 342
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/fixture-result.json",
+      "sha256": "cc7f08165b97cc26f656495ddff691ea116615ad00dce2cacc20d8da438aae84",
+      "bytes": 251
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/fixture.log",
+      "sha256": "d8f09250959f6f356e276964ebaa3892496251bd87df0dcdf931f39489016159",
+      "bytes": 154
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/qa.log",
+      "sha256": "cf76061c1afbff4e312797b0b46316d5652b20d6166f060497e98745516fe98f",
+      "bytes": 190765
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/release-record-controls.log",
+      "sha256": "29eedb30440c93c2c0d5bc72a9c2916ee1d179addf0dbfdc72228b80c3d28ffd",
+      "bytes": 59
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/rls.log",
+      "sha256": "3c4a69e9604ffabe6f98410548d320c7f23037489c12e1e52f0d29842ccad19c",
+      "bytes": 3157
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/shuffled-corrected.log",
+      "sha256": "d9a26f2235b26b92e1227dc375acd8f1e4d015ed4ae60bbcb1ccddc1851174f6",
+      "bytes": 664737
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/shuffled.log",
+      "sha256": "b86cf4f233a73805871901afc151ca14377d54e4cc748df04c0f4dca63820015",
+      "bytes": 678328
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workers.log",
+      "sha256": "8a07ba71de05510939bc6535aa58135692086beacdabd37b43de1aa7c4efbc89",
+      "bytes": 1987
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-baseline-1789328915671-1440-closed.png",
+      "sha256": "c6878464eb975c8849946747ee61f340922380092ada6384460440832c006357",
+      "bytes": 261534
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-baseline-1789328915671-1440-menu.png",
+      "sha256": "d37a22de232f9655290139730599d6e397c2c79224232e41206d7fe3586d5bc5",
+      "bytes": 272905
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-baseline-1789328915671-320-closed.png",
+      "sha256": "eebbbc62e35c3949ce5840d7edc2d1ae29e48f7a48ad44d1923e9925db2fab0a",
+      "bytes": 97127
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-baseline-1789328915671-320-menu.png",
+      "sha256": "eb2629f1ed59a3d63911784f6cb1c545616acf762cfed401f3c9935cac732053",
+      "bytes": 105250
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-baseline-1789328915671-390-closed.png",
+      "sha256": "66b62a3a2184ed48ac00cd847e2aae3f5d451206a9f88f9db0f7bdf97198df5f",
+      "bytes": 110411
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-baseline-1789328915671-390-menu.png",
+      "sha256": "233f8ea23ecf88fe532a224132e62f6d5b20f2d2be44aabec3b535bcdf74e69a",
+      "bytes": 118596
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-baseline-1789328915671-900-closed.png",
+      "sha256": "2cd647d47f4f47852117089bc0abeb59cdc6077a3a2c591a9d41ddebe1fb769b",
+      "bytes": 202208
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-baseline-1789328915671-900-menu.png",
+      "sha256": "0f0f242f33ecf4381bae328e2443efcef6e5ae50670f20dc54aa7143d46f7299",
+      "bytes": 213339
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-baseline-1789328915671-identity.log",
+      "sha256": "b4b0a78b112cb91d962675524c4158e62ff0f66753e95d535008277ae479fb53",
+      "bytes": 342
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-baseline-1789328915671-result.json",
+      "sha256": "8bc6547e3b25cf81d6f4ca904b496339239a3320421a4fa456d565aceeb5144b",
+      "bytes": 10256
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-clipped-1789328959707-1440-closed.png",
+      "sha256": "824a73fa197ba850bc027b777a7c4bcefc7dbfcbf806adc1db7c326b63c21ca2",
+      "bytes": 261528
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-clipped-1789328959707-1440-menu.png",
+      "sha256": "24f79aae0f73fb3316bf44e96b6a1dfa38eb116915ce352b31fdddb56dd5f1bd",
+      "bytes": 261738
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-clipped-1789328959707-failure.json",
+      "sha256": "1f8fbe1da8d123d94504afd3adae38253b314218f60f871e233ab8c891361d5a",
+      "bytes": 128
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-clipped-1789328959707-failure.png",
+      "sha256": "8d291c4bf4dd23ae860f4780f2badba07f87b9cd6464725d337d541c4a9bb56e",
+      "bytes": 262370
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-clipped-1789328959707-identity.log",
+      "sha256": "b4b0a78b112cb91d962675524c4158e62ff0f66753e95d535008277ae479fb53",
+      "bytes": 342
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-harmless-1789328938141-1440-closed.png",
+      "sha256": "c6878464eb975c8849946747ee61f340922380092ada6384460440832c006357",
+      "bytes": 261534
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-harmless-1789328938141-1440-menu.png",
+      "sha256": "d37a22de232f9655290139730599d6e397c2c79224232e41206d7fe3586d5bc5",
+      "bytes": 272905
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-harmless-1789328938141-320-closed.png",
+      "sha256": "eebbbc62e35c3949ce5840d7edc2d1ae29e48f7a48ad44d1923e9925db2fab0a",
+      "bytes": 97127
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-harmless-1789328938141-320-menu.png",
+      "sha256": "17e8184db3826b7540d0360e2ff62560b944187a46a676a08738e560a011e36b",
+      "bytes": 105094
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-harmless-1789328938141-390-closed.png",
+      "sha256": "66b62a3a2184ed48ac00cd847e2aae3f5d451206a9f88f9db0f7bdf97198df5f",
+      "bytes": 110411
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-harmless-1789328938141-390-menu.png",
+      "sha256": "233f8ea23ecf88fe532a224132e62f6d5b20f2d2be44aabec3b535bcdf74e69a",
+      "bytes": 118596
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-harmless-1789328938141-900-closed.png",
+      "sha256": "2cd647d47f4f47852117089bc0abeb59cdc6077a3a2c591a9d41ddebe1fb769b",
+      "bytes": 202208
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-harmless-1789328938141-900-menu.png",
+      "sha256": "226f02536cd71f7c5886b10322e6214020a2a8a136f97fa024824799fd5f36cf",
+      "bytes": 213136
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-harmless-1789328938141-identity.log",
+      "sha256": "b4b0a78b112cb91d962675524c4158e62ff0f66753e95d535008277ae479fb53",
+      "bytes": 342
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-harmless-1789328938141-result.json",
+      "sha256": "4d79e97dfbed12a2dd662031b820a9f2ca40234c85173a2eb7c5636bcb4eb3c5",
+      "bytes": 3993
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-hidden-1789328946894-390-closed.png",
+      "sha256": "34c4bbd29b58ddaac3b083f750f79d34a545b0e6a81753ef7c10a7ddcc3e7d13",
+      "bytes": 106154
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-hidden-1789328946894-failure.json",
+      "sha256": "0883a65c9dcdbf2ef7bffaf4f95dec40e8e6132e1c06c98875fd9089d9b6caae",
+      "bytes": 512
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-hidden-1789328946894-failure.png",
+      "sha256": "34c4bbd29b58ddaac3b083f750f79d34a545b0e6a81753ef7c10a7ddcc3e7d13",
+      "bytes": 106154
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/workspace-switch-v0581-evidence/workspace-switch-hidden-1789328946894-identity.log",
+      "sha256": "b4b0a78b112cb91d962675524c4158e62ff0f66753e95d535008277ae479fb53",
+      "bytes": 342
+    }
+  ],
+  "consoleSummary": {
+    "warning": 9
+  },
+  "limits": "Private screenshots/logs stay local; account credentials and raw invitation tokens excluded. Hashes prove retained bytes, not independent reruns."
+}
