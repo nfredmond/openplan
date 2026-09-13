@@ -1,0 +1,11 @@
+[
+  {
+    "name": "baseline",
+    "matched": false,
+    "exit": 3,
+    "expected": null,
+    "outcome": "killed",
+    "sqlSha256": "d5eeb277051b461f9136cf93ad4101497fd7bc3cb0c47dd05e3e682fdb79a72c",
+    "diagnostic": "ERROR:  workspace ced96e34-dd18-4705-a930-93e301e53e56 would be left without an owner\nCONTEXT:  PL/pgSQL function enforce_workspace_owner_floor() line 19 at RAISE\n"
+  }
+]

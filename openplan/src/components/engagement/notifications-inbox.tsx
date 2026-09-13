@@ -5,10 +5,11 @@ import { Bell, Check, Loader2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type {
-  EmailDeliverySummary,
   EngagementNotificationRow,
   EngagementNotificationType,
 } from "@/lib/notifications/engagement";
+
+import { emailDeliveryRecordSchema, type EmailDeliverySummary } from "@/lib/notifications/email-delivery-summary";
 
 const TYPE_LABEL: Record<EngagementNotificationType, string> = {
   comment_submitted: "New submission",
@@ -31,40 +32,12 @@ function fmt(value: string): string {
 
 // ── Email delivery ────────────────────────────────────────────────────────────
 
-/**
- * Every message OpenPlan has ever queued for this campaign has been recorded in
- * the outbox since 2026-07-22 and NOTHING displayed it, so an operator who
- * broadcast a "You said / We did" update, or whose participants asked for email
- * confirmations, had no way to find out whether any of it left the building.
- *
- * The three states are kept apart on purpose: a read that FAILED may not be
- * rendered as "no emails were sent". This is an internal operator surface, so
- * the database's own message is shown — on the public portal it would not be.
- */
 type DeliveryState =
   | { state: "loading" }
   | { state: "error"; message: string }
   | { state: "ready"; summary: Extract<EmailDeliverySummary, { ok: true }>; transport: string | null };
 
-/**
- * Mask any email address inside a message before it is rendered.
- *
- * The outbox `error` column holds the transport's own reply VERBATIM — see
- * sendEmail() in src/lib/notifications/email.ts, which returns
- * `HTTP ${status}: ${body.slice(0, 200)}` — and a provider that rejects a
- * recipient commonly echoes the address back in that body. Participant email
- * addresses are deliberately out of an operator's reach: engagement_email_outbox
- * has RLS on with zero policies and is REVOKEd from `authenticated`, and this
- * panel's own projection excludes `to_email` for exactly that reason. A raw
- * provider string would route an address around that boundary through the side
- * door, on a panel that promises it shows none — and because a self-hosted
- * operator can point the transport at any provider, the promise cannot be kept
- * by trusting the provider's wording.
- *
- * The domain survives, because that is what makes a delivery failure
- * diagnosable, and the panel says the masking happened rather than silently
- * altering what the database recorded.
- */
+/** Mask addresses in request failures; delivery summaries already withhold provider text in SQL. */
 export function maskEmailAddresses(message: string): string {
   return message.replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, (address) => {
     const at = address.lastIndexOf("@");
@@ -72,12 +45,15 @@ export function maskEmailAddresses(message: string): string {
   });
 }
 
-/** Operator-facing names for the four outbox statuses. */
-const DELIVERY_LABELS: { key: "sent" | "skipped" | "failed" | "queued"; label: string; tone: "success" | "warning" | "danger" | "neutral" }[] = [
-  { key: "sent", label: "Delivered", tone: "success" },
+/** Outcomes remain distinct even when the old outbox status is still queued. */
+const DELIVERY_LABELS: { key: keyof Extract<EmailDeliverySummary, { ok: true }>["counts"]; label: string; tone: "success" | "warning" | "danger" | "neutral" | "info" }[] = [
+  { key: "sent", label: "Accepted by email service", tone: "success" },
   { key: "skipped", label: "Recorded, not sent", tone: "warning" },
   { key: "failed", label: "Failed", tone: "danger" },
   { key: "queued", label: "Still queued", tone: "neutral" },
+  { key: "attempting", label: "Attempt in progress", tone: "info" },
+  { key: "uncertain", label: "Outcome uncertain", tone: "warning" },
+  { key: "cancelled", label: "Cancelled before sending", tone: "neutral" },
 ];
 
 function EmailDeliveryPanel({ delivery }: { delivery: DeliveryState }) {
@@ -104,7 +80,7 @@ function EmailDeliveryPanel({ delivery }: { delivery: DeliveryState }) {
   const { summary, transport } = delivery;
   const transportUnconfigured = transport === "none";
 
-  if (summary.total === 0) {
+  if (summary.total === 0 && Object.values(summary.broadcasts).every(value => value === 0)) {
     return (
       <div className="text-sm text-muted-foreground">
         <p>No emails have been queued for this campaign yet.</p>
@@ -129,9 +105,14 @@ function EmailDeliveryPanel({ delivery }: { delivery: DeliveryState }) {
       </div>
       <p className="text-muted-foreground">
         {summary.total} message{summary.total === 1 ? "" : "s"} recorded
-        {summary.truncated ? " (most recent only — there are more)" : ""}
-        {summary.lastAttemptAt ? `, most recently ${fmt(summary.lastAttemptAt)}` : ""}.
+        {summary.lastRecordedAt ? `, most recently ${fmt(summary.lastRecordedAt)}` : ""}.
       </p>
+      <p className="text-muted-foreground">Email service acceptance does not confirm inbox delivery.</p>
+      {summary.broadcasts.queued > 0 ? <p>{summary.broadcasts.queued} published update(s) waiting for recipient preparation. Recipient count is not known yet.</p> : null}
+      {summary.broadcasts.noShareToken > 0 ? <p>{summary.broadcasts.noShareToken} published update(s) could not prepare emails because the campaign had no public link.</p> : null}
+      {summary.broadcasts.cancelled > 0 ? <p>{summary.broadcasts.cancelled} published update(s) cancelled before recipient preparation.</p> : null}
+      {summary.broadcasts.prepared > 0 && summary.total === 0 ? <p>Recipient preparation completed with no eligible messages.</p> : null}
+      {summary.counts.uncertain > 0 ? <p>These attempts may have reached the email service. OpenPlan does not automatically resend uncertain messages.</p> : null}
       {summary.counts.skipped > 0 ? (
         <p className="text-muted-foreground">
           “Recorded, not sent” means the message was saved but no email service was configured at the time, so nothing
@@ -140,13 +121,13 @@ function EmailDeliveryPanel({ delivery }: { delivery: DeliveryState }) {
       ) : null}
       {summary.lastFailure ? (
         <p className="text-amber-800 dark:text-amber-200">
-          Most recent failure ({fmt(summary.lastFailure.at)}): {maskEmailAddresses(summary.lastFailure.message)}
+          Latest failed message, recorded {fmt(summary.lastFailure.at)}: {maskEmailAddresses(summary.lastFailure.message)}
         </p>
       ) : null}
       <p className="text-xs text-muted-foreground">
         Email service in effect now: {transport ?? "not reported"}
         {summary.transports.length > 0 ? ` · used on these messages: ${summary.transports.join(", ")}` : ""}. Recipient
-        addresses are not shown here — any that appear inside an email service’s own error text are masked.
+        addresses and private provider error text are not included in this record.
       </p>
     </div>
   );
@@ -164,9 +145,7 @@ export function EngagementNotificationsInbox({
   const [delivery, setDelivery] = useState<DeliveryState>({ state: "loading" });
   const unread = items.filter((n) => !n.is_read).length;
 
-  // The outbox is service-role-only, so the delivery summary comes back from the
-  // same campaign-scoped GET this component already owns rather than through the
-  // server page (which this component is mounted by but does not control).
+  const [refresh, setRefresh] = useState(0);
   useEffect(() => {
     let cancelled = false;
     void (async () => {
@@ -191,7 +170,12 @@ export function EngagementNotificationsInbox({
           setDelivery({ state: "error", message: summary.message });
           return;
         }
-        setDelivery({ state: "ready", summary, transport: payload.emailTransport ?? null });
+        const parsed = emailDeliveryRecordSchema.safeParse(summary);
+        if (!parsed.success || parsed.data.campaignId !== campaignId) {
+          setDelivery({ state: "error", message: "The server returned an incomplete or mismatched delivery record." });
+          return;
+        }
+        setDelivery({ state: "ready", summary: parsed.data, transport: payload.emailTransport ?? null });
       } catch (fetchError) {
         if (cancelled) return;
         setDelivery({ state: "error", message: fetchError instanceof Error ? fetchError.message : String(fetchError) });
@@ -200,7 +184,7 @@ export function EngagementNotificationsInbox({
     return () => {
       cancelled = true;
     };
-  }, [campaignId]);
+  }, [campaignId, refresh]);
 
   async function patch(body: Record<string, unknown>): Promise<boolean> {
     const res = await fetch(`/api/engagement/campaigns/${campaignId}/notifications`, {
@@ -242,14 +226,15 @@ export function EngagementNotificationsInbox({
       </div>
 
       <div id="email-delivery-panel" className="mt-5 rounded-xl border border-border/60 p-3" data-testid="email-delivery-panel">
-        <p className="flex items-center gap-2 text-[0.82rem] font-semibold text-foreground">
+        <p className="flex flex-wrap items-center gap-2 text-[0.82rem] font-semibold text-foreground">
           <Mail className="h-4 w-4" /> Email delivery
+          <Button type="button" variant="outline" size="sm" disabled={delivery.state === "loading"} onClick={() => { setDelivery({ state: "loading" }); setRefresh(value => value + 1); }}>Refresh email status</Button>
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
           What became of the update emails and confirmations OpenPlan queued for this campaign.
         </p>
         <div className="mt-3">
-          <EmailDeliveryPanel delivery={delivery} />
+          <EmailDeliveryPanel delivery={delivery.state === "ready" && delivery.summary.campaignId !== campaignId ? { state: "loading" } : delivery} />
         </div>
       </div>
 

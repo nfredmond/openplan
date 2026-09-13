@@ -1,3 +1,7 @@
+# Current continuation
+
+Read [ACTIVITY_JOIN.md](ACTIVITY_JOIN.md) first. It supersedes the usage-pause note for installed migrations and Activity.
+
 # Latest pause checkpoint
 
 Read [USAGE_PAUSE.md](USAGE_PAUSE.md) first for the September 13 usage-reset handoff.

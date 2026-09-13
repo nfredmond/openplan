@@ -1,0 +1,110 @@
+[
+  {
+    "name": "baseline",
+    "matched": true,
+    "exit": 0,
+    "expected": null,
+    "outcome": "survived",
+    "sqlSha256": "b0d90937d7d0f29cf73684dec80ada3082fb8a97b1d5345cd62ae7f272e07dfd",
+    "diagnostic": null
+  },
+  {
+    "name": "harmless-comment",
+    "matched": true,
+    "exit": 0,
+    "expected": null,
+    "outcome": "survived",
+    "sqlSha256": "48f4b8f46498a30f16a2458f15e0d178aaff9136ef5f23ea81e8af1b566d9985",
+    "diagnostic": null
+  },
+  {
+    "name": "foreign-campaign",
+    "matched": true,
+    "exit": 3,
+    "expected": "Complete campaign count lost rows or included another campaign",
+    "outcome": "killed",
+    "sqlSha256": "cffadf8fcd3b73840e7d91c7e1a802f191ba484aaf29be207416f87665ba9645",
+    "diagnostic": null
+  },
+  {
+    "name": "lost-durable-state",
+    "matched": true,
+    "exit": 3,
+    "expected": "Durable states were replaced by legacy queued counts",
+    "outcome": "killed",
+    "sqlSha256": "0bf629aa4d955971f7c128c5c2ea288e2643022906e869b5cf9154d85a578e93",
+    "diagnostic": null
+  },
+  {
+    "name": "raw-transport",
+    "matched": true,
+    "exit": 3,
+    "expected": "Private participant or provider strings escaped the aggregate",
+    "outcome": "killed",
+    "sqlSha256": "4de801a3b56688e4380a49bfd23353aa830a4b973a593cfccea04e0e93d18d36",
+    "diagnostic": null
+  },
+  {
+    "name": "raw-error",
+    "matched": true,
+    "exit": 3,
+    "expected": "Private participant or provider strings escaped the aggregate",
+    "outcome": "killed",
+    "sqlSha256": "f736650ab1362ab24d2f326bb4b9a06ca583ae6b3f6767cf45f46322e83c6161",
+    "diagnostic": null
+  },
+  {
+    "name": "lost-queued-publication",
+    "matched": true,
+    "exit": 3,
+    "expected": "Unprepared publication was invisible",
+    "outcome": "killed",
+    "sqlSha256": "3e63a9fa04b4149404e28141c06474ab7464430e02cf4303b5aa9ddc1bbb8ea8",
+    "diagnostic": null
+  },
+  {
+    "name": "lost-no-share",
+    "matched": true,
+    "exit": 3,
+    "expected": "Missing-share preparation was invisible",
+    "outcome": "killed",
+    "sqlSha256": "e008c08c489b22b081c75c574d9645a10f3c48a509e180b892a26501b2f181c6",
+    "diagnostic": null
+  },
+  {
+    "name": "lost-cancelled",
+    "matched": true,
+    "exit": 3,
+    "expected": "Cancelled preparation was invisible",
+    "outcome": "killed",
+    "sqlSha256": "f4961d28687d022b006a682676b0c90f71dfb2023456ce3fa0312570c37984c5",
+    "diagnostic": null
+  },
+  {
+    "name": "viewer-permitted",
+    "matched": true,
+    "exit": 3,
+    "expected": "Viewer read private delivery outcomes",
+    "outcome": "killed",
+    "sqlSha256": "f785661e1f14d7d1bc21d4863dbe74e970e98e086a7f0b1ed8c3d3a5535205af",
+    "diagnostic": null
+  },
+  {
+    "name": "another-membership-permitted",
+    "matched": true,
+    "exit": 3,
+    "expected": "Viewer read private delivery outcomes",
+    "outcome": "killed",
+    "sqlSha256": "4d1dae1780ff18c0a4dd364928e53d1ac4edb95ea228bdac7e4a9a27a515d94d",
+    "diagnostic": null
+  },
+  {
+    "name": "anonymous-execute",
+    "matched": true,
+    "exit": 3,
+    "expected": "Anonymous delivery summary execution permitted",
+    "outcome": "killed",
+    "sqlSha256": "b741bf88624f2cb2ec80d14b963ae2487aa666ef9469c162bf2587c3616582fe",
+    "diagnostic": null
+  }
+]

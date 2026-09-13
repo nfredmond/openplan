@@ -1,0 +1,11 @@
+{
+  "migration": "20261014000004_engagement_delivery_summary.sql",
+  "sha256": "d5eeb277051b461f9136cf93ad4101497fd7bc3cb0c47dd05e3e682fdb79a72c",
+  "migrationCount": 323,
+  "exit": 0,
+  "originalResponsesAndHistoryUnchanged": true,
+  "fixtureResponses": 1005,
+  "backupBytes": 5615155,
+  "backupRestorationTested": false,
+  "database": "postgres on supabase_db_openplan-restore-target-2026091050"
+}

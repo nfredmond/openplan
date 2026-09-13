@@ -1,0 +1,66 @@
+{
+  "migrationSha256": "4601df9e40867a60606d8832f2ad5faa74ae1cda0c916c4ff3c6c939ee917d23",
+  "existingMigrationCount": 321,
+  "sqlMatchesProbedCompanions": true,
+  "baseline": {
+    "entries": {
+      "sha256": "1f5ce1ae2786ccf3d8b015fcc37adf495165112eb569d4d99c083da9ad564ec9",
+      "rows": 3034
+    },
+    "history": {
+      "sha256": "e54d0880c85018cd2de23f1922725c6d0879a7c39db9e5d80fbdb14333940902",
+      "rows": 3051
+    },
+    "invalid-history-hashes": {
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "rows": 1
+    },
+    "fixture-count": {
+      "sha256": "4fc7580c670d656a7e94661bbc33d5c6c55728fee63bb4d18182c1e49c768175",
+      "rows": 1
+    }
+  },
+  "backup": {
+    "bytes": 5564713,
+    "sha256": "737ed019c614ceacea488cfc54c5c0c681b3d4ac4350a5d911aeb799a723d07c",
+    "archiveReadable": true,
+    "restorationTested": false
+  },
+  "database": "postgres on supabase_db_openplan-restore-target-2026091050",
+  "date": "2026-09-13",
+  "migrationApplied": true,
+  "after": {
+    "entries": {
+      "sha256": "1f5ce1ae2786ccf3d8b015fcc37adf495165112eb569d4d99c083da9ad564ec9",
+      "identicalToBefore": true
+    },
+    "history": {
+      "sha256": "e54d0880c85018cd2de23f1922725c6d0879a7c39db9e5d80fbdb14333940902",
+      "identicalToBefore": true
+    },
+    "invalid-history-hashes": {
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "identicalToBefore": true
+    },
+    "fixture-count": {
+      "sha256": "4fc7580c670d656a7e94661bbc33d5c6c55728fee63bb4d18182c1e49c768175",
+      "identicalToBefore": true
+    }
+  },
+  "migrationCount": 322,
+  "fixtureResponses": 1005,
+  "existingHistoryInvalidChecksums": 0,
+  "queries": {
+    "entries": "SELECT row_to_json(e)::text FROM public.engagement_closeloop_entries e ORDER BY e.id",
+    "history": "SELECT row_to_json(h)::text FROM (SELECT id,campaign_id,response_id,revision,actor_id,recorded_at,event,record_json,record_sha256 FROM public.engagement_response_history ORDER BY id) h",
+    "invalid-history-hashes": "SELECT count(*) FROM public.engagement_response_history WHERE record_sha256<>encode(extensions.digest(record_json::text,'sha256'),'hex')",
+    "fixture-count": "SELECT count(*) FROM public.engagement_closeloop_entries WHERE campaign_id='a3c41566-bfd4-40f2-b467-96ee79054ec6'"
+  },
+  "notes": [
+    "Initial comparison rejected separator blank lines only; exact companions match after preserving the two original separators.",
+    "First CLI connection refused unsupported TLS before applying SQL; loopback sslmode=disable succeeded.",
+    "Original aggregate hash query was not recovered. These fresh exact-row snapshots preserve every old history column, ordered by id, and independently verify each original record checksum.",
+    "Archive directory was read successfully; restoring this backup remains untested.",
+    "SQL installation and custody evidence only; not browser, full QA or release acceptance."
+  ]
+}

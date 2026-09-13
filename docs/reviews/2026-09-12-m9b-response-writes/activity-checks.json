@@ -1,0 +1,44 @@
+{
+  "date": "2026-09-13",
+  "tests": {
+    "files": 14,
+    "passed": 237,
+    "failed": 0,
+    "success": true
+  },
+  "typecheckExit": 0,
+  "eslintExit": 0,
+  "knipExit": 0,
+  "knipNotes": "Existing inventory reports unused exports/types and two duplicate exports; command exits zero. This is not a claim that no dead code exists.",
+  "mutations": {
+    "activity-ui-mutations.json": {
+      "cases": 19,
+      "targetedFailures": 17,
+      "matched": true
+    },
+    "activity-sql-mutations.json": {
+      "cases": 12,
+      "targetedFailures": 10,
+      "matched": true
+    },
+    "installed-probes.json": {
+      "cases": 5,
+      "targetedFailures": 1,
+      "matched": true
+    }
+  },
+  "sourceSha256": {
+    "openplan/src/components/engagement/notifications-inbox.tsx": "42409a6facf4a7af449c92a7a3c6b6be0b3c39da2772d97e2eb55f0cc4d65a22",
+    "openplan/src/lib/notifications/email-delivery-summary.ts": "72baad40dfb7edb11afe1baecc366517e4a9f6e4d1780c3f6d21db835ab6065a",
+    "openplan/src/lib/notifications/engagement.ts": "20c45622e9f426fe3330873d475c55d97714c5515440999da3d80f43b70e5880",
+    "openplan/src/app/api/engagement/campaigns/[campaignId]/notifications/route.ts": "e8af1e35e9c35fe8d8bec2329f76c09fade26e06dec6399391da5534d426a94b",
+    "openplan/src/test/engagement-email-delivery-is-visible.test.tsx": "d734ecabd9ad889e97d75e1c84dbe0228ae33e05c9db09b8194dcc9d06af15c8",
+    "openplan/supabase/migrations/20261014000003_engagement_response_recovery.sql": "4601df9e40867a60606d8832f2ad5faa74ae1cda0c916c4ff3c6c939ee917d23",
+    "openplan/supabase/migrations/20261014000004_engagement_delivery_summary.sql": "d5eeb277051b461f9136cf93ad4101497fd7bc3cb0c47dd05e3e682fdb79a72c"
+  },
+  "limits": [
+    "No application browser acceptance yet for this source. Installed Chrome about:blank preflight succeeded.",
+    "No full QA, shuffled suite, RLS gate, worker/REST recovery, full upgrade/restore or release CI for this increment.",
+    "Local SQL probes are synthetic and rolled back; jsdom/RPC doubles cannot prove navigation, layout or SQL authorization."
+  ]
+}

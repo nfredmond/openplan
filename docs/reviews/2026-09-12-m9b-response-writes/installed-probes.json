@@ -1,0 +1,42 @@
+[
+  {
+    "name": "installed-transaction-and-guards",
+    "exit": 0,
+    "matched": true,
+    "outcome": "survived",
+    "expected": null,
+    "probeSha256": "cdbe99085bfdff97c631432361fad3253615fea6328294f418f3861630c0e75a"
+  },
+  {
+    "name": "installed-broadcast",
+    "exit": 0,
+    "matched": true,
+    "outcome": "survived",
+    "expected": null,
+    "probeSha256": "780ddc5440b711785d61f8242edc571a10e02d007b756725704239608afe552b"
+  },
+  {
+    "name": "installed-authority",
+    "exit": 0,
+    "matched": true,
+    "outcome": "survived",
+    "expected": null,
+    "probeSha256": "708fba113ebcf69c3bc7f184ab266e42f7b8a7c4895f36c040d21814569013ff"
+  },
+  {
+    "name": "harmless-comment",
+    "exit": 0,
+    "matched": true,
+    "outcome": "survived",
+    "expected": null,
+    "probeSha256": "f23583d7aba4390296b0f19965393ddec64f9c8ced0f54459cdd22320d1068a2"
+  },
+  {
+    "name": "accept-stale-version",
+    "exit": 3,
+    "matched": true,
+    "outcome": "killed",
+    "expected": "Stale editor overwrote the first correction",
+    "probeSha256": "f23583d7aba4390296b0f19965393ddec64f9c8ced0f54459cdd22320d1068a2"
+  }
+]

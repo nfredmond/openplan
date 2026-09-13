@@ -1,0 +1,228 @@
+[
+  {
+    "name": "baseline",
+    "matched": true,
+    "exit": 0,
+    "outcome": "survived",
+    "expected": null,
+    "failedTests": [],
+    "passedTests": 16,
+    "sourceSha256": "72baad40dfb7edb11afe1baecc366517e4a9f6e4d1780c3f6d21db835ab6065a"
+  },
+  {
+    "name": "harmless-comment",
+    "matched": true,
+    "exit": 0,
+    "outcome": "survived",
+    "expected": null,
+    "failedTests": [],
+    "passedTests": 16,
+    "sourceSha256": "851bc707845c956e3df46eb5044ef7dbd5dde3789d6827995b63ae2e789bc93b"
+  },
+  {
+    "name": "wrong-rpc-scope",
+    "matched": true,
+    "exit": 1,
+    "outcome": "killed",
+    "expected": "uses the staff-scoped RPC",
+    "failedTests": [
+      "complete delivery record in Activity uses the staff-scoped RPC without service-role recipient reads"
+    ],
+    "passedTests": 15,
+    "sourceSha256": "a31a48df195f20ac831ce77be4214d3b46c23bd959d60ae6a8c0afffe89d2ced"
+  },
+  {
+    "name": "wrong-return-scope",
+    "matched": true,
+    "exit": 1,
+    "outcome": "killed",
+    "expected": "rejects a campaign defect at the reader",
+    "failedTests": [
+      "complete delivery record in Activity rejects a campaign defect at the reader"
+    ],
+    "passedTests": 15,
+    "sourceSha256": "e15ef6818b24e36f054a9d347ab466c9cf73744df801b8a90d20170d5721371f"
+  },
+  {
+    "name": "partial-counts",
+    "matched": true,
+    "exit": 1,
+    "outcome": "killed",
+    "expected": "rejects a total defect at the reader",
+    "failedTests": [
+      "complete delivery record in Activity rejects a total defect at the reader",
+      "complete delivery record in Activity rejects a total defect at the browser boundary"
+    ],
+    "passedTests": 14,
+    "sourceSha256": "123fa41dca5aa7cd49a145738fc494a4896fbaa99e79f961a2a5e511cad01f18"
+  },
+  {
+    "name": "negative-counts",
+    "matched": true,
+    "exit": 1,
+    "outcome": "killed",
+    "expected": "rejects a negative defect at the reader",
+    "failedTests": [
+      "complete delivery record in Activity rejects a negative defect at the reader"
+    ],
+    "passedTests": 15,
+    "sourceSha256": "16e90dd69d9286dea216115684689aa346fa24c8bb267d92f428831c8ed061d0"
+  },
+  {
+    "name": "private-record-field",
+    "matched": true,
+    "exit": 1,
+    "outcome": "killed",
+    "expected": "rejects a private defect at the reader",
+    "failedTests": [
+      "complete delivery record in Activity rejects a private defect at the reader"
+    ],
+    "passedTests": 15,
+    "sourceSha256": "8a35f49aee80119b7a0bc68cebf9b578f1901bb28b6652a63721e18bc20713d4"
+  },
+  {
+    "name": "missing-publication-state",
+    "matched": true,
+    "exit": 1,
+    "outcome": "killed",
+    "expected": "rejects a missing defect at the reader",
+    "failedTests": [
+      "complete delivery record in Activity rejects a missing defect at the reader"
+    ],
+    "passedTests": 15,
+    "sourceSha256": "8508c79dbfba93be74c7627775fc4919b89d28d4ff99e3d906dce86c8500ddf0"
+  },
+  {
+    "name": "raw-provider-error",
+    "matched": true,
+    "exit": 1,
+    "outcome": "killed",
+    "expected": "refuses raw provider text",
+    "failedTests": [
+      "complete delivery record in Activity refuses raw provider text in failure details"
+    ],
+    "passedTests": 15,
+    "sourceSha256": "a0ee93ce1125f24940b66dc08a50a234dfac09038095c013a40d2e02b5da2963"
+  },
+  {
+    "name": "browser-schema-bypass",
+    "matched": true,
+    "exit": 1,
+    "outcome": "killed",
+    "expected": "rejects a total defect at the browser boundary",
+    "failedTests": [
+      "complete delivery record in Activity rejects a total defect at the browser boundary"
+    ],
+    "passedTests": 15,
+    "sourceSha256": "08ff4cf0016b5771d5c60b3d5b583cae394dd42d0bf961f65249a36867df4fe9"
+  },
+  {
+    "name": "browser-scope-bypass",
+    "matched": true,
+    "exit": 1,
+    "outcome": "killed",
+    "expected": "rejects a campaign defect at the browser boundary",
+    "failedTests": [
+      "complete delivery record in Activity rejects a campaign defect at the browser boundary"
+    ],
+    "passedTests": 15,
+    "sourceSha256": "2c189535f8500fc105241a13c15965cc6679f429bafb6bb55857719f85c60de6"
+  },
+  {
+    "name": "stale-campaign-display",
+    "matched": true,
+    "exit": 1,
+    "outcome": "killed",
+    "expected": "hides the old campaign record",
+    "failedTests": [
+      "complete delivery record in Activity hides the old campaign record during navigation"
+    ],
+    "passedTests": 15,
+    "sourceSha256": "6f251f256fdceea1ad7e205b55842c9a4f005603101cdf9b28e1846291877b31"
+  },
+  {
+    "name": "false-delivered-label",
+    "matched": true,
+    "exit": 1,
+    "outcome": "killed",
+    "expected": "shows complete counts and honest outcome labels",
+    "failedTests": [
+      "complete delivery record in Activity shows complete counts and honest outcome labels",
+      "complete delivery record in Activity refreshes a changing attempt outcome"
+    ],
+    "passedTests": 14,
+    "sourceSha256": "5139670d538efb0fd62025f6b6642c9856e1f881e1fbd486b09f12894167096e"
+  },
+  {
+    "name": "lost-refresh",
+    "matched": true,
+    "exit": 1,
+    "outcome": "killed",
+    "expected": "refreshes a changing attempt outcome",
+    "failedTests": [
+      "complete delivery record in Activity refreshes a changing attempt outcome"
+    ],
+    "passedTests": 15,
+    "sourceSha256": "9829a85d6784341f359ababaee7f7afc3f92e2c0427176a63f8658519d90fef9"
+  },
+  {
+    "name": "false-empty",
+    "matched": true,
+    "exit": 1,
+    "outcome": "killed",
+    "expected": "keeps unprepared recipient counts unknown",
+    "failedTests": [
+      "complete delivery record in Activity keeps unprepared recipient counts unknown"
+    ],
+    "passedTests": 15,
+    "sourceSha256": "2e09f78272827f6b35ed64d2b50eafb8cb871ffba0d0f54d942011aeba67f063"
+  },
+  {
+    "name": "missing-link-outcome",
+    "matched": true,
+    "exit": 1,
+    "outcome": "killed",
+    "expected": "distinguishes missing links",
+    "failedTests": [
+      "complete delivery record in Activity distinguishes missing links from cancelled preparation"
+    ],
+    "passedTests": 15,
+    "sourceSha256": "1ddf5e289d11107a2b2116f7478fbe046faccfdee8162e25bc0071c80f213972"
+  },
+  {
+    "name": "missing-cancelled-outcome",
+    "matched": true,
+    "exit": 1,
+    "outcome": "killed",
+    "expected": "distinguishes missing links",
+    "failedTests": [
+      "complete delivery record in Activity distinguishes missing links from cancelled preparation"
+    ],
+    "passedTests": 15,
+    "sourceSha256": "56948497a848931ee44da86c46ad58e560b60a5158a7739dbe22dae411c5ce5b"
+  },
+  {
+    "name": "route-permission-bypass",
+    "matched": true,
+    "exit": 1,
+    "outcome": "killed",
+    "expected": "does not read outcomes when campaign access is denied",
+    "failedTests": [
+      "complete delivery record in Activity does not read outcomes when campaign access is denied"
+    ],
+    "passedTests": 15,
+    "sourceSha256": "c6b971516c6341274502d9989be0442c1d786de8d3732fdc80bb77860e707c17"
+  },
+  {
+    "name": "cached-private-record",
+    "matched": true,
+    "exit": 1,
+    "outcome": "killed",
+    "expected": "uses the staff-scoped RPC",
+    "failedTests": [
+      "complete delivery record in Activity uses the staff-scoped RPC without service-role recipient reads"
+    ],
+    "passedTests": 15,
+    "sourceSha256": "bf96ac026eb17f5deb1a06f09d0388759843b5c2f0427ac6f23915cf28a1a007"
+  }
+]
