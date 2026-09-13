@@ -1,0 +1,16 @@
+[
+  {
+    "name": "harmless-comment",
+    "exitCode": 0,
+    "outcome": "survived",
+    "matched": true,
+    "stderr": "NOTICE:  REPRODUCED: two scoped staff writes succeeded; stale edit replaced first correction without an expected version\n"
+  },
+  {
+    "name": "reject-stale-version",
+    "exitCode": 3,
+    "outcome": "killed",
+    "matched": true,
+    "stderr": "ERROR:  Expected current stale overwrite was not reproduced\nCONTEXT:  PL/pgSQL function inline_code_block line 18 at RAISE\n"
+  }
+]

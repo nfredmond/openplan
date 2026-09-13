@@ -2,7 +2,9 @@
 
 Worktree /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10,
 package openplan/, branch work/engagement-response-snapshots. v0.55.1 is published
-at 0f61c372. v0.55.2 is prepared but not yet merged/tagged at this checkpoint.
+at 0f61c372. v0.55.2 candidate 3455207b5723c6394ff95b9fbbd274c79e7d3c36
+is merged to main but not yet tagged. Branch HEAD has later investigation notes;
+those are separate from the release candidate.
 No PR or human review gate. Preserve root checkout/demo, the reminder constraint
 and the full v1 contract. No subagents or other worktree owner was observed.
 
@@ -42,3 +44,18 @@ existing project decisions/commitments. Reuse contribution-history and review-
 intent patterns and inspect existing public-copy database guards. Keep the broader
 administration, capital, RTP, procurement, provider and separate model-validation
 obligations from the current roadmap. The full v1 goal remains active.
+
+## Exact final release runs
+
+Final CI 34735821419 on 3455207b is confirmed live: full QA and shuffled tests
+are still running; worker, modeling-script and ops jobs succeeded. Final RLS
+34735821475 and Upgrade Path 34735821483 both completed successfully on the same
+commit. Re-poll CI 34735821419; do not dispatch duplicates. On success, verify
+all five jobs and the head SHA, then tag exactly 3455207b, not the later branch
+HEAD. The prepared release body is private v0552-release.md. Push the annotated
+tag and create the published GitHub release, then read back tag/publication.
+
+The next response-write gap is reproduced and retained in
+../2026-09-12-m9b-response-history/NEXT.md with rollback and checksum evidence.
+The current branch's later commits contain only investigation/checkpoint records.
+After v0.55.2 publication, land those records on main and continue implementation.

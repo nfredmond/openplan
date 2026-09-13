@@ -82,3 +82,10 @@ implementation must preserve the meaning and private/public scope of earlier
 translations rather than assuming a source-text snapshot records what every
 resident actually saw. The present translation table has current field rows;
 no per-response translation-history mechanism was found in the inspected source.
+
+The stale-write probe was itself checked: a harmless comment survived; adding
+the expected original timestamp predicate to the second write prevented the
+overwrites and failed the reproduction for its named reason. Both probe variants
+rolled back. A fresh real HTTP read afterward again matched all 1005 original
+responses. write-gap-mutations.py/json retain this control. It is evidence for
+the missing-version boundary, not an implemented response repair.
