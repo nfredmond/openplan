@@ -118,3 +118,15 @@ its exact CI and RLS workflows before the v0.55.0 tag. The GitHub release record
 those run links and publication; earlier main 47c4985e is not substituted for
 release-commit evidence. The upgrade source predates only wording/documentation,
 with migration, worker and API implementation unchanged.
+
+## Published release
+
+[v0.55.0](https://github.com/nfredmond/openplan/releases/tag/v0.55.0) was published
+on September 12, 2026 at 19:01 Pacific, 2026-09-13T02:01:15Z. It is neither a
+draft nor prerelease. The annotated remote tag peels to
+c73b051095d59beb105cf9cb1570776d416676ec, the exact main commit whose
+[all five CI jobs](https://github.com/nfredmond/openplan/actions/runs/34731133158)
+and [RLS](https://github.com/nfredmond/openplan/actions/runs/34731133153) passed.
+The local release checks and unchanged-upgrade evidence are above. JSON CI/RLS
+and publication receipts are retained here. Subsequent M9b response-recovery
+work is separate and is not included in this release.

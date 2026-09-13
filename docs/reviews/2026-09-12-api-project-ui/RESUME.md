@@ -144,3 +144,9 @@ images and public artifacts under wording-replay/. Full shuffled replay passed
 14080 tests; RLS and Upgrade Path are complete as recorded above. Dev handle
 34729 was stopped after acceptance. Full QA replay starts next; do not re-run
 unchanged RLS or browser journeys without a new reason. See VERIFICATION.md.
+
+v0.55.0 is now published at c73b051095d59beb105cf9cb1570776d416676ec.
+CI 34731133158 and RLS 34731133153 both succeeded. Publication receipts are
+retained beside VERIFICATION.md. Do not recreate the release or repoll those
+completed jobs. Active implementation is now M9b on
+work/engagement-response-recovery; see its dated VERIFICATION.md.

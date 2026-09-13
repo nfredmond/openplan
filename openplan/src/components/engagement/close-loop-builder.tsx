@@ -434,7 +434,8 @@ export function EngagementCloseLoopBuilder({
           <p className="module-section-label">Close the loop</p>
           <h2 className="module-section-title">You said / We did</h2>
           <p className="module-section-description">
-            Publish what the community told you and how the project team responded. {!readError && <>{publishedCount} published, {entries.length} total.</>}
+            Publish what the community told you and how the project team responded.{" "}
+            {!readError && <>{publishedCount} published, {entries.length} total.{" "}</>}
             Drafts stay private until you publish them.
           </p>
         </div>
