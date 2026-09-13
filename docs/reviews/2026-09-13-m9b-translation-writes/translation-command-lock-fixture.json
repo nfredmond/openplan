@@ -1,0 +1,9 @@
+{
+  "actor": "eacafeaf-7508-4156-9607-fad16f4bea47",
+  "workspace": "81da2556-1e3d-4f4d-bb78-2c5931b9201e",
+  "campaign": "6b8cb644-8d84-4d27-a1b8-bf66a299e84c",
+  "category": "26345983-ed64-44a0-be5e-467b511b527c",
+  "otherCategory": "ed0f57f0-d9c1-4b8d-ba7c-75fde7b13180",
+  "container": "supabase_db_openplan-restore-target-2731143",
+  "purpose": "SYNTHETIC retained source fixture for rollback-only translation command lock probes"
+}
