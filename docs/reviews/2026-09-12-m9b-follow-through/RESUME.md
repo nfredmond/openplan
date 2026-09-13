@@ -1,3 +1,21 @@
+# Main CI checkpoint
+
+v0.55.1 implementation and passing local gate receipts are now on main at
+`0f61c3728b4ace3cc562f07fc90087e9e848f703`. GitHub permitted the authorized
+direct push before the remote QA check existed; this is not release evidence.
+The exact main CI run is 34732984235 and RLS Isolation is 34732984209. Both
+were confirmed in progress; Python worker, modeling and ops jobs already
+completed successfully. Re-poll these exact run IDs, do not restart them.
+Current observations are in v0551-main-checks-pending.json and are not terminal
+receipts. Do not tag until both workflows finish successfully on this SHA.
+
+The next branch-only commit records this checkpoint, without changing the
+release source or causing another main CI run. The intended tag is v0.55.1 at
+0f61c372. Use the existing private v0551-release-notes.md. After publication,
+retain terminal CI/RLS and release/tag receipts, then continue M9b from
+NEXT_READ_BOUNDARY.md and the current roadmap. No app or test process remains
+running locally from this increment. Main and the branch are pushed.
+
 # Current checkpoint after corrected local gates
 
 The historical usage-reset checkpoint below is superseded for the failing test.
