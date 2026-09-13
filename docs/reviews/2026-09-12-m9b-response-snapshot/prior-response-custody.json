@@ -1,0 +1,19 @@
+{
+  "scope": "The two v0.55.1 browser-created originals remain unchanged after the additive migration and new loader; not a complete restore/upgrade drill",
+  "results": [
+    {
+      "width": 1440,
+      "campaignId": "51df702f-76ad-44a0-a028-88c451096368",
+      "retainedSha256": "c3da6d1c82c3e5609f277236c3d693b66ffe9c8eab7755e9fe0907d597acd562",
+      "rows": 1,
+      "status": "draft"
+    },
+    {
+      "width": 390,
+      "campaignId": "31db53b1-8021-4867-83a9-76f8e1506147",
+      "retainedSha256": "2c5deb110f6647101a3291b6ac40c29ba8c345cd388b222b62495097962424f2",
+      "rows": 1,
+      "status": "draft"
+    }
+  ]
+}

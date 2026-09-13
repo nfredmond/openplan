@@ -135,3 +135,20 @@ The database and unit evidence does not establish browser reachability. Next
 is an identified-build desktop/390px journey using real navigation, the RPC
 fault matcher, full response retrieval and public scope, then final release
 gates. No new release version or complete M9b claim is made here.
+
+## Corrected full QA and shuffle
+
+On 5ffec6c8, full QA and shuffle seed 912558 both completed with exit 0,
+14107 application tests passed, 450 skipped, 1258 files passed and 43 skipped.
+QA also passed lint, dead-code checks with existing advisories, 382 native
+connector tests with four skipped, TypeScript and the webpack production build.
+Dependency audit reported zero vulnerabilities. local-qa-checks.json retains
+terminal timestamps and log hashes. The separately launched full RLS suite and
+Upgrade Path run 34734998153 were still running at this checkpoint.
+
+Both original responses from the v0.55.1 accepted browser journeys still match
+their retained hashes through the new loader after applying the migration.
+prior-response-custody.json records this bounded check. It is not a complete
+upgrade/restore drill. Isolated Chrome launched and closed successfully; no
+new app browser acceptance has run. Prepared RPC-aware proxy and small browser
+replay scripts are in the private research directory for the next step.
