@@ -1,4 +1,4 @@
-# Saved API project workflow, v0.55.0 candidate
+# Saved API project workflow, v0.55.0
 
 The initial accepted workflow source is 5b84838c86852a228e23ea1a138551581b9132fd.
 The final wording replay below supersedes it for the shipped interface text.
@@ -98,3 +98,23 @@ Path 34730331136 succeeded from v0.54.0 on 8b4f756c. Subsequent changes are
 wording/docs only; no SQL/worker/upgrade change invalidates that result. Full QA
 replay and final main CI remain pending. Skipped unit categories are not inferred
 passed; RLS and worker evidence cover their stated independent boundaries.
+
+
+## Completed local release checks
+
+Full QA on 886ce2dc finished exit 0: 14080 application tests and 382 native
+connector checks passed; 450 application tests and four native checks were
+explicitly skipped. Lint, the existing advisory dead-code command, dependency
+audit with zero vulnerabilities, TypeScript and webpack production build passed.
+This supersedes the pending full-QA entries above. Shuffled 912556 and all 479
+isolated RLS tests passed independently. [Machine-readable local results and log
+hashes](local-release-checks.json) preserve source and command identity.
+No Python runtime changed; final GitHub CI includes its configured Python worker,
+modeling and ops checks. Full local Python/scientific validation is not inferred
+from those configured jobs.
+
+Only documentation and retained evidence follow this QA source. Main must pass
+its exact CI and RLS workflows before the v0.55.0 tag. The GitHub release records
+those run links and publication; earlier main 47c4985e is not substituted for
+release-commit evidence. The upgrade source predates only wording/documentation,
+with migration, worker and API implementation unchanged.

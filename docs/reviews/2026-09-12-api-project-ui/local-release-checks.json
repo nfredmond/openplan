@@ -1,0 +1,47 @@
+{
+  "checkedAt": "2026-09-13T01:40:38.441518+00:00",
+  "qaSource": "886ce2dc8956f297da8bb8a7c33c6c5b8d3cbabd",
+  "browserAndShuffleSource": "b86f5f878b8ea58d1f83d30c6a4ecf5f65bd9d0c",
+  "qa": {
+    "exitCode": 0,
+    "session": 94182,
+    "testsPassed": 14080,
+    "testsSkipped": 450,
+    "filesPassed": 1258,
+    "filesSkipped": 43,
+    "connectorPassed": 382,
+    "connectorSkipped": 4,
+    "auditVulnerabilities": 0,
+    "lint": true,
+    "typescript": true,
+    "webpackBuild": true,
+    "deadcode": "exit 0 with existing advisory findings"
+  },
+  "shuffled": {
+    "exitCode": 0,
+    "session": 10544,
+    "seed": 912556,
+    "testsPassed": 14080,
+    "testsSkipped": 450
+  },
+  "isolatedRls": {
+    "exitCode": 0,
+    "session": 67884,
+    "testsPassed": 479,
+    "filesPassed": 50,
+    "stack": "openplan-restore-target-2026091050",
+    "functionSourceHashesMatch": 9
+  },
+  "upgrade": {
+    "source": "8b4f756c324b224686216e055885f99a2fe588fe",
+    "baseTag": "v0.54.0",
+    "runId": 34730331136,
+    "conclusion": "success",
+    "unchangedSince": "SQL, API worker, route and upgrade code"
+  },
+  "logSha256": {
+    "v055-copy-full-qa.log": "c47fb565f9f4f519983f9b366ef0c10f2cc2c14992204c14d94d8678cd7cc063",
+    "v055-copy-shuffled.log": "6bafd7ec1ca6d5cef5df908a2c50e78318ab79fe0b91e161b367a8e3770d175b",
+    "v055-full-rls.log": "aa1f23f0df5e064d20b4f6717560eeff2d27e8118500383310266347f1977e9f"
+  }
+}

@@ -1,5 +1,13 @@
 # Saved API project UI acceptance
 
+Latest checkpoint: full QA handle 94182 finished exit 0 on 886ce2dc.
+Shuffled 912556, 479 isolated RLS checks, both browser widths and Upgrade Path
+34730331136 passed. All owned browser/dev/model/worker processes are stopped.
+The next commit lands directly on main; inspect its exact CI/RLS before tagging
+v0.55.0. Do not restart completed local checks without new changes or failures.
+See local-release-checks.json and the final sections of VERIFICATION.md.
+
+
 Active full v1 goal, A0b. Published release remains v0.54.0. Worker increment is
 on main at 47c4985e. Its RLS Isolation 34728670387 completed successfully. CI
 34728670375 has successful Python worker, modeling, ops and shuffled jobs;
