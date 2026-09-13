@@ -1,0 +1,122 @@
+{
+  "privateBase": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913",
+  "artifacts": [
+    {
+      "file": "workspace-switch-baseline-1789327389813-1440-closed.png",
+      "sha256": "5392aa4eef4d8dd20e623b29329dde4a3763614e9ea55cca4acf732f26ca61f7"
+    },
+    {
+      "file": "workspace-switch-baseline-1789327389813-1440-menu.png",
+      "sha256": "019f22bf21196c9e766288cf3b5807c998af47fb1961c62bc654a315285570c3"
+    },
+    {
+      "file": "workspace-switch-baseline-1789327389813-320-closed.png",
+      "sha256": "01da0f0b173dfbea8a7bdcf5472f6afd332aaffc4557c91c146274a37e5f936c"
+    },
+    {
+      "file": "workspace-switch-baseline-1789327389813-320-menu.png",
+      "sha256": "8451c45266e1319b15211fff8e6b6362921ccfd953415594511abaaa83c9101f"
+    },
+    {
+      "file": "workspace-switch-baseline-1789327389813-390-closed.png",
+      "sha256": "a0944278e1018e641c25a5f4bf18657667166c50893213c3bf9f6e21b6cb00ba"
+    },
+    {
+      "file": "workspace-switch-baseline-1789327389813-390-menu.png",
+      "sha256": "abd447227955f03eb9db671c99faf698e9831223a438847a1d364bdfd15e9907"
+    },
+    {
+      "file": "workspace-switch-baseline-1789327389813-900-closed.png",
+      "sha256": "fff8032c26a92b48a0be435ca74ec499bd32829e68bf086da3ba04ab77b4ee38"
+    },
+    {
+      "file": "workspace-switch-baseline-1789327389813-900-menu.png",
+      "sha256": "cab13fca56ea621d0279da9bf1a28b04865c15a4fe1d57e45144ba9c20b7609e"
+    },
+    {
+      "file": "workspace-switch-baseline-1789327389813-identity.log",
+      "sha256": "ec94396be35b8a10e26aab2c5c18dc4092695c7f0be6ae85da75a2f095814748"
+    },
+    {
+      "file": "workspace-switch-baseline-1789327389813-result.json",
+      "sha256": "81e57024e7349d89f9b71971afdada88da9859996fd304da8445b08deb1bead0"
+    },
+    {
+      "file": "workspace-switch-harmless-1789327468899-1440-closed.png",
+      "sha256": "06eb0e9c7bdefc0b89bac11ca6458b973a1a35723d43c078b21d06f73b5c6841"
+    },
+    {
+      "file": "workspace-switch-harmless-1789327468899-1440-menu.png",
+      "sha256": "d49714170fdd1824e43178d7a0fc35b1a50cb566c5fd92df94d5c1a27177248b"
+    },
+    {
+      "file": "workspace-switch-harmless-1789327468899-320-closed.png",
+      "sha256": "c027ecd16e9eaf5d1d4e8ba2711aed0dc19d108351bf00f55c19246a3e4da85b"
+    },
+    {
+      "file": "workspace-switch-harmless-1789327468899-320-menu.png",
+      "sha256": "b3a0fead529b6d8ddf8ed5d35a26fbd56c032b4593f6887b44f25994aa012c65"
+    },
+    {
+      "file": "workspace-switch-harmless-1789327468899-390-closed.png",
+      "sha256": "2da7cca773b454675783aca52cd3ace266c6343abb8987f7ac635dcfd06192b5"
+    },
+    {
+      "file": "workspace-switch-harmless-1789327468899-390-menu.png",
+      "sha256": "7e4d115ebc3a3bc06d1de3762c52b3670dfe690de85b541ba2c09418cc8efea2"
+    },
+    {
+      "file": "workspace-switch-harmless-1789327468899-900-closed.png",
+      "sha256": "4b581cc812ca836b19ce418c09947d813a18e85b95e24cc62082b67491742726"
+    },
+    {
+      "file": "workspace-switch-harmless-1789327468899-900-menu.png",
+      "sha256": "1591dda610d0bcce00797127f3286e4f2e4bacc9eec680d46540a1658bf671b6"
+    },
+    {
+      "file": "workspace-switch-harmless-1789327468899-identity.log",
+      "sha256": "ec94396be35b8a10e26aab2c5c18dc4092695c7f0be6ae85da75a2f095814748"
+    },
+    {
+      "file": "workspace-switch-harmless-1789327468899-result.json",
+      "sha256": "484ab6f4c508d4b33df4c386d760978a5b11b412edf793c8f5c96c878114d91a"
+    },
+    {
+      "file": "workspace-switch-hidden-1789327530674-390-closed.png",
+      "sha256": "9910d25765032a8d0f4f2f6eb86f85cb55d9bda684a18fa0fbfd1ba284ec27b1"
+    },
+    {
+      "file": "workspace-switch-hidden-1789327530674-failure.json",
+      "sha256": "594ec8c145d05f274e31cc084d433429c2d2b6965a558f6dd019950bcaed6741"
+    },
+    {
+      "file": "workspace-switch-hidden-1789327530674-failure.png",
+      "sha256": "d789df4a415b3f3dd4b54f378976e0f1a592fa2a294ec6cda5b87ca307615128"
+    },
+    {
+      "file": "workspace-switch-hidden-1789327530674-identity.log",
+      "sha256": "ec94396be35b8a10e26aab2c5c18dc4092695c7f0be6ae85da75a2f095814748"
+    },
+    {
+      "file": "workspace-switch-clipped-1789327546515-1440-closed.png",
+      "sha256": "64b0883b92ae09b76e3d9ddab2f9bde6b8fd697420998b64cf7e6257edcd0d5c"
+    },
+    {
+      "file": "workspace-switch-clipped-1789327546515-1440-menu.png",
+      "sha256": "c1a033705873808eca6692d807efb453160e91c494f3554da25eaae1ee54e6a1"
+    },
+    {
+      "file": "workspace-switch-clipped-1789327546515-failure.json",
+      "sha256": "1f8fbe1da8d123d94504afd3adae38253b314218f60f871e233ab8c891361d5a"
+    },
+    {
+      "file": "workspace-switch-clipped-1789327546515-failure.png",
+      "sha256": "a541aa695681dfbc63dc483603bdeb2f3e6b6c58716c0a0ca40c6d70ce05a10a"
+    },
+    {
+      "file": "workspace-switch-clipped-1789327546515-identity.log",
+      "sha256": "ec94396be35b8a10e26aab2c5c18dc4092695c7f0be6ae85da75a2f095814748"
+    }
+  ],
+  "limits": "Recorded identified development build, not main release evidence. See WORKSPACE_SWITCH_FIX.md."
+}
