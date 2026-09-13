@@ -57,6 +57,14 @@ export function useTranslationWrites({ userId, workspaceId, campaignId, canWrite
       const loaded = readPendingTranslations(storage, userId, campaignId, workspaceId);
       const values = new Map(loaded.pending.map(value => [value.intent.requestId, value]));
       const unresolved = new Set(loaded.unreadableKeys);
+      // A storage deletion is not a server acknowledgement. Keep every known
+      // request until this page confirms it or preserves it in an archive.
+      for (const value of pendingRef.current) {
+        const stored = values.get(value.intent.requestId);
+        if (!stored || canonicalizeActionPayload({ ...stored, phase: value.phase }) !== canonicalizeActionPayload(value)) {
+          volatile.current.set(value.intent.requestId, value);
+        }
+      }
       for (const [key, value] of volatile.current) {
         const stored = values.get(key);
         // A failed retention must not let a later storage refresh replace the page's words.
@@ -117,7 +125,8 @@ export function useTranslationWrites({ userId, workspaceId, campaignId, canWrite
         const phase = response.status === 409 && body?.kind === "conflict" ? "conflict"
           : response.status === 413 || response.status === 400 && body?.kind === "invalid" ? "rejected" : "unconfirmed";
         const next: PendingTranslation = { ...retained, phase };
-        try { retainPendingTranslation(window.localStorage, next); } catch { /* The original remains a safe retry. */ }
+        try { retainPendingTranslation(window.localStorage, next); volatile.current.delete(next.intent.requestId); }
+        catch { volatile.current.set(next.intent.requestId, next); }
         remember(pendingRef.current.map(row => row.intent.requestId === next.intent.requestId ? next : row));
         setMessage(phase === "unconfirmed" ? unknownMessage : "The change was refused. Your proposed words are retained. Review the current saved copy before reopening the editor.");
         return false;
@@ -125,7 +134,12 @@ export function useTranslationWrites({ userId, workspaceId, campaignId, canWrite
       const result = confirmPendingTranslation(body, retained);
       callbacks.current.onConfirmed(result, retained);
       setConfirmation(result.operation === "withdraw" ? "Translation withdrawn. Its earlier words remain in private history." : "Translation request confirmed. Refreshing the saved copy.");
-      try { clearPendingTranslation(window.localStorage, retained); restore(); setMessage(null); }
+      try {
+        clearPendingTranslation(window.localStorage, retained);
+        volatile.current.delete(retained.intent.requestId);
+        remember(pendingRef.current.filter(row => row.intent.requestId !== retained.intent.requestId));
+        restore(); setMessage(null);
+      }
       catch { setMessage("The request is confirmed, but this browser could not clear its recovery record. Retrying the same request is safe."); }
       return true;
     } catch { setMessage(unknownMessage); return false; }
@@ -155,8 +169,11 @@ export function useTranslationWrites({ userId, workspaceId, campaignId, canWrite
   function reopen(value: PendingTranslation | null, key: string) {
     if (busyRef.current || !review || review.requestId !== (value?.intent.requestId ?? key) || value?.phase === "unconfirmed") return;
     try {
+      if (value) retainPendingTranslation(window.localStorage, value);
       archivePendingTranslation(window.localStorage, key, userId, campaignId);
-      volatile.current.delete(value?.intent.requestId ?? ""); restore(); setReview(null);
+      volatile.current.delete(value?.intent.requestId ?? "");
+      if (value) remember(pendingRef.current.filter(row => row.intent.requestId !== value.intent.requestId));
+      restore(); setReview(null);
       callbacks.current.onReopen(value, review.snapshot); setMessage(null);
       setConfirmation("The earlier request is preserved under Earlier translation requests. Review the refreshed source and enter a reason before sending a new change.");
     } catch { setMessage("The earlier copy could not be preserved, or changed during archiving. It was not discarded. Retry recovery."); }
@@ -168,7 +185,7 @@ export function useTranslationWrites({ userId, workspaceId, campaignId, canWrite
     {!ready && <Button className="h-auto min-h-10 min-w-0 max-w-full whitespace-normal" type="button" onClick={restore} disabled={busy}>Retry translation recovery</Button>}
     {pending.map(value => <section key={value.intent.requestId} aria-label="Pending translation change" className="space-y-3 rounded-lg border border-amber-400 p-3">
       <h3 className="font-semibold">Pending {value.intent.operation} in {value.intent.locale}</h3>
-      <p>{volatile.current.has(value.intent.requestId) ? "This attempt was not sent. This page still has the request, but could not confirm its retention in browser storage. Keep this page open and download its copy. An earlier attempt may have reached the server." : value.phase === "unconfirmed" ? unknownMessage : "This request was refused. Compare the retained and current copies before proposing another change."}</p>
+      <p>{volatile.current.has(value.intent.requestId) ? "This page still has the request, but could not confirm its retention in browser storage. Keep this page open and download its copy. An earlier attempt may have reached the server." : value.phase === "unconfirmed" ? unknownMessage : "This request was refused. Compare the retained and current copies before proposing another change."}</p>
       <p className="whitespace-pre-wrap">Reason: {value.intent.reason || "New wording"}</p>
       {value.intent.entries.map((entry, index) => {
         const current = review?.requestId === value.intent.requestId ? review.snapshot : null;

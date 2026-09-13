@@ -124,7 +124,8 @@ async function exerciseRequestStorage(page,panel,row,campaignId,prefix){
 async function journey(browser,width){
  const context=await browser.newContext({viewport:{width,height:1000}}),page=await context.newPage();page.setDefaultTimeout(60000);
  const prefix=`${evidence}/translation-editor-${width}-${Date.now()}`;
- let otherContext,campaignId,lostReceipt,loseFirst=true;const commands=[],consoleEvents=[],network=[];
+ let otherContext,campaignId,lostReceipt,storageDeletion,lossesRemaining=2;
+ let routeFailure,deletionResolve,deletionReject;const deletionFinished=handled(new Promise((resolve,reject)=>{deletionResolve=resolve;deletionReject=reject}));const commands=[],consoleEvents=[],network=[];
  const observe=p=>{p.on('console',m=>{if(['error','warning'].includes(m.type()))consoleEvents.push({type:m.type(),text:m.text()})});p.on('pageerror',e=>consoleEvents.push({type:'pageerror',text:e.message}));p.on('requestfailed',r=>network.push({url:r.url(),method:r.method(),error:r.failure()?.errorText}));};observe(page);
  try{
   console.log('Starting real navigation',width,prefix);await login(page);await page.getByRole('button',{name:'New campaign',exact:true}).click();const dialog=page.getByRole('dialog');
@@ -133,18 +134,45 @@ async function journey(browser,width){
   await page.waitForURL(u=>/^\/engagement\/[-a-f0-9]{36}$/.test(u.pathname));campaignId=new URL(page.url()).pathname.split('/').pop();
   const {panel,row,input,reason}=await setup(page);const path=`/api/engagement/campaigns/${campaignId}/translations/commands`;
   const original=`\u00a0SINTÉTICO original ${width}\ufeff`,corrected=`\u00a0SINTÉTICO corrección ${width}\ufeff`,reviewed=`\u00a0SINTÉTICO revisado ${width}\ufeff`,colleague=`SINTÉTICO otra corrección ${width}`;
-  await page.route('**'+path,async route=>{commands.push(route.request().postDataJSON());if(loseFirst){loseFirst=false;const response=await route.fetch();expect(response.status()).toBe(200);lostReceipt=await response.json();await route.abort('failed');}else await route.continue();});
+  await page.route('**'+path,async route=>{
+   try {
+   commands.push(route.request().postDataJSON());
+   if(lossesRemaining>0){
+    lossesRemaining--;const response=await route.fetch();expect(response.status()).toBe(200);const receipt=await response.json();
+    if(!lostReceipt){
+     lostReceipt=receipt;const storageTab=await context.newPage();await storageTab.goto(base);
+     try{
+      const deleted=await storageTab.evaluate(requestId=>{const key=Object.keys(localStorage).find(key=>key.startsWith('openplan:translation-write:')&&key.endsWith(requestId));if(!key)throw Error('Missing real pending request');const raw=localStorage.getItem(key);localStorage.removeItem(key);return {key,raw};},commands[0].requestId);
+      await page.bringToFront();await page.screenshot({path:prefix+'-storage-deletion-observed.png'});
+      fs.writeFileSync(prefix+'-storage-deletion-observed.txt',await page.locator('body').ariaSnapshot());
+      await expect(panel.getByText(/This page still has the request, but could not confirm its retention/)).toBeVisible({timeout:10000});
+      const pendingDownload=handled(page.waitForEvent('download'));await keyClick(page,panel.getByRole('button',{name:'Download retained request',exact:true}));
+      const download=await pendingDownload,copy=prefix+'-deleted-inflight-request.json';await download.saveAs(copy);
+      expect(JSON.parse(fs.readFileSync(copy,'utf8'))).toEqual(JSON.parse(deleted.raw));
+      await page.screenshot({path:prefix+'-deleted-inflight-request.png'});
+      storageDeletion={key:deleted.key,requestId:commands[0].requestId,deletedSha256:sha(deleted.raw),downloadSha256:sha(fs.readFileSync(copy)),nativeStorageEvent:true};
+     }finally{await storageTab.close();}
+    }else{expect(receipt.replayed).toBe(true);expect(receipt.entries).toEqual(lostReceipt.entries);if(process.env.OPENPLAN_TRANSLATION_ROUTE_CONTROL==='error')throw Error('SYNTHETIC later route callback failure');}
+    await route.abort('failed');if(storageDeletion)deletionResolve();
+   }else await route.continue();
+   }catch(error){routeFailure=error;deletionReject(error);await route.abort('failed').catch(()=>{});}
+  });
   const draftRecovery=await exerciseDraftStorage(page,panel,input,campaignId,prefix);expect(commands).toHaveLength(0);
   await input.fill(original);const requestStorageRecovery=await exerciseRequestStorage(page,panel,row,campaignId,prefix);expect(commands).toHaveLength(0);
   await keyClick(page,panel.getByRole('button',{name:'Retry same translation request',exact:true}));
+  await deletionFinished;
   await expect(panel.getByRole('region',{name:'Pending translation change',exact:true})).toBeVisible();await expect(panel.getByRole('button',{name:'Retry same translation request',exact:true})).toBeEnabled();
   await expect(input).toHaveValue(original);expect(lostReceipt.entries[0].entry.translated_text).toBe(original);
   expect(commands[0].entries[0].expectedSource).toEqual({text:title,sourceLocale:null,available:true});expect(commands[0].entries[0].expectedTranslation).toBeNull();
   await panel.getByRole('region',{name:'Translation save recovery',exact:true}).scrollIntoViewIfNeeded();await page.screenshot({path:prefix+'-unconfirmed.png'});
+  await keyClick(page,panel.getByRole('button',{name:'Retry same translation request',exact:true}));
+  await expect(panel.getByRole('button',{name:'Retry same translation request',exact:true})).toBeEnabled();
+  expect(commands[1]).toEqual(commands[0]);
+  const retainedAgain=await page.evaluate(key=>localStorage.getItem(key),storageDeletion.key);expect(JSON.parse(retainedAgain).intent).toEqual(commands[0]);
   await page.reload();await expect(panel.getByRole('button',{name:'Retry same translation request',exact:true})).toBeVisible();
   const replayResponse=responseFor(page,r=>r.url().endsWith(path)&&r.request().method()==='POST');
   await keyClick(page,panel.getByRole('button',{name:'Retry same translation request',exact:true}));const replay=await (await replayResponse).json();
-  expect(replay.replayed).toBe(true);expect(commands[1]).toEqual(commands[0]);expect(replay.entries).toEqual(lostReceipt.entries);
+  expect(replay.replayed).toBe(true);expect(commands[2]).toEqual(commands[0]);expect(replay.entries).toEqual(lostReceipt.entries);
   await expect(panel.getByRole('region',{name:'Pending translation change',exact:true})).toHaveCount(0);await expect(panel.getByRole('button',{name:'Refresh saved translations',exact:true})).toHaveCount(0);
   await expect(input).toHaveValue(original);await expect(input).toBeEditable();console.log('Original replay confirmed',width);
   const historyPath=`/api/engagement/campaigns/${campaignId}/translations/history`;
@@ -155,7 +183,7 @@ async function journey(browser,width){
   await expect(panel.getByText(/No translation was sent. Enter nonblank wording/)).toBeVisible();expect(commands.length).toBe(beforeMissingReason);
   await reason.fill('\u00a0SYNTHETIC reason for correction\ufeff');const correctionResponse=responseFor(page,r=>r.url().endsWith(path)&&r.status()===200);
   await keyClick(page,row.getByRole('button',{name:'Save as our wording',exact:true}));const correction=await (await correctionResponse).json();
-  expect(correction.entries[0].revision).toBe(2);expect(correction.entries[0].entry.translated_text).toBe(corrected);expect(commands[2].reason).toBe('\u00a0SYNTHETIC reason for correction\ufeff');
+  expect(correction.entries[0].revision).toBe(2);expect(correction.entries[0].entry.translated_text).toBe(corrected);expect(commands[3].reason).toBe('\u00a0SYNTHETIC reason for correction\ufeff');
   await expect(panel.getByRole('button',{name:'Refresh saved translations',exact:true})).toHaveCount(0);await expect(input).toHaveValue(corrected);await expect(input).toBeEditable();
   await input.fill(reviewed);await page.reload();await expect(input).toHaveValue(reviewed);await expect(input).toBeEditable();console.log('Unsent draft survived reload',width);
   otherContext=await browser.newContext({viewport:{width,height:1000}});const other=await otherContext.newPage();other.setDefaultTimeout(60000);observe(other);
@@ -205,11 +233,12 @@ async function journey(browser,width){
   await keyClick(page,panel.getByRole('button',{name:`Download earlier request ${conflictIndex+1}`,exact:true}));const download=await downloadEvent;const copy=prefix+'-retained-request.json';await download.saveAs(copy);expect(sha(fs.readFileSync(copy))).toBe(sha(archived[conflictIndex]));
   await history.scrollIntoViewIfNeeded();await page.screenshot({path:prefix+'-retained-history.png'});
   const overflow=await page.evaluate(()=>({viewport:innerWidth,document:document.documentElement.scrollWidth}));expect(overflow.document).toBeLessThanOrEqual(overflow.viewport);
+  if(routeFailure)throw routeFailure;
   expect(consoleEvents.filter(row=>row.type==='pageerror')).toEqual([]);
   if(!/^[a-f0-9-]{36}$/.test(campaignId))throw Error('Invalid fixture id');
   const custody=JSON.parse(sql(`select jsonb_agg(jsonb_build_object('request',request_id,'reason',payload->'reason','resultHash',result_sha256)) from engagement_translation_write_receipts where campaign_id='${campaignId}'`));
   expect(custody.some(row=>row.reason==='SYNTHETIC withdrawal reason')).toBe(true);expect(custody.some(row=>row.reason==='\u00a0SYNTHETIC reason for correction\ufeff')).toBe(true);
-  fs.writeFileSync(prefix+'-result.json',JSON.stringify({passed:true,width,campaignId,layoutControl:process.env.OPENPLAN_TRANSLATION_LAYOUT_CONTROL??'none',controls,draftRecovery,requestStorageRecovery,commands,originalHistory:retainedOriginal,finalHistory,custody,downloadSha256:sha(fs.readFileSync(copy)),overflow,console:consoleEvents,network},null,2));console.log('Browser journey passed',width,prefix);
+  fs.writeFileSync(prefix+'-result.json',JSON.stringify({passed:true,width,campaignId,layoutControl:process.env.OPENPLAN_TRANSLATION_LAYOUT_CONTROL??'none',controls,draftRecovery,requestStorageRecovery,storageDeletion,commands,originalHistory:retainedOriginal,finalHistory,custody,downloadSha256:sha(fs.readFileSync(copy)),overflow,console:consoleEvents,network},null,2));console.log('Browser journey passed',width,prefix);
  }catch(error){fs.writeFileSync(prefix+'-failure.txt',await page.locator('body').ariaSnapshot().catch(()=>''));await page.screenshot({path:prefix+'-failure.png'}).catch(()=>{});fs.writeFileSync(prefix+'-failure.json',JSON.stringify({campaignId,message:error.message,commands,console:consoleEvents,network},null,2));throw error;}
  finally{await Promise.allSettled([otherContext?.close(),context.close()]);}
 }
@@ -220,6 +249,6 @@ async function journey(browser,width){
  if(process.env.OPENPLAN_TRANSLATION_CLEANUP_PROBE==='control')process.exit(0);
  if(process.env.OPENPLAN_TRANSLATION_CLEANUP_PROBE==='1')process.exit(23);
  let browser;
- try{browser=await chromium.launch({channel:'chrome',headless:true});for(const width of (process.env.OPENPLAN_TRANSLATION_LAYOUT_CONTROL==='overflow'?[390]:[1440,390]))await journey(browser,width);}
+ try{browser=await chromium.launch({channel:'chrome',headless:true});for(const width of (process.env.OPENPLAN_TRANSLATION_ROUTE_CONTROL==='error'?[1440]:process.env.OPENPLAN_TRANSLATION_LAYOUT_CONTROL==='overflow'?[390]:[1440,390]))await journey(browser,width);}
  finally{try{if(browser)await browser.close();}finally{expect(sourceHashes()).toEqual(before);fs.writeFileSync(evidence+'/translation-editor-browser-source.json',JSON.stringify({sourceHashes:before},null,2));}}
 })().catch(error=>{console.error(error.stack);process.exitCode=1});

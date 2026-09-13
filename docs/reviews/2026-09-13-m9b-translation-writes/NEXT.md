@@ -1,3 +1,7 @@
+# Latest recovery checkpoint
+
+Read [PENDING_STORAGE_DELETION.md](PENDING_STORAGE_DELETION.md) first. The separate header patch v0.58.1 is published. Continue the unfinished translation workflow from the recovery and generation boundaries recorded there.
+
 # Current access checkpoint and patch release
 
 Read [ACCESS_PROGRESS.md](ACCESS_PROGRESS.md) first. Header-only commit 05aa194b is ready for independent main-build verification and a v0.58.1 patch; the larger translation work remains unfinished.

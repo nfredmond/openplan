@@ -1,6 +1,6 @@
 {
   "sourceSha256": {
-    "hook": "f37a2ea18be00007c7e0dc4044efd859f13e8d0a90c17570ff53e7afe8794fb2"
+    "hook": "17be28a89254db0c73afa27263686266aefc31fe605649a1574ccef69dbd9d65"
   },
   "results": [
     {
@@ -45,11 +45,67 @@
       "expectedOutcome": true
     },
     {
-      "case": "discard-volatile-on-archive",
+      "case": "clear-volatile-cache-after-archive",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "forget-page-on-storage-change",
       "outcome": "killed",
-      "expectedFailure": "preserves the page request and separate stored bytes",
+      "expectedFailure": "keeps the in-flight page request when its stored copy",
       "failedAssertions": [
-        "translation write storage recovery preserves the page request and separate stored bytes when recovery finds a different payload with the same identity"
+        "translation write storage recovery keeps the in-flight page request when its stored copy is deleted",
+        "translation write storage recovery keeps the in-flight page request when its stored copy is corrupted",
+        "translation write storage recovery keeps the in-flight page request when its stored copy is replaced"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "archive-without-page-retention",
+      "outcome": "killed",
+      "expectedFailure": "archives the page copy before reopening",
+      "failedAssertions": [
+        "translation write storage recovery archives the page copy before reopening a refused request deleted from storage"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "resurrect-confirmed-page",
+      "outcome": "killed",
+      "expectedFailure": "removes the page request after an exact confirmation",
+      "failedAssertions": [
+        "translation write storage recovery removes the page request after an exact confirmation without restoring it from memory"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "lose-refused-phase",
+      "outcome": "killed",
+      "expectedFailure": "retains a definite refusal phase",
+      "failedAssertions": [
+        "translation write storage recovery retains a definite refusal phase when storage cannot save that phase"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "resurrect-archived-page",
+      "outcome": "killed",
+      "expectedFailure": "archives the page copy before reopening",
+      "failedAssertions": [
+        "translation write storage recovery archives the page copy before reopening a refused request deleted from storage"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "claim-deleted-attempt-unsent",
+      "outcome": "killed",
+      "expectedFailure": "keeps the in-flight page request when its stored copy",
+      "failedAssertions": [
+        "translation write storage recovery keeps the in-flight page request when its stored copy is deleted",
+        "translation write storage recovery keeps the in-flight page request when its stored copy is corrupted",
+        "translation write storage recovery keeps the in-flight page request when its stored copy is replaced"
       ],
       "expectedOutcome": true
     },
