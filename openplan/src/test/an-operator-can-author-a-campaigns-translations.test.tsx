@@ -538,7 +538,7 @@ describe("the operator panel", () => {
 
   it.each([true, false])("offers private translation history only with staff access: %s", (canWrite) => {
     render(<CampaignTranslationsPanel {...panelProps({ canWrite })} />);
-    const history = screen.queryByRole("button", { name: "Translation history", exact: true });
+    const history = screen.queryByRole("button", { name: /^Translation history$/ });
     if (canWrite) expect(history).toBeVisible();
     else expect(history).not.toBeInTheDocument();
   });

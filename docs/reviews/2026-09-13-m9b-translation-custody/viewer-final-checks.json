@@ -1,0 +1,30 @@
+{
+  "parentCommit": "de0ccf47",
+  "productionSourceCommit": "3397252c",
+  "testFile": "openplan/src/test/an-operator-can-author-a-campaigns-translations.test.tsx",
+  "testSha256": "66f466608b3649f34f2007a2a0d50f7d7f4c236e3bf67d5cfa1f858a36b26ee8",
+  "checks": {
+    "qa": {
+      "log": "history-viewer-qa-corrected.log",
+      "exit": 0,
+      "testsPassed": 14347,
+      "testsSkipped": 453,
+      "logSha256": "013b36a146d9081eb38361ecb2f75a47b689b78f48432b9069a5ddb4ebe3ea00",
+      "providerPassed": 382,
+      "providerSkipped": 4,
+      "dependencyVulnerabilities": 0,
+      "productionBuild": "passed",
+      "rls": "separate retained database run; not included in ordinary QA"
+    },
+    "shuffled": {
+      "log": "history-viewer-shuffled-corrected-580914.log",
+      "exit": 0,
+      "testsPassed": 14347,
+      "testsSkipped": 453,
+      "logSha256": "226f28af919f0a575cde12681130d98fe800d0cd55a3eedc167648a861b673ef",
+      "seed": 580914
+    }
+  },
+  "controls": "history-viewer-controls.json",
+  "limits": "Same production source as real viewer/staff browser acceptance. Test-only correction. Live database, upgrade and worker evidence in local-checks.json is unchanged; final release-commit CI and publication remain separate."
+}

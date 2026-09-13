@@ -1,5 +1,13 @@
 # Resume after the weekly usage reset
 
+> Latest continuation: the test-only TS2769 correction is implemented. Full QA
+> and shuffled seed580914 both exited 0 with 14,347 passing tests, 453 skipped.
+> The production build passed. Viewer permission mutation controls still detect
+> both broken cases. Read viewer-final-checks.json and VIEWER_CONTROL.md.
+> This candidate is ready for direct main landing and exact final CI/RLS/upgrade
+> inspection before tagging v0.58.0. The earlier unresolved-build status below
+> is historical. The full V1 objective and next translation-write work stay open.
+
 > Latest checkpoint, September 13, after the final viewer checks finished:
 > owned checkout and remote work/engagement-response-writes were clean at
 > b0929e3cae07ae56b4707ec4b457dc468f40a7ec. Remote main remains

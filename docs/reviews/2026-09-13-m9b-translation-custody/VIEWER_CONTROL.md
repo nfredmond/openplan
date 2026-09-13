@@ -59,3 +59,25 @@ and shuffled checks are next, then corrected main CI and publication. Existing
 local database/worker and migration328 evidence remains unchanged by this
 UI-only correction. The prior release candidate's18-minute CI is not a failure;
 it passed, and tagging was held for this demonstrated permission mismatch.
+
+## Final test correction and local gate
+
+The first final QA run failed during production TypeScript checking because the
+new test passed unsupported `exact: true` to Testing Library queryByRole. This
+was a test-code error missed by Vitest's execution, not a passing release gate.
+The corrected query uses the anchored /^Translation history$/ accessible name.
+Baseline and harmless-comment controls pass; forced viewer visibility and missing
+staff visibility still fail their respective cases. Production code is unchanged
+from the identified browser run.
+
+The corrected full QA command exited 0, including lint, dead-code checks,
+14,347 passing tests with 453 skipped, 382 passing connector tests with four
+skipped, zero dependency vulnerabilities and the webpack production build.
+Shuffled seed580914 also exited 0 with 14,347 passing tests and 453 skipped.
+The first attempted shuffle invocation used unsupported --seed=580914 and exited
+2 before tests; its log is retained separately. See viewer-final-checks.json for
+exact log and source hashes. The ordinary QA command does not run live RLS.
+Existing isolated 482-test, upgrade and 52-worker-suite evidence remains separate.
+
+Push this corrected release candidate directly to main and inspect all final
+commit CI and RLS jobs plus the populated upgrade workflow before tagging v0.58.0.
