@@ -1,8 +1,12 @@
 # Weekly usage checkpoint, September 13, 2026
 
+The latest weekly-reset backup is [WRITE_PROGRESS.md](WRITE_PROGRESS.md).
+Start there for the saved manual write/recovery modules, provisional routes and
+the remaining editor integration. They are unfinished and not released.
+
 Continuation after this checkpoint repaired the runner, exercised competing
 database sessions and added a complete snapshot reader. Start with
-[SNAPSHOT_PROGRESS.md](SNAPSHOT_PROGRESS.md) for the newest result and next action.
+[SNAPSHOT_PROGRESS.md](SNAPSHOT_PROGRESS.md) for that earlier verified result.
 The original stopping point below is
 retained as history, not the current test status.
 
