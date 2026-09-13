@@ -391,14 +391,15 @@ source-to-decision chain remain open. The machine helper's 4000-character source
 truncation is an observed gap; the allowed response source can be longer.
 
 
-## Unreleased translation history follow-up, September13
+## v0.58.0 translation history, September 13
 
-The candidate after v0.57.1 retains private translation revisions and exposes
+The v0.58.0 release retains private translation revisions and exposes
 original/corrected/withdrawn history in the existing editor. Identified desktop
 and390px keyboard journeys preserve original checksums and recover interrupted
 reads/saves. The helper now sends supported source text intact and refuses
 incomplete new output. [Browser and upgrade evidence](../reviews/2026-09-13-m9b-translation-custody/BROWSER_AND_UPGRADE.md)
-records the bounded outcome; final QA/CI and release remain separate.
+records the bounded outcome; [publication](../reviews/2026-09-13-m9b-translation-custody/PUBLICATION.md)
+records successful final local/GitHub checks and tagging.
 
 Public cached translations still contain text/sourceHash without completion
 provenance. This helper correction cannot retroactively prove cached output

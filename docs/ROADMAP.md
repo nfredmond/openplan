@@ -681,10 +681,11 @@ the remaining M9b and other early priorities above. Neither increment closes M9b
 or changes the full v1 destination.
 
 
-The v0.58.0 candidate adds private translation history and rejects incomplete new
+The v0.58.0 release adds private translation history and rejects incomplete new
 model output. [Verification](reviews/2026-09-13-m9b-translation-custody/BROWSER_AND_UPGRADE.md)
 records desktop/390px recovery, exact original retention, migration328 and local
-gates. Final CI and tagging remain separate. Continue exact-version reasoned
+gates. [Publication](reviews/2026-09-13-m9b-translation-custody/PUBLICATION.md)
+records successful final CI, RLS, upgrade and tagging. Continue exact-version reasoned
 translation writes, retained source wording, durable generation/spend accounting
 and cache completeness, then the remaining M9b and early priorities above.
 This does not close M9b or change the complete V1 contract.
