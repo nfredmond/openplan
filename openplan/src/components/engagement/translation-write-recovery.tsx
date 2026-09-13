@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { canonicalizeActionPayload } from "@/lib/runtime/action-metadata";
 import { archivePendingTranslation, clearPendingTranslation, confirmPendingTranslation, pendingTranslationKey, pendingTranslationSchema,
   readPendingTranslations, retainPendingTranslation, type PendingTranslation } from "@/lib/engagement/pending-translation";
 import { readTranslationSnapshot, translationSnapshotSource, type TranslationSnapshot } from "@/lib/engagement/translation-snapshot";
@@ -55,15 +56,23 @@ export function useTranslationWrites({ userId, workspaceId, campaignId, canWrite
       const storage = window.localStorage;
       const loaded = readPendingTranslations(storage, userId, campaignId, workspaceId);
       const values = new Map(loaded.pending.map(value => [value.intent.requestId, value]));
-      for (const [key, value] of volatile.current) if (!values.has(key)) values.set(key, value);
-      remember([...values.values()]); setUnreadable(loaded.unreadableKeys);
+      const unresolved = new Set(loaded.unreadableKeys);
+      for (const [key, value] of volatile.current) {
+        const stored = values.get(key);
+        // A failed retention must not let a later storage refresh replace the page's words.
+        // Phase is mutable; the request, baseline, actor and creation time are not.
+        if (stored && canonicalizeActionPayload({ ...stored, phase: value.phase }) !== canonicalizeActionPayload(value)) {
+          unresolved.add(pendingTranslationKey(value));
+        }
+        values.set(key, value);
+      }
       const prefix = `openplan:translation-archive:${encodeURIComponent(userId)}:${encodeURIComponent(campaignId)}:`;
       const retained = [];
       for (let index = 0; index < storage.length; index++) {
         const key = storage.key(index); if (!key?.startsWith(prefix)) continue;
         const raw = storage.getItem(key); if (raw !== null) retained.push({ key, raw });
       }
-      setArchives(retained); setReady(true);
+      remember([...values.values()]); setUnreadable([...unresolved]); setArchives(retained); setReady(true);
     } catch {
       setReady(false); setMessage("This browser's translation recovery records could not be read. Keep this page open and retry recovery before making another change.");
     }
@@ -159,7 +168,7 @@ export function useTranslationWrites({ userId, workspaceId, campaignId, canWrite
     {!ready && <Button className="h-auto min-h-10 min-w-0 max-w-full whitespace-normal" type="button" onClick={restore} disabled={busy}>Retry translation recovery</Button>}
     {pending.map(value => <section key={value.intent.requestId} aria-label="Pending translation change" className="space-y-3 rounded-lg border border-amber-400 p-3">
       <h3 className="font-semibold">Pending {value.intent.operation} in {value.intent.locale}</h3>
-      <p>{volatile.current.has(value.intent.requestId) ? "This request has not been sent or retained. Keep this page open and download its copy before leaving." : value.phase === "unconfirmed" ? unknownMessage : "This request was refused. Compare the retained and current copies before proposing another change."}</p>
+      <p>{volatile.current.has(value.intent.requestId) ? "This attempt was not sent. This page still has the request, but could not confirm its retention in browser storage. Keep this page open and download its copy. An earlier attempt may have reached the server." : value.phase === "unconfirmed" ? unknownMessage : "This request was refused. Compare the retained and current copies before proposing another change."}</p>
       <p className="whitespace-pre-wrap">Reason: {value.intent.reason || "New wording"}</p>
       {value.intent.entries.map((entry, index) => {
         const current = review?.requestId === value.intent.requestId ? review.snapshot : null;
@@ -183,15 +192,15 @@ export function useTranslationWrites({ userId, workspaceId, campaignId, canWrite
       </div>
     </section>)}
     {unreadable.map(key => <div key={key} className="space-y-2 rounded-lg border border-amber-400 p-3">
-      <p role="alert">A retained translation request could not be read. This does not establish whether it reached the server. Preserve its copy and review current translations before reopening the editor.</p>
+      <p role="alert">A stored translation request could not be read or differs from the request on this page. This does not establish whether it reached the server. Preserve its copy and review current translations before reopening the editor.</p>
       <div className="flex flex-wrap gap-2"><Button className="h-auto min-h-10 min-w-0 max-w-full whitespace-normal" type="button" variant="outline" onClick={() => {
         try { const raw = window.localStorage.getItem(key); if (raw !== null) downloadCopy(raw, "unreadable-translation-request.json"); }
         catch { setMessage("The retained request could not be downloaded. Keep this page open and retry recovery."); }
-      }}>Download unreadable copy</Button>
+      }}>Download stored recovery copy</Button>
       <Button className="h-auto min-h-10 min-w-0 max-w-full whitespace-normal" type="button" variant="outline" disabled={busy} onClick={() => void loadReview(key)}>Review current saved translations</Button>
       {review?.requestId === key && <><p>Read the current saved translations below before continuing.</p>
         {review.snapshot.translations.map(row => <p key={row.id} className="whitespace-pre-wrap">{row.locale}: {row.translated_text}</p>)}
-        <Button className="h-auto min-h-10 min-w-0 max-w-full whitespace-normal" type="button" disabled={busy || !canWrite} onClick={() => reopen(null, key)}>Preserve unreadable copy and reopen editor</Button></>}
+        <Button className="h-auto min-h-10 min-w-0 max-w-full whitespace-normal" type="button" disabled={busy || !canWrite} onClick={() => reopen(null, key)}>Preserve stored copy and reopen editor</Button></>}
       </div>
     </div>)}
     {archives.length > 0 && <details className="rounded-lg border border-border p-3"><summary>Earlier translation requests ({archives.length})</summary>

@@ -1,0 +1,67 @@
+{
+  "sourceSha256": {
+    "hook": "f37a2ea18be00007c7e0dc4044efd859f13e8d0a90c17570ff53e7afe8794fb2"
+  },
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-hook",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "replace-page-copy",
+      "outcome": "killed",
+      "expectedFailure": "preserves the page request and separate stored bytes",
+      "failedAssertions": [
+        "translation write storage recovery preserves the page request and separate stored bytes when recovery finds a different payload with the same identity"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "hide-differing-copy",
+      "outcome": "killed",
+      "expectedFailure": "preserves the page request and separate stored bytes",
+      "failedAssertions": [
+        "translation write storage recovery preserves the page request and separate stored bytes when recovery finds a different payload with the same identity"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "report-identical-copy-damaged",
+      "outcome": "killed",
+      "expectedFailure": "does not report identical stored words as damaged",
+      "failedAssertions": [
+        "translation write storage recovery retries the exact volatile request when storage returns and does not report identical stored words as damaged"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "discard-volatile-on-archive",
+      "outcome": "killed",
+      "expectedFailure": "preserves the page request and separate stored bytes",
+      "failedAssertions": [
+        "translation write storage recovery preserves the page request and separate stored bytes when recovery finds a different payload with the same identity"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "deny-possible-earlier-send",
+      "outcome": "killed",
+      "expectedFailure": "keeps an earlier sent attempt uncertain",
+      "failedAssertions": [
+        "translation write storage recovery keeps an earlier sent attempt uncertain when a later retention retry fails"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Selected volatile-request merge and recovery checks in jsdom. Does not establish all request guards, real browser delivery, durable generation or release readiness."
+}

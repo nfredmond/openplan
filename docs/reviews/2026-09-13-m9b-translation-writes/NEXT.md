@@ -1,3 +1,7 @@
+# Current request recovery checkpoint
+
+Read [WRITE_STORAGE_PROGRESS.md](WRITE_STORAGE_PROGRESS.md) first for the latest implementation, browser evidence and remaining work.
+
 # Current usage reset checkpoint
 
 Read [STORAGE_RECOVERY_PROGRESS.md](STORAGE_RECOVERY_PROGRESS.md) first. It records the latest saved implementation, terminal browser checks and remaining work.

@@ -80,6 +80,47 @@ async function exerciseDraftStorage(page,panel,input,campaignId,prefix){
  }finally{await restore().catch(()=>{});}
 }
 
+async function exerciseRequestStorage(page,panel,row,campaignId,prefix){
+ const captures=[];
+ const download=async(label,suffix)=>{
+  const pending=handled(page.waitForEvent('download'));await keyClick(page,panel.getByRole('button',{name:label,exact:true}));
+  const result=await pending,filename=prefix+suffix;await result.saveAs(filename);const bytes=fs.readFileSync(filename);
+  captures.push({filename,sha256:sha(bytes)});return bytes.toString('utf8');
+ };
+ let other;
+ const restore=()=>page.evaluate(()=>{if(window.__translationRequestPut){Storage.prototype.setItem=window.__translationRequestPut;delete window.__translationRequestPut;}});
+ try{
+  await page.evaluate(()=>{window.__translationRequestPut=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){
+   if(this===localStorage&&key.startsWith('openplan:translation-write:'))throw new DOMException('SYNTHETIC request quota','QuotaExceededError');
+   return window.__translationRequestPut.call(this,key,value);
+  };});
+  await keyClick(page,row.getByRole('button',{name:'Save as our wording',exact:true}));
+  await expect(panel.getByText(/could not retain the request, so no save was sent/)).toBeVisible();
+  await expect(panel.getByRole('button',{name:'Retry same translation request',exact:true})).toBeEnabled();
+  const original=JSON.parse(await download('Download retained request','-volatile-request.json'));await restore();
+  const differing=structuredClone(original);differing.intent.entries[0].text='SYNTHETIC differing retained request';
+  const raw=JSON.stringify(differing),key=`openplan:translation-write:${encodeURIComponent(original.userId)}:${encodeURIComponent(campaignId)}:${original.intent.requestId}`;
+  other=await page.context().newPage();await other.goto(base);
+  await other.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw});await page.bringToFront();
+  await expect(panel.getByText(/A stored translation request could not be read or differs/)).toBeVisible();
+  expect(JSON.parse(await download('Download retained request','-volatile-request-after-storage-event.json'))).toEqual(original);
+  expect(await download('Download stored recovery copy','-differing-stored-request.json')).toBe(raw);
+  await keyClick(page,panel.getByRole('button',{name:'Retry same translation request',exact:true}));
+  await expect(panel.getByRole('button',{name:'Retry same translation request',exact:true})).toBeEnabled();
+  expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBe(raw);
+  await panel.getByRole('button',{name:'Download stored recovery copy',exact:true}).scrollIntoViewIfNeeded();await page.screenshot({path:prefix+'-request-storage-conflict.png'});
+  await keyClick(page,panel.getByRole('button',{name:'Review current saved translations',exact:true}));
+  await keyClick(page,panel.getByRole('button',{name:'Preserve stored copy and reopen editor',exact:true}));
+  expect(await page.evaluate(key=>localStorage.getItem(key),key)).toBeNull();
+  expect(await download('Download retained request','-volatile-request-after-archive.json')).toBe(JSON.stringify(original,null,2));
+  await panel.getByText('Earlier translation requests (1)',{exact:true}).click();
+  expect(await download('Download earlier request 1','-differing-request-archive.json')).toBe(raw);
+  await expect(row.getByRole('button',{name:'Save as our wording',exact:true})).toBeDisabled();
+  console.log('Volatile request and differing stored copy recovered',prefix);
+  return {captures,requestId:original.intent.requestId,differingSha256:sha(raw)};
+ }finally{await restore().catch(()=>{});if(other)await other.close();}
+}
+
 async function journey(browser,width){
  const context=await browser.newContext({viewport:{width,height:1000}}),page=await context.newPage();page.setDefaultTimeout(60000);
  const prefix=`${evidence}/translation-editor-${width}-${Date.now()}`;
@@ -94,7 +135,8 @@ async function journey(browser,width){
   const original=`\u00a0SINTÉTICO original ${width}\ufeff`,corrected=`\u00a0SINTÉTICO corrección ${width}\ufeff`,reviewed=`\u00a0SINTÉTICO revisado ${width}\ufeff`,colleague=`SINTÉTICO otra corrección ${width}`;
   await page.route('**'+path,async route=>{commands.push(route.request().postDataJSON());if(loseFirst){loseFirst=false;const response=await route.fetch();expect(response.status()).toBe(200);lostReceipt=await response.json();await route.abort('failed');}else await route.continue();});
   const draftRecovery=await exerciseDraftStorage(page,panel,input,campaignId,prefix);expect(commands).toHaveLength(0);
-  await input.fill(original);await keyClick(page,row.getByRole('button',{name:'Save as our wording',exact:true}));
+  await input.fill(original);const requestStorageRecovery=await exerciseRequestStorage(page,panel,row,campaignId,prefix);expect(commands).toHaveLength(0);
+  await keyClick(page,panel.getByRole('button',{name:'Retry same translation request',exact:true}));
   await expect(panel.getByRole('region',{name:'Pending translation change',exact:true})).toBeVisible();await expect(panel.getByRole('button',{name:'Retry same translation request',exact:true})).toBeEnabled();
   await expect(input).toHaveValue(original);expect(lostReceipt.entries[0].entry.translated_text).toBe(original);
   expect(commands[0].entries[0].expectedSource).toEqual({text:title,sourceLocale:null,available:true});expect(commands[0].entries[0].expectedTranslation).toBeNull();
@@ -155,16 +197,19 @@ async function journey(browser,width){
   expect(finalHistory.find(row=>row.revision===2).change.reason).toBe('\u00a0SYNTHETIC reason for correction\ufeff');
   console.log('Receipt reason and exact source visible in history',width);
   const archived=await page.evaluate(()=>Object.keys(localStorage).filter(key=>key.startsWith('openplan:translation-archive:')).map(key=>localStorage.getItem(key)));
-  expect(archived).toHaveLength(1);expect(JSON.parse(archived[0]).intent).toEqual(conflictCommand);
-  await panel.getByText('Earlier translation requests (1)',{exact:true}).click();const downloadEvent=handled(page.waitForEvent('download'));
-  await keyClick(page,panel.getByRole('button',{name:'Download earlier request 1',exact:true}));const download=await downloadEvent;const copy=prefix+'-retained-request.json';await download.saveAs(copy);expect(sha(fs.readFileSync(copy))).toBe(sha(archived[0]));
+  expect(archived).toHaveLength(2);
+  const conflictIndex=archived.findIndex(raw=>JSON.parse(raw).intent.requestId===conflictCommand.requestId);expect(conflictIndex).toBeGreaterThanOrEqual(0);
+  expect(JSON.parse(archived[conflictIndex]).intent).toEqual(conflictCommand);expect(sha(archived[1-conflictIndex])).toBe(requestStorageRecovery.differingSha256);
+  const earlier=panel.locator('details').filter({hasText:'Earlier translation requests (2)'});
+  if(await earlier.getAttribute('open')===null)await earlier.locator('summary').click();const downloadEvent=handled(page.waitForEvent('download'));
+  await keyClick(page,panel.getByRole('button',{name:`Download earlier request ${conflictIndex+1}`,exact:true}));const download=await downloadEvent;const copy=prefix+'-retained-request.json';await download.saveAs(copy);expect(sha(fs.readFileSync(copy))).toBe(sha(archived[conflictIndex]));
   await history.scrollIntoViewIfNeeded();await page.screenshot({path:prefix+'-retained-history.png'});
   const overflow=await page.evaluate(()=>({viewport:innerWidth,document:document.documentElement.scrollWidth}));expect(overflow.document).toBeLessThanOrEqual(overflow.viewport);
   expect(consoleEvents.filter(row=>row.type==='pageerror')).toEqual([]);
   if(!/^[a-f0-9-]{36}$/.test(campaignId))throw Error('Invalid fixture id');
   const custody=JSON.parse(sql(`select jsonb_agg(jsonb_build_object('request',request_id,'reason',payload->'reason','resultHash',result_sha256)) from engagement_translation_write_receipts where campaign_id='${campaignId}'`));
   expect(custody.some(row=>row.reason==='SYNTHETIC withdrawal reason')).toBe(true);expect(custody.some(row=>row.reason==='\u00a0SYNTHETIC reason for correction\ufeff')).toBe(true);
-  fs.writeFileSync(prefix+'-result.json',JSON.stringify({passed:true,width,campaignId,layoutControl:process.env.OPENPLAN_TRANSLATION_LAYOUT_CONTROL??'none',controls,draftRecovery,commands,originalHistory:retainedOriginal,finalHistory,custody,downloadSha256:sha(fs.readFileSync(copy)),overflow,console:consoleEvents,network},null,2));console.log('Browser journey passed',width,prefix);
+  fs.writeFileSync(prefix+'-result.json',JSON.stringify({passed:true,width,campaignId,layoutControl:process.env.OPENPLAN_TRANSLATION_LAYOUT_CONTROL??'none',controls,draftRecovery,requestStorageRecovery,commands,originalHistory:retainedOriginal,finalHistory,custody,downloadSha256:sha(fs.readFileSync(copy)),overflow,console:consoleEvents,network},null,2));console.log('Browser journey passed',width,prefix);
  }catch(error){fs.writeFileSync(prefix+'-failure.txt',await page.locator('body').ariaSnapshot().catch(()=>''));await page.screenshot({path:prefix+'-failure.png'}).catch(()=>{});fs.writeFileSync(prefix+'-failure.json',JSON.stringify({campaignId,message:error.message,commands,console:consoleEvents,network},null,2));throw error;}
  finally{await Promise.allSettled([otherContext?.close(),context.close()]);}
 }
