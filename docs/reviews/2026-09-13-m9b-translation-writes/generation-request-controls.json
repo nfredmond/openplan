@@ -1,0 +1,417 @@
+{
+  "sourceSha256": {
+    "queue": "28d266a011f0bc05112e734da408bb380976d49400762b718a83368a30cba86c",
+    "read": "f546628a78683d8dc389c52dbd1f2c3801e5f65cf5103f2f2ec5dd91494d2fb1",
+    "request": "a170e2ef38fc4278f76fa7b87ef43c057e90f0349169aad23ccc7e63c8a0ff1d",
+    "route": "5ce649d003064f6c49bb83d9364c3be617e0c0840464882e03bce64dff66a54f",
+    "sql": "af4ac71c095242f1620f403fa774ff82e2450d5a95bc2b36078dc4c6011e17f6"
+  },
+  "testCount": 46,
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-request-controls/20260913T153211",
+  "results": [
+    {
+      "case": "baseline-queue",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-queue",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "baseline-read",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-read",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "baseline-request",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-request",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "baseline-route",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-route",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "baseline-sql",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-sql",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "replay-projection",
+      "outcome": "killed",
+      "expectedFailure": "binds the authenticated scope",
+      "failedAssertions": [
+        "staff generation queue routes binds the authenticated scope and exact source packet without calling a model"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "replay-id",
+      "outcome": "killed",
+      "expectedFailure": "refuses a retained request with changed id",
+      "failedAssertions": [
+        "staff generation queue routes refuses a retained request with changed id before key reads or creation"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "replay-workspace_id",
+      "outcome": "killed",
+      "expectedFailure": "refuses a retained request with changed workspace_id",
+      "failedAssertions": [
+        "staff generation queue routes refuses a retained request with changed workspace_id before key reads or creation"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "replay-campaign_id",
+      "outcome": "killed",
+      "expectedFailure": "refuses a retained request with changed campaign_id",
+      "failedAssertions": [
+        "staff generation queue routes refuses a retained request with changed campaign_id before key reads or creation"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "replay-actor_id",
+      "outcome": "killed",
+      "expectedFailure": "refuses a retained request with changed actor_id",
+      "failedAssertions": [
+        "staff generation queue routes refuses a retained request with changed actor_id before key reads or creation"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "replay-locale",
+      "outcome": "killed",
+      "expectedFailure": "refuses a retained request with changed locale",
+      "failedAssertions": [
+        "staff generation queue routes refuses a retained request with changed locale before key reads or creation"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "replay-intent",
+      "outcome": "killed",
+      "expectedFailure": "refuses a retained request with changed intent",
+      "failedAssertions": [
+        "staff generation queue routes refuses a retained request with changed intent before key reads or creation"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "retry-loads-key",
+      "outcome": "killed",
+      "expectedFailure": "confirms the same request after lost acknowledgement",
+      "failedAssertions": [
+        "staff generation queue routes confirms the same request after lost acknowledgement and key removal without preparing another key"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "wrong-actor-rpc",
+      "outcome": "killed",
+      "expectedFailure": "binds the authenticated scope",
+      "failedAssertions": [
+        "staff generation queue routes binds the authenticated scope and exact source packet without calling a model"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ack-id",
+      "outcome": "killed",
+      "expectedFailure": "does not confirm a wrong_id acknowledgement",
+      "failedAssertions": [
+        "staff generation queue routes does not confirm a wrong_id acknowledgement"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ack-replay",
+      "outcome": "killed",
+      "expectedFailure": "does not confirm a false_replay acknowledgement",
+      "failedAssertions": [
+        "staff generation queue routes does not confirm a false_replay acknowledgement"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "browser-origin",
+      "outcome": "killed",
+      "expectedFailure": "refuses cross-origin generation",
+      "failedAssertions": [
+        "staff generation queue routes refuses cross-origin generation marked by origin before authentication",
+        "staff generation queue routes refuses cross-origin generation marked by sec-fetch-site before authentication"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "agent-refusal",
+      "outcome": "killed",
+      "expectedFailure": "refuses unregistered agent execution",
+      "failedAssertions": [
+        "staff generation queue routes refuses unregistered agent execution marked by x-openplan-assistant-execution-source",
+        "staff generation queue routes refuses unregistered agent execution marked by x-openplan-assistant-input-hash",
+        "staff generation queue routes refuses unregistered agent execution marked by x-openplan-assistant-approval-id"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "staff-permission",
+      "outcome": "killed",
+      "expectedFailure": "refuses denied before creating a service client",
+      "failedAssertions": [
+        "staff generation queue routes refuses denied before creating a service client"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unauthenticated-status",
+      "outcome": "killed",
+      "expectedFailure": "refuses unauthenticated before creating a service client",
+      "failedAssertions": [
+        "staff generation queue routes refuses unauthenticated before creating a service client"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "body-bound",
+      "outcome": "killed",
+      "expectedFailure": "cancels an oversized body",
+      "failedAssertions": [
+        "staff generation queue routes cancels an oversized body without reading its tail or authenticating"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "duplicate-id",
+      "outcome": "killed",
+      "expectedFailure": "refuses duplicate_id source requests",
+      "failedAssertions": [
+        "staff generation queue routes refuses duplicate_id source requests without touching credentials"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "duplicate-address",
+      "outcome": "killed",
+      "expectedFailure": "refuses duplicate_address source requests",
+      "failedAssertions": [
+        "staff generation queue routes refuses duplicate_address source requests without touching credentials"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "input-unavailable",
+      "outcome": "killed",
+      "expectedFailure": "refuses unavailable source requests",
+      "failedAssertions": [
+        "staff generation queue routes refuses unavailable source requests without touching credentials"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "input-oversize",
+      "outcome": "killed",
+      "expectedFailure": "refuses oversize source requests",
+      "failedAssertions": [
+        "staff generation queue routes refuses oversize source requests without touching credentials"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "input-nul",
+      "outcome": "killed",
+      "expectedFailure": "refuses nul source requests",
+      "failedAssertions": [
+        "staff generation queue routes refuses nul source requests without touching credentials"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "input-unpaired",
+      "outcome": "killed",
+      "expectedFailure": "refuses unpaired source requests",
+      "failedAssertions": [
+        "staff generation queue routes refuses unpaired source requests without touching credentials"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unsupported-language",
+      "outcome": "killed",
+      "expectedFailure": "refuses unsupported_language source requests",
+      "failedAssertions": [
+        "staff generation queue routes refuses unsupported_language source requests without touching credentials"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "read-requestId",
+      "outcome": "killed",
+      "expectedFailure": "rejects a mismatched requestId",
+      "failedAssertions": [
+        "retained generation read validation rejects a mismatched requestId before exposing generated words"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "read-workspaceId",
+      "outcome": "killed",
+      "expectedFailure": "rejects a mismatched workspaceId",
+      "failedAssertions": [
+        "retained generation read validation rejects a mismatched workspaceId before exposing generated words"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "read-campaignId",
+      "outcome": "killed",
+      "expectedFailure": "rejects a mismatched campaignId",
+      "failedAssertions": [
+        "retained generation read validation rejects a mismatched campaignId before exposing generated words"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "read-count",
+      "outcome": "killed",
+      "expectedFailure": "rejects a mismatched count",
+      "failedAssertions": [
+        "retained generation read validation rejects a mismatched count before exposing generated words"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "read-source",
+      "outcome": "killed",
+      "expectedFailure": "rejects a mismatched source",
+      "failedAssertions": [
+        "retained generation read validation rejects a mismatched source before exposing generated words"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "read-state",
+      "outcome": "killed",
+      "expectedFailure": "rejects a mismatched state",
+      "failedAssertions": [
+        "retained generation read validation rejects a mismatched state before exposing generated words"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "read-lost-access-status",
+      "outcome": "killed",
+      "expectedFailure": "reports access lost during the database read as forbidden",
+      "failedAssertions": [
+        "staff generation queue routes reports access lost during the database read as forbidden"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "read-missing-output",
+      "outcome": "killed",
+      "expectedFailure": "rejects a mismatched missing_output",
+      "failedAssertions": [
+        "retained generation read validation rejects a mismatched missing_output before exposing generated words"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "read-partial-claim",
+      "outcome": "killed",
+      "expectedFailure": "rejects a mismatched partial_claim",
+      "failedAssertions": [
+        "retained generation read validation rejects a mismatched partial_claim before exposing generated words"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-access",
+      "outcome": "killed",
+      "expectedFailure": "Removed staff read was permitted",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-scope",
+      "outcome": "killed",
+      "expectedFailure": "Foreign request read was permitted",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-truncate",
+      "outcome": "killed",
+      "expectedFailure": "Reader truncated field inventory",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-output-loss",
+      "outcome": "killed",
+      "expectedFailure": "Reader lost retained output or queued field",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-credential-leak",
+      "outcome": "killed",
+      "expectedFailure": "Reader leaked captured credentials",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-anon-grant",
+      "outcome": "killed",
+      "expectedFailure": "Anonymous request read was permitted",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Mocked route authentication and service query; real native credential/codec and SQL permission read in rolled-back isolated proof DB. No browser queue submission or app worker dispatch."
+}

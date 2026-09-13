@@ -1,3 +1,7 @@
+# Latest staff queue API checkpoint
+
+Read [GENERATION_QUEUE_API_PROGRESS.md](GENERATION_QUEUE_API_PROGRESS.md) first. Staff queue creation and verified request reads are implemented and fault-tested. Request discovery, retained publication and editor integration remain unfinished.
+
 # Latest worker integration checkpoint
 
 Read [GENERATION_WORKER_PROGRESS.md](GENERATION_WORKER_PROGRESS.md) first. The staff worker now has actual process restart and local HTTP/database evidence. Staff routes, editor publication and public producers remain unfinished.
