@@ -168,6 +168,34 @@ monitor disk use. Print the workbook's selected **Print summary** sheet; use the
 PDF for the complete formatted program. Wide editable workbook tabs are intended
 for on-screen review, not entire-workbook printing.
 
+**Saved API generation worker, in development.** The retained API-job worker
+can be started with `npm run worker:provider-api` from `openplan/`, after applying
+migration `20261012000002_assistant_api_turns.sql`. `npm run worker:provider-api --
+--once` performs one recovery or queue cycle. The project selection controls are
+not connected yet; starting this process does not add a usable provider option.
+Use the same private Supabase URL, service-role key and integration encryption
+configuration as the app. No provider key is read from an environment fallback.
+
+The command needs Node 24 and Linux `/usr/bin/flock` plus `/usr/bin/cat`, as does
+the native connector. `OPENPLAN_PROVIDER_API_WORK_DIR` selects a private persistent
+directory. The default is a deployment-specific directory under
+`~/.local/state/openplan/provider-api-worker`, derived from the configured
+Supabase URL. Its journal retains that exact destination and attempt identity.
+Back it up privately with the database; it contains frozen project information
+and may contain an undelivered answer, but does not store provider credentials.
+
+A restart of a running attempt records interruption and never calls the model
+again. A completed journal retries only its exact result delivery. If database
+access fails, retain the journal and restart against the same deployment. A
+corrupt or differently targeted journal is refused before dispatch. Preserve the
+directory for recovery; do not erase it or transplant it between deployments to
+clear an error. SIGINT/SIGTERM abort active work and preserve delivery state.
+Cancellation is observed periodically and rechecked at database completion; it
+cannot reverse a provider request or charge already accepted. Reservations are
+conservative dispatch accounting, not invoices. Process-level generation and
+browser acceptance remain to be completed; see the
+[worker evidence](../../docs/reviews/2026-09-12-api-worker/VERIFICATION.md).
+
 When working with multiple local stacks, supply `OPENPLAN_SUPABASE_WORKDIR`
 explicitly to **every** live test/QA command. The application `.env.local` is not
 implicitly loaded by Vitest. Example: `OPENPLAN_SUPABASE_WORKDIR=/absolute/stack

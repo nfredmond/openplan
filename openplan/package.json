@@ -42,6 +42,7 @@
     "product:direction:check": "node scripts/ops/product-direction-review.mjs --check",
     "product:direction:packet": "node scripts/ops/product-direction-review.mjs --packet",
     "worker:document-exports": "node --env-file=.env.local --conditions=react-server --import tsx scripts/workers/document-exports.ts",
+    "worker:provider-api": "node --env-file=.env.local --conditions=react-server --import tsx scripts/workers/provider-api.ts",
     "worker:contract-calculations": "node --env-file=.env.local --conditions=react-server --import tsx scripts/workers/contract-calculations.ts",
     "test:provider-connector": "node --test ../workers/planner_agent_connector/test/*.test.mjs",
     "audit:dependencies": "npm audit --audit-level=low"

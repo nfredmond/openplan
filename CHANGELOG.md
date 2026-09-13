@@ -20,6 +20,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Local connector cleanup now handles a killed lock process without waiting
+indefinitely for an exit event that already occurred. The lock holder uses one
+process so its death releases the lock.
+
 Internal preparation for extensible Planner Agent APIs now checks exact request
 destinations, encrypted connection identity, raw model identity and cancellation.
 Workspace settings now save API connections and preserve their revision history.

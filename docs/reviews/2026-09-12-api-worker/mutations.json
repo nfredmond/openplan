@@ -1,0 +1,685 @@
+[
+  {
+    "name": "harmless-comment",
+    "outcome": "survived",
+    "expectedFailure": null,
+    "matched": true,
+    "failures": []
+  },
+  {
+    "name": "missing-lock",
+    "outcome": "killed",
+    "expectedFailure": "holds its OS lock",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody holds its OS lock across generation",
+        "message": "AssertionError: expected 'acquired' to be 'connector_already_running' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:175:24\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody aborts generation if its own flock process is lost",
+        "message": "Error: promise resolved \"{ state: 'failed', …(1) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:196:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "lost-lock-signal",
+    "outcome": "killed",
+    "expectedFailure": "own flock process is lost",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody aborts generation if its own flock process is lost",
+        "message": "Error: promise resolved \"{ state: 'failed', …(1) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:196:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "lost-caller-signal",
+    "outcome": "killed",
+    "expectedFailure": "empty queue or interrupted caller",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody does not dispatch on an empty queue or interrupted caller",
+        "message": "Error: promise resolved \"{ state: 'idle' }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:106:47\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "forked-lock-holder",
+    "outcome": "killed",
+    "expectedFailure": "own flock process is lost",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody aborts generation if its own flock process is lost",
+        "message": "Error: promise resolved \"{ state: 'failed', …(1) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:196:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "wait-on-already-signalled-exit",
+    "outcome": "killed",
+    "expectedFailure": "own flock process is lost",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody aborts generation if its own flock process is lost",
+        "message": "Error: expected [Function] to throw error including 'This operation was aborted' but got 'Worker cleanup did not finish after l…'\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:196:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "journal-target",
+    "outcome": "killed",
+    "expectedFailure": "different deployment or corrupt journal",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody rejects a different deployment or corrupt journal before any service request",
+        "message": "Error: promise resolved \"{ state: 'failed', …(1) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:252:61\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "target-url.username",
+    "outcome": "killed",
+    "expectedFailure": "canonicalizes the deployment destination",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody canonicalizes the deployment destination without accepting embedded credentials or query overrides",
+        "message": "AssertionError: expected [Function] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:265:219\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+      }
+    ]
+  },
+  {
+    "name": "target-url.password",
+    "outcome": "killed",
+    "expectedFailure": "canonicalizes the deployment destination",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody canonicalizes the deployment destination without accepting embedded credentials or query overrides",
+        "message": "AssertionError: expected [Function] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:265:219\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+      }
+    ]
+  },
+  {
+    "name": "target-url.search",
+    "outcome": "killed",
+    "expectedFailure": "canonicalizes the deployment destination",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody canonicalizes the deployment destination without accepting embedded credentials or query overrides",
+        "message": "AssertionError: expected [Function] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:265:219\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+      }
+    ]
+  },
+  {
+    "name": "target-url.hash",
+    "outcome": "killed",
+    "expectedFailure": "canonicalizes the deployment destination",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody canonicalizes the deployment destination without accepting embedded credentials or query overrides",
+        "message": "AssertionError: expected [Function] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:265:219\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+      }
+    ]
+  },
+  {
+    "name": "target-protocol",
+    "outcome": "killed",
+    "expectedFailure": "canonicalizes the deployment destination",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody canonicalizes the deployment destination without accepting embedded credentials or query overrides",
+        "message": "AssertionError: expected [Function] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:265:219\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+      }
+    ]
+  },
+  {
+    "name": "claim-state",
+    "outcome": "killed",
+    "expectedFailure": "non-running retained attempt",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody refuses a readable-by-others journal and a non-running retained attempt",
+        "message": "Error: promise resolved \"{ state: 'failed', …(1) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:261:25\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "claim-attempt",
+    "outcome": "killed",
+    "expectedFailure": "claimed job missing attempt_id",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody refuses a claimed job missing attempt_id",
+        "message": "Error: expected [Function] to throw error including 'api_worker_claim_invalid' but got 'api_worker_status_mismatch'\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:96:25\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "claim-lease",
+    "outcome": "killed",
+    "expectedFailure": "claimed job missing lease_expires_at",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody refuses a claimed job missing lease_expires_at",
+        "message": "Error: promise resolved \"{ state: 'failed', …(1) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:96:25\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody refuses a non-date lease in a retained journal",
+        "message": "Error: promise resolved \"{ state: 'failed', …(1) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:101:25\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "lost-running-journal",
+    "outcome": "killed",
+    "expectedFailure": "journals before its single invocation",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody journals before its single invocation and delivers the exact scoped receipt",
+        "message": "AssertionError: expected { state: 'failed', …(1) } to deeply equal { state: 'succeeded', …(1) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:70:27\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody keeps saved encrypted credentials out of the pending journal",
+        "message": "AssertionError: expected 'failed' to be 'succeeded' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:89:35\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody retries only saved delivery after response loss, committed=false",
+        "message": "AssertionError: expected { state: 'failed', …(1) } to deeply equal { state: 'succeeded', …(1) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:126:27\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody retries only saved delivery after response loss, committed=true",
+        "message": "AssertionError: expected { state: 'failed', …(1) } to deeply equal { state: 'succeeded', …(1) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:126:27\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody discards a response that resolves after cancellation instead of journaling an answer",
+        "message": "AssertionError: expected 'failed' to be 'cancelled' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:161:35\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody holds its OS lock across generation",
+        "message": "AssertionError: expected 'failed' to be 'succeeded' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:174:35\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody keeps pending delivery if its returned user_id is foreign",
+        "message": "AssertionError: expected 'failed' to be 'succeeded' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:236:35\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody keeps pending delivery if its returned request_id is foreign",
+        "message": "AssertionError: expected 'failed' to be 'succeeded' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:236:35\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody keeps pending delivery if its returned api_revision_id is foreign",
+        "message": "AssertionError: expected 'failed' to be 'succeeded' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:236:35\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody keeps pending delivery if its returned api_connection_id is foreign",
+        "message": "AssertionError: expected 'failed' to be 'succeeded' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:236:35\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody refuses a changed completion result",
+        "message": "Error: promise resolved \"{ state: 'failed', …(1) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:242:25\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody refuses a changed completion provider_receipt",
+        "message": "Error: promise resolved \"{ state: 'failed', …(1) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:242:25\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "lost-completed-journal",
+    "outcome": "killed",
+    "expectedFailure": "retries only saved delivery",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody retries only saved delivery after response loss, committed=false",
+        "message": "AssertionError: expected 'running' to be 'completed' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:125:80\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody retries only saved delivery after response loss, committed=true",
+        "message": "AssertionError: expected 'running' to be 'completed' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:125:80\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody discards a response that resolves after cancellation instead of journaling an answer",
+        "message": "AssertionError: expected undefined to deeply equal { kind: 'failure', …(1) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:162:22\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody aborts generation if its own flock process is lost",
+        "message": "AssertionError: expected undefined to deeply equal { kind: 'failure', …(1) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:198:42\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody keeps pending delivery if its returned user_id is foreign",
+        "message": "AssertionError: expected 'running' to be 'completed' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:235:39\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody keeps pending delivery if its returned request_id is foreign",
+        "message": "AssertionError: expected 'running' to be 'completed' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:235:39\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody keeps pending delivery if its returned api_revision_id is foreign",
+        "message": "AssertionError: expected 'running' to be 'completed' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:235:39\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody keeps pending delivery if its returned api_connection_id is foreign",
+        "message": "AssertionError: expected 'running' to be 'completed' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:235:39\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody refuses a changed completion result",
+        "message": "AssertionError: expected 'running' to be 'completed' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:242:110\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody refuses a changed completion provider_receipt",
+        "message": "AssertionError: expected 'running' to be 'completed' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:242:110\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody refuses a changed completion failure_code",
+        "message": "AssertionError: expected 'running' to be 'completed' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:242:110\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody refuses a changed completion state",
+        "message": "AssertionError: expected 'running' to be 'completed' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:242:110\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "forgotten-pending",
+    "outcome": "killed",
+    "expectedFailure": "restart of a running journal",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody turns restart of a running journal into failure without loading credentials or generating",
+        "message": "AssertionError: expected { state: 'succeeded', …(1) } to deeply equal { state: 'failed', …(1) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:114:27\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody retries only saved delivery after response loss, committed=false",
+        "message": "AssertionError: expected { state: 'idle' } to deeply equal { state: 'succeeded', …(1) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:126:27\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody retries only saved delivery after response loss, committed=true",
+        "message": "AssertionError: expected { state: 'idle' } to deeply equal { state: 'succeeded', …(1) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:126:27\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody aborts generation if its own flock process is lost",
+        "message": "AssertionError: expected 'idle' to be 'failed' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:200:35\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody keeps pending delivery if its returned user_id is foreign",
+        "message": "AssertionError: expected 'idle' to be 'succeeded' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:236:35\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody keeps pending delivery if its returned request_id is foreign",
+        "message": "AssertionError: expected 'idle' to be 'succeeded' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:236:35\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody keeps pending delivery if its returned api_revision_id is foreign",
+        "message": "AssertionError: expected 'idle' to be 'succeeded' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:236:35\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody keeps pending delivery if its returned api_connection_id is foreign",
+        "message": "AssertionError: expected 'idle' to be 'succeeded' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:236:35\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "claim-error",
+    "outcome": "killed",
+    "expectedFailure": "failed claim even if an unexpected row",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody refuses a failed claim even if an unexpected row accompanies the error",
+        "message": "Error: promise resolved \"{ state: 'succeeded', …(1) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:110:25\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "credential-projection",
+    "outcome": "killed",
+    "expectedFailure": "journals before its single invocation",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody journals before its single invocation and delivers the exact scoped receipt",
+        "message": "AssertionError: expected 'revision_id,connection_id,credential_…' to be 'revision_id,connection_id,workspace_i…' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:78:43\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "credential-filter-workspace_id",
+    "outcome": "killed",
+    "expectedFailure": "journals before its single invocation",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody journals before its single invocation and delivers the exact scoped receipt",
+        "message": "AssertionError: expected \"vi.fn()\" to be called with arguments: [ 'workspace_id', …(1) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n-   \"workspace_id\",\n-   \"c9e411d4-b258-4076-97d7-a88af7d32122\",\n+   \"connection_id\",\n+   \"956ccc8d-482f-4793-b0a3-f71d83a9e260\",\n  ]\n\n  2nd vi.fn() call:\n\n  [\n-   \"workspace_id\",\n-   \"c9e411d4-b258-4076-97d7-a88af7d32122\",\n+   \"revision_id\",\n+   \"39921104-7317-4a1a-ad66-8dcbf8e6ba25\",\n  ]\n\n\nNumber of calls: 2\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1487:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:80:177\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "credential-identity-workspace_id",
+    "outcome": "killed",
+    "expectedFailure": "credential row with foreign workspace_id",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody rejects a credential row with foreign workspace_id",
+        "message": "AssertionError: expected 'succeeded' to be 'failed' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:204:35\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "credential-filter-connection_id",
+    "outcome": "killed",
+    "expectedFailure": "journals before its single invocation",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody journals before its single invocation and delivers the exact scoped receipt",
+        "message": "AssertionError: expected \"vi.fn()\" to be called with arguments: [ 'connection_id', …(1) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n-   \"connection_id\",\n-   \"0b76ed4e-cfdb-47d5-b375-6b0f9f50fbd8\",\n+   \"workspace_id\",\n+   \"a38e3b38-b576-4e85-a75e-93ad37c3c3b5\",\n  ]\n\n  2nd vi.fn() call:\n\n  [\n-   \"connection_id\",\n-   \"0b76ed4e-cfdb-47d5-b375-6b0f9f50fbd8\",\n+   \"revision_id\",\n+   \"6b54a87b-721c-4a91-a3d4-92a6aadd1050\",\n  ]\n\n\nNumber of calls: 2\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1487:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:80:177\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "credential-identity-connection_id",
+    "outcome": "killed",
+    "expectedFailure": "credential row with foreign connection_id",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody rejects a credential row with foreign connection_id",
+        "message": "AssertionError: expected 'succeeded' to be 'failed' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:204:35\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "credential-filter-revision_id",
+    "outcome": "killed",
+    "expectedFailure": "journals before its single invocation",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody journals before its single invocation and delivers the exact scoped receipt",
+        "message": "AssertionError: expected \"vi.fn()\" to be called with arguments: [ 'revision_id', …(1) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n-   \"revision_id\",\n-   \"832d4beb-88a1-4d88-91ba-a20e9279f6a0\",\n+   \"workspace_id\",\n+   \"a3db718b-f295-4fd1-a417-abb0bc335149\",\n  ]\n\n  2nd vi.fn() call:\n\n  [\n-   \"revision_id\",\n-   \"832d4beb-88a1-4d88-91ba-a20e9279f6a0\",\n+   \"connection_id\",\n+   \"603fd8e2-7fd3-48f2-9fcf-7e3a933e8c0a\",\n  ]\n\n\nNumber of calls: 2\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1487:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:80:177\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "credential-identity-revision_id",
+    "outcome": "killed",
+    "expectedFailure": "credential row with foreign revision_id",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody rejects a credential row with foreign revision_id",
+        "message": "AssertionError: expected 'succeeded' to be 'failed' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:204:35\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "credential-persisted",
+    "outcome": "killed",
+    "expectedFailure": "keeps saved encrypted credentials out",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody keeps saved encrypted credentials out of the pending journal",
+        "message": "AssertionError: expected '{\"version\":1,\"target\":\"http://127.0.0…' not to contain 'SYNTHETIC_PRIVATE_CREDENTIAL_CANARY'\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:91:51\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "status-id",
+    "outcome": "killed",
+    "expectedFailure": "mismatched current status id",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody refuses a mismatched current status id before dispatch",
+        "message": "Error: promise resolved \"{ state: 'succeeded', …(1) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:219:30\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "status-attempt",
+    "outcome": "killed",
+    "expectedFailure": "mismatched current status attemptId",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody refuses a mismatched current status attemptId before dispatch",
+        "message": "Error: promise resolved \"{ state: 'succeeded', …(1) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:219:30\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "status-running",
+    "outcome": "killed",
+    "expectedFailure": "retires cancelled without retrieving credentials",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody retires cancelled without retrieving credentials or publishing a result",
+        "message": "AssertionError: expected \"vi.fn()\" to not be called at all, but actually been called 1 times\n\nReceived:\n\n  1st vi.fn() call:\n\n    Array []\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1467:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:133:26\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody retires interrupted without retrieving credentials or publishing a result",
+        "message": "AssertionError: expected \"vi.fn()\" to not be called at all, but actually been called 1 times\n\nReceived:\n\n  1st vi.fn() call:\n\n    Array []\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1467:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:133:26\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody retires access_lost without retrieving credentials or publishing a result",
+        "message": "AssertionError: expected \"vi.fn()\" to not be called at all, but actually been called 1 times\n\nReceived:\n\n  1st vi.fn() call:\n\n    Array []\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1467:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:133:26\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody aborts an in-flight generation when the retained request is cancelled",
+        "message": "AssertionError: expected false to be true // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:145:27\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody discards a response that resolves after cancellation instead of journaling an answer",
+        "message": "AssertionError: expected false to be true // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:161:81\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "lease-changed",
+    "outcome": "killed",
+    "expectedFailure": "changed future lease before dispatch",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody refuses a changed future lease before dispatch",
+        "message": "AssertionError: expected 'succeeded' to be 'failed' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:225:35\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "lease-expired",
+    "outcome": "killed",
+    "expectedFailure": "expired claimed lease before dispatch",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody refuses an expired claimed lease before dispatch",
+        "message": "AssertionError: expected 'succeeded' to be 'failed' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:229:35\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "lost-cancellation-poll",
+    "outcome": "killed",
+    "expectedFailure": "aborts an in-flight generation",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody aborts an in-flight generation when the retained request is cancelled",
+        "message": "AssertionError: expected false to be true // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:145:27\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody discards a response that resolves after cancellation instead of journaling an answer",
+        "message": "AssertionError: expected false to be true // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:161:81\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "late-response",
+    "outcome": "killed",
+    "expectedFailure": "response that resolves after cancellation",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody discards a response that resolves after cancellation instead of journaling an answer",
+        "message": "AssertionError: expected { kind: 'answer', …(2) } to deeply equal { kind: 'failure', …(1) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:162:22\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "unsanitized-generation-code",
+    "outcome": "killed",
+    "expectedFailure": "redacts lookup failures",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody redacts lookup failures and nonstandard generation error codes",
+        "message": "AssertionError: expected { …(8) } to match object { Object (p_failure_code) }\n(7 matching properties omitted from actual)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1283:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:212:43\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "forgotten-terminal-status",
+    "outcome": "killed",
+    "expectedFailure": "retires cancelled without retrieving credentials",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody retires cancelled without retrieving credentials or publishing a result",
+        "message": "AssertionError: expected { state: 'failed', …(1) } to deeply equal { state: 'cancelled', …(1) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:132:27\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody retires interrupted without retrieving credentials or publishing a result",
+        "message": "AssertionError: expected { state: 'failed', …(1) } to deeply equal { state: 'interrupted', …(1) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:132:27\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody retires access_lost without retrieving credentials or publishing a result",
+        "message": "AssertionError: expected { state: 'failed', …(1) } to deeply equal { state: 'access_lost', …(1) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:132:27\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody aborts an in-flight generation when the retained request is cancelled",
+        "message": "AssertionError: expected { state: 'failed', …(1) } to deeply equal { state: 'cancelled', …(1) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:144:27\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody discards a response that resolves after cancellation instead of journaling an answer",
+        "message": "AssertionError: expected 'failed' to be 'cancelled' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:161:35\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "lost-access-during-finish",
+    "outcome": "killed",
+    "expectedFailure": "minimal access loss that wins the final completion race",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody accepts cancellation or minimal access loss that wins the final completion race",
+        "message": "Error: provider_access_denied\n    at providerRpcError (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/lib/assistant/provider-server.ts:56:37)\n    at runProviderApiWorkerCycle (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/lib/assistant/provider-api-worker.ts:159:7)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:248:13\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "finished-identity",
+    "outcome": "killed",
+    "expectedFailure": "returned user_id is foreign",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody keeps pending delivery if its returned user_id is foreign",
+        "message": "Error: promise resolved \"{ state: 'succeeded', …(1) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:234:25\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody keeps pending delivery if its returned request_id is foreign",
+        "message": "Error: promise resolved \"{ state: 'succeeded', …(1) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:234:25\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody keeps pending delivery if its returned api_revision_id is foreign",
+        "message": "Error: promise resolved \"{ state: 'succeeded', …(1) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:234:25\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker custody keeps pending delivery if its returned api_connection_id is foreign",
+        "message": "Error: promise resolved \"{ state: 'succeeded', …(1) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:234:25\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "finished-cancellation",
+    "outcome": "killed",
+    "expectedFailure": "minimal access loss that wins the final completion race",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody accepts cancellation or minimal access loss that wins the final completion race",
+        "message": "Error: api_worker_delivery_mismatch\n    at runProviderApiWorkerCycle (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/lib/assistant/provider-api-worker.ts:165:110)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:246:13\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "finished-state",
+    "outcome": "killed",
+    "expectedFailure": "changed completion state",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody refuses a changed completion state",
+        "message": "Error: promise resolved \"{ state: 'running', …(1) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:242:25\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "finished-failure-code",
+    "outcome": "killed",
+    "expectedFailure": "changed completion failure_code",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody refuses a changed completion failure_code",
+        "message": "Error: promise resolved \"{ state: 'succeeded', …(1) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:242:25\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "finished-result",
+    "outcome": "killed",
+    "expectedFailure": "changed completion result",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody refuses a changed completion result",
+        "message": "Error: promise resolved \"{ state: 'succeeded', …(1) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:242:25\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "finished-receipt",
+    "outcome": "killed",
+    "expectedFailure": "changed completion provider_receipt",
+    "matched": true,
+    "failures": [
+      {
+        "name": "saved API worker custody refuses a changed completion provider_receipt",
+        "message": "Error: promise resolved \"{ state: 'succeeded', …(1) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker.test.ts:242:25\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  }
+]

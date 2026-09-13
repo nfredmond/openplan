@@ -20,12 +20,12 @@ export async function writeConnectorJournal(directory, value) {
   const parent = await open(directory, "r"); try { await parent.sync(); } finally { await parent.close(); }
 }
 
-// flock owns the OS lock while its cat child holds this pipe open. Parent loss
-// closes the pipe and releases the lock; there is no stale PID file to clear.
+// flock execs cat without forking, so one child owns both the OS lock and
+// this pipe. Parent loss closes the pipe; child loss releases the lock.
 export async function acquireConnectorLock(directory) {
   await privateConnectorDirectory(directory);
   const file = await open(join(directory, "run.lock"), "a", 0o600); await file.close();
-  const child = spawn("/usr/bin/flock", ["--exclusive", "--nonblock", join(directory, "run.lock"), "/usr/bin/cat"], { stdio: ["pipe", "pipe", "pipe"], env: { PATH: "/usr/bin:/bin" } });
+  const child = spawn("/usr/bin/flock", ["--exclusive", "--nonblock", "--no-fork", join(directory, "run.lock"), "/usr/bin/cat"], { stdio: ["pipe", "pipe", "pipe"], env: { PATH: "/usr/bin:/bin" } });
   const lost = new AbortController(); child.on("exit", () => lost.abort());
   child.stdin.on("error", () => {}); child.stderr.resume();
   await new Promise((resolve, reject) => {
@@ -35,7 +35,11 @@ export async function acquireConnectorLock(directory) {
     child.stdout.once("data", data => { clearTimeout(timeout); if (data.toString() === "locked\n") resolve(); else reject(new ConnectorError("connector_lock_unavailable")); });
     child.stdin.write("locked\n");
   });
-  return { signal: lost.signal, async release() { if (child.exitCode === null) { const ended = once(child, "exit"); child.stdin.end(); await ended; } } };
+  return { signal: lost.signal, async release() {
+    const ended = child.exitCode === null && child.signalCode === null ? once(child, "exit") : null;
+    child.stdin.end();
+    if (ended) await ended;
+  } };
 }
 
 function failureCode(error) {

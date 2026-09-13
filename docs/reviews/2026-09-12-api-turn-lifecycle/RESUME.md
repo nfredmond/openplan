@@ -5,6 +5,10 @@ old v0.48 release task. Continue roadmap A0b with the existing saved API setting
 generation adapter and newly verified retained-job lifecycle. The worker and
 project selection are next; no new generation option or tag is claimed yet.
 
+The worker implementation has now begun. Continue from
+[the worker checkpoint](../2026-09-12-api-worker/RESUME.md), which supersedes the
+implementation TODOs below and includes the newly discovered native lock fix.
+
 ## Checkout and landing
 
 Implementation checkout:
