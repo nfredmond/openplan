@@ -52,29 +52,49 @@ Final replay handles are all terminal: 60372 focused tests, 78388 native suite,
 98698 TypeScript and 87510 ESLint, all exit zero. No test, mutation or browser
 server is running. Do not restart those handles.
 
+## Usage-reset checkpoint
+
+The real-process live suite now exists in
+openplan/src/test/provider-api-worker-live.test.ts. Its corrected baseline passed
+all 11 cases. The first run passed ten and failed access removal because its
+fixture had only one owner; a second synthetic owner now preserves the existing
+last-owner protection. No production guard was weakened.
+
+live-mutations.json records all seven completed cases: the harmless comment
+passed all 11 tests, and six targeted faults failed the intended assertions.
+These cover missing running/completed journals, forgotten crash recovery,
+missed cancellation, changed deployment destination, and forbidden automatic
+business-record creation. The worker source matches committed HEAD after
+restoration. No mutation process or live worker remains running at checkpoint.
+The new live test and mutation evidence are saved as unfinished implementation
+work, not a release or a claim that full QA has passed.
+
+The real child process uses actual PostgREST, the SDK and a synthetic loopback
+model endpoint. It covers saved-key/keyless dispatch, exact original packet and
+receipt, one reservation, completion response loss before/after database commit,
+forced crash without a second model request, cancellation/edit/revoke/access
+loss, corrupt journals and changed destination. It creates no real business
+records and calls no external provider. Synthetic records remain only in the
+named disposable stack.
+
 ## Immediate next
 
-1. Build live worker acceptance with real PostgREST, the real SDK and a loopback
-   HTTP response fixture. Use the named disposable stack below and launch the
-   actual scripts/workers/provider-api.ts process, not only the in-process cycle.
-   Test both saved-key and explicit keyless modes, exact packet/model/revision
-   receipt, one dispatch reservation, no business action, and no ambient key.
-2. Prove response loss after completion commit retries only delivery; process
-   interruption while generating leaves a running journal that restarts as a
-   failed/interrupted request without a second model call. Check cancellation,
-   edit/revocation, private access, corrupt journal, lost lock and retry recovery.
-   Use real fake-provider request counts and retained checksums/identities.
-3. Run appropriate mutation controls for new checks; keep sources restored.
-   Then full QA/shuffle and final applicable database checks before landing this
-   worker increment directly on main. The shared native lock fix is included.
-4. Join the api_connection POST discriminator and ProjectProviderPanel, including
+1. Replay all 11 live cases on the restored source using explicit
+   OPENPLAN_RLS_LIVE_TEST=1 and OPENPLAN_SUPABASE_WORKDIR below. Run final
+   TypeScript and changed-file ESLint. Add the new live file to test:rls-live.
+2. Run full QA, shuffled tests and final full isolated RLS for the worker
+   increment, plus applicable native worker checks. Land directly on main and
+   inspect exact CI; no PRs. Existing main checks do not validate this increment.
+3. Join the api_connection POST discriminator and ProjectProviderPanel, including
    its browser-safe turn decoder. Exact saved revision/config hash/model/auth/
    charge acknowledgement must survive uncertain retries and history. Use the
    existing approval flow; generation only proposes. No inline web generation.
-5. Accept real navigation on an identified build at desktop and 390px with
+4. Accept real navigation on an identified build at desktop and 390px with
    keyboard and console evidence, response-loss recovery, config changes,
    private history and immutable original receipts. Only then remove settings'
    generation-unavailable wording. Inspect final main CI before a release tag.
+5. Continue the full v1 roadmap under the active goal. A usage reset is not a
+   completed goal. Recheck processes, git and serving identity when resuming.
 
 ## Isolated environment
 

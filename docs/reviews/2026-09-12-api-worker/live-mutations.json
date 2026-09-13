@@ -1,0 +1,110 @@
+[
+  {
+    "name": "harmless-comment",
+    "outcome": "survived",
+    "matched": true,
+    "expectedFailure": null,
+    "expectedMessage": null,
+    "passed": 11,
+    "skipped": 0,
+    "failures": []
+  },
+  {
+    "name": "missing-running-journal",
+    "outcome": "killed",
+    "matched": true,
+    "expectedFailure": "dispatches through the real SDK",
+    "expectedMessage": "Running journal must exist before model dispatch",
+    "passed": 0,
+    "skipped": 9,
+    "failures": [
+      {
+        "name": "saved API worker real process dispatches through the real SDK and PostgREST with api_key",
+        "message": "AssertionError: Running journal must exist before model dispatch: expected 'missing' to be 'running' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker-live.test.ts:162:125\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker real process dispatches through the real SDK and PostgREST with none",
+        "message": "AssertionError: Running journal must exist before model dispatch: expected 'missing' to be 'running' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker-live.test.ts:162:125\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "missing-completed-journal",
+    "outcome": "killed",
+    "matched": true,
+    "expectedFailure": "response loss after database commit",
+    "expectedMessage": "Completed result must survive response loss",
+    "passed": 0,
+    "skipped": 10,
+    "failures": [
+      {
+        "name": "saved API worker real process recovers an exact completion after response loss after database commit",
+        "message": "AssertionError: Completed result must survive response loss: expected 'running' to be 'completed' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker-live.test.ts:176:86\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "forgotten-running-recovery",
+    "outcome": "killed",
+    "matched": true,
+    "expectedFailure": "killed generating process",
+    "expectedMessage": "AssertionError",
+    "passed": 0,
+    "skipped": 10,
+    "failures": [
+      {
+        "name": "saved API worker real process recovers a killed generating process without a second model request",
+        "message": "AssertionError: expected { …(26) } to match object { state: 'failed', …(3) }\n(22 matching properties omitted from actual)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1283:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker-live.test.ts:190:52\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "missed-cancellation",
+    "outcome": "killed",
+    "matched": true,
+    "expectedFailure": "generation after cancel",
+    "expectedMessage": "Worker did not observe cancellation within twelve seconds",
+    "passed": 0,
+    "skipped": 10,
+    "failures": [
+      {
+        "name": "saved API worker real process interrupts real generation after cancel",
+        "message": "Error: Worker did not observe cancellation within twelve seconds\n    at Timeout.<anonymous> (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker-live.test.ts:23:117)\n    at listOnTimeout (node:internal/timers:685:17)\n    at processTimers (node:internal/timers:618:7)"
+      }
+    ]
+  },
+  {
+    "name": "wrong-deployment",
+    "outcome": "killed",
+    "matched": true,
+    "expectedFailure": "changed deployment destination",
+    "expectedMessage": "AssertionError",
+    "passed": 0,
+    "skipped": 10,
+    "failures": [
+      {
+        "name": "saved API worker real process refuses a saved journal against a changed deployment destination",
+        "message": "AssertionError: expected +0 to be 1 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker-live.test.ts:221:113\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "automatic-business-action",
+    "outcome": "killed",
+    "matched": true,
+    "expectedFailure": "dispatches through the real SDK",
+    "expectedMessage": "Generation must not execute its proposed business record",
+    "passed": 0,
+    "skipped": 9,
+    "failures": [
+      {
+        "name": "saved API worker real process dispatches through the real SDK and PostgREST with api_key",
+        "message": "AssertionError: Generation must not execute its proposed business record: expected 1 to be +0 // Object.is equality\n    at Object.custody (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker-live.test.ts:152:141)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker-live.test.ts:167:19\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API worker real process dispatches through the real SDK and PostgREST with none",
+        "message": "AssertionError: Generation must not execute its proposed business record: expected 1 to be +0 // Object.is equality\n    at Object.custody (/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker-live.test.ts:152:141)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-worker-live.test.ts:167:19\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  }
+]

@@ -70,3 +70,18 @@ process interruption, response-loss recovery against real retained jobs, or
 browser navigation. The existing independent adapter and SQL campaigns cover
 different boundaries. The project POST discriminator and UI still need joining.
 No new provider option or release is claimed. No external paid service is used.
+
+## Real-process checkpoint before usage reset
+
+The new provider-api-worker-live.test.ts passed all 11 cases against the named
+disposable database, actual child worker, real SDK and synthetic local HTTP
+endpoint. The first access-loss fixture failed the last-owner constraint;
+adding a second synthetic owner corrected the fixture without changing guards.
+The separate live mutation campaign completed one harmless survivor and six
+expected faults. All outcomes and named failure messages are retained in
+live-mutations.json. The production worker source matches HEAD after restoration.
+These tests extend the earlier mocked boundary with dispatch, encrypted saved
+credentials, completion-response recovery and real process interruption.
+They do not establish browser reachability or external-provider compatibility.
+A final restored live replay, full QA, shuffled tests and full isolated RLS on
+this increment remain pending. RESUME.md records the exact continuation.
