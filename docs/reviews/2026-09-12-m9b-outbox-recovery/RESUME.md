@@ -121,3 +121,9 @@ Do not restart merely because polling is quiet. The checkout is fixed until thos
 checks finish, apart from this receipt-only note. Main remains published v0.56.0
 at e006b98b. v0.56.1 is not on main or tagged; finish checks, land directly, inspect
 final GitHub CI/RLS and release under the existing policy.
+
+Corrected shuffled session 4767 is now terminal with status 0: 14,148 tests
+passed, 450 skipped, 1,261 files passed and 43 skipped; seed 913561, source
+79542b3e. Full QA session 21006 remains live; wrapper PID 4125729 and eslint
+child 4126108 were confirmed active at this checkpoint. Continue polling that
+same run. Only full QA remains locally before landing; final remote CI is separate.

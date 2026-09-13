@@ -102,3 +102,9 @@ full-checks.json. Worker setup initially ran no suites without this checkout's
 environments, then 51/52 without configuration, then all 52 with explicit dummy
 configuration. Reused virtualenvs are local dependency symlinks. The corrected
 worker test also passes without that external configuration.
+
+Corrected shuffle on 79542b3e passed 14,148 tests across 1,261 files, with 450
+tests and 43 files explicitly skipped. Isolated RLS passed 479 tests/50 files
+on 6fbbd72b, with schema and live-test source unchanged afterward. All 52 worker
+suites passed on 79542b3e without externally supplied test credentials. Full QA
+on that source is still running; these passes do not imply that it completed.
