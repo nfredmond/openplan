@@ -1,0 +1,30 @@
+{
+  "sourceSha256": "2afb724dde5e870b661e9662b269e99eeecb072a22aaaa91a4970b7d2d188c45",
+  "cases": [
+    {
+      "case": "baseline",
+      "matched": true,
+      "outcome": "observed-current-behavior",
+      "expectedFailure": null
+    },
+    {
+      "case": "harmless-comment",
+      "matched": true,
+      "outcome": "observed-current-behavior",
+      "expectedFailure": null
+    },
+    {
+      "case": "refuse-stale-version",
+      "matched": true,
+      "outcome": "rejected-changed-behavior",
+      "expectedFailure": "Current stale-write behavior changed"
+    },
+    {
+      "case": "refuse-changed-source",
+      "matched": true,
+      "outcome": "rejected-changed-behavior",
+      "expectedFailure": "Current source-race behavior changed"
+    }
+  ],
+  "limits": "Diagnostic controls, not an implemented write guard. Every case runs in a rollback transaction; connections close on errors."
+}

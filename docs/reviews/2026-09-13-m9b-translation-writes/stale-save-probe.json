@@ -1,0 +1,7 @@
+{
+  "scope": "Actual authenticated SQL with current route-shaped writes; no simultaneous clients or HTTP proof",
+  "observedOldClock": true,
+  "originalAndNewerHistoryRetained": true,
+  "staleSaveSilentlyReplacesNewerWording": true,
+  "sourceChangedBeforeSaveStillAcceptsOldSourceHash": true
+}
