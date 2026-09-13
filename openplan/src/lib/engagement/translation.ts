@@ -14,8 +14,8 @@ import { anthropicModel, hasAnthropicAccess } from "@/lib/integrations/anthropic
 const TRANSLATION_MODEL_ID =
   process.env.OPENPLAN_ENGAGEMENT_TRANSLATION_MODEL?.trim() || "claude-haiku-4-5-20251001";
 
-/** Input cap mirrors the public submission body cap so nothing partial leaks. */
-const TRANSLATION_INPUT_CAP = 4000;
+/** Bound model input without replacing a supported source with its prefix. */
+const TRANSLATION_INPUT_MAX_BYTES = 32_000;
 
 // The language list, labels, guard, and caveat live in
 // translation-languages.ts (client-safe); re-exported here so server callers
@@ -47,7 +47,7 @@ export async function translateEngagementText(input: {
   targetLanguage: TranslationLanguage;
 }): Promise<TranslationResult> {
   const target = input.targetLanguage;
-  const text = (input.text ?? "").trim().slice(0, TRANSLATION_INPUT_CAP);
+  const text = (input.text ?? "").trim();
 
   const unavailable = (): TranslationResult => ({
     source: "unavailable",
@@ -57,13 +57,13 @@ export async function translateEngagementText(input: {
     caveat: TRANSLATION_CAVEAT,
   });
 
-  if (!hasAnthropicAccess()) return unavailable();
+  if (!hasAnthropicAccess() || Buffer.byteLength(text, "utf8") > TRANSLATION_INPUT_MAX_BYTES) return unavailable();
   if (!text) {
     return { source: "ai", target_language: target, translated: "", model: TRANSLATION_MODEL_ID, caveat: TRANSLATION_CAVEAT };
   }
 
   try {
-    const { text: out } = await generateText({
+    const { text: out, finishReason } = await generateText({
       model: anthropicModel(TRANSLATION_MODEL_ID),
       temperature: 0,
       maxOutputTokens: 1500,
@@ -73,7 +73,7 @@ export async function translateEngagementText(input: {
     });
 
     const translated = out.trim();
-    if (!translated) return unavailable();
+    if (finishReason !== "stop" || !translated) return unavailable();
     return { source: "ai", target_language: target, translated, model: TRANSLATION_MODEL_ID, caveat: TRANSLATION_CAVEAT };
   } catch {
     return unavailable();

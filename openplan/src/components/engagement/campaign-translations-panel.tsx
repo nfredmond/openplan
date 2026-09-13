@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { TranslationHistory } from "./translation-history";
 import { useRouter } from "next/navigation";
 import { Languages, Loader2 } from "lucide-react";
 
@@ -176,6 +177,7 @@ export function CampaignTranslationsPanel({
     return withWork ?? targetLocales[0] ?? sourceLocale;
   });
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [historyRevision, setHistoryRevision] = useState(0);
   const [state, setState] = useState<FetchState>({ busy: null, error: null, notice: null });
 
   const direction = PORTAL_LOCALE_DIRECTION[locale];
@@ -296,7 +298,7 @@ export function CampaignTranslationsPanel({
 
   function finish(notice: string | null, refresh: boolean) {
     setState({ busy: null, error: null, notice });
-    if (refresh) router.refresh();
+    if (refresh) { setHistoryRevision(value => value + 1); router.refresh(); }
   }
 
   async function save(keys: string[]) {
@@ -464,6 +466,8 @@ export function CampaignTranslationsPanel({
           <Languages className="h-5 w-5" />
         </span>
       </div>
+
+      <TranslationHistory campaignId={campaignId} revision={historyRevision} />
 
       {readFailures.length > 0 ? (
         <div className="mt-4 space-y-2">

@@ -1,0 +1,164 @@
+[
+  {
+    "case": "baseline-helper",
+    "matched": true,
+    "outcome": "survived",
+    "failed": []
+  },
+  {
+    "case": "baseline-reader",
+    "matched": true,
+    "outcome": "survived",
+    "failed": []
+  },
+  {
+    "case": "baseline-ui",
+    "matched": true,
+    "outcome": "survived",
+    "failed": []
+  },
+  {
+    "case": "baseline-route",
+    "matched": true,
+    "outcome": "survived",
+    "failed": []
+  },
+  {
+    "case": "baseline-census",
+    "matched": true,
+    "outcome": "survived",
+    "failed": []
+  },
+  {
+    "case": "harmless-comment",
+    "matched": true,
+    "outcome": "survived",
+    "failed": []
+  },
+  {
+    "case": "source-prefix",
+    "matched": true,
+    "outcome": "killed",
+    "failed": [
+      "translateEngagementText sends the entire valid long source, including its final words",
+      "translateEngagementText refuses oversized UTF-8 input before spending, without translating a prefix"
+    ]
+  },
+  {
+    "case": "partial-completion",
+    "matched": true,
+    "outcome": "killed",
+    "failed": [
+      "translateEngagementText refuses nonempty output with incomplete or unknown finish reason length",
+      "translateEngagementText refuses nonempty output with incomplete or unknown finish reason content-filter",
+      "translateEngagementText refuses nonempty output with incomplete or unknown finish reason error",
+      "translateEngagementText refuses nonempty output with incomplete or unknown finish reason tool-calls",
+      "translateEngagementText refuses nonempty output with incomplete or unknown finish reason other",
+      "translateEngagementText refuses nonempty output with incomplete or unknown finish reason undefined"
+    ]
+  },
+  {
+    "case": "unbounded-input",
+    "matched": true,
+    "outcome": "killed",
+    "failed": [
+      "translateEngagementText refuses oversized UTF-8 input before spending, without translating a prefix"
+    ]
+  },
+  {
+    "case": "checksum",
+    "matched": true,
+    "outcome": "killed",
+    "failed": [
+      "private translation history verification rejects all rows on checksum corruption"
+    ]
+  },
+  {
+    "case": "count",
+    "matched": true,
+    "outcome": "killed",
+    "failed": [
+      "private translation history verification rejects all rows on count mismatch"
+    ]
+  },
+  {
+    "case": "workspace",
+    "matched": true,
+    "outcome": "killed",
+    "failed": [
+      "private translation history verification rejects all rows on foreign retained workspace"
+    ]
+  },
+  {
+    "case": "sequence",
+    "matched": true,
+    "outcome": "killed",
+    "failed": [
+      "private translation history verification rejects all rows on revision gap"
+    ]
+  },
+  {
+    "case": "after-removal",
+    "matched": true,
+    "outcome": "killed",
+    "failed": [
+      "private translation history verification rejects all rows on identity reused after removal"
+    ]
+  },
+  {
+    "case": "duplicate-id",
+    "matched": true,
+    "outcome": "killed",
+    "failed": [
+      "private translation history verification rejects all rows on duplicate identity with valid revisions"
+    ]
+  },
+  {
+    "case": "baseline-actor",
+    "matched": true,
+    "outcome": "killed",
+    "failed": [
+      "private translation history verification rejects all rows on invented legacy actor"
+    ]
+  },
+  {
+    "case": "address",
+    "matched": true,
+    "outcome": "killed",
+    "failed": [
+      "private translation history verification rejects all rows on address changed within identity"
+    ]
+  },
+  {
+    "case": "viewer-route",
+    "matched": true,
+    "outcome": "killed",
+    "failed": [
+      "refuses viewer before reading private history"
+    ]
+  },
+  {
+    "case": "failed-read",
+    "matched": true,
+    "outcome": "killed",
+    "failed": [
+      "reports failed verification without false empty history"
+    ]
+  },
+  {
+    "case": "foreign-ui",
+    "matched": true,
+    "outcome": "killed",
+    "failed": [
+      "refuses a foreign history payload"
+    ]
+  },
+  {
+    "case": "stale-ui",
+    "matched": true,
+    "outcome": "killed",
+    "failed": [
+      "refreshes open history after a confirmed save and preserves selection"
+    ]
+  }
+]
