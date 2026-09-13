@@ -1,0 +1,29 @@
+{
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "database": "postgres",
+  "function_sha256": "399f9530b4cd655b648a2c63f047dadb405975bde28999c44dbdc155c0e9399b",
+  "cases": [
+    {
+      "case": "baseline",
+      "expected_success": true,
+      "exit_code": 0,
+      "matched": true,
+      "original_function_restored": true
+    },
+    {
+      "case": "harmless-comment",
+      "expected_success": true,
+      "exit_code": 0,
+      "matched": true,
+      "original_function_restored": true
+    },
+    {
+      "case": "drop-campaign-translation",
+      "expected_success": false,
+      "exit_code": 3,
+      "matched": true,
+      "original_function_restored": true,
+      "failed_for_missing_campaign_snapshot": true
+    }
+  ]
+}

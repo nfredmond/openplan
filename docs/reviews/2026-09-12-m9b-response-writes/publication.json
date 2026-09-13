@@ -1,0 +1,65 @@
+{
+  "release": "v0.57.0",
+  "published_at": "2026-09-13T12:05:35Z",
+  "commit": "9cfd8aaf146bedb0946d9f56b77d9fb5be36c3bc",
+  "tag_object": "00446e7000da1fe18435cac415cb59ada9dd9d71",
+  "is_draft": false,
+  "is_prerelease": false,
+  "runs": [
+    {
+      "id": 34755308697,
+      "name": "CI",
+      "commit": "9cfd8aaf146bedb0946d9f56b77d9fb5be36c3bc",
+      "conclusion": "success",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34755308697",
+      "jobs": [
+        {
+          "name": "worker (python unit tests)",
+          "conclusion": "success"
+        },
+        {
+          "name": "ops scripts (python unit tests)",
+          "conclusion": "success"
+        },
+        {
+          "name": "verify (qa gate)",
+          "conclusion": "success"
+        },
+        {
+          "name": "modeling scripts (python unit tests)",
+          "conclusion": "success"
+        },
+        {
+          "name": "order independence (shuffled vitest)",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 34755308687,
+      "name": "RLS Isolation",
+      "commit": "9cfd8aaf146bedb0946d9f56b77d9fb5be36c3bc",
+      "conclusion": "success",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34755308687",
+      "jobs": [
+        {
+          "name": "live RLS isolation",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 34755308665,
+      "name": "Upgrade Path",
+      "commit": "9cfd8aaf146bedb0946d9f56b77d9fb5be36c3bc",
+      "conclusion": "success",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34755308665",
+      "jobs": [
+        {
+          "name": "previous release -> seed -> HEAD migration up",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "prove-translation-custody.py": "ef9772fbfe1e7f3883960ffac003b2d011013ff805d1ca95197d722c985ffbf8",
+  "prove-translation-history.py": "265e88ee77afb0e723557369f7baec311e75562c3ce926d6545ea787d0f38b69",
+  "translation-custody-probe.sql": "66d417274c9cea9a45ece23310f07c5feb1beafd995424d3e78d9f4bfdf56df4",
+  "translation-history-candidate.sql": "687eddf4b2980a7fb8e28c722acaadde975c88b368058ca9640521e768c600c6",
+  "translation-history-legacy-fixture.sql": "2c08c2ddf6e945a2565a05504b1280f0d48886a2e2d9b5cee84b291318cfc11b",
+  "translation-history-probe.sql": "68d1a8f289d5cecd501a6882503be97621a666d3020da01573ecb0d5ea30bc98"
+}

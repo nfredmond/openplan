@@ -1,0 +1,51 @@
+[
+  {
+    "case": "baseline",
+    "exit_code": 0,
+    "expected_failure": null,
+    "matched": true,
+    "prototype_schema_rolled_back": true
+  },
+  {
+    "case": "harmless-comment",
+    "exit_code": 0,
+    "expected_failure": null,
+    "matched": true,
+    "prototype_schema_rolled_back": true
+  },
+  {
+    "case": "lose-model",
+    "exit_code": 3,
+    "expected_failure": "Original model, words, actor or hash lost",
+    "matched": true,
+    "prototype_schema_rolled_back": true
+  },
+  {
+    "case": "foreign-reader",
+    "exit_code": 3,
+    "expected_failure": "Foreign actor read history",
+    "matched": true,
+    "prototype_schema_rolled_back": true
+  },
+  {
+    "case": "mutable-history",
+    "exit_code": 3,
+    "expected_failure": "Retained history tampering survived",
+    "matched": true,
+    "prototype_schema_rolled_back": true
+  },
+  {
+    "case": "record-noop",
+    "exit_code": 3,
+    "expected_failure": "Wrong translation sequence",
+    "matched": true,
+    "prototype_schema_rolled_back": true
+  },
+  {
+    "case": "truncate-reader",
+    "exit_code": 3,
+    "expected_failure": "Staff history incomplete",
+    "matched": true,
+    "prototype_schema_rolled_back": true
+  }
+]

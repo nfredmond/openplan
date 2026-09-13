@@ -1,5 +1,7 @@
 # v0.57.0 candidate: retained engagement responses
 
+> Published continuation: v0.57.0 is released. Read [PUBLICATION.md](PUBLICATION.md) and the [next translation-custody checkpoint](../2026-09-13-m9b-translation-custody/NEXT.md) before the historical preparation statements below.
+
 This is preparation, not a published release. Current published release remains
 v0.56.1. Full v1 and the remaining M9b scope are unchanged.
 

@@ -1,0 +1,14 @@
+[
+  {
+    "runner": "prove-translation-custody.py",
+    "in_repository_output_refused": true,
+    "output_directory_created": false,
+    "exit_code": 1
+  },
+  {
+    "runner": "prove-translation-history.py",
+    "in_repository_output_refused": true,
+    "output_directory_created": false,
+    "exit_code": 1
+  }
+]

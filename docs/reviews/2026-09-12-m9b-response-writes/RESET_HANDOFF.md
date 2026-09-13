@@ -1,5 +1,7 @@
 # Weekly reset checkpoint, September 13, 2026
 
+> Published continuation: v0.57.0 is released. Read [PUBLICATION.md](PUBLICATION.md) and the [next translation-custody checkpoint](../2026-09-13-m9b-translation-custody/NEXT.md) before the historical preparation statements below.
+
 > Later continuation: read [RELEASE_CANDIDATE.md](RELEASE_CANDIDATE.md) and [CONFLICT_AND_RESTORE.md](CONFLICT_AND_RESTORE.md). Version 0.57.0 is prepared, not tagged. Recovery and public source-withdrawal journeys passed at desktop and 390px, the full restored-target RLS suite passed, and shuffled seed 370816 passed. Full QA on 0c1e7d70 has now finished with exit 0. Read the final checkpoint below. Owned dev launcher 3326248 is stopped; port 3260 was empty. No unrelated container was stopped.
 
 This is the current recovery entry point. It supersedes the runtime, migration and next-step statements in USAGE_PAUSE.md; preserve that older record as history. Nathaniel asked whether this thread can resume after the weekly reset. Save work now; do not imply unfinished acceptance passed.
