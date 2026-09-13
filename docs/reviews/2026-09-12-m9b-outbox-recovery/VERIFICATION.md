@@ -108,3 +108,14 @@ tests and 43 files explicitly skipped. Isolated RLS passed 479 tests/50 files
 on 6fbbd72b, with schema and live-test source unchanged afterward. All 52 worker
 suites passed on 79542b3e without externally supplied test credentials. Full QA
 on that source is still running; these passes do not imply that it completed.
+
+## Local release checks complete
+
+Full QA on 79542b3e186fed939779bb46d9e9fefc5313e340 completed with status 0 at
+2026-09-13T06:07:52.781Z. Lint, dead-code checks, all tests, provider connector checks,
+dependency audit and the production webpack build/TypeScript passed. The preceding
+failed runs remain in full-checks.json. The only later changes retain these results;
+application and test source are unchanged. Browser, shuffled, isolated RLS and
+worker evidence is recorded above. Final GitHub CI remains required before tagging.
+No new migration was added; the schema is identical to published v0.56.0, whose
+populated upgrade check is retained in the response-history review.

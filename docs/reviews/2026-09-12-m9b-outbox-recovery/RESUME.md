@@ -127,3 +127,13 @@ passed, 450 skipped, 1,261 files passed and 43 skipped; seed 913561, source
 79542b3e. Full QA session 21006 remains live; wrapper PID 4125729 and eslint
 child 4126108 were confirmed active at this checkpoint. Continue polling that
 same run. Only full QA remains locally before landing; final remote CI is separate.
+
+## Local gate finished; land and inspect CI
+
+Full QA session 21006 is terminal with status 0. All local release checks are now
+complete, with receipts in full-checks.json. No local browser, app, proxy or test
+job from this increment remains running. The next action is to fast-forward the
+verified candidate directly to remote main and inspect the exact resulting GitHub
+CI and RLS runs before tagging/publishing v0.56.1. No new migration was introduced.
+Keep main's release source fixed while CI runs; use a separate owned worktree for
+the next response-write increment. The full v1 goal remains active.
