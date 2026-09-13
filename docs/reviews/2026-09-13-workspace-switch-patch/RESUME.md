@@ -1,3 +1,7 @@
+# Current state: v0.58.1 published
+
+Read [PUBLICATION.md](PUBLICATION.md). The tag and release are published after exact-commit CI, RLS and populated upgrade success. Continue development in the translation checkout at 5995b05f. Earlier preparation notes below remain historical.
+
 # Latest checkpoint: local acceptance complete
 
 Read [VERIFICATION.md](VERIFICATION.md). All local QA, shuffled, isolated RLS,
