@@ -349,7 +349,10 @@ function recordingClient(results: Record<string, { data: unknown[]; error: { mes
       from: (table: string) => {
         const recorded: Array<[string, unknown]> = [];
         filters.set(table, recorded);
+        let rangeStart = 0;
+        let rangeEnd = Number.POSITIVE_INFINITY;
         const chain: Record<string, unknown> = {
+          range: (from: number, to: number) => { rangeStart = from; rangeEnd = to; return chain; },
           select: () => chain,
           order: () => chain,
           limit: () => chain,
@@ -362,7 +365,7 @@ function recordingClient(results: Record<string, { data: unknown[]; error: { mes
             error: results[table]?.error ?? null,
           }),
           then: (resolve: (value: { data: unknown[]; error: { message: string } | null }) => unknown) =>
-            resolve(results[table] ?? { data: [], error: null }),
+            resolve({ data: (results[table]?.data ?? []).slice(rangeStart, rangeEnd + 1), error: results[table]?.error ?? null }),
         };
         return chain;
       },

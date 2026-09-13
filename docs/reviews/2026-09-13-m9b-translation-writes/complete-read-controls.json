@@ -1,0 +1,81 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "matched": true,
+    "failures": []
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived",
+    "matched": true,
+    "failures": []
+  },
+  {
+    "case": "stop-after-first-page",
+    "outcome": "killed",
+    "matched": true,
+    "failures": [
+      "a translation cannot be attached to something outside this campaign refuses a field this campaign does not show a participant",
+      "a translation cannot be attached to something outside this campaign refuses an archived question's prompt, because a participant does not read it",
+      "the operator's own wording stores it as the agency's statement, with no model and with what it translated",
+      "the operator's own wording reports a failed save as a failure, naming the database's own message",
+      "machine translation drafts without saving anything, so a suggestion is not a publication",
+      "machine translation publishes model output as machine, with the model recorded",
+      "machine translation meters the spend it caused, in its own bucket",
+      "machine translation stops at the rate limit instead of spending",
+      "machine translation says why the model is unavailable instead of showing an empty box",
+      "machine translation refuses to machine-translate into a language it carries but never generates \u2014 even with a key",
+      "machine translation reports a translation that failed as failed, not as one that came back empty",
+      "accepting a machine translation promotes it to the agency's own wording and drops the model",
+      "accepting a machine translation audits the promotion as a promotion, because who wrote a public sentence has legal weight",
+      "accepting a machine translation promotes only the fields asked for, never a cross product of them",
+      "accepting a machine translation answers a promotion that matched nothing as no such translation, not as success",
+      "withdrawing a translation removes exactly one field's translation in one language",
+      "withdrawing a translation answers a withdrawal that matched nothing as no such translation",
+      "withdrawing a translation refuses a withdrawal aimed outside this campaign",
+      "EngagementCampaignDetailPage the campaign's GIS context layers says the layer list could not be read instead of showing a campaign with none",
+      "EngagementCampaignDetailPage the campaign's translations hands the panel this campaign's own strings, not an empty inventory",
+      "EngagementCampaignDetailPage the campaign's translations shows what a language can be claimed to be, per language",
+      "EngagementCampaignDetailPage the campaign's translations marks a machine translation as machine and says what accepting it does",
+      "EngagementCampaignDetailPage the campaign's translations offers a viewer no translation control the route would refuse",
+      "complete campaign translation reads loads every source and saved wording at count 5 and cap 2",
+      "complete campaign translation reads loads every source and saved wording at count 1005 and cap 1000",
+      "complete campaign translation reads discards earlier pages and reports a later-page outage"
+    ]
+  },
+  {
+    "case": "ignore-incomplete",
+    "outcome": "killed",
+    "matched": true,
+    "failures": [
+      "a translation cannot be attached to something outside this campaign refuses everything when the inventory itself could not be read",
+      "the translatable inventory is exactly what a participant reads reports a failed inventory read instead of shrinking the thing it measures",
+      "the translatable inventory is exactly what a participant reads classifies an unapplied migration as a pending schema rather than a broken read",
+      "the translatable inventory is exactly what a participant reads withholds coverage when the inventory it would be measured against is short",
+      "EngagementCampaignDetailPage the campaign's translations says coverage is unknown rather than zero when the translations cannot be read",
+      "EngagementCampaignDetailPage the campaign's translations withholds coverage when part of what participants read could not be listed",
+      "complete campaign translation reads discards earlier pages and reports a later-page outage",
+      "complete campaign translation reads withholds results when the page ceiling prevents proving exhaustion"
+    ]
+  },
+  {
+    "case": "omit-unique-order",
+    "outcome": "killed",
+    "matched": true,
+    "failures": [
+      "complete campaign translation reads loads every source and saved wording at count 5 and cap 2",
+      "complete campaign translation reads loads every source and saved wording at count 1005 and cap 1000"
+    ]
+  },
+  {
+    "case": "drop-source-projection",
+    "outcome": "killed",
+    "matched": true,
+    "failures": [
+      "EngagementCampaignDetailPage the campaign's translations withholds coverage when part of what participants read could not be listed",
+      "complete campaign translation reads loads every source and saved wording at count 5 and cap 2",
+      "complete campaign translation reads loads every source and saved wording at count 1005 and cap 1000"
+    ]
+  }
+]

@@ -78,7 +78,8 @@ const projectSelectMock = vi.fn((columns?: string) => {
 });
 
 const categoriesOrderCreatedMock = vi.fn();
-const categoriesOrderSortMock = vi.fn(() => ({ order: categoriesOrderCreatedMock }));
+const categoriesPaging = pagingFake(() => categoriesOrderCreatedMock());
+const categoriesOrderSortMock = vi.fn(() => categoriesPaging.chain);
 const categoriesEqMock = vi.fn(() => ({ order: categoriesOrderSortMock }));
 const categoriesSelectMock = vi.fn(() => ({ eq: categoriesEqMock }));
 
@@ -488,6 +489,7 @@ describe("EngagementCampaignDetailPage", () => {
   beforeEach(() => {
     // The paging fake caches its fixture per request; clear it per test.
     itemsPaging.reset();
+    categoriesPaging.reset();
     vi.clearAllMocks();
     coverageRows = [{ project_id: "project-1", projects: { id: "project-1", name: "Downtown Mobility Plan" } }];
     coverageError = null;

@@ -1,5 +1,9 @@
 # Translation writes after the history release
 
+[Current inventory implementation and lock findings](READ_PROGRESS.md) continue
+this complete workflow in a separate checkout. They are not a release or an
+exact-version write guarantee.
+
 Continue the existing M9b editor and translation services. The complete V1
 contract and roadmap remain binding. No PRs or human-review release gate; local
 and free operation, native scope constraints and private retained originals stay

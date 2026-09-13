@@ -52,10 +52,13 @@ let deleteReturns: Record<string, unknown> | null = null;
 
 function readChain(rows: () => Array<Record<string, unknown>>, table: string) {
   const chain: Record<string, unknown> = {};
+  let start = 0;
+  let end = Number.POSITIVE_INFINITY;
+  chain.range = (from: number, to: number) => { start = from; end = to; return chain; };
   for (const method of ["select", "eq", "order", "limit", "in"]) chain[method] = () => chain;
   chain.maybeSingle = async () => ({ data: null, error: inventoryError[table] ?? null });
   chain.then = (resolve: (value: unknown) => unknown) =>
-    resolve({ data: inventoryError[table] ? [] : rows(), error: inventoryError[table] ?? null });
+    resolve({ data: inventoryError[table] ? [] : rows().slice(start, end + 1), error: inventoryError[table] ?? null });
   return chain;
 }
 

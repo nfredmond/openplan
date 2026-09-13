@@ -48,6 +48,7 @@
  */
 
 import { createHash } from "node:crypto";
+import { readEveryPage, type PagedReadPage } from "@/lib/supabase/paged-read";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { loadPublishedCloseLoopEntries } from "./close-loop";
 
@@ -383,6 +384,18 @@ function readFailure(label: string, message: string | null | undefined): Campaig
  * `loadCampaignAccess`), and a third read of the same row could disagree with
  * what the caller is rendering.
  */
+// Keep successful short pages distinct from a complete read. A configured
+// server cap may be smaller than our requested range; only exhaustion proves it.
+async function readCompleteTranslationRows<Row>(
+  fetchPage: (from: number, to: number) => PromiseLike<PagedReadPage<Row>>
+): Promise<{ data: Row[]; error: { message: string } | null }> {
+  const result = await readEveryPage(fetchPage);
+  if (!result.complete) {
+    return { data: [], error: result.error ?? { message: "The translation read did not reach its end. Try again or check the database page limit." } };
+  }
+  return { data: result.rows, error: null };
+}
+
 /**
  * The questions a participant is shown — active AND published.
  *
@@ -408,17 +421,21 @@ async function readTranslatableQuestions(
       // Only what a participant is shown. An archived question is not a gap.
       .eq("is_active", true);
 
-  const filtered = await base()
+  const filtered = await readCompleteTranslationRows((from, to) => base()
     .eq("status", "published")
     .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: true })
+    .order("id", { ascending: true })
+    .range(from, to));
 
   if (!filtered.error || !looksLikePendingSurveyStatusColumn(filtered.error.message)) return filtered;
 
 
-  return base()
+  return readCompleteTranslationRows((from, to) => base()
     .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: true })
+    .order("id", { ascending: true })
+    .range(from, to));
 }
 
 export async function loadCampaignTranslatableFields(
@@ -426,19 +443,23 @@ export async function loadCampaignTranslatableFields(
   campaign: CampaignTranslatableSource["campaign"]
 ): Promise<{ fields: CampaignTranslatableField[]; readFailures: CampaignTranslationReadFailure[] }> {
   const [categories, questions, options, closeLoop] = await Promise.all([
-    supabase
+    readCompleteTranslationRows((from, to) => supabase
       .from("engagement_categories")
       .select("id, label, description")
       .eq("campaign_id", campaign.id)
       .order("sort_order", { ascending: true })
-      .order("created_at", { ascending: true }),
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true })
+      .range(from, to)),
     readTranslatableQuestions(supabase, campaign.id),
-    supabase
+    readCompleteTranslationRows((from, to) => supabase
       .from("engagement_survey_question_options")
       .select("id, question_id, label")
       .eq("campaign_id", campaign.id)
       .eq("is_active", true)
-      .order("sort_order", { ascending: true }),
+      .order("sort_order", { ascending: true })
+      .order("id", { ascending: true })
+      .range(from, to)),
     loadPublishedCloseLoopEntries(supabase, campaign.id),
   ]);
 
@@ -482,9 +503,9 @@ export type CampaignTranslationRow = {
 /**
  * Every translation this campaign has, in every language.
  *
- * ONE READ, NOT ONE PER LOCALE: the operator question is "which languages are we
- * complete in", which cannot be answered a language at a time, and one query per
- * language to answer one question is one chance to half-fail per language.
+ * Read every page across all locales. This proves exhaustion for stable rows;
+ * it does not provide a transaction snapshot across concurrent edits. Exact
+ * source/version checks belong to the transactional write workflow.
  *
  * A failed read is REPORTED, never returned as an empty set. Empty means "this
  * campaign has been translated into nothing", which is a claim about the agency;
@@ -495,10 +516,12 @@ export async function loadCampaignTranslations(
   supabase: QueryClient,
   campaignId: string
 ): Promise<{ rows: CampaignTranslationRow[]; failure: CampaignTranslationReadFailure | null }> {
-  const result = await supabase
+  const result = await readCompleteTranslationRows((from, to) => supabase
     .from("engagement_content_translations")
     .select(CAMPAIGN_TRANSLATION_COLUMNS)
-    .eq("campaign_id", campaignId);
+    .eq("campaign_id", campaignId)
+    .order("id", { ascending: true })
+    .range(from, to));
 
   if (result.error) {
     return { rows: [], failure: readFailure("this campaign's saved translations", result.error.message) };

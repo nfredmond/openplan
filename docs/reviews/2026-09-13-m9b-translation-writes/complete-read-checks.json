@@ -1,0 +1,44 @@
+{
+  "parentCommit": "18c50222b7f9ab440c9274cc5696f70871710679",
+  "status": "unreleased next-work checkpoint",
+  "fullTests": {
+    "exit": 0,
+    "passed": 14344,
+    "skipped": 460,
+    "passedFiles": 1269,
+    "skippedFiles": 45
+  },
+  "focusedTests": {
+    "exit": 0,
+    "passed": 123,
+    "files": 4
+  },
+  "typeCheckExit": 0,
+  "changedFileLintExit": 0,
+  "mutationControls": "complete-read-controls.json",
+  "unprovisionedWorkerSkips": [
+    "every worker's suites can start under that worker's own interpreter activitysim_worker: every suite imports",
+    "every worker's suites can start under that worker's own interpreter aequilibrae_worker: every suite imports",
+    "every worker's suites can start under that worker's own interpreter county_onramp_worker: every suite imports",
+    "every worker's suites can start under that worker's own interpreter ocr_worker: every suite imports",
+    "every worker's suites can start under that worker's own interpreter odm_worker: every suite imports",
+    "the import probe can actually fail proves the interpreter it used can actually fail",
+    "the import probe can actually fail reports a broken import in a worker other than the one it was written for"
+  ],
+  "sourceSha256": {
+    "openplan/src/lib/engagement/campaign-translations.ts": "9a1a5122e9dc45230b0a131ad6881ccf940f23b059866cc5ff8302d7a0d3dabb",
+    "openplan/src/test/engagement-translation-complete-reads.test.ts": "bd7105a77a6f26a662b67d92ab9d88271086abfe5f8135c4b78704c698975ed2",
+    "openplan/src/test/an-operator-can-author-a-campaigns-translations.test.tsx": "8efeb6fcf069c41d611eddea6d8a40f17b34d91dfbabe9a085c408c028f1cd28",
+    "openplan/src/test/accepting-a-machine-translation-makes-it-the-agencys-own.test.ts": "c7e91a5794c40315f3b30aec1e8968c79c7ad545c8d9e712f3b253fdd1aa32fe",
+    "openplan/src/test/engagement-campaign-detail-page.test.tsx": "9c9df270eefd999f7a6095cd84ac3f3a45167f2cb56e3ae2cebb690810484355"
+  },
+  "logSha256": {
+    "translation-complete-reads-full-tests-final.log": "ece9fbaad7adfe41fcca2e0d833afc055085003acc54de6d9c6b4a6948b019f3",
+    "translation-complete-read-types-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "translation-complete-read-lint-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "translation-complete-read-page-controls-final.log": "a982d902bd24990388119a46a9136aa6162ad96b71d97abb65308dc5d49cab28",
+    "translation-complete-reads-page-focused.log": "64ea34d704faf05c1f6efc4f2657f0528f71b8f4eb53c2f5cdb04dbda4d184e4",
+    "translation-workflow-worker-import-skips.json": "304db57b9307fb0afc95e1f3a47c382e96b8ef4b450d6790571c6be346a500e5"
+  },
+  "limits": "No complete QA gate/build, shuffled run, identified browser acceptance or installed read test for this next-work source. Pagination is not an atomic snapshot and does not close the exact-version write/generation workflow."
+}

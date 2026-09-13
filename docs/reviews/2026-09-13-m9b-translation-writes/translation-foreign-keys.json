@@ -1,0 +1,55 @@
+{
+  "container": "supabase_db_openplan-restore-target-2731143",
+  "migrationCount": 328,
+  "query": "pg_constraint on public.engagement_content_translations, contype=f, sorted by conname",
+  "constraints": [
+    {
+      "name": "engagement_content_translations_campaign_id_fkey",
+      "table": "engagement_content_translations",
+      "definition": "FOREIGN KEY (campaign_id) REFERENCES engagement_campaigns(id) ON DELETE CASCADE",
+      "deleteAction": "c"
+    },
+    {
+      "name": "engagement_content_translations_created_by_fkey",
+      "table": "engagement_content_translations",
+      "definition": "FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL",
+      "deleteAction": "n"
+    },
+    {
+      "name": "engagement_content_translations_workspace_id_fkey",
+      "table": "engagement_content_translations",
+      "definition": "FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE",
+      "deleteAction": "c"
+    },
+    {
+      "name": "engagement_translation_campaign_workspace",
+      "table": "engagement_content_translations",
+      "definition": "FOREIGN KEY (campaign_id, workspace_id) REFERENCES engagement_campaigns(id, workspace_id) ON UPDATE RESTRICT ON DELETE CASCADE",
+      "deleteAction": "c"
+    },
+    {
+      "name": "engagement_translation_category_target",
+      "table": "engagement_content_translations",
+      "definition": "FOREIGN KEY (campaign_id, category_target_id) REFERENCES engagement_categories(campaign_id, id) ON UPDATE RESTRICT ON DELETE CASCADE",
+      "deleteAction": "c"
+    },
+    {
+      "name": "engagement_translation_option_target",
+      "table": "engagement_content_translations",
+      "definition": "FOREIGN KEY (campaign_id, option_target_id) REFERENCES engagement_survey_question_options(campaign_id, id) ON UPDATE RESTRICT ON DELETE CASCADE",
+      "deleteAction": "c"
+    },
+    {
+      "name": "engagement_translation_question_target",
+      "table": "engagement_content_translations",
+      "definition": "FOREIGN KEY (campaign_id, question_target_id) REFERENCES engagement_survey_questions(campaign_id, id) ON UPDATE RESTRICT ON DELETE CASCADE",
+      "deleteAction": "c"
+    },
+    {
+      "name": "engagement_translation_response_target",
+      "table": "engagement_content_translations",
+      "definition": "FOREIGN KEY (campaign_id, response_target_id) REFERENCES engagement_closeloop_entries(campaign_id, id) ON UPDATE RESTRICT ON DELETE CASCADE",
+      "deleteAction": "c"
+    }
+  ]
+}
