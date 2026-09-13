@@ -1,0 +1,274 @@
+[
+  {
+    "name": "harmless-comment",
+    "outcome": "survived",
+    "matched": true,
+    "expected": null,
+    "passed": 26,
+    "failures": []
+  },
+  {
+    "name": "wrong-create-rpc",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "queues the exact saved revision",
+    "passed": 24,
+    "failures": [
+      {
+        "name": "saved API project request route queues the exact saved revision with connection_api_key without inline generation",
+        "message": "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ 'create_assistant_api_turn', …(1) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n@@ -1,7 +1,7 @@\n  [\n-   \"create_assistant_api_turn\",\n+   \"create_assistant_provider_turn\",\n    {\n      \"p_auth_mode\": \"connection_api_key\",\n      \"p_charge_ack\": true,\n      \"p_configuration_hash\": \"195e3cf3a5646156a0449979d0ac25049a235b17951ad54b2fcf432696c77b0d\",\n      \"p_connection_id\": \"55555555-5555-4555-8555-555555555555\",\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:55:23\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route queues the exact saved revision with connection_no_key without inline generation",
+        "message": "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ 'create_assistant_api_turn', …(1) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n@@ -1,7 +1,7 @@\n  [\n-   \"create_assistant_api_turn\",\n+   \"create_assistant_provider_turn\",\n    {\n      \"p_auth_mode\": \"connection_no_key\",\n      \"p_charge_ack\": true,\n      \"p_configuration_hash\": \"b4734757c4c75e3abdb1e0b57e96ecc6937793da5db50c6b50145ddcd730e1e9\",\n      \"p_connection_id\": \"55555555-5555-4555-8555-555555555555\",\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:55:23\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "wrong-revision-argument",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "queues the exact saved revision",
+    "passed": 22,
+    "failures": [
+      {
+        "name": "saved API project request route queues the exact saved revision with connection_api_key without inline generation",
+        "message": "AssertionError: expected 409 to be 201 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:53:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route queues the exact saved revision with connection_no_key without inline generation",
+        "message": "AssertionError: expected 409 to be 201 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:53:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route requires the new packet only when created is false, preserving the old retry baseline",
+        "message": "AssertionError: expected 409 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:101:75\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route returns the retained result on response-loss retry without a second dispatch",
+        "message": "AssertionError: expected 400 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:110:69\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "wrong-config-argument",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "queues the exact saved revision",
+    "passed": 16,
+    "failures": [
+      {
+        "name": "saved API project request route queues the exact saved revision with connection_api_key without inline generation",
+        "message": "AssertionError: expected 409 to be 201 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:53:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route queues the exact saved revision with connection_no_key without inline generation",
+        "message": "AssertionError: expected 409 to be 201 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:53:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route refuses a valid stored row bound to a different request {\"user_id\":\"88888888-8888-4888-8888-888888888888\"}",
+        "message": "AssertionError: expected { Object (error) } to deeply equal { error: 'provider_retry_conflict' }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:86:116\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route refuses a valid stored row bound to a different request {\"api_connection_id\":\"88888888-8888-4888-8888-888888888888\"}",
+        "message": "AssertionError: expected { Object (error) } to deeply equal { error: 'provider_retry_conflict' }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:86:116\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route refuses a valid stored row bound to a different request {\"api_revision_id\":\"88888888-8888-4888-8888-888888888888\"}",
+        "message": "AssertionError: expected { Object (error) } to deeply equal { error: 'provider_retry_conflict' }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:86:116\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route refuses a valid stored row bound to a different request {\"model_id\":\"synthetic-other-model\"}",
+        "message": "AssertionError: expected { Object (error) } to deeply equal { error: 'provider_retry_conflict' }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:86:116\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route refuses a valid stored row bound to a different request {\"question\":\"SYNTHETIC wrong question\"}",
+        "message": "AssertionError: expected { Object (error) } to deeply equal { error: 'provider_retry_conflict' }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:86:116\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route refuses a valid stored row bound to a different request {\"request_id\":\"88888888-8888-4888-8888-888888888888\"}",
+        "message": "AssertionError: expected { Object (error) } to deeply equal { error: 'provider_retry_conflict' }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:86:116\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route requires the new packet only when created is false, preserving the old retry baseline",
+        "message": "AssertionError: expected 409 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:101:75\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route returns the retained result on response-loss retry without a second dispatch",
+        "message": "AssertionError: expected 400 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:110:69\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "wrong-charge-argument",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "queues the exact saved revision",
+    "passed": 14,
+    "failures": [
+      {
+        "name": "saved API project request route queues the exact saved revision with connection_api_key without inline generation",
+        "message": "AssertionError: expected 400 to be 201 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:53:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route queues the exact saved revision with connection_no_key without inline generation",
+        "message": "AssertionError: expected 400 to be 201 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:53:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route refuses a valid stored row bound to a different request {\"user_id\":\"88888888-8888-4888-8888-888888888888\"}",
+        "message": "AssertionError: expected 400 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:86:75\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route refuses a valid stored row bound to a different request {\"api_connection_id\":\"88888888-8888-4888-8888-888888888888\"}",
+        "message": "AssertionError: expected 400 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:86:75\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route refuses a valid stored row bound to a different request {\"api_revision_id\":\"88888888-8888-4888-8888-888888888888\"}",
+        "message": "AssertionError: expected 400 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:86:75\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route refuses a valid stored row bound to a different request {\"model_id\":\"synthetic-other-model\"}",
+        "message": "AssertionError: expected 400 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:86:75\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route refuses a valid stored row bound to a different request {\"question\":\"SYNTHETIC wrong question\"}",
+        "message": "AssertionError: expected 400 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:86:75\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route refuses a valid stored row bound to a different request {\"request_id\":\"88888888-8888-4888-8888-888888888888\"}",
+        "message": "AssertionError: expected 400 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:86:75\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route refuses a different valid frozen configuration hash",
+        "message": "AssertionError: expected 400 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:92:75\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route requires the new packet only when created is true, preserving the old retry baseline",
+        "message": "AssertionError: expected 400 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:101:75\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route requires the new packet only when created is false, preserving the old retry baseline",
+        "message": "AssertionError: expected 400 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:101:75\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route returns the retained result on response-loss retry without a second dispatch",
+        "message": "AssertionError: expected 400 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:110:69\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "missing-charge-validation",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "refuses invalid or unacknowledged",
+    "passed": 24,
+    "failures": [
+      {
+        "name": "saved API project request route refuses invalid or unacknowledged API selection {\"acceptApiCharges\":false} before storage",
+        "message": "AssertionError: expected \"vi.fn()\" to not be called at all, but actually been called 1 times\n\nReceived:\n\n  1st vi.fn() call:\n\n    Array [\n      \"create_assistant_api_turn\",\n      Object {\n        \"p_auth_mode\": \"connection_api_key\",\n        \"p_charge_ack\": false,\n        \"p_configuration_hash\": \"195e3cf3a5646156a0449979d0ac25049a235b17951ad54b2fcf432696c77b0d\",\n        \"p_connection_id\": \"55555555-5555-4555-8555-555555555555\",\n        \"p_model_id\": \"synthetic-model\",\n        \"p_packet_canonical\": \"{\"version\":1,\"workspaceId\":\"33333333-3333-4333-8333-333333333333\",\"project\":{\"id\":\"44444444-4444-4444-8444-444444444444\",\"name\":\"SYNTHETIC project\",\"summary\":\"SYNTHETIC original\",\"status\":\"active\",\"planType\":\"other\",\"deliveryPhase\":\"planning\",\"updatedAt\":\"2026-09-12T00:00:00Z\"},\"capturedAt\":\"2026-09-13T00:47:00.246Z\",\"source\":{\"id\":\"project:44444444-4444-4444-8444-444444444444\",\"label\":\"SYNTHETIC project\",\"href\":\"/projects/44444444-4444-4444-8444-444444444444\"}}\",\n        \"p_project_id\": \"44444444-4444-4444-8444-444444444444\",\n        \"p_question\": \"SYNTHETIC question\",\n        \"p_request_id\": \"77777777-7777-4777-8777-777777777777\",\n        \"p_revision_id\": \"66666666-6666-4666-8666-666666666666\",\n        \"p_user_id\": \"22222222-2222-4222-8222-222222222222\",\n        \"p_workspace_id\": \"33333333-3333-4333-8333-333333333333\",\n      },\n    ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (f"
+      },
+      {
+        "name": "saved API project request route refuses invalid or unacknowledged API selection {} before storage",
+        "message": "AssertionError: expected \"vi.fn()\" to not be called at all, but actually been called 1 times\n\nReceived:\n\n  1st vi.fn() call:\n\n    Array [\n      \"create_assistant_api_turn\",\n      Object {\n        \"p_auth_mode\": \"connection_api_key\",\n        \"p_charge_ack\": undefined,\n        \"p_configuration_hash\": \"195e3cf3a5646156a0449979d0ac25049a235b17951ad54b2fcf432696c77b0d\",\n        \"p_connection_id\": \"55555555-5555-4555-8555-555555555555\",\n        \"p_model_id\": \"synthetic-model\",\n        \"p_packet_canonical\": \"{\"version\":1,\"workspaceId\":\"33333333-3333-4333-8333-333333333333\",\"project\":{\"id\":\"44444444-4444-4444-8444-444444444444\",\"name\":\"SYNTHETIC project\",\"summary\":\"SYNTHETIC original\",\"status\":\"active\",\"planType\":\"other\",\"deliveryPhase\":\"planning\",\"updatedAt\":\"2026-09-12T00:00:00Z\"},\"capturedAt\":\"2026-09-13T00:47:00.250Z\",\"source\":{\"id\":\"project:44444444-4444-4444-8444-444444444444\",\"label\":\"SYNTHETIC project\",\"href\":\"/projects/44444444-4444-4444-8444-444444444444\"}}\",\n        \"p_project_id\": \"44444444-4444-4444-8444-444444444444\",\n        \"p_question\": \"SYNTHETIC question\",\n        \"p_request_id\": \"77777777-7777-4777-8777-777777777777\",\n        \"p_revision_id\": \"66666666-6666-4666-8666-666666666666\",\n        \"p_user_id\": \"22222222-2222-4222-8222-222222222222\",\n        \"p_workspace_id\": \"33333333-3333-4333-8333-333333333333\",\n      },\n    ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous"
+      }
+    ]
+  },
+  {
+    "name": "missing-owner-binding",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "refuses a valid stored row",
+    "passed": 25,
+    "failures": [
+      {
+        "name": "saved API project request route refuses a valid stored row bound to a different request {\"user_id\":\"88888888-8888-4888-8888-888888888888\"}",
+        "message": "AssertionError: expected 201 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:86:75\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "missing-connection-binding",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "refuses a valid stored row",
+    "passed": 25,
+    "failures": [
+      {
+        "name": "saved API project request route refuses a valid stored row bound to a different request {\"api_connection_id\":\"88888888-8888-4888-8888-888888888888\"}",
+        "message": "AssertionError: expected 201 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:86:75\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "missing-revision-binding",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "refuses a valid stored row",
+    "passed": 25,
+    "failures": [
+      {
+        "name": "saved API project request route refuses a valid stored row bound to a different request {\"api_revision_id\":\"88888888-8888-4888-8888-888888888888\"}",
+        "message": "AssertionError: expected 201 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:86:75\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "missing-config-binding",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "refuses a different valid frozen configuration",
+    "passed": 25,
+    "failures": [
+      {
+        "name": "saved API project request route refuses a different valid frozen configuration hash",
+        "message": "AssertionError: expected 201 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:92:75\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "missing-new-packet-check",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "requires the new packet only when created is true",
+    "passed": 25,
+    "failures": [
+      {
+        "name": "saved API project request route requires the new packet only when created is true, preserving the old retry baseline",
+        "message": "AssertionError: expected 201 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:101:75\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "rewritten-retry-packet",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "requires the new packet only when created is false",
+    "passed": 25,
+    "failures": [
+      {
+        "name": "saved API project request route requires the new packet only when created is false, preserving the old retry baseline",
+        "message": "AssertionError: expected 409 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:101:75\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "inline-api-generation",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "queues the exact saved revision",
+    "passed": 23,
+    "failures": [
+      {
+        "name": "saved API project request route queues the exact saved revision with connection_api_key without inline generation",
+        "message": "AssertionError: expected 503 to be 201 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:53:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route queues the exact saved revision with connection_no_key without inline generation",
+        "message": "AssertionError: expected 503 to be 201 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:53:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API project request route returns the retained result on response-loss retry without a second dispatch",
+        "message": "AssertionError: expected 400 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/provider-api-request-route.test.ts:110:69\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  }
+]

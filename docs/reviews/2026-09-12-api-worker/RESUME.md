@@ -1,9 +1,11 @@
 # Resume real API worker process acceptance
 
-Full v1 goal remains active; v0.54.0 is already released. Main is
-b6dbb8ca4d0a69986dd897285f2c6766184c4a42 with successful CI 34725416835,
-RLS Isolation 34725416839 and Upgrade Path 34725416832. All five CI jobs passed,
-including full QA and shuffled tests. Continue roadmap A0b, not old releases.
+Full v1 goal remains active; v0.54.0 is already released. The verified worker
+increment is now on main at 47c4985e361936b1f47c25f874b382ef9c69e60e. CI
+34728670375 and RLS Isolation 34728670387 are in progress. The previous
+migration-bearing main b6dbb8ca completed its CI, RLS and upgrade checks.
+Continue roadmap A0b, not old releases. New endpoint work and exact continuation
+are in ../2026-09-12-api-request-route/RESUME.md.
 
 Implementation checkout:
 /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10
@@ -91,9 +93,8 @@ terminal: 94900 corrected QA, 62688 corrected shuffle, 37658 RLS, all exit zero.
 
 ## Immediate next
 
-1. Land the verified worker increment directly on main, inspect exact GitHub CI,
-   RLS and upgrade jobs separately, and record the resulting commit/run IDs.
-   No PR, no worker-only capability tag. Main was b6dbb8ca before this landing.
+1. The worker increment landed directly on main at 47c4985e. Inspect CI
+   34728670375 and RLS 34728670387. No worker-only capability tag.
 2. Join the api_connection POST discriminator and ProjectProviderPanel, including
    its browser-safe turn decoder. Exact saved revision/config hash/model/auth/
    charge acknowledgement must survive uncertain retries and history. Use the
