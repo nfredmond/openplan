@@ -1,0 +1,10 @@
+BEGIN
+SET
+              set_config              
+--------------------------------------
+ 4a21e42f-27a7-474d-9a7a-5912c70af359
+(1 row)
+
+NOTICE:  REPRODUCED: two scoped staff writes succeeded; stale edit replaced first correction without an expected version
+DO
+ROLLBACK
