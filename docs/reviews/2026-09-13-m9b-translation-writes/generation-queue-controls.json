@@ -1,0 +1,217 @@
+{
+  "sourceSha256": "481f5d942d02929bab76052de645bdfaf6d37ab18332132ad4131d73b9c8bc0d",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/queue-controls/20260913T135647",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "harmless-read-grant-with-rls",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "anon-requests-leak",
+      "outcome": "killed",
+      "expectedFailure": "Private queue leak: anonymous request",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "anon-fields-leak",
+      "outcome": "killed",
+      "expectedFailure": "Private queue leak: anonymous fields",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "authenticated-requests-leak",
+      "outcome": "killed",
+      "expectedFailure": "Private queue leak: authenticated request",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "authenticated-fields-leak",
+      "outcome": "killed",
+      "expectedFailure": "Private queue leak: authenticated fields",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "anonymous-service-command",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: anonymous queue command",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "viewer-queue",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: viewer queue",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "changed-request-replay",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: changed request retry",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "foreign-credential",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: foreign credential workspace",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "ignore-current-key",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: changed key before queue",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "source-conflict",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: source changed before claim",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "translation-version-conflict",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: translation version changed before claim",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "duplicate-addresses",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: duplicate addresses with distinct field identities",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "packet-content",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: packet differs from source",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "forget-exact-packet",
+      "outcome": "killed",
+      "expectedFailure": "Queue source custody or unspent state failed",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "wrong-dispatch-attempt",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: wrong attempt",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "change-running-attempt",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: attempt immutable",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "rewrite-request",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: request immutable",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "rewrite-packet",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: packet immutable",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "rewrite-terminal",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: terminal outcome immutable",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "uninterrupt-expiry",
+      "outcome": "killed",
+      "expectedFailure": "Expired reservation was reclaimed",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "ignore-held-reservations",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: reserved staff allowance",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "ignore-dispatch-capacity",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: allowance consumed after reservation",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "no-dispatch-event",
+      "outcome": "killed",
+      "expectedFailure": "Dispatch retry or conservative usage evidence failed",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "claim-running-again",
+      "outcome": "killed",
+      "expectedFailure": "Generation identity or terminal outcome changed",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "different-failure-replay",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: different failure replay",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "status-key-change",
+      "outcome": "killed",
+      "expectedFailure": "Changed-key status or minimal disclosure failed",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "status-extra-private-data",
+      "outcome": "killed",
+      "expectedFailure": "Changed-key status or minimal disclosure failed",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    }
+  ],
+  "limits": "Rolled-back staff queue SQL with real application-generated packets and encrypted synthetic credentials. Serial probe, not concurrent claimants, a live worker, completed generation delivery, public queue dispatch or HTTP/browser acceptance."
+}

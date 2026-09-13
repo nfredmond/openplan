@@ -1,0 +1,53 @@
+{
+  "sourceSha256": "481f5d942d02929bab76052de645bdfaf6d37ab18332132ad4131d73b9c8bc0d",
+  "database": "supabase_db_openplan-restore-target-2731143/openplan_translation_command_proof_20260913",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/queue-concurrency/20260913T135553",
+  "fixtureRequestId": "8cb9a715-2595-4b82-ad52-25f5496883f1",
+  "results": [
+    {
+      "case": "overlapping-identical-create",
+      "firstTransactionHeld": true,
+      "secondReturnedBusy": true,
+      "requestsCreated": 1,
+      "retryRetainedOriginal": true
+    },
+    {
+      "case": "overlapping-claim",
+      "firstTransactionHeld": true,
+      "secondReturnedBusy": true,
+      "claims": 1,
+      "retryClaim": null
+    },
+    {
+      "case": "overlapping-dispatch-acknowledgement",
+      "firstTransactionHeld": true,
+      "secondReturnedBusy": true,
+      "identicalAcknowledgements": true,
+      "events": 1
+    },
+    {
+      "case": "baseline-lock",
+      "guardOutcome": "survived",
+      "returnedBusy": true,
+      "seconds": 0.04601313400780782,
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-lock",
+      "guardOutcome": "survived",
+      "returnedBusy": true,
+      "seconds": 0.04780952600413002,
+      "expectedOutcome": true
+    },
+    {
+      "case": "removed-advisory-lock",
+      "guardOutcome": "killed",
+      "returnedBusy": false,
+      "seconds": 0.052971480996347964,
+      "expectedOutcome": true
+    }
+  ],
+  "functionRestored": true,
+  "rolledBackControlFieldState": "queued",
+  "limits": "Synthetic service-role SQL requests and independent psql sessions. No provider call, process restart, completed output delivery, public generation queue or browser workflow. Installed only in a separate proof database; synthetic records retained."
+}

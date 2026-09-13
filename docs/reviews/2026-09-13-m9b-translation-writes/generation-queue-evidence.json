@@ -1,0 +1,26 @@
+{
+  "recordedAt": "2026-09-13T20:59:55.404187+00:00",
+  "baseCommit": "fab680c11a87f6143994442639d1309150b8ce5f",
+  "sourceSha256": {
+    "generation-queue-candidate.sql": "481f5d942d02929bab76052de645bdfaf6d37ab18332132ad4131d73b9c8bc0d",
+    "generation-queue-probe.sql": "518e92258f77aef6fd8d675795e408391353de3fe406f0071a90d1157edfbbde",
+    "generation-queue-fixture.ts": "81b9b7efd2a43cbffe6472d24d3f34cb81753b15ee221970605b60050d3b27ac",
+    "run-generation-queue-probe.py": "ac6c83fcb781a43689223bfc992308b391ec87e7595b4c9ae4676b5749e856d5",
+    "prove-generation-queue.py": "07d4f9bd6131012b002d738fa729846c70ce2e36bee1aef6cd16394369976608",
+    "prove-generation-queue-concurrency.py": "ace131d9c298adb8dd52cf33ab70d9a1938ea7c02c6dddc4643f0b26a59da5fb",
+    "generation-queue-controls.json": "b71f5f22e841147f16bc5ac0dee8f23a6adaf8ab6cf9ec7dced627dd9b3b4bb8",
+    "generation-queue-concurrency.json": "0aab8b1c1e8fb1e39aa0ca60296c7eb2e28d8d015920fe14f5cd671cc581cb2e"
+  },
+  "privateArtifactSha256": {
+    "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-queue-compile.log": "7a83c3db20db1891b6ccfb0541fe1914fa8f077224d921d0849ad89f1bee93b3",
+    "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-queue-probe-owner-floor-error.log": "d345640a8cd0f79d7f4a8aca34cb342d4ea86db259888419fc9c99395c1703f7",
+    "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-queue-probe-expiry-observation-error.log": "3d0de9c0d8fc3de93e89ed8005907addd8e534ea48a7af78e93471d1c13cf0e1",
+    "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-queue-probe-status-shape-error.log": "10b926a3efae3a0b68758232de570c83715b5b9b7414904098388150a64bf4ec",
+    "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-proof-install.log": "f0cf652fef82ce30f9b18f310b8a9d4d5547a9db3114eb109008c67fae5a8cb7",
+    "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-queue-mutations-final.log": "3af6d0967fafb978d26b593eab7ca8ba0e45b99a6160af095d25f0d32beea2c9",
+    "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-queue-concurrency.log": "cd902c7fd4c7320abca596763df20b0b0b14e5b0e8df63ef94f7f69093c6582c",
+    "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-queue-concurrency-held.log": "9fcfcc123790c9ee8c2b38f268e9b7a6c1a4c44cad2d17e8685e4d2eb304280b",
+    "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-queue-probe-restored.json": "f72eed2643af1bcf5f9a7d383a0db737bc0d64d56c077dc57afa35e5e4c74b1c"
+  },
+  "limits": "Queue candidate installed only in a dedicated proof database; app-stack probe DDL and fixtures rolled back. No worker/provider/UI/completed-output integration or release claim."
+}

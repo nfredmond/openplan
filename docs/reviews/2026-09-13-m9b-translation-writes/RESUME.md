@@ -1,3 +1,7 @@
+# Latest queue checkpoint
+
+Read [GENERATION_QUEUE_PROGRESS.md](GENERATION_QUEUE_PROGRESS.md) first. The staff queue candidate has serial and held-transaction PostgreSQL evidence; it is installed only in a separate proof database. Completion delivery, worker and public producer integration remain unfinished.
+
 # Latest generation checkpoint
 
 Read [GENERATION_FOUNDATION.md](GENERATION_FOUNDATION.md) first. The generation adapter and strict credential preparation are implemented and tested; durable queue/worker integration and producer conversion remain unfinished. Main publication-note CI is now fully green.
