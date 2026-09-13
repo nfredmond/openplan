@@ -1,0 +1,1 @@
+{"passed": true, "rollbackContained": true, "migrationSha256": "1139b5a904801475dfc4357a04f0c89823d4763077e734828472e82416cf6987", "nativeRead": {"count": 23, "pageSizes": [20, 3], "cursor": {"createdAt": "2026-09-13T12:00:00.123450Z", "id": "5de62531-9613-48c6-b511-9289d196ca0f"}}}

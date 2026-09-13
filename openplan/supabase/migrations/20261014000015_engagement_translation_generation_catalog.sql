@@ -1,5 +1,8 @@
 -- Browse retained staff generation requests independently of browser storage.
 -- Keyset pagination preserves PostgreSQL microseconds and UUID tie ordering.
+CREATE INDEX translation_generation_catalog ON public.engagement_translation_generation_requests
+ (campaign_id,workspace_id,created_at DESC,id DESC);
+
 CREATE FUNCTION public.list_translation_generation_requests(p_campaign uuid,p_before_created_at timestamptz DEFAULT NULL,p_before_id uuid DEFAULT NULL) RETURNS jsonb
  LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
 DECLARE workspace uuid; result jsonb; old_timeout text:=current_setting('lock_timeout');

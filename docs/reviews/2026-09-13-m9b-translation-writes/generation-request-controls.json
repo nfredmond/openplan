@@ -3,11 +3,11 @@
     "queue": "28d266a011f0bc05112e734da408bb380976d49400762b718a83368a30cba86c",
     "read": "f546628a78683d8dc389c52dbd1f2c3801e5f65cf5103f2f2ec5dd91494d2fb1",
     "request": "a170e2ef38fc4278f76fa7b87ef43c057e90f0349169aad23ccc7e63c8a0ff1d",
-    "route": "5ce649d003064f6c49bb83d9364c3be617e0c0840464882e03bce64dff66a54f",
+    "route": "9e6b7fd1d6641c23c17c2483042497fe401af3cf704edaead7b63a0e6773eafb",
     "sql": "af4ac71c095242f1620f403fa774ff82e2450d5a95bc2b36078dc4c6011e17f6"
   },
   "testCount": 46,
-  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-request-controls/20260913T153211",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-request-controls/20260913T155740",
   "results": [
     {
       "case": "baseline-queue",

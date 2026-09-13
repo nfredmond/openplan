@@ -1,3 +1,7 @@
+# Latest catalog checkpoint
+
+Read [GENERATION_CATALOG_PROGRESS.md](GENERATION_CATALOG_PROGRESS.md) first. Staff request discovery now has route, native-reader, SQL pagination/access and fault-control evidence. Retained publication and editor integration are next and remain unfinished.
+
 # Latest usage-reset checkpoint
 
 Read [GENERATION_CATALOG_RESET_CHECKPOINT.md](GENERATION_CATALOG_RESET_CHECKPOINT.md) first. The catalog increment is saved but unverified; the preceding queue API checkpoint remains the last verified implementation.

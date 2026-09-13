@@ -1,0 +1,388 @@
+{
+  "sourceSha256": {
+    "catalog": "ea970100fb149e0a14eebf616558214cf0ee6b359ad10c21f44af8a3816ed4c3",
+    "route": "9e6b7fd1d6641c23c17c2483042497fe401af3cf704edaead7b63a0e6773eafb",
+    "sql": "1139b5a904801475dfc4357a04f0c89823d4763077e734828472e82416cf6987"
+  },
+  "testSha256": "e3ab4c5174efeb1aef93e3bd3b514f5448f73b4ce4d2477e4781289a2c504ffc",
+  "testCount": 33,
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-catalog-controls/20260913T155838",
+  "results": [
+    {
+      "case": "baseline-catalog",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-catalog",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "baseline-route",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-route",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "baseline-sql",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-sql",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "campaign",
+      "outcome": "killed",
+      "expectedFailure": "rejects inconsistent campaign",
+      "failedAssertions": [
+        "generation catalog boundaries rejects inconsistent campaign"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "workspace",
+      "outcome": "killed",
+      "expectedFailure": "rejects inconsistent workspace",
+      "failedAssertions": [
+        "generation catalog boundaries rejects inconsistent workspace"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "duplicate-id",
+      "outcome": "killed",
+      "expectedFailure": "rejects inconsistent duplicate",
+      "failedAssertions": [
+        "generation catalog boundaries rejects inconsistent duplicate"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "counts",
+      "outcome": "killed",
+      "expectedFailure": "rejects inconsistent counts",
+      "failedAssertions": [
+        "generation catalog boundaries rejects inconsistent counts"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "time-order",
+      "outcome": "killed",
+      "expectedFailure": "rejects inconsistent time_order",
+      "failedAssertions": [
+        "generation catalog boundaries rejects inconsistent time_order"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "uuid-order",
+      "outcome": "killed",
+      "expectedFailure": "rejects inconsistent uuid_order",
+      "failedAssertions": [
+        "generation catalog boundaries rejects inconsistent uuid_order"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "cursor-inclusive",
+      "outcome": "killed",
+      "expectedFailure": "rejects inconsistent at_cursor",
+      "failedAssertions": [
+        "generation catalog boundaries rejects inconsistent at_cursor"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "cursor-dropped",
+      "outcome": "killed",
+      "expectedFailure": "rejects inconsistent after_cursor",
+      "failedAssertions": [
+        "generation catalog boundaries rejects inconsistent after_cursor"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "next-id",
+      "outcome": "killed",
+      "expectedFailure": "rejects inconsistent next_id",
+      "failedAssertions": [
+        "generation catalog boundaries rejects inconsistent next_id"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "next-time",
+      "outcome": "killed",
+      "expectedFailure": "rejects inconsistent next_time",
+      "failedAssertions": [
+        "generation catalog boundaries rejects inconsistent next_time"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "next-short",
+      "outcome": "killed",
+      "expectedFailure": "rejects inconsistent short_next",
+      "failedAssertions": [
+        "generation catalog boundaries rejects inconsistent short_next"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unknown-state",
+      "outcome": "killed",
+      "expectedFailure": "rejects inconsistent unknown_state",
+      "failedAssertions": [
+        "generation catalog boundaries rejects inconsistent unknown_state"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "empty-fields",
+      "outcome": "killed",
+      "expectedFailure": "rejects inconsistent empty_fields",
+      "failedAssertions": [
+        "generation catalog boundaries rejects inconsistent empty_fields"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unknown-locale",
+      "outcome": "killed",
+      "expectedFailure": "rejects inconsistent unsupported_locale",
+      "failedAssertions": [
+        "generation catalog boundaries rejects inconsistent unsupported_locale"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "timestamp-width",
+      "outcome": "killed",
+      "expectedFailure": "rejects inconsistent millisecond",
+      "failedAssertions": [
+        "generation catalog boundaries rejects inconsistent millisecond"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "page-limit",
+      "outcome": "killed",
+      "expectedFailure": "rejects inconsistent overfull",
+      "failedAssertions": [
+        "generation catalog boundaries rejects inconsistent overfull"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "private-extra",
+      "outcome": "killed",
+      "expectedFailure": "rejects inconsistent extra_private",
+      "failedAssertions": [
+        "generation catalog boundaries rejects inconsistent extra_private"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "time-truncated",
+      "outcome": "killed",
+      "expectedFailure": "passes all microseconds",
+      "failedAssertions": [
+        "generation catalog route passes all microseconds and UUID tie cursor to the caller's RPC"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "cursor-id-dropped",
+      "outcome": "killed",
+      "expectedFailure": "passes all microseconds",
+      "failedAssertions": [
+        "generation catalog route passes all microseconds and UUID tie cursor to the caller's RPC"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "rpc-lost-access",
+      "outcome": "killed",
+      "expectedFailure": "preserves database refusal 42501",
+      "failedAssertions": [
+        "generation catalog route preserves database refusal 42501"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "route-ambiguous",
+      "outcome": "killed",
+      "expectedFailure": "refuses malformed or ambiguous selector ?requestId=",
+      "failedAssertions": [
+        "generation catalog route refuses malformed or ambiguous selector ?requestId=73000000-0000-4000-8000-000000000005&beforeCreatedAt=2026-09-13T12:00:00.123456Z&beforeId=73000000-0000-4000-8000-000000000101 before authentication"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "route-cursor-dropped",
+      "outcome": "killed",
+      "expectedFailure": "passes all microseconds",
+      "failedAssertions": [
+        "generation catalog route passes all microseconds and UUID tie cursor to the caller's RPC"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "route-nonstaff",
+      "outcome": "killed",
+      "expectedFailure": "refuses nonstaff before listing",
+      "failedAssertions": [
+        "generation catalog route refuses nonstaff before listing"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-permission",
+      "outcome": "killed",
+      "expectedFailure": "member catalog access",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-workspace",
+      "outcome": "killed",
+      "expectedFailure": "Catalog leaked foreign workspace",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-campaign",
+      "outcome": "killed",
+      "expectedFailure": "Catalog leaked another campaign",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-continuation",
+      "outcome": "killed",
+      "expectedFailure": "Catalog first page lost continuation",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-inclusive",
+      "outcome": "killed",
+      "expectedFailure": "Catalog tail repeated or skipped requests",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-tie-loss",
+      "outcome": "killed",
+      "expectedFailure": "Catalog tail repeated or skipped requests",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-partial-cursor",
+      "outcome": "killed",
+      "expectedFailure": "partial cursor id",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-microseconds",
+      "outcome": "killed",
+      "expectedFailure": "Catalog timestamp lost microseconds",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-private-payload",
+      "outcome": "killed",
+      "expectedFailure": "Catalog exposed private payload or wrong scope",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-anon",
+      "outcome": "killed",
+      "expectedFailure": "anonymous catalog access",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-count-queued",
+      "outcome": "killed",
+      "expectedFailure": "Catalog state counts differ from fields",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-count-reserved",
+      "outcome": "killed",
+      "expectedFailure": "Catalog state counts differ from fields",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-count-running",
+      "outcome": "killed",
+      "expectedFailure": "Catalog state counts differ from fields",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-count-completed",
+      "outcome": "killed",
+      "expectedFailure": "Catalog state counts differ from fields",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-count-incomplete",
+      "outcome": "killed",
+      "expectedFailure": "Catalog state counts differ from fields",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-count-failed",
+      "outcome": "killed",
+      "expectedFailure": "Catalog state counts differ from fields",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-count-interrupted",
+      "outcome": "killed",
+      "expectedFailure": "Catalog state counts differ from fields",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-count-cancelled",
+      "outcome": "killed",
+      "expectedFailure": "Catalog state counts differ from fields",
+      "failedAssertions": [],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Mocked route auth, native page validation and real SQL permission/projection in a rolled-back proof DB. Projection fixtures directly insert all eight states; this does not prove workers produced their outcomes. No browser journey or concurrent page-wide snapshot claim."
+}
