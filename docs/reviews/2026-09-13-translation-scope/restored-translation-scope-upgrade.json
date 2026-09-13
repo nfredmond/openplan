@@ -1,0 +1,12 @@
+{
+  "container": "supabase_db_openplan-restore-target-2731143",
+  "database": "postgres",
+  "beforeLedger": "326|20261014000007",
+  "afterLedger": "327|20261014000008",
+  "migrationExit": 0,
+  "tablesCompared": 277,
+  "allTableRowHashesUnchanged": true,
+  "snapshotSha256": "aa190c6504d1b29fc61079d54b223c5680f096ca6b4627fdf77fd13a32319c3f",
+  "backupSha256": "3517020eea69f0f0715e2374b7dff383403884190e94e649fa0844265aa2f729",
+  "limits": "Existing full restore reached data verification at 325 and then 326 with final RLS. This adds scope constraints at 327, comparing existing rows without generated references. Final RLS is a separate check; the new backup is not independently restored here."
+}

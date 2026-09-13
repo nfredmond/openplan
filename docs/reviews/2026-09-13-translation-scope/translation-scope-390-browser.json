@@ -1,0 +1,47 @@
+{
+  "passed": true,
+  "width": 390,
+  "campaignId": "fd57aead-c823-494b-84c3-4cb514e6b667",
+  "source": "f4aa6f6d4d0c35f67eea78573d388a02ee8b49a6",
+  "migrationSha256": "f03a86eaeffaefae342634677ff123c9ae10d41f55021c8bcd4ba90738426fec",
+  "originalConfigurationHash": "7e92933b5d8bb72db80c4fd5bc998b814e914dee16a5aff993395202dc747981",
+  "originalRetainedAfterCorrectionAndWithdrawal": true,
+  "lostAcknowledgementRetriedSameBody": true,
+  "overflow": {
+    "viewport": 390,
+    "document": 390
+  },
+  "console": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    }
+  ],
+  "network": [
+    {
+      "url": "http://localhost:3260/api/map-layers/aerial-orthos",
+      "method": "GET",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3260/api/map-features/project-areas",
+      "method": "GET",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3260/api/map-features/crashes",
+      "method": "GET",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3260/api/map-features/engagement",
+      "method": "GET",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3260/api/engagement/campaigns/fd57aead-c823-494b-84c3-4cb514e6b667/translations",
+      "method": "POST",
+      "error": "net::ERR_FAILED"
+    }
+  ]
+}
