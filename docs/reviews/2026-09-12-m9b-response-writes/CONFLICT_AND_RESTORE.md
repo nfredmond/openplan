@@ -150,4 +150,3 @@ Full QA on pushed candidate 0c1e7d70081ccbf6b63d256903463efbb210067d completed w
 Remote main remains 3f70af98e6fb06b4c0f932769e10f880711d46ec. Candidate code is pushed on work/engagement-response-writes, not yet main or tagged. Next: refresh ownership and remote state, land directly on main without a PR, inspect CI for that exact main commit, then tag/publish v0.57.0 after applicable gates pass. Continue the full v1 goal afterward. Translation correction custody is a possible remaining M9b gap, not yet implemented; recheck the current roadmap before choosing the next lane.
 
 Older failed-test and runtime statements below are historical wherever they conflict with this checkpoint and the linked current evidence. Saved files and commits are the recovery authority; do not assume old tool sessions or processes survive a usage reset. The owned dev server is stopped. Preserve named database stacks and the separate demo.
-
