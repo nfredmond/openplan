@@ -65,3 +65,20 @@ legacy and deletion custody, and actual desktop/390px keyboard conflict/history
 journeys. Every changed guard needs a harmless control and targeted failure.
 Do not touch the pending reminder constraint. Continue the full roadmap after
 this increment; no human review gates or scientific claim promotions.
+
+## Additional readers to preserve and complete
+
+A source search also found direct response reads in
+openplan/src/lib/rtp/comment-response.ts and the land-use review-release closure
+route. They are outside the three loaders repaired in v0.55.2. Both still use
+ordinary table lists; the RTP call spans campaigns, and land-use closure also
+reads contributions before checking the moderation queue. These are source
+findings, not yet live reproductions. Include their completion/custody boundaries
+when connecting M9b responses to statutory decisions, and prioritize any confirmed
+false closure. Do not advertise v0.55.2 as repairing all cross-module readers.
+
+Response deletion also runs a translation-cleanup trigger. A new retained-history
+implementation must preserve the meaning and private/public scope of earlier
+translations rather than assuming a source-text snapshot records what every
+resident actually saw. The present translation table has current field rows;
+no per-response translation-history mechanism was found in the inspected source.
