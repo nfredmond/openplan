@@ -1,0 +1,45 @@
+{
+  "source": "db165e51d3071ac20487a7639e43864e1a801b45",
+  "width": 390,
+  "passed": true,
+  "campaignId": "31db53b1-8021-4867-83a9-76f8e1506147",
+  "originalHash": "2c5deb110f6647101a3291b6ac40c29ba8c345cd388b222b62495097962424f2",
+  "retainedHash": "2c5deb110f6647101a3291b6ac40c29ba8c345cd388b222b62495097962424f2",
+  "refusedReads": 12,
+  "failedRetryStatus": 500,
+  "anonymousStatus": 401,
+  "overflow": {
+    "viewport": 390,
+    "document": 390
+  },
+  "console": [
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3255/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789265151082 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3255/_next/static/media/36966cca54120369-s.p.woff2?v=1789265151082 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3255/_next/static/css/app/(app)/layout.css?v=1789265154430 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3255/_next/static/css/app/layout.css?v=1789265154430 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3255/_next/static/css/app/(app)/layout.css?v=1789265152780 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3255/_next/static/css/app/(app)/engagement/%5BcampaignId%5D/page.css?v=1789265156497 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    }
+  ]
+}

@@ -20,6 +20,20 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.55.1 — 2026-09-12
+
+A failed staff-response read in Engagement used to look like an empty response
+list. The page now says the responses could not be loaded, withholds misleading
+counts and offers a retry before edits. A failed retry preserves any responses
+already held; a successful retry checks the returned campaign and restores the
+saved drafts. No new database migration is needed beyond v0.55.0.
+
+Desktop and 390px journeys create and recover a synthetic draft through the
+actual interface while a local proxy interrupts database reads. The original
+saved response remains unchanged. See [verification](docs/reviews/2026-09-12-m9b-follow-through/VERIFICATION.md).
+Response revision/decision tracking and full campaign administration remain
+unfinished. Final QA and exact main CI are recorded separately.
+
 ## 0.55.0 — 2026-09-12
 
 The project Planner Agent can now use a saved workspace API destination and its

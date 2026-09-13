@@ -1,0 +1,10 @@
+Instance:  http://127.0.0.1:3255
+Version:   0.55.0
+Commit:    unknown
+Checkout:  /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10 @ db165e51
+
+Serving from: /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan
+[32mServing your checkout live (confirmed next dev launch process).[0m
+No commit is reported, and none should be: a dev server has no build to stamp,
+and a stamped SHA would be stale the moment you commit. The directory above is
+the identity that matters here. The listener belongs to this app's next dev launch.

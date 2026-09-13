@@ -84,3 +84,24 @@ The original assertions of 500 and 200 already tested actual failure/recovery;
 this corrects the attribution of the extra counter. A final replay follows.
 The proxy/dev supervisor 1360274 and its child were stopped intentionally;
 handle 20287 is terminal. All sources were restored after mutations.
+
+## Accepted browser replay and patch candidate
+
+Both widths passed again on db165e51, including the explicit spacing fix.
+The public synthetic browser folder contains scripts, identified checkout,
+reports, accessible text, viewport captures and SHA256SUMS. Each journey
+recorded 12 campaign-specific read refusals, failed retry 500 and recovered
+retry 200, unchanged saved draft hashes, anonymous 401 and no page exceptions
+or horizontal overflow. Screenshots and accessible text confirm readable
+warning, retry, recovered draft and correctly separated count sentences.
+Desktop console retained two Chrome ERR_NETWORK_CHANGED errors, eleven preload
+warnings and the deliberate 500. Mobile retained six preload warnings and the
+deliberate 500. These are successful functional journeys with disclosed console
+noise, not zero-console runs or independent screen-reader acceptance.
+
+The owned proxy/dev supervisor 1427427 was stopped after the final journeys;
+handle 36410 is terminal, exit 0. No proxy, browser or app process from this
+acceptance remains running. Prepared patch version 0.55.1 because this repairs
+an existing workflow; 318 migrations are unchanged. Product metadata is aligned
+without changing review dates/statuses. Full QA, shuffle and final CI remain
+required before landing/releasing this patch.

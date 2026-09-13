@@ -1,0 +1,73 @@
+{
+  "source": "db165e51d3071ac20487a7639e43864e1a801b45",
+  "width": 1440,
+  "passed": true,
+  "campaignId": "51df702f-76ad-44a0-a028-88c451096368",
+  "originalHash": "c3da6d1c82c3e5609f277236c3d693b66ffe9c8eab7755e9fe0907d597acd562",
+  "retainedHash": "c3da6d1c82c3e5609f277236c3d693b66ffe9c8eab7755e9fe0907d597acd562",
+  "refusedReads": 12,
+  "failedRetryStatus": 500,
+  "anonymousStatus": 401,
+  "overflow": {
+    "viewport": 1440,
+    "document": 1440
+  },
+  "console": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_NETWORK_CHANGED"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_NETWORK_CHANGED"
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3255/_next/static/css/app/layout.css?v=1789265098743 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3255/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789265084462 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3255/_next/static/css/app/(app)/engagement/%5BcampaignId%5D/page.css?v=1789265109216 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3255/_next/static/css/app/(app)/layout.css?v=1789265090675 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3255/_next/static/media/36966cca54120369-s.p.woff2?v=1789265084462 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3255/_next/static/css/app/(app)/layout.css?v=1789265098743 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3255/_next/static/css/app/layout.css?v=1789265098743 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3255/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789265084462 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3255/_next/static/css/app/(app)/layout.css?v=1789265090675 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3255/_next/static/media/36966cca54120369-s.p.woff2?v=1789265084462 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3255/_next/static/css/app/(app)/layout.css?v=1789265098743 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    }
+  ]
+}

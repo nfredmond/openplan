@@ -403,6 +403,12 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20261012000002_assistant_api_turns.sql",
     migrationsAtRelease: 318,
   },
+  // 0.55.1 restores staff-response read failures and retry; no schema change.
+  {
+    tag: "0.55.1",
+    lastMigration: "20261012000002_assistant_api_turns.sql",
+    migrationsAtRelease: 318,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");
