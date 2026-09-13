@@ -1,0 +1,20 @@
+{
+  "source": "6ee8c438da9e5c100bb6c1588e29d5248b46cac7",
+  "passed": 1,
+  "failed": 2,
+  "tests": [
+    {
+      "name": "control: complete short model output remains available",
+      "status": "passed"
+    },
+    {
+      "name": "valid long source reaches the model intact",
+      "status": "failed"
+    },
+    {
+      "name": "token-limited model output is refused as incomplete",
+      "status": "failed"
+    }
+  ],
+  "limits": "Actual helper with synthetic SDK output; no model request or language-quality evaluation. Diagnostic source copied temporarily into app/src/test and removed afterward."
+}
