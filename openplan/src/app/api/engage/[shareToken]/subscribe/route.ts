@@ -79,28 +79,35 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     // Send a double-opt-in confirmation unless they are already active. The outbox
     // records it even when no transport is configured (honest $0 no-op).
+    let confirmation: Awaited<ReturnType<typeof enqueueEmail>> | null = null;
     if (!result.alreadyConfirmed) {
       const origin = request.nextUrl.origin;
       const confirmUrl = `${origin}/api/engage/${parsedParams.data.shareToken}/subscribe/confirm?token=${confirmToken}`;
       const unsubscribeUrl = `${origin}/api/engage/${parsedParams.data.shareToken}/subscribe/unsubscribe?token=${unsubscribeToken}`;
-      await enqueueEmail(supabase, {
+      confirmation = await enqueueEmail(supabase, {
         campaignId: campaign.id,
         to: parsed.data.email.toLowerCase(),
         subject: `Confirm your updates for ${campaign.title}`,
         text: `Confirm you'd like email updates for "${campaign.title}":\n${confirmUrl}\n\nNot you? Ignore this email or unsubscribe: ${unsubscribeUrl}`,
         template: "subscribe_confirm",
-      }).catch(() => {});
+      }).catch(() => null);
     }
 
+    const confirmationNeedsRetry = !result.alreadyConfirmed && (!confirmation?.outboxId || confirmation.status === "failed");
+
     // Honest response: never promise an email that cannot be sent.
-    const message = transportConfigured
-      ? result.alreadyConfirmed
-        ? "You're already subscribed to updates for this campaign."
-        : "Almost there — check your email to confirm your subscription."
-      : "Your interest is recorded. Email updates are not enabled for this campaign yet, so no confirmation email will be sent.";
+    const message = result.alreadyConfirmed
+      ? "You're already subscribed to updates for this campaign."
+      : !confirmation?.outboxId
+        ? "Your interest is saved, but the confirmation email could not be prepared. Try subscribing again."
+        : confirmation.status === "failed"
+          ? "Your interest is saved, but the confirmation email could not be sent. Try subscribing again."
+          : confirmation.status === "sent"
+            ? "Almost there — check your email to confirm your subscription."
+            : "Your interest is recorded. Email updates are not enabled for this campaign yet, so no confirmation email will be sent.";
 
     audit.info("subscription_recorded", { campaignId: campaign.id, alreadyConfirmed: result.alreadyConfirmed, transportConfigured });
-    return NextResponse.json({ success: true, message, transportConfigured, alreadyConfirmed: result.alreadyConfirmed }, { status: 201 });
+    return NextResponse.json({ success: true, message, transportConfigured, alreadyConfirmed: result.alreadyConfirmed, confirmationNeedsRetry }, { status: 201 });
   } catch (error) {
     audit.error("unhandled_error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Unexpected error while subscribing" }, { status: 500 });

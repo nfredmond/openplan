@@ -120,7 +120,7 @@ export async function enqueueEmail(
 ): Promise<EnqueueEmailResult> {
   let outboxId: string | null = null;
   try {
-    const { data: row } = await client
+    const { data: row, error: insertError } = await client
       .from("engagement_email_outbox")
       .insert({
         campaign_id: msg.campaignId,
@@ -133,7 +133,10 @@ export async function enqueueEmail(
       })
       .select("id")
       .single();
-    outboxId = (row?.id as string | undefined) ?? null;
+    if (insertError || !row || typeof row.id !== "string" || !row.id.trim()) {
+      return { outboxId: null, status: "failed", transport: emailTransportName() };
+    }
+    outboxId = row.id;
   } catch {
     return { outboxId: null, status: "failed", transport: emailTransportName() };
   }
@@ -151,6 +154,8 @@ export async function enqueueEmail(
 }
 
 export type CampaignBroadcastResult = {
+  /** Outbox writes that failed before any delivery attempt. */
+  unrecorded: number;
   /** Rows written to the outbox — one per confirmed, still-subscribed participant. */
   enqueued: number;
   /** Of those, how many the transport actually accepted. */
@@ -190,6 +195,7 @@ export async function enqueueCampaignSubscriberEmails(
   // anywhere. `enqueued` alone is NOT an answer to "did it send" — at $0 every
   // row is 'skipped' — so the caller gets the delivery breakdown too.
   let enqueued = 0;
+  let unrecorded = 0;
   let delivered = 0;
   let skipped = 0;
   let failed = 0;
@@ -202,12 +208,13 @@ export async function enqueueCampaignSubscriberEmails(
       text: `${msg.text}\n\nUnsubscribe from these updates: ${unsubscribeUrl}`,
       template: msg.template,
     });
+    if (!outcome.outboxId) { unrecorded += 1; continue; }
     enqueued += 1;
     if (outcome.status === "sent") delivered += 1;
     else if (outcome.status === "skipped") skipped += 1;
     else failed += 1;
   }
-  return { enqueued, delivered, skipped, failed, transport: emailTransportName() };
+  return { enqueued, unrecorded, delivered, skipped, failed, transport: emailTransportName() };
 }
 
 // ── Outbox delivery status, for the operator console ──────────────────────────

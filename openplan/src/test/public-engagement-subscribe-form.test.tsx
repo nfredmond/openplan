@@ -18,8 +18,8 @@
  * than behind it. It proves the accessibility tree and the copy — the two halves
  * that regress in silence.
  */
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { PublicSubscribeForm } from "@/components/engagement/public-subscribe-form";
 import { resolvePortalLocale } from "@/lib/engagement/portal-i18n/locales";
@@ -29,7 +29,7 @@ import { createPortalTranslator } from "@/lib/engagement/portal-i18n/translator"
 const translatorFor = (locale: string) =>
   createPortalTranslator(buildPortalMessageBundle(resolvePortalLocale({ requested: locale, acceptLanguage: null })));
 
-afterEach(cleanup);
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 describe("the email updates form", () => {
   /**
@@ -104,4 +104,23 @@ describe("the email updates form", () => {
     // And it is not what `getByLabelText` finds for the real field.
     expect(screen.getByLabelText(EN_PORTAL_MESSAGES["portal.subscribeEmailLabel"])).not.toBe(honeypot);
   });
+});
+
+
+it("keeps the saved email address available after confirmation preparation fails", async () => {
+  const fetcher = vi.fn()
+    .mockResolvedValueOnce({ ok: true, json: async () => ({ message: "Your interest is saved, but the confirmation email could not be prepared. Try subscribing again.", confirmationNeedsRetry: true }) })
+    .mockResolvedValueOnce({ ok: true, json: async () => ({ message: "Your interest is recorded. No confirmation email will be sent.", confirmationNeedsRetry: false }) });
+  vi.stubGlobal("fetch", fetcher);
+  render(<PublicSubscribeForm shareToken="share-token-12345" />);
+  const field = screen.getByLabelText("Your email address");
+  fireEvent.change(field, { target: { value: "synthetic@example.invalid" } });
+  fireEvent.click(screen.getByRole("button", { name: "Email me updates" }));
+  expect(await screen.findByRole("status")).toHaveTextContent("could not be prepared");
+  expect(field).toHaveValue("synthetic@example.invalid");
+  expect(screen.getByRole("button", { name: "Email me updates" })).toBeEnabled();
+  fireEvent.click(screen.getByRole("button", { name: "Email me updates" }));
+  expect(await screen.findByText("Your interest is recorded. No confirmation email will be sent.")).toBeVisible();
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  expect(fetcher.mock.calls[1][1].body).toBe(fetcher.mock.calls[0][1].body);
 });

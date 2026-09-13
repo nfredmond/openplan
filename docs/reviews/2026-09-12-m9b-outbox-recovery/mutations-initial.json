@@ -1,0 +1,18 @@
+[
+  {
+    "name": "harmless-comment",
+    "outcome": "survived",
+    "matched": true,
+    "expectedTest": null,
+    "sourceSha256": "8e4c52bc5b1ee8537fc07f53383ffd1b3a34edfd02bd79aa6f3c1c98744a59a5",
+    "diagnostic": null
+  },
+  {
+    "name": "ignore-write-refusal",
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "error alongside a row",
+    "sourceSha256": "8e4c52bc5b1ee8537fc07f53383ffd1b3a34edfd02bd79aa6f3c1c98744a59a5",
+    "diagnostic": null
+  }
+]

@@ -40,6 +40,46 @@ describe("engagement notifications lib", () => {
     expect(update).toHaveBeenCalledWith(expect.objectContaining({ status: "skipped", transport: "none" }));
   });
 
+  it.each([
+    ["database error", { data: null, error: { message: "outbox unavailable" } }],
+    ["error alongside a row", { data: { id: "o1" }, error: { message: "ambiguous write" } }],
+    ["missing row", { data: null, error: null }],
+    ["missing identity", { data: {}, error: null }],
+    ["invalid identity", { data: { id: 42 }, error: null }],
+    ["empty identity", { data: { id: " " }, error: null }],
+  ])("does not attempt email delivery after %s", async (_label, reply) => {
+    process.env.RESEND_API_KEY = "SYNTHETIC-LOCAL-TEST-NOT-A-KEY";
+    const transport = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("{}", { status: 200 }));
+    const select = vi.fn(() => ({ single: vi.fn().mockResolvedValue(reply) }));
+    const client = { from: vi.fn(() => ({ insert: () => ({ select }), update: () => ({ eq: async () => ({ error: null }) }) })) } as never;
+    const outcome = await enqueueEmail(client, { campaignId: "c1", to: "synthetic@example.invalid", subject: "s", text: "t" });
+    expect(select).toHaveBeenCalledWith("id");
+    expect(transport).not.toHaveBeenCalled();
+    expect(outcome).toEqual({ outboxId: null, status: "failed", transport: "resend" });
+  });
+
+  it("attempts configured delivery only after the outbox identity is saved", async () => {
+    process.env.RESEND_API_KEY = "SYNTHETIC-LOCAL-TEST-NOT-A-KEY";
+    const order: string[] = [];
+    const transport = vi.spyOn(globalThis, "fetch").mockImplementation(async () => { order.push("transport"); return new Response("{}", { status: 200 }); });
+    const select = vi.fn(() => ({ single: async () => { order.push("insert"); return { data: { id: "saved-outbox" }, error: null }; } }));
+    const update = vi.fn(() => ({ eq: async () => { order.push("receipt"); return { error: null }; } }));
+    const client = { from: vi.fn(() => ({ insert: () => ({ select }), update })) } as never;
+    expect(await enqueueEmail(client, { campaignId: "c1", to: "synthetic@example.invalid", subject: "s", text: "t" })).toEqual({ outboxId: "saved-outbox", status: "sent", transport: "resend" });
+    expect(order).toEqual(["insert", "transport", "receipt"]);
+    expect(transport).toHaveBeenCalledTimes(1);
+  });
+
+  it("counts only saved emails as enqueued and separates unavailable outbox writes", async () => {
+    const is = vi.fn().mockResolvedValue({ data: [{ email: "a@example.invalid", unsubscribe_token: "a" }, { email: "b@example.invalid", unsubscribe_token: "b" }], error: null });
+    const single = vi.fn().mockResolvedValueOnce({ data: null, error: { message: "refused" } }).mockResolvedValueOnce({ data: { id: "saved" }, error: null });
+    const client = { from: vi.fn((table: string) => table === "engagement_subscriptions"
+      ? { select: () => ({ eq: () => ({ eq: () => ({ is }) }) }) }
+      : { insert: () => ({ select: () => ({ single }) }), update: () => ({ eq: async () => ({ error: null }) }) }) } as never;
+    const outcome = await enqueueCampaignSubscriberEmails(client, "c1", { subject: "s", text: "t" }, { origin: "https://agency.example.invalid", shareToken: "share" });
+    expect(outcome).toEqual({ enqueued: 1, unrecorded: 1, delivered: 0, skipped: 1, failed: 0, transport: "none" });
+  });
+
   it("enqueueCampaignSubscriberEmails sends each subscriber their OWN unsubscribe link", async () => {
     const subscribers = [
       { email: "a@x.com", unsubscribe_token: "tok-a" },

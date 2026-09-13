@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { EngagementCloseLoopBuilder } from "@/components/engagement/close-loop-builder";
+import { describeBroadcast, EngagementCloseLoopBuilder } from "@/components/engagement/close-loop-builder";
 import type { CloseLoopEntryRow } from "@/lib/engagement/close-loop";
 
 const CATEGORIES = [{ id: "cat-safety", label: "Safety" }];
@@ -153,5 +153,23 @@ describe("staff response read recovery", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("Saved staff responses could not be loaded");
     expect(screen.getByRole("button", { name: "Publish" })).toBeDisabled();
     expect(screen.queryByText("SYNTHETIC unavailable")).not.toBeInTheDocument();
+  });
+});
+
+
+describe("outbox persistence notices", () => {
+  it("does not call failed outbox writes an empty subscriber list", () => {
+    const notice = describeBroadcast({ outcome: "attempted", result: { enqueued: 0, unrecorded: 2, delivered: 0, skipped: 0, failed: 0, transport: "none" } });
+    expect(notice?.tone).toBe("warning");
+    expect(notice?.lines.join(" ")).toContain("2 update emails could not be saved");
+    expect(notice?.lines.join(" ")).toContain("Delivery was not attempted");
+    expect(notice?.lines.join(" ")).not.toMatch(/no confirmed email subscriptions/);
+  });
+
+  it("keeps partial delivery and unsaved emails distinct", () => {
+    const notice = describeBroadcast({ outcome: "attempted", result: { enqueued: 1, unrecorded: 1, delivered: 1, skipped: 0, failed: 0, transport: "resend" } });
+    expect(notice?.tone).toBe("warning");
+    expect(notice?.lines.join(" ")).toContain("1 update email could not be saved");
+    expect(notice?.lines.join(" ")).toContain("1 update email delivered");
   });
 });

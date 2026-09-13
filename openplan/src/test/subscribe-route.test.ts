@@ -71,14 +71,39 @@ describe("POST /api/engage/[shareToken]/subscribe", () => {
     expect(body.message).not.toMatch(/check your email/i);
   });
 
-  it("promises a confirmation email only when transport is configured", async () => {
+  it("promises a confirmation email only after the transport accepts it", async () => {
     isEmailTransportConfigured.mockReturnValue(true);
+    enqueueEmail.mockResolvedValue({ outboxId: "o1", status: "sent", transport: "resend" });
     const res = await POST(req({ email: "a@example.com" }), ctx);
     expect(res.status).toBe(201);
     const body = await res.json();
     expect(body.transportConfigured).toBe(true);
     expect(body.message).toMatch(/check your email/i);
     expect(enqueueEmail).toHaveBeenCalled();
+  });
+
+  it.each([
+    ["outbox unavailable", { outboxId: null, status: "failed", transport: "resend" }, /could not be prepared/],
+    ["transport refusal", { outboxId: "o1", status: "failed", transport: "resend" }, /could not be sent/],
+    ["transport skipped", { outboxId: "o1", status: "skipped", transport: "none" }, /no confirmation email/],
+  ])("does not promise confirmation after %s", async (_label, outcome, expected) => {
+    isEmailTransportConfigured.mockReturnValue(true);
+    enqueueEmail.mockResolvedValue(outcome);
+    const res = await POST(req({ email: "a@example.invalid" }), ctx);
+    expect(res.status).toBe(201);
+    const body = await res.json();
+    expect(body.success).toBe(true);
+    expect(body.confirmationNeedsRetry).toBe(outcome.status === "failed");
+    expect(body.message).toMatch(expected);
+    expect(body.message).not.toMatch(/check your email/i);
+  });
+
+  it("preserves an already confirmed subscription without another email", async () => {
+    subscribeParticipant.mockResolvedValue({ ok: true, alreadyConfirmed: true });
+    const body = await (await POST(req({ email: "a@example.invalid" }), ctx)).json();
+    expect(body.message).toMatch(/already subscribed/);
+    expect(body.confirmationNeedsRetry).toBe(false);
+    expect(enqueueEmail).not.toHaveBeenCalled();
   });
 
   it("429 when the per-connection rate limit is exceeded", async () => {

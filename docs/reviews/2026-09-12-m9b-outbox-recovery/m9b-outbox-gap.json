@@ -1,0 +1,12 @@
+{
+  "scope": "Real helper with local database and transport doubles; no email or network request sent",
+  "source": "68ac2b81169567e6ee094ab134e405f96ab9f502",
+  "moduleSha256": "e13a33cb6135ebcaf1fc04d66c83b7d6e9c6b5664c4d790b36b1a6822c73d7f4",
+  "insertCalls": 1,
+  "transportCalls": 1,
+  "outcome": {
+    "outboxId": null,
+    "status": "sent",
+    "transport": "resend"
+  }
+}

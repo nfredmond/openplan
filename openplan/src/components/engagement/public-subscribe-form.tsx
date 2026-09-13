@@ -96,10 +96,15 @@ export function PublicSubscribeForm({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email, website }),
       });
-      const payload = (await response.json()) as { error?: string; message?: string };
+      const payload = (await response.json()) as { error?: string; message?: string; confirmationNeedsRetry?: boolean };
       if (!response.ok) {
         setFailed(true);
         setServerMessage(typeof payload.error === "string" ? payload.error : null);
+        return;
+      }
+      if (payload.confirmationNeedsRetry) {
+        setFailed(true);
+        setServerMessage(typeof payload.message === "string" ? payload.message : null);
         return;
       }
       setDone(true);

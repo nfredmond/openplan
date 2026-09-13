@@ -1,0 +1,90 @@
+[
+  {
+    "name": "harmless-comment",
+    "outcome": "survived",
+    "matched": true,
+    "expectedTest": null,
+    "sourceSha256": "8e4c52bc5b1ee8537fc07f53383ffd1b3a34edfd02bd79aa6f3c1c98744a59a5",
+    "diagnostic": null
+  },
+  {
+    "name": "ignore-write-refusal",
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "error alongside a row",
+    "sourceSha256": "8e4c52bc5b1ee8537fc07f53383ffd1b3a34edfd02bd79aa6f3c1c98744a59a5",
+    "diagnostic": null
+  },
+  {
+    "name": "omit-identity-projection",
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "does not attempt email delivery",
+    "sourceSha256": "8e4c52bc5b1ee8537fc07f53383ffd1b3a34edfd02bd79aa6f3c1c98744a59a5",
+    "diagnostic": null
+  },
+  {
+    "name": "count-unsaved-as-enqueued",
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "counts only saved emails",
+    "sourceSha256": "8e4c52bc5b1ee8537fc07f53383ffd1b3a34edfd02bd79aa6f3c1c98744a59a5",
+    "diagnostic": null
+  },
+  {
+    "name": "false-empty-subscriber-notice",
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "does not call failed outbox writes an empty subscriber list",
+    "sourceSha256": "3057fc511514e23235a2930cfdad4f93c45aa96ad1cd6e222fff20cb7c6eaed0",
+    "diagnostic": null
+  },
+  {
+    "name": "hide-partial-failure",
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "keeps partial delivery and unsaved emails distinct",
+    "sourceSha256": "3057fc511514e23235a2930cfdad4f93c45aa96ad1cd6e222fff20cb7c6eaed0",
+    "diagnostic": null
+  },
+  {
+    "name": "hide-confirmation-persistence-error",
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "outbox unavailable",
+    "sourceSha256": "a93298952d575ae959b69d33abf3ddae37253f092ba2f71955ace17e948e6f76",
+    "diagnostic": null
+  },
+  {
+    "name": "hide-confirmation-transport-error",
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "transport refusal",
+    "sourceSha256": "a93298952d575ae959b69d33abf3ddae37253f092ba2f71955ace17e948e6f76",
+    "diagnostic": null
+  },
+  {
+    "name": "hide-confirmation-retry-flag",
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "outbox unavailable",
+    "sourceSha256": "a93298952d575ae959b69d33abf3ddae37253f092ba2f71955ace17e948e6f76",
+    "diagnostic": null
+  },
+  {
+    "name": "close-failed-confirmation-form",
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "keeps the saved email address available",
+    "sourceSha256": "5b33b5559f09adb6993bb58d5d5e9c696d6f79dfd26da39928dafa4e148419d2",
+    "diagnostic": null
+  },
+  {
+    "name": "configuration-as-delivery",
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "transport skipped",
+    "sourceSha256": "a93298952d575ae959b69d33abf3ddae37253f092ba2f71955ace17e948e6f76",
+    "diagnostic": null
+  }
+]

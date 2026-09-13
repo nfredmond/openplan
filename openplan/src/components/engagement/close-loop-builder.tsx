@@ -27,7 +27,7 @@ type Category = { id: string; label: string };
  * `outcome: null` means this PATCH was not a draft->published transition, so no
  * broadcast was owed and there is nothing to say.
  */
-type BroadcastResult = { enqueued: number; delivered: number; skipped: number; failed: number; transport: string };
+type BroadcastResult = { unrecorded?: number; enqueued: number; delivered: number; skipped: number; failed: number; transport: string };
 type BroadcastReport = { outcome: "attempted" | "no_share_token" | "unknown" | null; result: BroadcastResult | null };
 
 function plural(count: number, one: string, many: string): string {
@@ -78,7 +78,7 @@ export function describeBroadcast(report: BroadcastReport): { tone: "neutral" | 
     };
   }
 
-  const { enqueued, delivered, skipped, failed, transport } = report.result;
+  const { enqueued, delivered, skipped, failed, transport, unrecorded = 0 } = report.result;
 
   // A zero here is NOT evidence that nobody subscribed.
   // enqueueCampaignSubscriberEmails() reads engagement_subscriptions with the
@@ -86,7 +86,7 @@ export function describeBroadcast(report: BroadcastReport): { tone: "neutral" | 
   // empty one and lands in this exact branch. Until that read reports its own
   // failure (see the note above describeBroadcast), this branch may report what
   // OpenPlan FOUND and must not assert what is TRUE of the world.
-  if (enqueued === 0) {
+  if (enqueued === 0 && unrecorded === 0) {
     return {
       tone: "neutral",
       lines: [
@@ -97,6 +97,7 @@ export function describeBroadcast(report: BroadcastReport): { tone: "neutral" | 
   }
 
   const lines: string[] = [];
+  if (unrecorded > 0) lines.push(`${plural(unrecorded, "update email could", "update emails could")} not be saved to the outbox. Delivery was not attempted for those emails.`);
   if (delivered > 0) lines.push(`${plural(delivered, "update email", "update emails")} delivered via ${transport}.`);
   if (skipped > 0) {
     lines.push(
@@ -108,7 +109,7 @@ export function describeBroadcast(report: BroadcastReport): { tone: "neutral" | 
       `${plural(failed, "update email", "update emails")} could not be delivered — the email service refused them. See Activity → Email delivery for the reason.`
     );
   }
-  return { tone: delivered === enqueued ? "neutral" : "warning", lines };
+  return { tone: delivered === enqueued && unrecorded === 0 ? "neutral" : "warning", lines };
 }
 
 type Draft = { themeTitle: string; youSaid: string; sourceItemIds: string[] };
