@@ -1,0 +1,37 @@
+{
+  "source": "5b84838c86852a228e23ea1a138551581b9132fd",
+  "width": 390,
+  "passed": true,
+  "workspaceId": "f02e465a-40bd-4304-b4af-d45daff29d3d",
+  "projectId": "36e358b0-90d4-4f2f-aeab-e094b1069213",
+  "connectionId": "e005c0e2-727f-4772-bdb1-4eb09bf41c65",
+  "revisionId": "cb54afd9-64b5-4dfb-9065-ea69f79dab40",
+  "turnId": "645dee07-f9a2-4c88-b41c-15a4d71c58b6",
+  "originalHash": "84b705eb47b2151e2af4179ef3702b8cc570dc73069525543ff408336228c7fb",
+  "correctedTurnId": "a62e1cea-3184-4d83-aadc-87f29f37d696",
+  "correctedRevisionId": "f5cfd235-7495-4687-92c5-92effaebeef8",
+  "retainedHistoryHash": "52ea8cc6a0b417b1ed3b7983ef554e3b5bf51fa607e7f539a9ade17a0007bd47",
+  "revokedHistoryHash": "52ea8cc6a0b417b1ed3b7983ef554e3b5bf51fa607e7f539a9ade17a0007bd47",
+  "cancellationState": "cancelled",
+  "anonymousHistoryStatus": 401,
+  "credentialReadStatus": 403,
+  "packetHash": "e521775fc19c5bfe1a69a625520f93c20d770b4e7303ecd6e2d7490bfbd809f7",
+  "configurationHash": "e926332b4bf0a3466faf6c05fbc51865cafdb67f27a05fbfcc4eeadb747c729a",
+  "writes": [
+    "3e12232e93a6849c2626094c0060df0c1231887f735895416ded3bac73dc27cf",
+    "3e12232e93a6849c2626094c0060df0c1231887f735895416ded3bac73dc27cf",
+    "1310ec0ead50e6cd5da23ab735553f58add05ee4d9e62351a6dc3eabdb434173",
+    "718b036b54a5a143945272e64e0644b08901318ed4730b6c11deb107de4955b9"
+  ],
+  "modelCalls": 3,
+  "overflow": {
+    "viewport": 390,
+    "document": 390
+  },
+  "console": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    }
+  ]
+}

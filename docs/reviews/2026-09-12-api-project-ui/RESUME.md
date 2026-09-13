@@ -3,7 +3,8 @@
 Active full v1 goal, A0b. Published release remains v0.54.0. Worker increment is
 on main at 47c4985e. Its RLS Isolation 34728670387 completed successfully. CI
 34728670375 has successful Python worker, modeling, ops and shuffled jobs;
-QA is still in progress. Poll the existing run, do not restart it.
+QA also completed successfully. All five CI jobs and RLS passed for 47c4985e.
+Do not poll or restart these completed worker runs.
 
 The request endpoint is branch-pushed at 22a97822. The project provider panel
 now has Saved workspace API selection, paged metadata using the existing
@@ -32,31 +33,37 @@ Package openplan/, branch work/planner-agent-api-connections. No other agent
 owns this worktree; the other active session is in Job Search. Root/demo remain
 untouched. No subagents. Preserve unrelated reminder constraint and private keys.
 
-## Next
+## Release candidate checkpoint
 
-Start an identified local server on free loopback port 3255 with private
-api-settings.env below and the exact committed OPENPLAN_COMMIT_SHA. Clear any
-inherited VERCEL_GIT_COMMIT_SHA. Use which-openplan.sh before browser claims.
-Enter from home/sign-in, Workspace setup & health, then create a saved API
-through its real form. Use the synthetic loopback endpoint 127.0.0.1:3217/v1/
-which the existing private environment allowlists. Create a synthetic project
-through Projects -> New project -> Start a project. The two-step creator asks
-Project name / What is it? then type/phase/status and Start the project.
-Open Planner Agent -> Project task -> Saved workspace API.
+The UI and actual-worker journeys passed at desktop and 390px on source
+5b84838c86852a228e23ea1a138551581b9132fd. VERIFICATION.md, public synthetic
+JSON reports, viewport captures, build-identity.log and BROWSER_SHA256SUMS retain
+the evidence. Keyboard save/retry/cancellation, one dispatch after response loss,
+keyed original and keyless corrected generation, immutable old history after
+correction/revocation, anonymous history 401 and direct credential 403 passed.
+The final mobile retry followed a recorded Chrome network-change failure; it
+used Refresh connections and passed with only the deliberate POST abort error.
+The earlier source selector mistakes and clipped capture are documented too.
 
-Run desktop and 390px including keyboard, console, retry after lost POST response,
-actual local worker and SDK response, cancellation/interruption, config edit and
-revocation, original history, private API/document access and existing proposals.
-Use a real local HTTP response fixture, never external paid generation. Existing
-provider-api-worker-live.test.ts supplies the response and worker process recipe.
-Only the child workers/servers started for the journey may be stopped.
+The dev server on 3255 was stopped intentionally after browser collection.
+Its handle 68984 is terminal, exit 143. No browser, model fixture or API worker
+remains running. No new Python/scientific behavior was introduced.
 
-Workspace settings still truthfully carry the previous unavailable-generation
-wording until this new real path is accepted; then update it and rerun the
-identified journey for the final source. No browser claim or release yet.
-After UI acceptance run applicable QA, shuffle, isolated database/worker/upgrade
-checks, land directly on main, inspect exact CI before tagging a capability
-release. Do not reopen old v0.48 or v0.54 releases.
+Version/package-lock, contract/roadmap/matrix/registry release metadata and
+changelog are aligned to the v0.55.0 candidate. Review dates and capability
+statuses are unchanged. The release high-water mark is 318 migrations through
+20261012000002_assistant_api_turns.sql. Release-ordering fault probes had one
+harmless survivor and two expected failures; source restored. Browser source
+precedes only version, documentation and release-check changes, not runtime edits.
+
+Next: run full candidate QA, shuffled seed 912556 and full RLS in the named
+isolated stack. Keep their real session handles and logs; do not restart a live
+job. Commit/push checkpoints, land directly on main when applicable local checks
+pass, inspect exact main CI/RLS, and manually dispatch Upgrade Path from v0.54.0
+on the final candidate. Tag/publish v0.55.0 only after the declared gates pass.
+Then continue the full roadmap. No draft PRs, paid services or human-review gates.
+
+## Private environment
 
 Private files, never print or commit:
 /home/nathaniel/.local/state/openplan/api-provider-research-2026-09-12

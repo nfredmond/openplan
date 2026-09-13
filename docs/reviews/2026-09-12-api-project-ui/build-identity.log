@@ -1,0 +1,7 @@
+Instance:  http://127.0.0.1:3255
+Version:   0.54.0
+Commit:    5b84838c8685
+Checkout:  /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10 @ 5b84838c
+
+Serving from: /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan
+[32mMATCH — this instance is serving the checkout you are working in.[0m

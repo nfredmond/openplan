@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: e6d25edd
-current_release: v0.54.0
+current_release: v0.55.0
 review_by: 2026-10-05
 paths:
 - AGENTS.md
@@ -614,6 +614,8 @@ The [v0.52.0 scoped project-task increment](reviews/2026-09-10-planner-agent-pro
 The [v0.53.0 Claude increment](reviews/2026-09-10-claude-native-spike/VERIFICATION.md) extends this same task to installed Claude Code 2.1.263 on Linux, preserving exact provider/account binding, private history and interrupted delivery. Desktop and 390px acceptance uses the actual CLI with synthetic OAuth and scripted local responses. Live Claude quality, availability and account allowance remain unmeasured. OpenCode, extensible API endpoints, broader grounded tasks and durable assignments remain open; A0 and A1 stay partial.
 
 The [v0.54.0 OpenCode increment](reviews/2026-09-10-opencode-native-spike/VERIFICATION.md) adds the same retained project task through installed OpenCode 1.18.30 on Linux with native OpenAI API credentials. Desktop and 390px journeys use the actual executable and synthetic local Responses data, preserving Codex/Claude history and exact approvals. Live account access, billing and usefulness remain unmeasured. OpenCode OAuth/subscription modes, additional OpenCode providers, extensible API endpoints, broader tasks and durable assignments remain open. A0 and A1 stay partial.
+
+The [v0.55.0 candidate](reviews/2026-09-12-api-project-ui/VERIFICATION.md) connects saved workspace APIs to this same project task through a local worker. Identified desktop and 390px journeys retain original packets/revisions across lost responses, cancellation, correction and revocation; keyless and saved-key modes use a scripted local endpoint with the real SDK. Candidate release gates remain pending. Arbitrary provider protocols, broader chat/tasks, additional native account modes and A1 assignments are not established by this increment. A0/A1 remain partial.
 
 A0a proves one direct API choice and one local CLI backend on the same existing planning task. A0b completes Codex, Claude Code and OpenCode support, extensible API endpoints, recovery and provider switching. Both belong early; the full requested backend scope is not reduced to the first adapter. Other AI surfaces adopt the shared provider abstraction deliberately after their separate workload/privacy tests.
 

@@ -20,25 +20,32 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-Local connector cleanup now handles a killed lock process without waiting
-indefinitely for an exit event that already occurred. The lock holder uses one
-process so its death releases the lock.
+## 0.55.0 — 2026-09-12
 
-Internal preparation for extensible Planner Agent APIs now checks exact request
-destinations, encrypted connection identity, raw model identity and cancellation.
-Workspace settings now save API connections and preserve their revision history.
-The internal generation adapter binds the frozen project, exact saved revision,
-model and credential mode to one invocation, with cancellation and bounded output.
-Worker execution and selection in the project Planner Agent remain in development;
-this does not add a usable generation option yet.
+The project Planner Agent can now use a saved workspace API destination and its
+configured model IDs. Workspace settings retain each configuration revision and
+keep credentials separately protected. Select Saved workspace API in the
+existing project task, review the destination and shared project record, and
+acknowledge any provider charges. A local API worker processes the queued request;
+no paid hosting or provider account is created automatically.
 
-Migration `20261012000001_workspace_provider_api_revisions.sql` adds versioned
-workspace API configuration and separately protected credentials. Existing native
-and Anthropic request history is unchanged.
+Original packets, selected revisions and results survive response loss,
+configuration correction and revocation. Cancellation and process interruption
+stop publication without automatically retrying generation. A completed worker
+journal retries delivery only. Proposed submittals still use the existing exact
+approval flow. The native connector also handles killed lock processes without
+waiting for an exit event that already occurred.
 
-Migration `20261012000002_assistant_api_turns.sql` prepares retained API jobs,
-configuration-bound completion receipts and interrupted-attempt recovery. The
-local worker and project generation controls are still being integrated.
+Apply `20261012000001_workspace_provider_api_revisions.sql` and
+`20261012000002_assistant_api_turns.sql` before this app, then run
+`npm run worker:provider-api` from `openplan/` with the app's private database and
+encryption configuration. See [self hosting](openplan/docs/SELF_HOSTING.md).
+The supported protocol is OpenAI-compatible Chat Completions with structured
+output. Live provider availability, billing and answer usefulness remain
+unmeasured. Desktop and 390px acceptance uses a real local worker/SDK and
+synthetic responses; see [verification](docs/reviews/2026-09-12-api-project-ui/VERIFICATION.md).
+Broader agent tasks, additional protocols/native account modes and the full v1
+scope remain open. Final candidate checks and publication are recorded separately.
 
 ## 0.54.0 — 2026-09-12
 
