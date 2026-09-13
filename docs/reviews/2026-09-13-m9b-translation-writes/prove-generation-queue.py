@@ -1,8 +1,9 @@
 """Harmless and targeted failures of the rollback-only durable queue candidate."""
+from generation_schema_source import GenerationSection
 from pathlib import Path
 import hashlib,json,subprocess,time
 review=Path(__file__).resolve().parent
-source=review/'generation-queue-candidate.sql'
+source=GenerationSection('queue')
 original=source.read_text()
 private=Path('/home/nathaniel/.local/state/openplan/response-write-probe-20260913/queue-controls')/time.strftime('%Y%m%dT%H%M%S')
 private.mkdir(parents=True,exist_ok=False)

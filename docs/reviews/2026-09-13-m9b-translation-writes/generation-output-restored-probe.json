@@ -1,0 +1,7 @@
+{
+  "passed": true,
+  "rollbackContained": true,
+  "migrationSha256": "3daf131f02d2476a293cccde3ab5e74e73182dd0d5291db696df791bf0873cad",
+  "sourceSha256": "7a0b39deb0fc5ce37ff6198c32cd4871525829111be3ba4011c9ca2c76ee287d",
+  "probeSha256": "5558d2a430314a3c9fb48f77d6f1adde05f4cd3431db2ea87d892ba137f0a65d"
+}

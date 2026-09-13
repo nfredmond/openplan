@@ -3,11 +3,12 @@
 No model calls, application database changes or fixture deletion. Temporary
 function controls restore the original function and roll back their claims.
 """
+from generation_schema_source import GenerationSection
 from pathlib import Path
 import hashlib,json,os,select,subprocess,time
 review=Path(__file__).resolve().parent
 app=review.parents[2]/'openplan'
-source=(review/'generation-queue-candidate.sql').read_text()
+source=GenerationSection('queue').read_text()
 private=Path('/home/nathaniel/.local/state/openplan/response-write-probe-20260913/queue-concurrency')/time.strftime('%Y%m%dT%H%M%S')
 private.mkdir(parents=True,exist_ok=False)
 command=['docker','exec','-i','supabase_db_openplan-restore-target-2731143','psql','-X','-U','postgres','-d','openplan_translation_command_proof_20260913','-qAt','-v','ON_ERROR_STOP=1','-v','VERBOSITY=verbose']

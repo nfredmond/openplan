@@ -1,3 +1,7 @@
+# Latest retained-output checkpoint
+
+Read [GENERATION_OUTPUT_PROGRESS.md](GENERATION_OUTPUT_PROGRESS.md) first. The codec and SQL retention now have exact-byte and concurrent-delivery evidence against the actual migration. Worker and public workflow integration remain unfinished. This is the weekly usage reset checkpoint.
+
 # Latest queue checkpoint
 
 Read [GENERATION_QUEUE_PROGRESS.md](GENERATION_QUEUE_PROGRESS.md) first. The staff queue candidate has serial and held-transaction PostgreSQL evidence; it is installed only in a separate proof database. Completion delivery, worker and public producer integration remain unfinished.

@@ -1,0 +1,166 @@
+{
+  "sourceSha256": {
+    "sql": "7a0b39deb0fc5ce37ff6198c32cd4871525829111be3ba4011c9ca2c76ee287d",
+    "codec": "18f10b257c2eb23bf10c8f1b8514419035416ce9a20f99e08cfd329e54c4f0cb"
+  },
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/output-controls/20260913T143316",
+  "results": [
+    {
+      "case": "sql-baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-harmless",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true
+    },
+    {
+      "case": "sql-stray-read-grant",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true
+    },
+    {
+      "case": "codec-baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true
+    },
+    {
+      "case": "codec-harmless",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true
+    },
+    {
+      "case": "anon-output-leak",
+      "outcome": "killed",
+      "expectedFailure": "Anonymous retained output leak",
+      "expectedOutcome": true
+    },
+    {
+      "case": "authenticated-output-leak",
+      "outcome": "killed",
+      "expectedFailure": "Authenticated retained output leak",
+      "expectedOutcome": true
+    },
+    {
+      "case": "wrong-attempt",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: wrong output attempt",
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-delivery-digest",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: changed delivery digest",
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-bound-identity",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: foreign receipt campaign",
+      "expectedOutcome": true
+    },
+    {
+      "case": "misclassify-complete",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: complete output marked incomplete",
+      "expectedOutcome": true
+    },
+    {
+      "case": "jsonb-output-coercion",
+      "outcome": "killed",
+      "expectedFailure": "Invalid generation delivery value",
+      "expectedOutcome": true
+    },
+    {
+      "case": "jsonb-metadata-coercion",
+      "outcome": "killed",
+      "expectedFailure": "Invalid generation delivery value",
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-scope-status",
+      "outcome": "killed",
+      "expectedFailure": "Late changed-scope output was discarded or reactivated",
+      "expectedOutcome": true
+    },
+    {
+      "case": "discard-late-output",
+      "outcome": "killed",
+      "expectedFailure": "Late changed-scope output was discarded or reactivated",
+      "expectedOutcome": true
+    },
+    {
+      "case": "lose-finish-state",
+      "outcome": "killed",
+      "expectedFailure": "Late changed-scope output was discarded or reactivated",
+      "expectedOutcome": true
+    },
+    {
+      "case": "rewrite-output",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: output immutable",
+      "expectedOutcome": true
+    },
+    {
+      "case": "coerce-replay-bytes",
+      "outcome": "killed",
+      "expectedFailure": "Invalid generation delivery value",
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-replay-bytes-and-digest",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: equivalent words changed retained bytes",
+      "expectedOutcome": true
+    },
+    {
+      "case": "strip-output-whitespace",
+      "outcome": "killed",
+      "expectedFailure": "retains exact output and unusual provider metadata",
+      "expectedOutcome": true
+    },
+    {
+      "case": "drop-provider-id",
+      "outcome": "killed",
+      "expectedFailure": "retains exact output and unusual provider metadata",
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-output-hash",
+      "outcome": "killed",
+      "expectedFailure": "refuses a changed output hash or completeness claim",
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-completeness",
+      "outcome": "killed",
+      "expectedFailure": "refuses a changed output hash or completeness claim",
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-codec-size",
+      "outcome": "killed",
+      "expectedFailure": "refuses an oversized retained metadata record",
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-codec-digest",
+      "outcome": "killed",
+      "expectedFailure": "refuses changed retained bytes even if",
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-canonical-round-trip",
+      "outcome": "killed",
+      "expectedFailure": "refuses changed retained bytes even if",
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Application codec with intercepted SDK fetch and rolled-back PostgreSQL output delivery. No worker restart, live provider call, HTTP or browser publication. SQL treats provider metadata and unsupported output escapes as opaque text; the codec validates their reconstruction."
+}

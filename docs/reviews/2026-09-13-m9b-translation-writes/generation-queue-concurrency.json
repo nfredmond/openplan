@@ -1,8 +1,8 @@
 {
   "sourceSha256": "481f5d942d02929bab76052de645bdfaf6d37ab18332132ad4131d73b9c8bc0d",
   "database": "supabase_db_openplan-restore-target-2731143/openplan_translation_command_proof_20260913",
-  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/queue-concurrency/20260913T135553",
-  "fixtureRequestId": "8cb9a715-2595-4b82-ad52-25f5496883f1",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/queue-concurrency/20260913T142713",
+  "fixtureRequestId": "cfb22158-f581-46de-9b94-66455084575f",
   "results": [
     {
       "case": "overlapping-identical-create",
@@ -29,21 +29,21 @@
       "case": "baseline-lock",
       "guardOutcome": "survived",
       "returnedBusy": true,
-      "seconds": 0.04601313400780782,
+      "seconds": 0.04835709900362417,
       "expectedOutcome": true
     },
     {
       "case": "harmless-lock",
       "guardOutcome": "survived",
       "returnedBusy": true,
-      "seconds": 0.04780952600413002,
+      "seconds": 0.0471117080305703,
       "expectedOutcome": true
     },
     {
       "case": "removed-advisory-lock",
       "guardOutcome": "killed",
       "returnedBusy": false,
-      "seconds": 0.052971480996347964,
+      "seconds": 0.051484220020938665,
       "expectedOutcome": true
     }
   ],

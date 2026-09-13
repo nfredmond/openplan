@@ -2,6 +2,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createTranslationGeneration, translationGenerationPacketCanonical, type TranslationGenerationBinding, type TranslationGenerationPacket } from "@/lib/engagement/translation-generation";
+import { encodeTranslationGenerationDelivery, decodeTranslationGenerationDelivery } from "@/lib/engagement/translation-generation-delivery";
 import { prepareTranslationCredential } from "@/lib/integrations/translation-credentials";
 
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
@@ -54,6 +55,35 @@ describe("one claimed translation generation", () => {
       finishReason: "stop", inputTokens: 12, outputTokens: 7, sourceHash: hash(f.packet.sourceText), outputHash: hash(result.output) });
     expect(JSON.stringify(result)).not.toContain("SYNTHETIC-SELECTED-KEY");
     expect(JSON.stringify(result)).not.toContain(f.args.credential.credentialCiphertext);
+  });
+  it.each(["  SYNTHETIC full output.  ", "nul\0words", "unpaired\ud800words", "😀".repeat(8001)])("retains exact output and unusual provider metadata through the delivery codec", async output => {
+    reply.content = [{ type: "text", text: output }];
+    reply.id = "SYNTHETIC\0response"; reply.model = "SYNTHETIC\ud800reported-model";
+    const result = await createTranslationGeneration(fixture().args)();
+    const encoded = encodeTranslationGenerationDelivery(result);
+    expect(encoded.outputJson).toBe(JSON.stringify(output));
+    expect(encoded.bindingCanonical).not.toContain("responseId");
+    expect(encoded.providerMetadataJson).toContain("SYNTHETIC");
+    expect(decodeTranslationGenerationDelivery(encoded)).toEqual(result);
+    expect(JSON.stringify(encoded)).not.toContain("SYNTHETIC-SELECTED-KEY");
+  });
+  it("refuses changed retained bytes even if their represented words look equivalent", async () => {
+    const encoded = encodeTranslationGenerationDelivery(await createTranslationGeneration(fixture().args)());
+    expect(() => decodeTranslationGenerationDelivery({ ...encoded, outputJson: encoded.outputJson.replace("SYNTHETIC", "changed") })).toThrow("translation_delivery_digest_mismatch");
+    const alternate = { ...encoded, outputJson: " " + encoded.outputJson };
+    alternate.digest = hash([alternate.status, alternate.outputJson, alternate.bindingCanonical, alternate.providerMetadataJson].join("\n"));
+    expect(() => decodeTranslationGenerationDelivery(alternate)).toThrow("translation_delivery_encoding_mismatch");
+  });
+  it("refuses a changed output hash or completeness claim before encoding", async () => {
+    const result = await createTranslationGeneration(fixture().args)();
+    expect(() => encodeTranslationGenerationDelivery({ ...result, receipt: { ...result.receipt, outputHash: "0".repeat(64) } })).toThrow("translation_output_hash_mismatch");
+    expect(() => encodeTranslationGenerationDelivery({ ...result, status: "incomplete" })).toThrow("translation_completion_mismatch");
+    const incomplete = { ...result, status: "completed", output: "nul\0", receipt: { ...result.receipt, outputHash: hash("nul\0") } };
+    expect(() => encodeTranslationGenerationDelivery(incomplete)).toThrow("translation_completion_mismatch");
+  });
+  it("refuses an oversized retained metadata record before database delivery", async () => {
+    const result = await createTranslationGeneration(fixture().args)();
+    expect(() => encodeTranslationGenerationDelivery({ ...result, receipt: { ...result.receipt, responseId: "x".repeat(200001) } })).toThrow("translation_delivery_too_large");
   });
   it("does not use changed caller objects or ambient credentials after capture", async () => {
     const f = fixture();

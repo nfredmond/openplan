@@ -13,11 +13,12 @@ export const translationGenerationPacketSchema = z.object({
   targetLanguage: z.enum(TRANSLATION_LANGUAGES).refine(supportsMachineTranslation),
 }).strict();
 export type TranslationGenerationPacket = z.infer<typeof translationGenerationPacketSchema>;
-const bindingSchema = z.object({
+export const translationGenerationBindingSchema = z.object({
   workspaceId: id, campaignId: id, requestId: id, attemptId: id, fieldId: id, reservationId: id,
   credentialId: id, configurationHash: hash, packetHash: hash,
   leaseExpiresAt: z.string().datetime({ offset: true }),
 }).strict();
+const bindingSchema = translationGenerationBindingSchema;
 export type TranslationGenerationBinding = z.infer<typeof bindingSchema>;
 
 function sha256(value: string): string { return createHash("sha256").update(value).digest("hex"); }

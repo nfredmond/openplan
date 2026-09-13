@@ -119,7 +119,7 @@ BEGIN
  PERFORM pg_temp.require_queue_refusal(format('UPDATE engagement_translation_generation_fields SET state=%L WHERE id=%L','queued',first_field),'23514','never requeue');
  -- A retained expired reservation represents an earlier worker whose lease ended.
  INSERT INTO engagement_translation_generation_fields(id,request_id,ordinal,address,packet_canonical,state,attempt_id,reservation_id,reserved_at,lease_expires_at)
- VALUES(expired_id,request,3,fields#>'{0,address}',fields#>>'{0,packetCanonical}','reserved',gen_random_uuid(),gen_random_uuid(),clock_timestamp()-interval '4 minutes',clock_timestamp()-interval '1 minute');
+ VALUES(expired_id,request,3,fields#>'{0,address}',replace(fields#>>'{0,packetCanonical}',first_field::text,expired_id::text),'reserved',gen_random_uuid(),gen_random_uuid(),clock_timestamp()-interval '4 minutes',clock_timestamp()-interval '1 minute');
  SET LOCAL ROLE service_role;
  result:=claim_translation_generation_field(expired_id);
  IF result IS NOT NULL OR (SELECT state FROM engagement_translation_generation_fields WHERE id=expired_id)<>'interrupted' THEN
@@ -137,7 +137,7 @@ BEGIN
  -- A fresh unclaimed field is blocked by nineteen dispatched staff events and
  -- one live reservation. It remains queued, with no attempted generation.
  INSERT INTO engagement_translation_generation_fields(id,request_id,ordinal,address,packet_canonical)
- VALUES(other,request,4,fields#>'{1,address}',fields#>>'{1,packetCanonical}');
+ VALUES(other,request,4,fields#>'{1,address}',replace(fields#>>'{1,packetCanonical}',second_field::text,other::text));
  INSERT INTO usage_events(workspace_id,event_key,bucket_key,weight,idempotency_key,metadata_json)
  SELECT workspace,n::text,'assistant_chat',1,'staff:'||workspace::text||':'||n,'{}'::jsonb FROM generate_series(1,18) n;
  SET LOCAL ROLE service_role;
