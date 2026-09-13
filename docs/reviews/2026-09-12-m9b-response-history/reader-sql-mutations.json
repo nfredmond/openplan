@@ -1,0 +1,48 @@
+{
+  "stack": "openplan-restore-target-2026091050",
+  "migrationSha256": "13b346a260defe3cbb25891e216bf1e87f4e70eb8fd6458c9453a6165e80f594",
+  "results": [
+    {
+      "name": "harmless-comment",
+      "outcome": "survived",
+      "matched": true,
+      "expected": null,
+      "stderr": ""
+    },
+    {
+      "name": "cap-history",
+      "outcome": "killed",
+      "matched": true,
+      "expected": "READER: complete 1005 history copies",
+      "stderr": "ERROR:  READER: complete 1005 history copies\nCONTEXT:  PL/pgSQL function inline_code_block line 5 at RAISE\n"
+    },
+    {
+      "name": "wrong-checksum",
+      "outcome": "killed",
+      "matched": true,
+      "expected": "READER: exact retained checksum",
+      "stderr": "ERROR:  READER: exact retained checksum\nCONTEXT:  PL/pgSQL function inline_code_block line 8 at RAISE\n"
+    },
+    {
+      "name": "reverse-revisions",
+      "outcome": "killed",
+      "matched": true,
+      "expected": "READER: removed original and ordered corrections",
+      "stderr": "ERROR:  READER: removed original and ordered corrections\nCONTEXT:  PL/pgSQL function inline_code_block line 18 at RAISE\n"
+    },
+    {
+      "name": "bypass-rls",
+      "outcome": "killed",
+      "matched": true,
+      "expected": "READER: outsider denied",
+      "stderr": "ERROR:  READER: outsider denied\nCONTEXT:  PL/pgSQL function inline_code_block line 2 at RAISE\n"
+    },
+    {
+      "name": "allow-anonymous",
+      "outcome": "killed",
+      "matched": true,
+      "expected": "READER: anonymous execution",
+      "stderr": "ERROR:  READER: anonymous execution\nCONTEXT:  PL/pgSQL function inline_code_block line 9 at RAISE\n"
+    }
+  ]
+}

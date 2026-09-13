@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ResponseHistory } from "./response-history";
 import { Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -440,6 +441,8 @@ export function EngagementCloseLoopBuilder({
           </p>
         </div>
       </div>
+
+      <ResponseHistory campaignId={campaignId} />
 
       {readError && <div className="mt-4 space-y-2">
         <p role="alert" className={ERROR_CLASS}>Saved staff responses could not be loaded. Retry before adding or changing a response.</p>

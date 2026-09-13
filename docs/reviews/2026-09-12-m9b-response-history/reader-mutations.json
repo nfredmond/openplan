@@ -1,0 +1,128 @@
+[
+  {
+    "name": "harmless-comment",
+    "status": 0,
+    "outcome": "survived",
+    "matched": true,
+    "expectedTest": null,
+    "sourceSha256": "271c1d54f67d2624b27b424791c3aee87eda73d8030f530926909b737cbff2da",
+    "diagnostic": null
+  },
+  {
+    "name": "skip-checksum",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "checksum corruption",
+    "sourceSha256": "271c1d54f67d2624b27b424791c3aee87eda73d8030f530926909b737cbff2da",
+    "diagnostic": null
+  },
+  {
+    "name": "ignore-count",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "count mismatch",
+    "sourceSha256": "271c1d54f67d2624b27b424791c3aee87eda73d8030f530926909b737cbff2da",
+    "diagnostic": null
+  },
+  {
+    "name": "ignore-envelope",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "foreign envelope",
+    "sourceSha256": "271c1d54f67d2624b27b424791c3aee87eda73d8030f530926909b737cbff2da",
+    "diagnostic": null
+  },
+  {
+    "name": "ignore-row-scope",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "foreign row",
+    "sourceSha256": "271c1d54f67d2624b27b424791c3aee87eda73d8030f530926909b737cbff2da",
+    "diagnostic": null
+  },
+  {
+    "name": "ignore-retained-scope",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "foreign retained response",
+    "sourceSha256": "271c1d54f67d2624b27b424791c3aee87eda73d8030f530926909b737cbff2da",
+    "diagnostic": null
+  },
+  {
+    "name": "ignore-revisions",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "revision gap",
+    "sourceSha256": "271c1d54f67d2624b27b424791c3aee87eda73d8030f530926909b737cbff2da",
+    "diagnostic": null
+  },
+  {
+    "name": "ignore-removal",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "identity reused after removal",
+    "sourceSha256": "271c1d54f67d2624b27b424791c3aee87eda73d8030f530926909b737cbff2da",
+    "diagnostic": null
+  },
+  {
+    "name": "ignore-baseline",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "wrong initial event",
+    "sourceSha256": "271c1d54f67d2624b27b424791c3aee87eda73d8030f530926909b737cbff2da",
+    "diagnostic": null
+  },
+  {
+    "name": "wrong-anonymous-status",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "anonymous",
+    "sourceSha256": "ef1f1fe944e44eade9a66c52f8bdf0c347807262eebcbf7ecfbb965d78f00a1e",
+    "diagnostic": null
+  },
+  {
+    "name": "allow-viewer",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "viewer",
+    "sourceSha256": "ef1f1fe944e44eade9a66c52f8bdf0c347807262eebcbf7ecfbb965d78f00a1e",
+    "diagnostic": null
+  },
+  {
+    "name": "ignore-access-error",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "failed access read",
+    "sourceSha256": "ef1f1fe944e44eade9a66c52f8bdf0c347807262eebcbf7ecfbb965d78f00a1e",
+    "diagnostic": null
+  },
+  {
+    "name": "ignore-verification-error",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "failed verification",
+    "sourceSha256": "ef1f1fe944e44eade9a66c52f8bdf0c347807262eebcbf7ecfbb965d78f00a1e",
+    "diagnostic": null
+  },
+  {
+    "name": "cache-private-history",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "private no-store",
+    "sourceSha256": "ef1f1fe944e44eade9a66c52f8bdf0c347807262eebcbf7ecfbb965d78f00a1e",
+    "diagnostic": null
+  }
+]

@@ -23,8 +23,11 @@ stable enough to promise smooth upgrades indefinitely.
 Response-history persistence is in development. The additive
 `20261014000001_engagement_response_history.sql` migration retains private source
 copies through correction, publication changes and removal, with explicitly
-labelled legacy baselines. Staff history navigation, correction reasons,
-conflict/retry handling and translation-version custody remain unfinished.
+labelled legacy baselines. The additional
+`20261014000002_engagement_response_history_reader.sql` migration supports a
+private staff history view, including removed responses, checksum validation and
+read retries. Browser acceptance is pending. Correction reasons, conflict/retry
+handling for writes and translation-version custody remain unfinished.
 This foundation is not part of v0.55.2.
 
 ## 0.55.2 — 2026-09-12

@@ -94,3 +94,34 @@ Full QA, shuffled seed 913562 and full isolated RLS were launched on pushed
 source 5d8268a1. Upgrade Path 34737449570 was dispatched on that source from
 v0.55.2. They remain pending at this checkpoint; exact handles and receipt paths
 are in the sibling response-snapshot RESUME.md. No fresh browser claim is made.
+
+## Private history reader implementation, awaiting browser acceptance
+
+The additive 20261014000002 migration returns one RLS-scoped JSON snapshot of all
+campaign response revisions, including removed responses. The server checks exact
+PostgreSQL text against each retained SHA-256 before parsing, validates scope and
+revision sequence, and refuses the entire read on failure. The staff API requires
+engagement.write and returns private/no-store responses. A campaign-level history
+control is mounted in the existing response builder independently of current rows.
+It shows original/corrected/removed copies and explicitly names missing reasons,
+translation history and unknown pre-retention changes. No new write protection is
+claimed. Read-request aborts do not mutate saved responses.
+
+Focused tests: 36 passed across four files, TypeScript and changed-file lint exit
+0. The initial command ran from the repo root by mistake and failed to load app
+aliases/schema paths; those results are not app failures. Corrected commands ran
+from openplan/. Reader mutation evidence records one harmless survivor and thirteen
+matched failures. The initial anonymous-guard removal produced a null-user crash,
+not the intended assertion; retained initial JSON records it. The revised probe
+checks an incorrect anonymous response status and fails its named assertion.
+SQL probes record one harmless survivor and five targeted failures, with all
+transactions rolled back. They exercise 1,005 original histories, retained removed
+copies, exact checksums, anonymous execution and outsider/viewer access. The new
+migration was subsequently applied only to openplan-restore-target-2026091050.
+Both SQL pre-apply mutation scripts now require another disposable stack or a
+transactional adaptation; do not rerun them unchanged against the applied stack.
+
+Blind categories: mocked route tests do not prove live RLS; SQL probes do not prove
+browser navigation. Checksums detect differing retained bytes, not truth of the
+response. No history UI acceptance has been recorded at this checkpoint. Complete
+QA, shuffled tests and final exact-source CI remain before landing/release.

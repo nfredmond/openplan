@@ -1,0 +1,92 @@
+[
+  {
+    "name": "harmless-comment",
+    "status": 0,
+    "outcome": "survived",
+    "matched": true,
+    "expectedTest": null,
+    "sourceSha256": "271c1d54f67d2624b27b424791c3aee87eda73d8030f530926909b737cbff2da",
+    "diagnostic": null
+  },
+  {
+    "name": "skip-checksum",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "checksum corruption",
+    "sourceSha256": "271c1d54f67d2624b27b424791c3aee87eda73d8030f530926909b737cbff2da",
+    "diagnostic": null
+  },
+  {
+    "name": "ignore-count",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "count mismatch",
+    "sourceSha256": "271c1d54f67d2624b27b424791c3aee87eda73d8030f530926909b737cbff2da",
+    "diagnostic": null
+  },
+  {
+    "name": "ignore-envelope",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "foreign envelope",
+    "sourceSha256": "271c1d54f67d2624b27b424791c3aee87eda73d8030f530926909b737cbff2da",
+    "diagnostic": null
+  },
+  {
+    "name": "ignore-row-scope",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "foreign row",
+    "sourceSha256": "271c1d54f67d2624b27b424791c3aee87eda73d8030f530926909b737cbff2da",
+    "diagnostic": null
+  },
+  {
+    "name": "ignore-retained-scope",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "foreign retained response",
+    "sourceSha256": "271c1d54f67d2624b27b424791c3aee87eda73d8030f530926909b737cbff2da",
+    "diagnostic": null
+  },
+  {
+    "name": "ignore-revisions",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "revision gap",
+    "sourceSha256": "271c1d54f67d2624b27b424791c3aee87eda73d8030f530926909b737cbff2da",
+    "diagnostic": null
+  },
+  {
+    "name": "ignore-removal",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "identity reused after removal",
+    "sourceSha256": "271c1d54f67d2624b27b424791c3aee87eda73d8030f530926909b737cbff2da",
+    "diagnostic": null
+  },
+  {
+    "name": "ignore-baseline",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "wrong initial event",
+    "sourceSha256": "271c1d54f67d2624b27b424791c3aee87eda73d8030f530926909b737cbff2da",
+    "diagnostic": null
+  },
+  {
+    "name": "allow-anonymous",
+    "status": 1,
+    "outcome": "killed",
+    "matched": false,
+    "expectedTest": "anonymous",
+    "sourceSha256": "ef1f1fe944e44eade9a66c52f8bdf0c347807262eebcbf7ecfbb965d78f00a1e",
+    "diagnostic": "\n RUN  v4.1.11 /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan\n\n \u276f src/test/engagement-response-history-route.test.ts (6 tests | 1 failed) 17ms\n   \u00d7 refuses anonymous before reading private history 3ms\n\n Test Files  1 failed | 1 passed (2)\n      Tests  1 failed | 19 passed (20)\n   Start at  21:29:08\n   Duration  659ms (transform 88ms, setup 111ms, import 139ms, tests 48ms, environment 681ms)\n\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/test/engagement-response-history-route.test.ts > refuses anonymous before reading private history\nTypeError: Cannot read properties of null (reading 'id')\n \u276f Module.GET src/app/api/engagement/campaigns/[campaignId]/closeloop/history/route.ts:17:80\n     15|   const { data: { user } } = await client.auth.getUser();\n     16|   if (false) return NextResponse.json({ error: \"Unauthorized\" }, { sta\u2026\n     17|   const access = await loadCampaignAccess(client, parsed.data.campaign\u2026\n       |                                                                                ^\n     18|   if (access.error) return NextResponse.json({ error: \"Staff access co\u2026\n     19|   if (!access.campaign) return NextResponse.json({ error: \"Campaign no\u2026\n \u276f src/test/engagement-response-history-route.test.ts:31:20\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/1]\u23af\n\n"
+  }
+]
