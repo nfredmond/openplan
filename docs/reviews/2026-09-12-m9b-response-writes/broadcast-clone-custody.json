@@ -1,0 +1,16 @@
+{
+  "database": "response_broadcast_probe_20260913",
+  "sourceContainer": "supabase_db_openplan-restore-target-2026091050",
+  "ledger": "323|20261014000004",
+  "restoreExit": 0,
+  "sourceUnchanged": true,
+  "responseAndHistorySnapshotsRestored": true,
+  "archiveSha256": "df3b9074c9eed2d251a7c6a851ff662f30a753d08374472190c9bd3b5c262927",
+  "snapshotSha256": {
+    "entries": "86d6e6ed0985113b0f8dde5a136ce5af3389372efdc969aea81fcf03715da7c0",
+    "history": "62818454324100ff2892c6cfa4cc9a8d0556d93f88318383ad36a55684428f8e",
+    "invalid-history-hashes": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "fixture-count": "4fc7580c670d656a7e94661bbc33d5c6c55728fee63bb4d18182c1e49c768175"
+  },
+  "limitations": "Full archive restored, response/history and ledger compared. This is not yet an application restore drill or proof of every table."
+}

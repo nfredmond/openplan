@@ -1,0 +1,81 @@
+{
+  "source": "39f2db35619cbb44bc57d8979f02ab83a2e2b320",
+  "width": 390,
+  "passed": true,
+  "sourceFiles": {
+    "src/app/(app)/engagement/[campaignId]/page.tsx": "24e30ed05ef59f76020850df4f37164bfc2e49973cad1022c5ed848666edb6c1",
+    "src/components/engagement/close-loop-builder.tsx": "d9224efdf2d47899a17cde92abbd5d8860f312071782a864d1c37c3dde82a987",
+    "src/components/engagement/response-history.tsx": "f144b9df5321ad2decf242faa6c9debc84c8d4b201de9af4587551063bec294e",
+    "src/components/engagement/response-write-recovery.tsx": "65eaabc465bb820cf0feb68265c178410c186ecc77178d9ae0021a0486fb2ca1",
+    "src/components/engagement/notifications-inbox.tsx": "42409a6facf4a7af449c92a7a3c6b6be0b3c39da2772d97e2eb55f0cc4d65a22"
+  },
+  "campaignId": "177b5bb4-4d7b-4c97-a5ca-507a88a11095",
+  "responseId": "c765de32-ee2f-420f-b027-70c687b8c382",
+  "exactRetryHash": "1b3dce9a3c1f31e3052270bef7e1dfbfbcd5c485ca902c96021096dd592b8a09",
+  "originalHistoryChecksum": "8c63876644b7be1208ea9166054b9faacc291b83ee8d4665c7f833b41af63929",
+  "historyRevisions": 3,
+  "publicationWorker": "Native worker against local PostgREST; zero eligible recipients; email disabled",
+  "overflow": {
+    "viewport": 390,
+    "document": 390
+  },
+  "networkFailures": [
+    {
+      "url": "http://localhost:3260/api/map-layers/aerial-orthos",
+      "error": "net::ERR_ABORTED",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:3260/api/map-features/project-areas",
+      "error": "net::ERR_ABORTED",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:3260/api/map-features/crashes",
+      "error": "net::ERR_ABORTED",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:3260/api/map-features/engagement",
+      "error": "net::ERR_ABORTED",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:3260/api/engagement/campaigns/177b5bb4-4d7b-4c97-a5ca-507a88a11095/closeloop",
+      "error": "net::ERR_FAILED",
+      "method": "POST"
+    },
+    {
+      "url": "http://localhost:3260/api/map-layers/aerial-orthos",
+      "error": "net::ERR_ABORTED",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:3260/api/map-features/project-areas",
+      "error": "net::ERR_ABORTED",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:3260/api/map-features/crashes",
+      "error": "net::ERR_ABORTED",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:3260/api/map-features/engagement",
+      "error": "net::ERR_ABORTED",
+      "method": "GET"
+    },
+    {
+      "url": "http://localhost:3260/api/engagement/campaigns/177b5bb4-4d7b-4c97-a5ca-507a88a11095/closeloop/history",
+      "error": "net::ERR_ABORTED",
+      "method": "GET"
+    }
+  ],
+  "historyPublicationRefreshed": true,
+  "console": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    }
+  ]
+}

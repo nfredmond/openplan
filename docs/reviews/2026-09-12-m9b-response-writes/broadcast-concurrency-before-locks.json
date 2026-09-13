@@ -1,0 +1,27 @@
+{
+  "database": "response_broadcast_probe_20260913",
+  "results": [
+    {
+      "case": "two-workers-one-message",
+      "passed": true,
+      "evidence": {
+        "secondWorkerSkippedHeldMessage": true
+      }
+    },
+    {
+      "case": "claim-before-unsubscribe",
+      "passed": false,
+      "diagnostic": "Unsubscribe row change did not wait for the already-authorized claim"
+    },
+    {
+      "case": "unsubscribe-before-claim",
+      "passed": false,
+      "diagnostic": "unsubscribe-before-claim: Claim ignored a pending authority change"
+    },
+    {
+      "case": "closure-before-claim",
+      "passed": false,
+      "diagnostic": "closure-before-claim: Claim ignored a pending authority change"
+    }
+  ]
+}

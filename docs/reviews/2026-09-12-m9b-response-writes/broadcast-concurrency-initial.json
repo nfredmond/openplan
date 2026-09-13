@@ -1,0 +1,27 @@
+{
+  "database": "response_broadcast_probe_20260913",
+  "results": [
+    {
+      "case": "two-workers-one-message",
+      "passed": true,
+      "evidence": {
+        "secondWorkerSkippedHeldMessage": true
+      }
+    },
+    {
+      "case": "claim-before-unsubscribe",
+      "passed": false,
+      "diagnostic": "Unsubscribe committed its row change before the already-authorized claim finished"
+    },
+    {
+      "case": "unsubscribe-before-claim",
+      "passed": false,
+      "diagnostic": "unsubscribe-before-claim: Claim ignored a pending authority change"
+    },
+    {
+      "case": "pause-before-claim",
+      "passed": false,
+      "diagnostic": "Database session ended: ERROR:  new row for relation \"engagement_campaigns\" violates check constraint \"engagement_campaigns_status_check\"\nDETAIL:  Failing row contains (ad3a8442-83e6-4256-8b0a-1405bcab6335, f02e465a-40bd-4304-b4af-d45daff29d3d, null, SYNTHETIC concurrent delivery, null, paused, comment_collection, null, 2026-09-13 10:14:04.349738+00, 2026-09-13 10:14:04.56283+00, dd34106c-e18b-4255-b6a9-7041cd6d198d, null, f, null, null, null, null, null, f, null, null, f, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, f, null, null, null, fbfba740-cc22-47e9-abf7-abc195fc00a2, null, null).\n"
+    }
+  ]
+}

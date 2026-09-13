@@ -1,6 +1,6 @@
 # Current continuation
 
-Read [RESET_CHECKPOINT.md](RESET_CHECKPOINT.md) first, then [ACTIVITY_JOIN.md](ACTIVITY_JOIN.md).
+Read [BROWSER_AND_CONCURRENCY.md](BROWSER_AND_CONCURRENCY.md) first, then [RESET_CHECKPOINT.md](RESET_CHECKPOINT.md) and [ACTIVITY_JOIN.md](ACTIVITY_JOIN.md).
 The remaining text below is historical and superseded where those notes disagree.
 
 # Latest pause checkpoint

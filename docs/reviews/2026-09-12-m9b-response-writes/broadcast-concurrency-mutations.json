@@ -1,0 +1,84 @@
+{
+  "database": "response_broadcast_probe_20260913",
+  "results": [
+    {
+      "name": "baseline",
+      "matched": true,
+      "outcome": "survived",
+      "expected": null,
+      "diagnostic": null,
+      "evidence": [
+        {
+          "case": "two-workers-one-message",
+          "secondWorkerSkippedHeldMessage": true
+        },
+        {
+          "case": "claim-before-unsubscribe",
+          "unsubscribeWaitedForPriorClaim": true
+        },
+        {
+          "case": "unsubscribe-before-claim",
+          "claimWaitedAndCancelled": true
+        },
+        {
+          "case": "closure-before-claim",
+          "claimWaitedAndCancelled": true
+        }
+      ],
+      "definitionSha256": "cc7ce5c2d56d4c106dc66ce3fa84b09f8bafa7d9f25197f36421c13041f593c3"
+    },
+    {
+      "name": "harmless-comment",
+      "matched": true,
+      "outcome": "survived",
+      "expected": null,
+      "diagnostic": null,
+      "evidence": [
+        {
+          "case": "two-workers-one-message",
+          "secondWorkerSkippedHeldMessage": true
+        },
+        {
+          "case": "claim-before-unsubscribe",
+          "unsubscribeWaitedForPriorClaim": true
+        },
+        {
+          "case": "unsubscribe-before-claim",
+          "claimWaitedAndCancelled": true
+        },
+        {
+          "case": "closure-before-claim",
+          "claimWaitedAndCancelled": true
+        }
+      ],
+      "definitionSha256": "7e57d60c6f88cd5297feb2ef84c9bc003ef1d8c1985b40114ba0025529871f8f"
+    },
+    {
+      "name": "missing-subscription-lock",
+      "matched": true,
+      "outcome": "killed",
+      "expected": "Claim ignored a pending authority change",
+      "diagnostic": "unsubscribe-before-claim: Claim ignored a pending authority change",
+      "evidence": [],
+      "definitionSha256": "344eb340f934eee4403ebc479c1a4b3da4b49fe9a3bc40af1e8ebb21f7877845"
+    },
+    {
+      "name": "missing-campaign-lock",
+      "matched": true,
+      "outcome": "killed",
+      "expected": "Claim ignored a pending authority change",
+      "diagnostic": "closure-before-claim: Claim ignored a pending authority change",
+      "evidence": [],
+      "definitionSha256": "6cf1e6f1f2ab54f9f1a31369d6ffdfd6b94f2ef91bdaf71d0024a25e572d2ba8"
+    },
+    {
+      "name": "missing-skip-locked",
+      "matched": true,
+      "outcome": "killed",
+      "expected": "Second worker did not skip the held claim",
+      "diagnostic": "Second worker did not skip the held claim",
+      "evidence": [],
+      "definitionSha256": "a0f4a19ebd6ac2348dae36323263da83e1d6d11f8cb9b894096f0b2cfdf5e3f5"
+    }
+  ]
+}
