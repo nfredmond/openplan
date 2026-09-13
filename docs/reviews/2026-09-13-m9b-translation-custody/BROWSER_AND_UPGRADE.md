@@ -62,3 +62,24 @@ Final QA and shuffled results must be recorded before merge/release claims.
 The read/history proof does not close atomic translation writes, correction
 reasons, retained original source text, durable generation/spend accounting or
 cache completion provenance. RESUME.md lists these remaining software gaps.
+
+
+## Local release gates
+
+Full QA passed lint, dead-code checking,14345 tests with453 intentional skips,
+382 provider connector tests with4 skips, zero dependency audit vulnerabilities,
+and the webpack production build. Shuffled seed913328 passed the same14345 tests
+after the inventory correction. Live restored RLS passed482 tests and all52
+worker suites passed. See local-checks.json for terminal outcomes and log hashes.
+The inventory's baseline and harmless comment survive; removing its staff policy,
+RLS declaration or entire migration produces the corresponding failure.
+
+The v0.58.0 release records are being prepared. Final release metadata checks and
+exact-commit GitHub CI precede tagging; this document does not claim publication.
+
+Release accounting baseline and harmless comment pass; a wrong328-to327 migration
+count fails the release-ordering guard. The product-direction check caught one
+stale roadmap release header during preparation; it was corrected without
+changing review dates or capability grades. The check and focused changed-test
+lint then passed. Local QA was run before version-only release metadata edits;
+final release commit CI verifies the release package before tagging.

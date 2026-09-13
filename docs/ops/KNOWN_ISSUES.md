@@ -389,3 +389,20 @@ relationships refuse migration validation rather than being silently changed.
 Full private translation history, durable machine generation and the wider M9b
 source-to-decision chain remain open. The machine helper's 4000-character source
 truncation is an observed gap; the allowed response source can be longer.
+
+
+## Unreleased translation history follow-up, September13
+
+The candidate after v0.57.1 retains private translation revisions and exposes
+original/corrected/withdrawn history in the existing editor. Identified desktop
+and390px keyboard journeys preserve original checksums and recover interrupted
+reads/saves. The helper now sends supported source text intact and refuses
+incomplete new output. [Browser and upgrade evidence](../reviews/2026-09-13-m9b-translation-custody/BROWSER_AND_UPGRADE.md)
+records the bounded outcome; final QA/CI and release remain separate.
+
+Public cached translations still contain text/sourceHash without completion
+provenance. This helper correction cannot retroactively prove cached output
+complete. Exact-version atomic translation writes, reasons and source-word
+custody, durable generation/request receipts and attempt-based spend accounting
+remain open. An identical lost-acknowledgement save retry is not a general
+concurrent-write or paid-generation recovery guarantee. M9b remains unfinished.

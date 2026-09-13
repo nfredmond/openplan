@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: e6d25edd
-current_release: v0.57.1
+current_release: v0.58.0
 review_by: 2026-10-05
 paths:
 - AGENTS.md
@@ -679,3 +679,12 @@ constraints; [verification](reviews/2026-09-13-translation-scope/VERIFICATION.md
 records its release status. Continue translation custody and recovery, followed by
 the remaining M9b and other early priorities above. Neither increment closes M9b
 or changes the full v1 destination.
+
+
+The v0.58.0 candidate adds private translation history and rejects incomplete new
+model output. [Verification](reviews/2026-09-13-m9b-translation-custody/BROWSER_AND_UPGRADE.md)
+records desktop/390px recovery, exact original retention, migration328 and local
+gates. Final CI and tagging remain separate. Continue exact-version reasoned
+translation writes, retained source wording, durable generation/spend accounting
+and cache completeness, then the remaining M9b and early priorities above.
+This does not close M9b or change the complete V1 contract.

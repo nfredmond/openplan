@@ -1,5 +1,14 @@
 # Resume after the weekly usage reset
 
+> Later continuation: browser acceptance is complete at desktop1440 and390;
+> restored database2731143 is now328 and passed482 live tests. All52 worker
+> suites, full QA and shuffled seed913328 passed. The owned dev server was
+> stopped. See BROWSER_AND_UPGRADE.md and local-checks.json. The v0.58.0 release
+> commit follows the349cfe6e evidence checkpoint. Inspect exact main CI and
+> Upgrade Path before tagging; publication is not yet claimed here. Earlier
+> process/database/browser statuses below are historical. Continue the remaining
+> atomic writes, source custody, cache completeness and durable generation next.
+
 Saved September 13, 2026 at Nathaniel's request. The full V1 objective remains
 unfinished and authorized. Resume this work, do not restart the original v0.47
 plan. No PRs, no human-review release gate, local/free operation. Preserve the

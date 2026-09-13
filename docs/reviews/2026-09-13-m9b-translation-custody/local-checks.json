@@ -1,0 +1,41 @@
+{
+  "applicationCommit": "0d65771ecde0bd126d35582bf00c3e7934dc2236",
+  "inventoryCorrectionCommit": "349cfe6e",
+  "checks": {
+    "qa": {
+      "log": "history-qa-gate-final.log",
+      "exit": 0,
+      "testsPassed": 14345,
+      "testsSkipped": 453,
+      "providerPassed": 382,
+      "providerSkipped": 4,
+      "dependencyVulnerabilities": 0,
+      "productionBuild": "passed",
+      "logSha256": "4efb2489a8c3765e9f624924e1c689e79277991252a7e2fd480b425487ec2776"
+    },
+    "shuffled": {
+      "log": "history-shuffled-final.log",
+      "exit": 0,
+      "seed": 913328,
+      "testsPassed": 14345,
+      "testsSkipped": 453,
+      "logSha256": "9677cda0c6529ed10a563c8155d87aa5e726a608616252af58d78e53d564dcf4"
+    },
+    "restoredRls": {
+      "log": "history-restored-rls-328.log",
+      "exit": 0,
+      "testsPassed": 482,
+      "filesPassed": 52,
+      "container": "supabase_db_openplan-restore-target-2731143",
+      "logSha256": "726378ac47624ae037652a29742bd482f45f20ff0243f7ceba1927d1d96926e0"
+    },
+    "workers": {
+      "log": "history-workers.log",
+      "exit": 0,
+      "suitesPassed": 52,
+      "suitesNotRun": 0,
+      "logSha256": "34d280f09c4a5f494e686bd8b6355571b883171bf48052c5b5f79c8d4b8c6eb2"
+    }
+  },
+  "limits": "Local engineering checks; no machine quality or full V1 claim. Release metadata checks, final CI and publication are separate."
+}

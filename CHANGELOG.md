@@ -20,16 +20,21 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.58.0 — 2026-09-13
+
 Translation history retains private original, corrected, accepted and withdrawn
 wording with its recorded model and author. The editor reads and verifies retained
 copies independently of the current fields. Apply
 `20261014000009_engagement_translation_history.sql` before using the history reader.
 
-The translation helper preserves supported source text and refuses incomplete
-model output. The existing output-token ceiling remains; long translations may
-be unavailable rather than being presented as complete. Atomic translation writes,
-source-text custody and durable generation remain in development. This increment
-has not been released.
+For new model calls, the translation helper preserves supported source text and
+refuses incomplete model output. Previously cached translations lack completion
+provenance and have not been revalidated by this change. The existing output-token
+ceiling remains; long translations may be unavailable rather than being presented
+as complete. Atomic translation writes,
+source-text custody and durable generation remain in development. Earlier source
+words and correction reasons remain unknown unless retained separately.
+Publication and final CI are recorded in the translation-custody review.
 
 ## 0.57.1 — 2026-09-13
 
