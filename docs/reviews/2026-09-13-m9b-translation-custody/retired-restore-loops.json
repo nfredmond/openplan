@@ -1,0 +1,103 @@
+{
+  "before": [
+    {
+      "name": "supabase_auth_openplan-restore-source-3112923",
+      "status": "restarting",
+      "restartCount": 3920,
+      "restartPolicy": "unless-stopped",
+      "databaseStatus": "exited"
+    },
+    {
+      "name": "supabase_storage_openplan-restore-source-3112923",
+      "status": "restarting",
+      "restartCount": 3525,
+      "restartPolicy": "unless-stopped",
+      "databaseStatus": "exited"
+    },
+    {
+      "name": "supabase_auth_openplan-restore-target-3112923",
+      "status": "restarting",
+      "restartCount": 3912,
+      "restartPolicy": "unless-stopped",
+      "databaseStatus": "exited"
+    },
+    {
+      "name": "supabase_storage_openplan-restore-target-3112923",
+      "status": "restarting",
+      "restartCount": 3525,
+      "restartPolicy": "unless-stopped",
+      "databaseStatus": "exited"
+    },
+    {
+      "name": "supabase_auth_openplan-restore-source-3390964",
+      "status": "restarting",
+      "restartCount": 3912,
+      "restartPolicy": "unless-stopped",
+      "databaseStatus": "exited"
+    },
+    {
+      "name": "supabase_storage_openplan-restore-source-3390964",
+      "status": "restarting",
+      "restartCount": 3526,
+      "restartPolicy": "unless-stopped",
+      "databaseStatus": "exited"
+    },
+    {
+      "name": "supabase_auth_openplan-restore-target-3390964",
+      "status": "restarting",
+      "restartCount": 3921,
+      "restartPolicy": "unless-stopped",
+      "databaseStatus": "exited"
+    },
+    {
+      "name": "supabase_storage_openplan-restore-target-3390964",
+      "status": "restarting",
+      "restartCount": 3526,
+      "restartPolicy": "unless-stopped",
+      "databaseStatus": "exited"
+    }
+  ],
+  "after": [
+    {
+      "name": "supabase_auth_openplan-restore-source-3112923",
+      "status": "exited",
+      "restartCount": 3920
+    },
+    {
+      "name": "supabase_storage_openplan-restore-source-3112923",
+      "status": "exited",
+      "restartCount": 3525
+    },
+    {
+      "name": "supabase_auth_openplan-restore-target-3112923",
+      "status": "exited",
+      "restartCount": 3912
+    },
+    {
+      "name": "supabase_storage_openplan-restore-target-3112923",
+      "status": "exited",
+      "restartCount": 3525
+    },
+    {
+      "name": "supabase_auth_openplan-restore-source-3390964",
+      "status": "exited",
+      "restartCount": 3912
+    },
+    {
+      "name": "supabase_storage_openplan-restore-source-3390964",
+      "status": "exited",
+      "restartCount": 3526
+    },
+    {
+      "name": "supabase_auth_openplan-restore-target-3390964",
+      "status": "exited",
+      "restartCount": 3921
+    },
+    {
+      "name": "supabase_storage_openplan-restore-target-3390964",
+      "status": "exited",
+      "restartCount": 3526
+    }
+  ],
+  "status": "stopped; containers and volumes retained; no restart-policy change"
+}

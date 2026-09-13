@@ -35,7 +35,8 @@ address, viewer-access, failed-read, foreign-UI and stale-refresh failures. The
 migration's baseline/harmless controls and five targeted failures also pass. An
 actual authenticated SQL fixture exercised create/accept/correct/remove/recreate
 and >1000 complete private revisions inside a rollback transaction before install.
-Full installed RLS and browser acceptance are running or pending, not complete.
+Full installed RLS subsequently passed; browser acceptance remains incomplete.
+See RESUME.md for the later evidence and exact stopping point.
 
 Initial diagnostics are retained privately: npm exec with --prefix ran from the
 repository root and found no configured imports; a UI assertion matched both an

@@ -1,0 +1,42 @@
+[
+  {
+    "case": "baseline-fixture",
+    "matched": true,
+    "outcome": "survived",
+    "failed": []
+  },
+  {
+    "case": "harmless-fixture",
+    "matched": true,
+    "outcome": "survived",
+    "failed": []
+  },
+  {
+    "case": "empty-fixture",
+    "matched": true,
+    "outcome": "killed",
+    "failed": [
+      "translation history retains complete private originals, corrections and withdrawals"
+    ]
+  },
+  {
+    "case": "baseline-census",
+    "matched": true,
+    "outcome": "survived",
+    "failed": []
+  },
+  {
+    "case": "harmless-census",
+    "matched": true,
+    "outcome": "survived",
+    "failed": []
+  },
+  {
+    "case": "missing-history-probe",
+    "matched": true,
+    "outcome": "killed",
+    "failed": [
+      "workspace RLS isolation inventory covers every direct workspace-scoped table in the paid-access audit set"
+    ]
+  }
+]

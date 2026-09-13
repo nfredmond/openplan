@@ -1,0 +1,30 @@
+[
+  {
+    "case": "baseline",
+    "exit": 0,
+    "matched": true,
+    "expected": null,
+    "schemaRolledBack": true
+  },
+  {
+    "case": "harmless-comment",
+    "exit": 0,
+    "matched": true,
+    "expected": null,
+    "schemaRolledBack": true
+  },
+  {
+    "case": "category-delete-history",
+    "exit": 3,
+    "matched": true,
+    "expected": "Source cleanup lost retained translation",
+    "schemaRolledBack": true
+  },
+  {
+    "case": "mutable-address",
+    "exit": 3,
+    "matched": true,
+    "expected": "Address mutation survived",
+    "schemaRolledBack": true
+  }
+]
