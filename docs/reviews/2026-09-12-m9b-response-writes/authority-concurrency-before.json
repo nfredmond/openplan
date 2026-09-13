@@ -1,0 +1,14 @@
+{
+  "database": "response_write_probe_20260913",
+  "results": [
+    {
+      "name": "baseline",
+      "matched": false,
+      "outcome": "killed",
+      "diagnostic": "Revocation committed before the already-authorized response transaction finished",
+      "expected": null,
+      "evidence": [],
+      "functionSha256": "c04b88af6444df7137cbfb7326a60c8456566ab216958ceb95715b041e0b6b32"
+    }
+  ]
+}

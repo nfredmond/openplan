@@ -1,0 +1,92 @@
+[
+  {
+    "name": "baseline",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "expected": null,
+    "schemaSha256": "8e05a93f9d4ddf29facc3d2a05c4eafce1185f201b9d29633bd5ee948b277a88",
+    "probeSha256": "708fba113ebcf69c3bc7f184ab266e42f7b8a7c4895f36c040d21814569013ff",
+    "diagnostic": null
+  },
+  {
+    "name": "harmless-comment",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "expected": null,
+    "schemaSha256": "cf8f84d613b754e493ffbe8064c5daddffff0580b0c0bbf57b95a2337a5b6e69",
+    "probeSha256": "708fba113ebcf69c3bc7f184ab266e42f7b8a7c4895f36c040d21814569013ff",
+    "diagnostic": null
+  },
+  {
+    "name": "different-actor-replay",
+    "matched": true,
+    "status": 3,
+    "outcome": "killed",
+    "expected": "A different staff actor replayed the original request",
+    "schemaSha256": "16d2e5d16b5c635764dd66d295cb93d0db94039fd6dfc3edd482696ad90104d4",
+    "probeSha256": "708fba113ebcf69c3bc7f184ab266e42f7b8a7c4895f36c040d21814569013ff",
+    "diagnostic": null
+  },
+  {
+    "name": "cross-campaign-update",
+    "matched": true,
+    "status": 3,
+    "outcome": "killed",
+    "expected": "A staff actor corrected a response through another campaign",
+    "schemaSha256": "a05fd2330ea05e1cab63d8a523690d78f470809392849e77c662cd9a9345deb1",
+    "probeSha256": "708fba113ebcf69c3bc7f184ab266e42f7b8a7c4895f36c040d21814569013ff",
+    "diagnostic": null
+  },
+  {
+    "name": "viewer-receipt-disclosure",
+    "matched": true,
+    "status": 3,
+    "outcome": "killed",
+    "expected": "Viewer read private write receipts",
+    "schemaSha256": "55d5e01abfdc433c8b4e53dc28b90b38cf40f0a7c55a3ce6eeb58bafa2447d92",
+    "probeSha256": "708fba113ebcf69c3bc7f184ab266e42f7b8a7c4895f36c040d21814569013ff",
+    "diagnostic": null
+  },
+  {
+    "name": "viewer-write",
+    "matched": true,
+    "status": 3,
+    "outcome": "killed",
+    "expected": "Viewer wrote a staff response",
+    "schemaSha256": "f2a555ac4b81693842204db7d99ebf0e69f54f297722adcefe1b1048fcffb41e",
+    "probeSha256": "708fba113ebcf69c3bc7f184ab266e42f7b8a7c4895f36c040d21814569013ff",
+    "diagnostic": null
+  },
+  {
+    "name": "viewer-status-disclosure",
+    "matched": true,
+    "status": 3,
+    "outcome": "killed",
+    "expected": "Viewer read private subscriber status",
+    "schemaSha256": "9e85884235e6cb15940a7d536d2176195f76b4fa778d907267701bcd71e01dd8",
+    "probeSha256": "708fba113ebcf69c3bc7f184ab266e42f7b8a7c4895f36c040d21814569013ff",
+    "diagnostic": null
+  },
+  {
+    "name": "revoked-replay",
+    "matched": true,
+    "status": 3,
+    "outcome": "killed",
+    "expected": "Revoked actor replayed a private receipt",
+    "schemaSha256": "56f8e2caf46c0603613f269c0d202bc10b53d824f2e16360115fd02ee18c93a6",
+    "probeSha256": "708fba113ebcf69c3bc7f184ab266e42f7b8a7c4895f36c040d21814569013ff",
+    "diagnostic": null
+  },
+  {
+    "name": "anonymous-rpc-privilege",
+    "matched": true,
+    "status": 3,
+    "outcome": "killed",
+    "expected": "Anonymous caller has private response RPC privilege",
+    "schemaSha256": "a5567a4fb5279225ebc951a370d2d567675668128f127e24905f3acd71978b10",
+    "probeSha256": "708fba113ebcf69c3bc7f184ab266e42f7b8a7c4895f36c040d21814569013ff",
+    "diagnostic": null
+  }
+]

@@ -1,3 +1,7 @@
+# Latest pause checkpoint
+
+Read [USAGE_PAUSE.md](USAGE_PAUSE.md) first for the September 13 usage-reset handoff.
+
 # Resume response-write work
 
 The v1 goal remains active. v0.56.1 is published; all final CI/RLS jobs passed

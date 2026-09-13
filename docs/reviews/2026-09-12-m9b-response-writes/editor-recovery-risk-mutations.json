@@ -1,0 +1,76 @@
+[
+  {
+    "name": "baseline",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "sourceSha256": "1f2db2e0acb65194a0c351093bed9c282a5fa42fc9a15c6ada62198965004abb",
+    "expectedFailingTest": null,
+    "failedTests": [],
+    "passedTests": 78,
+    "failedTestCount": 0
+  },
+  {
+    "name": "harmless-comment",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "sourceSha256": "893c7e3cfe0888284e3a05a0cead42b4f3ff40639133e03bea95dbe81b5dbbf6",
+    "expectedFailingTest": null,
+    "failedTests": [],
+    "passedTests": 78,
+    "failedTestCount": 0
+  },
+  {
+    "name": "body-size-refusal-unconfirmed",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "e37e90174d4983cc45e1ecbd6c84f5c601fd39cd787bfb0fd50e8cabb08ca75f",
+    "expectedFailingTest": "offers reviewed correction after an HTTP body-size refusal",
+    "failedTests": [
+      "offers reviewed correction after an HTTP body-size refusal"
+    ],
+    "passedTests": 77,
+    "failedTestCount": 1
+  },
+  {
+    "name": "untrimmed-accepted-suggestion",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "443bd2f901d0b597db19229c9a60b884cce05f24640d0bacf26b5202919b07ce",
+    "expectedFailingTest": "removes an accepted AI suggestion",
+    "failedTests": [
+      "removes an accepted AI suggestion when retained text was trimmed"
+    ],
+    "passedTests": 77,
+    "failedTestCount": 1
+  },
+  {
+    "name": "unretained-unreadable-copy",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "79b325611a82480094709739f335e501ae14ca07cbc6d927f294226f534f3f58",
+    "expectedFailingTest": "keeps an unreadable active record",
+    "failedTests": [
+      "keeps an unreadable active record when its preservation copy cannot be retained"
+    ],
+    "passedTests": 77,
+    "failedTestCount": 1
+  },
+  {
+    "name": "archived-valid-request",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "565fb842e5a7f154b29de0f82aeef0be8a94a6b40a195e596b4c9c5b5f82712a",
+    "expectedFailingTest": "does not archive a valid request",
+    "failedTests": [
+      "does not archive a valid request that replaced an unreadable record"
+    ],
+    "passedTests": 77,
+    "failedTestCount": 1
+  }
+]

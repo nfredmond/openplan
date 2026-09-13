@@ -243,7 +243,7 @@ export function EngagementCloseLoopBuilder({
     }
     if (pending.origin === "suggestion" && pending.intent.operation === "create") {
       const body = pending.intent.body;
-      setDrafts(previous => previous.filter(draft => draft.themeTitle !== body.themeTitle || draft.youSaid !== (body.youSaid ?? "") || JSON.stringify(draft.sourceItemIds) !== JSON.stringify(body.sourceItemIds ?? [])));
+      setDrafts(previous => previous.filter(draft => draft.themeTitle.trim() !== body.themeTitle || draft.youSaid.trim() !== (body.youSaid ?? "") || JSON.stringify(draft.sourceItemIds) !== JSON.stringify(body.sourceItemIds ?? [])));
     }
   } });
 

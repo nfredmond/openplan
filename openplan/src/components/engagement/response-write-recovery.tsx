@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { closeLoopEntrySchema, type CloseLoopEntryRow } from "@/lib/engagement/close-loop";
-import { clearPendingResponse, readPendingResponse, retainPendingResponse, pendingResponseSchema, type PendingResponse } from "@/lib/engagement/pending-response";
+import { clearPendingResponse, readPendingResponse, retainPendingResponse, pendingResponseSchema, preserveUnreadableResponse, type PendingResponse } from "@/lib/engagement/pending-response";
 import { readResponseWriteResult, type ResponseWriteIntent, type ResponseWriteResult } from "@/lib/engagement/response-write";
 
 const unknownMessage = "This save is unconfirmed. Your request is retained in this tab. Retry the same save to check its result without creating another response.";
@@ -55,6 +55,15 @@ export function useResponseWrites({ userId, campaignId, onConfirmed, onAbsent, c
       setMessage("This tab's saved recovery record could not be read. Keep this tab open and retry recovery before making another change.");
     }
   }
+  function preserveAndReopen() {
+    try {
+      const archiveKey = preserveUnreadableResponse(window.sessionStorage, userId, campaignId);
+      restore();
+      setConfirmation(archiveKey ? "The unreadable recovery copy is preserved in this tab. Saved responses have not changed." : "No pending recovery record remains. Saved responses have not changed.");
+    } catch {
+      setMessage("The recovery copy could not be preserved, or the record changed. Nothing was discarded. Retry recovery before making another change.");
+    }
+  }
   useEffect(() => {
     restore();
     // The server page keys this editor by user and campaign; each mount has its own recovery scope.
@@ -100,7 +109,7 @@ export function useResponseWrites({ userId, campaignId, onConfirmed, onAbsent, c
       const payload: Record<string, unknown> = await response.json();
       if (!response.ok) {
         const phase = response.status === 409 && payload.kind === "conflict" ? "conflict"
-          : response.status === 400 && payload.kind === "invalid" ? "rejected"
+          : response.status === 413 || (response.status === 400 && payload.kind === "invalid") ? "rejected"
             : response.status === 404 && payload.kind === "missing" ? "missing" : "unconfirmed";
         const next: PendingResponse = { ...retained, phase };
         remember(next);
@@ -230,7 +239,8 @@ export function useResponseWrites({ userId, campaignId, onConfirmed, onAbsent, c
     {ready && !pending && message && <p role="alert" className="mt-4 rounded-lg border border-amber-300 p-3 text-sm">{message}</p>}
     {!ready && <div role="alert" className="mt-4 space-y-2 rounded-lg border border-amber-300 p-3">
       <p>{message || "Checking this tab for an unfinished save…"}</p>
-      <Button type="button" variant="outline" onClick={restore}>Retry recovery</Button>
+      <div className="flex flex-wrap gap-2"><Button type="button" variant="outline" onClick={restore}>Retry recovery</Button>
+      <Button type="button" variant="outline" onClick={preserveAndReopen}>Preserve unreadable copy and reopen editor</Button></div>
     </div>}
     {pending && <section ref={recoveryRef} tabIndex={-1} aria-label="Pending response change" className="mt-4 space-y-3 rounded-lg border border-amber-300 p-3 text-sm">
       <h3 className="font-semibold">{pending.intent.operation === "remove" ? "Pending removal" : "Pending response change"}</h3>

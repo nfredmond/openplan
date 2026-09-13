@@ -49,3 +49,20 @@ export function clearPendingResponse(storage: ResponseStorage, pending: PendingR
   storage.removeItem(key);
   if (storage.getItem(key) !== null) throw new Error("Pending response was not cleared");
 }
+
+/** Move unreadable bytes aside only after a second scoped copy can be read back; never discard a valid pending request. */
+export function preserveUnreadableResponse(storage: ResponseStorage, userId: string, campaignId: string): string | null {
+  const key = pendingResponseKey(userId, campaignId);
+  const raw = storage.getItem(key);
+  if (raw === null) return null;
+  let readable = false;
+  try { readable = readPendingResponse(storage, userId, campaignId) !== null; } catch { /* Preserve the unreadable bytes below. */ }
+  if (readable) throw new Error("The request is readable; retry recovery instead");
+  const archiveKey = `${key}:unreadable:${crypto.randomUUID()}`;
+  storage.setItem(archiveKey, raw);
+  if (storage.getItem(archiveKey) !== raw) throw new Error("Recovery copy was not retained");
+  if (storage.getItem(key) !== raw) throw new Error("The active recovery record changed");
+  storage.removeItem(key);
+  if (storage.getItem(key) !== null) throw new Error("The active recovery record could not be cleared");
+  return archiveKey;
+}

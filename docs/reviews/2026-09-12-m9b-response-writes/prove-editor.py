@@ -27,6 +27,10 @@ cases = [
     ('uneditable-invalid-unsent-request', 'recovery', 'if (!pendingResponseSchema.safeParse(value).success)', 'if (false)', 'leaves an invalid unsent edit editable'),
     ('lost-retry-focus', 'recovery', 'recoveryRef.current?.focus()', 'void 0', 'recovers an interrupted correction'),
     ('lost-confirmed-focus', 'recovery', 'confirmationRef.current?.focus()', 'void 0', 'retains before transport'),
+    ('body-size-refusal-unconfirmed', 'recovery', 'response.status === 413 ||', 'false ||', 'offers reviewed correction after an HTTP body-size refusal'),
+    ('untrimmed-accepted-suggestion', 'builder', 'draft.themeTitle.trim() !== body.themeTitle', 'draft.themeTitle !== body.themeTitle', 'removes an accepted AI suggestion'),
+    ('unretained-unreadable-copy', 'storage', 'if (storage.getItem(archiveKey) !== raw)', 'if (false)', 'keeps an unreadable active record'),
+    ('archived-valid-request', 'storage', 'if (readable)', 'if (false)', 'does not archive a valid request'),
     ('no-preflight-retention', 'recovery', 'retained = retainPendingResponse(window.sessionStorage, { ...value, phase: "unconfirmed" });', 'retained = { ...value, phase: "unconfirmed" };', 'retains before transport'),
     ('new-identity-on-retry', 'recovery', 'body: JSON.stringify(intent.body)', 'body: JSON.stringify({ ...intent.body, requestId: crypto.randomUUID() })', 'recovers an interrupted correction'),
     ('premature-clear', 'recovery', 'const result = readResponseWriteResult(payload, campaignId, intent);', 'clearPendingResponse(window.sessionStorage, retained);\n      const result = readResponseWriteResult(payload, campaignId, intent);', 'keeps the pending draft after a successful HTTP response'),
@@ -59,7 +63,7 @@ selected = [name for name in selected if name]
 if selected:
     assert set(selected).issubset({case[0] for case in cases}), selected
     cases = [case for case in cases if case[0] in ('baseline', 'harmless-comment') or case[0] in selected]
-output = root / ('editor-additional-mutations.json' if selected else 'editor-mutations.json')
+output = root / os.environ.get('OPENPLAN_EDITOR_MUTATIONS_REPORT', 'editor-additional-mutations.json' if selected else 'editor-mutations.json')
 results = []
 try:
     for name, key, before, after, expected in cases:

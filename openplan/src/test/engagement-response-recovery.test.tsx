@@ -275,3 +275,58 @@ it("leaves an invalid unsent edit editable instead of trapping it as an unknown 
   expect(fetcher).toHaveBeenCalledTimes(1);
   expect(sessionStorage.getItem(key)).toBeNull();
 });
+
+it("offers reviewed correction after an HTTP body-size refusal", async () => {
+  vi.spyOn(global, "fetch").mockResolvedValue(reply({ error: "Request body is too large" }, 413));
+  mount(); startEdit();
+  expect(await screen.findByRole("button", { name: "Review current saved responses" })).toBeVisible();
+  expect(readPendingResponse(sessionStorage, userId, campaignId)?.phase).toBe("rejected");
+});
+
+it("preserves unreadable recovery bytes before reopening the editor", async () => {
+  const damaged = '{"userId":"staff-1","words":"retain these words"';
+  sessionStorage.setItem(key, damaged);
+  const fetcher = vi.spyOn(global, "fetch");
+  mount();
+  expect(screen.getByRole("button", { name: /Generate drafts/ })).toBeDisabled();
+  fireEvent.click(screen.getByRole("button", { name: "Preserve unreadable copy and reopen editor" }));
+  await waitFor(() => expect(screen.getByRole("button", { name: /Generate drafts/ })).toBeEnabled());
+  const archives = Object.keys(sessionStorage).filter(name => name.startsWith(`${key}:unreadable:`));
+  expect(archives).toHaveLength(1);
+  expect(sessionStorage.getItem(archives[0])).toBe(damaged);
+  expect(sessionStorage.getItem(key)).toBeNull();
+  expect(fetcher).not.toHaveBeenCalled();
+});
+
+it("removes an accepted AI suggestion when retained text was trimmed", async () => {
+  const fetcher = vi.spyOn(global, "fetch").mockImplementation(async (url, init) => String(url).endsWith("/draft")
+    ? reply({ drafts: [{ themeTitle: "  Crossings  ", youSaid: "  Original input  ", sourceItemIds: [otherId] }], source: "ai", model: "synthetic-local", itemCount: 1 })
+    : reply(receipt(init!)));
+  mount([]);
+  fireEvent.click(screen.getByRole("button", { name: /Generate drafts/ }));
+  fireEvent.click(await screen.findByRole("button", { name: "Add as draft entry" }));
+  await screen.findByText("Response saved.");
+  expect(screen.queryByRole("button", { name: "Add as draft entry" })).toBeNull();
+  expect(JSON.parse(String(fetcher.mock.calls.at(-1)?.[1]?.body))).toMatchObject({ themeTitle: "Crossings", youSaid: "Original input", sourceItemIds: [otherId], aiAssisted: true });
+});
+
+it("keeps an unreadable active record when its preservation copy cannot be retained", async () => {
+  sessionStorage.setItem(key, "damaged original bytes");
+  mount();
+  vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {});
+  fireEvent.click(screen.getByRole("button", { name: "Preserve unreadable copy and reopen editor" }));
+  expect(await screen.findByText(/Nothing was discarded/)).toBeVisible();
+  expect(sessionStorage.getItem(key)).toBe("damaged original bytes");
+  expect(screen.getByRole("button", { name: /Generate drafts/ })).toBeDisabled();
+});
+
+it("does not archive a valid request that replaced an unreadable record", async () => {
+  sessionStorage.setItem(key, "damaged original bytes");
+  mount();
+  retainPendingResponse(sessionStorage, pending);
+  fireEvent.click(screen.getByRole("button", { name: "Preserve unreadable copy and reopen editor" }));
+  expect(await screen.findByText(/Nothing was discarded/)).toBeVisible();
+  expect(readPendingResponse(sessionStorage, userId, campaignId)).toEqual(pending);
+  fireEvent.click(screen.getByRole("button", { name: "Retry recovery" }));
+  expect(screen.getByRole("region", { name: "Pending response change" })).toHaveTextContent("My retained words");
+});

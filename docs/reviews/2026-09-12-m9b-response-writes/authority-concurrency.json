@@ -1,0 +1,52 @@
+{
+  "database": "response_write_probe_20260913",
+  "results": [
+    {
+      "name": "baseline",
+      "matched": true,
+      "outcome": "survived",
+      "diagnostic": null,
+      "expected": null,
+      "evidence": [
+        {
+          "case": "write-before-revocation",
+          "revokerWaited": true,
+          "responseId": "b00fdbff-e695-481a-8ef4-0f4ea59b254e"
+        },
+        {
+          "case": "revocation-before-write",
+          "writerWaitedAndWasRefused": true
+        }
+      ],
+      "functionSha256": "fafdb4337af621c49ecb90f34d3bad0df86766d9da4a49c2aaff48640bf4f9bd"
+    },
+    {
+      "name": "harmless-comment",
+      "matched": true,
+      "outcome": "survived",
+      "diagnostic": null,
+      "expected": null,
+      "evidence": [
+        {
+          "case": "write-before-revocation",
+          "revokerWaited": true,
+          "responseId": "1ea87146-728c-47bb-a244-e3996e3eb6ba"
+        },
+        {
+          "case": "revocation-before-write",
+          "writerWaitedAndWasRefused": true
+        }
+      ],
+      "functionSha256": "32dbdc211ecca3e93a28487f93c92745bee5afc02fcafe6d91e220a8257c5472"
+    },
+    {
+      "name": "missing-membership-lock",
+      "matched": true,
+      "outcome": "killed",
+      "diagnostic": "Revocation committed before the already-authorized response transaction finished",
+      "expected": "Revocation committed before",
+      "evidence": [],
+      "functionSha256": "c04b88af6444df7137cbfb7326a60c8456566ab216958ceb95715b041e0b6b32"
+    }
+  ]
+}

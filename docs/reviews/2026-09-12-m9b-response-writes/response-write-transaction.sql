@@ -66,7 +66,7 @@ BEGIN
   SELECT * INTO campaign FROM public.engagement_campaigns WHERE id = p_campaign FOR SHARE;
   IF NOT FOUND OR NOT EXISTS (SELECT 1 FROM public.workspace_members
       WHERE workspace_id = campaign.workspace_id AND user_id = auth.uid()
-      AND role IN ('owner', 'admin', 'member')) THEN
+      AND role IN ('owner', 'admin', 'member') FOR SHARE) THEN
     RAISE EXCEPTION 'Staff campaign access required' USING ERRCODE = '42501';
   END IF;
   IF p_request IS NULL OR p_operation IS NULL OR p_operation NOT IN ('create','update','remove')

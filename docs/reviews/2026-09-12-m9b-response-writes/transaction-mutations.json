@@ -5,7 +5,7 @@
     "matched": true,
     "outcome": "survived",
     "expected": null,
-    "schemaSha256": "ba49a5e21c730caeef8c96bd9a1fed6cd7bcbea4642be7f7e0790e2921f4de6e",
+    "schemaSha256": "fce149d28b7b590c87b5e2e1d57d6aa066b024d37ba55c0675b8d3c29079325e",
     "probeSha256": "cdbe99085bfdff97c631432361fad3253615fea6328294f418f3861630c0e75a",
     "diagnostic": null
   },
@@ -15,7 +15,7 @@
     "matched": true,
     "outcome": "survived",
     "expected": null,
-    "schemaSha256": "2c61a45fcecc65007d4d2b5c1b40927fe781929f9263dd7a0129bbbbc378d7d7",
+    "schemaSha256": "5a39eb9e2a921ba23ea47f0bd7c38de343bcd4688219f43df5fcb34ad9570d11",
     "probeSha256": "cdbe99085bfdff97c631432361fad3253615fea6328294f418f3861630c0e75a",
     "diagnostic": null
   },
@@ -25,7 +25,7 @@
     "matched": true,
     "outcome": "killed",
     "expected": "Stale editor overwrote the first correction",
-    "schemaSha256": "fcd6ffb4d646aac0a246329e9bb54738034e5296528f0c724d9bf669c18565a9",
+    "schemaSha256": "f0789dfc47eb54541628e3dc29ba65dc3de06dbad9f7085c7dd7b408ea1af4ea",
     "probeSha256": "cdbe99085bfdff97c631432361fad3253615fea6328294f418f3861630c0e75a",
     "diagnostic": null
   },
@@ -35,7 +35,7 @@
     "matched": true,
     "outcome": "killed",
     "expected": "Changed-payload retry was accepted",
-    "schemaSha256": "d9a0574f6a41dca6e56741acf4e071f82984fbc69bc46d16481b351cb6c1c3d7",
+    "schemaSha256": "ae769353ddab8378eca1a2fa88bebc74a319e29f87ff2d8ce97de49bce815081",
     "probeSha256": "cdbe99085bfdff97c631432361fad3253615fea6328294f418f3861630c0e75a",
     "diagnostic": null
   },
@@ -45,7 +45,7 @@
     "matched": true,
     "outcome": "killed",
     "expected": "Response version did not advance",
-    "schemaSha256": "59b2dbb4eec95976317319ad8d2528c5c334bce101cec91b536e016bfdca4486",
+    "schemaSha256": "ca235361cab07b5fceb77997021c46beb4db974a00f1e9260330f6aee96f18e1",
     "probeSha256": "cdbe99085bfdff97c631432361fad3253615fea6328294f418f3861630c0e75a",
     "diagnostic": null
   },
@@ -55,7 +55,7 @@
     "matched": true,
     "outcome": "killed",
     "expected": "Direct INSERT bypassed the response transaction",
-    "schemaSha256": "67d2df8d121f09256a7857e452428f5364d5533cb7902580bec62b6f036f7af2",
+    "schemaSha256": "cab81c69033922c255a1d903b86586a7b68c7b5b257531c019a363671d12b21b",
     "probeSha256": "cdbe99085bfdff97c631432361fad3253615fea6328294f418f3861630c0e75a",
     "diagnostic": null
   },
@@ -65,7 +65,7 @@
     "matched": true,
     "outcome": "killed",
     "expected": "Direct UPDATE bypassed the response transaction",
-    "schemaSha256": "8759207d1c6cc136eabefc04a499dd4fd3b94aa389b32dc2ee077c18a993147c",
+    "schemaSha256": "5b6111e002c34c140aa542e4b36a9a73bf123f8619bc0f667d4dcb2450691a43",
     "probeSha256": "cdbe99085bfdff97c631432361fad3253615fea6328294f418f3861630c0e75a",
     "diagnostic": null
   },
@@ -75,7 +75,7 @@
     "matched": true,
     "outcome": "killed",
     "expected": "Direct DELETE bypassed the response transaction",
-    "schemaSha256": "b61a060689fad7b90705f7bc79fb382b01b4472f9863364bd0b9423e80a3a818",
+    "schemaSha256": "661fa77e7c74d0fe127269142d84c866c2373a66d14c24be9c2e09c5e354e12e",
     "probeSha256": "cdbe99085bfdff97c631432361fad3253615fea6328294f418f3861630c0e75a",
     "diagnostic": null
   },
@@ -85,7 +85,7 @@
     "matched": true,
     "outcome": "killed",
     "expected": "Ordinary caller could invoke the trusted source helper",
-    "schemaSha256": "384a01f52335e077ce83d071ff73ca228ff1a8e432ee769bb0fe621b3189935f",
+    "schemaSha256": "f5169b82d6fd6f25366a33c265b04f16d06f4e68b0f353c19b0068e5d91e4be8",
     "probeSha256": "cdbe99085bfdff97c631432361fad3253615fea6328294f418f3861630c0e75a",
     "diagnostic": null
   },
@@ -95,7 +95,7 @@
     "matched": true,
     "outcome": "killed",
     "expected": "Complete history reader lost the retained correction metadata",
-    "schemaSha256": "96810e518c5449ac1dbda268bc50dac64761b2f9c7a25cebfcd8cff34a222b9f",
+    "schemaSha256": "8f1524bd19ed837d40cfe54adda69c30377f129708078eb90cdf5571ed54043f",
     "probeSha256": "cdbe99085bfdff97c631432361fad3253615fea6328294f418f3861630c0e75a",
     "diagnostic": null
   },
@@ -105,7 +105,7 @@
     "matched": true,
     "outcome": "killed",
     "expected": "Recorded AI assistance could be cleared",
-    "schemaSha256": "db34aea75a7eea4566b81f51230005a8ab0b439e499fe9cf601625dbc09edda6",
+    "schemaSha256": "5e2baa251ee12754f845d0ad4fd45cb7d1575c621afa8a97c9cfa06da9570651",
     "probeSha256": "cdbe99085bfdff97c631432361fad3253615fea6328294f418f3861630c0e75a",
     "diagnostic": null
   },
@@ -115,7 +115,7 @@
     "matched": true,
     "outcome": "killed",
     "expected": "Correction reason or request was lost from private history",
-    "schemaSha256": "685b144bf88a536ba2c37acda34347bd45423cbfdd5f1a38786aba5b41030424",
+    "schemaSha256": "35873fad402619aea4e643697970cf60bf5263f2ac9e4c79a25e6660d17a27d4",
     "probeSha256": "cdbe99085bfdff97c631432361fad3253615fea6328294f418f3861630c0e75a",
     "diagnostic": null
   },
@@ -125,7 +125,7 @@
     "matched": true,
     "outcome": "killed",
     "expected": "Direct source change did not withdraw its published response",
-    "schemaSha256": "69332a7c5eb22eb6462a63e27b12172dad39d01b8e2a88f8f4d4d368f7ff303e",
+    "schemaSha256": "0a8c7cc64d226f4bfa477cce5872d8ec2a9be4099241f0aa6df437fa0a0c485a",
     "probeSha256": "cdbe99085bfdff97c631432361fad3253615fea6328294f418f3861630c0e75a",
     "diagnostic": null
   },
@@ -135,7 +135,7 @@
     "matched": true,
     "outcome": "killed",
     "expected": "Parent change left a linked reply response published",
-    "schemaSha256": "c2dd6686fd6ee9eb83a38fbb8f5dbb575c0f290f6d33f0c5f4b321cd228d149b",
+    "schemaSha256": "47c788cfbbf1e7bd7e2f2534074362363a6df21c6f76335f19b6939846aec738",
     "probeSha256": "cdbe99085bfdff97c631432361fad3253615fea6328294f418f3861630c0e75a",
     "diagnostic": null
   },
@@ -145,7 +145,7 @@
     "matched": true,
     "outcome": "killed",
     "expected": "Automatic withdrawal lost source provenance or invented a human response reason",
-    "schemaSha256": "0740d4cb25a4cca8199f5f485e5ef7a959225eb643ab8b0d578050c7a007b73c",
+    "schemaSha256": "ba7d9b5804f9c0be1e8e56b60ef726f5f6d9053ef6ac62918c35237e7d7094ea",
     "probeSha256": "cdbe99085bfdff97c631432361fad3253615fea6328294f418f3861630c0e75a",
     "diagnostic": null
   },
@@ -155,7 +155,7 @@
     "matched": true,
     "outcome": "killed",
     "expected": "Service role bypassed the response transaction",
-    "schemaSha256": "1b61742372ba9187459a09757692e4473fa1eb213c73b3169fd43db4b4cb48d1",
+    "schemaSha256": "56ab135aae7dcecf5a18e9648a02eae4e1f9802fa5eef59316bc87810efe2d57",
     "probeSha256": "cdbe99085bfdff97c631432361fad3253615fea6328294f418f3861630c0e75a",
     "diagnostic": null
   },
@@ -165,7 +165,7 @@
     "matched": true,
     "outcome": "killed",
     "expected": "Completed receipt could be changed",
-    "schemaSha256": "d1287959652822037594b7a8883a091feb999cc04907beabacd67515b06caec8",
+    "schemaSha256": "d6fa4f1c46440c905c12c65ccf508c415d9915e1469d6a685b815b27c1b3fba7",
     "probeSha256": "cdbe99085bfdff97c631432361fad3253615fea6328294f418f3861630c0e75a",
     "diagnostic": null
   }

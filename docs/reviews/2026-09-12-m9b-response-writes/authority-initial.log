@@ -1,0 +1,21 @@
+              set_config
+--------------------------------------
+ 4a21e42f-27a7-474d-9a7a-5912c70af359
+(1 row)
+
+                                                                                                                                                                                                                                                                                                                                          write_engagement_response
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"entry": {"id": "9d419dbc-7e2d-49b3-8b31-81637e3acad7", "status": "published", "we_did": "Retained actor words", "you_said": "", "created_at": "2026-09-13T08:52:56.083219+00:00", "created_by": "4a21e42f-27a7-474d-9a7a-5912c70af359", "sort_order": 0, "updated_at": "2026-09-13T08:52:56.108077+00:00", "ai_assisted": false, "campaign_id": "b76fe95e-3a5e-4791-a232-dd65d85b8a57", "category_id": null, "theme_title": "SYNTHETIC authority probe", "published_at": "2026-09-13T08:52:56.083219+00:00", "source_item_ids": []}, "entryId": "9d419dbc-7e2d-49b3-8b31-81637e3acad7", "removed": false, "replayed": false, "requestId": "ac000000-0000-4000-8000-000000000010", "becamePublished": true}
+(1 row)
+
+              set_config
+--------------------------------------
+ ac000000-0000-4000-8000-000000000001
+(1 row)
+
+ERROR:  column reference "id" is ambiguous
+LINE 1: ...t_closeloop_entries WHERE engagement_closeloop_entries.id=id
+                                                                     ^
+DETAIL:  It could refer to either a PL/pgSQL variable or a table column.
+QUERY:  SELECT updated_at                          FROM engagement_closeloop_entries WHERE engagement_closeloop_entries.id=id
+CONTEXT:  PL/pgSQL function inline_code_block line 12 at SQL statement
