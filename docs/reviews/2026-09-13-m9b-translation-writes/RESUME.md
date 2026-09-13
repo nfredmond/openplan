@@ -1,3 +1,8 @@
+# Current continuation
+
+Read [EDITOR_RECOVERY_PROGRESS.md](EDITOR_RECOVERY_PROGRESS.md) first for the latest
+implementation, browser evidence, repaired defects and remaining work.
+
 # Resume after usage reset
 
 Read [USAGE_RESET_HANDOFF.md](USAGE_RESET_HANDOFF.md) first. It records the newest

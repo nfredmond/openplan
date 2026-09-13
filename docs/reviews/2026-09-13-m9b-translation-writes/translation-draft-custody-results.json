@@ -1,0 +1,292 @@
+{
+  "runId": "20260913T110942",
+  "sourceSha256": {
+    "storage": "eec9e132bf12f05f1ea596d15f154c89a0570e9a53695c7cc00806f74008b6c7",
+    "hook": "a10331cccf7961115a026b54820dcecbe9e46b854f4dfd42b4e59ef8d21380ed",
+    "panel": "fd6e875bcb4edfd869e6a3ecab0d31cb14fd3b8f1d34d02f8e01559578703fa3"
+  },
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-storage",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-hook",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-panel",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "trim-draft-words",
+      "outcome": "killed",
+      "expectedFailure": "keeps raw words",
+      "failedAssertions": [
+        "unsent translation draft custody keeps raw words, reasons and starting copies without imposing the submission word limit"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "replace-damaged-copy",
+      "outcome": "killed",
+      "expectedFailure": "treats only an absent record",
+      "failedAssertions": [
+        "unsent translation draft custody treats only an absent record as empty and preserves damaged original bytes"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-userId",
+      "outcome": "killed",
+      "expectedFailure": "another userId",
+      "failedAssertions": [
+        "unsent translation draft custody refuses a retained draft belonging to another userId"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-workspaceId",
+      "outcome": "killed",
+      "expectedFailure": "another workspaceId",
+      "failedAssertions": [
+        "unsent translation draft custody refuses a retained draft belonging to another workspaceId"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-campaignId",
+      "outcome": "killed",
+      "expectedFailure": "another campaignId",
+      "failedAssertions": [
+        "unsent translation draft custody refuses a retained draft belonging to another campaignId"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-original-campaign_id",
+      "outcome": "killed",
+      "expectedFailure": "different campaign_id",
+      "failedAssertions": [
+        "unsent translation draft custody refuses an original copy with a different campaign_id"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-original-workspace_id",
+      "outcome": "killed",
+      "expectedFailure": "different workspace_id",
+      "failedAssertions": [
+        "unsent translation draft custody refuses an original copy with a different workspace_id"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-original-locale",
+      "outcome": "killed",
+      "expectedFailure": "different locale",
+      "failedAssertions": [
+        "unsent translation draft custody refuses an original copy with a different locale"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-original-entity_type",
+      "outcome": "killed",
+      "expectedFailure": "different entity_type",
+      "failedAssertions": [
+        "unsent translation draft custody refuses an original copy with a different entity_type"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-original-entity_id",
+      "outcome": "killed",
+      "expectedFailure": "different entity_id",
+      "failedAssertions": [
+        "unsent translation draft custody refuses an original copy with a different entity_id"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-original-field",
+      "outcome": "killed",
+      "expectedFailure": "different field",
+      "failedAssertions": [
+        "unsent translation draft custody refuses an original copy with a different field"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "duplicate-draft",
+      "outcome": "killed",
+      "expectedFailure": "refuses duplicate draft addresses",
+      "failedAssertions": [
+        "unsent translation draft custody refuses duplicate draft addresses"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-write-failure",
+      "outcome": "killed",
+      "expectedFailure": "storage write that returned",
+      "failedAssertions": [
+        "unsent translation draft custody detects a storage write that returned without retaining the draft"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "lossy-archive",
+      "outcome": "killed",
+      "expectedFailure": "archives exact damaged bytes",
+      "failedAssertions": [
+        "unsent translation draft custody archives exact damaged bytes before clearing the active copy"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-archive-failure",
+      "outcome": "killed",
+      "expectedFailure": "writing its archive fails",
+      "failedAssertions": [
+        "unsent translation draft custody keeps the active draft when writing its archive fails"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "discard-newer-active",
+      "outcome": "killed",
+      "expectedFailure": "changes during archiving",
+      "failedAssertions": [
+        "unsent translation draft custody does not remove a newer active copy when it changes during archiving"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-remove-failure",
+      "outcome": "killed",
+      "expectedFailure": "failed active removal",
+      "failedAssertions": [
+        "unsent translation draft custody reports a failed active removal without losing either copy"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "forget-before-remount",
+      "outcome": "killed",
+      "expectedFailure": "preserves an unsent draft",
+      "failedAssertions": [
+        "translation editor retained requests preserves an unsent draft and its starting version across a remount with newer source data"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "rebase-while-typing",
+      "outcome": "killed",
+      "expectedFailure": "does not rebase a typed draft",
+      "failedAssertions": [
+        "translation editor retained requests does not rebase a typed draft silently when fresh props arrive in the same mounted editor"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "erase-draft-on-decision",
+      "outcome": "killed",
+      "expectedFailure": "keeps an unsaved draft when the saved copy",
+      "failedAssertions": [
+        "translation editor retained requests keeps an unsaved draft when the saved copy is accept",
+        "translation editor retained requests keeps an unsaved draft when the saved copy is withdraw"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "erase-other-address",
+      "outcome": "killed",
+      "expectedFailure": "leaves other drafts alone",
+      "failedAssertions": [
+        "translation draft acknowledgement custody clears only the draft matching the confirmed save and leaves other drafts alone"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "erase-newer-words",
+      "outcome": "killed",
+      "expectedFailure": "changed words after a delayed",
+      "failedAssertions": [
+        "translation draft acknowledgement custody preserves a newer draft with changed words after a delayed acknowledgement"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "erase-newer-source",
+      "outcome": "killed",
+      "expectedFailure": "changed source after a delayed",
+      "failedAssertions": [
+        "translation draft acknowledgement custody preserves a newer draft with changed source after a delayed acknowledgement"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "erase-newer-identity",
+      "outcome": "killed",
+      "expectedFailure": "changed identity after a delayed",
+      "failedAssertions": [
+        "translation draft acknowledgement custody preserves a newer draft with changed identity after a delayed acknowledgement"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "erase-newer-revision",
+      "outcome": "killed",
+      "expectedFailure": "changed revision after a delayed",
+      "failedAssertions": [
+        "translation draft acknowledgement custody preserves a newer draft with changed revision after a delayed acknowledgement"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "erase-newer-reason",
+      "outcome": "killed",
+      "expectedFailure": "preserves a newer reason",
+      "failedAssertions": [
+        "translation draft acknowledgement custody preserves a newer reason after a delayed acknowledgement"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-draft-source",
+      "outcome": "killed",
+      "expectedFailure": "preserves an unsent draft",
+      "failedAssertions": [
+        "translation editor retained requests preserves an unsent draft and its starting version across a remount with newer source data"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-draft-version",
+      "outcome": "killed",
+      "expectedFailure": "preserves an unsent draft",
+      "failedAssertions": [
+        "translation editor retained requests preserves an unsent draft and its starting version across a remount with newer source data"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Draft storage and acknowledgement assertions in jsdom; editor HTTP is mocked. Does not establish installed permissions, live browser persistence, geometry, all write-recovery guards, generation or release readiness."
+}

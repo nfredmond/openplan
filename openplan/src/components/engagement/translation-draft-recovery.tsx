@@ -63,7 +63,7 @@ export function useTranslationDrafts(scope: TranslationDraftScope) {
     const value = current.current; if (!value) return;
     const entries = value.entries.filter(draft => {
       const requested = pending.intent.entries.find(entry => translationDraftKey({ ...entry, locale: pending.intent.locale }) === translationDraftKey(draft));
-      if (!requested) return true;
+      if (!requested || pending.intent.operation !== "save") return true;
       if ("text" in requested && draft.text !== requested.text) return true;
       return JSON.stringify(draft.source) !== JSON.stringify(requested.expectedSource)
         || (draft.before?.entry.id ?? null) !== (requested.expectedTranslation?.id ?? null)
@@ -94,18 +94,18 @@ export function useTranslationDrafts(scope: TranslationDraftScope) {
   }
   const recovery = <div className="mt-3 space-y-2 text-sm">
     {message && <p role="alert">{message}</p>}
-    {!ready && <Button type="button" variant="outline" onClick={restore}>Retry unsaved draft recovery</Button>}
+    {!ready && <Button className="h-auto min-h-10 min-w-0 max-w-full whitespace-normal" type="button" variant="outline" onClick={restore}>Retry unsaved draft recovery</Button>}
     {(message || Boolean(record?.entries.length)) && <details className="rounded-lg border border-border p-3"><summary>Unsaved translation drafts</summary>
       <p className="mt-2">Drafts and their starting versions are retained in this tab. Download a copy before closing it.</p>
       {record?.entries.map(draft => <div key={translationDraftKey(draft)} className="mt-2 whitespace-pre-wrap break-words"><p>{draft.field} ({draft.locale})</p><p>{draft.text}</p></div>)}
-      <div className="mt-2 flex flex-wrap gap-2"><Button type="button" variant="outline" onClick={() => {
+      <div className="mt-2 flex flex-wrap gap-2"><Button className="h-auto min-h-10 min-w-0 max-w-full whitespace-normal" type="button" variant="outline" onClick={() => {
         try { downloadDraft(record ? JSON.stringify(record) : sessionStorage.getItem(key) ?? ""); }
         catch { setMessage("The draft could not be downloaded. Keep this page open and retry recovery."); }
       }}>Download unsaved drafts</Button>
-      <Button type="button" variant="outline" onClick={archive}>Preserve these drafts and start fresh</Button></div>
+      <Button className="h-auto min-h-10 min-w-0 max-w-full whitespace-normal" type="button" variant="outline" onClick={archive}>Preserve these drafts and start fresh</Button></div>
     </details>}
     {archives.length > 0 && <details className="rounded-lg border border-border p-3"><summary>Earlier unsaved draft copies ({archives.length})</summary>
-      {archives.map((copy, index) => <Button key={copy.key} type="button" variant="outline" onClick={() => downloadDraft(copy.raw)}>Download earlier draft copy {index + 1}</Button>)}
+      {archives.map((copy, index) => <Button className="h-auto min-h-10 min-w-0 max-w-full whitespace-normal" key={copy.key} type="button" variant="outline" onClick={() => downloadDraft(copy.raw)}>Download earlier draft copy {index + 1}</Button>)}
     </details>}
   </div>;
   return { ready, record, find, setText, clearConfirmed, reopen, clear, recovery,

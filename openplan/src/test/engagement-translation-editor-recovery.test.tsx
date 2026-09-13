@@ -54,11 +54,31 @@ describe("translation editor retained requests", () => {
     fireEvent.change(screen.getByLabelText(/^In .*Spanish/), { target: { value: corrected } });
     const newer = translationEditorFixture(); newer.translations[0].revision = 8;
     view.rerender(<CampaignTranslationsPanel {...props(newer)} />);
+    fireEvent.change(screen.getByLabelText(/^In .*Spanish/), { target: { value: corrected + " again" } });
     fireEvent.change(screen.getByLabelText("Reason for changing saved wording"), { target: { value: "SYNTHETIC reason" } });
     fireEvent.click(screen.getByRole("button", { name: "Save as our wording" }));
     await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
     expect(requestBody(fetch).entries[0].expectedTranslation).toEqual({ id: id(4), revision: 3 });
   });
+  it.each(["accept", "withdraw"] as const)("keeps an unsaved draft when the saved copy is %s", async operation => {
+    const snapshot = translationEditorFixture();
+    if (operation === "accept") { snapshot.translations[0].source = "machine"; snapshot.translations[0].machine_model = "SYNTHETIC model"; }
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (_url, init) => {
+      const body = JSON.parse(String(init?.body));
+      const { revision: _revision, ...entry } = snapshot.translations[0];
+      return new Response(JSON.stringify({ campaignId: id(1), requestId: body.requestId, operation, locale: "es", replayed: false,
+        entries: [{ entry: operation === "accept" ? { ...entry, source: "operator", machine_model: null } : entry, revision: 4, removed: operation === "withdraw" }] }), { status: 200 });
+    });
+    render(<CampaignTranslationsPanel {...props(snapshot)} />);
+    fireEvent.change(screen.getByLabelText(/^In .*Spanish/), { target: { value: corrected } });
+    fireEvent.change(screen.getByLabelText("Reason for changing saved wording"), { target: { value: "SYNTHETIC saved-copy decision" } });
+    fireEvent.click(screen.getByRole("button", { name: operation === "accept" ? /^Accept as our wording$/ : /^Withdraw$/ }));
+    await confirmDestructiveAction(operation === "accept" ? "Accept this wording" : "Withdraw this translation");
+    await waitFor(() => expect(refresh).toHaveBeenCalledTimes(1));
+    expect(screen.getByLabelText(/^In .*Spanish/)).toHaveValue(corrected);
+    expect(Object.values(sessionStorage).some(raw => typeof raw === "string" && raw.includes(corrected))).toBe(true);
+  });
+
   it("retains exact words and observed versions before sending and clears only a matching acknowledgement", async () => {
     const fetch = vi.spyOn(globalThis, "fetch").mockImplementation(async (_url, init) => {
       const body: TranslationWriteIntent = JSON.parse(String(init?.body));

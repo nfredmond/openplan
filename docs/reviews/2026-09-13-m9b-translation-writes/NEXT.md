@@ -1,3 +1,8 @@
+# Current continuation
+
+Read [EDITOR_RECOVERY_PROGRESS.md](EDITOR_RECOVERY_PROGRESS.md) first for the latest
+implementation, browser evidence, repaired defects and remaining work.
+
 # Latest checkpoint
 
 [Usage reset handoff](USAGE_RESET_HANDOFF.md) supersedes the editor integration

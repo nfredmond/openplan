@@ -156,7 +156,7 @@ export function useTranslationWrites({ userId, workspaceId, campaignId, canWrite
   const recovery = <section ref={recoveryRef} tabIndex={-1} aria-label="Translation save recovery" className="mt-4 space-y-3 text-sm">
     {confirmation && <p role="status">{confirmation}</p>}
     {message && <p role="alert" className="rounded-lg border border-amber-400 p-3">{message}</p>}
-    {!ready && <Button type="button" onClick={restore} disabled={busy}>Retry translation recovery</Button>}
+    {!ready && <Button className="h-auto min-h-10 min-w-0 max-w-full whitespace-normal" type="button" onClick={restore} disabled={busy}>Retry translation recovery</Button>}
     {pending.map(value => <section key={value.intent.requestId} aria-label="Pending translation change" className="space-y-3 rounded-lg border border-amber-400 p-3">
       <h3 className="font-semibold">Pending {value.intent.operation} in {value.intent.locale}</h3>
       <p>{volatile.current.has(value.intent.requestId) ? "This request has not been sent or retained. Keep this page open and download its copy before leaving." : value.phase === "unconfirmed" ? unknownMessage : "This request was refused. Compare the retained and current copies before proposing another change."}</p>
@@ -172,32 +172,32 @@ export function useTranslationWrites({ userId, workspaceId, campaignId, canWrite
           <p className="whitespace-pre-wrap"><strong>{value.intent.operation === "save" ? "Your proposed wording: " : "Wording in this request: "}</strong>{"text" in entry ? entry.text : value.before[index]?.entry.translated_text}</p>
           {current && <><p className="whitespace-pre-wrap"><strong>Current source: </strong>{source?.text ?? "Source unavailable"}</p>
             <p className="whitespace-pre-wrap"><strong>Current saved copy: </strong>{saved?.translated_text ?? "No saved translation"}</p>
-            <p>{source?.available ? "Source is published." : "Source is not available for new wording."} {saved ? `Saved revision ${saved.revision}.` : ""}</p></>}
+            <p>{source?.available ? "Source is available for translation." : "Source is not available for new wording."} {saved ? `Saved revision ${saved.revision}.` : ""}</p></>}
         </div>;
       })}
       <div className="flex flex-wrap gap-2">
-        <Button type="button" disabled={busy || !canWrite} onClick={() => void send(value)}>Retry same translation request</Button>
-        <Button type="button" variant="outline" onClick={() => downloadCopy(JSON.stringify(value, null, 2), `translation-request-${value.intent.requestId}.json`)}>Download retained request</Button>
-        {value.phase !== "unconfirmed" && <Button type="button" variant="outline" disabled={busy} onClick={() => void loadReview(value.intent.requestId)}>Review current saved translations</Button>}
-        {value.phase !== "unconfirmed" && review?.requestId === value.intent.requestId && <Button type="button" variant="outline" disabled={busy || !canWrite} onClick={() => reopen(value, pendingTranslationKey(value))}>Keep this copy and reopen editor</Button>}
+        <Button className="h-auto min-h-10 min-w-0 max-w-full whitespace-normal" type="button" disabled={busy || !canWrite} onClick={() => void send(value)}>Retry same translation request</Button>
+        <Button className="h-auto min-h-10 min-w-0 max-w-full whitespace-normal" type="button" variant="outline" onClick={() => downloadCopy(JSON.stringify(value, null, 2), `translation-request-${value.intent.requestId}.json`)}>Download retained request</Button>
+        {value.phase !== "unconfirmed" && <Button className="h-auto min-h-10 min-w-0 max-w-full whitespace-normal" type="button" variant="outline" disabled={busy} onClick={() => void loadReview(value.intent.requestId)}>Review current saved translations</Button>}
+        {value.phase !== "unconfirmed" && review?.requestId === value.intent.requestId && <Button className="h-auto min-h-10 min-w-0 max-w-full whitespace-normal" type="button" variant="outline" disabled={busy || !canWrite} onClick={() => reopen(value, pendingTranslationKey(value))}>Keep this copy and reopen editor</Button>}
       </div>
     </section>)}
     {unreadable.map(key => <div key={key} className="space-y-2 rounded-lg border border-amber-400 p-3">
       <p role="alert">A retained translation request could not be read. This does not establish whether it reached the server. Preserve its copy and review current translations before reopening the editor.</p>
-      <div className="flex flex-wrap gap-2"><Button type="button" variant="outline" onClick={() => {
+      <div className="flex flex-wrap gap-2"><Button className="h-auto min-h-10 min-w-0 max-w-full whitespace-normal" type="button" variant="outline" onClick={() => {
         try { const raw = window.localStorage.getItem(key); if (raw !== null) downloadCopy(raw, "unreadable-translation-request.json"); }
         catch { setMessage("The retained request could not be downloaded. Keep this page open and retry recovery."); }
       }}>Download unreadable copy</Button>
-      <Button type="button" variant="outline" disabled={busy} onClick={() => void loadReview(key)}>Review current saved translations</Button>
+      <Button className="h-auto min-h-10 min-w-0 max-w-full whitespace-normal" type="button" variant="outline" disabled={busy} onClick={() => void loadReview(key)}>Review current saved translations</Button>
       {review?.requestId === key && <><p>Read the current saved translations below before continuing.</p>
         {review.snapshot.translations.map(row => <p key={row.id} className="whitespace-pre-wrap">{row.locale}: {row.translated_text}</p>)}
-        <Button type="button" disabled={busy || !canWrite} onClick={() => reopen(null, key)}>Preserve unreadable copy and reopen editor</Button></>}
+        <Button className="h-auto min-h-10 min-w-0 max-w-full whitespace-normal" type="button" disabled={busy || !canWrite} onClick={() => reopen(null, key)}>Preserve unreadable copy and reopen editor</Button></>}
       </div>
     </div>)}
     {archives.length > 0 && <details className="rounded-lg border border-border p-3"><summary>Earlier translation requests ({archives.length})</summary>
       {archives.map(({ key, raw }, index) => <div key={key} className="mt-3 space-y-2">
         <EarlierRequest raw={raw} />
-        <Button type="button" variant="outline" onClick={() => downloadCopy(raw, `earlier-translation-request-${index + 1}.json`)}>Download earlier request {index + 1}</Button>
+        <Button className="h-auto min-h-10 min-w-0 max-w-full whitespace-normal" type="button" variant="outline" onClick={() => downloadCopy(raw, `earlier-translation-request-${index + 1}.json`)}>Download earlier request {index + 1}</Button>
       </div>)}
     </details>}
   </section>;
