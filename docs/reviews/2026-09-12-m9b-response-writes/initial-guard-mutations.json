@@ -1,0 +1,92 @@
+[
+  {
+    "name": "baseline",
+    "status": 0,
+    "matched": true,
+    "outcome": "survived",
+    "expected": null,
+    "schemaSha256": "ad39dbd73093ff6d9f3e044ceff7b387c5f53dc33e2d4e0c4ebc1c89d568fe45",
+    "probeSha256": "7ccbe11bf302da3005c38fe5ecb059999cda3cbcfb147f5c0d6ccab601139d0c",
+    "diagnostic": null
+  },
+  {
+    "name": "harmless-comment",
+    "status": 0,
+    "matched": true,
+    "outcome": "survived",
+    "expected": null,
+    "schemaSha256": "81c819cd90ab97c931c28330f41d9fd831973178ead452ee771e3048b22d3b91",
+    "probeSha256": "7ccbe11bf302da3005c38fe5ecb059999cda3cbcfb147f5c0d6ccab601139d0c",
+    "diagnostic": null
+  },
+  {
+    "name": "accept-stale-version",
+    "status": 3,
+    "matched": true,
+    "outcome": "killed",
+    "expected": "Stale editor overwrote the first correction",
+    "schemaSha256": "289715349ff05f5418af74c5d5c520d217e5febad3d11db63ae8a7a14e7b7aa3",
+    "probeSha256": "7ccbe11bf302da3005c38fe5ecb059999cda3cbcfb147f5c0d6ccab601139d0c",
+    "diagnostic": null
+  },
+  {
+    "name": "accept-changed-retry",
+    "status": 3,
+    "matched": true,
+    "outcome": "killed",
+    "expected": "Changed-payload retry was accepted",
+    "schemaSha256": "577fc9f692007581b5f7ad17f3649da4c23de7829c2368e740d0c62772320d3c",
+    "probeSha256": "7ccbe11bf302da3005c38fe5ecb059999cda3cbcfb147f5c0d6ccab601139d0c",
+    "diagnostic": null
+  },
+  {
+    "name": "regressing-clock",
+    "status": 3,
+    "matched": true,
+    "outcome": "killed",
+    "expected": "Response version did not advance",
+    "schemaSha256": "833d938372ee620586ebc374aac1a08f3efada2227e5a389b3555440c719f95e",
+    "probeSha256": "7ccbe11bf302da3005c38fe5ecb059999cda3cbcfb147f5c0d6ccab601139d0c",
+    "diagnostic": null
+  },
+  {
+    "name": "direct-insert",
+    "status": 3,
+    "matched": true,
+    "outcome": "killed",
+    "expected": "Direct INSERT bypassed the response transaction",
+    "schemaSha256": "bb043a42a879c343d5645b0bc9421926e673e87821f7bd4870f5c2e61bfc303a",
+    "probeSha256": "7ccbe11bf302da3005c38fe5ecb059999cda3cbcfb147f5c0d6ccab601139d0c",
+    "diagnostic": null
+  },
+  {
+    "name": "direct-update",
+    "status": 3,
+    "matched": true,
+    "outcome": "killed",
+    "expected": "Direct UPDATE bypassed the response transaction",
+    "schemaSha256": "92fbfc1e86132d4a07f5afa93843e7f1981b0c4f71e4b40191c347a182b10337",
+    "probeSha256": "7ccbe11bf302da3005c38fe5ecb059999cda3cbcfb147f5c0d6ccab601139d0c",
+    "diagnostic": null
+  },
+  {
+    "name": "direct-delete",
+    "status": 3,
+    "matched": true,
+    "outcome": "killed",
+    "expected": "Direct DELETE bypassed the response transaction",
+    "schemaSha256": "5ae476362a68b6234dc184e9988de8a07aea13247c2e002fae7add4073598edd",
+    "probeSha256": "7ccbe11bf302da3005c38fe5ecb059999cda3cbcfb147f5c0d6ccab601139d0c",
+    "diagnostic": null
+  },
+  {
+    "name": "forged-withdrawal",
+    "status": 0,
+    "matched": false,
+    "outcome": "survived",
+    "expected": "Ordinary caller could forge a source withdrawal",
+    "schemaSha256": "6be321077bd23a6ccfe8d5e97d3d05cb6843ef5a605b30ee97b3ccd3c0d9a2d8",
+    "probeSha256": "7ccbe11bf302da3005c38fe5ecb059999cda3cbcfb147f5c0d6ccab601139d0c",
+    "diagnostic": "NOTICE:  Create/correct/remove replays, changed-payload and stale refusals, original history passed\n"
+  }
+]

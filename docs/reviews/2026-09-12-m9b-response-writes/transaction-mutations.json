@@ -5,8 +5,8 @@
     "matched": true,
     "outcome": "survived",
     "expected": null,
-    "schemaSha256": "6bb1382c4f79992abb62293b92c9f7aeae3208ce339225120585b1f3c9dcf502",
-    "probeSha256": "f23583d7aba4390296b0f19965393ddec64f9c8ced0f54459cdd22320d1068a2",
+    "schemaSha256": "605b1b037ecc8b2281fa651065a82152f46b9e361014f6c56b9f1cacb8d345d5",
+    "probeSha256": "a625a5bdca1c84c98bec0ff3ca4e12e3ae7281ee6ece8891218304829dc9bc5f",
     "diagnostic": null
   },
   {
@@ -15,8 +15,8 @@
     "matched": true,
     "outcome": "survived",
     "expected": null,
-    "schemaSha256": "9bd861292f5a14a95f1078cb8825b23b29a4b5d945078945620e3568e3efc82f",
-    "probeSha256": "f23583d7aba4390296b0f19965393ddec64f9c8ced0f54459cdd22320d1068a2",
+    "schemaSha256": "183719a2a88975c34f766a3204103d3415791aa8573738ec4aa1a10378b66860",
+    "probeSha256": "a625a5bdca1c84c98bec0ff3ca4e12e3ae7281ee6ece8891218304829dc9bc5f",
     "diagnostic": null
   },
   {
@@ -25,8 +25,8 @@
     "matched": true,
     "outcome": "killed",
     "expected": "Stale editor overwrote the first correction",
-    "schemaSha256": "0f89ef1874f60ded1224c0ee1d30151641d2b8516f14edc46d9844c806edd30c",
-    "probeSha256": "f23583d7aba4390296b0f19965393ddec64f9c8ced0f54459cdd22320d1068a2",
+    "schemaSha256": "ef9cc9d191c6bf5ce4fe12aae7a3d43d1301453023b4993140cdaee03c73ef5e",
+    "probeSha256": "a625a5bdca1c84c98bec0ff3ca4e12e3ae7281ee6ece8891218304829dc9bc5f",
     "diagnostic": null
   },
   {
@@ -35,8 +35,8 @@
     "matched": true,
     "outcome": "killed",
     "expected": "Changed-payload retry was accepted",
-    "schemaSha256": "641846d3b61ab8418bb1c5a00274d4a9f634aaf4712c8f0f4f05a76a1c1fb683",
-    "probeSha256": "f23583d7aba4390296b0f19965393ddec64f9c8ced0f54459cdd22320d1068a2",
+    "schemaSha256": "c8ed2d8cba1d2901dd1c4bc31599bb036e970ebd12f7ec1e58ac1ba11b51c625",
+    "probeSha256": "a625a5bdca1c84c98bec0ff3ca4e12e3ae7281ee6ece8891218304829dc9bc5f",
     "diagnostic": null
   },
   {
@@ -45,8 +45,98 @@
     "matched": true,
     "outcome": "killed",
     "expected": "Response version did not advance",
-    "schemaSha256": "6dbbc8aaace4eef05bd516c6bb9ff1c771df740f741e684c899eeeaa5d6b1650",
-    "probeSha256": "f23583d7aba4390296b0f19965393ddec64f9c8ced0f54459cdd22320d1068a2",
+    "schemaSha256": "b1b899c27e31dbb5006d791e2f01c4f3e5a782ed941ca7d5a93586a3bd208fb4",
+    "probeSha256": "a625a5bdca1c84c98bec0ff3ca4e12e3ae7281ee6ece8891218304829dc9bc5f",
+    "diagnostic": null
+  },
+  {
+    "name": "direct-insert",
+    "status": 3,
+    "matched": true,
+    "outcome": "killed",
+    "expected": "Direct INSERT bypassed the response transaction",
+    "schemaSha256": "4f21246acb684bba287246a19a5a63b4604a5001a4b462164b17999ae6d97e3b",
+    "probeSha256": "a625a5bdca1c84c98bec0ff3ca4e12e3ae7281ee6ece8891218304829dc9bc5f",
+    "diagnostic": null
+  },
+  {
+    "name": "direct-update",
+    "status": 3,
+    "matched": true,
+    "outcome": "killed",
+    "expected": "Direct UPDATE bypassed the response transaction",
+    "schemaSha256": "8ccb32b37fff01fecc6bcd45459f367f17375b09598ef8b56898c0cdcbabb07f",
+    "probeSha256": "a625a5bdca1c84c98bec0ff3ca4e12e3ae7281ee6ece8891218304829dc9bc5f",
+    "diagnostic": null
+  },
+  {
+    "name": "direct-delete",
+    "status": 3,
+    "matched": true,
+    "outcome": "killed",
+    "expected": "Direct DELETE bypassed the response transaction",
+    "schemaSha256": "9f254379ec4e3c4f368970be5f1f6a474c6f6c56196a7020882d4967036be65e",
+    "probeSha256": "a625a5bdca1c84c98bec0ff3ca4e12e3ae7281ee6ece8891218304829dc9bc5f",
+    "diagnostic": null
+  },
+  {
+    "name": "forged-withdrawal",
+    "status": 3,
+    "matched": true,
+    "outcome": "killed",
+    "expected": "Ordinary caller could invoke the trusted source helper",
+    "schemaSha256": "944842e5979ab29ea1012737c6a27949cbdfdd9842613d38934f6ddd6e4702a1",
+    "probeSha256": "a625a5bdca1c84c98bec0ff3ca4e12e3ae7281ee6ece8891218304829dc9bc5f",
+    "diagnostic": null
+  },
+  {
+    "name": "missing-reason",
+    "status": 3,
+    "matched": true,
+    "outcome": "killed",
+    "expected": "Correction reason or request was lost from private history",
+    "schemaSha256": "230be541cffbc41db8c240c381bf72838b1423987d802ea54a5f2ca2f3e0826b",
+    "probeSha256": "a625a5bdca1c84c98bec0ff3ca4e12e3ae7281ee6ece8891218304829dc9bc5f",
+    "diagnostic": null
+  },
+  {
+    "name": "direct-withdrawal",
+    "status": 3,
+    "matched": true,
+    "outcome": "killed",
+    "expected": "Direct source change did not withdraw its published response",
+    "schemaSha256": "6d650dcf77fd0bef78d80c3ed415ea9ade9a8a0d19f3c0875747b475179eeed5",
+    "probeSha256": "a625a5bdca1c84c98bec0ff3ca4e12e3ae7281ee6ece8891218304829dc9bc5f",
+    "diagnostic": null
+  },
+  {
+    "name": "parent-withdrawal",
+    "status": 3,
+    "matched": true,
+    "outcome": "killed",
+    "expected": "Parent change left a linked reply response published",
+    "schemaSha256": "b4d44ab2f424829bf1c0654b7f14b1188edbad47aeacafa715c8cfcb501680ae",
+    "probeSha256": "a625a5bdca1c84c98bec0ff3ca4e12e3ae7281ee6ece8891218304829dc9bc5f",
+    "diagnostic": null
+  },
+  {
+    "name": "source-provenance",
+    "status": 3,
+    "matched": true,
+    "outcome": "killed",
+    "expected": "Automatic withdrawal lost source provenance or invented a human response reason",
+    "schemaSha256": "ec86b18cf1e7543886d2d28ece8d23094e9111ed6e7f99455614d14a10c7d22b",
+    "probeSha256": "a625a5bdca1c84c98bec0ff3ca4e12e3ae7281ee6ece8891218304829dc9bc5f",
+    "diagnostic": null
+  },
+  {
+    "name": "service-bypass",
+    "status": 3,
+    "matched": true,
+    "outcome": "killed",
+    "expected": "Service role bypassed the response transaction",
+    "schemaSha256": "b8ca892fce284c9ad349f25202b7d22e93e496165a1551cecdc52b06aa728f3b",
+    "probeSha256": "a625a5bdca1c84c98bec0ff3ca4e12e3ae7281ee6ece8891218304829dc9bc5f",
     "diagnostic": null
   },
   {
@@ -55,8 +145,8 @@
     "matched": true,
     "outcome": "killed",
     "expected": "Completed receipt could be changed",
-    "schemaSha256": "4745090812b9ca54cdd31aa016e2aa79cd7466a4a9a2c3bbdf3d36bda3cdc600",
-    "probeSha256": "f23583d7aba4390296b0f19965393ddec64f9c8ced0f54459cdd22320d1068a2",
+    "schemaSha256": "4fa425db09169c0ef31f12c3a38fd471832584399df027707b4a9cc433c1682f",
+    "probeSha256": "a625a5bdca1c84c98bec0ff3ca4e12e3ae7281ee6ece8891218304829dc9bc5f",
     "diagnostic": null
   }
 ]

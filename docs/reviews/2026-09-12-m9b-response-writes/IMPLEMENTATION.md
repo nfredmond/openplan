@@ -4,7 +4,7 @@ Owner: this thread, no subagents, in the separate worktree
 /home/nathaniel/.local/state/openplan/engagement-response-writes-2026-09-12,
 branch work/engagement-response-writes, based on 3f70af98. The application package
 is openplan/. Dependencies are reused by a node_modules symlink; build output is
-separate. The main release checkout must stay fixed while its final CI runs.
+separate. The preceding release checkout stays fixed; its final CI and publication completed.
 
 ## Preceding release published
 
@@ -89,3 +89,20 @@ source-to-decision linkage and the remaining roadmap still apply. Preserve all
 50 states/DC, explicit territory/tribal/overlapping support, separate AequilibraE
 and ActivitySim validation, free local operation and the pending reminder
 constraint. No human review gate is required for engineering releases.
+
+## Guard implementation checkpoint
+
+Use database role permissions for the ordinary write boundary instead of a
+caller-controlled session flag. Revoke response INSERT/UPDATE/DELETE from PUBLIC,
+anon, authenticated and service_role. The RPC's definer authority and the existing
+trusted source trigger still work. A revoked, invoker-only helper creates distinct
+source-withdrawal receipts, including reply-parent changes, and joins nullable
+private history metadata. The session flag only selects a pending matching private
+receipt for metadata; it is not the authorization mechanism.
+
+Campaign advisory locking serializes publication against source withdrawal. The
+source helper requires READ COMMITTED after a real repeatable-read race showed
+that an old snapshot could omit a new response. Keep this explicit compatibility
+limit until another implementation has equally strong evidence. Probes and
+restoration hashes are in VERIFICATION.md and database-custody.json. These changes
+remain outside installable migrations and do not complete the route/UI/outbox join.

@@ -1,0 +1,35 @@
+{
+  "database": "response_write_probe_20260913",
+  "results": [
+    {
+      "name": "harmless-comment",
+      "matched": true,
+      "outcome": "survived",
+      "expected": null,
+      "diagnostic": null,
+      "evidence": {
+        "case": "publication-first",
+        "waitEvent": "advisory"
+      },
+      "functionsSha256": "bd622bc42ab60c0270e036b31c265191ea4f88d2ccdfc8ded1408aeb31cd2646"
+    },
+    {
+      "name": "missing-campaign-lock",
+      "matched": true,
+      "outcome": "killed",
+      "expected": "Concurrent parent withdrawal left a newly created response published",
+      "diagnostic": "Concurrent parent withdrawal left a newly created response published",
+      "evidence": null,
+      "functionsSha256": "95e85012ac73d831a4af987aec46e249c881bdf05865f9e39de0c3296bb3f340"
+    },
+    {
+      "name": "unsafe-snapshot",
+      "matched": true,
+      "outcome": "killed",
+      "expected": "Unsafe snapshot withdrawal was accepted",
+      "diagnostic": "Unsafe snapshot withdrawal was accepted",
+      "evidence": null,
+      "functionsSha256": "b910505841ffabea2fe920c3eed79a9ef3a938441e71efc7ae9d87ffb8fa27e4"
+    }
+  ]
+}

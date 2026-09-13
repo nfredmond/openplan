@@ -1,0 +1,26 @@
+{
+  "sourceDatabase": "postgres on openplan-restore-target-2026091050",
+  "cloneDatabase": "response_write_probe_20260913",
+  "source": {
+    "migrations": 321,
+    "baselineResponses": 1005,
+    "baselineHistorySha256": "8bfd7b6e9182f0c5c889954e7baf2eeacdd38c73e5e21b2633956324f161b1ae",
+    "prototypePresent": false
+  },
+  "clone": {
+    "migrations": 321,
+    "baselineResponses": 1005,
+    "baselineHistorySha256": "8bfd7b6e9182f0c5c889954e7baf2eeacdd38c73e5e21b2633956324f161b1ae",
+    "prototypePresent": true
+  },
+  "restoredFunctions": [
+    {
+      "function": "write_engagement_response",
+      "restoredBodySha256": "8b08ec2480b24386de4936937a1054b7493cbb086b7bc49ad0e6b154e405b15a"
+    },
+    {
+      "function": "withdraw_engagement_source_responses",
+      "restoredBodySha256": "1ad7ed90aa6b73e3989f76f319b9872407ae3cc1e112e86c5d46eea630ec4b2e"
+    }
+  ]
+}

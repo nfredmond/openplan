@@ -1,0 +1,6 @@
+{
+  "database": "response_write_probe_20260913",
+  "responseAndParentStatus": "published:rejected",
+  "defectReproduced": true,
+  "inversePublisherProbe": "Refused by campaign FOR SHARE with serialization failure"
+}

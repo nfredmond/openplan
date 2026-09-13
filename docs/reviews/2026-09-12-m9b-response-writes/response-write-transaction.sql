@@ -5,8 +5,9 @@ CREATE TABLE public.engagement_response_write_receipts (
   request_id uuid NOT NULL,
   workspace_id uuid NOT NULL REFERENCES public.workspaces(id),
   response_id uuid NOT NULL,
-  actor_id uuid NOT NULL,
-  operation text NOT NULL CHECK (operation IN ('create', 'update', 'remove')),
+  actor_id uuid,
+  operation text NOT NULL CHECK (operation IN ('create', 'update', 'remove', 'source_withdrawal')),
+  CHECK (actor_id IS NOT NULL OR operation = 'source_withdrawal'),
   payload_json jsonb NOT NULL,
   payload_sha256 text GENERATED ALWAYS AS
     (encode(extensions.digest(payload_json::text, 'sha256'), 'hex')) STORED,
@@ -60,6 +61,8 @@ BEGIN
   IF auth.uid() IS NULL THEN
     RAISE EXCEPTION 'Staff authentication required' USING ERRCODE = '42501';
   END IF;
+  -- Shared with source withdrawals; no contribution row lock is taken here.
+  PERFORM pg_advisory_xact_lock(hashtextextended('engagement-response:' || p_campaign::text, 0));
   SELECT * INTO campaign FROM public.engagement_campaigns WHERE id = p_campaign FOR SHARE;
   IF NOT FOUND OR NOT EXISTS (SELECT 1 FROM public.workspace_members
       WHERE workspace_id = campaign.workspace_id AND user_id = auth.uid()
@@ -98,7 +101,7 @@ BEGIN
   SELECT * INTO receipt FROM public.engagement_response_write_receipts
     WHERE campaign_id = p_campaign AND request_id = p_request;
   IF FOUND THEN
-    IF receipt.actor_id <> auth.uid() OR receipt.payload_json <> envelope THEN
+    IF receipt.actor_id IS DISTINCT FROM auth.uid() OR receipt.payload_json <> envelope THEN
       RAISE EXCEPTION 'Request identity belongs to a different write' USING ERRCODE = '23505';
     END IF;
     IF receipt.result_json IS NULL THEN
