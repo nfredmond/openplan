@@ -70,7 +70,7 @@ describe("response transaction client", () => {
     });
   });
   it.each([
-    ["40001", 409, "conflict"], ["23505", 409, "conflict"], ["P0002", 404, "missing"],
+    ["PT409", 409, "conflict"], ["PT503", 503, "unavailable"], ["40001", 409, "conflict"], ["23505", 409, "conflict"], ["P0002", 404, "missing"],
     ["42501", 403, "forbidden"], ["22023", 400, "invalid"], ["22P02", 400, "invalid"],
     ["P0001", 503, "unavailable"], ["08006", 503, "unavailable"],
   ])("distinguishes database %s from an unconfirmed save", async (code, status, kind) => {

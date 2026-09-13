@@ -1,5 +1,7 @@
 # Usage-limit pause, September 13, 2026
 
+> Superseded runtime and next steps: read [RESET_HANDOFF.md](RESET_HANDOFF.md), the later September 13 checkpoint. The text below preserves the earlier pause evidence.
+
 User is pausing around a weekly usage reset. Resume the existing full v1 goal;
 do not recreate it, shrink its scope, or treat this checkpoint as a release.
 Direct main after verification, no PRs, no human review release gate. Existing

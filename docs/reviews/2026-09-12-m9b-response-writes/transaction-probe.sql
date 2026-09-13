@@ -38,7 +38,7 @@ BEGIN
   BEGIN
     PERFORM public.write_engagement_response(campaign,gen_random_uuid(),'update',
       (initial->>'entryId')::uuid,original_time,'SYNTHETIC stale correction','{"we_did":"Stale words"}');
-  EXCEPTION WHEN serialization_failure THEN refused=true;
+  EXCEPTION WHEN serialization_failure OR SQLSTATE 'PT409' THEN refused=true;
   END;
   IF NOT refused THEN RAISE EXCEPTION 'Stale editor overwrote the first correction'; END IF;
   IF corrected->'entry'->>'we_did' <> 'First correction' THEN RAISE EXCEPTION 'Correction was not retained'; END IF;

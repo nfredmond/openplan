@@ -20,6 +20,27 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Engagement response saves retain exact retry requests, reject stale corrections,
+and record change reasons in private history. Publication queues subscriber updates
+for the local email worker. Activity shows complete preparation and delivery
+counts, including unknown outcomes, without exposing participant addresses.
+Uncertain delivery attempts are not automatically resent. History preserves the
+original copy after correction, refreshes after saves and keeps keyboard focus.
+
+Apply these migrations before using the updated editor and local worker:
+
+- `20261014000003_engagement_response_recovery.sql`
+- `20261014000004_engagement_delivery_summary.sql`
+- `20261014000005_engagement_delivery_authority_locks.sql`
+- `20261014000006_engagement_response_rpc_policy_cleanup.sql`
+- `20261014000007_engagement_conflicts_without_transaction_retry.sql`
+
+The worker serializes claims with unsubscribe and campaign closure. A message
+already claimed may be in flight; provider acceptance does not prove inbox delivery.
+Recovery copies remain in the browser tab, which can be lost when that tab closes.
+Translation-version history and broader engagement workflow completion remain
+unfinished. Final release verification is still in progress.
+
 ## 0.56.1 — 2026-09-12
 
 Email delivery now requires a saved outbox record. If that save fails, OpenPlan

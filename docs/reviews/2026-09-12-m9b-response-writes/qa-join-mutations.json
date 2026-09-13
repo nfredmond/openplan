@@ -1,0 +1,104 @@
+[
+  {
+    "name": "baseline",
+    "matched": true,
+    "outcome": "survived",
+    "expected": null,
+    "failedTests": [],
+    "passedTests": 148,
+    "failedTestCount": 0
+  },
+  {
+    "name": "harmless-comment",
+    "matched": true,
+    "outcome": "survived",
+    "expected": null,
+    "failedTests": [],
+    "passedTests": 148,
+    "failedTestCount": 0
+  },
+  {
+    "name": "audit-never-created",
+    "matched": true,
+    "outcome": "killed",
+    "expected": "passes the caller's exact identity",
+    "failedTests": [
+      "create response route boundary passes the caller's exact identity, version, reason and fields to the transaction",
+      "update response route boundary passes the caller's exact identity, version, reason and fields to the transaction",
+      "remove response route boundary passes the caller's exact identity, version, reason and fields to the transaction"
+    ],
+    "passedTests": 80,
+    "failedTestCount": 3
+  },
+  {
+    "name": "confirmed-outcome-not-recorded",
+    "matched": true,
+    "outcome": "killed",
+    "expected": "passes the caller's exact identity",
+    "failedTests": [
+      "create response route boundary passes the caller's exact identity, version, reason and fields to the transaction",
+      "update response route boundary passes the caller's exact identity, version, reason and fields to the transaction",
+      "remove response route boundary passes the caller's exact identity, version, reason and fields to the transaction"
+    ],
+    "passedTests": 80,
+    "failedTestCount": 3
+  },
+  {
+    "name": "publication-anchor-renamed",
+    "matched": true,
+    "outcome": "killed",
+    "expected": "renders an element for each engagement console anchor",
+    "failedTests": [
+      "every anchor a tab claims has an element to scroll to renders an element for each engagement console anchor",
+      "a tab's anchors are rendered by that tab's own panel keeps each engagement console anchor inside the tab that claims it"
+    ],
+    "passedTests": 15,
+    "failedTestCount": 2
+  },
+  {
+    "name": "retained-column-unaccounted",
+    "matched": true,
+    "outcome": "killed",
+    "expected": "finds no unread column",
+    "failedTests": [
+      "a column the application never reads has to say why finds no unread column that is not accounted for",
+      "a column the application never reads has to say why keeps the ratchet honest \u2014 a column that gained a reader loses its entry"
+    ],
+    "passedTests": 3,
+    "failedTestCount": 2
+  },
+  {
+    "name": "obsolete-policy-left-promising-direct-write",
+    "matched": true,
+    "outcome": "killed",
+    "expected": "grants every command",
+    "failedTests": [
+      "a policy without a grant is a locked door grants every command its permissive policies promise a signed-in user"
+    ],
+    "passedTests": 4,
+    "failedTestCount": 1
+  },
+  {
+    "name": "extra-table-not-accounted",
+    "matched": true,
+    "outcome": "killed",
+    "expected": "reads every relation",
+    "failedTests": [
+      "migration schema inventory reads every relation the migrations declare",
+      "migration schema inventory distinguishes a table with no RLS from a table with no policy"
+    ],
+    "passedTests": 27,
+    "failedTestCount": 2
+  },
+  {
+    "name": "extra-policy-not-accounted",
+    "matched": true,
+    "outcome": "killed",
+    "expected": "counts what the database actually has",
+    "failedTests": [
+      "migration policy inventory counts what the database actually has"
+    ],
+    "passedTests": 28,
+    "failedTestCount": 1
+  }
+]

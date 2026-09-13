@@ -5,7 +5,7 @@
     "matched": true,
     "outcome": "survived",
     "expected": null,
-    "probeSha256": "cdbe99085bfdff97c631432361fad3253615fea6328294f418f3861630c0e75a"
+    "probeSha256": "edc5ce599b378736aec090fb8c919a389ffa95ddae8697d126f7784d70630de9"
   },
   {
     "name": "installed-broadcast",
@@ -29,7 +29,7 @@
     "matched": true,
     "outcome": "survived",
     "expected": null,
-    "probeSha256": "f23583d7aba4390296b0f19965393ddec64f9c8ced0f54459cdd22320d1068a2"
+    "probeSha256": "4695e8088d992da2afa0a06006fb536e6be8b6192b28a56ff0e143966aceeaf1"
   },
   {
     "name": "accept-stale-version",
@@ -37,6 +37,6 @@
     "matched": true,
     "outcome": "killed",
     "expected": "Stale editor overwrote the first correction",
-    "probeSha256": "f23583d7aba4390296b0f19965393ddec64f9c8ced0f54459cdd22320d1068a2"
+    "probeSha256": "4695e8088d992da2afa0a06006fb536e6be8b6192b28a56ff0e143966aceeaf1"
   }
 ]

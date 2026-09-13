@@ -1,0 +1,15 @@
+{
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "campaignId": "edf26e9b-d04f-49bd-9808-f6a2ad231098",
+  "requestId": "3ee550b6-6a52-4405-b236-3ea6689fd0ea",
+  "source": "1aa4bd840f79ac7903a10601d203951294cb0a5a",
+  "nativeWorkerSha256": "ab0222c1ff990947b282357356a2a333a7cb8a30b1ac1a6b2dce91dded2a7518",
+  "realPostgrest": true,
+  "interruptedAfterDatabaseCommit": true,
+  "identicalAcknowledgements": 2,
+  "attemptingClaims": 1,
+  "transportCalls": 1,
+  "externalProviderConfigured": false,
+  "durableOutcome": "skipped",
+  "limitations": "Confirmed subscriber is a synthetic REST fixture. No actual mail provider, public confirmation flow, or inbox delivery was exercised."
+}

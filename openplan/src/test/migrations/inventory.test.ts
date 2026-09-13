@@ -476,16 +476,18 @@ const EXPECTED = {
   // metadata SELECT policies. Credentials have no ordinary-user grants/policies.
   // 20261014000001: one immutable response history table with staff SELECT only.
   // The named isolated database catalog confirms each increment.
-  policies: 753,
-  permissive: 502,
+  // 20261014000003 adds three RLS tables and one staff receipt SELECT policy.
+  // 20261014000006 retires three obsolete direct-write policies after RPC-only writes.
+  policies: 751,
+  permissive: 500,
   restrictive: 251,
-  permissiveWrites: 280,
+  permissiveWrites: 277,
   expanded: 286,
-  tablesWithPolicies: 219,
-  relations: 253,
-  tables: 240,
+  tablesWithPolicies: 220,
+  relations: 256,
+  tables: 243,
   views: 13,
-  rlsEnabledTables: 240,
+  rlsEnabledTables: 243,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

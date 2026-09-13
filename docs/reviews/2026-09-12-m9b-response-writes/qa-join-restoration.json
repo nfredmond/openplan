@@ -1,0 +1,8 @@
+{
+  "src/lib/engagement/response-write-route.ts": "28e597ac0e22a185716de8a52c13675a960273200a76c03035c7df60f075c443",
+  "src/components/engagement/close-loop-builder.tsx": "3a0a580bd4202e06d893abb09ad33f30837c691ac07bee96559805871aab1fc5",
+  "src/components/engagement/response-broadcast-notice.tsx": "95eabe165d3b53dddb562fdfeac135a5dab0b964335f7d92d0dd58f0754b3e99",
+  "src/test/a-column-nothing-reads-is-a-question.test.ts": "8d75bc35b4d2b6505383e425bedafae510e880298786e9a6fbe7b705576bb1e9",
+  "supabase/migrations/20261014000006_engagement_response_rpc_policy_cleanup.sql": "ac8016bd08d97387b13469067b0cda7a4c5e1d0f58023401c940ab5c4f0a892a",
+  "supabase/migrations/20261014000005_engagement_delivery_authority_locks.sql": "cc7ce5c2d56d4c106dc66ce3fa84b09f8bafa7d9f25197f36421c13041f593c3"
+}

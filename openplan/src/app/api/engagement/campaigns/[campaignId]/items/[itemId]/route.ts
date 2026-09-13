@@ -175,7 +175,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       .eq("id", existingItem.id).eq("campaign_id", access.campaign.id)
       .eq("updated_at", parsed.data.expectedUpdatedAt).select("id, updated_at").maybeSingle();
 
-    if (updateError?.code === "40001") return NextResponse.json({ error: "Another reviewer changed this contribution. Refresh before reviewing again." }, { status: 409 });
+    if (updateError?.code === "PT409" || updateError?.code === "40001") return NextResponse.json({ error: "Another reviewer changed this contribution. Refresh before reviewing again." }, { status: 409 });
 
     if (isWriteFailure(updateError)) {
       audit.error("item_update_failed", {

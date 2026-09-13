@@ -1,0 +1,54 @@
+[
+  {
+    "name": "baseline",
+    "matched": true,
+    "outcome": "survived",
+    "expected": null,
+    "workerSha256": "ab0222c1ff990947b282357356a2a333a7cb8a30b1ac1a6b2dce91dded2a7518",
+    "evidence": {
+      "container": "supabase_db_openplan-restore-target-2026091050",
+      "campaignId": "a53e82ee-a44d-4333-8c3e-dc83038e1fa1",
+      "requestId": "5ffb703c-a2db-4231-8fef-ced5f6633e69",
+      "source": "1aa4bd840f79ac7903a10601d203951294cb0a5a",
+      "nativeWorkerSha256": "ab0222c1ff990947b282357356a2a333a7cb8a30b1ac1a6b2dce91dded2a7518",
+      "realPostgrest": true,
+      "interruptedAfterDatabaseCommit": true,
+      "identicalAcknowledgements": 2,
+      "attemptingClaims": 1,
+      "transportCalls": 1,
+      "externalProviderConfigured": false,
+      "durableOutcome": "skipped",
+      "limitations": "Confirmed subscriber is a synthetic REST fixture. No actual mail provider, public confirmation flow, or inbox delivery was exercised."
+    }
+  },
+  {
+    "name": "harmless-comment",
+    "matched": true,
+    "outcome": "survived",
+    "expected": null,
+    "workerSha256": "19e808ed206200407fdc7f0b7048708a0c60668304395afbda1116976fd03342",
+    "evidence": {
+      "container": "supabase_db_openplan-restore-target-2026091050",
+      "campaignId": "6bec59c1-06fb-4a30-bc54-cda9b782a35d",
+      "requestId": "6ee33c88-5c65-4002-be3d-3c824b68a7dc",
+      "source": "1aa4bd840f79ac7903a10601d203951294cb0a5a",
+      "nativeWorkerSha256": "19e808ed206200407fdc7f0b7048708a0c60668304395afbda1116976fd03342",
+      "realPostgrest": true,
+      "interruptedAfterDatabaseCommit": true,
+      "identicalAcknowledgements": 2,
+      "attemptingClaims": 1,
+      "transportCalls": 1,
+      "externalProviderConfigured": false,
+      "durableOutcome": "skipped",
+      "limitations": "Confirmed subscriber is a synthetic REST fixture. No actual mail provider, public confirmation flow, or inbox delivery was exercised."
+    }
+  },
+  {
+    "name": "missing-recovery",
+    "matched": true,
+    "outcome": "killed",
+    "expected": "Restart did not replay its retained acknowledgement",
+    "workerSha256": "6b9807ce7a02b59c85d5cbe6b9e3e84d9646e93a29c50be16c403495f772a50e",
+    "evidence": null
+  }
+]

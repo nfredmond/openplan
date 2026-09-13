@@ -1157,6 +1157,14 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
     seedSql:({engagementCampaignBId})=>`INSERT INTO engagement_item_history(campaign_id,item_id,event,record_json) SELECT campaign_id,id,'legacy_before_edit',to_jsonb(i) FROM engagement_items i WHERE campaign_id='${engagementCampaignBId}'`,
   },
   {
+    table: "engagement_response_write_receipts",
+    select: "campaign_id,request_id,workspace_id,response_id,actor_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId }) => ({ workspace_id: workspaceBId }),
+    seedSql: ({ engagementCampaignBId, userBId }) =>
+      `SELECT set_config('request.jwt.claim.sub','${userBId}',false); SELECT public.write_engagement_response('${engagementCampaignBId}',gen_random_uuid(),'create',NULL,NULL,NULL,'{"theme_title":"SYNTHETIC RLS retained request"}'::jsonb)`,
+  },
+  {
     table: "engagement_response_history",
     select: "id,campaign_id,response_id,revision",
     expectedMemberReadable: true,
@@ -1633,7 +1641,7 @@ describe("workspace RLS isolation inventory", () => {
   it("covers every direct workspace-scoped table in the paid-access audit set", () => {
     const tables = WORKSPACE_RLS_PROBES.map((probe) => probe.table).sort();
 
-    expect(tables).toHaveLength(90);
+    expect(tables).toHaveLength(91);
     expect(new Set(tables).size).toBe(tables.length);
     expect(tables).toEqual([
       "aerial_evidence_packages",
@@ -2401,6 +2409,38 @@ liveDescribe("workspace RLS live isolation", () => {
         expect(result.rows, `${result.table} tenant B service-only rows`).toEqual([]);
       }
     }
+  });
+
+  it("returns response and contribution conflicts promptly through PostgREST", async () => {
+    // Refuse the known retry-loop SQLSTATE before making a potentially looping HTTP call.
+    // SQL-only exception probes cannot establish the HTTP behavior below.
+    const retrying = queryCatalog(resolveLocalDbContainer(), `SELECT proname FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND proname IN ('write_engagement_response','require_engagement_review_intent') AND prosrc ~* 'ERRCODE[[:space:]]*=[[:space:]]*''40001''' ORDER BY proname`);
+    expect(retrying, "Business conflicts must not invoke PostgREST transaction retries").toEqual([]);
+    const requestId = randomUUID();
+    const created = await userB.rpc("write_engagement_response", {
+      p_campaign: context.engagementCampaignBId, p_request: requestId, p_operation: "create",
+      p_response: null, p_expected_updated_at: null, p_reason: null,
+      p_changes: { theme_title: "SYNTHETIC live conflict", we_did: "SYNTHETIC original" },
+    });
+    expect(created.error).toBeNull();
+    const staleId = randomUUID();
+    const stale = await userB.rpc("write_engagement_response", {
+      p_campaign: context.engagementCampaignBId, p_request: staleId, p_operation: "update",
+      p_response: created.data.entryId, p_expected_updated_at: "2000-01-01T00:00:00Z",
+      p_reason: "SYNTHETIC stale correction", p_changes: { we_did: "SYNTHETIC stale overwrite" },
+    }).abortSignal(AbortSignal.timeout(5000));
+    expect(stale.status).toBe(409);
+    expect(stale.error?.code).toBe("PT409");
+    const retained = await userB.from("engagement_closeloop_entries").select("we_did").eq("id", created.data.entryId).single();
+    expect(retained.error).toBeNull();expect(retained.data?.we_did).toBe("SYNTHETIC original");
+    const failedReceipt = await userB.from("engagement_response_write_receipts").select("request_id").eq("campaign_id", context.engagementCampaignBId).eq("request_id", staleId);
+    expect(failedReceipt.error).toBeNull();expect(failedReceipt.data).toEqual([]);
+    const item = await userB.from("engagement_items").select("id,body").eq("campaign_id", context.engagementCampaignBId).limit(1).single();
+    expect(item.error).toBeNull();expect(item.data).not.toBeNull();
+    const review = await userB.from("engagement_items").update({body: "SYNTHETIC stale moderation", review_expected_updated_at: "2000-01-01T00:00:00Z", review_reason: "SYNTHETIC stale review"}).eq("id", item.data!.id).select("id").abortSignal(AbortSignal.timeout(5000));
+    expect(review.status).toBe(409);expect(review.error?.code).toBe("PT409");
+    const original = await userB.from("engagement_items").select("body").eq("id", item.data!.id).single();
+    expect(original.error).toBeNull();expect(original.data?.body).toBe(item.data!.body);
   });
 
   it("keeps deployment-global modeling worker heartbeats service-role-only", async () => {

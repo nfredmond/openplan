@@ -1,0 +1,14 @@
+{
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "database": "postgres",
+  "ledger": "326|20261014000007",
+  "migrationExit": 0,
+  "existingResponseAndHistoryBytesUnchanged": true,
+  "backupSha256": "edd64ad43c08df831853bd86c4b436379cd4173f3c4336eba10c456c68ebcc93",
+  "snapshotSha256": {
+    "entries": "bb7391bb20cb0f9fb5d7e3da2b07c0cc4a2bde53ea82e7fe27a5e52ca512d2cd",
+    "history": "102d20be92287253a93fd9aa746f557b85466471d705f6e0bec3ee516dc555a0",
+    "invalid-history-hashes": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "fixture-count": "4fc7580c670d656a7e94661bbc33d5c6c55728fee63bb4d18182c1e49c768175"
+  }
+}

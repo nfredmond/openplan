@@ -283,6 +283,12 @@ describe("engagement category and item routes", () => {
     itemUpdatedMock.mockResolvedValueOnce({ data: null, error: null });
     expect((await call("2026-09-06T12:00:00+00:00")).status).toBe(409);
   });
+  it.each(["PT409", "40001"])("returns reviewable conflict for database %s", async code => {
+    itemUpdatedMock.mockResolvedValueOnce({ data: null, error: { code, message: "SYNTHETIC stale review" } });
+    const response = await patchItem(new NextRequest("http://localhost/api/engagement/campaigns/1/items/1", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ expectedUpdatedAt: "2026-09-06T12:00:00+00:00", status: "approved", moderationNotes: "Reviewed" }) }), { params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111", itemId: "66666666-6666-4666-8666-666666666666" }) });
+    expect(response.status).toBe(409);
+    expect((await response.json()).error).toContain("Another reviewer changed");
+  });
   it("refuses approval without a review reason", async () => {
     const response = await patchItem(new NextRequest("http://localhost/api/engagement/campaigns/1/items/1", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ expectedUpdatedAt: "2026-09-06T12:00:00+00:00", status: "approved" }) }), { params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111", itemId: "66666666-6666-4666-8666-666666666666" }) });
     expect(response.status).toBe(400);

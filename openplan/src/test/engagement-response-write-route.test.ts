@@ -8,11 +8,11 @@ import { loadResponseBroadcast } from "@/lib/engagement/response-broadcast";
 import type { ResponseWriteIntent } from "@/lib/engagement/response-write";
 
 const mocks = vi.hoisted(() => ({
-  rpc: vi.fn(), from: vi.fn(), getUser: vi.fn(), access: vi.fn(), createClient: vi.fn(), serviceClient: vi.fn(),
+  audit: vi.fn(), info: vi.fn(), warn: vi.fn(), auditError: vi.fn(), rpc: vi.fn(), from: vi.fn(), getUser: vi.fn(), access: vi.fn(), createClient: vi.fn(), serviceClient: vi.fn(),
 }));
 vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.createClient, createServiceRoleClient: mocks.serviceClient }));
 vi.mock("@/lib/engagement/api", () => ({ loadCampaignAccess: mocks.access }));
-vi.mock("@/lib/observability/audit", () => ({ createApiAuditLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() }) }));
+vi.mock("@/lib/observability/audit", () => ({ createApiAuditLogger: mocks.audit }));
 
 const campaignId = "11111111-1111-4111-8111-111111111111";
 const entryId = "22222222-2222-4222-8222-222222222222";
@@ -49,6 +49,7 @@ function publishReceipt(extra = {}) {
 
 beforeEach(() => {
   vi.resetAllMocks();
+  mocks.audit.mockReturnValue({ info: mocks.info, warn: mocks.warn, error: mocks.auditError });
   mocks.createClient.mockResolvedValue(client);
   mocks.getUser.mockResolvedValue({ data: { user: { id: userId } } });
   mocks.access.mockResolvedValue({ campaign: { id: campaignId }, allowed: true, error: null });
@@ -65,6 +66,8 @@ describe.each(["create", "update", "remove"] as const)("%s response route bounda
   it("passes the caller's exact identity, version, reason and fields to the transaction", async () => {
     const response = await handle(request(operation), context);
     expect(response.status).toBe(operation === "create" ? 201 : 200);
+    expect(mocks.audit).toHaveBeenCalledExactlyOnceWith(`engagement.response.${operation}`, expect.any(NextRequest));
+    expect(mocks.info).toHaveBeenCalledWith("response_write_confirmed", expect.objectContaining({ campaignId, userId, requestId, entryId }));
     expect(response.headers.get("Cache-Control")).toBe("private, no-store");
     expect(await response.json()).toEqual({ ...receipt, removed: operation === "remove", broadcast: null, broadcastStatus: "not_required" });
     expect(mocks.access).toHaveBeenCalledWith(client, campaignId, userId, "engagement.write");
@@ -111,7 +114,7 @@ describe.each(["create", "update", "remove"] as const)("%s response route bounda
     expect(JSON.stringify(await response.json())).not.toContain("PRIVATE");
   });
   it.each([
-    ["40001", 409, "conflict"], ["23505", 409, "conflict"], ["42501", 403, "forbidden"],
+    ["PT409", 409, "conflict"], ["PT503", 503, "unavailable"], ["40001", 409, "conflict"], ["23505", 409, "conflict"], ["42501", 403, "forbidden"],
     ["P0002", 404, "missing"], ["22023", 400, "invalid"], ["42P01", 503, "unavailable"],
   ])("preserves transaction refusal %s without pretending to save", async (code, status, kind) => {
     mocks.rpc.mockResolvedValue({ data: null, error: { code, message: "PRIVATE database detail" } });

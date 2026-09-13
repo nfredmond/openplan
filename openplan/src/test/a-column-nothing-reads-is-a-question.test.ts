@@ -193,6 +193,16 @@ const UNREAD_COLUMNS: ReadonlyArray<{
     "kb_ocr_job_callbacks.applied_payload_sha256", "kb_ocr_job_callbacks.ocr_job_id", "kb_ocr_job_callbacks.payload_bytes",
     "engagement_campaigns.setup_request_id", "engagement_campaigns.setup_source_configuration_id",
   ].map((column) => ({column, category: "READ_IN_SQL" as const, reason: "Transactional callback deduplication and export-lease RPCs read these fields; the Documents worker also renews and verifies leases outside src/. Live recovery tests exercise the stored values."})),
+  { column: "engagement_response_broadcast_messages.attempt_token", category: "READ_IN_SQL", reason: "The finish RPC compares this retained attempt identity before accepting an outcome; it is never an ordinary client-write field." },
+  { column: "engagement_response_broadcast_messages.outbox_id", category: "READ_IN_SQL", reason: "Claim and summary RPCs join the retained broadcast message to exactly one private outbox record, avoiding duplicate outcome counts." },
+  { column: "engagement_response_broadcast_messages.subscription_id", category: "READ_IN_SQL", reason: "The claim RPC checks the linked subscription and locks it while deciding whether a prepared message remains authorized to send." },
+  { column: "engagement_response_broadcasts.campaign_title", category: "READ_IN_SQL", reason: "Preparation uses the title retained when the publication was queued to construct the immutable subject of each subscriber message." },
+  { column: "engagement_response_broadcasts.prepared_count", category: "READ_IN_SQL", reason: "The private broadcast reader exposes this SQL preparation count as preparedCount, preserving unknown audience before preparation." },
+  { column: "engagement_response_broadcasts.response_json", category: "READ_IN_SQL", reason: "Preparation composes the retained publication text from this snapshot; claim compares its version with the current response before sending." },
+  { column: "engagement_response_broadcasts.prepared_at", category: "WRITE_ONLY", reason: "The worker retains the time preparation completed, but the current staff status panels do not display that preparation timestamp." },
+  { column: "engagement_response_write_receipts.before_record", category: "WRITE_ONLY", reason: "The request retains its pre-write response for later diagnosis. The editor reads separate response history; it does not expose this receipt snapshot." },
+  { column: "engagement_response_write_receipts.payload_sha256", category: "WRITE_ONLY", reason: "This generated checksum is retained for operator diagnosis. Replay currently compares the complete payload JSON; the editor does not display this hash." },
+
   // ---- READ_IN_SQL: the database reads these; TypeScript never names them --
   ...[
     ["census_tracts.households_zero_vehicle", "The numerator of `pct_zero_vehicle` in the census_tracts_computed view. TypeScript reads the computed percentage, never the raw count."],

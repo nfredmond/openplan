@@ -79,7 +79,7 @@ export async function writeResponse(client: Pick<SupabaseClient, "rpc">, campaig
 
 /** Database conflicts are terminal for this edit intent; transport failures keep the same pending request. */
 function responseWriteFailure(code?: string, message?: string): ResponseWriteFailure {
-  if (code === "40001" || code === "23505") return {
+  if (code === "PT409" || code === "40001" || code === "23505") return {
     kind: "conflict", status: 409, message: "This response or request has changed. Review the current saved copy before making another change.",
   };
   if (code === "P0002") return { kind: "missing", status: 404, message: "This response no longer exists. Its retained history is still available." };

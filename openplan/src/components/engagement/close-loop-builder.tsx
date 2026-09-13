@@ -165,7 +165,7 @@ function CloseLoopCard({ entry, categories, submit, broadcast }: {
             </p>
           ) : null}
           {error ? <p className={ERROR_CLASS}>{error}</p> : null}
-          {broadcast && <ResponseBroadcastNotice key={broadcast.requestId} campaignId={entry.campaign_id} entryId={entry.id} requestId={broadcast.requestId} initialReport={broadcast.report} />}
+          {broadcast && <ResponseBroadcastNotice key={broadcast.requestId} anchorId={`closeloop-broadcast-notice-${entry.id}`} campaignId={entry.campaign_id} entryId={entry.id} requestId={broadcast.requestId} initialReport={broadcast.report} />}
           <div className="flex flex-wrap gap-2">
             <Button type="button" variant="outline" size="sm" onClick={() => setEditing(true)} disabled={busy}>
               Edit

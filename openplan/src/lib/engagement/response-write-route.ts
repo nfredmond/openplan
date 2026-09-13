@@ -15,9 +15,13 @@ const unconfirmed = { error: "OpenPlan could not confirm this save. Keep your wo
 type RouteContext = { params: Promise<{ campaignId: string; entryId?: string }> };
 
 /** Shared boundary for response creates, corrections and removals; the database owns all write side effects. */
-export function responseWriteRoute(operation: ResponseWriteIntent["operation"]) {
+export function responseWriteRoute(
+  operation: ResponseWriteIntent["operation"],
+  auditForRequest: (request: NextRequest) => ReturnType<typeof createApiAuditLogger> =
+    request => createApiAuditLogger(`engagement.response.${operation}`, request),
+) {
   return async function handle(request: NextRequest, context: RouteContext) {
-    const audit = createApiAuditLogger(`engagement.response.${operation}`, request);
+    const audit = auditForRequest(request);
     try {
       const params = (operation === "create" ? campaignParams : entryParams).safeParse(await context.params);
       if (!params.success) return NextResponse.json({ error: "Invalid identifiers", kind: "invalid" }, { status: 400, headers });

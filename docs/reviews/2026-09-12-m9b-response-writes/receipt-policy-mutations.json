@@ -1,0 +1,23 @@
+{
+  "database": "response_broadcast_probe_20260913",
+  "results": [
+    {
+      "name": "baseline",
+      "matched": true,
+      "outcome": "survived",
+      "expected": null
+    },
+    {
+      "name": "harmless-condition",
+      "matched": true,
+      "outcome": "survived",
+      "expected": null
+    },
+    {
+      "name": "missing-tenant-scope",
+      "matched": true,
+      "outcome": "killed",
+      "expected": "Foreign workspace receipt was disclosed"
+    }
+  ]
+}
