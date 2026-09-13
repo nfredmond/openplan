@@ -115,3 +115,14 @@ After restoring all mutation edits, a fresh TypeScript run, changed-test lint an
 all four UI tests exited 0. The UI mutation replay still produced one harmless
 survivor and four targeted failures. A fresh full QA run is required on this
 corrected test commit; the preceding failure receipt remains in full-checks.json.
+
+## Local release gates complete
+
+Final QA on e3ed918ca62f4c13163626fafa636cbc2c8b81c4 ended with status 0 at
+2026-09-13T05:06:42Z. It includes lint, dead-code checks, the complete test suite,
+provider connector checks, dependency audit and the production build/TypeScript.
+The isolated RLS check is separate; ordinary QA did not silently exercise a demo
+DB. Its final receipt and private log hash are now in full-checks.json. The only
+changes after the last browser/source acceptance were release metadata, evidence
+and the corrected test option; runtime behavior is unchanged. Final exact main
+CI, RLS and populated upgrade checks remain required before publication.

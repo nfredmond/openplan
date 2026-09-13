@@ -1,4 +1,35 @@
-# Continue here: v0.56.0 candidate, full QA replay running
+# Current checkpoint: v0.56.0 local gates passed
+
+This opening section supersedes the earlier running-check details below. Final
+QA on e3ed918ca62f4c13163626fafa636cbc2c8b81c4 ended with status 0, including
+production compilation and TypeScript. Tool session 2388 is terminal. Earlier
+session 79549 failed only the invalid Testing Library test option, which was
+corrected; do not restart either completed run. The final receipt is private
+m9b-history-release-final-qa.result.json and retained in history/full-checks.json.
+Shuffled tests, live isolated RLS, worker suites and real browser acceptance are
+also complete with their exact scopes recorded in history/VERIFICATION.md.
+
+Next land this verified branch directly on main, inspect the exact resulting
+CI/RLS/Upgrade Path runs and tag/publish v0.56.0 only after they succeed. No PR,
+no human gate. The old queued upgrade 34737449570 is an earlier foundation source,
+not final-release proof. v0.55.2 remains published and must not be retagged.
+
+A second owned checkout now contains the next write-recovery work:
+/home/nathaniel/.local/state/openplan/engagement-write-recovery-2026-09-12,
+branch work/engagement-write-recovery, based on e3ed918c. It has independent app
+source and shares only installed node_modules via a symlink. No other coding
+session/subagent owns it. It currently has uncommitted email-outbox guard,
+subscriber-confirmation messaging and response-broadcast notice/tests. These are
+NOT part of v0.56.0. Preserve them and inspect its status before editing. A local
+real-helper probe with database/transport doubles reproduced delivery attempted
+after a failed outbox insert; no email/network request was sent. Its raw script and
+receipt are private m9b-outbox-gap.mts/json. Next code/proofs belong in that checkout.
+The full response-write conflict, reasons, durable retries and translation scope
+remains open. The pending reminder constraint remains untouched.
+
+---
+
+# Continue here: v0.56.0 landing and final CI
 
 v0.55.2 is published at 3455207b5723c6394ff95b9fbbd274c79e7d3c36. Its final
 CI/RLS/upgrade and release receipts are in this directory. Do not tag it again.

@@ -64,5 +64,16 @@
     "stack": null,
     "log": "m9b-history-reader-corrected-qa.log",
     "logSha256": "19fd20cb8232368285c2f478b2d2af95873f35963690eb4500fcabdc6a0dd4d7"
+  },
+  {
+    "source": "e3ed918ca62f4c13163626fafa636cbc2c8b81c4",
+    "kind": "qa",
+    "startedAt": "2026-09-13T05:02:40.553Z",
+    "finishedAt": "2026-09-13T05:06:42.662Z",
+    "status": 0,
+    "signal": null,
+    "stack": null,
+    "log": "m9b-history-release-final-qa.log",
+    "logSha256": "38243ae41da7ccb8625083af1ea86994d192e99f9ec6e4069c94a9b8b8061bba"
   }
 ]
