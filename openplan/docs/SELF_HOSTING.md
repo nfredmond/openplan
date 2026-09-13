@@ -168,11 +168,15 @@ monitor disk use. Print the workbook's selected **Print summary** sheet; use the
 PDF for the complete formatted program. Wide editable workbook tabs are intended
 for on-screen review, not entire-workbook printing.
 
-**Saved API generation worker, in development.** The retained API-job worker
+**Saved API generation worker.** The retained API-job worker
 can be started with `npm run worker:provider-api` from `openplan/`, after applying
 migration `20261012000002_assistant_api_turns.sql`. `npm run worker:provider-api --
---once` performs one recovery or queue cycle. The project selection controls are
-not connected yet; starting this process does not add a usable provider option.
+--once` performs one recovery or queue cycle. In a project, open Planner Agent, then Project task · choose provider, and select
+Saved workspace API. Choose a connection and one of its configured model IDs,
+review its destination and sharing scope, and acknowledge any provider charges.
+The request stays queued until this worker receives it. Workspace settings
+retains each configuration revision; editing or revoking a connection interrupts
+its active old-revision requests and keeps completed history.
 Use the same private Supabase URL, service-role key and integration encryption
 configuration as the app. No provider key is read from an environment fallback.
 
@@ -192,9 +196,10 @@ directory for recovery; do not erase it or transplant it between deployments to
 clear an error. SIGINT/SIGTERM abort active work and preserve delivery state.
 Cancellation is observed periodically and rechecked at database completion; it
 cannot reverse a provider request or charge already accepted. Reservations are
-conservative dispatch accounting, not invoices. Process-level generation and
-browser acceptance remain to be completed; see the
-[worker evidence](../../docs/reviews/2026-09-12-api-worker/VERIFICATION.md).
+conservative dispatch accounting, not invoices. Real process and browser recovery checks use a synthetic local API, so live
+provider account access, billing and answer usefulness remain unmeasured. See the
+[worker evidence](../../docs/reviews/2026-09-12-api-worker/VERIFICATION.md) and
+[project UI evidence](../../docs/reviews/2026-09-12-api-project-ui/RESUME.md).
 
 When working with multiple local stacks, supply `OPENPLAN_SUPABASE_WORKDIR`
 explicitly to **every** live test/QA command. The application `.env.local` is not

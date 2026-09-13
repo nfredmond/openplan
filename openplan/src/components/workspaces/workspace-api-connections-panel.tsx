@@ -146,7 +146,7 @@ function ApiConnections({ workspaceId, canManage }: { workspaceId: string; canMa
   return <section className="mt-6 min-w-0 rounded-xl border border-border/70 p-5" aria-labelledby="api-connections-title">
     {confirmDialog}
     <div className="module-section-heading"><h2 id="api-connections-title" className="module-section-title">AI API connections</h2></div>
-    <p className="text-sm text-muted-foreground">Save named API destinations and exact model IDs for your team. Each edit retains the previous version. These settings are not yet available for Planner Agent generation.</p>
+    <p className="text-sm text-muted-foreground">Save named API destinations and exact model IDs for your team. Each edit retains the previous version. Use these destinations in a project’s Planner Agent under Project task · choose provider. Your OpenPlan API worker must be running to process requests.</p>
     <p className="mt-2 text-sm text-muted-foreground">Requires an OpenAI-compatible Chat Completions endpoint with structured JSON output. Saving does not test compatibility or make a model request. Workspace members can read destination details; saved keys are never shown.</p>
     {readError && <p role="alert" className="mt-3 text-sm text-destructive">{readError}</p>}
     <div className="my-4 flex flex-wrap items-center gap-3">

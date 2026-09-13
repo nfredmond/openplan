@@ -2232,7 +2232,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                       className="rounded-[0.5rem] border border-amber-300/28 bg-amber-400/12 px-4 py-3 text-sm text-amber-100"
                     >
                       <p className="font-semibold">
-                        {target.kind === "project" ? "The existing project chat needs a workspace AI key. The project provider task above can use an installed Codex connection." : "The Planner Agent can't chat yet because no AI key is set up for this workspace."}
+                        {target.kind === "project" ? "The existing project chat needs a workspace AI key. The project provider task above can use a saved API or a supported installed CLI connection." : "The Planner Agent can't chat yet because no AI key is set up for this workspace."}
                       </p>
                       <p className="mt-1">
                         <Link
