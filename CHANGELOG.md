@@ -20,13 +20,17 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-Translation workflow integration is in progress. The staged database changes are
-`20261014000010_engagement_translation_commands.sql` and
-`20261014000011_engagement_translation_snapshot.sql`. They add retained command
-receipts and a complete source/current-version snapshot. The command remains
-unavailable to ordinary callers until editor and durable generation integration
-is finished. Existing direct producers have not yet been retired. These are
-development migrations, not a released conflict-safe editor or generation claim.
+Translation workflow integration is in progress. The development migrations are
+`20261014000010_engagement_translation_commands.sql`,
+`20261014000011_engagement_translation_snapshot.sql`,
+`20261014000012_engagement_translation_history_receipts.sql` and
+`20261014000013_engagement_translation_generation.sql`. They add retained command
+receipts, complete source/current-version snapshots, history receipts and private
+generation attempts/output. The local generation worker has process-restart and
+exact-delivery evidence. Staff queue controls, retained-output publication and
+public producer integration remain unfinished. Existing direct producers have
+not yet been retired; these migrations do not declare the complete workflow
+released or authorize ordinary callers to bypass its command boundary.
 
 ## 0.58.1 — 2026-09-13
 
