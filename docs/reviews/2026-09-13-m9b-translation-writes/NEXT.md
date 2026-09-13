@@ -1,3 +1,7 @@
+# Current access checkpoint and patch release
+
+Read [ACCESS_PROGRESS.md](ACCESS_PROGRESS.md) first. Header-only commit 05aa194b is ready for independent main-build verification and a v0.58.1 patch; the larger translation work remains unfinished.
+
 # Current request recovery checkpoint
 
 Read [WRITE_STORAGE_PROGRESS.md](WRITE_STORAGE_PROGRESS.md) first for the latest implementation, browser evidence and remaining work.

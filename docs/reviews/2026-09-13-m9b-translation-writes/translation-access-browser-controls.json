@@ -1,0 +1,41 @@
+{
+  "sourceSha256": {
+    "translation-access-browser.cjs": "3d39fc6708af4b2f0b542d99c82deae67c4485c8373fb3c3d404eadee5b77e2a",
+    "run-translation-editor-browser.py": "baceaffa7008a179e91e69678209a0a15b059f5a6fa0d011186fc95a6cf37ee8"
+  },
+  "results": [
+    {
+      "case": "baseline",
+      "expectedFailure": null,
+      "exit": 0,
+      "matched": true,
+      "grantRevoked": true,
+      "artifactPrefix": "translation-access-baseline-1789327469039"
+    },
+    {
+      "case": "harmless",
+      "expectedFailure": null,
+      "exit": 0,
+      "matched": true,
+      "grantRevoked": true,
+      "artifactPrefix": "translation-access-harmless-1789327554059"
+    },
+    {
+      "case": "viewer-history-leak",
+      "expectedFailure": "Viewer refusal contains no private history",
+      "exit": 1,
+      "matched": true,
+      "grantRevoked": true,
+      "artifactPrefix": "translation-access-viewer-history-leak-1789327597618"
+    },
+    {
+      "case": "outsider-snapshot-leak",
+      "expectedFailure": "Outsider refusal contains no campaign snapshot",
+      "exit": 1,
+      "matched": true,
+      "grantRevoked": true,
+      "artifactPrefix": "translation-access-outsider-snapshot-leak-1789327612217"
+    }
+  ],
+  "limits": "Faults inject response bodies to prove browser refusal assertions. They do not mutate application authorization or substitute for installed RLS controls."
+}

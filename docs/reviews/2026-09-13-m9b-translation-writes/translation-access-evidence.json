@@ -1,0 +1,154 @@
+{
+  "privateBase": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913",
+  "artifacts": [
+    {
+      "file": "translation-access-baseline-1789327469039-identity.log",
+      "sha256": "ec94396be35b8a10e26aab2c5c18dc4092695c7f0be6ae85da75a2f095814748"
+    },
+    {
+      "file": "translation-access-baseline-1789327469039-outsider-direct-1440.png",
+      "sha256": "dfee750473dd9128188fa779754e0cad7dc533a91b924b066a505711a9c3fb95"
+    },
+    {
+      "file": "translation-access-baseline-1789327469039-outsider-direct-390.png",
+      "sha256": "e89283f612fb8c2caebf6f8a39501e2b7082b1fcb6cad235ab9952ede6573e90"
+    },
+    {
+      "file": "translation-access-baseline-1789327469039-outsider-list-1440.png",
+      "sha256": "6e2bf15c221c88e12a920d2f4661473bf64bb6db62a1fb2f2d84bf0c61171b12"
+    },
+    {
+      "file": "translation-access-baseline-1789327469039-outsider-list-390.png",
+      "sha256": "03c9e023583f70014557fc5cc10fadce4478261f2752dd6f34310c267c816cfd"
+    },
+    {
+      "file": "translation-access-baseline-1789327469039-result.json",
+      "sha256": "0a4d05fd58c093b612aa2fc95116ed546476d62e36d996e0e13ef9f2a724e0bc"
+    },
+    {
+      "file": "translation-access-baseline-1789327469039-staff-1440.png",
+      "sha256": "7589305dca773164200292277460ac6453f1d270ff835489430cb6f63f9c55ec"
+    },
+    {
+      "file": "translation-access-baseline-1789327469039-staff-390.png",
+      "sha256": "e54462aba77976a09404f7435d0344a650d59567f7b463167ef8b703e0fb6038"
+    },
+    {
+      "file": "translation-access-baseline-1789327469039-viewer-1440.png",
+      "sha256": "51743375d4934e5fd5b271461a15275b5e6111756674539bd0793820149f204c"
+    },
+    {
+      "file": "translation-access-baseline-1789327469039-viewer-390.png",
+      "sha256": "86ef3d36eaa93b056996be454fc93b4ff22f4fd35ebbd46b059ea55e245f6757"
+    },
+    {
+      "file": "translation-access-harmless-1789327554059-identity.log",
+      "sha256": "ec94396be35b8a10e26aab2c5c18dc4092695c7f0be6ae85da75a2f095814748"
+    },
+    {
+      "file": "translation-access-harmless-1789327554059-outsider-direct-1440.png",
+      "sha256": "494114f21a66c3edec27b3b89ca783033fc3ef1319fd26617c70864c8c12816a"
+    },
+    {
+      "file": "translation-access-harmless-1789327554059-outsider-direct-390.png",
+      "sha256": "e89283f612fb8c2caebf6f8a39501e2b7082b1fcb6cad235ab9952ede6573e90"
+    },
+    {
+      "file": "translation-access-harmless-1789327554059-outsider-list-1440.png",
+      "sha256": "25441a73c8cd86b7ca50dd7b04e61008e517aff1c64e1ec348986502837c5199"
+    },
+    {
+      "file": "translation-access-harmless-1789327554059-outsider-list-390.png",
+      "sha256": "eec1dbe20396219ee965bfc5ccb8f94be94468f3345b71338c3456ec7cb2ff6b"
+    },
+    {
+      "file": "translation-access-harmless-1789327554059-result.json",
+      "sha256": "12407c7e44d0efa292c5fc9c584ef8f54d1440b771661870ee7a76b5a925ef17"
+    },
+    {
+      "file": "translation-access-harmless-1789327554059-staff-1440.png",
+      "sha256": "8f9a0094a1739c764d5211867c7248bed2a740cf118092a76df974ba48cf3688"
+    },
+    {
+      "file": "translation-access-harmless-1789327554059-staff-390.png",
+      "sha256": "7609e5677ed501535c968fab0f913c53053a33894f2bc94495a34b12a43528aa"
+    },
+    {
+      "file": "translation-access-harmless-1789327554059-viewer-1440.png",
+      "sha256": "9fb87cef1f42c7d6c5f49013f453ca9666b8987942c193fa94d8ba0b1192a535"
+    },
+    {
+      "file": "translation-access-harmless-1789327554059-viewer-390.png",
+      "sha256": "d1abb26f88eceef1fbaac054f5d83ac688a208d8cc12d27d88d3b01d50c481f6"
+    },
+    {
+      "file": "translation-access-viewer-history-leak-1789327597618-failure-aria.txt",
+      "sha256": "cdc11b0559d1d5e25bfb1430e8d1d66c4c0eafb8df5a734d17d063e0bce581f5"
+    },
+    {
+      "file": "translation-access-viewer-history-leak-1789327597618-failure.json",
+      "sha256": "a3304509bce4f4e352d7f785fad4b367ca58ce399d299fff9d01774929a47312"
+    },
+    {
+      "file": "translation-access-viewer-history-leak-1789327597618-failure.png",
+      "sha256": "73336c0dda92485442772a547f0b03c397b6214030e16a15272f3524bd3d4fb5"
+    },
+    {
+      "file": "translation-access-viewer-history-leak-1789327597618-identity.log",
+      "sha256": "ec94396be35b8a10e26aab2c5c18dc4092695c7f0be6ae85da75a2f095814748"
+    },
+    {
+      "file": "translation-access-viewer-history-leak-1789327597618-staff-1440.png",
+      "sha256": "81e1b7fae6b7e217fbd0709267a36a99c6574abf1b7b28eeb08d34d6f0e65070"
+    },
+    {
+      "file": "translation-access-outsider-snapshot-leak-1789327612217-failure-aria.txt",
+      "sha256": "28220ccfc1fa64eec717b833d64dc8ee2de9353c3e84bd86f9d8c74c9fe2a80d"
+    },
+    {
+      "file": "translation-access-outsider-snapshot-leak-1789327612217-failure.json",
+      "sha256": "24cf4626ef2a575db433dfe46a04c1703fdcbb45e8ea7e17f1d486a9e26dbee7"
+    },
+    {
+      "file": "translation-access-outsider-snapshot-leak-1789327612217-failure.png",
+      "sha256": "49132f967f917677deb208a2eafad7026d7cd4948d8a3d5f5ea09878e11ba112"
+    },
+    {
+      "file": "translation-access-outsider-snapshot-leak-1789327612217-identity.log",
+      "sha256": "ec94396be35b8a10e26aab2c5c18dc4092695c7f0be6ae85da75a2f095814748"
+    },
+    {
+      "file": "translation-access-outsider-snapshot-leak-1789327612217-outsider-list-1440.png",
+      "sha256": "805b1d9d7a744839fde43016a57a70b8d71e9ff58a64f04c77a6df3d0d7a0745"
+    },
+    {
+      "file": "translation-access-outsider-snapshot-leak-1789327612217-staff-1440.png",
+      "sha256": "80872868912896101765c2361a370425cbbf4826ec7d1a03fe012ed5d5708dd0"
+    },
+    {
+      "file": "translation-access-outsider-snapshot-leak-1789327612217-viewer-1440.png",
+      "sha256": "b2515202a5b4f448ece5b89d35f3ac2fd5c10dcb0993e5b3cfe629bbb45d38d4"
+    },
+    {
+      "file": "translation-editor-cleanup-access-control.json",
+      "sha256": "24319b5eb205d02427ff3f4430b67f0912eace2e0123b5c711c4c2752bfc56ad"
+    },
+    {
+      "file": "translation-editor-cleanup-access-abrupt-exit.json",
+      "sha256": "c5de4d86581613452ad2434e2cccedcb375541d69c74c8a64a7656c1b50b2fb0"
+    }
+  ],
+  "cleanup": [
+    {
+      "mode": "control",
+      "childExit": 0,
+      "grantRevoked": true
+    },
+    {
+      "mode": "abrupt-exit",
+      "childExit": 23,
+      "grantRevoked": true
+    }
+  ],
+  "limits": "Fixture browser roles and refusal-body controls; not all RLS boundaries, translation completion or main release readiness."
+}

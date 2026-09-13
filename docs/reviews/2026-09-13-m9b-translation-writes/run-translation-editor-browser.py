@@ -2,7 +2,7 @@
 import json, os, subprocess
 from pathlib import Path
 base = Path("/home/nathaniel/.local/state/openplan/response-write-probe-20260913")
-script = Path(__file__).parent / "translation-editor-browser.cjs"
+script = Path(__file__).parent / ("translation-access-browser.cjs" if os.environ.get("OPENPLAN_TRANSLATION_ACCESS_PROBE") == "1" else "translation-editor-browser.cjs")
 container = "supabase_db_openplan-restore-target-2026091050"
 signature = "public.write_engagement_translations(uuid,uuid,text,text,text,jsonb)"
 def sql(statement):
@@ -17,6 +17,6 @@ finally:
     revoked = sql(f"select has_function_privilege('authenticated','{signature}','EXECUTE')") == 'f'
     assert revoked
     suffix = 'abrupt-exit' if os.environ.get('OPENPLAN_TRANSLATION_CLEANUP_PROBE') == '1' else 'control' if os.environ.get('OPENPLAN_TRANSLATION_CLEANUP_PROBE') == 'control' else os.environ.get('OPENPLAN_TRANSLATION_LAYOUT_CONTROL', 'journey')
-    (base / f'translation-editor-cleanup-{suffix}.json').write_text(json.dumps({'childExit': code, 'grantRevoked': revoked}))
+    (base / f'translation-editor-cleanup-{"access-" if os.environ.get("OPENPLAN_TRANSLATION_ACCESS_PROBE") == "1" else ""}{suffix}.json').write_text(json.dumps({'childExit': code, 'grantRevoked': revoked}))
     print('Temporary command grant revoked; child exit', code, flush=True)
 raise SystemExit(code)
