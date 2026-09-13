@@ -1,0 +1,27 @@
+{
+  "source": "b158f28fb126dbb31e455a53a82b81791fa3916f",
+  "width": 1440,
+  "passed": true,
+  "campaignId": "6f633265-d967-4ecb-982c-5cc1991bc5b6",
+  "subscriptionId": "9c56e0c1-f69d-43fc-ba3e-cc475c630f36",
+  "subscriptionPreserved": true,
+  "outboxConfirmationId": "6b111fb2-aaa7-4743-8e62-bc7630b2d970",
+  "outboxRows": 1,
+  "confirmationDelivery": "synthetic transport acceptance only",
+  "confirmationLinkSource": "Retained local outbox message with intercepted transport; no email sent",
+  "refusedWrites": 2,
+  "broadcast": {
+    "enqueued": 0,
+    "unrecorded": 1,
+    "delivered": 0,
+    "skipped": 0,
+    "failed": 0,
+    "transport": "resend"
+  },
+  "responseHistoryHash": "9135100989093ed62ef20cf3e1306e3747e28ae04ee6d46866599957ad186a36",
+  "overflow": {
+    "viewport": 1440,
+    "document": 1440
+  },
+  "console": []
+}

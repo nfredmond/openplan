@@ -20,10 +20,20 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-Migration inventory for the prepared v0.56.0 release:
-`20261014000001_engagement_response_history.sql` and
-`20261014000002_engagement_response_history_reader.sql`.
-The release entry below describes the candidate; publication follows final CI.
+## 0.56.1 — 2026-09-12
+
+Email delivery now requires a saved outbox record. If that save fails, OpenPlan
+makes no delivery attempt and tells staff which update emails could not be saved.
+It no longer misreports that failure as an empty subscriber list.
+
+Public signup keeps the email address and retry button available when confirmation
+preparation or delivery fails. Retrying preserves the subscription, and the
+message reflects the recorded delivery outcome. Desktop and 390px journeys cover
+write refusal, keyboard retry, confirmation and preserved response history with
+a local transport stub. No external email delivery was tested.
+
+No new migration is required. Complete subscriber reads, durable delivery retries,
+response-write conflict protection and translation history remain unfinished.
 
 ## 0.56.0 — 2026-09-12
 

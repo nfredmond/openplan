@@ -1,0 +1,32 @@
+{
+  "release": "v0.56.0",
+  "url": "https://github.com/nfredmond/openplan/releases/tag/v0.56.0",
+  "publishedAt": "2026-09-13T05:29:22Z",
+  "commit": "e006b98bd8aeedbde48a74bec2169e1f1d01c9ad",
+  "checks": [
+    {
+      "headSha": "e006b98bd8aeedbde48a74bec2169e1f1d01c9ad",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34739606630",
+      "receipt": "v056-final-ci.json",
+      "sha256": "9965b76b96226438a0d04e4508384ccea6fc146c77976398903b774ace7e59b9"
+    },
+    {
+      "headSha": "e006b98bd8aeedbde48a74bec2169e1f1d01c9ad",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34739606639",
+      "receipt": "v056-final-rls.json",
+      "sha256": "f75349100c8cc2a8456ae9debb69626c65d505d88333190a562f2a8ec4150d20"
+    },
+    {
+      "headSha": "e006b98bd8aeedbde48a74bec2169e1f1d01c9ad",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34739606645",
+      "receipt": "v056-final-upgrade.json",
+      "sha256": "9b8a32f8684c9226840cb2265b569b141a61f966448f2257e8779fdfbc132d7f"
+    }
+  ]
+}

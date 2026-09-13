@@ -78,3 +78,20 @@ completeness and delivery-result recovery. This small fix is not all of M9b.
 Run product:direction:check and reread current authorities before selecting the
 next substantial lane. The full v1 contract and separate scientific validation
 obligations remain unchanged.
+
+## Superseding browser checkpoint, September 12 Pacific
+
+Both desktop and 390px browser journeys passed on b158f28f with unchanged runtime
+source. See VERIFICATION.md and browser/. The missing portal link was in Setup
+after activation switched the default tab to Responses. Signup correctly hides
+when email is disabled, so the final local browser used a process fetch stub with
+a dummy key and synthetic-only recipients. Both failures caused zero transport
+attempts, and successful keyboard retry caused exactly one stub call. No external
+email was sent. Final screenshots were inspected and console records were empty.
+
+Owned proxy 3890893/dev 3890901 were stopped after acceptance. Session 84719 was
+their handle; confirm terminal state on resume. No browser collector remains.
+Package/release metadata now prepare v0.56.1, without new migrations. Full QA,
+shuffled tests and isolated RLS are next; the candidate is not on main or released.
+The previous publication-pending wording has been superseded and v0.56.0 final
+CI/publication is retained in the response-history review.

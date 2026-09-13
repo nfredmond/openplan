@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: e6d25edd
-current_release: v0.56.0
+current_release: v0.56.1
 review_by: 2026-10-05
 paths:
 - AGENTS.md
@@ -657,4 +657,9 @@ Use the [human observation protocol](product/PLANNER_OBSERVATION_PROTOCOL.md) to
 
 Bring Nathaniel decisions about territory depth, the first engagement/capital case, actual administering and fiscal authority, confidentiality/public-record and personal-AI policies, and meaningful planning outcomes. Do not ask whether the early priorities or restored contract/RTP requirements belong in scope again; he has already decided that. Obtain permitted agreement/prior-plan observation cases and practitioner feedback on actual decisions. Do not ask him to choose libraries, schemas, queue mechanics or test frameworks. When observation changes priority, amend this single queue with evidence while preserving the full v1 destination and previous dated decisions.
 
-Response-history checkpoint for the v0.56.0 candidate: private retained originals, corrections, removals and complete staff reads now have desktop/390px evidence. [Verification](reviews/2026-09-12-m9b-response-history/VERIFICATION.md) records gates and limits. M9b remains open for reasoned conflict/retry-safe response writes, translation custody and source-to-decision follow-through. This does not change the queue above.
+Published v0.56.0 response-history checkpoint: private retained originals, corrections, removals and complete staff reads now have desktop/390px evidence. [Verification](reviews/2026-09-12-m9b-response-history/VERIFICATION.md) records gates and limits. M9b remains open for reasoned conflict/retry-safe response writes, translation custody and source-to-decision follow-through. This does not change the queue above.
+
+The v0.56.1 email-recovery candidate requires an outbox identity before delivery,
+reports unsaved broadcast emails, and preserves public confirmation retries.
+[Verification](reviews/2026-09-12-m9b-outbox-recovery/VERIFICATION.md) records
+desktop/390px evidence and remaining limits. M9b and the queue above are unchanged.

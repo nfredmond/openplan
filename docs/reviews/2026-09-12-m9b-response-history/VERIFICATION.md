@@ -126,3 +126,12 @@ DB. Its final receipt and private log hash are now in full-checks.json. The only
 changes after the last browser/source acceptance were release metadata, evidence
 and the corrected test option; runtime behavior is unchanged. Final exact main
 CI, RLS and populated upgrade checks remain required before publication.
+
+## Published
+
+v0.56.0 was published at 2026-09-13T05:29:22Z. Main and the peeled tag matched
+e006b98bd8aeedbde48a74bec2169e1f1d01c9ad. Final CI 34739606630, RLS 34739606639
+and populated Upgrade Path 34739606645 all completed successfully on that commit,
+including every CI job. Live GitHub readback reconfirmed those conclusions during
+the next increment. publication.json retains the source and private receipt hashes.
+This supersedes the pending statuses above; it does not broaden the shipped claim.
