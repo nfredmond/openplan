@@ -20,7 +20,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No additional changes yet.
+Migration inventory for the prepared v0.56.0 release:
+`20261014000001_engagement_response_history.sql` and
+`20261014000002_engagement_response_history_reader.sql`.
+The release entry below describes the candidate; publication follows final CI.
 
 ## 0.56.0 — 2026-09-12
 

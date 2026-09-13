@@ -46,6 +46,12 @@ describe("private response history verification", () => {
     ["missing baseline", (s: ReturnType<typeof snapshot>) => { s.entries[0].revision = 2; }],
     ["wrong initial event", (s: ReturnType<typeof snapshot>) => { s.entries[0].event = "corrected"; }],
     ["duplicate row", (s: ReturnType<typeof snapshot>) => { s.entries.push(s.entries[0]); s.count++; }],
+    ["duplicate identity with valid revisions", (s: ReturnType<typeof snapshot>) => { s.entries.push({ ...revision(2, "corrected"), id: s.entries[0].id }); s.count++; }],
+    ["foreign retained campaign", (s: ReturnType<typeof snapshot>) => {
+      const entry = s.entries[0];
+      const record = JSON.parse(entry.record_text); record.campaign_id = responseId;
+      entry.record_text = JSON.stringify(record); entry.record_sha256 = createHash("sha256").update(entry.record_text).digest("hex");
+    }],
     ["revision gap", (s: ReturnType<typeof snapshot>) => { s.entries.push(revision(3, "corrected")); s.count++; }],
     ["identity reused after removal", (s: ReturnType<typeof snapshot>) => { s.entries.push(revision(2, "removed"), revision(3, "corrected")); s.count += 2; }],
   ])("rejects all rows on %s", async (_name, corrupt) => {

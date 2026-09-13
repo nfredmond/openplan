@@ -55,3 +55,28 @@ Limits: checksums establish retained bytes, not truth or responsible approval.
 Schema retention cannot reconstruct earlier edits. Reasons, stale-write conflicts,
 durable mutation retries, translation-version custody and complete decision linkage
 remain the next implementation work. No human review gates software release.
+
+
+## First full candidate checks and corrections
+
+Source a038ba70 completed full QA and seed-913562 shuffle with eight failures,
+14,123 passes and 450 skips. Both found the same three preparation gaps: release
+metadata still named v0.55.2 in the contract/roadmap/matrix/registry, migration names
+had moved out of Unreleased before tagging, and two new interface phrases raised
+the existing plain-language baseline. No guard was weakened. Current-release
+metadata is aligned without changing review dates or scientific claims; Unreleased
+again names both migrations; the empty/error phrases use plain response wording.
+Focused replay is required after those corrections. Worker checks on a038ba70
+completed all 52 suites with zero failures/not-run; those worker sources did not
+change in these corrections. RLS was still active when this paragraph was written.
+
+Two additional focused cases now independently break duplicate history identity
+and retained-copy campaign scope. The earlier duplicate-row case also broke the
+revision sequence, so it did not isolate the identity guard. Fresh reader/API
+mutation results have one harmless survivor and fifteen matched failures. No
+previous positive result is being used to claim those extra cases were covered.
+
+Corrected focused replay completed 43 tests across six files. RLS on a038ba70
+completed with status 0; the same migrations and RLS suite remain unchanged by
+the subsequent metadata, interface wording and additional offline test corrections.
+Final browser and full QA/shuffle replay are still pending on the corrected commit.

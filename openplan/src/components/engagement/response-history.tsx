@@ -46,10 +46,10 @@ function HistoryRecords({ campaignId }: { campaignId: string }) {
 
   if (loading) return <p role="status">Loading response history…</p>;
   if (error) return <div className="space-y-2">
-    <p role="alert">Response history could not be read and verified completely. Saved records have not been changed.</p>
+    <p role="alert">Response history could not be read and verified completely. Saved responses have not been changed.</p>
     <Button type="button" variant="outline" onClick={() => { setLoading(true); setAttempt(value => value + 1); }}>Retry response history</Button>
   </div>;
-  if (!history.length) return <p>No response history has been retained for this campaign.</p>;
+  if (!history.length) return <p>No response history has been retained yet.</p>;
 
   const latest = new Map<string, ResponseHistoryEntry>();
   for (const row of history) latest.set(row.response_id, row);

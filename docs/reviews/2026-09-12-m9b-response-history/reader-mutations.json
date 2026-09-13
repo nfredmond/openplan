@@ -63,6 +63,24 @@
     "diagnostic": null
   },
   {
+    "name": "ignore-identity",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "duplicate identity with valid revisions",
+    "sourceSha256": "271c1d54f67d2624b27b424791c3aee87eda73d8030f530926909b737cbff2da",
+    "diagnostic": null
+  },
+  {
+    "name": "ignore-retained-campaign",
+    "status": 1,
+    "outcome": "killed",
+    "matched": true,
+    "expectedTest": "foreign retained campaign",
+    "sourceSha256": "271c1d54f67d2624b27b424791c3aee87eda73d8030f530926909b737cbff2da",
+    "diagnostic": null
+  },
+  {
     "name": "ignore-removal",
     "status": 1,
     "outcome": "killed",

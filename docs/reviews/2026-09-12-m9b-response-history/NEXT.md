@@ -1,5 +1,10 @@
 # M9b response correction and publication history
 
+The initial release-status paragraphs below are historical. v0.55.2 is published;
+do not tag it again. Retention and the private history reader are now implemented
+and browser-tested in the v0.56.0 candidate. VERIFICATION.md records current gates.
+The write, translation and cross-module boundaries below remain open.
+
 This investigation follows the v0.55.2 complete-read repair. It does not change
 that release candidate's runtime or claim response history already exists.
 Candidate commit 3455207b5723c6394ff95b9fbbd274c79e7d3c36 is pushed directly to
@@ -89,3 +94,27 @@ overwrites and failed the reproduction for its named reason. Both probe variants
 rolled back. A fresh real HTTP read afterward again matched all 1005 original
 responses. write-gap-mutations.py/json retain this control. It is evidence for
 the missing-version boundary, not an implemented response repair.
+
+
+## Next write increment: producer and transaction seam
+
+The current browser builder and POST/PATCH/DELETE routes are the response write
+producers found in the September 12 source search. No response-table write was
+found in the inspected runtime/assistant libraries. The PATCH route reads prior
+publication status separately from its ID/campaign-scoped update, then sends
+operator/subscriber notifications after the write. The stale overwrite is already
+reproduced; duplicate notifications are a source risk, not yet reproduced.
+
+Extend these producers together. A database transaction should lock the current
+response, verify the exact expected revision, retain the supplied correction or
+withdrawal reason, commit the response/history and save an actor/campaign-scoped
+request receipt with the approved payload hash. Identical interrupted retries must
+return that receipt; a reused request ID with different content must conflict.
+Creation/removal require the same receipt discipline. Keep source-change automatic
+withdrawals working without invented human intent. Read current immutable-history,
+contribution-review-intent and notification/outbox mechanisms before choosing the
+smallest implementation; this paragraph is a proposed seam, not shipped behavior.
+
+A browser conflict must preserve the unsaved proposed text while showing the newer
+saved version, and require a fresh deliberate save. Translation snapshots need
+separate custody before claiming recovery of every language a resident saw.

@@ -2,7 +2,7 @@
 
 <!-- openplan-v1-product-contract
 decided: 2026-08-25
-current_release: v0.55.2
+current_release: v0.56.0
 direction_review: docs/reviews/product-direction/2026-09-07-work-program-review.md
 review_protocol: docs/product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md
 capability_matrix: docs/product/US_PLANNING_CAPABILITY_MATRIX.md

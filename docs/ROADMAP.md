@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: e6d25edd
-current_release: v0.55.2
+current_release: v0.56.0
 review_by: 2026-10-05
 paths:
 - AGENTS.md

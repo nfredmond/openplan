@@ -14,6 +14,8 @@ cases=[
  ('ignore-row-scope',reader,'entry.campaign_id !== campaignId','false','foreign row'),
  ('ignore-retained-scope',reader,'record.id !== entry.response_id || record.campaign_id !== campaignId','false','foreign retained response'),
  ('ignore-revisions',reader,'entry.revision !== (revisions.get(entry.response_id) ?? 0) + 1','false','revision gap'),
+ ('ignore-identity',reader,'ids.has(entry.id)','false','duplicate identity with valid revisions'),
+ ('ignore-retained-campaign',reader,'record.campaign_id !== campaignId','false','foreign retained campaign'),
  ('ignore-removal',reader,'removed.has(entry.response_id)','false','identity reused after removal'),
  ('ignore-baseline',reader,'if (entry.revision === 1 ? !["created", "legacy_baseline"].includes(entry.event) : ["created", "legacy_baseline"].includes(entry.event))','if (false)','wrong initial event'),
  ('wrong-anonymous-status',route,'status: 401','status: 200','anonymous'),
