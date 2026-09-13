@@ -3,9 +3,9 @@ import { canonicalizeActionPayload } from "@/lib/runtime/action-metadata";
 import { translationGenerationAddressSchema, translationGenerationReadSchema, type TranslationGenerationRead } from "./translation-generation-request";
 import { retainedTranslationSchema } from "./translation-history";
 
+import { translationPublicationReferenceSchema, translationPublicationEvidenceSchema } from "./translation-publication-reference";
 const id = z.string().uuid();
-const digest = z.string().regex(/^[a-f0-9]{64}$/);
-export const translationPublicationReferenceSchema = z.object({ requestId: id, fieldId: id, attemptId: id, deliveryDigest: digest }).strict();
+export { translationPublicationReferenceSchema } from "./translation-publication-reference";
 export const translationPublicationIntentSchema = z.object({
   requestId: id, operation: z.literal("publish_generated"),
   locale: z.string().max(35).regex(/^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$/),
@@ -25,7 +25,7 @@ export type TranslationPublicationIntent = z.infer<typeof translationPublication
 export const translationPublicationResultSchema = z.object({
   campaignId: id, requestId: id, operation: z.literal("publish_generated"), locale: z.string(), replayed: z.boolean(),
   entries: z.array(z.object({ entry: retainedTranslationSchema, revision: z.number().int().positive(), removed: z.literal(false),
-    generation: translationPublicationReferenceSchema.extend({ actorId: id, outputHash: digest }).strict(),
+    generation: translationPublicationEvidenceSchema,
   }).strict()).min(1).max(200),
 }).strict();
 export type TranslationPublicationResult = z.infer<typeof translationPublicationResultSchema>;

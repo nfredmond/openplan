@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { translationPublicationEvidenceSchema } from "./translation-publication-reference";
 import { translationSourceVersionSchema, translationVersionSchema } from "./translation-snapshot";
 
 export const retainedTranslationSchema = z.object({
@@ -31,13 +32,17 @@ export const translationHistoryMetadataSchema = z.object({
 });
 
 export const translationHistoryChangeSchema = z.object({
-  requestId: z.string().uuid(), operation: z.enum(["save", "accept", "withdraw"]), reason: z.string().nullable(),
+  requestId: z.string().uuid(), operation: z.enum(["save", "accept", "withdraw", "publish_generated"]), reason: z.string().nullable(),
   source: translationSourceVersionSchema, expectedTranslation: translationVersionSchema.nullable(),
+  generation: translationPublicationEvidenceSchema.optional(),
   payloadSha256: z.string().regex(/^[a-f0-9]{64}$/), resultSha256: z.string().regex(/^[a-f0-9]{64}$/),
 }).strict();
 export const translationHistoryEntrySchema = translationHistoryMetadataSchema.extend({
   record: retainedTranslationSchema, change: translationHistoryChangeSchema.nullable(),
 }).superRefine((row, context) => {
+  if (row.change && (row.change.operation === "publish_generated") !== (row.change.generation !== undefined)) {
+    context.addIssue({ code: "custom", path: ["change"], message: "Publication generation evidence is incomplete or unrelated" });
+  }
   if (row.write_request_id !== (row.change?.requestId ?? null)) {
     context.addIssue({ code: "custom", path: ["change"], message: "History request evidence is incomplete" });
   }

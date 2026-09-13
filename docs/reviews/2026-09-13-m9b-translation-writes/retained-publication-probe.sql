@@ -160,11 +160,32 @@ BEGIN
  IF NOT EXISTS(SELECT 1 FROM engagement_translation_history WHERE translation_id=(baseline->>'id')::uuid AND revision=2 AND write_request_id=(f->>'secondWrite')::uuid)
  THEN RAISE EXCEPTION 'Identical new generation lost history link'; END IF;
 END $$;
+SET LOCAL ROLE authenticated;
+DO $$
+DECLARE f jsonb:=current_setting('openplan.publication_fixture')::jsonb; second jsonb:=current_setting('openplan.publication_second')::jsonb;
+ e jsonb; accepted jsonb; withdrawn jsonb; replay jsonb;
+BEGIN
+ e:=jsonb_set((f->'entry')-'generation','{expectedTranslation}',jsonb_build_object('id',second#>>'{entries,0,entry,id}','revision',2));
+ accepted:=write_engagement_translations((f->>'campaignId')::uuid,gen_random_uuid(),'accept','es','SYNTHETIC acceptance after retained publication',jsonb_build_array(e));
+ IF accepted#>>'{entries,0,revision}'<>'3' OR accepted#>>'{entries,0,entry,source}'<>'operator' THEN RAISE EXCEPTION 'Published wording acceptance lost revision'; END IF;
+ e:=jsonb_set(e,'{expectedTranslation,revision}','3'::jsonb);
+ withdrawn:=write_engagement_translations((f->>'campaignId')::uuid,gen_random_uuid(),'withdraw','es','SYNTHETIC withdrawal after acceptance',jsonb_build_array(e));
+ IF withdrawn#>>'{entries,0,revision}'<>'4' OR withdrawn#>>'{entries,0,removed}'<>'true' THEN RAISE EXCEPTION 'Published wording withdrawal lost revision'; END IF;
+ EXECUTE pg_temp.publish_call(f->'entry',(f->>'writeRequest')::uuid) INTO replay;
+ IF replay IS DISTINCT FROM current_setting('openplan.publication_result')::jsonb||'{"replayed":true}'::jsonb THEN RAISE EXCEPTION 'Historical publication retry lost its receipt'; END IF;
+END $$;
+RESET ROLE;
+DO $$ BEGIN
+ IF EXISTS(SELECT 1 FROM engagement_content_translations WHERE campaign_id=(current_setting('openplan.publication_fixture')::jsonb->>'campaignId')::uuid) THEN
+  RAISE EXCEPTION 'Historical publication retry resurrected withdrawn wording'; END IF;
+END $$;
 SET LOCAL ROLE anon;
 SELECT pg_temp.publication_refusal(pg_temp.publish_call(current_setting('openplan.publication_fixture')::jsonb->'entry'),'42501','anonymous publication');
 RESET ROLE;
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claim.sub',current_setting('openplan.publication_fixture')::jsonb->>'publisher',true) IS NOT NULL;
+SELECT 'PUBLICATION_HISTORY:'||read_engagement_translation_history((current_setting('openplan.publication_fixture')::jsonb->>'campaignId')::uuid)::text;
+SELECT 'PUBLICATION_SECOND_GENERATION:'||read_translation_generation_request((current_setting('openplan.publication_fixture')::jsonb->>'campaignId')::uuid,(current_setting('openplan.publication_second')::jsonb#>>'{entries,0,generation,requestId}')::uuid)::text;
 SELECT 'PUBLICATION_GENERATION:'||read_translation_generation_request((current_setting('openplan.publication_fixture')::jsonb->>'campaignId')::uuid,(current_setting('openplan.publication_fixture')::jsonb#>>'{entry,generation,requestId}')::uuid)::text;
 RESET ROLE;
 SELECT 'PUBLICATION_RESULT:'||current_setting('openplan.publication_result');

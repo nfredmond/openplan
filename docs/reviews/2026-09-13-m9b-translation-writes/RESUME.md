@@ -1,3 +1,7 @@
+# Latest publication-history checkpoint
+
+Read [PUBLICATION_HISTORY_PROGRESS.md](PUBLICATION_HISTORY_PROGRESS.md) first. Publication history now verifies original generation evidence through acceptance and withdrawal. Pending recovery, API/editor and producer integration remain unfinished.
+
 # Latest retained-publication checkpoint
 
 Read [RETAINED_PUBLICATION_PROGRESS.md](RETAINED_PUBLICATION_PROGRESS.md) first. Retained publication now has SQL and native receipt evidence. API/editor, pending recovery, history integration and producer replacement remain unfinished; execution is still revoked on the app stack.

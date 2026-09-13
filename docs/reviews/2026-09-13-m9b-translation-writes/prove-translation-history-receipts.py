@@ -28,8 +28,10 @@ def save():
         "limits": "Rolled-back SQL and selected reader/UI guards. Not browser evidence, installed upgrade, all changed guards, full RLS or release checks."}, indent=2) + "\n")
 
 def changed(text, old, new):
-    assert text.count(old) == 1, (old, text.count(old))
-    return text.replace(old, new, 1)
+    repeated = {'recordedCampaign !== campaignId', 'actorId !== raw.actor_id', 'intent.requestId !== raw.request_id', 'result.replayed'}
+    expected = 2 if old in repeated else 1
+    assert text.count(old) == expected, (old, text.count(old))
+    return text.replace(old, new)
 sql_cases = [("sql-baseline", migration, None), ("sql-harmless", migration + "\n-- Harmless history control.\n", None),
     ("sql-bypass-rls", changed(migration, "SECURITY INVOKER", "SECURITY DEFINER"), "Viewer received private history or receipts"),
     ("sql-missing-history-link", changed(migration, "'write_request_id',h.write_request_id", "'write_request_id',NULL"), "History command links were missing"),

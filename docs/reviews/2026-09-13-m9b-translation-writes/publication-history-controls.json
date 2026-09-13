@@ -1,0 +1,130 @@
+{
+  "sourceSha256": {
+    "reader": "2bc1fe13cfd03538545642238cd08831ef481ac44645b8e911a73d71af3ed2b9",
+    "schema": "73f6bfbb5cab92dafe3a811a5de99a62b20ef6c329fc077e0ca810ef9b92aa7d"
+  },
+  "testSha256": "f9fcb14e73b1909324b19308614cd682d8285d5050e9314766da689468819838",
+  "testCount": 13,
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/publication-history-controls/20260913T164548",
+  "results": [
+    {
+      "case": "baseline-reader",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-reader",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "baseline-schema",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-schema",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-publication-revision",
+      "outcome": "killed",
+      "expectedFailure": "refuses incomplete or altered publication evidence missing_revision",
+      "failedAssertions": [
+        "publication history custody refuses incomplete or altered publication evidence missing_revision"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unbounded-generation-reads",
+      "outcome": "killed",
+      "expectedFailure": "bounds concurrent evidence reads without omitting requests",
+      "failedAssertions": [
+        "publication history custody bounds concurrent evidence reads without omitting requests"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "repeated-generation-read",
+      "outcome": "killed",
+      "expectedFailure": "reuses a generation read across independently published fields",
+      "failedAssertions": [
+        "publication history custody reuses a generation read across independently published fields"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "trust-receipt-without-generation",
+      "outcome": "killed",
+      "expectedFailure": "does not return partial history when retained generation access is lost",
+      "failedAssertions": [
+        "publication history custody does not return partial history when retained generation access is lost"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "trust-generation-actor",
+      "outcome": "killed",
+      "expectedFailure": "refuses incomplete or altered publication evidence generation_actor",
+      "failedAssertions": [
+        "publication history custody refuses incomplete or altered publication evidence generation_actor"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "publication-receipt-scope",
+      "outcome": "killed",
+      "expectedFailure": "refuses incomplete or altered publication evidence scope",
+      "failedAssertions": [
+        "publication history custody refuses incomplete or altered publication evidence scope"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "publication-original-result",
+      "outcome": "killed",
+      "expectedFailure": "refuses incomplete or altered publication evidence replayed",
+      "failedAssertions": [
+        "publication history custody refuses incomplete or altered publication evidence replayed"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "publication-source-checksum",
+      "outcome": "killed",
+      "expectedFailure": "refuses incomplete or altered publication evidence source_hash",
+      "failedAssertions": [
+        "publication history custody refuses incomplete or altered publication evidence source_hash"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "generation-history-association",
+      "outcome": "killed",
+      "expectedFailure": "joins one batch to exact generated words and preserves both actors",
+      "failedAssertions": [
+        "publication history custody joins one batch to exact generated words and preserves both actors"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "history-evidence-schema",
+      "outcome": "killed",
+      "expectedFailure": "requires generation evidence only on publication history entries",
+      "failedAssertions": [
+        "publication history custody requires generation evidence only on publication history entries"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Native receipt/generation decoding with mocked RPC replies. Separate rollback SQL/native evidence covers actual retained rows. No browser, storage recovery or large-history performance claim."
+}

@@ -13,7 +13,7 @@ for name,expr in [('duplicate_address','addresses.has(address) ||'),('duplicate_
 mutate('intent-blank-source','!entry.expectedSource.text?.trim()','false','refuses publication intent blank_source')
 mutate('intent-reason','value.trim().length > 0 &&','true &&','refuses publication intent blank_reason')
 mutate('intent-extra-text','translationGenerationAddressSchema.extend({ generation: translationPublicationReferenceSchema }).strict()','translationGenerationAddressSchema.extend({ generation: translationPublicationReferenceSchema }).passthrough()','refuses publication intent text')
-mutate('intent-ref-extra','deliveryDigest: digest }).strict()','deliveryDigest: digest }).passthrough()','refuses publication intent reference_extra')
+mutate('intent-ref-extra','translationGenerationAddressSchema.extend({ generation: translationPublicationReferenceSchema }).strict()','translationGenerationAddressSchema.extend({ generation: translationPublicationReferenceSchema.passthrough() }).strict()','refuses publication intent reference_extra')
 mutate('intent-batch-max',').min(1).max(200),\n}).strict().superRefine',').min(1).max(201),\n}).strict().superRefine','bounds a publication batch')
 mutate('intent-batch-min',').min(1).max(200),\n}).strict().superRefine',').min(0).max(200),\n}).strict().superRefine','bounds a publication batch')
 mutate('reason-codepoints','[...value].length <= 2000','true','bounds a publication batch')
@@ -50,6 +50,6 @@ try:
   if count is None:count=report['numPassedTests'];assert count>=42
   correct=run.returncode==0 and report['numPassedTests']==count if expected is None else run.returncode!=0 and any(expected in f for f in failed)
   results.append({'case':name,'outcome':'survived' if run.returncode==0 else 'killed','expectedFailure':expected,'failedAssertions':failed,'expectedOutcome':correct})
-  (review/'publication-receipt-controls.json').write_text(json.dumps({'sourceSha256':hashlib.sha256(original.encode()).hexdigest(),'testSha256':hashlib.sha256(test.read_bytes()).hexdigest(),'testCount':count,'privateEvidence':str(private),'results':results,'limits':'Native acknowledgement checks against supplied verified-read DTOs. SQL independently owns scope and current-version authorization. No browser storage or editor integration.'},indent=2)+'\n')
+  (review/'publication-receipt-controls.json').write_text(json.dumps({'sourceSha256':hashlib.sha256(original.encode()).hexdigest(),'referenceSha256':hashlib.sha256((app/'src/lib/engagement/translation-publication-reference.ts').read_bytes()).hexdigest(),'testSha256':hashlib.sha256(test.read_bytes()).hexdigest(),'testCount':count,'privateEvidence':str(private),'results':results,'limits':'Native acknowledgement checks against supplied verified-read DTOs. SQL independently owns scope and current-version authorization. No browser storage or editor integration.'},indent=2)+'\n')
   print(name,results[-1]['outcome'],'expected' if correct else 'UNEXPECTED',flush=True);assert correct,(name,failed)
 finally:assert source.read_text()==original

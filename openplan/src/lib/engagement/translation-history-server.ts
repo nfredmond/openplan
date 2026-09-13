@@ -1,4 +1,7 @@
 import { createHash } from "node:crypto";
+import { translationPublicationIntentSchema, readTranslationPublicationResult } from "./translation-publication";
+import { loadTranslationGenerationRequest } from "./translation-generation-read";
+import type { TranslationGenerationRead } from "./translation-generation-request";
 import { isDeepStrictEqual } from "node:util";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
@@ -50,12 +53,26 @@ export async function loadTranslationHistory(client: Pick<SupabaseClient, "rpc">
       return row;
     });
     if (snapshot.receiptCount !== snapshot.receipts.length) throw new Error("Incomplete command receipts");
-    const receipts = new Map<string, ReturnType<typeof readReceipt>>();
+    const receipts = new Map<string, Awaited<ReturnType<typeof readReceipt>>>();
+    const generations = new Map<string, Promise<TranslationGenerationRead>>();
+    const generation = (requestId: string) => {
+      let read = generations.get(requestId);
+      if (!read) { read = loadTranslationGenerationRequest(client, { campaignId, workspaceId, requestId }); generations.set(requestId, read); }
+      return read;
+    };
     for (const raw of snapshot.receipts) {
       if (receipts.has(raw.request_id)) throw new Error("Duplicate command receipt");
-      receipts.set(raw.request_id, readReceipt(raw, campaignId, workspaceId));
+      receipts.set(raw.request_id, await readReceipt(raw, campaignId, workspaceId, generation));
     }
     const versions = new Map(rows.map(row => [`${row.translation_id}:${row.revision}`, row]));
+    for (const receipt of receipts.values()) {
+      if (receipt.kind !== "publication") continue;
+      for (const saved of receipt.result.entries) {
+        if (versions.get(`${saved.entry.id}:${saved.revision}`)?.write_request_id !== receipt.intent.requestId) {
+          throw new Error("Publication receipt is missing a retained history revision");
+        }
+      }
+    }
     const used = new Set<string>();
     for (const row of rows) {
       if (row.write_request_id === null) continue;
@@ -68,14 +85,17 @@ export async function loadTranslationHistory(client: Pick<SupabaseClient, "rpc">
       const event = receipt.intent.operation === "withdraw" ? "removed" : !previous ? "created"
         : previous.record.source === "machine" && row.record.source === "operator" && previous.record.translated_text === row.record.translated_text ? "accepted" : "corrected";
       if (row.event !== event) throw new Error("Receipt operation differs from history event");
-      const pending = pendingTranslationSchema.parse({ version: 1, userId: receipt.actorId, workspaceId, campaignId,
-        createdAt: row.recorded_at, phase: "unconfirmed", before: [previous ? { entry: previous.record, revision: previous.revision } : null],
-        intent: { ...receipt.intent, entries: [requested] } });
-      confirmPendingTranslation({ ...receipt.result, entries: [result] }, pending);
+      if (receipt.kind === "manual") {
+        const pending = pendingTranslationSchema.parse({ version: 1, userId: receipt.actorId, workspaceId, campaignId,
+          createdAt: row.recorded_at, phase: "unconfirmed", before: [previous ? { entry: previous.record, revision: previous.revision } : null],
+          intent: { ...receipt.intent, entries: [requested] } });
+        confirmPendingTranslation({ ...receipt.result, entries: [result] }, pending);
+      }
       if (receipt.intent.operation !== "withdraw" && row.record.source_text_hash !== createHash("sha256").update(requested.expectedSource.text!.trim(), "utf8").digest("hex")) throw new Error("Retained source checksum differs from checked source");
       row.change = { requestId: receipt.intent.requestId, operation: receipt.intent.operation, reason: receipt.intent.reason,
         source: requested.expectedSource, expectedTranslation: requested.expectedTranslation,
-        payloadSha256: receipt.payloadSha256, resultSha256: receipt.resultSha256 };
+        payloadSha256: receipt.payloadSha256, resultSha256: receipt.resultSha256,
+        ...(receipt.kind === "publication" && "generation" in result ? { generation: result.generation } : {}) };
       used.add(row.write_request_id);
     }
     if (used.size !== receipts.size) throw new Error("Unrelated receipts in history snapshot");
@@ -86,13 +106,25 @@ export async function loadTranslationHistory(client: Pick<SupabaseClient, "rpc">
 }
 
 /** Verify stored receipt bytes before extracting source words or associating a change. */
-function readReceipt(raw: z.infer<typeof receiptSchema>, campaignId: string, workspaceId: string) {
+async function readReceipt(raw: z.infer<typeof receiptSchema>, campaignId: string, workspaceId: string, generation: (requestId: string) => Promise<TranslationGenerationRead>) {
   if (createHash("sha256").update(raw.payload_text, "utf8").digest("hex") !== raw.payload_sha256
     || createHash("sha256").update(raw.result_text, "utf8").digest("hex") !== raw.result_sha256) throw new Error("Command receipt checksum mismatch");
   const { schema: _schema, campaignId: recordedCampaign, actorId, ...body } = payloadSchema.parse(JSON.parse(raw.payload_text));
+  if (body.operation === "publish_generated") {
+    const intent = translationPublicationIntentSchema.parse(body);
+    if (recordedCampaign !== campaignId || actorId !== raw.actor_id || intent.requestId !== raw.request_id) throw new Error("Command receipt scope mismatch");
+    const retained: TranslationGenerationRead[] = [];
+    // Bound concurrent database reads within a receipt; immutable requests are
+    // cached across the complete history so repeated publications reuse evidence.
+    const requestIds = [...new Set(intent.entries.map(entry => entry.generation.requestId))];
+    for (let start = 0; start < requestIds.length; start += 8) retained.push(...await Promise.all(requestIds.slice(start, start + 8).map(generation)));
+    const result = readTranslationPublicationResult(JSON.parse(raw.result_text), { campaignId, workspaceId, publisherId: actorId }, intent, retained);
+    if (result.replayed) throw new Error("Stored receipt is not the original result");
+    return { kind: "publication" as const, actorId, intent, result, payloadSha256: raw.payload_sha256, resultSha256: raw.result_sha256 };
+  }
   const intent = translationWriteIntentSchema.parse(body);
   if (recordedCampaign !== campaignId || actorId !== raw.actor_id || intent.requestId !== raw.request_id) throw new Error("Command receipt scope mismatch");
   const result = readTranslationWriteResult(JSON.parse(raw.result_text), { campaignId, workspaceId }, intent);
   if (result.replayed) throw new Error("Stored receipt is not the original result");
-  return { actorId, intent, result, payloadSha256: raw.payload_sha256, resultSha256: raw.result_sha256 };
+  return { kind: "manual" as const, actorId, intent, result, payloadSha256: raw.payload_sha256, resultSha256: raw.result_sha256 };
 }

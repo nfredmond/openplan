@@ -31,7 +31,9 @@ Translation workflow integration is in progress. The development migrations are
 receipts, complete source/current-version snapshots, history receipts and private
 generation attempts/output with staff-only detail and paginated request readers.
 The publication command resolves retained output and preserves its generation
-reference; its execution grant remains disabled pending workflow integration. The queue API retains exact
+reference; its execution grant remains disabled pending workflow integration.
+History receipt validation checks retained generation evidence through later
+acceptance and withdrawal. The queue API retains exact
 request identities across retries. The local generation worker has process-restart and
 exact-delivery evidence. Staff editor integration, publication recovery and
 public producer integration remain unfinished. Existing direct producers have
