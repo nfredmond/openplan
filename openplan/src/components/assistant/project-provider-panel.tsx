@@ -5,6 +5,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { AssistantChatProposal } from "@/lib/assistant/chat-tools";
+import { providerApiConnectionPage, providerApiRevisionMetadata, type ApiListedConnection } from "@/lib/integrations/provider-api-metadata";
 
 const connectionSchema = z.object({ id: z.string().uuid(), workspace_id: z.string().uuid(), project_id: z.string().uuid(),
   provider: z.enum(["codex", "claude", "opencode"]), device_label: z.string(), expected_auth_mode: z.enum(["chatgpt", "apiKey", "claude_subscription", "opencode_api"]), expires_at: z.string(), revoked_at: z.string().nullable(), last_status: z.string() });
@@ -13,10 +14,20 @@ const proposalSchema = z.object({ status: z.literal("proposed"), kind: z.literal
   payload: z.object({ kind: z.literal("create_project_record"), recordType: z.literal("submittal"), projectId: z.string().uuid(),
     title: z.string().min(1).max(160), submittalType: z.enum(["authorization_packet", "invoice_backup", "environmental_package", "hearing_record", "ps_e", "reimbursement", "progress_report", "other"]),
     status: z.literal("draft").optional(), notes: z.string().max(4000).optional() }).strict() }).strict();
-const turnSchema = z.object({ id: z.string().uuid(), request_id: z.string().uuid(), workspace_id: z.string().uuid(), project_id: z.string().uuid(),
+const turnBaseSchema = z.object({ id: z.string().uuid(), request_id: z.string().uuid(), workspace_id: z.string().uuid(), project_id: z.string().uuid(),
   provider: z.enum(["codex", "claude", "opencode", "anthropic"]), model_id: z.string(), auth_mode: z.string(), question: z.string(), packet_hash: z.string().regex(/^[a-f0-9]{64}$/),
   state: z.enum(["queued", "running", "succeeded", "failed", "cancelled", "interrupted"]), failure_code: z.string().nullable(), created_at: z.string(),
   result: z.object({ answer: z.string(), citations: z.array(z.object({ id: z.string(), label: z.string(), href: z.string() })).length(1), proposal: proposalSchema.nullable() }).strict().nullable() });
+const turnSchema = z.discriminatedUnion("provider", [turnBaseSchema, turnBaseSchema.extend({
+  provider: z.literal("api_connection"), auth_mode: z.enum(["connection_api_key", "connection_no_key"]),
+  api_connection_id: z.string().uuid(), api_revision_id: z.string().uuid(), api_configuration_hash: z.string().regex(/^[a-f0-9]{64}$/),
+  api_configuration_canonical: z.string(), api_charge_ack: z.literal(true),
+}).superRefine((turn, context) => {
+  try {
+    const config = providerApiRevisionMetadata.shape.configuration.parse(JSON.parse(turn.api_configuration_canonical));
+    if (!config.modelIds.includes(turn.model_id) || turn.auth_mode !== (config.authMode === "api_key" ? "connection_api_key" : "connection_no_key")) throw new Error();
+  } catch { context.addIssue({ code: "custom", message: "The retained API configuration could not be read." }); }
+})]);
 type Connection = z.infer<typeof connectionSchema>;
 type Turn = z.infer<typeof turnSchema>;
 const setupBase = z.object({ appUrl: z.string().url(), connectionId: z.string().uuid(), workspaceId: z.string().uuid(), projectId: z.string().uuid(),
@@ -25,10 +36,17 @@ const setupSchema = z.discriminatedUnion("version", [
   setupBase.extend({ version: z.literal(1), expectedAuthMode: z.enum(["chatgpt", "apiKey"]) }).strict(),
   setupBase.extend({ version: z.literal(2), provider: z.enum(["codex", "claude", "opencode"]), expectedAuthMode: z.enum(["chatgpt", "apiKey", "claude_subscription", "opencode_api"]) }).strict(),
 ]);
-type RequestBody = { workspaceId: string; projectId: string; requestId: string; question: string; model: string; provider: "codex" | "claude" | "opencode" | "anthropic";
-  connectionId: string | null; authMode: string; acceptApiCharges?: true };
+type Provider = "codex" | "claude" | "opencode" | "anthropic" | "api_connection";
+type RequestBody = { workspaceId: string; projectId: string; requestId: string; question: string; model: string; provider: Provider;
+  connectionId: string | null; authMode: string; acceptApiCharges?: true; revisionId?: string; configurationHash?: string };
+function matchesRequest(turn: Turn, body: RequestBody) {
+  return turn.request_id === body.requestId && turn.project_id === body.projectId && turn.workspace_id === body.workspaceId &&
+    turn.provider === body.provider && turn.model_id === body.model && turn.auth_mode === body.authMode && turn.question === body.question &&
+    (body.provider !== "api_connection" || turn.provider === "api_connection" && turn.api_connection_id === body.connectionId &&
+      turn.api_revision_id === body.revisionId && turn.api_configuration_hash === body.configurationHash);
+}
 export type ProviderProposalReview = { id: string; question: string; answer: string; proposal: AssistantChatProposal };
-const authLabels: Record<string, string> = { chatgpt: "Native ChatGPT account", claude_subscription: "Native Claude subscription", opencode_api: "OpenCode OpenAI API key (provider charges)", apiKey: "Native API key (provider charges)", workspace_api_key: "Workspace API key (provider charges)", deployment_api_key: "Deployment API key (provider charges)" };
+const authLabels: Record<string, string> = { connection_api_key: "Saved API key", connection_no_key: "No API key sent", chatgpt: "Native ChatGPT account", claude_subscription: "Native Claude subscription", opencode_api: "OpenCode OpenAI API key (provider charges)", apiKey: "Native API key (provider charges)", workspace_api_key: "Workspace API key (provider charges)", deployment_api_key: "Deployment API key (provider charges)" };
 const inputClass = "mt-1 w-full min-w-0 rounded border border-white/20 bg-slate-900 px-3 py-2 text-sm text-white";
 const outlineButtonClass = "h-auto min-h-10 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] border-white/30 bg-slate-900 text-slate-100 hover:border-sky-300 hover:bg-slate-800 hover:text-white";
 
@@ -60,7 +78,13 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
   workspaceId: string; projectId: string; busy: boolean; onReview: (review: ProviderProposalReview) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const [provider, setProvider] = useState<"codex" | "claude" | "opencode" | "anthropic">("codex");
+  const [provider, setProvider] = useState<Provider>("codex");
+  const [apiConnections, setApiConnections] = useState<ApiListedConnection[]>([]);
+  const [apiSelection, setApiSelection] = useState<ApiListedConnection | null>(null);
+  const [apiNext, setApiNext] = useState<number | null>(null);
+  const [apiLoading, setApiLoading] = useState(false);
+  const [apiReadError, setApiReadError] = useState<string | null>(null);
+  const apiReadVersion = useRef(0);
   const [connections, setConnections] = useState<Connection[]>([]);
   const [connectionId, setConnectionId] = useState("");
   const [apiMode, setApiMode] = useState("workspace_api_key");
@@ -111,7 +135,29 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
     return () => { stopped = true; clearTimeout(timer); invalidateReads(); };
   }, [expanded, refresh, invalidateReads]);
 
-  const nativeProvider = provider !== "anthropic";
+  const loadApiConnections = useCallback(async (offset = 0) => {
+    const version = ++apiReadVersion.current;
+    setApiLoading(true); setApiReadError(null);
+    try {
+      const page = providerApiConnectionPage.parse(await requestJson(`/api/workspaces/provider-api-connections?workspaceId=${workspaceId}&offset=${offset}`));
+      if (page.offset !== offset || page.nextOffset !== null && page.nextOffset <= offset ||
+        page.connections.some(row => row.workspace_id !== workspaceId || row.current_revision &&
+          (row.current_revision.workspace_id !== workspaceId || row.current_revision.connection_id !== row.id || row.current_revision.id !== row.current_revision_id))) throw new Error();
+      if (version !== apiReadVersion.current || !mounted.current) return;
+      setApiConnections(prior => offset === 0 ? page.connections : [...prior.filter(row => !page.connections.some(next => next.id === row.id)), ...page.connections]);
+      setApiNext(page.nextOffset);
+    } catch { if (version === apiReadVersion.current && mounted.current) setApiReadError("API choices could not be refreshed. Refresh them before sending a new request."); }
+    finally { if (version === apiReadVersion.current && mounted.current) setApiLoading(false); }
+  }, [workspaceId]);
+  const invalidateApiReads = useCallback(() => { apiReadVersion.current++; }, []);
+  useEffect(() => {
+    if (expanded && provider === "api_connection") void loadApiConnections();
+    return invalidateApiReads;
+  }, [expanded, provider, loadApiConnections, invalidateApiReads]);
+  const nativeProvider = provider === "codex" || provider === "claude" || provider === "opencode";
+  const apiRevision = apiSelection?.current_revision;
+  const apiSelectionCurrent = Boolean(apiSelection && !apiSelection.revoked_at && apiRevision && apiConnections.some(row =>
+    row.id === apiSelection.id && !row.revoked_at && row.current_revision_id === apiRevision.id && row.current_revision?.configuration_hash === apiRevision.configuration_hash));
   const connectionMode = provider === "opencode" ? "opencode_api" : provider === "claude" ? "claude_subscription" : nativeMode;
   async function createConnection() {
     setSaving(true); setError(null); setNotice(null);
@@ -144,8 +190,7 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
     try {
       const data = z.object({ turn: turnSchema }).parse(await requestJson("/api/assistant/providers/turns", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal: controller.signal }));
       if (!mounted.current) return;
-      if (data.turn.request_id !== body.requestId || data.turn.project_id !== projectId || data.turn.workspace_id !== workspaceId ||
-        data.turn.provider !== body.provider || data.turn.model_id !== body.model || data.turn.auth_mode !== body.authMode || data.turn.question !== body.question) throw new Error("The returned request did not match this project.");
+      if (!matchesRequest(data.turn, body)) throw new Error("The returned request did not match this project and selected revision.");
       confirmed = true; setPending(current => current?.requestId === body.requestId ? null : current); setQuestion(""); setNotice("Request saved. Its original packet and result remain available after reloading."); await refresh();
     } catch (failure) {
       if (!mounted.current) return;
@@ -176,9 +221,16 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
   const active = providerConnections.filter(connection => !connection.revoked_at && Date.parse(connection.expires_at) > Date.now());
   const selected = active.find(connection => connection.id === connectionId);
   const canSend = !busy && !saving && !cancelling && !pending && question.trim().length > 0 && model.trim().length > 0 &&
-    (nativeProvider ? Boolean(selected) && (!["apiKey", "opencode_api"].includes(selected?.expected_auth_mode ?? "") || charges) : charges);
+    (provider === "api_connection" ? apiSelectionCurrent && !apiLoading && !apiReadError && Boolean(apiRevision?.configuration.modelIds.includes(model)) && charges :
+      nativeProvider ? Boolean(selected) && (!["apiKey", "opencode_api"].includes(selected?.expected_auth_mode ?? "") || charges) : charges);
   function sendNew() {
     if (!canSend) return;
+    if (provider === "api_connection" && apiSelection && apiRevision) {
+      void send({ workspaceId, projectId, requestId: crypto.randomUUID(), question: question.trim(), model, provider,
+        connectionId: apiSelection.id, revisionId: apiRevision.id, configurationHash: apiRevision.configuration_hash,
+        authMode: apiRevision.configuration.authMode === "api_key" ? "connection_api_key" : "connection_no_key", acceptApiCharges: true });
+      return;
+    }
     void send({ workspaceId, projectId, requestId: crypto.randomUUID(), question: question.trim(), model: model.trim(), provider,
       connectionId: nativeProvider ? connectionId : null, authMode: nativeProvider ? selected!.expected_auth_mode : apiMode,
       ...(provider === "anthropic" || ["apiKey", "opencode_api"].includes(selected?.expected_auth_mode ?? "") ? { acceptApiCharges: true } : {}) });
@@ -190,10 +242,25 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
       <p className="text-sm">Ask about this project&apos;s stored name, summary and status, or draft a submittal. Only that project record and your question go to the selected provider. Documents and other project records are outside this task.</p>
       {error && <p role="alert" className="rounded border border-rose-300/30 p-2 text-sm text-rose-100">{error}</p>}
       {notice && <p role="status" className="text-sm text-sky-100">{notice}</p>}
-      <label className="block text-sm">Provider<select className={inputClass} value={provider} disabled={saving || Boolean(pending)} onChange={event => { setProvider(event.target.value as "codex" | "claude" | "opencode" | "anthropic"); setModel(""); setCharges(false); setConnectionId(""); setSetup(null); }}>
-        <option value="codex">Installed Codex</option><option value="claude">Installed Claude Code</option><option value="opencode">Installed OpenCode</option><option value="anthropic">Anthropic API</option>
+      <label className="block text-sm">Provider<select className={inputClass} value={provider} disabled={saving || Boolean(pending)} onChange={event => { setProvider(event.target.value as Provider); setApiSelection(null); setModel(""); setCharges(false); setConnectionId(""); setSetup(null); }}>
+        <option value="codex">Installed Codex</option><option value="claude">Installed Claude Code</option><option value="opencode">Installed OpenCode</option><option value="anthropic">Anthropic API</option><option value="api_connection">Saved workspace API</option>
       </select></label>
-      {nativeProvider ? <>
+      {provider === "api_connection" ? <div className="space-y-3">
+        <p className="text-xs">Choose a saved OpenAI-compatible Chat Completions destination. Requests wait for your OpenPlan API worker; provider availability and account access are checked only when it runs.</p>
+        <a className="text-xs underline" href="/workspace">Manage saved APIs in Workspace settings</a>
+        {apiReadError && <p role="alert" className="text-sm text-rose-100">{apiReadError}</p>}
+        <label className="block text-sm">Saved API connection<select className={inputClass} value={apiSelectionCurrent ? apiSelection?.id : ""} disabled={saving || Boolean(pending) || apiLoading} onChange={event => {
+          setApiSelection(apiConnections.find(row => row.id === event.target.value) ?? null); setModel(""); setCharges(false);
+        }}><option value="">Choose a saved API</option>{apiConnections.filter(row => !row.revoked_at && row.current_revision).map(row =>
+          <option key={row.id} value={row.id}>{row.current_revision!.configuration.label}</option>)}</select></label>
+        <div className="flex flex-wrap gap-2"><Button type="button" variant="outline" className={outlineButtonClass} disabled={apiLoading} onClick={() => void loadApiConnections()}>Refresh API choices</Button>
+          {apiNext !== null && <Button type="button" variant="outline" className={outlineButtonClass} disabled={apiLoading} onClick={() => void loadApiConnections(apiNext)}>Load more API choices</Button>}</div>
+        {apiSelection && !apiSelectionCurrent && !apiLoading && <p role="alert" className="text-sm">This API selection changed or is unavailable. Choose its current revision before sending a new request.</p>}
+        {apiRevision && <div className="space-y-1 text-xs [overflow-wrap:anywhere]">
+          <p>Destination: {apiRevision.configuration.endpoint}</p><p>{apiRevision.configuration.authMode === "api_key" ? "The saved revision's API key will be sent." : "No API key will be sent. The endpoint may still apply its own usage charges."}</p>
+          <p>Only this project&apos;s stored record and your question are shared. No other provider or account will be substituted.</p>
+        </div>}
+      </div> : nativeProvider ? <>
         <label className="block text-sm">Project connection<select className={inputClass} value={connectionId} disabled={saving || Boolean(pending)} onChange={event => { setConnectionId(event.target.value); setCharges(false); }}>
           <option value="">Choose a connection</option>{active.map(connection => <option key={connection.id} value={connection.id}>{connection.device_label} · {connection.last_status.replaceAll("_", " ")}</option>)}
         </select></label>
@@ -215,8 +282,11 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
           </div>)}
         </div></details>
       </> : <label className="block text-sm">API key source<select className={inputClass} value={apiMode} disabled={saving || Boolean(pending)} onChange={event => { setApiMode(event.target.value); setCharges(false); }}><option value="workspace_api_key">Team API key</option><option value="deployment_api_key">Deployment API key</option></select></label>}
-      <label className="block text-sm">Model ID<input className={inputClass} maxLength={160} value={model} disabled={saving || Boolean(pending)} onChange={event => setModel(event.target.value)} placeholder="Exact model ID from your provider" /></label>
-      <p className="text-xs">Use a model your account can access. Unsupported models fail without substitution. For Codex, the connector&apos;s models command lists current choices. For Claude, it checks sign-in but does not list models; use an exact claude- model ID supported by your account. For OpenCode, the command reads its offline OpenAI catalog. Those IDs do not establish account access or current availability; use the ID without the openai/ prefix.</p>
+      {provider === "api_connection" ? <label className="block text-sm">Model ID<select className={inputClass} value={model} disabled={saving || Boolean(pending) || !apiSelectionCurrent} onChange={event => { setModel(event.target.value); setCharges(false); }}>
+        <option value="">Choose a configured model</option>{apiRevision?.configuration.modelIds.map(id => <option key={id} value={id}>{id}</option>)}
+      </select></label> : <label className="block text-sm">Model ID<input className={inputClass} maxLength={160} value={model} disabled={saving || Boolean(pending)} onChange={event => setModel(event.target.value)} placeholder="Exact model ID from your provider" /></label>}
+      {provider !== "api_connection" && <p className="text-xs">Use a model your account can access. Unsupported models fail without substitution. For Codex, the connector&apos;s models command lists current choices. For Claude, it checks sign-in but does not list models; use an exact claude- model ID supported by your account. For OpenCode, the command reads its offline OpenAI catalog. Those IDs do not establish account access or current availability; use the ID without the openai/ prefix.</p>}
+      {provider === "api_connection" && <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={charges} disabled={saving || Boolean(pending)} onChange={event => setCharges(event.target.checked)} />I authorize sharing this project record and question with the selected API destination and accept any provider charges.</label>}
       {(provider === "anthropic" || ["apiKey", "opencode_api"].includes(selected?.expected_auth_mode ?? "")) && <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={charges} disabled={saving || Boolean(pending)} onChange={event => setCharges(event.target.checked)} />I authorize this request to use the selected API key and incur provider charges.</label>}
       <label className="block text-sm">Project question<Textarea className={`${inputClass} min-h-24`} maxLength={2000} value={question} disabled={saving || Boolean(pending)} onChange={event => setQuestion(event.target.value)} onKeyDown={event => {
         if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing && canSend) { event.preventDefault(); sendNew(); }
@@ -226,7 +296,7 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
         <Button type="button" variant="outline" className={outlineButtonClass} disabled={busy} onClick={() => void send(pending)}>Retry same request</Button>
         <Button type="button" variant="outline" className={outlineButtonClass} onClick={() => { void requestJson(`/api/assistant/providers/turns?${query}&requestId=${pending.requestId}`).then(data => {
           const rows = z.object({ turns: z.array(turnSchema) }).parse(data).turns;
-          const saved = rows.find(row => row.request_id === pending.requestId && row.project_id === projectId && row.workspace_id === workspaceId && row.question === pending.question && row.provider === pending.provider && row.model_id === pending.model && row.auth_mode === pending.authMode);
+          const saved = rows.find(row => matchesRequest(row, pending));
           if (saved) { setPending(null); setQuestion(""); setNotice("The original request was recovered without another generation."); setError(null); void refresh().catch(() => setError("The request was recovered, but the recent history could not be refreshed.")); }
           else setNotice("No saved request is visible yet. Retry the same request to avoid creating a different one.");
         }).catch(failure => setError(failure.message)); }}>Check saved request</Button>
@@ -236,7 +306,8 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
         {turns.length === 0 && <p className="text-sm">No saved requests for this project.</p>}
         {turns.map(turn => <article className="space-y-2 rounded border border-white/15 p-3" key={turn.id} aria-label={`Provider request: ${turn.question}`}>
           <p className="whitespace-pre-wrap break-words text-sm font-semibold">{turn.question}</p>
-          <p className="break-words text-xs">{turn.provider === "codex" ? "Installed Codex" : turn.provider === "claude" ? "Installed Claude Code" : turn.provider === "opencode" ? "Installed OpenCode" : "Anthropic API"} · {turn.model_id} · {authLabels[turn.auth_mode] ?? turn.auth_mode}</p>
+          <p className="break-words text-xs">{turn.provider === "codex" ? "Installed Codex" : turn.provider === "claude" ? "Installed Claude Code" : turn.provider === "opencode" ? "Installed OpenCode" : turn.provider === "api_connection" ? "Saved workspace API" : "Anthropic API"} · {turn.model_id} · {authLabels[turn.auth_mode] ?? turn.auth_mode}</p>
+          {turn.provider === "api_connection" && <p className="text-xs [overflow-wrap:anywhere]">Original destination: {providerApiRevisionMetadata.shape.configuration.parse(JSON.parse(turn.api_configuration_canonical)).endpoint}</p>}
           <p role="status" className="text-xs">Status: {turn.state}</p>
           {turn.failure_code && <p className="text-sm">{readableError(turn.failure_code)}</p>}
           {["queued", "running"].includes(turn.state) && <Button type="button" variant="outline" className={outlineButtonClass} size="sm" disabled={busy || cancelling === turn.id} onClick={() => void cancelTurn(turn)}>Cancel request</Button>}
@@ -245,7 +316,7 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
             <a className="text-xs underline" href={turn.result.citations[0].href}>{turn.result.citations[0].label} · stored project source</a>
             {turn.result.proposal && <Button type="button" variant="outline" className={outlineButtonClass} disabled={busy || saving} onClick={() => { onReview({ id: turn.id, question: turn.question, answer: turn.result!.answer, proposal: turn.result!.proposal! }); setExpanded(false); }}>Review draft submittal in conversation</Button>}
           </>}
-          <details className="text-xs"><summary className="cursor-pointer">Retained request identity</summary><p className="mt-1 break-all">Request {turn.request_id}<br />Packet SHA-256 {turn.packet_hash}</p></details>
+          <details className="text-xs"><summary className="cursor-pointer">Retained request identity</summary><p className="mt-1 break-all">Request {turn.request_id}<br />Packet SHA-256 {turn.packet_hash}{turn.provider === "api_connection" && <><br />API connection {turn.api_connection_id}<br />API revision {turn.api_revision_id}<br />Configuration SHA-256 {turn.api_configuration_hash}</>}</p></details>
         </article>)}
       </div>
     </div>}

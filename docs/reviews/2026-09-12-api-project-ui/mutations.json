@@ -1,0 +1,340 @@
+[
+  {
+    "name": "harmless-comment",
+    "outcome": "survived",
+    "matched": true,
+    "expected": null,
+    "passed": 25,
+    "failures": []
+  },
+  {
+    "name": "missing-consent",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "sends the exact saved revision",
+    "passed": 22,
+    "failures": [
+      {
+        "name": "saved API selection in the project provider panel sends the exact saved revision and configured model with api_key after consent",
+        "message": "Error: expect(element).toBeDisabled()\n\nReceived element is not disabled:\n  <button\n  class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"default\"\n  type=\"button\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/project-api-provider-panel.test.tsx:56:74\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API selection in the project provider panel sends the exact saved revision and configured model with none after consent",
+        "message": "Error: expect(element).toBeDisabled()\n\nReceived element is not disabled:\n  <button\n  class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"default\"\n  type=\"button\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/project-api-provider-panel.test.tsx:56:74\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API selection in the project provider panel requires fresh consent after changing the selected model",
+        "message": "Error: expect(element).toBeDisabled()\n\nReceived element is not disabled:\n  <button\n  class=\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"default\"\n  type=\"button\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/project-api-provider-panel.test.tsx:68:74\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "wrong-revision",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "sends the exact saved revision",
+    "passed": 21,
+    "failures": [
+      {
+        "name": "saved API selection in the project provider panel sends the exact saved revision and configured model with api_key after consent",
+        "message": "AssertionError: expected { …(11) } to match object { …(9) }\n(2 matching properties omitted from actual)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1283:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/project-api-provider-panel.test.tsx:60:53\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API selection in the project provider panel sends the exact saved revision and configured model with none after consent",
+        "message": "AssertionError: expected { …(11) } to match object { …(9) }\n(2 matching properties omitted from actual)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1283:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/project-api-provider-panel.test.tsx:60:53\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API selection in the project provider panel does not silently replace a selected revision after edit",
+        "message": "AssertionError: expected '33333333-3333-4333-8333-333333333333' to be '66666666-6666-4666-8666-666666666666' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/project-api-provider-panel.test.tsx:103:78\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API selection in the project provider panel keeps the exact pending payload after response loss and a later configuration edit",
+        "message": "AssertionError: expected '33333333-3333-4333-8333-333333333333' to be '44444444-4444-4444-8444-444444444444' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/project-api-provider-panel.test.tsx:114:33\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "wrong-hash",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "sends the exact saved revision",
+    "passed": 23,
+    "failures": [
+      {
+        "name": "saved API selection in the project provider panel sends the exact saved revision and configured model with api_key after consent",
+        "message": "AssertionError: expected { …(11) } to match object { …(9) }\n(2 matching properties omitted from actual)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1283:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/project-api-provider-panel.test.tsx:60:53\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API selection in the project provider panel sends the exact saved revision and configured model with none after consent",
+        "message": "AssertionError: expected { …(11) } to match object { …(9) }\n(2 matching properties omitted from actual)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1283:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/project-api-provider-panel.test.tsx:60:53\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "wrong-auth",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "sends the exact saved revision and configured model with none",
+    "passed": 24,
+    "failures": [
+      {
+        "name": "saved API selection in the project provider panel sends the exact saved revision and configured model with none after consent",
+        "message": "AssertionError: expected { …(11) } to match object { …(9) }\n(2 matching properties omitted from actual)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1283:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/project-api-provider-panel.test.tsx:60:53\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "wrong-ack",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "sends the exact saved revision",
+    "passed": 23,
+    "failures": [
+      {
+        "name": "saved API selection in the project provider panel sends the exact saved revision and configured model with api_key after consent",
+        "message": "AssertionError: expected { …(10) } to match object { …(9) }\n(2 matching properties omitted from actual)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1283:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/project-api-provider-panel.test.tsx:60:53\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      },
+      {
+        "name": "saved API selection in the project provider panel sends the exact saved revision and configured model with none after consent",
+        "message": "AssertionError: expected { …(10) } to match object { …(9) }\n(2 matching properties omitted from actual)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1283:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/project-api-provider-panel.test.tsx:60:53\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "missing-model-consent-reset",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "requires fresh consent after changing",
+    "passed": 24,
+    "failures": [
+      {
+        "name": "saved API selection in the project provider panel requires fresh consent after changing the selected model",
+        "message": "Error: expect(element).not.toBeChecked()\n\nReceived element is checked:\n  <input\n  type=\"checkbox\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/project-api-provider-panel.test.tsx:67:79\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "missing-page-append",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "loads subsequent metadata pages",
+    "passed": 24,
+    "failures": [
+      {
+        "name": "saved API selection in the project provider panel loads subsequent metadata pages without losing earlier API choices",
+        "message": "TestingLibraryElementError: Unable to find an accessible element with the role \"option\" and name \"SYNTHETIC saved API\"\n\nHere are the accessible roles:\n\n  region:\n\n  Name \"Project provider task\":\n  \u001b[36m<section\u001b[39m\n    \u001b[33maria-label\u001b[39m=\u001b[32m\"Project provider task\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"rounded-lg border border-sky-300/25 bg-sky-950/25 p-3 text-slate-100\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  button:\n\n  Name \"Project task · choose provider\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33maria-expanded\u001b[39m=\u001b[32m\"true\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] border-white/30 bg-slate-900 text-slate-100 hover:border-sky-300 hover:bg-slate-800 hover:text-white w-full\"\u001b[39m\n    \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Refresh API choices\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 "
+      }
+    ]
+  },
+  {
+    "name": "foreign-workspace",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "refuses metadata outside the requested workspace",
+    "passed": 24,
+    "failures": [
+      {
+        "name": "saved API selection in the project provider panel refuses metadata outside the requested workspace",
+        "message": "TestingLibraryElementError: Unable to find an accessible element with the role \"alert\"\n\nHere are the accessible roles:\n\n  region:\n\n  Name \"Project provider task\":\n  \u001b[36m<section\u001b[39m\n    \u001b[33maria-label\u001b[39m=\u001b[32m\"Project provider task\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"rounded-lg border border-sky-300/25 bg-sky-950/25 p-3 text-slate-100\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  button:\n\n  Name \"Project task · choose provider\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33maria-expanded\u001b[39m=\u001b[32m\"true\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] border-white/30 bg-slate-900 text-slate-100 hover:border-sky-300 hover:bg-slate-800 hover:text-white w-full\"\u001b[39m\n    \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Refresh API choices\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none dis"
+      }
+    ]
+  },
+  {
+    "name": "foreign-revision-workspace",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "refuses metadata outside the requested revision_workspace",
+    "passed": 24,
+    "failures": [
+      {
+        "name": "saved API selection in the project provider panel refuses metadata outside the requested revision_workspace",
+        "message": "TestingLibraryElementError: Unable to find an accessible element with the role \"alert\"\n\nHere are the accessible roles:\n\n  region:\n\n  Name \"Project provider task\":\n  \u001b[36m<section\u001b[39m\n    \u001b[33maria-label\u001b[39m=\u001b[32m\"Project provider task\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"rounded-lg border border-sky-300/25 bg-sky-950/25 p-3 text-slate-100\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  button:\n\n  Name \"Project task · choose provider\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33maria-expanded\u001b[39m=\u001b[32m\"true\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] border-white/30 bg-slate-900 text-slate-100 hover:border-sky-300 hover:bg-slate-800 hover:text-white w-full\"\u001b[39m\n    \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Refresh API choices\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none dis"
+      }
+    ]
+  },
+  {
+    "name": "foreign-connection",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "refuses metadata outside the requested connection",
+    "passed": 24,
+    "failures": [
+      {
+        "name": "saved API selection in the project provider panel refuses metadata outside the requested connection",
+        "message": "TestingLibraryElementError: Unable to find an accessible element with the role \"alert\"\n\nHere are the accessible roles:\n\n  region:\n\n  Name \"Project provider task\":\n  \u001b[36m<section\u001b[39m\n    \u001b[33maria-label\u001b[39m=\u001b[32m\"Project provider task\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"rounded-lg border border-sky-300/25 bg-sky-950/25 p-3 text-slate-100\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  button:\n\n  Name \"Project task · choose provider\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33maria-expanded\u001b[39m=\u001b[32m\"true\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] border-white/30 bg-slate-900 text-slate-100 hover:border-sky-300 hover:bg-slate-800 hover:text-white w-full\"\u001b[39m\n    \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Refresh API choices\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none dis"
+      }
+    ]
+  },
+  {
+    "name": "foreign-revision",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "refuses metadata outside the requested revision_id",
+    "passed": 24,
+    "failures": [
+      {
+        "name": "saved API selection in the project provider panel refuses metadata outside the requested revision_id",
+        "message": "TestingLibraryElementError: Unable to find an accessible element with the role \"alert\"\n\nHere are the accessible roles:\n\n  region:\n\n  Name \"Project provider task\":\n  \u001b[36m<section\u001b[39m\n    \u001b[33maria-label\u001b[39m=\u001b[32m\"Project provider task\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"rounded-lg border border-sky-300/25 bg-sky-950/25 p-3 text-slate-100\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  button:\n\n  Name \"Project task · choose provider\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33maria-expanded\u001b[39m=\u001b[32m\"true\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] border-white/30 bg-slate-900 text-slate-100 hover:border-sky-300 hover:bg-slate-800 hover:text-white w-full\"\u001b[39m\n    \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Refresh API choices\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none dis"
+      }
+    ]
+  },
+  {
+    "name": "regressing-pagination",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "refuses metadata outside the requested offset",
+    "passed": 24,
+    "failures": [
+      {
+        "name": "saved API selection in the project provider panel refuses metadata outside the requested offset",
+        "message": "TestingLibraryElementError: Unable to find an accessible element with the role \"alert\"\n\nHere are the accessible roles:\n\n  region:\n\n  Name \"Project provider task\":\n  \u001b[36m<section\u001b[39m\n    \u001b[33maria-label\u001b[39m=\u001b[32m\"Project provider task\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"rounded-lg border border-sky-300/25 bg-sky-950/25 p-3 text-slate-100\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  button:\n\n  Name \"Project task · choose provider\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33maria-expanded\u001b[39m=\u001b[32m\"true\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] border-white/30 bg-slate-900 text-slate-100 hover:border-sky-300 hover:bg-slate-800 hover:text-white w-full\"\u001b[39m\n    \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Refresh API choices\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none dis"
+      }
+    ]
+  },
+  {
+    "name": "changed-selection-revision",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "does not silently replace a selected revision after edit",
+    "passed": 23,
+    "failures": [
+      {
+        "name": "saved API selection in the project provider panel does not silently replace a selected revision after edit",
+        "message": "Error: Unable to find an element with the text: /This API selection changed/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<section\u001b[39m\n      \u001b[33maria-label\u001b[39m=\u001b[32m\"Project provider task\"\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"rounded-lg border border-sky-300/25 bg-sky-950/25 p-3 text-slate-100\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<button\u001b[39m\n        \u001b[33maria-expanded\u001b[39m=\u001b[32m\"true\"\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] border-white/30 bg-slate-900 text-slate-100 hover:border-sky-300 hover:bg-slate-800 hover:text-white w-full\"\u001b[39m\n        \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n        \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n        \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mProject task · choose provider\u001b[0m\n      \u001b[36m</button>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"m"
+      },
+      {
+        "name": "saved API selection in the project provider panel keeps the exact pending payload after response loss and a later configuration edit",
+        "message": "Error: Unable to find an element with the text: /This API selection changed/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<section\u001b[39m\n      \u001b[33maria-label\u001b[39m=\u001b[32m\"Project provider task\"\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"rounded-lg border border-sky-300/25 bg-sky-950/25 p-3 text-slate-100\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<button\u001b[39m\n        \u001b[33maria-expanded\u001b[39m=\u001b[32m\"true\"\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] border-white/30 bg-slate-900 text-slate-100 hover:border-sky-300 hover:bg-slate-800 hover:text-white w-full\"\u001b[39m\n        \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n        \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n        \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mProject task · choose provider\u001b[0m\n      \u001b[36m</button>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"m"
+      }
+    ]
+  },
+  {
+    "name": "changed-selection-hash",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "does not silently replace a selected revision after hash",
+    "passed": 24,
+    "failures": [
+      {
+        "name": "saved API selection in the project provider panel does not silently replace a selected revision after hash",
+        "message": "Error: Unable to find an element with the text: /This API selection changed/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<section\u001b[39m\n      \u001b[33maria-label\u001b[39m=\u001b[32m\"Project provider task\"\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"rounded-lg border border-sky-300/25 bg-sky-950/25 p-3 text-slate-100\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<button\u001b[39m\n        \u001b[33maria-expanded\u001b[39m=\u001b[32m\"true\"\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] border-white/30 bg-slate-900 text-slate-100 hover:border-sky-300 hover:bg-slate-800 hover:text-white w-full\"\u001b[39m\n        \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n        \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n        \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mProject task · choose provider\u001b[0m\n      \u001b[36m</button>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"m"
+      }
+    ]
+  },
+  {
+    "name": "changed-selection-revocation",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "does not silently replace a selected revision after revoke",
+    "passed": 24,
+    "failures": [
+      {
+        "name": "saved API selection in the project provider panel does not silently replace a selected revision after revoke",
+        "message": "Error: Unable to find an element with the text: /This API selection changed/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<section\u001b[39m\n      \u001b[33maria-label\u001b[39m=\u001b[32m\"Project provider task\"\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"rounded-lg border border-sky-300/25 bg-sky-950/25 p-3 text-slate-100\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<button\u001b[39m\n        \u001b[33maria-expanded\u001b[39m=\u001b[32m\"true\"\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] border-white/30 bg-slate-900 text-slate-100 hover:border-sky-300 hover:bg-slate-800 hover:text-white w-full\"\u001b[39m\n        \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n        \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n        \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mProject task · choose provider\u001b[0m\n      \u001b[36m</button>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"m"
+      }
+    ]
+  },
+  {
+    "name": "recreated-retry",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "keeps the exact pending payload",
+    "passed": 24,
+    "failures": [
+      {
+        "name": "saved API selection in the project provider panel keeps the exact pending payload after response loss and a later configuration edit",
+        "message": "AssertionError: expected { …(11) } to deeply equal { …(11) }\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/project-api-provider-panel.test.tsx:113:96\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "wrong-recovered-connection",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "does not accept a POST response for a different API connection",
+    "passed": 23,
+    "failures": [
+      {
+        "name": "saved API selection in the project provider panel does not accept a POST response for a different API connection",
+        "message": "Error: Unable to find role=\"button\" and name \"Retry same request\"\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<section\u001b[39m\n      \u001b[33maria-label\u001b[39m=\u001b[32m\"Project provider task\"\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"rounded-lg border border-sky-300/25 bg-sky-950/25 p-3 text-slate-100\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<button\u001b[39m\n        \u001b[33maria-expanded\u001b[39m=\u001b[32m\"true\"\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] border-white/30 bg-slate-900 text-slate-100 hover:border-sky-300 hover:bg-slate-800 hover:text-white w-full\"\u001b[39m\n        \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n        \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n        \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mProject task · choose provider\u001b[0m\n      \u001b[36m</button>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"mt-3 space-y-4\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mAsk about this project's stored name, "
+      },
+      {
+        "name": "saved API selection in the project provider panel recovers only the matching retained API request after lost response: connection",
+        "message": "Error: Unable to find an element with the text: /No saved request is visible yet/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<section\u001b[39m\n      \u001b[33maria-label\u001b[39m=\u001b[32m\"Project provider task\"\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"rounded-lg border border-sky-300/25 bg-sky-950/25 p-3 text-slate-100\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<button\u001b[39m\n        \u001b[33maria-expanded\u001b[39m=\u001b[32m\"true\"\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] border-white/30 bg-slate-900 text-slate-100 hover:border-sky-300 hover:bg-slate-800 hover:text-white w-full\"\u001b[39m\n        \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n        \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n        \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mProject task · choose provider\u001b[0m\n      \u001b[36m</button>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b["
+      }
+    ]
+  },
+  {
+    "name": "wrong-recovered-revision",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "does not accept a POST response for a different API revision",
+    "passed": 23,
+    "failures": [
+      {
+        "name": "saved API selection in the project provider panel does not accept a POST response for a different API revision",
+        "message": "Error: Unable to find role=\"button\" and name \"Retry same request\"\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<section\u001b[39m\n      \u001b[33maria-label\u001b[39m=\u001b[32m\"Project provider task\"\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"rounded-lg border border-sky-300/25 bg-sky-950/25 p-3 text-slate-100\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<button\u001b[39m\n        \u001b[33maria-expanded\u001b[39m=\u001b[32m\"true\"\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] border-white/30 bg-slate-900 text-slate-100 hover:border-sky-300 hover:bg-slate-800 hover:text-white w-full\"\u001b[39m\n        \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n        \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n        \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mProject task · choose provider\u001b[0m\n      \u001b[36m</button>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"mt-3 space-y-4\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mAsk about this project's stored name, "
+      },
+      {
+        "name": "saved API selection in the project provider panel recovers only the matching retained API request after lost response: revision",
+        "message": "Error: Unable to find an element with the text: /No saved request is visible yet/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<section\u001b[39m\n      \u001b[33maria-label\u001b[39m=\u001b[32m\"Project provider task\"\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"rounded-lg border border-sky-300/25 bg-sky-950/25 p-3 text-slate-100\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<button\u001b[39m\n        \u001b[33maria-expanded\u001b[39m=\u001b[32m\"true\"\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] border-white/30 bg-slate-900 text-slate-100 hover:border-sky-300 hover:bg-slate-800 hover:text-white w-full\"\u001b[39m\n        \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n        \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n        \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mProject task · choose provider\u001b[0m\n      \u001b[36m</button>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b["
+      }
+    ]
+  },
+  {
+    "name": "wrong-recovered-hash",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "does not accept a POST response for a different API hash",
+    "passed": 23,
+    "failures": [
+      {
+        "name": "saved API selection in the project provider panel does not accept a POST response for a different API hash",
+        "message": "Error: Unable to find role=\"button\" and name \"Retry same request\"\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<section\u001b[39m\n      \u001b[33maria-label\u001b[39m=\u001b[32m\"Project provider task\"\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"rounded-lg border border-sky-300/25 bg-sky-950/25 p-3 text-slate-100\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<button\u001b[39m\n        \u001b[33maria-expanded\u001b[39m=\u001b[32m\"true\"\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] border-white/30 bg-slate-900 text-slate-100 hover:border-sky-300 hover:bg-slate-800 hover:text-white w-full\"\u001b[39m\n        \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n        \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n        \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mProject task · choose provider\u001b[0m\n      \u001b[36m</button>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"mt-3 space-y-4\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mAsk about this project's stored name, "
+      },
+      {
+        "name": "saved API selection in the project provider panel recovers only the matching retained API request after lost response: hash",
+        "message": "Error: Unable to find an element with the text: /No saved request is visible yet/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<section\u001b[39m\n      \u001b[33maria-label\u001b[39m=\u001b[32m\"Project provider task\"\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"rounded-lg border border-sky-300/25 bg-sky-950/25 p-3 text-slate-100\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<button\u001b[39m\n        \u001b[33maria-expanded\u001b[39m=\u001b[32m\"true\"\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] border-white/30 bg-slate-900 text-slate-100 hover:border-sky-300 hover:bg-slate-800 hover:text-white w-full\"\u001b[39m\n        \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n        \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n        \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mProject task · choose provider\u001b[0m\n      \u001b[36m</button>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b["
+      }
+    ]
+  },
+  {
+    "name": "missing-history-auth-check",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "refuses an unreadable retained API configuration: auth",
+    "passed": 24,
+    "failures": [
+      {
+        "name": "saved API selection in the project provider panel refuses an unreadable retained API configuration: auth",
+        "message": "Error: Unable to find role=\"button\" and name \"Retry same request\"\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<section\u001b[39m\n      \u001b[33maria-label\u001b[39m=\u001b[32m\"Project provider task\"\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"rounded-lg border border-sky-300/25 bg-sky-950/25 p-3 text-slate-100\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<button\u001b[39m\n        \u001b[33maria-expanded\u001b[39m=\u001b[32m\"true\"\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 min-w-0 max-w-full whitespace-normal [overflow-wrap:anywhere] border-white/30 bg-slate-900 text-slate-100 hover:border-sky-300 hover:bg-slate-800 hover:text-white w-full\"\u001b[39m\n        \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n        \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n        \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mProject task · choose provider\u001b[0m\n      \u001b[36m</button>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"mt-3 space-y-4\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mAsk about this project's stored name, "
+      }
+    ]
+  },
+  {
+    "name": "missing-history-model-check",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "refuses an unreadable retained API configuration: model",
+    "passed": 24,
+    "failures": [
+      {
+        "name": "saved API selection in the project provider panel refuses an unreadable retained API configuration: model",
+        "message": "Error: expect(element).toHaveTextContent()\n\nExpected element to have text content:\n  retained API configuration could not be read\nReceived:\n  The returned request did not match this project and selected revision.\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/src/test/project-api-provider-panel.test.tsx:139:39\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      }
+    ]
+  },
+  {
+    "name": "current-history-destination",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "retains the old destination",
+    "passed": 24,
+    "failures": [
+      {
+        "name": "saved API selection in the project provider panel retains the old destination and draft without executing it after configuration changes",
+        "message": "TestingLibraryElementError: Unable to find an element with the text: /Original destination: https:\\/\\/synthetic.example.test\\/v1/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.\n\nIgnored nodes: comments, script, style\n\u001b[36m<article\u001b[39m\n  \u001b[33maria-label\u001b[39m=\u001b[32m\"Provider request: SYNTHETIC old request\"\u001b[39m\n  \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-2 rounded border border-white/15 p-3\"\u001b[39m\n\u001b[36m>\u001b[39m\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"whitespace-pre-wrap break-words text-sm font-semibold\"\u001b[39m\n  \u001b[36m>\u001b[39m\n    \u001b[0mSYNTHETIC old request\u001b[0m\n  \u001b[36m</p>\u001b[39m\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"break-words text-xs\"\u001b[39m\n  \u001b[36m>\u001b[39m\n    \u001b[0mSaved workspace API\u001b[0m\n    \u001b[0m · \u001b[0m\n    \u001b[0msynthetic-one\u001b[0m\n    \u001b[0m · \u001b[0m\n    \u001b[0mSaved API key\u001b[0m\n  \u001b[36m</p>\u001b[39m\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"text-xs [overflow-wrap:anywhere]\"\u001b[39m\n  \u001b[36m>\u001b[39m\n    \u001b[0mOriginal destination: \u001b[0m\n    \u001b[0mhttps://changed.example.test/v1/\u001b[0m\n  \u001b[36m</p>\u001b[39m\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"text-xs\"\u001b[39m\n    \u001b[33mrole\u001b[39m=\u001b[32m\"status\"\u001b[39m\n  \u001b[36m>\u001b[39m\n    \u001b[0mStatus: \u001b[0m\n    \u001b[0msucceeded\u001b[0m\n  \u001b[36m</p>\u001b[39m\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"whitespace-pre-wrap break-words text-sm\"\u001b[39m\n  \u001b[36m>\u001b[39m\n    \u001b[0mSYNTHETIC answer\u001b[0m\n  \u001b[36m</p>\u001b[39m\n  \u001b[36m<a\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"text-xs underline\"\u001b[39m\n    \u001b[33mhref\u001b[39m=\u001b[32m\"/projects/22222222-2222-4222-8222-222222222222\"\u001b[39m\n  \u001b[36m>\u001b[39m\n    \u001b[0mSYNTHETIC project\u001b[0m\n    \u001b[0m · "
+      }
+    ]
+  }
+]
