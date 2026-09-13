@@ -11,7 +11,7 @@ prove-transaction.py composes both SQL files and runs transaction-probe.sql and
 guards-probe.sql in rolled-back transactions against only the postgres database
 on supabase_db_openplan-restore-target-2026091050. The final catalog check confirms
 the receipt table remains absent there. transaction-mutations.json contains the
-current composed-source and probe hashes, baseline, harmless survivor and thirteen
+current composed-source and probe hashes, baseline, harmless survivor and fifteen
 intended failures. Earlier evidence is retained in Git and initial probe files.
 
 The baseline covers create/correct/remove, identical replay, changed-payload
@@ -108,10 +108,108 @@ receipt metadata cannot itself prove mail delivery, browser recovery, user inten
 or usefulness to a practicing planner.
 
 Still required: full actor/role/revocation and simultaneous membership-change
-probes; reader/type/UI reason exposure without rewriting old record/checksum pairs;
+probes; UI reason exposure and final reader integration without rewriting old record/checksum pairs;
 route integration and safe handling of transaction errors; durable publication
 and outbox outcomes; exact pending-request and unsaved-word recovery in the UI;
 real-navigation desktop/390px keyboard and console evidence; applicable full QA,
 shuffled, live RLS, worker and populated upgrade checks, final CI and release.
 Ordinary response routes would be disabled by applying the permission guard now.
 Do not promote this prototype until the routes and UI join are coherent.
+
+
+## Request adapter, reason reader and email worker checkpoint
+
+response-write.ts now validates and forwards the caller's retained request ID,
+original microsecond timestamp, reason, explicit nulls and accepted AI provenance.
+It checks receipt scope/identity and separates conflicts from unconfirmed saves.
+Only the known publication refusal is an invalid-input P0001; other internal
+exceptions remain unavailable rather than falsely blaming the user's fields.
+The history prototype reader includes reason/request/origin metadata; old absent
+metadata remains null in TypeScript, without changing retained response hashes.
+These helpers are not called by the current response routes yet.
+
+response-broadcast-queue.sql is another unapplied companion. A real publication
+transaction creates one private queued intent and operator inbox record. Replay
+creates neither again. Preparation snapshots every confirmed recipient in one SQL
+statement, persists each outbox message and opt-out link, and records the count.
+An injected outbox failure leaves the saved publication intact and its broadcast
+queued with unknown audience, rather than partial delivery or a false zero.
+
+Claims persist an attempt before transport and verify the retained message hash,
+current response/version/share link and subscription. Withdrawn or changed work,
+altered messages and unsubscribed recipients are cancelled before transport.
+Stale in-progress attempts become uncertain and are not reissued. Exact outcome
+acknowledgement is idempotent; a wrong attempt or replacement of a completed
+outcome is refused. Staff can read complete counts without recipient identifiers;
+private tables and worker RPCs remain inaccessible to ordinary app roles.
+Preparation and claims require READ COMMITTED. No provider is called by SQL.
+
+prove-broadcast.py retains baseline, harmless survivor and fourteen semantic
+failures, including >1,000 recipients, persistence failure, opt-out loss, claim
+identity, repeated uncertain delivery, content changes, withdrawal and access
+boundaries. Its source-stack transactions all rolled back; the broadcast table
+was absent after the probes. The specific isolation guards, empty/no-share-link
+branches, multiworker claims and concurrent unsubscribe still need dedicated
+adverse scenarios before promotion. The SQL suite is not a live worker-to-PostgREST
+integration test.
+
+The local worker is invoked with npm run worker:engagement-email. It needs the
+installation's ordinary Supabase configuration and NEXT_PUBLIC_APP_URL as a bare
+public origin. OPENPLAN_ENGAGEMENT_EMAIL_WORK_DIR optionally selects its private
+journal root; it always uses a database-address-derived child directory so separate
+installations cannot consume each other's outcomes. Do not start it against the
+app's source stack until the queue migration is ready and applied.
+
+The worker validates claim identity and PostgreSQL's exact message-text checksum
+before transport, journals the observed result, then acknowledges it in the
+database. Restart retries that acknowledgement only. A provider response or local
+journal failure with no durable observed outcome remains uncertain; this does not
+prove exactly-once delivery or physical power-loss durability. An accepted result
+means provider acceptance, not arrival in a recipient's inbox. Unconfigured email
+is skipped honestly and logs neither addresses nor subjects. The existing email
+transport now has a twenty-second request deadline.
+
+prove-typescript.py records 65 tests, a harmless survivor and twenty-five targeted
+failures. The initial mutation selector matched both an intent and a receipt field
+and stopped before editing; initial-typescript-mutations.json preserves that run.
+The corrected selector names the intent declaration. All source edits are restored
+in finally. The journal tests reopen actual local files in a fresh instance,
+retain unacknowledged/malformed files, and archive only an acknowledged result.
+
+prove-worker-process.mjs launches the actual worker entry point in separate Node
+processes against two local synthetic HTTP contracts, with the provider key removed
+from child environments. Its first acknowledgement fails; a new process recovers
+the exact retained skipped result without calling transport again. The second
+installation cannot consume the first one's result. Baseline and comment control
+survive; removing recovery or installation scoping fails for the named outcome.
+The initial process test had a local variable named process that shadowed Node's
+global before a worker started; initial-worker-process-results.json retains that
+harness failure. The corrected run restored the original worker script and stopped
+all worker/HTTP processes it created. No actual email or paid service was used.
+
+The clone still contains the b878d35d response transaction/withdrawal prototype,
+not these newer broadcast tables or complete-reader extension. The app database
+still has 321 applied migrations and no prototype objects. Do not confuse the
+local HTTP contract fixture with an identified OpenPlan browser build.
+
+Still required before a coherent release: route and UI integration, schema
+promotion and live REST-to-worker recovery, full actor/role/revocation and remaining
+queue concurrency/isolation probes, truthful Activity/broadcast reporting, browser
+pending-edit/conflict/reload recovery, desktop/390px keyboard and console journeys,
+full QA/shuffle/RLS/worker/upgrade checks and final release CI. The old Activity
+outbox projection does not yet expose the new uncertain/attempting states; it must
+be joined before the new worker is enabled. Previously skipped/uncertain mail is
+not automatically resent, and no retry/resolve UI for those outcomes exists yet.
+
+
+The final SQL adapter check also refuses clearing already-recorded AI assistance.
+An ordinary human correction keeps that provenance; the targeted clearing mutation
+fails. This is a recorded-provenance rule, not detection of unrecorded AI use. The
+source-stack transaction and broadcast suites were rerun after this guard. The
+older separate-connection clone has not been updated with this additional rule.
+
+Final focused compatibility check: 96 tests in nine files, including the existing
+notification library, inbox and delivery UI, with zero failures. Full TypeScript
+checking and ESLint on every changed TypeScript file completed with exit 0.
+adapter-worker-checks.json retains source hashes and the independently checked
+source database boundary. This is not the full release QA or browser gate.

@@ -29,7 +29,7 @@ export function emailTransportName(): string {
 export async function sendEmail(message: EmailMessage): Promise<EmailSendResult> {
   if (!isEmailTransportConfigured()) {
     // Honest no-op. The outbox row (written by the caller) is the durable record.
-    console.info("[notifications] email transport not configured — skipping send", { to: message.to, subject: message.subject });
+    console.info("[notifications] email transport not configured — skipping send");
     return { delivered: false, transport: "none", reason: "not_configured" };
   }
 
@@ -37,6 +37,7 @@ export async function sendEmail(message: EmailMessage): Promise<EmailSendResult>
   try {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
+      signal: AbortSignal.timeout(20_000),
       headers: {
         "content-type": "application/json",
         authorization: `Bearer ${process.env.RESEND_API_KEY}`,

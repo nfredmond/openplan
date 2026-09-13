@@ -343,3 +343,23 @@ No automatic provider/account fallback or restart is supported. Personal connect
 files stay private and expire/revoke separately from native sign-in. Provider history
 prevents project deletion; retire the project to preserve it. See the
 [verification record](../reviews/2026-09-10-planner-agent-provider-connection/VERIFICATION.md).
+
+
+## Response withdrawal and retry boundary, September 13, 2026
+
+The published v0.56.1 database guard withdraws responses linked directly to a
+changed contribution, but misses responses linked through that contribution's
+replies. A rolled-back reproduction left the stored response published after its
+parent was withheld. The public portal has an additional visible-source/parent
+filter, so this is not by itself evidence of disclosure through the browser.
+Approved parent wording changes also need response withdrawal and browser checks.
+The [response-write review](../reviews/2026-09-12-m9b-response-writes/VERIFICATION.md)
+retains the reproduction and prototype correction, including publication races.
+
+That prototype is not released or installed in the app database. Current response
+routes still lack retained request identities, editor-version checks and correction
+reasons. The new transaction adapter, reason reader and durable email worker are
+being joined to those routes and the browser. Until that join is complete, the
+older subscriber-read/completeness and interrupted-broadcast limits still apply.
+No human review gate is holding this work; implementation and engineering
+acceptance remain unfinished. The roadmap's full M9b scope is unchanged.

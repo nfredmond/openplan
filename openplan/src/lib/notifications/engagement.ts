@@ -1,6 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { createHash, randomUUID } from "node:crypto";
+import { z } from "zod";
 import { isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { emailTransportName, sendEmail } from "./email";
+import { responseEmailOutcomeSchema, type ResponseEmailOutcome } from "./response-email-outcome";
 
 // The ONLY module that touches the sensitive engagement_subscriptions and
 // engagement_email_outbox tables (participant emails) — enforced by
@@ -11,6 +14,69 @@ import { emailTransportName, sendEmail } from "./email";
 // here never fails the user's action.
 
 type QueryClient = Pick<SupabaseClient, "from">;
+
+const preparedBroadcastSchema = z.object({
+  campaignId: z.string().uuid(), requestId: z.string().uuid(),
+  state: z.enum(["prepared", "cancelled", "no_share_token"]),
+  count: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
+}).nullable();
+const responseEmailClaimSchema = z.discriminatedUnion("state", [
+  z.object({ state: z.literal("cancelled"), outboxId: z.string().uuid() }),
+  z.object({ state: z.literal("attempting"), outboxId: z.string().uuid(), attemptToken: z.string().uuid(),
+    messageText: z.string(), contentSha256: z.string().regex(/^[a-f0-9]{64}$/) }),
+]).nullable();
+const retainedEmailSchema = z.object({ to: z.string().email(), subject: z.string(), text: z.string() }).strict();
+
+/** Retry recording an observed outcome, never retry its transport call. */
+export async function finishResponseEmail(client: Pick<SupabaseClient, "rpc">, outcome: ResponseEmailOutcome): Promise<boolean> {
+  try {
+    const parsed = responseEmailOutcomeSchema.parse(outcome);
+    const result = await client.rpc("finish_engagement_response_email", {
+      p_outbox: parsed.outboxId, p_attempt: parsed.attemptToken, p_state: parsed.state,
+      p_transport: parsed.transport, p_error: parsed.error,
+    });
+    return !result.error && result.data === true;
+  } catch { return false; }
+}
+
+/** Process one retained publication email. The worker journals outcomes before acknowledging them in the database. */
+export async function processResponseEmail(
+  client: Pick<SupabaseClient, "rpc">,
+  origin: string,
+  journal: { retain: (outcome: ResponseEmailOutcome) => Promise<void>; recorded: (outcome: ResponseEmailOutcome) => Promise<void> },
+  transport: typeof sendEmail = sendEmail,
+): Promise<"idle" | "progress" | "unavailable"> {
+  try {
+    const url = new URL(origin);
+    if (!["http:", "https:"].includes(url.protocol) || url.origin !== origin) return "unavailable";
+    const prepared = await client.rpc("prepare_engagement_response_broadcast", { p_origin: origin });
+    if (prepared.error) return "unavailable";
+    const preparation = preparedBroadcastSchema.parse(prepared.data);
+    const attempt = randomUUID();
+    const claimed = await client.rpc("claim_engagement_response_email", { p_attempt: attempt });
+    if (claimed.error) return "unavailable";
+    const claim = responseEmailClaimSchema.parse(claimed.data);
+    if (!claim) return preparation ? "progress" : "idle";
+    if (claim.state === "cancelled") return "progress";
+    if (claim.attemptToken !== attempt || createHash("sha256").update(claim.messageText).digest("hex") !== claim.contentSha256) {
+      return "unavailable";
+    }
+    const message = retainedEmailSchema.parse(JSON.parse(claim.messageText));
+    let result: Awaited<ReturnType<typeof sendEmail>>;
+    try { result = await transport(message); }
+    catch { result = { delivered: false, transport: emailTransportName(), reason: "unknown" }; }
+    const outcome: ResponseEmailOutcome = {
+      outboxId: claim.outboxId, attemptToken: attempt,
+      state: result.delivered ? "accepted" : result.reason === "not_configured" ? "skipped" : "uncertain",
+      transport: result.transport,
+      error: result.delivered || result.reason === "not_configured" ? null : "The email service did not provide a confirmed delivery result. Do not resend automatically.",
+    };
+    await journal.retain(outcome);
+    if (!await finishResponseEmail(client, outcome)) return "unavailable";
+    await journal.recorded(outcome);
+    return "progress";
+  } catch { return "unavailable"; }
+}
 
 // The three scoped single-row writes below all answer `{ ok, found }`, and the
 // two axes are deliberately independent: `ok` is whether the database answered

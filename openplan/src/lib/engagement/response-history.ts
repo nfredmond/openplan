@@ -10,6 +10,10 @@ export const responseHistoryMetadataSchema = z.object({
   recorded_at: z.string().datetime({ offset: true }),
   event: z.enum(["legacy_baseline", "created", "corrected", "published", "unpublished", "removed"]),
   record_sha256: z.string().regex(/^[a-f0-9]{64}$/),
+  // Old history and pre-upgrade readers have no reason metadata. Unknown stays null.
+  write_request_id: z.string().uuid().nullable().default(null),
+  change_reason: z.string().nullable().default(null),
+  change_origin: z.enum(["staff", "source_withdrawal"]).nullable().default(null),
 });
 
 export const responseHistoryEntrySchema = responseHistoryMetadataSchema.extend({ record: closeLoopEntrySchema });

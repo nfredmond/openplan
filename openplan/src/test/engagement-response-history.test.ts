@@ -33,6 +33,21 @@ describe("private response history verification", () => {
     expect((await read(snapshot([revision(1, "legacy_baseline")]))).error).toBeNull();
     expect(await read(snapshot([]))).toEqual({ rows: [], error: null });
   });
+  it("keeps old reasons unknown and retains new reason and source-withdrawal metadata", async () => {
+    const requestId = randomUUID();
+    const original = revision(1, "legacy_baseline");
+    const correction = { ...revision(2, "corrected"), write_request_id: requestId,
+      change_reason: "Corrected after review", change_origin: "staff" };
+    const withdrawal = { ...revision(3, "unpublished"), write_request_id: randomUUID(),
+      change_reason: "Automatically withdrawn after a linked contribution or its parent changed", change_origin: "source_withdrawal" };
+    const result = await read({ campaignId, count: 3, entries: [original, correction, withdrawal] });
+    expect(result.error).toBeNull();
+    expect(result.rows[0]).toMatchObject({ write_request_id: null, change_reason: null, change_origin: null,
+      record_sha256: original.record_sha256 });
+    expect(result.rows[1]).toMatchObject({ write_request_id: requestId, change_reason: correction.change_reason,
+      change_origin: "staff", record_sha256: correction.record_sha256 });
+    expect(result.rows[2]).toMatchObject({ change_origin: "source_withdrawal", change_reason: withdrawal.change_reason });
+  });
   it("reads beyond 1000 revisions", async () => {
     const entries = Array.from({ length: 1005 }, (_, n) => revision(n + 1, n ? "corrected" : "created"));
     expect((await read(snapshot(entries))).rows).toHaveLength(1005);

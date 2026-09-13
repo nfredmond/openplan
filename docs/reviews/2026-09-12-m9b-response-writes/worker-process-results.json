@@ -1,0 +1,52 @@
+[
+  {
+    "name": "baseline",
+    "matched": true,
+    "outcome": "survived",
+    "expected": null,
+    "diagnostic": null,
+    "evidence": {
+      "endpointMode": "local synthetic HTTP contracts",
+      "processRestart": true,
+      "separateInstallations": true,
+      "transportCalls": 1,
+      "providerConfigured": false,
+      "identicalOutcomeAcknowledgements": 2
+    },
+    "workerSha256": "ab0222c1ff990947b282357356a2a333a7cb8a30b1ac1a6b2dce91dded2a7518"
+  },
+  {
+    "name": "harmless-comment",
+    "matched": true,
+    "outcome": "survived",
+    "expected": null,
+    "diagnostic": null,
+    "evidence": {
+      "endpointMode": "local synthetic HTTP contracts",
+      "processRestart": true,
+      "separateInstallations": true,
+      "transportCalls": 1,
+      "providerConfigured": false,
+      "identicalOutcomeAcknowledgements": 2
+    },
+    "workerSha256": "b960810c06854ee6fd98e2dadeea43efd23d3cd2c3fa289f53de7ede90cb60cf"
+  },
+  {
+    "name": "lost-recovery",
+    "matched": true,
+    "outcome": "killed",
+    "expected": "Restart did not replay the retained outcome",
+    "diagnostic": "Restart did not replay the retained outcome",
+    "evidence": null,
+    "workerSha256": "6b9807ce7a02b59c85d5cbe6b9e3e84d9646e93a29c50be16c403495f772a50e"
+  },
+  {
+    "name": "shared-installation-journal",
+    "matched": true,
+    "outcome": "killed",
+    "expected": "A different installation consumed the first installation's outcome",
+    "diagnostic": "A different installation consumed the first installation's outcome\n\n1 !== 0\n",
+    "evidence": null,
+    "workerSha256": "9b1372594bbde3291639ebc69215a7ecef9221e40ee467482a5e46bf7665cc02"
+  }
+]

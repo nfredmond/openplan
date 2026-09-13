@@ -1,0 +1,55 @@
+{
+  "focused": {
+    "passedTests": 96,
+    "failedTests": 0,
+    "testFiles": 9,
+    "reportPath": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/final-focused.json"
+  },
+  "sourceDatabase": {
+    "migrationCount": 321,
+    "responsePrototypeAbsent": true,
+    "broadcastPrototypeAbsent": true,
+    "baselineResponseCount": 1005,
+    "baselineHistorySha256": "8bfd7b6e9182f0c5c889954e7baf2eeacdd38c73e5e21b2633956324f161b1ae"
+  },
+  "sourceHashes": {
+    "docs/reviews/2026-09-12-m9b-response-writes/broadcast-probe.sql": "780ddc5440b711785d61f8242edc571a10e02d007b756725704239608afe552b",
+    "docs/reviews/2026-09-12-m9b-response-writes/guards-probe.sql": "c46a7e84f63b004e3b7961d3689fc19e318eb923ef6b15309dcaa09140939d40",
+    "docs/reviews/2026-09-12-m9b-response-writes/prove-broadcast.py": "4b96d715d1306e482b28d28822f9caa9e10e1c55871b4a26c77961d9c66666a2",
+    "docs/reviews/2026-09-12-m9b-response-writes/prove-transaction.py": "0bd557342c4081a56aba8d22f168548c1cf4241f441297d7301642899733dc00",
+    "docs/reviews/2026-09-12-m9b-response-writes/prove-typescript.py": "b82a969ab70897faaf0467b27d23dc10c47a72ac98c12d4bb6d98602979a56f1",
+    "docs/reviews/2026-09-12-m9b-response-writes/prove-worker-process.mjs": "23d6eaea003705cce761029f8dd2a2496cc32ad5ab4aced7f9f2e7872dec922d",
+    "docs/reviews/2026-09-12-m9b-response-writes/response-broadcast-queue.sql": "5901d482fd3a6beec1b01ce1103ae50b283e3844d39dea8a2e6e1460fd7a3409",
+    "docs/reviews/2026-09-12-m9b-response-writes/response-write-guards.sql": "a7c3b088e90c967bd8b3035e1cdb7a0595121004573d315f367f5f5f210c2905",
+    "openplan/package.json": "6181b9f79ab2d0f3ba5b6cb8f3d6a2bddc1fc5e1491635151c6c6cd4ccc84008",
+    "openplan/scripts/workers/engagement-email.ts": "ab0222c1ff990947b282357356a2a333a7cb8a30b1ac1a6b2dce91dded2a7518",
+    "openplan/src/lib/engagement/response-history.ts": "ef7589a5395f01be81e60f075d4cb7c43308bbda34bd5273a700edbf842b6a1b",
+    "openplan/src/lib/engagement/response-write.ts": "1e7721d0bfaa675b5b36256f6b99a8937fa2eedd368b97963bf4129afe18f508",
+    "openplan/src/lib/notifications/email.ts": "9743f299c14965cc62ac3d264c91099ecdf884e14a8f77393957ab96e0ca2b4a",
+    "openplan/src/lib/notifications/engagement.ts": "601a07b61bb1b7490e67fce3db853a8e51f4863b7588f38fdf88b9ed2fed1198",
+    "openplan/src/lib/notifications/response-email-journal.ts": "0b15e51f7bef09b6bd5481602f5d0e19e2982adbcfa7f954f3d42e4e33f20db9",
+    "openplan/src/lib/notifications/response-email-outcome.ts": "92f51d994f3a39461b3f31af4283e72ece651c01535bb3efbe3e6b693fc40528",
+    "openplan/src/test/engagement-response-email-journal.test.ts": "31035606e7b1e4673378883d14db1b4d376fbe86cf59dca7f8b64f1098373931",
+    "openplan/src/test/engagement-response-email-worker.test.ts": "8170367f1c16d55749888fa49ed02637aaddabdb39d51248feee00e11c22ea62",
+    "openplan/src/test/engagement-response-history.test.ts": "efe2564c7d9a7e50fd4f68eedb77a55e2b6c1e9c74884afcec88d7cb48012aab",
+    "openplan/src/test/engagement-response-write.test.ts": "b4f30e88196da0c58a78ce4c5e89d65ebafd195ed8954a77a653845c5bcfee82",
+    "openplan/src/test/notifications-email.test.ts": "63441de6b0529d587ff7ef2ee6db79972e87d78700a983036acfd15462c95a80"
+  },
+  "limitations": [
+    "No response route or browser join yet",
+    "Prototype queue not installed in app database",
+    "No full QA/shuffle/live RLS/upgrade campaign for this increment yet",
+    "Worker process evidence used local HTTP contracts, not live PostgREST",
+    "No provider delivery attempted"
+  ],
+  "typecheck": {
+    "command": "npm exec -- tsc --noEmit --incremental false",
+    "exit": 0
+  },
+  "lint": {
+    "scope": "All changed TypeScript source, worker and test files",
+    "exit": 0
+  },
+  "transactionMutationCases": 17,
+  "broadcastMutationCases": 16
+}

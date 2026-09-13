@@ -18,6 +18,8 @@ cases = [
     ('direct-update', 'REVOKE INSERT, UPDATE, DELETE ON public.engagement_closeloop_entries', 'REVOKE INSERT, DELETE ON public.engagement_closeloop_entries', 'Direct UPDATE bypassed the response transaction'),
     ('direct-delete', 'REVOKE INSERT, UPDATE, DELETE ON public.engagement_closeloop_entries', 'REVOKE INSERT, UPDATE ON public.engagement_closeloop_entries', 'Direct DELETE bypassed the response transaction'),
     ('forged-withdrawal', 'REVOKE ALL ON FUNCTION public.withdraw_engagement_source_responses(uuid,uuid,jsonb,jsonb)', 'GRANT EXECUTE ON FUNCTION public.withdraw_engagement_source_responses(uuid,uuid,jsonb,jsonb)', 'Ordinary caller could invoke the trusted source helper'),
+    ('reader-reason', "'change_reason', h.change_reason", "'change_reason', NULL::text", 'Complete history reader lost the retained correction metadata'),
+    ('cleared-ai-provenance', "IF previous.ai_assisted AND p_changes->'ai_assisted' = 'false'::jsonb THEN", 'IF false THEN', 'Recorded AI assistance could be cleared'),
     ('missing-reason', "write_receipt.payload_json->>'reason'", 'NULL::text', 'Correction reason or request was lost from private history'),
     ('direct-withdrawal', "p_source = ANY(e.source_item_ids)", 'false', 'Direct source change did not withdraw its published response'),
     ('parent-withdrawal', 'reply.parent_item_id = p_source', 'false', 'Parent change left a linked reply response published'),

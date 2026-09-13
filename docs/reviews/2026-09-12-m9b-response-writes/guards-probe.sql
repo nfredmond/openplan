@@ -59,6 +59,13 @@ BEGIN
       AND write_request_id = correction_request AND record_json->>'we_did' = 'Corrected wording') THEN
     RAISE EXCEPTION 'Correction reason or request was lost from private history';
   END IF;
+  IF NOT EXISTS(SELECT 1 FROM jsonb_array_elements(
+    public.read_engagement_response_history(campaign)->'entries') h
+    WHERE h->>'response_id'=initial->>'entryId' AND h->>'revision'='2'
+      AND h->>'change_reason'='SYNTHETIC exact correction reason'
+      AND h->>'change_origin'='staff' AND h->>'write_request_id'=correction_request::text) THEN
+    RAISE EXCEPTION 'Complete history reader lost the retained correction metadata';
+  END IF;
   IF NOT EXISTS(SELECT 1 FROM engagement_response_history
     WHERE response_id = (initial->>'entryId')::uuid AND revision = 1
       AND record_sha256 = original_hash AND record_json->>'we_did' = 'Original wording'
@@ -104,6 +111,20 @@ BEGIN
     refused=true;
   END;
   IF NOT refused THEN RAISE EXCEPTION 'A response disclosed a reply with a withheld parent'; END IF;
+  initial=public.write_engagement_response(campaign,gen_random_uuid(),'create',NULL,NULL,NULL,
+    '{"theme_title":"SYNTHETIC accepted AI draft","ai_assisted":true}');
+  corrected=public.write_engagement_response(campaign,gen_random_uuid(),'update',(initial->>'entryId')::uuid,
+    (initial->'entry'->>'updated_at')::timestamptz,'SYNTHETIC human correction','{"we_did":"Reviewed human answer"}');
+  IF corrected->'entry'->>'ai_assisted' IS DISTINCT FROM 'true' THEN
+    RAISE EXCEPTION 'A human correction lost recorded AI assistance';
+  END IF;
+  refused=false;
+  BEGIN
+    PERFORM public.write_engagement_response(campaign,gen_random_uuid(),'update',(corrected->>'entryId')::uuid,
+      (corrected->'entry'->>'updated_at')::timestamptz,'SYNTHETIC provenance overwrite','{"ai_assisted":false}');
+  EXCEPTION WHEN invalid_parameter_value THEN refused=true;
+  END;
+  IF NOT refused THEN RAISE EXCEPTION 'Recorded AI assistance could be cleared'; END IF;
   -- Membership is checked even for an otherwise identical retained request.
   PERFORM set_config('request.jwt.claim.sub',gen_random_uuid()::text,true);
   refused=false;

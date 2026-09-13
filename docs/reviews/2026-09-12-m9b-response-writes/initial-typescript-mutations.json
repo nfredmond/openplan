@@ -1,0 +1,24 @@
+[
+  {
+    "name": "baseline",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "changedSourceSha256": "c0e40eb42ea33be4ae79d384372ecb996b3b5100121fd02690e81f89b943cece",
+    "expectedFailingTest": null,
+    "failedTests": [],
+    "passedTests": 64,
+    "failedTestCount": 0
+  },
+  {
+    "name": "harmless-comment",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "changedSourceSha256": "0b292921aa8e0e53a16302dc335a7d96713d12f21bae7b994cdafcf63562a8a4",
+    "expectedFailingTest": null,
+    "failedTests": [],
+    "passedTests": 64,
+    "failedTestCount": 0
+  }
+]

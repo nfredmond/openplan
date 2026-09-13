@@ -119,6 +119,9 @@ BEGIN
     IF previous.updated_at IS DISTINCT FROM p_expected_updated_at THEN
       RAISE EXCEPTION 'Response changed; review the current copy' USING ERRCODE = '40001';
     END IF;
+    IF previous.ai_assisted AND p_changes->'ai_assisted' = 'false'::jsonb THEN
+      RAISE EXCEPTION 'Recorded AI assistance cannot be cleared' USING ERRCODE = '22023';
+    END IF;
     response_id = previous.id;
   ELSE
     response_id = gen_random_uuid();

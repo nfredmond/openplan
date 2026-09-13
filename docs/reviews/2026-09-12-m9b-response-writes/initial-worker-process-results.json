@@ -1,0 +1,11 @@
+[
+  {
+    "name": "baseline",
+    "matched": false,
+    "outcome": "killed",
+    "expected": null,
+    "diagnostic": "Cannot access 'process' before initialization",
+    "evidence": null,
+    "workerSha256": "ab0222c1ff990947b282357356a2a333a7cb8a30b1ac1a6b2dce91dded2a7518"
+  }
+]

@@ -1,0 +1,162 @@
+[
+  {
+    "name": "baseline",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "expected": null,
+    "schemaSha256": "36b48350c63abfd20bd6a4861864ac7793a277ba6542762d151dd7ca3b8649d2",
+    "probeSha256": "780ddc5440b711785d61f8242edc571a10e02d007b756725704239608afe552b",
+    "diagnostic": null
+  },
+  {
+    "name": "harmless-comment",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "expected": null,
+    "schemaSha256": "52094f389b92ba05d9ab95bb274aa65bf4199469204be835174c38a88445a2df",
+    "probeSha256": "780ddc5440b711785d61f8242edc571a10e02d007b756725704239608afe552b",
+    "diagnostic": null
+  },
+  {
+    "name": "lost-publication-job",
+    "matched": true,
+    "status": 3,
+    "outcome": "killed",
+    "expected": "An unprepared broadcast claimed a known audience",
+    "schemaSha256": "506628d2a51ef211f26b5098b431920d6b1c6e9c0c4ced25e21ab2c454e95d0b",
+    "probeSha256": "780ddc5440b711785d61f8242edc571a10e02d007b756725704239608afe552b",
+    "diagnostic": null
+  },
+  {
+    "name": "incomplete-audience",
+    "matched": true,
+    "status": 3,
+    "outcome": "killed",
+    "expected": "Broadcast preparation lost confirmed subscribers",
+    "schemaSha256": "5cc36eef525e80770c96d863671c6dbfa22ec7fe1f3433a4c30b21ee380485ed",
+    "probeSha256": "780ddc5440b711785d61f8242edc571a10e02d007b756725704239608afe552b",
+    "diagnostic": null
+  },
+  {
+    "name": "missing-opt-out",
+    "matched": true,
+    "status": 3,
+    "outcome": "killed",
+    "expected": "Retained messages lost their response or per-recipient opt-out",
+    "schemaSha256": "79d33e86b91a50999640944534a47366b98a5b9020a92b5d965a3c18d4817511",
+    "probeSha256": "780ddc5440b711785d61f8242edc571a10e02d007b756725704239608afe552b",
+    "diagnostic": null
+  },
+  {
+    "name": "unrecorded-attempt",
+    "matched": true,
+    "status": 3,
+    "outcome": "killed",
+    "expected": "Transport claim did not retain an outbox row and attempt first",
+    "schemaSha256": "610dc8cad053839adc4c1e5c838c182491825f5f017401837802deb1003038af",
+    "probeSha256": "780ddc5440b711785d61f8242edc571a10e02d007b756725704239608afe552b",
+    "diagnostic": null
+  },
+  {
+    "name": "foreign-attempt",
+    "matched": true,
+    "status": 3,
+    "outcome": "killed",
+    "expected": "A foreign attempt could finalize delivery",
+    "schemaSha256": "063243175b9c8d5c1ed97210a18270bebcd7409f8176bcffda74dc68aed8873b",
+    "probeSha256": "780ddc5440b711785d61f8242edc571a10e02d007b756725704239608afe552b",
+    "diagnostic": null
+  },
+  {
+    "name": "mutable-outcome",
+    "matched": true,
+    "status": 3,
+    "outcome": "killed",
+    "expected": "Completed delivery outcome was replaced",
+    "schemaSha256": "9a1ab76125bcc86234d83790632426c502286aed78bd6e7a9da65663496639e9",
+    "probeSha256": "780ddc5440b711785d61f8242edc571a10e02d007b756725704239608afe552b",
+    "diagnostic": null
+  },
+  {
+    "name": "reissued-uncertainty",
+    "matched": true,
+    "status": 3,
+    "outcome": "killed",
+    "expected": "Interrupted delivery was silently reissued or lost its uncertainty",
+    "schemaSha256": "5a51d43df582c85e6829d0eae8abd51a189f34984ed4791092fef7c9f3be0c1a",
+    "probeSha256": "780ddc5440b711785d61f8242edc571a10e02d007b756725704239608afe552b",
+    "diagnostic": null
+  },
+  {
+    "name": "ignored-unsubscribe",
+    "matched": true,
+    "status": 3,
+    "outcome": "killed",
+    "expected": "Unsubscribed participant reached the transport claim",
+    "schemaSha256": "28d43b654d2d41beed4fc2c64aa2876fc4c0f1559a34203d13e93d2ab019eef1",
+    "probeSha256": "780ddc5440b711785d61f8242edc571a10e02d007b756725704239608afe552b",
+    "diagnostic": null
+  },
+  {
+    "name": "altered-message",
+    "matched": true,
+    "status": 3,
+    "outcome": "killed",
+    "expected": "Changed retained message reached the transport claim",
+    "schemaSha256": "169e3a4ca9f86c83704b4ddb05ecfce639d552543e2992a1d242c89e66827402",
+    "probeSha256": "780ddc5440b711785d61f8242edc571a10e02d007b756725704239608afe552b",
+    "diagnostic": null
+  },
+  {
+    "name": "ignored-withdrawal",
+    "matched": true,
+    "status": 3,
+    "outcome": "killed",
+    "expected": "Withdrawn response reached a later transport claim",
+    "schemaSha256": "f070ee2d2b224cb701955bfa70c5f435cb562cdb5417950c7a4c107a20f2f7ad",
+    "probeSha256": "780ddc5440b711785d61f8242edc571a10e02d007b756725704239608afe552b",
+    "diagnostic": null
+  },
+  {
+    "name": "hidden-preparation-error",
+    "matched": true,
+    "status": 3,
+    "outcome": "killed",
+    "expected": "An outbox failure was disguised as a prepared broadcast",
+    "schemaSha256": "bfcc3022a8b0a900ee6f7b1b38442a945581130c771e9848b7f396d54d4212f4",
+    "probeSha256": "780ddc5440b711785d61f8242edc571a10e02d007b756725704239608afe552b",
+    "diagnostic": null
+  },
+  {
+    "name": "public-preparation",
+    "matched": true,
+    "status": 3,
+    "outcome": "killed",
+    "expected": "Staff caller prepared sensitive delivery messages",
+    "schemaSha256": "990130500ddb921cfbeb46fac9f407989ba11d34a84b01632960731748ffaa4a",
+    "probeSha256": "780ddc5440b711785d61f8242edc571a10e02d007b756725704239608afe552b",
+    "diagnostic": null
+  },
+  {
+    "name": "direct-table-disclosure",
+    "matched": true,
+    "status": 3,
+    "outcome": "killed",
+    "expected": "Staff caller read the private broadcast tables directly",
+    "schemaSha256": "6d3adbfd018d33ebe93bdd6506ee48689719ece05465aeb4c509b3e8055245ac",
+    "probeSha256": "780ddc5440b711785d61f8242edc571a10e02d007b756725704239608afe552b",
+    "diagnostic": null
+  },
+  {
+    "name": "outsider-summary",
+    "matched": true,
+    "status": 3,
+    "outcome": "killed",
+    "expected": "An outsider read the private broadcast summary",
+    "schemaSha256": "fa32f919d7076649638196b4b591f0297b9f240be4ba58d38280fb561dbc8094",
+    "probeSha256": "780ddc5440b711785d61f8242edc571a10e02d007b756725704239608afe552b",
+    "diagnostic": null
+  }
+]

@@ -106,3 +106,27 @@ that an old snapshot could omit a new response. Keep this explicit compatibility
 limit until another implementation has equally strong evidence. Probes and
 restoration hashes are in VERIFICATION.md and database-custody.json. These changes
 remain outside installable migrations and do not complete the route/UI/outbox join.
+
+
+## Durable notification join in progress
+
+A publication receipt now has a prototype trigger that queues one separate
+broadcast intent. The worker prepares all recipient outbox rows atomically and
+claims individual messages before transport. A claim is cancelled when its saved
+publication, subscription, share link or content hash has changed. An uncertain
+attempt is not automatically replayed; a known result whose acknowledgement was
+interrupted is recovered from a private per-installation journal. No provider or
+subscription is provisioned; unconfigured transport records a skipped outcome.
+
+The application has typed response intents and receipt validation, extended
+private-history metadata, and the local worker entry point. The route handlers,
+UI, current Activity summary and installable migration remain the next join.
+The current queue returns phase plus complete counts through the staff-only
+read_engagement_response_broadcast RPC. The UI must distinguish queued/prepared,
+accepted, skipped, attempting, uncertain, failed and cancelled; it must not reuse
+old outbox totals as a statement that uncertain mail was never attempted.
+
+NEXT_PUBLIC_APP_URL comes from installation configuration for unsubscribe links,
+not from caller-controlled response payloads. The retained email message is the
+saved publication copy. No new agent action is registered by this work; preserve
+the action registry and human-authored write boundary when connecting the routes.

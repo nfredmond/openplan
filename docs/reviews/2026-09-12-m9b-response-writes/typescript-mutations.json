@@ -1,0 +1,358 @@
+[
+  {
+    "name": "baseline",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "changedSourceSha256": "1e7721d0bfaa675b5b36256f6b99a8937fa2eedd368b97963bf4129afe18f508",
+    "expectedFailingTest": null,
+    "failedTests": [],
+    "passedTests": 65,
+    "failedTestCount": 0
+  },
+  {
+    "name": "harmless-comment",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "changedSourceSha256": "e633a9cc85cc045f42465096a5c4b1069c3f81dc496ad790dac46cd15745d7c7",
+    "expectedFailingTest": null,
+    "failedTests": [],
+    "passedTests": 65,
+    "failedTestCount": 0
+  },
+  {
+    "name": "missing-request",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "83fb61b149752d9b84002e57c03943a189190aaed27efa5fdc90e663e98cea51",
+    "expectedFailingTest": "requires caller-retained request identity",
+    "failedTests": [
+      "response write intents requires caller-retained request identity for creates, including accepted AI drafts",
+      "response write intents requires a reason and original microsecond version for correction and removal"
+    ],
+    "passedTests": 63,
+    "failedTestCount": 2
+  },
+  {
+    "name": "missing-version",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "2ebd05dcf88012bae9ec0b8d62b49a39362c363aa3c65f8b121c9f08bd880b1c",
+    "expectedFailingTest": "requires a reason and original microsecond version",
+    "failedTests": [
+      "response write intents requires a reason and original microsecond version for correction and removal"
+    ],
+    "passedTests": 64,
+    "failedTestCount": 1
+  },
+  {
+    "name": "blank-reason",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "c08e5df8f5632c648f0497c123e757f4a727d8727a2c75bd5c05bc151268ebac",
+    "expectedFailingTest": "requires a reason and original microsecond version",
+    "failedTests": [
+      "response write intents requires a reason and original microsecond version for correction and removal"
+    ],
+    "passedTests": 64,
+    "failedTestCount": 1
+  },
+  {
+    "name": "ignored-extra-fields",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "f4dd0907d40bb4a8fbc48b91d508138d0c4bd25c11a2199b2c1d70608d55ad59",
+    "expectedFailingTest": "refuses extra authority and identity fields",
+    "failedTests": [
+      "response write intents refuses extra authority and identity fields instead of silently dropping them"
+    ],
+    "passedTests": 64,
+    "failedTestCount": 1
+  },
+  {
+    "name": "changed-request",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "8a08e09111b2d3d4b3922240185a984bf86a0f555a3a9d92ea1113c8e71fd664",
+    "expectedFailingTest": "sends create provenance to the RPC",
+    "failedTests": [
+      "response transaction client sends create provenance to the RPC without direct table writes",
+      "response transaction client keeps exact correction identity, original timestamp and explicit null on retry",
+      "response transaction client recovers the committed removal receipt without needing a current response row"
+    ],
+    "passedTests": 62,
+    "failedTestCount": 3
+  },
+  {
+    "name": "rounded-version",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "bf917c2c0d70546c3b3cc7fb59a1747fbc48cad3d7471f1b597ae6c1e932574b",
+    "expectedFailingTest": "keeps exact correction identity",
+    "failedTests": [
+      "response transaction client keeps exact correction identity, original timestamp and explicit null on retry",
+      "response transaction client recovers the committed removal receipt without needing a current response row"
+    ],
+    "passedTests": 63,
+    "failedTestCount": 2
+  },
+  {
+    "name": "lost-explicit-null",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "e73042b7bdaf179280c5077563d2025f90008756f0ae3639d0927f5573d775e7",
+    "expectedFailingTest": "keeps exact correction identity",
+    "failedTests": [
+      "response transaction client keeps exact correction identity, original timestamp and explicit null on retry"
+    ],
+    "passedTests": 64,
+    "failedTestCount": 1
+  },
+  {
+    "name": "foreign-campaign-receipt",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "93679b037e6dbecfe52ab302c68211cf7a4b210b23ab108c243043b7dfb958a5",
+    "expectedFailingTest": "refuses an invalid or mismatched receipt",
+    "failedTests": [
+      "response transaction client refuses an invalid or mismatched receipt without reporting an unsaved action"
+    ],
+    "passedTests": 64,
+    "failedTestCount": 1
+  },
+  {
+    "name": "foreign-entry-receipt",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "ae0aa0a475ef9419b13880ca72390acc551cd20a4bac9317db6801be20af7e7f",
+    "expectedFailingTest": "refuses an invalid or mismatched receipt",
+    "failedTests": [
+      "response transaction client refuses an invalid or mismatched receipt without reporting an unsaved action"
+    ],
+    "passedTests": 64,
+    "failedTestCount": 1
+  },
+  {
+    "name": "foreign-request-receipt",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "de4d3d5cde9689d7953be84089eca01cab81e7274bc8d967d10e0cb7dc2c7090",
+    "expectedFailingTest": "refuses an invalid or mismatched receipt",
+    "failedTests": [
+      "response transaction client refuses an invalid or mismatched receipt without reporting an unsaved action"
+    ],
+    "passedTests": 64,
+    "failedTestCount": 1
+  },
+  {
+    "name": "unchecked-receipt-shape",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "7a085db6a9b37c22231e76b3e8dd7b02a566a5cd64504dc93365eada929738d0",
+    "expectedFailingTest": "refuses an invalid or mismatched receipt",
+    "failedTests": [
+      "response transaction client refuses an invalid or mismatched receipt without reporting an unsaved action",
+      "response transaction client refuses an invalid or mismatched receipt without reporting an unsaved action"
+    ],
+    "passedTests": 63,
+    "failedTestCount": 2
+  },
+  {
+    "name": "invented-validation-failure",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "a644e8fdc1f231dfc5aa14ab6886ed6e2faf219a000c921a63d4ff74ba7920cf",
+    "expectedFailingTest": "distinguishes database P0001",
+    "failedTests": [
+      "response transaction client distinguishes database P0001 from an unconfirmed save"
+    ],
+    "passedTests": 64,
+    "failedTestCount": 1
+  },
+  {
+    "name": "lost-conflict-state",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "5fb4ff2a81b8c21ad8428c59d54700111b730eacceae2a0e8f1820781de448f6",
+    "expectedFailingTest": "distinguishes database 40001",
+    "failedTests": [
+      "response transaction client distinguishes database 40001 from an unconfirmed save",
+      "response transaction client distinguishes database 23505 from an unconfirmed save"
+    ],
+    "passedTests": 63,
+    "failedTestCount": 2
+  },
+  {
+    "name": "lost-history-reason",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "7d2fd1a2c87b12553b9a7f6f7ed1a228b726cf57444dbbe6c5257be562c9fe3a",
+    "expectedFailingTest": "keeps old reasons unknown",
+    "failedTests": [
+      "private response history verification keeps old reasons unknown and retains new reason and source-withdrawal metadata"
+    ],
+    "passedTests": 64,
+    "failedTestCount": 1
+  },
+  {
+    "name": "invented-old-reason",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "caaa979a0e35799c8ee91aaf62030956df5889625a4765c7c82151b8b0fefdf1",
+    "expectedFailingTest": "keeps old reasons unknown",
+    "failedTests": [
+      "private response history verification keeps old reasons unknown and retains new reason and source-withdrawal metadata"
+    ],
+    "passedTests": 64,
+    "failedTestCount": 1
+  },
+  {
+    "name": "ignored-preparation-failure",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "e24984f28df728f713791d1b4a4c71ef9c2e3deef0dd062e5c89fc291f6413ef",
+    "expectedFailingTest": "does not contact transport when preparation",
+    "failedTests": [
+      "retained response email worker does not contact transport when preparation or a retained claim cannot be verified"
+    ],
+    "passedTests": 64,
+    "failedTestCount": 1
+  },
+  {
+    "name": "ignored-claim-failure",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "d87757cbf7cff3fcb4a12ec9344fe6327238e11f27f00b731012043aec3a943d",
+    "expectedFailingTest": "does not contact transport when preparation",
+    "failedTests": [
+      "retained response email worker does not contact transport when preparation or a retained claim cannot be verified"
+    ],
+    "passedTests": 64,
+    "failedTestCount": 1
+  },
+  {
+    "name": "ignored-message-checksum",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "74100b46a22c80cae61445bafe6ac6ef347bcfaf97c1dda182a71639ddf0a1c2",
+    "expectedFailingTest": "does not contact transport when preparation",
+    "failedTests": [
+      "retained response email worker does not contact transport when preparation or a retained claim cannot be verified"
+    ],
+    "passedTests": 64,
+    "failedTestCount": 1
+  },
+  {
+    "name": "ignored-attempt-identity",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "225f03e0d3ef15d00584f960e632f8ebb5ae14c4afffd8d67385ff83a812c404",
+    "expectedFailingTest": "does not contact transport when preparation",
+    "failedTests": [
+      "retained response email worker does not contact transport when preparation or a retained claim cannot be verified"
+    ],
+    "passedTests": 64,
+    "failedTestCount": 1
+  },
+  {
+    "name": "unretained-delivery-result",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "c791abe230ff6c9d22fc70725b6b782d6380102f4a32df22e0b0f799c209cd21",
+    "expectedFailingTest": "requires the retained claim and exact checksum",
+    "failedTests": [
+      "retained response email worker requires the retained claim and exact checksum before transport, then journals before acknowledgement",
+      "retained response email worker retries only the outcome after acknowledgement fails, without sending again",
+      "retained response email worker records no configured provider as skipped and an ambiguous provider error as uncertain",
+      "retained response email worker does not replace a failed journal write with a successful acknowledgement"
+    ],
+    "passedTests": 61,
+    "failedTestCount": 4
+  },
+  {
+    "name": "ignored-acknowledgement",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "0719ed9f543040be283ea81aac74a22238dc89ccff7bb866fab5fb692bd9df0d",
+    "expectedFailingTest": "retries only the outcome after acknowledgement fails",
+    "failedTests": [
+      "retained response email worker retries only the outcome after acknowledgement fails, without sending again"
+    ],
+    "passedTests": 64,
+    "failedTestCount": 1
+  },
+  {
+    "name": "false-provider-refusal",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "a8f79a55b75b20b0a8f8db79a2fe195da7db2df03d97c4820a9df907d563991e",
+    "expectedFailingTest": "records no configured provider as skipped",
+    "failedTests": [
+      "retained response email worker records no configured provider as skipped and an ambiguous provider error as uncertain"
+    ],
+    "passedTests": 64,
+    "failedTestCount": 1
+  },
+  {
+    "name": "discarded-pending-outcome",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "adc80c5b27ea27ba809b2de88292ccfb5e4f4efbf22fa6d8e389e3ce1eb40efb",
+    "expectedFailingTest": "recovers an exact retained result in a new journal instance",
+    "failedTests": [
+      "response email outcome journal recovers an exact retained result in a new journal instance and archives only an acknowledged outcome"
+    ],
+    "passedTests": 64,
+    "failedTestCount": 1
+  },
+  {
+    "name": "mismatched-journal-file",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "5ac3bcd57464c7f321e009e119f04ee213c7d3ae8c47810ef0fbb4007ffb49b8",
+    "expectedFailingTest": "retains malformed and mismatched files",
+    "failedTests": [
+      "response email outcome journal retains malformed and mismatched files without acknowledging invented results"
+    ],
+    "passedTests": 64,
+    "failedTestCount": 1
+  },
+  {
+    "name": "unbounded-provider-request",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "changedSourceSha256": "892400d49a8b228dc7d2409661ee5c83aa57bab62b9a41878c116170aab93730",
+    "expectedFailingTest": "bounds a stalled provider request",
+    "failedTests": [
+      "email transport seam bounds a stalled provider request and preserves its unknown delivery result"
+    ],
+    "passedTests": 64,
+    "failedTestCount": 1
+  }
+]
