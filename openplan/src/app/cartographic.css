@@ -340,6 +340,7 @@ html.dark .op-cart-rail__btn:hover {
 }
 .op-cart-ws-body {
   min-width: 0;
+  flex: 1;
 }
 .op-cart-ws-name {
   font-weight: 600;
@@ -347,7 +348,8 @@ html.dark .op-cart-rail__btn:hover {
   letter-spacing: -0.005em;
   white-space: nowrap;
   text-overflow: ellipsis;
-  overflow: hidden;
+  /* The trigger truncates its label; this ancestor must let its menu open. */
+  overflow: visible;
 }
 .op-cart-ws-meta {
   font-family: var(--font-mono);
@@ -1544,17 +1546,8 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
   color: var(--ink-2);
 }
 
-/* ---------- HEADER AT NARROW WIDTHS ----------
-   Three equal-weight columns stop being the right shape once the window cannot
-   hold all three. Rather than let them overlap, each breakpoint drops the least
-   load-bearing thing:
-
-   - the workspace card's identity is also in the rail and the switcher, so its
-     text goes before anything interactive does;
-   - the search placeholder can shrink to its icon, because ⌘K still works and a
-     magnifier still reads as search;
-   - light/dark and the primary action are never dropped. They are why the
-     header is there. */
+/* Keep workspace selection reachable as the header narrows. Only its label
+   truncates; hiding the workspace body would also hide the switcher. */
 @media (max-width: 1120px) {
   .op-cart-hdr {
     grid-template-columns: minmax(0, 0.7fr) minmax(160px, 1fr) auto;
@@ -1566,14 +1559,10 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
 
 @media (max-width: 960px) {
   .op-cart-hdr {
-    grid-template-columns: auto minmax(120px, 1fr) auto;
-  }
-  /* Just the workspace colour mark: enough to say which workspace, no width. */
-  .op-cart-hdr > .op-cart-pill:first-child .op-cart-ws-body {
-    display: none;
+    grid-template-columns: minmax(0, 1fr) minmax(120px, 1fr) auto;
   }
   .op-cart-hdr > .op-cart-pill:first-child {
-    justify-self: start;
+    justify-self: stretch;
     padding-left: 10px;
     padding-right: 10px;
   }
@@ -1581,13 +1570,23 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
 
 @media (max-width: 820px) {
   .op-cart-hdr {
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
   }
   .op-cart-search__placeholder {
     display: none;
   }
   .op-cart-search {
     max-width: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .op-cart-hdr {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .op-cart-hdr > .op-cart-pill:first-child {
+    grid-column: 1 / -1;
+    max-width: none;
   }
 }
 

@@ -1,0 +1,38 @@
+{
+  "sourceHashes": {
+    "openplan/src/app/cartographic.css": "d729c683a2c883a45ebc91a691a0b9557bb574ba13d13f26d2e28ed359e99d70",
+    "openplan/src/components/workspaces/workspace-switcher.tsx": "edd4dd99b062be8126a605085a72d59221b7d09c3f5f87860ad80694bf4b62ef",
+    "openplan/src/components/cartographic/cartographic-header.tsx": "56fc525bace7f32373b5b50b8f043d128c3cdfafebd2d259692b23ac514a109e"
+  },
+  "runnerSha256": "f9f4c3b8400340f62c0bb3ec6b8b14da262c10862ab292a50e57340cbe02df73",
+  "results": [
+    {
+      "case": "baseline",
+      "matched": true,
+      "exit": 0,
+      "artifact": "workspace-switch-baseline-1789327389813-result.json"
+    },
+    {
+      "case": "harmless",
+      "matched": true,
+      "exit": 0,
+      "expectedFailure": null,
+      "artifact": "workspace-switch-harmless-1789327468899-result.json"
+    },
+    {
+      "case": "hidden",
+      "matched": true,
+      "exit": 1,
+      "expectedFailure": "Workspace switch remains visible",
+      "artifact": "workspace-switch-hidden-1789327530674-failure.json"
+    },
+    {
+      "case": "clipped",
+      "matched": true,
+      "exit": 1,
+      "expectedFailure": "Workspace menu target is reachable",
+      "artifact": "workspace-switch-clipped-1789327546515-failure.json"
+    }
+  ],
+  "limits": "Visible navigation and menu hit-testing at selected widths; injected CSS reproduces hidden/clipped controls. Does not establish every global header layout, permission guard or production performance."
+}

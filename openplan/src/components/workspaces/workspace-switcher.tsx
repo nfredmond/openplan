@@ -84,7 +84,7 @@ export function WorkspaceSwitcher({
   const [error, setError] = useState<string | null>(null);
 
   if (workspaces.length <= 1) {
-    return <span className="text-sm font-semibold text-foreground">{currentWorkspaceName}</span>;
+    return <span className="block truncate text-sm font-semibold text-foreground">{currentWorkspaceName}</span>;
   }
 
   async function select(workspaceId: string) {
@@ -114,9 +114,9 @@ export function WorkspaceSwitcher({
         onClick={() => setOpen((value) => !value)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-sm font-semibold text-foreground transition hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="inline-flex min-h-10 min-w-0 max-w-full items-center gap-1.5 rounded-md px-1.5 py-0.5 text-sm font-semibold text-foreground transition hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <span className="max-w-[16rem] truncate">{currentWorkspaceName}</span>
+        <span className="min-w-0 max-w-[16rem] truncate">{currentWorkspaceName}</span>
         <ChevronsUpDown className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
       </button>
 
@@ -127,7 +127,7 @@ export function WorkspaceSwitcher({
           <ul
             role="listbox"
             aria-label="Switch workspace"
-            className="absolute left-0 z-20 mt-1 max-h-72 w-64 overflow-auto rounded-lg border border-border bg-background/98 py-1 shadow-lg"
+            className="absolute left-0 z-20 mt-1 max-h-72 w-64 max-w-[calc(100vw-5rem)] overflow-auto rounded-lg border border-border bg-background/98 py-1 shadow-lg"
           >
             {workspaces.map((workspace) => {
               const isCurrent = workspace.id === currentWorkspaceId;
@@ -140,7 +140,7 @@ export function WorkspaceSwitcher({
                     disabled={pendingId !== null}
                     className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none disabled:opacity-60"
                   >
-                    <span className="min-w-0 flex-1 truncate text-foreground">{workspace.name}</span>
+                    <span className="min-w-0 flex-1 whitespace-normal break-words text-foreground">{workspace.name}</span>
                     {isPending ? (
                       <Loader2 className="h-3.5 w-3.5 flex-shrink-0 animate-spin text-muted-foreground" />
                     ) : isCurrent ? (
