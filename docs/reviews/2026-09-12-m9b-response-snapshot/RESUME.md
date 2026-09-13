@@ -1,90 +1,82 @@
-# Continue here: response history after published v0.55.2
+# Continue here: v0.56.0 candidate, full QA replay running
 
-v0.55.2 is published at 3455207b5723c6394ff95b9fbbd274c79e7d3c36. Its final CI
-34735821419, RLS 34735821475 and Upgrade Path 34735821483 all succeeded. Remote
-annotated-tag target and published release were read back. Do not tag it again.
-See v0552-final-*.json, v0552-publication.json and VERIFICATION.md.
+v0.55.2 is published at 3455207b5723c6394ff95b9fbbd274c79e7d3c36. Its final
+CI/RLS/upgrade and release receipts are in this directory. Do not tag it again.
+The full v1 goal remains active. No PR or human review gate is authorized/needed.
 
-Worktree /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10,
+Use worktree /home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10,
 package openplan/, branch work/engagement-response-snapshots. The root checkout
-and demo are untouched. No other agent was observed; no subagents were spawned.
-The later source history work is unreleased and not part of the v0.55.2 tag.
+and demo remain untouched. This thread owns the worktree; no subagents or other
+active coding session were observed. Recheck actual ownership before editing.
 
-Read ../2026-09-12-m9b-response-history/IMPLEMENTATION.md and NEXT.md for the
-implemented foundation, retained failures, exact tests and next work. The new
-migration retains immutable source history and is integrated with the live RLS
-inventory. Offline 40 tests/20 skipped and live 37 tests passed, with SQL and live
-inventory mutations. Types and changed-file lint passed. The next steps are
-staff history access and conflict/retry-safe, reasoned writes, preserving source
-withdrawals, translations and frozen reports. Full QA/shuffle/RLS/upgrade and
-browser acceptance remain before calling this new increment complete or released.
+The v0.56.0 response-history candidate is implemented and browser-tested. Read
+../2026-09-12-m9b-response-history/VERIFICATION.md, IMPLEMENTATION.md, NEXT.md and
+full-checks.json. Package/contract/roadmap/matrix/registry current-release metadata
+all name 0.56.0; review dates and scientific claims are unchanged. Unreleased
+names both migrations until tagging. Runtime source is 03c1fe38f9674b19f7cce35d23bd7751627954ea;
+subsequent checkpoint commits only retain evidence and these restart instructions.
 
-The named disposable stack openplan-restore-target-2026091050 now has 320
-migrations through 20261014000001, API 29821 / DB 29822. Do not reset or reapply
-that migration. The pre-apply history-mutations.py intentionally expects the
-history table absent and must not be rerun unchanged against this stack.
-No owned app/browser remains. Current validation processes are listed below;
-recheck their actual handles before restarting anything.
+## Pending and completed checks
 
-Private directory /home/nathaniel/.local/state/openplan/api-provider-research-2026-09-12
-contains full logs and account/config files. Never print api-settings.env or
-api-settings-account.json. The 1005-response original browser fixture is
- a3c41566-bfd4-40f2-b467-96ee79054ec6; preserve it and the older accepted originals.
-Do not bypass history guards to delete fixtures. Retained checks and failure
-boundaries are separate from actual agency usefulness or complete v1 capability.
+Full corrected QA is LIVE: tool session 79549, wrapper
+/home/nathaniel/.local/state/openplan/api-provider-research-2026-09-12/m9b-history-corrected-check.cjs qa.
+It captures source 03c1fe38, writes m9b-history-reader-corrected-qa.log and a terminal
+.result.json. Poll this same session and inspect the receipt/process; do not
+restart solely because observation times out. Avoid runtime/schema changes until
+it finishes. If it fails, inspect the actual diagnostic before choosing a fix.
 
-Continue directly to main after verification; no PR or human-review gate. Preserve
-the pending reminder constraint, local/free operation, the full all-state planning
-contract, and separate AequilibraE/ActivitySim validation. The v1 goal remains active.
+Completed corrected seed-913562 shuffle: 14,133 tests passed, 450 skipped;
+1,261 files passed, 43 skipped. Full RLS: 479 tests/50 files passed against only
+openplan-restore-target-2026091050, and worker checks: all 52 suites passed. The
+RLS/worker source was a038ba70; their source/schema did not change in the later
+metadata, interface wording or offline-test corrections. Types and changed-file
+lint were green earlier; full QA's build remains the final type/build check.
+Focused corrected checks passed 43 tests across six files. Mutation receipts
+record harmless survivors and targeted failures, including two stronger identity
+and retained-campaign tests added after noticing overlap in the earlier cases.
 
-## Running foundation checks at 5d8268a1
+Initial full QA and shuffle failed eight tests from stale release metadata,
+premature migration-name removal from Unreleased, and new plain-language terms.
+These failures are retained in full-checks.json. Do not mistake them for test-order
+dependence or the earlier missing history reader. The old missing reader is fixed.
 
-Source 5d8268a177e4761676f3e34a2a1be8e7a08787ee is committed and pushed on
-work/engagement-response-snapshots. Main still names published v0.55.2 at 3455207b.
-The following checks were confirmed live after launch:
+Upgrade Path 34737449570 remains queued on older source 5d8268a1. It is NOT final
+reader evidence. Inspect its actual status before taking action; do not duplicate
+that same dispatch. Main push of the final candidate should trigger its own exact
+CI/RLS/upgrade jobs. Inspect those separately before tagging v0.56.0.
 
-- Full QA: tool session 26373.
-- Shuffled tests, seed 913562: tool session 76272.
-- Full RLS: tool session 47166, explicitly targeting only the named restore stack.
-- Upgrade Path: run 34737449570 on source 5d8268a1, dispatched from v0.55.2.
+## Browser and database custody
 
-The private m9b-history-check.cjs wrapper writes m9b-history-full-qa.log,
-m9b-history-full-shuffled.log and m9b-history-full-rls.log, plus terminal
-.result.json files. A missing tool handle requires checking real processes and
-these receipts. Do not infer completion or restart from a polling timeout.
-The upgrade run must be polled, not duplicated. Avoid changing runtime/schema
-source while these checks collect evidence, and do not collect browser evidence
-against the shared isolated DB during full RLS function mutations.
+No owned browser/app/proxy remains. Final owned dev/proxy session 39521 ended with
+status 0 after SIGTERM to the process started by this thread. Browser-final/ in the
+history review records fresh 1440px and 390px real navigation, UI creation,
+correction/removal, private history, checksum preservation, two failed reads and
+keyboard recovery on 03c1fe38. Screenshots were opened and inspected. Earlier
+browser/ captures additionally show all 1,005 history options and keyboard selection
+of the last, plus original and legacy-baseline copies. Final desktop console has
+preload warnings and injected 503s; final mobile has only injected 503s. No page
+exceptions or horizontal overflow were observed. Earlier network warnings and
+runner failures remain documented; do not claim a universally clean console.
 
-Once these gates are green, land the verified foundation directly on main and
-continue the staff history/read/write/conflict interface. This does not authorize
-a new release claim before the complete promised workflow works. v0.55.2 is
-already published; its full verification must not be repeated as pending work.
+Named disposable stack openplan-restore-target-2026091050 has 321 migrations through
+20261014000002, API 29821 / DB 29822. Both new migrations are applied. Do not reset,
+reapply, or run pre-apply SQL mutation scripts unchanged against this stack. The
+original 1,005-response fixture a3c41566-bfd4-40f2-b467-96ee79054ec6 is preserved.
+Synthetic original/correction/removal cases and hashes are in the browser receipts.
+Never bypass immutable-history guards to remove fixtures. Private account/config
+files under the private directory above must not be printed or committed.
 
-## Usage-reset checkpoint: terminal local checks
+## Next landing and implementation
 
-This section supersedes the running-check status above. All three local wrappers
-have terminal receipts and no matching check process remained at inspection:
+After full QA succeeds, checkpoint terminal results, verify remote main has not
+moved unexpectedly, and fast-forward the verified work directly to main. No PR.
+Inspect exact final CI, RLS and populated-upgrade runs; tag and publish v0.56.0 only
+when green. v0.56.0 is a retained-history increment, not completed M9b or v1.
 
-- Full QA ended with status 1: 14,106 tests passed, 450 skipped, one failed.
-- Shuffle seed 913562 ended with status 1 with the same counts and failure.
-- Both failures identify `engagement_response_history.record_sha256` as having
-  no application reader. This is unfinished integration, not demonstrated test
-  order dependence. Do not silence it with an allowlist or unused helper.
-- Full isolated RLS ended with status 0: 479 tests across 50 files passed.
-- Upgrade Path 34737449570 remains queued on exact source 5d8268a1. Inspect that
-  run after resuming; do not dispatch a duplicate based on elapsed time alone.
-
-Next implement the actual private staff response-history reader and navigation,
-including verification of the retained SHA-256 against PostgreSQL's returned
-`record_json::text`, read-failure recovery, and access to retained removed entries.
-Use an additive migration because the foundation migration is already applied.
-Then prove the guards and exercise identified desktop/390px keyboard journeys,
-rerun applicable gates, and land directly on main when green. Reasoned writes,
-stale-edit conflicts, interrupted retries and translation custody still need work.
-
-No runtime edits or new browser acceptance occurred during this checkpoint.
-The worktree was clean and its existing branch tip matched origin before this
-note. Only this restart note is being changed. The published v0.55.2 release is
-unaffected. A usage reset does not imply background jobs continued or succeeded;
-re-read this note, current git state, receipts and CI before restarting work.
+Continue immediately into reasoned, conflict-safe response writes and durable
+identical-request retries, preserving automatic source withdrawals and private
+translation history. NEXT.md maps current producers and proposed transaction seam;
+its initial v0.55.2 release-status text is explicitly historical. Cross-module RTP
+and land-use capped readers are source findings, not live reproductions yet.
+Preserve the pending reminder constraint, free/local operation, all-state/DC and
+territory/tribal/overlapping scope, and separate AequilibraE/ActivitySim validation.

@@ -1,0 +1,31 @@
+- article:
+  - paragraph: Close the loop
+  - heading "You said / We did" [level=2]
+  - paragraph: Publish what the community told you and how the project team responded. 0 published, 1 total. Drafts stay private until you publish them.
+  - button "Response history"
+  - group:
+    - text: Draft Theme
+    - textbox "Theme": SYNTHETIC retained crossing response
+    - text: You said
+    - textbox "You said":
+      - /placeholder: What the community told us
+      - text: SYNTHETIC request for a safer crossing.
+    - text: We did
+    - textbox "We did":
+      - /placeholder: How the project team responded
+      - text: SYNTHETIC draft response; not published.
+    - button "Save"
+    - button "Cancel"
+    - paragraph: Draft from community input
+    - button "Generate drafts"
+    - paragraph: Add an entry
+    - text: Theme
+    - textbox "Theme":
+      - /placeholder: e.g. Safer crossings downtown
+    - text: You said
+    - textbox "You said":
+      - /placeholder: What the community told us
+    - text: We did
+    - textbox "We did":
+      - /placeholder: How the project team responded
+    - button "Add entry" [disabled]

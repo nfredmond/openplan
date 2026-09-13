@@ -80,3 +80,26 @@ Corrected focused replay completed 43 tests across six files. RLS on a038ba70
 completed with status 0; the same migrations and RLS suite remain unchanged by
 the subsequent metadata, interface wording and additional offline test corrections.
 Final browser and full QA/shuffle replay are still pending on the corrected commit.
+
+## Corrected candidate acceptance at 03c1fe38
+
+Fresh desktop and 390px journeys passed on 03c1fe38 after the wording correction;
+see browser-final/ for identified process, receipts, scripts, screenshots and hashes.
+Both retained identical originals and complete history through correction, removal,
+two injected 503 reads and keyboard recovery. Screenshots were opened and inspected.
+Desktop console contained three preload warnings and two injected 503 errors;
+mobile contained only those two injected errors. Neither had page exceptions or
+horizontal overflow. The earlier 1,005-entry selector and baseline checks still
+cover the unchanged reader and selector implementation.
+
+An initial cold development run exceeded the empty-history assertion's five-second
+timeout while Next was compiling. Its screenshot showed Loading response history,
+not a false empty result. The assertion now allows 45 seconds, matching other
+runner actions; the fresh complete runs passed. The cold-run diagnostics are
+retained privately. This is not a measured production-performance claim.
+
+Corrected shuffled tests, seed 913562: 14,133 passed, 450 skipped, 1,261 files passed
+and 43 skipped. Full-checks.json retains the earlier failures and terminal RLS
+(479 tests/50 files) and worker (52 suites) receipts with private log hashes.
+Full QA replay on 03c1fe38 is running. Source/migrations must stay fixed until it
+finishes. Main remains the published v0.55.2 commit; v0.56.0 is not yet released.

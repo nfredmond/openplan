@@ -1,0 +1,53 @@
+- region "Response history":
+  - text: Response, including removed entries
+  - combobox "Response, including removed entries":
+    - option "SYNTHETIC retained crossing response (removed) · 06ecfca0-4ac8-4829-b15f-a753f7581e53" [selected]
+  - paragraph: 3 retained revisions. These copies preserve the response text and source references. Translation history and reasons for changes are not recorded here. Withdrawal may follow a source correction.
+  - list:
+    - listitem:
+      - 'heading "Revision 3: Removed from current responses" [level=3]'
+      - paragraph:
+        - time: 9/12/2026, 9:52:14 PM
+      - paragraph: "Recorded actor: 4a21e42f-27a7-474d-9a7a-5912c70af359"
+      - paragraph: SYNTHETIC retained crossing response
+      - paragraph:
+        - strong: "You said:"
+        - text: SYNTHETIC request for a safer crossing.
+      - paragraph:
+        - strong: "We did:"
+        - text: SYNTHETIC corrected answer; original retained.
+      - paragraph: "Saved status: draft"
+      - paragraph: "Source contribution IDs: None recorded"
+      - group:
+        - text: Retained checksum verified
+        - paragraph: "SHA-256: 18d5ed3f54b90a1eb6ff25d601944eada80a054b98d5a7702931449cacc8a46b"
+    - listitem:
+      - 'heading "Revision 2: Corrected" [level=3]'
+      - paragraph:
+        - time: 9/12/2026, 9:52:14 PM
+      - paragraph: "Recorded actor: 4a21e42f-27a7-474d-9a7a-5912c70af359"
+      - paragraph: SYNTHETIC retained crossing response
+      - paragraph:
+        - strong: "You said:"
+        - text: SYNTHETIC request for a safer crossing.
+      - paragraph:
+        - strong: "We did:"
+        - text: SYNTHETIC corrected answer; original retained.
+      - paragraph: "Saved status: draft"
+      - paragraph: "Source contribution IDs: None recorded"
+      - group: Retained checksum verified
+    - listitem:
+      - 'heading "Revision 1: Created" [level=3]'
+      - paragraph:
+        - time: 9/12/2026, 9:52:14 PM
+      - paragraph: "Recorded actor: 4a21e42f-27a7-474d-9a7a-5912c70af359"
+      - paragraph: SYNTHETIC retained crossing response
+      - paragraph:
+        - strong: "You said:"
+        - text: SYNTHETIC request for a safer crossing.
+      - paragraph:
+        - strong: "We did:"
+        - text: SYNTHETIC draft response; not published.
+      - paragraph: "Saved status: draft"
+      - paragraph: "Source contribution IDs: None recorded"
+      - group: Retained checksum verified

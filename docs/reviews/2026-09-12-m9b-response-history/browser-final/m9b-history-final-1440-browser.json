@@ -1,0 +1,38 @@
+{
+  "source": "03c1fe38f9674b19f7cce35d23bd7751627954ea",
+  "width": 1440,
+  "passed": true,
+  "campaignId": "74787acb-9a8b-4ae7-b77b-5213bb4db7f7",
+  "originalHash": "f06f347a2a4bdb7330db8648c90ac58fdcd08b9fc05f8447da232cdbb8f97e0c",
+  "retainedOriginalHash": "f06f347a2a4bdb7330db8648c90ac58fdcd08b9fc05f8447da232cdbb8f97e0c",
+  "historyBeforeFault": "86e284adbc3b3937f0dd6c25b7a71f923f2d5319ac896a36fc33ed3436ab87c9",
+  "historyAfterFault": "86e284adbc3b3937f0dd6c25b7a71f923f2d5319ac896a36fc33ed3436ab87c9",
+  "refusedReads": 2,
+  "anonymousStatus": 401,
+  "overflow": {
+    "viewport": 1440,
+    "document": 1440
+  },
+  "console": [
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3255/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789275067826 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3255/_next/static/css/app/(app)/layout.css?v=1789275069242 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "warning",
+      "text": "The resource http://127.0.0.1:3255/_next/static/media/36966cca54120369-s.p.woff2?v=1789275067826 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    }
+  ]
+}

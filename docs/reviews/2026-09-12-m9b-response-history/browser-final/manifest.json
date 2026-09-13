@@ -1,0 +1,67 @@
+[
+  {
+    "file": "m9b-history-final-browser.cjs",
+    "rawSha256": "07b97c18187aeed60acfe76ff5aa94c5a64beea2603c59dfbc95981d4ba5f206",
+    "retainedSha256": "07b97c18187aeed60acfe76ff5aa94c5a64beea2603c59dfbc95981d4ba5f206"
+  },
+  {
+    "file": "m9b-history-final-proxy-dev.cjs",
+    "rawSha256": "dd6eaf7f0e980f4b1b313eb52a81cd15997a65f860882aa7761886e87b6f0d2f",
+    "retainedSha256": "dd6eaf7f0e980f4b1b313eb52a81cd15997a65f860882aa7761886e87b6f0d2f"
+  },
+  {
+    "file": "m9b-history-final-identity.log",
+    "rawSha256": "1d84ad37079fa0860a300b25822447476c89d0db6a2218e39361cc1337cb9ae6",
+    "retainedSha256": "6581fce3ef172540cf3780063201a9dc6075dc48c2a1e73be220ecf459c1a046"
+  },
+  {
+    "file": "m9b-history-final-1440-browser.json",
+    "rawSha256": "e182da7959ec8ad2a44d3a41db96d28ccbac11faf2ee6c794abaf36549fb3e5b",
+    "retainedSha256": "f2a5541d8dd6702637e2098249b8f7d566356ef3861d763ef5abc3f1361d9b13"
+  },
+  {
+    "file": "m9b-history-final-1440-unavailable.png",
+    "rawSha256": "589f37ae7ba9136aa8d9400afb64a72eba79e6f57d4914b35760ad0be402ecbb",
+    "retainedSha256": "589f37ae7ba9136aa8d9400afb64a72eba79e6f57d4914b35760ad0be402ecbb"
+  },
+  {
+    "file": "m9b-history-final-1440-recovered.png",
+    "rawSha256": "fddb8f9e0e48351593edb3c11bd7b150a97f2a4f52bc509cef1790c0582d844a",
+    "retainedSha256": "fddb8f9e0e48351593edb3c11bd7b150a97f2a4f52bc509cef1790c0582d844a"
+  },
+  {
+    "file": "m9b-history-final-1440-aria.txt",
+    "rawSha256": "61d3f869710614b30c0c830a754e2de8bea1b315b896f38385136100d972e329",
+    "retainedSha256": "61d3f869710614b30c0c830a754e2de8bea1b315b896f38385136100d972e329"
+  },
+  {
+    "file": "m9b-history-final-1440-edit-aria.txt",
+    "rawSha256": "94843e6f467a4332549d1b13d2a6ebaa3261444527a5815463d9fa47b8e40381",
+    "retainedSha256": "94843e6f467a4332549d1b13d2a6ebaa3261444527a5815463d9fa47b8e40381"
+  },
+  {
+    "file": "m9b-history-final-390-browser.json",
+    "rawSha256": "c68ec275bf2aceb3cc7126d7323e5c18bcac56d37a38766df9bc7593ae109745",
+    "retainedSha256": "c37ac4fe74de6b68aba2460a21f68b622ea0dc5a838f227e4fdbe6ec13aff51a"
+  },
+  {
+    "file": "m9b-history-final-390-unavailable.png",
+    "rawSha256": "ca88928a62835c47850943b66a6504c6731420441e8449feaf5926093c13b246",
+    "retainedSha256": "ca88928a62835c47850943b66a6504c6731420441e8449feaf5926093c13b246"
+  },
+  {
+    "file": "m9b-history-final-390-recovered.png",
+    "rawSha256": "c422c110ed9e9d55e505ae815643b33a49a8b8cc434e32bf2979de1f3f52fc6a",
+    "retainedSha256": "c422c110ed9e9d55e505ae815643b33a49a8b8cc434e32bf2979de1f3f52fc6a"
+  },
+  {
+    "file": "m9b-history-final-390-aria.txt",
+    "rawSha256": "f4c1c6f2fe7dc64aa0f0a126a2f9b2d7c4bfe59956d28d5ff2ee7bb2cc385bff",
+    "retainedSha256": "f4c1c6f2fe7dc64aa0f0a126a2f9b2d7c4bfe59956d28d5ff2ee7bb2cc385bff"
+  },
+  {
+    "file": "m9b-history-final-390-edit-aria.txt",
+    "rawSha256": "94843e6f467a4332549d1b13d2a6ebaa3261444527a5815463d9fa47b8e40381",
+    "retainedSha256": "94843e6f467a4332549d1b13d2a6ebaa3261444527a5815463d9fa47b8e40381"
+  }
+]
