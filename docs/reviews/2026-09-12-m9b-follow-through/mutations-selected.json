@@ -1,0 +1,21 @@
+[
+  {
+    "name": "harmless-comment",
+    "outcome": "survived",
+    "matched": true,
+    "expected": null,
+    "failures": []
+  },
+  {
+    "name": "malformed-retry",
+    "outcome": "killed",
+    "matched": true,
+    "expected": "after malformed entry",
+    "failures": [
+      {
+        "name": "staff response read recovery keeps known responses and the retry control after malformed entry",
+        "message": "Error: Unable to find role=\"button\" and name \"Retry loading responses\"\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<article\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"module-section-surface\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"module-section-header\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"module-section-heading\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<p\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"module-section-label\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mClose the loop\u001b[0m\n          \u001b[36m</p>\u001b[39m\n          \u001b[36m<h2\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"module-section-title\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mYou said / We did\u001b[0m\n          \u001b[36m</h2>\u001b[39m\n          \u001b[36m<p\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"module-section-description\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mPublish what the community told you and how the project team responded. \u001b[0m\n            \u001b[0m0\u001b[0m\n            \u001b[0m published, \u001b[0m\n            \u001b[0m1\u001b[0m\n            \u001b[0m total.\u001b[0m\n            \u001b[0mDrafts stay private until you publish them.\u001b[0m\n          \u001b[36m</p>\u001b[39m\n        \u001b[36m</div>\u001b["
+      }
+    ]
+  }
+]

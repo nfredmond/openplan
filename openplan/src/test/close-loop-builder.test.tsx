@@ -109,3 +109,49 @@ describe("EngagementCloseLoopBuilder", () => {
     await screen.findByText("AI-assisted draft");
   });
 });
+
+
+describe("staff response read recovery", () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it("withholds empty counts and writes until the failed read recovers", async () => {
+    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(jsonResponse({ entries: [entry()] }));
+    render(<EngagementCloseLoopBuilder campaignId="camp-1" categories={[]} initialEntries={[]} initialReadError />);
+    expect(screen.getByRole("alert")).toHaveTextContent("Saved staff responses could not be loaded");
+    expect(screen.queryByText(/No entries yet/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/0 published, 0 total/)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Add entry/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Generate drafts/i })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Retry loading responses" }));
+    await screen.findByText("Safer crossings");
+    expect(fetchSpy).toHaveBeenCalledWith("/api/engagement/campaigns/camp-1/closeloop", expect.objectContaining({ method: "GET" }));
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Publish" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /Generate drafts/i })).toBeEnabled();
+  });
+
+  it("recognizes a recovered empty result as empty", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue(jsonResponse({ entries: [] }));
+    render(<EngagementCloseLoopBuilder campaignId="camp-1" categories={[]} initialEntries={[]} initialReadError />);
+    fireEvent.click(screen.getByRole("button", { name: "Retry loading responses" }));
+    await screen.findByText(/No entries yet/);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ["failed HTTP", { error: "SYNTHETIC unavailable" }, false],
+    ["missing entries", {}, true],
+    ["malformed entry", { entries: [{ ...entry(), status: "unreadable" }] }, true],
+    ["foreign campaign", { entries: [entry({ campaign_id: "other" })] }, true],
+    ["duplicate identity", { entries: [entry(), entry()] }, true],
+  ])("keeps known responses and the retry control after %s", async (_name, payload, ok) => {
+    vi.spyOn(global, "fetch").mockResolvedValue(jsonResponse(payload, ok));
+    render(<EngagementCloseLoopBuilder campaignId="camp-1" categories={[]} initialEntries={[entry()]} initialReadError />);
+    fireEvent.click(screen.getByRole("button", { name: "Retry loading responses" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Retry loading responses" })).toBeEnabled());
+    expect(screen.getByText("Safer crossings")).toBeVisible();
+    expect(screen.getByRole("alert")).toHaveTextContent("Saved staff responses could not be loaded");
+    expect(screen.getByRole("button", { name: "Publish" })).toBeDisabled();
+    expect(screen.queryByText("SYNTHETIC unavailable")).not.toBeInTheDocument();
+  });
+});

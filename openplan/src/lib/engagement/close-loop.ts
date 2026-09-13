@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { EngagementSynthesis } from "./ai-synthesis";
 
@@ -12,21 +13,22 @@ type QueryClient = Pick<SupabaseClient, "from">;
 
 export type CloseLoopStatus = "draft" | "published";
 
-export type CloseLoopEntryRow = {
-  id: string;
-  campaign_id: string;
-  category_id: string | null;
-  theme_title: string;
-  you_said: string;
-  we_did: string;
-  status: CloseLoopStatus;
-  ai_assisted: boolean;
-  source_item_ids: string[];
-  sort_order: number;
-  published_at: string | null;
-  created_at: string;
-  updated_at: string;
-};
+export const closeLoopEntrySchema = z.object({
+  id: z.string().min(1),
+  campaign_id: z.string().min(1),
+  category_id: z.string().nullable(),
+  theme_title: z.string(),
+  you_said: z.string(),
+  we_did: z.string(),
+  status: z.enum(["draft", "published"]),
+  ai_assisted: z.boolean(),
+  source_item_ids: z.array(z.string()),
+  sort_order: z.number().int(),
+  published_at: z.string().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+export type CloseLoopEntryRow = z.infer<typeof closeLoopEntrySchema>;
 
 export const CLOSE_LOOP_ENTRY_COLUMNS =
   "id, campaign_id, category_id, theme_title, you_said, we_did, status, ai_assisted, source_item_ids, sort_order, published_at, created_at, updated_at";
@@ -54,26 +56,15 @@ export type CloseLoopEntriesResult = {
   error: { message: string } | null;
 };
 
-/**
- * All entries for a campaign (operator builder view), ordered for display.
- *
- * STILL SWALLOWS ITS ERROR, and that is not an endorsement — see the header of
- * `CloseLoopEntriesResult`. Its three callers (the operator campaign page, the
- * operator close-loop API route, and `close-loop.test.ts`) are outside the lane
- * that fixed the public read, and changing this signature would break their
- * build with nobody able to repair it in the same change. The operator harm is
- * real but lesser: a planner shown an empty builder over a failed read may
- * re-author entries that already exist. Give it the same `{ rows, error }` seam
- * and update those three call sites.
- */
-export async function loadCloseLoopEntries(supabase: QueryClient, campaignId: string): Promise<CloseLoopEntryRow[]> {
-  const { data } = await supabase
+/** Staff responses for the builder, retaining read failures separately from an empty result. */
+export async function loadCloseLoopEntries(supabase: QueryClient, campaignId: string): Promise<CloseLoopEntriesResult> {
+  const { data, error } = await supabase
     .from("engagement_closeloop_entries")
     .select(CLOSE_LOOP_ENTRY_COLUMNS)
     .eq("campaign_id", campaignId)
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true });
-  return (data ?? []) as CloseLoopEntryRow[];
+  return { rows: error ? [] : (data ?? []) as CloseLoopEntryRow[], error: error ?? null };
 }
 
 /** Published entries only — the public portal read (service-role, campaign-scoped). */

@@ -773,7 +773,8 @@ export default async function EngagementCampaignDetailPage({
         <EngagementCloseLoopBuilder
           campaignId={campaign.id}
           categories={builderCategories}
-          initialEntries={closeLoopEntries}
+          initialEntries={closeLoopEntries.rows}
+          initialReadError={Boolean(closeLoopEntries.error)}
           sourceItems={(items ?? []).filter(item => item.status === "approved").map(item => ({id:item.id,title:item.title || item.body.slice(0,120)}))}
         />
 

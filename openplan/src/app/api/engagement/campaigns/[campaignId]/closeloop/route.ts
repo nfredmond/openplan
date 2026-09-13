@@ -6,6 +6,8 @@ import { loadCampaignAccess, validateCampaignCategoryAccess } from "@/lib/engage
 import { CLOSE_LOOP_ENTRY_COLUMNS, loadCloseLoopEntries } from "@/lib/engagement/close-loop";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
+import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
+
 const paramsSchema = z.object({ campaignId: z.string().uuid() });
 
 const CLOSE_LOOP_TEXT_MAX = 5000;
@@ -39,7 +41,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
     if (!access.allowed) return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
 
     const entries = await loadCloseLoopEntries(supabase, access.campaign.id);
-    return NextResponse.json({ entries });
+    const failure = classifyRouteReadFailure("saved staff responses", entries);
+    if (failure) {
+      audit.error("entries_read_failed", { campaignId: access.campaign.id, message: failure.message });
+      return NextResponse.json(failure.body, { status: failure.status });
+    }
+    return NextResponse.json({ entries: entries.rows });
   } catch (error) {
     audit.error("unhandled_error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Unexpected error while listing close-loop entries" }, { status: 500 });

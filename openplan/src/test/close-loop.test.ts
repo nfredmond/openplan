@@ -60,7 +60,10 @@ describe("close-loop loaders", () => {
     const rows = await loadCloseLoopEntries({ from } as never, "camp-1");
     expect(from).toHaveBeenCalledWith("engagement_closeloop_entries");
     expect(eq).toHaveBeenCalledWith("campaign_id", "camp-1");
-    expect(rows).toEqual([{ id: "e1" }]);
+    expect(select).toHaveBeenCalledWith("id, campaign_id, category_id, theme_title, you_said, we_did, status, ai_assisted, source_item_ids, sort_order, published_at, created_at, updated_at");
+    expect(order1).toHaveBeenCalledWith("sort_order", { ascending: true });
+    expect(order2).toHaveBeenCalledWith("created_at", { ascending: true });
+    expect(rows).toEqual({ rows: [{ id: "e1" }], error: null });
   });
 
   it("loadPublishedCloseLoopEntries additionally filters status=published", async () => {
@@ -74,5 +77,16 @@ describe("close-loop loaders", () => {
     await loadPublishedCloseLoopEntries({ from } as never, "camp-2");
     expect(eqCampaign).toHaveBeenCalledWith("campaign_id", "camp-2");
     expect(eqStatus).toHaveBeenCalledWith("status", "published");
+  });
+});
+
+
+describe("staff response read failures", () => {
+  it.each([null, { message: "SYNTHETIC connection lost" }])("preserves the error independently of empty rows: %j", async error => {
+    const query = { select: vi.fn(), eq: vi.fn(), order: vi.fn() };
+    query.select.mockReturnValue(query); query.eq.mockReturnValue(query);
+    query.order.mockReturnValueOnce(query).mockResolvedValueOnce({ data: error ? [{ id: "partial" }] : [], error });
+    const result = await loadCloseLoopEntries({ from: () => query } as never, "camp-1");
+    expect(result).toEqual({ rows: [], error });
   });
 });

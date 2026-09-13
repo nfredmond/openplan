@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/ui/status-badge";
-import type { CloseLoopEntryRow, CloseLoopStatus } from "@/lib/engagement/close-loop";
+import { closeLoopEntrySchema, type CloseLoopEntryRow, type CloseLoopStatus } from "@/lib/engagement/close-loop";
 
 const LABEL_CLASS = "text-[0.82rem] font-semibold text-foreground";
 const SELECT_CLASS =
@@ -316,14 +316,34 @@ export function EngagementCloseLoopBuilder({
   campaignId,
   categories,
   initialEntries,
+  initialReadError = false,
   sourceItems = [],
 }: {
   campaignId: string;
   categories: Category[];
   initialEntries: CloseLoopEntryRow[];
+  initialReadError?: boolean;
   sourceItems?: Array<{id:string;title:string}>;
 }) {
   const [entries, setEntries] = useState<CloseLoopEntryRow[]>(initialEntries);
+  const [readError, setReadError] = useState(initialReadError);
+  const [readLoading, setReadLoading] = useState(false);
+
+  async function retryEntries() {
+    if (readLoading) return;
+    setReadLoading(true);
+    try {
+      const payload = await api(`/api/engagement/campaigns/${campaignId}/closeloop`, "GET");
+      const rows = closeLoopEntrySchema.array().parse(payload.entries);
+      if (rows.some(row => row.campaign_id !== campaignId) || new Set(rows.map(row => row.id)).size !== rows.length) throw new Error("Invalid response scope");
+      setEntries(rows);
+      setReadError(false);
+    } catch {
+      setReadError(true);
+    } finally {
+      setReadLoading(false);
+    }
+  }
   const [sourceItemIds,setSourceItemIds] = useState<string[]>([]);
   const [themeTitle, setThemeTitle] = useState("");
   const [youSaid, setYouSaid] = useState("");
@@ -414,15 +434,22 @@ export function EngagementCloseLoopBuilder({
           <p className="module-section-label">Close the loop</p>
           <h2 className="module-section-title">You said / We did</h2>
           <p className="module-section-description">
-            Publish what the community told you and how the project team responded. {publishedCount} published, {entries.length} total.
+            Publish what the community told you and how the project team responded. {!readError && <>{publishedCount} published, {entries.length} total.</>}
             Drafts stay private until you publish them.
           </p>
         </div>
       </div>
 
+      {readError && <div className="mt-4 space-y-2">
+        <p role="alert" className={ERROR_CLASS}>Saved staff responses could not be loaded. Retry before adding or changing a response.</p>
+        <Button type="button" variant="outline" onClick={() => void retryEntries()} disabled={readLoading}>
+          {readLoading ? "Loading responses…" : "Retry loading responses"}
+        </Button>
+      </div>}
+      <fieldset disabled={readError || readLoading} className="min-w-0">
       <div className="mt-5 space-y-3">
         {entries.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No entries yet. Draft from community input or add one below.</p>
+          !readError && <p className="text-sm text-muted-foreground">No entries yet. Draft from community input or add one below.</p>
         ) : (
           entries.map((entry) => (
             <CloseLoopCard
@@ -506,6 +533,7 @@ export function EngagementCloseLoopBuilder({
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Add entry
         </Button>
       </form>
+      </fieldset>
     </article>
   );
 }

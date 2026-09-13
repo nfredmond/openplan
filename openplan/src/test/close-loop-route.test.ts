@@ -122,6 +122,26 @@ describe("close-loop operator routes", () => {
     expect((await res.json()).entries).toHaveLength(1);
   });
 
+  it.each([
+    [{ message: "SYNTHETIC database connection lost" }, 500],
+    [{ message: 'relation "engagement_closeloop_entries" does not exist' }, 503],
+  ])("GET refuses a failed read instead of returning an empty list: %j", async (error, status) => {
+    entryListResolve.mockResolvedValue({ data: null, error });
+    const res = await GET(new NextRequest("http://localhost/x"), listCtx);
+    expect(res.status).toBe(status);
+    const body = await res.json();
+    expect(body).not.toHaveProperty("entries");
+    expect(body.error).toMatch(/saved staff responses/i);
+    expect(body.error).not.toContain("SYNTHETIC");
+  });
+
+  it("GET returns a successful empty list when the read actually succeeds", async () => {
+    entryListResolve.mockResolvedValue({ data: [], error: null });
+    const res = await GET(new NextRequest("http://localhost/x"), listCtx);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ entries: [] });
+  });
+
   it("POST creates a draft entry (201)", async () => {
     entryInsertSingle.mockResolvedValue({ data: { id: ENTRY_ID, theme_title: "Crossings", status: "draft" }, error: null });
     const res = await POST(jsonRequest({ themeTitle: "Crossings", youSaid: "safer" }), listCtx);

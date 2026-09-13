@@ -208,6 +208,7 @@ let translationReadError: { message: string } | null = null;
  * sentences: one makes coverage unknown, the other makes it UNMEASURABLE,
  * because the list it would be measured against is short.
  */
+let closeLoopReadError: { message: string } | null = null;
 let surveyQuestionsReadError: { message: string } | null = null;
 
 /**
@@ -303,7 +304,7 @@ const fromMock = vi.fn((table: string) => {
   // Close-loop entries — `loadCloseLoopEntries` (all) and the translation
   // inventory (published only).
   if (table === "engagement_closeloop_entries") {
-    return flexibleChain(() => ({ data: [], error: null }));
+    return flexibleChain(() => ({ data: [], error: closeLoopReadError }));
   }
   if (table === "engagement_content_translations") {
     return flexibleChain(() => ({
@@ -443,6 +444,15 @@ async function renderPage(searchParams?: { created?: string; tab?: string }) {
 }
 
 describe("EngagementCampaignDetailPage", () => {
+  it("shows a retry instead of an empty staff-response builder when the read fails", async () => {
+    closeLoopReadError = { message: "SYNTHETIC connection lost" };
+    await renderPage();
+    expect(screen.getByRole("button", { name: "Retry loading responses" })).toBeEnabled();
+    expect(screen.getByText(/Saved staff responses could not be loaded/)).toBeVisible();
+    expect(screen.queryByText(/No entries yet/)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Add entry$/i })).toBeDisabled();
+  });
+
   it("passes every contribution to the paginated review workspace", async () => {
     itemsOrderMock.mockResolvedValue({ data: Array.from({ length: 1005 }, (_, index) => ({
       id: `full-item-${index + 1}`, campaign_id: "campaign-1", category_id: null,
@@ -486,6 +496,7 @@ describe("EngagementCampaignDetailPage", () => {
     sourceLocaleResult = { data: null, error: null };
     campaignPlaceResult = { data: null, error: null };
     surveyQuestionsReadError = null;
+    closeLoopReadError = null;
     membershipMaybeSingleMock.mockResolvedValue({
       data: { workspace_id: "workspace-1", role: "admin" },
       error: null,
