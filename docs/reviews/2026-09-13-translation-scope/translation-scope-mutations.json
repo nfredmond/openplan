@@ -1,0 +1,58 @@
+[
+  {
+    "case": "baseline",
+    "exit_code": 0,
+    "expected_failure": null,
+    "matched": true,
+    "schema_rolled_back": true
+  },
+  {
+    "case": "harmless-comment",
+    "exit_code": 0,
+    "expected_failure": null,
+    "matched": true,
+    "schema_rolled_back": true
+  },
+  {
+    "case": "campaign_workspace",
+    "exit_code": 3,
+    "expected_failure": "Workspace forgery expected scope constraint",
+    "matched": true,
+    "schema_rolled_back": true
+  },
+  {
+    "case": "category_target",
+    "exit_code": 3,
+    "expected_failure": "Foreign category target expected",
+    "matched": true,
+    "schema_rolled_back": true
+  },
+  {
+    "case": "question_target",
+    "exit_code": 3,
+    "expected_failure": "Foreign survey_question target expected",
+    "matched": true,
+    "schema_rolled_back": true
+  },
+  {
+    "case": "option_target",
+    "exit_code": 3,
+    "expected_failure": "Foreign survey_question_option target expected",
+    "matched": true,
+    "schema_rolled_back": true
+  },
+  {
+    "case": "response_target",
+    "exit_code": 3,
+    "expected_failure": "Foreign close_loop_entry target expected",
+    "matched": true,
+    "schema_rolled_back": true
+  },
+  {
+    "case": "target_field",
+    "exit_code": 3,
+    "expected_failure": "Foreign campaign target expected",
+    "matched": true,
+    "schema_rolled_back": true
+  }
+]

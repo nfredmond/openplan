@@ -1,5 +1,7 @@
 # M9b translation custody, September 13, 2026
 
+> A reproduced translation ownership defect takes priority. Read [the scope correction](../2026-09-13-translation-scope/VERIFICATION.md) before continuing this prototype.
+
 v0.57.0 is published at `9cfd8aaf146bedb0946d9f56b77d9fb5be36c3bc`; all final release CI passed. [Publication evidence](../2026-09-12-m9b-response-writes/PUBLICATION.md). This next increment is a tested SQL prototype, not an installed migration or finished application feature.
 
 Owned checkout: `/home/nathaniel/.local/state/openplan/engagement-response-writes-2026-09-12`, package `openplan/`, branch `work/engagement-response-writes`. No owned app server is running. The original `/home/nathaniel/code/openplan` checkout remains clean on local main at `de01ce9b176d31752af44e0afd0245f505c9ae1f`; do not confuse it with remote main or the owned checkout. The separate demo is unchanged. Refresh ownership and browser identity before implementing UI work.

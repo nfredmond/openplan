@@ -1,0 +1,32 @@
+{
+  "cases": [
+    {
+      "case": "baseline",
+      "exit_code": 0,
+      "expected_success": true,
+      "matched": true
+    },
+    {
+      "case": "harmless-comment",
+      "exit_code": 0,
+      "expected_success": true,
+      "matched": true
+    },
+    {
+      "case": "missing-column-inventory",
+      "exit_code": 1,
+      "expected_success": false,
+      "matched": true
+    },
+    {
+      "case": "empty-live-fixture",
+      "exit_code": 1,
+      "expected_success": false,
+      "matched": true
+    }
+  ],
+  "restored": {
+    "src/test/a-column-nothing-reads-is-a-question.test.ts": "6195df07b624c6a31a4396e3eaee00863b67cedc5b81f59aeb215b08bd007ba3",
+    "src/test/fixtures/engagement/translation-scope.sql": "5c1cd290c7da4d20475bb442bc1ce5b48c5863a453fb8b31642d88a63005884e"
+  }
+}

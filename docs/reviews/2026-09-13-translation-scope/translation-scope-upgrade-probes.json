@@ -1,0 +1,14 @@
+[
+  {
+    "case": "valid-legacy",
+    "exit_code": 0,
+    "matched": true,
+    "expected_success": true
+  },
+  {
+    "case": "invalid-legacy",
+    "exit_code": 3,
+    "matched": true,
+    "expected_success": false
+  }
+]

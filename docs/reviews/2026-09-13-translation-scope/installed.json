@@ -1,0 +1,29 @@
+{
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "migration": "20261014000008_engagement_translation_scope.sql",
+  "migration_exit": 0,
+  "ledger": "327|20261014000008",
+  "before": {
+    "engagement_campaigns": "104:94d2e908dad397d9b808855fa778a0f2",
+    "engagement_categories": "0:empty",
+    "engagement_survey_questions": "25:8a4e5b815246ee2ad7c8bac63a18da96",
+    "engagement_survey_question_options": "25:2427d8339a800998716aa3c879eebd98",
+    "engagement_closeloop_entries": "3061:d4347c5de5d07010c6ded45d740f0bd5",
+    "engagement_content_translations": "0:empty",
+    "engagement_configuration_versions": "209:c3e56f7e2ab589ba33ed72e07d635f48",
+    "engagement_response_history": "3116:ee241b5977c3b0e95c256ab8fb19d50b"
+  },
+  "after": {
+    "engagement_campaigns": "104:94d2e908dad397d9b808855fa778a0f2",
+    "engagement_categories": "0:empty",
+    "engagement_survey_questions": "25:8a4e5b815246ee2ad7c8bac63a18da96",
+    "engagement_survey_question_options": "25:2427d8339a800998716aa3c879eebd98",
+    "engagement_closeloop_entries": "3061:d4347c5de5d07010c6ded45d740f0bd5",
+    "engagement_content_translations": "0:empty",
+    "engagement_configuration_versions": "209:c3e56f7e2ab589ba33ed72e07d635f48",
+    "engagement_response_history": "3116:ee241b5977c3b0e95c256ab8fb19d50b"
+  },
+  "existing_records_unchanged": true,
+  "backup_sha256": "7482a5ac39029af2c2306c8797e9507bbf7e046a7696de1927676abb4d975e3c",
+  "migration_sha256": "f03a86eaeffaefae342634677ff123c9ae10d41f55021c8bcd4ba90738426fec"
+}

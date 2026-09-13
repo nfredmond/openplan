@@ -1,0 +1,10 @@
+{
+  "endpoint": "http://127.0.0.1:29821",
+  "forgedWorkspaceStatus": 409,
+  "sqlstate": "23503",
+  "constraint": "engagement_translation_campaign_workspace",
+  "elapsedMs": 18,
+  "foreignDefinitionUnchanged": true,
+  "forbiddenRowAbsent": true,
+  "anonymousReadSqlstate": "42501"
+}
