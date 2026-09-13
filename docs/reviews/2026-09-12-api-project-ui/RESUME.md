@@ -73,3 +73,49 @@ an older stack; override it. Named disposable Supabase workdir:
 API29821/DB29822, container supabase_db_openplan-restore-target-2026091050.
 318 migrations already applied; no reset/reapply. Live API claim is global;
 never overlap claim/mutation suites. Last verified queue was empty.
+
+## Usage-reset checkpoint, September 12
+
+Current candidate source is 8b4f756c324b224686216e055885f99a2fe588fe, already
+pushed to origin/work/planner-agent-api-connections. Working tree was clean
+before this notes-only checkpoint. Main remains the earlier worker increment;
+the UI candidate is not yet on main or released. The only other Codex process
+is in Job Search; this session owns this resumption note.
+
+Recovered actual candidate results:
+- Full QA handle 47344 finished exit 1. Normal suite: 1 failed, 14079 passed,
+  450 skipped; 1257 files passed, 1 failed, 43 skipped.
+- Shuffled seed 912556 handle 75430 finished exit 1 with the same failing test
+  and counts. This is not evidence of order dependence: normal order also fails.
+- Both fail planner-copy-says-the-plain-thing.test.ts, baseline comparison at
+  line 283: record increased 265 to 266, workspace increased 158 to 160.
+  Inspect the newly introduced user wording and existing jargon guidance;
+  fix the actual wording or justify any legitimate terminology explicitly.
+  Do not blindly increase the baseline to manufacture green. Other QA stages
+  after the failed suite are not established by this run.
+- Full isolated RLS handle 67884 was still running at checkpoint. Its quiet
+  log only showed startup; no terminal result yet. Recover it before starting
+  another live suite. If the tool handle expires, inspect processes and retained
+  log instead. No database reset or concurrent claim suites.
+- Upgrade Path 34730331136 completed SUCCESS for exact candidate 8b4f756c,
+  manually dispatched from v0.54.0. Do not dispatch it again without a reason.
+  https://github.com/nfredmond/openplan/actions/runs/34730331136
+
+Logs are retained privately under the api-provider-research directory below:
+v055-full-qa.log, v055-shuffled.log, v055-full-rls.log. QA and shuffle logs are
+terminal; the RLS log may still grow. Next recover RLS, fix the demonstrated
+wording failure, verify the change and repeat applicable candidate checks.
+Any browser-visible wording change requires proportionate browser verification.
+Then land directly on main, inspect exact final CI/RLS, and release v0.55.0.
+Keep developing toward the complete v1 contract afterward. No draft PRs and no
+human-review release gate. No v1 completion claim has been made.
+
+Returning after a usage reset: use this same thread and say continue. Re-read
+this file and current git/process state; tool handles and running processes
+must not be assumed to survive. All expensive implementation/browser evidence
+is committed. A reset is not evidence that an interrupted command completed.
+
+Terminal log SHA-256 values:
+
+- v055-full-qa.log: d10245deac3fceadc95e8050dc83f278c43c88b206dc574ba05aafcc57ab8df7
+- v055-shuffled.log: f6e81a6573b4bb0f001ea18d5a3bb694f8fba8bcdaa30cabfccc210d44c98973
