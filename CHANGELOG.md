@@ -25,12 +25,15 @@ Translation workflow integration is in progress. The development migrations are
 `20261014000011_engagement_translation_snapshot.sql`,
 `20261014000012_engagement_translation_history_receipts.sql`,
 `20261014000013_engagement_translation_generation.sql`,
-`20261014000014_engagement_translation_generation_reads.sql` and
-`20261014000015_engagement_translation_generation_catalog.sql`. They add retained command
+`20261014000014_engagement_translation_generation_reads.sql`,
+`20261014000015_engagement_translation_generation_catalog.sql` and
+`20261014000016_engagement_translation_retained_publication.sql`. They add retained command
 receipts, complete source/current-version snapshots, history receipts and private
-generation attempts/output with staff-only detail and paginated request readers. The queue API retains exact
+generation attempts/output with staff-only detail and paginated request readers.
+The publication command resolves retained output and preserves its generation
+reference; its execution grant remains disabled pending workflow integration. The queue API retains exact
 request identities across retries. The local generation worker has process-restart and
-exact-delivery evidence. Staff queue controls, retained-output publication and
+exact-delivery evidence. Staff editor integration, publication recovery and
 public producer integration remain unfinished. Existing direct producers have
 not yet been retired; these migrations do not declare the complete workflow
 released or authorize ordinary callers to bypass its command boundary.

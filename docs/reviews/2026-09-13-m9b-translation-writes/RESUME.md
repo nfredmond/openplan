@@ -1,3 +1,7 @@
+# Latest retained-publication checkpoint
+
+Read [RETAINED_PUBLICATION_PROGRESS.md](RETAINED_PUBLICATION_PROGRESS.md) first. Retained publication now has SQL and native receipt evidence. API/editor, pending recovery, history integration and producer replacement remain unfinished; execution is still revoked on the app stack.
+
 # Latest catalog checkpoint
 
 Read [GENERATION_CATALOG_PROGRESS.md](GENERATION_CATALOG_PROGRESS.md) first. Staff request discovery now has route, native-reader, SQL pagination/access and fault-control evidence. Retained publication and editor integration are next and remain unfinished.

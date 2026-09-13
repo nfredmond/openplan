@@ -1,0 +1,347 @@
+{
+  "sourceSha256": "ee8dee77f3548805a56d945cd07b9452ead8ef98632f84f272ce680750e66e12",
+  "testSha256": "a2797fcf25af776d0c6759386cf333100f728293e6db53be67df9ce3cecfa018",
+  "testCount": 42,
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/publication-receipt-controls/20260913T162253",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "intent-duplicate_address",
+      "outcome": "killed",
+      "expectedFailure": "refuses publication intent duplicate_address",
+      "failedAssertions": [
+        "retained publication receipt refuses publication intent duplicate_address"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "intent-duplicate_field",
+      "outcome": "killed",
+      "expectedFailure": "refuses publication intent duplicate_field",
+      "failedAssertions": [
+        "retained publication receipt refuses publication intent duplicate_field"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "intent-unavailable",
+      "outcome": "killed",
+      "expectedFailure": "refuses publication intent unavailable",
+      "failedAssertions": [
+        "retained publication receipt refuses publication intent unavailable"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "intent-blank-source",
+      "outcome": "killed",
+      "expectedFailure": "refuses publication intent blank_source",
+      "failedAssertions": [
+        "retained publication receipt refuses publication intent blank_source"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "intent-reason",
+      "outcome": "killed",
+      "expectedFailure": "refuses publication intent blank_reason",
+      "failedAssertions": [
+        "retained publication receipt refuses publication intent blank_reason"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "intent-extra-text",
+      "outcome": "killed",
+      "expectedFailure": "refuses publication intent text",
+      "failedAssertions": [
+        "retained publication receipt refuses publication intent text"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "intent-ref-extra",
+      "outcome": "killed",
+      "expectedFailure": "refuses publication intent reference_extra",
+      "failedAssertions": [
+        "retained publication receipt refuses publication intent reference_extra"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "intent-batch-max",
+      "outcome": "killed",
+      "expectedFailure": "bounds a publication batch",
+      "failedAssertions": [
+        "retained publication receipt bounds a publication batch and reason without truncating words"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "intent-batch-min",
+      "outcome": "killed",
+      "expectedFailure": "bounds a publication batch",
+      "failedAssertions": [
+        "retained publication receipt bounds a publication batch and reason without truncating words"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "reason-codepoints",
+      "outcome": "killed",
+      "expectedFailure": "bounds a publication batch",
+      "failedAssertions": [
+        "retained publication receipt bounds a publication batch and reason without truncating words"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "duplicate-reads",
+      "outcome": "killed",
+      "expectedFailure": "rejects repeated retained request identities",
+      "failedAssertions": [
+        "retained publication receipt rejects repeated retained request identities"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-campaign",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed receipt campaign",
+      "failedAssertions": [
+        "retained publication receipt rejects changed receipt campaign"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-request",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed receipt request",
+      "failedAssertions": [
+        "retained publication receipt rejects changed receipt request"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-locale",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed receipt locale",
+      "failedAssertions": [
+        "retained publication receipt rejects changed receipt locale"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-count",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed receipt count",
+      "failedAssertions": [
+        "retained publication receipt rejects changed receipt count"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-row_campaign",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed receipt row_campaign",
+      "failedAssertions": [
+        "retained publication receipt rejects changed receipt row_campaign"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-row_workspace",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed receipt row_workspace",
+      "failedAssertions": [
+        "retained publication receipt rejects changed receipt row_workspace"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-row_locale",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed receipt row_locale",
+      "failedAssertions": [
+        "retained publication receipt rejects changed receipt row_locale"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-same_row_id",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed receipt same_row_id",
+      "failedAssertions": [
+        "retained publication receipt rejects changed receipt same_row_id"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-same_field",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed receipt same_field",
+      "failedAssertions": [
+        "retained publication receipt rejects changed receipt same_field"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-publisher",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed receipt publisher",
+      "failedAssertions": [
+        "retained publication receipt rejects changed receipt publisher"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "retained-campaign",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed retained generation campaign",
+      "failedAssertions": [
+        "retained publication receipt rejects changed retained generation campaign"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "retained-workspace",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed retained generation workspace",
+      "failedAssertions": [
+        "retained publication receipt rejects changed retained generation workspace"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "retained-locale",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed retained generation locale",
+      "failedAssertions": [
+        "retained publication receipt rejects changed retained generation locale"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "retained-attempt",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed retained generation attempt",
+      "failedAssertions": [
+        "retained publication receipt rejects changed retained generation attempt"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "retained-digest",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed retained generation digest",
+      "failedAssertions": [
+        "retained publication receipt rejects changed retained generation digest"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "retained-source",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed retained generation address",
+      "failedAssertions": [
+        "retained publication receipt rejects changed retained generation address"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "retained-job_state",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed retained generation job_state",
+      "failedAssertions": [
+        "retained publication receipt rejects changed retained generation job_state"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "retained-output_status",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed retained generation output_status",
+      "failedAssertions": [
+        "retained publication receipt rejects changed retained generation output_status"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "retained-accepted-state",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed retained generation accepted_state",
+      "failedAssertions": [
+        "retained publication receipt rejects changed retained generation accepted_state"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-revision",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed receipt revision",
+      "failedAssertions": [
+        "retained publication receipt rejects changed receipt revision"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-saved-id",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed receipt saved_id",
+      "failedAssertions": [
+        "retained publication receipt rejects changed receipt saved_id"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-operator",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed receipt operator",
+      "failedAssertions": [
+        "retained publication receipt rejects changed receipt operator"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-model",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed receipt model",
+      "failedAssertions": [
+        "retained publication receipt rejects changed receipt model"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-words",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed receipt words",
+      "failedAssertions": [
+        "retained publication receipt rejects changed receipt words"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-reference",
+      "outcome": "killed",
+      "expectedFailure": "rejects changed receipt generation_actor",
+      "failedAssertions": [
+        "retained publication receipt rejects changed receipt generation_actor"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Native acknowledgement checks against supplied verified-read DTOs. SQL independently owns scope and current-version authorization. No browser storage or editor integration."
+}

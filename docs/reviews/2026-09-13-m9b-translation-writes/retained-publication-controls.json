@@ -1,0 +1,194 @@
+{
+  "migrationSha256": "4f5d2d33b62798dd57d113e4751d3b107d792f7082ad0f2f7dc7c43b4928b757",
+  "probeSha256": "cdac0cfb8a10b829a0ff06fcd074b8d479e844704643c8ed3860104b85fd64fa",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/retained-publication-controls/20260913T162555",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true
+    },
+    {
+      "case": "reference-validation",
+      "outcome": "killed",
+      "expectedFailure": "malformed reference or supplied text",
+      "expectedOutcome": true
+    },
+    {
+      "case": "ref-extras",
+      "outcome": "killed",
+      "expectedFailure": "malformed reference or supplied text",
+      "expectedOutcome": true
+    },
+    {
+      "case": "ref-digest-shape",
+      "outcome": "killed",
+      "expectedFailure": "malformed reference or supplied text",
+      "expectedOutcome": true
+    },
+    {
+      "case": "request-id",
+      "outcome": "killed",
+      "expectedFailure": "wrong request identity",
+      "expectedOutcome": true
+    },
+    {
+      "case": "attempt-id",
+      "outcome": "killed",
+      "expectedFailure": "wrong attempt identity",
+      "expectedOutcome": true
+    },
+    {
+      "case": "field-id",
+      "outcome": "killed",
+      "expectedFailure": "missing field identity",
+      "expectedOutcome": true
+    },
+    {
+      "case": "scope-campaign",
+      "outcome": "killed",
+      "expectedFailure": "campaign retained output",
+      "expectedOutcome": true
+    },
+    {
+      "case": "scope-workspace",
+      "outcome": "killed",
+      "expectedFailure": "workspace retained output",
+      "expectedOutcome": true
+    },
+    {
+      "case": "scope-locale",
+      "outcome": "killed",
+      "expectedFailure": "locale retained output",
+      "expectedOutcome": true
+    },
+    {
+      "case": "original-baseline",
+      "outcome": "killed",
+      "expectedFailure": "source retained output",
+      "expectedOutcome": true
+    },
+    {
+      "case": "original-saved-baseline",
+      "outcome": "killed",
+      "expectedFailure": "rebased old generation",
+      "expectedOutcome": true
+    },
+    {
+      "case": "delivery-digest",
+      "outcome": "killed",
+      "expectedFailure": "wrong delivery identity",
+      "expectedOutcome": true
+    },
+    {
+      "case": "job-state",
+      "outcome": "killed",
+      "expectedFailure": "job_state retained output",
+      "expectedOutcome": true
+    },
+    {
+      "case": "output-status",
+      "outcome": "killed",
+      "expectedFailure": "output_status retained output",
+      "expectedOutcome": true
+    },
+    {
+      "case": "accepted-state",
+      "outcome": "killed",
+      "expectedFailure": "accepted_state retained output",
+      "expectedOutcome": true
+    },
+    {
+      "case": "output-hash",
+      "outcome": "killed",
+      "expectedFailure": "hash retained output",
+      "expectedOutcome": true
+    },
+    {
+      "case": "model",
+      "outcome": "killed",
+      "expectedFailure": "model retained output",
+      "expectedOutcome": true
+    },
+    {
+      "case": "nonblank",
+      "outcome": "killed",
+      "expectedFailure": "blank retained output",
+      "expectedOutcome": true
+    },
+    {
+      "case": "unicode-blank-reason",
+      "outcome": "killed",
+      "expectedFailure": "blank publication reason",
+      "expectedOutcome": true
+    },
+    {
+      "case": "submitted-words",
+      "outcome": "killed",
+      "expectedFailure": "malformed reference or supplied text",
+      "expectedOutcome": true
+    },
+    {
+      "case": "publisher-row",
+      "outcome": "killed",
+      "expectedFailure": "Retained publication lost words authorship or reference",
+      "expectedOutcome": true
+    },
+    {
+      "case": "generation-actor",
+      "outcome": "killed",
+      "expectedFailure": "Retained publication lost words authorship or reference",
+      "expectedOutcome": true
+    },
+    {
+      "case": "exact-words",
+      "outcome": "killed",
+      "expectedFailure": "Retained publication lost words authorship or reference",
+      "expectedOutcome": true
+    },
+    {
+      "case": "reference-receipt",
+      "outcome": "killed",
+      "expectedFailure": "Retained publication lost words authorship or reference",
+      "expectedOutcome": true
+    },
+    {
+      "case": "identical-history",
+      "outcome": "killed",
+      "expectedFailure": "Identical new generation lost revision",
+      "expectedOutcome": true
+    },
+    {
+      "case": "helper-private",
+      "outcome": "killed",
+      "expectedFailure": "Private publication helper exposed for execution",
+      "expectedOutcome": true
+    },
+    {
+      "case": "command-disabled",
+      "outcome": "killed",
+      "expectedFailure": "Publication migration prematurely enabled command",
+      "expectedOutcome": true
+    },
+    {
+      "case": "current-key-required",
+      "outcome": "killed",
+      "expectedFailure": "Retained publication must succeed without current key or generating membership",
+      "expectedOutcome": true
+    },
+    {
+      "case": "generating-membership-required",
+      "outcome": "killed",
+      "expectedFailure": "Retained publication must succeed without current key or generating membership",
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "SQL-only write boundary, actual retained output and crafted private rows for independent failure conditions. All probes rolled back; no UI, new worker/model run or concurrent publication evidence."
+}
