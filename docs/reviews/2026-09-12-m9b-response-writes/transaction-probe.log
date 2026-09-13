@@ -1,0 +1,25 @@
+BEGIN
+SET
+CREATE TABLE
+ALTER TABLE
+REVOKE
+GRANT
+CREATE POLICY
+CREATE FUNCTION
+REVOKE
+CREATE TRIGGER
+CREATE FUNCTION
+REVOKE
+GRANT
+CREATE FUNCTION
+REVOKE
+CREATE TRIGGER
+SET
+              set_config              
+--------------------------------------
+ 4a21e42f-27a7-474d-9a7a-5912c70af359
+(1 row)
+
+DO
+ROLLBACK
+NOTICE:  Create/correct/remove replays, changed-payload and stale refusals, original history passed

@@ -1,0 +1,62 @@
+[
+  {
+    "name": "baseline",
+    "status": 0,
+    "matched": true,
+    "outcome": "survived",
+    "expected": null,
+    "schemaSha256": "6bb1382c4f79992abb62293b92c9f7aeae3208ce339225120585b1f3c9dcf502",
+    "probeSha256": "f23583d7aba4390296b0f19965393ddec64f9c8ced0f54459cdd22320d1068a2",
+    "diagnostic": null
+  },
+  {
+    "name": "harmless-comment",
+    "status": 0,
+    "matched": true,
+    "outcome": "survived",
+    "expected": null,
+    "schemaSha256": "9bd861292f5a14a95f1078cb8825b23b29a4b5d945078945620e3568e3efc82f",
+    "probeSha256": "f23583d7aba4390296b0f19965393ddec64f9c8ced0f54459cdd22320d1068a2",
+    "diagnostic": null
+  },
+  {
+    "name": "accept-stale-version",
+    "status": 3,
+    "matched": true,
+    "outcome": "killed",
+    "expected": "Stale editor overwrote the first correction",
+    "schemaSha256": "0f89ef1874f60ded1224c0ee1d30151641d2b8516f14edc46d9844c806edd30c",
+    "probeSha256": "f23583d7aba4390296b0f19965393ddec64f9c8ced0f54459cdd22320d1068a2",
+    "diagnostic": null
+  },
+  {
+    "name": "accept-changed-retry",
+    "status": 3,
+    "matched": true,
+    "outcome": "killed",
+    "expected": "Changed-payload retry was accepted",
+    "schemaSha256": "641846d3b61ab8418bb1c5a00274d4a9f634aaf4712c8f0f4f05a76a1c1fb683",
+    "probeSha256": "f23583d7aba4390296b0f19965393ddec64f9c8ced0f54459cdd22320d1068a2",
+    "diagnostic": null
+  },
+  {
+    "name": "regressing-clock",
+    "status": 3,
+    "matched": true,
+    "outcome": "killed",
+    "expected": "Response version did not advance",
+    "schemaSha256": "6dbbc8aaace4eef05bd516c6bb9ff1c771df740f741e684c899eeeaa5d6b1650",
+    "probeSha256": "f23583d7aba4390296b0f19965393ddec64f9c8ced0f54459cdd22320d1068a2",
+    "diagnostic": null
+  },
+  {
+    "name": "mutable-receipt",
+    "status": 3,
+    "matched": true,
+    "outcome": "killed",
+    "expected": "Completed receipt could be changed",
+    "schemaSha256": "4745090812b9ca54cdd31aa016e2aa79cd7466a4a9a2c3bbdf3d36bda3cdc600",
+    "probeSha256": "f23583d7aba4390296b0f19965393ddec64f9c8ced0f54459cdd22320d1068a2",
+    "diagnostic": null
+  }
+]

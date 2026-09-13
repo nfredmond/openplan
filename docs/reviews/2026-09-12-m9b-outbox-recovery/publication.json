@@ -1,0 +1,24 @@
+{
+  "release": "v0.56.1",
+  "publishedAt": "2026-09-13T06:28:37Z",
+  "commit": "3f70af98e6fb06b4c0f932769e10f880711d46ec",
+  "url": "https://github.com/nfredmond/openplan/releases/tag/v0.56.1",
+  "checks": [
+    {
+      "headSha": "3f70af98e6fb06b4c0f932769e10f880711d46ec",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34742035606",
+      "kind": "ci",
+      "receiptSha256": "689b470a7c31094fec107a1b4f4fbc75d23fabb8838bd199ed9e59d4f797ee37"
+    },
+    {
+      "headSha": "3f70af98e6fb06b4c0f932769e10f880711d46ec",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34742035586",
+      "kind": "rls",
+      "receiptSha256": "cc23640600f0558f8045ffb0d72684cc7dc3dfaf9a14141ccf591adaeb0814c8"
+    }
+  ]
+}

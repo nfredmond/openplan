@@ -119,3 +119,11 @@ application and test source are unchanged. Browser, shuffled, isolated RLS and
 worker evidence is recorded above. Final GitHub CI remains required before tagging.
 No new migration was added; the schema is identical to published v0.56.0, whose
 populated upgrade check is retained in the response-history review.
+
+## Published
+
+v0.56.1 was published at 2026-09-13T06:28:37Z. The peeled tag and remote main
+matched 3f70af98e6fb06b4c0f932769e10f880711d46ec. CI 34742035606 and RLS
+34742035586 completed successfully on that exact commit, with every job checked
+before tagging. publication.json retains their identity and private receipt hashes.
+This supersedes the earlier pending statuses without broadening the release.

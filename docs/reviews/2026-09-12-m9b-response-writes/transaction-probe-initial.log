@@ -1,0 +1,25 @@
+BEGIN
+SET
+CREATE TABLE
+ALTER TABLE
+REVOKE
+GRANT
+CREATE POLICY
+CREATE FUNCTION
+REVOKE
+CREATE TRIGGER
+CREATE FUNCTION
+REVOKE
+GRANT
+SET
+              set_config              
+--------------------------------------
+ 4a21e42f-27a7-474d-9a7a-5912c70af359
+(1 row)
+
+ERROR:  Response write receipts are immutable
+CONTEXT:  PL/pgSQL function guard_engagement_response_write_receipt() line 7 at RAISE
+SQL statement "UPDATE public.engagement_response_write_receipts SET result_json = result
+    WHERE campaign_id = p_campaign AND request_id = p_request"
+PL/pgSQL function write_engagement_response(uuid,uuid,text,uuid,timestamp with time zone,text,jsonb) line 128 at SQL statement
+PL/pgSQL function inline_code_block line 11 at assignment

@@ -1,0 +1,21 @@
+BEGIN
+SET
+CREATE TABLE
+ALTER TABLE
+REVOKE
+GRANT
+CREATE POLICY
+CREATE FUNCTION
+REVOKE
+CREATE TRIGGER
+CREATE FUNCTION
+REVOKE
+GRANT
+SET
+              set_config              
+--------------------------------------
+ 4a21e42f-27a7-474d-9a7a-5912c70af359
+(1 row)
+
+ERROR:  Stale editor overwrote the first correction
+CONTEXT:  PL/pgSQL function inline_code_block line 36 at RAISE

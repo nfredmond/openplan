@@ -659,7 +659,7 @@ Bring Nathaniel decisions about territory depth, the first engagement/capital ca
 
 Published v0.56.0 response-history checkpoint: private retained originals, corrections, removals and complete staff reads now have desktop/390px evidence. [Verification](reviews/2026-09-12-m9b-response-history/VERIFICATION.md) records gates and limits. M9b remains open for reasoned conflict/retry-safe response writes, translation custody and source-to-decision follow-through. This does not change the queue above.
 
-The v0.56.1 email-recovery candidate requires an outbox identity before delivery,
+Published v0.56.1 email recovery requires an outbox identity before delivery,
 reports unsaved broadcast emails, and preserves public confirmation retries.
 [Verification](reviews/2026-09-12-m9b-outbox-recovery/VERIFICATION.md) records
 desktop/390px evidence and remaining limits. M9b and the queue above are unchanged.

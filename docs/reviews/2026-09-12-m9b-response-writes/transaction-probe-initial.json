@@ -1,0 +1,7 @@
+{
+  "status": 3,
+  "schemaSha256": "46ab4131e135856b4efcd9c2670af858c8eb528ef847df7a661f3cfe5c73e87f",
+  "probeSha256": "deeab9ad4cf9a3c80d372be25db5e6680b084cf236a915402dedaef823a3c5e8",
+  "stack": "openplan-restore-target-2026091050",
+  "transaction": "rolled back on completion or connection closure"
+}
