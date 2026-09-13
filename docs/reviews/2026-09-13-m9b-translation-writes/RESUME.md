@@ -1,3 +1,7 @@
+# Latest generation checkpoint
+
+Read [GENERATION_FOUNDATION.md](GENERATION_FOUNDATION.md) first. The generation adapter and strict credential preparation are implemented and tested; durable queue/worker integration and producer conversion remain unfinished. Main publication-note CI is now fully green.
+
 # Latest recovery checkpoint
 
 Read [PENDING_STORAGE_DELETION.md](PENDING_STORAGE_DELETION.md) first. The separate header patch v0.58.1 is published. Continue the unfinished translation workflow from the recovery and generation boundaries recorded there.

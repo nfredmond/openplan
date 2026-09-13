@@ -1,0 +1,25 @@
+{
+  "recordedAt": "2026-09-13T20:29:24.296764+00:00",
+  "baseCommit": "5995b05f06a8bc377e5db84137acc5c5da16d708",
+  "sourceSha256": {
+    "openplan/src/lib/engagement/translation-generation.ts": "ed8259dd9d9578a16fa3478116f5c36c6668e1fa44d759ff651a0bab1599d15d",
+    "openplan/src/lib/engagement/translation.ts": "b7c1cff72f1750af8b0c005ae56e2d3522d15150123cf03377b3de1d41625486",
+    "openplan/src/lib/integrations/translation-credentials.ts": "fb0a54d0529a11ed42aef6bb07c7b3f4acd2bd9d2cdeb407e50db3f12c5932a6",
+    "openplan/src/lib/integrations/workspace-keys.ts": "3b30471b52a7e9bb61dbd4a7924ff8442d323f102e56ca0dbfa4d009836f64c9",
+    "openplan/src/lib/integrations/anthropic-access.ts": "81ca57ecb80d9cff41d3e821716f32099a5fe5b91f1415d28b2d213ffab30790",
+    "openplan/src/test/translation-generation.test.ts": "45fc79d28a386eab0c3dfe954f5bbeb1ff888128c7cf2b7f8ecb41fdaf32bcea",
+    "openplan/src/test/translation-generation-credentials.test.ts": "f81ca1a73ead1bac726fe0c4723705081030050772dbe6d8868e22fc6d1bed28",
+    "openplan/src/test/engagement-translation.test.ts": "bd99802ad6cbafb07159d51d8ffb463ef9c70c045d810221a503a2b608b2aa96",
+    "docs/reviews/2026-09-13-m9b-translation-writes/prove-translation-generation.py": "6d23938564d1b7b6c28f0b519743d60346c6255c1f29452e9a7a729197f04bcb",
+    "docs/reviews/2026-09-13-m9b-translation-writes/translation-generation-controls.json": "738c8f3cbcbf2e1c60d2ba64ec41c40f867cb6f288f1fd6b375fa2dd70ed41c7"
+  },
+  "privateArtifactSha256": {
+    "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-foundation-tests.log": "e4d1f010fef2318822ae51b3fd3e961f6524c4a18cb030303815d95914fcd763",
+    "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-foundation-tests-final.log": "815ac32b4b233e9777ba0f9c86de2e230574bf6cd8c8675371093c4d75423295",
+    "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-foundation-tests-restored.log": "7abccac809dcf6cef7430f30ba5fd55eb8371995240b67568e04332066e3564c",
+    "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-foundation-type-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-foundation-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-foundation-mutations.log": "7006a56dbbadf798fb5764c051d843234caafcf1e0f77e72a5c1308a2fc505f2"
+  },
+  "limits": "Generation adapter and strict credential preparation are not yet wired to durable jobs or HTTP producers. Real SDK tested with intercepted fetch, no paid/model network calls. No new UI or database acceptance claimed."
+}

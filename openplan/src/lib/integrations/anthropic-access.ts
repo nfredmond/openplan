@@ -1,5 +1,7 @@
 /**
- * The ONE way OpenPlan reads Anthropic credentials and constructs models.
+ * Ambient Anthropic credential resolution for synchronous request paths.
+ * Durable translation attempts use a sealed request credential instead; see
+ * translation-credentials.ts and engagement/translation-generation.ts.
  *
  * Resolution order at every call: the current request's workspace key (set by
  * `withWorkspaceIntegrationContext` at a route entry) first, then the

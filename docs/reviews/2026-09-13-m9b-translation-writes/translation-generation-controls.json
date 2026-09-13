@@ -1,0 +1,453 @@
+{
+  "sourceSha256": {
+    "generation": "ed8259dd9d9578a16fa3478116f5c36c6668e1fa44d759ff651a0bab1599d15d",
+    "credential": "fb0a54d0529a11ed42aef6bb07c7b3f4acd2bd9d2cdeb407e50db3f12c5932a6",
+    "workspace": "3b30471b52a7e9bb61dbd4a7924ff8442d323f102e56ca0dbfa4d009836f64c9",
+    "legacy": "b7c1cff72f1750af8b0c005ae56e2d3522d15150123cf03377b3de1d41625486"
+  },
+  "testCount": 68,
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-controls/20260913T132512",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-generation",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-credential",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-workspace",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-legacy",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "sdk-retries",
+      "outcome": "killed",
+      "expectedFailure": "does not retry a provider 429",
+      "failedAssertions": [
+        "one claimed translation generation does not retry a provider 429 automatically or on a second invocation"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "legacy-sdk-retries",
+      "outcome": "killed",
+      "expectedFailure": "sends the entire valid long source",
+      "failedAssertions": [
+        "translateEngagementText sends the entire valid long source, including its final words"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "reuse-attempt",
+      "outcome": "killed",
+      "expectedFailure": "consumes success exactly once",
+      "failedAssertions": [
+        "one claimed translation generation consumes success exactly once including a concurrent second invocation"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "expired-dispatch",
+      "outcome": "killed",
+      "expectedFailure": "consumes an expired attempt",
+      "failedAssertions": [
+        "one claimed translation generation consumes an expired attempt without contacting the provider"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "late-lease-completion",
+      "outcome": "killed",
+      "expectedFailure": "refuses completion after the durable lease deadline",
+      "failedAssertions": [
+        "one claimed translation generation refuses completion after the durable lease deadline even before its timer fires"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "trim-source",
+      "outcome": "killed",
+      "expectedFailure": "uses the exact captured source",
+      "failedAssertions": [
+        "one claimed translation generation uses the exact captured source, key and recipe through the real SDK and retains completion provenance"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "trim-output",
+      "outcome": "killed",
+      "expectedFailure": "uses the exact captured source",
+      "failedAssertions": [
+        "one claimed translation generation uses the exact captured source, key and recipe through the real SDK and retains completion provenance"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "complete-truncated",
+      "outcome": "killed",
+      "expectedFailure": "retains incomplete output and usage",
+      "failedAssertions": [
+        "one claimed translation generation retains incomplete output and usage for max_tokens without making it publishable",
+        "one claimed translation generation retains incomplete output and usage for tool_use without making it publishable",
+        "one claimed translation generation retains incomplete output and usage for unknown without making it publishable"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "publish-empty",
+      "outcome": "killed",
+      "expectedFailure": "keeps unpublishable words",
+      "failedAssertions": [
+        "one claimed translation generation keeps unpublishable words as incomplete evidence"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "publish-oversize",
+      "outcome": "killed",
+      "expectedFailure": "keeps unpublishable words",
+      "failedAssertions": [
+        "one claimed translation generation keeps unpublishable words as incomplete evidence"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "publish-nul",
+      "outcome": "killed",
+      "expectedFailure": "keeps unpublishable words",
+      "failedAssertions": [
+        "one claimed translation generation keeps unpublishable words as incomplete evidence"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "publish-unpaired",
+      "outcome": "killed",
+      "expectedFailure": "keeps unpublishable words",
+      "failedAssertions": [
+        "one claimed translation generation keeps unpublishable words as incomplete evidence"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "wrong-output-unit",
+      "outcome": "killed",
+      "expectedFailure": "counts supplementary characters",
+      "failedAssertions": [
+        "one claimed translation generation counts supplementary characters as code points without trimming output"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unknown-usage-zero",
+      "outcome": "killed",
+      "expectedFailure": "preserves invalid token counts",
+      "failedAssertions": [
+        "one claimed translation generation preserves invalid token counts as unknown rather than zero"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "wrong-source-hash",
+      "outcome": "killed",
+      "expectedFailure": "uses the exact captured source",
+      "failedAssertions": [
+        "one claimed translation generation uses the exact captured source, key and recipe through the real SDK and retains completion provenance"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "wrong-output-hash",
+      "outcome": "killed",
+      "expectedFailure": "uses the exact captured source",
+      "failedAssertions": [
+        "one claimed translation generation uses the exact captured source, key and recipe through the real SDK and retains completion provenance"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ambient-payer",
+      "outcome": "killed",
+      "expectedFailure": "uses the exact captured source",
+      "failedAssertions": [
+        "one claimed translation generation uses the exact captured source, key and recipe through the real SDK and retains completion provenance"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "caller-binding-mutation",
+      "outcome": "killed",
+      "expectedFailure": "does not use changed caller objects",
+      "failedAssertions": [
+        "one claimed translation generation does not use changed caller objects or ambient credentials after capture"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "caller-credential-mutation",
+      "outcome": "killed",
+      "expectedFailure": "does not use changed caller objects",
+      "failedAssertions": [
+        "one claimed translation generation does not use changed caller objects or ambient credentials after capture"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "changed-packet",
+      "outcome": "killed",
+      "expectedFailure": "refuses source without spending",
+      "failedAssertions": [
+        "one claimed translation generation refuses source without spending"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "noncanonical-packet",
+      "outcome": "killed",
+      "expectedFailure": "refuses noncanonical without spending",
+      "failedAssertions": [
+        "one claimed translation generation refuses noncanonical without spending"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "oversized-source",
+      "outcome": "killed",
+      "expectedFailure": "refuses oversize without spending",
+      "failedAssertions": [
+        "one claimed translation generation refuses oversize without spending"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "empty-source",
+      "outcome": "killed",
+      "expectedFailure": "refuses empty without spending",
+      "failedAssertions": [
+        "one claimed translation generation refuses empty without spending"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unpaired-source",
+      "outcome": "killed",
+      "expectedFailure": "refuses unpaired_source without spending",
+      "failedAssertions": [
+        "one claimed translation generation refuses unpaired_source without spending"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unavailable-language",
+      "outcome": "killed",
+      "expectedFailure": "refuses unavailable_language without spending",
+      "failedAssertions": [
+        "one claimed translation generation refuses unavailable_language without spending"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "binding-requestId",
+      "outcome": "killed",
+      "expectedFailure": "refuses changed binding requestId",
+      "failedAssertions": [
+        "one claimed translation generation refuses changed binding requestId before a model call"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "binding-credentialId",
+      "outcome": "killed",
+      "expectedFailure": "refuses changed binding credentialId",
+      "failedAssertions": [
+        "one claimed translation generation refuses changed binding credentialId before a model call"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "binding-configurationHash",
+      "outcome": "killed",
+      "expectedFailure": "refuses changed binding configurationHash",
+      "failedAssertions": [
+        "one claimed translation generation refuses changed binding configurationHash before a model call"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "binding-campaignId",
+      "outcome": "killed",
+      "expectedFailure": "refuses changed binding campaignId",
+      "failedAssertions": [
+        "one claimed translation generation refuses changed binding campaignId before a model call"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "binding-fieldId",
+      "outcome": "killed",
+      "expectedFailure": "refuses changed binding fieldId",
+      "failedAssertions": [
+        "one claimed translation generation refuses changed binding fieldId before a model call"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "binding-workspaceId",
+      "outcome": "killed",
+      "expectedFailure": "refuses changed binding workspaceId",
+      "failedAssertions": [
+        "one claimed translation generation refuses changed binding workspaceId before a model call"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "envelope-workspaceId",
+      "outcome": "killed",
+      "expectedFailure": "refuses replaced workspaceId without fallback",
+      "failedAssertions": [
+        "translation credential custody refuses replaced workspaceId without fallback"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "envelope-requestId",
+      "outcome": "killed",
+      "expectedFailure": "refuses replaced requestId without fallback",
+      "failedAssertions": [
+        "translation credential custody refuses replaced requestId without fallback"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "envelope-credentialId",
+      "outcome": "killed",
+      "expectedFailure": "refuses replaced credentialId without fallback",
+      "failedAssertions": [
+        "translation credential custody refuses replaced credentialId without fallback"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "envelope-source",
+      "outcome": "killed",
+      "expectedFailure": "refuses replaced source without fallback",
+      "failedAssertions": [
+        "translation credential custody refuses replaced source without fallback"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "envelope-recipe",
+      "outcome": "killed",
+      "expectedFailure": "refuses a replaced recipe even when",
+      "failedAssertions": [
+        "translation credential custody refuses a replaced recipe even when the attacker also replaces the outer configuration hash"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "configuration-hash",
+      "outcome": "killed",
+      "expectedFailure": "refuses replaced configuration without fallback",
+      "failedAssertions": [
+        "translation credential custody refuses replaced configuration without fallback"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "plaintext-storage",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "query-projection",
+      "outcome": "killed",
+      "expectedFailure": "asserts the complete query projection",
+      "failedAssertions": [
+        "strict workspace translation credential selection selects the scoped workspace override and asserts the complete query projection"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-read-error",
+      "outcome": "killed",
+      "expectedFailure": "refuses error rather than changing the payer",
+      "failedAssertions": [
+        "strict workspace translation credential selection refuses error rather than changing the payer"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-duplicate-selection",
+      "outcome": "killed",
+      "expectedFailure": "refuses duplicate rather than changing the payer",
+      "failedAssertions": [
+        "strict workspace translation credential selection refuses duplicate rather than changing the payer"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "wrong-workspace-row",
+      "outcome": "killed",
+      "expectedFailure": "refuses wrong_workspace rather than changing the payer",
+      "failedAssertions": [
+        "strict workspace translation credential selection refuses wrong_workspace rather than changing the payer"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "wrong-provider-row",
+      "outcome": "killed",
+      "expectedFailure": "refuses wrong_provider rather than changing the payer",
+      "failedAssertions": [
+        "strict workspace translation credential selection refuses wrong_provider rather than changing the payer"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "decrypt-fallback",
+      "outcome": "killed",
+      "expectedFailure": "refuses undecryptable rather than changing the payer",
+      "failedAssertions": [
+        "strict workspace translation credential selection refuses undecryptable rather than changing the payer"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "capture-request-too-late",
+      "outcome": "killed",
+      "expectedFailure": "captures request identity before waiting",
+      "failedAssertions": [
+        "strict workspace translation credential selection captures request identity before waiting for the key read"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Real SDK with intercepted fetch, mocked scoped credential query. Does not establish live provider behavior, database authorization/leases, durable dispatch reservation, restart recovery, UI reachability or publication."
+}

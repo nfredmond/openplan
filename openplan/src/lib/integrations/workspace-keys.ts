@@ -9,8 +9,10 @@
  * the per-request integration context — never in a response body.
  */
 
+import { prepareTranslationCredential, TranslationCredentialError, type TranslationCredential } from "./translation-credentials";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import {
+  decryptIntegrationKey,
   encryptIntegrationKey,
   integrationKeyEncryptionAvailable,
   integrationKeyLast4,
@@ -132,4 +134,34 @@ export async function withWorkspaceIntegrationContext<T>(
     // Fall through with no overrides.
   }
   return await runWithWorkspaceIntegrationKeys(workspaceId, keys, fn);
+}
+
+// Durable translation requests require a conclusive read of the selected key.
+// Unlike the legacy request context, a failed read/decrypt cannot switch who
+// pays. This only captures credentials; it does not authorize or dispatch work.
+export async function prepareWorkspaceTranslationCredential(args: {
+  workspaceId: string; requestId: string; credentialId: string; modelId: string;
+  client?: ServiceClientLike;
+}): Promise<TranslationCredential> {
+  // Capture caller-owned scalars before the asynchronous database read.
+  const { workspaceId, requestId, credentialId, modelId } = args;
+  try {
+    const client = args.client ?? createServiceRoleClient();
+    const { data, error } = await client.from("workspace_integration_keys")
+      .select("workspace_id, provider, key_ciphertext")
+      .eq("workspace_id", workspaceId).eq("provider", "anthropic");
+    if (error || !Array.isArray(data) || data.length > 1) throw new Error();
+    let apiKey: string | null;
+    const source = data.length === 1 ? "workspace" : "env";
+    if (data.length === 1) {
+      const row = data[0] as Record<string, unknown> | null;
+      if (!row || row.workspace_id !== workspaceId || row.provider !== "anthropic" ||
+        typeof row.key_ciphertext !== "string") throw new Error();
+      apiKey = decryptIntegrationKey(row.key_ciphertext);
+    } else {
+      apiKey = process.env.ANTHROPIC_API_KEY?.trim() || null;
+    }
+    if (!apiKey) throw new Error();
+    return prepareTranslationCredential({ workspaceId, requestId, credentialId, modelId, source, apiKey });
+  } catch { throw new TranslationCredentialError("translation_credential_unavailable"); }
 }

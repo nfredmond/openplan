@@ -70,6 +70,7 @@ describe("translateEngagementText", () => {
     expect(result.source).toBe("ai");
     expect(generateTextMock.mock.lastCall?.[0].prompt).toContain(text);
     expect(generateTextMock.mock.lastCall?.[0].maxOutputTokens).toBe(1500);
+    expect(generateTextMock.mock.lastCall?.[0].maxRetries).toBe(0);
   });
 
   it.each(["length", "content-filter", "error", "tool-calls", "other", undefined])(
