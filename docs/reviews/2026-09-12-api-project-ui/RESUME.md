@@ -119,3 +119,14 @@ Terminal log SHA-256 values:
 
 - v055-full-qa.log: d10245deac3fceadc95e8050dc83f278c43c88b206dc574ba05aafcc57ab8df7
 - v055-shuffled.log: f6e81a6573b4bb0f001ea18d5a3bb694f8fba8bcdaa30cabfccc210d44c98973
+
+## Wording fix and recovered RLS result
+
+RLS handle 67884 finished exit 0: 479 tests across 50 files. All nine retained
+SQL function-source hashes match the earlier worker reference and active API
+queue is zero. UI wording now says Saved API, links to settings, and specifies
+name, summary, status and question in both the disclosure and consent. No test
+baseline was raised and no guard changed. Focused copy and both panel suites
+passed 57 tests. A harmless comment control passed all four copy checks; original
+wording failed the baseline as documented above. The copy guard cannot assess
+meaning or layout; fresh browser acceptance and full QA/shuffle follow.

@@ -243,11 +243,11 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
       {error && <p role="alert" className="rounded border border-rose-300/30 p-2 text-sm text-rose-100">{error}</p>}
       {notice && <p role="status" className="text-sm text-sky-100">{notice}</p>}
       <label className="block text-sm">Provider<select className={inputClass} value={provider} disabled={saving || Boolean(pending)} onChange={event => { setProvider(event.target.value as Provider); setApiSelection(null); setModel(""); setCharges(false); setConnectionId(""); setSetup(null); }}>
-        <option value="codex">Installed Codex</option><option value="claude">Installed Claude Code</option><option value="opencode">Installed OpenCode</option><option value="anthropic">Anthropic API</option><option value="api_connection">Saved workspace API</option>
+        <option value="codex">Installed Codex</option><option value="claude">Installed Claude Code</option><option value="opencode">Installed OpenCode</option><option value="anthropic">Anthropic API</option><option value="api_connection">Saved API</option>
       </select></label>
       {provider === "api_connection" ? <div className="space-y-3">
         <p className="text-xs">Choose a saved OpenAI-compatible Chat Completions destination. Requests wait for your OpenPlan API worker; provider availability and account access are checked only when it runs.</p>
-        <a className="text-xs underline" href="/workspace">Manage saved APIs in Workspace settings</a>
+        <a className="text-xs underline" href="/workspace">Manage saved APIs in settings</a>
         {apiReadError && <p role="alert" className="text-sm text-rose-100">{apiReadError}</p>}
         <label className="block text-sm">Saved API connection<select className={inputClass} value={apiSelectionCurrent ? apiSelection?.id : ""} disabled={saving || Boolean(pending) || apiLoading} onChange={event => {
           setApiSelection(apiConnections.find(row => row.id === event.target.value) ?? null); setModel(""); setCharges(false);
@@ -258,7 +258,7 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
         {apiSelection && !apiSelectionCurrent && !apiLoading && <p role="alert" className="text-sm">This API selection changed or is unavailable. Choose its current revision before sending a new request.</p>}
         {apiRevision && <div className="space-y-1 text-xs [overflow-wrap:anywhere]">
           <p>Destination: {apiRevision.configuration.endpoint}</p><p>{apiRevision.configuration.authMode === "api_key" ? "The saved revision's API key will be sent." : "No API key will be sent. The endpoint may still apply its own usage charges."}</p>
-          <p>Only this project&apos;s stored record and your question are shared. No other provider or account will be substituted.</p>
+          <p>Only the saved project name, summary, status and your question are shared. No other provider or account will be substituted.</p>
         </div>}
       </div> : nativeProvider ? <>
         <label className="block text-sm">Project connection<select className={inputClass} value={connectionId} disabled={saving || Boolean(pending)} onChange={event => { setConnectionId(event.target.value); setCharges(false); }}>
@@ -286,7 +286,7 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
         <option value="">Choose a configured model</option>{apiRevision?.configuration.modelIds.map(id => <option key={id} value={id}>{id}</option>)}
       </select></label> : <label className="block text-sm">Model ID<input className={inputClass} maxLength={160} value={model} disabled={saving || Boolean(pending)} onChange={event => setModel(event.target.value)} placeholder="Exact model ID from your provider" /></label>}
       {provider !== "api_connection" && <p className="text-xs">Use a model your account can access. Unsupported models fail without substitution. For Codex, the connector&apos;s models command lists current choices. For Claude, it checks sign-in but does not list models; use an exact claude- model ID supported by your account. For OpenCode, the command reads its offline OpenAI catalog. Those IDs do not establish account access or current availability; use the ID without the openai/ prefix.</p>}
-      {provider === "api_connection" && <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={charges} disabled={saving || Boolean(pending)} onChange={event => setCharges(event.target.checked)} />I authorize sharing this project record and question with the selected API destination and accept any provider charges.</label>}
+      {provider === "api_connection" && <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={charges} disabled={saving || Boolean(pending)} onChange={event => setCharges(event.target.checked)} />I authorize sharing the saved project name, summary, status and my question with the selected API destination and accept any provider charges.</label>}
       {(provider === "anthropic" || ["apiKey", "opencode_api"].includes(selected?.expected_auth_mode ?? "")) && <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={charges} disabled={saving || Boolean(pending)} onChange={event => setCharges(event.target.checked)} />I authorize this request to use the selected API key and incur provider charges.</label>}
       <label className="block text-sm">Project question<Textarea className={`${inputClass} min-h-24`} maxLength={2000} value={question} disabled={saving || Boolean(pending)} onChange={event => setQuestion(event.target.value)} onKeyDown={event => {
         if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing && canSend) { event.preventDefault(); sendNew(); }
@@ -306,7 +306,7 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
         {turns.length === 0 && <p className="text-sm">No saved requests for this project.</p>}
         {turns.map(turn => <article className="space-y-2 rounded border border-white/15 p-3" key={turn.id} aria-label={`Provider request: ${turn.question}`}>
           <p className="whitespace-pre-wrap break-words text-sm font-semibold">{turn.question}</p>
-          <p className="break-words text-xs">{turn.provider === "codex" ? "Installed Codex" : turn.provider === "claude" ? "Installed Claude Code" : turn.provider === "opencode" ? "Installed OpenCode" : turn.provider === "api_connection" ? "Saved workspace API" : "Anthropic API"} · {turn.model_id} · {authLabels[turn.auth_mode] ?? turn.auth_mode}</p>
+          <p className="break-words text-xs">{turn.provider === "codex" ? "Installed Codex" : turn.provider === "claude" ? "Installed Claude Code" : turn.provider === "opencode" ? "Installed OpenCode" : turn.provider === "api_connection" ? "Saved API" : "Anthropic API"} · {turn.model_id} · {authLabels[turn.auth_mode] ?? turn.auth_mode}</p>
           {turn.provider === "api_connection" && <p className="text-xs [overflow-wrap:anywhere]">Original destination: {providerApiRevisionMetadata.shape.configuration.parse(JSON.parse(turn.api_configuration_canonical)).endpoint}</p>}
           <p role="status" className="text-xs">Status: {turn.state}</p>
           {turn.failure_code && <p className="text-sm">{readableError(turn.failure_code)}</p>}
