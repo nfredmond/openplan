@@ -1,0 +1,25 @@
+{
+  "status": "All declared local checks passed; final release-commit CI and publication remain pending",
+  "checks": [
+    {
+      "log": "translation-scope-full-rls.log",
+      "sha256": "b18d905e2851ba108d0efdde5fa5dcd8eb26c60976563ec4ffe7db9666337c28",
+      "result": "481 passed; terminal exit 0"
+    },
+    {
+      "log": "translation-scope-shuffled.log",
+      "sha256": "2e8f9a3957d15b8254814049519e59740c8f4acc4b4cdc5f54e0b31e7a844216",
+      "result": "14306 passed, 452 skipped; seed 571913; terminal exit 0"
+    },
+    {
+      "log": "translation-scope-workers.log",
+      "sha256": "34d280f09c4a5f494e686bd8b6355571b883171bf48052c5b5f79c8d4b8c6eb2",
+      "result": "52 suites passed, 0 failed, 0 not run; terminal exit 0"
+    },
+    {
+      "log": "translation-scope-qa.log",
+      "sha256": "19e5e2d3edd478f624ff1cbb4b8cfefaa24994ba156e1c4a28e0c38eef6b7f1a",
+      "result": "qa:gate terminal exit 0; 14306 tests passed, 452 skipped; provider connector, lint, deadcode, dependency audit and webpack production build passed; live RLS checked separately"
+    }
+  ]
+}

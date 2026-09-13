@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: e6d25edd
-current_release: v0.57.0
+current_release: v0.57.1
 review_by: 2026-10-05
 paths:
 - AGENTS.md
@@ -670,3 +670,12 @@ Published v0.56.1 email recovery requires an outbox identity before delivery,
 reports unsaved broadcast emails, and preserves public confirmation retries.
 [Verification](reviews/2026-09-12-m9b-outbox-recovery/VERIFICATION.md) records
 desktop/390px evidence and remaining limits. M9b and the queue above are unchanged.
+
+
+v0.57.0 publishes exact-version response writes, retained retry requests, reasoned
+history and local subscriber delivery. [Publication](reviews/2026-09-12-m9b-response-writes/PUBLICATION.md)
+records final CI. The v0.57.1 translation scope correction adds native relationship
+constraints; [verification](reviews/2026-09-13-translation-scope/VERIFICATION.md)
+records its release status. Continue translation custody and recovery, followed by
+the remaining M9b and other early priorities above. Neither increment closes M9b
+or changes the full v1 destination.

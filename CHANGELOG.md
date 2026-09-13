@@ -22,6 +22,25 @@ stable enough to promise smooth upgrades indefinitely.
 
 No changes yet.
 
+## 0.57.1 — 2026-09-13
+
+Translation writes now enforce that the workspace, campaign and source field
+belong together, including direct authenticated database API requests. Previously,
+a writer could combine their own workspace with another campaign's identifiers
+and alter that campaign's retained public configuration. Native database
+constraints now reject those forged relationships while preserving legitimate
+translation corrections and withdrawal.
+
+Apply `20261014000008_engagement_translation_scope.sql` before using this release.
+Existing inconsistent translation rows stop migration validation; the upgrade does
+not silently delete or reinterpret them. Referenced sources cannot move to a
+different campaign. Deleting a source still removes its current translation.
+
+Desktop and 390px journeys exercised original, corrected and withdrawn wording,
+lost-response retries and retained original configuration hashes. Full private
+translation-version history and durable machine generation remain unfinished;
+this patch does not expand language-quality, map or scientific-validation claims.
+
 ## 0.57.0 — 2026-09-13
 
 Engagement response saves retain exact retry requests, reject stale corrections,

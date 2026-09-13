@@ -371,3 +371,21 @@ receipt results. A successful review retry also now clears its old read-failure
 warning. Full final QA, shuffled tests, remaining changed-workflow acceptance and
 release-commit CI are still required. No human review gate is holding this work.
 The roadmap's full M9b scope is unchanged.
+
+
+## September 13 release status and translation scope
+
+v0.57.0 was published after final QA, shuffled, isolation and upgrade CI passed.
+The earlier unreleased response-write paragraphs above are retained development
+history, superseded by the [publication record](../reviews/2026-09-12-m9b-response-writes/PUBLICATION.md).
+The parent/reply withdrawal and HTTP conflict corrections shipped in that release.
+
+The v0.57.1 security patch enforces campaign/workspace and source-target relationships
+for translations, including direct authenticated database API writes. Its
+[verification record](../reviews/2026-09-13-translation-scope/VERIFICATION.md) records
+the demonstrated foreign-campaign write, refusal after migration, original/corrected/
+withdrawn browser wording, retained hashes and upgrade checks. Existing invalid
+relationships refuse migration validation rather than being silently changed.
+Full private translation history, durable machine generation and the wider M9b
+source-to-decision chain remain open. The machine helper's 4000-character source
+truncation is an observed gap; the allowed response source can be longer.

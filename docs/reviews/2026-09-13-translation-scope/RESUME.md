@@ -1,3 +1,9 @@
+> Superseding checkpoint: v0.57.1 local QA, shuffled tests, all 481 isolation tests,
+> 52 worker suites, populated upgrade and browser evidence are complete. Release
+> metadata is prepared. Land this verified commit directly on main, inspect exact
+> CI (including Upgrade Path), then tag/publish. See VERIFICATION.md and local-checks.json.
+> The historical reset checkpoint below retains setup and following-work details.
+
 # Restart checkpoint — September 13, 2026
 
 Saved before the weekly usage reset. Continue the existing full-v1 objective; do not restart planning or declare v1 complete.
