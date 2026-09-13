@@ -29,6 +29,57 @@ async function setup(page){await page.getByTestId('page-tabs-nav').getByRole('li
  const panel=panelFor(page);await keyClick(page,panel.getByRole('button',{name:/Español.*Spanish/}));
  const row=panel.getByRole('listitem').filter({has:page.getByText('Campaign title',{exact:true})});
  return {panel,row,input:row.getByRole('textbox'),reason:panel.getByRole('textbox',{name:'Reason for changing saved wording',exact:true})};}
+async function exerciseDraftStorage(page,panel,input,campaignId,prefix){
+ const first='\u00a0SYNTHETIC unsent draft\ufeff',latest=first+' latest',proposed=first+' proposal';
+ const damaged='\u00a0{SYNTHETIC damaged browser copy\ufeff';
+ const captures=[];
+ const download=async(label,suffix)=>{
+  const pending=handled(page.waitForEvent('download'));await keyClick(page,panel.getByRole('button',{name:label,exact:true}));
+  const result=await pending;const filename=prefix+suffix;await result.saveAs(filename);const bytes=fs.readFileSync(filename);
+  captures.push({filename,sha256:sha(bytes)});return bytes.toString('utf8');
+ };
+ const restore=()=>page.evaluate(()=>{window.__translationStorageProbeRestore?.();delete window.__translationStorageProbeRestore;});
+ try{
+  await input.fill(first);
+  const observed=await page.evaluate(campaign=>{const key=Object.keys(sessionStorage).find(key=>key.startsWith('openplan:translation-drafts:')&&key.endsWith(':'+campaign));if(!key)throw Error('Draft was not retained');return{key,raw:sessionStorage.getItem(key)}},campaignId);
+  expect(JSON.parse(observed.raw).entries[0].text).toBe(first);
+  await page.evaluate(key=>{const original=Storage.prototype.setItem;window.__translationStorageProbeRestore=()=>{Storage.prototype.setItem=original};Storage.prototype.setItem=function(name,value){if(this===sessionStorage&&name===key)throw new DOMException('SYNTHETIC quota full','QuotaExceededError');return original.call(this,name,value)}},observed.key);
+  await input.fill(latest);await expect(panel.getByText(/could not retain the latest draft/)).toBeVisible();
+  await keyClick(page,panel.getByRole('button',{name:'Retry retaining latest draft',exact:true}));await expect(input).toHaveValue(latest);
+  await panel.getByText('Unsaved translation drafts',{exact:true}).click();
+  const pageDraft=JSON.parse(await download('Download unsaved drafts','-quota-page-draft.json'));expect(pageDraft.entries[0].text).toBe(latest);
+  await panel.getByText('Unsaved translation drafts',{exact:true}).scrollIntoViewIfNeeded();await page.screenshot({path:prefix+'-quota-draft.png'});
+  await restore();await keyClick(page,panel.getByRole('button',{name:'Retry retaining latest draft',exact:true}));
+  expect(await page.evaluate(key=>JSON.parse(sessionStorage.getItem(key)).entries[0].text,observed.key)).toBe(latest);
+  await page.evaluate(({key,raw})=>sessionStorage.setItem(key,raw),{key:observed.key,raw:damaged});
+  await input.fill(proposed);await expect(panel.getByRole('button',{name:'Retry retaining latest draft',exact:true})).toBeVisible();
+  await keyClick(page,panel.getByRole('button',{name:'Retry retaining latest draft',exact:true}));
+  expect(await page.evaluate(key=>sessionStorage.getItem(key),observed.key)).toBe(damaged);await expect(input).toHaveValue(proposed);
+  expect(await download('Download stored draft copy','-damaged-stored-copy.json')).toBe(damaged);
+  await page.evaluate(key=>{const original=Storage.prototype.setItem;let count=0;window.__translationStorageProbeRestore=()=>{Storage.prototype.setItem=original};Storage.prototype.setItem=function(name,value){if(this===sessionStorage&&name.startsWith(key+':archive:')&&++count===2)throw new DOMException('SYNTHETIC second archive quota failure','QuotaExceededError');return original.call(this,name,value)}},observed.key);
+  await keyClick(page,panel.getByRole('button',{name:'Preserve these drafts and start fresh',exact:true}));
+  await expect(panel.getByText(/draft copy could not be preserved/)).toBeVisible();await expect(input).toHaveValue(proposed);
+  expect(await page.evaluate(key=>sessionStorage.getItem(key),observed.key)).toBe(damaged);
+  await panel.getByText('Unsaved translation drafts',{exact:true}).scrollIntoViewIfNeeded();await page.screenshot({path:prefix+'-interrupted-archive.png'});
+  await restore();await keyClick(page,panel.getByRole('button',{name:'Preserve these drafts and start fresh',exact:true}));await expect(input).toHaveValue('');await expect(input).toBeEditable();
+  const copies=await page.evaluate(key=>Object.keys(sessionStorage).filter(name=>name.startsWith(key+':archive:')).map(name=>sessionStorage.getItem(name)),observed.key);
+  expect(copies).toHaveLength(3);expect(copies.filter(raw=>raw===damaged)).toHaveLength(2);
+  expect(copies.some(raw=>raw!==damaged&&JSON.parse(raw).entries[0].text===proposed)).toBe(true);
+  await panel.getByText('Earlier unsaved draft copies (3)',{exact:true}).click();
+  for(let i=0;i<copies.length;i++)expect(sha(await download(`Download earlier draft copy ${i+1}`,`-archive-${i+1}.json`))).toBe(sha(copies[i]));
+  const unreadable=damaged+' after reload';await page.evaluate(({key,raw})=>sessionStorage.setItem(key,raw),{key:observed.key,raw:unreadable});await page.reload();
+  await expect(input).toHaveAttribute('readonly','');await expect(panel.getByRole('button',{name:'Retry unsaved draft recovery',exact:true})).toBeVisible();
+  await keyClick(page,panel.getByRole('button',{name:'Retry unsaved draft recovery',exact:true}));await expect(input).toHaveAttribute('readonly','');
+  await panel.getByText('Unsaved translation drafts',{exact:true}).click();expect(await download('Download unsaved drafts','-unreadable-after-reload.json')).toBe(unreadable);
+  await panel.getByText('Unsaved translation drafts',{exact:true}).scrollIntoViewIfNeeded();await page.screenshot({path:prefix+'-unreadable-draft.png'});
+  await keyClick(page,panel.getByRole('button',{name:'Preserve these drafts and start fresh',exact:true}));await expect(input).toBeEditable();await expect(input).toHaveValue('');
+  const final=await page.evaluate(key=>Object.keys(sessionStorage).filter(name=>name.startsWith(key+':archive:')).map(name=>sessionStorage.getItem(name)),observed.key);
+  expect(final).toHaveLength(4);expect([...final].sort()).toEqual([...copies,unreadable].sort());
+  console.log('Quota, differing copies and interrupted archival recovered',prefix);
+  return {captures,archiveCount:final.length,storedDamagedSha256:sha(damaged),unreadableSha256:sha(unreadable)};
+ }finally{await restore().catch(()=>{});}
+}
+
 async function journey(browser,width){
  const context=await browser.newContext({viewport:{width,height:1000}}),page=await context.newPage();page.setDefaultTimeout(60000);
  const prefix=`${evidence}/translation-editor-${width}-${Date.now()}`;
@@ -42,6 +93,7 @@ async function journey(browser,width){
   const {panel,row,input,reason}=await setup(page);const path=`/api/engagement/campaigns/${campaignId}/translations/commands`;
   const original=`\u00a0SINTÉTICO original ${width}\ufeff`,corrected=`\u00a0SINTÉTICO corrección ${width}\ufeff`,reviewed=`\u00a0SINTÉTICO revisado ${width}\ufeff`,colleague=`SINTÉTICO otra corrección ${width}`;
   await page.route('**'+path,async route=>{commands.push(route.request().postDataJSON());if(loseFirst){loseFirst=false;const response=await route.fetch();expect(response.status()).toBe(200);lostReceipt=await response.json();await route.abort('failed');}else await route.continue();});
+  const draftRecovery=await exerciseDraftStorage(page,panel,input,campaignId,prefix);expect(commands).toHaveLength(0);
   await input.fill(original);await keyClick(page,row.getByRole('button',{name:'Save as our wording',exact:true}));
   await expect(panel.getByRole('region',{name:'Pending translation change',exact:true})).toBeVisible();await expect(panel.getByRole('button',{name:'Retry same translation request',exact:true})).toBeEnabled();
   await expect(input).toHaveValue(original);expect(lostReceipt.entries[0].entry.translated_text).toBe(original);
@@ -112,7 +164,7 @@ async function journey(browser,width){
   if(!/^[a-f0-9-]{36}$/.test(campaignId))throw Error('Invalid fixture id');
   const custody=JSON.parse(sql(`select jsonb_agg(jsonb_build_object('request',request_id,'reason',payload->'reason','resultHash',result_sha256)) from engagement_translation_write_receipts where campaign_id='${campaignId}'`));
   expect(custody.some(row=>row.reason==='SYNTHETIC withdrawal reason')).toBe(true);expect(custody.some(row=>row.reason==='\u00a0SYNTHETIC reason for correction\ufeff')).toBe(true);
-  fs.writeFileSync(prefix+'-result.json',JSON.stringify({passed:true,width,campaignId,layoutControl:process.env.OPENPLAN_TRANSLATION_LAYOUT_CONTROL??'none',controls,commands,originalHistory:retainedOriginal,finalHistory,custody,downloadSha256:sha(fs.readFileSync(copy)),overflow,console:consoleEvents,network},null,2));console.log('Browser journey passed',width,prefix);
+  fs.writeFileSync(prefix+'-result.json',JSON.stringify({passed:true,width,campaignId,layoutControl:process.env.OPENPLAN_TRANSLATION_LAYOUT_CONTROL??'none',controls,draftRecovery,commands,originalHistory:retainedOriginal,finalHistory,custody,downloadSha256:sha(fs.readFileSync(copy)),overflow,console:consoleEvents,network},null,2));console.log('Browser journey passed',width,prefix);
  }catch(error){fs.writeFileSync(prefix+'-failure.txt',await page.locator('body').ariaSnapshot().catch(()=>''));await page.screenshot({path:prefix+'-failure.png'}).catch(()=>{});fs.writeFileSync(prefix+'-failure.json',JSON.stringify({campaignId,message:error.message,commands,console:consoleEvents,network},null,2));throw error;}
  finally{await Promise.allSettled([otherContext?.close(),context.close()]);}
 }

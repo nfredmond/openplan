@@ -1,3 +1,7 @@
+# Current usage reset checkpoint
+
+Read [STORAGE_RECOVERY_PROGRESS.md](STORAGE_RECOVERY_PROGRESS.md) first. It records the latest saved implementation, terminal browser checks and remaining work.
+
 # Current history continuation
 
 Read [HISTORY_RECEIPT_PROGRESS.md](HISTORY_RECEIPT_PROGRESS.md) first for the latest

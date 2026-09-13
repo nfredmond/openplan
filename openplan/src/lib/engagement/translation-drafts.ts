@@ -32,27 +32,47 @@ export function translationDraftKey(draft: Pick<TranslationDraft, "locale" | "en
 export function translationDraftStorageKey(scope: TranslationDraftScope) {
   return `openplan:translation-drafts:${scope.userId}:${scope.workspaceId}:${scope.campaignId}`;
 }
-export function readTranslationDrafts(storage: DraftStorage, scope: TranslationDraftScope): TranslationDraftRecord {
+/** Read one observed copy; writers must keep these exact bytes as their starting version. */
+export function readTranslationDraftState(storage: DraftStorage, scope: TranslationDraftScope): { record: TranslationDraftRecord; raw: string | null } {
   const raw = storage.getItem(translationDraftStorageKey(scope));
-  if (raw === null) return { version: 1, ...scope, reason: "", entries: [] };
+  if (raw === null) return { raw, record: { version: 1, ...scope, reason: "", entries: [] } };
   const record = translationDraftRecordSchema.parse(JSON.parse(raw));
   if (record.userId !== scope.userId || record.workspaceId !== scope.workspaceId || record.campaignId !== scope.campaignId) throw new Error("Draft belongs to another editor");
-  return record;
+  return { record, raw };
 }
-export function retainTranslationDrafts(storage: DraftStorage, record: TranslationDraftRecord) {
+export function readTranslationDrafts(storage: DraftStorage, scope: TranslationDraftScope): TranslationDraftRecord {
+  return readTranslationDraftState(storage, scope).record;
+}
+/** Replace only the observed copy; an identical retained result is safe to acknowledge again. */
+export function retainTranslationDrafts(storage: DraftStorage, record: TranslationDraftRecord, expectedRaw: string | null) {
   const parsed = translationDraftRecordSchema.parse(record);
   const key = translationDraftStorageKey(parsed), raw = JSON.stringify(parsed);
+  const before = storage.getItem(key);
+  if (before === raw) return parsed;
+  if (before !== expectedRaw) throw new Error("Stored draft changed; preserve both copies before starting fresh");
   storage.setItem(key, raw);
   if (storage.getItem(key) !== raw) throw new Error("Draft was not retained");
   return parsed;
 }
-/** Keep the exact damaged or abandoned draft before starting another editor copy. */
-export function archiveTranslationDrafts(storage: DraftStorage, scope: TranslationDraftScope) {
+/** Preserve both stored bytes and newer page words before clearing the active copy. */
+export function archiveTranslationDrafts(storage: DraftStorage, scope: TranslationDraftScope, latest: TranslationDraftRecord | null = null) {
   const key = translationDraftStorageKey(scope), raw = storage.getItem(key);
-  if (raw === null) return;
-  const archive = key + ":archive:" + crypto.randomUUID();
-  storage.setItem(archive, raw);
-  if (storage.getItem(archive) !== raw || storage.getItem(key) !== raw) throw new Error("Draft archive failed or active copy changed");
+  const copies = new Set<string>();
+  if (raw !== null) copies.add(raw);
+  if (latest !== null) {
+    const parsed = translationDraftRecordSchema.parse(latest);
+    if (translationDraftStorageKey(parsed) !== key) throw new Error("Page draft belongs to another editor");
+    copies.add(JSON.stringify(parsed));
+  }
+  if (copies.size === 0) return;
+  const archived: Array<{ key: string; raw: string }> = [];
+  for (const copy of copies) {
+    const archive = key + ":archive:" + crypto.randomUUID();
+    storage.setItem(archive, copy);
+    archived.push({ key: archive, raw: copy });
+  }
+  if (archived.some(copy => storage.getItem(copy.key) !== copy.raw)) throw new Error("Draft archive failed");
+  if (storage.getItem(key) !== raw) throw new Error("Draft active copy changed during archiving");
   storage.removeItem(key);
   if (storage.getItem(key) !== null) throw new Error("Active draft was not cleared");
 }

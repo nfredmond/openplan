@@ -1,0 +1,118 @@
+{
+  "privateBase": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913",
+  "artifacts": [
+    {
+      "file": "translation-editor-1440-1789325318769-archive-1.json",
+      "sha256": "4b95b33996333bb2b06aaec986def4863c97349b5a8b9e05e0391799c294cb59"
+    },
+    {
+      "file": "translation-editor-1440-1789325318769-archive-2.json",
+      "sha256": "4b95b33996333bb2b06aaec986def4863c97349b5a8b9e05e0391799c294cb59"
+    },
+    {
+      "file": "translation-editor-1440-1789325318769-archive-3.json",
+      "sha256": "2de551423886da373fc5edf77cde0325ff199e5cd5e4c917a9459c518041768e"
+    },
+    {
+      "file": "translation-editor-1440-1789325318769-conflict-review.png",
+      "sha256": "a899c131b79378c186189c35d387116bc6ec9934536c74fe8ac823f1dd6c0e47"
+    },
+    {
+      "file": "translation-editor-1440-1789325318769-damaged-stored-copy.json",
+      "sha256": "4b95b33996333bb2b06aaec986def4863c97349b5a8b9e05e0391799c294cb59"
+    },
+    {
+      "file": "translation-editor-1440-1789325318769-interrupted-archive.png",
+      "sha256": "94f4868d0e5a913b31a272ccec1746b4b059de69f25af444cbd3f1672db14f87"
+    },
+    {
+      "file": "translation-editor-1440-1789325318769-quota-draft.png",
+      "sha256": "6c0e5d99cd5f14e85e62f58e7b908172117e9f21cf623b0d445b5720b50229ed"
+    },
+    {
+      "file": "translation-editor-1440-1789325318769-quota-page-draft.json",
+      "sha256": "27dbf22d8d0a4510deb09df88abf46e2ddd458b304904fd24e1050740c01d10e"
+    },
+    {
+      "file": "translation-editor-1440-1789325318769-result.json",
+      "sha256": "ca18380c31bc0e211d0b56f7962ec2e627503d1dc19c5f2d1f9a495b78526202"
+    },
+    {
+      "file": "translation-editor-1440-1789325318769-retained-history.png",
+      "sha256": "ef6930b123fc165dbef83bf9b74fd1c349d446c33aa1a08c4803de50c9eb188a"
+    },
+    {
+      "file": "translation-editor-1440-1789325318769-retained-request.json",
+      "sha256": "56fdc9f02af97c9f288bcdff0e4b8d733656445ea156d06606e5bafa7ad03821"
+    },
+    {
+      "file": "translation-editor-1440-1789325318769-unconfirmed.png",
+      "sha256": "66db908e04d0ba03ae152beed98465fdc627bf6970d0d6a1e7ba2fdbe928c0c5"
+    },
+    {
+      "file": "translation-editor-1440-1789325318769-unreadable-after-reload.json",
+      "sha256": "ffc8d646ce0eea2a7ac686d2e94db00cafbd0252558bd89ce21d5898a64ad0c8"
+    },
+    {
+      "file": "translation-editor-1440-1789325318769-unreadable-draft.png",
+      "sha256": "db36d0393affb398195ed1a21135f0c80986e9192240e617188b93e2a37a35db"
+    },
+    {
+      "file": "translation-editor-390-1789325356981-archive-1.json",
+      "sha256": "7dbecaf255bafb28ef458bb35dd095fc6850d06d354edbce48a4ac60d36eb5bb"
+    },
+    {
+      "file": "translation-editor-390-1789325356981-archive-2.json",
+      "sha256": "4b95b33996333bb2b06aaec986def4863c97349b5a8b9e05e0391799c294cb59"
+    },
+    {
+      "file": "translation-editor-390-1789325356981-archive-3.json",
+      "sha256": "4b95b33996333bb2b06aaec986def4863c97349b5a8b9e05e0391799c294cb59"
+    },
+    {
+      "file": "translation-editor-390-1789325356981-conflict-review.png",
+      "sha256": "d70b34d2bfba5b52a321b9a209526e16a97b92437d713135e366c0a24f37099e"
+    },
+    {
+      "file": "translation-editor-390-1789325356981-damaged-stored-copy.json",
+      "sha256": "4b95b33996333bb2b06aaec986def4863c97349b5a8b9e05e0391799c294cb59"
+    },
+    {
+      "file": "translation-editor-390-1789325356981-interrupted-archive.png",
+      "sha256": "8f7f14e3d62a7d965853e0b75ef31423bbeabe0ce3c49732b6c86c075545de9f"
+    },
+    {
+      "file": "translation-editor-390-1789325356981-quota-draft.png",
+      "sha256": "9ff7cdeb3a2cace77cc28a6e9ebb7ef19440ecdaffd604211d86ea7989a4cea6"
+    },
+    {
+      "file": "translation-editor-390-1789325356981-quota-page-draft.json",
+      "sha256": "52e6886135e5e253d90c476abc20c50152ab3229920dd439c3346414678ea613"
+    },
+    {
+      "file": "translation-editor-390-1789325356981-result.json",
+      "sha256": "7929abe90c95bf78967ee646ca637dd731fce6714ae7513bf79e2a98e44bbce8"
+    },
+    {
+      "file": "translation-editor-390-1789325356981-retained-history.png",
+      "sha256": "1cf8d6bf23277fd49230c23b38707cc94de514538bdba0ab29a73937a9d9fe65"
+    },
+    {
+      "file": "translation-editor-390-1789325356981-retained-request.json",
+      "sha256": "1e5b36dc52bcc02bbbfb8b17ed9490a6811a0328fcd84d270eab6af9f349d250"
+    },
+    {
+      "file": "translation-editor-390-1789325356981-unconfirmed.png",
+      "sha256": "4f6dba09a61410c144e341bd0ae6d9f87cfcbf89c616471da18af14e32a2c227"
+    },
+    {
+      "file": "translation-editor-390-1789325356981-unreadable-after-reload.json",
+      "sha256": "ffc8d646ce0eea2a7ac686d2e94db00cafbd0252558bd89ce21d5898a64ad0c8"
+    },
+    {
+      "file": "translation-editor-390-1789325356981-unreadable-draft.png",
+      "sha256": "98668dd7716c911fecb2f29deda88c4b092442991fad9b66b69f736e77a2413c"
+    }
+  ],
+  "limits": "Recorded focused browser and storage evidence. Not complete translation workflow, full QA, global RLS, worker/upgrade/restore checks or release CI."
+}

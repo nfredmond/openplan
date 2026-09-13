@@ -1,0 +1,27 @@
+# Usage reset checkpoint, September 13, 2026
+
+Resume in `/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13`, branch `work/translation-command-workflow`, app package `openplan/`. This checkpoint follows ceb19810. The user is approaching the weekly usage limit. Preserve unfinished work; do not depend on live processes or chat recall. Full V1 remains authorized, with verified increments direct to main, no PRs, no human-review release gate, local/free operation. Preserve the pending reminder constraint, original checkout and demo. Another Codex session was active at the original checkout; recheck ownership before editing.
+
+## Latest repair
+
+Typing or archiving could overwrite a stored draft that had changed since this page read it. Two regression tests reproduced those defects before the fix. Draft reads now retain the exact observed bytes, and later writes refuse to replace differing bytes. Archiving preserves both the stored bytes and current page words, verifies every archived copy, and only then clears the unchanged active copy. Failed storage writes keep the latest page words visible, provide a retention retry, and offer separate downloads for page and stored copies. An unreadable remounted draft stays protected until preserved.
+
+Seven focused suites passed, 150 tests. TypeScript and lint commands exited zero. The storage mutation runner recorded baseline and two harmless survivors plus 20 targeted failures for the stated assertions. Source hashes still match its manifest. These checks cover selected draft storage and recovery boundaries, not every pending-request guard or the complete translation workflow.
+
+The repository browser wrapper completed real navigation, keyboard operation and downloads at 1440px and 390px against the owned webpack dev build on port 3260 and the explicitly isolated app database. It exercised quota failures, latest-word retention retry, changed malformed stored bytes, failure of the second archive write, preservation/download of both copies, unreadable reload recovery, then original save, lost acknowledgement/replay, correction, competing update/conflict recovery, withdrawal/recreation and retained history. All twelve draft download hashes were independently rechecked. Desktop quota and mobile interrupted-archive screenshots were visually inspected; the recovery controls were readable and wrapped within the panel. Console inspection found the deliberately interrupted request and expected 409, plus two mobile font-preload warnings. No page exception was recorded.
+
+An earlier browser attempt failed because its assertion assumed WebStorage key enumeration order stayed stable after adding another archive. All exact copies survived but reordered. The assertion now compares the complete multiset, preserving duplicate counts. That failure is retained, not counted as an app failure or a passing run. Two earlier unit fixture failures likewise assumed JSON property ordering and were corrected without weakening exact stored-byte checks.
+
+## Evidence and runtime
+
+Private artifacts remain in `/home/nathaniel/.local/state/openplan/response-write-probe-20260913`. Successful prefixes are `translation-editor-1440-1789325318769` and `translation-editor-390-1789325356981`; the earlier failed desktop prefix is `translation-editor-1440-1789325249126`. See `translation-storage-recovery-evidence.json` for file hashes and `translation-storage-recovery-controls.json` for mutation outcomes. Logs include `translation-storage-seven-suites.log`, `translation-storage-types-final.log`, `translation-storage-lint.log`, and the before/after draft regression logs. Raw browser/account material stays private.
+
+Browser job 60432 ended with exit 0. Its wrapper confirmed the temporary authenticated command EXECUTE permission was revoked. No test or mutation job remains running. The owned webpack dev server may remain on 3260; recheck its process/cwd with `which-openplan.sh` before using or restarting it. Do not assume process handles survive a reset.
+
+App database is `supabase_db_openplan-restore-target-2026091050`, API 29821, DB 29822, stack directory `/home/nathaniel/.local/state/openplan/openplan-restore-target-2026091050`. It has 331 migrations through 20261014000012. The command remains revoked outside the explicit test wrapper. The older isolated proof database and synthetic retained fixtures are preserved. No database reset or destructive cleanup is needed.
+
+## Resume next
+
+Read this note, then HISTORY_RECEIPT_PROGRESS.md and the complete remaining-work section of NEXT.md. Recheck remote main/tags/CI and run product:direction:check before picking the next substantial task. v0.58.0 was already published; do not restart the obsolete v0.47 prompt. This branch is an unfinished development checkpoint, not a release or main CI pass.
+
+Continue pending-request storage/race/recovery proof and private viewer/outsider browser journeys, then durable translation generation, resumable worker leases, retained publication, attempt/spend accounting and cache provenance. Convert all legacy producers before retiring direct authenticated writes or enabling the command in migrations. Full QA, shuffled tests, standard isolated RLS, applicable workers, upgrade/restore checks and final main CI still precede merge/tag. M9b and the complete V1 contract remain open. Keep AequilibraE and ActivitySim scientific claims separate.

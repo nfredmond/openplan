@@ -1,0 +1,210 @@
+{
+  "sourceSha256": {
+    "storage": "564283435aac0792f133d59d72f462cc08f78cb1596ed5eaacb443b4bd520495",
+    "hook": "2fa023e1960dad5691fbdb71401805e096ad4b2f7792b9d257723eddcaac8633"
+  },
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-storage",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-hook",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "forget-observed-bytes",
+      "outcome": "killed",
+      "expectedFailure": "exact observed bytes from a single storage read",
+      "failedAssertions": [
+        "unsent translation draft custody returns the exact observed bytes from a single storage read"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "overwrite-changed-copy",
+      "outcome": "killed",
+      "expectedFailure": "refuses to replace an active copy",
+      "failedAssertions": [
+        "unsent translation draft custody refuses to replace an active copy that differs from the observed bytes"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "repeat-confirmed-write",
+      "outcome": "killed",
+      "expectedFailure": "recognizes an identical retained result",
+      "failedAssertions": [
+        "unsent translation draft custody recognizes an identical retained result without attempting another storage write"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "forget-written-copy",
+      "outcome": "killed",
+      "expectedFailure": "keeps page words through a quota failure",
+      "failedAssertions": [
+        "unsaved translation storage recovery keeps page words through a quota failure and retries the same draft when storage returns"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-stored-archive",
+      "outcome": "killed",
+      "expectedFailure": "archives both the page draft and changed stored bytes",
+      "failedAssertions": [
+        "unsaved translation storage recovery archives both the page draft and changed stored bytes before starting fresh"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-page-archive",
+      "outcome": "killed",
+      "expectedFailure": "archives page-only drafts",
+      "failedAssertions": [
+        "unsent translation draft custody archives page-only drafts even when no active copy was retained"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "foreign-page-archive",
+      "outcome": "killed",
+      "expectedFailure": "different editor scope",
+      "failedAssertions": [
+        "unsent translation draft custody refuses to archive a page draft under a different editor scope"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-incomplete-archive",
+      "outcome": "killed",
+      "expectedFailure": "second archive cannot be retained",
+      "failedAssertions": [
+        "unsent translation draft custody does not clear the active copy if the second archive cannot be retained"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-first-archive",
+      "outcome": "killed",
+      "expectedFailure": "verifies the first archive again",
+      "failedAssertions": [
+        "unsent translation draft custody verifies the first archive again after writing the second copy"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "discard-newer-active",
+      "outcome": "killed",
+      "expectedFailure": "does not remove a newer active copy",
+      "failedAssertions": [
+        "unsent translation draft custody does not remove a newer active copy when it changes during archiving"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-failed-clear",
+      "outcome": "killed",
+      "expectedFailure": "failed active removal",
+      "failedAssertions": [
+        "unsent translation draft custody reports a failed active removal without losing either copy"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-failed-retention",
+      "outcome": "killed",
+      "expectedFailure": "storage write that returned",
+      "failedAssertions": [
+        "unsent translation draft custody detects a storage write that returned without retaining the draft"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-page-at-archive-call",
+      "outcome": "killed",
+      "expectedFailure": "archives both the page draft and changed stored bytes",
+      "failedAssertions": [
+        "unsaved translation storage recovery archives both the page draft and changed stored bytes before starting fresh"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "overwrite-before-archive",
+      "outcome": "killed",
+      "expectedFailure": "archives both the page draft and changed stored bytes",
+      "failedAssertions": [
+        "unsaved translation storage recovery archives both the page draft and changed stored bytes before starting fresh"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "retry-by-reloading-old-words",
+      "outcome": "killed",
+      "expectedFailure": "keeps page words through a quota failure",
+      "failedAssertions": [
+        "unsaved translation storage recovery keeps page words through a quota failure and retries the same draft when storage returns"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "hide-retention-retry",
+      "outcome": "killed",
+      "expectedFailure": "keeps page words through a quota failure",
+      "failedAssertions": [
+        "unsaved translation storage recovery keeps page words through a quota failure and retries the same draft when storage returns"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "drop-newer-memory-copy",
+      "outcome": "killed",
+      "expectedFailure": "does not overwrite changed stored bytes while keeping",
+      "failedAssertions": [
+        "unsaved translation storage recovery does not overwrite changed stored bytes while keeping the newest words on the page"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "download-old-copy-as-latest",
+      "outcome": "killed",
+      "expectedFailure": "downloads the newer page draft",
+      "failedAssertions": [
+        "unsaved translation storage recovery downloads the newer page draft and the differing stored bytes as separate copies"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "invent-empty-download",
+      "outcome": "killed",
+      "expectedFailure": "does not invent an empty download",
+      "failedAssertions": [
+        "unsaved translation storage recovery does not invent an empty download when an unreadable stored copy disappears"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "enable-unreadable-editor",
+      "outcome": "killed",
+      "expectedFailure": "preserves unreadable bytes after a remount",
+      "failedAssertions": [
+        "unsaved translation storage recovery preserves unreadable bytes after a remount and opens a fresh editor only after archiving"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Selected draft storage/recovery guards in jsdom. Not all editor/write guards, browser quota behavior, real downloads, generation or release checks."
+}

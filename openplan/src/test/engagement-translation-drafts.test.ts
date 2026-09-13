@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { archiveTranslationDrafts, readTranslationDrafts, retainTranslationDrafts, translationDraftRecordSchema,
+import { archiveTranslationDrafts, readTranslationDraftState, readTranslationDrafts, retainTranslationDrafts, translationDraftRecordSchema,
   translationDraftStorageKey, type TranslationDraftRecord } from "@/lib/engagement/translation-drafts";
 import { translationEditorFixture, translationTestId as id, translationTestUser as userId, translationTestWorkspace as workspaceId } from "./helpers/translation-editor-fixture";
 
@@ -18,10 +18,42 @@ const key = translationDraftStorageKey(scope);
 describe("unsent translation draft custody", () => {
   it("keeps raw words, reasons and starting copies without imposing the submission word limit", () => {
     const target = storage(), draft = record(); draft.entries[0].text += "a".repeat(9000);
-    expect(retainTranslationDrafts(target, draft)).toEqual(draft); expect(readTranslationDrafts(target, scope)).toEqual(draft);
-    draft.entries[0].text = ""; retainTranslationDrafts(target, draft); expect(readTranslationDrafts(target, scope).entries[0].text).toBe("");
+    expect(retainTranslationDrafts(target, draft, target.getItem(key))).toEqual(draft); expect(readTranslationDrafts(target, scope)).toEqual(draft);
+    draft.entries[0].text = ""; retainTranslationDrafts(target, draft, target.getItem(key)); expect(readTranslationDrafts(target, scope).entries[0].text).toBe("");
     const unsupported = record(); unsupported.entries[0].locale = "qaa"; unsupported.entries[0].before!.entry.locale = "qaa";
     expect(translationDraftRecordSchema.parse(unsupported)).toEqual(unsupported);
+  });
+  it("returns the exact observed bytes from a single storage read", () => {
+    const target = storage(), raw = JSON.stringify(record(), null, 2); let reads = 0;
+    target.getItem = () => ++reads === 1 ? raw : "SYNTHETIC different next read";
+    expect(readTranslationDraftState(target, scope)).toEqual({ raw, record: record() }); expect(reads).toBe(1);
+  });
+  it("refuses to replace an active copy that differs from the observed bytes", () => {
+    const target = storage(), raw = "SYNTHETIC another stored copy"; target.setItem(key, raw);
+    expect(() => retainTranslationDrafts(target, record(), null)).toThrow("Stored draft changed"); expect(target.getItem(key)).toBe(raw);
+  });
+  it("recognizes an identical retained result without attempting another storage write", () => {
+    const target = storage(), draft = record(); retainTranslationDrafts(target, draft, null);
+    target.setItem = () => { throw new Error("SYNTHETIC quota full"); };
+    expect(retainTranslationDrafts(target, draft, null)).toEqual(draft);
+  });
+  it("archives page-only drafts even when no active copy was retained", () => {
+    const target = storage(), draft = record(); archiveTranslationDrafts(target, scope, draft);
+    expect([...target.rows.values()].map(raw => JSON.parse(raw))).toEqual([draft]); expect(target.getItem(key)).toBeNull();
+  });
+  it("does not clear the active copy if the second archive cannot be retained", () => {
+    const target = storage(), raw = "SYNTHETIC damaged active"; target.setItem(key, raw); let writes = 0;
+    target.setItem = (name, value) => { if (++writes === 1) target.rows.set(name, value); };
+    expect(() => archiveTranslationDrafts(target, scope, record())).toThrow("Draft archive failed"); expect(target.getItem(key)).toBe(raw);
+  });
+  it("verifies the first archive again after writing the second copy", () => {
+    const target = storage(), raw = "SYNTHETIC damaged active"; target.setItem(key, raw); let first: string | null = null;
+    target.setItem = (name, value) => { target.rows.set(name, value); if (first) target.rows.set(first, "SYNTHETIC changed archive"); else first = name; };
+    expect(() => archiveTranslationDrafts(target, scope, record())).toThrow("Draft archive failed"); expect(target.getItem(key)).toBe(raw);
+  });
+  it("refuses to archive a page draft under a different editor scope", () => {
+    const target = storage(), draft = record(); draft.userId = id(99);
+    expect(() => archiveTranslationDrafts(target, scope, draft)).toThrow("Page draft belongs to another editor"); expect(target.rows.size).toBe(0);
   });
   it("treats only an absent record as empty and preserves damaged original bytes", () => {
     const target = storage(); expect(readTranslationDrafts(target, scope)).toEqual({ version: 1, ...scope, reason: "", entries: [] });
@@ -45,7 +77,7 @@ describe("unsent translation draft custody", () => {
   });
   it("detects a storage write that returned without retaining the draft", () => {
     const target = storage(); target.setItem = () => {};
-    expect(() => retainTranslationDrafts(target, record())).toThrow("Draft was not retained");
+    expect(() => retainTranslationDrafts(target, record(), null)).toThrow("Draft was not retained");
   });
   it("archives exact damaged bytes before clearing the active copy", () => {
     const target = storage(), raw = "\u00a0{SYNTHETIC damaged draft\ufeff"; target.setItem(key, raw);
