@@ -1,0 +1,705 @@
+{
+  "releaseCommit": "6ee8c438da9e5c100bb6c1588e29d5248b46cac7",
+  "runs": [
+    {
+      "conclusion": "success",
+      "databaseId": 34758602973,
+      "headSha": "6ee8c438da9e5c100bb6c1588e29d5248b46cac7",
+      "jobs": [
+        {
+          "completedAt": "2026-09-13T13:18:34Z",
+          "conclusion": "success",
+          "databaseId": 103727265597,
+          "name": "verify (qa gate)",
+          "startedAt": "2026-09-13T13:00:12Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-09-13T13:00:14Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-09-13T13:00:13Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:27Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@v6",
+              "number": 2,
+              "startedAt": "2026-09-13T13:00:14Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:28Z",
+              "conclusion": "success",
+              "name": "Setup Node",
+              "number": 3,
+              "startedAt": "2026-09-13T13:00:27Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:54Z",
+              "conclusion": "success",
+              "name": "Install",
+              "number": 4,
+              "startedAt": "2026-09-13T13:00:28Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:56Z",
+              "conclusion": "success",
+              "name": "First-week browser instrument",
+              "number": 5,
+              "startedAt": "2026-09-13T13:00:54Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:18:31Z",
+              "conclusion": "success",
+              "name": "QA gate",
+              "number": 6,
+              "startedAt": "2026-09-13T13:00:56Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:18:32Z",
+              "conclusion": "success",
+              "name": "Post Setup Node",
+              "number": 11,
+              "startedAt": "2026-09-13T13:18:31Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:18:32Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v6",
+              "number": 12,
+              "startedAt": "2026-09-13T13:18:32Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:18:32Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 13,
+              "startedAt": "2026-09-13T13:18:32Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/nfredmond/openplan/actions/runs/34758602973/job/103727265597"
+        },
+        {
+          "completedAt": "2026-09-13T13:01:30Z",
+          "conclusion": "success",
+          "databaseId": 103727265619,
+          "name": "modeling scripts (python unit tests)",
+          "startedAt": "2026-09-13T13:00:11Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-09-13T13:00:13Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-09-13T13:00:12Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:22Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@v6",
+              "number": 2,
+              "startedAt": "2026-09-13T13:00:13Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:22Z",
+              "conclusion": "success",
+              "name": "Setup Python",
+              "number": 3,
+              "startedAt": "2026-09-13T13:00:22Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:58Z",
+              "conclusion": "success",
+              "name": "Install test deps",
+              "number": 4,
+              "startedAt": "2026-09-13T13:00:22Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:01:24Z",
+              "conclusion": "success",
+              "name": "Unit tests (all suites the lightweight env can run)",
+              "number": 5,
+              "startedAt": "2026-09-13T13:00:58Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:01:27Z",
+              "conclusion": "success",
+              "name": "Published v0.44 distributed-work-loading custody",
+              "number": 6,
+              "startedAt": "2026-09-13T13:01:24Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:01:27Z",
+              "conclusion": "success",
+              "name": "Post Setup Python",
+              "number": 11,
+              "startedAt": "2026-09-13T13:01:27Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:01:27Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v6",
+              "number": 12,
+              "startedAt": "2026-09-13T13:01:27Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:01:27Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 13,
+              "startedAt": "2026-09-13T13:01:27Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/nfredmond/openplan/actions/runs/34758602973/job/103727265619"
+        },
+        {
+          "completedAt": "2026-09-13T13:01:24Z",
+          "conclusion": "success",
+          "databaseId": 103727265626,
+          "name": "ops scripts (python unit tests)",
+          "startedAt": "2026-09-13T13:00:11Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-09-13T13:00:12Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-09-13T13:00:11Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:19Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@v6",
+              "number": 2,
+              "startedAt": "2026-09-13T13:00:12Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:20Z",
+              "conclusion": "success",
+              "name": "Setup Python",
+              "number": 3,
+              "startedAt": "2026-09-13T13:00:19Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:36Z",
+              "conclusion": "success",
+              "name": "Native control display dependencies",
+              "number": 4,
+              "startedAt": "2026-09-13T13:00:20Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:56Z",
+              "conclusion": "success",
+              "name": "Unit tests",
+              "number": 5,
+              "startedAt": "2026-09-13T13:00:36Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:01:22Z",
+              "conclusion": "success",
+              "name": "Control and recovery guard mutations",
+              "number": 6,
+              "startedAt": "2026-09-13T13:00:56Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:01:22Z",
+              "conclusion": "success",
+              "name": "Post Setup Python",
+              "number": 11,
+              "startedAt": "2026-09-13T13:01:22Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:01:22Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v6",
+              "number": 12,
+              "startedAt": "2026-09-13T13:01:22Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:01:23Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 13,
+              "startedAt": "2026-09-13T13:01:22Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/nfredmond/openplan/actions/runs/34758602973/job/103727265626"
+        },
+        {
+          "completedAt": "2026-09-13T13:13:15Z",
+          "conclusion": "success",
+          "databaseId": 103727265627,
+          "name": "order independence (shuffled vitest)",
+          "startedAt": "2026-09-13T13:00:11Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-09-13T13:00:12Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-09-13T13:00:12Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:25Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@v6",
+              "number": 2,
+              "startedAt": "2026-09-13T13:00:12Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:26Z",
+              "conclusion": "success",
+              "name": "Setup Node",
+              "number": 3,
+              "startedAt": "2026-09-13T13:00:25Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:48Z",
+              "conclusion": "success",
+              "name": "Install",
+              "number": 4,
+              "startedAt": "2026-09-13T13:00:26Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:13:12Z",
+              "conclusion": "success",
+              "name": "Shuffled suite",
+              "number": 5,
+              "startedAt": "2026-09-13T13:00:48Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:13:13Z",
+              "conclusion": "success",
+              "name": "Post Setup Node",
+              "number": 9,
+              "startedAt": "2026-09-13T13:13:12Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:13:13Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v6",
+              "number": 10,
+              "startedAt": "2026-09-13T13:13:13Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:13:13Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 11,
+              "startedAt": "2026-09-13T13:13:13Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/nfredmond/openplan/actions/runs/34758602973/job/103727265627"
+        },
+        {
+          "completedAt": "2026-09-13T13:00:42Z",
+          "conclusion": "success",
+          "databaseId": 103727265647,
+          "name": "worker (python unit tests)",
+          "startedAt": "2026-09-13T13:00:11Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-09-13T13:00:12Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-09-13T13:00:11Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:19Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@v6",
+              "number": 2,
+              "startedAt": "2026-09-13T13:00:12Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:20Z",
+              "conclusion": "success",
+              "name": "Setup Python",
+              "number": 3,
+              "startedAt": "2026-09-13T13:00:19Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:28Z",
+              "conclusion": "success",
+              "name": "Install test deps",
+              "number": 4,
+              "startedAt": "2026-09-13T13:00:20Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:28Z",
+              "conclusion": "success",
+              "name": "Syntax check",
+              "number": 5,
+              "startedAt": "2026-09-13T13:00:28Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:40Z",
+              "conclusion": "success",
+              "name": "Unit tests (all lightweight suites)",
+              "number": 6,
+              "startedAt": "2026-09-13T13:00:28Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:41Z",
+              "conclusion": "success",
+              "name": "Post Setup Python",
+              "number": 11,
+              "startedAt": "2026-09-13T13:00:40Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:41Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v6",
+              "number": 12,
+              "startedAt": "2026-09-13T13:00:41Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:41Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 13,
+              "startedAt": "2026-09-13T13:00:41Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/nfredmond/openplan/actions/runs/34758602973/job/103727265647"
+        }
+      ],
+      "name": "CI",
+      "status": "completed",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34758602973"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 34758602945,
+      "headSha": "6ee8c438da9e5c100bb6c1588e29d5248b46cac7",
+      "jobs": [
+        {
+          "completedAt": "2026-09-13T13:09:06Z",
+          "conclusion": "success",
+          "databaseId": 103727265485,
+          "name": "live RLS isolation",
+          "startedAt": "2026-09-13T13:00:30Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-09-13T13:00:32Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-09-13T13:00:31Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:37Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@v6",
+              "number": 2,
+              "startedAt": "2026-09-13T13:00:32Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:38Z",
+              "conclusion": "success",
+              "name": "Setup Node",
+              "number": 3,
+              "startedAt": "2026-09-13T13:00:37Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:01:00Z",
+              "conclusion": "success",
+              "name": "Install",
+              "number": 4,
+              "startedAt": "2026-09-13T13:00:38Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:02:28Z",
+              "conclusion": "success",
+              "name": "Start Supabase",
+              "number": 5,
+              "startedAt": "2026-09-13T13:01:00Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:03:00Z",
+              "conclusion": "success",
+              "name": "Reset local database",
+              "number": 6,
+              "startedAt": "2026-09-13T13:02:28Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:08:43Z",
+              "conclusion": "success",
+              "name": "Run live RLS isolation proof",
+              "number": 7,
+              "startedAt": "2026-09-13T13:03:00Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:09:04Z",
+              "conclusion": "success",
+              "name": "Stop Supabase",
+              "number": 8,
+              "startedAt": "2026-09-13T13:08:43Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:09:05Z",
+              "conclusion": "success",
+              "name": "Post Setup Node",
+              "number": 15,
+              "startedAt": "2026-09-13T13:09:04Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:09:05Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v6",
+              "number": 16,
+              "startedAt": "2026-09-13T13:09:05Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:09:05Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 17,
+              "startedAt": "2026-09-13T13:09:05Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/nfredmond/openplan/actions/runs/34758602945/job/103727265485"
+        }
+      ],
+      "name": "RLS Isolation",
+      "status": "completed",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34758602945"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 34758602943,
+      "headSha": "6ee8c438da9e5c100bb6c1588e29d5248b46cac7",
+      "jobs": [
+        {
+          "completedAt": "2026-09-13T13:03:41Z",
+          "conclusion": "success",
+          "databaseId": 103727265270,
+          "name": "previous release -> seed -> HEAD migration up",
+          "startedAt": "2026-09-13T13:00:11Z",
+          "status": "completed",
+          "steps": [
+            {
+              "completedAt": "2026-09-13T13:00:14Z",
+              "conclusion": "success",
+              "name": "Set up job",
+              "number": 1,
+              "startedAt": "2026-09-13T13:00:13Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:27Z",
+              "conclusion": "success",
+              "name": "Run actions/checkout@v6",
+              "number": 2,
+              "startedAt": "2026-09-13T13:00:14Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:27Z",
+              "conclusion": "success",
+              "name": "Setup Node",
+              "number": 3,
+              "startedAt": "2026-09-13T13:00:27Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:27Z",
+              "conclusion": "success",
+              "name": "Resolve previous release tag",
+              "number": 4,
+              "startedAt": "2026-09-13T13:00:27Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:28Z",
+              "conclusion": "success",
+              "name": "Check out the previous release",
+              "number": 5,
+              "startedAt": "2026-09-13T13:00:27Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:00:50Z",
+              "conclusion": "success",
+              "name": "Install (previous release)",
+              "number": 6,
+              "startedAt": "2026-09-13T13:00:28Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:02:55Z",
+              "conclusion": "success",
+              "name": "Start Supabase and apply the previous release's migrations",
+              "number": 7,
+              "startedAt": "2026-09-13T13:00:50Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:02:55Z",
+              "conclusion": "success",
+              "name": "Seed representative workspace data",
+              "number": 8,
+              "startedAt": "2026-09-13T13:02:55Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:02:55Z",
+              "conclusion": "success",
+              "name": "Record the seeded row counts",
+              "number": 9,
+              "startedAt": "2026-09-13T13:02:55Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:02:55Z",
+              "conclusion": "success",
+              "name": "Check out HEAD",
+              "number": 10,
+              "startedAt": "2026-09-13T13:02:55Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:03:14Z",
+              "conclusion": "success",
+              "name": "Install (HEAD)",
+              "number": 11,
+              "startedAt": "2026-09-13T13:02:55Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:03:15Z",
+              "conclusion": "success",
+              "name": "Apply HEAD's migrations onto the populated previous-release schema",
+              "number": 12,
+              "startedAt": "2026-09-13T13:03:14Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:03:15Z",
+              "conclusion": "success",
+              "name": "Assert the seeded rows survived",
+              "number": 13,
+              "startedAt": "2026-09-13T13:03:15Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:03:15Z",
+              "conclusion": "success",
+              "name": "Exercise v0.32 operational rows on the upgraded database",
+              "number": 14,
+              "startedAt": "2026-09-13T13:03:15Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:03:36Z",
+              "conclusion": "success",
+              "name": "Stop Supabase",
+              "number": 15,
+              "startedAt": "2026-09-13T13:03:15Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:03:39Z",
+              "conclusion": "success",
+              "name": "Post Setup Node",
+              "number": 29,
+              "startedAt": "2026-09-13T13:03:36Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:03:39Z",
+              "conclusion": "success",
+              "name": "Post Run actions/checkout@v6",
+              "number": 30,
+              "startedAt": "2026-09-13T13:03:39Z",
+              "status": "completed"
+            },
+            {
+              "completedAt": "2026-09-13T13:03:39Z",
+              "conclusion": "success",
+              "name": "Complete job",
+              "number": 31,
+              "startedAt": "2026-09-13T13:03:39Z",
+              "status": "completed"
+            }
+          ],
+          "url": "https://github.com/nfredmond/openplan/actions/runs/34758602943/job/103727265270"
+        }
+      ],
+      "name": "Upgrade Path",
+      "status": "completed",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34758602943"
+    }
+  ],
+  "publication": {
+    "isDraft": false,
+    "isPrerelease": false,
+    "publishedAt": "2026-09-13T13:19:12Z",
+    "tagName": "v0.57.1",
+    "targetCommitish": "main",
+    "url": "https://github.com/nfredmond/openplan/releases/tag/v0.57.1"
+  },
+  "annotatedTagObject": "5206378c3442def4eca6171eeab70c7cfce33f5d"
+}

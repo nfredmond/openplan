@@ -1,6 +1,6 @@
 # Translation target isolation, September 13, 2026
 
-This security correction is in development for v0.57.1. v0.57.0 remains the published release. Main checkpoint 542ffdd0 passed CI and RLS; new release evidence for this patch is not complete.
+This security correction was published as v0.57.1 after exact-release-commit CI passed. See [publication evidence](PUBLICATION.md). The earlier development/runtime paragraphs below retain the sequence and are superseded by the final evidence and publication sections.
 
 ## Reproduced defect
 

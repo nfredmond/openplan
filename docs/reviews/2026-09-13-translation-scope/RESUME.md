@@ -1,3 +1,10 @@
+> Published: v0.57.1 at 6ee8c438da9e5c100bb6c1588e29d5248b46cac7, with all
+> exact-commit CI green before tagging. See PUBLICATION.md and publication.json.
+> Continue the translation-history increment from ../2026-09-13-m9b-translation-custody/NEXT.md
+> and AFTER_SCOPE.md there. Its prototype is still uninstalled. The helper input
+> truncation and incomplete-output acceptance now have focused reproductions.
+> Full v1 remains active. Older checkpoint paragraphs below are historical setup.
+
 > Superseding checkpoint: v0.57.1 local QA, shuffled tests, all 481 isolation tests,
 > 52 worker suites, populated upgrade and browser evidence are complete. Release
 > metadata is prepared. Land this verified commit directly on main, inspect exact
