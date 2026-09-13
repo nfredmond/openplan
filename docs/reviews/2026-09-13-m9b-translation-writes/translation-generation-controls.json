@@ -1,12 +1,12 @@
 {
   "sourceSha256": {
-    "generation": "ed8259dd9d9578a16fa3478116f5c36c6668e1fa44d759ff651a0bab1599d15d",
+    "generation": "1736bd67853eabfcb61bfb44a5a11a9cd69174eaa0373b63da2dabf7bab8591a",
     "credential": "fb0a54d0529a11ed42aef6bb07c7b3f4acd2bd9d2cdeb407e50db3f12c5932a6",
-    "workspace": "3b30471b52a7e9bb61dbd4a7924ff8442d323f102e56ca0dbfa4d009836f64c9",
+    "workspace": "88079bee7878b3bbd6fd6a15e46df2e72a8ed65a67100eb33f7bafa88116589e",
     "legacy": "b7c1cff72f1750af8b0c005ae56e2d3522d15150123cf03377b3de1d41625486"
   },
-  "testCount": 68,
-  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-controls/20260913T132512",
+  "testCount": 81,
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-controls/20260913T150011",
   "results": [
     {
       "case": "baseline",

@@ -1,10 +1,10 @@
 // @vitest-environment node
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { prepareTranslationCredential, openTranslationCredential } from "@/lib/integrations/translation-credentials";
 import { encryptIntegrationKey } from "@/lib/integrations/key-crypto";
 vi.mock("@/lib/supabase/server", () => ({ createServiceRoleClient: () => { throw new Error("Synthetic unavailable service"); } }));
-import { prepareWorkspaceTranslationCredential } from "@/lib/integrations/workspace-keys";
+import { prepareWorkspaceTranslationCredential, prepareWorkspaceTranslationSelection, verifyWorkspaceTranslationSelection } from "@/lib/integrations/workspace-keys";
 
 beforeEach(() => {
   vi.stubEnv("OPENPLAN_INTEGRATION_KEY_SECRET", "SYNTHETIC-TRANSLATION-SECRET-0123456789");
@@ -103,5 +103,32 @@ describe("strict workspace translation credential selection", () => {
     const stored = await pending;
     expect(stored.requestId).toBe(expected.requestId);
     expect(stored.configuration.modelId).toBe(expected.modelId);
+  });
+});
+
+
+describe("queued translation selection verification", () => {
+  it("captures the digest and envelope from one read and verifies the same selection", async () => {
+    const scope = identity(); const ciphertext = encryptIntegrationKey("SYNTHETIC-WORKSPACE-KEY");
+    const row = { workspace_id: scope.workspaceId, provider: "anthropic", key_ciphertext: ciphertext };
+    const f = fixture([row]);
+    const selection = await prepareWorkspaceTranslationSelection({ ...scope, client: f.client });
+    expect(selection.selectedKeyCiphertextHash).toBe(createHash("sha256").update(ciphertext).digest("hex"));
+    expect(f.from).toHaveBeenCalledOnce();
+    expect(openTranslationCredential(selection.credential)).toBe("SYNTHETIC-WORKSPACE-KEY");
+    await expect(verifyWorkspaceTranslationSelection({ ...selection, client: fixture([row]).client })).resolves.toBeUndefined();
+  });
+  it.each(["ciphertext", "plaintext", "source", "environment", "read_failure"])("refuses changed %s before a queued dispatch", async change => {
+    const scope = identity(); const ciphertext = encryptIntegrationKey("SYNTHETIC-WORKSPACE-KEY");
+    const row = { workspace_id: scope.workspaceId, provider: "anthropic", key_ciphertext: ciphertext };
+    const env = change === "environment" || change === "source";
+    const selection = await prepareWorkspaceTranslationSelection({ ...scope, client: fixture(env ? [] : [row]).client });
+    if (change === "ciphertext") row.key_ciphertext = encryptIntegrationKey("SYNTHETIC-WORKSPACE-KEY");
+    if (change === "plaintext") {
+      selection.credential = prepareTranslationCredential({ ...scope, source: "workspace", apiKey: "SYNTHETIC-OTHER-KEY" });
+    }
+    if (change === "environment") vi.stubEnv("ANTHROPIC_API_KEY", "SYNTHETIC-NEW-ENV-KEY");
+    await expect(verifyWorkspaceTranslationSelection({ ...selection,
+      client: fixture(change === "environment" ? [] : [row], change === "read_failure" ? { message: "Synthetic failure" } : null).client })).rejects.toThrow("translation_credential_unavailable");
   });
 });

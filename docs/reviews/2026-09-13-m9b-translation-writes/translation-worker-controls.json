@@ -1,0 +1,315 @@
+{
+  "sourceSha256": {
+    "worker": "94322942982b34ea6d108a64fb8cfd3b14ed47b227f1da06f19a48c6987d9f17",
+    "workspace": "88079bee7878b3bbd6fd6a15e46df2e72a8ed65a67100eb33f7bafa88116589e"
+  },
+  "testCount": 66,
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/worker-controls/20260913T145456",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-worker",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-workspace",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "journal-before-dispatch",
+      "outcome": "killed",
+      "expectedFailure": "claims with exact projections",
+      "failedAssertions": [
+        "durable translation worker claims with exact projections, journals before dispatch and retains exact output without credentials"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "journal-before-delivery",
+      "outcome": "killed",
+      "expectedFailure": "claims with exact projections",
+      "failedAssertions": [
+        "durable translation worker claims with exact projections, journals before dispatch and retains exact output without credentials"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "forget-recovered-output",
+      "outcome": "killed",
+      "expectedFailure": "replays only saved bytes",
+      "failedAssertions": [
+        "durable translation worker replays only saved bytes after output acknowledgement loss, committed=false",
+        "durable translation worker replays only saved bytes after output acknowledgement loss, committed=true"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "retry-running-as-new",
+      "outcome": "killed",
+      "expectedFailure": "recovers a running journal",
+      "failedAssertions": [
+        "durable translation worker recovers a running journal without reading keys, authorizing or invoking"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-target",
+      "outcome": "killed",
+      "expectedFailure": "refuses moving a pending journal",
+      "failedAssertions": [
+        "durable translation worker refuses moving a pending journal to another database before any query"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-journal-hash",
+      "outcome": "killed",
+      "expectedFailure": "refuses a changed pending packet",
+      "failedAssertions": [
+        "durable translation worker refuses a changed pending packet before any query"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-preclaim-key",
+      "outcome": "killed",
+      "expectedFailure": "refuses an environment-key change before_claim",
+      "failedAssertions": [
+        "durable translation worker refuses an environment-key change before_claim without invoking"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-dispatch-key",
+      "outcome": "killed",
+      "expectedFailure": "refuses an environment-key change after_claim",
+      "failedAssertions": [
+        "durable translation worker refuses an environment-key change after_claim without invoking"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "dispatch-error-schema-control",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "dispatch-fieldId",
+      "outcome": "killed",
+      "expectedFailure": "does not invoke after a changed dispatch fieldId",
+      "failedAssertions": [
+        "durable translation worker does not invoke after a changed dispatch fieldId"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "dispatch-attemptId",
+      "outcome": "killed",
+      "expectedFailure": "does not invoke after a changed dispatch attemptId",
+      "failedAssertions": [
+        "durable translation worker does not invoke after a changed dispatch attemptId"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "dispatch-reservationId",
+      "outcome": "killed",
+      "expectedFailure": "does not invoke after a changed dispatch reservationId",
+      "failedAssertions": [
+        "durable translation worker does not invoke after a changed dispatch reservationId"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "dispatch-state",
+      "outcome": "killed",
+      "expectedFailure": "does not invoke after a changed dispatch state",
+      "failedAssertions": [
+        "durable translation worker does not invoke after a changed dispatch state"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "dispatch-leaseExpiresAt",
+      "outcome": "killed",
+      "expectedFailure": "does not invoke after a changed dispatch leaseExpiresAt",
+      "failedAssertions": [
+        "durable translation worker does not invoke after a changed dispatch leaseExpiresAt"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "delivery-fieldId",
+      "outcome": "killed",
+      "expectedFailure": "preserves output after a changed delivery acknowledgement fieldId",
+      "failedAssertions": [
+        "durable translation worker preserves output after a changed delivery acknowledgement fieldId"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "delivery-attemptId",
+      "outcome": "killed",
+      "expectedFailure": "preserves output after a changed delivery acknowledgement attemptId",
+      "failedAssertions": [
+        "durable translation worker preserves output after a changed delivery acknowledgement attemptId"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "delivery-status",
+      "outcome": "killed",
+      "expectedFailure": "preserves output after a changed delivery acknowledgement status",
+      "failedAssertions": [
+        "durable translation worker preserves output after a changed delivery acknowledgement status"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "delivery-digest",
+      "outcome": "killed",
+      "expectedFailure": "preserves output after a changed delivery acknowledgement digest",
+      "failedAssertions": [
+        "durable translation worker preserves output after a changed delivery acknowledgement digest"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "cancel-observer",
+      "outcome": "killed",
+      "expectedFailure": "aborts the provider when status becomes cancelled",
+      "failedAssertions": [
+        "durable translation worker aborts the provider when status becomes cancelled"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "failed-status-read",
+      "outcome": "killed",
+      "expectedFailure": "aborts the provider when status becomes read_failure",
+      "failedAssertions": [
+        "durable translation worker aborts the provider when status becomes read_failure"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "status-lease-change",
+      "outcome": "killed",
+      "expectedFailure": "aborts the provider when status becomes lease_changed",
+      "failedAssertions": [
+        "durable translation worker aborts the provider when status becomes lease_changed"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "claimed-identity-schema-control",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "claimed-identity-combined",
+      "outcome": "killed",
+      "expectedFailure": "refuses a changed claimed id",
+      "failedAssertions": [
+        "durable translation worker refuses a changed claimed id before journaling or dispatch"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "claimed-packet-schema-control",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "received-source",
+      "outcome": "killed",
+      "expectedFailure": "refuses generated output with changed receipt sourceHash",
+      "failedAssertions": [
+        "durable translation worker refuses generated output with changed receipt sourceHash"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "received-language",
+      "outcome": "killed",
+      "expectedFailure": "refuses generated output with changed receipt targetLanguage",
+      "failedAssertions": [
+        "durable translation worker refuses generated output with changed receipt targetLanguage"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "received-model",
+      "outcome": "killed",
+      "expectedFailure": "refuses generated output with changed receipt model",
+      "failedAssertions": [
+        "durable translation worker refuses generated output with changed receipt model"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "received-binding",
+      "outcome": "killed",
+      "expectedFailure": "refuses generated output with changed receipt attemptId",
+      "failedAssertions": [
+        "durable translation worker refuses generated output with changed receipt attemptId"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "selection-digest",
+      "outcome": "killed",
+      "expectedFailure": "refuses changed ciphertext before a queued dispatch",
+      "failedAssertions": [
+        "queued translation selection verification refuses changed ciphertext before a queued dispatch"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "selection-plaintext",
+      "outcome": "killed",
+      "expectedFailure": "refuses changed plaintext before a queued dispatch",
+      "failedAssertions": [
+        "queued translation selection verification refuses changed plaintext before a queued dispatch"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "environment-plaintext",
+      "outcome": "killed",
+      "expectedFailure": "refuses changed environment before a queued dispatch",
+      "failedAssertions": [
+        "queued translation selection verification refuses changed environment before a queued dispatch"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "captured-digest",
+      "outcome": "killed",
+      "expectedFailure": "captures the digest and envelope from one read",
+      "failedAssertions": [
+        "queued translation selection verification captures the digest and envelope from one read and verifies the same selection"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Mutation controls for real private journal/lock and mocked database/adapter.\n\nRun only in the owned idle checkout. No provider calls, live database, browser or\nprocess restart is established by this instrument. Per-case failures must name an\nactual failed assertion; syntax errors cannot count as a killed mutation.\n"
+}

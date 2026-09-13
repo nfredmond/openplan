@@ -9,7 +9,8 @@
  * the per-request integration context — never in a response body.
  */
 
-import { prepareTranslationCredential, TranslationCredentialError, type TranslationCredential } from "./translation-credentials";
+import { createHash } from "node:crypto";
+import { openTranslationCredential, translationCredentialSchema, prepareTranslationCredential, TranslationCredentialError, type TranslationCredential } from "./translation-credentials";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import {
   decryptIntegrationKey,
@@ -136,32 +137,64 @@ export async function withWorkspaceIntegrationContext<T>(
   return await runWithWorkspaceIntegrationKeys(workspaceId, keys, fn);
 }
 
-// Durable translation requests require a conclusive read of the selected key.
-// Unlike the legacy request context, a failed read/decrypt cannot switch who
-// pays. This only captures credentials; it does not authorize or dispatch work.
-export async function prepareWorkspaceTranslationCredential(args: {
+// One conclusive read supplies both the selected key and its revision digest.
+// Failed reads/decryption never fall back to a different payer.
+async function selectedTranslationKey(workspaceId: string, client: ServiceClientLike, signal?: AbortSignal) {
+  let query = client.from("workspace_integration_keys").select("workspace_id, provider, key_ciphertext")
+    .eq("workspace_id", workspaceId).eq("provider", "anthropic");
+  if (signal) query = query.abortSignal(signal);
+  const { data, error } = await query;
+  if (error || !Array.isArray(data) || data.length > 1) throw new Error();
+  let apiKey: string | null;
+  let selectedKeyCiphertextHash: string | null = null;
+  const source = data.length === 1 ? "workspace" as const : "env" as const;
+  if (data.length === 1) {
+    const row = data[0] as Record<string, unknown> | null;
+    if (!row || row.workspace_id !== workspaceId || row.provider !== "anthropic" ||
+      typeof row.key_ciphertext !== "string") throw new Error();
+    apiKey = decryptIntegrationKey(row.key_ciphertext);
+    selectedKeyCiphertextHash = createHash("sha256").update(row.key_ciphertext).digest("hex");
+  } else {
+    apiKey = process.env.ANTHROPIC_API_KEY?.trim() || null;
+  }
+  if (!apiKey) throw new Error();
+  return { apiKey, source, selectedKeyCiphertextHash };
+}
+
+type TranslationSelectionArgs = {
   workspaceId: string; requestId: string; credentialId: string; modelId: string;
-  client?: ServiceClientLike;
-}): Promise<TranslationCredential> {
-  // Capture caller-owned scalars before the asynchronous database read.
-  const { workspaceId, requestId, credentialId, modelId } = args;
+  client?: ServiceClientLike; signal?: AbortSignal;
+};
+
+// Keep the encrypted credential and selection digest from the same database read
+// when creating a durable request. Neither value authorizes model dispatch.
+export async function prepareWorkspaceTranslationSelection(args: TranslationSelectionArgs) {
+  const { workspaceId, requestId, credentialId, modelId, signal } = args;
   try {
-    const client = args.client ?? createServiceRoleClient();
-    const { data, error } = await client.from("workspace_integration_keys")
-      .select("workspace_id, provider, key_ciphertext")
-      .eq("workspace_id", workspaceId).eq("provider", "anthropic");
-    if (error || !Array.isArray(data) || data.length > 1) throw new Error();
-    let apiKey: string | null;
-    const source = data.length === 1 ? "workspace" : "env";
-    if (data.length === 1) {
-      const row = data[0] as Record<string, unknown> | null;
-      if (!row || row.workspace_id !== workspaceId || row.provider !== "anthropic" ||
-        typeof row.key_ciphertext !== "string") throw new Error();
-      apiKey = decryptIntegrationKey(row.key_ciphertext);
-    } else {
-      apiKey = process.env.ANTHROPIC_API_KEY?.trim() || null;
-    }
-    if (!apiKey) throw new Error();
-    return prepareTranslationCredential({ workspaceId, requestId, credentialId, modelId, source, apiKey });
+    const selection = await selectedTranslationKey(workspaceId, args.client ?? createServiceRoleClient(), signal);
+    signal?.throwIfAborted();
+    return { credential: prepareTranslationCredential({ workspaceId, requestId, credentialId, modelId,
+      source: selection.source, apiKey: selection.apiKey }), selectedKeyCiphertextHash: selection.selectedKeyCiphertextHash };
+  } catch { throw new TranslationCredentialError("translation_credential_unavailable"); }
+}
+
+export async function prepareWorkspaceTranslationCredential(args: TranslationSelectionArgs): Promise<TranslationCredential> {
+  return (await prepareWorkspaceTranslationSelection(args)).credential;
+}
+
+// A queued request keeps its original envelope. Verify it against the currently
+// selected key before claim/dispatch, including environment changes after restart.
+export async function verifyWorkspaceTranslationSelection(args: {
+  credential: TranslationCredential; selectedKeyCiphertextHash: string | null;
+  client?: ServiceClientLike; signal?: AbortSignal;
+}): Promise<void> {
+  try {
+    const credential = translationCredentialSchema.parse(args.credential);
+    const { selectedKeyCiphertextHash, signal } = args;
+    const original = openTranslationCredential(credential);
+    const selection = await selectedTranslationKey(credential.workspaceId, args.client ?? createServiceRoleClient(), signal);
+    signal?.throwIfAborted();
+    if (selection.source !== credential.source || selection.selectedKeyCiphertextHash !== selectedKeyCiphertextHash ||
+      selection.apiKey !== original) throw new Error();
   } catch { throw new TranslationCredentialError("translation_credential_unavailable"); }
 }

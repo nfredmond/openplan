@@ -1,0 +1,114 @@
+{
+  "database": "openplan_translation_worker_proof_20260913",
+  "container": "openplan_translation_worker_rest_20260913",
+  "target": "http://127.0.0.1:38962",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/translation-worker-live/20260913T150213",
+  "workerSha256": "94322942982b34ea6d108a64fb8cfd3b14ed47b227f1da06f19a48c6987d9f17",
+  "results": [
+    {
+      "case": "normal",
+      "first": {
+        "exit": 0,
+        "result": {
+          "state": "completed",
+          "fieldId": "02ac20ae-27da-4466-9118-4655a87b8231"
+        }
+      },
+      "second": {
+        "exit": 0,
+        "result": {
+          "state": "idle"
+        }
+      },
+      "fieldId": "02ac20ae-27da-4466-9118-4655a87b8231",
+      "providerCallsIntercepted": 1,
+      "dispatchEvents": 1,
+      "state": "completed",
+      "retainedOutputs": 1,
+      "journalPrivate": true
+    },
+    {
+      "case": "dispatch-loss",
+      "first": {
+        "exit": 0,
+        "result": {
+          "state": "interrupted",
+          "fieldId": "f0456a29-c2cd-4ace-91b4-36c839e91bd5"
+        }
+      },
+      "second": {
+        "exit": 0,
+        "result": {
+          "state": "idle"
+        }
+      },
+      "fieldId": "f0456a29-c2cd-4ace-91b4-36c839e91bd5",
+      "providerCallsIntercepted": 0,
+      "dispatchEvents": 1,
+      "state": "interrupted",
+      "retainedOutputs": 0,
+      "journalPrivate": true
+    },
+    {
+      "case": "output-loss",
+      "first": {
+        "exit": 1,
+        "error": "translation_worker_database_failed"
+      },
+      "second": {
+        "exit": 0,
+        "result": {
+          "state": "completed",
+          "fieldId": "2a73e159-3a9e-4fae-b2f3-972454acabe3"
+        }
+      },
+      "fieldId": "2a73e159-3a9e-4fae-b2f3-972454acabe3",
+      "providerCallsIntercepted": 1,
+      "dispatchEvents": 1,
+      "state": "completed",
+      "retainedOutputs": 1,
+      "journalPrivate": true
+    },
+    {
+      "case": "running-crash",
+      "first": {
+        "killedAtBarrier": "provider-awaiting-response",
+        "phase": "running"
+      },
+      "second": {
+        "exit": 0,
+        "result": {
+          "state": "interrupted",
+          "fieldId": "4287138e-15e6-4ef7-9457-cdac3eb304b9"
+        }
+      },
+      "fieldId": "4287138e-15e6-4ef7-9457-cdac3eb304b9",
+      "providerCallsIntercepted": 1,
+      "dispatchEvents": 1,
+      "state": "interrupted",
+      "retainedOutputs": 0,
+      "journalPrivate": true
+    },
+    {
+      "case": "completed-crash",
+      "first": {
+        "killedAtBarrier": "completion-before-delivery",
+        "phase": "completed"
+      },
+      "second": {
+        "exit": 0,
+        "result": {
+          "state": "interrupted",
+          "fieldId": "3b07fe23-3973-42f7-a89b-242ace163ccb"
+        }
+      },
+      "fieldId": "3b07fe23-3973-42f7-a89b-242ace163ccb",
+      "providerCallsIntercepted": 1,
+      "dispatchEvents": 1,
+      "state": "interrupted",
+      "retainedOutputs": 1,
+      "journalPrivate": true
+    }
+  ],
+  "limits": "Actual worker processes, SDK transport interception, PostgREST and PostgreSQL.\n\nOnly the named schema-only worker proof database receives synthetic fixtures. No\nreal provider call is allowed by the child transport. Kill only a child started\nhere after observing its barrier and persisted journal phase.\n"
+}

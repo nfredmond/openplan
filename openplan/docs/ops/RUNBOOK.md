@@ -178,6 +178,30 @@ fail runs and a deadline sweep can send messages. Model-page loading also has
 reconciliation behavior. HTTP method and page navigation are not reliable
 indicators that an action is read-only.
 
+### Development translation worker
+
+The unreleased translation queue uses `npm run worker:translation-generation`
+from `openplan/`; append `-- --once` for one claim or recovery cycle. It requires
+migration `20261014000013`, the configured local Supabase service credential and
+`OPENPLAN_INTEGRATION_KEY_SECRET`. Staff queue routes and public translation
+producer conversion are still being connected; this worker alone does not make
+the complete translation workflow available.
+
+`OPENPLAN_TRANSLATION_GENERATION_WORK_DIR` may name an absolute private directory.
+The default is beneath `~/.local/state/openplan/translation-generation-worker/`,
+partitioned by the configured database URL. Keep that directory on durable local
+storage and reuse it after restart. Its OS lock prevents two processes sharing
+the same journal; database claims protect attempts across worker directories.
+Never copy a pending journal to a different database or delete it to retry work.
+
+A restart with a running journal reports an interrupted attempt without another
+model call. A completed journal redelivers its exact saved output, including when
+source or access has since changed; that retained evidence does not publish the
+translation or reactivate a cancelled job. Expired claims without a journal are
+reconciled through database status. A failed key read, decryption or changed
+selection prevents dispatch. The worker logs states without source words or keys.
+Do not infer publication or translation quality from a completed worker cycle.
+
 ## Separate inspection from changes
 
 | Action | Operational effect |

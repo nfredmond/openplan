@@ -1,0 +1,25 @@
+{
+  "workerSha256": "94322942982b34ea6d108a64fb8cfd3b14ed47b227f1da06f19a48c6987d9f17",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/translation-worker-live-controls/20260913T150213",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedOutcome": true,
+      "expectedFailure": null
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived",
+      "expectedOutcome": true,
+      "expectedFailure": null
+    },
+    {
+      "case": "discard-recovered-output",
+      "outcome": "killed",
+      "expectedOutcome": true,
+      "expectedFailure": "Worker recovery must succeed"
+    }
+  ],
+  "limits": "Real worker process termination and local HTTP/SQL, synthetic intercepted provider transport. No real provider or UI acceptance."
+}

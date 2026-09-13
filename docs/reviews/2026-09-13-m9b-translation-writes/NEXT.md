@@ -1,3 +1,7 @@
+# Latest worker integration checkpoint
+
+Read [GENERATION_WORKER_PROGRESS.md](GENERATION_WORKER_PROGRESS.md) first. The staff worker now has actual process restart and local HTTP/database evidence. Staff routes, editor publication and public producers remain unfinished.
+
 # Latest retained-output checkpoint
 
 Read [GENERATION_OUTPUT_PROGRESS.md](GENERATION_OUTPUT_PROGRESS.md) first. The codec and SQL retention now have exact-byte and concurrent-delivery evidence against the actual migration. Worker and public workflow integration remain unfinished. This is the weekly usage reset checkpoint.

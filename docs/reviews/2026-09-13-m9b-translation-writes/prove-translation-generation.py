@@ -72,7 +72,7 @@ mutation('allow-duplicate-selection', w, 'data.length > 1', 'false', 'refuses du
 mutation('wrong-workspace-row', w, 'row.workspace_id !== workspaceId ||', 'false ||', 'refuses wrong_workspace rather than changing the payer')
 mutation('wrong-provider-row', w, 'row.provider !== "anthropic" ||', 'false ||', 'refuses wrong_provider rather than changing the payer')
 mutation('decrypt-fallback', w, 'apiKey = decryptIntegrationKey(row.key_ciphertext);', 'apiKey = decryptIntegrationKey(row.key_ciphertext) || process.env.ANTHROPIC_API_KEY || null;', 'refuses undecryptable rather than changing the payer')
-mutation('capture-request-too-late', w, 'return prepareTranslationCredential({ workspaceId, requestId, credentialId, modelId, source, apiKey });', 'return prepareTranslationCredential({ workspaceId, requestId: args.requestId, credentialId, modelId: args.modelId, source, apiKey });', 'captures request identity before waiting')
+mutation('capture-request-too-late', w, 'credential: prepareTranslationCredential({ workspaceId, requestId, credentialId, modelId,', 'credential: prepareTranslationCredential({ workspaceId, requestId: args.requestId, credentialId, modelId: args.modelId,', 'captures request identity before waiting')
 
 results = []
 report = review / 'translation-generation-controls.json'

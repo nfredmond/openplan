@@ -1,0 +1,7 @@
+{
+  "database": "openplan_translation_worker_proof_20260913",
+  "container": "supabase_db_openplan-restore-target-2731143",
+  "schemaSha256": "a8d823ddae5dcffa4a4f0b4ffcbe06ed4fd44a023b4467a354d401c09e565bb4",
+  "schemaSource": "openplan_translation_command_proof_20260913",
+  "fixturesCopied": false
+}
