@@ -10,6 +10,7 @@ const sourceFiles=['openplan/src/components/engagement/campaign-translations-pan
  'openplan/src/lib/engagement/campaign-translations.ts','openplan/src/lib/engagement/pending-translation.ts','openplan/src/lib/engagement/translation-write.ts',
  'openplan/src/app/api/engagement/campaigns/[campaignId]/translations/commands/route.ts','openplan/src/app/api/engagement/campaigns/[campaignId]/translations/snapshot/route.ts'];
 sourceFiles.push('openplan/src/components/engagement/translation-draft-recovery.tsx','openplan/src/lib/engagement/translation-drafts.ts','openplan/src/lib/engagement/translation-snapshot.ts','openplan/src/app/(app)/engagement/[campaignId]/page.tsx');
+sourceFiles.push('openplan/src/lib/engagement/translation-history.ts','openplan/src/lib/engagement/translation-history-server.ts','openplan/src/components/engagement/translation-history.tsx','openplan/supabase/migrations/20261014000012_engagement_translation_history_receipts.sql');
 const handled=promise=>{promise.catch(()=>{});return promise;};
 const responseFor=(page,predicate)=>handled(page.waitForResponse(predicate));
 const sha=value=>crypto.createHash('sha256').update(value).digest('hex');
@@ -96,6 +97,11 @@ async function journey(browser,width){
   await chooser.selectOption(lostReceipt.entries[0].entry.id);await expect(history.getByText(original,{exact:true})).toBeVisible();console.log('Original visible after withdrawal and recreation',width);
   const finalHistory=await page.evaluate(async path=>{const response=await fetch(path,{cache:'no-store'});if(!response.ok)throw Error('History read failed');return(await response.json()).history},historyPath);
   expect(finalHistory).toHaveLength(6);expect(finalHistory.find(row=>row.id===retainedOriginal.id)).toEqual(retainedOriginal);
+  expect(retainedOriginal.change.source).toEqual({text:title,sourceLocale:null,available:true});
+  await expect(history.getByText('SYNTHETIC reason for correction',{exact:false})).toBeVisible();
+  await expect(history.getByText(title,{exact:true})).toHaveCount(5);
+  expect(finalHistory.find(row=>row.revision===2).change.reason).toBe('\u00a0SYNTHETIC reason for correction\ufeff');
+  console.log('Receipt reason and exact source visible in history',width);
   const archived=await page.evaluate(()=>Object.keys(localStorage).filter(key=>key.startsWith('openplan:translation-archive:')).map(key=>localStorage.getItem(key)));
   expect(archived).toHaveLength(1);expect(JSON.parse(archived[0]).intent).toEqual(conflictCommand);
   await panel.getByText('Earlier translation requests (1)',{exact:true}).click();const downloadEvent=handled(page.waitForEvent('download'));
@@ -112,7 +118,7 @@ async function journey(browser,width){
 }
 (async()=>{
  const before=sourceHashes();const identity=execFileSync('bash',[root+'/openplan/scripts/ops/which-openplan.sh',base],{cwd:root,encoding:'utf8'});fs.writeFileSync(evidence+'/translation-editor-browser-identity.log',identity);
- expect(sql('select count(*)||\':\'||max(version) from supabase_migrations.schema_migrations')).toBe('330:20261014000011');
+ expect(sql('select count(*)||\':\'||max(version) from supabase_migrations.schema_migrations')).toBe('331:20261014000012');
  expect(sql(`select has_function_privilege('authenticated','${signature}','EXECUTE')`)).toBe('t');
  if(process.env.OPENPLAN_TRANSLATION_CLEANUP_PROBE==='control')process.exit(0);
  if(process.env.OPENPLAN_TRANSLATION_CLEANUP_PROBE==='1')process.exit(23);

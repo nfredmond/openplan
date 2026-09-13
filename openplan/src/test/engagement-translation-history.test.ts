@@ -14,10 +14,10 @@ function revision(number = 1, event = "created") {
   // Spaces deliberately differ from JSON.stringify: the verifier must hash returned text.
   const record_text = JSON.stringify(record, null, 1);
   return { id: randomUUID(), campaign_id: campaignId, translation_id: translationId, revision: number,
-    actor_id: null as string | null, recorded_at: "2026-09-12T00:00:00+00:00", event, record_text,
+    actor_id: null as string | null, write_request_id: null, recorded_at: "2026-09-12T00:00:00+00:00", event, record_text,
     record_sha256: createHash("sha256").update(record_text).digest("hex") };
 }
-function snapshot(entries = [revision()]) { return { campaignId, count: entries.length, entries }; }
+function snapshot(entries = [revision()]) { return { schema: 2, campaignId, count: entries.length, entries, receiptCount: 0, receipts: [] }; }
 async function read(data: unknown) {
   const rpc = vi.fn().mockResolvedValue({ data, error: null });
   const result = await loadTranslationHistory({ rpc } as never, campaignId, workspaceId);

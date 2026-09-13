@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { translationSourceVersionSchema, translationVersionSchema } from "./translation-snapshot";
 
 export const retainedTranslationSchema = z.object({
   id: z.string().uuid(),
@@ -26,7 +27,19 @@ export const translationHistoryMetadataSchema = z.object({
   recorded_at: z.string().datetime({ offset: true }),
   event: z.enum(["legacy_baseline", "created", "corrected", "accepted", "removed"]),
   record_sha256: z.string().regex(/^[a-f0-9]{64}$/),
+  write_request_id: z.string().uuid().nullable(),
 });
 
-export const translationHistoryEntrySchema = translationHistoryMetadataSchema.extend({ record: retainedTranslationSchema });
+export const translationHistoryChangeSchema = z.object({
+  requestId: z.string().uuid(), operation: z.enum(["save", "accept", "withdraw"]), reason: z.string().nullable(),
+  source: translationSourceVersionSchema, expectedTranslation: translationVersionSchema.nullable(),
+  payloadSha256: z.string().regex(/^[a-f0-9]{64}$/), resultSha256: z.string().regex(/^[a-f0-9]{64}$/),
+}).strict();
+export const translationHistoryEntrySchema = translationHistoryMetadataSchema.extend({
+  record: retainedTranslationSchema, change: translationHistoryChangeSchema.nullable(),
+}).superRefine((row, context) => {
+  if (row.write_request_id !== (row.change?.requestId ?? null)) {
+    context.addIssue({ code: "custom", path: ["change"], message: "History request evidence is incomplete" });
+  }
+});
 export type TranslationHistoryEntry = z.infer<typeof translationHistoryEntrySchema>;

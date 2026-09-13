@@ -1,9 +1,19 @@
 import { createHash } from "node:crypto";
+import { isDeepStrictEqual } from "node:util";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { confirmPendingTranslation, pendingTranslationSchema } from "./pending-translation";
+import { readTranslationWriteResult, translationWriteIntentSchema } from "./translation-write";
 import { retainedTranslationSchema, translationHistoryMetadataSchema, type TranslationHistoryEntry } from "./translation-history";
 
+const digest = z.string().regex(/^[a-f0-9]{64}$/);
+const receiptSchema = z.object({ request_id: z.string().uuid(), actor_id: z.string().uuid(),
+  payload_text: z.string(), payload_sha256: digest, result_text: z.string(), result_sha256: digest,
+}).strict();
+const payloadSchema = z.object({ schema: z.literal(1), campaignId: z.string().uuid(), actorId: z.string().uuid() }).passthrough();
 const snapshotSchema = z.object({
+  schema: z.literal(2),
+  receiptCount: z.number().int().nonnegative(), receipts: z.array(receiptSchema),
   campaignId: z.string().uuid(),
   count: z.number().int().nonnegative(),
   entries: translationHistoryMetadataSchema.extend({ record_text: z.string() }).array(),
@@ -20,7 +30,7 @@ export async function loadTranslationHistory(client: Pick<SupabaseClient, "rpc">
     if (snapshot.campaignId !== campaignId || snapshot.count !== snapshot.entries.length) throw new Error("Incomplete history");
     const ids = new Set<string>();
     const latest = new Map<string, TranslationHistoryEntry>();
-    const rows = snapshot.entries.map(({ record_text, ...entry }) => {
+    const rows: TranslationHistoryEntry[] = snapshot.entries.map(({ record_text, ...entry }) => {
       const previous = latest.get(entry.translation_id);
       if (entry.campaign_id !== campaignId || ids.has(entry.id)
         || entry.revision !== (previous?.revision ?? 0) + 1
@@ -34,13 +44,55 @@ export async function loadTranslationHistory(client: Pick<SupabaseClient, "rpc">
         const field = key as "entity_type" | "entity_id" | "field" | "locale";
         return previous.record[field] !== record[field];
       })) throw new Error("Translation address changed");
-      const row = { ...entry, record };
+      const row = { ...entry, record, change: null };
       ids.add(entry.id);
       latest.set(entry.translation_id, row);
       return row;
     });
+    if (snapshot.receiptCount !== snapshot.receipts.length) throw new Error("Incomplete command receipts");
+    const receipts = new Map<string, ReturnType<typeof readReceipt>>();
+    for (const raw of snapshot.receipts) {
+      if (receipts.has(raw.request_id)) throw new Error("Duplicate command receipt");
+      receipts.set(raw.request_id, readReceipt(raw, campaignId, workspaceId));
+    }
+    const versions = new Map(rows.map(row => [`${row.translation_id}:${row.revision}`, row]));
+    const used = new Set<string>();
+    for (const row of rows) {
+      if (row.write_request_id === null) continue;
+      const receipt = receipts.get(row.write_request_id);
+      if (!receipt || receipt.actorId !== row.actor_id || row.event === "legacy_baseline") throw new Error("Missing or unrelated history receipt");
+      const requested = receipt.intent.entries.find(entry => entry.entityType === row.record.entity_type && entry.entityId === row.record.entity_id && entry.field === row.record.field);
+      const result = receipt.result.entries.find(entry => entry.entry.id === row.translation_id);
+      if (!requested || !result || result.revision !== row.revision || !isDeepStrictEqual(retainedTranslationSchema.parse(result.entry), row.record)) throw new Error("Receipt differs from retained history");
+      const previous = versions.get(`${row.translation_id}:${row.revision - 1}`);
+      const event = receipt.intent.operation === "withdraw" ? "removed" : !previous ? "created"
+        : previous.record.source === "machine" && row.record.source === "operator" && previous.record.translated_text === row.record.translated_text ? "accepted" : "corrected";
+      if (row.event !== event) throw new Error("Receipt operation differs from history event");
+      const pending = pendingTranslationSchema.parse({ version: 1, userId: receipt.actorId, workspaceId, campaignId,
+        createdAt: row.recorded_at, phase: "unconfirmed", before: [previous ? { entry: previous.record, revision: previous.revision } : null],
+        intent: { ...receipt.intent, entries: [requested] } });
+      confirmPendingTranslation({ ...receipt.result, entries: [result] }, pending);
+      if (receipt.intent.operation !== "withdraw" && row.record.source_text_hash !== createHash("sha256").update(requested.expectedSource.text!.trim(), "utf8").digest("hex")) throw new Error("Retained source checksum differs from checked source");
+      row.change = { requestId: receipt.intent.requestId, operation: receipt.intent.operation, reason: receipt.intent.reason,
+        source: requested.expectedSource, expectedTranslation: requested.expectedTranslation,
+        payloadSha256: receipt.payloadSha256, resultSha256: receipt.resultSha256 };
+      used.add(row.write_request_id);
+    }
+    if (used.size !== receipts.size) throw new Error("Unrelated receipts in history snapshot");
     return { rows, error: null };
   } catch {
     return { rows: [], error: { message: "Translation history could not be read and verified completely. Try again." } };
   }
+}
+
+/** Verify stored receipt bytes before extracting source words or associating a change. */
+function readReceipt(raw: z.infer<typeof receiptSchema>, campaignId: string, workspaceId: string) {
+  if (createHash("sha256").update(raw.payload_text, "utf8").digest("hex") !== raw.payload_sha256
+    || createHash("sha256").update(raw.result_text, "utf8").digest("hex") !== raw.result_sha256) throw new Error("Command receipt checksum mismatch");
+  const { schema: _schema, campaignId: recordedCampaign, actorId, ...body } = payloadSchema.parse(JSON.parse(raw.payload_text));
+  const intent = translationWriteIntentSchema.parse(body);
+  if (recordedCampaign !== campaignId || actorId !== raw.actor_id || intent.requestId !== raw.request_id) throw new Error("Command receipt scope mismatch");
+  const result = readTranslationWriteResult(JSON.parse(raw.result_text), { campaignId, workspaceId }, intent);
+  if (result.replayed) throw new Error("Stored receipt is not the original result");
+  return { actorId, intent, result, payloadSha256: raw.payload_sha256, resultSha256: raw.result_sha256 };
 }

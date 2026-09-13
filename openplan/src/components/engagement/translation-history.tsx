@@ -68,7 +68,7 @@ function HistoryRecords({ campaignId, revision }: { campaignId: string; revision
         {recordLabel(row)}{row.event === "removed" ? " (withdrawn)" : ""}
       </option>)}
     </select>
-    <p className="text-xs text-muted-foreground">{revisions.length} retained revisions. Earlier changes before retention began remain unknown. These copies retain translated wording and its recorded origin; a source checksum cannot reconstruct the original source text.</p>
+    <p className="text-xs text-muted-foreground">{revisions.length} retained revisions. Earlier changes before retention began remain unknown. These copies retain translated wording and its recorded origin. Command-backed changes also retain their reason and checked source. A source checksum alone cannot reconstruct missing source text.</p>
     <ol className="space-y-4">
       {revisions.map(row => <li key={row.id} className="space-y-2 rounded-lg border border-border p-3 text-sm break-words">
         <h3 className="font-semibold">Revision {row.revision}: {eventLabels[row.event]}</h3>
@@ -78,7 +78,18 @@ function HistoryRecords({ campaignId, revision }: { campaignId: string; revision
         <p className="whitespace-pre-wrap">{row.record.translated_text}</p>
         <p>Saved origin: {row.record.source === "machine" ? "Machine translation" : "Agency wording, written or accepted"}</p>
         <p>Model recorded: {row.record.machine_model || "Not recorded for this copy"}</p>
-        <p className="text-xs text-muted-foreground">Source text: not retained in this copy.</p>
+        {row.change ? <div className="space-y-2 rounded-lg border border-border p-3">
+          <p className="whitespace-pre-wrap"><strong>Reason: </strong>{row.change.reason ?? "New wording; no reason recorded"}</p>
+          <p className="whitespace-pre-wrap"><strong>Source checked for this change: </strong><span lang={row.change.source.sourceLocale ?? undefined} dir="auto">{row.change.source.text ?? "No source words recorded"}</span></p>
+          <p>Recorded source language: {row.change.source.sourceLocale ?? "Not recorded"}.</p>
+          <p>{row.change.source.available ? "Source was available for translation." : "Source was unavailable for new wording."}</p>
+          <p>{row.change.expectedTranslation ? `Started from saved revision ${row.change.expectedTranslation.revision}.` : "No translation was saved at this address before this change."}</p>
+          <details className="text-xs text-muted-foreground"><summary>Verified change receipt</summary>
+            <p className="mt-2 break-all">Request: {row.change.requestId}</p>
+            <p className="break-all">Request SHA-256: {row.change.payloadSha256}</p>
+            <p className="break-all">Result SHA-256: {row.change.resultSha256}</p>
+          </details>
+        </div> : <p className="text-xs text-muted-foreground">Reason and checked source text were not retained for this change.</p>}
         <details className="text-xs text-muted-foreground"><summary>Retained checksum verified</summary><p className="mt-2 break-all">SHA-256: {row.record_sha256}</p></details>
       </li>)}
     </ol>

@@ -1,3 +1,8 @@
+# Current history continuation
+
+Read [HISTORY_RECEIPT_PROGRESS.md](HISTORY_RECEIPT_PROGRESS.md) first for the latest
+implementation, installed migration, browser evidence and remaining work.
+
 # Current continuation
 
 Read [EDITOR_RECOVERY_PROGRESS.md](EDITOR_RECOVERY_PROGRESS.md) first for the latest

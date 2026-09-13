@@ -5,7 +5,7 @@ const campaignId = "10000000-0000-4000-8000-000000000001";
 const translationId = "20000000-0000-4000-8000-000000000001";
 const row = {
   id: "30000000-0000-4000-8000-000000000001", campaign_id: campaignId, translation_id: translationId,
-  revision: 1, actor_id: null, event: "legacy_baseline", recorded_at: "2026-09-12T00:00:00Z", record_sha256: "a".repeat(64),
+  revision: 1, actor_id: null, write_request_id: null, change: null, event: "legacy_baseline", recorded_at: "2026-09-12T00:00:00Z", record_sha256: "a".repeat(64),
   record: { id: translationId, workspace_id: "40000000-0000-4000-8000-000000000001", campaign_id: campaignId,
     entity_type: "campaign", entity_id: campaignId, field: "title", locale: "es", translated_text: "Original answer", source: "machine",
     machine_model: "synthetic-model", source_text_hash: null, created_by: null, created_at: "2026-09-12T00:00:00Z", updated_at: "2026-09-12T00:00:00Z" },
@@ -64,4 +64,39 @@ it("refreshes open history after a confirmed save and preserves selection", asyn
   expect(screen.getByRole("combobox")).toHaveValue(secondId);
   expect(screen.getByRole("combobox")).toHaveFocus();
   expect(fetcher).toHaveBeenCalledTimes(2);
+});
+
+it("shows the verified reason, exact checked source and starting version beside retained words", async () => {
+  const reason = "\u00a0SYNTHETIC change reason\ufeff", source = "\u00a0SYNTHETIC checked source\ufeff";
+  const requestId = "60000000-0000-4000-8000-000000000001";
+  const linked = { ...row, event: "corrected", revision: 2, write_request_id: requestId,
+    change: { requestId, operation: "save", reason, source: { text: source, sourceLocale: "es", available: true },
+      expectedTranslation: { id: translationId, revision: 1 }, payloadSha256: "b".repeat(64), resultSha256: "c".repeat(64) } };
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ history: [linked] }) }));
+  render(<TranslationHistory campaignId={campaignId} />); open();
+  const shownSource = await screen.findByText(/SYNTHETIC checked source/);
+  expect(shownSource.textContent).toBe(source); expect(shownSource).toHaveAttribute("lang", "es"); expect(shownSource).toHaveAttribute("dir", "auto");
+  expect(screen.getByText(/SYNTHETIC change reason/).textContent).toBe("Reason: " + reason);
+  expect(screen.getByText("Started from saved revision 1.")).toBeVisible();
+  expect(screen.getByText("Verified change receipt")).toBeVisible();
+  expect(screen.queryByText(/Reason and checked source text were not retained/)).toBeNull();
+});
+
+it("shows an absent source and unknown recorded language without borrowing current wording", async () => {
+  const requestId = "60000000-0000-4000-8000-000000000001";
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ history: [{ ...row, event: "removed", revision: 2,
+    write_request_id: requestId, change: { requestId, operation: "withdraw", reason: "SYNTHETIC obsolete source",
+      source: { text: null, sourceLocale: null, available: false }, expectedTranslation: { id: translationId, revision: 1 },
+      payloadSha256: "b".repeat(64), resultSha256: "c".repeat(64) } }] }) }));
+  render(<TranslationHistory campaignId={campaignId} />); open();
+  expect(await screen.findByText("No source words recorded")).toBeVisible();
+  expect(screen.getByText("Recorded source language: Not recorded.")).toBeVisible();
+  expect(screen.getByText("Source was unavailable for new wording.")).toBeVisible();
+});
+
+it("refuses a linked history entry with missing or unrelated change evidence", async () => {
+  const requestId = "60000000-0000-4000-8000-000000000001";
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ history: [{ ...row, write_request_id: requestId }] }) }));
+  render(<TranslationHistory campaignId={campaignId} />); open();
+  expect(await screen.findByRole("alert")).toBeVisible(); expect(screen.queryByText("Original answer")).toBeNull();
 });

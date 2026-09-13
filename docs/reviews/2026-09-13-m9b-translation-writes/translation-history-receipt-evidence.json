@@ -1,0 +1,109 @@
+{
+  "baseCommit": "dbf53e5d1b054601a8c82ef17d24eca5aba73d1d",
+  "checkout": "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13",
+  "applicationSourceSha256": {
+    "openplan/src/components/engagement/campaign-translations-panel.tsx": "fd6e875bcb4edfd869e6a3ecab0d31cb14fd3b8f1d34d02f8e01559578703fa3",
+    "openplan/src/components/engagement/translation-write-recovery.tsx": "584f09377d80fa1337ff3c1a3bed4d2a65b984c7fcd527989ae87030e688e02e",
+    "openplan/src/lib/engagement/campaign-translations.ts": "c07c534546e7db5317719ae39063ee655afc99f9e308e5b49b80e8d2c958dac7",
+    "openplan/src/lib/engagement/pending-translation.ts": "36497b83a4ea19e95c3863dabed2a55a671b4ea5d594ed7818c534f53ab4d60b",
+    "openplan/src/lib/engagement/translation-write.ts": "949312415c08305f62f04d1574b210e7fe2a59696304cfb045414bab7913a415",
+    "openplan/src/app/api/engagement/campaigns/[campaignId]/translations/commands/route.ts": "6a4d4133d75d2af87f7e5e0f5bf38e8cf134ff973aa17912171ce829291d2f09",
+    "openplan/src/app/api/engagement/campaigns/[campaignId]/translations/snapshot/route.ts": "631d87757a8141b6fb148cfa26238eef84430c9ddfe1e4a0358160534e776e05",
+    "openplan/src/components/engagement/translation-draft-recovery.tsx": "a10331cccf7961115a026b54820dcecbe9e46b854f4dfd42b4e59ef8d21380ed",
+    "openplan/src/lib/engagement/translation-drafts.ts": "eec9e132bf12f05f1ea596d15f154c89a0570e9a53695c7cc00806f74008b6c7",
+    "openplan/src/lib/engagement/translation-snapshot.ts": "2fe4e45bc95aa4decdcb023838051dd049cac8459115307a8afb495ab7e1c39b",
+    "openplan/src/app/(app)/engagement/[campaignId]/page.tsx": "f0da9b3b93e2e01421fe192f865481b8bbee627ab8fa30855759d4fabc492d7e",
+    "openplan/src/lib/engagement/translation-history.ts": "0a9ad05a4e986d8e7b399b2d126696a0da44ca28f16d23caa454bd221f0e72ea",
+    "openplan/src/lib/engagement/translation-history-server.ts": "99ec8b6d67cd4a37a1260097c1dae69d79b72dda3e1071124e65e51ee5ce7a96",
+    "openplan/src/components/engagement/translation-history.tsx": "3504cb29f72b28a49620fb671ddc188c6ee2b825110f20d5319c6588e022d40d",
+    "openplan/supabase/migrations/20261014000012_engagement_translation_history_receipts.sql": "5ed0aada4a21e364197ac7874e2ba890d734a7504605c53d06833dbabddc9544"
+  },
+  "browserHarnessSha256": "e7c623820bf92a3efbc144c51e751c82937b925c1f4a458b4570f3e8fe983da1",
+  "wrapperSha256": "1d10ef88d91f6e578dddb217d4ff1a86932801b109887c1c2c3c010a615e1a61",
+  "privateEvidenceDirectory": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913",
+  "journeys": [
+    {
+      "width": 1440,
+      "prefix": "translation-editor-1440-1789324214341",
+      "downloadSha256": "ca3f48146ee412d7ceff497b6875278acf33fd873b62435fcea8c3a4d6e446d1",
+      "console": [
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789324215916 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/css/app/(app)/layout.css?v=1789324217332 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/36966cca54120369-s.p.woff2?v=1789324215916 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/36966cca54120369-s.p.woff2?v=1789324242472 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789324242472 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+        }
+      ],
+      "linkedHistoryCount": 6,
+      "files": {
+        "translation-editor-1440-1789324214341-result.json": "250f344eef2d94ba33a29d3ee2561e32a7bd3631b51bbf3cd5976743171a96a6",
+        "translation-editor-1440-1789324214341-retained-history.png": "5f034a89568eda57523097ade1a5232ae44b47ea9bfd9f75dd480068b03ee747",
+        "translation-editor-1440-1789324214341-retained-request.json": "ca3f48146ee412d7ceff497b6875278acf33fd873b62435fcea8c3a4d6e446d1"
+      }
+    },
+    {
+      "width": 390,
+      "prefix": "translation-editor-390-1789324257833",
+      "downloadSha256": "5f3d2bd01e66657d677fd1e0dcd061246a780f3b0c68da49fb8ad29129166532",
+      "console": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/36966cca54120369-s.p.woff2?v=1789324270663 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789324270663 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+        }
+      ],
+      "linkedHistoryCount": 6,
+      "files": {
+        "translation-editor-390-1789324257833-result.json": "6bbd83c87e057b3633d71b99101448ded40e7e8f5dacec825fddc4d27baa1e1d",
+        "translation-editor-390-1789324257833-retained-history.png": "3ac0d012dbe753953b2396c88332b11f06a9554e198ad4c74a8e1d80cb8d8661",
+        "translation-editor-390-1789324257833-retained-request.json": "5f3d2bd01e66657d677fd1e0dcd061246a780f3b0c68da49fb8ad29129166532"
+      }
+    }
+  ],
+  "cleanup": {
+    "childExit": 0,
+    "grantRevoked": true
+  },
+  "installedMigrationCount": 331,
+  "latestInstalledMigration": "20261014000012",
+  "tests": {
+    "focused": 60,
+    "installedHistoryRls": 2,
+    "typecheckExit": 0,
+    "changedFileEslintExit": 0
+  },
+  "limits": "Selected reader/schema/UI and isolated SQL checks plus owner browser navigation. Not all new guards, viewer browser navigation, full QA/RLS/worker/upgrade/restore, generation or release CI."
+}
