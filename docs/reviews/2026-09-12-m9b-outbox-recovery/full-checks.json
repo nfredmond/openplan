@@ -58,5 +58,29 @@
     "label": "workers",
     "log": "m9b-outbox-release-workers.log",
     "sha256": "de0dc9b2f23facacb68cf1d867e0f92ad5b57289a4c84a5a79f9928c2424cbb7"
+  },
+  {
+    "source": "6fbbd72b77b81e5369e34f20f54728429b3b64e9",
+    "kind": "rls",
+    "startedAt": "2026-09-13T05:52:36.927Z",
+    "finishedAt": "2026-09-13T06:00:31.825Z",
+    "status": 0,
+    "signal": null,
+    "stack": "openplan-restore-target-2026091050",
+    "label": "rls-complete",
+    "log": "m9b-outbox-release-rls.log",
+    "sha256": "262f74e4ac3818a07c938d4fbb8f12a40715052a497672b6a832e71edcd94c79"
+  },
+  {
+    "source": "79542b3e186fed939779bb46d9e9fefc5313e340",
+    "kind": "workers",
+    "startedAt": "2026-09-13T06:01:27.885Z",
+    "finishedAt": "2026-09-13T06:02:01.495Z",
+    "status": 0,
+    "signal": null,
+    "stack": null,
+    "label": "workers-complete",
+    "log": "m9b-outbox-release-workers.log",
+    "sha256": "de0dc9b2f23facacb68cf1d867e0f92ad5b57289a4c84a5a79f9928c2424cbb7"
   }
 ]

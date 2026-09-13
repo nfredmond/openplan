@@ -105,3 +105,19 @@ Live RLS session 99564, PID 3983051, remained running on source 6fbbd72b; it has
 not been restarted. Its schema and live test source are unchanged by the follow-up
 unit-test corrections. Poll the same handle; do not infer termination from quiet
 output. The private m9b-outbox-release-check.cjs records terminal receipts.
+
+## Live corrected full checks
+
+RLS session 99564 completed successfully: 479 tests across 50 files on source
+6fbbd72b. No schema or live RLS test changed afterward. Worker session 44999
+completed successfully on 79542b3e: all 52 suites, with the corrected test supplying
+its own temporary configuration. No external worker credentials are needed.
+
+Corrected full QA is running in tool session 21006 and shuffled tests with seed
+913561 in session 4767, both on 79542b3e186fed939779bb46d9e9fefc5313e340. Private
+logs and terminal receipts use m9b-outbox-release-qa and -shuffled under the same
+private evidence directory. Initial failed runs are preserved with -initial.
+Do not restart merely because polling is quiet. The checkout is fixed until those
+checks finish, apart from this receipt-only note. Main remains published v0.56.0
+at e006b98b. v0.56.1 is not on main or tagged; finish checks, land directly, inspect
+final GitHub CI/RLS and release under the existing policy.
