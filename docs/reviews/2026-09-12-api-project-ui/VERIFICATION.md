@@ -1,6 +1,7 @@
 # Saved API project workflow, v0.55.0 candidate
 
-The accepted workflow source is 5b84838c86852a228e23ea1a138551581b9132fd.
+The initial accepted workflow source is 5b84838c86852a228e23ea1a138551581b9132fd.
+The final wording replay below supersedes it for the shipped interface text.
 which-openplan.sh matched the isolated checkout and local development server at
 127.0.0.1:3255. The desktop 1440px and mobile 390px journeys entered through
 home/sign-in, Workspace settings and Projects. They created API configuration
@@ -63,3 +64,37 @@ separate AequilibraE/ActivitySim validation obligations remain unchanged.
 The successful worker foundation CI/RLS at 47c4985e is prior evidence, not the
 final capability release gate. Full candidate QA/shuffle/RLS and an upgrade from
 v0.54.0, final main CI and publication are still pending.
+
+
+## Final wording replay
+
+Source b86f5f878b8ea58d1f83d30c6a4ecf5f65bd9d0c clarifies Saved API and the
+exact name/summary/status/question disclosure and consent. The unchanged copy
+guard caught the earlier regression; no baseline was increased. The restored
+copy and both panel suites passed 57 tests. A harmless comment passed the four
+copy checks. This guard cannot judge meaning or layout, or detect all dynamic
+strings. Existing route/UI mutation results remain applicable; no guard changed.
+
+The complete workflow above ran again on this identified source at 1440px and
+390px, including actual worker execution, interrupted retry, cancellation,
+correction, revocation and private access checks. Each final run had three model
+calls, no page errors, no horizontal overflow, and only the deliberate aborted
+POST console error. Consent, results and corrected history screenshots were
+inspected at both widths. [Replay artifacts](wording-replay/) and their
+[checksums](wording-replay/SHA256SUMS) retain the evidence; previous evidence stays
+unchanged. The first desktop attempt hit Chrome ERR_NETWORK_CHANGED before
+saving configuration and timed out. Its screenshot/log remain private under
+api-ui-b86f5f87-network-change; no product cause is established. A replay after
+the shuffled suite finished passed without changing the browser script.
+
+The initial dev launch failed because Next inherited Node's --env-file flag in
+NODE_OPTIONS. Loading the private environment in a parent launcher fixed startup;
+no application fix was needed. The owned dev server was stopped after collection.
+
+Shuffled seed 912556 passed 14080 tests, 450 skipped, across 1258 passing files.
+Full isolated RLS completed 479 tests in 50 files. Nine database function-source
+hashes match the retained worker reference; active API queue was zero. Upgrade
+Path 34730331136 succeeded from v0.54.0 on 8b4f756c. Subsequent changes are
+wording/docs only; no SQL/worker/upgrade change invalidates that result. Full QA
+replay and final main CI remain pending. Skipped unit categories are not inferred
+passed; RLS and worker evidence cover their stated independent boundaries.

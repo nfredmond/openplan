@@ -1,0 +1,38 @@
+- region "Project provider task":
+  - button "Project task · choose provider" [expanded]
+  - paragraph: Ask about this project's stored name, summary and status, or draft a submittal. Only that project record and your question go to the selected provider. Documents and other project records are outside this task.
+  - text: Provider
+  - combobox "Provider":
+    - option "Installed Codex"
+    - option "Installed Claude Code"
+    - option "Installed OpenCode"
+    - option "Anthropic API"
+    - option "Saved API" [selected]
+  - paragraph: Choose a saved OpenAI-compatible Chat Completions destination. Requests wait for your OpenPlan API worker; provider availability and account access are checked only when it runs.
+  - link "Manage saved APIs in settings":
+    - /url: /workspace
+  - text: Saved API connection
+  - combobox "Saved API connection":
+    - option "Choose a saved API"
+    - option "SYNTHETIC project API 1440 1789263142484" [selected]
+    - option "SYNTHETIC project API 390 1789261982806 corrected"
+    - option "SYNTHETIC project API 390 1789261565919"
+    - option "SYNTHETIC project API 1440 1789261515592"
+    - option "SYNTHETIC project API 1440 1789261461348"
+    - option "SYNTHETIC project API 1440 1789261383923"
+    - option "Settings fixture 1440 1789248265902"
+  - button "Refresh API choices"
+  - paragraph: "Destination: http://127.0.0.1:3217/v1/"
+  - paragraph: The saved revision's API key will be sent.
+  - paragraph: Only the saved project name, summary, status and your question are shared. No other provider or account will be substituted.
+  - text: Model ID
+  - combobox "Model ID":
+    - option "Choose a configured model"
+    - option "synthetic-model" [selected]
+  - checkbox "I authorize sharing the saved project name, summary, status and my question with the selected API destination and accept any provider charges." [checked]
+  - text: I authorize sharing the saved project name, summary, status and my question with the selected API destination and accept any provider charges. Project question
+  - textbox "Project question": SYNTHETIC draft a progress submittal
+  - button "Send project request"
+  - heading "Saved project requests" [level=3]
+  - paragraph: The latest 20 requests stay here after reloading. Failed or interrupted attempts never restart automatically.
+  - paragraph: No saved requests for this project.

@@ -24,7 +24,7 @@ stable enough to promise smooth upgrades indefinitely.
 
 The project Planner Agent can now use a saved workspace API destination and its
 configured model IDs. Workspace settings retain each configuration revision and
-keep credentials separately protected. Select Saved workspace API in the
+keep credentials separately protected. Select Saved API in the
 existing project task, review the destination and shared project record, and
 acknowledge any provider charges. A local API worker processes the queued request;
 no paid hosting or provider account is created automatically.

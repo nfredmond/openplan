@@ -172,7 +172,7 @@ for on-screen review, not entire-workbook printing.
 can be started with `npm run worker:provider-api` from `openplan/`, after applying
 migration `20261012000002_assistant_api_turns.sql`. `npm run worker:provider-api --
 --once` performs one recovery or queue cycle. In a project, open Planner Agent, then Project task · choose provider, and select
-Saved workspace API. Choose a connection and one of its configured model IDs,
+Saved API. Choose a connection and one of its configured model IDs,
 review its destination and sharing scope, and acknowledge any provider charges.
 The request stays queued until this worker receives it. Workspace settings
 retains each configuration revision; editing or revoking a connection interrupts

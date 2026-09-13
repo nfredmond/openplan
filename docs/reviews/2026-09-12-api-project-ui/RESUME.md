@@ -130,3 +130,9 @@ baseline was raised and no guard changed. Focused copy and both panel suites
 passed 57 tests. A harmless comment control passed all four copy checks; original
 wording failed the baseline as documented above. The copy guard cannot assess
 meaning or layout; fresh browser acceptance and full QA/shuffle follow.
+
+Final browser wording replay on b86f5f87 passed at both widths, with inspected
+images and public artifacts under wording-replay/. Full shuffled replay passed
+14080 tests; RLS and Upgrade Path are complete as recorded above. Dev handle
+34729 was stopped after acceptance. Full QA replay starts next; do not re-run
+unchanged RLS or browser journeys without a new reason. See VERIFICATION.md.
