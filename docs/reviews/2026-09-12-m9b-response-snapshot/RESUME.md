@@ -60,3 +60,31 @@ Once these gates are green, land the verified foundation directly on main and
 continue the staff history/read/write/conflict interface. This does not authorize
 a new release claim before the complete promised workflow works. v0.55.2 is
 already published; its full verification must not be repeated as pending work.
+
+## Usage-reset checkpoint: terminal local checks
+
+This section supersedes the running-check status above. All three local wrappers
+have terminal receipts and no matching check process remained at inspection:
+
+- Full QA ended with status 1: 14,106 tests passed, 450 skipped, one failed.
+- Shuffle seed 913562 ended with status 1 with the same counts and failure.
+- Both failures identify `engagement_response_history.record_sha256` as having
+  no application reader. This is unfinished integration, not demonstrated test
+  order dependence. Do not silence it with an allowlist or unused helper.
+- Full isolated RLS ended with status 0: 479 tests across 50 files passed.
+- Upgrade Path 34737449570 remains queued on exact source 5d8268a1. Inspect that
+  run after resuming; do not dispatch a duplicate based on elapsed time alone.
+
+Next implement the actual private staff response-history reader and navigation,
+including verification of the retained SHA-256 against PostgreSQL's returned
+`record_json::text`, read-failure recovery, and access to retained removed entries.
+Use an additive migration because the foundation migration is already applied.
+Then prove the guards and exercise identified desktop/390px keyboard journeys,
+rerun applicable gates, and land directly on main when green. Reasoned writes,
+stale-edit conflicts, interrupted retries and translation custody still need work.
+
+No runtime edits or new browser acceptance occurred during this checkpoint.
+The worktree was clean and its existing branch tip matched origin before this
+note. Only this restart note is being changed. The published v0.55.2 release is
+unaffected. A usage reset does not imply background jobs continued or succeeded;
+re-read this note, current git state, receipts and CI before restarting work.
