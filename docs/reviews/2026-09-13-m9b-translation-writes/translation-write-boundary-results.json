@@ -1,0 +1,744 @@
+{
+  "runId": "20260913T101437",
+  "sourceSha256": {
+    "write": "949312415c08305f62f04d1574b210e7fe2a59696304cfb045414bab7913a415",
+    "pending": "36497b83a4ea19e95c3863dabed2a55a671b4ea5d594ed7818c534f53ab4d60b",
+    "post": "6a4d4133d75d2af87f7e5e0f5bf38e8cf134ff973aa17912171ce829291d2f09",
+    "get": "631d87757a8141b6fb148cfa26238eef84430c9ddfe1e4a0358160534e776e05"
+  },
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-write",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-pending",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-post",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-get",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "post-ignore-invalid-campaign",
+      "outcome": "killed",
+      "expectedFailure": "write translation access validates campaign identity",
+      "failedAssertions": [
+        "write translation access validates campaign identity before creating a client"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "post-allow-anonymous",
+      "outcome": "killed",
+      "expectedFailure": "write translation access refuses unauthenticated",
+      "failedAssertions": [
+        "write translation access refuses unauthenticated before the RPC"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "post-allow-denied",
+      "outcome": "killed",
+      "expectedFailure": "write translation access refuses denied",
+      "failedAssertions": [
+        "write translation access refuses denied before the RPC"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "post-ignore-access-error",
+      "outcome": "killed",
+      "expectedFailure": "write translation access refuses unreadable",
+      "failedAssertions": [
+        "write translation access refuses unreadable before the RPC"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "post-cache-private-response",
+      "outcome": "killed",
+      "expectedFailure": "sends the exact save",
+      "failedAssertions": [
+        "translation command routes sends the exact save intent once through the caller's transaction",
+        "translation command routes sends the exact accept intent once through the caller's transaction",
+        "translation command routes sends the exact withdraw intent once through the caller's transaction",
+        "translation command routes cancels an oversize streamed body without reading the tail or touching the database",
+        "write translation access refuses unauthenticated before the RPC",
+        "write translation access refuses denied before the RPC",
+        "write translation access refuses missing before the RPC",
+        "write translation access refuses unreadable before the RPC",
+        "write translation access refuses throws before the RPC"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "get-ignore-invalid-campaign",
+      "outcome": "killed",
+      "expectedFailure": "snapshot translation access validates campaign identity",
+      "failedAssertions": [
+        "snapshot translation access validates campaign identity before creating a client"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "get-allow-anonymous",
+      "outcome": "killed",
+      "expectedFailure": "snapshot translation access refuses unauthenticated",
+      "failedAssertions": [
+        "snapshot translation access refuses unauthenticated before the RPC"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "get-allow-denied",
+      "outcome": "killed",
+      "expectedFailure": "snapshot translation access refuses denied",
+      "failedAssertions": [
+        "snapshot translation access refuses denied before the RPC"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "get-ignore-access-error",
+      "outcome": "killed",
+      "expectedFailure": "snapshot translation access refuses unreadable",
+      "failedAssertions": [
+        "snapshot translation access refuses unreadable before the RPC"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "get-cache-private-response",
+      "outcome": "killed",
+      "expectedFailure": "returns the complete raw snapshot",
+      "failedAssertions": [
+        "snapshot translation access refuses unauthenticated before the RPC",
+        "snapshot translation access refuses denied before the RPC",
+        "snapshot translation access refuses missing before the RPC",
+        "snapshot translation access refuses unreadable before the RPC",
+        "snapshot translation access refuses throws before the RPC",
+        "translation snapshot route returns the complete raw snapshot with viewer permission through one RPC"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "post-wrong-permission",
+      "outcome": "killed",
+      "expectedFailure": "sends the exact save",
+      "failedAssertions": [
+        "translation command routes sends the exact save intent once through the caller's transaction",
+        "translation command routes sends the exact accept intent once through the caller's transaction",
+        "translation command routes sends the exact withdraw intent once through the caller's transaction"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "get-wrong-permission",
+      "outcome": "killed",
+      "expectedFailure": "returns the complete raw snapshot",
+      "failedAssertions": [
+        "translation snapshot route returns the complete raw snapshot with viewer permission through one RPC"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "post-buffer-whole-upload",
+      "outcome": "killed",
+      "expectedFailure": "cancels an oversize streamed body",
+      "failedAssertions": [
+        "translation command routes cancels an oversize streamed body without reading the tail or touching the database"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "post-lossy-utf8",
+      "outcome": "killed",
+      "expectedFailure": "rejects malformed utf8",
+      "failedAssertions": [
+        "translation command routes rejects malformed utf8 before database access"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "post-ignore-invalid-intent",
+      "outcome": "killed",
+      "expectedFailure": "rejects malformed intent",
+      "failedAssertions": [
+        "translation command routes rejects malformed intent before database access"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "post-ignore-write-refusal",
+      "outcome": "killed",
+      "expectedFailure": "preserves PT409 refusal",
+      "failedAssertions": [
+        "translation command routes preserves PT409 refusal without returning a saved receipt",
+        "translation command routes preserves 42501 refusal without returning a saved receipt",
+        "translation command routes preserves 22023 refusal without returning a saved receipt"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "get-ignore-read-refusal",
+      "outcome": "killed",
+      "expectedFailure": "withholds a partial snapshot",
+      "failedAssertions": [
+        "translation snapshot route withholds a partial snapshot instead of claiming no translations",
+        "translation snapshot route withholds a error snapshot instead of claiming no translations",
+        "translation snapshot route withholds a throws snapshot instead of claiming no translations"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "undersized-transport",
+      "outcome": "killed",
+      "expectedFailure": "accepts a valid Unicode batch",
+      "failedAssertions": [
+        "translation command routes accepts a valid Unicode batch larger than the legacy transport cap",
+        "translation command routes cancels an oversize streamed body without reading the tail or touching the database"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "replace-request-id",
+      "outcome": "killed",
+      "expectedFailure": "sends raw words, null source locale",
+      "failedAssertions": [
+        "translation command routes sends the exact save intent once through the caller's transaction",
+        "translation command routes sends the exact accept intent once through the caller's transaction",
+        "translation command routes sends the exact withdraw intent once through the caller's transaction",
+        "translation command routes returns the original replay without rereading a later source or creating another identity",
+        "exact translation command boundary sends raw words, null source locale and the caller's request identity once"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "trim-command-words",
+      "outcome": "killed",
+      "expectedFailure": "sends raw words, null source locale",
+      "failedAssertions": [
+        "translation command routes sends the exact save intent once through the caller's transaction",
+        "translation command routes returns the original replay without rereading a later source or creating another identity",
+        "exact translation command boundary sends raw words, null source locale and the caller's request identity once",
+        "translation recovery custody confirms unchanged-content saves but requires a new revision for changed content",
+        "translation recovery custody does not confirm a save attributed to another actor",
+        "translation recovery custody reports a failed active-record removal after confirmation or archiving",
+        "translation recovery custody retains independent requests across reloads and separates users and campaigns",
+        "translation recovery custody confirms exact retries and preserves the original model words on acceptance and withdrawal"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-input-validation",
+      "outcome": "killed",
+      "expectedFailure": "refuses missing request",
+      "failedAssertions": [
+        "exact translation command boundary refuses missing request without calling the database",
+        "exact translation command boundary refuses extra actor without calling the database",
+        "exact translation command boundary refuses invalid language without calling the database",
+        "exact translation command boundary refuses empty batch without calling the database",
+        "exact translation command boundary refuses duplicate address without calling the database",
+        "exact translation command boundary refuses unsupported source field without calling the database",
+        "exact translation command boundary refuses blank words without calling the database",
+        "exact translation command boundary refuses missing observed state without calling the database"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-duplicate-input-address",
+      "outcome": "killed",
+      "expectedFailure": "refuses duplicate address without calling",
+      "failedAssertions": [
+        "exact translation command boundary refuses duplicate address without calling the database"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-unsupported-field",
+      "outcome": "killed",
+      "expectedFailure": "refuses unsupported source field",
+      "failedAssertions": [
+        "exact translation command boundary refuses unsupported source field without calling the database"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-correction-reason",
+      "outcome": "killed",
+      "expectedFailure": "requires a reason for corrections",
+      "failedAssertions": [
+        "exact translation command boundary requires a reason for corrections and an observed machine version for acceptance"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-unavailable-source",
+      "outcome": "killed",
+      "expectedFailure": "allows withdrawal of unpublished words",
+      "failedAssertions": [
+        "exact translation command boundary allows withdrawal of unpublished words but refuses saving or accepting them"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-rpc-refusal",
+      "outcome": "killed",
+      "expectedFailure": "keeps a PT409 response distinct",
+      "failedAssertions": [
+        "translation command routes preserves PT409 refusal without returning a saved receipt",
+        "translation command routes preserves 42501 refusal without returning a saved receipt",
+        "translation command routes preserves 22023 refusal without returning a saved receipt",
+        "translation command routes preserves PT503 refusal without returning a saved receipt",
+        "exact translation command boundary keeps a PT409 response distinct without retrying",
+        "exact translation command boundary keeps a 42501 response distinct without retrying",
+        "exact translation command boundary keeps a 22023 response distinct without retrying",
+        "exact translation command boundary keeps a PT503 response distinct without retrying"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-campaign",
+      "outcome": "killed",
+      "expectedFailure": "mismatched campaign",
+      "failedAssertions": [
+        "exact translation command boundary does not confirm a receipt with mismatched campaign"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-request",
+      "outcome": "killed",
+      "expectedFailure": "mismatched request",
+      "failedAssertions": [
+        "exact translation command boundary does not confirm a receipt with mismatched request"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-operation",
+      "outcome": "killed",
+      "expectedFailure": "mismatched operation",
+      "failedAssertions": [
+        "exact translation command boundary does not confirm a receipt with mismatched operation"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-locale",
+      "outcome": "killed",
+      "expectedFailure": "mismatched locale",
+      "failedAssertions": [
+        "exact translation command boundary does not confirm a receipt with mismatched locale"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-count",
+      "outcome": "killed",
+      "expectedFailure": "mismatched partial batch",
+      "failedAssertions": [
+        "exact translation command boundary does not confirm a receipt with mismatched partial batch"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-duplicate-address",
+      "outcome": "killed",
+      "expectedFailure": "batch receipt with duplicate address",
+      "failedAssertions": [
+        "translation recovery custody refuses a batch receipt with duplicate address even when every word is identical"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-duplicate-id",
+      "outcome": "killed",
+      "expectedFailure": "batch receipt with duplicate row identity",
+      "failedAssertions": [
+        "translation recovery custody refuses a batch receipt with duplicate row identity even when every word is identical"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-row-campaign",
+      "outcome": "killed",
+      "expectedFailure": "correction receipt with changed campaign",
+      "failedAssertions": [
+        "translation recovery custody refuses a correction receipt with changed campaign"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-workspace",
+      "outcome": "killed",
+      "expectedFailure": "mismatched workspace",
+      "failedAssertions": [
+        "translation command routes does not confirm a reply belonging to a different workspace",
+        "exact translation command boundary does not confirm a receipt with mismatched workspace"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-row-locale",
+      "outcome": "killed",
+      "expectedFailure": "correction receipt with changed locale",
+      "failedAssertions": [
+        "translation recovery custody refuses a correction receipt with changed locale"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-removal",
+      "outcome": "killed",
+      "expectedFailure": "mismatched removal",
+      "failedAssertions": [
+        "exact translation command boundary does not confirm a receipt with mismatched removal"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-version-id",
+      "outcome": "killed",
+      "expectedFailure": "correction receipt with changed id",
+      "failedAssertions": [
+        "translation recovery custody refuses a correction receipt with changed id"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-older-revision",
+      "outcome": "killed",
+      "expectedFailure": "correction receipt with changed older revision",
+      "failedAssertions": [
+        "translation recovery custody refuses a correction receipt with changed older revision"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-skipped-revision",
+      "outcome": "killed",
+      "expectedFailure": "correction receipt with changed skipped revision",
+      "failedAssertions": [
+        "translation recovery custody refuses a correction receipt with changed skipped revision"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-new-revision",
+      "outcome": "killed",
+      "expectedFailure": "mismatched new version",
+      "failedAssertions": [
+        "exact translation command boundary does not confirm a receipt with mismatched new version"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-source",
+      "outcome": "killed",
+      "expectedFailure": "mismatched changed authorship",
+      "failedAssertions": [
+        "exact translation command boundary does not confirm a receipt with mismatched changed authorship"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-model",
+      "outcome": "killed",
+      "expectedFailure": "correction receipt with changed model",
+      "failedAssertions": [
+        "translation recovery custody refuses a correction receipt with changed model"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-words",
+      "outcome": "killed",
+      "expectedFailure": "mismatched changed words",
+      "failedAssertions": [
+        "exact translation command boundary does not confirm a receipt with mismatched changed words"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-unretained-acceptance",
+      "outcome": "killed",
+      "expectedFailure": "incremented revision and original authorship for accept",
+      "failedAssertions": [
+        "translation recovery custody requires an incremented revision and original authorship for accept",
+        "translation recovery custody requires an incremented revision and original authorship for withdraw"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-before-length-mismatch",
+      "outcome": "killed",
+      "expectedFailure": "refuses a mismatched before-copy",
+      "failedAssertions": [
+        "translation recovery custody refuses a mismatched before-copy instead of inventing a baseline"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-before-revision-mismatch",
+      "outcome": "killed",
+      "expectedFailure": "refuses a mismatched before-copy",
+      "failedAssertions": [
+        "translation recovery custody refuses a mismatched before-copy instead of inventing a baseline"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "accept-operator-origin",
+      "outcome": "killed",
+      "expectedFailure": "requires a reason for corrections",
+      "failedAssertions": [
+        "exact translation command boundary requires a reason for corrections and an observed machine version for acceptance"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "overwrite-retained-request",
+      "outcome": "killed",
+      "expectedFailure": "never replaces different words",
+      "failedAssertions": [
+        "translation recovery custody allows a status change but never replaces different words at the same recovery key"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-failed-storage-write",
+      "outcome": "killed",
+      "expectedFailure": "storage write that did not retain",
+      "failedAssertions": [
+        "translation recovery custody detects a storage write that did not retain the proposed request"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "discard-malformed-record",
+      "outcome": "killed",
+      "expectedFailure": "preserves unreadable bytes",
+      "failedAssertions": [
+        "translation recovery custody keeps mismatched scope or request identities visible as unreadable records",
+        "translation recovery custody preserves unreadable bytes before removing the active key"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "clear-other-payload",
+      "outcome": "killed",
+      "expectedFailure": "never replaces different words",
+      "failedAssertions": [
+        "translation recovery custody allows a status change but never replaces different words at the same recovery key"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-failed-clear",
+      "outcome": "killed",
+      "expectedFailure": "failed active-record removal",
+      "failedAssertions": [
+        "translation recovery custody reports a failed active-record removal after confirmation or archiving"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "archive-other-scope",
+      "outcome": "killed",
+      "expectedFailure": "archive access to a different campaign",
+      "failedAssertions": [
+        "translation recovery custody refuses archive access to a different campaign or user"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "discard-without-archive",
+      "outcome": "killed",
+      "expectedFailure": "archiving failed or another writer",
+      "failedAssertions": [
+        "translation recovery custody does not discard a request if archiving failed or another writer changed it"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "archive-stale-bytes",
+      "outcome": "killed",
+      "expectedFailure": "archiving failed or another writer",
+      "failedAssertions": [
+        "translation recovery custody does not discard a request if archiving failed or another writer changed it"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-failed-archive-clear",
+      "outcome": "killed",
+      "expectedFailure": "failed active-record removal",
+      "failedAssertions": [
+        "translation recovery custody reports a failed active-record removal after confirmation or archiving"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "confirm-other-actor",
+      "outcome": "killed",
+      "expectedFailure": "save attributed to another actor",
+      "failedAssertions": [
+        "translation recovery custody does not confirm a save attributed to another actor"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "confirm-changed-words-without-revision",
+      "outcome": "killed",
+      "expectedFailure": "unchanged-content saves but requires a new revision",
+      "failedAssertions": [
+        "translation recovery custody confirms unchanged-content saves but requires a new revision for changed content"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "confirm-altered-baseline",
+      "outcome": "killed",
+      "expectedFailure": "preserves the original model words",
+      "failedAssertions": [
+        "translation recovery custody confirms exact retries and preserves the original model words on acceptance and withdrawal"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "confirm-changed-original-actor",
+      "outcome": "killed",
+      "expectedFailure": "incremented revision and original authorship for accept",
+      "failedAssertions": [
+        "translation recovery custody requires an incremented revision and original authorship for accept",
+        "translation recovery custody requires an incremented revision and original authorship for withdraw"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "confirm-changed-withdrawal-origin",
+      "outcome": "killed",
+      "expectedFailure": "withdrawal with a different original source",
+      "failedAssertions": [
+        "translation recovery custody does not confirm withdrawal with a different original source or model"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "recovery-scope-value.workspaceId",
+      "outcome": "killed",
+      "expectedFailure": "mismatched scope or request identities",
+      "failedAssertions": [
+        "translation recovery custody keeps mismatched scope or request identities visible as unreadable records"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "recovery-scope-pendingTranslationKey(value)",
+      "outcome": "killed",
+      "expectedFailure": "mismatched scope or request identities",
+      "failedAssertions": [
+        "translation recovery custody keeps mismatched scope or request identities visible as unreadable records"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "before-id",
+      "outcome": "killed",
+      "expectedFailure": "before-copy with mismatched id",
+      "failedAssertions": [
+        "translation recovery custody refuses a before-copy with mismatched id"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "before-campaign_id",
+      "outcome": "killed",
+      "expectedFailure": "before-copy with mismatched campaign_id",
+      "failedAssertions": [
+        "translation recovery custody refuses a before-copy with mismatched campaign_id"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "before-workspace_id",
+      "outcome": "killed",
+      "expectedFailure": "before-copy with mismatched workspace_id",
+      "failedAssertions": [
+        "translation recovery custody refuses a before-copy with mismatched workspace_id"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "before-locale",
+      "outcome": "killed",
+      "expectedFailure": "before-copy with mismatched locale",
+      "failedAssertions": [
+        "translation recovery custody refuses a before-copy with mismatched locale"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "before-entity_type",
+      "outcome": "killed",
+      "expectedFailure": "before-copy with mismatched entity_type",
+      "failedAssertions": [
+        "translation recovery custody refuses a before-copy with mismatched entity_type"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "before-entity_id",
+      "outcome": "killed",
+      "expectedFailure": "before-copy with mismatched entity_id",
+      "failedAssertions": [
+        "translation recovery custody refuses a before-copy with mismatched entity_id"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "before-field",
+      "outcome": "killed",
+      "expectedFailure": "before-copy with mismatched field",
+      "failedAssertions": [
+        "translation recovery custody refuses a before-copy with mismatched field"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "invent-absent-baseline",
+      "outcome": "killed",
+      "expectedFailure": "explicit absent before-copy",
+      "failedAssertions": [
+        "translation recovery custody requires an explicit absent before-copy only when creating a translation"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Route and client contracts with a mocked database transport. Does not prove installed permissions, SQL atomicity, real HTTP uploads, browser localStorage or navigation, generation or release readiness."
+}

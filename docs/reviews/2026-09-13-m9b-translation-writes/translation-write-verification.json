@@ -1,0 +1,30 @@
+{
+  "baseCommit": "6d499779b123adb75972a3862e964b15aca21c03",
+  "status": "unreleased development; editor and generation integration outstanding",
+  "files": {
+    "openplan/src/lib/engagement/translation-write.ts": "949312415c08305f62f04d1574b210e7fe2a59696304cfb045414bab7913a415",
+    "openplan/src/lib/engagement/pending-translation.ts": "36497b83a4ea19e95c3863dabed2a55a671b4ea5d594ed7818c534f53ab4d60b",
+    "openplan/src/app/api/engagement/campaigns/[campaignId]/translations/commands/route.ts": "6a4d4133d75d2af87f7e5e0f5bf38e8cf134ff973aa17912171ce829291d2f09",
+    "openplan/src/app/api/engagement/campaigns/[campaignId]/translations/snapshot/route.ts": "631d87757a8141b6fb148cfa26238eef84430c9ddfe1e4a0358160534e776e05",
+    "openplan/src/test/engagement-translation-write.test.ts": "954433dbf9529b05cee27d9ca8299cd181ebb4dd29be18e60b4afccb11cc2233",
+    "openplan/src/test/engagement-translation-command-routes.test.ts": "525ee1c3f5156eb78d801b601d5901516dbcc0b5638e84c721463b024a07b8d9",
+    "docs/reviews/2026-09-13-m9b-translation-writes/prove-translation-write-boundaries.py": "792ab4799e2c4470fd851304f42089c420f49e0562c9eaa48bda86fffcc7d009",
+    "docs/reviews/2026-09-13-m9b-translation-writes/translation-write-boundary-results.json": "b4ea8df10165f1686aac97e787a00d9433730c826989adf934dba0e4f78ad692"
+  },
+  "privateLogs": {
+    "translation-write-types-complete.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "translation-write-lint-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "translation-write-focused-complete.log": "42a37043f3fbdd64b428ae6affb389178f04639ef844fe58970a3b1d1b09ab9c",
+    "translation-write-controls-final.log": "f9e373e021cabea346768ae60db0be09394bb48c47bea2851694ab9426d3b647"
+  },
+  "checks": {
+    "focusedTests": 106,
+    "focusedExit": 0,
+    "typecheckExit": 0,
+    "changedFileLintExit": 0,
+    "mutationCases": 77,
+    "baselineAndHarmlessSurvivors": 5,
+    "targetedFailures": 72
+  },
+  "limits": "Mocked database transport for routes; no browser localStorage/navigation, installed writes, generation or release acceptance. Final test-only duplex literal annotation changes TypeScript inference, not runtime. The full focused suite was rerun after it; mutation source files are unchanged."
+}

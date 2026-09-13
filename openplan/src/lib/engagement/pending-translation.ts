@@ -70,7 +70,7 @@ export function readPendingTranslations(storage: TranslationStorage, userId: str
     if (raw === null) continue;
     try {
       const value = pendingTranslationSchema.parse(JSON.parse(raw));
-      if (value.userId !== userId || value.campaignId !== campaignId || value.workspaceId !== workspaceId || pendingTranslationKey(value) !== key) throw new Error("Recovery scope differs");
+      if (value.workspaceId !== workspaceId || pendingTranslationKey(value) !== key) throw new Error("Recovery scope differs");
       pending.push(value);
     } catch { unreadableKeys.push(key); }
   }
@@ -106,12 +106,17 @@ export function confirmPendingTranslation(data: unknown, value: PendingTranslati
   const pending = pendingTranslationSchema.parse(value);
   const result = readTranslationWriteResult(data, pending, pending.intent);
   for (const saved of result.entries) {
-    if (pending.intent.operation === "save") {
-      if (saved.entry.created_by !== pending.userId) throw new Error("Saved translation actor differs");
-      continue;
-    }
     const index = pending.intent.entries.findIndex(entry => entry.entityType === saved.entry.entity_type && entry.entityId === saved.entry.entity_id && entry.field === saved.entry.field);
     const before = pending.before[index];
+    if (pending.intent.operation === "save") {
+      if (saved.entry.created_by !== pending.userId) throw new Error("Saved translation actor differs");
+      // Only a save with unchanged retained content may reuse its revision.
+      // updated_at can advance without the history trigger recording a change.
+      if (before && saved.revision === before.revision && ["translated_text", "source", "machine_model", "source_text_hash", "created_by"].some(
+        field => saved.entry[field] !== before.entry[field],
+      )) throw new Error("Changed translation was acknowledged without a new revision");
+      continue;
+    }
     if (!before || saved.entry.translated_text !== before.entry.translated_text || saved.entry.created_by !== before.entry.created_by
       || (pending.intent.operation === "withdraw" && (saved.entry.source !== before.entry.source || saved.entry.machine_model !== before.entry.machine_model))) {
       throw new Error("Acknowledged translation differs from the retained baseline");
