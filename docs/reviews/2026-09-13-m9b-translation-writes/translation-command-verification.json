@@ -1,0 +1,49 @@
+{
+  "candidateSha256": "d06a41b679a10981cdfc9fc81bbf6fb833fe1db378a347f20b564f671fafa61a",
+  "fileSha256": {
+    "translation-command-candidate.sql": "d06a41b679a10981cdfc9fc81bbf6fb833fe1db378a347f20b564f671fafa61a",
+    "translation-command-probe.sql": "89ce494308ff9f9a35a641f56e5e02c40002afadb95d7ea50a736e77312ae981",
+    "run-command-probe.py": "2fe16926b7e7f33f04264e98b84e112d3d8b93fbcc6a22caf5e5ea903b948b92",
+    "prove-translation-command.py": "bd9896b5eed71b3f378b759a8fd36701d9d75526d85ecd7382a0c5d8db596850",
+    "prove-translation-command-locks.py": "3dda73ee5bfae3a85ecd5784b44a5de1f5d9503985f85834d99cd0d6d575cfde",
+    "prove-translation-command-races.py": "07f7e6e793690e8598a74c5c9c3880233506c783a5aeacf5b3ec319bb4c23a9a",
+    "translation-command-controls.json": "d4a3b1fa7ab3485c976c62d1165c8ad34d52e2ee18ee5fdbf88775df68407d8f",
+    "translation-command-lock-results.json": "30072f0823619c0185a3f7db20c85292da7208dc1f7ea979ecd7e564a83d1653",
+    "translation-command-race-results.json": "5ba26ac4ac3ceb618b18242a9d472dabb97b56ffbf0ecef0f095bc4da15bc81c"
+  },
+  "privateLogSha256": {
+    "translation-command-controls-authority-corrected.log": "c96326cb99437625581d01ec5f53309ddaeeae966e91a755e1efdf75054a2d9c",
+    "translation-command-locks-authority-corrected.log": "bbc95c22ebc7cbfa4f943e73cca634a050669bee700e5f8a09870297f4633ff4",
+    "translation-command-races-authority-corrected.log": "ad403342b94c2066f728e09e71cfe20ed8011c2d81b71397a4d0e7366597c349",
+    "translation-command-races-authority-before-fix.log": "db2f1d9a01a9e0720525f218792a2c3f029ce03f5d4576c585fd03ff15bc5c60",
+    "translation-command-locks.log": "a1343ff73aed400dd375fdc9de95f643e88a1cdae2d377d338eee5b55b687cca",
+    "translation-command-proof-schema-install.log": "082295cf695e60e802070604bd99a22da01c154b8a8444c2c76682a9b3b74765",
+    "translation-command-proof-schema-install-admin.log": "eab47d7b4bec0ba348adcb3e41d1b63204cffa8a2fe08ed94d492117525960d5"
+  },
+  "rollbackSourceCensus": {
+    "candidateFunctions": 0,
+    "receiptTableAbsent": true,
+    "candidateHistoryColumns": 0,
+    "sourceFixtureCategories": 2,
+    "sourceFixtureTranslations": 0
+  },
+  "installedProofFunctionMatchesSource": true,
+  "terminalRuns": {
+    "serial": {
+      "exit": 0,
+      "cases": 14,
+      "targetedFailures": 12
+    },
+    "locks": {
+      "exit": 0,
+      "cases": 9,
+      "targetedFailures": 2
+    },
+    "races": {
+      "exit": 0,
+      "cases": 17,
+      "targetedFailures": 5
+    }
+  },
+  "limits": "Unreleased SQL candidate. No application migration, HTTP/browser, generation/spend, complete snapshot reads or all-producer conversion acceptance."
+}

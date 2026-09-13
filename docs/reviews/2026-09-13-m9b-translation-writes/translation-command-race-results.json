@@ -1,0 +1,166 @@
+{
+  "database": "openplan_translation_command_proof_20260913",
+  "candidateSha256": "d06a41b679a10981cdfc9fc81bbf6fb833fe1db378a347f20b564f671fafa61a",
+  "results": [
+    {
+      "mode": "baseline",
+      "case": "competing-creations",
+      "outcome": "survived",
+      "fixture": {
+        "actor": "0c6afb3b-0be6-4bbc-ba67-4ba6b4c8918e",
+        "workspace": "3617a3a9-821a-4a30-b5f3-aa357b351c75",
+        "campaign": "32b24885-2605-4cd1-b146-49f53a39e7a5",
+        "category": "b135986f-64d3-4c8d-a65d-f5ddde5305dd"
+      }
+    },
+    {
+      "mode": "baseline",
+      "case": "competing-corrections",
+      "outcome": "survived",
+      "fixture": {
+        "actor": "f097c071-c64f-4e89-8c14-05cbceead6ce",
+        "workspace": "6f045c4d-b293-4f17-bc37-4e9dc934057a",
+        "campaign": "698f7929-2ba9-4520-bd71-f9f7b1635d9e",
+        "category": "e29ae1cd-6a24-4d45-8527-753f03b97b7a"
+      }
+    },
+    {
+      "mode": "baseline",
+      "case": "acceptance-versus-correction",
+      "outcome": "survived",
+      "fixture": {
+        "actor": "34e01459-5319-48b9-bc24-e4b87daf7bf6",
+        "workspace": "465414f8-26dd-49d4-9ae7-907b9598df1c",
+        "campaign": "8f8479cb-507a-4c3d-921d-835b57300f7f",
+        "category": "2db197a4-2b3d-42a0-a282-c967600a2991"
+      }
+    },
+    {
+      "mode": "baseline",
+      "case": "source-update",
+      "outcome": "survived",
+      "fixture": {
+        "actor": "73a6ad82-662d-436b-b1db-9a91228fff7c",
+        "workspace": "8df82065-910d-45a7-bbd3-5ead2c2189e8",
+        "campaign": "09ab7bf6-f09c-4354-ba70-34e925028896",
+        "category": "8434be15-f41a-4495-bcfe-4d8766d74145"
+      }
+    },
+    {
+      "mode": "baseline",
+      "case": "source-delete",
+      "outcome": "survived",
+      "fixture": {
+        "actor": "2c4c60d3-5180-426d-acac-30f375e1ae19",
+        "workspace": "38559650-2d18-4aae-9156-e2608f6d8062",
+        "campaign": "ca613246-f4cf-4306-959b-3ee1d6b89433",
+        "category": "30b682a5-7c19-495e-bfff-cda97f2197a4"
+      }
+    },
+    {
+      "mode": "baseline",
+      "case": "unauthorized-contention",
+      "outcome": "survived",
+      "fixture": {
+        "actor": "ea55f58e-4580-46b0-abd8-50253a42d1fb",
+        "workspace": "3a95eada-51eb-4342-9d7c-945407dd62c3",
+        "campaign": "b6399904-f5b0-4504-bd15-6c884c64f966",
+        "category": "f73b94b2-d1b6-4cb1-b01c-df3d484f5ad8",
+        "outsider": "eb4f90a2-3720-46a6-a0ce-8d95d4c72507"
+      }
+    },
+    {
+      "mode": "harmless-comment",
+      "case": "competing-creations",
+      "outcome": "survived",
+      "fixture": {
+        "actor": "23f4388d-a3e6-4ea8-9f38-40feeba704a3",
+        "workspace": "93f95bf9-936b-43f2-b07d-2f8a5a8d17cb",
+        "campaign": "4017f09e-9a50-4ecd-9e7d-20aa72ae3164",
+        "category": "0ecd1435-db7c-49bb-bc3f-8d925fd45b73"
+      }
+    },
+    {
+      "mode": "harmless-comment",
+      "case": "competing-corrections",
+      "outcome": "survived",
+      "fixture": {
+        "actor": "326bb84f-bdf8-40f2-8851-3e519277b065",
+        "workspace": "fcc27bdf-14b6-4c28-bbb5-dec3b67bfb98",
+        "campaign": "ceacd5b8-56aa-4e6c-893e-009f9e5f6e8f",
+        "category": "b902789a-aa58-4a74-9862-dda7a35d11d8"
+      }
+    },
+    {
+      "mode": "harmless-comment",
+      "case": "acceptance-versus-correction",
+      "outcome": "survived",
+      "fixture": {
+        "actor": "23fdfe18-9ecc-41cf-89e5-879c807cfe61",
+        "workspace": "ab59abc8-9b7e-403a-adc2-69d7d964e1a8",
+        "campaign": "068379bd-db5e-4a4b-8c75-3ea6655b7e65",
+        "category": "22430ff0-a62e-402c-be02-2905d303cfb5"
+      }
+    },
+    {
+      "mode": "harmless-comment",
+      "case": "source-update",
+      "outcome": "survived",
+      "fixture": {
+        "actor": "8da7e33a-abfc-4e86-90b5-8b44b2cc1ab6",
+        "workspace": "a92e2f30-9fad-404c-a0e0-298b18aaa782",
+        "campaign": "f5ffa91e-b276-486f-88e2-4ed9e38cf3c6",
+        "category": "9ed3117d-214e-4b6b-a220-cd12bdc2a943"
+      }
+    },
+    {
+      "mode": "harmless-comment",
+      "case": "source-delete",
+      "outcome": "survived",
+      "fixture": {
+        "actor": "a8785259-c10e-4f3e-928f-f67ec37cd3ad",
+        "workspace": "ad7f49c1-1db4-4bee-8935-99203d3bb8e6",
+        "campaign": "abc8b7e8-5ae2-41ca-bc61-08ab37afd249",
+        "category": "36acdcee-f2a1-4461-80df-d586929dc7bc"
+      }
+    },
+    {
+      "mode": "harmless-comment",
+      "case": "unauthorized-contention",
+      "outcome": "survived",
+      "fixture": {
+        "actor": "51c550b2-578a-4805-8d6d-975d42ad43da",
+        "workspace": "b5ec3f25-8141-4abb-a968-995b434fdd7d",
+        "campaign": "ef47975f-a8d8-44f5-bf39-8cfe901f3632",
+        "category": "c6519924-97f0-4697-821b-7090fd0387d9",
+        "outsider": "8eb46179-1f40-45b2-a105-0a9f765ec9c5"
+      }
+    },
+    {
+      "case": "ignore-absence",
+      "outcome": "killed",
+      "expectedFailure": "committed creation must refuse another absent claim"
+    },
+    {
+      "case": "ignore-current-version",
+      "outcome": "killed",
+      "expectedFailure": "committed correction must refuse stale version"
+    },
+    {
+      "case": "ignore-current-source",
+      "outcome": "killed",
+      "expectedFailure": "committed source change must refuse stale source"
+    },
+    {
+      "case": "lose-original-retry",
+      "outcome": "killed",
+      "expectedFailure": "Exact retry changed its original receipt"
+    },
+    {
+      "case": "skip-access-before-lock",
+      "outcome": "killed",
+      "expectedFailure": "unauthorized caller must be refused before contention"
+    }
+  ],
+  "limits": "Real SQL roles and concurrent sessions. No PostgREST, browser, worker, billable generation or all-producer retirement acceptance."
+}

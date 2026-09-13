@@ -4,7 +4,7 @@ A dedicated, named synthetic source fixture is retained in the disposable DB.
 No existing campaign or user is modified. Source-delete probes roll back too.
 """
 from pathlib import Path
-import json,select,subprocess,time,uuid
+import json,os,select,subprocess,time,uuid
 
 review=Path(__file__).parent
 container='supabase_db_openplan-restore-target-2731143'
@@ -41,20 +41,18 @@ def probe(name,lock_sql,want_busy,body):
         holder.stdin.write("BEGIN; SET LOCAL statement_timeout='5s';\n"+lock_sql+";\n\\echo OPENPLAN_LOCK_READY\n")
         holder.stdin.flush()
         deadline=time.monotonic()+10
-        # Query output is read one byte at a time so a Python text buffer cannot
-        # hide the ready marker from select() after a prior result line.
-        line=''
+        # Read the descriptor directly: TextIOWrapper.read can buffer the marker
+        # while select sees an empty OS pipe and waits forever.
+        received=b''
         while True:
             remaining=deadline-time.monotonic()
             if remaining<=0: raise TimeoutError('Lock holder did not report readiness')
             ready,_,_=select.select([holder.stdout],[],[],remaining)
             if not ready: raise TimeoutError('Lock holder did not report readiness')
-            char=holder.stdout.read(1)
-            if not char: raise RuntimeError('Lock holder exited: '+holder.stderr.read())
-            line+=char
-            if char=='\n':
-                if line.strip()=='OPENPLAN_LOCK_READY': break
-                line=''
+            chunk=os.read(holder.stdout.fileno(),4096)
+            if not chunk: raise RuntimeError('Lock holder exited: '+holder.stderr.read())
+            received+=chunk
+            if b'OPENPLAN_LOCK_READY' in received.splitlines(): break
         expectation="IF code IS DISTINCT FROM 'PT503' THEN RAISE EXCEPTION 'Busy result expected PT503, got %',COALESCE(code,'accepted'); END IF;" if want_busy else "IF code IS NOT NULL OR result#>>'{entries,0,entry,translated_text}' IS DISTINCT FROM 'SYNTHETIC lock wording' THEN RAISE EXCEPTION 'Harmless lock prevented a valid write: %',code; END IF;"
         no_writes="IF EXISTS(SELECT 1 FROM engagement_content_translations WHERE campaign_id='"+campaign+"') OR EXISTS(SELECT 1 FROM engagement_translation_write_receipts WHERE campaign_id='"+campaign+"') THEN RAISE EXCEPTION 'Busy command retained partial writes'; END IF;" if want_busy else ''
         sql="BEGIN; SET LOCAL statement_timeout='3s';\n"+body+f"""
@@ -102,13 +100,13 @@ for name,lock,busy in cases:
 result=probe('harmless-comment',cases[1][1],True,source+'\n-- Harmless contention comment.\n')
 assert result['passed'],result
 result.pop('output');results.append(result)
-for name,old,new,target_case in [
- ('remove-bounded-fk-wait',"set_config('lock_timeout','100ms',true)","set_config('lock_timeout','0',true)",cases[1]),
- ('ignore-source-advisory',"NOT pg_try_advisory_xact_lock(hashtextextended('engagement-response:'||p_campaign::text,0))",'false',cases[5]),
+for name,old,new,target_case,expected_failure in [
+ ('remove-bounded-fk-wait',"set_config('lock_timeout','100ms',true)","set_config('lock_timeout','0',true)",cases[1],'canceling statement due to statement timeout'),
+ ('ignore-source-advisory',"NOT pg_try_advisory_xact_lock(hashtextextended('engagement-response:'||p_campaign::text,0))",'false',cases[5],'Busy result expected PT503'),
 ]:
     assert old in source
     result=probe(name,target_case[1],True,source.replace(old,new,1))
-    assert not result['passed'] and 'Busy result expected PT503' in result['output'],result
+    assert not result['passed'] and expected_failure in result['output'],result
     result.pop('output');result['expectedMutationFailure']=True;results.append(result)
 (review/'translation-command-lock-results.json').write_text(json.dumps({'fixture':fixture,'results':results,'limits':'Actual row/advisory contention and rolled-back category deletion. No simultaneous successful corrections, real PostgREST, generation or browser-write acceptance yet.'},indent=2)+'\n')
 print(json.dumps(results))

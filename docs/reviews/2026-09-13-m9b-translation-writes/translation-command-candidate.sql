@@ -121,6 +121,12 @@ BEGIN
  -- checks/cascades whose implicit locks are not visible in the application SQL.
  PERFORM set_config('lock_timeout','100ms',true);
  IF auth.uid() IS NULL THEN RAISE EXCEPTION 'Staff authentication required' USING ERRCODE='42501'; END IF;
+ -- Refuse outsiders before exposing contention or acquiring campaign locks.
+ -- The locked membership check below still protects changes during acquisition.
+ IF NOT EXISTS(SELECT 1 FROM engagement_campaigns c JOIN workspace_members m ON m.workspace_id=c.workspace_id
+  WHERE c.id=p_campaign AND m.user_id=auth.uid() AND m.role IN ('owner','admin','member')) THEN
+  RAISE EXCEPTION 'Staff campaign access required' USING ERRCODE='42501';
+ END IF;
  IF p_campaign IS NULL OR NOT pg_try_advisory_xact_lock(hashtextextended('engagement-response:'||p_campaign::text,0)) THEN
   RAISE EXCEPTION 'Translation sources are busy; retry the same request' USING ERRCODE='PT503';
  END IF;

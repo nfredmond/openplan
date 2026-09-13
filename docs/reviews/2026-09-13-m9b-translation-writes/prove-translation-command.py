@@ -19,7 +19,7 @@ cases=[
  ('allow-duplicate-address',change("IF (SELECT count(*) FROM jsonb_array_elements(p_entries))<>","IF false AND (SELECT count(*) FROM jsonb_array_elements(p_entries))<>"),'duplicate address'),
  ('lose-raw-source',change('VALUES(p_campaign,p_request,auth.uid(),envelope);',"VALUES(p_campaign,p_request,auth.uid(),envelope #- '{entries,0,expectedSource,text}');"),'Exact raw source/receipt custody failed'),
  ('accept-stale-machine',change("IF previous.source_text_hash IS DISTINCT FROM translation_source_compatibility_hash(actual_source->>'text') THEN",'IF false THEN'),'stale machine source'),
- ('viewer-can-write',change("AND user_id=auth.uid() AND role IN ('owner','admin','member') FOR SHARE NOWAIT",'AND user_id=auth.uid() FOR SHARE NOWAIT'),'viewer fresh write'),
+ ('viewer-can-write',change("AND user_id=auth.uid() AND role IN ('owner','admin','member') FOR SHARE NOWAIT",'AND user_id=auth.uid() FOR SHARE NOWAIT').replace("WHERE c.id=p_campaign AND m.user_id=auth.uid() AND m.role IN ('owner','admin','member')","WHERE c.id=p_campaign AND m.user_id=auth.uid()",1),'viewer fresh write'),
  ('viewer-can-read-receipts',change("WHERE c.id=campaign_id AND m.user_id=auth.uid() AND m.role IN ('owner','admin','member')","WHERE c.id=campaign_id AND m.user_id=auth.uid()"),'Viewer read receipt'),
  ('rewrite-completed-receipt',change("IF TG_OP='DELETE' OR OLD.result_json IS NOT NULL THEN","IF TG_OP='DELETE' THEN"),'Receipt immutability failed'),
  ('forge-completed-context',change('AND request_id=active_request AND actor_id=auth.uid() AND result_json IS NULL','AND request_id=active_request AND actor_id=auth.uid()'),'Completed receipt context was forged'),

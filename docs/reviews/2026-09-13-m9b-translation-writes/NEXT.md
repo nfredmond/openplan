@@ -4,6 +4,9 @@
 this complete workflow in a separate checkout. They are not a release or an
 exact-version write guarantee.
 
+[Transaction and concurrency progress](COMMAND_PROGRESS.md) records the staged
+command, repaired probes, real competing sessions and remaining application join.
+
 Continue the existing M9b editor and translation services. The complete V1
 contract and roadmap remain binding. No PRs or human-review release gate; local
 and free operation, native scope constraints and private retained originals stay

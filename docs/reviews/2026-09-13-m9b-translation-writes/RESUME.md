@@ -1,5 +1,10 @@
 # Weekly usage checkpoint, September 13, 2026
 
+Continuation after this checkpoint repaired the runner and exercised actual
+competing database sessions. Start with [COMMAND_PROGRESS.md](COMMAND_PROGRESS.md)
+for that newer result and next action. The original stopping point below is
+retained as history, not the current test status.
+
 The user is approaching the weekly usage limit and asked whether this thread
 can resume after reset. Preserve this checkpoint rather than depending on live
 processes or conversation recall. Full V1 remains the authorized goal. Continue

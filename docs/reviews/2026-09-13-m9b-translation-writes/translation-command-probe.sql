@@ -57,7 +57,7 @@ BEGIN
  OR NOT EXISTS(SELECT 1 FROM engagement_translation_write_receipts r WHERE request_id=request AND r.payload#>>'{entries,0,expectedSource,text}'=original_source) THEN
   RAISE EXCEPTION 'Exact raw source/receipt custody failed';
  END IF;
- PERFORM pg_temp.require_translation_refusal(campaign,gen_random_uuid(),'save','qaa',NULL,payload,'PT409','existing address presented as absent');
+ PERFORM pg_temp.require_translation_refusal(campaign,gen_random_uuid(),'save','qaa','SYNTHETIC conflicting creation',payload,'PT409','existing address presented as absent');
  corrected_payload:=jsonb_set(jsonb_set(payload,'{0,expectedTranslation}',jsonb_build_object('id',original_id,'revision',1)),
   '{0,text}',to_jsonb('SYNTHETIC corrected wording'::text));
  PERFORM pg_temp.require_translation_refusal(campaign,gen_random_uuid(),'save','qaa',NULL,corrected_payload,'22023','missing correction reason');

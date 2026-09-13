@@ -1,0 +1,9 @@
+{
+  "database": "openplan_translation_command_proof_20260913",
+  "container": "supabase_db_openplan-restore-target-2731143",
+  "baseSchemaFrom": "328:20261014000009",
+  "baseSchemaSha256": "995489623b06f70fae795c715ff99bcd32088140cdadfd9a6ba0c15382dedf5b",
+  "candidateSha256": "ddb79519c472238a31aba59308485a08374b9454be8234c24c260b0ef1a024e6",
+  "scope": "Dedicated schema-only proof database; candidate installed for actual concurrent SQL sessions, no app or PostgREST service connected, synthetic records only",
+  "retainedFailedAttempt": "Initial schema restore stopped on supabase_admin ownership; retried as that schema owner in one transaction, reusing only two already-created empty schemas. No DROP or database reset."
+}
