@@ -356,10 +356,18 @@ Approved parent wording changes also need response withdrawal and browser checks
 The [response-write review](../reviews/2026-09-12-m9b-response-writes/VERIFICATION.md)
 retains the reproduction and prototype correction, including publication races.
 
-That prototype is not released or installed in the app database. Current response
-routes still lack retained request identities, editor-version checks and correction
-reasons. The new transaction adapter, reason reader and durable email worker are
-being joined to those routes and the browser. Until that join is complete, the
-older subscriber-read/completeness and interrupted-broadcast limits still apply.
-No human review gate is holding this work; implementation and engineering
-acceptance remain unfinished. The roadmap's full M9b scope is unchanged.
+The unreleased response-write increment now joins retained request identities,
+version checks, correction reasons, private history and the durable email worker
+to the editor and Activity. Its named disposable app database has 326 migrations;
+this does not mean a deployed installation has upgraded. Desktop and 390px
+journeys preserve original history through lost acknowledgements and reviewed
+concurrent corrections. The retained restore target passed 480 isolation checks.
+See the [conflict and restore evidence](../reviews/2026-09-12-m9b-response-writes/CONFLICT_AND_RESTORE.md).
+
+A stale-save browser test exposed manual SQLSTATE 40001 causing installed
+PostgREST 14.15 to retry instead of returning a prompt conflict. Migration
+20261014000007 uses PT409 for engagement conflicts and PT503 for unconfirmed
+receipt results. A successful review retry also now clears its old read-failure
+warning. Full final QA, shuffled tests, remaining changed-workflow acceptance and
+release-commit CI are still required. No human review gate is holding this work.
+The roadmap's full M9b scope is unchanged.

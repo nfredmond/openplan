@@ -166,6 +166,7 @@ export function useResponseWrites({ userId, campaignId, onConfirmed, onAbsent, c
       const rows = closeLoopEntrySchema.array().parse(payload.entries);
       if (rows.some(row => row.campaign_id !== campaignId) || new Set(rows.map(row => row.id)).size !== rows.length) throw new Error("Invalid response scope");
       setReview(rows);
+      setMessage("Current saved responses loaded. Compare the copies before saving your reviewed change.");
       const p = pendingRef.current;
       const fields: Partial<Extract<ResponseWriteIntent, { operation: "update" }>["body"]> = p.intent.operation === "remove" ? {} : p.intent.body;
       setEditedWords({

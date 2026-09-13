@@ -1,0 +1,37 @@
+[
+  {
+    "name": "baseline",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "sourceSha256": "352f09927b5a2560101cb041eef02adf888c65613a110aa06876d08204c6e4f8",
+    "expectedFailingTest": null,
+    "failedTests": [],
+    "passedTests": 83,
+    "failedTestCount": 0
+  },
+  {
+    "name": "harmless-comment",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "sourceSha256": "8f46d746f0ee8d6a5d850af08647d99452f40106faeb342d0e890564306acf26",
+    "expectedFailingTest": null,
+    "failedTests": [],
+    "passedTests": 83,
+    "failedTestCount": 0
+  },
+  {
+    "name": "stale-review-failure-message",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "9ab172dc4dc361fbb4b62c8aa3c0648ecae8fbebe4e7179a58c0636ed08703fc",
+    "expectedFailingTest": "replaces a failed review warning",
+    "failedTests": [
+      "replaces a failed review warning only after a complete successful retry"
+    ],
+    "passedTests": 82,
+    "failedTestCount": 1
+  }
+]

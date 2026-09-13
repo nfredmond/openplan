@@ -22,6 +22,7 @@ originals = {key: path.read_text() for key, path in paths.items()}
 tests = ['src/test/' + name for name in ('engagement-response-recovery.test.tsx', 'close-loop-builder.test.tsx',
     'engagement-response-history-ui.test.tsx', 'engagement-response-write.test.ts', 'write-policy-coverage-guard.test.ts')]
 cases = [
+    ('stale-review-failure-message', 'recovery', 'setMessage("Current saved responses loaded. Compare the copies before saving your reviewed change.");', 'void 0;', 'replaces a failed review warning'),
     ('baseline', 'recovery', None, None, None),
     ('confirmation-steals-focus', 'recovery', 'active === document.body || active === start || Boolean(active && recovery?.contains(active))', 'true', 'refreshes history opened during a pending correction'),
     ('history-update-not-requested', 'builder', 'setHistoryRevision(value => value + 1);', 'void 0;', 'refreshes history opened during a pending correction'),

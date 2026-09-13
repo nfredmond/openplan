@@ -1,0 +1,12 @@
+{
+  "container": "supabase_db_openplan-restore-target-2731143",
+  "database": "postgres",
+  "beforeLedger": "325|20261014000006",
+  "afterLedger": "326|20261014000007",
+  "migrationExit": 0,
+  "tablesCompared": 277,
+  "allTableRowHashesUnchanged": true,
+  "snapshotSha256": "8fe6933053600ff01b99d392ad16b23cce862222703c4fd198afb610ab9eecc4",
+  "backupSha256": "604c3cc09a0cdd194fc32e5aaeeeedf99385d3bf2eeeb953f78343118977f3b3",
+  "limits": "Existing full restore reached data verification at 325; final RLS after this function upgrade is a separate check."
+}

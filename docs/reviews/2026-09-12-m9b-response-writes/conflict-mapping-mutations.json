@@ -1,0 +1,64 @@
+[
+  {
+    "name": "baseline",
+    "outcome": "survived",
+    "matched": true,
+    "passed": 128,
+    "failed": [],
+    "expected": null
+  },
+  {
+    "name": "harmless-comment",
+    "outcome": "survived",
+    "matched": true,
+    "passed": 128,
+    "failed": [],
+    "expected": null
+  },
+  {
+    "name": "response-conflict-unavailable",
+    "outcome": "killed",
+    "matched": true,
+    "passed": 124,
+    "failed": [
+      "create response route boundary preserves transaction refusal PT409 without pretending to save",
+      "update response route boundary preserves transaction refusal PT409 without pretending to save",
+      "remove response route boundary preserves transaction refusal PT409 without pretending to save",
+      "response transaction client distinguishes database PT409 from an unconfirmed save"
+    ],
+    "expected": "distinguishes database PT409"
+  },
+  {
+    "name": "unconfirmed-receipt-editable",
+    "outcome": "killed",
+    "matched": true,
+    "passed": 124,
+    "failed": [
+      "create response route boundary preserves transaction refusal PT503 without pretending to save",
+      "update response route boundary preserves transaction refusal PT503 without pretending to save",
+      "remove response route boundary preserves transaction refusal PT503 without pretending to save",
+      "response transaction client distinguishes database PT503 from an unconfirmed save"
+    ],
+    "expected": "distinguishes database PT503"
+  },
+  {
+    "name": "item-conflict-unavailable",
+    "outcome": "killed",
+    "matched": true,
+    "passed": 127,
+    "failed": [
+      "engagement category and item routes returns reviewable conflict for database PT409"
+    ],
+    "expected": "returns reviewable conflict for database PT409"
+  },
+  {
+    "name": "receipt-census-entry-removed",
+    "outcome": "killed",
+    "matched": true,
+    "passed": 127,
+    "failed": [
+      "workspace RLS isolation inventory covers every direct workspace-scoped table in the paid-access audit set"
+    ],
+    "expected": "covers every direct workspace-scoped table"
+  }
+]

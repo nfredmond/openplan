@@ -1,0 +1,38 @@
+[
+  {
+    "name": "baseline",
+    "outcome": "survived",
+    "matched": true,
+    "passed": 1,
+    "failedTests": [],
+    "failureBoundary": null
+  },
+  {
+    "name": "harmless-comment",
+    "outcome": "survived",
+    "matched": true,
+    "passed": 1,
+    "failedTests": [],
+    "failureBoundary": null
+  },
+  {
+    "name": "write_engagement_response-retry-code",
+    "outcome": "killed",
+    "matched": true,
+    "passed": 0,
+    "failedTests": [
+      "workspace RLS live isolation returns response and contribution conflicts promptly through PostgREST"
+    ],
+    "failureBoundary": "installed function preflight before HTTP"
+  },
+  {
+    "name": "require_engagement_review_intent-retry-code",
+    "outcome": "killed",
+    "matched": true,
+    "passed": 0,
+    "failedTests": [
+      "workspace RLS live isolation returns response and contribution conflicts promptly through PostgREST"
+    ],
+    "failureBoundary": "installed function preflight before HTTP"
+  }
+]

@@ -1662,6 +1662,7 @@ describe("workspace RLS isolation inventory", () => {
       "engagement_items",
       "engagement_report_jobs",
       "engagement_response_history",
+      "engagement_response_write_receipts",
       "engagement_survey_question_options",
       "engagement_survey_questions",
       "engagement_survey_review_history",      "funding_awards",

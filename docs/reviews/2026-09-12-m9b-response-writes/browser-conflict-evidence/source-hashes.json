@@ -1,0 +1,6 @@
+{
+  "openplan/src/lib/engagement/response-write.ts": "036ab069087b4b2d26479e6db0b5582bd7e3c3e8f62f9ff656d2810664bf6c2e",
+  "openplan/src/components/engagement/response-write-recovery.tsx": "352f09927b5a2560101cb041eef02adf888c65613a110aa06876d08204c6e4f8",
+  "openplan/supabase/migrations/20261014000007_engagement_conflicts_without_transaction_retry.sql": "baf8589be49dc0507d547e743048d6112d85bdaba7d82a25f3e74e7e6818b089",
+  "docs/reviews/2026-09-12-m9b-response-writes/response-browser.cjs": "449a4beca668d1603b72ffc3b86616604cf5fb6febd8ea4fe1fc6bd44890f695"
+}

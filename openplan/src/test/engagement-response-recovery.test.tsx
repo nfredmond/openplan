@@ -155,6 +155,24 @@ it("requires current-copy review before replacing a conflicted intent, then keep
   expect(writes).toBe(2);
 });
 
+it("replaces a failed review warning only after a complete successful retry", async () => {
+  retainPendingResponse(sessionStorage, { ...pending, phase: "conflict" });
+  const fetcher = vi.spyOn(global, "fetch").mockRejectedValueOnce(new Error("SYNTHETIC interrupted read"))
+    .mockResolvedValueOnce(reply({ entries: [{ ...entry, we_did: "Other staff correction", updated_at: later }] }));
+  mount();
+  fireEvent.click(screen.getByRole("button", { name: "Review current saved responses" }));
+  expect(await screen.findByText(/Current saved responses could not be read completely/)).toBeVisible();
+  expect(screen.queryByRole("button", { name: "Save reviewed change" })).toBeNull();
+  expect(readPendingResponse(sessionStorage, userId, campaignId)?.intent.body).toMatchObject({ weDid: "My retained words" });
+  fireEvent.click(screen.getByRole("button", { name: "Review current saved responses" }));
+  expect(await screen.findByText("Other staff correction")).toBeVisible();
+  expect(screen.queryByText(/Current saved responses could not be read completely/)).toBeNull();
+  expect(screen.getByText("Current saved responses loaded. Compare the copies before saving your reviewed change.")).toBeVisible();
+  expect(screen.getByRole("textbox", { name: "Reviewed we did" })).toHaveValue("My retained words");
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  expect(readPendingResponse(sessionStorage, userId, campaignId)?.intent.body.requestId).toBe(requestId);
+});
+
 it("does not overwrite an intervening text correction when reviewing only a publication change", async () => {
   retainPendingResponse(sessionStorage, { ...pending, phase: "conflict", intent: { operation: "update", entryId,
     body: { requestId, expectedUpdatedAt: version, reason: "Reviewed for publication", status: "published" } } });

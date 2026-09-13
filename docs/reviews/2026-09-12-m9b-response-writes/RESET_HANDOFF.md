@@ -1,5 +1,7 @@
 # Weekly reset checkpoint, September 13, 2026
 
+> Later continuation: read [CONFLICT_AND_RESTORE.md](CONFLICT_AND_RESTORE.md). Both extended browser journeys and the full restored-target RLS suite now pass their workflow assertions; desktop background network errors are disclosed there. The receipt census and stale review warning are fixed. Owned dev launcher 2704541 is being stopped for full QA; recheck runtime before resuming.
+
 This is the current recovery entry point. It supersedes the runtime, migration and next-step statements in USAGE_PAUSE.md; preserve that older record as history. Nathaniel asked whether this thread can resume after the weekly reset. Save work now; do not imply unfinished acceptance passed.
 
 ## Direction and ownership
