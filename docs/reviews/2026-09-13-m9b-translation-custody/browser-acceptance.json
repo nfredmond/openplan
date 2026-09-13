@@ -1,0 +1,186 @@
+[
+  {
+    "passed": true,
+    "width": 1440,
+    "campaignId": "ef6f2052-02f3-495e-b18a-5f6d1321c18c",
+    "source": "b81d932cc306e3527818f1f39d4b58d359cce604",
+    "migrationSha256": "9b9397f280bbe6a24182d333cd68a3bb19ec070d49e91357ea5781019d4b24ef",
+    "originalConfigurationHash": "ba5c42d73c875cc335db0e99913cf399a9e198498495d2413ab22cfdf5cddd04",
+    "historyRetainedAfterCorrectionAndWithdrawal": true,
+    "historyReadRetry": true,
+    "interruptedHistoryReads": 2,
+    "originalRetainedAfterCorrectionAndWithdrawal": true,
+    "lostAcknowledgementRetriedSameBody": true,
+    "overflow": {
+      "viewport": 1440,
+      "document": 1440
+    },
+    "console": [
+      {
+        "type": "error",
+        "text": "Failed to load resource: net::ERR_FAILED"
+      },
+      {
+        "type": "error",
+        "text": "Failed to load resource: net::ERR_FAILED"
+      }
+    ],
+    "network": [
+      {
+        "url": "http://localhost:3260/api/map-layers/aerial-orthos",
+        "method": "GET",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "http://localhost:3260/api/map-features/project-areas",
+        "method": "GET",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "http://localhost:3260/api/map-features/crashes",
+        "method": "GET",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "http://localhost:3260/api/map-features/engagement",
+        "method": "GET",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "http://localhost:3260/api/engagement/campaigns/ef6f2052-02f3-495e-b18a-5f6d1321c18c/translations",
+        "method": "POST",
+        "error": "net::ERR_FAILED"
+      },
+      {
+        "url": "http://localhost:3260/api/engagement/campaigns/ef6f2052-02f3-495e-b18a-5f6d1321c18c/translations/history",
+        "method": "GET",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "http://localhost:3260/api/engagement/campaigns/ef6f2052-02f3-495e-b18a-5f6d1321c18c/translations/history",
+        "method": "GET",
+        "error": "net::ERR_FAILED"
+      }
+    ],
+    "originalHistorySha256": "285f7f06fb14360dbefbd2bd11c35bb6ddfe1bc605943f4e0639935b697e87b1",
+    "originalHistoryId": "2aecd974-9435-4f46-9330-98e87e17ea4b",
+    "captures": [
+      {
+        "file": "translation-history-1440-corrected-public.png",
+        "sha256": "814296ab4049b45af6c45dbec662095b78d7a65ecb5f192949afedddd56dbc6d"
+      },
+      {
+        "file": "translation-history-1440-original-history.png",
+        "sha256": "f153f575fdf97f27142516edbc50c19f0d5c99ef4777b54efaed1e6548579fa6"
+      },
+      {
+        "file": "translation-history-1440-original-public.png",
+        "sha256": "42b6f4ff63cfa8be743c05d0d5005089baf52c846bf4ed0dc3073842cd62147c"
+      },
+      {
+        "file": "translation-history-1440-original-staff.png",
+        "sha256": "4684726ab6c7b3388ed2e6cac74dd350c3612a7543ed300d60be8df5a573c121"
+      },
+      {
+        "file": "translation-history-1440-withdrawn-history.png",
+        "sha256": "3cd91f6e110808f11bab6a554820edc30f7cdc4fff8ece0352d5f5e376869b52"
+      },
+      {
+        "file": "translation-history-1440-withdrawn-public.png",
+        "sha256": "f67e83007a060fcb7826a5d1920b2fcb3a9543dc762eb83b7b2ec861036e698f"
+      }
+    ]
+  },
+  {
+    "passed": true,
+    "width": 390,
+    "campaignId": "ca04f971-4a73-4d05-a9aa-cbc6ecd8dfc4",
+    "source": "b81d932cc306e3527818f1f39d4b58d359cce604",
+    "migrationSha256": "9b9397f280bbe6a24182d333cd68a3bb19ec070d49e91357ea5781019d4b24ef",
+    "originalConfigurationHash": "35940561669b98deae694bb9bdcc61ba441e0c72a469920bad6e973870a67859",
+    "historyRetainedAfterCorrectionAndWithdrawal": true,
+    "historyReadRetry": true,
+    "interruptedHistoryReads": 2,
+    "originalRetainedAfterCorrectionAndWithdrawal": true,
+    "lostAcknowledgementRetriedSameBody": true,
+    "overflow": {
+      "viewport": 390,
+      "document": 390
+    },
+    "console": [
+      {
+        "type": "error",
+        "text": "Failed to load resource: net::ERR_FAILED"
+      },
+      {
+        "type": "error",
+        "text": "Failed to load resource: net::ERR_FAILED"
+      }
+    ],
+    "network": [
+      {
+        "url": "http://localhost:3260/api/map-layers/aerial-orthos",
+        "method": "GET",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "http://localhost:3260/api/map-features/project-areas",
+        "method": "GET",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "http://localhost:3260/api/map-features/crashes",
+        "method": "GET",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "http://localhost:3260/api/map-features/engagement",
+        "method": "GET",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "http://localhost:3260/api/engagement/campaigns/ca04f971-4a73-4d05-a9aa-cbc6ecd8dfc4/translations",
+        "method": "POST",
+        "error": "net::ERR_FAILED"
+      },
+      {
+        "url": "http://localhost:3260/api/engagement/campaigns/ca04f971-4a73-4d05-a9aa-cbc6ecd8dfc4/translations/history",
+        "method": "GET",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "url": "http://localhost:3260/api/engagement/campaigns/ca04f971-4a73-4d05-a9aa-cbc6ecd8dfc4/translations/history",
+        "method": "GET",
+        "error": "net::ERR_FAILED"
+      }
+    ],
+    "originalHistorySha256": "6d13a61968f6683b923709ca297920dae7609fc0347e62db00c832a1c7bb9d45",
+    "originalHistoryId": "714eb95b-d9e9-4a08-af0d-39b79e08ce88",
+    "captures": [
+      {
+        "file": "translation-history-390-corrected-public.png",
+        "sha256": "c1ba74ba62a0826aa93fb9cd546b336888d15fb815b4441d2b33024e6cea931f"
+      },
+      {
+        "file": "translation-history-390-original-history.png",
+        "sha256": "99e3ef55921c44c425d0b708e027a5af8ba8be657e1c6dd0595d52c2a5442051"
+      },
+      {
+        "file": "translation-history-390-original-public.png",
+        "sha256": "2e72e4da312b328abd44aaee7bd805a27402e24ccec88b9f4542190fefdee255"
+      },
+      {
+        "file": "translation-history-390-original-staff.png",
+        "sha256": "95c4fb2b245875e814942c040c285d6822391b9aa9217f77b86463692b4596f2"
+      },
+      {
+        "file": "translation-history-390-withdrawn-history.png",
+        "sha256": "c83eb646d4f4c7f44372d081c72932c7967661616e1d3f7bbc06e1599a408601"
+      },
+      {
+        "file": "translation-history-390-withdrawn-public.png",
+        "sha256": "afcabc54ce306542710ec44a3ea73db79eee83fca823423935b728c2eec43981"
+      }
+    ]
+  }
+]

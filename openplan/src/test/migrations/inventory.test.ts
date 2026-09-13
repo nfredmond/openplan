@@ -478,16 +478,17 @@ const EXPECTED = {
   // The named isolated database catalog confirms each increment.
   // 20261014000003 adds three RLS tables and one staff receipt SELECT policy.
   // 20261014000006 retires three obsolete direct-write policies after RPC-only writes.
-  policies: 751,
-  permissive: 500,
+  // 20261014000009 adds one immutable translation history table with staff SELECT only.
+  policies: 752,
+  permissive: 501,
   restrictive: 251,
   permissiveWrites: 277,
   expanded: 286,
-  tablesWithPolicies: 220,
-  relations: 256,
-  tables: 243,
+  tablesWithPolicies: 221,
+  relations: 257,
+  tables: 244,
   views: 13,
-  rlsEnabledTables: 243,
+  rlsEnabledTables: 244,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

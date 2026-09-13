@@ -1,5 +1,10 @@
 # M9b translation custody, September 13, 2026
 
+> Historical design/prototype checkpoint. Installed implementation and later
+> verification supersede its runtime status in IMPLEMENTATION.md and
+> BROWSER_AND_UPGRADE.md. The remaining atomic-write/generation design below
+> remains open. RESUME.md routes the latest continuation.
+
 > The translation ownership correction is published in [v0.57.1](../2026-09-13-translation-scope/PUBLICATION.md). Continue this prototype using the [schema-327 compatibility proof and completeness failures](AFTER_SCOPE.md).
 
 v0.57.0 is published at `9cfd8aaf146bedb0946d9f56b77d9fb5be36c3bc`; all final release CI passed. [Publication evidence](../2026-09-12-m9b-response-writes/PUBLICATION.md). This next increment is a tested SQL prototype, not an installed migration or finished application feature.

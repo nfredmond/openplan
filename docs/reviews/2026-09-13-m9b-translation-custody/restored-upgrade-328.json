@@ -1,0 +1,12 @@
+{
+  "container": "supabase_db_openplan-restore-target-2731143",
+  "beforeLedger": "327|20261014000008",
+  "afterLedger": "328|20261014000009",
+  "tablesCompared": 277,
+  "existingRowHashesUnchanged": true,
+  "observedBaselines": 0,
+  "migrationSha256": "9b9397f280bbe6a24182d333cd68a3bb19ec070d49e91357ea5781019d4b24ef",
+  "backupSha256": "30e11559cee4233d033b2219bb546ffa18954999c92d6e9273736380393abe8f",
+  "snapshotSha256": "2f3bfcb157c987e1a03477946aba75fa86b831efce60c61faad307db374cf546",
+  "limits": "Named retained restored disposable stack only. Full backup retained but not independently restored here. Live RLS and browser checks follow separately."
+}
