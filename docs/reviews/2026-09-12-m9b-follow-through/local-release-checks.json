@@ -1,0 +1,33 @@
+{
+  "full-qa": {
+    "status": 0,
+    "signal": null,
+    "finishedAt": "2026-09-13T02:24:00.309Z",
+    "logSha256": "80bab11aee82b91abe1ba37486efc638428f96d78642b92a36e6ed561c3459e5",
+    "testsPassed": 14093,
+    "testsSkipped": 450,
+    "filesPassed": 1258,
+    "filesSkipped": 43,
+    "connectorPassed": 382,
+    "connectorSkipped": 4,
+    "lint": true,
+    "deadcode": "exit 0; existing advisory findings retained",
+    "typescript": true,
+    "webpackBuild": true,
+    "auditVulnerabilities": 0,
+    "liveRls": "not run in local QA; unchanged SQL has prior isolated evidence; final CI RLS required"
+  },
+  "shuffled": {
+    "status": 0,
+    "signal": null,
+    "finishedAt": "2026-09-13T02:20:03.928Z",
+    "logSha256": "63bdc4e79b8df9bd0262b1b9657cf30e1afa07b220fa9bc63a322aa4524ee116",
+    "testsPassed": 14093,
+    "testsSkipped": 450,
+    "filesPassed": 1258,
+    "filesSkipped": 43,
+    "seed": 912557
+  },
+  "source": "d7030c37f0f7367d2f3e6dd5f54358fd39995a85",
+  "recordedAt": "2026-09-13T02:24:36.541928+00:00"
+}

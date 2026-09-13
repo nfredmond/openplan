@@ -1,3 +1,13 @@
+# Current checkpoint after corrected local gates
+
+The historical usage-reset checkpoint below is superseded for the failing test.
+The exception is removed and its harmless/targeted mutation evidence retained.
+Full QA and shuffle 912557 both completed successfully on d7030c37. See
+local-release-checks.json and VERIFICATION.md. All owned local check processes
+are terminal. Next: push the verified patch to main, inspect exact final CI/RLS,
+then tag and publish v0.55.1. Do not call the candidate released before that.
+The release body is private v0551-release-notes.md beside the named logs.
+
 # Usage-reset checkpoint
 
 User asked whether this thread can resume after weekly usage resets. Continue

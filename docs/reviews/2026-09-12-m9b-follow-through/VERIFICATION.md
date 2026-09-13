@@ -122,3 +122,20 @@ for the missing exception. Source was restored byte-for-byte. This static
 guard does not prove runtime recovery or catch every possible way of ignoring
 an error; the separate runtime and browser evidence cover this changed loader.
 Full QA and shuffle are being repeated after this correction.
+
+## Corrected local release gates
+
+Full QA and shuffled seed 912557 completed with exit 0 on d7030c37. Both
+application runs passed 14093 tests, skipped 450, with 1258 passing files
+and 43 skipped. QA also passed lint, dead-code checks with existing advisory
+findings, 382 native connector tests with four skipped, TypeScript and the
+webpack production build; dependency audit reported zero vulnerabilities.
+local-release-checks.json retains terminal receipts and private-log hashes.
+
+Browser SHA256SUMS was checked again and all eleven entries matched. The
+runtime code remains the accepted db165e51 browser implementation. Subsequent
+changes are release metadata, evidence and removal of the repaired exception.
+SQL, migrations, workers and scientific scripts are unchanged from v0.55.0.
+Local QA explicitly skipped live RLS; prior isolated SQL evidence remains in
+the v0.55 record, and the final main commit must pass its own CI/RLS workflows.
+No new upgrade migration is required or claimed by this patch.
