@@ -14,10 +14,11 @@ const eventLabels: Record<ResponseHistoryEntry["event"], string> = {
   removed: "Removed from current responses",
 };
 
-function HistoryRecords({ campaignId }: { campaignId: string }) {
+function HistoryRecords({ campaignId, revision }: { campaignId: string; revision: number }) {
   const [history, setHistory] = useState<ResponseHistoryEntry[]>([]);
   const [selected, setSelected] = useState("");
   const [loading, setLoading] = useState(true);
+  const [loadedRevision, setLoadedRevision] = useState<number | null>(null);
   const [error, setError] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const selectId = useId();
@@ -33,19 +34,20 @@ function HistoryRecords({ campaignId }: { campaignId: string }) {
         if (rows.some(row => row.campaign_id !== campaignId || row.record.campaign_id !== campaignId || row.record.id !== row.response_id)) throw new Error("Invalid history scope");
         if (controller.signal.aborted) return;
         setHistory(rows);
-        setSelected(rows[0]?.response_id ?? "");
+        setSelected(current => rows.some(row => row.response_id === current) ? current : rows[0]?.response_id ?? "");
         setError(false);
       } catch {
         if (!controller.signal.aborted) setError(true);
       } finally {
-        if (!controller.signal.aborted) setLoading(false);
+        if (!controller.signal.aborted) { setLoading(false); setLoadedRevision(revision); }
       }
     }
     void read();
     return () => controller.abort();
-  }, [campaignId, attempt]);
+  }, [campaignId, attempt, revision]);
 
-  if (loading) return <p role="status">Loading response history…</p>;
+  const refreshing = loadedRevision !== revision;
+  if (loading || (refreshing && history.length === 0)) return <p role="status">Loading response history…</p>;
   if (error) return <div className="space-y-2">
     <p role="alert">Response history could not be read and verified completely. Saved responses have not been changed.</p>
     <Button type="button" variant="outline" onClick={() => { setLoading(true); setAttempt(value => value + 1); }}>Retry response history</Button>
@@ -55,7 +57,8 @@ function HistoryRecords({ campaignId }: { campaignId: string }) {
   const latest = new Map<string, ResponseHistoryEntry>();
   for (const row of history) latest.set(row.response_id, row);
   const revisions = history.filter(row => row.response_id === selected).reverse();
-  return <div className="space-y-4">
+  return <div className="space-y-4" aria-busy={refreshing}>
+    {refreshing && <p role="status">Refreshing response history. Showing the last verified copy.</p>}
     <label htmlFor={selectId} className="block text-sm font-medium">Response, including removed entries</label>
     <select id={selectId} value={selected} onChange={event => setSelected(event.target.value)} className="w-full min-w-0 rounded-lg border border-input bg-background p-2 text-sm">
       {[...latest.values()].map(row => <option key={row.response_id} value={row.response_id}>
@@ -85,7 +88,7 @@ function HistoryRecords({ campaignId }: { campaignId: string }) {
 }
 
 /** Opens private campaign history independently of the current response list. */
-export function ResponseHistory({ campaignId }: { campaignId: string }) {
+export function ResponseHistory({ campaignId, revision = 0 }: { campaignId: string; revision?: number }) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
   return <div className="mt-4">
@@ -93,7 +96,7 @@ export function ResponseHistory({ campaignId }: { campaignId: string }) {
       {open ? "Close response history" : "Response history"}
     </Button>
     <section id={panelId} aria-label="Response history" hidden={!open} className="mt-3 space-y-3 rounded-lg border border-border p-3">
-      {open && <HistoryRecords key={campaignId} campaignId={campaignId} />}
+      {open && <HistoryRecords key={campaignId} campaignId={campaignId} revision={revision} />}
     </section>
   </div>;
 }

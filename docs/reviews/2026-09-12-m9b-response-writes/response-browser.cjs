@@ -1,0 +1,57 @@
+const {chromium,expect:baseExpect}=require('/home/nathaniel/code/openplan/qa-harness/node_modules/playwright/test');
+const expect=baseExpect.configure({timeout:45000});
+const fs=require('node:fs'),crypto=require('node:crypto'),{spawn,execFileSync}=require('node:child_process');
+const app='/home/nathaniel/.local/state/openplan/engagement-response-writes-2026-09-12/openplan';
+const privateRoot='/home/nathaniel/.local/state/openplan/response-write-probe-20260913';
+const account=JSON.parse(fs.readFileSync('/home/nathaniel/.local/state/openplan/api-provider-research-2026-09-12/api-settings-account.json'));
+const base='http://localhost:3260',width=Number(process.env.WIDTH||1440),prefix=`${privateRoot}/response-${width}`;
+const hash=v=>crypto.createHash('sha256').update(JSON.stringify(v)).digest('hex');
+(async()=>{
+ const browser=await chromium.launch({channel:'chrome',headless:true});
+ const context=await browser.newContext({viewport:{width,height:1000}});const page=await context.newPage();page.setDefaultTimeout(60000);
+ const errors=[],requests=[];let campaignId,worker,workerExit,original,committedStatus;
+ page.on('console',m=>{if(['error','warning'].includes(m.type()))errors.push({type:m.type(),text:m.text()})});page.on('pageerror',e=>errors.push({type:'pageerror',text:e.message}));
+ try{
+  await page.goto(base);if(!page.url().includes('/sign-in'))await page.getByRole('link',{name:/Sign in/i}).first().click();
+  await page.getByLabel('Work email',{exact:true}).fill(account.email);await page.getByLabel('Password',{exact:true}).fill(account.password);await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.waitForURL(u=>!u.pathname.includes('sign-in'));
+  await page.getByRole('link',{name:'Engagement',exact:true}).first().focus();await page.keyboard.press('Enter');await page.waitForURL('**/engagement');
+  await page.getByRole('button',{name:'New campaign',exact:true}).click();const dialog=page.getByRole('dialog');await dialog.getByRole('button',{name:'Next',exact:true}).click();await dialog.getByLabel('Title',{exact:true}).fill(`SYNTHETIC retained response ${width} ${Date.now()}`);await dialog.getByRole('button',{name:'Next',exact:true}).click();await dialog.getByRole('button',{name:'Create campaign',exact:true}).click();await page.waitForURL(u=>/^\/engagement\/[-a-f0-9]{36}$/.test(u.pathname));campaignId=new URL(page.url()).pathname.split('/').pop();
+  console.log('Campaign created through navigation',width);
+  const generate=page.getByTestId('publish-step-share_token').getByRole('button',{name:'Generate link',exact:true});await generate.click();await expect(generate).toHaveCount(0);
+  const description=page.getByLabel('Public-facing description',{exact:true});await description.fill('SYNTHETIC local acceptance. No outreach or real email delivery.');await page.getByRole('button',{name:'Save description',exact:true}).click();await expect(description).toHaveCount(0);
+  const accept=page.getByTestId('publish-step-submission_mode').getByRole('button',{name:'Accept public submissions',exact:true});if(await accept.count()){await accept.click();await expect(accept).toHaveCount(0)}
+  const activate=page.getByTestId('publish-step-active_status').getByRole('button',{name:'Set the campaign to Active',exact:true});await activate.click();await expect(activate).toHaveCount(0);
+  const tabs=page.getByTestId('page-tabs-nav');await tabs.getByRole('link',{name:'Setup',exact:true}).click();
+  const panel=page.getByRole('article').filter({has:page.getByRole('heading',{name:'You said / We did',exact:true})});
+  const writePath=`**/api/engagement/campaigns/${campaignId}/closeloop`;let interrupt=true;
+  await page.route(writePath,async route=>{
+   if(route.request().method()!=='POST')return route.continue();
+   requests.push(route.request().postDataJSON());
+   if(interrupt){interrupt=false;const result=await route.fetch();committedStatus=result.status();original=(await result.json()).entry;return route.abort('failed')}
+   return route.continue();
+  });
+  await panel.getByLabel('Theme',{exact:true}).fill('SYNTHETIC crossing response');await panel.getByLabel('You said',{exact:true}).fill('SYNTHETIC safer crossing request');await panel.getByLabel('We did',{exact:true}).fill('SYNTHETIC original response');
+  await panel.getByRole('button',{name:'Add entry',exact:true}).focus();await page.keyboard.press('Enter');
+  const pending=panel.getByRole('region',{name:'Pending response change',exact:true});await expect(pending).toBeVisible();await expect(pending).toBeFocused();expect(committedStatus).toBe(201);await page.screenshot({path:prefix+'-pending.png'});
+  await page.reload();await expect(pending).toBeVisible();await pending.getByRole('button',{name:'Retry same save',exact:true}).focus();await page.keyboard.press('Enter');await expect(panel.getByText('Response saved.',{exact:true})).toBeVisible();expect(requests).toHaveLength(2);expect(requests[1]).toEqual(requests[0]);
+  const history=async()=>{const r=await context.request.get(`${base}/api/engagement/campaigns/${campaignId}/closeloop/history`);expect(r.status()).toBe(200);return (await r.json()).history};
+  const initialHistory=await history();expect(initialHistory).toHaveLength(1);expect(initialHistory[0].record.we_did).toBe('SYNTHETIC original response');
+  await panel.getByLabel('Reason for this change',{exact:true}).fill('SYNTHETIC publish approved wording');await panel.getByRole('button',{name:'Publish',exact:true}).focus();await page.keyboard.press('Enter');await expect(panel.getByText('Published',{exact:true})).toBeVisible();
+  await tabs.getByRole('link',{name:'Responses',exact:true}).focus();await page.keyboard.press('Enter');
+  const delivery=page.getByTestId('email-delivery-panel');await expect(delivery.getByText(/Recipient count is not known yet/)).toBeVisible();await delivery.scrollIntoViewIfNeeded();await page.screenshot({path:prefix+'-queued.png'});
+  const read=await context.request.get(`${base}/api/engagement/campaigns/${campaignId}/notifications`);const readBody=await read.json();expect(readBody.emailTransport).toBe('none');expect(readBody.emailDelivery.broadcasts.queued).toBe(1);
+  const fd=fs.openSync(prefix+'-worker.log','w');worker=spawn(process.execPath,['--env-file=.env.local','--conditions=react-server','--import','tsx','scripts/workers/engagement-email.ts'],{cwd:app,env:{...process.env,RESEND_API_KEY:'',OPENPLAN_ENGAGEMENT_EMAIL_WORK_DIR:prefix+'-journal'},stdio:['ignore',fd,fd]});workerExit=new Promise(resolve=>worker.once('exit',code=>resolve(code)));
+  await expect.poll(async()=>{const r=await context.request.get(`${base}/api/engagement/campaigns/${campaignId}/notifications`);return (await r.json()).emailDelivery?.broadcasts?.prepared},{timeout:30000}).toBe(1);
+  worker.kill('SIGTERM');expect(await workerExit).toBe(0);worker=null;
+  await delivery.getByRole('button',{name:'Refresh email status',exact:true}).focus();await page.keyboard.press('Enter');await expect(delivery.getByText('Recipient preparation completed with no eligible messages.',{exact:true})).toBeVisible();await page.screenshot({path:prefix+'-prepared.png'});
+  await tabs.getByRole('link',{name:'Setup',exact:true}).click();await panel.getByLabel('Reason for this change',{exact:true}).fill('SYNTHETIC reviewed correction');await panel.getByRole('button',{name:'Edit',exact:true}).click();await expect(panel.getByRole('button',{name:'Save',exact:true})).toBeVisible();await expect(panel.getByLabel('We did',{exact:true})).toHaveCount(2);await panel.getByLabel('We did',{exact:true}).first().fill('SYNTHETIC corrected response');let releaseCorrection,correctionPayload;const correctionGate=new Promise(resolve=>{releaseCorrection=resolve});
+  await page.route(`**/api/engagement/campaigns/${campaignId}/closeloop/${original.id}`,async route=>{correctionPayload=route.request().postDataJSON();await correctionGate;return route.continue()});
+  await panel.getByRole('button',{name:'Save',exact:true}).click();
+  await panel.getByRole('button',{name:'Response history',exact:true}).focus();await page.keyboard.press('Enter');const retained=panel.getByRole('region',{name:'Response history',exact:true});await expect(retained.getByText(/2 retained revisions/)).toBeVisible();
+  expect(correctionPayload.weDid).toBe("SYNTHETIC corrected response");await retained.getByRole("combobox").focus();releaseCorrection();await expect(retained.getByText(/3 retained revisions/)).toBeVisible();await expect(retained.getByRole("combobox")).toBeFocused();await expect(retained.getByText('SYNTHETIC reviewed correction',{exact:false})).toBeVisible();
+  const finalHistory=await history();expect(finalHistory).toHaveLength(3);expect(finalHistory[0].record_sha256).toBe(initialHistory[0].record_sha256);expect(finalHistory[0].record).toEqual(initialHistory[0].record);await retained.scrollIntoViewIfNeeded();await page.screenshot({path:prefix+'-history.png'});
+  const overflow=await page.evaluate(()=>({viewport:innerWidth,document:document.documentElement.scrollWidth}));expect(overflow.document).toBeLessThanOrEqual(overflow.viewport);expect(errors.filter(e=>e.type==='pageerror')).toEqual([]);
+  fs.writeFileSync(prefix+'-browser.json',JSON.stringify({source:execFileSync('git',['rev-parse','HEAD'],{cwd:app,encoding:'utf8'}).trim(),width,passed:true,sourceFiles:Object.fromEntries(["src/app/(app)/engagement/[campaignId]/page.tsx","src/components/engagement/close-loop-builder.tsx","src/components/engagement/response-history.tsx","src/components/engagement/response-write-recovery.tsx","src/components/engagement/notifications-inbox.tsx"].map(path=>[path,crypto.createHash("sha256").update(fs.readFileSync(`${app}/${path}`)).digest("hex")])),campaignId,responseId:original.id,exactRetryHash:hash(requests[0]),originalHistoryChecksum:initialHistory[0].record_sha256,historyRevisions:3,publicationWorker:'Native worker against local PostgREST; zero eligible recipients; email disabled',overflow,console:errors},null,2));console.log('Browser journey passed',width);
+ }catch(e){await page.screenshot({path:prefix+'-failure.png',fullPage:true});fs.writeFileSync(prefix+'-failure.json',JSON.stringify({campaignId,message:e.message,console:errors},null,2));throw e}
+ finally{if(worker){worker.kill('SIGTERM');await workerExit}await browser.close()}
+})().catch(e=>{console.error(e.message);process.exitCode=1});

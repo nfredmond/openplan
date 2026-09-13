@@ -330,3 +330,25 @@ it("does not archive a valid request that replaced an unreadable record", async 
   fireEvent.click(screen.getByRole("button", { name: "Retry recovery" }));
   expect(screen.getByRole("region", { name: "Pending response change" })).toHaveTextContent("My retained words");
 });
+
+it("refreshes history opened during a pending correction after its acknowledgement", async () => {
+  let saved = false;
+  let acknowledge: (() => void) | undefined;
+  const original = { id: requestId, campaign_id: campaignId, response_id: entryId, revision: 1,
+    actor_id: null, event: "created", recorded_at: version, record_sha256: "a".repeat(64), record: entry };
+  const fetcher = vi.spyOn(global, "fetch").mockImplementation(async (url, init) => {
+    if (String(url).endsWith("/history")) return reply({ history: saved ? [original, {
+      ...original, id: otherId, revision: 2, event: "corrected", record: { ...entry, we_did: "My retained words", updated_at: later },
+    }] : [original] });
+    return new Promise<Response>(resolve => { acknowledge = () => { saved = true; resolve(reply(receipt(init!))); }; });
+  });
+  mount(); startEdit();
+  fireEvent.click(screen.getByRole("button", { name: "Response history" }));
+  await screen.findByText(/1 retained revisions/);
+  screen.getByRole("combobox").focus();
+  acknowledge!();
+  await screen.findByText(/2 retained revisions/);
+  expect(screen.getByRole("combobox")).toHaveFocus();
+  expect(fetcher.mock.calls.filter(([url]) => String(url).endsWith("/history"))).toHaveLength(2);
+  expect(screen.getByRole("button", { name: "Close response history" })).toBeVisible();
+});

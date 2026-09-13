@@ -200,6 +200,7 @@ export function EngagementCloseLoopBuilder({
   sourceItems?: Array<{id:string;title:string}>;
 }) {
   const [entries, setEntries] = useState<CloseLoopEntryRow[]>(initialEntries);
+  const [historyRevision, setHistoryRevision] = useState(0);
   const [readError, setReadError] = useState(initialReadError);
   const [readLoading, setReadLoading] = useState(false);
 
@@ -234,6 +235,7 @@ export function EngagementCloseLoopBuilder({
 
   const [broadcasts, setBroadcasts] = useState<Record<string, { requestId: string; report: unknown }>>({});
   const writes = useResponseWrites({ userId, campaignId, categories, sourceItems, onAbsent(id) { setEntries(previous => previous.filter(row => row.id !== id)); }, onConfirmed(result, pending, payload) {
+    setHistoryRevision(value => value + 1);
     setEntries(previous => result.removed ? previous.filter(row => row.id !== result.entryId)
       : previous.some(row => row.id === result.entryId) ? previous.map(row => row.id === result.entryId ? result.entry : row)
         : [...previous, result.entry]);
@@ -315,7 +317,7 @@ export function EngagementCloseLoopBuilder({
         </div>
       </div>
 
-      <ResponseHistory campaignId={campaignId} />
+      <ResponseHistory campaignId={campaignId} revision={historyRevision} />
 
       {readError && <div className="mt-4 space-y-2">
         <p role="alert" className={ERROR_CLASS}>Saved staff responses could not be loaded. Retry before adding or changing a response.</p>

@@ -1,0 +1,129 @@
+[
+  {
+    "name": "baseline",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "sourceSha256": "65eaabc465bb820cf0feb68265c178410c186ecc77178d9ae0021a0486fb2ca1",
+    "expectedFailingTest": null,
+    "failedTests": [],
+    "passedTests": 80,
+    "failedTestCount": 0
+  },
+  {
+    "name": "harmless-comment",
+    "matched": true,
+    "status": 0,
+    "outcome": "survived",
+    "sourceSha256": "c8419112cf0b5cfbad458a59589930b7e4fc9ee8db1a593b245e963791bfe4ae",
+    "expectedFailingTest": null,
+    "failedTests": [],
+    "passedTests": 80,
+    "failedTestCount": 0
+  },
+  {
+    "name": "confirmation-steals-focus",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "9ac12eaa8e38378eb39431b66ae4124871c285ed53240039ba0a0ca72001ad31",
+    "expectedFailingTest": "refreshes history opened during a pending correction",
+    "failedTests": [
+      "refreshes history opened during a pending correction after its acknowledgement"
+    ],
+    "passedTests": 79,
+    "failedTestCount": 1
+  },
+  {
+    "name": "history-update-not-requested",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "dcbd630bcbbc22beeea436a472ebecbdee618a4c6e21b5620aebbf2d2a6e23d6",
+    "expectedFailingTest": "refreshes history opened during a pending correction",
+    "failedTests": [
+      "refreshes history opened during a pending correction after its acknowledgement"
+    ],
+    "passedTests": 79,
+    "failedTestCount": 1
+  },
+  {
+    "name": "history-version-not-forwarded",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "4ca14e37a2f5b94a3b65cf977d5f2861086e80070ca9eb16d8b202071ec636d9",
+    "expectedFailingTest": "refreshes history opened during a pending correction",
+    "failedTests": [
+      "refreshes history opened during a pending correction after its acknowledgement"
+    ],
+    "passedTests": 79,
+    "failedTestCount": 1
+  },
+  {
+    "name": "history-version-ignored",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "f2c2cfcc80a9b5114faa81ec411e6f268ed0bf46741f99977528e3e401978932",
+    "expectedFailingTest": "refreshes open history after a confirmed save",
+    "failedTests": [
+      "refreshes open history after a confirmed save and preserves selection",
+      "refreshes history opened during a pending correction after its acknowledgement"
+    ],
+    "passedTests": 78,
+    "failedTestCount": 2
+  },
+  {
+    "name": "history-selection-reset",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "e24cd04994d15dabe0db79aaf771d7206d77fd74db92d90e85d11457c5ad4489",
+    "expectedFailingTest": "refreshes open history after a confirmed save",
+    "failedTests": [
+      "refreshes open history after a confirmed save and preserves selection"
+    ],
+    "passedTests": 79,
+    "failedTestCount": 1
+  },
+  {
+    "name": "stale-history-while-refreshing",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "82478bab6a7b07c161cf4d069459dccac955f9b09fe24e1753fd2152081e594a",
+    "expectedFailingTest": "refreshes open history after a confirmed save",
+    "failedTests": [
+      "refreshes open history after a confirmed save and preserves selection"
+    ],
+    "passedTests": 79,
+    "failedTestCount": 1
+  },
+  {
+    "name": "lost-retry-focus",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "297d81ce472c453179ad9a87e0a3f0755e2cff9035328a2d5137afca48cbdf67",
+    "expectedFailingTest": "recovers an interrupted correction",
+    "failedTests": [
+      "recovers an interrupted correction after reload with exactly the same body"
+    ],
+    "passedTests": 79,
+    "failedTestCount": 1
+  },
+  {
+    "name": "lost-confirmed-focus",
+    "matched": true,
+    "status": 1,
+    "outcome": "killed",
+    "sourceSha256": "84f3d0246d7b29f074e542f39be3b09f4f0c24535dbaa1ac70c1de6138275c7f",
+    "expectedFailingTest": "retains before transport",
+    "failedTests": [
+      "retains before transport, refuses duplicate clicks, and clears only after a confirmed receipt"
+    ],
+    "passedTests": 79,
+    "failedTestCount": 1
+  }
+]

@@ -9,6 +9,12 @@ import { readResponseWriteResult, type ResponseWriteIntent, type ResponseWriteRe
 
 const unknownMessage = "This save is unconfirmed. Your request is retained in this tab. Retry the same save to check its result without creating another response.";
 
+/** Keep result focus near the save unless the user has moved to another control. */
+function mayFocusResponseResult(start: Element | null, recovery: HTMLElement | null) {
+  const active = document.activeElement;
+  return active === document.body || active === start || Boolean(active && recovery?.contains(active));
+}
+
 function ResponseCopy({ title, entry }: { title: string; entry: Partial<CloseLoopEntryRow> | null }) {
   return <div className="min-w-0 space-y-2 rounded-lg border border-border p-3 break-words">
     <h4 className="font-semibold">{title}</h4>
@@ -32,6 +38,7 @@ export function useResponseWrites({ userId, campaignId, onConfirmed, onAbsent, c
   const [confirmation, setConfirmation] = useState<string | null>(null);
   const recoveryRef = useRef<HTMLElement>(null);
   const confirmationRef = useRef<HTMLParagraphElement>(null);
+  const saveFocus = useRef<Element | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [review, setReview] = useState<CloseLoopEntryRow[] | null>(null);
   const [editedWords, setEditedWords] = useState<{ themeTitle: string; youSaid: string; weDid: string; reason: string; categoryId: string | null; sourceItemIds: string[] } | null>(null);
@@ -71,10 +78,10 @@ export function useResponseWrites({ userId, campaignId, onConfirmed, onAbsent, c
   }, [userId, campaignId]);
 
   useEffect(() => {
-    if (pending && !busy) recoveryRef.current?.focus();
+    if (pending && !busy && mayFocusResponseResult(saveFocus.current, recoveryRef.current)) recoveryRef.current?.focus();
   }, [pending, busy]);
   useEffect(() => {
-    if (confirmation) confirmationRef.current?.focus();
+    if (confirmation && mayFocusResponseResult(saveFocus.current, recoveryRef.current)) confirmationRef.current?.focus();
   }, [confirmation]);
 
   async function send(value: PendingResponse) {
@@ -83,6 +90,7 @@ export function useResponseWrites({ userId, campaignId, onConfirmed, onAbsent, c
       setMessage("The response fields are invalid, so no save was sent. Check the title, text lengths, contribution links and change reason; your words remain editable.");
       return false;
     }
+    saveFocus.current = document.activeElement;
     busyRef.current = true;
     setBusy(true);
     setConfirmation(null);

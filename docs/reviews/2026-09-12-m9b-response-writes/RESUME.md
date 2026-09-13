@@ -1,6 +1,7 @@
 # Current continuation
 
-Read [ACTIVITY_JOIN.md](ACTIVITY_JOIN.md) first. It supersedes the usage-pause note for installed migrations and Activity.
+Read [RESET_CHECKPOINT.md](RESET_CHECKPOINT.md) first, then [ACTIVITY_JOIN.md](ACTIVITY_JOIN.md).
+The remaining text below is historical and superseded where those notes disagree.
 
 # Latest pause checkpoint
 

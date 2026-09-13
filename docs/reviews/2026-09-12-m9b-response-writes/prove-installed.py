@@ -19,6 +19,16 @@ def read(sql):
     return subprocess.run(command + ['-c', sql], capture_output=True, check=True).stdout
 
 
+queries = json.loads((private / 'queries.json').read_text())
+snapshots = {name: read(query) for name, query in queries.items()}
+for name, current in snapshots.items():
+    baseline = (private / (name + '-before.txt')).read_bytes()
+    if name in ('entries', 'history'):
+        current_rows = {json.loads(line)['id']: line for line in current.splitlines()}
+        assert all(current_rows.get(json.loads(line)['id']) == line for line in baseline.splitlines()), name
+    else:
+        assert current == baseline, name
+
 original = read("SELECT pg_get_functiondef(oid) FROM pg_proc WHERE pronamespace='public'::regnamespace AND proname='write_engagement_response'")
 assert original and original.count(b'CREATE OR REPLACE FUNCTION') == 1
 definition = original.decode().rstrip() + ';\n'
@@ -47,6 +57,6 @@ for name, override, files, expected in cases:
     assert matched, f'{name}: inspect the private probe log'
     assert read("SELECT pg_get_functiondef(oid) FROM pg_proc WHERE pronamespace='public'::regnamespace AND proname='write_engagement_response'") == original
 
-for name, query in json.loads((private / 'queries.json').read_text()).items():
-    assert read(query) == (private / (name + '-before.txt')).read_bytes(), name
+for name, query in queries.items():
+    assert read(query) == snapshots[name], name
 print('Installed definition and original response/history rows unchanged after all rolled-back cases', flush=True)

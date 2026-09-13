@@ -1021,7 +1021,8 @@ export default async function EngagementCampaignDetailPage({
       <PageTabPanel tabKey="responses" active={activeTab === "responses"}>
         {canManageContextLayers ? <SurveyReviewQueue campaignId={campaign.id} /> : null}
         <div className="mt-6 min-w-0 space-y-6">
-        <EngagementNotificationsInbox campaignId={campaign.id} initialNotifications={notifications} />
+        {/* Refresh Activity on opening its tab; other hidden panels retain their drafts. */}
+        {activeTab === "responses" && <EngagementNotificationsInbox campaignId={campaign.id} initialNotifications={notifications} />}
 
         {locatedItems.length > 0 ? (
           <article className="module-section-surface">

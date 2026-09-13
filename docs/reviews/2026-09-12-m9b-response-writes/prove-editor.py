@@ -23,6 +23,12 @@ tests = ['src/test/' + name for name in ('engagement-response-recovery.test.tsx'
     'engagement-response-history-ui.test.tsx', 'engagement-response-write.test.ts', 'write-policy-coverage-guard.test.ts')]
 cases = [
     ('baseline', 'recovery', None, None, None),
+    ('confirmation-steals-focus', 'recovery', 'active === document.body || active === start || Boolean(active && recovery?.contains(active))', 'true', 'refreshes history opened during a pending correction'),
+    ('history-update-not-requested', 'builder', 'setHistoryRevision(value => value + 1);', 'void 0;', 'refreshes history opened during a pending correction'),
+    ('history-version-not-forwarded', 'builder', 'revision={historyRevision}', 'revision={0}', 'refreshes history opened during a pending correction'),
+    ('history-version-ignored', 'history', '[campaignId, attempt, revision]', '[campaignId, attempt]', 'refreshes open history after a confirmed save'),
+    ('history-selection-reset', 'history', 'setSelected(current => rows.some(row => row.response_id === current) ? current : rows[0]?.response_id ?? "");', 'setSelected(rows[0]?.response_id ?? "");', 'refreshes open history after a confirmed save'),
+    ('stale-history-while-refreshing', 'history', 'loadedRevision !== revision', 'false', 'refreshes open history after a confirmed save'),
     ('harmless-comment', 'recovery', 'One pending write per campaign', 'One retained write per campaign', None),
     ('uneditable-invalid-unsent-request', 'recovery', 'if (!pendingResponseSchema.safeParse(value).success)', 'if (false)', 'leaves an invalid unsent edit editable'),
     ('lost-retry-focus', 'recovery', 'recoveryRef.current?.focus()', 'void 0', 'recovers an interrupted correction'),
@@ -58,6 +64,7 @@ cases = [
     ('unsafe-direct-delete', 'route', '\nexport const PATCH', '\nimport { createClient } from "@/lib/supabase/server";\nasync function unsafeDelete() { const supabase = await createClient(); await supabase.from("engagement_closeloop_entries").delete().eq("id", "synthetic"); }\nexport const PATCH', 'adds no new UPDATE or DELETE'),
     ('unchecked-browser-receipt', 'adapter', 'const result = responseWriteResultSchema.parse(data);', 'const result = data as ResponseWriteResult;', 'keeps the pending draft after a successful HTTP response'),
 ]
+cases.sort(key=lambda case: 0 if case[0] == 'baseline' else 1 if case[0] == 'harmless-comment' else 2)
 selected = os.environ.get('OPENPLAN_EDITOR_MUTATIONS_CASES', '').split(',')
 selected = [name for name in selected if name]
 if selected:

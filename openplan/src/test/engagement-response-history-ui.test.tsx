@@ -73,3 +73,22 @@ it("reopens a retained publication's email status from history after a reload", 
   expect(fetcher).toHaveBeenCalledWith(`/api/engagement/campaigns/${campaignId}/closeloop/broadcasts/${publicationRequest}`, expect.objectContaining({ cache: "no-store" }));
   expect(screen.getByTestId("closeloop-broadcast-notice").id).toBe(`response-history-broadcast-${row.id}`);
 });
+
+it("refreshes open history after a confirmed save and preserves selection", async () => {
+  const secondId = "20000000-0000-4000-8000-000000000002";
+  const second = { ...row, id: "30000000-0000-4000-8000-000000000004", response_id: secondId,
+    record: { ...row.record, id: secondId, theme_title: "Second response" } };
+  const fetcher = vi.fn().mockResolvedValueOnce({ ok: true, json: async () => ({ history: [row, second] }) })
+    .mockResolvedValueOnce({ ok: true, json: async () => ({ history: [row, second,
+      { ...second, id: "30000000-0000-4000-8000-000000000005", revision: 2, event: "corrected", record: { ...second.record, we_did: "Confirmed correction" } },
+    ] }) });
+  vi.stubGlobal("fetch", fetcher);
+  const view = render(<ResponseHistory campaignId={campaignId} revision={0} />); open();
+  await screen.findByRole("combobox"); screen.getByRole("combobox").focus(); fireEvent.change(screen.getByRole("combobox"), { target: { value: secondId } });
+  view.rerender(<ResponseHistory campaignId={campaignId} revision={1} />);
+  expect(screen.getByText("Refreshing response history. Showing the last verified copy.")).toBeVisible();
+  expect(await screen.findByText(/Confirmed correction/)).toBeVisible();
+  expect(screen.getByRole("combobox")).toHaveValue(secondId);
+  expect(screen.getByRole("combobox")).toHaveFocus();
+  expect(fetcher).toHaveBeenCalledTimes(2);
+});
