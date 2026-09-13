@@ -1,5 +1,17 @@
 # Resume after the weekly usage reset
 
+> Published: v0.58.0 at 18c50222b7f9ab440c9274cc5696f70871710679,
+> September13 15:32:08 UTC. All exact-commit CI, RLS and populated-upgrade checks
+> passed before tagging. PUBLICATION.md and publication.json are authoritative.
+> All pending-tag/build instructions below are historical and superseded.
+> Continue in /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13,
+> branch work/translation-command-workflow, checkpoint153447a5. Its complete-read
+> correction is pushed but unmerged, with full unit/type/lint/control evidence.
+> It still needs installed/browser and full release acceptance. Then implement
+> the complete transactional translation-write and generation workflow from
+> ../2026-09-13-m9b-translation-writes/NEXT.md and READ_PROGRESS.md. Preserve
+> the full V1 contract; do not confuse this next checkpoint with the released tag.
+
 > Latest continuation: the test-only TS2769 correction is implemented. Full QA
 > and shuffled seed580914 both exited 0 with 14,347 passing tests, 453 skipped.
 > The production build passed. Viewer permission mutation controls still detect

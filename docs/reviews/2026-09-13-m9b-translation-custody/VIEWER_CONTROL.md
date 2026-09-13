@@ -1,5 +1,8 @@
 # Private history entry point correction
 
+Published in v0.58.0 after the final local and exact-commit GitHub checks passed.
+See [publication](PUBLICATION.md); pending instructions below describe earlier stages.
+
 Do not tag the initial v0.58.0 candidate1b0783ca. Its CI, shuffled, RLS, workers
 and upgrade checks passed, but final source review found that viewers were offered
 the private-history button even though the staff-only read route correctly
