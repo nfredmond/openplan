@@ -1,0 +1,83 @@
+{
+  "case": "restore-white-hover-background",
+  "outcome": "killed",
+  "sourceRestored": true,
+  "sourceSha256": "abaacfcda34c2aba8291db5e4e3c494a1c8047491123e2a35c134c742ed7efb6",
+  "mutantSha256": "809659ea08f874d351877ff8a140aa3b515729c3184f5b35c8a5a45c336cb6c7",
+  "scriptSha256": "6e6a0c5cc5de89eb9ba50bd773b36376ad17387f7eacd93e79632f9b0e5ac60d",
+  "privateResult": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/outline-button-restored-white-20260913T174448-1789346689130-result.json",
+  "measurementCount": 60,
+  "failedMeasurements": [
+    {
+      "width": 1440,
+      "mode": "dark",
+      "palette": "cartographic",
+      "state": "hover",
+      "ratio": 1.4947088380629059
+    },
+    {
+      "width": 1440,
+      "mode": "dark",
+      "palette": "slate",
+      "state": "hover",
+      "ratio": 1.200164245548949
+    },
+    {
+      "width": 1440,
+      "mode": "dark",
+      "palette": "harbor",
+      "state": "hover",
+      "ratio": 1.2067835937974014
+    },
+    {
+      "width": 1440,
+      "mode": "dark",
+      "palette": "meadow",
+      "state": "hover",
+      "ratio": 1.1851133115548564
+    },
+    {
+      "width": 1440,
+      "mode": "dark",
+      "palette": "plum",
+      "state": "hover",
+      "ratio": 1.301994692232549
+    },
+    {
+      "width": 390,
+      "mode": "dark",
+      "palette": "cartographic",
+      "state": "hover",
+      "ratio": 1.4947088380629059
+    },
+    {
+      "width": 390,
+      "mode": "dark",
+      "palette": "slate",
+      "state": "hover",
+      "ratio": 1.200164245548949
+    },
+    {
+      "width": 390,
+      "mode": "dark",
+      "palette": "harbor",
+      "state": "hover",
+      "ratio": 1.2067835937974014
+    },
+    {
+      "width": 390,
+      "mode": "dark",
+      "palette": "meadow",
+      "state": "hover",
+      "ratio": 1.1851133115548564
+    },
+    {
+      "width": 390,
+      "mode": "dark",
+      "palette": "plum",
+      "state": "hover",
+      "ratio": 1.301994692232549
+    }
+  ],
+  "limits": "Shared outline button on actual Engagement history control, five palettes, two modes, two widths. Text contrast and keyboard activation only; does not prove every component override, focus-ring contrast or the unfinished publication producer."
+}

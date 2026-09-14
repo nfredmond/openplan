@@ -11,7 +11,7 @@ const buttonVariants = cva(
       variant: {
         default: "border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45",
         destructive: "border-destructive/30 bg-destructive text-white hover:brightness-110 focus-visible:ring-destructive/55",
-        outline: "border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,white)] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45",
+        outline: "border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45",
         secondary: "border-[color:var(--line)] bg-[color:var(--sand)] text-[#1f2428] hover:brightness-105 focus-visible:ring-[color:var(--focus-ring-light)]/45",
         ghost: "border-transparent text-foreground hover:bg-muted hover:text-foreground focus-visible:ring-[color:var(--focus-ring-light)]/45",
         link: "border-transparent text-primary underline-offset-4 hover:underline focus-visible:ring-[color:var(--focus-ring-light)]/45",
