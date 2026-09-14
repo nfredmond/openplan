@@ -1,5 +1,7 @@
 # Resume after v0.61.1 publication
 
+Newer reset checkpoint: [M9b RESUME](../2026-09-14-m9b-synthesis-custody/RESUME.md). Read it first for terminal CI failures and the backed-up, unfinished UI integration.
+
 v0.61.1 is published at 291ce88a600547c1cd2b8b3d85047d5d07c6df44. Read PUBLICATION.md and final-ci.json for terminal success of CI 34877113299 and RLS 34877113339, exact counts, log hashes and verified remote tag. Do not republish or move this tag. Later main commits only record evidence/investigation.
 
 Use /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13, package openplan/, branch work/engagement-decision-traceability. Another live session owned /home/nathaniel/code/openplan at the checkpoint; leave it read-only and inspect current ownership before edits. No PRs, human software-release gates, paid services or reminder constraint changes. Continue the complete V1 contract and roadmap; v0.48 in the persistent objective is historical, not the current release target.
