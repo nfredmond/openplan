@@ -1066,9 +1066,9 @@ export async function publicReviewStillCurrent(service: SupabaseClient, snapshot
     }
     return true;
   }
-  if (!await matches('engagement_items', snapshot.items, ['title','body','submitted_by','photo_path','parent_item_id','geometry','latitude','longitude','category_id'], ['status','approved'])) return false;
+  if (!await matches('engagement_public_items', snapshot.items, ['title','body','submitted_by','photo_path','parent_item_id','geometry','latitude','longitude','category_id'], ['status','approved'])) return false;
   const parents = [...new Set(snapshot.items.map(item => item.parent_item_id).filter(Boolean))].map(id => ({ id, parent_item_id: null }));
-  if (!await matches('engagement_items', parents, ['parent_item_id'], ['status','approved'])) return false;
+  if (!await matches('engagement_public_items', parents, ['parent_item_id'], ['status','approved'])) return false;
   if (!await matches('engagement_survey_response_sessions', snapshot.sessions, [], ['status','approved'])) return false;
   if (!await matches('engagement_survey_answers', snapshot.answers, ['session_id','question_id','question_prompt_snapshot','question_type','answer_text','answer_json'])) return false;
   return matches('engagement_closeloop_entries', snapshot.responses, ['theme_title','you_said','we_did','source_item_ids'], ['status','published']);

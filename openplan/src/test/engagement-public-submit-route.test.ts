@@ -67,8 +67,11 @@ const fromMock = vi.fn((table: string) => {
   if (table === "engagement_categories") {
     return { select: categorySelectMock };
   }
+  if (table === "engagement_public_items") {
+    return { select: (columns: string) => { expect(columns).toBe("id, parent_item_id"); return parentChain; } };
+  }
   if (table === "engagement_items") {
-    return { select: itemSelectMock, insert: itemInsertMock };
+    return { select: (columns: string) => { expect(columns).not.toContain("parent_item_id"); return itemSelectMock(columns); }, insert: itemInsertMock };
   }
   if (table === "engagement_item_demographics") {
     return { insert: demographicsInsertMock };

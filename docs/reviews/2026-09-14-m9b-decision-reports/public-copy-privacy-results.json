@@ -1,0 +1,263 @@
+{
+  "candidateSha256": "28c5ae6e7f3e161a08dea904605a8637beb54a21f798865e6e163e6bd086ca3c",
+  "fixtureSha256": "f1e17b57606c00c04f9ca22651dfcd9693fc49e6ab8158f8b0e894e352c68c57",
+  "probeSha256": "07f552f82b6848770c92cd7edc61e373ca4f6b1b7ed0fc2ad293f5cf5a74b8d5",
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "database": "postgres",
+  "outcomes": [
+    {
+      "name": "baseline",
+      "outcome": "survived",
+      "assertionCount": 32,
+      "failedAssertions": []
+    },
+    {
+      "name": "harmless",
+      "outcome": "survived",
+      "assertionCount": 32,
+      "failedAssertions": []
+    },
+    {
+      "name": "review-status",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "service-view-live",
+        "view-record-selection",
+        "report-public-selection"
+      ]
+    },
+    {
+      "name": "private-flag",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "service-view-live",
+        "parent-vote-denial",
+        "private-vote-denial",
+        "private-reply-denial",
+        "view-record-selection",
+        "report-public-selection",
+        "private-old-cache-denial",
+        "translation-parent-denial",
+        "privacy-hides-current-copy",
+        "translation-private-denial",
+        "parent-reviewed-cache-denial",
+        "published-response-selection",
+        "private-reviewed-cache-denial",
+        "parent-response-publication-denial",
+        "private-response-publication-denial"
+      ]
+    },
+    {
+      "name": "internal-flag",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "service-view-live",
+        "view-record-selection",
+        "report-public-selection"
+      ]
+    },
+    {
+      "name": "visibility",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "service-view-live",
+        "view-record-selection",
+        "report-public-selection"
+      ]
+    },
+    {
+      "name": "unicode-private-flag",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "service-view-live",
+        "view-record-selection",
+        "report-public-selection"
+      ]
+    },
+    {
+      "name": "view-direct-authenticated",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "view-no-authenticated-read"
+      ]
+    },
+    {
+      "name": "view-direct-anonymous",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "view-no-anonymous-read"
+      ]
+    },
+    {
+      "name": "view-write-grant",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "view-no-direct-writes"
+      ]
+    },
+    {
+      "name": "view-projection",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "view-private-columns"
+      ]
+    },
+    {
+      "name": "view-item",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "service-view-live",
+        "view-record-selection",
+        "privacy-hides-current-copy"
+      ]
+    },
+    {
+      "name": "view-parent",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "service-view-live",
+        "view-record-selection"
+      ]
+    },
+    {
+      "name": "translation-item",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "translation-private-denial"
+      ]
+    },
+    {
+      "name": "translation-parent",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "translation-parent-denial"
+      ]
+    },
+    {
+      "name": "response-publication-item",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "private-response-publication-denial"
+      ]
+    },
+    {
+      "name": "response-publication-parent",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "parent-response-publication-denial"
+      ]
+    },
+    {
+      "name": "response-public-read",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "published-response-selection"
+      ]
+    },
+    {
+      "name": "old-cache",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "private-old-cache-denial"
+      ]
+    },
+    {
+      "name": "reviewed-cache",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "private-reviewed-cache-denial"
+      ]
+    },
+    {
+      "name": "reviewed-cache-parent",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "parent-reviewed-cache-denial"
+      ]
+    },
+    {
+      "name": "privacy-review-version",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "privacy-review-version-required"
+      ]
+    },
+    {
+      "name": "privacy-review-reason",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "privacy-review-reason-required"
+      ]
+    },
+    {
+      "name": "privacy-withdrawal",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "privacy-clears-cache",
+        "privacy-withdrawal-receipt",
+        "privacy-withdraws-response"
+      ]
+    },
+    {
+      "name": "privacy-history",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "privacy-history-retained"
+      ]
+    },
+    {
+      "name": "reply-write",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "private-reply-denial"
+      ]
+    },
+    {
+      "name": "vote-write",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "private-vote-denial"
+      ]
+    },
+    {
+      "name": "vote-parent-write",
+      "outcome": "killed",
+      "assertionCount": 32,
+      "failedAssertions": [
+        "parent-vote-denial"
+      ]
+    }
+  ],
+  "installedDefinitionsUnchanged": true,
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/public-copy-privacy-1789391300985952776",
+  "limits": [
+    "Candidate only; no application migration installed.",
+    "Native transaction proof does not establish application callers, public browser navigation, artifacts or concurrent operations.",
+    "Explicit privacy flags only; source-type-only policy remains unchanged."
+  ]
+}

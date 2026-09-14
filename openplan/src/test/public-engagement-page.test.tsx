@@ -217,7 +217,7 @@ const fromMock = vi.fn((table: string) => {
   if (table === "engagement_categories") {
     return { select: categoriesSelectMock };
   }
-  if (table === "engagement_items") {
+  if (table === "engagement_public_items") {
     return { select: itemsSelectMock };
   }
   if (table === "engagement_survey_questions") {

@@ -10,7 +10,7 @@ type Cursor = { id: string; created_at: string };
 export async function readPublicApprovedItems<Row extends Cursor>(client: Pick<SupabaseClient, "from">, campaignId: string) {
   let cursor: Cursor | undefined;
   const result = await readEveryPage<Row>(async (from, to) => {
-    let query = client.from("engagement_items").select(PUBLIC_ITEM_COLUMNS)
+    let query = client.from("engagement_public_items").select(PUBLIC_ITEM_COLUMNS)
       .eq("campaign_id", campaignId).eq("status", "approved")
       .order("created_at", { ascending: false }).order("id", { ascending: true });
     if (cursor) query = query.or(`created_at.lt.${cursor.created_at},and(created_at.eq.${cursor.created_at},id.gt.${cursor.id})`);

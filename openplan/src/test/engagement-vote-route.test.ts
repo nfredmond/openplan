@@ -16,7 +16,10 @@ const itemLookupEqIdMock = vi.fn(() => ({ eq: itemLookupEqCampaignMock }));
 const votesCountMaybeSingleMock = vi.fn();
 const votesCountEqMock = vi.fn(() => ({ maybeSingle: votesCountMaybeSingleMock }));
 
+const parentMaybeSingleMock = vi.fn();
+const parentChain = { eq: () => ({ eq: () => ({ eq: () => ({ is: () => ({ maybeSingle: parentMaybeSingleMock }) }) }) }) };
 const itemSelectMock = vi.fn((columns: string) => {
+  if (columns === "id") return parentChain;
   if (columns === "votes_count") {
     return { eq: votesCountEqMock };
   }
@@ -39,7 +42,7 @@ const fromMock = vi.fn((table: string) => {
   if (table === "engagement_campaigns") {
     return { select: campaignSelectMock };
   }
-  if (table === "engagement_items") {
+  if (table === "engagement_public_items") {
     return { select: itemSelectMock };
   }
   if (table === "engagement_item_votes") {
@@ -120,6 +123,20 @@ describe("POST /api/engage/[shareToken]/items/[itemId]/vote", () => {
     );
   });
 
+  it("permits a reply vote while its reviewed public parent is still available", async () => {
+    itemLookupMaybeSingleMock.mockResolvedValueOnce({ data: { id: ITEM_ID, parent_item_id: "parent" }, error: null });
+    parentMaybeSingleMock.mockResolvedValueOnce({ data: { id: "parent" }, error: null });
+    expect((await POST(voteRequest(), routeContext())).status).toBe(201);
+    expect(parentMaybeSingleMock).toHaveBeenCalled();
+  });
+
+  it("refuses a reply vote when its parent was withheld after the item lookup", async () => {
+    itemLookupMaybeSingleMock.mockResolvedValueOnce({ data: { id: ITEM_ID, parent_item_id: "parent" }, error: null });
+    parentMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
+    expect((await POST(voteRequest(), routeContext())).status).toBe(404);
+    expect(voteInsertMock).not.toHaveBeenCalled();
+  });
+
   it("is idempotent: a repeated vote returns 200 with alreadyVoted", async () => {
     voteInsertMock.mockResolvedValueOnce({
       error: { code: "23505", message: "duplicate key value violates unique constraint" },
@@ -188,7 +205,7 @@ describe("POST /api/engage/[shareToken]/items/[itemId]/vote", () => {
   it("omits the support count it could not read instead of reporting zero", async () => {
     votesCountMaybeSingleMock.mockResolvedValueOnce({
       data: null,
-      error: { message: "permission denied for table engagement_items" },
+      error: { message: "permission denied for table engagement_public_items" },
     });
 
     const response = await POST(voteRequest(), routeContext());
@@ -207,7 +224,7 @@ describe("POST /api/engage/[shareToken]/items/[itemId]/vote", () => {
     });
     votesCountMaybeSingleMock.mockResolvedValueOnce({
       data: null,
-      error: { message: 'relation "public.engagement_items" does not exist' },
+      error: { message: 'relation "public.engagement_public_items" does not exist' },
     });
 
     const response = await POST(voteRequest(), routeContext());
@@ -264,7 +281,7 @@ describe("DELETE /api/engage/[shareToken]/items/[itemId]/vote", () => {
   it("omits the support count it could not read after a removal", async () => {
     votesCountMaybeSingleMock.mockResolvedValueOnce({
       data: null,
-      error: { message: "permission denied for table engagement_items" },
+      error: { message: "permission denied for table engagement_public_items" },
     });
 
     const response = await DELETE(voteRequest("DELETE"), routeContext());

@@ -1,5 +1,9 @@
 # Usage-reset checkpoint, September 14
 
+**Latest continuation:** see "Public-copy implementation and isolated activation"
+at the end. Migration 23 is now installed in the isolated application stack;
+the earlier candidate-only and ledger-341 statements below are historical.
+
 Resume in `/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13`,
 branch `work/engagement-decision-traceability`; the application package is
 `openplan/`. Another session owns the original `/home/nathaniel/code/openplan`
@@ -122,3 +126,64 @@ v0.47 release plan as if it were current.
 
 There is no need for a live process to survive the usage reset to reconstruct
 this work. Reconcile Git, CI, files, database and browser identity on return.
+
+## Public-copy implementation and isolated activation
+
+The next continuation implemented `20261014000023_engagement_public_copy_privacy.sql`
+and connected the public portal/feed, photos, votes, reply-parent lookup and
+public-report current-copy check to `engagement_public_items`. The new view has
+explicit columns, a security barrier, caller privileges and service-only SELECT.
+Each contribution and its root parent must be approved and free of explicit
+private/internal/visibility flags. Native translation reads/caches and published
+response reads/publication use the same pure eligibility function.
+
+Metadata-only privacy changes now require the existing current-version review
+intent and a fresh reason. They retain history, clear cached translations and
+withdraw affected published responses with original source evidence. Native
+vote and public-reply insert guards recheck eligible originals under row locks.
+Their concurrent behavior still needs explicit multi-connection tests.
+
+`public-copy-privacy-results.json` records 32 native assertions for baseline and
+harmless control, plus 26 deliberately broken behaviors caught for their intended
+assertions. Each candidate/fault transaction rolled back, with installed function
+fingerprints unchanged. `public-copy-readers-results.json` records 117 baseline
+and harmless-control tests and 11 caught reversions to unrestricted table reads.
+The reader proof mocks database results; native tests separately establish the
+view's actual filtering. `public-copy-inventory-results.json` records baseline,
+harmless control and two census failures when the new view is omitted by the
+parser. Migration and candidate bytes match exactly.
+
+The broader engagement plus migration inventory run passed 1,521 tests with 23
+skipped. Type checking passed with an 8 GB heap before the final live-test fixture
+was added. The first test command was incorrectly launched at repository root:
+all five suites failed imports and no tests ran. The corrected package-root run
+passed. The first broader engagement run found 41 failures in the page fixture's
+old table selector; it now requires the restricted view and its mutation is caught.
+An initial census edit missed the total relation count; the real 266-versus-265
+failure led to correcting that count to 266, including 252 tables and 14 views.
+No failure was removed by exempting a route, relation or assertion.
+
+`public-copy-activation.json` records activation on
+`supabase_db_openplan-restore-target-2026091050`, database `postgres`, using the
+explicit restore-target workdir. The ledger is now **342 / 20261014000023**.
+Exactly one migration was pending. All 14 existing source/history/report table
+hashes stayed unchanged, and all 11 installed function hashes match the native
+candidate. Migration 23 is also saved in the restore target's migration directory.
+The disconnected decision proof database remains untouched by this increment.
+
+`engagement-public-copy-privacy-rls.test.ts` is registered in `test:rls-live`.
+Its installed fixture has private explanations as drafts and labels the private
+parent's synthetic input as staff-authored. It does not manufacture already-public
+private records through the new guards. Eight installed tests passed, including
+baseline, harmless control and six targeted grant/trigger faults. All fixtures
+and faults rolled back. Raw suite output is in the private decision-context folder
+as `public-copy-installed-rls.json`; `public-copy-engagement-suite.json` holds the
+broader suite. Source-candidate proofs that assert ledger 341 are now historical;
+do not rerun them against the upgraded application stack without adapting isolation.
+
+Still unfinished: legacy public artifact disposition, full QA/shuffle/worker/RLS
+and upgrade checks on the final source, native concurrency proof, a fresh identified
+production build and desktop/390px browser/artifact acceptance. The old port-3262
+server still serves `6604a87e` and is not browser evidence for this fix. No v0.60
+release or full M9b completion is claimed. Decision lineage in internal exports and
+the actual public explanation journey remain next after this privacy correction.

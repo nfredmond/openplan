@@ -1,0 +1,97 @@
+{
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "database": "postgres",
+  "beforeLedger": "341:20261014000022",
+  "migration": "20261014000023_engagement_public_copy_privacy.sql",
+  "migrationSha256": "28c5ae6e7f3e161a08dea904605a8637beb54a21f798865e6e163e6bd086ca3c",
+  "beforeTableFingerprints": [
+    {
+      "count": 247,
+      "table": "engagement_campaigns",
+      "sha256": "35060fbc40cf3c4a2d5f311750b8e5702d6b2d2ced11892b2d9eec6608c3a79a"
+    },
+    {
+      "count": 67,
+      "table": "engagement_items",
+      "sha256": "654fa54a781c2db704f41f3ffa0e802162361732a88c371e5d78404bb42c375a"
+    },
+    {
+      "count": 115,
+      "table": "engagement_item_history",
+      "sha256": "f956ef90326c8b4b94b1e9ddef501407ccc7a79d94e319f95191b57f3edfea90"
+    },
+    {
+      "count": 0,
+      "table": "engagement_item_votes",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "count": 3096,
+      "table": "engagement_closeloop_entries",
+      "sha256": "28867300467669efa31231940f94cb326d0e0f4156602c8de880f50380e10583"
+    },
+    {
+      "count": 3155,
+      "table": "engagement_response_history",
+      "sha256": "e213ddf311fa3f81bb16824d5c60867ebefe83c75724774e29d6b4f4996d09ed"
+    },
+    {
+      "count": 94,
+      "table": "engagement_response_write_receipts",
+      "sha256": "1ee907d6613de179001ad61d726322d10ffbfb8dc3efa75695eba7689e79e1e2"
+    },
+    {
+      "count": 16,
+      "table": "engagement_response_decision_links",
+      "sha256": "943762221203923b9c6856166461f17417878379918df9f09c496b8900fdd24b"
+    },
+    {
+      "count": 21,
+      "table": "engagement_decision_request_resolutions",
+      "sha256": "317014b85ac481b2cf07765a819dc2d0a630e4c9ad4c857148e6904fa81ace69"
+    },
+    {
+      "count": 66,
+      "table": "engagement_content_translations",
+      "sha256": "4af9821bdba72311043be61665f342099b645c25690dc33ea882b5f18f024d25"
+    },
+    {
+      "count": 199,
+      "table": "engagement_translation_history",
+      "sha256": "78c6d0f20b489d8895fcb0093da0b802394c955f8b8e52839ad1ced0245c62f8"
+    },
+    {
+      "count": 34,
+      "table": "engagement_report_jobs",
+      "sha256": "8a7f7f1fb4f809a4f9a8cc54f4a946d93bae23f9512bf92706673555d008c487"
+    },
+    {
+      "count": 34,
+      "table": "reports",
+      "sha256": "24e7b11cc88d0786510bac47871d654a2296c796af1cd27abd1ed58ba3b45682"
+    },
+    {
+      "count": 34,
+      "table": "report_artifacts",
+      "sha256": "fd90d4d5cb5b94a1d94b49b3d185d4f6290768e6b4de8745bff2e452f6cf228a"
+    }
+  ],
+  "expectedFunctionHashes": {
+    "guard_engagement_public_copy()": "1b401cb9d92340e577d5153a445973e25268b39076fa5ef25e2f787d28d61886",
+    "guard_engagement_public_vote()": "4e8fb1cfe492be31b8ff20aa47da92afa7e7f93cd4f5754c6a85b2e43c0245c7",
+    "retain_engagement_item_history()": "e5c771c80d16f4d7b05b05011a5616f049f319178307fd7ffd381cd94f516cf2",
+    "require_engagement_review_intent()": "54559948732237ef9c136aa278a6b695f80af67fd020d9aa871c5daf774cca10",
+    "guard_engagement_response_publication()": "61b6ab8650367a8bb96be3d033e5bd0e1b998312dfb7f4bbf6347414ee4a2615",
+    "queue_engagement_report(uuid,uuid,text,jsonb)": "38a73e590791e3b3ccd59ce22a2ca7e2f84bf6225dd69b97908387a63cb92562",
+    "lock_public_translation_source(uuid,text,uuid)": "d1f6e30bd22604c1f8152207a350ca2ebff6185942aa1dac79af40c200dff3ac",
+    "engagement_item_public_copy_allowed(text,jsonb)": "06d22fdf48c77a3494d731b9c5d653b114c4f46c0ca11e11ef8a2254ee23f726",
+    "read_engagement_response_snapshot(uuid,boolean)": "4a8210d5055e199e871c65929a3e0cc3ce864688ba9cf55b831faca983ba21e1",
+    "engagement_cache_item_translation(uuid,text,text)": "7982c554e643bbb5e0d7a7b1e2ba77879e9f5327ae5449d21ebd244e24329a52",
+    "engagement_cache_reviewed_translation(uuid,text,text,text,text,text)": "393f1ebcdf53fde6039c59c466ce18c5b90b9e7cdf1ecc4c972872cd09446d3c"
+  },
+  "status": "activated in isolated application stack",
+  "afterLedger": "342:20261014000023",
+  "existingRowsUnchanged": true,
+  "installedFunctionsMatchCandidate": true,
+  "limits": "Schema and retained-row preservation only; browser, concurrency, complete QA and release remain outstanding."
+}

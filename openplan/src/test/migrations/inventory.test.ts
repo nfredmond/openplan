@@ -494,10 +494,11 @@ const EXPECTED = {
   // 20261014000013 adds three generation custody tables with RLS and no client policies.
   // Installed isolated catalog confirms all three; no application view or policy is added.
   // Migration 20 adds the private public-translation mapping table, RLS and no policies.
-  // Installed isolated catalog, excluding extension-owned relations: 250 tables, 13 views, 250 RLS tables.
-  relations: 265,
+  // Migrations 21/22 add two private tables; 23 adds one service-only public-copy view.
+  // Excludes extension-owned relations: 252 tables, 14 views, 252 RLS tables.
+  relations: 266,
   tables: 252,
-  views: 13,
+  views: 14,
   rlsEnabledTables: 252,
 } as const;
 
@@ -849,6 +850,7 @@ describe("migration schema inventory", () => {
       "contract_delivery_my_work",
       "contract_participant_my_work",
       "contract_pending_my_work",
+      "engagement_public_items",
       "gtfs_stops_map",
       "lodes_by_tract",
       "project_bca_screenings_latest",

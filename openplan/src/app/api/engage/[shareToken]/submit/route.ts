@@ -281,7 +281,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     let parentItemId: string | null = null;
     if (parsed.data.parentItemId) {
       const { data: parent, error: parentError } = await supabase
-        .from("engagement_items")
+        .from("engagement_public_items")
         .select("id, parent_item_id")
         .eq("id", parsed.data.parentItemId)
         .eq("campaign_id", campaign.id)

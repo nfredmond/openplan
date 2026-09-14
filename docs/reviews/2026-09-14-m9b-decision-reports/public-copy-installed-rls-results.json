@@ -1,0 +1,11 @@
+{
+  "numTotalTests": 8,
+  "numPassedTests": 8,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "success": true,
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/public-copy-installed-rls.json",
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "database": "postgres",
+  "limits": "Eight installed serial checks only; concurrent interleavings and browser acceptance remain outstanding."
+}

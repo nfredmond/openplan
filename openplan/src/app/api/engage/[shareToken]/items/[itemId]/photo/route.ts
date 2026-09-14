@@ -16,10 +16,10 @@ export async function GET(request: NextRequest, context: { params: Promise<{ sha
   const service = createServiceRoleClient();
   const campaign = await service.from("engagement_campaigns").select("id").eq("share_token", parsed.data.shareToken).eq("status", "active").maybeSingle();
   if (campaign.error || !campaign.data) return denied();
-  const item = await service.from("engagement_items").select("photo_path, parent_item_id").eq("id", parsed.data.itemId).eq("campaign_id", campaign.data.id).eq("status", "approved").maybeSingle();
+  const item = await service.from("engagement_public_items").select("photo_path, parent_item_id").eq("id", parsed.data.itemId).eq("campaign_id", campaign.data.id).eq("status", "approved").maybeSingle();
   if (item.error || !item.data?.photo_path || !isEngagementPhotoPathForCampaign(item.data.photo_path, campaign.data.id)) return denied();
   if (item.data.parent_item_id) {
-    const parent = await service.from("engagement_items").select("id").eq("id", item.data.parent_item_id).eq("campaign_id", campaign.data.id).eq("status", "approved").is("parent_item_id", null).maybeSingle();
+    const parent = await service.from("engagement_public_items").select("id").eq("id", item.data.parent_item_id).eq("campaign_id", campaign.data.id).eq("status", "approved").is("parent_item_id", null).maybeSingle();
     if (parent.error || !parent.data) return denied();
   }
   const file = await service.storage.from(ENGAGEMENT_PHOTO_BUCKET).download(item.data.photo_path);

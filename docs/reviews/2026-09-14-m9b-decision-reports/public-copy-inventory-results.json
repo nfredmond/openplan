@@ -1,0 +1,24 @@
+{
+  "outcomes": [
+    {
+      "name": "baseline",
+      "outcome": "survived",
+      "failedTests": []
+    },
+    {
+      "name": "harmless",
+      "outcome": "survived",
+      "failedTests": []
+    },
+    {
+      "name": "omitted-public-view",
+      "outcome": "killed",
+      "failedTests": [
+        "migration schema inventory reads every relation the migrations declare",
+        "migration schema inventory reports a view's columns as unknown rather than as a short list"
+      ]
+    }
+  ],
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/public-copy-inventory-1789391283904854175",
+  "limit": "Source census proof, not an installed migration or live permission check."
+}

@@ -14,7 +14,7 @@ function fixture(cap: number, failPage = -1) {
   const rows=[...original,added,{...original[0],id:"foreign",campaign_id:"other"}];
   let calls=0;
   const cursors:string[]=[];
-  const client={from(table:string){expect(table).toBe("engagement_items");let columns="";const filters:Record<string,string>={};let cursor:string|undefined;const order:string[]=[];
+  const client={from(table:string){expect(table).toBe("engagement_public_items");let columns="";const filters:Record<string,string>={};let cursor:string|undefined;const order:string[]=[];
     const query={select(value:string){columns=value;return query;},eq(key:string,value:string){filters[key]=value;return query;},order(key:string,options:{ascending:boolean}){order.push(`${key}:${options.ascending}`);return query;},or(value:string){cursor=value;cursors.push(value);return query;},async range(from:number,to:number){
       expect(columns).toBe(PUBLIC_ITEM_COLUMNS);expect(columns).not.toContain("moderation_notes");
       expect(filters).toEqual({campaign_id:"campaign",status:"approved"});

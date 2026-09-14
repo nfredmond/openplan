@@ -38,7 +38,7 @@ const fakeSupabase = {
       // select → eq(campaign_id) → order(sort_order) → order(created_at)
       return { select: () => ({ eq: () => ({ order: () => ({ order: categoriesResolve }) }) }) };
     }
-    if (table === "engagement_items") {
+    if (table === "engagement_public_items") {
       // select → eq(campaign_id) → eq(status) → order(created_at) → limit(100)
       return { select: () => ({ eq: () => ({ eq: () => ({ order: () => ({ order: () => ({ range: itemsResolve }) }) }) }) }) };
     }
@@ -88,7 +88,7 @@ describe("GET /api/engage/[shareToken] — a failed read is a status, never an e
   it("does not answer 200 with zero comments when the comment read failed", async () => {
     itemsResolve.mockResolvedValue({
       data: null,
-      error: { message: "permission denied for relation engagement_items" },
+      error: { message: "permission denied for relation engagement_public_items" },
     });
 
     const response = await call();
@@ -132,7 +132,7 @@ describe("GET /api/engage/[shareToken] — a failed read is a status, never an e
   it("answers 503, not 500, when the failure is a migration this deployment has not applied", async () => {
     itemsResolve.mockResolvedValue({
       data: null,
-      error: { message: 'relation "engagement_items" does not exist' },
+      error: { message: 'relation "engagement_public_items" does not exist' },
     });
 
     const response = await call();
@@ -160,14 +160,14 @@ describe("GET /api/engage/[shareToken] — a failed read is a status, never an e
   it("records the database's own words for the operator without putting them in the response", async () => {
     itemsResolve.mockResolvedValue({
       data: null,
-      error: { message: "permission denied for relation engagement_items" },
+      error: { message: "permission denied for relation engagement_public_items" },
     });
 
     const body = await (await call()).json();
 
     expect(auditError).toHaveBeenCalledWith(
       "engagement_public_feedback_read_failed",
-      expect.objectContaining({ message: "permission denied for relation engagement_items" })
+      expect.objectContaining({ message: "permission denied for relation engagement_public_items" })
     );
     // Anyone with the share token can call this. Disclosing THAT a read failed
     // is the honesty requirement; disclosing HOW is an information leak.

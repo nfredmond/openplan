@@ -1,0 +1,195 @@
+{
+  "outcomes": [
+    {
+      "name": "baseline",
+      "outcome": "survived",
+      "tests": 117,
+      "failed": []
+    },
+    {
+      "name": "harmless",
+      "outcome": "survived",
+      "tests": 117,
+      "failed": []
+    },
+    {
+      "name": "portal-page-1",
+      "outcome": "killed",
+      "tests": 45,
+      "failed": [
+        "PublicEngagementPage tells a resident which area frames the map, on the page they actually open",
+        "PublicEngagementPage warns a resident, before they drop a pin, when a campaign only accepts pins inside its area",
+        "PublicEngagementPage says nothing about a location rule on a campaign that has not asked for one",
+        "PublicEngagementPage asks the database whether this campaign refuses pins outside its area",
+        "PublicEngagementPage shows linked project context on the public engagement page",
+        "PublicEngagementPage asks for this campaign's published layers on the page a resident opens",
+        "PublicEngagementPage opens in the language a shared link names",
+        "PublicEngagementPage still says parts are English when the catalog is complete but the page is not",
+        "PublicEngagementPage discloses the gap once, not twice, on a language with no catalog",
+        "PublicEngagementPage offers a resident who cannot use the page a way to take part anyway",
+        "PublicEngagementPage asks the database for the columns it renders",
+        "PublicEngagementPage asks only for survey questions that are active AND published",
+        "PublicEngagementPage says nothing about translation on the page it is written in",
+        "PublicEngagementPage turns the page around for a right-to-left language",
+        "PublicEngagementPage stays left-to-right for a language that reads that way",
+        "PublicEngagementPage honours the browser's own language when the link names none",
+        "PublicEngagementPage lets an explicit choice beat the browser's language",
+        "PublicEngagementPage falls back rather than 404s when a link names a language this portal does not carry, and says so",
+        "PublicEngagementPage says which parts of a partly translated page are not translated",
+        "PublicEngagementPage offers every language in its own script, in a link that can be shared",
+        "PublicEngagementPage keeps the rest of the URL when the language changes",
+        "PublicEngagementPage asks for this campaign's translations in the language the participant is reading",
+        "PublicEngagementPage shows the agency's own translation as the agency's own words",
+        "PublicEngagementPage labels a machine translation as one, every time",
+        "PublicEngagementPage marks untranslated operator text as untranslated rather than as a choice",
+        "PublicEngagementPage never presents a failed translation lookup as an untranslated campaign",
+        "PublicEngagementPage says nothing about translation on the campaign's own language",
+        "PublicEngagementPage names the campaign's stated source language rather than presuming English",
+        "PublicEngagementPage formats the last-updated timestamp in the participant's locale",
+        "PublicEngagementPage does not tell residents nobody commented when the comment read failed",
+        "PublicEngagementPage discloses a failed read at the top of the page, above what it affects",
+        "PublicEngagementPage discloses a failed category read as well, not only comments",
+        "PublicEngagementPage never shows the database's own message to a resident",
+        "PublicEngagementPage keeps the close-the-loop tab, and says so, when that read failed",
+        "PublicEngagementPage prints no feedback count at all when the comment read failed",
+        "PublicEngagementPage says the ordinary empty-state when the reads succeeded and there is simply nothing yet",
+        "PublicEngagementPage loadPublicPortalResult reports a failed close-the-loop read instead of an agency that never answered",
+        "PublicEngagementPage loadPublicPortalResult reports a failed project read instead of a standalone consultation",
+        "PublicEngagementPage loadPublicPortalResult claims no read failure when every read answered",
+        "PublicEngagementPage loadPublicPortalResult does not invent a project read failure for a standalone campaign",
+        "PublicEngagementPage returns a complete feed beyond the former 200-item cap and hides orphan replies"
+      ]
+    },
+    {
+      "name": "portal-1",
+      "outcome": "killed",
+      "tests": 4,
+      "failed": [
+        "public feed advances by received keys while moderation changes eligibility keeps every original record once despite changing offsets and server cap 500",
+        "public feed advances by received keys while moderation changes eligibility keeps every original record once despite changing offsets and server cap 73",
+        "public feed advances by received keys while moderation changes eligibility discards the partial list when a later page fails"
+      ]
+    },
+    {
+      "name": "json-1",
+      "outcome": "killed",
+      "tests": 7,
+      "failed": [
+        "GET /api/engage/[shareToken] \u2014 a failed read is a status, never an empty answer does not answer 200 with zero comments when the comment read failed",
+        "GET /api/engage/[shareToken] \u2014 a failed read is a status, never an empty answer does not answer 200 with zero topics when the topic read failed",
+        "GET /api/engage/[shareToken] \u2014 a failed read is a status, never an empty answer answers 503, not 500, when the failure is a migration this deployment has not applied",
+        "GET /api/engage/[shareToken] \u2014 a failed read is a status, never an empty answer names the feedback read first when both reads failed",
+        "GET /api/engage/[shareToken] \u2014 a failed read is a status, never an empty answer records the database's own words for the operator without putting them in the response",
+        "GET /api/engage/[shareToken] \u2014 a failed read is a status, never an empty answer still answers a genuinely empty consultation as empty"
+      ]
+    },
+    {
+      "name": "vote-1",
+      "outcome": "killed",
+      "tests": 14,
+      "failed": [
+        "POST /api/engage/[shareToken]/items/[itemId]/vote records a vote on an approved item",
+        "POST /api/engage/[shareToken]/items/[itemId]/vote permits a reply vote while its reviewed public parent is still available",
+        "POST /api/engage/[shareToken]/items/[itemId]/vote refuses a reply vote when its parent was withheld after the item lookup",
+        "POST /api/engage/[shareToken]/items/[itemId]/vote is idempotent: a repeated vote returns 200 with alreadyVoted",
+        "POST /api/engage/[shareToken]/items/[itemId]/vote returns 404 for non-approved items without leaking their existence",
+        "POST /api/engage/[shareToken]/items/[itemId]/vote rate limits rapid voting from the same connection",
+        "POST /api/engage/[shareToken]/items/[itemId]/vote omits the support count it could not read instead of reporting zero",
+        "POST /api/engage/[shareToken]/items/[itemId]/vote omits the support count on the alreadyVoted replay too",
+        "DELETE /api/engage/[shareToken]/items/[itemId]/vote removes an existing vote",
+        "DELETE /api/engage/[shareToken]/items/[itemId]/vote reports removed=false when no vote existed for this fingerprint",
+        "DELETE /api/engage/[shareToken]/items/[itemId]/vote omits the support count it could not read after a removal"
+      ]
+    },
+    {
+      "name": "vote-2",
+      "outcome": "killed",
+      "tests": 14,
+      "failed": [
+        "POST /api/engage/[shareToken]/items/[itemId]/vote permits a reply vote while its reviewed public parent is still available",
+        "POST /api/engage/[shareToken]/items/[itemId]/vote refuses a reply vote when its parent was withheld after the item lookup"
+      ]
+    },
+    {
+      "name": "vote-3",
+      "outcome": "killed",
+      "tests": 14,
+      "failed": [
+        "POST /api/engage/[shareToken]/items/[itemId]/vote records a vote on an approved item",
+        "POST /api/engage/[shareToken]/items/[itemId]/vote permits a reply vote while its reviewed public parent is still available",
+        "POST /api/engage/[shareToken]/items/[itemId]/vote is idempotent: a repeated vote returns 200 with alreadyVoted",
+        "POST /api/engage/[shareToken]/items/[itemId]/vote omits the support count it could not read instead of reporting zero",
+        "POST /api/engage/[shareToken]/items/[itemId]/vote omits the support count on the alreadyVoted replay too",
+        "DELETE /api/engage/[shareToken]/items/[itemId]/vote removes an existing vote",
+        "DELETE /api/engage/[shareToken]/items/[itemId]/vote reports removed=false when no vote existed for this fingerprint",
+        "DELETE /api/engage/[shareToken]/items/[itemId]/vote omits the support count it could not read after a removal"
+      ]
+    },
+    {
+      "name": "photo-1",
+      "outcome": "killed",
+      "tests": 3,
+      "failed": [
+        "public photo privacy does not fetch bytes for an approved item excluded by privacy flags"
+      ]
+    },
+    {
+      "name": "photo-2",
+      "outcome": "killed",
+      "tests": 3,
+      "failed": [
+        "public photo privacy rechecks a parent that became private after the reply lookup"
+      ]
+    },
+    {
+      "name": "reply-1",
+      "outcome": "killed",
+      "tests": 37,
+      "failed": [
+        "POST /api/engage/[shareToken]/submit accepts a reply to an approved top-level comment and stores parent_item_id",
+        "POST /api/engage/[shareToken]/submit rejects a reply to an unknown or non-approved parent (400, no insert)",
+        "POST /api/engage/[shareToken]/submit rejects a reply to a reply \u2014 one level of nesting only (400, no insert)"
+      ]
+    },
+    {
+      "name": "public-report-1",
+      "outcome": "killed",
+      "tests": 7,
+      "failed": [
+        "public report withdrawal permits unchanged reviewed copies and checks exact projections and campaign scopes",
+        "public report withdrawal withdraws after engagement_public_items reply changes",
+        "public report withdrawal withdraws after engagement_public_items parent changes",
+        "public report withdrawal withdraws after engagement_survey_response_sessions session changes",
+        "public report withdrawal withdraws after engagement_survey_answers answer changes",
+        "public report withdrawal withdraws after engagement_closeloop_entries response changes",
+        "public report withdrawal refuses a failed current-copy read"
+      ]
+    },
+    {
+      "name": "public-report-2",
+      "outcome": "killed",
+      "tests": 7,
+      "failed": [
+        "public report withdrawal permits unchanged reviewed copies and checks exact projections and campaign scopes",
+        "public report withdrawal withdraws after engagement_public_items parent changes",
+        "public report withdrawal withdraws after engagement_survey_response_sessions session changes",
+        "public report withdrawal withdraws after engagement_survey_answers answer changes",
+        "public report withdrawal withdraws after engagement_closeloop_entries response changes",
+        "public report withdrawal refuses a failed current-copy read"
+      ]
+    }
+  ],
+  "sources": {
+    "src/lib/engagement/public-approved-items.ts": "67ac4a9912a176147e47c5f7287cfc7966df5bacc9704dc59ab4c1ceae8091b4",
+    "src/app/api/engage/[shareToken]/route.ts": "48ebabe5991f85d47b4a32d0b19d0ae700277176116bde768fdb81e3e1a96802",
+    "src/app/api/engage/[shareToken]/items/[itemId]/vote/route.ts": "7015f338d1d469133d650b6242e22d29cbd6339e907850543403f8937924b1e4",
+    "src/app/api/engage/[shareToken]/items/[itemId]/photo/route.ts": "f4f7742ea45ec01d3441f5c4bb7c9a1c53599f8bb30e95a6081b5268dd0fe109",
+    "src/app/api/engage/[shareToken]/submit/route.ts": "dd0a9283d16e06b74ad1e7929e53b1e7c242b66514d2a7dbe10564213d5c89ef",
+    "src/lib/engagement/survey-responses.ts": "761d9beabcbc0026ad9b6d820eb896ec9488d46acaf8ac739938bed549d83ce6"
+  },
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/public-copy-readers-1789391219861607186",
+  "limits": [
+    "Query-boundary tests mock database rows; native candidate proof establishes view filtering separately.",
+    "No new browser or installed-migration acceptance in this record."
+  ]
+}

@@ -70,7 +70,7 @@ async function resolveVoteTarget(
   // as missing ones so pending/rejected submissions cannot be enumerated
   // through the vote endpoint.
   const { data: item, error: itemError } = await supabase
-    .from("engagement_items")
+    .from("engagement_public_items")
     .select("id, campaign_id, status, parent_item_id")
     .eq("id", itemId)
     .eq("campaign_id", campaign.id)
@@ -92,7 +92,7 @@ async function resolveVoteTarget(
   }
 
   if (item.parent_item_id) {
-    const parent = await supabase.from("engagement_items").select("id").eq("id", item.parent_item_id).eq("campaign_id", campaign.id).eq("status", "approved").is("parent_item_id", null).maybeSingle();
+    const parent = await supabase.from("engagement_public_items").select("id").eq("id", item.parent_item_id).eq("campaign_id", campaign.id).eq("status", "approved").is("parent_item_id", null).maybeSingle();
     if (parent.error || !parent.data) return { ok: false, response: NextResponse.json({ error: "Feedback item not found" }, { status: 404 }) };
   }
   return { ok: true, campaignId: campaign.id, itemId: item.id };
@@ -116,7 +116,7 @@ async function readVotesCount(
   itemId: string
 ): Promise<number | null> {
   const countResult = await supabase
-    .from("engagement_items")
+    .from("engagement_public_items")
     .select("votes_count")
     .eq("id", itemId)
     .maybeSingle();

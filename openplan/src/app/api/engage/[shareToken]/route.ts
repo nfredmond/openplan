@@ -71,7 +71,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         .order("sort_order", { ascending: true })
         .order("created_at", { ascending: true }),
       readEveryPage((from, to) => supabase
-        .from("engagement_items")
+        .from("engagement_public_items")
         .select("id, category_id, title, body, submitted_by, latitude, longitude, geometry, parent_item_id, created_at")
         .eq("campaign_id", campaign.id)
         .eq("status", "approved")
