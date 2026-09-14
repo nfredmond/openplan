@@ -691,12 +691,12 @@ and cache completeness, then the remaining M9b and early priorities above.
 This does not close M9b or change the complete V1 contract.
 
 
-The v0.59.0 candidate completes exact-source translation commands, retained
+The v0.59.0 release completes exact-source translation commands, retained
 worker generation and self-service recovery for staff and public comment readers.
 [Release verification](reviews/2026-09-13-m9b-translation-writes/RELEASE_VERIFICATION.md)
 records desktop/390px production journeys, 339 migrations, preserved originals,
-explicit retry custody and local/upgrade checks. Final main CI and publication
-are recorded separately. Old cached text retains its original provenance limits;
+explicit retry custody and local/upgrade checks. [Publication](reviews/2026-09-13-m9b-translation-writes/PUBLICATION.md) records
+passing final main CI, RLS, upgrade, restore and tagging. Old cached text retains its original provenance limits;
 synthetic words do not establish language quality. Continue the remaining M9b
 source-to-decision follow-through and the other early priorities above. This
 increment does not close M9b or narrow the complete V1 contract.

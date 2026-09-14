@@ -1,3 +1,7 @@
+# v0.59.0 published; continue decision traceability
+
+Read [PUBLICATION.md](PUBLICATION.md) and [NEXT_DECISION_TRACEABILITY.md](NEXT_DECISION_TRACEABILITY.md) first. The release is tagged at `47bde77d`; all required final checks passed. The next task extends existing responses and project decisions. Preserve the full V1 objective and dated evidence below.
+
 # v0.59.0 release candidate
 
 Read [RELEASE_VERIFICATION.md](RELEASE_VERIFICATION.md) first. Full QA, shuffled tests, all 526 isolated RLS tests, 52 worker suites, populated upgrade and desktop/390px production browser recovery pass. Final main CI and publication remain. Preserve the full V1 objective and dated evidence below.

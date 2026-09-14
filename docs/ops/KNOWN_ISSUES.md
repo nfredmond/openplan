@@ -409,7 +409,7 @@ remain open. An identical lost-acknowledgement save retry is not a general
 concurrent-write or paid-generation recovery guarantee. M9b remains unfinished.
 
 
-## v0.59.0 candidate translation recovery
+## v0.59.0 translation recovery
 
 The translation development branch now supports exact-source staff writes,
 retained generation output, explicit resolution receipts, public queue recovery
@@ -430,6 +430,6 @@ network-change error; their causes remain unproved, and neither reproduced in
 the production run.
 
 [Release verification](../reviews/2026-09-13-m9b-translation-writes/RELEASE_VERIFICATION.md)
-retains the evidence and final main CI/publication boundary. Translation quality, actual agency usefulness and the broader M9b
+retains the engineering evidence. [Publication](../reviews/2026-09-13-m9b-translation-writes/PUBLICATION.md) records passing final CI and tagging. Translation quality, actual agency usefulness and the broader M9b
 workflow are not established by synthetic engineering journeys. Historical
 release limitations above remain dated records.

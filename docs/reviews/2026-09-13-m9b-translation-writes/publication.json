@@ -1,0 +1,121 @@
+{
+  "release": {
+    "draft": false,
+    "html_url": "https://github.com/nfredmond/openplan/releases/tag/v0.59.0",
+    "prerelease": false,
+    "published_at": "2026-09-14T08:54:22Z",
+    "tag_name": "v0.59.0",
+    "target_commitish": "main"
+  },
+  "tagRefs": [
+    "7ad83ab0c843269addf4becf02a400cf6e4064e0\trefs/tags/v0.59.0",
+    "47bde77d42c017184c0a9ab894c976a0ffb39154\trefs/tags/v0.59.0^{}"
+  ],
+  "releaseCommit": "47bde77d42c017184c0a9ab894c976a0ffb39154",
+  "runs": [
+    {
+      "id": 34823426631,
+      "commit": "47bde77d42c017184c0a9ab894c976a0ffb39154",
+      "conclusion": "success",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34823426631",
+      "jobs": [
+        {
+          "name": "modeling scripts (python unit tests)",
+          "conclusion": "success"
+        },
+        {
+          "name": "order independence (shuffled vitest)",
+          "conclusion": "success"
+        },
+        {
+          "name": "verify (qa gate)",
+          "conclusion": "success"
+        },
+        {
+          "name": "worker (python unit tests)",
+          "conclusion": "success"
+        },
+        {
+          "name": "ops scripts (python unit tests)",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 34823426673,
+      "commit": "47bde77d42c017184c0a9ab894c976a0ffb39154",
+      "conclusion": "success",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34823426673",
+      "jobs": [
+        {
+          "name": "live RLS isolation",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 34822840046,
+      "commit": "32848d3f641c0dc8e7c6229aeb32de3a3eb78d34",
+      "conclusion": "success",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34822840046",
+      "jobs": [
+        {
+          "name": "previous release -> seed -> HEAD migration up",
+          "conclusion": "success"
+        }
+      ]
+    },
+    {
+      "id": 34822875027,
+      "commit": "32848d3f641c0dc8e7c6229aeb32de3a3eb78d34",
+      "conclusion": "success",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34822875027",
+      "jobs": [
+        {
+          "name": "restore-drill",
+          "conclusion": "success"
+        }
+      ]
+    }
+  ],
+  "upgradeRestoreDifference": [
+    "docs/reviews/2026-09-13-m9b-translation-writes/NEXT_DECISION_TRACEABILITY.md",
+    "docs/reviews/2026-09-13-m9b-translation-writes/RELEASE_VERIFICATION.md",
+    "openplan/docs/SELF_HOSTING.md",
+    "openplan/docs/ops/RUNBOOK.md"
+  ],
+  "ciUnitTests": 15127,
+  "ciUnitSkipped": 504,
+  "localUnitTests": 15134,
+  "localUnitSkipped": 497,
+  "ciSkipDifference": "Seven worker interpreter/import probes in every-worker-suite-can-actually-run.test.ts require the local worker virtualenvs. The CI QA log names its seven skips; local QA and the separate local 52-suite worker run exercise the installed workers.",
+  "ciShuffledSeed": 917049,
+  "logs": {
+    "v059-final-ci.log": "3be21b2c672c50b758e3a0b6897d89480062f00e2103706ba5578d38be145272",
+    "v059-final-rls.log": "e1199735357a15da95603b40b21f55811b7aaf2f69eec5c863971109e7439668"
+  },
+  "restore": {
+    "runId": 34822875027,
+    "commit": "32848d3f641c0dc8e7c6229aeb32de3a3eb78d34",
+    "conclusion": "success",
+    "tables": 303,
+    "translationRows": {
+      "public.engagement_content_translations": 0,
+      "public.engagement_public_translation_requests": 0,
+      "public.engagement_translation_generation_fields": 0,
+      "public.engagement_translation_generation_outputs": 0,
+      "public.engagement_translation_generation_requests": 0,
+      "public.engagement_translation_generation_resolutions": 0,
+      "public.engagement_translation_history": 0,
+      "public.engagement_translation_write_receipts": 0
+    },
+    "mutationOutcomes": {
+      "survived": 3,
+      "targeted failure": 42
+    },
+    "manifestSha256": "1a5114356f9bb3188604c4b5089621fc4120d66d27f155c2c7c5f3734bf3a726",
+    "mutationsSha256": "af0f222026f0ce0b91888ff2111550e7da347cd59f152ce2d6e26c373ede82ea",
+    "scope": "Default local CLI database and Storage; no external workers, custom roles or scheduled SQL jobs",
+    "limits": "All translation custody tables were empty in this generic full restore fixture. It proves restored schema/catalog coverage; populated translation preservation is independently covered by the local upgrade rehearsal. External worker files and protected configuration are outside this archive."
+  }
+}
