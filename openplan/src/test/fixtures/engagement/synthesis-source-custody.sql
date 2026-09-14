@@ -117,5 +117,11 @@ SELECT pg_temp.expect_error($q$SELECT pg_temp.capture('d0000000-0000-4000-8000-0
 RESET ROLE;
 SELECT pg_temp.expect_error($q$UPDATE engagement_synthesis_sources SET snapshot_text='{}' WHERE id='d0000000-0000-4000-8000-000000000001'$q$,'P0001','Retained source mutation was allowed');
 SELECT pg_temp.expect_error($q$DELETE FROM engagement_synthesis_sources WHERE id='d0000000-0000-4000-8000-000000000001'$q$,'P0001','Retained source deletion was allowed');
-SELECT pg_temp.assert_true((SELECT count(*)=5 FROM engagement_synthesis_sources),'Source request count differs after refusals/retries');
+-- A real capture in an unrelated campaign is a harmless control for the scoped count.
+SELECT set_config('request.jwt.claim.sub','14a71429-1cb2-49b5-8711-c696a2f394c3',true);
+SET LOCAL ROLE authenticated;
+SELECT capture_engagement_synthesis_sources('250f0f62-7225-48b3-a2f7-5a134d3b9f78','d0000000-0000-4000-8000-000000000900',(SELECT value FROM synthesis_probe WHERE key='selection'));
+RESET ROLE;
+SELECT set_config('request.jwt.claim.sub','13466ed2-dcb7-4861-a528-68cc5579eea9',true);
+SELECT pg_temp.assert_true((SELECT count(*)=5 FROM engagement_synthesis_sources WHERE campaign_id='10c5cdd7-16c6-4b91-b9c0-d2f67598a54f'),'Source request count differs after refusals/retries');
 SELECT 'synthesis-source-custody-verified';

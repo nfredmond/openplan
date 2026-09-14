@@ -1,3 +1,42 @@
+# Weekly reset checkpoint: retained review implementation
+
+September 14, 2026. This section supersedes the older restart state below. The user asked whether work can resume in this thread after the weekly reset. Preserve this checkpoint and resume the same V1 objective; no new product decision or permission request is needed.
+
+## Saved work and release boundary
+
+Completed preparation work is on main at 09c1cd178ef014021a6d3c5701392c9e7d54d8ca. Its CI 34892120409 and RLS 34892120481 were observed successful in the preceding implementation turn. Remote main and the work branch were both confirmed at that commit before saving this checkpoint. v0.61.1 remains the last published release.
+
+The new checkpoint contains the retained review content model, candidate migration 20261014000027, private append-only review/revision RPCs, focused tests, native custody fixtures, and mutation evidence. It is incomplete implementation, backed up on the existing work branch, not a release or a draft PR. Full QA, shuffled tests, installed RLS and API/browser integration have not yet passed for this candidate. Complete those before landing the increment directly on main.
+
+Use /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13, package openplan/, branch work/engagement-decision-traceability. The original checkout remains owned by the other Codex session. Recheck ownership before editing. This checkpoint owns only the review model, migration, tests, fixture correction, test registration and review notes listed by its commit.
+
+## Verified at the reset checkpoint
+
+- Pure review model and migration inventory: 36 tests passed. Changed TypeScript files passed ESLint.
+- Model mutation proof finished and restored both source files: baseline, harmless control and 26 targeted faults had their expected outcomes. See review-model-mutations.json and prove-review-model.py.
+- Native candidate review custody: 31 tests passed in 53.45 seconds, including harmless controls, equal-timestamp pagination and targeted broken guards. These transactions roll back; migration 27 is not installed.
+- The source fixture previously counted every campaign globally. Persistent browser sources exposed that test defect. It now includes an unrelated campaign control and counts only its own campaign; a targeted mutation restoring the global count fails.
+- No review API or UI has been implemented or browser-verified. The native fixture uses an explicitly synthetic preparation payload and proves database custody, not compatibility with production TypeScript preparation or the future reader.
+- No owned mutation/test job remains active after these checks. No app server was started for this checkpoint. Do not assume processes survive a reset.
+
+Logs are retained in the private evidence directory and hashed in review-reset-evidence.json. Tests skipped by a full suite have not been reclassified as passing. No production data, schema reset, paid provider, reminder constraint, release tag or other session was changed.
+
+## Resume here
+
+Read RETAINED_REVIEW_DESIGN.md and IMPLEMENTATION_BOUNDARY.md, then inspect current git state, CI and processes. The named stack remains supabase_db_openplan-restore-target-2026091050 at API 29821 / DB 29822, with 345 installed migrations through 20261014000026. Candidate tests opt in with OPENPLAN_SYNTHESIS_REVIEW_CANDIDATE=1. Do not run the older source candidate proof, which requires baseline 343, against this stack.
+
+1. Rerun the existing source native suite after its fixture correction. Verify candidate catalog counts 269 relations, 255 tables and 255 RLS-enabled tables inside a rollback transaction. Review the new native tests' concurrency blind spots.
+2. Implement the saved review reader and API. Verify source, exact preparation/content checksums, identity, intent and complete membership. Compute preparation/content on the server. Never accept browser-prepared authoritative bytes. Keep algorithm 1 reproducible for historical reviews.
+3. Preserve exact request retries before recomputation or stale-head checks. Create review ID equals request ID. A correction names its parent revision ID/hash and reason. The service-only writer rechecks current staff role and compares the current head atomically. Refuse agent writes until the action registry supports them.
+4. Add the interface under saved source inspection: create/reopen reviews, reasoned group and membership changes, full history, scoped pending commands, interruption recovery and private-content clearing after account changes.
+5. Prove the actual TypeScript-to-database/API join, concurrency, desktop and 390px navigation, keyboard use, console behavior and recovery. Apply migration 27 additively only after candidate checks; run appropriate full QA, shuffle, installed RLS and upgrade checks. Push directly to main when ready, inspect final CI before any tag.
+
+Approval evidence, optional resumable generation, response/decision linkage and reviewed exports remain part of the connected M9b outcome. The old capped synthesis generator remains separate. Do not mark M9b or V1 complete from this foundation. User authorization for local/free work, repository Playwright, direct main landing and continued development through the full V1 contract persists.
+
+---
+
+## Historical checkpoint notes
+
 # Resume after complete source preparation
 
 September 14, 2026. Full V1 remains the objective. v0.61.1 is published; no new synthesis release has been tagged.

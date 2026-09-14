@@ -1,0 +1,239 @@
+{
+  "sourcesRestored": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "failed": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "failed": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "source-identity",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content refuses altered source identity, duplicate or unknown membership, and dishonest coverage on read"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "duplicate-groups",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content refuses altered source identity, duplicate or unknown membership, and dishonest coverage on read"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "duplicate-membership",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content refuses altered source identity, duplicate or unknown membership, and dishonest coverage on read"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unknown-source",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content refuses altered source identity, duplicate or unknown membership, and dishonest coverage on read",
+        "retained synthesis review content refuses stale or contradictory membership deltas, duplicate groups, unavailable groups and empty corrections"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "coverage-ledger",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content refuses altered source identity, duplicate or unknown membership, and dishonest coverage on read"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "existing-group",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content refuses stale or contradictory membership deltas, duplicate groups, unavailable groups and empty corrections"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "membership-delta",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content refuses stale or contradictory membership deltas, duplicate groups, unavailable groups and empty corrections"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "stale-membership",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content refuses stale or contradictory membership deltas, duplicate groups, unavailable groups and empty corrections"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "empty-correction",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content refuses stale or contradictory membership deltas, duplicate groups, unavailable groups and empty corrections"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "drop-original-tail",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content creates complete unassessed drafts from historical preparation, including the final contribution",
+        "retained synthesis review content preserves the parent and source when correcting wording, explicit sentiment and last-source membership"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "invent-initial-sentiment",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content creates complete unassessed drafts from historical preparation, including the final contribution"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "rewrite-parent",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content preserves the parent and source when correcting wording, explicit sentiment and last-source membership",
+        "retained synthesis review content refuses stale or contradictory membership deltas, duplicate groups, unavailable groups and empty corrections"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "lose-staff-wording",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content preserves the parent and source when correcting wording, explicit sentiment and last-source membership"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "lose-staff-summary",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content preserves the parent and source when correcting wording, explicit sentiment and last-source membership"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "lose-staff-sentiment",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content preserves the parent and source when correcting wording, explicit sentiment and last-source membership"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-membership-removal",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content preserves the parent and source when correcting wording, explicit sentiment and last-source membership"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-new-group-membership",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content preserves the parent and source when correcting wording, explicit sentiment and last-source membership",
+        "retained synthesis review content discloses overlap without inflating assigned counts and makes removed groups explicitly unassigned"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "hide-overlap",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content discloses overlap without inflating assigned counts and makes removed groups explicitly unassigned"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "hide-unassigned",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content preserves the parent and source when correcting wording, explicit sentiment and last-source membership",
+        "retained synthesis review content discloses overlap without inflating assigned counts and makes removed groups explicitly unassigned"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "truncate-notes",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content retains complete notes, missing historical context and empty selected sources"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "invent-missing-context",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content retains complete notes, missing historical context and empty selected sources"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-blank-label",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content binds strict create/correction intents to actor, workspace and an exact reasoned parent"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-invalid-text",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content binds strict create/correction intents to actor, workspace and an exact reasoned parent"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-unknown-create-data",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content binds strict create/correction intents to actor, workspace and an exact reasoned parent"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-unknown-correction-data",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review content binds strict create/correction intents to actor, workspace and an exact reasoned parent"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "stale-relation-inventory",
+      "exitCode": 1,
+      "failed": [
+        "migration schema inventory reads every relation the migrations declare"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "sourceSha256": {
+    "src/lib/engagement/synthesis-review.ts": "83eac84fc1ffae80da245f5e5c1c6dcc5dce34fd38282a0f0cd5b18830fc5277",
+    "src/test/migrations/inventory.test.ts": "25b0988bfc7f2d3f4d3d5c1aca107f19cde06b39780a8ebe9c3c6e8f75b1016a"
+  },
+  "testSha256": {
+    "src/test/engagement-synthesis-review.test.ts": "3f24baf0f1025787e93e840ba91f3fa0e220cde16cfcd4efd67a25c05efc005e",
+    "src/test/migrations/inventory.test.ts": "25b0988bfc7f2d3f4d3d5c1aca107f19cde06b39780a8ebe9c3c6e8f75b1016a"
+  },
+  "limits": "Pure preparation/correction and SQL-declaration census. Not persistence, authorization, browser recovery, meaningful staff interpretation, approvals, or exports."
+}

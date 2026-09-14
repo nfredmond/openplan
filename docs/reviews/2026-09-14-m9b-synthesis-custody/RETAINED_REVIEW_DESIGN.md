@@ -1,0 +1,13 @@
+# Retained staff review implementation
+
+September 14, 2026. Work in progress after 09c1cd17. This implements the next part of IMPLEMENTATION_BOUNDARY.md; it does not narrow that boundary or complete M9b.
+
+Create a review from an already verified immutable source. The server computes the versioned free preparation and initial review groups; browser-supplied machine preparation is not authoritative. Keep the original preparation text/hash separate from staff-authored review content. Initial groups derive from historical categories and keep interpretation unassessed. The record is private and is not publication or approval evidence.
+
+Retain append-only complete revisions with exact command identity, author, reason, parent revision/hash, source identity and content checksum. A correction command changes group wording, sentiment assessment, membership or review notes. Each source is either assigned to one or more groups or explicitly unassigned. Duplicates within a group and unknown source references are invalid; overlap across groups is disclosed rather than counted as distinct people. Group IDs survive wording changes. Removing a group does not discard its source records.
+
+Small correction commands carry additions/removals rather than the full original corpus. The server loads the retained source and parent revision, verifies their bytes/scope/membership, applies the command and persists the full next revision. The database locks the request/review, rechecks current staff membership, refuses changed-request and stale-parent writes and returns an original acknowledgement on exact retries. Only service-side persistence may retain machine preparation or applied revisions. Staff-only RPCs provide metadata history and exact private reads; direct client table access and agent writes remain refused.
+
+Connect creation, history, inspection and correction to the saved-source inspector. Preserve the exact pending command before sending, reuse its request ID after interruption, erase private reads on account changes, and keep a confirmed save confirmed if subsequent reading fails. Earlier revisions remain inspectable; editing an old revision must require opening the current version rather than silently overwriting it. Add native isolated-stack failure controls, route/storage tests and real desktop/390px journeys before claiming that this connected outcome works.
+
+Approval of exact output, optional durable model batches with complete coverage/spend custody, response/decision links and reviewed exports follow this retained-draft/correction foundation. The old capped generator remains legacy until that replacement is connected. No paid provider is called to test the draft workflow.

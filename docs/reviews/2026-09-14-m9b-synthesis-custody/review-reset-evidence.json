@@ -1,0 +1,21 @@
+{
+  "purpose": "Resume checkpoint only; API and UI not integrated",
+  "logs": [
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/openplan-review-reset-unit.log",
+      "sha256": "78fc7c9da10c101d543fa8bc196071b03a87e3fdfc9e824427c47752af05dc29"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/openplan-review-reset-lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/openplan-review-reset-native.log",
+      "sha256": "493811216f16cca790740a98f74e447281321169b797f51e96cd838f507a6115"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/openplan-review-model-mutations.log",
+      "sha256": "629f7b558735daf9acdb24cd77a171591fd277c4fea480cf9240abcbfbc94f51"
+    }
+  ]
+}
