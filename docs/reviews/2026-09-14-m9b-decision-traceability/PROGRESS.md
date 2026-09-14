@@ -1,5 +1,61 @@
 # Response-to-decision context in progress
 
+## Campaign scope correction after editor QA
+
+Full QA at `87bac2b8` passed lint/dead-code checks but stopped with 15186 tests
+passing, 504 skipped and one wording-ledger failure. Four occurrences of the
+generic word "record" in the new panel exceeded its baseline. Labels now name
+the response/decision or say "saved". The unchanged wording check and editor
+tests pass together. Later QA stages were not reached on that commit; the private
+log is `decision-context/full-qa-87bac2b8.log` beneath the evidence root below.
+
+A separate native probe found a real uninstalled-command privacy defect. An
+inaccessible campaign normally returned `42501`, but a held campaign row or
+request advisory lock returned `PT503`. This exposed lock state, not source
+content. `FOREIGN_CAMPAIGN_LOCK_FINDING.json` and
+`campaign-scope-order-results.json` preserve the original candidate hash and
+observations. The command now scopes the campaign by current staff membership
+before locking its row, then verifies/locks membership and workspace before
+taking the request lock. Neither guard is an application-schema change yet.
+
+The expanded concurrency suite passes 22 scenarios for both baseline and
+harmless controls, with 11 targeted lock/scope failures. Parent-row controls use
+`FOR NO KEY UPDATE` so an INSERT's foreign-key key-share lock cannot hide a
+missing explicit share lock. Reverse-order cases hold a saved link transaction
+while each source lock is attempted, then confirm the exact original receipt.
+The separate proof database's corrected function was restored after mutation;
+the application remains at 339/20 with candidates absent.
+
+The previous viewer-command mutation survived after this fix because the new
+campaign scope check also excludes viewers. Its updated mutation deliberately
+changes both command access predicates while leaving the table read policy
+intact; the viewer command refusal then fails as intended. Serial link, history
+and grant/malformed-intent suites were rerun. Their source hashes reflect the
+corrected candidate. The history probe regenerated the synthetic typed fixture.
+
+The editor also hides local recovery content until a complete history response
+confirms the same actor and scope. A new regression retains the old local copy
+but refuses to display or download it after a confirmed account mismatch. The
+HTTP/editor mutation suites were refreshed for these exact sources. Editor
+baseline and harmless controls pass 81 tests and all 20 targeted faults fail.
+HTTP baseline and harmless controls pass 36 tests and all 26 targeted faults fail.
+`EDITOR_COVERAGE_GAP.json` records a timing gap in the first new account test:
+it asserted absence before local recovery finished. The corrected test first
+displays the actual saved explanation under its verified account, then changes
+the returned actor on reload and checks that the explanation and download vanish.
+The deliberate rendering fault now fails that executed assertion. A later
+typecheck invocation repeated the root/package path error and did not run; the
+correct package-root rerun completed successfully.
+
+For activation, assemble the context, link command and history candidates in
+that order as additive migration 21. Add an installed native role/lifecycle
+fixture to `test:rls-live` and its dedicated-table census entry before upgrading
+the named isolated application stack. Preserve the older 339/20 candidate proof
+records. The context proof module currently asserts that old schema at import;
+move its execution guard to its runnable entry point if importing its reusable
+synthetic fixture after activation, rather than pretending the old pre-migration
+proof applies to the upgraded schema. No reset is needed or authorized.
+
 ## Editor implementation checkpoint
 
 The real campaign response builder now opens `DecisionLinksPanel`, scoped by

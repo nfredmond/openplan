@@ -1,22 +1,22 @@
 {
   "container": "supabase_db_openplan-restore-target-2026091050",
   "database": "openplan_decision_link_proof_20260914",
-  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/concurrency-1789379584340721997",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/concurrency-1789381924085485128",
   "candidateSha256": {
     "decision-context-candidate.sql": "44e599b5ab9b1e082179587c02a7c67a031dae813f28eec026f7be948156c342",
-    "decision-link-candidate.sql": "5bf2905c17a5205ece6bd4218d6489840c7a88602b58a69a2eba203c634ccd3b",
+    "decision-link-candidate.sql": "908e765c6c501cfef786310e1d5aa0f289bc24366763150201e193b3ce75e304",
     "decision-history-candidate.sql": "d2c50bc27cf101bbb5443bea721758aea0b4154d6d371e75419e601df0f601a0"
   },
   "results": [
     {
       "case": "baseline",
       "outcome": "survived",
-      "overlappingCases": 12
+      "overlappingCases": 22
     },
     {
       "case": "harmless-comment",
       "outcome": "survived",
-      "overlappingCases": 12
+      "overlappingCases": 22
     },
     {
       "case": "missing-source-lock",
@@ -39,9 +39,39 @@
       "expectedFailure": "missing-membership-lock overlap was not refused"
     },
     {
+      "case": "missing-campaign-lock",
+      "outcome": "killed",
+      "expectedFailure": "missing-campaign-lock overlap was not refused"
+    },
+    {
+      "case": "missing-workspace-lock",
+      "outcome": "killed",
+      "expectedFailure": "missing-workspace-lock overlap was not refused"
+    },
+    {
+      "case": "missing-response-lock",
+      "outcome": "killed",
+      "expectedFailure": "missing-response-lock overlap was not refused"
+    },
+    {
+      "case": "missing-project-lock",
+      "outcome": "killed",
+      "expectedFailure": "missing-project-lock overlap was not refused"
+    },
+    {
       "case": "foreign-decision-lock-scope",
       "outcome": "killed",
       "expectedFailure": "foreign-decision-lock-scope foreign lock state was exposed"
+    },
+    {
+      "case": "foreign-campaign-lock-scope",
+      "outcome": "killed",
+      "expectedFailure": "foreign-campaign-lock-scope foreign lock state was exposed"
+    },
+    {
+      "case": "request-lock-before-access",
+      "outcome": "killed",
+      "expectedFailure": "request-lock-before-access foreign lock state was exposed"
     }
   ],
   "definitionRestored": true,

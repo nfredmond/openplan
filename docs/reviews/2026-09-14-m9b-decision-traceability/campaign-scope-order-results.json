@@ -1,0 +1,35 @@
+{
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/concurrency-1789381715103239749",
+  "originalCandidateSha256": "5bf2905c17a5205ece6bd4218d6489840c7a88602b58a69a2eba203c634ccd3b",
+  "results": [
+    {
+      "case": "original-request-lock-order",
+      "outcome": "killed"
+    },
+    {
+      "case": "fixed-campaign",
+      "outcome": "survived"
+    },
+    {
+      "case": "fixed-request",
+      "outcome": "survived"
+    },
+    {
+      "case": "harmless-campaign",
+      "outcome": "survived"
+    },
+    {
+      "case": "harmless-request",
+      "outcome": "survived"
+    },
+    {
+      "case": "missing-campaign-scope",
+      "outcome": "killed"
+    },
+    {
+      "case": "request-lock-before-access",
+      "outcome": "killed"
+    }
+  ],
+  "definitionRestored": true
+}

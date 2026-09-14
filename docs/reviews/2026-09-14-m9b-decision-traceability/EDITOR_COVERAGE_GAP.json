@@ -1,0 +1,7 @@
+{
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/editor-contract-1789382048118652157",
+  "case": "local-copy-account",
+  "observed": "Targeted mutation survived because the test checked absence before asynchronous local recovery finished.",
+  "correction": "Load the actual private local recovery explanation under a verified account first, then return a different actor on explicit reload and assert that content and its download disappear.",
+  "productionGuard": "Hide local recovery copies until a complete private snapshot confirms the actor and scope."
+}

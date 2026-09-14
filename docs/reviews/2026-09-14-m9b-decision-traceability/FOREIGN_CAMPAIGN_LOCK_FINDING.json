@@ -1,0 +1,7 @@
+{
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/concurrency-1789381638430196720",
+  "ordinaryDenied": true,
+  "ordinaryCode": "42501",
+  "busyCode": "PT503",
+  "candidateSha256": "5bf2905c17a5205ece6bd4218d6489840c7a88602b58a69a2eba203c634ccd3b"
+}

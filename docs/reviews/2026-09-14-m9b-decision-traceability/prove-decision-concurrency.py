@@ -147,6 +147,14 @@ def source_case(kind,label):
         first=f"SELECT id FROM project_decisions WHERE id='{f['decision']}' FOR UPDATE;"
     elif kind=='membership-lock':
         first=f"SELECT user_id FROM workspace_members WHERE workspace_id='{f['workspace']}' AND user_id='{f['actor']}' FOR UPDATE;"
+    elif kind=='campaign-lock':
+        first=f"SELECT id FROM engagement_campaigns WHERE id='{f['campaign']}' FOR NO KEY UPDATE;"
+    elif kind=='workspace-lock':
+        first=f"SELECT id FROM workspaces WHERE id='{f['workspace']}' FOR NO KEY UPDATE;"
+    elif kind=='response-lock':
+        first=f"SELECT id FROM engagement_closeloop_entries WHERE id='{f['response']}' FOR NO KEY UPDATE;"
+    elif kind=='project-lock':
+        first=f"SELECT id FROM projects WHERE id='{f['project']}' FOR NO KEY UPDATE;"
     else:
         raise AssertionError('Unknown source case')
     with held(first,label) as (child,_):
@@ -155,7 +163,7 @@ def source_case(kind,label):
     late=call(write(f),label+'-after-change')
     if kind=='membership':
         denied(late,'42501',label+' revoked staff was not refused')
-    elif kind in ('relationship','source-lock','decision-lock','membership-lock'):
+    elif kind in ('relationship','source-lock','decision-lock','membership-lock','campaign-lock','workspace-lock','response-lock','project-lock'):
         assert late.returncode==0,late.stderr
     else:
         denied(late,'PT409',label+' old source context was accepted')
@@ -174,6 +182,28 @@ def foreign_decision_case(label):
         finish(child)
 
 
+
+def foreign_campaign_case(label,kind):
+    f=fixture(label);f['campaign']=f['otherCampaign']
+    denied(call(write(f),label+'-idle'),'42501',label+' idle foreign access was not refused')
+    statement=(f"SELECT id FROM engagement_campaigns WHERE id='{f['campaign']}' FOR UPDATE;" if kind=='campaign' else f"SELECT pg_advisory_xact_lock(hashtextextended('engagement-decision-request:' || '{f['request']}',0));")
+    with held(statement,label) as (child,_):
+        denied(call(write(f),label+'-overlap'),'42501',label+' foreign lock state was exposed')
+        finish(child)
+
+
+def writer_first_case(kind,label):
+    f=fixture(label)
+    table,key={'campaign':('engagement_campaigns','campaign'),'workspace':('workspaces','workspace'),'response':('engagement_closeloop_entries','response'),'project':('projects','project')}[kind]
+    with held(write(f),label) as (child,records):
+        denied(call(f"SELECT id FROM {table} WHERE id='{f[key]}' FOR NO KEY UPDATE NOWAIT;",label+'-overlap'),'55P03',label+' saved source was not protected')
+        finish(child)
+    after=call(f"SELECT id FROM {table} WHERE id='{f[key]}' FOR NO KEY UPDATE NOWAIT;",label+'-after')
+    assert after.returncode==0,after.stderr
+    replay=call(write(f),label+'-replay')
+    assert replay.returncode==0 and objects(replay.stdout)[-1]=={**records[-1],'replayed':True},label+' original changed'
+
+
 candidate=review/'decision-link-candidate.sql'
 source=candidate.read_text()
 assert hashlib.sha256(candidate.read_bytes()).hexdigest()==manifest['candidateSha256'][candidate.name]
@@ -188,16 +218,24 @@ def main():
             replay_case(name+'-interrupted-rollback',rollback=True)
             replay_case(name+'-competing-root',competing=True)
             replay_case(name+'-competing-successor',competing=True,successor=True)
-            for kind in ('source','decision','relationship','membership','source-lock','decision-lock','membership-lock'):
+            for kind in ('source','decision','relationship','membership','source-lock','decision-lock','membership-lock','campaign-lock','workspace-lock','response-lock','project-lock'):
                 source_case(kind,name+'-'+kind)
             foreign_decision_case(name+'-foreign-decision')
-            results.append({'case':name,'outcome':'survived','overlappingCases':12})
-            print(name,'survived 12 races',flush=True)
+            for kind in ('campaign','request'):
+                foreign_campaign_case(name+'-foreign-'+kind,kind)
+            for kind in ('campaign','workspace','response','project'):
+                writer_first_case(kind,name+'-writer-first-'+kind)
+            results.append({'case':name,'outcome':'survived','overlappingCases':22})
+            print(name,'survived 22 races',flush=True)
         for name,old,new,kind in [
             ('missing-source-lock','PERFORM 1 FROM public.engagement_items WHERE campaign_id = p_campaign\n      AND id = ANY(response.source_item_ids) ORDER BY id FOR SHARE NOWAIT;','PERFORM 1;','source-lock'),
             ('missing-decision-lock',') FOR SHARE OF d NOWAIT;',');','decision-lock'),
             ('missing-relationship-lock','AND workspace_id = campaign.workspace_id FOR SHARE NOWAIT) THEN','AND workspace_id = campaign.workspace_id) THEN','relationship'),
             ('missing-membership-lock',"AND user_id = auth.uid() AND role IN ('owner', 'admin', 'member') FOR SHARE NOWAIT","AND user_id = auth.uid() AND role IN ('owner', 'admin', 'member')",'membership-lock'),
+            ('missing-campaign-lock',') FOR SHARE OF c NOWAIT;',');','campaign-lock'),
+            ('missing-workspace-lock','PERFORM 1 FROM public.workspaces WHERE id = campaign.workspace_id FOR SHARE NOWAIT;','PERFORM 1;','workspace-lock'),
+            ('missing-response-lock','WHERE id = p_response AND campaign_id = p_campaign FOR SHARE NOWAIT;','WHERE id = p_response AND campaign_id = p_campaign;','response-lock'),
+            ('missing-project-lock','AND workspace_id = campaign.workspace_id FOR SHARE NOWAIT)\n      OR NOT EXISTS','AND workspace_id = campaign.workspace_id)\n      OR NOT EXISTS','project-lock'),
         ]:
             assert function.count(old)==1,name
             must(function.replace(old,new,1),name+'-install')
@@ -222,6 +260,27 @@ def main():
             print(name,'killed',flush=True)
         else:
             raise AssertionError('Foreign decision scope mutation survived')
+        scoped="""SELECT c.* INTO campaign FROM public.engagement_campaigns c
+    WHERE c.id = p_campaign AND EXISTS (
+      SELECT 1 FROM public.workspace_members m WHERE m.workspace_id = c.workspace_id
+        AND m.user_id = auth.uid() AND m.role IN ('owner', 'admin', 'member')
+    ) FOR SHARE OF c NOWAIT;"""
+        advisory="""  IF NOT pg_try_advisory_xact_lock(hashtextextended('engagement-decision-request:' || p_request::text, 0)) THEN
+    RAISE EXCEPTION 'Decision link save is busy; retry the same request' USING ERRCODE = 'PT503';
+  END IF;
+"""
+        assert function.count(scoped)==1 and function.count(advisory)==1
+        for name,definition,kind in [
+            ('foreign-campaign-lock-scope',function.replace(scoped,'SELECT * INTO campaign FROM public.engagement_campaigns WHERE id = p_campaign FOR SHARE NOWAIT;'),'campaign'),
+            ('request-lock-before-access',function.replace(advisory,'').replace(scoped,advisory+scoped),'request'),
+        ]:
+            must(definition,name+'-install')
+            try:foreign_campaign_case(name,kind)
+            except AssertionError as error:
+                assert name+' foreign lock state was exposed' in str(error),str(error)
+                results.append({'case':name,'outcome':'killed','expectedFailure':name+' foreign lock state was exposed'})
+                print(name,'killed',flush=True)
+            else:raise AssertionError('Foreign campaign scope mutation survived: '+name)
     finally:
         must(function,'restore-function')
         final=must("SELECT pg_get_functiondef('public.write_engagement_response_decision_link(uuid,uuid,uuid,uuid,text,uuid,text,text)'::regprocedure);",'final-definition')

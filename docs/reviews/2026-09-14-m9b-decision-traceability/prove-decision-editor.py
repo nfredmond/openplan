@@ -26,7 +26,7 @@ def run(name,title=None):
  if title:
   target=[a for a in assertions if a['title']==title]
   assert result.returncode!=0 and any(a['status']=='failed' for a in target),name+': targeted assertion did not fail'
- else: assert result.returncode==0 and report['numPassedTests']==80 and report['numFailedTests']==0,name+': baseline or harmless control failed'
+ else: assert result.returncode==0 and report['numPassedTests']==81 and report['numFailedTests']==0,name+': baseline or harmless control failed'
  return {'case':name,'outcome':'killed' if title else 'survived','test':title,'passed':report['numPassedTests'],'failed':report['numFailedTests']}
 
 mutations=[
@@ -45,6 +45,7 @@ mutations=[
  ('lost-ack-retention','pending','} catch { /* Keep the same request after transport, receipt or cleanup failure. */ }','} catch { storage.removeItem(pendingDecisionKey(pending)); }','retries a lost acknowledgement with the original ID, headers and complete intent'),
  ('corrupt-retention','pending','} catch { unreadable.push({ key, raw }); }','} catch { storage.removeItem(key); }','keeps corrupt bytes and mismatched keys available for recovery'),
  ('response-builder-entry','builder','<DecisionLinksPanel actorId={userId} workspaceId={workspaceId} campaignId={campaignId} responses={entries} responsesUnavailable={readError || readLoading} revision={historyRevision} />','null','opens from the actual response builder and retains a reviewed link before sending'),
+ ('local-copy-account','panel','{snapshot && !loading && pending.map(request =>','{pending.map(request =>','hides local recovery content after a confirmed account mismatch'),
  ('snapshot-account','panel','if (payload.actorId !== actorId) throw new Error("Account changed");','void actorId;','does not display a snapshot from another signed-in account'),
  ('correction-predecessor','panel','predecessorId: leaf?.id ?? null','predecessorId: null','preserves earlier history when saving a reviewed correction'),
  ('withdrawal-preserved-context','panel','const context = withdraw && leaf ? { contextText: leaf.context_text, contextSha256: leaf.context_sha256 } : preview!.packet;','const context = preview!.packet;','withdraws a retained link when current response and decision records are unavailable'),

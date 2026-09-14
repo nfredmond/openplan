@@ -3,7 +3,7 @@
   "database": "postgres",
   "candidateSha256": "d2c50bc27cf101bbb5443bea721758aea0b4154d6d371e75419e601df0f601a0",
   "contextCandidateSha256": "44e599b5ab9b1e082179587c02a7c67a031dae813f28eec026f7be948156c342",
-  "linkCandidateSha256": "5bf2905c17a5205ece6bd4218d6489840c7a88602b58a69a2eba203c634ccd3b",
+  "linkCandidateSha256": "908e765c6c501cfef786310e1d5aa0f289bc24366763150201e193b3ce75e304",
   "results": [
     {
       "case": "baseline",

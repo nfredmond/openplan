@@ -153,7 +153,25 @@ describe("decision link editor", () => {
     fireEvent.click(screen.getByRole("button", { name: "Connect responses to decisions" }));
     await screen.findByText(/Decision history could not be loaded/);
     expect(screen.queryByText("SYNTHETIC private rationale")).toBeNull();
-    expect(screen.queryByText(/No decision links have been recorded/)).toBeNull();
+    expect(screen.queryByText(/No decision links have been saved/)).toBeNull();
     expect(screen.getByLabelText("Staff response")).toBeDisabled();
+  });
+  it("hides local recovery content after a confirmed account mismatch", async () => {
+    const { retainPendingDecision } = await import("@/lib/engagement/pending-decision-link");
+    const { campaignId: _campaign, ...payload } = source.payload_json;
+    await retainPendingDecision(localStorage, { version: 1, ...native.scope, phase: "unconfirmed",
+      intent: { ...payload, requestId: source.id, reason: "SYNTHETIC old account private explanation" },
+      context: { contextText: source.context_text, contextSha256: source.context_sha256 } });
+    const backend = server();
+    render(<DecisionLinksPanel {...props} />);
+    fireEvent.click(screen.getByRole("button", { name: "Connect responses to decisions" }));
+    await screen.findByText("SYNTHETIC old account private explanation");
+    await waitFor(() => expect(screen.getByRole("button", { name: "Reload decision links" })).toBeEnabled());
+    backend.fetcher.mockResolvedValue(json({ snapshot: native.initial, actorId: crypto.randomUUID() }));
+    fireEvent.click(screen.getByRole("button", { name: "Reload decision links" }));
+    await screen.findByText(/Decision history could not be loaded/);
+    expect(screen.queryByText("SYNTHETIC old account private explanation")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Download retained request" })).toBeNull();
+    expect(localStorage.length).toBe(1);
   });
 });

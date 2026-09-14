@@ -109,11 +109,13 @@ def run(body):
     return data
 
 
+command_access = original.split("SELECT c.* INTO campaign", 1)[1].split("    RAISE EXCEPTION 'Staff campaign access required'", 1)[0]
+
 mutations = [
     ('request-payload-reuse', ' OR receipt.payload_json IS DISTINCT FROM envelope', '', 'Different payload reused request'),
     ('request-actor-reuse', 'receipt.actor_id IS DISTINCT FROM auth.uid() OR ', '', 'Different staff actor reused receipt'),
-    ('viewer-command', "role IN ('owner', 'admin', 'member') FOR SHARE", "role IN ('owner', 'admin', 'member', 'viewer') FOR SHARE", 'Viewer replay was not refused'),
-    ('viewer-history', "m.role IN ('owner', 'admin', 'member')", "m.role IN ('owner', 'admin', 'member', 'viewer')", 'Viewer read leaked history'),
+    ('viewer-command', command_access, command_access.replace("('owner', 'admin', 'member')", "('owner', 'admin', 'member', 'viewer')"), 'Viewer replay was not refused'),
+    ('viewer-history', "m.role IN ('owner', 'admin', 'member'))", "m.role IN ('owner', 'admin', 'member', 'viewer'))", 'Viewer read leaked history'),
     ('stale-source', "IF snapshot->>'contextSha256' IS DISTINCT FROM p_expected_context_sha256 THEN", 'IF false THEN', 'Stale context was not refused'),
     ('overwritten-history', 'CREATE TRIGGER engagement_response_decision_link_immutable BEFORE UPDATE OR DELETE\n  ON public.engagement_response_decision_links FOR EACH ROW\n  EXECUTE FUNCTION public.refuse_engagement_history_change();', '', 'Retained receipt update was not refused'),
     ('forked-history', 'predecessor_id uuid UNIQUE REFERENCES', 'predecessor_id uuid REFERENCES', 'Unique predecessor constraint did not refuse fork'),

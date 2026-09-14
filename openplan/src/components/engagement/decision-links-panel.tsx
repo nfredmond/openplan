@@ -26,7 +26,7 @@ function ContextSummary({ context }: { context: DecisionLinkContext }) {
     <p className="whitespace-pre-wrap">{context.decision.rationale}</p>
     <p><strong>Response revision {context.responseHistory.revision}: {context.response.theme_title}</strong></p>
     <p className="whitespace-pre-wrap">You said: {context.response.you_said}</p>
-    <p className="whitespace-pre-wrap">We did: {context.response.we_did || "No response explanation recorded."}</p>
+    <p className="whitespace-pre-wrap">We did: {context.response.we_did || "No response explanation saved."}</p>
     <p>{context.sourceCount} source references. Source words are observed at this review, not necessarily when the response was first written.</p>
     <details><summary className="cursor-pointer">Review referenced contributions and original configurations</summary>
       <ol className="mt-2 space-y-3">
@@ -139,17 +139,17 @@ function DecisionEditor(props: Props) {
   }
 
   return <section aria-label="Decision link editor" className="mt-3 min-w-0 space-y-4 rounded-lg border border-border p-3">
-    <p className="text-sm text-muted-foreground">Connect a staff response to a decision already recorded in Projects. Links and source evidence stay private. Linking does not approve a decision or publish an explanation.</p>
+    <p className="text-sm text-muted-foreground">Connect a staff response to a decision already saved in Projects. Links and source evidence stay private. Linking does not approve a decision or publish an explanation.</p>
     <Button type="button" variant="outline" disabled={busy || loading} onClick={() => setAttempt(value => value + 1)}>Reload decision links</Button>
     {loading && <p role="status">Loading decision links…</p>}
     {readError && <p role="alert">Decision history could not be loaded. Its absence has not been established.</p>}
     {storageError && <p role="alert">Local recovery storage is unavailable. Enable storage before saving a link.</p>}
     {message && <p role="status" className="break-words text-sm">{message}</p>}
-    {unreadable.map(copy => <div key={copy.key} className="space-y-2 rounded border border-border p-2">
+    {snapshot && !loading && unreadable.map(copy => <div key={copy.key} className="space-y-2 rounded border border-border p-2">
       <p role="alert">A local request could not be verified. Its original bytes are retained; new saves are paused.</p>
       <Button type="button" variant="outline" onClick={() => downloadCopy("unreadable-decision-request.json", copy.raw)}>Download unreadable request</Button>
     </div>)}
-    {pending.map(request => <div key={request.intent.requestId} className="space-y-2 rounded border border-border p-2 text-sm">
+    {snapshot && !loading && pending.map(request => <div key={request.intent.requestId} className="space-y-2 rounded border border-border p-2 text-sm">
       <p>Retained request: {request.phase} · {request.intent.operation}</p>
       <p className="whitespace-pre-wrap break-words">{request.intent.reason}</p>
       <p className="break-all">Request {request.intent.requestId}</p>
@@ -162,15 +162,15 @@ function DecisionEditor(props: Props) {
       <select id={`${id}-response`} className={field} value={responseId} onChange={event => { setResponseId(event.target.value); setPreview(null); }}>
         <option value="">Select a response</option>
         {responses.map(response => <option key={response.id} value={response.id}>{response.theme_title}</option>)}
-        {responseId && !responses.some(row => row.id === responseId) && <option value={responseId}>Retained response, current record unavailable</option>}
+        {responseId && !responses.some(row => row.id === responseId) && <option value={responseId}>Retained response, current response unavailable</option>}
       </select>
       <label className="block text-sm" htmlFor={`${id}-decision`}>Project decision</label>
       <select id={`${id}-decision`} className={field} value={decisionId} onChange={event => { setDecisionId(event.target.value); setPreview(null); }}>
         <option value="">Select a decision</option>
         {snapshot?.decisions.map(({ record, projectName }) => <option key={record.id} value={record.id}>{projectName}: {record.title} · {record.status}</option>)}
-        {decisionId && !snapshot?.decisions.some(row => row.record.id === decisionId) && <option value={decisionId}>Retained decision, current record unavailable</option>}
+        {decisionId && !snapshot?.decisions.some(row => row.record.id === decisionId) && <option value={decisionId}>Retained decision, current decision unavailable</option>}
       </select>
-      {snapshot?.decisionCount === 0 && <p className="text-sm">No decisions are available on this campaign&apos;s linked projects. Record a decision in Projects and link its project to this campaign.</p>}
+      {snapshot?.decisionCount === 0 && <p className="text-sm">No decisions are available on this campaign&apos;s linked projects. Add a decision in Projects and link its project to this campaign.</p>}
       {responsesUnavailable && <p role="alert">Current staff responses are unavailable. Reload them before reviewing a new link.</p>}
       <Button type="button" variant="outline" disabled={!responseId || !decisionId || responsesUnavailable} onClick={() => void review()}>Review current sources</Button>
       {preview && <ContextSummary context={preview.context} />}
@@ -183,7 +183,7 @@ function DecisionEditor(props: Props) {
     </fieldset>
     {snapshot && !loading && <div className="space-y-3">
       <h3 className="font-medium">Retained decision history</h3>
-      {snapshot.entryCount === 0 && <p className="text-sm">No decision links have been recorded.</p>}
+      {snapshot.entryCount === 0 && <p className="text-sm">No decision links have been saved.</p>}
       {snapshot.entries.map(row => {
         const current = snapshot.current.find(state => state.linkId === row.id);
         return <article key={row.id} className="min-w-0 space-y-2 rounded border border-border p-3 text-sm">

@@ -71,10 +71,11 @@ BEGIN
   -- Nonblocking locks avoid a cycle with source withdrawal, which already owns
   -- its contribution row before it reaches the response. Retry the same intent
   -- when busy; a changed snapshot needs an explicit new review and request.
-  IF NOT pg_try_advisory_xact_lock(hashtextextended('engagement-decision-request:' || p_request::text, 0)) THEN
-    RAISE EXCEPTION 'Decision link save is busy; retry the same request' USING ERRCODE = 'PT503';
-  END IF;
-  SELECT * INTO campaign FROM public.engagement_campaigns WHERE id = p_campaign FOR SHARE NOWAIT;
+  SELECT c.* INTO campaign FROM public.engagement_campaigns c
+    WHERE c.id = p_campaign AND EXISTS (
+      SELECT 1 FROM public.workspace_members m WHERE m.workspace_id = c.workspace_id
+        AND m.user_id = auth.uid() AND m.role IN ('owner', 'admin', 'member')
+    ) FOR SHARE OF c NOWAIT;
   IF campaign.id IS NULL OR NOT EXISTS (
     SELECT 1 FROM public.workspace_members WHERE workspace_id = campaign.workspace_id
       AND user_id = auth.uid() AND role IN ('owner', 'admin', 'member') FOR SHARE NOWAIT
@@ -82,6 +83,9 @@ BEGIN
     RAISE EXCEPTION 'Staff campaign access required' USING ERRCODE = '42501';
   END IF;
   PERFORM 1 FROM public.workspaces WHERE id = campaign.workspace_id FOR SHARE NOWAIT;
+  IF NOT pg_try_advisory_xact_lock(hashtextextended('engagement-decision-request:' || p_request::text, 0)) THEN
+    RAISE EXCEPTION 'Decision link save is busy; retry the same request' USING ERRCODE = 'PT503';
+  END IF;
   envelope = jsonb_build_object('campaignId', p_campaign, 'responseId', p_response,
     'decisionId', p_decision, 'operation', p_operation, 'predecessorId', p_predecessor,
     'expectedContextSha256', p_expected_context_sha256, 'reason', p_reason);

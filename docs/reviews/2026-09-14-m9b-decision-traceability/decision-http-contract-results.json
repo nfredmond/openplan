@@ -1,5 +1,5 @@
 {
-  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/http-contract-1789379673607145566",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/http-contract-1789382218108617942",
   "sourceSha256": {
     "src/lib/engagement/decision-links.ts": "36dd234bf0b4b1ceb2fcedf7549369ab24e54c89c455846763bed7126c3d9315",
     "src/lib/engagement/decision-links-server.ts": "b3d4d0c5270628d8792fe2118a9ec7d24894697b00e4006634c05c19ec1c6e0c",
@@ -7,7 +7,7 @@
     "src/app/api/engagement/campaigns/[campaignId]/decision-links/route.ts": "34a97ab4de9cb6484c7e01981447cd62ab56daea2d263e9d981e189bcc6002c3",
     "src/test/engagement-decision-links.test.ts": "62a29fffc0572f1471c857e8a3a04377b8c650f586bb3fdaa099d765750f1a01",
     "src/test/engagement-decision-link-routes.test.ts": "3d781a21849f9fef3a5056a8e28ec5f6c2edabdc646b4177791b4d1d132a2f82",
-    "src/test/fixtures/decision-link-native.json": "b464027e4d1d66bc43bc2652e7efa3a2104314be45fe0ee6d586f2cb19898931"
+    "src/test/fixtures/decision-link-native.json": "0a886a1ce2754b5c83d6a9a5e201d30732b32916ea959a51831a6e56b1e5bf50"
   },
   "results": [
     {
