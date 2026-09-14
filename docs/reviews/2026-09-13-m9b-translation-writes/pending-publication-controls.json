@@ -1,0 +1,139 @@
+{
+  "sourceSha256": {
+    "pending": "88a62ec79b725321cf5766ed9f530d1eaf48cb2411abebc84a9c703a52b971a1",
+    "publication": "14eb393c39201986ea46dfc9f6000c1899d996823fc38c8d3873a155d621dc97",
+    "recovery": "0658453ffc77e7f010a1f1daec3bd7e499153e66ff13a9f8e3c3498b18f6b856",
+    "draft": "1d9cd144c7652d2832c60bd6f6100b0922c385c286f444aa16eb07d17514124c"
+  },
+  "testSha256": "08b1ccb2459ce25b7912a395584775db73fb58cf7a3a6acd9ff8541470542702",
+  "testCount": 26,
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/pending-publication-controls/20260913T171922",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-pending",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-publication",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-recovery",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-draft",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "retain-unbound-output",
+      "outcome": "killed",
+      "expectedFailure": "rejects missing or changed viewed generation source",
+      "failedAssertions": [
+        "pending retained publication rejects missing or changed viewed generation source"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-extra-request",
+      "outcome": "killed",
+      "expectedFailure": "refuses ambiguous retained selection extra_request",
+      "failedAssertions": [
+        "pending retained publication refuses ambiguous retained selection extra_request"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-ambiguous-field",
+      "outcome": "killed",
+      "expectedFailure": "refuses ambiguous retained selection duplicate_field",
+      "failedAssertions": [
+        "pending retained publication refuses ambiguous retained selection duplicate_field"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "trust-publication-ack",
+      "outcome": "killed",
+      "expectedFailure": "confirms against viewed evidence before clearing recovery",
+      "failedAssertions": [
+        "pending retained publication confirms against viewed evidence before clearing recovery"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "replace-viewed-output",
+      "outcome": "killed",
+      "expectedFailure": "does not overwrite or clear a frozen publication with changed words",
+      "failedAssertions": [
+        "pending retained publication does not overwrite or clear a frozen publication with changed words"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "display-earlier-words",
+      "outcome": "killed",
+      "expectedFailure": "round-trips exact viewed words",
+      "failedAssertions": [
+        "pending retained publication round-trips exact viewed words, original baseline and both actors"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "use-field-array-index",
+      "outcome": "killed",
+      "expectedFailure": "round-trips exact viewed words",
+      "failedAssertions": [
+        "pending retained publication round-trips exact viewed words, original baseline and both actors"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "archive-words",
+      "outcome": "killed",
+      "expectedFailure": "preserves refused generated words in the archive",
+      "failedAssertions": [
+        "pending retained publication preserves refused generated words in the archive without rebasing a manual draft"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "active-words",
+      "outcome": "killed",
+      "expectedFailure": "retains exact publication after in-flight storage deletion",
+      "failedAssertions": [
+        "pending retained publication retains exact publication after in-flight storage deletion and response loss"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "rebase-as-operator-draft",
+      "outcome": "killed",
+      "expectedFailure": "preserves refused generated words in the archive",
+      "failedAssertions": [
+        "pending retained publication preserves refused generated words in the archive without rebasing a manual draft"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Schema, exact browser-storage identity and React recovery behavior in jsdom with synthetic verified-read DTOs and mocked HTTP. Does not prove real navigation, rendered geometry, SQL, worker execution or the unfinished editor generation producer."
+}

@@ -1,9 +1,9 @@
 {
-  "sourceSha256": "ba0fb361a6676ec9b49e15fc845ddec172ae9ab427dcca54d1ee8e6dd2e9eb90",
+  "sourceSha256": "14eb393c39201986ea46dfc9f6000c1899d996823fc38c8d3873a155d621dc97",
   "referenceSha256": "6cabaf8f9e69e91b7ae790318a004a7f8c90d2197b75935251e3e0828d5d8a23",
   "testSha256": "a2797fcf25af776d0c6759386cf333100f728293e6db53be67df9ce3cecfa018",
   "testCount": 42,
-  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/publication-receipt-controls/20260913T164318",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/publication-receipt-controls/20260913T171631",
   "results": [
     {
       "case": "baseline",

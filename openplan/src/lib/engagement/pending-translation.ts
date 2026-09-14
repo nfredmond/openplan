@@ -2,12 +2,24 @@ import { z } from "zod";
 import { canonicalizeActionPayload } from "@/lib/runtime/action-metadata";
 import { readTranslationWriteResult, translationSavedRowSchema, translationWriteIntentSchema, type TranslationWriteResult } from "./translation-write";
 
-export const pendingTranslationSchema = z.object({
+import { readTranslationPublicationSelection, readTranslationPublicationResult, translationPublicationIntentSchema, type TranslationPublicationResult } from "./translation-publication";
+import { translationGenerationReadSchema } from "./translation-generation-request";
+
+const commonPending = {
   version: z.literal(1), userId: z.string().uuid(), workspaceId: z.string().uuid(), campaignId: z.string().uuid(),
   createdAt: z.string().datetime({ offset: true }), phase: z.enum(["unconfirmed", "conflict", "rejected"]),
-  intent: translationWriteIntentSchema,
   before: z.array(z.object({ entry: translationSavedRowSchema, revision: z.number().int().positive() }).strict().nullable()),
-}).strict().superRefine((pending, context) => {
+};
+export const pendingTranslationSchema = z.union([
+  z.object({ ...commonPending, intent: translationWriteIntentSchema }).strict(),
+  z.object({ ...commonPending, intent: translationPublicationIntentSchema,
+    retained: z.array(translationGenerationReadSchema).min(1).max(200),
+  }).strict(),
+]).superRefine((pending, context) => {
+  if ("retained" in pending) {
+    try { readTranslationPublicationSelection(pending, pending.intent, pending.retained); }
+    catch { context.addIssue({ code: "custom", path: ["retained"], message: "Publication needs the exact viewed output and original source and saved version" }); }
+  }
   if (pending.before.length !== pending.intent.entries.length) {
     context.addIssue({ code: "custom", path: ["before"], message: "Each requested translation needs its observed baseline" });
     return;
@@ -27,6 +39,7 @@ export const pendingTranslationSchema = z.object({
   }
 });
 export type PendingTranslation = z.infer<typeof pendingTranslationSchema>;
+export type PendingTranslationResult = TranslationWriteResult | TranslationPublicationResult;
 export type TranslationStorage = Pick<Storage, "getItem" | "setItem" | "removeItem" | "key" | "length">;
 
 function prefix(userId: string, campaignId: string) {
@@ -102,8 +115,10 @@ export function archivePendingTranslation(storage: TranslationStorage, key: stri
 }
 
 /** Acceptance and withdrawal must acknowledge the exact words the operator saw. */
-export function confirmPendingTranslation(data: unknown, value: PendingTranslation): TranslationWriteResult {
+export function confirmPendingTranslation(data: unknown, value: PendingTranslation): PendingTranslationResult {
   const pending = pendingTranslationSchema.parse(value);
+  if ("retained" in pending) return readTranslationPublicationResult(data, { campaignId: pending.campaignId,
+    workspaceId: pending.workspaceId, publisherId: pending.userId }, pending.intent, pending.retained);
   const result = readTranslationWriteResult(data, pending, pending.intent);
   for (const saved of result.entries) {
     const index = pending.intent.entries.findIndex(entry => entry.entityType === saved.entry.entity_type && entry.entityId === saved.entry.entity_id && entry.field === saved.entry.field);
@@ -123,4 +138,14 @@ export function confirmPendingTranslation(data: unknown, value: PendingTranslati
     }
   }
   return result;
+}
+
+/** Display wording from an already parsed pending request without revalidating the entire batch for each row. */
+export function pendingTranslationWords(pending: PendingTranslation, index: number): string | undefined {
+  if ("retained" in pending) {
+    const reference = pending.intent.entries[index]?.generation;
+    return reference && pending.retained.find(request => request.requestId === reference.requestId)?.fields.find(field => field.id === reference.fieldId)?.output?.text;
+  }
+  const entry = pending.intent.entries[index];
+  return entry && "text" in entry ? entry.text : pending.before[index]?.entry.translated_text;
 }

@@ -33,9 +33,9 @@ for name,expr in [('job_state','field.state !== "completed" ||'),('output_status
 mutate('retained-accepted-state','field.output.acceptedState !== "completed"','false','rejects changed retained generation accepted_state')
 mutate('receipt-revision','saved.revision !== (expected.expectedTranslation?.revision ?? 0) + 1 ||','false ||','rejects changed receipt revision')
 mutate('receipt-saved-id','(expected.expectedTranslation && row.id !== expected.expectedTranslation.id)','false','rejects changed receipt saved_id')
-for name,expr in [('operator','row.source !== "machine" ||'),('model','row.machine_model !== field.output.model ||'),('words','row.translated_text !== field.output.text ||')]:
+for name,expr in [('operator','row.source !== "machine" ||'),('model','row.machine_model !== output.model ||'),('words','row.translated_text !== output.text ||')]:
  mutate('receipt-'+name,expr,'false ||','rejects changed receipt '+name)
-mutate('receipt-reference','canonicalizeActionPayload(saved.generation) !== canonicalizeActionPayload({ ...reference, actorId: request.actorId, outputHash: field.output.outputHash })','false','rejects changed receipt generation_actor')
+mutate('receipt-reference','canonicalizeActionPayload(saved.generation) !== canonicalizeActionPayload({ ...reference, actorId: request.actorId, outputHash: output.outputHash })','false','rejects changed receipt generation_actor')
 results=[];count=None
 try:
  for name,body,expected in cases:

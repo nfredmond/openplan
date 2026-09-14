@@ -1,3 +1,7 @@
+# Latest pending-publication checkpoint
+
+Read [PENDING_PUBLICATION_PROGRESS.md](PENDING_PUBLICATION_PROGRESS.md) first. Publication recovery now retains viewed output and original baselines. The actual staff generation/catalog/editor producer join remains unfinished.
+
 # Latest publication-command checkpoint
 
 Read [PUBLICATION_COMMAND_PROGRESS.md](PUBLICATION_COMMAND_PROGRESS.md) first. Publication is joined to the commands API with retained-output verification and a shared deadline. Pending recovery and editor/producer integration remain unfinished.

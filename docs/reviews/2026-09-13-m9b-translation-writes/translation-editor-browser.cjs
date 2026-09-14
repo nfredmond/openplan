@@ -11,6 +11,7 @@ const sourceFiles=['openplan/src/components/engagement/campaign-translations-pan
  'openplan/src/app/api/engagement/campaigns/[campaignId]/translations/commands/route.ts','openplan/src/app/api/engagement/campaigns/[campaignId]/translations/snapshot/route.ts'];
 sourceFiles.push('openplan/src/components/engagement/translation-draft-recovery.tsx','openplan/src/lib/engagement/translation-drafts.ts','openplan/src/lib/engagement/translation-snapshot.ts','openplan/src/app/(app)/engagement/[campaignId]/page.tsx');
 sourceFiles.push('openplan/src/lib/engagement/translation-history.ts','openplan/src/lib/engagement/translation-history-server.ts','openplan/src/components/engagement/translation-history.tsx','openplan/supabase/migrations/20261014000012_engagement_translation_history_receipts.sql');
+sourceFiles.push('openplan/src/lib/engagement/translation-publication.ts','openplan/src/lib/engagement/translation-publication-reference.ts','openplan/src/lib/engagement/translation-generation-request.ts','openplan/src/lib/engagement/translation-publication-server.ts','openplan/src/lib/engagement/translation-generation-read.ts');
 const handled=promise=>{promise.catch(()=>{});return promise;};
 const responseFor=(page,predicate)=>handled(page.waitForResponse(predicate));
 const sha=value=>crypto.createHash('sha256').update(value).digest('hex');

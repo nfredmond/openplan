@@ -1,0 +1,90 @@
+{
+  "base": "http://127.0.0.1:3260",
+  "checkout": "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13",
+  "startingCommit": "ce127cecc08bd2150002e315a0880f4ccf9bb02a",
+  "identity": "Live next dev process confirmed by which-openplan.sh; no build commit is stamped",
+  "sourceHashes": {
+    "openplan/src/components/engagement/campaign-translations-panel.tsx": "fd6e875bcb4edfd869e6a3ecab0d31cb14fd3b8f1d34d02f8e01559578703fa3",
+    "openplan/src/components/engagement/translation-write-recovery.tsx": "0658453ffc77e7f010a1f1daec3bd7e499153e66ff13a9f8e3c3498b18f6b856",
+    "openplan/src/lib/engagement/campaign-translations.ts": "c07c534546e7db5317719ae39063ee655afc99f9e308e5b49b80e8d2c958dac7",
+    "openplan/src/lib/engagement/pending-translation.ts": "88a62ec79b725321cf5766ed9f530d1eaf48cb2411abebc84a9c703a52b971a1",
+    "openplan/src/lib/engagement/translation-write.ts": "f2dee0dc4d9929c65928084cde990d4f6012286f804a36eba22bac375e1048ff",
+    "openplan/src/app/api/engagement/campaigns/[campaignId]/translations/commands/route.ts": "73094a9f95d6496642bcb6ce445ce860972fe16d0b67372350b41152e0e0d1cc",
+    "openplan/src/app/api/engagement/campaigns/[campaignId]/translations/snapshot/route.ts": "631d87757a8141b6fb148cfa26238eef84430c9ddfe1e4a0358160534e776e05",
+    "openplan/src/components/engagement/translation-draft-recovery.tsx": "1d9cd144c7652d2832c60bd6f6100b0922c385c286f444aa16eb07d17514124c",
+    "openplan/src/lib/engagement/translation-drafts.ts": "564283435aac0792f133d59d72f462cc08f78cb1596ed5eaacb443b4bd520495",
+    "openplan/src/lib/engagement/translation-snapshot.ts": "2fe4e45bc95aa4decdcb023838051dd049cac8459115307a8afb495ab7e1c39b",
+    "openplan/src/app/(app)/engagement/[campaignId]/page.tsx": "f0da9b3b93e2e01421fe192f865481b8bbee627ab8fa30855759d4fabc492d7e",
+    "openplan/src/lib/engagement/translation-history.ts": "73f6bfbb5cab92dafe3a811a5de99a62b20ef6c329fc077e0ca810ef9b92aa7d",
+    "openplan/src/lib/engagement/translation-history-server.ts": "2bc1fe13cfd03538545642238cd08831ef481ac44645b8e911a73d71af3ed2b9",
+    "openplan/src/components/engagement/translation-history.tsx": "3504cb29f72b28a49620fb671ddc188c6ee2b825110f20d5319c6588e022d40d",
+    "openplan/supabase/migrations/20261014000012_engagement_translation_history_receipts.sql": "5ed0aada4a21e364197ac7874e2ba890d734a7504605c53d06833dbabddc9544",
+    "openplan/src/lib/engagement/translation-publication.ts": "14eb393c39201986ea46dfc9f6000c1899d996823fc38c8d3873a155d621dc97",
+    "openplan/src/lib/engagement/translation-publication-reference.ts": "6cabaf8f9e69e91b7ae790318a004a7f8c90d2197b75935251e3e0828d5d8a23",
+    "openplan/src/lib/engagement/translation-generation-request.ts": "a170e2ef38fc4278f76fa7b87ef43c057e90f0349169aad23ccc7e63c8a0ff1d",
+    "openplan/src/lib/engagement/translation-publication-server.ts": "6c3662048ba0b421a5384468daf12668dd0210625fb0e08b4a692e6ec49a739b",
+    "openplan/src/lib/engagement/translation-generation-read.ts": "a7a8a1bc8dd77ee54c6e769d51ce14ecd316a2371bd343106eced8b2e080735a"
+  },
+  "journeys": [
+    {
+      "width": 1440,
+      "passed": true,
+      "campaignId": "d4e95e57-3df6-47e3-97b7-7a319283373c",
+      "privateResult": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/translation-editor-1440-1789345214844-result.json",
+      "resultSha256": "38839691c701c48cccc91e485499027ed2e9b715cd3ab416fed3eedcf1898506",
+      "overflow": {
+        "viewport": 1440,
+        "document": 1440
+      },
+      "consoleErrors": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+        }
+      ],
+      "preloadWarningCount": 10,
+      "inspectedScreenshot": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/translation-editor-1440-1789345214844-conflict-review.png",
+      "screenshotSha256": "7ea18d34199e2138309c91bbcc6d541aa5d548743edba9d422a81162095e0cc2"
+    },
+    {
+      "width": 390,
+      "passed": true,
+      "campaignId": "0e3d8dc6-512d-4257-9568-f9bedfa0929e",
+      "privateResult": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/translation-editor-390-1789345283385-result.json",
+      "resultSha256": "949773d853f8876305bd97908457b1bdf58228d14c22da52b89ec44727931450",
+      "overflow": {
+        "viewport": 390,
+        "document": 390
+      },
+      "consoleErrors": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+        }
+      ],
+      "preloadWarningCount": 0,
+      "inspectedScreenshot": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/translation-editor-390-1789345283385-conflict-review.png",
+      "screenshotSha256": "20bd55ae568d7b86619bf7b7834ab8fadfcf3c5e4ea2f90c2ddeefe360c122cf"
+    }
+  ],
+  "commandGrantRevoked": true,
+  "migration": "20261014000012",
+  "finding": "Narrow conflict-review screenshot shows low-contrast hover on Download retained request. Inspect Button outline hover white mixture with dark-theme text and correct before calling the editor visually complete.",
+  "limits": "Existing manual editor regression with keyboard, interruption, downloads and history. Actual new generation/publication navigation remains unfinished and unverified."
+}

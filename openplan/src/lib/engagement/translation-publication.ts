@@ -30,28 +30,20 @@ export const translationPublicationResultSchema = z.object({
 }).strict();
 export type TranslationPublicationResult = z.infer<typeof translationPublicationResultSchema>;
 
-// Confirm the saved receipt against the retained output the staff member saw.
-// Reads must come from the server's verified generation reader. This client-safe
-// check protects acknowledgement/recovery; SQL owns authorization and writes.
-export function readTranslationPublicationResult(raw: unknown, scope: { campaignId: string; workspaceId: string; publisherId: string },
-  proposed: TranslationPublicationIntent, retained: TranslationGenerationRead[]): TranslationPublicationResult {
+// Resolve only the immutable fields selected for publication. The server has
+// already verified these read DTOs; reuse the same binding checks when retaining
+// a browser request and when acknowledging its result.
+export function readTranslationPublicationSelection(scope: { campaignId: string; workspaceId: string },
+  proposed: TranslationPublicationIntent, retained: TranslationGenerationRead[]) {
   const intent = translationPublicationIntentSchema.parse(proposed);
-  const result = translationPublicationResultSchema.parse(raw);
   const requests = retained.map(value => translationGenerationReadSchema.parse(value));
   if (new Set(requests.map(request => request.requestId)).size !== requests.length) throw new Error("Publication reads repeat a request identity");
-  if (result.campaignId !== scope.campaignId || result.requestId !== intent.requestId || result.locale !== intent.locale || result.entries.length !== intent.entries.length) {
-    throw new Error("Publication receipt differs from the requested batch");
+  if (requests.some(request => !intent.entries.some(entry => entry.generation.requestId === request.requestId)) ||
+    requests.some(request => new Set(request.fields.map(field => field.id)).size !== request.fields.length)) {
+    throw new Error("Publication reads contain unrequested requests or ambiguous field identities");
   }
-  const seen = new Set<string>(), seenFields = new Set<string>();
-  for (const saved of result.entries) {
-    const row = saved.entry;
-    const expected = intent.entries.find(entry => entry.entityType === row.entity_type && entry.entityId === row.entity_id && entry.field === row.field);
-    if (!expected || seen.has(row.id) || seenFields.has(expected.generation.fieldId) || row.campaign_id !== scope.campaignId || row.workspace_id !== scope.workspaceId || row.locale !== intent.locale || row.created_by !== scope.publisherId) {
-      throw new Error("Publication receipt contains an unexpected translation or publisher");
-    }
-    seen.add(row.id);
+  return intent.entries.map(expected => {
     const { generation: reference, ...expectedAddress } = expected;
-    seenFields.add(reference.fieldId);
     const request = requests.find(request => request.requestId === reference.requestId);
     const field = request?.fields.find(field => field.id === reference.fieldId);
     if (!request || !field || request.campaignId !== scope.campaignId || request.workspaceId !== scope.workspaceId || request.locale !== intent.locale ||
@@ -60,11 +52,37 @@ export function readTranslationPublicationResult(raw: unknown, scope: { campaign
       throw new Error("Publication generation differs from the retained source and version");
     }
     if (field.state !== "completed" || field.output.status !== "completed" || field.output.acceptedState !== "completed") throw new Error("Publication output was not successfully completed");
+    return { expected, request, field, output: field.output };
+  });
+}
+
+// Confirm the saved receipt against the retained output the staff member saw.
+// This client-safe check protects acknowledgement/recovery; SQL owns writes.
+export function readTranslationPublicationResult(raw: unknown, scope: { campaignId: string; workspaceId: string; publisherId: string },
+  proposed: TranslationPublicationIntent, retained: TranslationGenerationRead[]): TranslationPublicationResult {
+  const intent = translationPublicationIntentSchema.parse(proposed);
+  const result = translationPublicationResultSchema.parse(raw);
+  const selected = readTranslationPublicationSelection(scope, intent, retained);
+  if (result.campaignId !== scope.campaignId || result.requestId !== intent.requestId || result.locale !== intent.locale || result.entries.length !== intent.entries.length) {
+    throw new Error("Publication receipt differs from the requested batch");
+  }
+  const seen = new Set<string>(), seenFields = new Set<string>();
+  for (const saved of result.entries) {
+    const row = saved.entry;
+    const selection = selected.find(item => item.expected.entityType === row.entity_type && item.expected.entityId === row.entity_id && item.expected.field === row.field);
+    const expected = selection?.expected;
+    if (!expected || seen.has(row.id) || seenFields.has(expected.generation.fieldId) || row.campaign_id !== scope.campaignId || row.workspace_id !== scope.workspaceId || row.locale !== intent.locale || row.created_by !== scope.publisherId) {
+      throw new Error("Publication receipt contains an unexpected translation or publisher");
+    }
+    seen.add(row.id);
+    const reference = expected.generation;
+    seenFields.add(reference.fieldId);
+    const { request, output } = selection!;
     if (saved.revision !== (expected.expectedTranslation?.revision ?? 0) + 1 || (expected.expectedTranslation && row.id !== expected.expectedTranslation.id)) {
       throw new Error("Publication did not retain the requested revision");
     }
-    if (row.source !== "machine" || row.machine_model !== field.output.model || row.translated_text !== field.output.text ||
-      canonicalizeActionPayload(saved.generation) !== canonicalizeActionPayload({ ...reference, actorId: request.actorId, outputHash: field.output.outputHash })) {
+    if (row.source !== "machine" || row.machine_model !== output.model || row.translated_text !== output.text ||
+      canonicalizeActionPayload(saved.generation) !== canonicalizeActionPayload({ ...reference, actorId: request.actorId, outputHash: output.outputHash })) {
       throw new Error("Publication changed retained words, model or generation identity");
     }
   }

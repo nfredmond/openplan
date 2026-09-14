@@ -75,6 +75,9 @@ export function useTranslationDrafts(scope: TranslationDraftScope) {
     remember({ ...value, reason: value.reason === (pending.intent.reason ?? "") ? "" : value.reason, entries });
   }
   function reopen(pending: PendingTranslation, snapshot: TranslationSnapshot) {
+    // Publication keeps its machine authorship and original baseline in the
+    // archive. A refreshed source requires a separately reviewed generation.
+    if (pending.intent.operation === "publish_generated") return;
     const value = current.current; if (!value) return;
     const drafts = pending.intent.entries.map((entry, index) => {
       const text = "text" in entry && typeof entry.text === "string" ? entry.text : pending.before[index]?.entry.translated_text ?? "";

@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { canonicalizeActionPayload } from "@/lib/runtime/action-metadata";
 import { archivePendingTranslation, clearPendingTranslation, confirmPendingTranslation, pendingTranslationKey, pendingTranslationSchema,
-  readPendingTranslations, retainPendingTranslation, type PendingTranslation } from "@/lib/engagement/pending-translation";
+  readPendingTranslations, retainPendingTranslation, pendingTranslationWords, type PendingTranslationResult, type PendingTranslation } from "@/lib/engagement/pending-translation";
 import { readTranslationSnapshot, translationSnapshotSource, type TranslationSnapshot } from "@/lib/engagement/translation-snapshot";
-import type { TranslationWriteResult } from "@/lib/engagement/translation-write";
+
+const operationNames = { save: "save", accept: "accept", withdraw: "withdraw", publish_generated: "publication" };
 
 const unknownMessage = "This translation request is unconfirmed. Its exact words and observed versions are retained in this browser. Retry the same request to check its result.";
 
@@ -20,11 +21,11 @@ function EarlierRequest({ raw }: { raw: string }) {
   let value: PendingTranslation | null = null;
   try { value = pendingTranslationSchema.parse(JSON.parse(raw)); } catch { /* Preserve unreadable bytes for download. */ }
   if (!value) return <p>This earlier copy could not be read. Download it to retain its original contents.</p>;
-  return <div className="space-y-2 break-words"><p>{value.intent.operation} in {value.intent.locale}. Reason: {value.intent.reason || "New wording"}</p>
+  return <div className="space-y-2 break-words"><p>{operationNames[value.intent.operation]} in {value.intent.locale}. Reason: {value.intent.reason || "New wording"}</p>
       {value.intent.entries.map((entry, index) => <div key={index} className="whitespace-pre-wrap">
         <p><strong>Source at the time: </strong>{entry.expectedSource.text ?? "Not recorded"}</p>
         <p><strong>Earlier saved copy: </strong>{value.before[index]?.entry.translated_text ?? "No saved translation"}</p>
-        <p><strong>Requested wording: </strong>{"text" in entry ? entry.text : value.before[index]?.entry.translated_text}</p>
+        <p><strong>Requested wording: </strong>{pendingTranslationWords(value, index)}</p>
       </div>)}
     </div>;
 }
@@ -32,7 +33,7 @@ function EarlierRequest({ raw }: { raw: string }) {
 /** Retain requests before sending; a lost acknowledgement never invents a new request identity. */
 export function useTranslationWrites({ userId, workspaceId, campaignId, canWrite, onConfirmed, onReopen }: {
   userId: string; workspaceId: string; campaignId: string; canWrite: boolean;
-  onConfirmed: (result: TranslationWriteResult, pending: PendingTranslation) => void;
+  onConfirmed: (result: PendingTranslationResult, pending: PendingTranslation) => void;
   onReopen: (pending: PendingTranslation | null, snapshot: TranslationSnapshot) => void;
 }) {
   const [pending, setPending] = useState<PendingTranslation[]>([]);
@@ -184,7 +185,7 @@ export function useTranslationWrites({ userId, workspaceId, campaignId, canWrite
     {message && <p role="alert" className="rounded-lg border border-amber-400 p-3">{message}</p>}
     {!ready && <Button className="h-auto min-h-10 min-w-0 max-w-full whitespace-normal" type="button" onClick={restore} disabled={busy}>Retry translation recovery</Button>}
     {pending.map(value => <section key={value.intent.requestId} aria-label="Pending translation change" className="space-y-3 rounded-lg border border-amber-400 p-3">
-      <h3 className="font-semibold">Pending {value.intent.operation} in {value.intent.locale}</h3>
+      <h3 className="font-semibold">Pending {operationNames[value.intent.operation]} in {value.intent.locale}</h3>
       <p>{volatile.current.has(value.intent.requestId) ? "This page still has the request, but could not confirm its retention in browser storage. Keep this page open and download its copy. An earlier attempt may have reached the server." : value.phase === "unconfirmed" ? unknownMessage : "This request was refused. Compare the retained and current copies before proposing another change."}</p>
       <p className="whitespace-pre-wrap">Reason: {value.intent.reason || "New wording"}</p>
       {value.intent.entries.map((entry, index) => {
@@ -195,7 +196,7 @@ export function useTranslationWrites({ userId, workspaceId, campaignId, canWrite
           <h4 className="font-semibold">{entry.field.replaceAll("_", " ")}</h4>
           <p className="whitespace-pre-wrap"><strong>Source you saw: </strong>{entry.expectedSource.text ?? "No source words"}</p>
           <p className="whitespace-pre-wrap"><strong>Copy you started from: </strong>{value.before[index]?.entry.translated_text ?? "No saved translation"}</p>
-          <p className="whitespace-pre-wrap"><strong>{value.intent.operation === "save" ? "Your proposed wording: " : "Wording in this request: "}</strong>{"text" in entry ? entry.text : value.before[index]?.entry.translated_text}</p>
+          <p className="whitespace-pre-wrap"><strong>{value.intent.operation === "save" ? "Your proposed wording: " : "Wording in this request: "}</strong>{pendingTranslationWords(value, index)}</p>
           {current && <><p className="whitespace-pre-wrap"><strong>Current source: </strong>{source?.text ?? "Source unavailable"}</p>
             <p className="whitespace-pre-wrap"><strong>Current saved copy: </strong>{saved?.translated_text ?? "No saved translation"}</p>
             <p>{source?.available ? "Source is available for translation." : "Source is not available for new wording."} {saved ? `Saved revision ${saved.revision}.` : ""}</p></>}
