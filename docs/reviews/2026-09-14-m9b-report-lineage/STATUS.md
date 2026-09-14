@@ -35,3 +35,8 @@ Full QA on fec3ed7f finished with 15,325 passing tests, 523 skips and one failur
 The initial specialized view accidentally omitted the existing title, summary and status editor. The follow-up restores it using ReportDetailControls in metadataOnly mode, with a workspace/user-scoped reports.write role check. This correction is saved but still needs refreshed mutation proof, lint, TypeScript, identified-build browser metadata-save acceptance and full QA. The earlier browser evidence and eleven-fault proof apply only to fec3ed7f, not this follow-up. The saved browser runner still expects the old Open campaign label and must be updated before reuse.
 
 See [restart checkpoint](RESUME.md) for the exact continuation. No v0.61 release is claimed.
+
+
+## Metadata follow-up
+
+The remaining campaign count was a scanner false positive on the JSX expression `: !campaign.data ?`, not visible copy. Renaming the local result to consultation removes the false positive without changing the guard or its baseline. Metadata-only status and unsaved-edit help now describe retained files. The focused page/editor/copy run passes 28 tests. The updated mutation runner has a 24-test baseline, a surviving harmless comment and 20 targeted failures, including viewer permissions, user/workspace filters, missing role projection, exposed model/generation controls and accidentally cleared citations. The first runner attempt caught a JSX syntax mistake before tests could collect; it was corrected and the complete runner rerun. See report-page-metadata-mutations.json. Final browser acceptance and full QA remain pending.

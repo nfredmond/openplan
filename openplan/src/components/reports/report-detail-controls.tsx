@@ -379,18 +379,18 @@ export function ReportDetailControls({
             onChange={(event) => setStatus(event.target.value)}
           >
             {status === "generated" ? (
-              <option value="generated">Generated from artifact output</option>
+              metadataOnly ? <option value="generated">Files saved</option> : <option value="generated">Generated from artifact output</option>
             ) : null}
             <option value="draft">Draft</option>
             <option value="archived">Archived</option>
           </select>
-          <p className="text-xs leading-relaxed text-muted-foreground">
+          {metadataOnly ? <p className="text-xs leading-relaxed text-muted-foreground">Filing status helps organize this report. Changing it keeps the saved files and their history.</p> : <p className="text-xs leading-relaxed text-muted-foreground">
             Artifact generation moves a report into the generated state.
             Metadata edits can keep it in draft or archive it after review.
             {report.hasGeneratedArtifact
               ? " Existing artifact history remains attached to this record."
               : ""}
-          </p>
+          </p>}
         </div>
 
         {!metadataOnly ? <>
@@ -711,7 +711,7 @@ export function ReportDetailControls({
         {/* Actions */}
         {hasUnsavedChanges ? (
           <p role="status" className="text-sm text-amber-800 dark:text-amber-200">
-            Unsaved report edits or evidence choices. Save metadata before generating. Existing downloads still contain the previously saved version.
+            {metadataOnly ? <span>Unsaved report details. Save metadata to keep these edits. Saved file contents stay unchanged.</span> : <span>Unsaved report edits or evidence choices. Save metadata before generating. Existing downloads still contain the previously saved version.</span>}
           </p>
         ) : null}
         <div className="flex flex-wrap gap-3 border-t border-border/50 pt-4">

@@ -29,6 +29,7 @@ describe("ReportDetailControls", () => {
     fireEvent.change(screen.getByLabelText("Title"), { target: { value: "Reviewed consultation" } });
     fireEvent.change(screen.getByLabelText("Summary"), { target: { value: "Updated filing note" } });
     fireEvent.change(screen.getByLabelText("Status"), { target: { value: "archived" } });
+    expect(screen.getByRole("status")).toHaveTextContent("Saved file contents stay unchanged.");
     fireEvent.click(screen.getByRole("button", { name: "Save metadata" }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
     expect(fetchMock).toHaveBeenCalledWith("/api/reports/report-review", {

@@ -35,14 +35,14 @@ export async function loadEngagementReviewReportPage(client: Client, report: Rep
   }
   if (!job.data) return null;
 
-  const campaign = await client.from("engagement_campaigns")
+  const consultation = await client.from("engagement_campaigns")
     .select("id, title, project_id")
     .eq("id", report.engagement_campaign_id)
     .eq("workspace_id", report.workspace_id)
     .maybeSingle();
-  const project = !campaign.error && campaign.data?.project_id
+  const project = !consultation.error && consultation.data?.project_id
     ? await client.from("projects").select("id, name")
-      .eq("id", campaign.data.project_id)
+      .eq("id", consultation.data.project_id)
       .eq("workspace_id", report.workspace_id)
       .maybeSingle()
     : null;
@@ -59,14 +59,14 @@ export async function loadEngagementReviewReportPage(client: Client, report: Rep
       <p>The files below retain the consultation snapshot and selection saved for this report. Later consultation edits do not rewrite those files.</p>
       <nav aria-label="Report context" className="flex flex-wrap gap-4">
         <Link className="underline" href="/reports">Back to Reports</Link>
-        {!campaign.error && campaign.data ? <Link className="underline" href={`/engagement/${campaign.data.id}?tab=record`}>Open consultation</Link> : null}
+        {!consultation.error && consultation.data ? <Link className="underline" href={`/engagement/${consultation.data.id}?tab=record`}>Open consultation</Link> : null}
         {project && !project.error && project.data ? <Link className="underline" href={`/projects/${project.data.id}`}>Open project</Link> : null}
       </nav>
     </header>
     <section className="space-y-2" aria-label="Current consultation context">
-      {campaign.error ? <p role="alert">Current consultation details could not be loaded. Reload to try again; retained file access is checked separately below.</p>
-        : !campaign.data ? <p>The consultation is no longer available to this account.</p>
-        : <p>Current consultation: <strong>{campaign.data.title}</strong></p>}
+      {consultation.error ? <p role="alert">Current consultation details could not be loaded. Reload to try again; retained file access is checked separately below.</p>
+        : !consultation.data ? <p>The consultation is no longer available to this account.</p>
+        : <p>Current consultation: <strong>{consultation.data.title}</strong></p>}
       {project?.error ? <p role="alert">Current project details could not be loaded. This does not change the saved report.</p>
         : project && !project.data ? <p>The linked project is no longer available to this account.</p>
         : project?.data ? <p>Current project: {project.data.name}</p> : null}
