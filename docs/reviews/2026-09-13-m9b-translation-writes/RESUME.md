@@ -1,3 +1,7 @@
+# Current recovery editor pause checkpoint
+
+Read [RESOLUTION_EDITOR_RESET_CHECKPOINT.md](RESOLUTION_EDITOR_RESET_CHECKPOINT.md) first. The newest browser recovery helper is saved but untested and not yet connected. The preceding API checkpoint remains the evidence authority. Entries below retain historical states and are superseded where the newer note says so.
+
 # Latest resolution API and installation checkpoint
 
 Read [RESOLUTION_API_PROGRESS.md](RESOLUTION_API_PROGRESS.md) first. Migration 19 is installed at 338/19. API, queue preflight and concurrent SQL checks are in place; all 525 isolated RLS tests pass. The full unit run has one failure because the editor does not yet call the new endpoint. Finish reachable browser recovery next.
