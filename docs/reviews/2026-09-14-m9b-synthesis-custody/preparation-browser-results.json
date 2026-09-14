@@ -1,0 +1,120 @@
+{
+  "privateDirectory": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context",
+  "records": [
+    {
+      "stem": "synthesis-preparation-390-1789416585293",
+      "commit": "8ab73ec54600",
+      "width": 390,
+      "counts": {
+        "items": 3,
+        "sessions": 3,
+        "answers": 3,
+        "campaignItems": 3,
+        "campaignSessions": 3,
+        "campaignAnswers": 3
+      },
+      "membershipSpacing": null,
+      "completeJourney": true,
+      "console": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET"
+      ],
+      "pageErrors": [],
+      "artifacts": {
+        "synthesis-preparation-390-1789416585293-corrected.png": "0856d64c605a4437c3591f6420d2b3f9c4cedcbe70bebb6c89a76c969b4a6210",
+        "synthesis-preparation-390-1789416585293-original.png": "a24bce5548f6d2667bb691eb5f9c00d2fbf886bed7fb381199d9ae885c2fbcd7",
+        "synthesis-preparation-390-1789416585293-pending.png": "99b094f0fa5610d5d9e7b47d173c0cbb4da62bb4e5e58b1b6b12fd67f4d174d3",
+        "synthesis-preparation-390-1789416585293-preparation.png": "a989a56c3870599b418762dedeebd0e0112691c60cae365e9a9d1f6469291763",
+        "synthesis-preparation-390-1789416585293-question-group.png": "3fa61e951331760d2c5791fc3006712691433f8081ecac6423198d2bf629f8f3",
+        "synthesis-preparation-390-1789416585293-recovery-control.png": "f5a15bf52c9bd97074c279c9e57c0f42ca2216245c3edf069cb35d3f141a8b8c",
+        "synthesis-preparation-390-1789416585293-reopened-original.png": "b0c111a7f6e11dfc7582899f504c96b2f785fcd15f035e2f057a702bb3bbd042",
+        "synthesis-preparation-390-1789416585293-retry-control.png": "d587b5625e88f77a597867707163f72114ca1cddc7a007fd53ba984a6bd8a7a3",
+        "synthesis-preparation-390-1789416585293-selection.png": "711198daf78379abd7be05996161791a08e671cd0a40d69281de6b582a7345c6",
+        "synthesis-preparation-390-1789416585293-survey-form.png": "7535495da5b9518cdbc793ccf7c78cd0294930aa24b2a5886c639bee1dfe5c2e",
+        "synthesis-preparation-390-1789416585293-survey-form.txt": "aa42510ff991808da31a9f347a11b8aed5e0bf4ac811583ccb43141776cd573d",
+        "synthesis-preparation-390-1789416585293-survey-receipt.png": "24c70f5db47745e44437b2cb0e5b1687d5156d59d1b57fcf4681182960497793",
+        "synthesis-preparation-390-1789416585293.json": "844cef04767e8fb304dcc5d242b4a2d46a7c4081e8c326156d835a1402599240"
+      }
+    },
+    {
+      "stem": "synthesis-preparation-1440-1789416818345",
+      "commit": "ddb31bc0b02d",
+      "width": 1440,
+      "counts": {
+        "items": 4,
+        "sessions": 3,
+        "answers": 3,
+        "campaignItems": 4,
+        "campaignSessions": 3,
+        "campaignAnswers": 3
+      },
+      "membershipSpacing": {
+        "baseline": {
+          "gap": 8,
+          "ring": 6
+        },
+        "harmless": {
+          "gap": 8,
+          "ring": 6
+        },
+        "targeted": {
+          "gap": 0,
+          "ring": 6
+        }
+      },
+      "completeJourney": true,
+      "console": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET"
+      ],
+      "pageErrors": [],
+      "artifacts": {
+        "synthesis-preparation-1440-1789416818345-corrected.png": "f7d6053b9a0a9819a8e5994439a44e8903ec3c56074c90fabe8d9fedf1b7ba66",
+        "synthesis-preparation-1440-1789416818345-original.png": "ca45971001966508beb37ef09ff30f9b345ba52b927605f67ab633060819405b",
+        "synthesis-preparation-1440-1789416818345-pending.png": "c20688bfa0e437143c5309a947d8717551b13029528cde35263eb60b4e2dd81e",
+        "synthesis-preparation-1440-1789416818345-preparation.png": "0834fb59a9f0efdd2f1d56b2c7c1b54928463f4a67a71f7e0a1be286d84aea01",
+        "synthesis-preparation-1440-1789416818345-question-group.png": "f077cb84b41c14e2efdff8d759397fdf04897638c86093e3702d174621676b0a",
+        "synthesis-preparation-1440-1789416818345-recovery-control.png": "cf49b96ea476709617212df50c66b5d98efe3963085b792a912985a95a296b57",
+        "synthesis-preparation-1440-1789416818345-reopened-original.png": "d0f4a3f4ef3c0bb2b934f40d710c40f681c93bc22d5d6032d9750b4db24cd6ef",
+        "synthesis-preparation-1440-1789416818345-retry-control.png": "53aa4eda0071f9d55bd35855633d55c3a57586d1ce3d24717ab6b34758ea70ec",
+        "synthesis-preparation-1440-1789416818345-selection.png": "4f7d8f23a8c2d82ae087674fd8db67555dd136dc047aa76bb41d19f02389eda5",
+        "synthesis-preparation-1440-1789416818345-survey-form.png": "5ef7621185031c3357d0cc426440a001d71a8190efc643f142858f4fd902bdd9",
+        "synthesis-preparation-1440-1789416818345-survey-form.txt": "6b8aac91908fe6feb82c3cdb10aa02bd34f28787b906e517ba57c43bb6446226",
+        "synthesis-preparation-1440-1789416818345-survey-receipt.png": "88abe4dc1bb70c47b32090e7751394efdef0b7decea81504711797253b16da74",
+        "synthesis-preparation-1440-1789416818345.json": "129ac728e0d4a8a319f32afb4bce1be8a414c12d459bee571a36b28c7f0bbd43"
+      }
+    },
+    {
+      "stem": "synthesis-preparation-spacing-390-1789416947251",
+      "commit": "ddb31bc0b02d",
+      "width": 390,
+      "counts": null,
+      "membershipSpacing": {
+        "baseline": {
+          "gap": 8,
+          "ring": 6
+        },
+        "harmless": {
+          "gap": 8,
+          "ring": 6
+        },
+        "targeted": {
+          "gap": 0,
+          "ring": 6
+        }
+      },
+      "completeJourney": false,
+      "console": [],
+      "pageErrors": [],
+      "artifacts": {
+        "synthesis-preparation-spacing-390-1789416947251-membership.png": "b590d62b90c10e80330a71263e483895f0ad8da21c034501b2eff5df0a2e59ec",
+        "synthesis-preparation-spacing-390-1789416947251.json": "4167fe17a6aa1dcc410c3adcccb558a4853145380bdcd6819bf291c39882abb1"
+      }
+    }
+  ],
+  "logs": {
+    "openplan-preparation-qa.log": "171ba7090d71711e31eb23c897f4e88099d65cd52d708e25f5a520f5cdfd7d6a",
+    "openplan-preparation-shuffled.log": "fbf9e10b624c2776267a5c38d9d0765808cf92cb528418d91ef23d5c9b3db221",
+    "openplan-preparation-spacing-build.log": "a0e681a6d5cd4add080321431a6be86bb86c5b561567b84b48cec1c50251d26b",
+    "openplan-preparation-mutations-final.log": "43fac706eacdd666a64d3efb49ce951d1bd4b735ecea263679e9ad8917e958f4"
+  },
+  "limits": "Full phone source creation/survey/recovery/history journey used 8ab73ec5. Corrected desktop full journey and phone read-only saved-history/spacing checks used ddb31bc0. The corrected phone repeat submission reached the existing 3-per-10-minute limit and is not claimed as a successful fresh submission. No retained staff review, model generation, review export, or large browser corpus is proved."
+}
