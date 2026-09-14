@@ -39,9 +39,11 @@ BEGIN
   jsonb_build_object('entityType','campaign','entityId',campaign,'field','title','expectedTranslation',jsonb_build_object('id',title_id,'revision',1),
    'expectedSource',jsonb_build_object('text','SYNTHETIC newly revised source','sourceLocale',NULL,'available',true),'text',corrected_words)
  ));
- -- A pre-command producer still has no receipt. Do not guess its source or reason.
+ -- A privileged legacy import fixture has no receipt. Do not invent one.
+ RESET ROLE;
  INSERT INTO engagement_content_translations(workspace_id,campaign_id,entity_type,entity_id,field,locale,translated_text,source)
  VALUES(workspace,campaign,'campaign',campaign,'summary','fr','SYNTHETIC legacy producer','operator');
+ SET LOCAL ROLE authenticated;
  UPDATE engagement_campaigns SET title='' WHERE id=campaign;
  answer:=write_engagement_translations(campaign,withdrawn_request,'withdraw','es',reason,jsonb_build_array(
   jsonb_build_object('entityType','campaign','entityId',campaign,'field','title','expectedTranslation',jsonb_build_object('id',title_id,'revision',2),

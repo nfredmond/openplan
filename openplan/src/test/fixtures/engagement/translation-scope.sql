@@ -33,7 +33,9 @@ BEGIN
  INSERT INTO public.engagement_closeloop_entries(id,campaign_id,theme_title,we_did,status) VALUES(response_a,campaign_a,'SYNTHETIC response A','SYNTHETIC action A','draft'),(response_b,campaign_b,'SYNTHETIC response B','SYNTHETIC action B','draft');
  SELECT configuration_version_id INTO before_definition FROM public.engagement_campaigns WHERE id=campaign_b;
  PERFORM set_config('request.jwt.claim.sub',actor::text,true);
- SET LOCAL ROLE authenticated;
+ -- Privileged writes isolate native relationship constraints; command-only
+ -- staff writes and access are exercised by translation-command-activation.sql.
+ SET LOCAL ROLE service_role;
  FOR target IN SELECT * FROM (VALUES
   ('campaign',campaign_a,campaign_b,'title','engagement_translation_target_field'),
   ('category',category_a,category_b,'label','engagement_translation_category_target'),
@@ -51,13 +53,19 @@ BEGIN
  END LOOP;
  observed:=pg_temp.try_translation(workspace_a,campaign_b,'campaign',campaign_b,'title');
  IF observed<>'engagement_translation_campaign_workspace' THEN RAISE EXCEPTION 'Workspace forgery expected scope constraint, observed %',observed; END IF;
+ RESET ROLE;
+ SET LOCAL ROLE authenticated;
  observed:=pg_temp.try_translation(workspace_b,campaign_b,'campaign',campaign_b,'title');
- IF observed<>'42501' THEN RAISE EXCEPTION 'Foreign workspace write expected RLS, observed %',observed; END IF;
+ IF observed<>'42501' THEN RAISE EXCEPTION 'Foreign workspace direct write expected denial, observed %',observed; END IF;
+ RESET ROLE;
+ SET LOCAL ROLE service_role;
  observed:=pg_temp.try_translation(workspace_a,campaign_a,'campaign',campaign_a,'private_metadata');
  IF observed<>'engagement_translation_target_field' THEN RAISE EXCEPTION 'Unsupported field expected target constraint, observed %',observed; END IF;
+ RESET ROLE;
+ SET LOCAL ROLE authenticated;
  PERFORM set_config('request.jwt.claim.sub',viewer::text,true);
  observed:=pg_temp.try_translation(workspace_a,campaign_a,'campaign',campaign_a,'title');
- IF observed<>'42501' THEN RAISE EXCEPTION 'Viewer write expected RLS, observed %',observed; END IF;
+ IF observed<>'42501' THEN RAISE EXCEPTION 'Viewer direct write expected denial, observed %',observed; END IF;
  RESET ROLE;
  IF (SELECT configuration_version_id FROM public.engagement_campaigns WHERE id=campaign_b) IS DISTINCT FROM before_definition THEN RAISE EXCEPTION 'Foreign public definition changed'; END IF;
  PERFORM set_config('request.jwt.claim.sub',actor::text,true);

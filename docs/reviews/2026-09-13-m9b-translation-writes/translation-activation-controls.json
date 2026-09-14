@@ -1,0 +1,110 @@
+{
+  "migrationSha256": "43bb8638b703ebd1ee6d7c705da88ec00bcaaf3208a1eeda9e2651aa79e1e1fb",
+  "runnerSha256": "750e4fcbc6730a7212f59d46007da54a2d5679f57a246d6e688bc221c434b8f5",
+  "fixtureSha256": {
+    "translation-history-receipts.sql": "48db93da3e1fc4de308bedaefd35b749d83380025c0ea3ffd3c6682415380984",
+    "translation-command-activation.sql": "2c2391dc88aa0357a3f755fce35820efc1dfcb517f26d7dc2136b72b1413fd33",
+    "translation-history.sql": "8233233cb504f4b9e0d34cab259b9b4acee306bc80e09b3a0df811a663287845",
+    "translation-scope.sql": "807813fad0cc000a1adcf2bb8998e35f5e450109516fdcc8120c02e3f0519554"
+  },
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/translation-activation-controls/20260913T183632",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-insert",
+      "outcome": "killed",
+      "expectedFailure": "direct insert",
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-update",
+      "outcome": "killed",
+      "expectedFailure": "direct update",
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-delete",
+      "outcome": "killed",
+      "expectedFailure": "direct delete",
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-truncate",
+      "outcome": "killed",
+      "expectedFailure": "Activation privilege remains: TRUNCATE",
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-references",
+      "outcome": "killed",
+      "expectedFailure": "Activation privilege remains: REFERENCES",
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-trigger",
+      "outcome": "killed",
+      "expectedFailure": "Activation privilege remains: TRIGGER",
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-staff-grant",
+      "outcome": "killed",
+      "expectedFailure": "Activated staff command failed",
+      "expectedOutcome": true
+    },
+    {
+      "case": "retain-anonymous-execute",
+      "outcome": "killed",
+      "expectedFailure": "Anonymous command grant remains",
+      "expectedOutcome": true
+    },
+    {
+      "case": "retain-public-execute",
+      "outcome": "killed",
+      "expectedFailure": "Anonymous command grant remains",
+      "expectedOutcome": true
+    },
+    {
+      "case": "retain-public-table-grants",
+      "outcome": "killed",
+      "expectedFailure": "direct insert",
+      "expectedOutcome": true
+    },
+    {
+      "case": "retain-anonymous-table-grants",
+      "outcome": "killed",
+      "expectedFailure": "Activation privilege remains: INSERT",
+      "expectedOutcome": true
+    },
+    {
+      "case": "disable-history-capture",
+      "outcome": "killed",
+      "expectedFailure": "Original translation history missing",
+      "expectedOutcome": true
+    },
+    {
+      "case": "disable-history-receipt-link",
+      "outcome": "killed",
+      "expectedFailure": "History did not return one complete batch receipt",
+      "expectedOutcome": true
+    },
+    {
+      "case": "disable-category-reference",
+      "outcome": "killed",
+      "expectedFailure": "Foreign category target expected",
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Real SQL on named disposable stack, all migrations/grants/rows/triggers rolled back. Permission probes exercise insert/update/delete but inspect truncate/references/trigger privileges without executing those operations. Native constraint/history fixtures deliberately use privileged legacy writes; current staff access uses a separate command fixture. Does not prove browser navigation, worker execution, permanent migration install or public comment generation."
+}

@@ -1,3 +1,7 @@
+# Latest activation reset checkpoint
+
+Read [ACTIVATION_RESET_CHECKPOINT.md](ACTIVATION_RESET_CHECKPOINT.md) first. The application stack is now 336/17 with command execution enabled. Full RLS finished with 483 passes and one receipt-table coverage failure. Old browser grant wrappers must be adapted before reuse. This is unfinished and unreleased.
+
 # Latest retired staff route checkpoint
 
 Read [RETIRED_STAFF_ROUTE_PROGRESS.md](RETIRED_STAFF_ROUTE_PROGRESS.md) first. The old staff write route now refuses safely; the current editor uses retained generation and commands. Command activation, public generation recovery and browser-worker acceptance remain unfinished.

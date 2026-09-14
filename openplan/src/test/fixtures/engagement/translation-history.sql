@@ -11,10 +11,12 @@ BEGIN
  INSERT INTO engagement_campaigns(id,workspace_id,title,created_by) VALUES(campaign,workspace,'SYNTHETIC history fixture',actor);
  INSERT INTO engagement_closeloop_entries(id,campaign_id,theme_title,we_did) VALUES(response,campaign,'SYNTHETIC history response','SYNTHETIC source');
  PERFORM set_config('request.jwt.claim.sub',actor::text,true);
- SET LOCAL ROLE authenticated;
+ -- Privileged legacy fixtures exercise native history triggers independently
+ -- of the command-only authenticated write boundary. Private reads below use authenticated.
  INSERT INTO engagement_content_translations(id,workspace_id,campaign_id,entity_type,entity_id,field,locale,translated_text,source,machine_model,source_text_hash,created_by)
  VALUES(original,workspace,campaign,'close_loop_entry',response,'we_did','qaa','Synthetic original translation','machine','synthetic-model',repeat('a',64),actor);
- SELECT record_sha256 INTO STRICT digest FROM engagement_translation_history WHERE translation_id=original AND revision=1;
+ SELECT record_sha256 INTO digest FROM engagement_translation_history WHERE translation_id=original AND revision=1;
+ IF digest IS NULL THEN RAISE EXCEPTION 'Original translation history missing'; END IF;
  UPDATE engagement_content_translations SET source='operator',machine_model=NULL WHERE id=original;
  UPDATE engagement_content_translations SET translated_text='Synthetic corrected translation' WHERE id=original;
  UPDATE engagement_content_translations SET updated_at=clock_timestamp() WHERE id=original;
