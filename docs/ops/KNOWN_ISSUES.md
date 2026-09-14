@@ -433,3 +433,17 @@ the production run.
 retains the engineering evidence. [Publication](../reviews/2026-09-13-m9b-translation-writes/PUBLICATION.md) records passing final CI and tagging. Translation quality, actual agency usefulness and the broader M9b
 workflow are not established by synthetic engineering journeys. Historical
 release limitations above remain dated records.
+
+
+## M9b decision links and privacy, v0.60 candidate
+
+[Engineering evidence](../reviews/2026-09-14-m9b-decision-reports/RELEASE_VERIFICATION.md)
+covers private retained decision links, interrupted-request recovery, public
+explanations, metadata privacy, photographs and original/corrected downloads.
+Internal review files do not yet include private decision-link lineage. Opening an
+engagement review report currently displays a project-read warning and unrelated
+grant-readiness panels because the report is owned by its campaign; its retained
+files remain available. Correct that report detail workflow with the next report
+lineage increment. Privacy metadata has no dedicated UI toggle. The public map
+was unavailable in the isolated acceptance build; the accessible non-map path was
+exercised. No new map, human usefulness or participation-quality claim is made.

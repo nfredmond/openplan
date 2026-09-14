@@ -370,3 +370,21 @@ finish photo access at both widths, prepare the bounded v0.60 release with priva
 decision-link/recovery and privacy evidence, merge directly and inspect final CI
 including populated upgrade before tagging. Internal export decision lineage
 remains unimplemented. No PR or human-review gate applies.
+
+
+Photo acceptance is now complete at both widths. The runner corrected two more
+assumptions: campaign GET intentionally omits storage paths, so retained attachment
+presence is verified through complete private history; navigation must finish on
+the Engagement catalog before selecting a campaign, otherwise a same-title report
+link can be selected on the previous page. The resulting unintended report visit
+exposed the unrelated project/grant panels recorded in the release limitations.
+Successful source/photo/console histories are in public-photo-browser-results.json;
+visible/hidden screenshots were inspected at desktop and 390px.
+
+The v0.60 candidate metadata is prepared, with 342 migrations and retained limits.
+Release ledger controls passed: baseline and harmless comment survive; wrong count,
+missing migration file and missing operator migration each fail the intended check.
+Product direction and focused metadata tests passed. Final candidate full QA,
+main push and GitHub CI/upgrade remain next. No tag has been created. The owned
+old dfebc1af app server is stopped before rebuilding; restart and identify the
+candidate as needed. The isolated document worker remains available.

@@ -98,3 +98,5 @@ Contract management: [operator workflow](ops/CONTRACT_RECONCILIATION.md) and [v0
 - [OWP closeout reconciliation](ops/OWP_CLOSEOUT_RECONCILIATION.md): private saved assessments, accounting-period closure/reopening and bounded next-cycle carryover.
 
 - [v0.59.0 translation recovery verification](reviews/2026-09-13-m9b-translation-writes/RELEASE_VERIFICATION.md): exact-source staff writes, retained worker output, public retry custody and production/upgrade evidence.
+
+- [v0.60.0 decision links and public-copy privacy](reviews/2026-09-14-m9b-decision-reports/RELEASE_VERIFICATION.md): retained private context, interrupted recovery and actual public artifact/privacy checks; final publication recorded separately.

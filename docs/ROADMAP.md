@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: e6d25edd
-current_release: v0.59.0
+current_release: v0.60.0
 review_by: 2026-10-05
 paths:
 - AGENTS.md
@@ -700,3 +700,14 @@ passing final main CI, RLS, upgrade, restore and tagging. Old cached text retain
 synthetic words do not establish language quality. Continue the remaining M9b
 source-to-decision follow-through and the other early priorities above. This
 increment does not close M9b or narrow the complete V1 contract.
+
+
+The v0.60.0 candidate adds private response-to-decision links and interrupted
+request recovery, plus explicit private-copy protection across public readers and
+writes. [Release evidence](reviews/2026-09-14-m9b-decision-reports/RELEASE_VERIFICATION.md)
+records actual public explanation, download/photo and privacy-change journeys at
+desktop/390px, native concurrency and preserved originals. Final CI and tagging
+are recorded separately. Next extend internal review reports with retained decision
+lineage and correct the engagement report detail page's unrelated project/grant
+panels, then continue the remaining M9b and other early priorities above. No M9b
+completion, usefulness or nationwide model validation is claimed by this increment.

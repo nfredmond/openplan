@@ -1,0 +1,138 @@
+{
+  "journeys": [
+    {
+      "width": 1440,
+      "identity": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-09-14T13:59:09.096Z",
+        "deployment": {
+          "commit": "dfebc1af3a68",
+          "version": "0.59.0"
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "itemId": "6c9c1611-3d15-43ae-a200-5c427a028240",
+      "publicPhoto": {
+        "url": "http://127.0.0.1:3262/api/engage/r9zfzuio5vzxymhfj16vrp0nspla/items/6c9c1611-3d15-43ae-a200-5c427a028240/photo",
+        "sha256": "1ec0a8187b91245c79790bbe7dcea6963ee5603b47bcbe5cc69f01535cc56d9d"
+      },
+      "hiddenPhotoStatus": 404,
+      "retainedPhotoHistory": [
+        {
+          "id": "63cc5195-b108-479e-bdcd-b4eabd7dbf04",
+          "actorId": null,
+          "event": "received",
+          "recorded_at": "2026-09-14T13:59:11.511314+00:00",
+          "reason": null,
+          "record": {
+            "title": "SYNTHETIC privacy photograph 1440 1789394351370",
+            "body": "SYNTHETIC privacy photograph 1440 1789394351370",
+            "status": "pending",
+            "hasPhoto": true
+          }
+        },
+        {
+          "id": "edd6869f-f03a-435d-9aff-9a57c63813bb",
+          "actorId": "4a21e42f-27a7-474d-9a7a-5912c70af359",
+          "event": "reviewed",
+          "recorded_at": "2026-09-14T13:59:11.700136+00:00",
+          "reason": "SYNTHETIC photograph privacy acceptance",
+          "record": {
+            "title": "SYNTHETIC privacy photograph 1440 1789394351370",
+            "body": "SYNTHETIC privacy photograph 1440 1789394351370",
+            "status": "approved",
+            "hasPhoto": true
+          }
+        },
+        {
+          "id": "0e67273a-fec0-4060-a0d0-5f5ab3fbb7e8",
+          "actorId": "4a21e42f-27a7-474d-9a7a-5912c70af359",
+          "event": "reviewed",
+          "recorded_at": "2026-09-14T13:59:12.427298+00:00",
+          "reason": "SYNTHETIC photograph privacy acceptance",
+          "record": {
+            "title": "SYNTHETIC privacy photograph 1440 1789394351370",
+            "body": "SYNTHETIC privacy photograph 1440 1789394351370",
+            "status": "approved",
+            "hasPhoto": true
+          }
+        }
+      ],
+      "console": [],
+      "evidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/public-photo-1440-1789394348806.json"
+    },
+    {
+      "width": 390,
+      "identity": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-09-14T14:00:41.187Z",
+        "deployment": {
+          "commit": "dfebc1af3a68",
+          "version": "0.59.0"
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "itemId": "52cd57bc-4a38-41cc-ab42-f515d6d18b96",
+      "publicPhoto": {
+        "url": "http://127.0.0.1:3262/api/engage/ljobax7p08h76hjzn3caif0xv03s/items/52cd57bc-4a38-41cc-ab42-f515d6d18b96/photo",
+        "sha256": "1ec0a8187b91245c79790bbe7dcea6963ee5603b47bcbe5cc69f01535cc56d9d"
+      },
+      "hiddenPhotoStatus": 404,
+      "retainedPhotoHistory": [
+        {
+          "id": "b6806e3e-b45e-4338-b05a-7c523dfac91a",
+          "actorId": null,
+          "event": "received",
+          "recorded_at": "2026-09-14T14:00:43.522892+00:00",
+          "reason": null,
+          "record": {
+            "title": "SYNTHETIC privacy photograph 390 1789394443384",
+            "body": "SYNTHETIC privacy photograph 390 1789394443384",
+            "status": "pending",
+            "hasPhoto": true
+          }
+        },
+        {
+          "id": "5f8adb8b-7543-4b52-8db8-a871b24665e8",
+          "actorId": "4a21e42f-27a7-474d-9a7a-5912c70af359",
+          "event": "reviewed",
+          "recorded_at": "2026-09-14T14:00:43.71566+00:00",
+          "reason": "SYNTHETIC photograph privacy acceptance",
+          "record": {
+            "title": "SYNTHETIC privacy photograph 390 1789394443384",
+            "body": "SYNTHETIC privacy photograph 390 1789394443384",
+            "status": "approved",
+            "hasPhoto": true
+          }
+        },
+        {
+          "id": "3f46d2de-1342-4a9d-be3c-929cc2b8ab52",
+          "actorId": "4a21e42f-27a7-474d-9a7a-5912c70af359",
+          "event": "reviewed",
+          "recorded_at": "2026-09-14T14:00:45.196037+00:00",
+          "reason": "SYNTHETIC photograph privacy acceptance",
+          "record": {
+            "title": "SYNTHETIC privacy photograph 390 1789394443384",
+            "body": "SYNTHETIC privacy photograph 390 1789394443384",
+            "status": "approved",
+            "hasPhoto": true
+          }
+        }
+      ],
+      "console": [],
+      "evidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/public-photo-390-1789394440894.json"
+    }
+  ],
+  "limits": [
+    "Actual anonymous form upload; approval and explicit privacy metadata applied through authenticated item edit API.",
+    "No UI privacy toggle exists. Synthetic image only; no real participant material."
+  ]
+}

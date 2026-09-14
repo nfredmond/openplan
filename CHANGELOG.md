@@ -20,23 +20,36 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-Private engagement response-to-decision links are in development. Staff can
-retain reviewed source context and reasons, correct or withdraw a link while
-keeping its original evidence, and resolve interrupted requests with retained
-recovery copies. Desktop and 390px request-recovery journeys passed. Final release
-checks, public explanations and report/export lineage remain open.
+## 0.60.0 — 2026-09-14
 
-Apply `20261014000021_engagement_response_decision_links.sql` and
-`20261014000022_engagement_decision_request_resolution.sql`, plus
-`20261014000023_engagement_public_copy_privacy.sql` before running this code.
-These additive migrations retain link history and private recovery receipts;
-resolving an unsaved request prevents its late arrival without deleting saved links.
+Staff can link an engagement response to a saved project decision, retain the
+reviewed sources and reason, and correct or withdraw that link while keeping its
+original evidence. Interrupted requests retain recovery copies and can be resolved
+without deleting saved links or allowing an unsaved request to arrive late.
+Decision links stay private and do not approve decisions or publish explanations.
 
 Explicit private/internal contribution flags now restrict public reads, photographs,
 translation sources, replies, votes and report selection independently of approval
 status. Privacy edits require a current review and retain history while withdrawing
-affected staff responses. Migration 23 preserves existing records. Browser acceptance
-of this privacy correction and the handling of legacy public files remain unfinished.
+affected staff responses. Previously prepared public files are refused when their
+source is no longer publicly available. Staff can download unchanged internal
+originals and prepare corrected public PDF/XLSX/ZIP packets. An interrupted export
+request recovers the same saved job.
+
+Apply `20261014000021_engagement_response_decision_links.sql`,
+`20261014000022_engagement_decision_request_resolution.sql` and
+`20261014000023_engagement_public_copy_privacy.sql` before restarting the app and
+workers. These additive migrations preserve existing records. The existing local
+Documents export worker prepares report files; no new paid service is required.
+
+Desktop and 390px engineering journeys cover saved originals, public explanations,
+privacy changes, actual downloads, photographs and interrupted retries. Internal
+report decision lineage remains unfinished. The engagement report detail page
+still shows unrelated project/grant panels. There is no new UI privacy toggle;
+explicit metadata flags are enforced through existing writes. Earlier snapshot
+formats do not acquire missing historical authorization evidence. This release
+does not establish planner usefulness, representative participation or legal
+publication authority. See the [release evidence](docs/reviews/2026-09-14-m9b-decision-reports/RELEASE_VERIFICATION.md).
 
 ## 0.59.0 — 2026-09-14
 
