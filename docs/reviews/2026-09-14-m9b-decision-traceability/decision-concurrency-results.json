@@ -1,21 +1,22 @@
 {
   "container": "supabase_db_openplan-restore-target-2026091050",
   "database": "openplan_decision_link_proof_20260914",
-  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/concurrency-1789377835379544352",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/concurrency-1789379584340721997",
   "candidateSha256": {
     "decision-context-candidate.sql": "44e599b5ab9b1e082179587c02a7c67a031dae813f28eec026f7be948156c342",
-    "decision-link-candidate.sql": "ceb9f226283f0c95232a1db9719fc6b18e1d01041ecd3753a5b387171fa78541"
+    "decision-link-candidate.sql": "5bf2905c17a5205ece6bd4218d6489840c7a88602b58a69a2eba203c634ccd3b",
+    "decision-history-candidate.sql": "d2c50bc27cf101bbb5443bea721758aea0b4154d6d371e75419e601df0f601a0"
   },
   "results": [
     {
       "case": "baseline",
       "outcome": "survived",
-      "overlappingCases": 11
+      "overlappingCases": 12
     },
     {
       "case": "harmless-comment",
       "outcome": "survived",
-      "overlappingCases": 11
+      "overlappingCases": 12
     },
     {
       "case": "missing-source-lock",
@@ -36,6 +37,11 @@
       "case": "missing-membership-lock",
       "outcome": "killed",
       "expectedFailure": "missing-membership-lock overlap was not refused"
+    },
+    {
+      "case": "foreign-decision-lock-scope",
+      "outcome": "killed",
+      "expectedFailure": "foreign-decision-lock-scope foreign lock state was exposed"
     }
   ],
   "definitionRestored": true,

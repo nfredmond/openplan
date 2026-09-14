@@ -1,0 +1,212 @@
+{
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/http-contract-1789379673607145566",
+  "sourceSha256": {
+    "src/lib/engagement/decision-links.ts": "36dd234bf0b4b1ceb2fcedf7549369ab24e54c89c455846763bed7126c3d9315",
+    "src/lib/engagement/decision-links-server.ts": "b3d4d0c5270628d8792fe2118a9ec7d24894697b00e4006634c05c19ec1c6e0c",
+    "src/lib/engagement/decision-link-access.ts": "eb4924b7dff3081fdc46b5ffaac5250ee58e32739e75d7e1c9ada8b773331d8f",
+    "src/app/api/engagement/campaigns/[campaignId]/decision-links/route.ts": "34a97ab4de9cb6484c7e01981447cd62ab56daea2d263e9d981e189bcc6002c3",
+    "src/test/engagement-decision-links.test.ts": "62a29fffc0572f1471c857e8a3a04377b8c650f586bb3fdaa099d765750f1a01",
+    "src/test/engagement-decision-link-routes.test.ts": "3d781a21849f9fef3a5056a8e28ec5f6c2edabdc646b4177791b4d1d132a2f82",
+    "src/test/fixtures/decision-link-native.json": "b464027e4d1d66bc43bc2652e7efa3a2104314be45fe0ee6d586f2cb19898931"
+  },
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "test": null,
+      "passed": 36,
+      "failed": 0
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived",
+      "test": null,
+      "passed": 36,
+      "failed": 0
+    },
+    {
+      "case": "checksum",
+      "outcome": "killed",
+      "test": "refuses altered context bytes",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "context-scope",
+      "outcome": "killed",
+      "test": "refuses foreign context with a recomputed hash",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "retained-response",
+      "outcome": "killed",
+      "test": "refuses changed retained response content with recomputed hashes",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "source-census",
+      "outcome": "killed",
+      "test": "refuses lost references even with a reduced declared count",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "source-order",
+      "outcome": "killed",
+      "test": "refuses changed order and invented unavailable content",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "missing-content",
+      "outcome": "killed",
+      "test": "refuses changed order and invented unavailable content",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "source-scope",
+      "outcome": "killed",
+      "test": "refuses foreign source records and fabricated configuration",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "configuration-state",
+      "outcome": "killed",
+      "test": "refuses foreign source records and fabricated configuration",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "definition-bytes",
+      "outcome": "killed",
+      "test": "checks original definition bytes and rejects unused definitions",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "unused-definition",
+      "outcome": "killed",
+      "test": "checks original definition bytes and rejects unused definitions",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "receipt-actor",
+      "outcome": "killed",
+      "test": "refuses another actor, request or reason",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "payload-consistency",
+      "outcome": "killed",
+      "test": "refuses changed request bytes and contradictory row fields",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "history-count",
+      "outcome": "killed",
+      "test": "refuses incomplete counts, duplicate rows and missing predecessors",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "history-fork",
+      "outcome": "killed",
+      "test": "refuses forks and duplicate roots",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "duplicate-root",
+      "outcome": "killed",
+      "test": "refuses forks and duplicate roots",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "history-cycle",
+      "outcome": "killed",
+      "test": "refuses a cycle whose referenced rows all exist",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "current-source-state",
+      "outcome": "killed",
+      "test": "refuses an invented source state or missing current leaf",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "intent-operation",
+      "outcome": "killed",
+      "test": "refuses malformed commands",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "agent-refusal",
+      "outcome": "killed",
+      "test": "refuses unregistered agent marker x-openplan-assistant-execution-source",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "origin-refusal",
+      "outcome": "killed",
+      "test": "refuses foreign origin and changed account/workspace expectations",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "account-expectation",
+      "outcome": "killed",
+      "test": "refuses foreign origin and changed account/workspace expectations",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "workspace-expectation",
+      "outcome": "killed",
+      "test": "refuses foreign origin and changed account/workspace expectations",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "staff-access",
+      "outcome": "killed",
+      "test": "requires signed-in staff for reads and writes",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "write-receipt-verification",
+      "outcome": "killed",
+      "test": "keeps uncertain saves uncertain rather than issuing another request",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "write-request-id",
+      "outcome": "killed",
+      "test": "sends one exact command and verifies its receipt without rereading source",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "history-rpc-scope",
+      "outcome": "killed",
+      "test": "returns a verified complete snapshot with current actor and no-store",
+      "passed": 0,
+      "failed": 1
+    }
+  ],
+  "sourcesRestored": true,
+  "limits": "Actual TypeScript parsers and Next route handlers with mocked current-user/campaign lookup and RPC transport, using native synthetic SQL packets. Does not prove live HTTP, native grants, browser navigation, storage recovery or public publication."
+}

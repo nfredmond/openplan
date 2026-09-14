@@ -1,0 +1,140 @@
+{
+  "synthetic": true,
+  "scope": {
+    "campaignId": "5a645583-3027-441e-a905-7171e9c9c3f9",
+    "workspaceId": "795afa6d-fa36-4296-9dbb-1356788bbf1b",
+    "actorId": "6edd8a07-0d31-4474-81e7-ddc81b9e80b2"
+  },
+  "initial": {
+    "schema": 1,
+    "current": [
+      {
+        "linkId": "62d2179f-63ad-4694-8956-0365d1362795",
+        "sourceState": "unchanged",
+        "unavailableReason": null,
+        "currentContextSha256": "ffee1932475c277d68d4673e66b50f72e9d71a1be41de2668f095ad8bf3a6603"
+      }
+    ],
+    "entries": [
+      {
+        "id": "62d2179f-63ad-4694-8956-0365d1362795",
+        "reason": "SYNTHETIC link reason",
+        "actor_id": "6edd8a07-0d31-4474-81e7-ddc81b9e80b2",
+        "operation": "link",
+        "created_at": "2026-09-14T09:53:56.495108+00:00",
+        "project_id": "152343d7-9b8e-4109-a296-97913371fd1f",
+        "campaign_id": "5a645583-3027-441e-a905-7171e9c9c3f9",
+        "decision_id": "2fe4f037-59d6-434b-bbe2-c18bbabe5d85",
+        "response_id": "6ec31045-aa86-4ddb-b93e-0b1c0d75bf84",
+        "context_text": "{\"schema\": 1, \"project\": {\"id\": \"152343d7-9b8e-4109-a296-97913371fd1f\", \"name\": \"SYNTHETIC linked project\", \"workspaceId\": \"795afa6d-fa36-4296-9dbb-1356788bbf1b\"}, \"sources\": [{\"itemId\": \"88113c13-5ba4-4073-9874-08ed66e4befc\", \"record\": {\"id\": \"88113c13-5ba4-4073-9874-08ed66e4befc\", \"body\": \"SYNTHETIC original source words\", \"title\": \"\u00a0SYNTHETIC raw title\ufeff\", \"status\": \"pending\", \"geometry\": {\"type\": \"LineString\", \"coordinates\": [[12.5, -8.25], [12.75, -8.5]]}, \"latitude\": null, \"longitude\": null, \"created_at\": \"2026-09-14T09:53:56.450798+00:00\", \"updated_at\": \"2026-09-14T09:53:56.450798+00:00\", \"campaign_id\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"category_id\": null, \"source_type\": \"internal\", \"parent_item_id\": null, \"configuration_version_id\": \"cc5df2f3-be4c-4c09-8d59-84a88ab27d03\"}, \"position\": 1, \"availability\": \"available\", \"configurationAvailability\": \"available\"}, {\"itemId\": \"ed6f899c-e7b6-47f7-beba-62af531a40d3\", \"record\": {\"id\": \"ed6f899c-e7b6-47f7-beba-62af531a40d3\", \"body\": \"SYNTHETIC unknown historical configuration\", \"title\": null, \"status\": \"pending\", \"geometry\": null, \"latitude\": null, \"longitude\": null, \"created_at\": \"2026-09-14T09:53:56.450798+00:00\", \"updated_at\": \"2026-09-14T09:53:56.450798+00:00\", \"campaign_id\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"category_id\": null, \"source_type\": \"internal\", \"parent_item_id\": null, \"configuration_version_id\": null}, \"position\": 2, \"availability\": \"available\", \"configurationAvailability\": \"unknown\"}, {\"itemId\": \"88113c13-5ba4-4073-9874-08ed66e4befc\", \"record\": {\"id\": \"88113c13-5ba4-4073-9874-08ed66e4befc\", \"body\": \"SYNTHETIC original source words\", \"title\": \"\u00a0SYNTHETIC raw title\ufeff\", \"status\": \"pending\", \"geometry\": {\"type\": \"LineString\", \"coordinates\": [[12.5, -8.25], [12.75, -8.5]]}, \"latitude\": null, \"longitude\": null, \"created_at\": \"2026-09-14T09:53:56.450798+00:00\", \"updated_at\": \"2026-09-14T09:53:56.450798+00:00\", \"campaign_id\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"category_id\": null, \"source_type\": \"internal\", \"parent_item_id\": null, \"configuration_version_id\": \"cc5df2f3-be4c-4c09-8d59-84a88ab27d03\"}, \"position\": 3, \"availability\": \"available\", \"configurationAvailability\": \"available\"}, {\"itemId\": \"1ca411f5-b6e7-4ca3-9ce3-f398a6e4f6c9\", \"record\": null, \"position\": 4, \"availability\": \"unavailable\", \"configurationAvailability\": \"unavailable\"}, {\"itemId\": \"24ed0f8f-c8dd-413a-8d4b-cdb5e434afeb\", \"record\": null, \"position\": 5, \"availability\": \"unavailable\", \"configurationAvailability\": \"unavailable\"}], \"campaign\": {\"id\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"title\": \"SYNTHETIC revised question context\", \"workspaceId\": \"795afa6d-fa36-4296-9dbb-1356788bbf1b\"}, \"decision\": {\"id\": \"2fe4f037-59d6-434b-bbe2-c18bbabe5d85\", \"title\": \"SYNTHETIC decision\", \"status\": \"proposed\", \"rationale\": \"SYNTHETIC private rationale\", \"created_at\": \"2026-09-14T09:53:56.450798+00:00\", \"created_by\": null, \"decided_at\": null, \"project_id\": \"152343d7-9b8e-4109-a296-97913371fd1f\", \"updated_at\": \"2026-09-14T09:53:56.450798+00:00\", \"impact_summary\": null}, \"response\": {\"id\": \"6ec31045-aa86-4ddb-b93e-0b1c0d75bf84\", \"status\": \"draft\", \"we_did\": \"SYNTHETIC corrected answer\", \"you_said\": \"SYNTHETIC minority input\", \"created_at\": \"2026-09-14T09:53:56.450798+00:00\", \"created_by\": null, \"sort_order\": 0, \"updated_at\": \"2026-09-14T09:53:56.484215+00:00\", \"ai_assisted\": false, \"campaign_id\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"category_id\": null, \"theme_title\": \"SYNTHETIC theme\", \"published_at\": null, \"source_item_ids\": [\"88113c13-5ba4-4073-9874-08ed66e4befc\", \"ed6f899c-e7b6-47f7-beba-62af531a40d3\", \"88113c13-5ba4-4073-9874-08ed66e4befc\", \"1ca411f5-b6e7-4ca3-9ce3-f398a6e4f6c9\", \"24ed0f8f-c8dd-413a-8d4b-cdb5e434afeb\"]}, \"visibility\": \"private\", \"sourceCount\": 5, \"relationship\": {\"id\": \"476307ef-f527-4c0c-a335-90d785160c06\", \"created_at\": \"2026-09-14T09:53:56.450798+00:00\", \"created_by\": null, \"project_id\": \"152343d7-9b8e-4109-a296-97913371fd1f\", \"campaign_id\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"workspace_id\": \"795afa6d-fa36-4296-9dbb-1356788bbf1b\"}, \"configurations\": [{\"id\": \"cc5df2f3-be4c-4c09-8d59-84a88ab27d03\", \"createdAt\": \"2026-09-14T09:53:56.470565+00:00\", \"campaignId\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"definitionText\": \"{\\\"layers\\\": [], \\\"schema\\\": 1, \\\"campaign\\\": {\\\"title\\\": \\\"SYNTHETIC original question context\\\", \\\"summary\\\": null, \\\"place_bbox\\\": [null, null, null, null], \\\"place_label\\\": null, \\\"instructions\\\": null, \\\"project_frame\\\": {\\\"bbox\\\": [null, null, null, null], \\\"label\\\": null, \\\"source\\\": null}, \\\"engagement_type\\\": \\\"comment_collection\\\", \\\"workspace_frame\\\": {\\\"bbox\\\": [null, null, null, null], \\\"label\\\": null, \\\"source\\\": null}, \\\"demographics_enabled\\\": false, \\\"participation_ends_at\\\": null, \\\"default_content_locale\\\": null, \\\"place_geometry_geojson\\\": null, \\\"participation_starts_at\\\": null, \\\"accessibility_contact_email\\\": null, \\\"accessibility_contact_label\\\": null, \\\"accessibility_contact_phone\\\": null, \\\"submission_geofence_enabled\\\": false, \\\"accessibility_alternate_formats\\\": null}, \\\"questions\\\": [], \\\"categories\\\": [], \\\"translations\\\": []}\", \"definitionSha256\": \"7c973a78bcc502801339d4f068c959c94b7f4ea34f2efe40b9d25cd74117d1aa\"}], \"responseHistory\": {\"id\": \"db973235-d30b-4c81-b376-205a40f459e2\", \"event\": \"corrected\", \"actorId\": null, \"revision\": 2, \"recordText\": \"{\\\"id\\\": \\\"6ec31045-aa86-4ddb-b93e-0b1c0d75bf84\\\", \\\"status\\\": \\\"draft\\\", \\\"we_did\\\": \\\"SYNTHETIC corrected answer\\\", \\\"you_said\\\": \\\"SYNTHETIC minority input\\\", \\\"created_at\\\": \\\"2026-09-14T09:53:56.450798+00:00\\\", \\\"created_by\\\": null, \\\"sort_order\\\": 0, \\\"updated_at\\\": \\\"2026-09-14T09:53:56.484215+00:00\\\", \\\"ai_assisted\\\": false, \\\"campaign_id\\\": \\\"5a645583-3027-441e-a905-7171e9c9c3f9\\\", \\\"category_id\\\": null, \\\"theme_title\\\": \\\"SYNTHETIC theme\\\", \\\"published_at\\\": null, \\\"source_item_ids\\\": [\\\"88113c13-5ba4-4073-9874-08ed66e4befc\\\", \\\"ed6f899c-e7b6-47f7-beba-62af531a40d3\\\", \\\"88113c13-5ba4-4073-9874-08ed66e4befc\\\", \\\"1ca411f5-b6e7-4ca3-9ce3-f398a6e4f6c9\\\", \\\"24ed0f8f-c8dd-413a-8d4b-cdb5e434afeb\\\"]}\", \"recordedAt\": \"2026-09-14T09:53:56.484716+00:00\", \"recordSha256\": \"20d09f4017c55b5ce65b731a51284e2f7887410e2aebcff8a61db5113e9c4901\"}, \"sourceObservation\": \"current_at_link_preview\", \"configurationCount\": 1}",
+        "payload_json": {
+          "reason": "SYNTHETIC link reason",
+          "operation": "link",
+          "campaignId": "5a645583-3027-441e-a905-7171e9c9c3f9",
+          "decisionId": "2fe4f037-59d6-434b-bbe2-c18bbabe5d85",
+          "responseId": "6ec31045-aa86-4ddb-b93e-0b1c0d75bf84",
+          "predecessorId": null,
+          "expectedContextSha256": "ffee1932475c277d68d4673e66b50f72e9d71a1be41de2668f095ad8bf3a6603"
+        },
+        "payload_text": "{\"reason\": \"SYNTHETIC link reason\", \"operation\": \"link\", \"campaignId\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"decisionId\": \"2fe4f037-59d6-434b-bbe2-c18bbabe5d85\", \"responseId\": \"6ec31045-aa86-4ddb-b93e-0b1c0d75bf84\", \"predecessorId\": null, \"expectedContextSha256\": \"ffee1932475c277d68d4673e66b50f72e9d71a1be41de2668f095ad8bf3a6603\"}",
+        "workspace_id": "795afa6d-fa36-4296-9dbb-1356788bbf1b",
+        "context_sha256": "ffee1932475c277d68d4673e66b50f72e9d71a1be41de2668f095ad8bf3a6603",
+        "payload_sha256": "57d8966799cb221ee994bd040044fb33d2b030cd9a04384fbfd264fb68e4bd86",
+        "predecessor_id": null
+      }
+    ],
+    "decisions": [
+      {
+        "record": {
+          "id": "2fe4f037-59d6-434b-bbe2-c18bbabe5d85",
+          "title": "SYNTHETIC decision",
+          "status": "proposed",
+          "rationale": "SYNTHETIC private rationale",
+          "created_at": "2026-09-14T09:53:56.450798+00:00",
+          "created_by": null,
+          "decided_at": null,
+          "project_id": "152343d7-9b8e-4109-a296-97913371fd1f",
+          "updated_at": "2026-09-14T09:53:56.450798+00:00",
+          "impact_summary": null
+        },
+        "projectName": "SYNTHETIC linked project"
+      }
+    ],
+    "campaignId": "5a645583-3027-441e-a905-7171e9c9c3f9",
+    "entryCount": 1,
+    "workspaceId": "795afa6d-fa36-4296-9dbb-1356788bbf1b",
+    "currentCount": 1,
+    "decisionCount": 1
+  },
+  "withdrawn": {
+    "schema": 1,
+    "current": [
+      {
+        "linkId": "d8a256c1-11e4-4cba-8e0e-0535152e50e0",
+        "sourceState": "unavailable",
+        "unavailableReason": "source_unavailable",
+        "currentContextSha256": null
+      }
+    ],
+    "entries": [
+      {
+        "id": "62d2179f-63ad-4694-8956-0365d1362795",
+        "reason": "SYNTHETIC link reason",
+        "actor_id": "6edd8a07-0d31-4474-81e7-ddc81b9e80b2",
+        "operation": "link",
+        "created_at": "2026-09-14T09:53:56.786658+00:00",
+        "project_id": "152343d7-9b8e-4109-a296-97913371fd1f",
+        "campaign_id": "5a645583-3027-441e-a905-7171e9c9c3f9",
+        "decision_id": "2fe4f037-59d6-434b-bbe2-c18bbabe5d85",
+        "response_id": "6ec31045-aa86-4ddb-b93e-0b1c0d75bf84",
+        "context_text": "{\"schema\": 1, \"project\": {\"id\": \"152343d7-9b8e-4109-a296-97913371fd1f\", \"name\": \"SYNTHETIC linked project\", \"workspaceId\": \"795afa6d-fa36-4296-9dbb-1356788bbf1b\"}, \"sources\": [{\"itemId\": \"88113c13-5ba4-4073-9874-08ed66e4befc\", \"record\": {\"id\": \"88113c13-5ba4-4073-9874-08ed66e4befc\", \"body\": \"SYNTHETIC original source words\", \"title\": \"\u00a0SYNTHETIC raw title\ufeff\", \"status\": \"pending\", \"geometry\": {\"type\": \"LineString\", \"coordinates\": [[12.5, -8.25], [12.75, -8.5]]}, \"latitude\": null, \"longitude\": null, \"created_at\": \"2026-09-14T09:53:56.738684+00:00\", \"updated_at\": \"2026-09-14T09:53:56.738684+00:00\", \"campaign_id\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"category_id\": null, \"source_type\": \"internal\", \"parent_item_id\": null, \"configuration_version_id\": \"831be627-aa60-4441-bba7-a55868041ea8\"}, \"position\": 1, \"availability\": \"available\", \"configurationAvailability\": \"available\"}, {\"itemId\": \"ed6f899c-e7b6-47f7-beba-62af531a40d3\", \"record\": {\"id\": \"ed6f899c-e7b6-47f7-beba-62af531a40d3\", \"body\": \"SYNTHETIC unknown historical configuration\", \"title\": null, \"status\": \"pending\", \"geometry\": null, \"latitude\": null, \"longitude\": null, \"created_at\": \"2026-09-14T09:53:56.738684+00:00\", \"updated_at\": \"2026-09-14T09:53:56.738684+00:00\", \"campaign_id\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"category_id\": null, \"source_type\": \"internal\", \"parent_item_id\": null, \"configuration_version_id\": null}, \"position\": 2, \"availability\": \"available\", \"configurationAvailability\": \"unknown\"}, {\"itemId\": \"88113c13-5ba4-4073-9874-08ed66e4befc\", \"record\": {\"id\": \"88113c13-5ba4-4073-9874-08ed66e4befc\", \"body\": \"SYNTHETIC original source words\", \"title\": \"\u00a0SYNTHETIC raw title\ufeff\", \"status\": \"pending\", \"geometry\": {\"type\": \"LineString\", \"coordinates\": [[12.5, -8.25], [12.75, -8.5]]}, \"latitude\": null, \"longitude\": null, \"created_at\": \"2026-09-14T09:53:56.738684+00:00\", \"updated_at\": \"2026-09-14T09:53:56.738684+00:00\", \"campaign_id\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"category_id\": null, \"source_type\": \"internal\", \"parent_item_id\": null, \"configuration_version_id\": \"831be627-aa60-4441-bba7-a55868041ea8\"}, \"position\": 3, \"availability\": \"available\", \"configurationAvailability\": \"available\"}, {\"itemId\": \"1ca411f5-b6e7-4ca3-9ce3-f398a6e4f6c9\", \"record\": null, \"position\": 4, \"availability\": \"unavailable\", \"configurationAvailability\": \"unavailable\"}, {\"itemId\": \"24ed0f8f-c8dd-413a-8d4b-cdb5e434afeb\", \"record\": null, \"position\": 5, \"availability\": \"unavailable\", \"configurationAvailability\": \"unavailable\"}], \"campaign\": {\"id\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"title\": \"SYNTHETIC revised question context\", \"workspaceId\": \"795afa6d-fa36-4296-9dbb-1356788bbf1b\"}, \"decision\": {\"id\": \"2fe4f037-59d6-434b-bbe2-c18bbabe5d85\", \"title\": \"SYNTHETIC decision\", \"status\": \"proposed\", \"rationale\": \"SYNTHETIC private rationale\", \"created_at\": \"2026-09-14T09:53:56.738684+00:00\", \"created_by\": null, \"decided_at\": null, \"project_id\": \"152343d7-9b8e-4109-a296-97913371fd1f\", \"updated_at\": \"2026-09-14T09:53:56.738684+00:00\", \"impact_summary\": null}, \"response\": {\"id\": \"6ec31045-aa86-4ddb-b93e-0b1c0d75bf84\", \"status\": \"draft\", \"we_did\": \"SYNTHETIC corrected answer\", \"you_said\": \"SYNTHETIC minority input\", \"created_at\": \"2026-09-14T09:53:56.738684+00:00\", \"created_by\": null, \"sort_order\": 0, \"updated_at\": \"2026-09-14T09:53:56.774325+00:00\", \"ai_assisted\": false, \"campaign_id\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"category_id\": null, \"theme_title\": \"SYNTHETIC theme\", \"published_at\": null, \"source_item_ids\": [\"88113c13-5ba4-4073-9874-08ed66e4befc\", \"ed6f899c-e7b6-47f7-beba-62af531a40d3\", \"88113c13-5ba4-4073-9874-08ed66e4befc\", \"1ca411f5-b6e7-4ca3-9ce3-f398a6e4f6c9\", \"24ed0f8f-c8dd-413a-8d4b-cdb5e434afeb\"]}, \"visibility\": \"private\", \"sourceCount\": 5, \"relationship\": {\"id\": \"b822211d-bc91-4473-9f20-0dea4888b345\", \"created_at\": \"2026-09-14T09:53:56.738684+00:00\", \"created_by\": null, \"project_id\": \"152343d7-9b8e-4109-a296-97913371fd1f\", \"campaign_id\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"workspace_id\": \"795afa6d-fa36-4296-9dbb-1356788bbf1b\"}, \"configurations\": [{\"id\": \"831be627-aa60-4441-bba7-a55868041ea8\", \"createdAt\": \"2026-09-14T09:53:56.75979+00:00\", \"campaignId\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"definitionText\": \"{\\\"layers\\\": [], \\\"schema\\\": 1, \\\"campaign\\\": {\\\"title\\\": \\\"SYNTHETIC original question context\\\", \\\"summary\\\": null, \\\"place_bbox\\\": [null, null, null, null], \\\"place_label\\\": null, \\\"instructions\\\": null, \\\"project_frame\\\": {\\\"bbox\\\": [null, null, null, null], \\\"label\\\": null, \\\"source\\\": null}, \\\"engagement_type\\\": \\\"comment_collection\\\", \\\"workspace_frame\\\": {\\\"bbox\\\": [null, null, null, null], \\\"label\\\": null, \\\"source\\\": null}, \\\"demographics_enabled\\\": false, \\\"participation_ends_at\\\": null, \\\"default_content_locale\\\": null, \\\"place_geometry_geojson\\\": null, \\\"participation_starts_at\\\": null, \\\"accessibility_contact_email\\\": null, \\\"accessibility_contact_label\\\": null, \\\"accessibility_contact_phone\\\": null, \\\"submission_geofence_enabled\\\": false, \\\"accessibility_alternate_formats\\\": null}, \\\"questions\\\": [], \\\"categories\\\": [], \\\"translations\\\": []}\", \"definitionSha256\": \"7c973a78bcc502801339d4f068c959c94b7f4ea34f2efe40b9d25cd74117d1aa\"}], \"responseHistory\": {\"id\": \"74153601-3b91-4b75-b152-b6f3d7956ce3\", \"event\": \"corrected\", \"actorId\": null, \"revision\": 2, \"recordText\": \"{\\\"id\\\": \\\"6ec31045-aa86-4ddb-b93e-0b1c0d75bf84\\\", \\\"status\\\": \\\"draft\\\", \\\"we_did\\\": \\\"SYNTHETIC corrected answer\\\", \\\"you_said\\\": \\\"SYNTHETIC minority input\\\", \\\"created_at\\\": \\\"2026-09-14T09:53:56.738684+00:00\\\", \\\"created_by\\\": null, \\\"sort_order\\\": 0, \\\"updated_at\\\": \\\"2026-09-14T09:53:56.774325+00:00\\\", \\\"ai_assisted\\\": false, \\\"campaign_id\\\": \\\"5a645583-3027-441e-a905-7171e9c9c3f9\\\", \\\"category_id\\\": null, \\\"theme_title\\\": \\\"SYNTHETIC theme\\\", \\\"published_at\\\": null, \\\"source_item_ids\\\": [\\\"88113c13-5ba4-4073-9874-08ed66e4befc\\\", \\\"ed6f899c-e7b6-47f7-beba-62af531a40d3\\\", \\\"88113c13-5ba4-4073-9874-08ed66e4befc\\\", \\\"1ca411f5-b6e7-4ca3-9ce3-f398a6e4f6c9\\\", \\\"24ed0f8f-c8dd-413a-8d4b-cdb5e434afeb\\\"]}\", \"recordedAt\": \"2026-09-14T09:53:56.774839+00:00\", \"recordSha256\": \"a5f3d28df6128f9467f90200a598f78bbb3dcec89fc461f8849e6e72874f590d\"}, \"sourceObservation\": \"current_at_link_preview\", \"configurationCount\": 1}",
+        "payload_json": {
+          "reason": "SYNTHETIC link reason",
+          "operation": "link",
+          "campaignId": "5a645583-3027-441e-a905-7171e9c9c3f9",
+          "decisionId": "2fe4f037-59d6-434b-bbe2-c18bbabe5d85",
+          "responseId": "6ec31045-aa86-4ddb-b93e-0b1c0d75bf84",
+          "predecessorId": null,
+          "expectedContextSha256": "48d6a9191ec1712013d3b4f7b5b804c213161cd3a65c20a767723559496c2e33"
+        },
+        "payload_text": "{\"reason\": \"SYNTHETIC link reason\", \"operation\": \"link\", \"campaignId\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"decisionId\": \"2fe4f037-59d6-434b-bbe2-c18bbabe5d85\", \"responseId\": \"6ec31045-aa86-4ddb-b93e-0b1c0d75bf84\", \"predecessorId\": null, \"expectedContextSha256\": \"48d6a9191ec1712013d3b4f7b5b804c213161cd3a65c20a767723559496c2e33\"}",
+        "workspace_id": "795afa6d-fa36-4296-9dbb-1356788bbf1b",
+        "context_sha256": "48d6a9191ec1712013d3b4f7b5b804c213161cd3a65c20a767723559496c2e33",
+        "payload_sha256": "5c80c1ac1a28e8aa0d0457dfd88ebf60d619ed16d2463cb9f08880f40735ee1a",
+        "predecessor_id": null
+      },
+      {
+        "id": "d8a256c1-11e4-4cba-8e0e-0535152e50e0",
+        "reason": "SYNTHETIC link reason",
+        "actor_id": "6edd8a07-0d31-4474-81e7-ddc81b9e80b2",
+        "operation": "withdraw",
+        "created_at": "2026-09-14T09:53:56.793574+00:00",
+        "project_id": "152343d7-9b8e-4109-a296-97913371fd1f",
+        "campaign_id": "5a645583-3027-441e-a905-7171e9c9c3f9",
+        "decision_id": "2fe4f037-59d6-434b-bbe2-c18bbabe5d85",
+        "response_id": "6ec31045-aa86-4ddb-b93e-0b1c0d75bf84",
+        "context_text": "{\"schema\": 1, \"project\": {\"id\": \"152343d7-9b8e-4109-a296-97913371fd1f\", \"name\": \"SYNTHETIC linked project\", \"workspaceId\": \"795afa6d-fa36-4296-9dbb-1356788bbf1b\"}, \"sources\": [{\"itemId\": \"88113c13-5ba4-4073-9874-08ed66e4befc\", \"record\": {\"id\": \"88113c13-5ba4-4073-9874-08ed66e4befc\", \"body\": \"SYNTHETIC original source words\", \"title\": \"\u00a0SYNTHETIC raw title\ufeff\", \"status\": \"pending\", \"geometry\": {\"type\": \"LineString\", \"coordinates\": [[12.5, -8.25], [12.75, -8.5]]}, \"latitude\": null, \"longitude\": null, \"created_at\": \"2026-09-14T09:53:56.738684+00:00\", \"updated_at\": \"2026-09-14T09:53:56.738684+00:00\", \"campaign_id\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"category_id\": null, \"source_type\": \"internal\", \"parent_item_id\": null, \"configuration_version_id\": \"831be627-aa60-4441-bba7-a55868041ea8\"}, \"position\": 1, \"availability\": \"available\", \"configurationAvailability\": \"available\"}, {\"itemId\": \"ed6f899c-e7b6-47f7-beba-62af531a40d3\", \"record\": {\"id\": \"ed6f899c-e7b6-47f7-beba-62af531a40d3\", \"body\": \"SYNTHETIC unknown historical configuration\", \"title\": null, \"status\": \"pending\", \"geometry\": null, \"latitude\": null, \"longitude\": null, \"created_at\": \"2026-09-14T09:53:56.738684+00:00\", \"updated_at\": \"2026-09-14T09:53:56.738684+00:00\", \"campaign_id\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"category_id\": null, \"source_type\": \"internal\", \"parent_item_id\": null, \"configuration_version_id\": null}, \"position\": 2, \"availability\": \"available\", \"configurationAvailability\": \"unknown\"}, {\"itemId\": \"88113c13-5ba4-4073-9874-08ed66e4befc\", \"record\": {\"id\": \"88113c13-5ba4-4073-9874-08ed66e4befc\", \"body\": \"SYNTHETIC original source words\", \"title\": \"\u00a0SYNTHETIC raw title\ufeff\", \"status\": \"pending\", \"geometry\": {\"type\": \"LineString\", \"coordinates\": [[12.5, -8.25], [12.75, -8.5]]}, \"latitude\": null, \"longitude\": null, \"created_at\": \"2026-09-14T09:53:56.738684+00:00\", \"updated_at\": \"2026-09-14T09:53:56.738684+00:00\", \"campaign_id\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"category_id\": null, \"source_type\": \"internal\", \"parent_item_id\": null, \"configuration_version_id\": \"831be627-aa60-4441-bba7-a55868041ea8\"}, \"position\": 3, \"availability\": \"available\", \"configurationAvailability\": \"available\"}, {\"itemId\": \"1ca411f5-b6e7-4ca3-9ce3-f398a6e4f6c9\", \"record\": null, \"position\": 4, \"availability\": \"unavailable\", \"configurationAvailability\": \"unavailable\"}, {\"itemId\": \"24ed0f8f-c8dd-413a-8d4b-cdb5e434afeb\", \"record\": null, \"position\": 5, \"availability\": \"unavailable\", \"configurationAvailability\": \"unavailable\"}], \"campaign\": {\"id\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"title\": \"SYNTHETIC revised question context\", \"workspaceId\": \"795afa6d-fa36-4296-9dbb-1356788bbf1b\"}, \"decision\": {\"id\": \"2fe4f037-59d6-434b-bbe2-c18bbabe5d85\", \"title\": \"SYNTHETIC decision\", \"status\": \"proposed\", \"rationale\": \"SYNTHETIC private rationale\", \"created_at\": \"2026-09-14T09:53:56.738684+00:00\", \"created_by\": null, \"decided_at\": null, \"project_id\": \"152343d7-9b8e-4109-a296-97913371fd1f\", \"updated_at\": \"2026-09-14T09:53:56.738684+00:00\", \"impact_summary\": null}, \"response\": {\"id\": \"6ec31045-aa86-4ddb-b93e-0b1c0d75bf84\", \"status\": \"draft\", \"we_did\": \"SYNTHETIC corrected answer\", \"you_said\": \"SYNTHETIC minority input\", \"created_at\": \"2026-09-14T09:53:56.738684+00:00\", \"created_by\": null, \"sort_order\": 0, \"updated_at\": \"2026-09-14T09:53:56.774325+00:00\", \"ai_assisted\": false, \"campaign_id\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"category_id\": null, \"theme_title\": \"SYNTHETIC theme\", \"published_at\": null, \"source_item_ids\": [\"88113c13-5ba4-4073-9874-08ed66e4befc\", \"ed6f899c-e7b6-47f7-beba-62af531a40d3\", \"88113c13-5ba4-4073-9874-08ed66e4befc\", \"1ca411f5-b6e7-4ca3-9ce3-f398a6e4f6c9\", \"24ed0f8f-c8dd-413a-8d4b-cdb5e434afeb\"]}, \"visibility\": \"private\", \"sourceCount\": 5, \"relationship\": {\"id\": \"b822211d-bc91-4473-9f20-0dea4888b345\", \"created_at\": \"2026-09-14T09:53:56.738684+00:00\", \"created_by\": null, \"project_id\": \"152343d7-9b8e-4109-a296-97913371fd1f\", \"campaign_id\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"workspace_id\": \"795afa6d-fa36-4296-9dbb-1356788bbf1b\"}, \"configurations\": [{\"id\": \"831be627-aa60-4441-bba7-a55868041ea8\", \"createdAt\": \"2026-09-14T09:53:56.75979+00:00\", \"campaignId\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"definitionText\": \"{\\\"layers\\\": [], \\\"schema\\\": 1, \\\"campaign\\\": {\\\"title\\\": \\\"SYNTHETIC original question context\\\", \\\"summary\\\": null, \\\"place_bbox\\\": [null, null, null, null], \\\"place_label\\\": null, \\\"instructions\\\": null, \\\"project_frame\\\": {\\\"bbox\\\": [null, null, null, null], \\\"label\\\": null, \\\"source\\\": null}, \\\"engagement_type\\\": \\\"comment_collection\\\", \\\"workspace_frame\\\": {\\\"bbox\\\": [null, null, null, null], \\\"label\\\": null, \\\"source\\\": null}, \\\"demographics_enabled\\\": false, \\\"participation_ends_at\\\": null, \\\"default_content_locale\\\": null, \\\"place_geometry_geojson\\\": null, \\\"participation_starts_at\\\": null, \\\"accessibility_contact_email\\\": null, \\\"accessibility_contact_label\\\": null, \\\"accessibility_contact_phone\\\": null, \\\"submission_geofence_enabled\\\": false, \\\"accessibility_alternate_formats\\\": null}, \\\"questions\\\": [], \\\"categories\\\": [], \\\"translations\\\": []}\", \"definitionSha256\": \"7c973a78bcc502801339d4f068c959c94b7f4ea34f2efe40b9d25cd74117d1aa\"}], \"responseHistory\": {\"id\": \"74153601-3b91-4b75-b152-b6f3d7956ce3\", \"event\": \"corrected\", \"actorId\": null, \"revision\": 2, \"recordText\": \"{\\\"id\\\": \\\"6ec31045-aa86-4ddb-b93e-0b1c0d75bf84\\\", \\\"status\\\": \\\"draft\\\", \\\"we_did\\\": \\\"SYNTHETIC corrected answer\\\", \\\"you_said\\\": \\\"SYNTHETIC minority input\\\", \\\"created_at\\\": \\\"2026-09-14T09:53:56.738684+00:00\\\", \\\"created_by\\\": null, \\\"sort_order\\\": 0, \\\"updated_at\\\": \\\"2026-09-14T09:53:56.774325+00:00\\\", \\\"ai_assisted\\\": false, \\\"campaign_id\\\": \\\"5a645583-3027-441e-a905-7171e9c9c3f9\\\", \\\"category_id\\\": null, \\\"theme_title\\\": \\\"SYNTHETIC theme\\\", \\\"published_at\\\": null, \\\"source_item_ids\\\": [\\\"88113c13-5ba4-4073-9874-08ed66e4befc\\\", \\\"ed6f899c-e7b6-47f7-beba-62af531a40d3\\\", \\\"88113c13-5ba4-4073-9874-08ed66e4befc\\\", \\\"1ca411f5-b6e7-4ca3-9ce3-f398a6e4f6c9\\\", \\\"24ed0f8f-c8dd-413a-8d4b-cdb5e434afeb\\\"]}\", \"recordedAt\": \"2026-09-14T09:53:56.774839+00:00\", \"recordSha256\": \"a5f3d28df6128f9467f90200a598f78bbb3dcec89fc461f8849e6e72874f590d\"}, \"sourceObservation\": \"current_at_link_preview\", \"configurationCount\": 1}",
+        "payload_json": {
+          "reason": "SYNTHETIC link reason",
+          "operation": "withdraw",
+          "campaignId": "5a645583-3027-441e-a905-7171e9c9c3f9",
+          "decisionId": "2fe4f037-59d6-434b-bbe2-c18bbabe5d85",
+          "responseId": "6ec31045-aa86-4ddb-b93e-0b1c0d75bf84",
+          "predecessorId": "62d2179f-63ad-4694-8956-0365d1362795",
+          "expectedContextSha256": null
+        },
+        "payload_text": "{\"reason\": \"SYNTHETIC link reason\", \"operation\": \"withdraw\", \"campaignId\": \"5a645583-3027-441e-a905-7171e9c9c3f9\", \"decisionId\": \"2fe4f037-59d6-434b-bbe2-c18bbabe5d85\", \"responseId\": \"6ec31045-aa86-4ddb-b93e-0b1c0d75bf84\", \"predecessorId\": \"62d2179f-63ad-4694-8956-0365d1362795\", \"expectedContextSha256\": null}",
+        "workspace_id": "795afa6d-fa36-4296-9dbb-1356788bbf1b",
+        "context_sha256": "48d6a9191ec1712013d3b4f7b5b804c213161cd3a65c20a767723559496c2e33",
+        "payload_sha256": "a7c27fd3b4b4cd9766d1ee0498bd167704b4c75f522aff9bbe39517a877dfb2c",
+        "predecessor_id": "62d2179f-63ad-4694-8956-0365d1362795"
+      }
+    ],
+    "decisions": [],
+    "campaignId": "5a645583-3027-441e-a905-7171e9c9c3f9",
+    "entryCount": 2,
+    "workspaceId": "795afa6d-fa36-4296-9dbb-1356788bbf1b",
+    "currentCount": 1,
+    "decisionCount": 0
+  }
+}

@@ -27,7 +27,7 @@ assert created.returncode==0,created.stderr
 restore=subprocess.run(['docker','exec','-i',container,'psql','-U','supabase_admin','-d',database,'-X','-q','-1','-v','ON_ERROR_STOP=1'],input=dump.stdout,capture_output=True,timeout=90)
 (private/'restore.log').write_bytes(restore.stdout+restore.stderr)
 assert restore.returncode==0,restore.stderr.decode()[-2500:]
-candidates=[review/'decision-context-candidate.sql',review/'decision-link-candidate.sql']
+candidates=[review/'decision-context-candidate.sql',review/'decision-link-candidate.sql',review/'decision-history-candidate.sql']
 installed=sql('BEGIN;\n'+'\n'.join(p.read_text() for p in candidates)+'\nCOMMIT;',database)
 (private/'candidate-install.log').write_text(installed.stdout+installed.stderr)
 assert installed.returncode==0,installed.stderr

@@ -165,47 +165,74 @@ def source_case(kind,label):
         assert objects(saved.stdout)[-1]['replayed'] is False,label+' failed attempt became receipt'
 
 
+def foreign_decision_case(label):
+    f=fixture(label)
+    f['decision']=f['otherDecision']
+    denied(call(write(f),label+'-ordinary'),'P0002',label+' ordinary foreign decision was not refused')
+    with held(f"SELECT id FROM project_decisions WHERE id='{f['otherDecision']}' FOR UPDATE;",label) as (child,_):
+        denied(call(write(f),label+'-overlap'),'P0002',label+' foreign lock state was exposed')
+        finish(child)
+
+
 candidate=review/'decision-link-candidate.sql'
 source=candidate.read_text()
 assert hashlib.sha256(candidate.read_bytes()).hexdigest()==manifest['candidateSha256'][candidate.name]
 function='CREATE OR REPLACE FUNCTION public.write_engagement_response_decision_link'+source.split('CREATE FUNCTION public.write_engagement_response_decision_link',1)[1].split('REVOKE ALL ON FUNCTION',1)[0]
 original_definition=must("SELECT pg_get_functiondef('public.write_engagement_response_decision_link(uuid,uuid,uuid,uuid,text,uuid,text,text)'::regprocedure);",'original-definition')
-results=[]
-try:
-    for name,definition in [('baseline',function),('harmless-comment',function+'\n-- Harmless lock comment.\n')]:
-        must(definition,name+'-install')
-        replay_case(name+'-exact-retry')
-        replay_case(name+'-interrupted-rollback',rollback=True)
-        replay_case(name+'-competing-root',competing=True)
-        replay_case(name+'-competing-successor',competing=True,successor=True)
-        for kind in ('source','decision','relationship','membership','source-lock','decision-lock','membership-lock'):
-            source_case(kind,name+'-'+kind)
-        results.append({'case':name,'outcome':'survived','overlappingCases':11})
-        print(name,'survived 11 races',flush=True)
-    for name,old,new,kind in [
-        ('missing-source-lock','PERFORM 1 FROM public.engagement_items WHERE campaign_id = p_campaign\n      AND id = ANY(response.source_item_ids) ORDER BY id FOR SHARE NOWAIT;','PERFORM 1;','source-lock'),
-        ('missing-decision-lock','WHERE id = p_decision FOR SHARE NOWAIT;','WHERE id = p_decision;','decision-lock'),
-        ('missing-relationship-lock','AND workspace_id = campaign.workspace_id FOR SHARE NOWAIT) THEN','AND workspace_id = campaign.workspace_id) THEN','relationship'),
-        ('missing-membership-lock',"AND user_id = auth.uid() AND role IN ('owner', 'admin', 'member') FOR SHARE NOWAIT","AND user_id = auth.uid() AND role IN ('owner', 'admin', 'member')",'membership-lock'),
-    ]:
-        assert function.count(old)==1,name
-        must(function.replace(old,new,1),name+'-install')
+def main():
+    results=[]
+    try:
+        for name,definition in [('baseline',function),('harmless-comment',function+'\n-- Harmless lock comment.\n')]:
+            must(definition,name+'-install')
+            replay_case(name+'-exact-retry')
+            replay_case(name+'-interrupted-rollback',rollback=True)
+            replay_case(name+'-competing-root',competing=True)
+            replay_case(name+'-competing-successor',competing=True,successor=True)
+            for kind in ('source','decision','relationship','membership','source-lock','decision-lock','membership-lock'):
+                source_case(kind,name+'-'+kind)
+            foreign_decision_case(name+'-foreign-decision')
+            results.append({'case':name,'outcome':'survived','overlappingCases':12})
+            print(name,'survived 12 races',flush=True)
+        for name,old,new,kind in [
+            ('missing-source-lock','PERFORM 1 FROM public.engagement_items WHERE campaign_id = p_campaign\n      AND id = ANY(response.source_item_ids) ORDER BY id FOR SHARE NOWAIT;','PERFORM 1;','source-lock'),
+            ('missing-decision-lock',') FOR SHARE OF d NOWAIT;',');','decision-lock'),
+            ('missing-relationship-lock','AND workspace_id = campaign.workspace_id FOR SHARE NOWAIT) THEN','AND workspace_id = campaign.workspace_id) THEN','relationship'),
+            ('missing-membership-lock',"AND user_id = auth.uid() AND role IN ('owner', 'admin', 'member') FOR SHARE NOWAIT","AND user_id = auth.uid() AND role IN ('owner', 'admin', 'member')",'membership-lock'),
+        ]:
+            assert function.count(old)==1,name
+            must(function.replace(old,new,1),name+'-install')
+            try:
+                source_case(kind,name)
+            except AssertionError as error:
+                assert name+' overlap was not refused' in str(error),str(error)
+                (private/(name+'-expected-failure.log')).write_text(str(error)+'\n')
+                results.append({'case':name,'outcome':'killed','expectedFailure':name+' overlap was not refused'})
+                print(name,'killed',flush=True)
+            else:
+                raise AssertionError('Lock mutation survived: '+name)
+        name='foreign-decision-lock-scope'
+        old='WHERE d.id = p_decision AND EXISTS (\n        SELECT 1 FROM public.projects p JOIN public.engagement_campaign_projects cp ON cp.project_id = p.id\n        WHERE p.id = d.project_id AND p.workspace_id = campaign.workspace_id\n          AND cp.campaign_id = p_campaign AND cp.workspace_id = campaign.workspace_id\n      ) FOR SHARE OF d NOWAIT;'
+        assert function.count(old)==1
+        must(function.replace(old,'WHERE d.id = p_decision FOR SHARE OF d NOWAIT;',1),name+'-install')
         try:
-            source_case(kind,name)
+            foreign_decision_case(name)
         except AssertionError as error:
-            assert name+' overlap was not refused' in str(error),str(error)
-            (private/(name+'-expected-failure.log')).write_text(str(error)+'\n')
-            results.append({'case':name,'outcome':'killed','expectedFailure':name+' overlap was not refused'})
+            assert name+' foreign lock state was exposed' in str(error),str(error)
+            results.append({'case':name,'outcome':'killed','expectedFailure':name+' foreign lock state was exposed'})
             print(name,'killed',flush=True)
         else:
-            raise AssertionError('Lock mutation survived: '+name)
-finally:
-    must(function,'restore-function')
-    final=must("SELECT pg_get_functiondef('public.write_engagement_response_decision_link(uuid,uuid,uuid,uuid,text,uuid,text,text)'::regprocedure);",'final-definition')
-    restored=final==original_definition
-    (review/'decision-concurrency-results.json').write_text(json.dumps({
-        'container':manifest['container'],'database':manifest['database'],'privateEvidence':str(private),
-        'candidateSha256':manifest['candidateSha256'],'results':results,'definitionRestored':restored,
-        'limits':'Real held native transactions with pg_stat_activity readiness and process liveness. Synthetic fixtures remain only in disconnected proof DB. No PostgREST, browser, public disclosure or provider/worker traffic. Failed competitors roll back, and failed held test transactions roll back.',
-    },indent=2)+'\n')
-    assert restored,'Native command definition not restored'
+            raise AssertionError('Foreign decision scope mutation survived')
+    finally:
+        must(function,'restore-function')
+        final=must("SELECT pg_get_functiondef('public.write_engagement_response_decision_link(uuid,uuid,uuid,uuid,text,uuid,text,text)'::regprocedure);",'final-definition')
+        restored=final==original_definition
+        (review/'decision-concurrency-results.json').write_text(json.dumps({
+            'container':manifest['container'],'database':manifest['database'],'privateEvidence':str(private),
+            'candidateSha256':manifest['candidateSha256'],'results':results,'definitionRestored':restored,
+            'limits':'Real held native transactions with pg_stat_activity readiness and process liveness. Synthetic fixtures remain only in disconnected proof DB. No PostgREST, browser, public disclosure or provider/worker traffic. Failed competitors roll back, and failed held test transactions roll back.',
+        },indent=2)+'\n')
+        assert restored,'Native command definition not restored'
+
+
+if __name__ == "__main__":
+    main()

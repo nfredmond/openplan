@@ -121,32 +121,37 @@ mutations = [
     ('withdrawal-requires-live-source', "IF p_operation = 'withdraw' THEN\n", "IF false THEN\n", 'Response or decision is unavailable'),
     ('empty-reason', "OR p_request = p_predecessor OR NULLIF(btrim(p_reason), '') IS NULL OR length(p_reason) > 2000", 'OR p_request = p_predecessor', 'Empty reason was not refused'),
 ]
-results=[]
-try:
-    for name,body,expected in [('baseline',original,None),('harmless-comment',original+'\n-- Harmless link comment.\n',None)]+[(name,original.replace(old,new,1),expected) for name,old,new,expected in mutations]:
-        if expected:
-            old=next(old for mutation,old,_,_ in mutations if mutation==name)
-            assert original.count(old)==1,name
-        try:
-            summary=run(body)
-        except AssertionError as error:
-            (private/(name+'.log')).write_text(str(error)+'\n')
-            assert expected and expected in str(error),str(error)
-            outcome='killed'
-        else:
-            assert expected is None,'Link mutation survived: '+name
-            outcome='survived'
-        results.append({'case':name,'outcome':outcome,'expectedFailure':expected})
-        print(name,outcome,flush=True)
-finally:
-    restored=fixture.state()=='339:20261014000020\nt'
-    table=fixture.sql("SELECT to_regclass('public.engagement_response_decision_links') IS NULL;")
-    restored=restored and table.returncode==0 and table.stdout.strip()=='t'
-    (review/'decision-link-results.json').write_text(json.dumps({
-        'container':fixture.container,'database':'postgres','baseLedger':'339:20261014000020',
-        'candidateSha256':hashlib.sha256(candidate.read_bytes()).hexdigest(),
-        'contextCandidateSha256':hashlib.sha256(fixture.candidate.read_bytes()).hexdigest(),
-        'results':results,'candidateAndFixturesRolledBack':restored,
-        'limits':'Native serial lifecycle and mutation evidence only. Concurrency, direct command grants, all malformed intents, PostgREST recovery, UI, public disclosure and exports remain to test before installation and release.',
-    },indent=2)+'\n')
-    assert restored,'Candidate schema survived rollback'
+def main():
+    results=[]
+    try:
+        for name,body,expected in [('baseline',original,None),('harmless-comment',original+'\n-- Harmless link comment.\n',None)]+[(name,original.replace(old,new,1),expected) for name,old,new,expected in mutations]:
+            if expected:
+                old=next(old for mutation,old,_,_ in mutations if mutation==name)
+                assert original.count(old)==1,name
+            try:
+                summary=run(body)
+            except AssertionError as error:
+                (private/(name+'.log')).write_text(str(error)+'\n')
+                assert expected and expected in str(error),str(error)
+                outcome='killed'
+            else:
+                assert expected is None,'Link mutation survived: '+name
+                outcome='survived'
+            results.append({'case':name,'outcome':outcome,'expectedFailure':expected})
+            print(name,outcome,flush=True)
+    finally:
+        restored=fixture.state()=='339:20261014000020\nt'
+        table=fixture.sql("SELECT to_regclass('public.engagement_response_decision_links') IS NULL;")
+        restored=restored and table.returncode==0 and table.stdout.strip()=='t'
+        (review/'decision-link-results.json').write_text(json.dumps({
+            'container':fixture.container,'database':'postgres','baseLedger':'339:20261014000020',
+            'candidateSha256':hashlib.sha256(candidate.read_bytes()).hexdigest(),
+            'contextCandidateSha256':hashlib.sha256(fixture.candidate.read_bytes()).hexdigest(),
+            'results':results,'candidateAndFixturesRolledBack':restored,
+            'limits':'Native serial lifecycle and mutation evidence only. Concurrency, direct command grants, all malformed intents, PostgREST recovery, UI, public disclosure and exports remain to test before installation and release.',
+        },indent=2)+'\n')
+        assert restored,'Candidate schema survived rollback'
+
+
+if __name__ == "__main__":
+    main()

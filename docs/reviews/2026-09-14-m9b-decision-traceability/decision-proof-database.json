@@ -5,9 +5,11 @@
   "schemaSha256": "9360ef978ebd476c1fe93a00742d3d53068aaac4298c39dbcf3db168059860c6",
   "candidateSha256": {
     "decision-context-candidate.sql": "44e599b5ab9b1e082179587c02a7c67a031dae813f28eec026f7be948156c342",
-    "decision-link-candidate.sql": "ceb9f226283f0c95232a1db9719fc6b18e1d01041ecd3753a5b387171fa78541"
+    "decision-link-candidate.sql": "5bf2905c17a5205ece6bd4218d6489840c7a88602b58a69a2eba203c634ccd3b",
+    "decision-history-candidate.sql": "d2c50bc27cf101bbb5443bea721758aea0b4154d6d371e75419e601df0f601a0"
   },
   "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/proof-database",
   "emptyUserAndContributionTables": true,
-  "limits": "Schema-only native proof database. No PostgREST, auth server, browser or worker is connected. Synthetic concurrency fixtures will be retained here; never connect a worker or use this as the application database."
+  "limits": "Schema-only native proof database. No PostgREST, auth server, browser or worker is connected. Synthetic concurrency fixtures will be retained here; never connect a worker or use this as the application database.",
+  "extension": "Proof database only: history reader, canonical receipt payload text and decision-scope-before-lock correction installed after serial checks. Application postgres remains at 339 migrations."
 }

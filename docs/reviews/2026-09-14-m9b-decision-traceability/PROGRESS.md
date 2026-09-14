@@ -1,5 +1,64 @@
 # Response-to-decision context in progress
 
+## Current history and HTTP checkpoint
+
+Private history and HTTP integration now exist in addition to the original
+native candidates. No application migration or editor integration is installed
+yet. The new routes return unavailable against an unupgraded application schema;
+this is unfinished development, not a release or browser acceptance claim.
+
+`decision-history-candidate.sql` returns current eligible project decisions,
+complete retained link chains and distinct unchanged/changed/unavailable source
+states. The serial probe reads 1006 retained rows, preserves original context
+after decision removal and withdrawal, and checks empty and populated staff
+access. Baseline and harmless controls pass; eight targeted failures are recorded
+in `decision-history-results.json`. `HISTORY_COVERAGE_GAP.md` preserves the initial
+viewer mutation that survived due to borrowing a nested reader's protection.
+
+The native save receipt now includes exact `payload_text` alongside its stored
+checksum. That function and the history reader were installed only in the
+disconnected proof database. Its manifest has the updated hashes. Serial link
+and all 11 concurrency cases were rerun with the receipt change; four removed
+row locks still fail. The ordinary application database remains at 339/20.
+
+`openplan/src/lib/engagement/decision-links.ts` checks native context/definition/
+history bytes, reference counts and ordering, scope, nonforking chains, cycles,
+exact actors/requests and current-source labels. Both server loaders and future
+browser recovery use this checker. Cycle checking reuses resolved paths rather
+than repeatedly walking an entire long history. The native synthetic fixture in
+`openplan/src/test/fixtures/decision-link-native.json` contains no real records.
+
+Private GET history, GET context and POST command routes now call those loaders.
+POST checks browser origin, expected user/workspace, strict intent and native
+receipts. It makes one write attempt, preserves conflict/unavailable outcomes,
+and explicitly refuses unregistered Planner Agent headers. No current-source
+preflight is inserted before receipt replay. Responses are private/no-store and
+do not expose database diagnostics. The RPC/client boundary is mocked in route
+tests; this is not live HTTP, browser recovery or database grant evidence.
+
+The 36 TypeScript contract/route tests and a harmless control pass. All 26
+targeted parser/route mutations fail their named executed assertions; runner or
+import failures do not count. `decision-http-contract-results.json` retains the
+exact sources and private reports. Full QA and current CI are separate next
+checks, followed by the remaining native boundary cases and editor integration.
+
+A further native counterexample found the command attempted to lock a foreign
+decision before checking campaign/project scope. An idle foreign row returned
+`P0002`; a busy foreign row returned `PT503`. No contents or saved links were
+returned, but the error exposed foreign lock state. The command now filters the
+decision by both workspace and campaign/project membership before taking its row
+lock, then rechecks and locks the relationship before saving. The retained
+`FOREIGN_DECISION_LOCK_FINDING.json` records the old hash and observed errors.
+Current baseline and harmless controls each pass 12 races, and all five lock/
+scope mutations fail. Serial link and history probes were rerun on the corrected
+candidate; the application database still has neither candidate installed.
+
+CI `34827922723` finished all five jobs successfully, and RLS `34827922744` passed,
+for the preceding `24f0dc9f` checkpoint. These results do not cover this later HTTP
+implementation. Full local QA and its final remote CI remain separate checks.
+
+## Earlier native implementation checkpoint
+
 The v0.59.0 publication checkpoint is `8d563fd2` on main. Work continues in
 `/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13`
 on `work/engagement-decision-traceability`. The original checkout has another

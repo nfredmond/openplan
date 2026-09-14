@@ -90,7 +90,7 @@ BEGIN
     IF receipt.actor_id IS DISTINCT FROM auth.uid() OR receipt.payload_json IS DISTINCT FROM envelope THEN
       RAISE EXCEPTION 'Request identity belongs to a different decision link' USING ERRCODE = '23505';
     END IF;
-    RETURN jsonb_build_object('link', to_jsonb(receipt), 'replayed', true);
+    RETURN jsonb_build_object('link', to_jsonb(receipt) || jsonb_build_object('payload_text', receipt.payload_json::text), 'replayed', true);
   END IF;
   IF NOT pg_try_advisory_xact_lock(hashtextextended(
     'engagement-decision-pair:' || p_campaign::text || ':' || p_response::text || ':' || p_decision::text, 0)) THEN
@@ -117,7 +117,12 @@ BEGIN
   ELSE
     SELECT * INTO response FROM public.engagement_closeloop_entries
       WHERE id = p_response AND campaign_id = p_campaign FOR SHARE NOWAIT;
-    SELECT * INTO decision FROM public.project_decisions WHERE id = p_decision FOR SHARE NOWAIT;
+    SELECT d.* INTO decision FROM public.project_decisions d
+      WHERE d.id = p_decision AND EXISTS (
+        SELECT 1 FROM public.projects p JOIN public.engagement_campaign_projects cp ON cp.project_id = p.id
+        WHERE p.id = d.project_id AND p.workspace_id = campaign.workspace_id
+          AND cp.campaign_id = p_campaign AND cp.workspace_id = campaign.workspace_id
+      ) FOR SHARE OF d NOWAIT;
     IF response.id IS NULL OR decision.id IS NULL THEN
       RAISE EXCEPTION 'Response or decision is unavailable' USING ERRCODE = 'P0002';
     END IF;
@@ -147,7 +152,7 @@ BEGIN
     p_request, campaign.workspace_id, p_campaign, p_response, p_decision, saved_project, p_predecessor,
     p_operation, auth.uid(), p_reason, envelope, saved_context
   ) RETURNING * INTO receipt;
-  RETURN jsonb_build_object('link', to_jsonb(receipt), 'replayed', false);
+  RETURN jsonb_build_object('link', to_jsonb(receipt) || jsonb_build_object('payload_text', receipt.payload_json::text), 'replayed', false);
 EXCEPTION WHEN lock_not_available THEN
   RAISE EXCEPTION 'Decision link sources are busy; retry the same request' USING ERRCODE = 'PT503';
 END $$;

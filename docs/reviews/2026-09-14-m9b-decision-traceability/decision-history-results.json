@@ -1,0 +1,61 @@
+{
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "database": "postgres",
+  "candidateSha256": "d2c50bc27cf101bbb5443bea721758aea0b4154d6d371e75419e601df0f601a0",
+  "contextCandidateSha256": "44e599b5ab9b1e082179587c02a7c67a031dae813f28eec026f7be948156c342",
+  "linkCandidateSha256": "5bf2905c17a5205ece6bd4218d6489840c7a88602b58a69a2eba203c634ccd3b",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived",
+      "expectedFailure": null
+    },
+    {
+      "case": "unscoped-decisions",
+      "outcome": "killed",
+      "expectedFailure": "Eligible decision scope differs"
+    },
+    {
+      "case": "hidden-change",
+      "outcome": "killed",
+      "expectedFailure": "Source correction was hidden"
+    },
+    {
+      "case": "invented-current-source",
+      "outcome": "killed",
+      "expectedFailure": "Missing source meaning differs"
+    },
+    {
+      "case": "viewer-history",
+      "outcome": "killed",
+      "expectedFailure": "viewer history read was not refused"
+    },
+    {
+      "case": "anonymous-execute",
+      "outcome": "killed",
+      "expectedFailure": "anon history execution was not refused"
+    },
+    {
+      "case": "service-execute",
+      "outcome": "killed",
+      "expectedFailure": "service_role history execution was not refused"
+    },
+    {
+      "case": "missing-history-row",
+      "outcome": "killed",
+      "expectedFailure": "Retained history truncated or leaves duplicated"
+    },
+    {
+      "case": "nonleaf-current",
+      "outcome": "killed",
+      "expectedFailure": "Withdrawal chain census differs"
+    }
+  ],
+  "candidateAndFixturesRolledBack": true,
+  "limits": "Native serial history, permission and complete 1006-row reads. The committed fixture contains synthetic data only. HTTP row transport, browser controls and public readers remain unfinished."
+}

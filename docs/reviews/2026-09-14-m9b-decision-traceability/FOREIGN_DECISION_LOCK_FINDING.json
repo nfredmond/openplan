@@ -1,0 +1,11 @@
+{
+  "candidateSha256": {
+    "decision-context-candidate.sql": "44e599b5ab9b1e082179587c02a7c67a031dae813f28eec026f7be948156c342",
+    "decision-link-candidate.sql": "c81b651a298b75571e37705f7da8e81bbbe843d7c7015f3f1789fdf2c1c88923",
+    "decision-history-candidate.sql": "d2c50bc27cf101bbb5443bea721758aea0b4154d6d371e75419e601df0f601a0"
+  },
+  "uncontendedError": "P0002",
+  "contendedError": "PT503",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/concurrency-1789379475651240498",
+  "finding": "The command attempts to lock an unscoped decision before checking its project membership. A busy foreign decision produces PT503 instead of the ordinary P0002 refusal. No decision contents or saved links were returned."
+}
