@@ -1,0 +1,44 @@
+{
+  "sourceSha256": "d7c83d5fe038a2f3d0a4eead400ce998e623abfbd9de05a9360a50e334173bc3",
+  "testSha256": "b2360757b7428cd19d1f8611d667dc1044456cdec2826172abfcb91d88091816",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-parent-controls/20260913T181541",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedOutcome": true,
+      "failedAssertions": []
+    },
+    {
+      "case": "harmless-parent",
+      "outcome": "survived",
+      "expectedOutcome": true,
+      "failedAssertions": []
+    },
+    {
+      "case": "bypass-generation-hook",
+      "outcome": "killed",
+      "expectedOutcome": true,
+      "failedAssertions": [
+        "queues reviewed source then publishes selected retained output separately while preserving a manual draft"
+      ]
+    },
+    {
+      "case": "omit-original-history",
+      "outcome": "killed",
+      "expectedOutcome": true,
+      "failedAssertions": [
+        "queues reviewed source then publishes selected retained output separately while preserving a manual draft"
+      ]
+    },
+    {
+      "case": "replace-publication-reason",
+      "outcome": "killed",
+      "expectedOutcome": true,
+      "failedAssertions": [
+        "queues reviewed source then publishes selected retained output separately while preserving a manual draft"
+      ]
+    }
+  ],
+  "limits": "Actual parent, generation, publication and draft React components in jsdom with mocked HTTP. Does not establish browser geometry, database or worker execution, or public portal behavior."
+}

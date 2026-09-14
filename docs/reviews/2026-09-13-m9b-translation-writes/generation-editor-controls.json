@@ -1,0 +1,267 @@
+{
+  "sourceSha256": {
+    "helper": "5f3107dd7fb62c6ee0ef9c65b1617fe1ad933a9e58c5f584e6b0c367cdacb5c8",
+    "panel": "df3c5a9815a46674cfbb49ddd9923fc87ceab8f740ee3f9ba36281884851acec"
+  },
+  "testSha256": "e5da0acc740d5096019532c219b63ae80f44f3194343494a0b9373d0baac2705",
+  "testCount": 28,
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-editor-controls/20260913T181340",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-helper",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-panel",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-snapshot-scope",
+      "outcome": "killed",
+      "expectedFailure": "freezes exact source",
+      "failedAssertions": [
+        "generation editor custody freezes exact source and original saved revision without sharing snapshot objects"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "lose-baseline",
+      "outcome": "killed",
+      "expectedFailure": "freezes exact source",
+      "failedAssertions": [
+        "generation editor custody freezes exact source and original saved revision without sharing snapshot objects"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "trim-original-source",
+      "outcome": "killed",
+      "expectedFailure": "freezes exact source",
+      "failedAssertions": [
+        "generation editor custody freezes exact source and original saved revision without sharing snapshot objects"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-frozen-identity",
+      "outcome": "killed",
+      "expectedFailure": "retains exact request identity",
+      "failedAssertions": [
+        "generation editor custody retains exact request identity while allowing refusal phase updates"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "include-phase-in-identity",
+      "outcome": "killed",
+      "expectedFailure": "retains exact request identity",
+      "failedAssertions": [
+        "generation editor custody retains exact request identity while allowing refusal phase updates"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-stored-workspace",
+      "outcome": "killed",
+      "expectedFailure": "reports unreadable and wrong workspace",
+      "failedAssertions": [
+        "generation editor custody reports unreadable and wrong workspace copies without modifying their bytes"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "replace-archive-bytes",
+      "outcome": "killed",
+      "expectedFailure": "reports unreadable and wrong workspace",
+      "failedAssertions": [
+        "generation editor custody reports unreadable and wrong workspace copies without modifying their bytes"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-read-request",
+      "outcome": "killed",
+      "expectedFailure": "rejects a generation read with changed request",
+      "failedAssertions": [
+        "generation editor custody rejects a generation read with changed request"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-read-campaign",
+      "outcome": "killed",
+      "expectedFailure": "rejects a generation read with changed campaign",
+      "failedAssertions": [
+        "generation editor custody rejects a generation read with changed campaign"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-read-workspace",
+      "outcome": "killed",
+      "expectedFailure": "rejects a generation read with changed workspace",
+      "failedAssertions": [
+        "generation editor custody rejects a generation read with changed workspace"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-read-actor",
+      "outcome": "killed",
+      "expectedFailure": "rejects a generation read with changed actor",
+      "failedAssertions": [
+        "generation editor custody rejects a generation read with changed actor"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-read-locale",
+      "outcome": "killed",
+      "expectedFailure": "rejects a generation read with changed locale",
+      "failedAssertions": [
+        "generation editor custody rejects a generation read with changed locale"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-read-count",
+      "outcome": "killed",
+      "expectedFailure": "rejects a generation read with changed partial",
+      "failedAssertions": [
+        "generation editor custody rejects a generation read with changed partial"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-read-fields",
+      "outcome": "killed",
+      "expectedFailure": "rejects a generation read with changed baseline",
+      "failedAssertions": [
+        "generation editor custody rejects a generation read with changed baseline"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-duplicate-id",
+      "outcome": "killed",
+      "expectedFailure": "rejects a generation read with changed duplicate_id",
+      "failedAssertions": [
+        "generation editor custody rejects a generation read with changed duplicate_id"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-duplicate-address",
+      "outcome": "killed",
+      "expectedFailure": "rejects a generation read with changed duplicate_address",
+      "failedAssertions": [
+        "generation editor custody rejects a generation read with changed duplicate_address"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "use-latest-history",
+      "outcome": "killed",
+      "expectedFailure": "prepares publication from original history",
+      "failedAssertions": [
+        "generation editor custody prepares publication from original history even when newer revisions exist and the requester differs"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "accept-removal-baseline",
+      "outcome": "killed",
+      "expectedFailure": "refuses unusable original history removed",
+      "failedAssertions": [
+        "generation editor custody refuses unusable original history removed"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-history-workspace",
+      "outcome": "killed",
+      "expectedFailure": "refuses unusable original history workspace",
+      "failedAssertions": [
+        "generation editor custody refuses unusable original history workspace"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-history-header",
+      "outcome": "killed",
+      "expectedFailure": "refuses unusable original history campaign",
+      "failedAssertions": [
+        "generation editor custody refuses unusable original history campaign"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "dispatch-without-storage",
+      "outcome": "killed",
+      "expectedFailure": "does not dispatch when storage",
+      "failedAssertions": [
+        "generation editor custody does not dispatch when storage cannot retain the frozen intent"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "retry-new-identity",
+      "outcome": "killed",
+      "expectedFailure": "retains before dispatch and retries",
+      "failedAssertions": [
+        "generation editor custody retains before dispatch and retries the exact request after response loss and storage deletion"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "trust-other-ack",
+      "outcome": "killed",
+      "expectedFailure": "keeps recovery after an acknowledgement for a different request",
+      "failedAssertions": [
+        "generation editor custody keeps recovery after an acknowledgement for a different request"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-read-intent",
+      "outcome": "killed",
+      "expectedFailure": "keeps recovery when the server read changes",
+      "failedAssertions": [
+        "generation editor custody keeps recovery when the server read changes the original intent"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "lose-page-copy",
+      "outcome": "killed",
+      "expectedFailure": "retains before dispatch and retries",
+      "failedAssertions": [
+        "generation editor custody retains before dispatch and retries the exact request after response loss and storage deletion"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "publish-after-failed-read",
+      "outcome": "killed",
+      "expectedFailure": "disables publication after a failed status read",
+      "failedAssertions": [
+        "generation editor custody disables publication after a failed status read while retaining the viewed words"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Pure helper and React recovery behavior with synthetic safe DTOs and mocked HTTP. Does not prove cryptographic server reading, database isolation, actual provider/worker execution, full parent controls or rendered browser acceptance."
+}

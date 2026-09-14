@@ -1,3 +1,7 @@
+# Latest generation-editor evidence
+
+Read [GENERATION_EDITOR_PROGRESS.md](GENERATION_EDITOR_PROGRESS.md) first. Native and React recovery/publication integration now has focused fault evidence. Legacy producers, isolated migration activation and the full browser-worker journey remain unfinished.
+
 # Latest generation-editor usage-reset checkpoint
 
 Read [GENERATION_EDITOR_RESET_CHECKPOINT.md](GENERATION_EDITOR_RESET_CHECKPOINT.md) first. The new editor integration is saved but unverified. Resume its implementation and acceptance before enabling or releasing the translation workflow.

@@ -172,13 +172,13 @@ export function useTranslationGeneration({ userId, workspaceId, campaignId, canW
       {!ready && <Button type="button" variant="outline" onClick={restore}>Retry generation recovery</Button>}
       {pending.map(value => <section key={value.intent.requestId} aria-label="Retained generation request" className="space-y-2 rounded-lg border border-amber-400 p-3 break-words">
         <h3 className="font-semibold">{value.phase === "refused" ? "Refused generation request" : "Unconfirmed generation request"}</h3>
-        <p>{TRANSLATION_LANGUAGE_LABELS[value.intent.locale]}. Keep this request's original source and identity when retrying.</p>
+        <p>{TRANSLATION_LANGUAGE_LABELS[value.intent.locale]}. Keep this request&apos;s original source and identity when retrying.</p>
         {value.intent.fields.map(field => <p key={field.id} className="whitespace-pre-wrap">{field.address.field}: {field.address.expectedSource.text}</p>)}
         <div className="flex flex-wrap gap-2"><Button type="button" disabled={busy} className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => void send(value)}>Retry same generation request</Button>
           <Button type="button" variant="outline" className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => download(JSON.stringify(value, null, 2), `translation-generation-${value.intent.requestId}.json`)}>Download generation request</Button>
           {value.phase === "refused" && <Button type="button" variant="outline" disabled={busy} className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => archive(value)}>Archive refused request and refresh source</Button>}</div>
       </section>)}
-      {unreadable.map(key => <div key={key} className="space-y-2 break-words"><p role="alert">A generation recovery copy could not be read or differs from this page's request. Preserve both copies and check saved requests before generating again.</p>
+      {unreadable.map(key => <div key={key} className="space-y-2 break-words"><p role="alert">A generation recovery copy could not be read or differs from this page&apos;s request. Preserve both copies and check saved requests before generating again.</p>
         <Button type="button" variant="outline" onClick={() => { try { const raw = localStorage.getItem(key); if (raw !== null) download(raw, "unreadable-generation-request.json"); }
           catch { setMessage("The stored generation copy could not be read. Keep this page open and retry recovery."); } }}>Download stored generation copy</Button>
         <Button type="button" variant="outline" disabled={busy} onClick={() => void recover(key)}>Recover saved generation request</Button>
