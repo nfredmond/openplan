@@ -1,0 +1,30 @@
+{
+  "implementationCommit": "e30996ae828dc2c425362ba84cf34c07d4645429",
+  "qaWorktree": "/home/nathaniel/.local/state/openplan/translation-resolution-qa-20260913-125bf2a3",
+  "command": "npm run qa:gate",
+  "exit": 0,
+  "unit": {
+    "passed": 15004,
+    "skipped": 496,
+    "failed": 0,
+    "filesPassed": 1294,
+    "filesSkipped": 49
+  },
+  "included": [
+    "full ESLint",
+    "unused-code audit",
+    "full unit suite",
+    "provider connector",
+    "dependency audit",
+    "webpack production build and TypeScript"
+  ],
+  "notIncluded": [
+    "optional live RLS hook; preceding isolated full RLS has its own evidence",
+    "fresh shuffled tests after this UI edit",
+    "new database upgrade run"
+  ],
+  "logs": {
+    "generation-lifecycle-full-qa.log": "b598df1971ec5b224148fa899e3223c0da7201a0cf277f18f8e25be4c2a43104",
+    "generation-lifecycle-full-qa.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  }
+}
