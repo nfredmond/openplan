@@ -43,17 +43,22 @@ import { loadSchemaInventory } from "./migrations/schema-inventory";
  * may write four named columns and not the draft's own grounding record. The
  * door opens, just onto fewer columns, so it is not a locked door.
  *
- * NO EXCEPTION LIST. Every table in the corpus satisfies this today, which was
- * confirmed against the live database as well as the migrations before the rule
- * was written, so there is nothing to ratchet down from. Do not add a mechanism
- * for exceptions speculatively; if a real one appears, the honest form is a
- * named entry carrying the argument for why that policy is meant to be
- * unreachable to a signed-in user.
+ * COMMAND-ONLY TRANSLATIONS. Migration 17 retires ordinary table writes in
+ * favor of the checked command. Its three old row policies remain as a second
+ * membership boundary if a grant is accidentally restored. They are no longer
+ * promises of direct writes. The named exception below separately requires
+ * direct writes to remain revoked; live activation tests exercise the command.
  */
 
 /** The commands a GRANT and a policy can both be about. */
 const COMMANDS = ["SELECT", "INSERT", "UPDATE", "DELETE"] as const;
 type Command = (typeof COMMANDS)[number];
+
+const RETIRED_TRANSLATION_WRITES: Readonly<Record<string, Command>> = {
+  engagement_content_translations_writer_insert: "INSERT",
+  engagement_content_translations_writer_update: "UPDATE",
+  engagement_content_translations_writer_delete: "DELETE",
+};
 
 type LockedDoor = {
   table: string;
@@ -107,6 +112,8 @@ function sweep(options: { dir?: string } = {}): Sweep {
           const role = clientRoleFor(audience);
           if (!role) continue;
 
+          if (table === "engagement_content_translations" && role === "authenticated" &&
+            RETIRED_TRANSLATION_WRITES[policy.policy] === command) continue;
           checked += 1;
           if (grants.holds(table, role, command) !== "none") continue;
 
@@ -133,6 +140,19 @@ function describe_(doors: readonly LockedDoor[]): string {
 }
 
 describe("a policy without a grant is a locked door", () => {
+  it("retired translation row policies never authorize direct client writes", () => {
+    const grants = loadGrantInventory();
+    const policies = loadPolicyInventory();
+    for (const [policy, command] of Object.entries(RETIRED_TRANSLATION_WRITES)) {
+      expect(policies.permissiveGrants("engagement_content_translations", command).map(row => row.policy)).toEqual([policy]);
+      for (const role of ["authenticated", "anon"] as const) {
+        expect(grants.holds("engagement_content_translations", role, command), `${role} ${command} must use the checked command`).toBe("none");
+      }
+    }
+    expect(Object.values(RETIRED_TRANSLATION_WRITES).sort()).toEqual(["DELETE", "INSERT", "UPDATE"]);
+    expect(grants.holds("engagement_content_translations", "authenticated", "SELECT")).not.toBe("none");
+  });
+
   it("grants every command its permissive policies promise a signed-in user", () => {
     const { doors } = sweep();
 

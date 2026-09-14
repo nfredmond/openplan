@@ -1,3 +1,7 @@
+# Latest integration guard checkpoint
+
+Read [INTEGRATION_GUARDS_PROGRESS.md](INTEGRATION_GUARDS_PROGRESS.md) first. It records the retired refusal audit, measured generation inventory, command-only privilege guard and copy repairs. Old browser-wrapper cautions and the remaining browser/worker/public generation work still apply.
+
 # Latest receipt privacy checkpoint
 
 Read [RECEIPT_PRIVACY_PROGRESS.md](RECEIPT_PRIVACY_PROGRESS.md) first. Direct receipt privacy and census controls are complete. The broader unit run uncovered branch-wide integration failures; the note records exact next repairs. Database and stale browser-wrapper cautions in the activation checkpoint still apply.

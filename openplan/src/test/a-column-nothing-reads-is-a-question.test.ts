@@ -73,6 +73,14 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "engagement_translation_generation_fields.dispatch_authorized_at", category: "READ_IN_SQL", reason: "The dispatch command records first authorization, the immutable-field trigger refuses replacement, and retain_translation_generation_output requires it before accepting a delivered model result." },
+  { column: "engagement_translation_generation_fields.reserved_at", category: "READ_IN_SQL", reason: "The reservation transaction writes the timestamp; the field state constraint requires it for reserved work and the immutable-field trigger preserves the original reservation identity." },
+  { column: "engagement_translation_generation_outputs.field_id", category: "READ_IN_SQL", reason: "The output receipt foreign key binds its generation field and attempt. read_translation_generation_request joins on that exact pair before returning output to the staff reader." },
+  { column: "engagement_translation_generation_outputs.accepted_state", category: "READ_IN_SQL", reason: "retain_translation_generation_output returns the first accepted delivery state across exact retries. The private request reader returns it separately from the current field state." },
+  { column: "engagement_translation_generation_outputs.output_json", category: "READ_IN_SQL", reason: "The delivery transaction compares exact output bytes on retries, and read_translation_generation_request returns those retained bytes for server verification before display." },
+  { column: "engagement_translation_generation_outputs.binding_canonical", category: "READ_IN_SQL", reason: "The delivery transaction compares the retained binding on retries. The private SQL reader returns it to the server, which verifies source, configuration and attempt custody." },
+  { column: "engagement_translation_generation_outputs.delivery_digest", category: "READ_IN_SQL", reason: "Postgres generates the delivery digest from exact retained bytes. The delivery transaction checks retries against it and the private SQL reader returns it for server verification." },
+  { column: "engagement_translation_generation_outputs.provider_metadata_json", category: "READ_IN_SQL", reason: "The delivery transaction retains and compares exact provider metadata across retries. The private SQL reader returns it as providerMetadataJson for server validation." },
   { column: "engagement_content_translations.category_target_id", category: "READ_IN_SQL", reason: "Generated from the polymorphic translation address and consumed by the campaign-scoped category foreign key. It prevents direct writes and concurrent source moves from crossing campaign boundaries; application code uses the original address." },
   { column: "engagement_content_translations.question_target_id", category: "READ_IN_SQL", reason: "Generated from the polymorphic translation address and consumed by the campaign-scoped question foreign key. It prevents direct writes and concurrent source moves from crossing campaign boundaries; application code uses the original address." },
   { column: "engagement_content_translations.option_target_id", category: "READ_IN_SQL", reason: "Generated from the polymorphic translation address and consumed by the campaign-scoped option foreign key. It prevents direct writes and concurrent source moves from crossing campaign boundaries; application code uses the original address." },
@@ -205,7 +213,6 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   { column: "engagement_response_broadcasts.response_json", category: "READ_IN_SQL", reason: "Preparation composes the retained publication text from this snapshot; claim compares its version with the current response before sending." },
   { column: "engagement_response_broadcasts.prepared_at", category: "WRITE_ONLY", reason: "The worker retains the time preparation completed, but the current staff status panels do not display that preparation timestamp." },
   { column: "engagement_response_write_receipts.before_record", category: "WRITE_ONLY", reason: "The request retains its pre-write response for later diagnosis. The editor reads separate response history; it does not expose this receipt snapshot." },
-  { column: "engagement_response_write_receipts.payload_sha256", category: "WRITE_ONLY", reason: "This generated checksum is retained for operator diagnosis. Replay currently compares the complete payload JSON; the editor does not display this hash." },
 
   // ---- READ_IN_SQL: the database reads these; TypeScript never names them --
   ...[

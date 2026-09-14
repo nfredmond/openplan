@@ -476,7 +476,7 @@ export function CampaignTranslationsPanel({
       </p>
 
       {/* ── What may be claimed, per language ───────────────────────────── */}
-      {unsupportedSource ? <p className="mt-4 text-sm">Coverage is unassessed for the recorded source language. This does not mean the campaign has no translations.</p> : coverage === null ? (
+      {unsupportedSource ? <p className="mt-4 text-sm">Coverage is unassessed for this source language. Translations may still be available.</p> : coverage === null ? (
         <p className="mt-4 rounded-[0.5rem] border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-foreground">
           Which languages this campaign is complete in is <strong>unknown</strong> right now, because{" "}
           {readFailures.length > 0

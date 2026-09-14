@@ -1,0 +1,74 @@
+{
+  "migrationSha256": "43bb8638b703ebd1ee6d7c705da88ec00bcaaf3208a1eeda9e2651aa79e1e1fb",
+  "testSha256": "171e94eb95309869a87593799f08979c0521e435b6d8b2e0ad64442c4fc9cdbf",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/translation-command-only-controls-20260913T190525",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-migration",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-test",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true
+    },
+    {
+      "case": "authenticated-insert",
+      "outcome": "killed",
+      "expectedFailure": "retired translation row policies never authorize direct client writes",
+      "expectedOutcome": true
+    },
+    {
+      "case": "authenticated-update",
+      "outcome": "killed",
+      "expectedFailure": "retired translation row policies never authorize direct client writes",
+      "expectedOutcome": true
+    },
+    {
+      "case": "authenticated-delete",
+      "outcome": "killed",
+      "expectedFailure": "retired translation row policies never authorize direct client writes",
+      "expectedOutcome": true
+    },
+    {
+      "case": "anon-insert",
+      "outcome": "killed",
+      "expectedFailure": "retired translation row policies never authorize direct client writes",
+      "expectedOutcome": true
+    },
+    {
+      "case": "anon-update",
+      "outcome": "killed",
+      "expectedFailure": "retired translation row policies never authorize direct client writes",
+      "expectedOutcome": true
+    },
+    {
+      "case": "anon-delete",
+      "outcome": "killed",
+      "expectedFailure": "retired translation row policies never authorize direct client writes",
+      "expectedOutcome": true
+    },
+    {
+      "case": "deny-staff-read",
+      "outcome": "killed",
+      "expectedFailure": "retired translation row policies never authorize direct client writes",
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-retired-policy-name",
+      "outcome": "killed",
+      "expectedFailure": "grants every command its permissive policies promise a signed-in user",
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Static migration grant composition. Fault SQL is parsed only, never applied to a database. Actual command and direct-write boundaries are separately covered by activation SQL controls and full isolated RLS."
+}

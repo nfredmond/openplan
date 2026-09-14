@@ -487,10 +487,12 @@ const EXPECTED = {
   permissiveWrites: 277,
   expanded: 286,
   tablesWithPolicies: 222,
-  relations: 258,
-  tables: 245,
+  // 20261014000013 adds three generation custody tables with RLS and no client policies.
+  // Installed isolated catalog confirms all three; no application view or policy is added.
+  relations: 261,
+  tables: 248,
   views: 13,
-  rlsEnabledTables: 245,
+  rlsEnabledTables: 248,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

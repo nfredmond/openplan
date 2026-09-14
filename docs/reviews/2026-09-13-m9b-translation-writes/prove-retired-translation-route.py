@@ -11,19 +11,21 @@ for key in paths:cases.append(('harmless-'+key,key,original[key]+'\n// Harmless 
 def mutate(name,key,old,new,expected):
  assert original[key].count(old)==1,(name,original[key].count(old))
  cases.append((name,key,original[key].replace(old,new),expected))
-mutate('false-success','route','status: 410','status: 200','refuses legacy POST save')
+mutate('false-success','route','status: 410, headers:','status: 200, headers:','refuses legacy POST save')
 mutate('cache-retirement','route','"private, no-store"','"public, max-age=3600"','refuses legacy DELETE')
 mutate('redirect-legacy-body','route','"Cache-Control": "private, no-store"','"Cache-Control": "private, no-store", Location: "/api/engagement/campaigns/old/translations/commands"','refuses legacy POST save')
 mutate('discard-unsaved-instructions','route','Keep a copy of any unsaved words, then reopen','Reopen','refuses legacy POST save')
 mutate('claim-write-happened','route','This request did not change saved translations or request machine generation.','Saved and generated successfully.','refuses legacy POST publish_machine')
 mutate('reflect-private-words','route','kind: "retired",','kind: "retired", reflected: "SYNTHETIC private unsaved words",','refuses legacy POST save')
-mutate('consume-old-body','route','export function POST() { return retiredTranslationWrite(); }','export function POST(request: Request) { void request.text(); return retiredTranslationWrite(); }','refuses legacy POST save')
+mutate('consume-old-body','route','export function POST(request: NextRequest) { return retiredTranslationWrite(request); }','export function POST(request: NextRequest) { void request.text(); return retiredTranslationWrite(request); }','refuses legacy POST save')
 for name,module,dependency,verb,expected in [
  ('reopen-user-db','@/lib/supabase/server','createClient','POST','refuses legacy POST save'),
  ('reopen-service-db','@/lib/supabase/server','createServiceRoleClient','DELETE','refuses legacy DELETE'),
  ('call-model','@/lib/engagement/translation','translateEngagementText','POST','refuses legacy POST publish_machine')]:
- body='import { '+dependency+' } from "'+module+'";\n'+original['route'].replace('export function '+verb+'() { return','export function '+verb+'() { void '+dependency+'(); return')
+ body='import { '+dependency+' } from "'+module+'";\n'+original['route'].replace('export function '+verb+'(request: NextRequest) { return','export function '+verb+'(request: NextRequest) { void '+dependency+'(); return')
  cases.append((name,'route',body,expected))
+mutate('omit-refusal-audit','route','createApiAuditLogger("engagement.translations.retired", request).warn("engagement_translation_write_retired", { status: 410 });','void request;','audits retired POST without submitted words or query values')
+mutate('leak-query-in-audit','route','{ status: 410 });','{ status: 410, url: request.url });','audits retired DELETE without submitted words or query values')
 for size in (199,201):mutate('accept-cap-'+str(size),'write','TRANSLATION_WRITE_BATCH_MAX = 200','TRANSLATION_WRITE_BATCH_MAX = '+str(size),'bounds the accept button by the same constant the route enforces')
 results=[];count=None
 try:

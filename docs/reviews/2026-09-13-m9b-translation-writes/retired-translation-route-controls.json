@@ -1,14 +1,14 @@
 {
   "sourceSha256": {
-    "route": "f4b08400629309788401cc29e8e4db19de6e9a5bb289bb091aabf2286763f602",
+    "route": "f36cbc43ace6004ca85e166739f7d3b430170eb523a41ea8c4173eae7a9b4ade",
     "write": "f2dee0dc4d9929c65928084cde990d4f6012286f804a36eba22bac375e1048ff"
   },
   "testSha256": {
-    "src/test/engagement-translation-retired-route.test.ts": "f552b8f325bf27776ac48ee9fe8208d75772e3a285f4b9762e60ede3a172423f",
+    "src/test/engagement-translation-retired-route.test.ts": "1906f69938f80556f0b0ed57a6bee517ca8fad6e90fda09c0ca7d6240bea3f36",
     "src/test/an-operator-can-author-a-campaigns-translations.test.tsx": "25492547fed748c2b6ded86e4790c4ed86fcbd58dd39660566903fddb6e836ed"
   },
-  "testCount": 47,
-  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/retired-translation-route-controls/20260913T182112",
+  "testCount": 49,
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/retired-translation-route-controls/20260913T190023",
   "results": [
     {
       "case": "baseline",
@@ -118,6 +118,24 @@
       "expectedFailure": "refuses legacy POST publish_machine",
       "failedAssertions": [
         "retired translation write route refuses legacy POST publish_machine without reading or replaying it"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-refusal-audit",
+      "outcome": "killed",
+      "expectedFailure": "audits retired POST without submitted words or query values",
+      "failedAssertions": [
+        "retired translation write route audits retired POST without submitted words or query values"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "leak-query-in-audit",
+      "outcome": "killed",
+      "expectedFailure": "audits retired DELETE without submitted words or query values",
+      "failedAssertions": [
+        "retired translation write route audits retired DELETE without submitted words or query values"
       ],
       "expectedOutcome": true
     },

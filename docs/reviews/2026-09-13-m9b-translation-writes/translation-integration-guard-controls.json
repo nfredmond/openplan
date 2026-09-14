@@ -1,0 +1,173 @@
+{
+  "sourceSha256": {
+    "route": "f36cbc43ace6004ca85e166739f7d3b430170eb523a41ea8c4173eae7a9b4ade",
+    "caller": "fa9bdade6915f2d08ce8f1352a992e43f52bd89f43c2f01babac23c28429f42d",
+    "columns": "c244c2dff53a496dc93f72b21dba356276bbbd7519fc41d5a8288b6094b23395",
+    "inventory": "92624ceefd96b0b651202491776133ff838dca7e8da6b69f74a38313a4672ef2",
+    "migration": "3daf131f02d2476a293cccde3ab5e74e73182dd0d5291db696df791bf0873cad"
+  },
+  "testCount": 58,
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/translation-integration-controls-20260913T190327",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-route",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-caller",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-columns",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-inventory",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-migration",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "revive-excused-endpoint",
+      "outcome": "killed",
+      "expectedFailure": "keeps the excused translation endpoint retired",
+      "failedAssertions": [
+        "every API route has a caller keeps the excused translation endpoint retired for both old write methods"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-retired-caller-registration",
+      "outcome": "killed",
+      "expectedFailure": "finds no API route that nothing in the product calls",
+      "failedAssertions": [
+        "every API route has a caller finds no API route that nothing in the product calls"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-sql-reader-engagement_translation_generation_fields.dispatch_authorized_at",
+      "outcome": "killed",
+      "expectedFailure": "finds no unread column that is not accounted for",
+      "failedAssertions": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-sql-reader-engagement_translation_generation_fields.reserved_at",
+      "outcome": "killed",
+      "expectedFailure": "finds no unread column that is not accounted for",
+      "failedAssertions": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-sql-reader-engagement_translation_generation_outputs.field_id",
+      "outcome": "killed",
+      "expectedFailure": "finds no unread column that is not accounted for",
+      "failedAssertions": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-sql-reader-engagement_translation_generation_outputs.accepted_state",
+      "outcome": "killed",
+      "expectedFailure": "finds no unread column that is not accounted for",
+      "failedAssertions": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-sql-reader-engagement_translation_generation_outputs.output_json",
+      "outcome": "killed",
+      "expectedFailure": "finds no unread column that is not accounted for",
+      "failedAssertions": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-sql-reader-engagement_translation_generation_outputs.binding_canonical",
+      "outcome": "killed",
+      "expectedFailure": "finds no unread column that is not accounted for",
+      "failedAssertions": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-sql-reader-engagement_translation_generation_outputs.delivery_digest",
+      "outcome": "killed",
+      "expectedFailure": "finds no unread column that is not accounted for",
+      "failedAssertions": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-sql-reader-engagement_translation_generation_outputs.provider_metadata_json",
+      "outcome": "killed",
+      "expectedFailure": "finds no unread column that is not accounted for",
+      "failedAssertions": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "stale-response-checksum-exception",
+      "outcome": "killed",
+      "expectedFailure": "keeps the ratchet honest",
+      "failedAssertions": [
+        "a column the application never reads has to say why keeps the ratchet honest \u2014 a column that gained a reader loses its entry"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unaccounted-table",
+      "outcome": "killed",
+      "expectedFailure": "reads every relation the migrations declare",
+      "failedAssertions": [
+        "migration schema inventory reads every relation the migrations declare"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "disable-generation-output-rls",
+      "outcome": "killed",
+      "expectedFailure": "reads every relation the migrations declare",
+      "failedAssertions": [
+        "migration schema inventory reads every relation the migrations declare"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Executable retired endpoint checks plus static caller, column-name and migration inventories. SQL column reasons are traced to actual SQL but these controls do not execute those readers. Global identifier matching cannot distinguish equal column names on different tables. Database privacy, worker and browser evidence remain separate."
+}

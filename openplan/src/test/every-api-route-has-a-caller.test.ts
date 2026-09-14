@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { stripSourceComments } from "./helpers/source-text";
 
 /**
@@ -67,6 +67,7 @@ import { stripSourceComments } from "./helpers/source-text";
  * `src/`. Every entry is a claim that can be checked by reading the route.
  */
 const EXTERNAL_CALLERS: Record<string, string> = {
+  "api/engagement/campaigns/[campaignId]/translations": "410 retirement response for old editor tabs and external scripts that still send unversioned writes. Current UI uses generation and commands endpoints; engagement-translation-retired-route.test.ts proves refusal without body consumption or effects.",
   "api/assistant/providers/native": "workers/planner_agent_connector/connector-client.mjs calls this scoped-bearer endpoint for claims, status and retained result delivery; connector-worker.test.mjs exercises its actual HTTP redirect boundary and delivery recovery.",
   "api/knowledge-base/extraction-dispatch": "workers/ocr_worker/main.py polls its configured OPENPLAN_KB_OCR_DISPATCH_URL to recover queued documents and cancellation requests.",
   "api/health":
@@ -403,6 +404,21 @@ describe("every API route has a caller", () => {
       "utf8"
     );
     expect(routeSource, "the excused route no longer answers 410 Gone — it grew a real capability, so it needs a real caller, not an excuse").toContain("410");
+  });
+
+  it("keeps the excused translation endpoint retired for both old write methods", async () => {
+    const reason = EXTERNAL_CALLERS["api/engagement/campaigns/[campaignId]/translations"];
+    expect(reason).toContain("410");
+    const { NextRequest } = await import("next/server");
+    const { POST, DELETE } = await import("@/app/api/engagement/campaigns/[campaignId]/translations/route");
+    const quiet = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      for (const [method, handler] of [["POST", POST], ["DELETE", DELETE]] as const) {
+        const result = handler(new NextRequest("http://localhost/api/engagement/campaigns/old/translations", { method }));
+        expect(result.status, "An excused retired route must still refuse old writes").toBe(410);
+        expect(await result.json()).toMatchObject({ kind: "retired" });
+      }
+    } finally { quiet.mockRestore(); }
   });
 
   it("names a real route in every allowlist entry", () => {
