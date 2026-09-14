@@ -1,21 +1,25 @@
-# Resume retained synthesis work
+# Resume after retained source browser acceptance
 
-September 14, 2026. Supersedes the earlier weekly-reset checkpoint. Full V1 remains the objective; v0.61.1 is the published release. No new synthesis release is claimed.
+September 14, 2026. Full V1 remains the objective. v0.61.1 is published; no new synthesis release has been tagged.
 
-## Where to work
+## Current work
 
-Use /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13, package openplan/, branch work/engagement-decision-traceability. Another live agent owns /home/nathaniel/code/openplan; inspect ownership before edits. Direct main pushes, no PRs, local/free operation and repository Playwright remain authorized. Leave reminder constraints, other servers and other stacks alone.
+Use /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13, package openplan/, branch work/engagement-decision-traceability. The original /home/nathaniel/code/openplan belongs to another live agent. Recheck ownership before editing. Direct main pushes, no PRs, free/local operation and the repository Playwright harness remain authorized. Leave reminder constraints and other sessions alone.
 
-Read SOURCE_UI_CHECKPOINT.md, IMPLEMENTATION_BOUNDARY.md and the final verification note when present. Source selection, metadata history, exact-request browser recovery and original-text inspection are now implemented. Survey-only/empty entry is independent of the old synthesis guard. The old capped generator remains separate. The free preparation, generation/review worker, response/decision links and usable reviewed exports are still required; do not shrink M9b to source capture.
+Source selection/history/private inspection and exact browser recovery are implemented in 26eded0c. f3b7edff4b35a64e82bd0685d6a0cc7e3eda93e6 fixes the narrow recovery button; the final source build has passed desktop and 390px keyboard journeys. Read SOURCE_UI_VERIFICATION.md and source-ui-browser-results.json for precise checks and limits. Original source text/hash survives a category correction and can be reopened through saved history. Anonymous/stale-account reads are denied. A harmless DOM control survives the new inner-container layout assertion; removing the wrap constraints reproduces its failure.
 
-## Current verification
+The old capped synthesis generator remains separate and does not consume these saved sources. Read IMPLEMENTATION_BOUNDARY.md. Next implement complete free preparation by historical category/question and source membership, preserve not-assessed interpretation, then durable optional generation, staff corrections, response/decision linkage and reviewed exports. A real survey-submission-to-inspection journey and larger history/corpus browser cases still need coverage. Do not mark M9b or V1 complete from this source foundation.
 
-68 focused source/API/recovery/client checks passed. source-api-mutations.json records baseline and harmless survivor plus 45 detected targeted faults with byte restoration. The source/list native suite passed 16 tests in candidate mode and again against the installed migrations. Inventory and server-to-panel handoff proofs have their own JSON results. The first connected full QA run failed in campaign-page test setup and copy wording; both were corrected. A new full QA run must finish before claiming success.
+## Checks and CI
 
-The full RLS run is in /tmp/openplan-synthesis-full-rls.log; full QA in /tmp/openplan-synthesis-full-qa.log. Inspect terminal outcomes and live handles rather than restart based on elapsed time. Browser runner: browser-sources.cjs. Its fixed local URL is port3262, currently awaiting an identified build and owned server. Supply PROBE_COMMIT from /api/health's 12-character commit and run PROBE_WIDTH=1440 and 390. Inspect images and consoles; the only expected browser transport error is an intentionally lost save acknowledgement. The runner uses existing synthetic consultations created by earlier real product producers, edits a category through the UI, verifies exact retry and original/corrected hashes, and checks private reads. It is not browser evidence until successfully run and reviewed.
+26eded0c passed full local QA and shuffled seed 619142: 15,431 tests, 549 skipped. Complete installed RLS passed 578 tests in 62 files. All 52 worker suites passed. f3b7edff passed its changed-file lint, eight panel/copy tests, fresh production build and both complete browser journeys. Database/worker/server logic is unchanged between those two commits.
 
-## Database and recovery
+GitHub CI 34886882906 and Upgrade Path 34886882938 succeeded on 26eded0c. RLS 34886882895 first failed at Supabase startup because the runner's port 54324 was occupied; the failed job was rerun and remained active at this note. Inspect it, and the new final commit's CI runs, directly before any release claim. A push is not passing CI. No source/UI test failure was relabeled as infrastructure.
 
-The explicitly named isolated stack supabase_db_openplan-restore-target-2026091050, workdir /home/nathaniel/.local/state/openplan/openplan-restore-target-2026091050, API29821/DB29822 now has 345 installed migrations through 20261014000026. Migrations25/26 were applied additively with the explicit workdir. Never reset/drop. Run registered native tests in installed mode here; the older candidate-only runner requires baseline343 and must not be rerun here.
+Logs have been copied from /tmp into the private artifact directory and hashed in source-ui-browser-results.json. The earlier failed full-QA run and runner mistakes are documented in SOURCE_UI_CHECKPOINT.md; do not restart them or treat them as current results. No owned test/browser job remains active locally; check current process state after interruptions.
 
-Private browser/account files remain at the paths in browser-sources.cjs. Raw artifacts belong under /home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/. Never print or commit credentials. The seven-file weekly-reset recovery copy remains under /home/nathaniel/.local/state/openplan/weekly-reset-20260914-synthesis-wip/ but is now superseded by subsequent implementation; do not restore it blindly.
+## Environment
+
+The named isolated stack is supabase_db_openplan-restore-target-2026091050, workdir /home/nathaniel/.local/state/openplan/openplan-restore-target-2026091050, API 29821 / DB 29822. It now has 345 installed migrations through 20261014000026. Migrations 25/26 were applied additively. Never reset/drop. Registered native tests use installed mode here; the old candidate-only script requires baseline 343 and must not run here.
+
+The owned production server at port 3262 served f3b7edff4b35 during acceptance. The owned server was stopped after acceptance; recheck the port/process rather than trusting this note. Credentials remain in the existing private account file used by browser-sources.cjs. Private evidence is under /home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/. The weekly-reset seven-file backup is superseded and must not overwrite newer work.

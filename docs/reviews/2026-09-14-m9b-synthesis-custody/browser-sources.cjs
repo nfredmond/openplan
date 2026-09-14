@@ -125,6 +125,11 @@ async function click(page, locator) { await expect(locator).toBeVisible(); await
   await expect(panel.getByRole('article', { name: 'Saved source inspection' })).toBeVisible();
   await panel.getByRole('article', { name: 'Saved source inspection' }).getByRole('heading', { level: 3 }).evaluate(element => element.scrollIntoView({ block: 'start', behavior: 'instant' }));
   await page.screenshot({ path: prefix + '-corrected.png' });
+  await click(page, panel.getByRole('button', { name: `Open saved source ${originalReceipt.requestId.slice(0, 8)}`, exact: true }));
+  await expect(panel.getByText(`Source SHA256: ${original.snapshotSha256}`, { exact: true })).toBeVisible();
+  observed.reopenedThroughHistory = true;
+  await panel.getByRole('article', { name: 'Saved source inspection' }).getByRole('heading', { level: 3 }).evaluate(element => element.scrollIntoView({ block: 'start', behavior: 'instant' }));
+  await page.screenshot({ path: prefix + '-reopened-original.png' });
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
   const anonymous = await browser.newContext();
   for (const path of [endpoint, `${endpoint}?requestId=${originalReceipt.requestId}`]) assert.equal((await anonymous.request.get(path)).status(), 401);

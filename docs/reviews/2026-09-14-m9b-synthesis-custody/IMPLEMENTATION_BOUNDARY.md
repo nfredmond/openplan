@@ -1,6 +1,6 @@
 # Next implementation boundary: complete retained synthesis review
 
-Current implementation status: [backend checkpoint](BACKEND_CHECKPOINT.md). The initial investigation/design below remains the source of the complete M9b outcome.
+Current implementation status: [source interface verification](SOURCE_UI_VERIFICATION.md), following the [backend checkpoint](BACKEND_CHECKPOINT.md). The initial investigation/design below remains the source of the complete M9b outcome.
 September 14, 2026. Engineering design following the controlled omissions and unconfirmed-save reproduction. This is not implemented or release evidence. M9b and the whole V1 contract remain open.
 
 ## Existing homes and seams

@@ -22,7 +22,7 @@ stable enough to promise smooth upgrades indefinitely.
 
 - `20261014000026_engagement_synthesis_source_list.sql` adds a staff-only paginated list of retained source selections. Source records can be reopened without recapturing current contributions.
 
-- Begin private retained synthesis sources: `20261014000025_engagement_synthesis_sources.sql` adds immutable complete selected comments/survey answers, historical definitions, exact hashes and staff-only capture/read RPCs. The Analysis tab now has a staff source-selection/history/inspection panel with exact browser retries. Full browser acceptance is pending; generation/review workers and portable reviewed outputs are not yet connected. This is unfinished M9b work, not a released synthesis fix.
+- Begin private retained synthesis sources: `20261014000025_engagement_synthesis_sources.sql` adds immutable complete selected comments/survey answers, historical definitions, exact hashes and staff-only capture/read RPCs. The Analysis tab now has a staff source-selection/history/inspection panel with exact browser retries. Desktop/390px source-selection, history, keyboard retry, original/corrected checksums and private-read checks passed. Generation/review workers and portable reviewed outputs are not yet connected. This is unfinished M9b work, not a released synthesis fix.
 
 ## 0.61.1 — 2026-09-14
 

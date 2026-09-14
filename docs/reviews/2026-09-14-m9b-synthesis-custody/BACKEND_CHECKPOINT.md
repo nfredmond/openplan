@@ -1,5 +1,7 @@
 # M9b retained synthesis source backend checkpoint
 
+Later implementation: [source interface verification](SOURCE_UI_VERIFICATION.md) supersedes this checkpoint’s pending source-selection/inspection/browser work. The full preparation/generation/review outcome remains open.
+
 September 14, 2026. Implemented source custody and staff capture/read API; not a completed or released synthesis workflow. v0.61.1 remains the published release. The old synthesis panel/POST still uses the capped mutable generation path until the connected review implementation replaces it. Do not claim that the currently visible synthesis is repaired by this checkpoint.
 
 ## Implemented

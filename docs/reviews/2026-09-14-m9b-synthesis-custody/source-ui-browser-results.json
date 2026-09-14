@@ -1,0 +1,334 @@
+{
+  "sourceCommit": "f3b7edff4b35a64e82bd0685d6a0cc7e3eda93e6",
+  "bundles": [
+    {
+      "result": {
+        "width": 390,
+        "completed": true,
+        "console": [
+          "Failed to load resource: net::ERR_CONNECTION_RESET"
+        ],
+        "pageErrors": [],
+        "identity": {
+          "status": "ok",
+          "service": "openplan",
+          "checkedAt": "2026-09-14T19:40:22.703Z",
+          "deployment": {
+            "commit": "f3b7edff4b35",
+            "version": "0.61.1"
+          },
+          "checks": {
+            "app": "ok",
+            "database": "not_checked"
+          }
+        },
+        "originalReceipt": {
+          "requestId": "0418b621-9204-424c-9c7e-d4063d2fbbe6",
+          "campaignId": "a9bdd9e3-620a-4b28-a6e0-cc30afa5a43b",
+          "workspaceId": "f02e465a-40bd-4304-b4af-d45daff29d3d",
+          "snapshotSha256": "b3a71162cbc6e482c4978c064ed80d92e75c75440dd3b0a11e77bd00e6b86ffe",
+          "createdAt": "2026-09-14T19:40:25.773357+00:00",
+          "counts": {
+            "items": 3,
+            "sessions": 0,
+            "answers": 0,
+            "campaignItems": 3,
+            "campaignSessions": 0,
+            "campaignAnswers": 0
+          },
+          "replayed": false
+        },
+        "retryStyle": {
+          "color": "rgb(26, 26, 26)",
+          "background": "rgb(255, 122, 88)",
+          "opacity": "0.777486",
+          "display": "flex",
+          "visibility": "visible",
+          "width": 241.671875,
+          "height": 40
+        },
+        "recoveryControl": {
+          "left": 74,
+          "right": 316,
+          "width": 242,
+          "parentLeft": 74,
+          "parentRight": 316,
+          "viewport": 390
+        },
+        "layoutGuard": {
+          "harmless": {
+            "left": 74,
+            "right": 316,
+            "parentLeft": 74,
+            "parentRight": 316,
+            "viewport": 390
+          },
+          "targeted": {
+            "left": 74,
+            "right": 416.171875,
+            "parentLeft": 74,
+            "parentRight": 316,
+            "viewport": 390
+          }
+        },
+        "counts": {
+          "items": 3,
+          "sessions": 0,
+          "answers": 0,
+          "campaignItems": 3,
+          "campaignSessions": 0,
+          "campaignAnswers": 0
+        },
+        "originalSha256": "b3a71162cbc6e482c4978c064ed80d92e75c75440dd3b0a11e77bd00e6b86ffe",
+        "correctedReceipt": {
+          "requestId": "1555fc18-5426-45a4-a5d1-b648b1a61a30",
+          "campaignId": "a9bdd9e3-620a-4b28-a6e0-cc30afa5a43b",
+          "workspaceId": "f02e465a-40bd-4304-b4af-d45daff29d3d",
+          "snapshotSha256": "03efd05e6e18cbc2341f81a545d7174e6dc5a312684bd2a75dff344cf674febb",
+          "createdAt": "2026-09-14T19:40:28.217122+00:00",
+          "counts": {
+            "items": 3,
+            "sessions": 0,
+            "answers": 0,
+            "campaignItems": 3,
+            "campaignSessions": 0,
+            "campaignAnswers": 0
+          },
+          "replayed": false
+        },
+        "correction": {
+          "beforeLabel": "SYNTHETIC retained category 390 1789414824859",
+          "afterLabel": "SYNTHETIC source history 390 1789414827636",
+          "originalPreserved": true,
+          "correctedSha256": "03efd05e6e18cbc2341f81a545d7174e6dc5a312684bd2a75dff344cf674febb"
+        },
+        "reopenedThroughHistory": true,
+        "privacy": {
+          "anonymousList": 401,
+          "anonymousRead": 401,
+          "staleAccount": 403
+        }
+      },
+      "files": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-sources-390-1789414822397.json",
+          "sha256": "4b976cc625f3345c632b09fb953adcaf61c62be7c94ab1d49a1b10a2700d796c",
+          "bytes": 2773
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-sources-390-1789414822397-corrected.png",
+          "sha256": "cf407c7f6d86587e0a395e4aac21c5c11a8f0a667d39effcbd886c00f2bf139a",
+          "bytes": 114636
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-sources-390-1789414822397-original.png",
+          "sha256": "e81839310bed45672df23c7baf644317dd10606ece904fee70979f632d974177",
+          "bytes": 114302
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-sources-390-1789414822397-pending.png",
+          "sha256": "c68bc63ed31aafa6db07d9b5512c881b7cb3501bdc0455e6432c50e3b0f64d0b",
+          "bytes": 108038
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-sources-390-1789414822397-recovery-control.png",
+          "sha256": "2f6ce15f8995e024b3f6fa0b568d97ca05097d0bef24180b07a8be1c611e3002",
+          "bytes": 105974
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-sources-390-1789414822397-reopened-original.png",
+          "sha256": "2b554d610398f137b3f889799581ca6ccfd86fa1c2fcc43ba45c4aa41b07b59c",
+          "bytes": 114450
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-sources-390-1789414822397-retry-control.png",
+          "sha256": "d587b5625e88f77a597867707163f72114ca1cddc7a007fd53ba984a6bd8a7a3",
+          "bytes": 3172
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-sources-390-1789414822397-selection.png",
+          "sha256": "711198daf78379abd7be05996161791a08e671cd0a40d69281de6b582a7345c6",
+          "bytes": 112439
+        }
+      ]
+    },
+    {
+      "result": {
+        "width": 1440,
+        "completed": true,
+        "console": [
+          "Failed to load resource: net::ERR_CONNECTION_RESET"
+        ],
+        "pageErrors": [],
+        "identity": {
+          "status": "ok",
+          "service": "openplan",
+          "checkedAt": "2026-09-14T19:40:29.537Z",
+          "deployment": {
+            "commit": "f3b7edff4b35",
+            "version": "0.61.1"
+          },
+          "checks": {
+            "app": "ok",
+            "database": "not_checked"
+          }
+        },
+        "originalReceipt": {
+          "requestId": "cfd0d90b-6aec-4719-88bd-472197b4c4f9",
+          "campaignId": "77a4a228-07f6-4636-929e-ff164f9d68bd",
+          "workspaceId": "f02e465a-40bd-4304-b4af-d45daff29d3d",
+          "snapshotSha256": "e56d631d5b6f13cb93f331fe91d72e6812030d35d543dfed6ca30f47fde1976d",
+          "createdAt": "2026-09-14T19:40:32.369222+00:00",
+          "counts": {
+            "items": 4,
+            "sessions": 0,
+            "answers": 0,
+            "campaignItems": 4,
+            "campaignSessions": 0,
+            "campaignAnswers": 0
+          },
+          "replayed": false
+        },
+        "retryStyle": {
+          "color": "rgb(26, 26, 26)",
+          "background": "rgb(255, 122, 88)",
+          "opacity": "0.866252",
+          "display": "flex",
+          "visibility": "visible",
+          "width": 241.671875,
+          "height": 40
+        },
+        "recoveryControl": {
+          "left": 583.671875,
+          "right": 925.84375,
+          "width": 342.171875,
+          "parentLeft": 330,
+          "parentRight": 1366,
+          "viewport": 1440
+        },
+        "counts": {
+          "items": 4,
+          "sessions": 0,
+          "answers": 0,
+          "campaignItems": 4,
+          "campaignSessions": 0,
+          "campaignAnswers": 0
+        },
+        "originalSha256": "e56d631d5b6f13cb93f331fe91d72e6812030d35d543dfed6ca30f47fde1976d",
+        "correctedReceipt": {
+          "requestId": "d86c5724-0ec8-4490-91c9-867e0e670a54",
+          "campaignId": "77a4a228-07f6-4636-929e-ff164f9d68bd",
+          "workspaceId": "f02e465a-40bd-4304-b4af-d45daff29d3d",
+          "snapshotSha256": "79da7538a7ae052b884f206c59760482b42273517d1b64b2e0930ecca1d6401b",
+          "createdAt": "2026-09-14T19:40:34.955311+00:00",
+          "counts": {
+            "items": 4,
+            "sessions": 0,
+            "answers": 0,
+            "campaignItems": 4,
+            "campaignSessions": 0,
+            "campaignAnswers": 0
+          },
+          "replayed": false
+        },
+        "correction": {
+          "beforeLabel": "SYNTHETIC retained category 1440 1789414831433",
+          "afterLabel": "SYNTHETIC source history 1440 1789414834317",
+          "originalPreserved": true,
+          "correctedSha256": "79da7538a7ae052b884f206c59760482b42273517d1b64b2e0930ecca1d6401b"
+        },
+        "reopenedThroughHistory": true,
+        "privacy": {
+          "anonymousList": 401,
+          "anonymousRead": 401,
+          "staleAccount": 403
+        }
+      },
+      "files": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-sources-1440-1789414829238.json",
+          "sha256": "b97bf70bb708e227c2abd2079ce6f4329af39e0a4adde34fb40d4d5368190441",
+          "bytes": 2500
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-sources-1440-1789414829238-corrected.png",
+          "sha256": "4861b6040bfbffb8166d95cf5e0f90758d5a1cc48cb37c1690ea474ce2e30cc7",
+          "bytes": 227985
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-sources-1440-1789414829238-original.png",
+          "sha256": "d4eff7ee463157b97527bf1c5c1941edd418e46e7cc48c9fd96ca4d57bcb6b25",
+          "bytes": 228083
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-sources-1440-1789414829238-pending.png",
+          "sha256": "4f4ea3511d57991ee5101b0f4f367650b77554f3ba82ce6332105b1803f6177b",
+          "bytes": 218319
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-sources-1440-1789414829238-recovery-control.png",
+          "sha256": "8dc475f22508910a60fd8de1875d59f06115da64639b372516eafcc5f247ac61",
+          "bytes": 219175
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-sources-1440-1789414829238-reopened-original.png",
+          "sha256": "26276f98c9279b4fd1ecbdab7bb79658f8b75eaf003356151ba8972b3ea0b2cc",
+          "bytes": 228162
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-sources-1440-1789414829238-retry-control.png",
+          "sha256": "1d20c8cba4af95e87a4f6de134a47a41e985b93e3cbdfba221d443aa3859e14c",
+          "bytes": 2960
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-sources-1440-1789414829238-selection.png",
+          "sha256": "4056f7a44ffaa368db9c1605540ad8ba6de3f44861bc6f1281e07c4872a363a3",
+          "bytes": 208027
+        }
+      ]
+    }
+  ],
+  "logs": [
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/openplan-synthesis-full-qa-26eded0c.log",
+      "sha256": "8b7ff48e6be7c40aea3b644cb6b94f689307f59f377fce949dca0a29d12a5e39",
+      "bytes": 194176
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/openplan-synthesis-shuffled-26eded0c.log",
+      "sha256": "ce2d9b6e2c10fbcc17d05887a4e424010e5fab6f3bff808d9ebbc3560966fc80",
+      "bytes": 717725
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/openplan-synthesis-full-rls.log",
+      "sha256": "61b7937468f91a6d217597de7dba6a95f1e86aea691e62242c2acdd4cea556a2",
+      "bytes": 3796
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/openplan-synthesis-workers-26eded0c.log",
+      "sha256": "2fc63921548651ea9a123ac6cd26a4130ca2dcfe7800231efb2cdbcace229ae4",
+      "bytes": 1987
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/openplan-synthesis-build-f3b7edff.log",
+      "sha256": "14620cfefb1476cca01ab9de17514e16ed83310671302e14f66249954a7e900c",
+      "bytes": 17602
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/openplan-synthesis-layout-tests.log",
+      "sha256": "16483cd7d38eeeb4d0b45b2e5d445908a3bf85e3310448eac118c9aca1158a9c",
+      "bytes": 275
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/openplan-synthesis-installed-native.log",
+      "sha256": "530b0842b12eb53e4f8fd88a473a347dd1331586548d9bc7c65d2d8b42d5e4e4",
+      "bytes": 276
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/openplan-synthesis-ci-rls-failed.log",
+      "sha256": "aff73ac69d9a72405dd698e1392e0d1e4a8ddce55b83c9cabe164f54b7d22624",
+      "bytes": 96759
+    }
+  ],
+  "limits": "Four existing synthetic comments at desktop and three at 390px; category correction, exact lost-acknowledgement retry and private-read probes. Full 301-source/survey coverage is native and component evidence, not this browser corpus. No generation/review worker, theme interpretation, survey attachment content or export acceptance is claimed."
+}

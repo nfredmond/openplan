@@ -719,3 +719,5 @@ The [report-history engineering record](reviews/2026-09-14-m9b-report-lineage/RE
 
 
 September 14 v0.61.1 API follow-up: [verification](reviews/2026-09-14-report-api-project/RELEASE_VERIFICATION.md) closes the generic report GET null-project failure documented in the preceding increment. This does not change the active queue or complete M9b. [Publication](reviews/2026-09-14-report-api-project/PUBLICATION.md) records passing final CI and the v0.61.1 tag. The [next synthesis investigation](reviews/2026-09-14-m9b-synthesis-custody/INITIAL_FINDINGS.md) reproduces omitted sources and unconfirmed saves; retained complete source review remains M9b work.
+
+September 14 retained-source checkpoint: [source interface verification](reviews/2026-09-14-m9b-synthesis-custody/SOURCE_UI_VERIFICATION.md) connects private selection/history/inspection with exact browser retries and preserved original hashes at desktop/390px. Native checks cover full 301-comment and survey custody. The existing synthesis generator remains separate; complete preparation, resumable generation/review and reviewed exports remain M9b work. This is not a release or a capability-rating promotion.
