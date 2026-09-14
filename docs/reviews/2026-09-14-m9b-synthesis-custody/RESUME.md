@@ -1,3 +1,17 @@
+# Usage reset checkpoint after final browser runs
+
+September 14, 2026. This section supersedes the older checkpoints below. Owned checkout: `/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13`; app package `openplan/`; branch `work/engagement-decision-traceability`. Application commit `6bbdf6091064f97b7241e5e54e7e57388d5fd2f4` is pushed. This checkpoint does not land or release the unfinished increment. User continues to authorize direct verified main landing without PRs and development through the full V1 contract.
+
+Full QA and shuffled seed 619144 on the recovery fix passed 15,492 tests with 583 explicit skips. Installed RLS passed 612 tests in 64 files on `supabase_db_openplan-restore-target-2026091050`, API 29821 / DB 29822, with 346 migrations through 20261014000027. All 52 worker suites passed. Populated upgrade run 34901731600 passed. The subsequent CSS-only 6bbdf609 fix passed 33 focused tests, changed-file lint and production build. See REVIEW_UI_VERIFICATION.md for evidence and limits.
+
+Both final browser runners have finished and their result JSON records completed=true and no page errors. Private evidence directory: `/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser`. Final files are `synthesis-reviews-390-1789425085944.json` and `synthesis-reviews-1440-1789425133001.json`, with matching screenshot prefixes. Final screenshot visual review is still pending; do not equate runner completion with visual acceptance. The earlier narrow-layout failure is retained in review-browser-before-layout.json. Concurrency evidence is `synthesis-review-concurrency-1789424729262.json` from the unchanged backend on 7608831f.
+
+Next: inspect both final screenshot sets and console details, record final evidence, then retire the old capped legacy Generate write path while retaining honestly labeled read-only historical results. The existing translations 410 route and executable refusal test are the pattern. The old synthesis route caps comments at 300, omits survey responses, and can return success after a failed save; do not release this workflow with misleading live generation claims. Complete applicable verification, land directly on main, inspect final CI, and prepare the next honestly bounded minor release. Full M9b still includes exact-output approval, optional resumable generation, response/decision links and reviewed exports.
+
+At checkpoint no browser-review process remained running. The owned production server was started on 3262 from 6bbdf609; recheck process ownership and use which-openplan.sh before any browser work after reset. Do not assume servers or jobs survive. The original checkout has another Codex session and remains outside this lane. Leave the pending reminder constraint untouched. Use installed migration mode on the named DB, not old candidate flags. Do not run mutation scripts concurrently with builds or edits to their production files.
+
+---
+
 # Current recovery fix and remaining browser acceptance
 
 September 14, 2026. This section supersedes earlier checkpoints. Work remains in `/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13`, application `openplan/`, branch `work/engagement-decision-traceability`. Main remains 09c1cd17, latest published v0.61.1. No PR, main push or release is created by this checkpoint.
