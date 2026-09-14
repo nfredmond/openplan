@@ -1,0 +1,272 @@
+{
+  "date": "2026-09-14",
+  "buildCommit": "ea474256c9322a88bbdfe87077f8a2ad33b67604",
+  "checkoutAtAcceptance": "712e604ac61ec4efc22b381a2afb446282cdf5f3",
+  "identityDifference": "One documentation-only handoff commit; application sources and production build stayed frozen. which-openplan correctly reported the difference.",
+  "runners": {
+    "decision-source-browser.cjs": {
+      "executedPrivateRunner": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/source-decision.cjs",
+      "executedPrivateSha256": "f925b15b4b88e3e042b3af9289d23f2070f7c5e66300a7bfd5b0887a1f0d45c7",
+      "archivedSha256": "9e7bfed4731b07f7b759fc6a3212ecbb6543eee412dbccb1aff0061cc9320828",
+      "difference": "Output and prior-evidence directory is explicit so running from the review directory never writes raw captures into the repository."
+    },
+    "decision-correction-browser.cjs": {
+      "executedPrivateRunner": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/correct-decision.cjs",
+      "executedPrivateSha256": "ea5925f30e1d978ceb8825c3ef8ac13220909a05a4a6eea8d7bcb42087d6863c",
+      "archivedSha256": "eb275cc6ab78afe410a53f63f3eadd5a9914399b1e3b97d320781065fc8dbe2d",
+      "difference": "Output and prior-evidence directory is explicit so running from the review directory never writes raw captures into the repository."
+    },
+    "decision-history-browser-controls.cjs": {
+      "executedPrivateRunner": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/history-controls.cjs",
+      "executedPrivateSha256": "efe95778b32be110bd2801d89cecd34dfcbad85696f2a7cbd4c01b3c37a41312",
+      "archivedSha256": "04e778e76a8bef3c20584d02fff34f107aedce5c07841bd51f7ec72d9f06dc08",
+      "difference": "Output and prior-evidence directory is explicit so running from the review directory never writes raw captures into the repository."
+    }
+  },
+  "results": [
+    {
+      "evidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/source-1440-1789384640579.json",
+      "sha256": "6b5bc4aa06ded9d999662530939ef909f3f39a94d3d7a752de06cffc6a1fb955",
+      "width": 1440,
+      "completed": true,
+      "servedCommit": "ea474256c932",
+      "console": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_CONNECTION_RESET"
+        }
+      ],
+      "retainedContextSha256": "70585d6849c5d0fa63d2347deea06a69278f6d9027e9b6f7b92e76949250ca4d",
+      "entryCount": 1,
+      "retainedSourceCounts": [
+        1
+      ],
+      "downloads": [
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/source-1440-1789384640579-retained-request.json",
+          "sha256": "eff78df932e9012b0dfb294413963f7934d516d6d415d7df9795d713369a5b40"
+        }
+      ],
+      "screenshots": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/source-1440-1789384640579.png",
+          "sha256": "4a1742e61ebad1b420753aebfff330ec0db207cbf3bd090f2523511dcb8368d0"
+        }
+      ]
+    },
+    {
+      "evidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/source-390-1789384659745.json",
+      "sha256": "3a28aad79d97baaab890fd73d1ac5b56263cb5ce8253bad38b9d291bed0b1af6",
+      "width": 390,
+      "completed": true,
+      "servedCommit": "ea474256c932",
+      "console": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_CONNECTION_RESET"
+        }
+      ],
+      "retainedContextSha256": "2c0973450dc3e24c76d58cb662ab7794f6dd6ff571815cf002f724d60b0113ff",
+      "entryCount": 1,
+      "retainedSourceCounts": [
+        1
+      ],
+      "downloads": [
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/source-390-1789384659745-retained-request.json",
+          "sha256": "40c7c5944c422e48be760d8e78b503d88bb721b4ddf6beea6aebaf79aa5db4a8"
+        }
+      ],
+      "screenshots": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/source-390-1789384659745.png",
+          "sha256": "7cb97f7853ba622b6b87a3436d523897b5b8ffe5204d88d674877a614d0597c1"
+        }
+      ]
+    },
+    {
+      "evidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/correction-1440-1789384630505.json",
+      "sha256": "4d2b4ee67a56eb19f2cfc6b390f9ee28751dba6ad553a49fdfae9cc3f8c28988",
+      "width": 1440,
+      "completed": true,
+      "servedCommit": "ea474256c932",
+      "console": [],
+      "focus": [
+        "Staff response",
+        "Project decision",
+        "Review current sources"
+      ],
+      "entryCount": 3,
+      "retainedSourceCounts": [
+        0,
+        0,
+        0
+      ],
+      "screenshots": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/correction-1440-1789384630505-original.png",
+          "sha256": "e742adf3d0092f8a319f83f70175e1c055690f95883a6e59bf9d7382aa42942a"
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/correction-1440-1789384630505-withdrawn.png",
+          "sha256": "b161501e2cf513f327f53f019a66ddab52ba53ea5e468aee3e70a9c30c62b2c4"
+        }
+      ]
+    },
+    {
+      "evidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/correction-1440-1789384728094.json",
+      "sha256": "5fd0e687da288d4da08c9753fda21d7a6dbfbfb4de1be9e273c2e49c1022a7de",
+      "width": 1440,
+      "completed": true,
+      "servedCommit": "ea474256c932",
+      "console": [],
+      "focus": [
+        "Staff response",
+        "Project decision",
+        "Review current sources"
+      ],
+      "entryCount": 3,
+      "retainedSourceCounts": [
+        1,
+        1,
+        1
+      ],
+      "screenshots": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/correction-1440-1789384728094-original.png",
+          "sha256": "dad5120dc8b7cc04c3f514d484b05b5ccbe2a577a35b7cde81dde4f56d8a0ad6"
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/correction-1440-1789384728094-withdrawn.png",
+          "sha256": "bf33056ed1c110aeeaa694f0e9f741a9ad4cc43888254676ddf892ee6665791d"
+        }
+      ]
+    },
+    {
+      "evidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/correction-390-1789384650551.json",
+      "sha256": "8dde872b2a111473e593e9c6b52f76a2770db046e21d2ee3b874dc4ec617b08d",
+      "width": 390,
+      "completed": true,
+      "servedCommit": "ea474256c932",
+      "console": [],
+      "focus": [
+        "Staff response",
+        "Project decision",
+        "Review current sources"
+      ],
+      "entryCount": 3,
+      "retainedSourceCounts": [
+        0,
+        0,
+        0
+      ],
+      "screenshots": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/correction-390-1789384650551-original.png",
+          "sha256": "4928fb1d3e0e753c58f028130d431e60d68e4a309411ef0293a950cdfd561d0d"
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/correction-390-1789384650551-withdrawn.png",
+          "sha256": "1be52bcb4f0a17648f86a0a30cb9488dc3dda411425b760ef82dcaf880af25a1"
+        }
+      ]
+    },
+    {
+      "evidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/correction-390-1789384742715.json",
+      "sha256": "2dc1586b7fe583d98d165b9fff09203c0ef32fbfa9b8cd3b33cf83fa0136ed0b",
+      "width": 390,
+      "completed": true,
+      "servedCommit": "ea474256c932",
+      "console": [],
+      "focus": [
+        "Staff response",
+        "Project decision",
+        "Review current sources"
+      ],
+      "entryCount": 3,
+      "retainedSourceCounts": [
+        1,
+        1,
+        1
+      ],
+      "screenshots": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/correction-390-1789384742715-original.png",
+          "sha256": "939eb189795b4908c9d8d95791f72ef7a7a16d9e6ac2937a7c9d1a75ae33d208"
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/correction-390-1789384742715-withdrawn.png",
+          "sha256": "d897912e93c035a34279d1dc05a41facfd6cb1225e75816011061bca86274ee2"
+        }
+      ]
+    },
+    {
+      "evidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/history-controls-1440-1789384710068.json",
+      "sha256": "887ad7a038f258b1f84d7c11ad9198e1f1ea26c4824addd3de8487edb259af9e",
+      "width": 1440,
+      "completed": true,
+      "servedCommit": "ea474256c932",
+      "console": [],
+      "baseline": true,
+      "harmlessSurvived": true,
+      "targetKilled": true,
+      "restored": true,
+      "focus": [],
+      "screenshots": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/history-controls-1440-1789384710068-rejected.png",
+          "sha256": "2564e01a8505d34c0112cafa7e2dfc586e6b5e567764da7c63454f36cee197ec"
+        }
+      ]
+    },
+    {
+      "evidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/history-controls-390-1789384743994.json",
+      "sha256": "9c1d340625db78915492be2d494813a84adff80eb55169b2f491da1dda06cdf7",
+      "width": 390,
+      "completed": true,
+      "servedCommit": "ea474256c932",
+      "console": [],
+      "baseline": true,
+      "harmlessSurvived": true,
+      "targetKilled": true,
+      "restored": true,
+      "focus": [],
+      "screenshots": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/history-controls-390-1789384743994-rejected.png",
+          "sha256": "e060fe871e819f9aa16556b50774f944c5573927687c1a59f83013aa5382d23a"
+        }
+      ]
+    }
+  ],
+  "harnessErrors": [
+    {
+      "evidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/correction-1440-1789384389721.json",
+      "sha256": "ab3f1d9c1a395c7e349be91daf82ea72f03e4d6cbc3906c2f828d25a13d337e8",
+      "error": "Error: expect(locator).toBeEnabled() failed\n\nLocator: getByRole('link', { name: 'SYNTHETIC decision traceability 1440 1789383801102', exact: true })\nExpected: enabled\nTimeout: 30000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.enabled\" with timeout 30000ms\n  - waiting for getByRole('link', { name: 'SYNTHETIC decision traceability 1440 1789383801102', exact: true })\n\n    at Proxy.<anonymous> (/home/nathaniel/code/openplan/qa-harness/node_modules/playwright/lib/matchers/expect.js:213:24)\n    at click (/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/correct-decision.cjs:9:58)\n    at /home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/correct-decision.cjs:15:140\n    at runNextTicks (node:internal/process/task_queues:65:5)\n    at process.processImmediate (node:internal/timers:541:9)"
+    },
+    {
+      "evidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/correction-1440-1789384441263.json",
+      "sha256": "b201c45bbdf6caa2632a4ceec0dbeec28c2906d43c75306b46a7f3fb8b3fb800",
+      "error": "locator.fill: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('article').filter({ has: getByRole('heading', { name: 'You said / We did', exact: true }) }).locator('.module-record-row').filter({ has: getByText('SYNTHETIC response 1440 1789383801102', { exact: true }) }).getByLabel('We did', { exact: true })\u001b[22m\n\n    at /home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/correct-decision.cjs:24:117"
+    },
+    {
+      "evidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/correction-1440-1789384489382.json",
+      "sha256": "c28445f3df2ad929063bb560aaf9f8fe3524da8c361ba7889443ac6295d440a5",
+      "error": "Error: expect(locator).toBeEnabled() failed\n\nLocator: locator('article').filter({ has: getByRole('heading', { name: 'You said / We did', exact: true }) }).locator('.module-record-row').filter({ has: getByLabel('Reason for this change', { exact: true }) }).getByRole('button', { name: 'Edit', exact: true })\nExpected: enabled\nTimeout: 30000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.enabled\" with timeout 30000ms\n  - waiting for locator('article').filter({ has: getByRole('heading', { name: 'You said / We did', exact: true }) }).locator('.module-record-row').filter({ has: getByLabel('Reason for this change', { exact: true }) }).getByRole('button', { name: 'Edit', exact: true })\n\n    at Proxy.<anonymous> (/home/nathaniel/code/openplan/qa-harness/node_modules/playwright/lib/matchers/expect.js:213:24)\n    at click (/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/correct-decision.cjs:9:58)\n    at /home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/correct-decision.cjs:23:170"
+    },
+    {
+      "evidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/correction-1440-1789384549549.json",
+      "sha256": "6c804abc32329bf8962fd79e8469a27b09a86e48c0453319c3c4ac5266efdc38",
+      "error": "locator.fill: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('article').filter({ has: getByRole('heading', { name: 'You said / We did', exact: true }) }).locator('.module-record-row').getByLabel('We did', { exact: true })\u001b[22m\n\n    at /home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/correct-decision.cjs:24:117"
+    }
+  ],
+  "limits": [
+    "Synthetic staff meeting intake via real UI, not observed participant usefulness.",
+    "Meeting submission configuration stays unknown; portal submission configuration not exercised in these journeys.",
+    "Corrupt history transport refusal does not establish self-service resolution of damaged local requests.",
+    "No public explanation or report/export lineage acceptance.",
+    "Mobile history is readable and wraps, but nested page padding leaves narrow text columns.",
+    "Corruption controls cover browser history byte verification, not removal of native database guards."
+  ]
+}

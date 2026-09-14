@@ -1,5 +1,60 @@
 # Response-to-decision context in progress
 
+## Browser correction, withdrawal and source evidence completed
+
+Desktop and 390px journeys now cover the complete private link lifecycle from
+real navigation on the frozen ea474256 production build. A meeting contribution
+was created through Setup's existing Register feedback item form and selected
+in Contributions addressed. Native retained context includes that contribution's
+words, excludes its private source label, and leaves submission configuration
+unknown. No database rows were hand-seeded for these journeys.
+
+Each width saved a link, deliberately lost its successful acknowledgment,
+downloaded and verified the retained request, and retried exactly once without
+creating a duplicate. The response was then corrected through its Edit form.
+The decision editor showed changed sources; reviewing and saving retained a
+successor while keeping the original byte-for-byte. Withdrawal retained both
+previous entries and the corrected context. Reload showed all three entries.
+The same correction/withdrawal sequence also passed for the earlier zero-source
+cases. All four no-fault correction journeys had zero console warnings/errors.
+The two lost-acknowledgment journeys each contain their intentional connection
+reset. Navigation-prefetch aborts remain separately recorded.
+
+Keyboard Tab traversal reached Staff response, Project decision and Review
+current sources in order; Enter activated review. Desktop and mobile original
+and withdrawal screenshots were inspected, as were expanded source screenshots.
+At 390px the content wraps and the history controls remain reachable, though
+nested page padding leaves narrow columns. This is engineering acceptance using
+synthetic data, not observation of practicing planners or public participants.
+
+At both widths a harmless response-header change preserved displayed history.
+Changing retained context bytes while leaving its checksum unchanged caused
+private history validation to refuse the payload, remove unverified history
+from display and explain the failed read. The original visibility assertion
+failed with expected three entries versus actual zero. Restoring transport
+restored the original three entries without altering native data.
+
+`decision-browser-evidence.json` retains exact evidence and runner hashes,
+console outcomes, screenshots and limitations. Raw evidence stays private.
+Archived browser runners explicitly write to the private evidence directory.
+Source creation runs fresh; correction requires a prior source-creation JSON
+through PROBE_PRIOR if the default historical campaign is already withdrawn.
+The history-control runner reads a retained three-entry campaign.
+
+Four initial correction-runner attempts failed on selectors before any source
+correction or decision-link write: campaign links include status text, a theme
+text locator disappears during editing, and populated wrapped textareas require
+their textbox accessible name rather than exact label text. These harness
+failures are preserved in the evidence packet. No application defect was
+established by them. The corrected runner completed at both widths.
+
+Next implement self-service resolution for damaged or unknown local decision
+requests, retaining original bytes and preventing late commits. Existing
+translation resolution/recovery is the starting pattern. Then complete explicit
+public explanation with privacy exclusion and report/export lineage. Full M9b
+and release readiness remain incomplete. All browser jobs in this checkpoint
+are terminal; the identified production server remains running on 3262.
+
 ## Usage-reset handoff, September 14
 
 The user asked to preserve continuity across the weekly usage reset. Resume
