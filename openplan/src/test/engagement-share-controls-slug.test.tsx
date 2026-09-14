@@ -74,24 +74,23 @@ describe("EngagementShareControls — the printable link name", () => {
   it("sends the link name only when edited, and sends what was typed — binding varied", async () => {
     render(<EngagementShareControls campaign={campaign()} />);
 
-    // Untouched save: no publicSlug key at all, so a failed slug read can
-    // never be replayed as a deliberate clear.
+    // Untouched save is disabled, so a failed slug read cannot become a clear.
     fireEvent.click(saveButton());
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-    expect("publicSlug" in bodyOfCall(0)).toBe(false);
+    expect(saveButton()).toBeDisabled();
+    expect(fetchMock).not.toHaveBeenCalled();
 
     // First edit travels, lowercased as typed.
     fireEvent.change(slugField(), { target: { value: "Jefferson-Street-Study" } });
     fireEvent.click(saveButton());
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
-    expect(bodyOfCall(1).publicSlug).toBe("jefferson-street-study");
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(bodyOfCall(0).publicSlug).toBe("jefferson-street-study");
 
     // A DIFFERENT edit travels as itself — one fixture cannot tell "threads
     // the binding" from "hardcodes its value".
     fireEvent.change(slugField(), { target: { value: "oak-avenue-plan" } });
     fireEvent.click(saveButton());
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
-    expect(bodyOfCall(2).publicSlug).toBe("oak-avenue-plan");
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    expect(bodyOfCall(1).publicSlug).toBe("oak-avenue-plan");
   });
 
   it("clears with an emptied field, sent as null", async () => {

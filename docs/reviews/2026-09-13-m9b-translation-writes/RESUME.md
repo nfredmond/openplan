@@ -1,3 +1,7 @@
+# Current public retry and share-settings checkpoint
+
+Read [PUBLIC_RETRY_SHARE_SETTINGS_PROGRESS.md](PUBLIC_RETRY_SHARE_SETTINGS_PROGRESS.md) first. Failed-attempt successors, rotated-link refusals and repaired share settings now pass desktop/390px journeys. Full QA, isolated release checks, legacy-cache browser compatibility and production cold navigation remain. Older entries retain their dated evidence.
+
 # Current installed public translation integration
 
 Read [PUBLIC_TRANSLATION_INTEGRATION_PROGRESS.md](PUBLIC_TRANSLATION_INTEGRATION_PROGRESS.md) first. Migration 20 and desktop/390px public queue/worker recovery are now exercised. Explicit failed retries, privacy extensions, the discovered stale share-settings panel and final release checks remain. Older entries retain their dated evidence.

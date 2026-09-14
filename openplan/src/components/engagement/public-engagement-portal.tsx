@@ -677,13 +677,7 @@ export function PublicEngagementPortal({
                 >
                   {translation.text}
                 </p>
-                {/*
-                  The same sentence the rest of the portal uses for machine
-                  output. One wording for one promise: a resident who has learnt
-                  what the badge means on a campaign description should not have
-                  to learn a second phrasing here.
-                */}
-                <p className="mt-1.5 text-[0.7rem] text-muted-foreground">{t("provenance.machine.caveat")}</p>
+                <p className="mt-1.5 text-[0.7rem] text-muted-foreground">{t("portal.commentTranslationCaveat")}</p>
               </div>
             ) : null}
             {translation && ["pending", "failed", "missing", "unconfirmed", "unavailable"].includes(translation.status) ? (
@@ -964,7 +958,7 @@ export function PublicEngagementPortal({
 
             {activeTab === "feedback" ? (
               <>
-                <div className="public-map-frame public-map-frame--display">
+                <div className="public-map-frame public-map-frame--display empty:hidden">
                   <LocationDisplayMap
                     items={topLevel.map((item) => ({
                       id: item.id,

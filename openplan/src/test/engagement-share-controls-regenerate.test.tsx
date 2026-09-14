@@ -117,6 +117,7 @@ describe("EngagementShareControls server-minted link flow", () => {
 
   it("saving share settings never sends a token", async () => {
     render(<EngagementShareControls campaign={campaign()} />);
+    fireEvent.change(screen.getByLabelText(/Public-facing description/), { target: { value: "Updated public description" } });
 
     fireEvent.click(screen.getByRole("button", { name: /Save share settings/ }));
 

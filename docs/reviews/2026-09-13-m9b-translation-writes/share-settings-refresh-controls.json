@@ -1,0 +1,153 @@
+{
+  "sourceSha256": "ff144bda42e8acda21f0a84fe7b6c9a03b47a139e38c1b35250bafae7dfecc1a",
+  "tests": {
+    "src/test/engagement-share-controls-refresh.test.tsx": "6f0716072a6ed1d468a9e51e31352c5ae84f87be48cbc5acdd7836198ed32f52",
+    "src/test/engagement-share-controls-slug.test.tsx": "0f26e82bb90104045227b4e090db7441e96ce8f9ac2321b766f6aa7b2c74f51e",
+    "src/test/engagement-share-controls-regenerate.test.tsx": "d70ff3885c908816926fb83f2f6365d90cfbc54f8e4f60d2992f3f8a2138826e",
+    "src/test/engagement-share-controls-embed.test.tsx": "93d6072ef53e387e916c0f337aeb5ae61629650d34c8229720cb5b604fb20e9e"
+  },
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/share-settings-refresh-controls/20260914T004627",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "freeze-untouched-values",
+      "outcome": "killed",
+      "expectedFailure": "reflects publishing changes",
+      "failedTests": [
+        "share settings follow saved values without losing drafts reflects publishing changes in untouched controls and live status"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "discard-unsaved-draft",
+      "outcome": "killed",
+      "expectedFailure": "preserves a slug draft",
+      "failedTests": [
+        "share settings follow saved values without losing drafts preserves a slug draft while refreshed untouched settings follow the server"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "carry-foreign-draft",
+      "outcome": "killed",
+      "expectedFailure": "never carries an old draft",
+      "failedTests": [
+        "share settings follow saved values without losing drafts never carries an old draft into a different campaign or back again"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "revive-confirmed-draft",
+      "outcome": "killed",
+      "expectedFailure": "releases a confirmed draft",
+      "failedTests": [
+        "share settings follow saved values without losing drafts releases a confirmed draft so a later saved change can appear"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "draft-is-live-status",
+      "outcome": "killed",
+      "expectedFailure": "keeps unsaved submission changes separate",
+      "failedTests": [
+        "share settings follow saved values without losing drafts keeps unsaved submission changes separate from live status and sends only that edit"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "send-untouched-description",
+      "outcome": "killed",
+      "expectedFailure": "preserves a slug draft",
+      "failedTests": [
+        "share settings follow saved values without losing drafts preserves a slug draft while refreshed untouched settings follow the server"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "send-untouched-submissions",
+      "outcome": "killed",
+      "expectedFailure": "preserves a slug draft",
+      "failedTests": [
+        "share settings follow saved values without losing drafts preserves a slug draft while refreshed untouched settings follow the server"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "send-untouched-demographics",
+      "outcome": "killed",
+      "expectedFailure": "preserves a slug draft",
+      "failedTests": [
+        "share settings follow saved values without losing drafts preserves a slug draft while refreshed untouched settings follow the server"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "lose-explicit-description-clear",
+      "outcome": "killed",
+      "expectedFailure": "keeps explicit empty descriptions",
+      "failedTests": [
+        "share settings follow saved values without losing drafts keeps explicit empty descriptions and slugs as deliberate clears"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "lose-explicit-slug-clear",
+      "outcome": "killed",
+      "expectedFailure": "clears with an emptied field",
+      "failedTests": [
+        "EngagementShareControls \u2014 the printable link name clears with an emptied field, sent as null"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "lose-false-demographics",
+      "outcome": "killed",
+      "expectedFailure": "sends a changed demographics setting",
+      "failedTests": [
+        "share settings follow saved values without losing drafts sends a changed demographics setting without replaying the other fields"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "settings-replay-share-token",
+      "outcome": "killed",
+      "expectedFailure": "saving share settings never sends a token",
+      "failedTests": [
+        "EngagementShareControls server-minted link flow saving share settings never sends a token"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "enable-untouched-save",
+      "outcome": "killed",
+      "expectedFailure": "makes an untouched or reverted save a no-op",
+      "failedTests": [
+        "share settings follow saved values without losing drafts makes an untouched or reverted save a no-op"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "erase-newer-draft-on-confirmation",
+      "outcome": "killed",
+      "expectedFailure": "preserves a newer edit",
+      "failedTests": [
+        "share settings follow saved values without losing drafts preserves a newer edit while an earlier save is confirmed"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Real React component with controlled prop refreshes and mocked fetch. Does not prove browser reachability, backend concurrent-write conflicts or account authorization. Server values must themselves distinguish successful reads from unavailable fields."
+}

@@ -11,7 +11,7 @@ async function main() {
   const config = z.object({ fieldId: z.string().uuid(), requestId: z.string().uuid(), sourceText: z.string().startsWith("SYNTHETIC "), outputText: z.string().includes("SINTÉTICO") }).strict().parse(JSON.parse(readFileSync(configPath, "utf8")));
   const target = "http://127.0.0.1:29821";
   if (process.env.NEXT_PUBLIC_SUPABASE_URL !== target || process.env.ANTHROPIC_API_KEY !== "SYNTHETIC-TRANSLATION-BROWSER-KEY" || !directory.startsWith("/home/nathaniel/.local/state/openplan/response-write-probe-20260913/")) throw new Error("Unexpected synthetic worker configuration");
-  if (!["output-loss", "resume"].includes(mode)) throw new Error("Unexpected worker mode");
+  if (!["output-loss", "resume", "provider-failure"].includes(mode)) throw new Error("Unexpected worker mode");
   const nativeFetch = globalThis.fetch;
   globalThis.fetch = async (input, init) => {
     const request = new Request(input, init); const url = new URL(request.url);
@@ -22,6 +22,7 @@ async function main() {
       const eventPath = join(directory, "provider-events.jsonl");
       appendFileSync(eventPath, JSON.stringify({ providerTransportIntercepted: true, fieldId: config.fieldId }) + "\n", { mode: 0o600 });
       const fd = openSync(eventPath, "r"); try { fsyncSync(fd); } finally { closeSync(fd); }
+      if (mode === "provider-failure") return new Response(JSON.stringify({ type: "error", error: { type: "overloaded_error", message: "SYNTHETIC provider unavailable" } }), { status: 503, headers: { "content-type": "application/json" } });
       return new Response(JSON.stringify({ id: "SYNTHETIC-browser-response", type: "message", role: "assistant", model: "synthetic-browser-model",
         content: [{ type: "text", text: config.outputText }], stop_reason: "end_turn", stop_sequence: null,
         usage: { input_tokens: 12, output_tokens: 7 } }), { headers: { "content-type": "application/json" } });

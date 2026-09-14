@@ -197,6 +197,7 @@ export const EN_PORTAL_MESSAGES = {
   "portal.translationUnconfirmed": "The request could not be confirmed. Check its status to recover existing work.",
   "portal.translationCheck": "Check translation status",
   "portal.translationNewAttempt": "Request a new translation",
+  "portal.commentTranslationCaveat": "Machine translation for convenience. The participant's original comment is shown above.",
   "portal.translationUnavailable":
     "This comment could not be translated right now. The original is shown.",
   "portal.demographics": "About you (only if you want to)",
@@ -685,6 +686,7 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
   "portal.translationUnconfirmed": "No se pudo confirmar la solicitud. Consulte su estado para recuperar el trabajo existente.",
   "portal.translationCheck": "Consultar el estado de la traducción",
   "portal.translationNewAttempt": "Solicitar una nueva traducción",
+  "portal.commentTranslationCaveat": "Traducción automática para facilitar la lectura. El comentario original del participante aparece arriba.",
   "portal.translationUnavailable":
     "No se pudo traducir este comentario en este momento. Se muestra el original.",
   "portal.demographics": "Sobre usted (solo si usted quiere)",

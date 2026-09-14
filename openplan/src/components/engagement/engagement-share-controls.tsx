@@ -45,6 +45,15 @@ function escapeHtmlAttribute(value: string): string {
     .replace(/>/g, "&gt;");
 }
 
+// Untouched fields follow refreshed server values. A local edit survives a
+// refresh until that exact value is saved, and never carries into another campaign.
+function useShareField<T extends string | boolean>(campaignId: string, saved: T, equal: (a: T, b: T) => boolean = Object.is) {
+  const [draft, setDraft] = useState<{ campaignId: string; value: T } | null>(null);
+  const current = draft?.campaignId === campaignId && !equal(draft.value, saved) ? draft : null;
+  if (draft !== null && current === null) setDraft(null);
+  return [current?.value ?? saved, (value: T) => setDraft(equal(value, saved) ? null : { campaignId, value })] as const;
+}
+
 export function EngagementShareControls({
   campaign,
 }: {
@@ -55,10 +64,10 @@ export function EngagementShareControls({
   // The share token is server truth: it is minted and rotated by
   // POST /share-token and cleared by PATCH { shareToken: null } — never typed.
   const shareToken = normalizeShareToken(campaign.share_token) ?? "";
-  const [publicDescription, setPublicDescription] = useState(campaign.public_description ?? "");
-  const [publicSlug, setPublicSlug] = useState(campaign.public_slug ?? "");
-  const [allowSubmissions, setAllowSubmissions] = useState(campaign.allow_public_submissions);
-  const [demographicsEnabled, setDemographicsEnabled] = useState(campaign.demographics_enabled);
+  const [publicDescription, setPublicDescription] = useShareField(campaign.id, campaign.public_description ?? "", (a, b) => a.trim() === b.trim());
+  const [publicSlug, setPublicSlug] = useShareField(campaign.id, campaign.public_slug ?? "", (a, b) => normalizePublicSlugInput(a) === normalizePublicSlugInput(b));
+  const [allowSubmissions, setAllowSubmissions] = useShareField(campaign.id, campaign.allow_public_submissions);
+  const [demographicsEnabled, setDemographicsEnabled] = useShareField(campaign.id, campaign.demographics_enabled);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRotating, setIsRotating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,13 +79,7 @@ export function EngagementShareControls({
     setBrowserOrigin(window.location.origin);
   }, []);
 
-  const portalState = getPublicPortalState({
-    status: campaign.status,
-    share_token: shareToken,
-    public_description: publicDescription,
-    allow_public_submissions: allowSubmissions,
-    submissions_closed_at: campaign.submissions_closed_at,
-  });
+  const portalState = getPublicPortalState(campaign);
   const shareUrl = portalState.portalPath ? `${browserOrigin}${portalState.portalPath}` : null;
 
   // The SAME normalization and rule the route and the public resolver use —
@@ -86,6 +89,10 @@ export function EngagementShareControls({
   // an unedited field must never clear a slug that exists but could not be
   // read; gating on change makes that impossible rather than unlikely.
   const slugEdited = normalizedSlug !== (campaign.public_slug ?? "");
+  const descriptionEdited = publicDescription.trim() !== (campaign.public_description ?? "");
+  const submissionsEdited = allowSubmissions !== campaign.allow_public_submissions;
+  const demographicsEdited = demographicsEnabled !== campaign.demographics_enabled;
+  const hasEdits = slugEdited || descriptionEdited || submissionsEdited || demographicsEdited;
   const slugUrl =
     normalizedSlug !== "" && isPublicSlugCandidate(normalizedSlug)
       ? `${browserOrigin}/engage/${normalizedSlug}`
@@ -126,6 +133,7 @@ export function EngagementShareControls({
   }, [embedSnippet]);
 
   async function handleSave() {
+    if (!hasEdits || isSubmitting) return;
     // Refuse a bad link name HERE, with the same sentence the server uses, so
     // the planner is not told "saved" and then finds the address dead.
     if (slugEdited && normalizedSlug !== "" && !isPublicSlugCandidate(normalizedSlug)) {
@@ -141,9 +149,9 @@ export function EngagementShareControls({
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          publicDescription: publicDescription || null,
-          allowPublicSubmissions: allowSubmissions,
-          demographicsEnabled,
+          ...(descriptionEdited ? { publicDescription: publicDescription.trim() || null } : {}),
+          ...(submissionsEdited ? { allowPublicSubmissions: allowSubmissions } : {}),
+          ...(demographicsEdited ? { demographicsEnabled } : {}),
           // An emptied field is a deliberate clear; an untouched one sends
           // nothing at all (see slugEdited above).
           ...(slugEdited ? { publicSlug: normalizedSlug === "" ? null : normalizedSlug } : {}),
@@ -443,7 +451,7 @@ export function EngagementShareControls({
         )}
 
         <div className="flex flex-wrap gap-2">
-          <Button type="button" onClick={() => void handleSave()} disabled={isSubmitting}>
+          <Button type="button" onClick={() => void handleSave()} disabled={isSubmitting || !hasEdits}>
             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             Save share settings
           </Button>

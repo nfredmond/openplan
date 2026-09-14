@@ -1,0 +1,342 @@
+{
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-translation-browser-1789372543552",
+  "build": {
+    "commit": "cbcb8985d37d8320101009077b2c135316608638",
+    "dirty": " M docs/reviews/2026-09-13-m9b-translation-writes/public-browser-transport-controls.json\n M docs/reviews/2026-09-13-m9b-translation-writes/public-translation-browser.cjs\n M docs/reviews/2026-09-13-m9b-translation-writes/translation-generation-browser-worker.ts\n M openplan/package.json\n M openplan/src/components/engagement/engagement-share-controls.tsx\n M openplan/src/components/engagement/public-engagement-portal.tsx\n M openplan/src/lib/engagement/portal-i18n/messages.ts\n M openplan/src/test/engagement-share-controls-regenerate.test.tsx\n M openplan/src/test/engagement-share-controls-slug.test.tsx\n?? docs/reviews/2026-09-13-m9b-translation-writes/prove-share-settings-refresh.py\n?? docs/reviews/2026-09-13-m9b-translation-writes/share-settings-refresh-controls.json\n?? openplan/src/test/engagement-share-controls-refresh.test.tsx\n",
+    "files": {
+      "src/components/engagement/use-public-comment-translations.ts": "11852d69bfdb415f56512073ae3640c5374b3f2d5622c2e96bdcd01b3b0a4ec3",
+      "src/components/engagement/engagement-share-controls.tsx": "ff144bda42e8acda21f0a84fe7b6c9a03b47a139e38c1b35250bafae7dfecc1a",
+      "src/components/engagement/public-engagement-portal.tsx": "c5f5332b6c41b4f868c68e434f894e5316014d2bd776cdc56141a83735bf8bbc",
+      "src/app/api/engage/[shareToken]/items/[itemId]/translate/route.ts": "78125d43b6738224eb3012f4072101aaf0f3d020a2d15f033e3b13617b254693",
+      "supabase/migrations/20261014000020_engagement_public_translation_queue.sql": "c247f4ead091a3bc2f19570731a683a721dc147a50e2a967df195869523b18ff"
+    }
+  },
+  "journeys": [
+    {
+      "width": 1440,
+      "passed": true,
+      "campaignId": "ff89d5cc-7f5a-470f-9059-6a53166e560f",
+      "itemId": "ae9aa3b4-da22-4da8-bbb1-0febfa115986",
+      "requestId": "7197867c-9154-4db9-ad43-05eca36f1194",
+      "fieldId": "55e44864-77c4-44b7-a38e-345dd1454fda",
+      "sourceHash": "81ac1a953b667cd35e595d4b748ee7e01ff691bda68af226a97f5e6ab31857bd",
+      "providerCalls": 3,
+      "failedRequest": {
+        "requestId": "8f9b5464-f0fb-4169-9075-501439a47bb3",
+        "fieldId": "1ae2eaba-0083-4547-acf7-99e047fd1eee"
+      },
+      "successorRequest": {
+        "requestId": "74658e6c-b7ed-4950-b1ec-4cb7777732e4",
+        "fieldId": "8c7b4562-d708-4c49-8f06-1b1064f72bcb"
+      },
+      "revokedStatus": 404,
+      "workerResults": [
+        {
+          "mode": "output-loss",
+          "exit": 1
+        },
+        {
+          "mode": "resume",
+          "exit": 0
+        }
+      ],
+      "shareSettingsSavedOnlyDraft": true,
+      "emptyMapGuard": {
+        "emptyHidden": true,
+        "nonemptyVisible": true,
+        "removedGuardVisible": true,
+        "restoredHidden": true
+      },
+      "sourceMismatchStatus": 409,
+      "overflow": {
+        "viewport": 1440,
+        "document": 1440
+      },
+      "console": [
+        {
+          "type": "log",
+          "text": "[Fast Refresh] rebuilding"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] done in 487ms"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] rebuilding"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] done in 1355ms"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] rebuilding"
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789372546649 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/css/app/(app)/layout.css?v=1789372548789 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/36966cca54120369-s.p.woff2?v=1789372546649 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] done in 865ms"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] rebuilding"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] done in 482ms"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] rebuilding"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] done in 1427ms"
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789372546649 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/css/app/(app)/layout.css?v=1789372548789 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/36966cca54120369-s.p.woff2?v=1789372546649 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] rebuilding"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] done in 1015ms"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] rebuilding"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] done in 969ms"
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789372546649 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/css/app/layout.css?v=1789372559278 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/css/app/(app)/layout.css?v=1789372559278 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/css/app/(app)/layout.css?v=1789372548789 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/36966cca54120369-s.p.woff2?v=1789372546649 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] rebuilding"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] done in 1317ms"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] rebuilding"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] done in 1691ms"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] rebuilding"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] done in 532ms"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] rebuilding"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] done in 581ms"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] rebuilding"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] done in 494ms"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] rebuilding"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] rebuilding"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] done in 569ms"
+        },
+        {
+          "type": "log",
+          "text": "[Fast Refresh] done in 569ms"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "passed": true,
+      "campaignId": "e8e7a761-dd24-4832-87a7-a7780dde1af7",
+      "itemId": "bae48da9-a196-4291-be93-e0c168281ec1",
+      "requestId": "4680717a-18bd-4bc6-aff1-6c4d623dd7c8",
+      "fieldId": "33a35ea5-c9f9-4c78-b54f-b62faa565428",
+      "sourceHash": "8d36b12fc29b6a33cb482434ab491501c5eb37374c6eb74fdb0bedd21c3130cf",
+      "providerCalls": 3,
+      "failedRequest": {
+        "requestId": "161c94f2-f28f-4d0e-8258-6458facdddf9",
+        "fieldId": "a77b8e15-5a5c-4b93-873f-6f28be791833"
+      },
+      "successorRequest": {
+        "requestId": "ac86214d-4def-4021-871a-4e4b70caafda",
+        "fieldId": "1850d1c7-4b9b-42e1-bf3e-a2929813e218"
+      },
+      "revokedStatus": 404,
+      "workerResults": [
+        {
+          "mode": "output-loss",
+          "exit": 1
+        },
+        {
+          "mode": "resume",
+          "exit": 0
+        }
+      ],
+      "shareSettingsSavedOnlyDraft": true,
+      "emptyMapGuard": {
+        "emptyHidden": true,
+        "nonemptyVisible": true,
+        "removedGuardVisible": true,
+        "restoredHidden": true
+      },
+      "sourceMismatchStatus": 409,
+      "overflow": {
+        "viewport": 390,
+        "document": 390
+      },
+      "console": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/css/app/(app)/layout.css?v=1789372596084 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/36966cca54120369-s.p.woff2?v=1789372592444 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789372592444 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/css/app/(app)/layout.css?v=1789372593709 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/css/app/layout.css?v=1789372596084 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        }
+      ]
+    }
+  ],
+  "artifacts": {
+    "1440-worker-output-loss.log": "378ae61ba9f4859523ae1361ea60be0ac18fdae87047a9dca88397d539458c09",
+    "1440-successor.png": "de07c65672bebcc61e0e62dda200cf372e8bbc6d1e662a166ac925e92bfbda3b",
+    "390-checkpoint.json": "f758374582689a8c1291f8e8356bbe495f4ee0536e0e7593e3f160dd687bf48b",
+    "source.json": "d8a4a30983fa8a818670515582ad39f8707a5af0ddda8fe0703e9666955d950c",
+    "390-worker-config.json": "af95343874f20abc9c3fcfde7ceb90d67f56e5093910d2977b458383bb2941bb",
+    "1440-queue-response.json": "082dffe98e05f1d1ec5e7b158d3bb770a3e17092910df622cde6d3db7d55122d",
+    "1440-successor-config.json": "30557bef30252a2afece83309fc06f5467901784815b68ef643b5fd19af30c31",
+    "1440-share-saved.png": "61a918c7a248921d31c0a748416c7df343b46c3b981f9e06af43aff164a74342",
+    "390-worker-output-loss.log": "378ae61ba9f4859523ae1361ea60be0ac18fdae87047a9dca88397d539458c09",
+    "390-share-saved.png": "055b0ca7aeab9a13187e33ce27851b98c3f2825778f9957d2b14952e6c12ebeb",
+    "1440-checkpoint.json": "829a0a7a994a145f108f4e855b61fe3ec11f347d50b57205386ae70f78926919",
+    "1440-item-response.json": "be2296b6e3724529b806eab7783f6be96c06cb3abf8ccef3c6b36de111425aed",
+    "1440-worker-config.json": "00ea2a0a35532b0f9038111c1e36469f810bcb34c20977de220e72160a8636b6",
+    "1440-completed.png": "53beb4b53b58d4e0868f10c2680bae33fa125bf7b6b66173168b7ddc2e475909",
+    "1440-failed.png": "1f6c7f5b873d5948a25608d0a6b12327a4e2e835f2cf6f36d57ebe759936a572",
+    "390-queue-response.json": "17b35a33b8c6673283cfc32228c741a8f7a6475c70f0943e271a6e6f607f2ca9",
+    "identity.txt": "f2cf85abed9c1cbf2aba69c7f8e8b4460ecdb90eb2abdde57464d14951b62acf",
+    "1440-pending.png": "13e59043ec6aba5999193ed3d93fb563dacb6b9537d76442f21d9d7e779ffa1d",
+    "390-failed-config.json": "f6d72ee887ccd303bc79f0b39923d0bcd06359723d1555935041e39c27d2b1a7",
+    "390-pending.png": "4bd70f14d1e5e31a63d23829c10f9a64a628750ba48c980c991a709d2f382a53",
+    "390-worker-resume.log": "e7de8dbbb35ee13a5febcb0c1f9ad42cc057d36466f7c0a5fe5eac7b2838b9c9",
+    "390-completed.png": "768bda297b606ec9f02e47eb6b7b035e3d032238510ded3598d89ddfc2044404",
+    "1440-worker-resume.log": "19281b074afd100287ea28a8c9c36e925486103a3e0ccb44876f9ee0c714ba32",
+    "390-successor.png": "8f1c4c17d9ec932afe113e8f2ad8349622aa1ef10eeaf0f81be0c3763cd6e74d",
+    "results.json": "9be5974ac3cbd7bbb404eae7aefcb6b1eaf7674162190eca3d9a0e8ce8aa28da",
+    "390-item-response.json": "2bac1f5eb6327876e3b01a32ae83253596e79fbe692db68b2f9fbc8a4705c4b6",
+    "390-failed.png": "73f267488edec152fe58e797d8f810997cd159fc4bed94ac3b632f2c16901de8",
+    "390-successor-config.json": "f764b6ecf2ffded2b4764f903d6cb0a70d88f53966a39011ce52dea00debd76f",
+    "1440-failed-config.json": "63933474f27d9240209344a58a7f81a2314c0fd296fad37a3ffd138581ac88f3"
+  },
+  "limits": "Synthetic meeting input created through the UI, real anonymous browser navigation, installed SQL, actual worker and SDK, locally intercepted provider traffic. Per width, one initial success, one explicit provider failure, and one explicitly requested successor. No real translation-quality, prescribed-language or paid-provider claim. Legacy cache browser compatibility and production-build cold navigation remain separate checks. Draft tests protect untouched settings and retain edits; they do not establish concurrent same-field optimistic locking in campaign settings."
+}
