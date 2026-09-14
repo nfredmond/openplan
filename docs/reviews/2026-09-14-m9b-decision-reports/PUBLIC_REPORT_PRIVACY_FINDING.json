@@ -1,0 +1,16 @@
+{
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "database": "postgres",
+  "migrationLedger": "341/20261014000022",
+  "rolledBack": true,
+  "result": {
+    "scope": "public",
+    "retainsPrivateMarker": false,
+    "containsPrivateCanary": true,
+    "containsPublicControl": true
+  },
+  "sqlSha256": "a3720810ba15de9ea0d243f612fbcc0b8640cde2b8a7534ddfa1671a40619acc",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/public-report-before-owner-read.log",
+  "earlierProbe": "Authenticated SELECT of snapshot_text was denied by deliberate column-level grants. id, scope and filters_json are readable. Owner read inspects the snapshot in a rolled-back fixture; this is not evidence of a broken report listing.",
+  "limits": "Synthetic native queue probe; generated PDF/XLSX and browser delivery not exercised by this probe."
+}

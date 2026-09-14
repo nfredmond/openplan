@@ -1,0 +1,91 @@
+{
+  "candidateSha256": "31ccbf6731f6e11f4f2a3d19f9f2abf7901dc60608114413c65fccd5826c9328",
+  "fixtureSha256": "f1e17b57606c00c04f9ca22651dfcd9693fc49e6ab8158f8b0e894e352c68c57",
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "database": "postgres",
+  "outcomes": [
+    {
+      "name": "baseline",
+      "outcome": "survived",
+      "failedAssertions": []
+    },
+    {
+      "name": "harmless",
+      "outcome": "survived",
+      "failedAssertions": []
+    },
+    {
+      "name": "private-flag",
+      "outcome": "killed",
+      "failedAssertions": [
+        "public-record-selection",
+        "public-response-selection"
+      ]
+    },
+    {
+      "name": "internal-flag",
+      "outcome": "killed",
+      "failedAssertions": [
+        "public-record-selection"
+      ]
+    },
+    {
+      "name": "visibility",
+      "outcome": "killed",
+      "failedAssertions": [
+        "public-record-selection"
+      ]
+    },
+    {
+      "name": "review-state",
+      "outcome": "killed",
+      "failedAssertions": [
+        "public-record-selection"
+      ]
+    },
+    {
+      "name": "unicode-private-flag",
+      "outcome": "killed",
+      "failedAssertions": [
+        "public-record-selection"
+      ]
+    },
+    {
+      "name": "queue-record-scope",
+      "outcome": "killed",
+      "failedAssertions": [
+        "public-record-selection",
+        "public-response-selection"
+      ]
+    },
+    {
+      "name": "queue-parent-scope",
+      "outcome": "killed",
+      "failedAssertions": [
+        "public-record-selection"
+      ]
+    },
+    {
+      "name": "internal-originals",
+      "outcome": "killed",
+      "failedAssertions": [
+        "internal-original-retention",
+        "internal-response-retention"
+      ]
+    },
+    {
+      "name": "response-source-selection",
+      "outcome": "killed",
+      "failedAssertions": [
+        "public-response-selection"
+      ]
+    }
+  ],
+  "installedDefinitionsUnchanged": true,
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/public-report-privacy-1789389849996241988",
+  "limits": [
+    "Candidate only; no application migration installed.",
+    "Tests cover report queue selection, not existing archived artifacts, public portal, attachment or translation reads.",
+    "Flags are explicit private_note/internal_note/visibility. Source-type-only privacy policy is not changed."
+  ]
+}
