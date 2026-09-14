@@ -1,0 +1,24 @@
+{
+  "qa": {
+    "commit": "d94c73ee0f8522037770241ba93c50b7e494834c",
+    "exitCode": 0,
+    "elapsedSeconds": 395.52,
+    "log": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/full-qa-d94c73ee.log"
+  },
+  "shuffled": {
+    "commit": "d94c73ee0f8522037770241ba93c50b7e494834c",
+    "seed": "914060",
+    "exitCode": 0,
+    "elapsedSeconds": 128.48,
+    "log": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/shuffled-d94c73ee.log"
+  },
+  "vitestEach": {
+    "passingFiles": 1301,
+    "skippedFiles": 50,
+    "passingTests": 15188,
+    "skippedTests": 504
+  },
+  "liveRlsGate": "explicitly_skipped",
+  "applicationSchema": "339:20261014000020; decision candidates not installed",
+  "limits": "Local lint, dead-code, unit/connector, audit, build and shuffled verification. Native candidate role/concurrency evidence is recorded separately. No live HTTP/database migration, browser acceptance, new worker/upgrade/restore evidence or release claim."
+}

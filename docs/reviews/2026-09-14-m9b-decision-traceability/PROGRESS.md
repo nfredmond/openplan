@@ -1,5 +1,28 @@
 # Response-to-decision context in progress
 
+## Latest verified checkpoint: d94c73ee
+
+Full local QA completed successfully on `d94c73ee0f8522037770241ba93c50b7e494834c`.
+Its 1301 test files passed with 15188 passing tests and 504 skipped tests across
+50 skipped files. Lint, dead-code checks, provider connector checks, dependency
+audit and the webpack production build completed. The separately shuffled suite
+also passed 15188 tests with 504 skipped using seed `914060`. Exact process
+results and private log paths are in `editor-local-qa.json`.
+
+The live RLS gate was explicitly skipped in that QA run. Native candidate
+role/concurrency tests above are separate evidence; the new schema is still
+uninstalled in application `postgres`. No new worker, upgrade, restore, browser,
+public-explanation or release acceptance is claimed here. There are no remaining
+QA or mutation processes from this checkpoint to resume. Existing port 3260 is
+still the old isolated browser build, not this compiled checkout.
+
+All implementation work is pushed to `work/engagement-decision-traceability`.
+Main remains `24f0dc9f`; GitHub CI `34827922723` and RLS `34827922744` were checked
+completed/success again. GitHub has no workflow runs for this work branch.
+Do not attribute main's green CI to this newer implementation. Continue directly
+to main after the additive migration and affected workflows are ready; no PR or
+human review is required. The full V1 goal remains active.
+
 ## Campaign scope correction after editor QA
 
 Full QA at `87bac2b8` passed lint/dead-code checks but stopped with 15186 tests
