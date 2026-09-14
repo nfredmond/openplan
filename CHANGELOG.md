@@ -26,19 +26,23 @@ Translation workflow integration is in progress. The development migrations are
 `20261014000012_engagement_translation_history_receipts.sql`,
 `20261014000013_engagement_translation_generation.sql`,
 `20261014000014_engagement_translation_generation_reads.sql`,
-`20261014000015_engagement_translation_generation_catalog.sql` and
-`20261014000016_engagement_translation_retained_publication.sql`. They add retained command
-receipts, complete source/current-version snapshots, history receipts and private
-generation attempts/output with staff-only detail and paginated request readers.
-The publication command resolves retained output and preserves its generation
-reference; its execution grant remains disabled pending workflow integration.
-History receipt validation checks retained generation evidence through later
-acceptance and withdrawal. The queue API retains exact
-request identities across retries. The local generation worker has process-restart and
-exact-delivery evidence. Staff editor integration, publication recovery and
-public producer integration remain unfinished. Existing direct producers have
-not yet been retired; these migrations do not declare the complete workflow
-released or authorize ordinary callers to bypass its command boundary.
+`20261014000015_engagement_translation_generation_catalog.sql`,
+`20261014000016_engagement_translation_retained_publication.sql` and
+`20261014000017_engagement_translation_command_activation.sql`. They retain
+command receipts, source and saved versions, private generation attempts and
+outputs, and paginated staff history. Publication resolves retained output and
+preserves the original generation evidence through acceptance and withdrawal.
+
+Migration 17 enables authenticated staff commands and revokes ordinary direct
+translation writes. The old staff HTTP write route returns 410 and tells callers
+to preserve unsaved words and reopen the editor. It never repeats an old write
+or starts generation. Apply the migrations before using this development code.
+
+The queue API and editor retain exact request identities across retries. The
+local worker has process-restart and exact-delivery evidence. Complete browser
+and worker acceptance, remaining editor recovery cases, and public comment
+generation durability are still unfinished. This development entry does not
+claim that the complete workflow is released.
 
 ## 0.58.1 — 2026-09-13
 

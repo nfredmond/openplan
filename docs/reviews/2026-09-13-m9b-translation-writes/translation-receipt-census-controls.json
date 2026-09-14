@@ -1,0 +1,22 @@
+{
+  "sourceSha256": "64c274f117f972c08d936a6c26b0d4546386974b77d3fad4e0128bb819f2fbb5",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/translation-receipt-census-20260913T185024",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless",
+      "outcome": "survived",
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-receipt-registration",
+      "outcome": "killed",
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Live schema census checks registration only. Receipt read/privacy behavior is independently exercised by translation-command-activation.sql and its policy faults. No browser or worker coverage."
+}

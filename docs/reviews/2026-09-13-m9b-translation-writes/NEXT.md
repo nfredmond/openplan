@@ -1,3 +1,7 @@
+# Latest receipt privacy checkpoint
+
+Read [RECEIPT_PRIVACY_PROGRESS.md](RECEIPT_PRIVACY_PROGRESS.md) first. Direct receipt privacy and census controls are complete. The broader unit run uncovered branch-wide integration failures; the note records exact next repairs. Database and stale browser-wrapper cautions in the activation checkpoint still apply.
+
 # Latest activation reset checkpoint
 
 Read [ACTIVATION_RESET_CHECKPOINT.md](ACTIVATION_RESET_CHECKPOINT.md) first. The application stack is now 336/17 with command execution enabled. Full RLS finished with 483 passes and one receipt-table coverage failure. Old browser grant wrappers must be adapted before reuse. This is unfinished and unreleased.

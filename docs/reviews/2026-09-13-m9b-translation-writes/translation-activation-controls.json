@@ -3,11 +3,11 @@
   "runnerSha256": "750e4fcbc6730a7212f59d46007da54a2d5679f57a246d6e688bc221c434b8f5",
   "fixtureSha256": {
     "translation-history-receipts.sql": "48db93da3e1fc4de308bedaefd35b749d83380025c0ea3ffd3c6682415380984",
-    "translation-command-activation.sql": "2c2391dc88aa0357a3f755fce35820efc1dfcb517f26d7dc2136b72b1413fd33",
+    "translation-command-activation.sql": "164a84657d5fc1b04730701eec3717d3122747b941ec84a26d8bc5e08e5ea0a9",
     "translation-history.sql": "8233233cb504f4b9e0d34cab259b9b4acee306bc80e09b3a0df811a663287845",
     "translation-scope.sql": "807813fad0cc000a1adcf2bb8998e35f5e450109516fdcc8120c02e3f0519554"
   },
-  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/translation-activation-controls/20260913T183632",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/translation-activation-controls/20260913T184947",
   "results": [
     {
       "case": "baseline",
@@ -103,6 +103,30 @@
       "case": "disable-category-reference",
       "outcome": "killed",
       "expectedFailure": "Foreign category target expected",
+      "expectedOutcome": true
+    },
+    {
+      "case": "deny-staff-receipt",
+      "outcome": "killed",
+      "expectedFailure": "Staff cannot read exact command receipt",
+      "expectedOutcome": true
+    },
+    {
+      "case": "leak-viewer-receipt",
+      "outcome": "killed",
+      "expectedFailure": "Nonstaff read command receipts: viewer",
+      "expectedOutcome": true
+    },
+    {
+      "case": "leak-outsider-receipt",
+      "outcome": "killed",
+      "expectedFailure": "Nonstaff read command receipts: outsider",
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-anonymous-receipt-select",
+      "outcome": "killed",
+      "expectedFailure": "anonymous receipt read",
       "expectedOutcome": true
     }
   ],

@@ -25,6 +25,13 @@ DO $$ DECLARE t record; BEGIN
  END LOOP;
 END $$;
 """,'Foreign category target expected','translation-scope.sql'))
+for name,policy,expected in [
+ ('deny-staff-receipt', 'false', 'Staff cannot read exact command receipt'),
+ ('leak-viewer-receipt', "EXISTS(SELECT 1 FROM workspace_members m WHERE m.user_id=auth.uid())", 'Nonstaff read command receipts: viewer'),
+ ('leak-outsider-receipt', "NOT EXISTS(SELECT 1 FROM workspace_members m WHERE m.user_id=auth.uid() AND m.role='viewer')", 'Nonstaff read command receipts: outsider'),
+]:
+ cases.append((name,original+'\nALTER POLICY translation_receipts_staff_read ON public.engagement_translation_write_receipts USING ('+policy+');\n',expected,'translation-command-activation.sql'))
+cases.append(('allow-anonymous-receipt-select',original+'\nGRANT SELECT ON public.engagement_translation_write_receipts TO anon;\n','anonymous receipt read','translation-command-activation.sql'))
 results=[]
 try:
  for name,body,expected,fixture in cases:

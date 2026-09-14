@@ -26,6 +26,9 @@ BEGIN
  IF result#>>'{entries,0,entry,translated_text}' IS DISTINCT FROM 'SYNTHETIC checked wording' OR result#>>'{entries,0,revision}' IS DISTINCT FROM '1'
  OR NOT EXISTS(SELECT 1 FROM engagement_content_translations WHERE id=translated AND created_by=actor)
  THEN RAISE EXCEPTION 'Activated command lost saved wording or staff read'; END IF;
+ IF NOT EXISTS(SELECT 1 FROM engagement_translation_write_receipts
+  WHERE campaign_id=campaign AND request_id=request AND actor_id=actor AND result_json=result)
+ THEN RAISE EXCEPTION 'Staff cannot read exact command receipt'; END IF;
  SELECT record_sha256 INTO STRICT digest FROM engagement_translation_history WHERE translation_id=translated AND revision=1;
  -- Valid own-campaign writes isolate permission denial from relational or RLS errors.
  PERFORM pg_temp.require_activation_denial(format('INSERT INTO engagement_content_translations(workspace_id,campaign_id,entity_type,entity_id,field,locale,translated_text,source,created_by) VALUES(%L,%L,%L,%L,%L,%L,%L,%L,%L)',workspace,campaign,'campaign',campaign,'title','qab','SYNTHETIC bypass','operator',actor),'direct insert');
@@ -50,11 +53,14 @@ BEGIN
  OR EXISTS(SELECT 1 FROM engagement_content_translations WHERE id=translated) THEN RAISE EXCEPTION 'Activated retry resurrected withdrawn wording'; END IF;
  FOREACH person IN ARRAY ARRAY[viewer,outsider] LOOP
   PERFORM set_config('request.jwt.claim.sub',person::text,true);
+  IF EXISTS(SELECT 1 FROM engagement_translation_write_receipts WHERE campaign_id=campaign)
+  THEN RAISE EXCEPTION 'Nonstaff read command receipts: %',CASE WHEN person=viewer THEN 'viewer' ELSE 'outsider' END; END IF;
   PERFORM pg_temp.require_activation_denial(format('SELECT write_engagement_translations(%L,%L,%L,%L,NULL,%L)',campaign,gen_random_uuid(),'save','qab',payload),'nonstaff command');
   PERFORM pg_temp.require_activation_denial(format('SELECT write_engagement_translations(%L,%L,%L,%L,NULL,%L)',campaign,request,'save','qaa',payload),'nonstaff retry');
  END LOOP;
  RESET ROLE;
  SET LOCAL ROLE anon;
+ PERFORM pg_temp.require_activation_denial(format('SELECT * FROM engagement_translation_write_receipts WHERE campaign_id=%L',campaign),'anonymous receipt read');
  PERFORM pg_temp.require_activation_denial(format('SELECT write_engagement_translations(%L,%L,%L,%L,NULL,%L)',campaign,request,'save','qaa',payload),'anonymous command');
  RESET ROLE;
  FOREACH operation IN ARRAY ARRAY['INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER'] LOOP
