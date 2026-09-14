@@ -13,6 +13,8 @@ import {
   type PendingSynthesisSource, type SynthesisClientScope,
 } from "@/lib/engagement/pending-synthesis-source";
 import { SynthesisSourceInspection } from "./synthesis-source-inspection";
+import { SynthesisReviewEditor } from "./synthesis-review-editor";
+import { readReviewWorkingCopy } from "@/lib/engagement/synthesis-review-recovery";
 
 const inspectionSchema = z.object({
   requestId: z.string().uuid(), campaignId: z.string().uuid(), workspaceId: z.string().uuid(),
@@ -45,6 +47,8 @@ function SourcePanel({ userId, workspaceId, campaignId, categories }: SynthesisC
   const [inspection, setInspection] = useState<Inspection | null>(null), [openId, setOpenId] = useState<string | null>(null);
   const [readError, setReadError] = useState<string | null>(null), [reading, setReading] = useState(false);
   const [accessLost, setAccessLost] = useState(false);
+  const openIdRef = useRef<string | null>(null);
+  const loseReviewAccess = useCallback(() => { setAccessLost(true); setInspection(null); setEntries(null); setPending(null); setNotice(null); }, []);
   const epoch = useRef(0), readSequence = useRef(0), listSequence = useRef(0), sending = useRef(false);
   const endpoint = `/api/engagement/campaigns/${campaignId}/synthesis/sources`;
 
@@ -65,6 +69,22 @@ function SourcePanel({ userId, workspaceId, campaignId, categories }: SynthesisC
     } finally { if (current === epoch.current && sequence === listSequence.current) setListing(false); }
   }, [endpoint, campaignId, workspaceId, userId]);
 
+
+  const inspect = useCallback(async (requestId: string) => {
+    openIdRef.current = requestId;
+    const current = epoch.current, sequence = ++readSequence.current;
+    setOpenId(requestId); setInspection(null); setReadError(null); setReading(true);
+    try {
+      const response = await fetch(`${endpoint}?requestId=${requestId}`, { cache: "no-store", headers: { "x-openplan-expected-user": userId, "x-openplan-expected-workspace": workspaceId } });
+      if (!response.ok) throw new Error("The saved source could not be opened. Retry this read; an earlier confirmed save remains retained.");
+      const saved = inspectionSchema.parse(await response.json());
+      if (saved.requestId !== requestId || saved.campaignId !== campaignId || saved.workspaceId !== workspaceId
+        || saved.snapshot.requestId !== requestId || saved.snapshot.campaignId !== campaignId || saved.snapshot.workspaceId !== workspaceId) throw new Error("Saved source identity differs from the requested source.");
+      if (current === epoch.current && sequence === readSequence.current) setInspection(saved);
+    } catch (cause) { if (current === epoch.current && sequence === readSequence.current) setReadError(message(cause)); }
+    finally { if (current === epoch.current && sequence === readSequence.current) setReading(false); }
+  }, [endpoint, campaignId, workspaceId, userId]);
+
   useEffect(() => {
     const restore = () => {
       try {
@@ -80,26 +100,12 @@ function SourcePanel({ userId, workspaceId, campaignId, categories }: SynthesisC
         epoch.current++; setAccessLost(true); setInspection(null); setEntries(null); setPending(null); setNotice(null);
       }
     });
-    const refresh = () => { setInspection(null); setOpenId(null); readSequence.current++; restore(); void list(); };
+    const refresh = () => { const requestId = openIdRef.current; setInspection(null); readSequence.current++; restore(); void list(); if (requestId) void inspect(requestId); };
     window.addEventListener("focus", refresh);
     window.addEventListener("storage", refresh);
     const invalidate = () => { epoch.current++; };
     return () => { invalidate(); subscription.unsubscribe(); window.removeEventListener("focus", refresh); window.removeEventListener("storage", refresh); };
-  }, [userId, workspaceId, campaignId, list]);
-
-  async function inspect(requestId: string) {
-    const current = epoch.current, sequence = ++readSequence.current;
-    setOpenId(requestId); setInspection(null); setReadError(null); setReading(true);
-    try {
-      const response = await fetch(`${endpoint}?requestId=${requestId}`, { cache: "no-store", headers: { "x-openplan-expected-user": userId, "x-openplan-expected-workspace": workspaceId } });
-      if (!response.ok) throw new Error("The saved source could not be opened. Retry this read; an earlier confirmed save remains retained.");
-      const saved = inspectionSchema.parse(await response.json());
-      if (saved.requestId !== requestId || saved.campaignId !== campaignId || saved.workspaceId !== workspaceId
-        || saved.snapshot.requestId !== requestId || saved.snapshot.campaignId !== campaignId || saved.snapshot.workspaceId !== workspaceId) throw new Error("Saved source identity differs from the requested source.");
-      if (current === epoch.current && sequence === readSequence.current) setInspection(saved);
-    } catch (cause) { if (current === epoch.current && sequence === readSequence.current) setReadError(message(cause)); }
-    finally { if (current === epoch.current && sequence === readSequence.current) setReading(false); }
-  }
+  }, [userId, workspaceId, campaignId, list, inspect]);
 
   async function save() {
     if (sending.current) return;
@@ -120,6 +126,13 @@ function SourcePanel({ userId, workspaceId, campaignId, categories }: SynthesisC
       void list(); void inspect(result.receipt.requestId);
     } catch (cause) { if (current === epoch.current) setError(message(cause)); }
     finally { sending.current = false; if (current === epoch.current) setBusy(false); }
+  }
+
+  function reviewRecoveryLabel(entry: SynthesisSourceListEntry) {
+    try {
+      const recovery = readReviewWorkingCopy(localStorage, { userId, workspaceId, campaignId, sourceId: entry.requestId, sourceSha256: entry.snapshotSha256 });
+      return recovery.draft || recovery.pending ? "Unfinished staff review in this browser" : null;
+    } catch { return "Staff review recovery in this browser needs attention"; }
   }
 
   if (accessLost) return <section className="module-section-surface"><p role="alert">The signed-in account changed. Reopen this consultation to check access.</p></section>;
@@ -146,9 +159,9 @@ function SourcePanel({ userId, workspaceId, campaignId, categories }: SynthesisC
     <Button type="button" variant="outline" disabled={listing} onClick={() => void list()}>Refresh saved sources</Button>
     {listing ? <p role="status">Loading saved source history…</p> : null}{listError ? <p role="alert">{listError}</p> : null}
     {entries?.length === 0 ? <p>No saved sources were found.</p> : null}
-    <ul className="space-y-3">{entries?.map(entry => <li key={entry.requestId} className="rounded border p-3 space-y-2"><p>{new Date(entry.createdAt).toLocaleString()} · {entry.counts.items} comments · {entry.counts.sessions} survey responses · {entry.counts.answers} answers</p><p className="text-xs">Statuses: {entry.selection.statuses.join(", ")}</p><Button type="button" variant="outline" onClick={() => void inspect(entry.requestId)}>Open saved source {entry.requestId.slice(0, 8)}</Button></li>)}</ul>
+    <ul className="space-y-3">{entries?.map(entry => <li key={entry.requestId} className="rounded border p-3 space-y-2"><p>{new Date(entry.createdAt).toLocaleString()} · {entry.counts.items} comments · {entry.counts.sessions} survey responses · {entry.counts.answers} answers</p><p className="text-xs">Statuses: {entry.selection.statuses.join(", ")}</p><p className="text-sm font-medium">{reviewRecoveryLabel(entry)}</p><Button type="button" variant="outline" onClick={() => void inspect(entry.requestId)}>Open saved source {entry.requestId.slice(0, 8)}</Button></li>)}</ul>
     {cursor ? <Button type="button" variant="outline" disabled={listing} onClick={() => void list(cursor)}>Load older sources</Button> : null}
     {reading ? <p role="status">Opening retained source…</p> : null}{readError ? <div><p role="alert">{readError}</p>{openId ? <Button type="button" variant="outline" onClick={() => void inspect(openId)}>Retry opening saved source</Button> : null}</div> : null}
-    {inspection ? <SynthesisSourceInspection key={inspection.requestId} snapshot={inspection.snapshot} sha256={inspection.snapshotSha256} /> : null}
+    {inspection ? <div key={inspection.requestId} className="space-y-4"><SynthesisSourceInspection snapshot={inspection.snapshot} sha256={inspection.snapshotSha256} /><SynthesisReviewEditor userId={userId} workspaceId={workspaceId} campaignId={campaignId} sourceId={inspection.requestId} sourceSha256={inspection.snapshotSha256} snapshot={inspection.snapshot} onAccessLost={loseReviewAccess} /></div> : null}
   </section>;
 }

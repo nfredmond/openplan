@@ -1,0 +1,330 @@
+{
+  "sourcesRestored": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "failed": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "failed": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "Review recovery belongs to another source or session",
+      "exitCode": 1,
+      "failed": [
+        "staff review browser recovery retains incomplete full text and scopes it to the exact account, source and workspace"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "Review recovery changed in another tab. Reopen the saved copy before editing.",
+      "exitCode": 1,
+      "failed": [
+        "staff review browser recovery retains incomplete full text and scopes it to the exact account, source and workspace",
+        "staff review browser recovery refuses another tab's edits and failed readback without overwriting its request",
+        "staff review browser recovery keeps confirmation after cleanup failure and preserves another tab's copy"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "The review edit could not be retained in this browser",
+      "exitCode": 1,
+      "failed": [
+        "staff review browser recovery refuses another tab's edits and failed readback without overwriting its request"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "Keep the exact pending review request until it is confirmed or preserved",
+      "exitCode": 1,
+      "failed": [
+        "staff review browser recovery freezes the parent and refuses changing or clearing an unconfirmed request"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "A review request is already pending",
+      "exitCode": 1,
+      "failed": [
+        "staff review browser recovery freezes the parent and refuses changing or clearing an unconfirmed request"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "Latest recovery copy belongs to another source",
+      "exitCode": 1,
+      "failed": [
+        "staff review browser recovery preserves unreadable and newest unsaved bytes and can restore a readable edit"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "The recovery copy could not be preserved",
+      "exitCode": 1,
+      "failed": [
+        "staff review browser recovery refuses failed preservation readback, changed originals and failed removal"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "The preserved review copy could not be moved aside",
+      "exitCode": 1,
+      "failed": [
+        "staff review browser recovery refuses failed preservation readback, changed originals and failed removal"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "The review receipt differs. Keep the request for recovery.",
+      "exitCode": 1,
+      "failed": [
+        "staff review browser recovery retains requests for refused, malformed and foreign receipts"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "intent-source-binding",
+      "exitCode": 1,
+      "failed": [
+        "staff review browser recovery freezes the parent and refuses changing or clearing an unconfirmed request",
+        "staff review browser recovery checks create source identity and revision before freezing"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "intent-parent-binding",
+      "exitCode": 1,
+      "failed": [
+        "staff review browser recovery freezes the parent and refuses changing or clearing an unconfirmed request"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "bypass-stale-recovery-before-transport",
+      "exitCode": 1,
+      "failed": [
+        "staff review browser recovery refuses another tab's edits and failed readback without overwriting its request",
+        "staff review browser recovery does not send a missing, changed or unretainable recovery copy",
+        "staff review browser recovery keeps confirmation after cleanup failure and preserves another tab's copy"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "drop-unreadable-original",
+      "exitCode": 1,
+      "failed": [
+        "staff review browser recovery preserves unreadable and newest unsaved bytes and can restore a readable edit"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "drop-newest-unsaved-text",
+      "exitCode": 1,
+      "failed": [
+        "retained staff review editor keeps the newest text visible after storage fails and preserves it for restoration",
+        "staff review browser recovery preserves unreadable and newest unsaved bytes and can restore a readable edit"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "lost-save-confirmation",
+      "exitCode": 1,
+      "failed": [
+        "staff review browser recovery keeps confirmation after cleanup failure and preserves another tab's copy"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "clear-unconfirmed-on-refusal",
+      "exitCode": 1,
+      "failed": [
+        "retained staff review editor hides private content after read or write access is refused",
+        "staff review browser recovery retains requests for refused, malformed and foreign receipts"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "new-request-on-retry",
+      "exitCode": 1,
+      "failed": [
+        "retained staff review editor creates a retained review from the real saved-source panel and keeps its complete membership",
+        "retained staff review editor restores complete unfinished notes after remount and preserves the original after correction",
+        "retained staff review editor edits actual contribution membership beyond the first page and restores an unassigned concern in a new group",
+        "retained staff review editor retries the exact command after persistence succeeded but the response was interrupted",
+        "retained staff review editor keeps confirmation when reopening fails",
+        "retained staff review editor keeps the newer requested revision when an older read completes late",
+        "staff review browser recovery keeps exact requests after interruption and reuses their bytes on retry"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "Review history belongs to another source",
+      "exitCode": 1,
+      "failed": [
+        "retained staff review editor refuses foreign saved review and history identities before rendering them"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "Saved review identity differs from this source",
+      "exitCode": 1,
+      "failed": [
+        "retained staff review editor refuses foreign saved review and history identities before rendering them"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "Revision history belongs to another review",
+      "exitCode": 1,
+      "failed": [
+        "retained staff review editor refuses foreign saved review and history identities before rendering them"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "Revision continuation belongs to another review",
+      "exitCode": 1,
+      "failed": [
+        "retained staff review editor loads both history tails and refuses a foreign revision continuation"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "late-read-replaces-current",
+      "exitCode": 1,
+      "failed": [
+        "retained staff review editor keeps the newer requested revision when an older read completes late"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "hide-newest-unstored-text",
+      "exitCode": 1,
+      "failed": [
+        "retained staff review editor keeps the newest text visible after storage fails and preserves it for restoration"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-new-create-while-pending",
+      "exitCode": 1,
+      "failed": [
+        "retained staff review editor retries the exact command after persistence succeeded but the response was interrupted"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "editable-old-revision",
+      "exitCode": 1,
+      "failed": [
+        "retained staff review editor restores complete unfinished notes after remount and preserves the original after correction"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-local-change-validation",
+      "exitCode": 1,
+      "failed": [
+        "retained staff review editor requires a reason and a real change before freezing or sending a correction"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "truncate-typed-notes",
+      "exitCode": 1,
+      "failed": [
+        "retained staff review editor restores complete unfinished notes after remount and preserves the original after correction"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "drop-staff-label",
+      "exitCode": 1,
+      "failed": [
+        "retained staff review editor edits actual contribution membership beyond the first page and restores an unassigned concern in a new group"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "drop-staff-summary",
+      "exitCode": 1,
+      "failed": [
+        "retained staff review editor edits actual contribution membership beyond the first page and restores an unassigned concern in a new group"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "drop-staff-sentiment",
+      "exitCode": 1,
+      "failed": [
+        "retained staff review editor edits actual contribution membership beyond the first page and restores an unassigned concern in a new group"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-membership-removal",
+      "exitCode": 1,
+      "failed": [
+        "retained staff review editor edits actual contribution membership beyond the first page and restores an unassigned concern in a new group"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-membership-addition",
+      "exitCode": 1,
+      "failed": [
+        "retained staff review editor edits actual contribution membership beyond the first page and restores an unassigned concern in a new group"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "hide-source-recovery-notice",
+      "exitCode": 1,
+      "failed": [
+        "retained staff review editor retries the exact command after persistence succeeded but the response was interrupted"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "lose-focus-reopening",
+      "exitCode": 1,
+      "failed": [
+        "retained staff review editor reopens the selected source after focus without losing the retained correction"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "lose-review-connection",
+      "exitCode": 1,
+      "failed": [
+        "retained staff review editor creates a retained review from the real saved-source panel and keeps its complete membership",
+        "retained staff review editor retries the exact command after persistence succeeded but the response was interrupted",
+        "retained staff review editor reopens the selected source after focus without losing the retained correction"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "render-after-access-refusal",
+      "exitCode": 1,
+      "failed": [
+        "retained staff review editor hides private content after read or write access is refused"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "sourceSha256": {
+    "src/lib/engagement/synthesis-review-recovery.ts": "7e269e18e577406662372b2e7c9688609ee6a669b700ffaadc9d790feb62418c",
+    "src/components/engagement/synthesis-review-editor.tsx": "25d9c015b39c89c97f186e0034cd552e502fb361d45428bc6992e1c1490ce7b0",
+    "src/components/engagement/engagement-synthesis-sources.tsx": "2f8d218112fc051cdfff713bfd9b7203a92537426f8b76dcb74fce414f832015"
+  },
+  "testSha256": {
+    "src/test/engagement-synthesis-review-editor.test.tsx": "29fe24daedc0eb818d2fe001fd25e97df585cae5780058c120df54cf63bf4db1",
+    "src/test/engagement-synthesis-review-recovery.test.ts": "2ec37b4937439100ba717ee33b164572db0019259c0719c8decda28979923407"
+  },
+  "limits": "Real editor and browser-storage logic with synthetic transport in jsdom. Not native layout, browser lifecycle, actual database concurrency, human usefulness, approvals or exports. The stale-copy fault removes both overlapping pre-transport checks to test actual unintended sending."
+}

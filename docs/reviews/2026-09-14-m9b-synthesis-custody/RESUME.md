@@ -1,3 +1,29 @@
+# Weekly usage checkpoint — September 14, 2026
+
+This section supersedes all historical status below. The connected review editor and recovery work is saved by this checkpoint commit on `work/engagement-decision-traceability` in `/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13`. Main and release are not advanced by this checkpoint. No PR is needed or authorized.
+
+Latest focused run: 23 tests passed. Mutation proof completed: 38 cases, all expected outcomes, production sources restored. The earlier old-revision editability mutation survived an insufficient assertion; the assertion was strengthened and the final targeted fault fails. The original failed proof remains in the private evidence directory. Installed review/source/native join suites passed 50 tests. The named isolated database has 346 migrations through 20261014000027; do not use the older candidate migration flags.
+
+No owned mutation, Vitest, or review-browser process was running at this checkpoint. No application server was started for this increment. Logs were copied from /tmp to `/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/`. Recheck processes after the reset; background execution is not guaranteed.
+
+Resume with final lint/type checks, full QA, shuffled tests and full installed RLS isolation. Then build an identified candidate on the owned port and run `browser-reviews.cjs` at desktop and 390px, inspecting screenshots, console, keyboard navigation, exact interrupted retries and original/corrected custody. Actual concurrent corrections, applicable upgrade checks and final GitHub CI remain required before landing/release. Browser script is prepared but has not been run. Do not describe this checkpoint as a completed UI or release.
+
+Continue the existing full V1 goal and roadmap after this increment. Preserve other sessions, original checkout ownership, pending reminder constraint, local/free operation and scientific limits. No renewed permission or human release approval is needed. Same-thread continuation should start by reading this file and current git/CI/process state.
+
+---
+
+# In progress: connected review editor
+
+September 14, 2026. Work after c110c36d is currently uncommitted. New files are synthesis-review-recovery.ts, synthesis-review-editor.tsx and their focused tests; engagement-synthesis-sources.tsx mounts the editor and reopens the selected source after focus revalidation. The editor retains unfinished text, freezes exact commands, keeps original revisions, handles source membership, and preserves failed browser-storage edits before moving them aside. Verification is ongoing; do not call this browser accepted yet.
+
+Migration 20261014000027 was copied byte-for-byte and applied additively to the named isolated stack with `supabase migration up --local --workdir /home/nathaniel/.local/state/openplan/openplan-restore-target-2026091050`. The stack now has **346 installed migrations through 27**. Use installed mode for review native tests, not OPENPLAN_SYNTHESIS_REVIEW_CANDIDATE=1. Log: /tmp/openplan-review-migration27-up.log. No reset or drop occurred.
+
+Fresh isolated Chrome access was confirmed via the authorized repository Playwright harness and installed Chrome channel. No app server has been started in this turn; port 3262 was free at the migration checkpoint. Identify the actual build with which-openplan.sh before browser claims. The previous source panel focus handler unmounted its inspection; it now reopens the same selected source, and the editor restores its scoped browser draft. A failed local write keeps the newest text on screen and can preserve both the existing stored bytes and the newest draft.
+
+Current tests and jobs must be inspected from live processes/logs before rerunning: /tmp/openplan-review-ui-tests.log, /tmp/openplan-review-ui-types.log, /tmp/openplan-review-installed-rls.log. Final mutation evidence and browser acceptance do not yet exist. No new release or main landing.
+
+---
+
 # Latest: retained review server and API
 
 September 14, 2026. This section supersedes the checkpoint state below. Read REVIEW_SERVER_VERIFICATION.md and review-server-evidence.json before resuming. The previous goal turn made progress by saving 2f23e0eb; this turn adds real review server/API behavior and native TypeScript-to-RPC evidence.
