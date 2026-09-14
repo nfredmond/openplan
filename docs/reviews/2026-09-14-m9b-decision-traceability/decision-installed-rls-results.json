@@ -1,0 +1,23 @@
+{
+  "installedTests": {
+    "passed": 7,
+    "failed": 0,
+    "report": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/activation-installed.json"
+  },
+  "fullIsolatedRls": {
+    "passedTests": 533,
+    "passedFiles": 58,
+    "durationSeconds": 375.66,
+    "exitCode": 0,
+    "log": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/rls-after-activation.log"
+  },
+  "installedDefinitionsMatchProofDatabase": true,
+  "definitionSha256": {
+    "public.read_engagement_response_decision_context(uuid,uuid,uuid)": "88148e6b2e43de57859692eeede2131b124dea626c34e7968dfa3f277ec7398c",
+    "public.write_engagement_response_decision_link(uuid,uuid,uuid,uuid,text,uuid,text,text)": "9ba7787f45fa2faffda32456856afcdf965e36564d3e3a2f021b5bac75fb9ace",
+    "public.read_engagement_decision_links(uuid)": "6216b88bd20c0afa0bf50ce30cf16ab731edae3681b41cbac7836a429f590924"
+  },
+  "fixtureSha256": "2acb994b32aadc3fe2ef116bfdd04cb83858380ba03636cfa1b59d61177a15a4",
+  "testSha256": "996dd7ded6e9cc17a83ea56a4eaf57bdc78df89e2059b308e3edc267c9e7442e",
+  "limits": "Installed native roles, grants, retained link lifecycle and full existing isolation suite. Browser behavior, artifact usability, public explanation and recovery completion are separate."
+}

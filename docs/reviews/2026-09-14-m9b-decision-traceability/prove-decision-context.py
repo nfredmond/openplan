@@ -32,7 +32,6 @@ def state():
     return result.stdout.strip()
 
 
-assert state() == '339:20261014000020\nt', 'Unexpected target schema; do not alter this stack'
 seed = f"""
 INSERT INTO auth.users(id,aud,role,email)
  SELECT id,'authenticated','authenticated',id::text||'@synthetic-decision.invalid'
@@ -182,6 +181,7 @@ mutations = [
     ('current-definition-substitution', 'v.id IN (\n    SELECT i.configuration_version_id FROM public.engagement_items i\n    WHERE i.campaign_id = p_campaign AND i.id = ANY(response.source_item_ids)\n  )', 'v.id = campaign.configuration_version_id', 'Wrong source configuration reference'),
 ]
 def main():
+    assert state() == '339:20261014000020\nt', 'Unexpected target schema; do not alter this stack'
     results = []
     try:
         for name, body, expected in [('baseline', original, None), ('harmless-comment', original+'\n-- Harmless context comment.\n', None)] + [

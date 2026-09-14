@@ -1,5 +1,42 @@
 # Response-to-decision context in progress
 
+## Migration 21 activated in the isolated application stack
+
+`20261014000021_engagement_response_decision_links.sql` is assembled from the
+three verified candidates in context/command/history order. It is now installed
+in `supabase_db_openplan-restore-target-2026091050`, application database
+`postgres`, ledger `340:20261014000021`. This supersedes the older uninstalled
+status below. All 339 preceding migration files matched the isolated stack
+before the additive upgrade. Eight existing source/history table fingerprints
+were identical before and after activation; the new link table started empty.
+`decision-link-activation.json` retains those hashes. No database was reset.
+
+The new installed test is `engagement-decision-link-activation-rls.test.ts`, using
+the synthetic `fixtures/engagement/decision-link-activation.sql`. It exercises
+the installed definitions without replacing their grants for its baseline.
+Baseline and harmless controls pass; five deliberate privilege faults fail
+their intended native assertions. This is seven executed tests. The old-schema
+positive tests failed because the new reader was absent, and the combined
+migration/fixture then passed inside a rolled-back transaction before installation.
+The first invocation from the repository root failed to locate its fixture and
+ran no tests; it is not the before-migration evidence. The corrected package-root
+run is in private `decision-context/activation-before-migration.json`.
+
+The new live test is included in `test:rls-live` and the table's dedicated RLS
+inventory. Full isolated RLS completed successfully: 533 tests in 58 files,
+375.66 seconds. Tool session `58922` is terminal. Its log is
+`/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/rls-after-activation.log`.
+The census baseline and harmless comment pass; omitting this table's probe fails
+the actual native catalog inventory. Source was restored, as recorded in
+`decision-activation-census-results.json`. Installed definitions of all three
+new functions exactly match the separately tested proof database after full RLS.
+`decision-installed-rls-results.json` records results and hashes. The
+context proof's old-schema execution guard now lives in `main()` so its reusable
+synthetic fixture can be imported after activation; direct execution still
+requires its original uninstalled 339/20 target. The disconnected proof DB is
+unchanged. Next build an identified server on a free port and exercise the editor
+through actual Projects/Engagement navigation at desktop and 390px.
+
 ## Latest verified checkpoint: d94c73ee
 
 Full local QA completed successfully on `d94c73ee0f8522037770241ba93c50b7e494834c`.

@@ -1,0 +1,54 @@
+{
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "database": "postgres",
+  "beforeLedger": "339:20261014000020",
+  "afterLedger": "340:20261014000021",
+  "newLinkCount": 0,
+  "migration": "20261014000021_engagement_response_decision_links.sql",
+  "migrationSha256": "f4ce13ea3a4b7dab774c5cd444b0db20c4fc1dffa8872fd4c119187eebcf7c84",
+  "existingSourceTablesUnchanged": true,
+  "tableFingerprints": [
+    {
+      "table": "engagement_campaigns",
+      "count": 233,
+      "sha256": "eb852d5d614f12c6e5a7518254af1f1de89944a32d230dc048f978e21cff5744"
+    },
+    {
+      "table": "engagement_items",
+      "count": 59,
+      "sha256": "bb5d558abce3d14510f3ed3b10e54d1819b4ffe1a3ddd127b67be0d53b5a1ca1"
+    },
+    {
+      "table": "engagement_closeloop_entries",
+      "count": 3082,
+      "sha256": "6fd6ad77cbdb3d4c8793b7f5c81129ba2b44375e95d75dc84e4e644a0f840c46"
+    },
+    {
+      "table": "engagement_response_history",
+      "count": 3137,
+      "sha256": "127d3b185507b0feb6d4be0e9bf76a0e84a6c3922537df9bb86f223bf0397476"
+    },
+    {
+      "table": "project_decisions",
+      "count": 32,
+      "sha256": "e170d8911ed6bbcd3a26117c963e3672eb04f0ba253f9c97ccef2282558fbc37"
+    },
+    {
+      "table": "workspace_members",
+      "count": 3847,
+      "sha256": "8bf35becb613586a2eb519904b6f2dbc52daf85611080e659b9771e873252bbd"
+    },
+    {
+      "table": "engagement_content_translations",
+      "count": 64,
+      "sha256": "e98a0e11207585ec2619a37a38f6a523d2f53393d8951af88a8e601c6a0a4bba"
+    },
+    {
+      "table": "engagement_translation_history",
+      "count": 197,
+      "sha256": "c91ae6cfdb7d2de5ec6d00f0b3d9d7e1a10d49b5f7f5c20d95cf6b4f652e0941"
+    }
+  ],
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context",
+  "limits": "Additive installation and exact unchanged bytes for eight existing source/history tables. Installed command/RLS and browser checks are separate."
+}

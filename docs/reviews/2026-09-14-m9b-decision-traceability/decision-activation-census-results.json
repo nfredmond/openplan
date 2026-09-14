@@ -1,0 +1,20 @@
+{
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/activation-census-1789383428892947008",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived"
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived"
+    },
+    {
+      "case": "missing-decision-link-probe",
+      "outcome": "killed"
+    }
+  ],
+  "sourceRestored": true,
+  "sourceSha256": "e4bfdc86d2920a92c96f2842301adc76275ab23132baff9470b2a0fbaa9c86e1",
+  "limits": "Native catalog inventory, plus separate installed role/lifecycle fixture. Does not prove every possible policy behavior or live browser use."
+}
