@@ -1,0 +1,9 @@
+# v0.61.0 publication
+
+Published September 14, 2026 at 17:37:51 UTC: [v0.61.0](https://github.com/nfredmond/openplan/releases/tag/v0.61.0). GitHub confirms a published release, neither draft nor prerelease. The annotated tag resolves locally and remotely to `b3514277450380718cde19edbbbb14e50f2c2105`, which landed directly on main.
+
+All final CI jobs passed before tagging: QA, shuffled tests, modeling scripts, workers and operations. QA passed 15,353 tests with 540 skips, dependency audit and the production webpack/TypeScript build. Separate RLS Isolation passed 562 tests in 61 files. The populated upgrade from v0.60.0 applied migration 24 and retained its nonempty representative row counts `2:2:1:1:1:1:1`. Its generic fixture is separate from the 42-snapshot local upgrade and native history/concurrency proofs. The exact release commit also built successfully locally. [Exact records](final-ci.json) retain run identities, job outcomes, log hashes and release/tag identities. Skipped tests establish no coverage.
+
+The [engineering verification](RELEASE_VERIFICATION.md) attributes source-level QA and mutation evidence, identified desktop/390px journeys, original/corrected/withdrawn/public files, old-format checks and failed-job recovery. The stale older worker was stopped; the same failed snapshot completed through UI retry without changing original files. No human review gate held the release. Synthetic engineering evidence does not establish agency approval, representative support, planner usefulness, translation quality or full M9b completion.
+
+A separate follow-up is in preparation for the generic report GET API's null-project lookup. The published specialized saved-report page, metadata editing and downloads avoid that existing defect. This follow-up is not part of the v0.61 tag. Continue the full V1 contract and roadmap; no scope or scientific validation claim is reduced.

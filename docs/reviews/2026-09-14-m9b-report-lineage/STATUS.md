@@ -86,3 +86,6 @@ The first full QA run passed lint, deadcode and 15,359 tests but failed the rele
 All five pages of the browser-generated withdrawal PDF and the workbook's history, scope, sources, exact bytes and recalculated summary were inspected. Supplemental centered captures show actual narrow download controls. The release ledger passes its baseline, harmless control and three targeted faults. No owned worker/server is left running. v0.61 metadata is ready; final main CI, populated GitHub upgrade and actual tagging/publication remain pending. The full V1 goal and M9b remain open.
 
 The first final direction check caught stale contract and roadmap release fields after the package bump. The contract, roadmap and capability registry release fields now match v0.61.0; review dates, source commits and capability ratings remain unchanged.
+
+
+v0.61.0 is now [published](PUBLICATION.md) at b3514277 after all exact-commit GitHub checks passed. The API follow-up remains separate.

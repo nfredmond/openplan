@@ -1,6 +1,6 @@
 # v0.61.0 report context and private decision history
 
-September 14, 2026. Engineering acceptance is complete; final release-commit CI and publication are recorded separately. This document does not itself declare a tag published.
+September 14, 2026. Engineering acceptance is complete. [Publication](PUBLICATION.md) records the successful final release-commit CI, populated upgrade and published tag.
 
 Saved consultation reports show their consultation/project context and permission-scoped metadata editing. Editing metadata preserves saved files and citations. New internal PDF/XLSX/ZIP files include the entire consultation decision history: original links, reviewed corrections and withdrawals, exact retained payload/context bytes, predecessor identities and original source/configuration availability. Participation filters do not restrict that private history, and the UI and files disclose the distinction. Public copies exclude it. Earlier reports retain their original files and disclose absent history; unknown formats remain unknown.
 
