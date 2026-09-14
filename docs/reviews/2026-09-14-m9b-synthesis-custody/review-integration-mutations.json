@@ -1,0 +1,114 @@
+{
+  "sourcesRestored": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "passed": 15,
+      "failed": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "passed": 15,
+      "failed": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "undocumented-engagement_synthesis_review_revisions.content_text",
+      "exitCode": 1,
+      "passed": 14,
+      "failed": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "undocumented-engagement_synthesis_review_revisions.content_title",
+      "exitCode": 1,
+      "passed": 14,
+      "failed": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "undocumented-engagement_synthesis_review_revisions.intent_json",
+      "exitCode": 1,
+      "passed": 14,
+      "failed": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "undocumented-engagement_synthesis_review_revisions.parent_sha256",
+      "exitCode": 1,
+      "passed": 14,
+      "failed": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "undocumented-engagement_synthesis_review_revisions.review_id",
+      "exitCode": 1,
+      "passed": 14,
+      "failed": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "undocumented-engagement_synthesis_review_revisions.revision_no",
+      "exitCode": 1,
+      "passed": 14,
+      "failed": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "undocumented-engagement_synthesis_reviews.preparation_sha256",
+      "exitCode": 1,
+      "passed": 14,
+      "failed": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "undocumented-engagement_synthesis_reviews.preparation_text",
+      "exitCode": 1,
+      "passed": 14,
+      "failed": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "planner-copy-regression",
+      "exitCode": 1,
+      "passed": 14,
+      "failed": [
+        "planner copy says the plain thing uses no term from the ledger more often than the recorded baseline"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "undisclosed-migration",
+      "exitCode": 1,
+      "passed": 14,
+      "failed": [
+        "released migration ordering the CHANGELOG's Unreleased section names every migration landed since the newest tag"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "sha256": {
+    "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts": "a8813341dfcf5654c8d93b9d4cfab22e7ae10b87a7d4af2900138bf72478a26a",
+    "openplan/src/components/engagement/synthesis-review-editor.tsx": "411a355f97d3f7a5a43e9e5422f87d7467a490613a02138d7b06eac580d668c2",
+    "CHANGELOG.md": "279d63db2dfff65d2b71b107c37aa1f2312335b42cf95fa08ba64da9db3d3d1e"
+  }
+}

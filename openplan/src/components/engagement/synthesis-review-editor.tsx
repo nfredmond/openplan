@@ -137,7 +137,7 @@ function ReviewPanel({ snapshot, onAccessLost, ...scope }: Props) {
   }
 
   const draft = working.draft, oldRevision = saved && saved.currentRevisionId !== saved.revision.requestId;
-  if (accessLost) return <section><p role="alert">Staff access changed. Reopen this campaign to check access.</p></section>;
+  if (accessLost) return <section><p role="alert">Staff access changed. Reopen this consultation to check access.</p></section>;
   return <section aria-label="Retained staff reviews" className="rounded border p-4 space-y-4 min-w-0">
     <h3 className="font-semibold">Staff synthesis reviews</h3>
     <p>Create a private draft from this complete saved source. Historical categories begin unassessed. Staff wording and membership corrections retain their reasons and earlier versions.</p>

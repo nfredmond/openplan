@@ -73,6 +73,14 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "engagement_synthesis_review_revisions.content_text", category: "READ_IN_SQL", reason: "read_engagement_synthesis_review returns exact contentText for server verification and staff display; the retain RPC compares unchanged correction bytes." },
+  { column: "engagement_synthesis_review_revisions.content_title", category: "READ_IN_SQL", reason: "list_engagement_synthesis_reviews reads this generated title from the current revision and returns it in staff source history." },
+  { column: "engagement_synthesis_review_revisions.intent_json", category: "READ_IN_SQL", reason: "The retain RPC compares exact retry commands; read_engagement_synthesis_review returns intent for server replay and lineage verification." },
+  { column: "engagement_synthesis_review_revisions.parent_sha256", category: "READ_IN_SQL", reason: "Review read and revision history RPCs return parentSha256; the server checks that it matches the exact retained predecessor." },
+  { column: "engagement_synthesis_review_revisions.review_id", category: "READ_IN_SQL", reason: "Review read/list and revision history RPCs bind every revision to its immutable review root; the writer rejects a retry against another review." },
+  { column: "engagement_synthesis_review_revisions.revision_no", category: "READ_IN_SQL", reason: "Read and list RPCs return revisionNo, identify the latest revision and paginate older versions; the writer allocates the next number under the review lock." },
+  { column: "engagement_synthesis_reviews.preparation_sha256", category: "READ_IN_SQL", reason: "The receipt and read RPCs return preparationSha256 for exact original preparation verification by the server and staff inspector." },
+  { column: "engagement_synthesis_reviews.preparation_text", category: "READ_IN_SQL", reason: "read_engagement_synthesis_review returns preparationText; the server recomputes the original preparation and the inspector preserves its exact bytes." },
   { column: "engagement_public_translation_requests.previous_request_id", category: "READ_IN_SQL", reason: "create_public_translation_attempt deduplicates an explicit successor by predecessor; find_public_translation_request follows the current leaf while preserving failed attempts." },
   { column: "engagement_public_translation_requests.share_token_hash", category: "READ_IN_SQL", reason: "Public request creation, discovery and reads compare the retained token hash with the current published campaign token; rotation refuses access through the old link." },
   { column: "engagement_public_translation_requests.source_snapshot", category: "READ_IN_SQL", reason: "Public creation, read, discovery and worker authority compare the retained original with the currently approved item; displayed-source mismatches cannot return another translation." },

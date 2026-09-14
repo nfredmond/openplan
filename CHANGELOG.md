@@ -20,6 +20,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- `20261014000027_engagement_synthesis_reviews.sql` retains private staff reviews and append-only corrections to wording, interpretation and contribution membership. Staff-only readers return the original preparation, exact revision history and checksums; the service writer refuses stale parents and changed retries. The connected editor is under verification. Exact-output approval, optional generation, response/decision links and reviewed exports remain unfinished.
+
 - `20261014000026_engagement_synthesis_source_list.sql` adds a staff-only paginated list of retained source selections. Source records can be reopened without recapturing current contributions.
 
 - Begin private retained synthesis sources: `20261014000025_engagement_synthesis_sources.sql` adds immutable complete selected comments/survey answers, historical definitions, exact hashes and staff-only capture/read RPCs. The Analysis tab now has a staff source-selection/history/inspection panel with exact browser retries. Desktop/390px source-selection, history, keyboard retry, original/corrected checksums and private-read checks passed. Generation/review workers and portable reviewed outputs are not yet connected. This is unfinished M9b work, not a released synthesis fix.

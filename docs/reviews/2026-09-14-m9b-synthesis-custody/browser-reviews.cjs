@@ -66,7 +66,8 @@ async function click(page, locator) { await expect(locator).toBeVisible(); await
   assert(fits(observed.recoveryBounds.baseline)); assert(fits(observed.recoveryBounds.harmless));
   if (width === 390) assert(!fits(observed.recoveryBounds.targeted), 'Narrow recovery control guard missed an unwrapped label');
   await page.screenshot({ path: prefix + '-pending.png' });
-  await page.unroute(endpoint); await page.reload(); await openSource();
+  await page.unroute(endpoint); await page.reload();
+  await expect(sources.getByText("Unfinished staff review in this browser", { exact: true }).first()).toBeVisible(); await openSource();
   const replayResponse = page.waitForResponse(response => response.url() === endpoint && response.request().method() === 'POST');
   await click(page, reviews.getByRole('button', { name: 'Retry retained review request', exact: true }));
   const replay = await replayResponse; assert.equal(replay.status(), 200); assert.deepEqual(replay.request().postDataJSON(), createIntent);
@@ -129,6 +130,7 @@ async function click(page, locator) { await expect(locator).toBeVisible(); await
   await click(page, saved.getByRole('button', { name: 'Open revision 1', exact: true }));
   await expect(saved.getByRole('heading', { name: /revision 1$/ })).toBeVisible();
   await expect(saved.getByRole('button', { name: 'Save reasoned correction', exact: true })).toBeDisabled();
+  await expect(saved.getByLabel('Staff review notes', { exact: true })).toBeDisabled();
   await expect(saved.getByRole('button', { name: 'Open current review', exact: true })).toBeVisible();
   const originalAgain = await read(createReceipt.requestId);
   assert.equal(originalAgain.revision.contentText, original.revision.contentText); assert.equal(originalAgain.preparationText, original.preparationText);
