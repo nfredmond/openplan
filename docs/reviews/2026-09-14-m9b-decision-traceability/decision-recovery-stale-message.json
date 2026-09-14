@@ -1,0 +1,25 @@
+{
+  "sourceSha256": "9d427a540ec09ff9c8c5fd03577c54902eae202935954e17e56d4d839095bafb",
+  "outcomes": [
+    {
+      "name": "baseline",
+      "passed": 12,
+      "failed": []
+    },
+    {
+      "name": "harmless",
+      "passed": 12,
+      "failed": []
+    },
+    {
+      "name": "stale-warning",
+      "passed": 11,
+      "failed": [
+        "decision link editor preserves page-held and corrupted copies when resolving a lost link acknowledgement"
+      ]
+    }
+  ],
+  "restored": true,
+  "finding": "Desktop cancellation screenshot showed the earlier unconfirmed-save warning after native cancellation and archive success. The regression failed before the fix; successful resolution now clears the earlier message.",
+  "limits": "Controller message lifecycle only; identified browser rerun remains necessary."
+}

@@ -483,20 +483,22 @@ const EXPECTED = {
   // Confirmed in openplan_translation_command_proof_20260913; no direct write policy.
   // 20261014000019 adds one immutable resolution table with RLS and one actor/staff SELECT policy.
   // Confirmed in the isolated installed catalog; no new write policy or view.
-  policies: 754,
-  permissive: 503,
+  // Migrations 21/22 add two immutable RLS tables and two staff/actor SELECT policies.
+  // Isolated postgres catalog: 756 policies, 225 policy tables, 252 application tables.
+  policies: 756,
+  permissive: 505,
   restrictive: 251,
   permissiveWrites: 277,
   expanded: 286,
-  tablesWithPolicies: 223,
+  tablesWithPolicies: 225,
   // 20261014000013 adds three generation custody tables with RLS and no client policies.
   // Installed isolated catalog confirms all three; no application view or policy is added.
   // Migration 20 adds the private public-translation mapping table, RLS and no policies.
   // Installed isolated catalog, excluding extension-owned relations: 250 tables, 13 views, 250 RLS tables.
-  relations: 263,
-  tables: 250,
+  relations: 265,
+  tables: 252,
   views: 13,
-  rlsEnabledTables: 250,
+  rlsEnabledTables: 252,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

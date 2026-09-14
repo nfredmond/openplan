@@ -1,0 +1,12 @@
+{
+  "commit": "d3345de30487c47b94f34c21cd92ed2f8f517adf",
+  "sourceSha256": {
+    "src/components/engagement/decision-links-panel.tsx": "a350a7ab19c1261a05b61d9bd8724f5c88df8b8efe6babd305208eb149bc4cbb",
+    "src/components/engagement/decision-resolution-panel.tsx": "1ee98910aec6a23009601ac76c5454badb731795e88633cc4b950657eb93ab90",
+    "src/lib/engagement/decision-resolution-recovery.ts": "22038d3831c1d589d7ff3167ea1133f142d030a42c7590845c97d15ea9713e37",
+    "src/lib/engagement/decision-resolution-server.ts": "1049c05f9b9d61a0315217931e36122fd7d8d10096eac85692395c156bccaf99",
+    "src/app/api/engagement/campaigns/[campaignId]/decision-links/resolutions/route.ts": "bd58c236434dc37acba20dbeb67d459df65ec45e8248e8d2465ebc36643f398d",
+    "supabase/migrations/20261014000022_engagement_decision_request_resolution.sql": "2fb5cf597d33da4eff4db0e38b33c48ae573428e0a4bdd4ae9388b36e184152c"
+  },
+  "scope": "Frozen production source for recovery browser journeys; inventory tests and evidence documentation have later working changes."
+}

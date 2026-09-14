@@ -42,6 +42,64 @@ checks and final main CI still precede release. User authorizes direct main land
 without PRs or human-review release gates once engineering evidence is satisfied.
 The pending reminder constraint is untouched. Continue the binding v1 roadmap.
 
+## Browser finding and final recovery message fix
+
+The d3345de3 candidate completed both-width saved-request recovery: two exact
+copies, lost save and resolution acknowledgments, same-resolution replay,
+downloaded archives with matching hashes, unchanged original saved link, wrong
+workspace 403 and anonymous 401. Desktop and 390px cancellation also retained
+copies through intent/archive quota failures and refused an actual late write
+with 409. Screenshots exposed a separate UI defect: the earlier unconfirmed-save
+warning remained after successful recovery. The new regression failed before the
+one-line message reset, then passed baseline and harmless controls and failed
+when that reset was removed. See `decision-recovery-stale-message.json`.
+These earlier browser runs establish data behavior but do not accept the stale UI.
+
+The first damaged-resolution browser journey recovered both retained originals,
+but its final assertion assumed localStorage archive enumeration was insertion
+order. That assumption is invalid; the runner now downloads both archives and
+matches exact retained resolution identities. Original private failure files
+remain under browser/damaged-resolution-1440-*. No native data defect was
+established by that assertion. Rebuild and rerun all three recovery journeys at
+both widths with the new message check before claiming final browser acceptance.
+
+Full QA on the preceding candidate passed 15,310 tests with 512 skipped and the
+production build. Shuffled seed 914061 passed the same counts; live isolation
+passed 541 tests across 59 files. All 52 Python worker suites passed. These jobs
+are terminal. The message-only fix has separate focused/mutation evidence; no
+new database behavior changed. The v1 goal and remaining public explanation,
+report/export lineage, final main CI and release work remain open.
+
+## Broader recovery checks, September 14
+
+Browser candidate `d3345de30487c47b94f34c21cd92ed2f8f517adf` built successfully
+and is identified on port 3262. Manual-only synthetic provider configuration and
+the existing network guard remain in its launch recipe. The first full unit run
+found two outdated inventory expectations: migration 21/22 added two tables and
+two SELECT policies. Live isolated catalog confirms 756 policies, 225 tables with
+policies, 252 application tables and 13 application views. The corrected inventory
+passes all 29 tests. Baseline/harmless controls survive; simulated omission of a
+policy or relation fails its exact-count assertion. See
+`decision-recovery-inventory-results.json`.
+
+The complete shuffled suite at seed 914061 passes 15,310 tests, with 512 skipped.
+Before linking existing worker environments, the earlier normal run passed 15,301,
+failed the two inventory checks and skipped 519. These counts differ because
+seven worker-environment probes can now run. All 52 Python worker suites pass
+using each worker's existing .venv311, linked into this isolated checkout. No
+packages were installed. First worker invocation refused to report success because
+all five environments were absent; its failure log is retained.
+
+Full lint, configured dead-code check, provider connector suites and npm dependency
+audit completed successfully. Dead-code output retains its advisory unused-export
+inventory; do not describe it as no findings. The audit reported zero vulnerabilities.
+Private logs use the `recovery-` prefix under
+`/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context`.
+The full live RLS run completed successfully, 541 tests across 59 files. Prepared browser runners
+`decision-recovery-browser.cjs` and `decision-cancellation-browser.cjs` have not
+been exercised yet. Require PROBE_COMMIT to match served health identity; cancellation
+also requires a completed recovery run's PROBE_PRIOR file.
+
 ## Earlier decision request recovery candidate and reader verified
 
 `decision-resolution-candidate.sql` adds private immutable recovery receipts.

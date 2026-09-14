@@ -1,0 +1,42 @@
+{
+  "sourceSha256": "0f79ada71bfa245f4aa8c7dce5524caadd8aaa78ac34b2b7f02de9ac899713b0",
+  "outcomes": [
+    {
+      "name": "baseline",
+      "passed": 2,
+      "failedAssertions": []
+    },
+    {
+      "name": "harmless",
+      "passed": 2,
+      "failedAssertions": []
+    },
+    {
+      "name": "omitted-policy",
+      "passed": 1,
+      "failedAssertions": [
+        "migration policy inventory counts what the database actually has"
+      ]
+    },
+    {
+      "name": "omitted-relation",
+      "passed": 1,
+      "failedAssertions": [
+        "migration schema inventory reads every relation the migrations declare"
+      ]
+    }
+  ],
+  "restored": true,
+  "catalog": {
+    "container": "supabase_db_openplan-restore-target-2026091050",
+    "database": "postgres",
+    "policies": 756,
+    "permissive": 505,
+    "restrictive": 251,
+    "policyTables": 225,
+    "applicationTables": 252,
+    "applicationViews": 13,
+    "rlsTables": 252
+  },
+  "limits": "Simulated parser omissions prove the exact-count checks. Counts alone do not prove policy behavior or field completeness; installed live fixtures and parser tests cover separate boundaries."
+}

@@ -178,6 +178,7 @@ describe("decision link editor", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save decision link" }));
     await screen.findByText(/The save is unconfirmed/);
     await screen.findByRole("button", { name: "Retry exact request" });
+    expect(screen.getByText(/The save is unconfirmed/)).toBeVisible();
     const sourceKey = localStorage.key(0)!, originalBytes = localStorage.getItem(sourceKey)!;
     localStorage.setItem(sourceKey, "SYNTHETIC changed stored bytes");
     fireEvent(window, new StorageEvent("storage"));
@@ -194,6 +195,7 @@ describe("decision link editor", () => {
     await waitFor(() => expect(localStorage.getItem(sourceKey)).toBeNull());
     await waitFor(() => expect(screen.getByLabelText("Staff response")).toBeEnabled());
     expect(screen.queryByRole("button", { name: "Retry exact request" })).toBeNull();
+    expect(screen.queryByText(/The save is unconfirmed/)).toBeNull();
     const saved = readDecisionResolutionRecovery(localStorage, native.scope);
     expect(saved.archives).toHaveLength(1);
     const archive = JSON.parse(saved.archives[0].raw);

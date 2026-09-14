@@ -109,7 +109,7 @@ function DecisionEditor(props: Props) {
     download: (raw, name) => downloadCopy(name, raw),
     onResolved(bundle) {
       for (const [key, value] of heldRequests.current) if (decisionResolutionHasCopy(bundle, JSON.stringify(value))) heldRequests.current.delete(key);
-      setPreview(null); setAttempt(value => value + 1);
+      setMessage(""); setPreview(null); setAttempt(value => value + 1);
     },
   });
 
