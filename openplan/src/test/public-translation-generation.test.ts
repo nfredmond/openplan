@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const prepare = vi.hoisted(() => vi.fn());
 vi.mock("@/lib/integrations/workspace-keys", () => ({ prepareWorkspaceTranslationSelection: prepare }));
 import { TranslationCredentialError } from "@/lib/integrations/translation-credentials";
-import { publicTranslationSourceHash, queuePublicTranslationGeneration, readPublicTranslationGeneration, type PublicTranslationIntent } from "@/lib/engagement/public-translation-generation";
+import { publicTranslationSourceHash, queuePublicTranslationGeneration, readPublicTranslationGeneration, readPublicTranslationCache, type PublicTranslationIntent } from "@/lib/engagement/public-translation-generation";
 
 type Service = Parameters<typeof queuePublicTranslationGeneration>[0];
 type Reply = { data: unknown; error: { code: string } | null };
@@ -167,5 +167,23 @@ describe("public translation durable server queue", () => {
     const controller = new AbortController();
     prepare.mockImplementation(async () => { controller.abort(); return { credential: {}, selectedKeyCiphertextHash: null }; });
     await expect(queuePublicTranslationGeneration(service, scope, intent, controller.signal)).rejects.toMatchObject({ name: "AbortError" }); expect(created).toBeNull();
+  });
+});
+
+
+describe("public legacy translation cache", () => {
+  it("reads a valid cache with the exact original and no credential", async () => {
+    override("read_public_translation_cache", "  SINTÉTICO cache\n");
+    await expect(readPublicTranslationCache(service, scope, intent)).resolves.toBe("  SINTÉTICO cache\n");
+    expect(rpc.mock.calls[1]).toEqual(["read_public_translation_cache", { p_share_token: scope.shareToken, p_item: item, p_locale: "es", p_snapshot: snapshot }]);
+    expect(prepare).not.toHaveBeenCalled(); expect(created).toBeNull();
+  });
+  it.each([null, "", " ", "a".repeat(8001), { secret: "SYNTHETIC invalid" }])("leaves invalid or absent legacy cache unused (%#)", async value => {
+    override("read_public_translation_cache", value);
+    await expect(readPublicTranslationCache(service, scope, intent)).resolves.toBeNull(); expect(prepare).not.toHaveBeenCalled();
+  });
+  it("does not call a failed cache read a cache miss", async () => {
+    handler.mockImplementation((name, args) => name === "read_public_translation_cache" ? { data: null, error: { code: "PT503" } } : defaultReply(name, args));
+    await expect(readPublicTranslationCache(service, scope, intent)).rejects.toMatchObject({ kind: "unavailable" }); expect(prepare).not.toHaveBeenCalled();
   });
 });

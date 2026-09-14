@@ -1,9 +1,9 @@
 {
-  "sourceSha256": "27235fc51d9d2cdb9786ad6c96dcb113735207182433ad0ccac6794023be990a",
-  "composedProbeSha256": "6a813d802987c70f7b7640b1c9401ab309b9c57e8e91df104a2753e1b25e34dc",
-  "publicProbeSha256": "f9ce4d0048a3a9b08c340c6e4ac7c77e7f39e228357cc8411a5e84fda73dcde3",
+  "sourceSha256": "227d50ae366a4fcd462812b737a80cf0495ee94bc4dcc66ec11d5b7b0448c4b4",
+  "composedProbeSha256": "d992fdc8ea2aed8d7b489d96e7d5c9ff76ea421677532217e27e69a779460ef7",
+  "publicProbeSha256": "1ffeab372f55a97a8c3de65e0da3e01e82b1b2e9ab8e8ec13ca11a3637fd96ec",
   "staffProbeSha256": "1e60680f590b1a567f85473a7ed6111e20e9d6148ff0d972d12c7ad4f9efb6c3",
-  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-queue-controls/20260913T234420",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-queue-controls/20260914T001310",
   "results": [
     {
       "case": "baseline",
@@ -268,6 +268,27 @@
       "case": "lookup-ignores-displayed-source",
       "outcome": "killed",
       "expectedFailure": "Guard failed: lookup displayed source changed",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "cache-wrong-original",
+      "outcome": "killed",
+      "expectedFailure": "Stale original cache leaked",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "cache-wrong-page",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: cache displayed source changed",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "cache-wrong-language",
+      "outcome": "killed",
+      "expectedFailure": "Cache language substituted",
       "expectedOutcome": true,
       "rollbackContained": true
     }

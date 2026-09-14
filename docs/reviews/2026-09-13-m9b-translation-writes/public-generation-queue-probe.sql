@@ -51,6 +51,18 @@ BEGIN
  PERFORM pg_temp.require_public_refusal(format('SELECT read_public_translation_source(%L,%L)',token||'-wrong',item),'42501','wrong share token');
  fixture:=pg_temp.queue_public_fixture(campaign,item,token);request:=(fixture->>'request')::uuid;field:=(fixture->>'field')::uuid;
  IF fixture#>>'{ack,created}' IS DISTINCT FROM 'true' THEN RAISE EXCEPTION 'Public queue positive failed'; END IF;
+ IF read_public_translation_cache(token,item,'es',fixture->'source') IS NOT NULL THEN RAISE EXCEPTION 'Missing cache fabricated'; END IF;
+ RESET ROLE;
+ UPDATE engagement_items SET metadata_json=jsonb_build_object('ai_translations',jsonb_build_object('es',jsonb_build_object('text','SINTÉTICO cache exacto','sourceHash','425486ff8c087a93e2139240f4ddd1ab7b84b1229589eabd3c0f9c451f3ad098'))) WHERE id=item;
+ SET LOCAL ROLE service_role;
+ IF read_public_translation_cache(token,item,'es',fixture->'source') IS DISTINCT FROM '"SINTÉTICO cache exacto"'::jsonb THEN RAISE EXCEPTION 'Exact legacy cache was not recovered'; END IF;
+ PERFORM pg_temp.require_public_refusal(format('SELECT read_public_translation_cache(%L,%L,%L,%L)',token,item,'es',jsonb_set(fixture->'source','{body}','"SYNTHETIC stale page"')),'PT409','cache displayed source changed');
+ IF read_public_translation_cache(token,item,'vi',fixture->'source') IS NOT NULL THEN RAISE EXCEPTION 'Cache language substituted'; END IF;
+ RESET ROLE;
+ UPDATE engagement_items SET metadata_json=jsonb_set(metadata_json,'{ai_translations,es,sourceHash}','"SYNTHETIC stale hash"') WHERE id=item;
+ SET LOCAL ROLE service_role;
+ IF read_public_translation_cache(token,item,'es',fixture->'source') IS NOT NULL THEN RAISE EXCEPTION 'Stale original cache leaked'; END IF;
+
  IF (SELECT authority_kind FROM engagement_translation_generation_requests WHERE id=request) IS DISTINCT FROM 'public'
  OR (SELECT actor_id FROM engagement_translation_generation_requests WHERE id=request) IS NOT NULL
  OR EXISTS(SELECT 1 FROM usage_events WHERE workspace_id=workspace) THEN RAISE EXCEPTION 'Anonymous identity or unspent creation failed'; END IF;

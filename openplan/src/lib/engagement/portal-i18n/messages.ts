@@ -192,6 +192,11 @@ export const EN_PORTAL_MESSAGES = {
   "portal.translateInto": "Translate into",
   "portal.showOriginal": "Original",
   "portal.translating": "Translating…",
+  "portal.translationPending": "Translation is queued or running. The original stays available while you wait.",
+  "portal.translationFailed": "That attempt did not produce a complete translation. A new attempt is a separate request and may use the agency's translation allowance.",
+  "portal.translationUnconfirmed": "The request could not be confirmed. Check its status to recover existing work.",
+  "portal.translationCheck": "Check translation status",
+  "portal.translationNewAttempt": "Request a new translation",
   "portal.translationUnavailable":
     "This comment could not be translated right now. The original is shown.",
   "portal.demographics": "About you (only if you want to)",
@@ -675,6 +680,11 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
   "portal.translateInto": "Traducir a",
   "portal.showOriginal": "Original",
   "portal.translating": "Traduciendo…",
+  "portal.translationPending": "La traducción está en espera o en proceso. El original sigue disponible mientras espera.",
+  "portal.translationFailed": "Ese intento no produjo una traducción completa. Un nuevo intento es una solicitud independiente y puede usar el cupo de traducción de la agencia.",
+  "portal.translationUnconfirmed": "No se pudo confirmar la solicitud. Consulte su estado para recuperar el trabajo existente.",
+  "portal.translationCheck": "Consultar el estado de la traducción",
+  "portal.translationNewAttempt": "Solicitar una nueva traducción",
   "portal.translationUnavailable":
     "No se pudo traducir este comentario en este momento. Se muestra el original.",
   "portal.demographics": "Sobre usted (solo si usted quiere)",

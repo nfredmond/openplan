@@ -6,6 +6,7 @@ import {
   type ApprovedItem,
   type ApprovedItemGrouping,
 } from "@/lib/engagement/approved-item-grouping";
+import { usePublicCommentTranslations } from "./use-public-comment-translations";
 import { ClipboardCheck, ClipboardList, Info, Loader2, MapPinned, MessageSquare, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { readStoredEngagementGeometry } from "@/lib/engagement/geometry";
@@ -453,10 +454,7 @@ export function PublicEngagementPortal({
   // E6 — the top-level comment the participant is replying to (null = a new
   // top-level submission). Set from a "Reply" button in the feed.
   const [replyTarget, setReplyTarget] = useState<{ id: string; label: string } | null>(null);
-  // E8 — per-comment machine translation (null language = show original).
-  const [translations, setTranslations] = useState<
-    Record<string, { language: TranslationLanguage; text: string | null; status: "loading" | "done" | "unavailable" }>
-  >({});
+  const { translations, translateComment, clearTranslation, checkTranslation, retryTranslation } = usePublicCommentTranslations(shareToken, approvedItems, previewMode);
 
   // Rebuilt from the bundle rather than passed as a function, and memoised so the
   // `useMemo`s below that depend on it are not invalidated on every render.
@@ -509,35 +507,6 @@ export function PublicEngagementPortal({
     setReplyTarget({ id: item.id, label: replyPreviewLabel(item) });
     setActiveTab("submit");
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  async function translateComment(itemId: string, language: TranslationLanguage) {
-    // Preview sends nothing — see `previewMode` on the props.
-    if (previewMode) return;
-    setTranslations((previous) => ({ ...previous, [itemId]: { language, text: null, status: "loading" } }));
-    try {
-      const response = await fetch(`/api/engage/${shareToken}/items/${itemId}/translate`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ language }),
-      });
-      const payload = (await response.json()) as { translated?: string | null; source?: string };
-      if (!response.ok || payload.source === "unavailable" || typeof payload.translated !== "string") {
-        setTranslations((previous) => ({ ...previous, [itemId]: { language, text: null, status: "unavailable" } }));
-        return;
-      }
-      setTranslations((previous) => ({ ...previous, [itemId]: { language, text: payload.translated as string, status: "done" } }));
-    } catch {
-      setTranslations((previous) => ({ ...previous, [itemId]: { language, text: null, status: "unavailable" } }));
-    }
-  }
-
-  function clearTranslation(itemId: string) {
-    setTranslations((previous) => {
-      const next = { ...previous };
-      delete next[itemId];
-      return next;
-    });
   }
 
   const sortedItems = useMemo(() => {
@@ -717,8 +686,19 @@ export function PublicEngagementPortal({
                 <p className="mt-1.5 text-[0.7rem] text-muted-foreground">{t("provenance.machine.caveat")}</p>
               </div>
             ) : null}
-            {translation?.status === "unavailable" ? (
-              <p className="mt-2 text-xs text-muted-foreground">{t("portal.translationUnavailable")}</p>
+            {translation && ["pending", "failed", "missing", "unconfirmed", "unavailable"].includes(translation.status) ? (
+              <div className="mt-2 space-y-2 text-xs text-muted-foreground" aria-live="polite">
+                <p>{t(translation.status === "pending" ? "portal.translationPending" : translation.status === "failed" ? "portal.translationFailed" :
+                  translation.status === "unconfirmed" ? "portal.translationUnconfirmed" : "portal.translationUnavailable")}</p>
+                {["pending", "unconfirmed"].includes(translation.status) ? (
+                  <button type="button" className="min-h-10 rounded-md border border-input px-3 text-foreground focus-visible:outline-2 focus-visible:outline-primary"
+                    onClick={() => void checkTranslation(item.id)}>{t("portal.translationCheck")}</button>
+                ) : null}
+                {["failed", "missing"].includes(translation.status) ? (
+                  <button type="button" className="min-h-10 rounded-md border border-input px-3 text-foreground focus-visible:outline-2 focus-visible:outline-primary"
+                    onClick={() => void retryTranslation(item.id)}>{t("portal.translationNewAttempt")}</button>
+                ) : null}
+              </div>
             ) : null}
             {!options.isReply && acceptingSubmissions ? (
               <button

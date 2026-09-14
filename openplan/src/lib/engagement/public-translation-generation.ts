@@ -3,29 +3,15 @@ import { z } from "zod";
 import type { createServiceRoleClient } from "@/lib/supabase/server";
 import { prepareWorkspaceTranslationSelection } from "@/lib/integrations/workspace-keys";
 import { TranslationCredentialError } from "@/lib/integrations/translation-credentials";
-import { TRANSLATION_LANGUAGES, supportsMachineTranslation } from "./translation-languages";
+import { publicTranslationIntentSchema, publicTranslationViewSchema, publicTranslationTextSchema, type PublicTranslationIntent, type PublicTranslationView } from "./public-translation-contract";
+export { publicTranslationIntentSchema, publicTranslationViewSchema, type PublicTranslationIntent, type PublicTranslationView } from "./public-translation-contract";
 import { translationGenerationPacketCanonical } from "./translation-generation";
 
 const id = z.string().uuid();
-const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const scopeSchema = z.object({ shareToken: z.string().min(8).max(64), itemId: id }).strict();
 const sourceSchema = z.object({ workspaceId: id, campaignId: id, itemId: id, title: z.string().nullable(), body: z.string() }).strict();
-export const publicTranslationIntentSchema = z.object({
-  language: z.enum(TRANSLATION_LANGUAGES).refine(supportsMachineTranslation),
-  sourceHash: hash,
-  retryOf: id.optional(),
-}).strict();
-export type PublicTranslationIntent = z.infer<typeof publicTranslationIntentSchema>;
 export type PublicTranslationScope = z.infer<typeof scopeSchema>;
 const retryable = new Set(["failed", "interrupted", "incomplete", "cancelled"]);
-export const publicTranslationViewSchema = z.object({
-  requestId: id, language: z.enum(TRANSLATION_LANGUAGES).refine(supportsMachineTranslation),
-  state: z.enum(["queued", "reserved", "running", "completed", "incomplete", "failed", "interrupted", "cancelled"]),
-  translated: z.string().nullable(),
-}).strict().refine(value => value.state === "completed"
-  ? value.translated !== null && value.translated.trim().length > 0 && value.translated.isWellFormed() && !value.translated.includes("\0") && [...value.translated].length <= 8000
-  : value.translated === null);
-export type PublicTranslationView = z.infer<typeof publicTranslationViewSchema>;
 type Source = z.infer<typeof sourceSchema>;
 type Service = ReturnType<typeof createServiceRoleClient>;
 type Failure = "invalid" | "forbidden" | "conflict" | "unavailable" | "credential_unavailable" | "rate_limited";
@@ -130,4 +116,20 @@ export async function queuePublicTranslationGeneration(service: Service, rawScop
   if (!ack.success || (ack.data.created && ack.data.requestId !== requestId)) unavailable();
   const current = await read(service, scope, intent, ack.data.requestId, snapshot, signal);
   return { ...current, created: ack.data.created };
+}
+
+// Legacy cache reads remain free of new reservations. SQL checks both the exact
+// displayed source and the cached entry's original hash under its public lock.
+export async function readPublicTranslationCache(service: Service, rawScope: PublicTranslationScope,
+  raw: PublicTranslationIntent, parentSignal?: AbortSignal): Promise<string | null> {
+  const { scope, intent } = parseInput(rawScope, raw);
+  const signal = operationSignal(parentSignal);
+  const snapshot = await source(service, scope, intent, signal);
+  const result = await service.rpc("read_public_translation_cache", { p_share_token: scope.shareToken, p_item: scope.itemId,
+    p_locale: intent.language, p_snapshot: snapshot }).abortSignal(signal);
+  signal.throwIfAborted(); checkError(result.error);
+  if (result.data === null) return null;
+  const checked = publicTranslationTextSchema.safeParse(result.data);
+  if (!checked.success) return null;
+  return checked.data;
 }

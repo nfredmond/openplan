@@ -1,10 +1,12 @@
 {
-  "sourceSha256": "366cbff9211713617b0a7a914d64a932f119df759f717efb61540c90f9b74310",
-  "testSha256": "9895294e0985c561d650d3e67dbd59b2ba6cf93ed9a24c974f9104de0f1b260d",
-  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-server-controls/20260913T234842",
+  "sourceSha256": "2c10c9e39b05b3d66d0f23aa127131d3e191132d42cfbf777ebbeb1cba90ab85",
+  "contractSha256": "818d8ff628c71a957d3912cf6026af62c99203a010a0cad4b3a1f83e40d8b6d1",
+  "testSha256": "d893efd8e4adc7b04a1dbcc7a18d9a540d94adb32aebc595277bb677c8480885",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-server-controls/20260914T001216",
   "results": [
     {
       "case": "baseline",
+      "file": "src/lib/engagement/public-translation-generation.ts",
       "outcome": "survived",
       "expectedFailure": null,
       "failedTests": [],
@@ -12,6 +14,7 @@
     },
     {
       "case": "harmless-comment",
+      "file": "src/lib/engagement/public-translation-generation.ts",
       "outcome": "survived",
       "expectedFailure": null,
       "failedTests": [],
@@ -19,6 +22,7 @@
     },
     {
       "case": "trim-source",
+      "file": "src/lib/engagement/public-translation-generation.ts",
       "outcome": "killed",
       "expectedFailure": "preserves null and empty title as different original identities",
       "failedTests": [
@@ -28,6 +32,7 @@
     },
     {
       "case": "ignore-original-hash",
+      "file": "src/lib/engagement/public-translation-generation.ts",
       "outcome": "killed",
       "expectedFailure": "refuses a changed displayed original before looking for a job",
       "failedTests": [
@@ -37,6 +42,7 @@
     },
     {
       "case": "ignore-item-identity",
+      "file": "src/lib/engagement/public-translation-generation.ts",
       "outcome": "killed",
       "expectedFailure": "refuses a source from another item",
       "failedTests": [
@@ -46,6 +52,7 @@
     },
     {
       "case": "recreate-on-recovery",
+      "file": "src/lib/engagement/public-translation-generation.ts",
       "outcome": "killed",
       "expectedFailure": "recovers retained output without selecting a replacement credential",
       "failedTests": [
@@ -55,6 +62,7 @@
     },
     {
       "case": "ignore-active-predecessor",
+      "file": "src/lib/engagement/public-translation-generation.ts",
       "outcome": "killed",
       "expectedFailure": "recovers rather than retries",
       "failedTests": [
@@ -67,6 +75,7 @@
     },
     {
       "case": "create-root-for-retry",
+      "file": "src/lib/engagement/public-translation-generation.ts",
       "outcome": "killed",
       "expectedFailure": "creates one explicit successor",
       "failedTests": [
@@ -79,6 +88,7 @@
     },
     {
       "case": "retry-wrong-predecessor",
+      "file": "src/lib/engagement/public-translation-generation.ts",
       "outcome": "killed",
       "expectedFailure": "creates one explicit successor",
       "failedTests": [
@@ -91,6 +101,7 @@
     },
     {
       "case": "lookup-without-snapshot",
+      "file": "src/lib/engagement/public-translation-generation.ts",
       "outcome": "killed",
       "expectedFailure": "captures the exact original and one credential after conclusive discovery",
       "failedTests": [
@@ -100,6 +111,7 @@
     },
     {
       "case": "receipt-without-snapshot",
+      "file": "src/lib/engagement/public-translation-generation.ts",
       "outcome": "killed",
       "expectedFailure": "pins the displayed snapshot in exact receipt recovery",
       "failedTests": [
@@ -109,6 +121,7 @@
     },
     {
       "case": "wrong-queue-original",
+      "file": "src/lib/engagement/public-translation-generation.ts",
       "outcome": "killed",
       "expectedFailure": "captures the exact original and one credential after conclusive discovery",
       "failedTests": [
@@ -118,6 +131,7 @@
     },
     {
       "case": "omit-source-title",
+      "file": "src/lib/engagement/public-translation-generation.ts",
       "outcome": "killed",
       "expectedFailure": "captures the exact original and one credential after conclusive discovery",
       "failedTests": [
@@ -127,6 +141,7 @@
     },
     {
       "case": "accept-wrong-acknowledgement",
+      "file": "src/lib/engagement/public-translation-generation.ts",
       "outcome": "killed",
       "expectedFailure": "refuses a created acknowledgement with a different identity",
       "failedTests": [
@@ -136,6 +151,7 @@
     },
     {
       "case": "ignore-competing-creator",
+      "file": "src/lib/engagement/public-translation-generation.ts",
       "outcome": "killed",
       "expectedFailure": "recovers a competing creator's exact retained request",
       "failedTests": [
@@ -145,6 +161,7 @@
     },
     {
       "case": "accept-other-receipt",
+      "file": "src/lib/engagement/public-translation-generation.ts",
       "outcome": "killed",
       "expectedFailure": "refuses an exact receipt for another request",
       "failedTests": [
@@ -154,6 +171,7 @@
     },
     {
       "case": "accept-other-locale",
+      "file": "src/lib/engagement/public-translation-generation.ts",
       "outcome": "killed",
       "expectedFailure": "refuses an invalid retained public DTO",
       "failedTests": [
@@ -163,6 +181,7 @@
     },
     {
       "case": "fail-open-discovery",
+      "file": "src/lib/engagement/public-translation-generation.ts",
       "outcome": "killed",
       "expectedFailure": "does not treat failed discovery",
       "failedTests": [
@@ -177,6 +196,7 @@
     },
     {
       "case": "late-response-after-abort",
+      "file": "src/lib/engagement/public-translation-generation.ts",
       "outcome": "killed",
       "expectedFailure": "never returns a translation after the caller has left",
       "failedTests": [
@@ -186,6 +206,7 @@
     },
     {
       "case": "create-after-abort",
+      "file": "src/lib/engagement/public-translation-generation.ts",
       "outcome": "killed",
       "expectedFailure": "does not create work after credential preparation is interrupted",
       "failedTests": [
@@ -195,6 +216,7 @@
     },
     {
       "case": "strip-unknown-input",
+      "file": "src/lib/engagement/public-translation-contract.ts",
       "outcome": "killed",
       "expectedFailure": "refuses invalid or unsupported intent before database access",
       "failedTests": [
@@ -204,6 +226,7 @@
     },
     {
       "case": "strip-private-dto",
+      "file": "src/lib/engagement/public-translation-contract.ts",
       "outcome": "killed",
       "expectedFailure": "refuses an invalid retained public DTO",
       "failedTests": [
@@ -213,6 +236,7 @@
     },
     {
       "case": "unsupported-language-before-db",
+      "file": "src/lib/engagement/public-translation-contract.ts",
       "outcome": "killed",
       "expectedFailure": "refuses invalid or unsupported intent before database access",
       "failedTests": [
@@ -222,6 +246,7 @@
     },
     {
       "case": "publish-incomplete-words",
+      "file": "src/lib/engagement/public-translation-contract.ts",
       "outcome": "killed",
       "expectedFailure": "refuses an invalid retained public DTO",
       "failedTests": [
@@ -231,6 +256,7 @@
     },
     {
       "case": "accept-empty-output",
+      "file": "src/lib/engagement/public-translation-contract.ts",
       "outcome": "killed",
       "expectedFailure": "refuses an invalid retained public DTO",
       "failedTests": [
@@ -240,6 +266,7 @@
     },
     {
       "case": "accept-oversized-output",
+      "file": "src/lib/engagement/public-translation-contract.ts",
       "outcome": "killed",
       "expectedFailure": "refuses an invalid retained public DTO",
       "failedTests": [
@@ -249,6 +276,7 @@
     },
     {
       "case": "accept-broken-unicode",
+      "file": "src/lib/engagement/public-translation-contract.ts",
       "outcome": "killed",
       "expectedFailure": "refuses an invalid retained public DTO",
       "failedTests": [
@@ -258,6 +286,7 @@
     },
     {
       "case": "accept-null-byte",
+      "file": "src/lib/engagement/public-translation-contract.ts",
       "outcome": "killed",
       "expectedFailure": "refuses an invalid retained public DTO",
       "failedTests": [

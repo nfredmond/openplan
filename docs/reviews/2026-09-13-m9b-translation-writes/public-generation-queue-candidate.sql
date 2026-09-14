@@ -373,3 +373,17 @@ BEGIN
 END $$;
 REVOKE ALL ON FUNCTION public.find_public_translation_request(text,uuid,text,uuid,jsonb) FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.find_public_translation_request(text,uuid,text,uuid,jsonb) TO service_role;
+
+CREATE FUNCTION public.read_public_translation_cache(p_share_token text,p_item uuid,p_locale text,p_snapshot jsonb) RETURNS jsonb
+ LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
+DECLARE source jsonb; cached jsonb; source_hash text;
+BEGIN
+ source:=read_public_translation_source(p_share_token,p_item);
+ IF p_snapshot IS NULL OR source IS DISTINCT FROM p_snapshot THEN RAISE EXCEPTION 'Displayed public original changed' USING ERRCODE='PT409'; END IF;
+ source_hash:=encode(extensions.digest('['||coalesce(to_json(source->>'title')::text,'null')||','||to_json(source->>'body')::text||']','sha256'),'hex');
+ SELECT metadata_json#>ARRAY['ai_translations',p_locale] INTO cached FROM engagement_items WHERE id=p_item;
+ IF cached->>'sourceHash' IS DISTINCT FROM source_hash OR jsonb_typeof(cached->'text') IS DISTINCT FROM 'string' THEN RETURN NULL; END IF;
+ RETURN cached->'text';
+END $$;
+REVOKE ALL ON FUNCTION public.read_public_translation_cache(text,uuid,text,jsonb) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.read_public_translation_cache(text,uuid,text,jsonb) TO service_role;

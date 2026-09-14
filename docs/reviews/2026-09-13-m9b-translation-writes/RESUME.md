@@ -1,3 +1,7 @@
+# Current public translation HTTP and usage-reset checkpoint
+
+Read [PUBLIC_TRANSLATION_HTTP_RESET_CHECKPOINT.md](PUBLIC_TRANSLATION_HTTP_RESET_CHECKPOINT.md) first. The public queue route, source-matched cache read and browser recovery hook are saved. Actual browser/worker integration and final release checks remain unfinished. Older entries retain their dated evidence.
+
 # Current public translation server checkpoint
 
 Read [PUBLIC_TRANSLATION_SERVER_PROGRESS.md](PUBLIC_TRANSLATION_SERVER_PROGRESS.md) first. Explicit retry chains, source-pinned discovery and server queue/read helpers are implemented and tested. HTTP, public browser and actual worker integration remain. Older entries preserve their dated evidence.

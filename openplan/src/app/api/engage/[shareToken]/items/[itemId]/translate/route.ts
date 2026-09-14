@@ -1,220 +1,88 @@
-import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-
-import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
-import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
+import { requireProviderBrowserOrigin } from "@/lib/assistant/provider-server";
+import { readBytesWithLimitStreaming } from "@/lib/http/body-limit";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import {
-  checkAiUsageRateLimit,
-  PUBLIC_ENGAGEMENT_AI_BUCKET_KEYS,
-  PUBLIC_ENGAGEMENT_AI_MAX_PER_WINDOW,
-  recordAiUsageEvent,
-} from "@/lib/runtime/ai-rate-limit";
-import {
-  isTranslationLanguage,
-  translateEngagementText,
-  type TranslationLanguage,
-} from "@/lib/engagement/translation";
-import { machineTranslationUnavailableReason } from "@/lib/engagement/translation-languages";
+import { TRANSLATION_LANGUAGES, machineTranslationUnavailableReason } from "@/lib/engagement/translation-languages";
+import { publicTranslationResponseSchema, type PublicTranslationResponse } from "@/lib/engagement/public-translation-contract";
+import { PublicTranslationQueueError, queuePublicTranslationGeneration, readPublicTranslationCache, readPublicTranslationGeneration } from "@/lib/engagement/public-translation-generation";
 
-const paramsSchema = z.object({
-  shareToken: z.string().min(8).max(64),
-  itemId: z.string().uuid(),
-});
-
-const bodySchema = z.object({ language: z.string().min(2).max(16) });
-
+const headers = { "Cache-Control": "private, no-store" };
+const paramsSchema = z.object({ shareToken: z.string().min(8).max(64), itemId: z.string().uuid() }).strict();
+const intentSchema = z.object({ language: z.enum(TRANSLATION_LANGUAGES), sourceHash: z.string().regex(/^[a-f0-9]{64}$/), retryOf: z.string().uuid().optional() }).strict();
 type RouteContext = { params: Promise<{ shareToken: string; itemId: string }> };
-type SupabaseServiceClient = ReturnType<typeof createServiceRoleClient>;
-
-type ApprovedItem = {
-  id: string;
-  workspaceId: string;
-  title: string | null;
-  body: string;
-  metadata: Record<string, unknown>;
+const messages = {
+  invalid: "Review the language and reload the original comment before translating it.",
+  forbidden: "This comment is not available for translation.",
+  conflict: "The original or request changed. Reload the comment or recover its current translation.",
+  unavailable: "The translation request could not be confirmed. Check its status before requesting another attempt.",
+  credential_unavailable: "Translation is unavailable with the current connection. The original remains available.",
+  rate_limited: "Translation capacity is currently reserved. Keep reading the original and check again shortly.",
 };
-
-/**
- * POST — machine-translate ONE approved community comment into a supported
- * language for reading. E8 (multilingual). Notes:
- * - Only APPROVED items in an ACTIVE campaign are translatable; anything else
- *   returns the same 404 as a missing item, so pending/rejected/foreign items
- *   can't be enumerated (mirrors the vote route).
- * - Translations are CACHED into metadata_json.ai_translations[lang]. The
- *   supported-language set is bounded (a couple of dozen, derived from the one
- *   language taxonomy rather than restated here), so an item accrues at most a
- *   handful of cached entries regardless of request volume — repeat requests
- *   never re-hit the model. The per-workspace AI rate limit guards the FIRST
- *   (uncached) translation of each (item, language).
- * - AI-offline safe: with no key the lib returns source:"unavailable" and this
- *   still responds 200 (the client keeps showing the original text).
- */
-async function resolveApprovedItem(
-  supabase: SupabaseServiceClient,
-  audit: ReturnType<typeof createApiAuditLogger>,
-  shareToken: string,
-  itemId: string
-): Promise<{ ok: true; item: ApprovedItem } | { ok: false; response: NextResponse }> {
-  const { data: campaign, error: campaignError } = await supabase
-    .from("engagement_campaigns")
-    .select("id, workspace_id, status")
-    .eq("share_token", shareToken)
-    .eq("status", "active")
-    .maybeSingle();
-
-  if (campaignError) {
-    audit.error("engagement_translate_campaign_lookup_failed", { message: campaignError.message });
-    return { ok: false, response: NextResponse.json({ error: "Failed to verify campaign" }, { status: 500 }) };
-  }
-  if (!campaign) {
-    return { ok: false, response: NextResponse.json({ error: "Campaign not found or not publicly available" }, { status: 404 }) };
-  }
-
-  const { data: item, error: itemError } = await supabase
-    .from("engagement_items")
-    .select("id, title, body, metadata_json, parent_item_id")
-    .eq("id", itemId)
-    .eq("campaign_id", campaign.id)
-    .eq("status", "approved")
-    .maybeSingle();
-
-  if (itemError) {
-    audit.error("engagement_translate_item_lookup_failed", { campaignId: campaign.id, itemId, message: itemError.message });
-    return { ok: false, response: NextResponse.json({ error: "Failed to verify feedback item" }, { status: 500 }) };
-  }
-  if (!item) {
-    return { ok: false, response: NextResponse.json({ error: "Feedback item not found" }, { status: 404 }) };
-  }
-
-  if (item.parent_item_id) {
-    const parent = await supabase.from("engagement_items").select("id").eq("id", item.parent_item_id).eq("campaign_id", campaign.id).eq("status", "approved").is("parent_item_id", null).maybeSingle();
-    if (parent.error || !parent.data) return { ok: false, response: NextResponse.json({ error: "Feedback item not found" }, { status: 404 }) };
-  }
-  return {
-    ok: true,
-    item: {
-      id: item.id,
-      workspaceId: campaign.workspace_id as string,
-      title: (item.title as string | null) ?? null,
-      body: (item.body as string) ?? "",
-      metadata: ((item.metadata_json as Record<string, unknown> | null) ?? {}),
-    },
-  };
+function failure(kind: keyof typeof messages, status: number) {
+  return NextResponse.json({ kind, error: messages[kind] }, { status, headers: { ...headers, ...(status === 429 ? { "Retry-After": "300" } : {}) } });
+}
+function reply(value: PublicTranslationResponse) {
+  const parsed = publicTranslationResponseSchema.safeParse(value);
+  if (!parsed.success) return failure("unavailable", 503);
+  const pending = parsed.data.source === "queue" && ["queued", "reserved", "running"].includes(parsed.data.request.state);
+  return NextResponse.json(parsed.data, { status: pending ? 202 : 200, headers: { ...headers, ...(pending ? { "Retry-After": "2" } : {}) } });
+}
+function caught(error: unknown) {
+  return error instanceof PublicTranslationQueueError ? failure(error.kind, error.status) : failure("unavailable", 503);
 }
 
-function readCachedTranslation(metadata: Record<string, unknown>, language: TranslationLanguage, sourceHash: string): string | null {
-  const bag = metadata.ai_translations;
-  if (!bag || typeof bag !== "object") return null;
-  const value = (bag as Record<string, unknown>)[language];
-  if (!value || typeof value !== "object") return null;
-  const entry = value as Record<string, unknown>;
-  return entry.sourceHash === sourceHash && typeof entry.text === "string" ? entry.text : null;
-}
-
+// Anonymous authority is the current published comment/share token, checked in
+// SQL. This route queues bounded work; only the worker can authorize dispatch.
 export async function POST(request: NextRequest, context: RouteContext) {
   const audit = createApiAuditLogger("engage.public_translate", request);
-
   try {
-    const parsedParams = paramsSchema.safeParse(await context.params);
-    if (!parsedParams.success) {
-      return NextResponse.json({ error: "Invalid translate route params" }, { status: 400 });
+    const params = paramsSchema.safeParse(await context.params);
+    if (!params.success) return failure("invalid", 400);
+    if (["x-openplan-assistant-execution-source", "x-openplan-assistant-input-hash", "x-openplan-assistant-approval-id"].some(key => request.headers.has(key))) return failure("forbidden", 403);
+    try { requireProviderBrowserOrigin(request); } catch { return failure("forbidden", 403); }
+    const bytes = await readBytesWithLimitStreaming(request, 2048);
+    if (!bytes.ok) { bytes.response.headers.set("Cache-Control", headers["Cache-Control"]); return bytes.response; }
+    let raw: unknown;
+    try { raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes.bytes)); } catch { return failure("invalid", 400); }
+    const parsed = intentSchema.safeParse(raw);
+    if (!parsed.success) return failure("invalid", 400);
+    const { language, sourceHash } = parsed.data;
+    const caveat = machineTranslationUnavailableReason(language);
+    if (caveat) return reply({ source: "unavailable", language, sourceHash, translated: null, caveat });
+    const service = createServiceRoleClient();
+    // Explicit retries recover their named successor, not an unrelated legacy cache.
+    if (parsed.data.retryOf === undefined) {
+      const cached = await readPublicTranslationCache(service, params.data, parsed.data, request.signal);
+      if (cached !== null) return reply({ source: "cache", language, sourceHash, translated: cached });
     }
-
-    const bodyRead = await readJsonWithLimit(request, BODY_LIMITS.adminTriageJson);
-    if (!bodyRead.ok) return bodyRead.response;
-
-    const parsedBody = bodySchema.safeParse(bodyRead.data);
-    if (!parsedBody.success || !isTranslationLanguage(parsedBody.data.language)) {
-      return NextResponse.json({ error: "Unsupported translation language" }, { status: 400 });
-    }
-    const language = parsedBody.data.language;
-
-    // Some languages this portal RENDERS are deliberately not languages a model
-    // may write. The portal can be published in Diné Bizaad — by people — and a
-    // resident reading it can still be offered every other comment in English;
-    // what they are not offered is a machine's guess at Navajo presented beside
-    // an agency's consultation. `source: "unavailable"` is the shape this route
-    // already uses when translation cannot happen, so the client keeps showing
-    // the original text; only the caveat differs, and it says why.
-    const languageRefusal = machineTranslationUnavailableReason(language);
-    if (languageRefusal) {
-      return NextResponse.json(
-        { source: "unavailable", language, translated: null, caveat: languageRefusal },
-        { status: 200 }
-      );
-    }
-
-    const supabase = createServiceRoleClient();
-    const resolved = await resolveApprovedItem(supabase, audit, parsedParams.data.shareToken, parsedParams.data.itemId);
-    if (!resolved.ok) return resolved.response;
-    const { item } = resolved;
-
-    return await withWorkspaceIntegrationContext(item.workspaceId, async () => {
-      // Cache hit: return without any model call or rate-limit charge.
-      const sourceHash = createHash("sha256").update(JSON.stringify([item.title, item.body])).digest("hex");
-      const cached = readCachedTranslation(item.metadata, language, sourceHash);
-      if (cached !== null) {
-        return NextResponse.json({ source: "cache", language, translated: cached }, { status: 200 });
-      }
-
-      // First (uncached) translation of this (item, language): guard cost against
-      // the DEDICATED public bucket, so this anonymous route can never drain — or
-      // 429-lock-out — the workspace's staff AI allowance.
-      const rateLimit = await checkAiUsageRateLimit(item.workspaceId, {
-        bucketKeys: PUBLIC_ENGAGEMENT_AI_BUCKET_KEYS,
-        max: PUBLIC_ENGAGEMENT_AI_MAX_PER_WINDOW,
-      });
-      if (!rateLimit.allowed) {
-        return NextResponse.json(
-          { error: "Too many translation requests right now. Please try again shortly." },
-          { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds ?? 60) } }
-        );
-      }
-
-      const sourceText = item.title ? `${item.title}\n\n${item.body}` : item.body;
-      const result = await translateEngagementText({ text: sourceText, targetLanguage: language });
-
-      if (result.source !== "ai" || result.translated === null) {
-        // AI-offline / model error → the client keeps showing the original.
-        return NextResponse.json({ source: "unavailable", language, translated: null, caveat: result.caveat }, { status: 200 });
-      }
-
-      // Fire-and-forget spend metering into the DEDICATED public bucket the
-      // check above counts — cache hits returned earlier and are never charged.
-      void recordAiUsageEvent({
-        workspaceId: item.workspaceId,
-        bucketKey: "engagement_public_translation",
-        eventKey: "engagement_public_translation",
-        sourceRoute: "/api/engage/[shareToken]/items/[itemId]/translate",
-        metadataJson: { model: result.model, language },
-        serviceSupabase: supabase,
-      });
-
-      // Cache into metadata_json.ai_translations[lang] via an ATOMIC db-side jsonb
-      // merge (migration 098) rather than a client read-modify-write, so two
-      // concurrent translations of the same comment into different languages can't
-      // clobber each other's cache write. Non-fatal — we still return the
-      // translation the caller just paid for even if the cache write fails.
-      const { error: cacheError } = await supabase.rpc("engagement_cache_reviewed_translation", {
-        p_title: item.title, p_body: item.body, p_source_hash: sourceHash,
-        p_item_id: item.id,
-        p_language: language,
-        p_translation: result.translated,
-      });
-      if (cacheError) {
-        audit.warn("engagement_translation_cache_write_failed", { itemId: item.id, message: cacheError.message });
-      }
-
-      const current = await resolveApprovedItem(supabase, audit, parsedParams.data.shareToken, parsedParams.data.itemId);
-      if (!current.ok) return current.response;
-      if (current.item.title !== item.title || current.item.body !== item.body) return NextResponse.json({ error: "This public copy changed during translation. Reload it." }, { status: 409 });
-      return NextResponse.json({ source: "ai", language, translated: result.translated, caveat: result.caveat }, { status: 200 });
-    });
+    const { created, ...queued } = await queuePublicTranslationGeneration(service, params.data, parsed.data, request.signal);
+    audit.info("public_translation_retained", { requestId: queued.requestId, created, state: queued.state });
+    return reply({ source: "queue", sourceHash, request: queued, created });
   } catch (error) {
-    audit.error("engage_public_translate_unhandled_error", { error });
-    return NextResponse.json({ error: "Unexpected error while translating" }, { status: 500 });
+    audit.warn("public_translation_unconfirmed", { kind: error instanceof PublicTranslationQueueError ? error.kind : "unavailable" });
+    return caught(error);
   }
+}
+
+// GET is recovery only. Missing work, failed reads and terminal failures remain
+// distinct, and neither credential selection nor provider execution occurs here.
+export async function GET(request: NextRequest, context: RouteContext) {
+  try {
+    const params = paramsSchema.safeParse(await context.params);
+    const pairs = [...request.nextUrl.searchParams];
+    if (new Set(pairs.map(([key]) => key)).size !== pairs.length || pairs.some(([key]) => !["language", "sourceHash", "requestId"].includes(key))) return failure("invalid", 400);
+    const parsed = intentSchema.omit({ retryOf: true }).safeParse({ language: request.nextUrl.searchParams.get("language"), sourceHash: request.nextUrl.searchParams.get("sourceHash") });
+    const requestId = z.string().uuid().optional().safeParse(request.nextUrl.searchParams.get("requestId") ?? undefined);
+    if (!params.success || !parsed.success || !requestId.success) return failure("invalid", 400);
+    const { language, sourceHash } = parsed.data;
+    const caveat = machineTranslationUnavailableReason(language);
+    if (caveat) return reply({ source: "unavailable", language, sourceHash, translated: null, caveat });
+    const service = createServiceRoleClient();
+    const saved = await readPublicTranslationGeneration(service, params.data, parsed.data, requestId.data, request.signal);
+    if (saved !== null) return reply({ source: "queue", sourceHash, request: saved });
+    const cached = await readPublicTranslationCache(service, params.data, parsed.data, request.signal);
+    return cached === null ? reply({ source: "missing", sourceHash, language, translated: null }) : reply({ source: "cache", sourceHash, language, translated: cached });
+  } catch (error) { return caught(error); }
 }

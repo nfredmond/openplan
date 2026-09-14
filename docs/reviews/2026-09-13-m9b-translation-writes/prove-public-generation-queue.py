@@ -77,6 +77,10 @@ cases.append(('receipt-ignores-displayed-source', original.replace(snapshot_guar
 left, right = original.rsplit(snapshot_guard, 1)
 cases.append(('lookup-ignores-displayed-source', left + 'NULL;' + right, 'Guard failed: lookup displayed source changed'))
 
+mutate('cache-wrong-original', "cached->>'sourceHash' IS DISTINCT FROM source_hash", 'false', 'Stale original cache leaked')
+mutate('cache-wrong-page', "IF p_snapshot IS NULL OR source IS DISTINCT FROM p_snapshot THEN", 'IF false THEN', 'Guard failed: cache displayed source changed')
+mutate('cache-wrong-language', "metadata_json#>ARRAY['ai_translations',p_locale]", "metadata_json#>ARRAY['ai_translations','es']", 'Cache language substituted')
+
 fixture_run = subprocess.run(['npm', 'exec', '--', 'tsx', str(review / 'generation-queue-fixture.ts')], cwd=review.parents[2] / 'openplan', capture_output=True, text=True, timeout=30)
 assert fixture_run.returncode == 0, fixture_run.stderr
 fixture = json.loads(fixture_run.stdout)

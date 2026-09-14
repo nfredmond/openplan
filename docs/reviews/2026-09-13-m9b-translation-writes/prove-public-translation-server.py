@@ -7,12 +7,16 @@ from pathlib import Path
 import hashlib,json,re,subprocess,time
 review=Path(__file__).resolve().parent
 app=review.parents[2]/'openplan';source=app/'src/lib/engagement/public-translation-generation.ts';test='src/test/public-translation-generation.test.ts'
-original=source.read_text();private=Path('/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-server-controls')/time.strftime('%Y%m%dT%H%M%S');private.mkdir(parents=True,exist_ok=False)
-cases=[('baseline',original,None),('harmless-comment',original+'\n// Harmless server queue control.\n',None)]
+original=source.read_text();contract=app/'src/lib/engagement/public-translation-contract.ts';originals={source:original,contract:contract.read_text()};private=Path('/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-server-controls')/time.strftime('%Y%m%dT%H%M%S');private.mkdir(parents=True,exist_ok=False)
+cases=[('baseline',source,original,None),('harmless-comment',source,original+'\n// Harmless server queue control.\n',None)]
 def mutate(name,old,new,target):
- assert original.count(old)==1,(name,original.count(old));cases.append((name,original.replace(old,new,1),target))
+ matches=[path for path,body in originals.items() if old in body]
+ assert len(matches)==1,(name,matches)
+ path=matches[0];body=originals[path];assert body.count(old)==1,(name,body.count(old));cases.append((name,path,body.replace(old,new,1),target))
 def function_mutation(name,start,end,old,new,target):
- a=original.index(start);b=original.index(end,a);body=original[a:b];assert body.count(old)==1,(name,body.count(old));cases.append((name,original[:a]+body.replace(old,new,1)+original[b:],target))
+ matches=[path for path,body in originals.items() if start in body]
+ assert len(matches)==1,(name,matches)
+ path=matches[0];original=originals[path];a=original.index(start);b=original.index(end,a);body=original[a:b];assert body.count(old)==1,(name,body.count(old));cases.append((name,path,original[:a]+body.replace(old,new,1)+original[b:],target))
 mutate('trim-source', 'source.title, source.body', 'source.title?.trim() ?? null, source.body.trim()', 'preserves null and empty title as different original identities')
 mutate('ignore-original-hash','if (publicTranslationSourceHash(parsed.data) !== intent.sourceHash)', 'if (false)', 'refuses a changed displayed original before looking for a job')
 mutate('ignore-item-identity', ' || parsed.data.itemId !== scope.itemId', '', 'refuses a source from another item')
@@ -35,23 +39,23 @@ function_mutation('strip-unknown-input','export const publicTranslationIntentSch
 function_mutation('strip-private-dto','export const publicTranslationViewSchema', 'export type PublicTranslationView', '}).strict().refine', '}).refine', 'refuses an invalid retained public DTO')
 function_mutation('unsupported-language-before-db','export const publicTranslationIntentSchema', 'export type PublicTranslationIntent', '.refine(supportsMachineTranslation)', '', 'refuses invalid or unsupported intent before database access')
 mutate('publish-incomplete-words', ': value.translated === null);', ': true);', 'refuses an invalid retained public DTO')
-mutate('accept-empty-output', 'value.translated.trim().length > 0', 'true', 'refuses an invalid retained public DTO')
-mutate('accept-oversized-output', '[...value.translated].length <= 8000', 'true', 'refuses an invalid retained public DTO')
-mutate('accept-broken-unicode', 'value.translated.isWellFormed()', 'true', 'refuses an invalid retained public DTO')
-mutate('accept-null-byte', '!value.translated.includes("\\0")', 'true', 'refuses an invalid retained public DTO')
+mutate('accept-empty-output', 'text.trim().length > 0', 'true', 'refuses an invalid retained public DTO')
+mutate('accept-oversized-output', '[...text].length <= 8000', 'true', 'refuses an invalid retained public DTO')
+mutate('accept-broken-unicode', 'text.isWellFormed()', 'true', 'refuses an invalid retained public DTO')
+mutate('accept-null-byte', '!text.includes("\\0")', 'true', 'refuses an invalid retained public DTO')
 results=[]
 try:
- for name,body,expected in cases:
-  assert source.read_text()==original;target=private/(name+'.json');source.write_text(body)
+ for name,path,body,expected in cases:
+  assert all(p.read_text()==v for p,v in originals.items());target=private/(name+'.json');path.write_text(body)
   args=['npm','exec','--','vitest','run',test,'--reporter=json','--outputFile='+str(target)]
   if expected:args+=['-t',re.escape(expected)]
   try:run=subprocess.run(args,cwd=app,text=True,capture_output=True,timeout=30)
-  finally:source.write_text(original)
+  finally:path.write_text(originals[path])
   (private/(name+'.log')).write_text(run.stdout+run.stderr)
   report=json.loads(target.read_text());failed=[a['fullName'] for s in report['testResults'] for a in s['assertionResults'] if a['status']=='failed']
-  correct=run.returncode==0 and report['numPassedTests']==50 if expected is None else run.returncode!=0 and any(expected in f for f in failed)
-  results.append({'case':name,'outcome':'survived' if run.returncode==0 else 'killed','expectedFailure':expected,'failedTests':failed,'expectedOutcome':correct})
+  correct=run.returncode==0 and report['numPassedTests']==57 if expected is None else run.returncode!=0 and any(expected in f for f in failed)
+  results.append({'case':name,'file':str(path.relative_to(app)),'outcome':'survived' if run.returncode==0 else 'killed','expectedFailure':expected,'failedTests':failed,'expectedOutcome':correct})
   print(name,results[-1]['outcome'],'expected' if correct else 'UNEXPECTED',flush=True);assert correct,(name,failed)
 finally:
- assert source.read_text()==original
- (review/'public-translation-server-controls.json').write_text(json.dumps({'sourceSha256':hashlib.sha256(original.encode()).hexdigest(),'testSha256':hashlib.sha256((app/test).read_bytes()).hexdigest(),'privateEvidence':str(private),'results':results,'limits':'Actual server helper and shared packet validation with mocked RPC responses/credential selection. RPC names and source snapshots are asserted. Native SQL, RLS, concurrency, credential encryption, provider execution, HTTP and real browser behavior require separate evidence.'},indent=2)+'\n')
+ assert all(p.read_text()==v for p,v in originals.items())
+ (review/'public-translation-server-controls.json').write_text(json.dumps({'sourceSha256':hashlib.sha256(original.encode()).hexdigest(),'contractSha256':hashlib.sha256(originals[contract].encode()).hexdigest(),'testSha256':hashlib.sha256((app/test).read_bytes()).hexdigest(),'privateEvidence':str(private),'results':results,'limits':'Actual server helper and shared packet validation with mocked RPC responses/credential selection. RPC names and source snapshots are asserted. Native SQL, RLS, concurrency, credential encryption, provider execution, HTTP and real browser behavior require separate evidence.'},indent=2)+'\n')
