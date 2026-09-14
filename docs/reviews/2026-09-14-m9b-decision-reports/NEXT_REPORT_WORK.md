@@ -3,8 +3,8 @@
 Implementation notes from September 14, 2026. The first v0.60 candidate,
 28be41642bd39f41bea6ddaac7a7325419cbd8a0, passed shuffled tests, RLS and
 populated upgrade but failed CI's TypeScript build with an exhausted Node heap.
-Finish the build-memory correction and final CI, then tag/publish v0.60 before
-starting this report work. See RELEASE_VERIFICATION.md and build-heap-results.json.
+The corrected 29c5f7ab passed final checks and is published as v0.60.0.
+Continue this report work; see PUBLICATION.md and build-heap-results.json.
 
 The actual photo runner's mistaken same-title navigation reached a report and
 revealed the context problem. Corrected runner waits for the Engagement catalog

@@ -1,7 +1,8 @@
 # v0.60.0 decision links and public-copy privacy
 
-Prepared September 14, 2026. This is the release candidate record. Final main CI,
-populated upgrade and publication must be recorded before tagging.
+Prepared September 14, 2026. The candidate evidence below retains its original
+sequence and failures. [Publication](PUBLICATION.md) records final passing CI and
+the v0.60.0 tag on 29c5f7ab.
 
 ## What changes
 

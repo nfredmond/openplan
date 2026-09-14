@@ -435,7 +435,7 @@ workflow are not established by synthetic engineering journeys. Historical
 release limitations above remain dated records.
 
 
-## M9b decision links and privacy, v0.60 candidate
+## M9b decision links and privacy, v0.60.0
 
 [Engineering evidence](../reviews/2026-09-14-m9b-decision-reports/RELEASE_VERIFICATION.md)
 covers private retained decision links, interrupted-request recovery, public
