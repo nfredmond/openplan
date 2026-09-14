@@ -42,7 +42,39 @@ checks and final main CI still precede release. User authorizes direct main land
 without PRs or human-review release gates once engineering evidence is satisfied.
 The pending reminder constraint is untouched. Continue the binding v1 roadmap.
 
-## Browser finding and final recovery message fix
+## Recovery acceptance completed on 6604a87e
+
+All six identified browser journeys passed on production build
+`6604a87ee4b3fa3a7b80ebc9d7516d65a96d9f68`, desktop 1440px and mobile 390px.
+The scenarios cover saved links with damaged plus page-held copies, exact retries
+after lost write/resolution acknowledgments, intent/archive quota failures,
+unsaved cancellation and actual late-write refusal, and recovery of damaged
+resolution envelopes followed by their original request. Downloaded originals,
+opaque damaged bytes and server receipt checksums agree. Wrong workspace and
+anonymous recovery are refused. The original link remains unchanged.
+
+`decision-recovery-browser-results.json` identifies the six private evidence
+bundles, screenshots, downloaded checksums and runner hashes. Keyboard focus/Enter
+and Tab traversal were exercised. The expected connection resets remain visible
+in the console; navigation aborted prefetches are recorded separately. Screenshots
+were inspected at both widths. The stale unconfirmed-save warning is absent after
+recovery. The earlier archive-order assumption was a runner defect; current checks
+match retained identities rather than assuming localStorage iteration order.
+
+`decision-recovery-final-checks.json` records final full QA and shuffled seed
+914062: 15,310 passed, 512 skipped, with a successful production build. Applicable
+live isolation passed 541 tests across 59 files, and all 52 Python worker suites
+passed. Native/RLS/worker source did not change with the final message-only fix.
+The current server remains running at port 3262 on the identified 6604a87e build.
+All browser and QA jobs are terminal.
+
+Next land this verified private workflow directly on main, inspect its CI, then
+continue explicit public explanation and campaign report/export lineage. The
+[operator guide](../../ops/ENGAGEMENT_DECISION_LINKS.md) records actual navigation,
+recovery and limits. Full M9b and v1 remain incomplete; no human review gate or
+paid hosting is introduced. Pending reminder constraint remains untouched.
+
+## Earlier browser finding and final recovery message fix
 
 The d3345de3 candidate completed both-width saved-request recovery: two exact
 copies, lost save and resolution acknowledgments, same-resolution replay,

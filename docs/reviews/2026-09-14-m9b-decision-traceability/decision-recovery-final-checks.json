@@ -1,0 +1,46 @@
+{
+  "applicationCommit": "6604a87ee4b3fa3a7b80ebc9d7516d65a96d9f68",
+  "qa": {
+    "exit": 0,
+    "passed": 15310,
+    "skipped": 512,
+    "build": "passed"
+  },
+  "shuffled": {
+    "exit": 0,
+    "seed": 914062,
+    "passed": 15310,
+    "skipped": 512
+  },
+  "rls": {
+    "exit": 0,
+    "passed": 541,
+    "files": 59,
+    "database": "supabase_db_openplan-restore-target-2026091050/postgres",
+    "boundary": "Before message-only UI fix; database and RLS suite unchanged."
+  },
+  "workers": {
+    "exit": 0,
+    "suites": 52,
+    "boundary": "Before message-only UI fix; workers unchanged. Reused existing per-worker .venv311."
+  },
+  "logs": {
+    "recovery-final-qa.log": {
+      "privatePath": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/recovery-final-qa.log",
+      "sha256": "d20ad8b20c13c561405f0b8fcb9b21bc5c5f1b7e6889731fc01f06cf7e2df655"
+    },
+    "recovery-final-shuffled.log": {
+      "privatePath": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/recovery-final-shuffled.log",
+      "sha256": "036822f435d8e083ce2511512b6b78da06a3fe979fa9b256c16a5a44259635b7"
+    },
+    "recovery-full-rls.log": {
+      "privatePath": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/recovery-full-rls.log",
+      "sha256": "45544e8fedbce9fb17413b757fa8f83c3f9399734dca6edaf01df4ec2565d54e"
+    },
+    "recovery-workers-provisioned.log": {
+      "privatePath": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/recovery-workers-provisioned.log",
+      "sha256": "8b8846e4ef3297f09e6fbda5be687dc64e3101c9542080ba6236b86bb2566ac8"
+    }
+  },
+  "limits": "Local engineering evidence. Main CI and release tagging remain separate."
+}

@@ -1,0 +1,231 @@
+{
+  "commit": "6604a87ee4b3fa3a7b80ebc9d7516d65a96d9f68",
+  "base": "http://127.0.0.1:3262",
+  "journeys": [
+    {
+      "journey": "recovery-1440-1789388842586",
+      "width": 1440,
+      "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/recovery-1440-1789388842586.json",
+      "evidenceSha256": "7f8c467811e8bdb57da3764ace21f92e498c28cd689aaf85d784903c05f8c236",
+      "screenshot": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/recovery-1440-1789388842586.png",
+      "screenshotSha256": "224f531131c0d46ae923d8c6efe2742e9c280fbd60f277607fe3d2d9576c8df7",
+      "downloads": [
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/recovery-1440-1789388842586-retained-request.json",
+          "sha256": "a95be64c84382f1fa9947fa5c90094643bcd1c05e947dfa0ee3784838739ca59"
+        },
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/recovery-1440-1789388842586-proposed.json",
+          "sha256": "acf3c93476ce9d4f82669c4a31fff54ff63467553e091b87e5477b1918997774"
+        },
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/recovery-1440-1789388842586-retained-resolution.json",
+          "sha256": "acf3c93476ce9d4f82669c4a31fff54ff63467553e091b87e5477b1918997774"
+        },
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/recovery-1440-1789388842586-archive.json",
+          "sha256": "bb834480b87f6a73908b9a22f1b8562f913562fd6afbd9dc5fbeeceae4bba1ee"
+        }
+      ],
+      "console": {
+        "Failed to load resource: net::ERR_CONNECTION_RESET": 2
+      },
+      "network": {
+        "net::ERR_ABORTED": 128,
+        "net::ERR_CONNECTION_RESET": 2
+      }
+    },
+    {
+      "journey": "recovery-390-1789388867197",
+      "width": 390,
+      "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/recovery-390-1789388867197.json",
+      "evidenceSha256": "dec7b2b0bdb95cb55249a1a9580416b22bf67053ddf3a82e0705cb9c6a3e546f",
+      "screenshot": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/recovery-390-1789388867197.png",
+      "screenshotSha256": "63e9e98286c50c97d1d074424be32c61f6b229d7773c10caa83212a91e8033d4",
+      "downloads": [
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/recovery-390-1789388867197-retained-request.json",
+          "sha256": "b1389ad6eb6d2c6942a7569da6b2bdcc85b77afa0bc382f7fed8b317f9007017"
+        },
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/recovery-390-1789388867197-proposed.json",
+          "sha256": "fc8ff5dfaeff3d69eee1994070a21edef652c6ba8a3e7f5ab12d683f8313a887"
+        },
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/recovery-390-1789388867197-retained-resolution.json",
+          "sha256": "fc8ff5dfaeff3d69eee1994070a21edef652c6ba8a3e7f5ab12d683f8313a887"
+        },
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/recovery-390-1789388867197-archive.json",
+          "sha256": "8227c1898d83710f0d60afab86e4c49a8a68dd7fd62e2d54a51f4299be9b7823"
+        }
+      ],
+      "console": {
+        "Failed to load resource: net::ERR_CONNECTION_RESET": 2
+      },
+      "network": {
+        "net::ERR_ABORTED": 66,
+        "net::ERR_CONNECTION_RESET": 2
+      }
+    },
+    {
+      "journey": "cancellation-1440-1789388888893",
+      "width": 1440,
+      "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/cancellation-1440-1789388888893.json",
+      "evidenceSha256": "d73cff61d68ab51fdea97985b0a51d7bc4054c4ceb635725b495f5defdedf448",
+      "screenshot": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/cancellation-1440-1789388888893.png",
+      "screenshotSha256": "c4bfeeaf8c533ac0ca2c4f7096deb452391ba9c4e21cc9dc7ec1dc6cb5671f24",
+      "downloads": [
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/cancellation-1440-1789388888893-unsaved-request.json",
+          "sha256": "0520f578178bc855900855d0b1fee7b20cd8fa8c3b39748bf7ae678c02de592f"
+        },
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/cancellation-1440-1789388888893-proposed.json",
+          "sha256": "d347a19041083fe2c39390929db42ae11ce913f7d2ddeca45c0a6db2ca187f0a"
+        },
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/cancellation-1440-1789388888893-archive.json",
+          "sha256": "ea7eb7cf079f0ef60e1377329ca5445e0621874d889b5d98484d820b3e80e66e"
+        }
+      ],
+      "console": {
+        "Failed to load resource: net::ERR_CONNECTION_RESET": 1
+      },
+      "network": {
+        "net::ERR_ABORTED": 28,
+        "net::ERR_CONNECTION_RESET": 1
+      }
+    },
+    {
+      "journey": "cancellation-390-1789388898582",
+      "width": 390,
+      "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/cancellation-390-1789388898582.json",
+      "evidenceSha256": "9e68cfdb05897c57ef5541941eb69d2ee39ada8e05b439536c923d6fda85d6ff",
+      "screenshot": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/cancellation-390-1789388898582.png",
+      "screenshotSha256": "d3c7f75613432a979f8ace1edee070b0292500807d48c94260f2de128470315c",
+      "downloads": [
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/cancellation-390-1789388898582-unsaved-request.json",
+          "sha256": "d548a1443e1bb373a807e41a88ea46982343c9dbb1418f56a72770dfd9690969"
+        },
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/cancellation-390-1789388898582-proposed.json",
+          "sha256": "1daf8b9b078aca2d2d4fdbc614cb601d5ed98eddcdc42597f930a376ab52035b"
+        },
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/cancellation-390-1789388898582-archive.json",
+          "sha256": "0be39e8fd76b6ae0d6fb75623737f7bab680d7ca4ff0fdb35b4038f7ff0dfa6b"
+        }
+      ],
+      "console": {
+        "Failed to load resource: net::ERR_CONNECTION_RESET": 1
+      },
+      "network": {
+        "net::ERR_ABORTED": 23,
+        "net::ERR_CONNECTION_RESET": 1
+      }
+    },
+    {
+      "journey": "damaged-resolution-1440-1789388893148",
+      "width": 1440,
+      "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/damaged-resolution-1440-1789388893148.json",
+      "evidenceSha256": "aa0466b6099640d53f8005dd56ec95c095b9e169fa4c2e0f6faf4e35ffa684bf",
+      "screenshot": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/damaged-resolution-1440-1789388893148.png",
+      "screenshotSha256": "cc105d43ead247e691a4fea31bd74a220a7f2de51d1ba07764f1cba62a2d2aa7",
+      "downloads": [
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/damaged-resolution-1440-1789388893148-unsaved-request.json",
+          "sha256": "86cda2398245702dbda5550f790843ed57b8cdf61f7d3fa5def272921b4aeb34"
+        },
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/damaged-resolution-1440-1789388893148-proposed.json",
+          "sha256": "cdca09143c41974f5ca75e1cdeb6067dda7e4dc29ab07619c4579dafbf6116d8"
+        },
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/damaged-resolution-1440-1789388893148-damaged-resolution-proposed.json",
+          "sha256": "7fb564bad260fb4b9d14edece5888eb22699476784b6f6b739282b586e76179c"
+        },
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/damaged-resolution-1440-1789388893148-damaged-resolution-archive.json",
+          "sha256": "9c148b6dc5b44463ba3b63a4d3a9defab4544e980c13af6d2891da3f8d581828"
+        },
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/damaged-resolution-1440-1789388893148-original-proposed.json",
+          "sha256": "509f23ee87e202639e89e1e263c57b6f993f02b22a60c73080bcebc49f9035a6"
+        },
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/damaged-resolution-1440-1789388893148-complete-archive-1.json",
+          "sha256": "9c148b6dc5b44463ba3b63a4d3a9defab4544e980c13af6d2891da3f8d581828"
+        },
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/damaged-resolution-1440-1789388893148-complete-archive-2.json",
+          "sha256": "fed7645c6cc5420c456ed04573e5638382a0af0519f4b82a753fcd244472c755"
+        }
+      ],
+      "console": {
+        "Failed to load resource: net::ERR_CONNECTION_RESET": 1
+      },
+      "network": {
+        "net::ERR_ABORTED": 59,
+        "net::ERR_CONNECTION_RESET": 1
+      }
+    },
+    {
+      "journey": "damaged-resolution-390-1789388902597",
+      "width": 390,
+      "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/damaged-resolution-390-1789388902597.json",
+      "evidenceSha256": "81c82b333da2db2085d6c42fc0e6569269d15bc7627b52558993cbbcc8d6ac12",
+      "screenshot": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/damaged-resolution-390-1789388902597.png",
+      "screenshotSha256": "efc431edb0df71c1e1549263f8bf88bb38dc58f5ed778ff39176ce7e1a6c0538",
+      "downloads": [
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/damaged-resolution-390-1789388902597-unsaved-request.json",
+          "sha256": "36ed1f09925d89cdd6d9c52c30787db944183a9d48c3e646aea9ffd5ce0705b0"
+        },
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/damaged-resolution-390-1789388902597-proposed.json",
+          "sha256": "711ecb2c50ce2dec64d6b4a497acd29f7717b5e5b1d284234d16953258247d6c"
+        },
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/damaged-resolution-390-1789388902597-damaged-resolution-proposed.json",
+          "sha256": "008d639e2a4b2873119b30aaac8e119c33fa81caa633da1b91a825201a1866d1"
+        },
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/damaged-resolution-390-1789388902597-damaged-resolution-archive.json",
+          "sha256": "757701f77f047f6dc50f1ca0fbaa1d590b6791c60ecd6f5406f8915d48e36b76"
+        },
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/damaged-resolution-390-1789388902597-original-proposed.json",
+          "sha256": "9a6acb00f6d8ee07392fe3cdda17aa951fa2218d1491f9f4c513cdb3d15aa30a"
+        },
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/damaged-resolution-390-1789388902597-complete-archive-1.json",
+          "sha256": "c628c80826201ad53a318f16da879e7df940c54fbdf9bcf8c6d524661763cc44"
+        },
+        {
+          "file": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/damaged-resolution-390-1789388902597-complete-archive-2.json",
+          "sha256": "757701f77f047f6dc50f1ca0fbaa1d590b6791c60ecd6f5406f8915d48e36b76"
+        }
+      ],
+      "console": {
+        "Failed to load resource: net::ERR_CONNECTION_RESET": 1
+      },
+      "network": {
+        "net::ERR_ABORTED": 23,
+        "net::ERR_CONNECTION_RESET": 1
+      }
+    }
+  ],
+  "runners": {
+    "decision-recovery-browser.cjs": "161dc54dcbe5f6613fe45590d80b068656e8f6678517e6929f151199bd1e247e",
+    "decision-cancellation-browser.cjs": "280d16b4b69a9f471f105a0c8d017188fd206a25b9e5c85efd9c9e53a71d4566",
+    "decision-damaged-resolution-browser.cjs": "7273d61107183bd2902a434d55ae1c0a09b9ab982b35fff52d0a993d93e7b8da"
+  },
+  "limits": [
+    "Synthetic staff cases from real navigation, not observed agency work or usability research.",
+    "Deliberate connection resets appear in the console; other failed requests are navigation-aborted prefetches.",
+    "Private link/recovery only. Public explanation and report/export lineage remain open.",
+    "Browser storage has no atomic cross-tab compare-and-swap; observed originals and readbacks are checked."
+  ]
+}
