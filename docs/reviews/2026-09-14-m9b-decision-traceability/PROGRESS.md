@@ -1,5 +1,62 @@
 # Response-to-decision context in progress
 
+## Usage-reset handoff, September 14
+
+Resume in `/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13`,
+branch `work/engagement-decision-traceability`. Another session owns the original
+checkout. This checkpoint saves unfinished work on the existing work branch;
+it is not a PR or a release. Continue directly to main after fixing and checking
+the integration. The full V1 goal, local/free operation and no human release
+gate remain unchanged. Do not touch the pending reminder constraint.
+
+Remote main was `24f0dc9f` at this handoff. Its CI `34827922723` and RLS
+`34827922744` previously completed successfully. Local `dc6e4fcd` adds the HTTP
+implementation, but full QA failed with 15161 tests passing, 504 skipped and two
+failures: the workspace role inventory does not recognize `decisionLinkAccess`,
+and the new routes have no UI caller. Later QA stages were not reached. Logs are
+under `/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/full-qa-dc6e4fcd.log`.
+Do not describe this checkpoint as QA-green or push it onto main as complete.
+
+The final two edits are unfinished and have not been tested: the role inventory
+now recognizes the helper and its underlying `loadCampaignAccess` invocation;
+`pending-decision-link.ts` retains exact actor/workspace/campaign/request recovery
+copies and validates receipts before deleting them. These edits need focused
+tests, harmless controls and targeted failures. Do not remove the caller check
+or add an exemption. Implement the actual reachable editor instead.
+
+Next connect a decision-links panel to `EngagementCloseLoopBuilder`, passing
+`campaign.workspace_id` from the actual campaign page. Use the existing GET
+history, GET context and POST routes. The context response is `{packet,actorId}`.
+Review source context before link/refresh, retain the exact request before POST,
+retry the same ID after lost acknowledgments, preserve original context on
+withdrawal, and keep corrupt recovery bytes visible. Project decisions already
+exist in Projects; project display names use `name`. Do not create another module.
+No editor, application migration or browser acceptance exists yet.
+
+A further native grant/malformed-input probe is saved privately at
+`/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/prove-command-boundaries.py`,
+with `command-boundaries/results.json` beneath that directory. Its baseline,
+harmless control and five targeted cases reached their expected outcomes. The
+first anonymous-grant mutation survived because its argument queried a fixture
+table before the command ran; the corrected fixture supplies that argument from
+a preloaded setting. Move the reusable probe/evidence into this review folder,
+document that test gap and rerun as needed. Do not mistake it for browser proof.
+
+Application stack `supabase_db_openplan-restore-target-2026091050`, database
+`postgres`, remains at 339 migrations through `20261014000020`. Candidates are
+installed only in disconnected `openplan_decision_link_proof_20260914` on that
+container. Never attach PostgREST or workers to that proof database, recreate it,
+or reset either database. Existing port 3260 serves the older isolated 5a93ae99
+build; identify any new served build with `which-openplan.sh` before acceptance.
+Recheck processes after the reset. Do not assume shell sessions or servers survived.
+
+After editor implementation, finish additive migration/RLS, desktop and 390px
+real navigation, keyboard/console checks, recovery, explicit public explanation
+without private-field leakage and export/report lineage. Run applicable full QA,
+shuffled, worker, upgrade and isolated RLS checks, then inspect CI on the final
+release commit before tagging. v0.59.0 is the existing published release; this
+work does not yet close M9b.
+
 ## Current history and HTTP checkpoint
 
 Private history and HTTP integration now exist in addition to the original
