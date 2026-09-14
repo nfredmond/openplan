@@ -2,6 +2,22 @@
 
 Current checkpoint, September 14, 2026. This supersedes earlier resume instructions. Continue the active goal through the full V1 product contract. No draft PRs, paid resources, destructive resets, reminder-constraint changes or human release gates. Verified work lands directly on main. This development checkpoint is backed up on the existing work branch and is not a release.
 
+## Latest pause checkpoint: September 14, after browser failure
+
+This section supersedes the older progress and process descriptions below. The user asked to preserve continuity before the weekly usage reset. Do not restart planning or repeat completed suites without a new reason.
+
+Source checkpoint 24c72d1f4cbdd4f03789e79c558c9949e24c3eca is pushed to work/engagement-decision-traceability. Remote main remains 0ce1fb8b0823ab197616a4323b5c9bc974133586. This follow-up saves the corrected combobox locators and prepared legacy browser runner; both pass node --check. The legacy runner has not run. No new release is claimed.
+
+All four local gates on 24c72d1f completed successfully: full QA 15,360 passed / 533 skipped with production build; shuffled seed 260914, 15,360 passed / 533 skipped; isolated live RLS 562 passed in 61 files; workers 52 suites passed. Logs in the private evidence base are report-history-full-qa-24c72d1f.log, report-history-shuffled-24c72d1f.log, report-history-full-rls-24c72d1f.log and report-history-workers-24c72d1f.log. Installed live CI coverage is now implemented (10 cases); do not add it again. Final release-commit GitHub CI and Upgrade Path remain pending.
+
+Desktop navigation on identified build 24c72d1f4cbd created the source and decision history, recovered lost link and queue responses, and downloaded the original PDF/XLSX/ZIP with matching retained hashes. The corrected report then failed with Unsupported campaign snapshot. Root cause remains unknown. Do not claim full browser acceptance. The 390px journey, withdrawal/public packets and legacy runner still need execution. The first desktop failure was only a scope-combobox locator mismatch; retain that capture separately.
+
+Immediate next action: diagnose failed corrected job e0de5cb6-7773-46a6-9721-7b00996074e2 against successful original job 951b3d6a-d0f3-46f8-ac3d-27255c0eff7b. Campaign 6611198f-3743-4a70-a5c7-295eb727566b; original report e6624a9c-1c58-456e-9be0-0f616dd68d6b. Private browser evidence prefix browser/report-history-1440-1789405349029 includes downloaded original files and failed-job capture. Verify stored snapshot arrays and campaign ID, then run the current parser against the exact retained bytes. Search all Unsupported campaign snapshot emitters. Preserve original files and failed snapshot; never fabricate a replacement.
+
+Worker inventory correction: modern Node processes are named MainThread. Filtering only node missed an older worker. At this checkpoint PID 2148105 and PID 4038996 BOTH have this isolated app as cwd and run document-exports.ts. PID 2541 belongs to the demo /home/nathaniel/apps/openplan/openplan and must remain untouched. A stale worker is a hypothesis, not a diagnosed cause. Recheck startup time, parent/process ownership and code version before stopping anything. Our new worker was exec session 58874, log report-history-browser-worker.log; own identified server on port 3262 was exec session 35026, log report-history-server-24c72d1f.log. No runner is active. Tool handles and processes may expire across reset; do not rely on them surviving.
+
+After diagnosis, finish desktop/390px exact-file/history/privacy/retry acceptance, visually inspect browser-created files, update release metadata for v0.61, land directly on main, inspect final CI, then tag. Continue the complete V1 contract afterward. Do not confuse this saved development branch with a PR or a release. Keep other checkout ownership and reminder constraints intact.
+
 ## Checkout and ownership
 
 Use /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13, package openplan/, branch work/engagement-decision-traceability. Another live Codex PID 3081751 owns /home/nathaniel/code/openplan; leave it read-only until ownership is rechecked. Our session PID is 988312. Recheck all processes, remote main, working changes and browser identity before continuing.

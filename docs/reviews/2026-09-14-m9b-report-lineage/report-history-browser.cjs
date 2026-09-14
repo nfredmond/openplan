@@ -53,9 +53,9 @@ try{
    return {downloaded,archive,layout};
   }
   async function prepare(label,scope,expected,interrupt=false){
-   await click(page,page.getByTestId('page-tabs-nav').getByRole('link',{name:'Record',exact:true}));await expect(fileSection.getByLabel('Disclosure scope',{exact:true})).toBeVisible();
-   await fileSection.getByLabel('Disclosure scope',{exact:true}).selectOption(scope);
-   if(scope==='internal')await fileSection.getByLabel('Review status',{exact:true}).selectOption('all');
+   await click(page,page.getByTestId('page-tabs-nav').getByRole('link',{name:'Record',exact:true}));await expect(fileSection.getByRole('combobox',{name:'Disclosure scope',exact:true})).toBeVisible();
+   await fileSection.getByRole('combobox',{name:'Disclosure scope',exact:true}).selectOption(scope);
+   if(scope==='internal')await fileSection.getByRole('combobox',{name:'Review status',exact:true}).selectOption('all');
    await fileSection.getByLabel('Received from, UTC',{exact:true}).fill(scope==='internal'?'2100-01-01':'');
    await expect(fileSection.getByText(/Internal files also retain the entire consultation decision history/)).toHaveCount(scope==='internal'?1:0);
    await fileSection.getByRole('button',{name:'Prepare PDF, XLSX and ZIP',exact:true}).scrollIntoViewIfNeeded();await page.screenshot({path:prefix+`-${label}-prepare.png`});
