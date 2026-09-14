@@ -14,7 +14,7 @@ import {
 } from "@/lib/engagement/pending-synthesis-source";
 import { SynthesisSourceInspection } from "./synthesis-source-inspection";
 import { SynthesisReviewEditor } from "./synthesis-review-editor";
-import { readReviewWorkingCopy } from "@/lib/engagement/synthesis-review-recovery";
+import { readReviewWorkingCopy, type ReviewWorkingCopy } from "@/lib/engagement/synthesis-review-recovery";
 
 const inspectionSchema = z.object({
   requestId: z.string().uuid(), campaignId: z.string().uuid(), workspaceId: z.string().uuid(),
@@ -47,8 +47,16 @@ function SourcePanel({ userId, workspaceId, campaignId, categories }: SynthesisC
   const [inspection, setInspection] = useState<Inspection | null>(null), [openId, setOpenId] = useState<string | null>(null);
   const [readError, setReadError] = useState<string | null>(null), [reading, setReading] = useState(false);
   const [accessLost, setAccessLost] = useState(false);
+  // Revalidation unmounts private inspectors. Keep quota-failed edits within this account/campaign until the user can preserve them.
+  const reviewMemories = useRef(new Map<string, { current: ReviewWorkingCopy | null }>());
+  function reviewMemory(saved: Inspection) {
+    const key = `${saved.requestId}:${saved.snapshotSha256}`;
+    let memory = reviewMemories.current.get(key);
+    if (!memory) { memory = { current: null }; reviewMemories.current.set(key, memory); }
+    return memory;
+  }
   const openIdRef = useRef<string | null>(null);
-  const loseReviewAccess = useCallback(() => { setAccessLost(true); setInspection(null); setEntries(null); setPending(null); setNotice(null); }, []);
+  const loseReviewAccess = useCallback(() => { reviewMemories.current.clear(); setAccessLost(true); setInspection(null); setEntries(null); setPending(null); setNotice(null); }, []);
   const epoch = useRef(0), readSequence = useRef(0), listSequence = useRef(0), sending = useRef(false);
   const endpoint = `/api/engagement/campaigns/${campaignId}/synthesis/sources`;
 
@@ -97,6 +105,7 @@ function SourcePanel({ userId, workspaceId, campaignId, categories }: SynthesisC
     const client = createClient();
     const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
       if (session?.user.id !== userId) {
+        reviewMemories.current.clear();
         epoch.current++; setAccessLost(true); setInspection(null); setEntries(null); setPending(null); setNotice(null);
       }
     });
@@ -130,6 +139,8 @@ function SourcePanel({ userId, workspaceId, campaignId, categories }: SynthesisC
 
   function reviewRecoveryLabel(entry: SynthesisSourceListEntry) {
     try {
+      const unsaved = reviewMemories.current.get(`${entry.requestId}:${entry.snapshotSha256}`)?.current;
+      if (unsaved?.draft || unsaved?.pending) return "Staff review recovery in this browser needs attention";
       const recovery = readReviewWorkingCopy(localStorage, { userId, workspaceId, campaignId, sourceId: entry.requestId, sourceSha256: entry.snapshotSha256 });
       return recovery.draft || recovery.pending ? "Unfinished staff review in this browser" : null;
     } catch { return "Staff review recovery in this browser needs attention"; }
@@ -162,6 +173,6 @@ function SourcePanel({ userId, workspaceId, campaignId, categories }: SynthesisC
     <ul className="space-y-3">{entries?.map(entry => <li key={entry.requestId} className="rounded border p-3 space-y-2"><p>{new Date(entry.createdAt).toLocaleString()} · {entry.counts.items} comments · {entry.counts.sessions} survey responses · {entry.counts.answers} answers</p><p className="text-xs">Statuses: {entry.selection.statuses.join(", ")}</p><p className="text-sm font-medium">{reviewRecoveryLabel(entry)}</p><Button type="button" variant="outline" onClick={() => void inspect(entry.requestId)}>Open saved source {entry.requestId.slice(0, 8)}</Button></li>)}</ul>
     {cursor ? <Button type="button" variant="outline" disabled={listing} onClick={() => void list(cursor)}>Load older sources</Button> : null}
     {reading ? <p role="status">Opening retained source…</p> : null}{readError ? <div><p role="alert">{readError}</p>{openId ? <Button type="button" variant="outline" onClick={() => void inspect(openId)}>Retry opening saved source</Button> : null}</div> : null}
-    {inspection ? <div key={inspection.requestId} className="space-y-4"><SynthesisSourceInspection snapshot={inspection.snapshot} sha256={inspection.snapshotSha256} /><SynthesisReviewEditor userId={userId} workspaceId={workspaceId} campaignId={campaignId} sourceId={inspection.requestId} sourceSha256={inspection.snapshotSha256} snapshot={inspection.snapshot} onAccessLost={loseReviewAccess} /></div> : null}
+    {inspection ? <div key={inspection.requestId} className="space-y-4"><SynthesisSourceInspection snapshot={inspection.snapshot} sha256={inspection.snapshotSha256} /><SynthesisReviewEditor userId={userId} workspaceId={workspaceId} campaignId={campaignId} sourceId={inspection.requestId} sourceSha256={inspection.snapshotSha256} snapshot={inspection.snapshot} onAccessLost={loseReviewAccess} recoveryMemory={reviewMemory(inspection)} /></div> : null}
   </section>;
 }

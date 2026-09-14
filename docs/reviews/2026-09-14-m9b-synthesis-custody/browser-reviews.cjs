@@ -124,8 +124,40 @@ async function click(page, locator) { await expect(locator).toBeVisible(); await
   await saved.getByLabel('Reason for correction', { exact: true }).fill('SYNTHETIC keep the distinct concern visible without dropping its source.');
   await click(page, saved.getByRole('button', { name: 'Save reasoned correction', exact: true }));
   await expect(saved.getByRole('heading', { name: /revision 4$/ })).toBeVisible();
-  const final = await read(); assert.equal(final.content.assignedSourceCount, total); assert.deepEqual(final.content.unassignedSourceIds, []);
+  let final = await read(); assert.equal(final.content.assignedSourceCount, total); assert.deepEqual(final.content.unassignedSourceIds, []);
   assert(final.content.groups.some(group => group.sourceIds.length === 1 && group.sourceIds[0] === memberId));
+  const quotaNotes = `SYNTHETIC latest quota-failed review text ${width} ${crypto.randomUUID()}`;
+  await page.evaluate(() => {
+   window.__reviewQuota = { original: Storage.prototype.setItem, failures: 0, focusEvents: 0 };
+   window.addEventListener('focus', () => { window.__reviewQuota.focusEvents++; });
+   Storage.prototype.setItem = function(key, value) {
+    if (key.startsWith('openplan:synthesis-review:') && window.__reviewQuota.failures === 0) { window.__reviewQuota.failures++; throw new DOMException('SYNTHETIC quota refusal', 'QuotaExceededError'); }
+    return window.__reviewQuota.original.call(this, key, value);
+   };
+  });
+  try { await saved.getByLabel('Staff review notes', { exact: true }).fill(quotaNotes); }
+  finally { await page.evaluate(() => { Storage.prototype.setItem = window.__reviewQuota.original; }); }
+  assert.equal(await page.evaluate(() => window.__reviewQuota.failures), 1);
+  await expect(saved.getByLabel('Staff review notes', { exact: true })).toHaveValue(quotaNotes);
+  await expect(saved.getByRole('button', { name: 'Save reasoned correction', exact: true })).toBeDisabled();
+  const beforeFocus = await page.evaluate(() => window.__reviewQuota.focusEvents);
+  const elsewhere = await context.newPage(); await elsewhere.goto('about:blank'); await elsewhere.bringToFront(); await page.bringToFront();
+  await expect.poll(() => page.evaluate(() => window.__reviewQuota.focusEvents)).toBeGreaterThan(beforeFocus);
+  await expect(saved.getByLabel('Staff review notes', { exact: true })).toHaveValue(quotaNotes);
+  await expect(saved.getByRole('button', { name: 'Save reasoned correction', exact: true })).toBeDisabled();
+  await saved.getByLabel('Staff review notes', { exact: true }).scrollIntoViewIfNeeded(); await page.screenshot({ path: prefix + '-quota-refocus.png' });
+  await elsewhere.close();
+  await click(page, reviews.getByRole('button', { name: 'Preserve edit and start another correction', exact: true }));
+  const copies = reviews.getByRole('region', { name: 'Preserved review recovery copies' });
+  await click(page, copies.getByText('Preserved correction to revision 4', { exact: true }).last());
+  await expect(copies.getByText(quotaNotes, { exact: false })).toBeVisible();
+  await click(page, copies.getByRole('button', { name: 'Restore preserved edit', exact: true }).last());
+  await expect(saved.getByLabel('Staff review notes', { exact: true })).toHaveValue(quotaNotes);
+  await saved.getByLabel('Reason for correction', { exact: true }).fill('SYNTHETIC preserved and restored after storage refusal and real tab refocus.');
+  await click(page, saved.getByRole('button', { name: 'Save reasoned correction', exact: true }));
+  await expect(saved.getByRole('heading', { name: /revision 5$/ })).toBeVisible();
+  final = await read(); assert.equal(final.content.notes, quotaNotes); assert.equal(final.content.assignedSourceCount, total);
+  observed.quotaRecovery = { failureInjected: true, actualFocusEvents: await page.evaluate(() => window.__reviewQuota.focusEvents), preservedAndRestored: true, revision: 5 };
   await saved.getByRole('heading', { level: 4 }).scrollIntoViewIfNeeded(); await page.screenshot({ path: prefix + '-corrected.png' });
   await click(page, saved.getByRole('button', { name: 'Open revision 1', exact: true }));
   await expect(saved.getByRole('heading', { name: /revision 1$/ })).toBeVisible();

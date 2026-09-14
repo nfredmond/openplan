@@ -188,6 +188,23 @@ describe("retained staff review editor", () => {
     act(() => window.dispatchEvent(new Event("focus")));
     expect(await screen.findByDisplayValue("SYNTHETIC focus recovery")).toBeTruthy();
   });
+  it.each(["focus", "storage"])("keeps quota-failed text through %s revalidation until it can be preserved", async event => {
+    seed(); render(<EngagementSynthesisSources userId={scope.userId} workspaceId={scope.workspaceId} campaignId={scope.campaignId} categories={[]} />);
+    fireEvent.click(await screen.findByRole("button", { name: /Open saved source/ }));
+    fireEvent.click(await screen.findByRole("button", { name: /Open staff review/ }));
+    const originalSet = Storage.prototype.setItem;
+    vi.spyOn(Storage.prototype, "setItem").mockImplementationOnce(() => { throw new Error("SYNTHETIC quota failure"); }).mockImplementation(originalSet);
+    fireEvent.change(await screen.findByLabelText("Staff review notes"), { target: { value: "SYNTHETIC newest text after quota refusal" } });
+    expect(screen.getByLabelText("Staff review notes")).toHaveValue("SYNTHETIC newest text after quota refusal");
+    act(() => window.dispatchEvent(new Event(event)));
+    expect(await screen.findByDisplayValue("SYNTHETIC newest text after quota refusal")).toBeTruthy();
+    expect(screen.getByText("Staff review recovery in this browser needs attention")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: /Open staff review/ }));
+    expect(await screen.findByDisplayValue("SYNTHETIC newest text after quota refusal")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Save reasoned correction" })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Preserve edit and start another correction" }));
+    expect(listPreservedReviewCopies(localStorage, scope).some(row => row.value?.draft?.notes === "SYNTHETIC newest text after quota refusal")).toBe(true);
+  });
   it("does not restore a late private response after the source scope unmounts", async () => {
     seed(); let resolve: (response: Response) => void = () => undefined;
     transport.mockImplementation((url, options) => String(url).includes("mode=read") ? new Promise<Response>(done => { resolve = done; }) : server(url, options));

@@ -1,3 +1,17 @@
+# Current recovery fix and remaining browser acceptance
+
+September 14, 2026. This section supersedes earlier checkpoints. Work remains in `/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13`, application `openplan/`, branch `work/engagement-decision-traceability`. Main remains 09c1cd17, latest published v0.61.1. No PR, main push or release is created by this checkpoint.
+
+The connected review editor/API exists. Full QA on 33b9474f passed 15,490 tests, 583 explicitly skipped, and completed lint, dead-code, provider connector, audit and production build. Full installed isolation passed 612 tests in 64 files against the named stack at API 29821/DB 29822 with 346 migrations. All 52 worker suites passed. GitHub populated upgrade from v0.61.1 passed in run 34901731600. Read REVIEW_UI_VERIFICATION.md and review-connected-checks.json for precise evidence and original runner errors.
+
+A subsequent combined regression exposed loss of quota-failed text after focus/storage revalidation. This checkpoint fixes it with source-scoped on-screen recovery while private inspectors revalidate. Reopening history cannot overwrite that text, and its source history shows recovery needs attention. Leaving/reloading with unavailable storage still requires preserving or copying the text; memory is not disk durability. Focused tests now total 25. All 42 mutation cases produced expected outcomes, source hashes were restored, and changed-file lint passed. Browser/database/worker permissions were not widened.
+
+Next run shuffled seed 619144 and full QA for this fix, then start an owned production server on confirmed-free 3262 with this candidate commit recorded. Identify it with which-openplan.sh. Existing .next was built from 33b9474f and does not include the latest recovery fix. Run browser-reviews.cjs at 1440 and 390, inspect screenshots and console, then browser-review-concurrency.cjs with PROBE_REVIEW pointing at a completed journey. The browser runner now forces storage failure and real tab switching in addition to exact interrupted retries, original/corrected hashes and membership correction. It has not yet been run for this implementation. Fix any demonstrated defect before landing directly on main. Final main/release CI remains required before tagging.
+
+Do not rerun mutation scripts while building or testing their production files. Recheck live handles/processes after any interruption. Remaining M9b work includes exact-output approval, optional resumable generation, response/decision links and reviewed exports; the complete V1 goal remains active. Keep the original checkout and pending reminder constraint untouched.
+
+---
+
 # Weekly usage checkpoint — September 14, 2026
 
 This section supersedes all historical status below. The connected review editor and recovery work is saved by this checkpoint commit on `work/engagement-decision-traceability` in `/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13`. Main and release are not advanced by this checkpoint. No PR is needed or authorized.

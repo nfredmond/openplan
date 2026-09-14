@@ -1,0 +1,44 @@
+{
+  "commit": "33b9474fa70baeea9a2faa3f3ff3630e171aac70",
+  "qa": {
+    "passed": 15490,
+    "skipped": 583,
+    "filesPassed": 1323,
+    "filesSkipped": 57,
+    "build": "passed",
+    "rlsInQa": "explicitly skipped; separately executed"
+  },
+  "installedRls": {
+    "passed": 612,
+    "files": 64,
+    "seconds": 590.56,
+    "stack": "supabase_db_openplan-restore-target-2026091050",
+    "migrationCount": 346
+  },
+  "workers": {
+    "suitesPassed": 52,
+    "skipped": 0
+  },
+  "upgrade": {
+    "run": 34901731600,
+    "base": "v0.61.1",
+    "conclusion": "success"
+  },
+  "laterRegression": {
+    "case": "quota failure followed by focus/storage revalidation",
+    "before": "two tests fail",
+    "after": "25 focused tests pass",
+    "finalMutationProof": "running",
+    "browserAcceptance": "pending",
+    "finalQaShuffle": "pending"
+  },
+  "logsSha256": {
+    "openplan-review-full-rls.log": "9606ad54ee408c0bca6bdef73eaa20625f0c6834f1b0c5592c5343c16bc13cd8",
+    "openplan-review-full-qa-corrected.log": "b9420e81f2eaf1b697a77f0ab094fc46572127e60462044e15181257f6f70d67",
+    "openplan-review-upgrade.log": "860cf30511b86a336c0b029f3c36a3f0d4aa62928d32df7fdc49acfb69c5d5fd",
+    "openplan-review-quota-focus-before.log": "7d284002b75ab54aed71dbcb4e5b4b1ddb8146f31c72ef01d67219799cb57ede",
+    "openplan-review-quota-focus-after.log": "c8063282f9677c3d4cd4d8d0486cb39b319a145ec646db54c57e0bcce978fe1e",
+    "openplan-review-ui-copy-tests.log": "d0abd64459b9323e2bc3c0038293464fedf8c53742f7fe6746959f3354a344e6",
+    "openplan-review-ui-copy-tests-corrected.log": "832690a75b3e4a4b8d107b7bd3b64be1f313ed1b504250fcbc4c1f03d995e1eb"
+  }
+}

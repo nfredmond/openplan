@@ -74,8 +74,13 @@ fault('ignore-membership-addition', editor, '[...current.members, row.id]', 'cur
 fault('hide-source-recovery-notice', parent, 'return recovery.draft || recovery.pending ?', 'return false ?', 'retries the exact command')
 fault('lose-focus-reopening', parent, 'if (requestId) void inspect(requestId);', '', 'reopens the selected source after focus')
 fault('lose-review-connection', parent,
-      '<SynthesisReviewEditor userId={userId} workspaceId={workspaceId} campaignId={campaignId} sourceId={inspection.requestId} sourceSha256={inspection.snapshotSha256} snapshot={inspection.snapshot} onAccessLost={loseReviewAccess} />',
+      '<SynthesisReviewEditor userId={userId} workspaceId={workspaceId} campaignId={campaignId} sourceId={inspection.requestId} sourceSha256={inspection.snapshotSha256} snapshot={inspection.snapshot} onAccessLost={loseReviewAccess} recoveryMemory={reviewMemory(inspection)} />',
       '', 'creates a retained review from the real saved-source panel')
+
+fault('lose-quota-failed-memory', editor, 'recoveryMemory.current = value;', '', 'keeps quota-failed text')
+fault('overwrite-quota-failed-edit-on-history-open', editor, 'if (!blocked) update(', 'update(', 'keeps quota-failed text')
+fault('hide-quota-recovery-notice', parent, 'if (unsaved?.draft || unsaved?.pending)', 'if (false)', 'keeps quota-failed text')
+fault('disconnect-source-recovery-memory', parent, ' recoveryMemory={reviewMemory(inspection)}', '', 'keeps quota-failed text')
 
 # Both read and write refusals must clear the standalone editor, even before its parent unmounts it.
 cases.append(('render-after-access-refusal', [(editor, 'setAccessLost(true); onAccessLost();', 'onAccessLost();')], ['hides private content']))
@@ -93,7 +98,7 @@ try:
         run = subprocess.run(['npm', 'exec', '--', 'vitest', 'run', *tests, '--reporter=json'], cwd=app, text=True, capture_output=True, timeout=60)
         data = json.loads(run.stdout[run.stdout.index('{'):])
         failed = [a['fullName'] for f in data['testResults'] for a in f['assertionResults'] if a['status'] == 'failed']
-        ok = data['numTotalTests'] == 23 and data['numPendingTests'] == 0 and (
+        ok = data['numTotalTests'] == 25 and data['numPendingTests'] == 0 and (
             run.returncode == 0 and not failed if not expected else run.returncode == 1 and all(any(e in f for f in failed) for e in expected))
         results.append({'case': name, 'exitCode': run.returncode, 'failed': failed, 'expectedOutcome': ok})
         print(json.dumps(results[-1]), flush=True)

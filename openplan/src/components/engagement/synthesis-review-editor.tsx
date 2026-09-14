@@ -11,7 +11,7 @@ import type { SynthesisSourceSnapshot } from "@/lib/engagement/synthesis-sources
 type SavedReview = SynthesisReviewRecord & { content: SynthesisReviewContent };
 type ReviewPage = z.infer<typeof synthesisReviewListSchema>;
 type RevisionPage = z.infer<typeof synthesisReviewRevisionListSchema>;
-type Props = ReviewClientScope & { snapshot: SynthesisSourceSnapshot; onAccessLost: () => void };
+type Props = ReviewClientScope & { snapshot: SynthesisSourceSnapshot; onAccessLost: () => void; recoveryMemory?: { current: ReviewWorkingCopy | null } };
 const errorText = (cause: unknown) => cause instanceof Error ? cause.message : "The saved review is unavailable. Keep your recovery copy.";
 
 /** The parent owns campaign authentication; scope changes remount every private editor state. */
@@ -19,8 +19,10 @@ export function SynthesisReviewEditor(props: Props) {
   return <ReviewPanel key={`${props.userId}:${props.workspaceId}:${props.campaignId}:${props.sourceId}`} {...props} />;
 }
 
-function ReviewPanel({ snapshot, onAccessLost, ...scope }: Props) {
+function ReviewPanel({ snapshot, onAccessLost, recoveryMemory: sourceMemory, ...scope }: Props) {
   const { userId, workspaceId, campaignId, sourceId, sourceSha256 } = scope;
+  const localMemory = useRef<ReviewWorkingCopy | null>(null);
+  const recoveryMemory = sourceMemory ?? localMemory;
   const [working, setWorking] = useState(() => emptyReviewWorkingCopy(scope));
   const workingRef = useRef(working), epoch = useRef(0), reading = useRef(0), listing = useRef(0), sending = useRef(false);
   const [ready, setReady] = useState(false), [blocked, setBlocked] = useState(false), [busy, setBusy] = useState(false);
@@ -67,11 +69,15 @@ function ReviewPanel({ snapshot, onAccessLost, ...scope }: Props) {
   useEffect(() => {
     const currentScope = { userId, workspaceId, campaignId, sourceId, sourceSha256 };
     const restore = () => {
+      const unsaved = recoveryMemory.current;
+      if (unsaved) setWorking(unsaved);
       try {
         const value = readReviewWorkingCopy(localStorage, currentScope);
-        adopt(value); setBlocked(false); setCopies(listPreservedReviewCopies(localStorage, currentScope));
-        if (value.draft) void open(value.draft.reviewId, value.draft.parentId);
-        else if (value.activeReviewId) void open(value.activeReviewId);
+        adopt(value); setBlocked(Boolean(unsaved)); setCopies(listPreservedReviewCopies(localStorage, currentScope));
+        if (unsaved) { setWorking(unsaved); setError("This edit could not be stored in the browser. Preserve the latest text before continuing."); }
+        const displayed = unsaved ?? value;
+        if (displayed.draft) void open(displayed.draft.reviewId, displayed.draft.parentId);
+        else if (displayed.activeReviewId) void open(displayed.activeReviewId);
       } catch (cause) { setBlocked(true); setSaved(null); setError(errorText(cause)); }
       setReady(true);
     };
@@ -80,11 +86,11 @@ function ReviewPanel({ snapshot, onAccessLost, ...scope }: Props) {
     window.addEventListener("storage", refresh);
     const invalidate = () => { epoch.current++; };
     return () => { invalidate(); window.removeEventListener("storage", refresh); };
-  }, [userId, workspaceId, campaignId, sourceId, sourceSha256, open, list]);
+  }, [userId, workspaceId, campaignId, sourceId, sourceSha256, open, list, recoveryMemory]);
 
   function update(value: ReviewWorkingCopy) {
-    try { adopt(writeReviewWorkingCopy(localStorage, workingRef.current, value)); setBlocked(false); setError(null); }
-    catch (cause) { setWorking(value); setBlocked(true); setError(errorText(cause)); }
+    try { adopt(writeReviewWorkingCopy(localStorage, workingRef.current, value)); recoveryMemory.current = null; setBlocked(false); setError(null); }
+    catch (cause) { recoveryMemory.current = value; setWorking(value); setBlocked(true); setError(errorText(cause)); }
   }
 
   async function send(intent?: SynthesisReviewIntent, revisionNo = 1) {
@@ -143,18 +149,18 @@ function ReviewPanel({ snapshot, onAccessLost, ...scope }: Props) {
     <p>Create a private draft from this complete saved source. Historical categories begin unassessed. Staff wording and membership corrections retain their reasons and earlier versions.</p>
     <p className="text-sm">These drafts do not approve or publish findings. Contribution counts do not measure distinct people or representative support.</p>
     {error ? <p role="alert" className="break-words">{error}</p> : null}{notice ? <p role="status">{notice}</p> : null}
-    {blocked ? <><p role="alert">Browser recovery needs attention. The latest edit stays on screen; preserve it before starting another edit.</p>{working.draft ? <details><summary>Latest edit retained on screen</summary><pre className="mt-2 whitespace-pre-wrap break-all text-xs">{JSON.stringify(working.draft, null, 2)}</pre></details> : null}</> : null}
+    {blocked ? <><p role="alert">Browser recovery needs attention. Preserve or copy the latest text before leaving or reloading this page.</p>{working.draft ? <details><summary>Latest edit retained on screen</summary><pre className="mt-2 whitespace-pre-wrap break-all text-xs">{JSON.stringify(working.draft, null, 2)}</pre></details> : null}</> : null}
     {working.pending ? <div className="rounded border p-3 space-y-2"><p>An exact review request is retained for retry. Its text and parent are fixed.</p><p className="text-xs break-all">Request {working.pending.intent.requestId}</p><Button type="button" disabled={busy || blocked} onClick={() => void send()}>Retry retained review request</Button></div> : null}
     <div className="flex flex-wrap gap-3">
       <Button type="button" disabled={!ready || blocked || busy || Boolean(draft || working.pending)} onClick={() => void send({ operation: "create", requestId: crypto.randomUUID(), actorId: userId, workspaceId, sourceId, sourceSha256 })}>Create staff review</Button>
       <Button type="button" variant="outline" onClick={() => void list()}>Refresh staff reviews</Button>
       {draft || working.pending || blocked ? <Button type="button" variant="outline" className="h-auto min-h-10 max-w-full whitespace-normal" disabled={busy} onClick={() => {
-        try { preserveReviewWorkingCopy(localStorage, scope, working); adopt(readReviewWorkingCopy(localStorage, scope)); setCopies(listPreservedReviewCopies(localStorage, scope)); setBlocked(false); setError(null); setNotice("Recovery copy preserved below. Open the current review before starting another correction."); }
+        try { preserveReviewWorkingCopy(localStorage, scope, working); adopt(readReviewWorkingCopy(localStorage, scope)); recoveryMemory.current = null; setCopies(listPreservedReviewCopies(localStorage, scope)); setBlocked(false); setError(null); setNotice("Recovery copy preserved below. Open the current review before starting another correction."); }
         catch (cause) { setError(errorText(cause)); }
       }}>Preserve edit and start another correction</Button> : null}
     </div>
     {page?.entries.length === 0 ? <p>No staff reviews have been saved for this source.</p> : null}
-    <ul className="space-y-2">{page?.entries.map(row => <li key={row.reviewId} className="rounded border p-3 space-y-2"><p className="break-words">{row.title} · latest revision {row.revisionNo}</p><Button type="button" variant="outline" onClick={() => { update({ ...workingRef.current, activeReviewId: row.reviewId }); void open(row.reviewId); }}>Open staff review {row.reviewId.slice(0, 8)}</Button></li>)}</ul>
+    <ul className="space-y-2">{page?.entries.map(row => <li key={row.reviewId} className="rounded border p-3 space-y-2"><p className="break-words">{row.title} · latest revision {row.revisionNo}</p><Button type="button" variant="outline" onClick={() => { if (!blocked) update({ ...workingRef.current, activeReviewId: row.reviewId }); void open(row.reviewId); }}>Open staff review {row.reviewId.slice(0, 8)}</Button></li>)}</ul>
     {page?.nextCursor ? <Button type="button" variant="outline" onClick={() => void list(page.nextCursor)}>Load older staff reviews</Button> : null}
     {saved ? <article aria-label="Saved staff review" className="space-y-3 min-w-0">
       <h4 className="font-semibold break-words">{saved.content.title} · revision {saved.revision.revisionNo}</h4>
