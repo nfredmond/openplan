@@ -20,6 +20,8 @@ mutate('omit-authentication','route','if (!user) return refused("forbidden", 401
 mutate('omit-access-refusal','route','if (!access.allowed) return refused("forbidden", 403);','/* Missing access gate. */','refuses denied before resolution')
 mutate('omit-access-error','route','if (access.error) return refused("unavailable", 503);','/* Missing access error gate. */','refuses error before resolution')
 mutate('omit-missing-campaign','route','if (!access.campaign) return refused("forbidden", 404);','/* Missing campaign gate. */','refuses missing before resolution')
+mutate('changed-browser-user','route','request.headers.get("x-openplan-expected-user") !== user.id','false','refuses a changed or missing browser scope header x-openplan-expected-user before resolution')
+mutate('changed-browser-workspace','route','request.headers.get("x-openplan-expected-workspace") !== access.campaign.workspace_id','false','refuses a changed or missing browser scope header x-openplan-expected-workspace before resolution')
 mutate('mislabel-replay','route','status: packet.replayed ? 200 : 201','status: 201','retries the exact resolution after acknowledgement loss without inventing another identity')
 mutate('cache-private-receipts','route','"Cache-Control": "private, no-store"','"Cache-Control": "public, max-age=3600"','binds authenticated scope and returns verified private receipts without logging copied words')
 mutate('log-private-copy','route','resolutionId: intent.data.resolutionId, replayed: packet.replayed','resolutionId: intent.data.resolutionId, replayed: packet.replayed, copy: intent.data.copyJson','binds authenticated scope and returns verified private receipts without logging copied words')
@@ -42,7 +44,7 @@ try:
   finally:paths[key].write_text(original[key])
   (private/(name+'.log')).write_text(run.stdout+run.stderr);report=json.loads(target.read_text())
   failed=[a['fullName'] for s in report['testResults'] for a in s['assertionResults'] if a['status']=='failed']
-  correct=run.returncode==0 and report['numPassedTests']==({'route':26,'queue':52}[key]) if expected is None else run.returncode!=0 and any(expected in f for f in failed)
+  correct=run.returncode==0 and report['numPassedTests']==({'route':28,'queue':52}[key]) if expected is None else run.returncode!=0 and any(expected in f for f in failed)
   results.append({'case':name,'outcome':'survived' if run.returncode==0 else 'killed','expectedFailure':expected,'failedTests':failed,'expectedOutcome':correct});print(name,results[-1]['outcome'],flush=True);assert correct,(name,failed)
 finally:
  assert all(p.read_text()==original[k] for k,p in paths.items())

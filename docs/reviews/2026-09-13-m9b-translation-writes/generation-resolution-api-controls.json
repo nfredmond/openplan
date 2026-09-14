@@ -1,13 +1,13 @@
 {
   "sourceSha256": {
-    "route": "648792d6b6acf16e6263383bebbec8c232d658fce2d697f28f728316da773ec3",
+    "route": "d2a654e38bd5a5427840a5e1069e71d51c1c8724d07359a20ad37e57a3cf5c54",
     "queue": "153883ec2d232eb3e7e95ab97b92422cdb664bf997ca806b8d80c0ccb37ecd7d"
   },
   "testSha256": {
-    "route": "b54b44c6c08ec77413a8a452bffc814773a20b98c57d291e87d2a2203384023e",
+    "route": "5aadf147674b18000722fdb052d8e7e3c62d8438d8e1fc532858d7590def3ed8",
     "queue": "fa1a115dfeb13be8e43caf86108372c0312f3a75c4f22982a13630325ed52d83"
   },
-  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/resolution-api-controls-1789358552132598764",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/resolution-api-controls-1789360879387101764",
   "results": [
     {
       "case": "baseline-route",
@@ -124,6 +124,24 @@
       "expectedFailure": "refuses missing before resolution",
       "failedTests": [
         "generation resolution HTTP route refuses missing before resolution"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "changed-browser-user",
+      "outcome": "killed",
+      "expectedFailure": "refuses a changed or missing browser scope header x-openplan-expected-user before resolution",
+      "failedTests": [
+        "generation resolution HTTP route refuses a changed or missing browser scope header x-openplan-expected-user before resolution"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "changed-browser-workspace",
+      "outcome": "killed",
+      "expectedFailure": "refuses a changed or missing browser scope header x-openplan-expected-workspace before resolution",
+      "failedTests": [
+        "generation resolution HTTP route refuses a changed or missing browser scope header x-openplan-expected-workspace before resolution"
       ],
       "expectedOutcome": true
     },

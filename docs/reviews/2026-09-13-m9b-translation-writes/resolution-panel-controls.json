@@ -1,0 +1,175 @@
+{
+  "sourceSha256": "ea55a1a17550386472b3af12feaacd005776a9dc71650f8bcec66cbfe2ad16e1",
+  "testSha256": "53261d760632b41305fdaa5acf2b1e80dafa4526c8ee93b43d40f3239d872907",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/resolution-panel-controls-1789362054712840259",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "begin-without-access",
+      "outcome": "killed",
+      "expectedFailure": "does not prepare resolution when blocked by access",
+      "failedTests": [
+        "generation resolution controller does not prepare resolution when blocked by access"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "begin-while-busy",
+      "outcome": "killed",
+      "expectedFailure": "does not prepare resolution when blocked by busy",
+      "failedTests": [
+        "generation resolution controller does not prepare resolution when blocked by busy"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "forget-lost-storage",
+      "outcome": "killed",
+      "expectedFailure": "retries the exact resolution after acknowledgement loss and lost browser storage",
+      "failedTests": [
+        "generation resolution controller retries the exact resolution after acknowledgement loss and lost browser storage"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "send-unretained",
+      "outcome": "killed",
+      "expectedFailure": "does not dispatch when the intent has quota storage failure",
+      "failedTests": [
+        "generation resolution controller does not dispatch when the intent has quota storage failure"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-user-pin",
+      "outcome": "killed",
+      "expectedFailure": "retains both copies before dispatch with pinned login and archives confirmed receipts",
+      "failedTests": [
+        "generation resolution controller retains both copies before dispatch with pinned login and archives confirmed receipts"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-workspace-pin",
+      "outcome": "killed",
+      "expectedFailure": "retains both copies before dispatch with pinned login and archives confirmed receipts",
+      "failedTests": [
+        "generation resolution controller retains both copies before dispatch with pinned login and archives confirmed receipts"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "send-new-identity",
+      "outcome": "killed",
+      "expectedFailure": "retains both copies before dispatch with pinned login and archives confirmed receipts",
+      "failedTests": [
+        "generation resolution controller retains both copies before dispatch with pinned login and archives confirmed receipts"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-second-copy",
+      "outcome": "killed",
+      "expectedFailure": "retains both copies before dispatch with pinned login and archives confirmed receipts",
+      "failedTests": [
+        "generation resolution controller retains both copies before dispatch with pinned login and archives confirmed receipts"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-refusal",
+      "outcome": "killed",
+      "expectedFailure": "keeps original and pending copies on refused response",
+      "failedTests": [
+        "generation resolution controller keeps original and pending copies on refused response"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-scope-and-abort-lifecycle",
+      "outcome": "killed",
+      "expectedFailure": "ignores late acknowledgement after workspace-changed",
+      "failedTests": [
+        "generation resolution controller ignores late acknowledgement after workspace-changed"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-access-lifecycle",
+      "outcome": "killed",
+      "expectedFailure": "ignores late acknowledgement after access-revoked",
+      "failedTests": [
+        "generation resolution controller ignores late acknowledgement after access-revoked"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-abort",
+      "outcome": "killed",
+      "expectedFailure": "ignores late acknowledgement after unmount",
+      "failedTests": [
+        "generation resolution controller ignores late acknowledgement after unmount"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-archive",
+      "outcome": "killed",
+      "expectedFailure": "retains both copies before dispatch with pinned login and archives confirmed receipts",
+      "failedTests": [
+        "generation resolution controller retains both copies before dispatch with pinned login and archives confirmed receipts"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "forget-resolution-callback",
+      "outcome": "killed",
+      "expectedFailure": "retains both copies before dispatch with pinned login and archives confirmed receipts",
+      "failedTests": [
+        "generation resolution controller retains both copies before dispatch with pinned login and archives confirmed receipts"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "forget-held-retirement",
+      "outcome": "killed",
+      "expectedFailure": "retains both copies before dispatch with pinned login and archives confirmed receipts",
+      "failedTests": [
+        "generation resolution controller retains both copies before dispatch with pinned login and archives confirmed receipts"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-replacement",
+      "outcome": "killed",
+      "expectedFailure": "retains both copies before dispatch with pinned login and archives confirmed receipts",
+      "failedTests": [
+        "generation resolution controller retains both copies before dispatch with pinned login and archives confirmed receipts"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "download-wrong-archive",
+      "outcome": "killed",
+      "expectedFailure": "retains both copies before dispatch with pinned login and archives confirmed receipts",
+      "failedTests": [
+        "generation resolution controller retains both copies before dispatch with pinned login and archives confirmed receipts"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Actual React controller, recovery helper and native cryptographic verification using synthetic absent-request receipts and mocked HTTP. Browser geometry, real cookies, database transitions, provider execution and actual download artifacts are outside this suite."
+}

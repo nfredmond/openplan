@@ -1,3 +1,5 @@
+import { webcrypto } from "node:crypto";
+import { resolutionTestPacket } from "./helpers/translation-resolution-fixture";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useTranslationGeneration } from "@/components/engagement/translation-generation-panel";
@@ -187,10 +189,10 @@ describe("generation editor custody", () => {
       nativePut.call(this, name, raw);
     });
     render(<Editor pending={f.pending}/>); fireEvent.click(sendButton());
-    await screen.findByRole("button", { name: "Archive refused request and refresh source" });
+    await screen.findByRole("heading", { name: "Refused generation request" });
     expect(JSON.parse(localStorage.getItem(key)!).phase).toBe("unconfirmed");
     act(() => window.dispatchEvent(new StorageEvent("storage")));
-    expect(screen.getByRole("button", { name: "Archive refused request and refresh source" })).toBeEnabled();
+    expect(screen.getByRole("heading", { name: "Refused generation request" })).toBeInTheDocument();
     expect(sendButton()).toBeDisabled(); expect(refresh).not.toHaveBeenCalled();
   });
   it("preserves unreadable recovery when the saved request cannot be retrieved", async () => {
@@ -205,19 +207,38 @@ describe("generation editor custody", () => {
     expect(fetch).toHaveBeenCalledOnce(); expect(fetch.mock.calls[0][1]?.method ?? "GET").toBe("GET");
     expect(publish).not.toHaveBeenCalled(); expect(refresh).not.toHaveBeenCalled();
   });
+  it("clears the earlier unconfirmed message after verified resolution", async () => {
+    vi.stubGlobal("crypto", webcrypto);
+    const f = fixture(), fetch = vi.spyOn(globalThis, "fetch").mockRejectedValueOnce(new Error("SYNTHETIC queue acknowledgement lost"));
+    render(<Editor pending={f.pending}/>); fireEvent.click(sendButton());
+    await screen.findByText(/^Generation is unconfirmed/);
+    fetch.mockImplementation(async (_url, init) => reply(resolutionTestPacket(scope, JSON.parse(String(init?.body)))));
+    fireEvent.click(screen.getByRole("button", { name: "Review request resolution" }));
+    expect(retryButton()).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Confirm resolution and preserve copies" }));
+    await screen.findByText(/Resolution confirmed and copies archived/);
+    expect(screen.queryByText(/^Generation is unconfirmed/)).toBeNull();
+    expect(screen.queryByRole("button", { name: "Retry same generation request" })).toBeNull();
+    expect(localStorage.getItem(pendingGenerationKey(f.pending))).toBeNull();
+    expect(refresh).toHaveBeenCalledOnce(); expect(sendButton()).toBeEnabled();
+  });
   it("keeps the refused source copy when archive readback fails", async () => {
     const f = fixture(), refused = { ...f.pending, phase: "refused" as const }, key = pendingGenerationKey(refused);
     retainPendingGeneration(localStorage, refused); const original = localStorage.getItem(key);
     const nativeGet = Storage.prototype.getItem;
     vi.spyOn(Storage.prototype, "getItem").mockImplementation(function (this: Storage, name: string) {
       const raw = nativeGet.call(this, name);
-      return name.startsWith("openplan:translation-generation-archive:") && raw !== null ? "SYNTHETIC archive mismatch" : raw;
+      return name.startsWith("openplan:translation-resolution-archive:") && raw !== null ? "SYNTHETIC archive mismatch" : raw;
     });
-    const fetch = vi.spyOn(globalThis, "fetch"); render(<Editor pending={refused}/>);
-    fireEvent.click(screen.getByRole("button", { name: "Archive refused request and refresh source" }));
-    await screen.findByText(/could not be archived/);
+    vi.stubGlobal("crypto", webcrypto);
+    const fetch = vi.spyOn(globalThis, "fetch").mockImplementation(async (_url, init) => reply(resolutionTestPacket(scope, JSON.parse(String(init?.body)))));
+    render(<Editor pending={refused}/>);
+    fireEvent.click(screen.getByRole("button", { name: "Review request resolution" }));
+    expect(fetch).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Confirm resolution and preserve copies" }));
+    await screen.findByText(/archive could not be saved/);
     expect(localStorage.getItem(key)).toBe(original); expect(sendButton()).toBeDisabled();
-    expect(refresh).not.toHaveBeenCalled(); expect(fetch).not.toHaveBeenCalled();
+    expect(refresh).not.toHaveBeenCalled(); expect(fetch).toHaveBeenCalledOnce();
   });
 
 });

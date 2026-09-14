@@ -21,7 +21,7 @@ function packet(replayed = false) {
   return { payloadText, payloadSha256: hash(payloadText), resultText, resultSha256: hash(resultText), replayed };
 }
 function request(body: unknown = intent, headers: Record<string, string> = {}) {
-  return new NextRequest(url, { method: "POST", headers: { host: "localhost", origin: "http://localhost", "content-type": "application/json", ...headers }, body: JSON.stringify(body) });
+  return new NextRequest(url, { method: "POST", headers: { host: "localhost", origin: "http://localhost", "content-type": "application/json", "x-openplan-expected-user": scope.actorId, "x-openplan-expected-workspace": scope.workspaceId, ...headers }, body: JSON.stringify(body) });
 }
 function fixture() {
   const result = vi.fn(async (): Promise<{ data: unknown; error: { code: string } | null }> => ({ data: packet(), error: null }));
@@ -45,6 +45,16 @@ describe("generation resolution HTTP route", () => {
     expect(mocks.service).not.toHaveBeenCalled();
     expect(mocks.info).toHaveBeenCalledWith("translation_generation_resolved", { campaignId: scope.campaignId, actorId: scope.actorId, requestId: intent.requestId, resolutionId: intent.resolutionId, replayed: false });
     expect(JSON.stringify([mocks.info.mock.calls, mocks.warn.mock.calls])).not.toContain("PRIVATE");
+  });
+  it.each(["x-openplan-expected-user", "x-openplan-expected-workspace"])("refuses a changed or missing browser scope header %s before resolution", async key => {
+    const f = fixture();
+    for (const replacement of [id(99), null]) {
+      const req = request();
+      if (replacement === null) req.headers.delete(key); else req.headers.set(key, replacement);
+      const response = await POST(req, context);
+      expect(response.status).toBe(403); expect(f.rpc).not.toHaveBeenCalled();
+      expect(response.headers.get("cache-control")).toBe("private, no-store");
+    }
   });
   it("retries the exact resolution after acknowledgement loss without inventing another identity", async () => {
     const f = fixture(); f.result.mockRejectedValueOnce(new Error("PRIVATE synthetic acknowledgement loss"));

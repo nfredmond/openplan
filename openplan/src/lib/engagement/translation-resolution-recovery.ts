@@ -27,7 +27,8 @@ export const pendingResolutionSchema = scopeSchema.extend({ version: z.literal(1
 }).strict().superRefine((value, context) => {
   try {
     const requestId = resolutionRequestId(value.sourceKey, value);
-    if (value.intents.some(intent => intent.requestId !== requestId) || new Set(value.intents.map(intent => intent.resolutionId)).size !== value.intents.length
+    if (value.sourceKey === resolutionPendingPrefix(value) + value.intents[0].requestId + ":" + value.intents[0].resolutionId
+      || value.intents.some(intent => intent.requestId !== requestId) || new Set(value.intents.map(intent => intent.resolutionId)).size !== value.intents.length
       || new Set(value.intents.map(intent => intent.copyJson)).size !== value.intents.length) throw new Error();
   } catch { context.addIssue({ code: "custom", message: "Recovery bundle does not match its original scope and request" }); }
 });
@@ -35,22 +36,21 @@ export type PendingResolution = z.infer<typeof pendingResolutionSchema>;
 export const pendingResolutionKey = (value: PendingResolution) => resolutionPendingPrefix(value) + value.intents[0].requestId + ":" + value.intents[0].resolutionId;
 export const resolutionArchiveKey = (value: PendingResolution) => resolutionArchivePrefix(value) + value.intents[0].requestId + ":" + value.intents[0].resolutionId;
 const same = (a: unknown, b: unknown) => canonicalizeActionPayload(a) === canonicalizeActionPayload(b);
+/** Copies are compared exactly, including whitespace and damaged UTF-16 strings. */
 export function resolutionHasCopy(value: PendingResolution, raw: string) {
-  return value.intents.some(intent => {
-    const copy = JSON.parse(intent.copyJson) as string;
-    if (copy === raw) return true;
-    try { return same(JSON.parse(copy), JSON.parse(raw)); } catch { return false; }
-  });
+  return value.intents.some(intent => JSON.parse(intent.copyJson) === raw);
 }
 
-/** Freeze both surviving versions before any resolution is dispatched. */
+/** Freeze surviving stored and page-held versions before any resolution is dispatched. */
 export function preparePendingResolution(storage: TranslationStorage, scope: GenerationEditorScope, key: string, reason: string, pageCopy?: string) {
   const requestId = resolutionRequestId(key, scope), raw = storage.getItem(key);
-  if (raw === null) throw new Error("Original recovery copy is unavailable");
-  const parsed = (() => { try { return pendingGenerationSchema.safeParse(JSON.parse(raw)); } catch { return null; } })();
-  if (parsed?.success && (parsed.data.workspaceId !== scope.workspaceId || pendingGenerationKey(parsed.data) !== key)) throw new Error("Original recovery scope differs");
-  const copies = [raw];
-  if (pageCopy !== undefined && !resolutionHasCopy({ intents: [{ copyJson: JSON.stringify(raw) }] } as PendingResolution, pageCopy)) copies.push(pageCopy);
+  const copies = raw === null ? [] : [raw];
+  if (pageCopy !== undefined && !copies.includes(pageCopy)) copies.push(pageCopy);
+  if (copies.length === 0) throw new Error("Original recovery copy is unavailable");
+  for (const copy of copies) {
+    const parsed = (() => { try { return pendingGenerationSchema.safeParse(JSON.parse(copy)); } catch { return null; } })();
+    if (parsed?.success && (parsed.data.workspaceId !== scope.workspaceId || pendingGenerationKey(parsed.data) !== key)) throw new Error("Original recovery scope differs");
+  }
   return pendingResolutionSchema.parse({ version: 1, ...scope, sourceKey: key, createdAt: new Date().toISOString(),
     intents: copies.map(copy => ({ requestId, resolutionId: crypto.randomUUID(), copyJson: JSON.stringify(copy), reason })) });
 }

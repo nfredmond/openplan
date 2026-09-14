@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useTranslationResolution } from "./translation-resolution-panel";
+import { resolutionHasCopy } from "@/lib/engagement/translation-resolution-recovery";
 import { canonicalizeActionPayload } from "@/lib/runtime/action-metadata";
 import { readTranslationGenerationCatalog, type TranslationGenerationCatalog, type TranslationGenerationCursor } from "@/lib/engagement/translation-generation-catalog";
 import { translationGenerationRequestAckSchema, type TranslationGenerationRead } from "@/lib/engagement/translation-generation-request";
@@ -62,13 +64,26 @@ export function useTranslationGeneration({ userId, workspaceId, campaignId, canW
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, workspaceId, campaignId]);
 
+  const resolution = useTranslationResolution(scope, {
+    canWrite, busy,
+    acquire: () => { if (busyRef.current) return false; busyRef.current = true; setBusy(true); setOpen(true); return true; },
+    release: () => { busyRef.current = false; setBusy(false); },
+    download,
+    onResolved: bundle => {
+      setMessage(null);
+      for (const [id, value] of volatile.current) if (resolutionHasCopy(bundle, JSON.stringify(value))) volatile.current.delete(id);
+      remember(remembered.current.filter(value => !resolutionHasCopy(bundle, JSON.stringify(value))));
+      restore(); callbacks.current.onRefresh();
+    },
+  });
+
   async function readRequest(id: string, retained?: PendingGeneration, signal = AbortSignal.timeout(30000)) {
     const response = await fetch(`${api}?requestId=${encodeURIComponent(id)}`, { cache: "no-store", signal });
     if (!response.ok) throw new Error("Generation evidence is unavailable");
     return readViewedTranslationGeneration(await response.json(), { campaignId, workspaceId, requestId: id }, retained);
   }
   async function send(value: PendingGeneration) {
-    if (!canWrite || busyRef.current) return;
+    if (!canWrite || busyRef.current || resolution.hasPending()) return;
     const parsed = pendingGenerationSchema.safeParse(value);
     if (!parsed.success || value.userId !== userId || value.workspaceId !== workspaceId || value.campaignId !== campaignId) {
       setMessage("No generation was requested. Refresh and review the original source and saved versions."); return;
@@ -105,7 +120,7 @@ export function useTranslationGeneration({ userId, workspaceId, campaignId, canW
     finally { busyRef.current = false; setBusy(false); }
   }
   async function start(value: PendingGeneration) {
-    if (!ready || busyRef.current || pending.length || unreadable.length) { setOpen(true); return; }
+    if (!ready || busyRef.current || pending.length || unreadable.length || resolution.blocked || resolution.hasPending()) { setOpen(true); return; }
     try {
       const current = readPendingGenerations(localStorage, scope);
       if (current.pending.length || current.unreadable.length) { restore(); setOpen(true); return; }
@@ -149,20 +164,11 @@ export function useTranslationGeneration({ userId, workspaceId, campaignId, canW
       archivePendingGeneration(localStorage, key, scope);
       volatile.current.delete(id); remember(remembered.current.filter(value => value.intent.requestId !== id)); restore();
       setViewed(found); setReadFailed(false); setMessage("The saved request was recovered from the server. Its earlier browser copy remains archived below.");
-    } catch { setMessage("The saved request could not be matched, or its browser copy changed. Both copies remain retained. Retry recovery without creating another request."); }
+    } catch { setMessage("The saved request could not be matched, or its browser copy changed. The server copy has not been verified. Keep your browser copies and retry recovery or resolve the retained request below."); }
     finally { busyRef.current = false; setBusy(false); }
   }
-  function archive(value: PendingGeneration) {
-    if (value.phase !== "refused" || busyRef.current) return;
-    try {
-      retainPendingGeneration(localStorage, value); const key = archivePendingGeneration(localStorage, pendingGenerationKey(value), scope);
-      download(localStorage.getItem(key)!, `earlier-generation-${value.intent.requestId}.json`);
-      volatile.current.delete(value.intent.requestId); remember(remembered.current.filter(row => row.intent.requestId !== value.intent.requestId)); restore(); callbacks.current.onRefresh();
-      setMessage("The refused request is archived in this browser. Review refreshed source before creating a new request.");
-    } catch { setMessage("The refused generation copy could not be archived. It remains retained; keep this page open and retry recovery."); }
-  }
   const completed = viewed?.fields.filter(field => field.state === "completed" && field.output?.status === "completed" && field.output.acceptedState === "completed").map(field => field.id) ?? [];
-  const blocked = !ready || pending.length > 0 || unreadable.length > 0;
+  const blocked = !ready || pending.length > 0 || unreadable.length > 0 || resolution.blocked;
   const panel = canWrite && <section aria-label="Machine translation requests" className="mt-4 space-y-3 text-sm">
     <Button type="button" variant="outline" className="h-auto min-h-10 max-w-full whitespace-normal" aria-expanded={open} onClick={() => { if (open) setOpen(false); else void list(); }}>
       {open ? "Hide machine translation requests" : "Machine translation requests"}
@@ -174,14 +180,15 @@ export function useTranslationGeneration({ userId, workspaceId, campaignId, canW
         <h3 className="font-semibold">{value.phase === "refused" ? "Refused generation request" : "Unconfirmed generation request"}</h3>
         <p>{TRANSLATION_LANGUAGE_LABELS[value.intent.locale]}. Keep this request&apos;s original source and identity when retrying.</p>
         {value.intent.fields.map(field => <p key={field.id} className="whitespace-pre-wrap">{field.address.field}: {field.address.expectedSource.text}</p>)}
-        <div className="flex flex-wrap gap-2"><Button type="button" disabled={busy} className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => void send(value)}>Retry same generation request</Button>
+        <div className="flex flex-wrap gap-2"><Button type="button" disabled={busy || resolution.blocked} className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => void send(value)}>Retry same generation request</Button>
           <Button type="button" variant="outline" className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => download(JSON.stringify(value, null, 2), `translation-generation-${value.intent.requestId}.json`)}>Download generation request</Button>
-          {value.phase === "refused" && <Button type="button" variant="outline" disabled={busy} className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => archive(value)}>Archive refused request and refresh source</Button>}</div>
+          <Button type="button" variant="outline" disabled={busy} className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => resolution.begin(pendingGenerationKey(value), JSON.stringify(value))}>Review request resolution</Button></div>
       </section>)}
       {unreadable.map(key => <div key={key} className="space-y-2 break-words"><p role="alert">A generation recovery copy could not be read or differs from this page&apos;s request. Preserve both copies and check saved requests before generating again.</p>
         <Button type="button" variant="outline" className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => { try { const raw = localStorage.getItem(key); if (raw !== null) download(raw, "unreadable-generation-request.json"); }
           catch { setMessage("The stored generation copy could not be read. Keep this page open and retry recovery."); } }}>Download stored generation copy</Button>
         <Button type="button" variant="outline" disabled={busy} className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => void recover(key)}>Recover saved generation request</Button>
+        <Button type="button" variant="outline" disabled={busy} className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => resolution.begin(key, remembered.current.find(value => pendingGenerationKey(value) === key) ? JSON.stringify(remembered.current.find(value => pendingGenerationKey(value) === key)) : undefined)}>Review damaged request resolution</Button>
       </div>)}
       {archives.length > 0 && <details><summary>Earlier generation requests ({archives.length})</summary>
         {archives.map((copy,index) => <Button key={copy.key} type="button" variant="outline" className="m-1 h-auto min-h-10 max-w-full whitespace-normal" onClick={() => download(copy.raw, `earlier-generation-${index + 1}.json`)}>Download earlier generation request {index + 1}</Button>)}
@@ -210,6 +217,7 @@ export function useTranslationGeneration({ userId, workspaceId, campaignId, canW
         {completed.length > 1 && <Button type="button" disabled={busy || publicationBlocked || readFailed} className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => void callbacks.current.onPublish(viewed, completed)}>Publish all {completed.length} completed fields with machine labels</Button>}
       </section>}
     </div>}
+    {resolution.panel}
   </section>;
   return { start, panel, busy, blocked };
 }

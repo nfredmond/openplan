@@ -1,3 +1,7 @@
+# Current resolution editor and browser checkpoint
+
+Read [RESOLUTION_EDITOR_PROGRESS.md](RESOLUTION_EDITOR_PROGRESS.md) first. The editor now calls the resolution API; absent-request recovery and downloaded receipts passed desktop/390px journeys, and the full unit suite passed. Existing-request browser recovery, remaining producers and release gates are still open. Older entries below preserve their dated states.
+
 # Current recovery editor pause checkpoint
 
 Read [RESOLUTION_EDITOR_RESET_CHECKPOINT.md](RESOLUTION_EDITOR_RESET_CHECKPOINT.md) first. The newest browser recovery helper is saved but untested and not yet connected. The preceding API checkpoint remains the evidence authority. Entries below retain historical states and are superseded where the newer note says so.

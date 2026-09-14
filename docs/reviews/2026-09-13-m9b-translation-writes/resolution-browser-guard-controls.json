@@ -1,0 +1,36 @@
+{
+  "sourceSha256": "23e11964b95e001382713ed2823fe7dc2c5f554273e7a9cd9138727747bbccb4",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "observedFailure": null
+    },
+    {
+      "case": "harmless",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "observedFailure": null
+    },
+    {
+      "case": "ignore-overflow",
+      "outcome": "killed",
+      "expectedFailure": "wide layout",
+      "observedFailure": "wide layout"
+    },
+    {
+      "case": "ignore-page-error",
+      "outcome": "killed",
+      "expectedFailure": "page exception",
+      "observedFailure": "page exception"
+    },
+    {
+      "case": "ignore-runtime-error",
+      "outcome": "killed",
+      "expectedFailure": "unexpected runtime error",
+      "observedFailure": "unexpected runtime error"
+    }
+  ],
+  "limits": "Executes the actual geometry and console assertions extracted from the browser journey. Synthetic events and measured widths test the acceptance predicate. Does not replace rendered screenshot inspection. Warnings remain recorded, not classified as runtime errors; intentional network abort errors are expected in this journey."
+}

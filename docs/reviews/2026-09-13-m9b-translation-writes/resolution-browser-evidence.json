@@ -1,0 +1,391 @@
+{
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/translation-resolution-browser-1789362173300",
+  "sourceSha256": {
+    "src/components/engagement/translation-resolution-panel.tsx": "ea55a1a17550386472b3af12feaacd005776a9dc71650f8bcec66cbfe2ad16e1",
+    "src/components/engagement/translation-generation-panel.tsx": "8c381ffcbe9de4a40243247c8f59a5ca46c17d874760df4a5c5bfb361364f044",
+    "src/lib/engagement/translation-resolution-recovery.ts": "e5d47c9d64a421626e102b90cbb58003431e2e984c6bcedb51d0f162a5039b0f",
+    "src/app/api/engagement/campaigns/[campaignId]/translations/generation/resolutions/route.ts": "d2a654e38bd5a5427840a5e1069e71d51c1c8724d07359a20ad37e57a3cf5c54"
+  },
+  "artifactSha256": {
+    "390-checkpoint.json": "3782c5815e4f7cf5cd8892d254b5422dd0390e11c80c0cd853a27c9212b964ea",
+    "1440-archive.json": "bd9fc14030e059361ac895f5e69142218ce9adb092a359d16a53435a6aceb034",
+    "1440-checkpoint.json": "464eec8f2f0b3a9d83224553375b7bb66ac871b4c0e0ba29a9ebb61e676ad1e6",
+    "source-sha256.json": "8770c883ae46e1bb649ce6090490135fa054d1e389aa1c3e65955cd942e4e20c",
+    "1440-pending-resolution.json": "297a27608e48fd0b32a8f91002f4871af836f87c9af41adabe52550d8ef849a5",
+    "390-pending-resolution.json": "4e5a81ca5971254f2e34c35644305f484f9e5c18f86b34162c66cbe2e23c8ec1",
+    "1440-archive.png": "99ac0249cda8f76d5d96df60dc6e0ac3223bd15ce02114a76b50b0f57f6e211c",
+    "390-archive.json": "3fa923b1bd148c90d490b0b145c3665359f2a64ca6ab05d80529e902357329fe",
+    "390-confirm.png": "82c09db0763cbc6323655329ce6526b09ee387f9cdb9c3994fddb3667720183b",
+    "1440-confirm.png": "bd906fb1ec52c5ec62f3120410ebf83396bbfcbc2d115b0c49719ebdba582cad",
+    "results.json": "5c1c188367463928cb267ea47a8a74d67e668652d27743966450b98433f5320c",
+    "390-archive.png": "e381cbdc959107a139fcc9938a26ae427de24c126a5c301b98dc57a8a9bd1ba8",
+    "identity.log": "6dbb98d7ff63823d85302909ec08c2c863a4ce47c50ebadcf49151b173cbdb4b"
+  },
+  "results": [
+    {
+      "width": 1440,
+      "campaignId": "435b63b5-5e68-45ad-b9e6-559e9da44755",
+      "requestId": "4d943fcd-1733-4ad7-bbff-1700d386d37b",
+      "passed": true,
+      "retainedDownloadSha256": "297a27608e48fd0b32a8f91002f4871af836f87c9af41adabe52550d8ef849a5",
+      "archiveDownloadSha256": "bd9fc14030e059361ac895f5e69142218ce9adb092a359d16a53435a6aceb034",
+      "resolutionIds": [
+        "998641df-ed2b-4964-967b-4116ab28556b",
+        "c65cda00-7067-4fa0-8752-1f093dfa0774"
+      ],
+      "originalHistory": [
+        {
+          "id": "8111befa-cb7b-41a5-8777-e3834ecc8e4e",
+          "campaign_id": "435b63b5-5e68-45ad-b9e6-559e9da44755",
+          "translation_id": "edd5ad38-860d-47b7-9c6e-4af0605636fc",
+          "revision": 1,
+          "actor_id": "4a21e42f-27a7-474d-9a7a-5912c70af359",
+          "recorded_at": "2026-09-14T05:04:08.107496+00:00",
+          "event": "created",
+          "record_sha256": "916e900585661c50dfcdb1833bf9c9d38ab225d21654b89a41f10eab5196d672",
+          "write_request_id": "f0f51ac2-5e39-4bfb-a5e0-321ea10a3385",
+          "record": {
+            "id": "edd5ad38-860d-47b7-9c6e-4af0605636fc",
+            "workspace_id": "f02e465a-40bd-4304-b4af-d45daff29d3d",
+            "campaign_id": "435b63b5-5e68-45ad-b9e6-559e9da44755",
+            "entity_type": "campaign",
+            "entity_id": "435b63b5-5e68-45ad-b9e6-559e9da44755",
+            "field": "title",
+            "locale": "es",
+            "translated_text": "SINT\u00c9TICO original antes de resolver 1440",
+            "source": "operator",
+            "machine_model": null,
+            "source_text_hash": "b234e74397317f6bbbbf8aeb61a55e53e46d804d693ef00f2f9f19afa60b2c20",
+            "created_by": "4a21e42f-27a7-474d-9a7a-5912c70af359",
+            "created_at": "2026-09-14T05:04:08.08185+00:00",
+            "updated_at": "2026-09-14T05:04:08.08185+00:00"
+          },
+          "change": {
+            "requestId": "f0f51ac2-5e39-4bfb-a5e0-321ea10a3385",
+            "operation": "save",
+            "reason": null,
+            "source": {
+              "text": "SYNTHETIC resolution browser 1440 1789362215507",
+              "sourceLocale": null,
+              "available": true
+            },
+            "expectedTranslation": null,
+            "payloadSha256": "ec2c70299edaa73ba19afbaf569b1223592cf71650c0309cad5635cea8a4e8e4",
+            "resultSha256": "c7d17dc3e843b5655ffd43521ca0cfb8dd79fde2d32c965bffbe3ed22a3eda9b"
+          }
+        }
+      ],
+      "finalHistory": [
+        {
+          "id": "8111befa-cb7b-41a5-8777-e3834ecc8e4e",
+          "campaign_id": "435b63b5-5e68-45ad-b9e6-559e9da44755",
+          "translation_id": "edd5ad38-860d-47b7-9c6e-4af0605636fc",
+          "revision": 1,
+          "actor_id": "4a21e42f-27a7-474d-9a7a-5912c70af359",
+          "recorded_at": "2026-09-14T05:04:08.107496+00:00",
+          "event": "created",
+          "record_sha256": "916e900585661c50dfcdb1833bf9c9d38ab225d21654b89a41f10eab5196d672",
+          "write_request_id": "f0f51ac2-5e39-4bfb-a5e0-321ea10a3385",
+          "record": {
+            "id": "edd5ad38-860d-47b7-9c6e-4af0605636fc",
+            "workspace_id": "f02e465a-40bd-4304-b4af-d45daff29d3d",
+            "campaign_id": "435b63b5-5e68-45ad-b9e6-559e9da44755",
+            "entity_type": "campaign",
+            "entity_id": "435b63b5-5e68-45ad-b9e6-559e9da44755",
+            "field": "title",
+            "locale": "es",
+            "translated_text": "SINT\u00c9TICO original antes de resolver 1440",
+            "source": "operator",
+            "machine_model": null,
+            "source_text_hash": "b234e74397317f6bbbbf8aeb61a55e53e46d804d693ef00f2f9f19afa60b2c20",
+            "created_by": "4a21e42f-27a7-474d-9a7a-5912c70af359",
+            "created_at": "2026-09-14T05:04:08.08185+00:00",
+            "updated_at": "2026-09-14T05:04:08.08185+00:00"
+          },
+          "change": {
+            "requestId": "f0f51ac2-5e39-4bfb-a5e0-321ea10a3385",
+            "operation": "save",
+            "reason": null,
+            "source": {
+              "text": "SYNTHETIC resolution browser 1440 1789362215507",
+              "sourceLocale": null,
+              "available": true
+            },
+            "expectedTranslation": null,
+            "payloadSha256": "ec2c70299edaa73ba19afbaf569b1223592cf71650c0309cad5635cea8a4e8e4",
+            "resultSha256": "c7d17dc3e843b5655ffd43521ca0cfb8dd79fde2d32c965bffbe3ed22a3eda9b"
+          }
+        }
+      ],
+      "lateCreationStatus": 409,
+      "changedWorkspaceStatus": 403,
+      "anonymousStatus": 401,
+      "generationIntercepts": 1,
+      "overflow": {
+        "viewport": 1440,
+        "document": 1440
+      },
+      "console": [
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789362175656 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/css/app/(app)/layout.css?v=1789362179118 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/36966cca54120369-s.p.woff2?v=1789362175656 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789362175656 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/css/app/(app)/layout.css?v=1789362179118 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/36966cca54120369-s.p.woff2?v=1789362175656 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789362175656 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/css/app/(app)/layout.css?v=1789362179118 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/36966cca54120369-s.p.woff2?v=1789362175656 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789362175656 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/css/app/(app)/layout.css?v=1789362179118 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/36966cca54120369-s.p.woff2?v=1789362175656 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789362175656 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/css/app/(app)/layout.css?v=1789362179118 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/36966cca54120369-s.p.woff2?v=1789362175656 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789362175656 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/css/app/(app)/layout.css?v=1789362179118 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/36966cca54120369-s.p.woff2?v=1789362175656 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789362175656 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/css/app/(app)/layout.css?v=1789362179118 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/css/app/layout.css?v=1789362226220 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/css/app/(app)/layout.css?v=1789362226220 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/36966cca54120369-s.p.woff2?v=1789362175656 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789362175656 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/css/app/(app)/layout.css?v=1789362179118 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/css/app/layout.css?v=1789362226220 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/css/app/(app)/layout.css?v=1789362226220 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/36966cca54120369-s.p.woff2?v=1789362175656 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "campaignId": "42b6835d-7729-45f9-953e-f46599c71997",
+      "requestId": "3c225722-06b5-406a-8d70-8d720afe33f5",
+      "passed": true,
+      "retainedDownloadSha256": "4e5a81ca5971254f2e34c35644305f484f9e5c18f86b34162c66cbe2e23c8ec1",
+      "archiveDownloadSha256": "3fa923b1bd148c90d490b0b145c3665359f2a64ca6ab05d80529e902357329fe",
+      "resolutionIds": [
+        "7bb7f58c-373f-4e46-9db0-ada075dd5cc8",
+        "3be44ea1-de2e-48e3-b8f5-b199ea59fe0b"
+      ],
+      "originalHistory": [
+        {
+          "id": "bc3191a8-fd5c-4985-90af-3306011f5af9",
+          "campaign_id": "42b6835d-7729-45f9-953e-f46599c71997",
+          "translation_id": "9d023e84-a1f2-49cd-873a-8f8a3fd436b2",
+          "revision": 1,
+          "actor_id": "4a21e42f-27a7-474d-9a7a-5912c70af359",
+          "recorded_at": "2026-09-14T05:04:52.973992+00:00",
+          "event": "created",
+          "record_sha256": "58e24613e4eab357c58ea97347499fcf8a13acbfe3fb16b29f172798762ec8d0",
+          "write_request_id": "30053904-9b62-4c33-944f-73bc4be515f0",
+          "record": {
+            "id": "9d023e84-a1f2-49cd-873a-8f8a3fd436b2",
+            "workspace_id": "f02e465a-40bd-4304-b4af-d45daff29d3d",
+            "campaign_id": "42b6835d-7729-45f9-953e-f46599c71997",
+            "entity_type": "campaign",
+            "entity_id": "42b6835d-7729-45f9-953e-f46599c71997",
+            "field": "title",
+            "locale": "es",
+            "translated_text": "SINT\u00c9TICO original antes de resolver 390",
+            "source": "operator",
+            "machine_model": null,
+            "source_text_hash": "e303d823e9dc479129c05cc9410e2a1a4bfc64f1f77f0f9337a5d16e7ef970cd",
+            "created_by": "4a21e42f-27a7-474d-9a7a-5912c70af359",
+            "created_at": "2026-09-14T05:04:52.952203+00:00",
+            "updated_at": "2026-09-14T05:04:52.952203+00:00"
+          },
+          "change": {
+            "requestId": "30053904-9b62-4c33-944f-73bc4be515f0",
+            "operation": "save",
+            "reason": null,
+            "source": {
+              "text": "SYNTHETIC resolution browser 390 1789362285425",
+              "sourceLocale": null,
+              "available": true
+            },
+            "expectedTranslation": null,
+            "payloadSha256": "78eef974c43a10b8f0c5c5a9e3187293a6e18b9ed22b8180f2b319651362bf63",
+            "resultSha256": "ea960eff862f196193564351f4799feb2e106525ba5f04b33b102b8d2e49b65f"
+          }
+        }
+      ],
+      "finalHistory": [
+        {
+          "id": "bc3191a8-fd5c-4985-90af-3306011f5af9",
+          "campaign_id": "42b6835d-7729-45f9-953e-f46599c71997",
+          "translation_id": "9d023e84-a1f2-49cd-873a-8f8a3fd436b2",
+          "revision": 1,
+          "actor_id": "4a21e42f-27a7-474d-9a7a-5912c70af359",
+          "recorded_at": "2026-09-14T05:04:52.973992+00:00",
+          "event": "created",
+          "record_sha256": "58e24613e4eab357c58ea97347499fcf8a13acbfe3fb16b29f172798762ec8d0",
+          "write_request_id": "30053904-9b62-4c33-944f-73bc4be515f0",
+          "record": {
+            "id": "9d023e84-a1f2-49cd-873a-8f8a3fd436b2",
+            "workspace_id": "f02e465a-40bd-4304-b4af-d45daff29d3d",
+            "campaign_id": "42b6835d-7729-45f9-953e-f46599c71997",
+            "entity_type": "campaign",
+            "entity_id": "42b6835d-7729-45f9-953e-f46599c71997",
+            "field": "title",
+            "locale": "es",
+            "translated_text": "SINT\u00c9TICO original antes de resolver 390",
+            "source": "operator",
+            "machine_model": null,
+            "source_text_hash": "e303d823e9dc479129c05cc9410e2a1a4bfc64f1f77f0f9337a5d16e7ef970cd",
+            "created_by": "4a21e42f-27a7-474d-9a7a-5912c70af359",
+            "created_at": "2026-09-14T05:04:52.952203+00:00",
+            "updated_at": "2026-09-14T05:04:52.952203+00:00"
+          },
+          "change": {
+            "requestId": "30053904-9b62-4c33-944f-73bc4be515f0",
+            "operation": "save",
+            "reason": null,
+            "source": {
+              "text": "SYNTHETIC resolution browser 390 1789362285425",
+              "sourceLocale": null,
+              "available": true
+            },
+            "expectedTranslation": null,
+            "payloadSha256": "78eef974c43a10b8f0c5c5a9e3187293a6e18b9ed22b8180f2b319651362bf63",
+            "resultSha256": "ea960eff862f196193564351f4799feb2e106525ba5f04b33b102b8d2e49b65f"
+          }
+        }
+      ],
+      "lateCreationStatus": 409,
+      "changedWorkspaceStatus": 403,
+      "anonymousStatus": 401,
+      "generationIntercepts": 1,
+      "overflow": {
+        "viewport": 390,
+        "document": 390
+      },
+      "console": [
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/css/app/(app)/layout.css?v=1789362273842 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/36966cca54120369-s.p.woff2?v=1789362270967 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789362270967 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/css/app/(app)/layout.css?v=1789362273842 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/36966cca54120369-s.p.woff2?v=1789362270967 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "warning",
+          "text": "The resource http://127.0.0.1:3260/_next/static/media/558ca1a6aa3cb55e-s.p.woff2?v=1789362270967 was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        }
+      ]
+    }
+  ],
+  "limits": "Real navigation, keyboard, 1440px and 390px Chrome, actual resolution HTTP/SQL, downloads and immutable receipt/hash comparison. Generation POST was intercepted before dispatch: this journey resolves absent request identities, not a running provider. Only synthetic records. Earlier completed/running/native/worker evidence remains separate. Local development asset preload warnings retained; no page exceptions and two intentional network-abort errors per viewport. No production build, public participant journey, practicing planner usefulness or scientific acceptance."
+}

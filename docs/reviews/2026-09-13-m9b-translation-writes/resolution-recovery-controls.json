@@ -1,0 +1,305 @@
+{
+  "sourceSha256": "e5d47c9d64a421626e102b90cbb58003431e2e984c6bcedb51d0f162a5039b0f",
+  "testSha256": "c986fd1c19faba86b53572a608845a5372832acedcd4a03b03b61667ad43c977",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/resolution-storage-controls-1789360829304874304",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "lose-page-copy",
+      "outcome": "killed",
+      "expectedFailure": "preserves a page-held copy when storage has lost the source",
+      "failedTests": [
+        "resolution recovery custody preserves a page-held copy when storage has lost the source"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "drop-second-copy",
+      "outcome": "killed",
+      "expectedFailure": "freezes both exact copies including whitespace and damaged strings",
+      "failedTests": [
+        "resolution recovery custody freezes both exact copies including whitespace and damaged strings"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "duplicate-identical-copy",
+      "outcome": "killed",
+      "expectedFailure": "deduplicates only identical copies",
+      "failedTests": [
+        "resolution recovery custody deduplicates only identical copies"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "copy-comparison",
+      "outcome": "killed",
+      "expectedFailure": "freezes both exact copies including whitespace and damaged strings",
+      "failedTests": [
+        "resolution recovery custody freezes both exact copies including whitespace and damaged strings"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "foreign-key",
+      "outcome": "killed",
+      "expectedFailure": "refuses unowned or malformed source key",
+      "failedTests": [
+        "resolution recovery custody refuses unowned or malformed source key openplan:translation-generation:76000000-0000-4000-8000-000000000098:76000000-0000-4000-8000-000000000003:76000000-0000-4000-8000-000000000004",
+        "resolution recovery custody refuses unowned or malformed source key openplan:translation-generation:76000000-0000-4000-8000-000000000001:76000000-0000-4000-8000-000000000098:76000000-0000-4000-8000-000000000004",
+        "resolution recovery custody refuses unowned or malformed source key openplan:translation-resolution:76000000-0000-4000-8000-000000000001:76000000-0000-4000-8000-000000000098:76000000-0000-4000-8000-000000000003:76000000-0000-4000-8000-000000000004:76000000-0000-4000-8000-000000000005",
+        "resolution recovery custody refuses unowned or malformed source key unrelated:76000000-0000-4000-8000-000000000004"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "malformed-resolution",
+      "outcome": "killed",
+      "expectedFailure": "refuses unowned or malformed source key",
+      "failedTests": [
+        "resolution recovery custody refuses unowned or malformed source key openplan:translation-resolution:76000000-0000-4000-8000-000000000001:76000000-0000-4000-8000-000000000002:76000000-0000-4000-8000-000000000003:76000000-0000-4000-8000-000000000004:bad"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "source-scope",
+      "outcome": "killed",
+      "expectedFailure": "refuses a readable generation from another workspace",
+      "failedTests": [
+        "resolution recovery custody refuses a readable generation from another workspace in the stored copy",
+        "resolution recovery custody refuses a readable generation from another workspace in the page copy"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "source-collision",
+      "outcome": "killed",
+      "expectedFailure": "rejects incoherent bundle source-collision",
+      "failedTests": [
+        "resolution recovery custody rejects incoherent bundle source-collision"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "request-inventory",
+      "outcome": "killed",
+      "expectedFailure": "rejects incoherent bundle request",
+      "failedTests": [
+        "resolution recovery custody rejects incoherent bundle request"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "resolution-inventory",
+      "outcome": "killed",
+      "expectedFailure": "rejects incoherent bundle resolution",
+      "failedTests": [
+        "resolution recovery custody rejects incoherent bundle resolution"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "copy-inventory",
+      "outcome": "killed",
+      "expectedFailure": "rejects incoherent bundle copy",
+      "failedTests": [
+        "resolution recovery custody rejects incoherent bundle copy"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "overwrite-pending",
+      "outcome": "killed",
+      "expectedFailure": "retains exact intent for retry and refuses overwriting another retained intent",
+      "failedTests": [
+        "resolution recovery custody retains exact intent for retry and refuses overwriting another retained intent"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-intent-readback",
+      "outcome": "killed",
+      "expectedFailure": "refuses unretained dispatch intent on readback failure",
+      "failedTests": [
+        "resolution recovery custody refuses unretained dispatch intent on readback failure"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "read-unbound-key",
+      "outcome": "killed",
+      "expectedFailure": "reads only current scope and retains unreadable and mismatched bundles",
+      "failedTests": [
+        "resolution recovery custody reads only current scope and retains unreadable and mismatched bundles"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-payload-checksum",
+      "outcome": "killed",
+      "expectedFailure": "rejects invalid payloadSha256 before touching originals",
+      "failedTests": [
+        "resolution recovery custody rejects invalid payloadSha256 before touching originals"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-result-checksum",
+      "outcome": "killed",
+      "expectedFailure": "rejects invalid resultSha256 before touching originals",
+      "failedTests": [
+        "resolution recovery custody rejects invalid resultSha256 before touching originals"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-receipt-binding",
+      "outcome": "killed",
+      "expectedFailure": "rejects a correctly hashed receipt from another intent",
+      "failedTests": [
+        "resolution recovery custody rejects a correctly hashed receipt from another intent"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-receipt-inventory",
+      "outcome": "killed",
+      "expectedFailure": "requires every copy receipt before creating an archive",
+      "failedTests": [
+        "resolution recovery custody requires every copy receipt before creating an archive"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-archive-verification",
+      "outcome": "killed",
+      "expectedFailure": "rejects invalid payloadSha256 before touching originals",
+      "failedTests": [
+        "resolution recovery custody rejects invalid payloadSha256 before touching originals"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-pending-binding",
+      "outcome": "killed",
+      "expectedFailure": "refuses a different pending bundle before archiving",
+      "failedTests": [
+        "resolution recovery custody refuses a different pending bundle before archiving"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "replace-archive",
+      "outcome": "killed",
+      "expectedFailure": "refuses replacing an existing different archive",
+      "failedTests": [
+        "resolution recovery custody refuses replacing an existing different archive"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-archive-write",
+      "outcome": "killed",
+      "expectedFailure": "archives verified receipts and exact copies before retiring both source and intent",
+      "failedTests": [
+        "resolution recovery custody archives verified receipts and exact copies before retiring both source and intent"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-archive-readback",
+      "outcome": "killed",
+      "expectedFailure": "preserves originals when archive write has readback failure",
+      "failedTests": [
+        "resolution recovery custody preserves originals when archive write has readback failure"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-pending-recheck",
+      "outcome": "killed",
+      "expectedFailure": "preserves originals when archive write has pending-changed failure",
+      "failedTests": [
+        "resolution recovery custody preserves originals when archive write has pending-changed failure"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-first-lifecycle",
+      "outcome": "killed",
+      "expectedFailure": "aborts stale lifecycle at checkpoint 1 before retiring originals",
+      "failedTests": [
+        "resolution recovery custody aborts stale lifecycle at checkpoint 1 before retiring originals"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-second-lifecycle",
+      "outcome": "killed",
+      "expectedFailure": "aborts stale lifecycle at checkpoint 2 before retiring originals",
+      "failedTests": [
+        "resolution recovery custody aborts stale lifecycle at checkpoint 2 before retiring originals"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "delete-changed-source",
+      "outcome": "killed",
+      "expectedFailure": "preserves changed or absent original different",
+      "failedTests": [
+        "resolution recovery custody preserves changed or absent original different"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-source-retirement-check",
+      "outcome": "killed",
+      "expectedFailure": "retries after failed source retirement using replay receipts and the existing archive",
+      "failedTests": [
+        "resolution recovery custody retries after failed source retirement using replay receipts and the existing archive"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-pending-retirement-check",
+      "outcome": "killed",
+      "expectedFailure": "retries after failed pending retirement using replay receipts and the existing archive",
+      "failedTests": [
+        "resolution recovery custody retries after failed pending retirement using replay receipts and the existing archive"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "erase-changed-pending",
+      "outcome": "killed",
+      "expectedFailure": "preserves a pending bundle changed during source retirement",
+      "failedTests": [
+        "resolution recovery custody preserves a pending bundle changed during source retirement"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unstable-replay-archive",
+      "outcome": "killed",
+      "expectedFailure": "retries after failed pending retirement using replay receipts and the existing archive",
+      "failedTests": [
+        "resolution recovery custody retries after failed pending retirement using replay receipts and the existing archive"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Native WebCrypto and actual recovery helper with synthetic receipts and in-memory Storage fault injection. No React lifecycle, browser navigation, cross-tab scheduling, server/database join, quota capacity measurement or end-to-end acceptance."
+}

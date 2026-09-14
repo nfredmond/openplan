@@ -44,6 +44,10 @@ export async function POST(request: NextRequest, context: { params: Promise<{ ca
     if (access.error) return refused("unavailable", 503);
     if (!access.campaign) return refused("forbidden", 404);
     if (!access.allowed) return refused("forbidden", 403);
+    // Pin a persisted browser intent to its original login and workspace.
+    // These headers constrain the authenticated scope; they never grant access.
+    if (request.headers.get("x-openplan-expected-user") !== user.id
+      || request.headers.get("x-openplan-expected-workspace") !== access.campaign.workspace_id) return refused("forbidden", 403);
     const packet = await resolveTranslationGenerationRequest(client, { campaignId: params.data.campaignId, workspaceId: access.campaign.workspace_id, actorId: user.id }, intent.data);
     audit.info("translation_generation_resolved", { campaignId: params.data.campaignId, actorId: user.id, requestId: intent.data.requestId,
       resolutionId: intent.data.resolutionId, replayed: packet.replayed });

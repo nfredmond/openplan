@@ -1,10 +1,11 @@
 {
   "sourceSha256": {
     "helper": "5f3107dd7fb62c6ee0ef9c65b1617fe1ad933a9e58c5f584e6b0c367cdacb5c8",
-    "panel": "db3fd0a7e9ab05b3daab297bae22b6e61ba46b97b44dd75436a64f6e55cde201"
+    "panel": "8c381ffcbe9de4a40243247c8f59a5ca46c17d874760df4a5c5bfb361364f044",
+    "resolution": "e5d47c9d64a421626e102b90cbb58003431e2e984c6bcedb51d0f162a5039b0f"
   },
-  "testSha256": "31ca8615d497ad1d2949c232697066a4350cb3fd7dcfaee6b03c761762d1e275",
-  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-recovery-controls-1789355808293966258",
+  "testSha256": "a6581feb744eefad8ed03da49d8f2cc38df36c357fb5b8bca15ab40e9da007ab",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-recovery-controls-1789362136234682904",
   "results": [
     {
       "case": "baseline",
@@ -22,6 +23,13 @@
     },
     {
       "case": "harmless-panel",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-resolution",
       "outcome": "survived",
       "expectedFailure": null,
       "failedTests": [],
@@ -55,6 +63,15 @@
       "expectedOutcome": true
     },
     {
+      "case": "stale-generation-message",
+      "outcome": "killed",
+      "expectedFailure": "clears the earlier unconfirmed message after verified resolution",
+      "failedTests": [
+        "generation editor custody clears the earlier unconfirmed message after verified resolution"
+      ],
+      "expectedOutcome": true
+    },
+    {
       "case": "omit-archive-readback",
       "outcome": "killed",
       "expectedFailure": "keeps the refused source copy when archive readback fails",
@@ -64,5 +81,5 @@
       "expectedOutcome": true
     }
   ],
-  "limits": "React and storage failures with synthetic records and mocked HTTP. Tests protect retention and refusal behavior; they do not provide a new way to resolve an unreadable request with no retrievable server record, prove real downloads, or test lifecycle cancellation or public generation."
+  "limits": "React and storage failures with synthetic records and mocked HTTP. Tests protect retention and refusal behavior; resolution archive readback uses the real controller and checksum helper with synthetic absent-request receipts. No real downloads, HTTP/database join, browser lifecycle or public generation acceptance."
 }
