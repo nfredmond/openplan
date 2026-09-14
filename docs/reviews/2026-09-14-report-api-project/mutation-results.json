@@ -1,0 +1,55 @@
+{
+  "sources": {
+    "openplan/src/app/api/reports/[reportId]/route.ts": "437cd959a5fa3e7d660e75544a8da14d100e04f510ce9f691cdca58a420c7e5c",
+    "openplan/src/lib/reports/api.ts": "e68581fd5b3aa34f4eec3c7022d64939a9162938c7d2386700567c63270a0c02"
+  },
+  "cases": [
+    {
+      "case": "baseline",
+      "passed": 17,
+      "failed": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless",
+      "passed": 17,
+      "failed": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unconditional-project-read",
+      "passed": 16,
+      "failed": [
+        "/api/reports/[reportId] GET reads a consultation report without a project lookup"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "never-read-project",
+      "passed": 15,
+      "failed": [
+        "/api/reports/[reportId] GET returns report detail payload",
+        "/api/reports/[reportId] GET retains the named project and reports a failed project read"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "swallow-project-error",
+      "passed": 16,
+      "failed": [
+        "/api/reports/[reportId] GET retains the named project and reports a failed project read"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-project-projection",
+      "passed": 16,
+      "failed": [
+        "/api/reports/[reportId] GET reads a consultation report without a project lookup"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Real handler and shared access resolver with mocked database queries. Projections asserted; native API, real RLS and UI checked separately.",
+  "testSha256": "223f7d87a595b115f28489666b3adcd64562447059607314bfb59605f73c3f81"
+}

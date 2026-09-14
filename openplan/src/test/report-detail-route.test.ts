@@ -245,6 +245,7 @@ describe("/api/reports/[reportId]", () => {
       report: {
         id: "11111111-1111-4111-8111-111111111111",
       },
+      project: { id: "44444444-4444-4444-8444-444444444444", name: "Nevada County Safety Action Program" },
       sections: [expect.objectContaining({ id: "section-1" })],
       runs: [expect.objectContaining({ id: "55555555-5555-4555-8555-555555555555" })],
       artifacts: [expect.objectContaining({ id: "artifact-1" })],
@@ -253,6 +254,34 @@ describe("/api/reports/[reportId]", () => {
         corridor: "Central Avenue",
       }],
     });
+  });
+
+  it("GET reads a consultation report without a project lookup", async () => {
+    const reportType = "board_packet";
+    reportMaybeSingleMock.mockResolvedValueOnce({
+      data: { id: "11111111-1111-4111-8111-111111111111", workspace_id: "33333333-3333-4333-8333-333333333333", project_id: null, report_type: reportType, metadata_json: {} },
+      error: null,
+    });
+    projectMaybeSingleMock.mockResolvedValue({ data: null, error: { code: "22P02", message: 'invalid input syntax for type uuid: "null"' } });
+    const response = await getReportDetail(new NextRequest("http://localhost/api/reports/11111111-1111-4111-8111-111111111111"), {
+      params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+    });
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ report: { report_type: reportType, project_id: null }, project: null, sections: [expect.objectContaining({ id: "section-1" })], runs: [expect.objectContaining({ id: "55555555-5555-4555-8555-555555555555" })], artifacts: [expect.objectContaining({ id: "artifact-1" })] });
+    expect(projectSelectMock).not.toHaveBeenCalled();
+    expect(reportSelectMock).toHaveBeenCalledWith(expect.stringContaining("project_id"));
+    expect(membershipEqWorkspaceMock).toHaveBeenCalledWith("workspace_id", "33333333-3333-4333-8333-333333333333");
+  });
+
+  it("GET retains the named project and reports a failed project read", async () => {
+    projectMaybeSingleMock.mockResolvedValueOnce({ data: null, error: { code: "57014", message: "statement timeout" } });
+    const response = await getReportDetail(new NextRequest("http://localhost/api/reports/11111111-1111-4111-8111-111111111111"), {
+      params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+    });
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: "Failed to load report project" });
+    expect(projectEqMock).toHaveBeenCalledWith("id", "44444444-4444-4444-8444-444444444444");
+    expect(sectionsSelectMock).not.toHaveBeenCalled();
   });
 
   it("PATCH refuses a held orthophoto from another project", async () => {

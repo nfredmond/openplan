@@ -130,11 +130,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
     }
 
-    const { data: project, error: projectError } = await access.supabase
-      .from("projects")
-      .select("id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at")
-      .eq("id", access.report.project_id)
-      .maybeSingle();
+    const { data: project, error: projectError } = access.report.project_id
+      ? await access.supabase
+          .from("projects")
+          .select("id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at")
+          .eq("id", access.report.project_id)
+          .maybeSingle()
+      : { data: null, error: null };
 
     if (projectError) {
       audit.error("report_project_lookup_failed", {
