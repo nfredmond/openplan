@@ -30,6 +30,7 @@ export async function retainPendingDecision(storage: DecisionStorage, raw: Pendi
   const pending = await verified(raw, raw), key = pendingDecisionKey(pending), old = storage.getItem(key);
   if (updating && old === null) throw new Error("The local request changed in another tab");
   if (old !== null && !same(immutable(await verified(JSON.parse(old), pending)), immutable(pending))) throw new Error("A different request already owns this recovery key");
+  if (storage.getItem(key) !== old) throw new Error("The local request changed in another tab");
   const text = JSON.stringify(pending);
   storage.setItem(key, text);
   if (storage.getItem(key) !== text) throw new Error("The local explanation could not be retained");
@@ -54,9 +55,34 @@ export async function readPendingDecisions(storage: DecisionStorage, scope: Deci
 
 /** Clear only the matching request after its complete, actor-bound server receipt verifies. */
 export async function finishPendingDecision(storage: DecisionStorage, pending: PendingDecisionLink, receipt: unknown) {
-  await readDecisionLinkReceipt(receipt, pending, pending.intent);
+  const { link } = await readDecisionLinkReceipt(receipt, pending, pending.intent);
+  if (link.context_text !== pending.context.contextText || link.context_sha256 !== pending.context.contextSha256) throw new Error("The receipt has different retained sources; the local copy was kept");
   const key = pendingDecisionKey(pending), raw = storage.getItem(key);
   if (raw !== null && !same(immutable(await verified(JSON.parse(raw), pending)), immutable(pending))) throw new Error("The local recovery copy changed; it was kept");
+  if (storage.getItem(key) !== raw) throw new Error("The local recovery copy changed; it was kept");
   storage.removeItem(key);
   if (storage.getItem(key) !== null) throw new Error("The confirmed request is saved; local recovery cleanup needs another attempt");
+}
+
+/** One transport attempt follows durable local retention; only an exact receipt clears it. */
+export async function sendPendingDecision(storage: DecisionStorage, pending: PendingDecisionLink, transport: typeof fetch = fetch) {
+  await retainPendingDecision(storage, { ...pending, phase: "unconfirmed" }, true);
+  try {
+    const response = await transport(`/api/engagement/campaigns/${pending.campaignId}/decision-links`, {
+      method: "POST", credentials: "same-origin", cache: "no-store",
+      headers: { "Content-Type": "application/json", "x-openplan-expected-user": pending.actorId, "x-openplan-expected-workspace": pending.workspaceId },
+      body: JSON.stringify(pending.intent),
+    });
+    const body: unknown = await response.json();
+    if (response.ok) {
+      await finishPendingDecision(storage, pending, body);
+      return { confirmed: true, message: "Decision link saved. Its original sources and explanation are retained." };
+    }
+    const refusal = z.object({ kind: z.enum(["invalid", "missing", "conflict"]) }).safeParse(body);
+    if (refusal.success && response.status === { invalid: 400, missing: 404, conflict: 409 }[refusal.data.kind]) {
+      await retainPendingDecision(storage, { ...pending, phase: refusal.data.kind }, true);
+      return { confirmed: false, message: "This request was refused. Its original explanation is retained below. Review current sources before a new request." };
+    }
+  } catch { /* Keep the same request after transport, receipt or cleanup failure. */ }
+  return { confirmed: false, message: "The save is unconfirmed. Keep this request and retry it; OpenPlan will check for its original receipt." };
 }

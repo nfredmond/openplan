@@ -1,0 +1,167 @@
+{
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/editor-contract-1789381400011908965",
+  "sourceSha256": {
+    "src/lib/engagement/pending-decision-link.ts": "0faf212de6774a761c3dcc7c6c06c5bf53f5858cce7cb3b14396f503a1838e0f",
+    "src/components/engagement/decision-links-panel.tsx": "69cc9fd56cc45cda30590f399bbd3c021b4314bf8ba71c65f76291959e3e1fc2",
+    "src/components/engagement/close-loop-builder.tsx": "74dc5fc499b128b20447d15b323abd868ae672eb339569ee66bb5a2109fabe5e",
+    "src/lib/engagement/decision-link-access.ts": "eb4924b7dff3081fdc46b5ffaac5250ee58e32739e75d7e1c9ada8b773331d8f",
+    "src/test/pending-decision-link.test.ts": "c56a7060f48079e9569efe5b9d424ee9acaa046ccf82500d43d904d3e656ac84",
+    "src/test/decision-links-panel.test.tsx": "ccfea522ee3bab09fb72ba6d752bff8014bb3156f128c9f2f3daf9568c73f99b",
+    "src/test/engagement-response-recovery.test.tsx": "acab85b8d0a94d490f417a18b917a72d20dfec441910a92f51df488e2f150525",
+    "src/test/close-loop-builder.test.tsx": "c9ba71c84f21c65b3e3df7ef48add5197a8dc2a8afa17c21fa5c2124fe77a8f9",
+    "src/test/workspace-write-role-gate-guard.test.ts": "fdf0fc33014ba223296560e5addb014b518deec46e5b4b4625f9fecd005f569e",
+    "src/test/every-api-route-has-a-caller.test.ts": "fa9bdade6915f2d08ce8f1352a992e43f52bd89f43c2f01babac23c28429f42d",
+    "src/test/fixtures/decision-link-native.json": "b464027e4d1d66bc43bc2652e7efa3a2104314be45fe0ee6d586f2cb19898931"
+  },
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "test": null,
+      "passed": 80,
+      "failed": 0
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived",
+      "test": null,
+      "passed": 80,
+      "failed": 0
+    },
+    {
+      "case": "storage-readback",
+      "outcome": "killed",
+      "test": "does not send when storage fails or silently discards the copy",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "retry-recreates",
+      "outcome": "killed",
+      "test": "does not recreate a request removed in another tab",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "intent-replacement",
+      "outcome": "killed",
+      "test": "refuses a different intent sharing a recovery key",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "retain-concurrent-replacement",
+      "outcome": "killed",
+      "test": "does not overwrite a request replaced while its old bytes are being checked",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "cleanup-concurrent-replacement",
+      "outcome": "killed",
+      "test": "does not delete changed local intent or a copy replaced during cleanup",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "cleanup-unchanged-intent",
+      "outcome": "killed",
+      "test": "does not delete changed local intent or a copy replaced during cleanup",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "cleanup-readback",
+      "outcome": "killed",
+      "test": "reports cleanup failure without treating a retained copy as cleared",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "reviewed-hash",
+      "outcome": "killed",
+      "test": "refuses a nonwithdrawal whose reviewed hash differs from the intent",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "withdrawal-original",
+      "outcome": "killed",
+      "test": "refuses a withdrawal receipt with a different valid original context",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "retry-identity",
+      "outcome": "killed",
+      "test": "retries a lost acknowledgement with the original ID, headers and complete intent",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "expected-account",
+      "outcome": "killed",
+      "test": "retries a lost acknowledgement with the original ID, headers and complete intent",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "refusal-status",
+      "outcome": "killed",
+      "test": "keeps malformed replies, permission changes and contradictory refusals unconfirmed",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "lost-ack-retention",
+      "outcome": "killed",
+      "test": "retries a lost acknowledgement with the original ID, headers and complete intent",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "corrupt-retention",
+      "outcome": "killed",
+      "test": "keeps corrupt bytes and mismatched keys available for recovery",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "response-builder-entry",
+      "outcome": "killed",
+      "test": "opens from the actual response builder and retains a reviewed link before sending",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "snapshot-account",
+      "outcome": "killed",
+      "test": "does not display a snapshot from another signed-in account",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "correction-predecessor",
+      "outcome": "killed",
+      "test": "preserves earlier history when saving a reviewed correction",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "withdrawal-preserved-context",
+      "outcome": "killed",
+      "test": "withdraws a retained link when current response and decision records are unavailable",
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "case": "role-helper-call",
+      "outcome": "killed",
+      "test": "recognizes only gates that actually consult a role",
+      "passed": 0,
+      "failed": 1
+    }
+  ],
+  "sourcesRestored": true,
+  "limits": "Real React components, browser storage interface and typed receipt verification with synthetic native packets and mocked fetch. Static role-helper inventory checks invocation presence, not runtime control flow. Does not prove browser rendering, real storage events across tabs, live HTTP/database integration, publication or usable downloads."
+}

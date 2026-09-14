@@ -25,7 +25,7 @@ function receipt(init: RequestInit, changes = {}) {
     replayed: false, removed: init.method === "DELETE", becamePublished: false, ...changes };
 }
 function mount(rows = [entry], owner = userId) {
-  return render(<EngagementCloseLoopBuilder userId={owner} campaignId={campaignId} categories={[]} initialEntries={rows} />);
+  return render(<EngagementCloseLoopBuilder workspaceId="50000000-0000-4000-8000-000000000005" userId={owner} campaignId={campaignId} categories={[]} initialEntries={rows} />);
 }
 function startEdit() {
   fireEvent.change(screen.getByLabelText("Reason for this change"), { target: { value: "Correct the work program reference" } });

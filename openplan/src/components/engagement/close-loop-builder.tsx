@@ -6,6 +6,7 @@ import { ResponseBroadcastNotice } from "./response-broadcast-notice";
 import type { PendingResponse } from "@/lib/engagement/pending-response";
 import type { ResponseWriteIntent } from "@/lib/engagement/response-write";
 import { ResponseHistory } from "./response-history";
+import { DecisionLinksPanel } from "./decision-links-panel";
 import { Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -185,6 +186,7 @@ function CloseLoopCard({ entry, categories, submit, broadcast }: {
 }
 
 export function EngagementCloseLoopBuilder({
+  workspaceId,
   userId,
   campaignId,
   categories,
@@ -192,6 +194,7 @@ export function EngagementCloseLoopBuilder({
   initialReadError = false,
   sourceItems = [],
 }: {
+  workspaceId: string;
   userId: string;
   campaignId: string;
   categories: Category[];
@@ -318,6 +321,7 @@ export function EngagementCloseLoopBuilder({
       </div>
 
       <ResponseHistory campaignId={campaignId} revision={historyRevision} />
+      <DecisionLinksPanel actorId={userId} workspaceId={workspaceId} campaignId={campaignId} responses={entries} responsesUnavailable={readError || readLoading} revision={historyRevision} />
 
       {readError && <div className="mt-4 space-y-2">
         <p role="alert" className={ERROR_CLASS}>Saved staff responses could not be loaded. Retry before adding or changing a response.</p>

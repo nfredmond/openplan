@@ -1,5 +1,61 @@
 # Response-to-decision context in progress
 
+## Editor implementation checkpoint
+
+The real campaign response builder now opens `DecisionLinksPanel`, scoped by
+the current user, workspace and campaign. It reads eligible project decisions,
+previews private response/decision/source context, saves a link or reviewed
+successor, retains earlier versions, and can withdraw using original context
+after current records disappear. It does not publish private source words or
+approve a decision. This is implemented code, not yet browser acceptance.
+
+Recovery uses one local-storage key per actor/workspace/campaign/request. The
+exact context and intent are retained and read back before transport. Lost
+acknowledgments retry the same ID. Definitive refusals preserve the old request
+while allowing a newly reviewed attempt; malformed replies, permission changes
+and uncertain outcomes stay unconfirmed. Corrupt local bytes remain downloadable
+and block new saves. Self-service resolution of corrupt copies remains unfinished.
+Receipt cleanup checks the exact retained context even for withdrawal, and
+refuses concurrent local replacement. A confirmed old retry does not clear a
+different explanation currently being typed.
+
+The two failures from full QA at `dc6e4fcd` are resolved in the focused suite:
+production callers now exist, and the role inventory follows `decisionLinkAccess`
+to the actual `loadCampaignAccess` call. The role checker is static invocation
+evidence, not runtime control-flow proof. Existing HTTP tests cover actual
+handler refusals separately.
+
+`prove-decision-editor.py` ran 80 focused tests for baseline and harmless comment
+controls. All 19 targeted mutations failed executed assertions; exact source
+hashes and limits are in `decision-editor-results.json`. These cover storage
+readback, missing/replaced recovery copies, cleanup, reviewed hashes, original
+withdrawal context, exact retry identity/account headers, refusal classification,
+lost acknowledgments, corrupt bytes, the actual response-builder entry point,
+snapshot account checks, predecessor wiring and the role helper invocation.
+They use real React components and typed checks with mocked HTTP; browser layout,
+cross-tab storage events and actual downloads still require live evidence.
+
+The first typecheck command was mistakenly invoked from the repository root
+and did not run. The corrected package-root check found missing workspace props
+in an existing recovery fixture and overly narrow inferred native fixture types;
+those fixtures were corrected. Lint also caught an unescaped JSX apostrophe,
+which was fixed. Full QA is the next check on this checkpoint.
+
+`prove-command-boundaries.py` is now retained here. Its native baseline and
+harmless controls passed 13 cases, and five grant/malformed-input mutations
+failed. `decision-command-boundaries-results.json` records the candidate hashes
+and private logs. The application database returned to 339/20 with candidates
+absent after rollback. The initial private anonymous-grant mutation had survived
+because its checksum argument queried a fixture table before calling the command;
+the corrected fixture supplies a preloaded setting, so the intended command grant
+is now reached and tested. No production command change was needed for this gap.
+
+Next activate the additive migration and installed RLS checks, then run identified
+desktop/390px browser journeys, keyboard/console inspection and artifact/retry
+acceptance. Complete explicit public explanation and export/report lineage before
+claiming the full response-to-decision increment. Keep this unfinished editor on
+the existing work branch until its database integration is ready for main.
+
 ## Usage-reset handoff, September 14
 
 Resume in `/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13`,

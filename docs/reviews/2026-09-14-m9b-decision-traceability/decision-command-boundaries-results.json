@@ -1,0 +1,44 @@
+{
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/command-boundaries-1789381422026953400",
+  "candidateSha256": "5bf2905c17a5205ece6bd4218d6489840c7a88602b58a69a2eba203c634ccd3b",
+  "contextCandidateSha256": "44e599b5ab9b1e082179587c02a7c67a031dae813f28eec026f7be948156c342",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived",
+      "expectedFailure": null
+    },
+    {
+      "case": "anonymous-command-grant",
+      "outcome": "killed",
+      "expectedFailure": "anon command execution was not refused"
+    },
+    {
+      "case": "service-command-grant",
+      "outcome": "killed",
+      "expectedFailure": "service_role command execution was not refused"
+    },
+    {
+      "case": "direct-staff-insert",
+      "outcome": "killed",
+      "expectedFailure": "Direct staff insert was not refused"
+    },
+    {
+      "case": "malformed-context",
+      "outcome": "killed",
+      "expectedFailure": "invalid-context was not refused"
+    },
+    {
+      "case": "self-predecessor",
+      "outcome": "killed",
+      "expectedFailure": "self-predecessor was not refused"
+    }
+  ],
+  "candidateAndFixturesRolledBack": true,
+  "limits": "Native serial command grants and malformed-input checks. No live HTTP, browser recovery or public disclosure."
+}

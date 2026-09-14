@@ -771,6 +771,7 @@ export default async function EngagementCampaignDetailPage({
         />
 
         <EngagementCloseLoopBuilder
+          workspaceId={campaign.workspace_id}
           key={`${user.id}:${campaign.id}`}
           userId={user.id}
           campaignId={campaign.id}

@@ -40,7 +40,7 @@ describe("EngagementCloseLoopBuilder", () => {
 
   it("links a manual reviewed response to selected contributions without AI",async()=>{
     const fetchSpy=vi.spyOn(global,"fetch").mockImplementation(async (_url, init) => acknowledged(entry({id:"20000000-0000-4000-8000-000000000003",source_item_ids:["30000000-0000-4000-8000-000000000001"]}), init));
-    render(<EngagementCloseLoopBuilder userId="staff-1" campaignId="10000000-0000-4000-8000-000000000001" categories={[]} initialEntries={[]} sourceItems={[{id:"30000000-0000-4000-8000-000000000001",title:"Safer crossing"}]}/>);
+    render(<EngagementCloseLoopBuilder workspaceId="50000000-0000-4000-8000-000000000005" userId="staff-1" campaignId="10000000-0000-4000-8000-000000000001" categories={[]} initialEntries={[]} sourceItems={[{id:"30000000-0000-4000-8000-000000000001",title:"Safer crossing"}]}/>);
     fireEvent.change(screen.getByPlaceholderText(/Safer crossings downtown/i),{target:{value:"Reviewed crossing response"}});
     const select=screen.getByLabelText("Contributions addressed") as HTMLSelectElement;
     select.options[0].selected=true;fireEvent.change(select);
@@ -54,7 +54,7 @@ describe("EngagementCloseLoopBuilder", () => {
     const created = entry({ id: "20000000-0000-4000-8000-000000000002", theme_title: "Transit gaps" });
     const fetchSpy = vi.spyOn(global, "fetch").mockImplementation(async (_url, init) => acknowledged(created, init));
 
-    render(<EngagementCloseLoopBuilder userId="staff-1" campaignId="10000000-0000-4000-8000-000000000001" categories={CATEGORIES} initialEntries={[]} />);
+    render(<EngagementCloseLoopBuilder workspaceId="50000000-0000-4000-8000-000000000005" userId="staff-1" campaignId="10000000-0000-4000-8000-000000000001" categories={CATEGORIES} initialEntries={[]} />);
 
     fireEvent.change(screen.getByPlaceholderText(/Safer crossings downtown/i), { target: { value: "Transit gaps" } });
     fireEvent.click(screen.getByRole("button", { name: /add entry/i }));
@@ -70,7 +70,7 @@ describe("EngagementCloseLoopBuilder", () => {
     const published = entry({ status: "published", published_at: "2026-07-22T01:00:00Z" });
     const fetchSpy = vi.spyOn(global, "fetch").mockImplementation(async (_url, init) => acknowledged(published, init));
 
-    render(<EngagementCloseLoopBuilder userId="staff-1" campaignId="10000000-0000-4000-8000-000000000001" categories={CATEGORIES} initialEntries={[entry()]} />);
+    render(<EngagementCloseLoopBuilder workspaceId="50000000-0000-4000-8000-000000000005" userId="staff-1" campaignId="10000000-0000-4000-8000-000000000001" categories={CATEGORIES} initialEntries={[entry()]} />);
 
     fireEvent.change(screen.getByLabelText("Reason for this change"), { target: { value: "Reviewed for publication" } });
     fireEvent.click(screen.getByRole("button", { name: /^publish$/i }));
@@ -104,7 +104,7 @@ describe("EngagementCloseLoopBuilder", () => {
       return Promise.resolve(acknowledged(created, init));
     });
 
-    render(<EngagementCloseLoopBuilder userId="staff-1" campaignId="10000000-0000-4000-8000-000000000001" categories={CATEGORIES} initialEntries={[]} />);
+    render(<EngagementCloseLoopBuilder workspaceId="50000000-0000-4000-8000-000000000005" userId="staff-1" campaignId="10000000-0000-4000-8000-000000000001" categories={CATEGORIES} initialEntries={[]} />);
     fireEvent.click(screen.getByRole("button", { name: /generate drafts/i }));
 
     // Honest offline labelling.
@@ -124,7 +124,7 @@ describe("staff response read recovery", () => {
 
   it("withholds empty counts and writes until the failed read recovers", async () => {
     const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(jsonResponse({ entries: [entry()] }));
-    render(<EngagementCloseLoopBuilder userId="staff-1" campaignId="10000000-0000-4000-8000-000000000001" categories={[]} initialEntries={[]} initialReadError />);
+    render(<EngagementCloseLoopBuilder workspaceId="50000000-0000-4000-8000-000000000005" userId="staff-1" campaignId="10000000-0000-4000-8000-000000000001" categories={[]} initialEntries={[]} initialReadError />);
     expect(screen.getByRole("alert")).toHaveTextContent("Saved staff responses could not be loaded");
     expect(screen.queryByText(/No entries yet/)).not.toBeInTheDocument();
     expect(screen.queryByText(/0 published, 0 total/)).not.toBeInTheDocument();
@@ -140,7 +140,7 @@ describe("staff response read recovery", () => {
 
   it("recognizes a recovered empty result as empty", async () => {
     vi.spyOn(global, "fetch").mockResolvedValue(jsonResponse({ entries: [] }));
-    render(<EngagementCloseLoopBuilder userId="staff-1" campaignId="10000000-0000-4000-8000-000000000001" categories={[]} initialEntries={[]} initialReadError />);
+    render(<EngagementCloseLoopBuilder workspaceId="50000000-0000-4000-8000-000000000005" userId="staff-1" campaignId="10000000-0000-4000-8000-000000000001" categories={[]} initialEntries={[]} initialReadError />);
     fireEvent.click(screen.getByRole("button", { name: "Retry loading responses" }));
     await screen.findByText(/No entries yet/);
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
@@ -154,7 +154,7 @@ describe("staff response read recovery", () => {
     ["duplicate identity", { entries: [entry(), entry()] }, true],
   ])("keeps known responses and the retry control after %s", async (_name, payload, ok) => {
     vi.spyOn(global, "fetch").mockResolvedValue(jsonResponse(payload, ok));
-    render(<EngagementCloseLoopBuilder userId="staff-1" campaignId="10000000-0000-4000-8000-000000000001" categories={[]} initialEntries={[entry()]} initialReadError />);
+    render(<EngagementCloseLoopBuilder workspaceId="50000000-0000-4000-8000-000000000005" userId="staff-1" campaignId="10000000-0000-4000-8000-000000000001" categories={[]} initialEntries={[entry()]} initialReadError />);
     fireEvent.click(screen.getByRole("button", { name: "Retry loading responses" }));
     await waitFor(() => expect(screen.getByRole("button", { name: "Retry loading responses" })).toBeEnabled());
     expect(screen.getByText("Safer crossings")).toBeVisible();
