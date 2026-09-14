@@ -1,3 +1,7 @@
+# Active synthetic generation browser server
+
+Read [GENERATION_BROWSER_IN_PROGRESS.md](GENERATION_BROWSER_IN_PROGRESS.md) first for the temporary server configuration and restoration instructions.
+
 # Latest installed browser checkpoint
 
 Read [INSTALLED_BROWSER_PROGRESS.md](INSTALLED_BROWSER_PROGRESS.md) first. Manual write/recovery/history and access journeys now ran on installed 336/17 with permissions preserved. A shared 404 console error remains recorded; the actual generation-worker-publication journey is next.
