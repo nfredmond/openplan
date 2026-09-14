@@ -17,11 +17,11 @@ export async function downloadEngagementReview(client:SupabaseClient,jobId:strin
  const service=createServiceRoleClient();
  const retained=await service.from('engagement_report_jobs').select('snapshot_text').eq('id',row.id).eq('campaign_id',row.campaign_id).maybeSingle();
  if(retained.error||!retained.data)return denied();
- // Public-format files are withdrawn if a contained public copy was redacted or withheld after capture.
- if(row.scope==='public') {
-  const snapshot=parseReviewSnapshot(retained.data.snapshot_text,row.snapshot_sha256);
-  if(!await publicReviewStillCurrent(service,snapshot))return denied();
- }
+ // Verify private archives too; public copies additionally track later withdrawal/redaction.
+ try {
+  const snapshot=await parseReviewSnapshot(retained.data.snapshot_text,row.snapshot_sha256,{campaignId:row.campaign_id,workspaceId:row.workspace_id,scope:row.scope});
+  if(row.scope==='public'&&!await publicReviewStillCurrent(service,snapshot))return denied();
+ } catch { return denied(); }
  const downloaded=await service.storage.from('report-artifacts').download(artifact.path);
  if(downloaded.error||!downloaded.data)return denied();
  const bytes=Buffer.from(await downloaded.data.arrayBuffer());

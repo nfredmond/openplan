@@ -1,0 +1,50 @@
+{
+  "ci": {
+    "runId": 34863342444,
+    "commit": "0ce1fb8b0823ab197616a4323b5c9bc974133586",
+    "conclusion": "success",
+    "logSha256": "7a372d662d9485ca56a8b417a19f9a4f4ef69450fab2a27be53e5967a2325aa0",
+    "jobs": [
+      {
+        "name": "ops scripts (python unit tests)",
+        "conclusion": "success"
+      },
+      {
+        "name": "verify (qa gate)",
+        "conclusion": "success"
+      },
+      {
+        "name": "worker (python unit tests)",
+        "conclusion": "success"
+      },
+      {
+        "name": "modeling scripts (python unit tests)",
+        "conclusion": "success"
+      },
+      {
+        "name": "order independence (shuffled vitest)",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "rls": {
+    "runId": 34863342471,
+    "commit": "0ce1fb8b0823ab197616a4323b5c9bc974133586",
+    "conclusion": "success",
+    "logSha256": "e6d230f3e1a43513d731fe7feea70f2eaf23c80f854b3f3f663441f73c47b45e",
+    "jobs": [
+      {
+        "name": "live RLS isolation",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "counts": {
+    "qaPassed": 15325,
+    "qaSkipped": 530,
+    "shuffledPassed": 15325,
+    "shuffledSkipped": 530,
+    "rlsPassed": 552,
+    "rlsFiles": 60
+  }
+}

@@ -1,3 +1,7 @@
+# Current usage-reset checkpoint
+
+September 14, 2026. The report-page fix is on main with successful final CI and RLS. Private decision-history exports are implemented in the development checkpoint, with focused and rollback-database evidence, but still need concurrency, real browser/artifact acceptance and full release checks. See [current resume instructions](RESUME.md). Historical entries below retain their original findings and are superseded where the current checkpoint differs. No v0.61 release is claimed.
+
 # Engagement report context and private decision lineage
 
 September 14, 2026. v0.60.0 is published; this is the next M9b development work.

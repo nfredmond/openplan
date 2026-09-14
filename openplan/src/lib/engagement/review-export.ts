@@ -4,14 +4,18 @@ import JSZip from "jszip";
 import { renderReportPdf } from "@/lib/reports/pdf";
 import { escapeCsvField } from "@/lib/export/csv";
 import { readStoredEngagementGeometry } from "./geometry";
+import { readDecisionLinkHistory, type VerifiedDecisionLink } from "./decision-links";
 
 type RecordData = Record<string, unknown>;
 export type EngagementReviewSnapshot = {
-  schema: 1; capturedAt: string; scope: "public" | "internal"; filters: RecordData;
+  capturedAt: string; scope: "public" | "internal"; filters: RecordData;
   campaign: { id: string; title: string; summary: string | null; configurationVersionId: string | null };
   items: RecordData[]; sessions: RecordData[]; answers: RecordData[]; responses: RecordData[];
   definitions: Array<{ id: string; sha256: string; definition: { campaign: RecordData; categories: RecordData[]; questions: RecordData[]; layers: RecordData[]; translations?: RecordData[] } }>;
-};
+} & ({ schema: 1; decisionLinks?: never } | {
+  schema: 2; scope: "internal"; workspaceId: string; decisionLinkHistoryScope: "campaign";
+  decisionLinkCount: number; decisionLinks: VerifiedDecisionLink[];
+});
 export type EngagementReviewFile = { format: "pdf" | "xlsx" | "zip"; contentType: string; bytes: Buffer; checksum: string };
 const escape = (value: unknown) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 const text = (value: unknown) => value == null ? "" : typeof value === "object" ? JSON.stringify(value) : String(value);
@@ -21,11 +25,22 @@ function contributionGeometry(row: RecordData) {
   return readStoredEngagementGeometry(row.geometry ?? (typeof row.longitude === "number" && typeof row.latitude === "number" ? { type: "Point", coordinates: [row.longitude, row.latitude] } : null));
 }
 
-export function parseReviewSnapshot(snapshotText: string, checksum: string): EngagementReviewSnapshot {
+export async function parseReviewSnapshot(snapshotText: string, checksum: string, expected?: { campaignId: string; workspaceId: string; scope: string }): Promise<EngagementReviewSnapshot> {
   if (createHash("sha256").update(snapshotText).digest("hex") !== checksum) throw new Error("Campaign snapshot checksum mismatch");
   const value = JSON.parse(snapshotText) as EngagementReviewSnapshot;
-  if (value.schema !== 1 || !["public", "internal"].includes(value.scope) || !value.campaign?.id || ![value.items, value.sessions, value.answers, value.responses, value.definitions].every(Array.isArray)) throw new Error("Unsupported campaign snapshot");
+  if (!value || ![1, 2].includes(value.schema) || !["public", "internal"].includes(value.scope) || !value.campaign?.id || ![value.items, value.sessions, value.answers, value.responses, value.definitions].every(Array.isArray)) throw new Error("Unsupported campaign snapshot");
   if (value.scope === "public" && (value.items.some((row) => row.status !== "approved" || "moderation_notes" in row || "metadata_json" in row || row.review_reason != null || row.review_expected_updated_at != null) || value.sessions.some((row) => row.status !== "approved" || "respondent_fingerprint" in row))) throw new Error("Private records found in a public snapshot");
+  const historyFields = ["workspaceId", "decisionLinkHistoryScope", "decisionLinkCount", "decisionLinks"];
+  if (value.schema === 1 && historyFields.some(field => field in value)) throw new Error("Private decision history found in a legacy or public snapshot");
+  if (expected && (value.campaign.id !== expected.campaignId || value.scope !== expected.scope)) throw new Error("Campaign snapshot scope differs");
+  if (value.schema === 2) {
+    if (value.scope !== "internal" || value.decisionLinkHistoryScope !== "campaign" || typeof value.workspaceId !== "string"
+      || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value.workspaceId)
+      || (expected && value.workspaceId !== expected.workspaceId)) throw new Error("Private decision history scope differs");
+    const history = await readDecisionLinkHistory({ entryCount: value.decisionLinkCount, entries: value.decisionLinks },
+      { campaignId: value.campaign.id, workspaceId: value.workspaceId });
+    value.decisionLinks = history.entries;
+  }
   const ids = new Set(value.items.map((row) => row.id));
   if (ids.size !== value.items.length || new Set(value.answers.map((row) => row.id)).size !== value.answers.length) throw new Error("Duplicate snapshot identifiers");
   return value;
@@ -122,6 +137,24 @@ export function campaignQuestionSummary(snapshot: EngagementReviewSnapshot) {
   return rows;
 }
 
+/** Historical evidence is private and campaign-wide, independent of participation filters. */
+function decisionHistoryHtml(snapshot: EngagementReviewSnapshot): string {
+  if (snapshot.scope !== "internal") return "";
+  if (snapshot.schema === 1) return '<h2 id="decision-history">Decision history unavailable in this saved format</h2><p>This earlier internal snapshot did not retain decision-link history. This is missing evidence, not a count of zero. Prepare a new internal review to capture the history now available; the earlier files remain unchanged.</p>';
+  return `<h2 id="decision-history">Private decision history</h2><p>${snapshot.decisionLinks.length} saved actions across the entire consultation, including original links, refreshed evidence and withdrawals. The contribution status, category and date filters above do not filter this history. These are the exact versions reviewed at each action, not current project or response content. A recorded link does not establish approval, implementation or representative public support. Full original context and definitions remain in the workbook and portable snapshot.</p>${snapshot.decisionLinks.map(row => {
+    const context = row.context;
+    return `<article class="entry"><h3>${escape(row.operation === "link" ? "Original link" : row.operation === "refresh" ? "Refreshed evidence" : "Withdrawn link")} · ${escape(context.decision.title)}</h3>
+    <p class="meta">Action ${escape(row.id)} | Previous action ${escape(row.predecessor_id ?? "None")}<br>Saved ${escape(row.created_at)} | Actor ${escape(row.actor_id)}<br>Response ${escape(row.response_id)} | Decision ${escape(row.decision_id)} | Project ${escape(row.project_id)}<br>Payload SHA-256 ${row.payload_sha256}<br>Context SHA-256 ${row.context_sha256}</p>
+    <h4>Reason for this action</h4>${reportNarrative(row.reason,row.id)}
+    <p>Retained project: ${escape(context.project.name)}. Retained decision status: ${escape(context.decision.status)}.</p>
+    <h4>Retained decision rationale</h4>${reportNarrative(context.decision.rationale,row.id)}
+    <h4>Retained staff response</h4><p>${escape(context.response.theme_title)} · ${escape(context.response.status)} · revision ${context.responseHistory.revision}</p>
+    <h4>You said</h4>${reportNarrative(context.response.you_said,row.response_id)}<h4>Agency response</h4>${reportNarrative(context.response.we_did,row.response_id)}
+    <h4>Retained source contributions</h4>${context.sources.map(source=>`<section><p class="meta">Source ${source.position}: ${escape(source.itemId)} | ${source.availability} | original configuration ${source.configurationAvailability}</p>${source.record ? `<h4>${escape(source.record.title)}</h4>${reportNarrative(source.record.body,source.itemId)}` : '<p>Source content was unavailable when this evidence was saved.</p>'}</section>`).join('') || '<p>No source contributions were linked to this retained response.</p>'}
+    <p class="meta">Original configuration definitions: ${context.configurations.map(definition=>`${escape(definition.id)} / SHA-256 ${definition.definitionSha256}`).join('; ') || 'None retained'}</p></article>`;
+  }).join('')}`;
+}
+
 export function buildCampaignReviewHtml(snapshot: EngagementReviewSnapshot, checksum: string, photos: Map<string,Buffer> = new Map()): string {
   const questionSummary = campaignQuestionSummary(snapshot);
   const missing = snapshot.items.filter((row) => !row.configuration_version_id).length;
@@ -141,6 +174,7 @@ export function buildCampaignReviewHtml(snapshot: EngagementReviewSnapshot, chec
   <h2 id="contributions">Contributions</h2>${snapshot.items.map((row,index)=>`<article class="entry"><h3>${index+1}. ${escape(row.title || 'Untitled contribution')}</h3><p class="meta">${escape(row.id)} | ${escape(row.created_at)} | ${escape(row.status)} | ${escape(historicalCategory(snapshot,row))}<br>Configuration: ${escape(row.configuration_version_id || 'Historical definition unavailable')}${row.parent_item_id ? `<br>Reply to ${escape(row.parent_item_id)}` : ''}</p>${reportNarrative(row.body,row.id)}${row.geometry && !contributionGeometry(row) ? '<p>The retained drawing is invalid or degenerate. Its exact coordinates remain in snapshot.json; it is omitted from the map and GeoJSON.</p>' : ''}${row.submitted_by ? `<p>Submitted name: ${escape(row.submitted_by)}</p>`:''}${snapshot.scope==='internal' && row.moderation_notes ? `<p>Review reason: ${escape(row.moderation_notes)}</p>`:''}${row.photo_path && photos.has(`photos/${row.id}.${text(row.photo_path).split('.').pop()}`) ? `<img alt="Reviewed photograph for contribution ${escape(row.id)}" src="data:image/${text(row.photo_path).endsWith('.jpg') ? 'jpeg' : text(row.photo_path).split('.').pop()};base64,${photos.get(`photos/${row.id}.${text(row.photo_path).split('.').pop()}`)!.toString('base64')}"/>` : ''}${row.photo_path ? `<p>Reviewed photograph: photos/${escape(row.id)}.${escape(text(row.photo_path).split('.').pop())}. Included in the portable package.</p>`:''}</article>`).join('')}
   <h2 id="answers">Survey answer register</h2>${snapshot.sessions.map((session)=>`<article class="entry"><h3>Session ${escape(session.id)}</h3><p class="meta">${escape(session.created_at)} | ${escape(session.status)} | Configuration ${escape(session.configuration_version_id || 'Historical definition unavailable')}</p>${snapshot.answers.filter((answer)=>answer.session_id===session.id).map((answer)=>`<p><strong>${escape(answer.question_prompt_snapshot || 'Historical question prompt unavailable')}</strong><br><span dir="auto">${escape(answer.answer_text || text(answer.answer_json))}</span>${photos.size && (answer.answer_json as { files?: unknown[] }|null)?.files ? `<br>Attachments: ${(answer.answer_json as {files:Array<{path:string}>}).files.map((file,index)=>`attachments/${escape(answer.id)}-${index+1}.${escape(file.path.split('.').pop())}`).join(', ')}` : ''}<br><span class="meta">Answer ${escape(answer.id)} | Question ${escape(answer.question_id || 'Deleted question')}</span></p>`).join('') || '<p>No answers included for this session under these filters.</p>'}</article>`).join('')}
   <h2 id="responses">Reviewed staff responses</h2>${snapshot.responses.map((row)=>`<article class="entry"><h3>${escape(row.theme_title)}</h3><p>You said: ${escape(row.you_said)}</p><p>Agency response: ${escape(row.we_did)}</p><p class="meta">Response ${escape(row.id)} | Sources ${escape(text(row.source_item_ids))}</p></article>`).join('') || '<p>No reviewed staff responses are available for this selection.</p>'}
+  ${decisionHistoryHtml(snapshot)}
   <section class="definitions"><h2 id="definitions">Historical definitions</h2>${snapshot.definitions.map((version)=>`<section class="version"><h3>Configuration ${escape(version.id)}</h3><p class="meta">Definition SHA-256 ${escape(version.sha256)}</p><p>${escape(version.definition.campaign.instructions)}</p><h3>Categories</h3>${version.definition.categories.map((row)=>`<p>${escape(row.label)}: ${escape(row.description)}<br><span class="meta">${escape(row.id)}</span></p>`).join('')}<h3>Questions</h3>${version.definition.questions.map((row)=>`<p>${escape(row.prompt)}<br>${escape(row.help_text)}<br>Type ${escape(row.question_type)}; ${row.required ? 'required' : 'optional'}. Options ${escape(text(row.options))}</p>`).join('')}<h3>Retained translations</h3>${(version.definition.translations??[]).map(row=>`<p>${escape(row.locale)} · ${escape(row.entity_type)} · ${escape(row.field)} · ${escape(row.source)}<br>${escape(row.translated_text)}</p>`).join('')||'<p>No translations in this definition.</p>'}</section>`).join('')}
   </section><h2>Portable record</h2><p>Download the engagement companion ZIP for this snapshot from its Reports record. A project evidence bundle containing this PDF alone does not include every engagement companion. The engagement ZIP contains this PDF, the XLSX workbook, exact snapshot JSON, complete contribution CSV/GeoJSON, answer CSV and reviewed photographs. Workbook long text is split into ordered companion rows. Concatenate parts by record ID, field and part number to recover it exactly. Formula-like participant text remains literal text in XLSX and JSON; CSV protects spreadsheet users by prefixing dangerous formulas.</p></body></html>`;
 }
@@ -185,8 +219,20 @@ export async function buildCampaignReviewWorkbook(snapshot: EngagementReviewSnap
   ] as const) add(name,[ [...fields],...rows.map(row=>fields.map(field=>cell(kind,row.id,field,row[field])))]);
   add('Question summary',[["Configuration","Question ID","Prompt","Sessions","Answered","Redacted","Unanswered or not shown","Repeated additional answers"],...campaignQuestionSummary(snapshot).map(row=>[row.version,row.question,cell('question',row.question,'prompt',row.prompt),row.sessions,row.answered,row.redacted,row.unanswered,row.repeated])]);
   add('Definitions',[["Version ID","SHA-256","Definition JSON"],...snapshot.definitions.map(row=>[row.id,row.sha256,cell('definition',row.id,'definition',row.definition)])]);
+  if (snapshot.scope === 'internal') {
+    add('Decision history scope', [['Field','Value'],['Availability',snapshot.schema === 2 ? 'Retained in this snapshot' : 'Unavailable in this earlier saved format; not zero'],['Selection','Entire consultation history; contribution date, status and category filters do not filter decision history.'],['Meaning','Exact evidence retained at each original link, refresh or withdrawal. Does not establish approval, implementation or representative support.']]);
+    if (snapshot.schema === 2) {
+      const fields = ['id','predecessor_id','operation','created_at','actor_id','response_id','decision_id','project_id','reason','payload_sha256','context_sha256'] as const;
+      add('Decision history', [[...fields,'Retained project','Retained decision','Retained decision status','Retained rationale','Response revision','You said','Agency response'],...snapshot.decisionLinks.map(row=>[...fields.map(field=>cell('decision action',row.id,field,row[field])),cell('decision action',row.id,'project_name',row.context.project.name),cell('decision action',row.id,'decision_title',row.context.decision.title),row.context.decision.status,cell('decision action',row.id,'decision_rationale',row.context.decision.rationale),row.context.responseHistory.revision,cell('decision action',row.id,'you_said',row.context.response.you_said),cell('decision action',row.id,'we_did',row.context.response.we_did)])]);
+      add('Decision sources', [['Action ID','Source ID','Position','Availability','Original configuration availability','Original source JSON'],...snapshot.decisionLinks.flatMap(row=>row.context.sources.map(source=>[row.id,source.itemId,source.position,source.availability,source.configurationAvailability,cell('decision source',`${row.id}/${source.itemId}`,'source',source.record)]))]);
+      add('Decision exact context', [['Action ID','Payload SHA-256','Exact payload text','Context SHA-256','Exact context text'],...snapshot.decisionLinks.map(row=>[row.id,row.payload_sha256,cell('decision action',row.id,'payload_text',row.payload_text),row.context_sha256,cell('decision action',row.id,'context_text',row.context_text)])]);
+    }
+  }
   add('Long text',longText);
-  add('Summary',[["Record set","Count"],["Contributions",snapshot.items.length],["Survey sessions",snapshot.sessions.length],["Answers",snapshot.answers.length],["Staff responses",snapshot.responses.length]]);
+  const totals: Array<Array<string | number>> = [["Record set","Count"],["Contributions",snapshot.items.length],["Survey sessions",snapshot.sessions.length],["Answers",snapshot.answers.length],["Staff responses",snapshot.responses.length]];
+  if(snapshot.schema===2)totals.push(["Decision history actions",snapshot.decisionLinkCount]);
+  add('Summary',totals);
+  if(snapshot.schema===2)workbook.Sheets.Summary.B6={t:'n',v:snapshot.decisionLinkCount,f:snapshot.decisionLinkCount?`COUNTA('Decision history'!A2:A${snapshot.decisionLinkCount+1})`:'0'};
   for(const [index,name,count] of [[2,'Contributions',snapshot.items.length],[3,'Survey sessions',snapshot.sessions.length],[4,'Answers',snapshot.answers.length],[5,'Staff responses',snapshot.responses.length]] as const) {
     workbook.Sheets.Summary[`B${index}`]={t:'n',v:count,f:count?`COUNTA('${name}'!A2:A${count+1})`:'0'};
   }
@@ -223,7 +269,7 @@ export async function verifyCampaignReviewZip(bytes: Buffer, snapshotChecksum: s
 }
 
 export async function renderCampaignReviewFiles(snapshotText:string,checksum:string,photos:Map<string,Buffer> = new Map()):Promise<EngagementReviewFile[]> {
-  const snapshot=parseReviewSnapshot(snapshotText,checksum);
+  const snapshot=await parseReviewSnapshot(snapshotText,checksum);
   const html=buildCampaignReviewHtml(snapshot,checksum,photos);
   const pdf=await renderReportPdf(html,{title:snapshot.campaign.title,generatedAt:snapshot.capturedAt,footerLabel:`${snapshot.scope} engagement review | ${checksum.slice(0,12)}`});
   if(pdf.engine!=='chrome') throw new Error('The installed Chrome renderer is required to retain multilingual text and maps in this campaign PDF. Install it and retry this saved snapshot.');
@@ -239,6 +285,7 @@ export async function renderCampaignReviewFiles(snapshotText:string,checksum:str
   const csv=(rows:RecordData[],fields:string[])=>[fields,...rows.map(row=>fields.map(field=>text(row[field])))].map(row=>row.map(escapeCsvField).join(',')).join('\r\n');
   addText('contributions.csv',csv(snapshot.items,['id','parent_item_id','configuration_version_id','category_id','title','body','status','created_at']));
   addText('answers.csv',csv(snapshot.answers,['id','session_id','question_id','question_prompt_snapshot','question_type','answer_text','answer_json']));
+  if(snapshot.schema===2)addText('decision-history.csv',csv(snapshot.decisionLinks,['id','predecessor_id','operation','created_at','actor_id','response_id','decision_id','project_id','reason','payload_sha256','context_sha256']));
   addText('contributions.geojson',JSON.stringify({type:'FeatureCollection',features:snapshot.items.filter(row=>contributionGeometry(row)).map(row=>({type:'Feature',id:row.id,geometry:contributionGeometry(row),properties:{id:row.id,title:row.title,category:historicalCategory(snapshot,row),configurationVersionId:row.configuration_version_id}}))},null,2));
   for(const [path,bytes] of photos) zip.file(path,bytes);
   const manifestFiles = await Promise.all(Object.values(zip.files).filter(file=>!file.dir).map(async file=>{

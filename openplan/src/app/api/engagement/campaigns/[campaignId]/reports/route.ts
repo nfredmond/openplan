@@ -27,7 +27,7 @@ export async function GET(request:NextRequest,context:{params:Promise<{campaignI
  const access=await loadCampaignAccess(client,campaignId,user.id,'engagement.read');if(access.error||!access.allowed)return NextResponse.json({error:'Campaign access unavailable'},{status:403});
  const reportId=new URL(request.url).searchParams.get('reportId');
  if(reportId&&!z.string().uuid().safeParse(reportId).success)return NextResponse.json({error:'Invalid report'},{status:400});
- let query=client.from('engagement_report_jobs').select('id,report_id,scope,filters_json,snapshot_sha256,status,phase,attempts,artifacts_json,failure_detail,created_at').eq('campaign_id',campaignId).order('created_at',{ascending:false}).limit(50);
+ let query=client.from('engagement_report_jobs').select('id,report_id,scope,snapshot_format,filters_json,snapshot_sha256,status,phase,attempts,artifacts_json,failure_detail,created_at').eq('campaign_id',campaignId).order('created_at',{ascending:false}).limit(50);
  if(reportId)query=query.eq('report_id',reportId);
  const jobs=await query;
  if(jobs.error)return NextResponse.json({error:'Saved review files could not be loaded'},{status:503});

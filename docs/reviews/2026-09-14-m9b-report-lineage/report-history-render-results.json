@@ -1,0 +1,26 @@
+{
+  "synthetic": true,
+  "snapshotSha256": "332def0c9e73811d5ae7befddee5711ea7bdc6631d1648f98656ecec86690ee2",
+  "operations": [
+    "link",
+    "refresh",
+    "withdraw"
+  ],
+  "files": [
+    {
+      "format": "pdf",
+      "bytes": 90976,
+      "sha256": "faf70d114963db528c7e6b74659cbd31bfc2a3497237340041d25208eefee62e"
+    },
+    {
+      "format": "xlsx",
+      "bytes": 24606,
+      "sha256": "a3a1007242eea6c2cf254fc73c4ee0545096d33fff55e590f9c3f6cea24235d0"
+    },
+    {
+      "format": "zip",
+      "bytes": 88863,
+      "sha256": "f7a16f43eb16f7f6969bae2ab20d97ae152364ced6b7c72afd6e607c5bc771ec"
+    }
+  ]
+}

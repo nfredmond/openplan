@@ -58,3 +58,17 @@ UI-created retained reports, enter from Engagement Record and Reports, exercise
 keyboard navigation at desktop/390, and download/check all three retained file
 formats. Preserve the before-warning evidence and original bytes. A real report
 page must not offer unrelated grant/model generation controls for this job type.
+
+
+## September 14 implementation decisions
+
+Final report-page main CI on 0ce1fb8b is green; report-page-final-ci.json retains run IDs and log hashes. The next local changes extract complete historical-chain validation from readDecisionLinkSnapshot into readDecisionLinkHistory, retaining the separate current-source checks. The export parser is asynchronous to reuse exact-byte hash validation. Worker claim processing and report download validation supply campaign/workspace/disclosure scope before trusting an internal archive. New internal schema 2 has workspaceId, decisionLinkHistoryScope=campaign, decisionLinkCount and decisionLinks with exact payload/context text. Schema 1 refuses those private fields. The draft SQL remains private and unapplied.
+
+The renderer adds readable original/refresh/withdrawal history, retained staff response and source context, separate workbook history/source/exact-context sheets, formula-backed action totals and a portable history CSV. Existing snapshot.json stays byte-for-byte original. Old internal schema-1 rendering labels the history unavailable rather than zero. Already retained old files must remain unchanged, so the job UI must also identify their old format. A generated snapshot-format integer on engagement_report_jobs is the preferred additive metadata column: derive it from immutable snapshot_text, list it through the existing authorized API, and show per-job old-format absence. Do not claim every existing file includes new history.
+
+Before activation: add worker cache/recovery and UI disclosure tests, finish fault proofs, add the generated format column and queue change in a data-safe migration, prove native old retries/new snapshots/concurrent link serialization and public exclusion in the disconnected proof database, then activate on the isolated application stack with the compatible worker. Do not reset either database. Real Chrome PDF/XLSX/ZIP inspection and browser desktop/390px, privacy, correction, original-byte and interruption evidence are still required. The generic report GET null-project issue remains a separate known gap.
+
+
+## Usage-reset checkpoint update
+
+Migration 20261014000024 now exists in source and passed rollback-only native proof; it remains unapplied on the application stack. The generated-format column requires a narrow SELECT grant because raw snapshots are column-restricted. Focused tests, final lint/TypeScript and mutation controls completed. Real renderer files exist but visual inspection, concurrency, application activation and full browser/release gates remain. See RESUME.md and copied proof results for the authoritative continuation.

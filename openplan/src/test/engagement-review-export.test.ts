@@ -6,16 +6,16 @@ import * as XLSX from 'xlsx';
 import { buildCampaignReviewHtml,buildCampaignReviewWorkbook,parseReviewSnapshot,renderCampaignReviewFiles,campaignQuestionSummary,campaignReviewMap,type EngagementReviewSnapshot } from '@/lib/engagement/review-export';
 const snapshot:EngagementReviewSnapshot={schema:1,capturedAt:'2026-09-06T12:00:00Z',scope:'internal',filters:{},campaign:{id:'demo',title:'Demonstration only',summary:null,configurationVersionId:null},items:[{id:'one',status:'pending',body:'=HYPERLINK("https://invalid.test")',title:'<script>bad()</script>',configuration_version_id:null}],sessions:[{id:'session',status:'pending'}],answers:[{id:'answer1',session_id:'session',answer_text:'Repeated answer'},{id:'answer2',session_id:'session',answer_text:'Repeated answer'}],responses:[],definitions:[]};
 describe('campaign review records',()=>{
- it('refuses corrupt snapshots and private records in public snapshots',()=>{
+ it('refuses corrupt snapshots and private records in public snapshots',async()=>{
   const raw=JSON.stringify(snapshot),hash=createHash('sha256').update(raw).digest('hex');
-  expect(parseReviewSnapshot(raw,hash).items).toHaveLength(1);
-  expect(()=>parseReviewSnapshot(raw+' ',hash)).toThrow('checksum');
+  expect((await parseReviewSnapshot(raw,hash)).items).toHaveLength(1);
+  await expect(parseReviewSnapshot(raw+' ',hash)).rejects.toThrow('checksum');
   const bad=JSON.stringify({...snapshot,scope:'public'});
-  expect(()=>parseReviewSnapshot(bad,createHash('sha256').update(bad).digest('hex'))).toThrow('Private records');
+  await expect(parseReviewSnapshot(bad,createHash('sha256').update(bad).digest('hex'))).rejects.toThrow('Private records');
  });
- it('refuses private review intent embedded in an otherwise public snapshot',()=>{
+ it('refuses private review intent embedded in an otherwise public snapshot',async()=>{
   const raw=JSON.stringify({...snapshot,scope:'public',items:[{id:'public',status:'approved',review_reason:'Private reviewer input'}],sessions:[],answers:[]});
-  expect(()=>parseReviewSnapshot(raw,createHash('sha256').update(raw).digest('hex'))).toThrow('Private records');
+  await expect(parseReviewSnapshot(raw,createHash('sha256').update(raw).digest('hex'))).rejects.toThrow('Private records');
  });
  it('keeps literal spreadsheet text, repeated answers and complete multilingual long values',async()=>{
   const long='🙂'.repeat(599)+'日本語 فارسی '+ 'long narrative\n'.repeat(2400);

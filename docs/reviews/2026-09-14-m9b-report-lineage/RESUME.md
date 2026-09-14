@@ -1,40 +1,34 @@
-# Restart after the usage reset
+# Resume after the weekly usage reset
 
-Saved September 14, 2026. Continue the existing active goal through the complete V1 contract. No draft PRs or human release gates. Verified changes land directly on main; do not merge this unfinished checkpoint before its remaining checks. No paid resources, destructive database operations, or reminder-constraint edits.
+Current checkpoint, September 14, 2026. This supersedes earlier resume instructions. Continue the active goal through the full V1 product contract. No draft PRs, paid resources, destructive resets, reminder-constraint changes or human release gates. Verified work lands directly on main. This development checkpoint is backed up on the existing work branch and is not a release.
 
 ## Checkout and ownership
 
-Use /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13, application package openplan/, branch work/engagement-decision-traceability. This branch is being backed up to origin without a PR. Another live Codex owns /home/nathaniel/code/openplan, which stays read-only. Recheck current sessions, worktrees, remote main and serving identity before edits.
+Use /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13, package openplan/, branch work/engagement-decision-traceability. Another live Codex PID 3081751 owns /home/nathaniel/code/openplan; leave it read-only until ownership is rechecked. Our session PID is 988312. Recheck all processes, remote main, working changes and browser identity before continuing.
 
-## Released and unfinished
+## Saved state
 
-v0.60.0 is published at tag commit 29c5f7ab5140a0c71652485189d158c7099ead80. Publication evidence is committed on main at 9f7d9e4a28abe0ffc4b922175d381c95c4512669, also confirmed with git ls-remote during this checkpoint. See ../2026-09-14-m9b-decision-reports/PUBLICATION.md and RELEASE_VERIFICATION.md for CI, local QA, RLS, worker and upgrade evidence. The initial report-context implementation is fec3ed7fb8cb0316e49a932ec399ac89029f2166; the next checkpoint includes incomplete metadata-editor restoration and copy changes.
+v0.60.0 is published at 29c5f7ab5140a0c71652485189d158c7099ead80. Main at this checkpoint is 0ce1fb8b0823ab197616a4323b5c9bc974133586. Its final CI 34863342444 and RLS 34863342471 succeeded. Full QA and shuffled each passed 15,325 tests with 530 skips; RLS passed 552. See report-page-final-ci.json. The metadata report-page fix already has desktop/390px navigation, interrupted-save recovery and unchanged PDF/XLSX/ZIP evidence. It is complete.
 
-## Earlier checkpoint, superseded below
+The current unfinished M9b increment adds private decision history to internal PDF/XLSX/ZIP, including exact payload/context validation, original/refresh/withdrawal chains, legacy-format absence labels and public exclusion. Worker and download paths validate authenticated job scope before trusting saved snapshots. The queue migration is openplan/supabase/migrations/20261014000024_engagement_report_decision_history.sql. It derives snapshot_format and grants access only to that metadata column, preserving raw snapshot column restrictions. It has NOT been activated on the application stack.
 
-The following list records the earlier interruption, not current failures.
+Current checks: 57 focused tests across eight files passed. Final TypeScript and changed-file ESLint both exited 0, recovered from sessions 82253 and 42231. Mutation proof has a 53-test baseline, harmless survivor and 21 targeted failures. Native rollback proof has a baseline, harmless survivor and five targeted failures; it preserves old snapshot bytes/retries, three history actions despite empty contribution filters, public exclusion and column permissions. See the copied report-history-* results and proof scripts. These checks do not prove concurrency, UI reachability or artifact layout.
 
-## Original resume steps
+The real renderer produced PDF/XLSX/ZIP from the synthetic native archive. Files and hashes exist under private evidence report-history-artifacts-native/. Actual PDF pages and workbook layout have NOT been inspected. Do not repeat the PDF artifact-start marker unnecessarily; it ran before generation. Renderer script is private render-report-history-native.mts. No checks are known to be running. Former document worker PID 4038996 is no longer present in the process inventory; recheck and restart our worker when needed.
 
-1. Read STATUS.md and IMPLEMENTATION_NOTES.md. Latest focused log is /home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/report-page-metadata-tests.log. It finished with 27 passing tests and one copy-guard failure. Find the remaining campaign count increase, fix the wording without inflating the baseline. Metadata save tests passed but are not browser proof.
-2. Inspect metadataOnly behavior in report-detail-controls.tsx, specialized-report-page.tsx, their tests, and the reports/[reportId] caller. Preserve the existing editor, permissions, citations and retained file contents. Consider replacing irrelevant generation help text in metadata-only mode.
-3. Update prove-report-page.py for the new userId argument, membership query, editor and new copy. Add harmless controls and targeted failures for changed permissions/metadata guards. Earlier eleven-fault evidence is for fec3ed7f only. Restore mutations without checkout/reset.
-4. Run changed-file lint and TypeScript from the app package, focused checks, then build and identify a fresh server. Browser runner report-page-browser.cjs still expects Open campaign; current label is Open consultation. Exercise actual metadata save/readback, existing downloads/checksums, keyboard, anonymous refusal, desktop and 390px, inspect console and screenshots. Prior evidence is explicitly dated to fec3ed7f.
-5. Run full QA, applicable shuffled/RLS/worker/upgrade checks. Push the verified result directly to main, inspect final CI separately, then continue the internal decision-history exports. No v0.61 claim or tag yet.
+## Next actions
 
-## Local operation and private evidence
+1. Inspect rendered PDF pages and workbook contents/layout, and confirm ZIP exact snapshot bytes. Private render result and script already exist; do not assume a missing tool session means generation failed.
+2. Prove actual concurrent queue/link transaction serialization on a named disposable database. Existing native proof uses rollback-only transactions and does not cover overlap. If a separate committed proof database is necessary, create one without dropping/resetting existing databases. Preserve queue FOR UPDATE and link FOR SHARE NOWAIT lock order.
+3. Activate migration 24 only on the isolated application stack, with a compatible owned Documents worker. Build a committed, identified checkout using which-openplan.sh before real browser acceptance.
+4. Exercise old/new internal format disclosure, public exclusion, original/refresh/withdrawal files, old retained checksums, private access and interrupted retries from actual navigation at desktop and 390px, with keyboard and console review. Use the repository Playwright harness without asking permission.
+5. Run full QA, shuffled tests, isolated live RLS, workers and populated upgrade checks. Prepare a coherent v0.61 release only after these checks, align release metadata, land directly on main, inspect final exact-commit CI, then tag/publish. No v0.61 version or release exists yet.
+6. Continue the remaining M9b and full roadmap obligations. The generic /api/reports/[reportId] GET still queries projects with a nullable project ID. The specialized page and metadata PATCH avoid it; do not claim that separate API gap is fixed.
 
-Private evidence base is /home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/. Existing browser fixtures and checksum records are under browser/. Credentials remain in local files and must never be printed or committed. The report acceptance server on port 3262 was stopped before full QA; recheck before starting. The isolated document worker PID 4038996 was still live when checkpointed; verify ownership/current state before using it. Do not kill other workers.
+## Local state and evidence
 
-Application isolated stack is supabase_db_openplan-restore-target-2026091050, API 29821, database port 29822, 342 migrations through 20261014000023. Stack directory is /home/nathaniel/.local/state/openplan/openplan-restore-target-2026091050. There is also a disconnected proof database openplan_decision_link_proof_20260914 in that container. Do not reset or drop either.
+Private evidence base: /home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/. Browser evidence is under browser/. Keep credentials and raw private captures out of Git.
 
-## Next substantive work
+Application isolated container: supabase_db_openplan-restore-target-2026091050, database postgres, API 29821, DB 29822. Stack directory: /home/nathaniel/.local/state/openplan/openplan-restore-target-2026091050. It has 342 migrations through 20261014000023. Disconnected proof database: openplan_decision_link_proof_20260914 in the same container, owned by supabase_admin. Migration 24 only ran inside rolled-back proof transactions. Do not reset or drop either database.
 
-Internal PDF/XLSX/ZIP decision lineage is not implemented. Read openplan/src/lib/engagement/decision-links.ts and reuse its exact payload/context hash and predecessor-chain validators; do not invent current source states for historical archives. Private draft decision-context/report-decision-history-candidate.sql is UNAPPLIED and not an application migration. It proposes internal schema 2 with campaign-wide history, keeping public schema 1 and retry behavior. Public snapshots must reject private history fields because ZIP retains source snapshot text. Legacy internal schema 1 must remain readable and disclose absent history, not zero. Disclose campaign-wide private history separately from contribution filters. Preserve campaign lock order and exact PostgreSQL payload text. Continue within existing owners; M9b and the full v1 contract remain open.
-
-
-## Current checkpoint after report-page verification
-
-The copy failure and metadata editor follow-up are resolved. App source commit d6b0a4fc passed full QA and identified-build desktop/390px acceptance, including lost-response save retry, metadata restore and unchanged downloads. See STATUS.md and report-page-metadata-browser-results.json. Mutation proof has a 24-test baseline, surviving harmless control and 20 intended failures. Main landing follows this evidence commit; inspect its exact GitHub CI and RLS. No v0.61 tag yet.
-
-Resume with the private decision-history export implementation after final CI is green. Preserve the full goal and source notes. The port-3262 acceptance server is stopped. Read private report-lineage-source-findings.md for the async parser call-site inventory and the still-unfixed generic report GET null-project assumption.
+Acceptance server 3262 was stopped. No worker or browser lifetime is guaranteed across the reset. Recheck rather than trusting stored PIDs. Disk was about 90 percent used with 350 GiB free. Preserve existing evidence, synthetic fixtures and original snapshots. Follow current contract/roadmap, not old release numbering or stale plans.

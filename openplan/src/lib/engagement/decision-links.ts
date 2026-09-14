@@ -161,15 +161,13 @@ export async function readDecisionLinkReceipt(raw: unknown, scope: DecisionLinkS
   return { receipt, link };
 }
 
-/** Check complete nonforking chains and their current source states before treating an empty list as fact. */
-export async function readDecisionLinkSnapshot(raw: unknown, scope: DecisionLinkScope): Promise<DecisionLinkSnapshot> {
-  const snapshot = snapshotSchema.parse(raw);
-  if (snapshot.campaignId !== scope.campaignId || snapshot.workspaceId !== scope.workspaceId
-    || snapshot.entryCount !== snapshot.entries.length || snapshot.decisionCount !== snapshot.decisions.length
-    || snapshot.currentCount !== snapshot.current.length) throw new Error("Decision link inventory is incomplete");
-  const entries = await Promise.all(snapshot.entries.map(row => readDecisionLink(row, scope)));
+/** Validate an exact historical inventory without consulting or inventing current source states. */
+export async function readDecisionLinkHistory(raw: unknown, scope: DecisionLinkScope) {
+  const history = z.object({ entryCount: count, entries: decisionLinkRowSchema.array() }).strict().parse(raw);
+  if (history.entryCount !== history.entries.length) throw new Error("Decision link inventory is incomplete");
+  const entries = await Promise.all(history.entries.map(row => readDecisionLink(row, scope)));
   const byId = new Map(entries.map(row => [row.id, row]));
-  if (byId.size !== entries.length || new Set(snapshot.decisions.map(row => row.record.id)).size !== snapshot.decisions.length) throw new Error("Duplicate decision records");
+  if (byId.size !== entries.length) throw new Error("Duplicate decision records");
   const children = new Set<string>(), roots = new Set<string>(), resolved = new Set<string>();
   for (const row of entries) {
     if (row.predecessor_id === null) {
@@ -193,6 +191,17 @@ export async function readDecisionLinkSnapshot(raw: unknown, scope: DecisionLink
     for (const key of seen) resolved.add(key);
   }
   const leaves = entries.filter(row => !children.has(row.id));
+  return { entries, leaves };
+}
+
+/** Check complete nonforking chains and their current source states before treating an empty list as fact. */
+export async function readDecisionLinkSnapshot(raw: unknown, scope: DecisionLinkScope): Promise<DecisionLinkSnapshot> {
+  const snapshot = snapshotSchema.parse(raw);
+  if (snapshot.campaignId !== scope.campaignId || snapshot.workspaceId !== scope.workspaceId
+    || snapshot.entryCount !== snapshot.entries.length || snapshot.decisionCount !== snapshot.decisions.length
+    || snapshot.currentCount !== snapshot.current.length) throw new Error("Decision link inventory is incomplete");
+  if (new Set(snapshot.decisions.map(row => row.record.id)).size !== snapshot.decisions.length) throw new Error("Duplicate decision records");
+  const { entries, leaves } = await readDecisionLinkHistory({ entryCount: snapshot.entryCount, entries: snapshot.entries }, scope);
   if (leaves.length !== snapshot.currentCount || new Set(snapshot.current.map(row => row.linkId)).size !== leaves.length) throw new Error("Current decision links are incomplete");
   for (const state of snapshot.current) {
     const leaf = leaves.find(row => row.id === state.linkId);

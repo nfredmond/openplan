@@ -10,11 +10,11 @@ export async function processNextEngagementReport(root:string):Promise<boolean> 
  const service=createServiceRoleClient();
  const token=randomUUID();const claimed=await service.rpc('claim_engagement_report',{p_token:token});
  if(claimed.error)throw new Error('Campaign export queue unavailable');
- const job=claimed.data as {id:string;workspace_id:string;campaign_id:string;report_id:string;snapshot_text:string;snapshot_sha256:string}|null;
+ const job=claimed.data as {id:string;workspace_id:string;campaign_id:string;report_id:string;scope:string;snapshot_text:string;snapshot_sha256:string}|null;
  if(!job)return false;
  const heartbeat=setInterval(()=>{void service.from('engagement_report_jobs').update({lease_until:new Date(Date.now()+600_000).toISOString()}).eq('id',job.id).eq('lease_token',token).eq('status','running').select('id').maybeSingle().then(({error,data})=>{if(error||!data)console.error('Campaign export lease renewal failed or lease lost.');});},30_000);
  try {
-  const snapshot=parseReviewSnapshot(job.snapshot_text,job.snapshot_sha256);
+  const snapshot=await parseReviewSnapshot(job.snapshot_text,job.snapshot_sha256,{campaignId:job.campaign_id,workspaceId:job.workspace_id,scope:job.scope});
   const folder=join(root,'engagement',job.id);await mkdir(folder,{recursive:true,mode:0o700});
   let files:EngagementReviewFile[]|null=null;
   try {
