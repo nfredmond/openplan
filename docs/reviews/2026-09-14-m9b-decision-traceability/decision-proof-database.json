@@ -1,0 +1,13 @@
+{
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "database": "openplan_decision_link_proof_20260914",
+  "sourceLedger": "339:20261014000020",
+  "schemaSha256": "9360ef978ebd476c1fe93a00742d3d53068aaac4298c39dbcf3db168059860c6",
+  "candidateSha256": {
+    "decision-context-candidate.sql": "44e599b5ab9b1e082179587c02a7c67a031dae813f28eec026f7be948156c342",
+    "decision-link-candidate.sql": "ceb9f226283f0c95232a1db9719fc6b18e1d01041ecd3753a5b387171fa78541"
+  },
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/proof-database",
+  "emptyUserAndContributionTables": true,
+  "limits": "Schema-only native proof database. No PostgREST, auth server, browser or worker is connected. Synthetic concurrency fixtures will be retained here; never connect a worker or use this as the application database."
+}

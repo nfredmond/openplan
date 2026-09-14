@@ -1,0 +1,8 @@
+{
+  "case": "missing-source-lock",
+  "initialOutcome": "survived",
+  "initialEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/concurrency-1789377786436607177",
+  "finding": "A real contribution UPDATE also locks its parent project through the existing evidence-revision trigger. The command was refused by that parent lock even when its contribution lock was removed. The initial test did not isolate contribution locking.",
+  "correction": "Keep the actual update races and add SELECT FOR UPDATE races holding only the contribution, decision and membership rows. Each removed lock must then fail its own overlap assertion.",
+  "productionChangeRequired": false
+}

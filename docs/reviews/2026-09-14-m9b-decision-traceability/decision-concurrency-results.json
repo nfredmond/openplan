@@ -1,0 +1,43 @@
+{
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "database": "openplan_decision_link_proof_20260914",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/concurrency-1789377835379544352",
+  "candidateSha256": {
+    "decision-context-candidate.sql": "44e599b5ab9b1e082179587c02a7c67a031dae813f28eec026f7be948156c342",
+    "decision-link-candidate.sql": "ceb9f226283f0c95232a1db9719fc6b18e1d01041ecd3753a5b387171fa78541"
+  },
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "overlappingCases": 11
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived",
+      "overlappingCases": 11
+    },
+    {
+      "case": "missing-source-lock",
+      "outcome": "killed",
+      "expectedFailure": "missing-source-lock overlap was not refused"
+    },
+    {
+      "case": "missing-decision-lock",
+      "outcome": "killed",
+      "expectedFailure": "missing-decision-lock overlap was not refused"
+    },
+    {
+      "case": "missing-relationship-lock",
+      "outcome": "killed",
+      "expectedFailure": "missing-relationship-lock overlap was not refused"
+    },
+    {
+      "case": "missing-membership-lock",
+      "outcome": "killed",
+      "expectedFailure": "missing-membership-lock overlap was not refused"
+    }
+  ],
+  "definitionRestored": true,
+  "limits": "Real held native transactions with pg_stat_activity readiness and process liveness. Synthetic fixtures remain only in disconnected proof DB. No PostgREST, browser, public disclosure or provider/worker traffic. Failed competitors roll back, and failed held test transactions roll back."
+}

@@ -29,13 +29,14 @@ with exact request replay, current source checks and nonforking correction chain
 The preview is not a write lock. The command takes nonblocking membership,
 project relationship, decision and source locks before re-reading. This avoids
 waiting in a cycle with the existing source-withdrawal writer. Concurrent lock
-behavior remains to be proved. A withdrawal retains the predecessor's context
+behavior now has the native evidence below. A withdrawal retains the predecessor's context
 and works after the response, decision and campaign/project link disappear.
 
 Native serial verification on the explicitly named disposable application stack
 `supabase_db_openplan-restore-target-2026091050`, database `postgres`, installed
 ledger `339:20261014000020`, ran each candidate and synthetic fixture inside a
-rolled-back transaction. Neither candidate is installed afterward. Reader
+rolled-back transaction. Neither candidate is installed in that application's
+`postgres` database afterward. Reader
 controls have a baseline and harmless survivor plus 17 targeted failures. Link
 controls have a baseline and harmless survivor plus 10 targeted failures. See
 `decision-context-results.json` and `decision-link-results.json` for exact source
@@ -49,9 +50,33 @@ Exact retries return the old records; viewer/outsider reads and writes are refus
 The preview excludes contact/metadata fields but still contains private source
 words and decision rationale. It must never be used directly as a public payload.
 
-Next prove simultaneous source changes, permission changes, competing successors,
-and interrupted identical requests in a disconnected proof database. Complete
-command grant and malformed-input checks before installing an additive migration.
+`prepare-decision-proof.py` copied schema only into the new disconnected database
+`openplan_decision_link_proof_20260914` on that same explicitly isolated container.
+No user or contribution rows were copied. Only this proof database has the two
+candidates installed. Do not recreate it, attach a worker or point PostgREST at it.
+Its schema/candidate hashes and private dump location are in
+`decision-proof-database.json`. Synthetic concurrency fixtures remain there.
+
+`prove-decision-concurrency.py` observes each held backend as `idle in transaction`
+in `pg_stat_activity` and checks its process before and after the competing call.
+Baseline and harmless controls each pass 11 races: exact retry after commit,
+interrupted rollback, competing root and successor, actual source and decision
+corrections, project relationship lock, actual staff downgrade, and independent
+source/decision/membership row locks. Four removed locks fail their respective
+overlap assertions. Committed corrections reject stale contexts; explicit fresh
+context succeeds. Results and limits are in `decision-concurrency-results.json`.
+The original native function definition was restored after every mutation run.
+
+The initial source-lock mutation survived. A real contribution UPDATE also locks
+its parent project through the existing evidence-revision trigger, so that test
+borrowed the parent's protection. `CONCURRENCY_COVERAGE_GAP.json` preserves this
+failure and the private first-run evidence. The revised test holds the source row
+alone as well as retaining the real-update scenario. No production code change
+was needed to repair this test gap.
+
+Next complete command grant and malformed-input checks, campaign/workspace/response
+lock controls, reverse writer-first races, and retained-history reader validation
+before installing an additive migration. These are still candidates, not a release.
 Then finish staff navigation, an explicit public explanation with private-field
 exclusion, export/report lineage and interrupted recovery. Agent writes require
 the existing approval registry or an executable refusal.
