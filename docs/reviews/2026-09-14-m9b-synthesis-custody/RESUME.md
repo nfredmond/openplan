@@ -1,3 +1,15 @@
+# Resume at exact-review approval protocol
+
+September 14, 2026. This section supersedes earlier checkpoints. v0.62.0 remains published; no later release exists. The next approval increment now has an implemented pure protocol in `openplan/src/lib/engagement/synthesis-approval.ts`, a focused test suite and `prove-approval-domain.py`. Read `APPROVAL_PROTOCOL_VERIFICATION.md` and `approval-domain-mutations.json`. There are 29 new protocol tests, 46 tests in the focused protocol/review run, and 43 mutation/control cases with expected outcomes. This is not a usable approval workflow yet. No new migration, API or UI exists.
+
+Next implement the native append-only event table/retention/private-reader boundary, sharing migration 27's review correction lock and preserving exact request recovery before stale-head comparisons. Then connect TypeScript, authenticated routes, browser recovery and desktop/390px acceptance. The source/preparation and old immutable `staff_draft` content must stay untouched. Retain complete old approval history while corrections remain unapproved; scope includes source/review/revision IDs and hashes. The protocol's verified history does not replace native access checks or authoritative completeness.
+
+Owned checkout remains `/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13`, package `openplan/`, branch `work/engagement-decision-traceability`. Another live Codex session was confirmed in `/home/nathaniel/code/openplan`; keep that checkout and its reminder constraint untouched. The named DB remains installed through migration 27 with 346 migrations. No database or browser state was changed in this protocol turn. Reidentify the existing server and database before using them.
+
+Main at the start was `e53e851193d5867afe31707632395d46b928e8ef`. Its CI `34908852644` and RLS `34908852712` are now completed/successful. Verify the new checkpoint's push and CI separately. Continue directly toward the complete V1 goal; no PR or human software-release approval is needed.
+
+---
+
 # Resume after published v0.62.0
 
 September 14, 2026. This section supersedes earlier checkpoints. v0.62.0 is published, non-draft/non-prerelease, at 23:23:16 UTC. Annotated tag c9cca46fe0d35a8f71cb0b51848ae0fcb08c41c2 resolves to 018cda5d8a33a45001bbd39c1c6362636101d785. It was pushed directly to main without a PR. CI34907096050, RLS34907096003 and Upgrade34907095999 all passed on that exact release commit before tagging. PUBLICATION.md and v0620-final-ci.json contain the evidence. Local full QA/shuffle passed 15,502 tests with 583 explicit skips; native isolation passed 612 and all 52 worker suites passed.

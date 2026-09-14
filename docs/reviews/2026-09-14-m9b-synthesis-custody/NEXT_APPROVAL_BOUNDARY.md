@@ -2,6 +2,8 @@
 
 September 14, 2026. Engineering design prepared while v0.62.0 release CI ran; that release is now published. This is not implemented behavior and does not change that release's claims.
 
+Later development checkpoint: the pure command, event, history and receipt rules are now implemented and mutation-tested in `synthesis-approval.ts`; see [protocol verification](APPROVAL_PROTOCOL_VERIFICATION.md). Native persistence, access enforcement and the browser workflow below remain unimplemented. No approval capability has been released.
+
 ## Reuse and scope
 
 The current review schema deliberately preserves immutable `staff_draft` content and complete source membership. Do not rewrite old content to an approved status or infer approval from a saved correction. Extend this review with a separate append-only approval history, using the existing request identity, hash, staff access, native transaction and browser recovery patterns. The decision-link history already provides link/refresh/withdraw events with exact response history and reason; the translation-resolution code provides scope-bound receipt recovery. Neither is a substitute for approving a synthesis revision.

@@ -1,0 +1,499 @@
+{
+  "cases": [
+    {
+      "case": "baseline",
+      "expected": "survives",
+      "exit": 0,
+      "passed": 29,
+      "failed": 0,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "expected": "survives",
+      "exit": 0,
+      "passed": 29,
+      "failed": 0,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "approval-carries-to-correction",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 26,
+      "failed": 3,
+      "failedAssertions": [
+        "exact synthesis approval protocol binds approval to the exact revision and keeps later corrections unapproved",
+        "exact synthesis approval protocol retains original approval after approving a later correction without inheriting it",
+        "exact synthesis approval protocol withdraws the exact prior approval after correction and permits a new explicit approval"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-current-version-check",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 25,
+      "failed": 4,
+      "failedAssertions": [
+        "exact synthesis approval protocol binds approval to the exact revision and keeps later corrections unapproved",
+        "exact synthesis approval protocol rejects changed approval revisionId even with an otherwise matching context",
+        "exact synthesis approval protocol rejects changed approval revisionSha256 even with an otherwise matching context",
+        "exact synthesis approval protocol rejects changed approval revisionNo even with an otherwise matching context"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-revision-id",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol rejects changed approval revisionId even with an otherwise matching context"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-revision-sha",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 26,
+      "failed": 3,
+      "failedAssertions": [
+        "exact synthesis approval protocol rejects changed approval revisionSha256 even with an otherwise matching context",
+        "exact synthesis approval protocol rejects historical revisionSha256 corruption instead of claiming no approval",
+        "exact synthesis approval protocol rejects reassignment of a retained revision ID or sequence number within history"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-revision-number",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 27,
+      "failed": 2,
+      "failedAssertions": [
+        "exact synthesis approval protocol rejects changed approval revisionNo even with an otherwise matching context",
+        "exact synthesis approval protocol rejects historical revisionNo corruption instead of claiming no approval"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-scope-campaignId",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol rejects cross-scope campaignId on reads and writes"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-scope-workspaceId",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 27,
+      "failed": 2,
+      "failedAssertions": [
+        "exact synthesis approval protocol keeps absent approval distinct and validates an empty private history's scope",
+        "exact synthesis approval protocol rejects cross-scope workspaceId on reads and writes"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-scope-reviewId",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol rejects cross-scope reviewId on reads and writes"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-scope-sourceId",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 26,
+      "failed": 3,
+      "failedAssertions": [
+        "exact synthesis approval protocol keeps absent approval distinct and validates an empty private history's scope",
+        "exact synthesis approval protocol rejects cross-scope sourceId on reads and writes",
+        "exact synthesis approval protocol recovers exact old receipts but rejects changes to any bound command field"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-scope-sourceSha256",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol rejects cross-scope sourceSha256 on reads and writes"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-scope-preparationSha256",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol rejects cross-scope preparationSha256 on reads and writes"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-predecessor-id",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol fences a stale or competing predecessorId"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-predecessor-sha",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol fences a stale or competing predecessorSha256"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "duplicate-approval",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol allows reapproval of the same version only after explicit withdrawal"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "approve-old-version",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol retains original approval after approving a later correction without inheriting it"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "withdraw-other-version",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol rejects withdrawal of a different version or an already withdrawn event"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "withdraw-twice",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol rejects withdrawal of a different version or an already withdrawn event"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-checksum",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol rejects altered event bytes and a broader authority claim even if it is rehashed"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "broader-authority",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol rejects altered event bytes and a broader authority claim even if it is rehashed"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "future-schema",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol rejects altered event bytes and a broader authority claim even if it is rehashed"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "empty-reason",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 27,
+      "failed": 2,
+      "failedAssertions": [
+        "exact synthesis approval protocol refuses an invalid reason without silently rewriting it",
+        "exact synthesis approval protocol refuses an invalid reason without silently rewriting it"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "nul-reason",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol refuses an invalid reason without silently rewriting it"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "malformed-unicode-reason",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol refuses an invalid reason without silently rewriting it"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "too-long-reason",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol refuses an invalid reason without silently rewriting it"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "rewrite-reason",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 25,
+      "failed": 4,
+      "failedAssertions": [
+        "exact synthesis approval protocol binds approval to the exact revision and keeps later corrections unapproved",
+        "exact synthesis approval protocol withdraws the exact prior approval after correction and permits a new explicit approval",
+        "exact synthesis approval protocol rejects altered event bytes and a broader authority claim even if it is rehashed",
+        "exact synthesis approval protocol preserves full Unicode reasons and refuses unsupported or ambiguous commands"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unpaired-predecessor",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol preserves full Unicode reasons and refuses unsupported or ambiguous commands"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "self-predecessor",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol preserves full Unicode reasons and refuses unsupported or ambiguous commands"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "withdraw-without-approval",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol preserves full Unicode reasons and refuses unsupported or ambiguous commands"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "extra-command-fields",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol preserves full Unicode reasons and refuses unsupported or ambiguous commands"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "altered-receipt",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol recovers exact old receipts but rejects changes to any bound command field"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "incorrect-inventory",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol refuses incomplete, reordered, duplicated or forked approval history"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "wrong-sequence",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol refuses incomplete, reordered, duplicated or forked approval history"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "reused-request",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol refuses incomplete, reordered, duplicated or forked approval history"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "wrong-head-id",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol refuses incomplete, reordered, duplicated or forked approval history"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "wrong-head-sha",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol refuses incomplete, reordered, duplicated or forked approval history"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "reused-revision-id",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol rejects reassignment of a retained revision ID or sequence number within history"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "reused-revision-number",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol rejects reassignment of a retained revision ID or sequence number within history"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "historical-hash-corruption",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 27,
+      "failed": 2,
+      "failedAssertions": [
+        "exact synthesis approval protocol rejects historical revisionSha256 corruption instead of claiming no approval",
+        "exact synthesis approval protocol rejects historical revisionNo corruption instead of claiming no approval"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "withdrawal-disappears",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 28,
+      "failed": 1,
+      "failedAssertions": [
+        "exact synthesis approval protocol withdraws the exact prior approval after correction and permits a new explicit approval"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "approval-disappears",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 27,
+      "failed": 2,
+      "failedAssertions": [
+        "exact synthesis approval protocol binds approval to the exact revision and keeps later corrections unapproved",
+        "exact synthesis approval protocol withdraws the exact prior approval after correction and permits a new explicit approval"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "oldest-event-wins",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 27,
+      "failed": 2,
+      "failedAssertions": [
+        "exact synthesis approval protocol withdraws the exact prior approval after correction and permits a new explicit approval",
+        "exact synthesis approval protocol allows reapproval of the same version only after explicit withdrawal"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "sourceRestored": true,
+  "sourceSha256": "1b0793d9721ecd91421f6e19b4344d1999aee1566359d5bfd334c9170c759b3d",
+  "blindCategories": [
+    "Pure protocol tests do not establish database locking, access control, membership revocation, or durable idempotency.",
+    "A checksum establishes byte consistency, not who authorized the bytes; native access and authenticated route checks are still required.",
+    "A self-consistent truncated history with a forged count and head requires comparison with authoritative database history.",
+    "No browser reachability, usability, recovery, approval meaning, export, or public authority is established."
+  ]
+}
