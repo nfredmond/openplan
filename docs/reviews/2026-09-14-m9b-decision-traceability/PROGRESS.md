@@ -1,5 +1,70 @@
 # Response-to-decision context in progress
 
+## Usage-reset handoff, September 14
+
+The user asked to preserve continuity across the weekly usage reset. Resume
+this lane from this checkout, not the original checkout or an old roadmap.
+This section supersedes older next-step and uninstalled-status statements below.
+
+- Checkout: `/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13`.
+  Application commands run in its `openplan/` subdirectory.
+- Branch: `work/engagement-decision-traceability`. All application changes through
+  `ea474256c9322a88bbdfe87077f8a2ad33b67604` were verified present on origin at
+  this checkpoint. Main remains `24f0dc9f2bee0e6958d205c505aa1a3b810dd648`.
+  No PR. Merge directly to main when affected acceptance is ready.
+- Latest released version remains v0.59.0. This decision-link increment is
+  unfinished and unreleased. The complete V1 objective remains unchanged.
+- The isolated application database is now at 340 migrations through
+  `20261014000021`; activation and all 533 live RLS tests passed as recorded below.
+  Preserve it and the disconnected proof database. Do not reset either.
+- A production build of ea474256 completed and is served on localhost:3262 by
+  our server process. The process may not survive a reset. Recheck ownership,
+  served identity with `scripts/ops/which-openplan.sh`, and database URL before
+  resuming. Other servers and the original checkout belong to separate work.
+
+### Browser checkpoint
+
+Both desktop 1440px and 390px journeys completed through real Projects and
+Engagement navigation on identified ea474256. Each created a synthetic proposed
+project decision and a manual response, linked them, lost the successful POST
+acknowledgment deliberately, downloaded the retained request, reloaded, and
+retried the identical request. Each retained one history entry, with the downloaded
+context matching its retained SHA256. These manual responses have zero source
+contribution references; they do not prove the full traceability journey.
+
+Private evidence is under
+`/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/`:
+`basic-1440-1789383801102` and `basic-390-1789383913908`, with JSON observations,
+screenshots, accessibility snapshots and downloaded retained requests.
+The reusable private runner is `basic-decision.cjs`.
+Each console contains the deliberately induced connection reset. Navigation also
+aborted RSC prefetch requests. Do not report an unqualified clean console.
+Screenshots were inspected at both widths; the mobile history still needs a
+separate scrolled inspection. Focus/Enter activation was exercised, but a
+meaningful Tab traversal remains outstanding.
+
+### Continue here
+
+1. Extend browser acceptance to real source contributions, corrections and
+   withdrawal at both widths. Inspect expanded history, keyboard traversal and
+   a journey without induced console errors. Keep the served build frozen while
+   collecting acceptance and preserve raw private evidence locally.
+2. Complete self-service recovery for corrupt or unknown saved requests. Read
+   existing translation/request-resolution patterns first. Archiving local bytes
+   alone cannot cancel an in-flight server request. Preserve exact original
+   bytes and prevent late commits or duplicates. Unsent draft durability also
+   remains unproved.
+3. Finish explicit public explanation with private-field exclusion and report/
+   export lineage before claiming M9b complete. Private snapshots cannot be
+   repurposed directly as public payloads.
+4. Run applicable final QA, shuffled tests, isolated RLS and worker/upgrade checks.
+   Inspect GitHub CI on the actual final main release commit before tagging.
+   Earlier main CI does not cover this branch. No human review release gate.
+
+The browser jobs completed and closed their browsers. No QA or mutation run is
+pending at this checkpoint. Do not rely on tool session IDs surviving the reset.
+Keep operation local and free; leave the pending reminder constraint untouched.
+
 ## Migration 21 activated in the isolated application stack
 
 `20261014000021_engagement_response_decision_links.sql` is assembled from the
