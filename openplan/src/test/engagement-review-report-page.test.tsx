@@ -10,13 +10,17 @@ vi.mock('next/navigation', () => ({
   notFound: () => { throw new Error('notFound'); },
   redirect: () => { throw new Error('redirect'); },
 }));
+vi.mock('@/components/reports/report-detail-controls', () => ({
+  ReportDetailControls: ({ metadataOnly, report }: { metadataOnly?: boolean; report: { id: string } }) =>
+    <section aria-label="Report editing" data-report={report.id} data-metadata-only={String(metadataOnly)} />,
+}));
 vi.mock('@/components/engagement/engagement-review-files', () => ({
   EngagementReviewFiles: ({ campaignId, reportId }: { campaignId: string; reportId: string }) =>
     <section aria-label="Retained file controls" data-campaign={campaignId} data-report={reportId} />,
 }));
 
 type Result = { data: unknown; error: { message: string } | null };
-const report = { id: 'report-1', workspace_id: 'workspace-1', engagement_campaign_id: 'campaign-1', title: 'Saved consultation', summary: null };
+const report = { id: 'report-1', workspace_id: 'workspace-1', engagement_campaign_id: 'campaign-1', title: 'Saved consultation', summary: null, status: 'draft', generated_at: null };
 let rows: Record<string, Result>;
 let queries: Array<{ table: string; columns: string; filters: Array<[string, unknown]> }>;
 const client = {
@@ -36,12 +40,13 @@ const client = {
     },
   })),
 };
-const load = (value = report) => loadEngagementReviewReportPage(client as unknown as Parameters<typeof loadEngagementReviewReportPage>[0], value);
+const load = (value = report) => loadEngagementReviewReportPage(client as unknown as Parameters<typeof loadEngagementReviewReportPage>[0], value, 'staff-1');
 
 beforeEach(() => {
   vi.clearAllMocks();
   queries = [];
   rows = {
+    workspace_members: { data: { role: 'member' }, error: null },
     reports: { data: report, error: null },
     engagement_report_jobs: { data: { id: 'job-1' }, error: null },
     engagement_campaigns: { data: { id: 'campaign-1', title: 'Current consultation', project_id: null }, error: null },
@@ -50,6 +55,20 @@ beforeEach(() => {
 });
 
 describe('saved engagement report context', () => {
+  it('keeps report detail editing with a scoped role check and metadata-only controls', async () => {
+    render(await load());
+    expect(screen.getByRole('region', { name: 'Report editing' })).toHaveAttribute('data-report', report.id);
+    expect(screen.getByRole('region', { name: 'Report editing' })).toHaveAttribute('data-metadata-only', 'true');
+  });
+
+  it.each(['viewer', 'unknown', 'absent', 'failed'])('refuses report editing for %s membership', async role => {
+    rows.workspace_members = { data: ['absent', 'failed'].includes(role) ? null : { role }, error: role === 'failed' ? { message: 'disconnected' } : null };
+    render(await load());
+    expect(screen.queryByRole('region', { name: 'Report editing' })).not.toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Retained file controls' })).toBeInTheDocument();
+    if (role === 'failed') expect(screen.getByRole('alert')).toHaveTextContent('Editing permissions could not be loaded');
+  });
+
   it('preserves the land-use report owner before campaign review lookup', async () => {
     rows.reports.data = { ...report, land_use_plan_id: 'plan-1' };
     render(await ReportDetailPage({ params: Promise.resolve({ reportId: report.id }) }));
@@ -61,7 +80,7 @@ describe('saved engagement report context', () => {
     render(await ReportDetailPage({ params: Promise.resolve({ reportId: report.id }) }));
     expect(screen.getByRole('heading', { name: report.title, level: 1 })).toBeVisible();
     expect(screen.getByRole('region', { name: 'Retained file controls' })).toHaveAttribute('data-report', report.id);
-    expect(queries.map(q => q.table)).toEqual(['reports', 'engagement_report_jobs', 'engagement_campaigns']);
+    expect(queries.map(q => q.table)).toEqual(['reports', 'engagement_report_jobs', 'engagement_campaigns', 'workspace_members']);
   });
 
   it('scopes the real job and campaign queries and keeps the retained report selection', async () => {
@@ -69,8 +88,9 @@ describe('saved engagement report context', () => {
     expect(queries).toEqual([
       { table: 'engagement_report_jobs', columns: 'id', filters: [['report_id', report.id], ['campaign_id', report.engagement_campaign_id], ['workspace_id', report.workspace_id]] },
       { table: 'engagement_campaigns', columns: 'id, title, project_id', filters: [['id', report.engagement_campaign_id], ['workspace_id', report.workspace_id]] },
+      { table: 'workspace_members', columns: 'role', filters: [['workspace_id', report.workspace_id], ['user_id', 'staff-1']] },
     ]);
-    expect(screen.getByRole('link', { name: 'Open campaign' })).toHaveAttribute('href', '/engagement/campaign-1?tab=record');
+    expect(screen.getByRole('link', { name: 'Open consultation' })).toHaveAttribute('href', '/engagement/campaign-1?tab=record');
     const files = screen.getByRole('region', { name: 'Retained file controls' });
     expect(files).toHaveAttribute('data-report', report.id);
     expect(files).toHaveAttribute('data-campaign', report.engagement_campaign_id);
@@ -82,7 +102,7 @@ describe('saved engagement report context', () => {
     rows.engagement_campaigns.data = { id: 'campaign-1', title: 'Current consultation', project_id: 'project-1' };
     rows.projects = { data: { id: 'project-1', name: 'Current project name' }, error: null };
     render(await load());
-    expect(queries.at(-1)).toEqual({ table: 'projects', columns: 'id, name', filters: [['id', 'project-1'], ['workspace_id', report.workspace_id]] });
+    expect(queries.find(q => q.table === 'projects')).toEqual({ table: 'projects', columns: 'id, name', filters: [['id', 'project-1'], ['workspace_id', report.workspace_id]] });
     expect(screen.getByRole('link', { name: 'Open project' })).toHaveAttribute('href', '/projects/project-1');
     expect(screen.getByText('Current project: Current project name')).toBeVisible();
   });
@@ -101,7 +121,7 @@ describe('saved engagement report context', () => {
   it('refuses the generic route on a failed job read instead of treating failure as absence', async () => {
     rows.engagement_report_jobs = { data: null, error: { message: 'disconnected' } };
     render(await ReportDetailPage({ params: Promise.resolve({ reportId: report.id }) }));
-    expect(screen.getByRole('alert')).toHaveTextContent('saved review record could not be loaded');
+    expect(screen.getByRole('alert')).toHaveTextContent('saved review could not be loaded');
     expect(queries.map(q => q.table)).toEqual(['reports', 'engagement_report_jobs']);
     expect(screen.queryByRole('region', { name: 'Retained file controls' })).not.toBeInTheDocument();
   });
@@ -109,9 +129,9 @@ describe('saved engagement report context', () => {
   it.each([false, true])('retains file controls with unavailable campaign context; failed read=%s', async failed => {
     rows.engagement_campaigns = { data: null, error: failed ? { message: 'disconnected' } : null };
     render(await load());
-    expect(screen.getByText(failed ? /Current campaign details could not be loaded/ : /campaign is no longer available/)).toBeVisible();
+    expect(screen.getByText(failed ? /Current consultation details could not be loaded/ : /consultation is no longer available/)).toBeVisible();
     expect(screen.getByRole('region', { name: 'Retained file controls' })).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Open campaign' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Open consultation' })).not.toBeInTheDocument();
     expect(queries.some(q => q.table === 'projects')).toBe(false);
   });
 

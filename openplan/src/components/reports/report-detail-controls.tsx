@@ -79,6 +79,7 @@ function sourceReviewPostureClassName(state: ReportSourceReviewPosture["state"])
 
 export function ReportDetailControls({
   report,
+  metadataOnly = false,
   driftSummary,
   evidenceSummary,
   fundingSummary,
@@ -100,6 +101,7 @@ export function ReportDetailControls({
     status: string;
     hasGeneratedArtifact: boolean;
   };
+  metadataOnly?: boolean;
   driftSummary?: {
     changedCount: number;
     totalCount: number;
@@ -309,11 +311,12 @@ export function ReportDetailControls({
             Controls
           </p>
           <h2 className="text-xl font-semibold tracking-tight">
-            Edit and generate
+            {metadataOnly ? "Edit report details" : "Edit and generate"}
           </h2>
         </div>
       </div>
 
+      {metadataOnly ? <p className="mt-3 text-sm text-muted-foreground">Changes here update the title, summary and filing status. Saved file contents stay unchanged.</p> : null}
       <form className="mt-5 space-y-4" onSubmit={handleSave}>
         <fieldset disabled={isGenerating} className="space-y-4">
         {/* Title */}
@@ -390,6 +393,7 @@ export function ReportDetailControls({
           </p>
         </div>
 
+        {!metadataOnly ? <>
         {/* Cited model runs */}
         {safetyIngestOptions.length > 0 ? (
           <div className="space-y-2" data-testid="report-safety-evidence-selection">
@@ -688,6 +692,7 @@ export function ReportDetailControls({
           </div>
         ) : null}
 
+        </> : null}
         {/* Error banner */}
         {error ? (
           <p className="rounded-xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
@@ -724,6 +729,7 @@ export function ReportDetailControls({
             )}
           </Button>
 
+          {!metadataOnly ? <>
           <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
             <span>Format</span>
             <select
@@ -757,6 +763,7 @@ export function ReportDetailControls({
               </span>
             )}
           </Button>
+          </> : null}
         </div>
         </fieldset>
       </form>

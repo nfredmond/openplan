@@ -14,6 +14,29 @@ import {
 } from "@/components/reports/report-detail-controls";
 
 describe("ReportDetailControls", () => {
+  it("edits saved review metadata without model controls or a generation request", async () => {
+    const fetchMock = vi.fn(async () => ({ ok: true, json: async () => ({}) }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<ReportDetailControls metadataOnly
+      report={{ id: "report-review", title: "Saved consultation", summary: "Original note", status: "generated", hasGeneratedArtifact: true }}
+      citedModelRunIds={["existing-citation"]}
+      fundingSummary={{ headline: "SYNTHETIC funding panel", detail: "Unrelated financial detail" }}
+    />);
+    expect(screen.getByRole("heading", { name: "Edit report details" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: /Generate|Regenerate/ })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Packet format")).not.toBeInTheDocument();
+    expect(screen.queryByText("SYNTHETIC funding panel")).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Title"), { target: { value: "Reviewed consultation" } });
+    fireEvent.change(screen.getByLabelText("Summary"), { target: { value: "Updated filing note" } });
+    fireEvent.change(screen.getByLabelText("Status"), { target: { value: "archived" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save metadata" }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
+    expect(fetchMock).toHaveBeenCalledWith("/api/reports/report-review", {
+      method: "PATCH", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ title: "Reviewed consultation", summary: "Updated filing note", status: "archived" }),
+    });
+  });
+
   it("offers held orthophotos without automatically selecting one and saves only a planner choice", async () => {
     const fetchMock = vi.fn(async (_input: unknown, _init?: { body?: unknown }) => ({ ok: true, json: async () => ({}) }));
     vi.stubGlobal("fetch", fetchMock);

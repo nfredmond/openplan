@@ -126,7 +126,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     notFound();
   }
 
-  const specializedReport = await loadSpecializedReportPage(supabase, report);
+  const specializedReport = await loadSpecializedReportPage(supabase, report, user.id);
   if (specializedReport) return specializedReport;
 
   /**

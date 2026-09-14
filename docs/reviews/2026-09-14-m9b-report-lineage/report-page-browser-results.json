@@ -1,0 +1,127 @@
+{
+  "sourceCommit": "fec3ed7fb8cb0316e49a932ec399ac89029f2166",
+  "journeys": [
+    {
+      "width": 1440,
+      "fixed": true,
+      "completed": true,
+      "console": [],
+      "downloads": [
+        {
+          "format": "pdf",
+          "checksum": "c2b2dffba0d79a9fb0c92da3dccbed37ad077b5fd05767b330c671c98b38e52d",
+          "byteLength": 59868
+        },
+        {
+          "format": "xlsx",
+          "checksum": "b1449a67d40c2e8f47acd7de6bcb5747572dc40c90b254db25de330d1a403d78",
+          "byteLength": 15882
+        },
+        {
+          "format": "zip",
+          "checksum": "2b871db7a85fc1c7fa970f6518a29711b0c6a34fbc40cbcaf9282ae69173f652",
+          "byteLength": 61703
+        }
+      ],
+      "identity": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-09-14T15:07:58.674Z",
+        "deployment": {
+          "commit": "fec3ed7fb8cb",
+          "version": "0.60.0"
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "reportId": "9611d8ec-f836-4928-8926-cfd994d1b320",
+      "anonymousReportStatus": 307,
+      "anonymousFiles": [
+        {
+          "format": "pdf",
+          "status": 401
+        },
+        {
+          "format": "xlsx",
+          "status": 401
+        },
+        {
+          "format": "zip",
+          "status": 401
+        }
+      ],
+      "layout": {
+        "width": 1024,
+        "scrollWidth": 1024
+      },
+      "returnedToCampaign": true,
+      "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/report-page-after-1440-1789398478379"
+    },
+    {
+      "width": 390,
+      "fixed": true,
+      "completed": true,
+      "console": [],
+      "downloads": [
+        {
+          "format": "pdf",
+          "checksum": "cd365b822b95f8ac60a8900f4745afcfba2b3edc0a33fe199a93135c74a8f9d8",
+          "byteLength": 59459
+        },
+        {
+          "format": "xlsx",
+          "checksum": "f3b87fc2486447f193436610a3fa1a008b54331e8673167c351c5eb7d0c7f722",
+          "byteLength": 15878
+        },
+        {
+          "format": "zip",
+          "checksum": "217d616308009c4d7f9109a1ef2ce18b020086a43f4579b593803a82b8e410fe",
+          "byteLength": 61254
+        }
+      ],
+      "identity": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-09-14T15:08:33.101Z",
+        "deployment": {
+          "commit": "fec3ed7fb8cb",
+          "version": "0.60.0"
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "reportId": "4107e08b-7f3a-4757-8139-928081b39ddd",
+      "anonymousReportStatus": 307,
+      "anonymousFiles": [
+        {
+          "format": "pdf",
+          "status": 401
+        },
+        {
+          "format": "xlsx",
+          "status": 401
+        },
+        {
+          "format": "zip",
+          "status": 401
+        }
+      ],
+      "layout": {
+        "width": 292,
+        "scrollWidth": 292
+      },
+      "returnedToCampaign": true,
+      "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/report-page-after-390-1789398512793"
+    }
+  ],
+  "limits": [
+    "The cases reuse UI-created synthetic campaigns and existing saved internal files. No generation or file-content change is claimed.",
+    "Anonymous access is tested live; broader workspace/role isolation remains the unchanged native RLS evidence from v0.60.",
+    "Keyboard focus and activation are tested, not exhaustive tab order or assistive-technology usability.",
+    "Private decision-link history exports remain unimplemented."
+  ]
+}
