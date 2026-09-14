@@ -257,3 +257,8 @@ CORE-OWP-01/M2d.4 now extends the preparatory review with [saved reconciliation 
 ### September 9 accounting-period closure increment, unreleased
 
 CORE-OWP-01/M2d.4 extends saved reconciliation with [accounting-period closure and authorized reopening](../reviews/2026-09-09-m2d4-period-closure/VERIFICATION.md). Cumulative dates and linked sources are protected while later-period work can continue. Outstanding balances remain visible. Multi-target carryover, outbound-refund matching, independent reconstruction/restore and practicing-finance acceptance remain open. The full administration requirement stays partial.
+
+
+## September 14 report context and private decision history, v0.61 candidate
+
+The [report-history engineering record](../reviews/2026-09-14-m9b-report-lineage/RELEASE_VERIFICATION.md) supersedes the earlier report-page warning and missing internal-history limitations for new snapshots. CORE-ENG-03/04 now have original, correction and withdrawal history in internal PDF/XLSX/ZIP, with exact retained bytes, whole-consultation scope disclosure and public exclusion. Earlier files remain unchanged. Desktop/390px keyboard, interrupted retry, retained downloads, live isolation and populated upgrade evidence are recorded there. Final release CI and publication remain separate. The generic report GET API's nullable-project assumption still needs correction. M9b, comparative usefulness and the remaining V1 requirements stay open; no capability rating or scientific claim is promoted.

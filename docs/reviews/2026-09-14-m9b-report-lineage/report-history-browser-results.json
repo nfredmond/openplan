@@ -1,0 +1,633 @@
+{
+  "date": "2026-09-14",
+  "build": "b3dea322fec3",
+  "checkout": "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13",
+  "synthetic": true,
+  "journeys": [
+    {
+      "width": 1440,
+      "privateRecord": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/report-history-1440-1789405863570.json",
+      "recordSha256": "0f67e7f7e82529e12d42d3083b15121ada9e72a16ce61d46a9f1de12912db5de",
+      "console": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_CONNECTION_RESET"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        }
+      ],
+      "reportQueueRetry": {
+        "committedBeforeLoss": true,
+        "sameRequest": true,
+        "sameJob": true,
+        "reloaded": true
+      },
+      "originalFilesPreserved": true,
+      "anonymous": [
+        {
+          "label": "original",
+          "format": "pdf",
+          "status": 401
+        },
+        {
+          "label": "original",
+          "format": "xlsx",
+          "status": 401
+        },
+        {
+          "label": "original",
+          "format": "zip",
+          "status": 401
+        },
+        {
+          "label": "corrected",
+          "format": "pdf",
+          "status": 401
+        },
+        {
+          "label": "corrected",
+          "format": "xlsx",
+          "status": 401
+        },
+        {
+          "label": "corrected",
+          "format": "zip",
+          "status": 401
+        },
+        {
+          "label": "withdrawn",
+          "format": "pdf",
+          "status": 401
+        },
+        {
+          "label": "withdrawn",
+          "format": "xlsx",
+          "status": 401
+        },
+        {
+          "label": "withdrawn",
+          "format": "zip",
+          "status": 401
+        },
+        {
+          "label": "public",
+          "format": "pdf",
+          "status": 401
+        },
+        {
+          "label": "public",
+          "format": "xlsx",
+          "status": 401
+        },
+        {
+          "label": "public",
+          "format": "zip",
+          "status": 401
+        }
+      ],
+      "reports": [
+        {
+          "label": "original",
+          "format": 2,
+          "snapshotSha256": "8a37fd426db6c7d9f1aea0132ba6d407dfcac737baba7f64ace247edf3ce9dfa",
+          "files": [
+            {
+              "format": "pdf",
+              "sha256": "33fc362a3be384bd35c5704c3f13b3daa5d2a976e7e2ce5b09bcdea94e5b2c7c",
+              "bytes": 65320
+            },
+            {
+              "format": "xlsx",
+              "sha256": "fd7f0f99c2968d15e019eb9f511f361456ca86a3f46984cea418a616ebd99929",
+              "bytes": 21317
+            },
+            {
+              "format": "zip",
+              "sha256": "307bcc7b8cdaac0b8e95883dd987024ba3525228ca64db432fa3872a187739af",
+              "bytes": 71892
+            }
+          ],
+          "operations": [
+            "link"
+          ],
+          "layout": {
+            "width": 1024,
+            "scrollWidth": 1024
+          }
+        },
+        {
+          "label": "corrected",
+          "format": 2,
+          "snapshotSha256": "4a120bfbecfd7ab786628531e3ed2efaf7ea765fb7ebe2cd0da1ebf5bae18ac3",
+          "files": [
+            {
+              "format": "pdf",
+              "sha256": "a9ff3bd28790681c711c82f5a5ac111589803683f4ac82349fb3487679ded6b9",
+              "bytes": 73925
+            },
+            {
+              "format": "xlsx",
+              "sha256": "c98a5ab714011f167bff63cfcf368959d4f2d8838c57e72f2859fa8e78a49831",
+              "bytes": 22297
+            },
+            {
+              "format": "zip",
+              "sha256": "a966307049e4ddd155896413a4aaf379e8e36671be42f383dfe885def999150f",
+              "bytes": 78273
+            }
+          ],
+          "operations": [
+            "link",
+            "refresh"
+          ],
+          "layout": {
+            "width": 1024,
+            "scrollWidth": 1024
+          }
+        },
+        {
+          "label": "withdrawn",
+          "format": 2,
+          "snapshotSha256": "9a32524c5e9f30bcf2576e0018b28d8c2be13f08ead6a483c061b026807070be",
+          "files": [
+            {
+              "format": "pdf",
+              "sha256": "f2f34d301f65fcb0dfcfba7c13e99ec2b641e6249fbcfbfb1a6d811a1b05da73",
+              "bytes": 81100
+            },
+            {
+              "format": "xlsx",
+              "sha256": "59cbedc27e8624d503a0766006de4f5a0492493889135465f404eee4fa53897d",
+              "bytes": 23009
+            },
+            {
+              "format": "zip",
+              "sha256": "5443fcf0bbb3af8ab6c379bd7f3ee13099b3ddc3e98d3e12eeac871d44cba757",
+              "bytes": 82735
+            }
+          ],
+          "operations": [
+            "link",
+            "refresh",
+            "withdraw"
+          ],
+          "layout": {
+            "width": 1024,
+            "scrollWidth": 1024
+          }
+        },
+        {
+          "label": "public",
+          "format": 1,
+          "snapshotSha256": "b843faea1db758232397968fb9df661572eab90c1796aeb49c877554787fb2ea",
+          "files": [
+            {
+              "format": "pdf",
+              "sha256": "b078076044d13b790cf31dbe434b4e33cd7dfa4794a10044138c4095624839c0",
+              "bytes": 57433
+            },
+            {
+              "format": "xlsx",
+              "sha256": "1a916875b0d685ad24a93fd424a71a0938f74a396fdeeb9364a0e949315e2e47",
+              "bytes": 15507
+            },
+            {
+              "format": "zip",
+              "sha256": "87f291053aa609b8a7b16da1835c560abc0f41432d4228fd6461fdbf880240de",
+              "bytes": 59675
+            }
+          ],
+          "operations": [],
+          "layout": {
+            "width": 1024,
+            "scrollWidth": 1024
+          }
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "privateRecord": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/report-history-390-1789405897743.json",
+      "recordSha256": "db510f9b37956ebf25c9d5ca172fa13c0982ea6e8d5c80d7d3a77833a58b2b68",
+      "console": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_CONNECTION_RESET"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        }
+      ],
+      "reportQueueRetry": {
+        "committedBeforeLoss": true,
+        "sameRequest": true,
+        "sameJob": true,
+        "reloaded": true
+      },
+      "originalFilesPreserved": true,
+      "anonymous": [
+        {
+          "label": "original",
+          "format": "pdf",
+          "status": 401
+        },
+        {
+          "label": "original",
+          "format": "xlsx",
+          "status": 401
+        },
+        {
+          "label": "original",
+          "format": "zip",
+          "status": 401
+        },
+        {
+          "label": "corrected",
+          "format": "pdf",
+          "status": 401
+        },
+        {
+          "label": "corrected",
+          "format": "xlsx",
+          "status": 401
+        },
+        {
+          "label": "corrected",
+          "format": "zip",
+          "status": 401
+        },
+        {
+          "label": "withdrawn",
+          "format": "pdf",
+          "status": 401
+        },
+        {
+          "label": "withdrawn",
+          "format": "xlsx",
+          "status": 401
+        },
+        {
+          "label": "withdrawn",
+          "format": "zip",
+          "status": 401
+        },
+        {
+          "label": "public",
+          "format": "pdf",
+          "status": 401
+        },
+        {
+          "label": "public",
+          "format": "xlsx",
+          "status": 401
+        },
+        {
+          "label": "public",
+          "format": "zip",
+          "status": 401
+        }
+      ],
+      "reports": [
+        {
+          "label": "original",
+          "format": 2,
+          "snapshotSha256": "07680414aa6dd7ff9266933431f0567e30cae74576b51460df328b319a73afb3",
+          "files": [
+            {
+              "format": "pdf",
+              "sha256": "73d2c40bce1bd79d37d117976e58eff18c4840a25bbcca67de5a3578c356d61c",
+              "bytes": 65137
+            },
+            {
+              "format": "xlsx",
+              "sha256": "22055a60f03321b41be4d85a08178d5d7a783c7faf1cdd86b0797a98929766db",
+              "bytes": 21339
+            },
+            {
+              "format": "zip",
+              "sha256": "48f9cc0ce38fbd486f251ddec62dec00a029bedece6450488bbb3ce82fbc2a2b",
+              "bytes": 71738
+            }
+          ],
+          "operations": [
+            "link"
+          ],
+          "layout": {
+            "width": 292,
+            "scrollWidth": 292
+          }
+        },
+        {
+          "label": "corrected",
+          "format": 2,
+          "snapshotSha256": "b021370a8e0eb9dd9330eaa5159c3da370235df558bc48f7c6fcdd13e3b0b1bb",
+          "files": [
+            {
+              "format": "pdf",
+              "sha256": "c344e98c0de41003ff72a3baf5c367b7d6996fae6fadf1a6d31672c93cc44d25",
+              "bytes": 73727
+            },
+            {
+              "format": "xlsx",
+              "sha256": "e39d8e3a83a6e2d090d4fa1edfb1032e23485f4de3aa85dc164faa6aa4fc3964",
+              "bytes": 22324
+            },
+            {
+              "format": "zip",
+              "sha256": "de0298479f9681d200392cacb88ba17b45e97de633177577d4cc947666385811",
+              "bytes": 78111
+            }
+          ],
+          "operations": [
+            "link",
+            "refresh"
+          ],
+          "layout": {
+            "width": 292,
+            "scrollWidth": 292
+          }
+        },
+        {
+          "label": "withdrawn",
+          "format": 2,
+          "snapshotSha256": "ccb24c26062a9625df1fda38798a80864590da7cf7c400ee0bbe6d0a8a59cb35",
+          "files": [
+            {
+              "format": "pdf",
+              "sha256": "41bb53b47f91decff5360679d90a8d41148a8b274b881e88c2f9ef3b67e3b13f",
+              "bytes": 81138
+            },
+            {
+              "format": "xlsx",
+              "sha256": "171414fea74d4cc5b8b086b29111978a4f56b29f7dd6db733a9c024f657c4e0e",
+              "bytes": 23034
+            },
+            {
+              "format": "zip",
+              "sha256": "f1820b1970908bd21ea5bbdc447a46744ef2d0cf2cb937eec220cd3396c52ab0",
+              "bytes": 82797
+            }
+          ],
+          "operations": [
+            "link",
+            "refresh",
+            "withdraw"
+          ],
+          "layout": {
+            "width": 292,
+            "scrollWidth": 292
+          }
+        },
+        {
+          "label": "public",
+          "format": 1,
+          "snapshotSha256": "3fec3365a44830131737a3d79810e3ea808ec6251427f7e3241e892d9b41bb10",
+          "files": [
+            {
+              "format": "pdf",
+              "sha256": "2c9df935e84b3a073028606790862df4a3e772f0e46b61cd165d357670855b79",
+              "bytes": 57387
+            },
+            {
+              "format": "xlsx",
+              "sha256": "ae1b38405d5ee5bda3522e5e055ed7c90ee6d8b85b9e02de12f2426a9f96cd74",
+              "bytes": 15507
+            },
+            {
+              "format": "zip",
+              "sha256": "1e0a0e84cea456f39c45a40f9e18b70cace9762ab36f46838a600b3fcba30c8f",
+              "bytes": 59622
+            }
+          ],
+          "operations": [],
+          "layout": {
+            "width": 292,
+            "scrollWidth": 292
+          }
+        }
+      ]
+    }
+  ],
+  "legacy": [
+    {
+      "width": 1440,
+      "legacyFormatDisclosed": true,
+      "metadata": {
+        "committedBeforeLoss": true,
+        "retrySaved": true,
+        "reloaded": true,
+        "restored": true,
+        "patchCount": 3,
+        "generationRequests": 0
+      },
+      "downloads": [
+        {
+          "format": "pdf",
+          "checksum": "c2b2dffba0d79a9fb0c92da3dccbed37ad077b5fd05767b330c671c98b38e52d",
+          "byteLength": 59868
+        },
+        {
+          "format": "xlsx",
+          "checksum": "b1449a67d40c2e8f47acd7de6bcb5747572dc40c90b254db25de330d1a403d78",
+          "byteLength": 15882
+        },
+        {
+          "format": "zip",
+          "checksum": "2b871db7a85fc1c7fa970f6518a29711b0c6a34fbc40cbcaf9282ae69173f652",
+          "byteLength": 61703
+        }
+      ],
+      "console": [],
+      "layout": {
+        "width": 1024,
+        "scrollWidth": 1024
+      },
+      "anonymousReportStatus": 307,
+      "anonymousFiles": [
+        {
+          "format": "pdf",
+          "status": 401
+        },
+        {
+          "format": "xlsx",
+          "status": 401
+        },
+        {
+          "format": "zip",
+          "status": 401
+        }
+      ],
+      "returnedToCampaign": true
+    },
+    {
+      "width": 390,
+      "legacyFormatDisclosed": true,
+      "metadata": {
+        "committedBeforeLoss": true,
+        "retrySaved": true,
+        "reloaded": true,
+        "restored": true,
+        "patchCount": 3,
+        "generationRequests": 0
+      },
+      "downloads": [
+        {
+          "format": "pdf",
+          "checksum": "cd365b822b95f8ac60a8900f4745afcfba2b3edc0a33fe199a93135c74a8f9d8",
+          "byteLength": 59459
+        },
+        {
+          "format": "xlsx",
+          "checksum": "f3b87fc2486447f193436610a3fa1a008b54331e8673167c351c5eb7d0c7f722",
+          "byteLength": 15878
+        },
+        {
+          "format": "zip",
+          "checksum": "217d616308009c4d7f9109a1ef2ce18b020086a43f4579b593803a82b8e410fe",
+          "byteLength": 61254
+        }
+      ],
+      "console": [],
+      "layout": {
+        "width": 292,
+        "scrollWidth": 292
+      },
+      "anonymousReportStatus": 307,
+      "anonymousFiles": [
+        {
+          "format": "pdf",
+          "status": 401
+        },
+        {
+          "format": "xlsx",
+          "status": 401
+        },
+        {
+          "format": "zip",
+          "status": 401
+        }
+      ],
+      "returnedToCampaign": true
+    }
+  ],
+  "workerRecovery": {
+    "before": {
+      "id": "e0de5cb6-7773-46a6-9721-7b00996074e2",
+      "status": "failed",
+      "snapshotSha256": "80d1c5e1e1f8136d98d39c5fda973ec3da04a6008927da932d537065dab777ec",
+      "error": "Unsupported campaign snapshot"
+    },
+    "recovered": {
+      "id": "e0de5cb6-7773-46a6-9721-7b00996074e2",
+      "snapshotSha256": "80d1c5e1e1f8136d98d39c5fda973ec3da04a6008927da932d537065dab777ec",
+      "files": [
+        {
+          "format": "pdf",
+          "sha256": "9efced7c84bc5a9982b967e21890881cbd64c46edcd65cdf05b690218163a2e5",
+          "bytes": 73979
+        },
+        {
+          "format": "xlsx",
+          "sha256": "18f4cfa6c1afb4639f80a9eacf37d798d1f8e28b3c918b13f4f1b9a4681f259a",
+          "bytes": 22318
+        },
+        {
+          "format": "zip",
+          "sha256": "027bb0eecf5a0da7cbb6f8a9b5687fd91935a3ab9959c41af8929d07863b8da7",
+          "bytes": 78379
+        }
+      ]
+    },
+    "originalPreserved": [
+      {
+        "format": "pdf",
+        "sha256": "7ab8ce393742457f34d0c70d5c8f6b02dfd12c7c919590e01f0519c1b890b631",
+        "bytes": 64965
+      },
+      {
+        "format": "xlsx",
+        "sha256": "224bd34c97038e93092c5c344c0188ddbf66b2c4e7a392c3a6db30569d1b1e48",
+        "bytes": 21329
+      },
+      {
+        "format": "zip",
+        "sha256": "b843b70866c77da321358aa0d44071205d9ea6f7b5cbcf65b4b2e638788758fc",
+        "bytes": 71558
+      }
+    ],
+    "console": [],
+    "completed": true,
+    "causeEvidence": "Two session-owned workers shared this checkout. The older process started at 06:34 before schema 2 was implemented; historical parser rejects schema 2. Current parser accepted exact failed bytes. Stopping the old owned process and retrying the same job through real navigation completed with unchanged snapshot hash. No application correction was required."
+  },
+  "artifacts": {
+    "pdf": "All five pages of the desktop withdrawal PDF visually inspected. Original, refreshed and withdrawn response/decision context remains readable; unknown original configuration is explicit.",
+    "workbook": "LibreOffice Calc exported 13 sheets. Inspected history across all columns, scope, sources and exact bytes; recalculated summary shows three history actions and zero filtered contributions. Full exact context has linked Long text continuation rows.",
+    "zip": "Every browser download hash, exact snapshot bytes and every manifest member hash checked at both widths.",
+    "limits": "Synthetic workflows; no planner usefulness, agency approval, representative support, language quality or universal narrative-layout claim."
+  },
+  "controlsCaptures": [
+    {
+      "record": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/report-history-controls-1440-1789406154210.json",
+      "recordSha256": "38d5119fb7f7c45d6510816f66a05bd8c11046e6a774c3f9b5a6e47db8bf07d6",
+      "completed": true,
+      "console": [],
+      "screenshots": [
+        {
+          "name": "report-history-controls-1440-1789406154210-corrected-download-controls.png",
+          "sha256": "cd9a27b3c62f9a2437b95e24fbd6d02ae5dff3d5d6fc7952b8dbe39a0469bfbe"
+        },
+        {
+          "name": "report-history-controls-1440-1789406154210-original-download-controls.png",
+          "sha256": "fbc05dda0c5beba770279bf0ced4650c0d8c951d15bcbe69eb44a37b5e591b41"
+        },
+        {
+          "name": "report-history-controls-1440-1789406154210-public-download-controls.png",
+          "sha256": "a56fb55460b810e030a1f12e3c2e329947dbaf3d595acb787cf460876b171922"
+        },
+        {
+          "name": "report-history-controls-1440-1789406154210-withdrawn-download-controls.png",
+          "sha256": "e19c9604799cd4649209104f9cc031ca430e02f09fa4ae0ffed2eb0ae5147918"
+        }
+      ]
+    },
+    {
+      "record": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/report-history-controls-390-1789406206269.json",
+      "recordSha256": "c6459357e08b564b5fb7f532f2f2e69e68474adf7a5df392db51c1806a899d96",
+      "completed": true,
+      "console": [],
+      "screenshots": [
+        {
+          "name": "report-history-controls-390-1789406206269-corrected-download-controls.png",
+          "sha256": "f53e8aefb18d0ffc3fea3ccdaa2fa4c8c6b6abdc811ee928bac0efec90a939b3"
+        },
+        {
+          "name": "report-history-controls-390-1789406206269-original-download-controls.png",
+          "sha256": "bd3c5bc77c9afa41401ec88022dbcd722f60a7b5c63a2250584c2ee2b2062a46"
+        },
+        {
+          "name": "report-history-controls-390-1789406206269-public-download-controls.png",
+          "sha256": "48e293723f6761a93a91861da735ed7f73e506e40c8944caa7b5b39efbb7cbd1"
+        },
+        {
+          "name": "report-history-controls-390-1789406206269-withdrawn-download-controls.png",
+          "sha256": "f463bbee889d52d7e1f298f6834de53cde886aa4a55d074dd7c85aeda9f1e8d6"
+        }
+      ]
+    },
+    {
+      "record": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/report-history-controls-legacy-390-1789406293315.json",
+      "recordSha256": "7df90920a51b130f9cc2ec6579c8c7df87f4422646da0f3f79dffca566f62662",
+      "completed": true,
+      "console": [],
+      "screenshots": [
+        {
+          "name": "report-history-controls-legacy-390-1789406293315-internal-download-controls.png",
+          "sha256": "c61ba822d18720825a30b11d58fa6ad76c7c153b598f940090f830e34dde8183"
+        }
+      ]
+    }
+  ]
+}

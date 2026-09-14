@@ -1,0 +1,36 @@
+{
+  "sourceCommit": "24c72d1f4cbdd4f03789e79c558c9949e24c3eca",
+  "checks": [
+    {
+      "check": "full-qa",
+      "passed": 15360,
+      "skipped": 533,
+      "log": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/report-history-full-qa-24c72d1f.log",
+      "sha256": "df23efa62076a183977db056bf16c3f914ef8382286eaafb5789e3b0fa12ca92"
+    },
+    {
+      "check": "shuffled",
+      "passed": 15360,
+      "skipped": 533,
+      "log": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/report-history-shuffled-24c72d1f.log",
+      "sha256": "c0905361432c604df31d943accea6b8f1bfc300f4e82abf0411d0c2b38361e3c"
+    },
+    {
+      "check": "full-rls",
+      "passed": 562,
+      "skipped": 0,
+      "log": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/report-history-full-rls-24c72d1f.log",
+      "sha256": "8c4ebc854fcf83bb2ec41f0c6ebbb1abfcf65b80aa09a25d06ee99e3b4808ffa"
+    },
+    {
+      "check": "workers",
+      "passed": 52,
+      "skipped": 0,
+      "log": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/report-history-workers-24c72d1f.log",
+      "sha256": "d947d19b885c09a7e12226db842e6c42649360bbc42a79514d5d00d26624b0c0"
+    }
+  ],
+  "shuffledSeed": 260914,
+  "isolatedStack": "/home/nathaniel/.local/state/openplan/openplan-restore-target-2026091050",
+  "limits": "These results are source-attributed local checks. Final main CI is separate. Skips do not establish coverage."
+}

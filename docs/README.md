@@ -99,4 +99,5 @@ Contract management: [operator workflow](ops/CONTRACT_RECONCILIATION.md) and [v0
 
 - [v0.59.0 translation recovery verification](reviews/2026-09-13-m9b-translation-writes/RELEASE_VERIFICATION.md): exact-source staff writes, retained worker output, public retry custody and production/upgrade evidence.
 
+- [v0.61 report context and private history candidate](reviews/2026-09-14-m9b-report-lineage/RELEASE_VERIFICATION.md): exact internal history, original/changed files, browser retry and upgrade evidence; final CI and publication remain separate.
 - [v0.60.0 decision links and public-copy privacy](reviews/2026-09-14-m9b-decision-reports/RELEASE_VERIFICATION.md): retained private context, interrupted recovery and actual public artifact/privacy checks; final publication recorded separately.

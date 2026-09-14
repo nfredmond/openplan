@@ -47,7 +47,7 @@ try{
     downloaded.push({format:file.format,sha256:sha(bytes),bytes:bytes.length});
     if(file.format==='zip'){const zip=await JSZip.loadAsync(bytes),raw=await zip.file('snapshot.json').async('string');assert.equal(sha(raw),job.snapshot_sha256);archive=JSON.parse(raw);const manifest=JSON.parse(await zip.file('manifest.json').async('string'));for(const entry of manifest.files)assert.equal(sha(await zip.file(entry.name).async('nodebuffer')),entry.checksum);}
    }
-   assert(archive);await fileSection.getByRole('heading',{name:'Engagement review files',exact:true}).scrollIntoViewIfNeeded();await page.screenshot({path:prefix+`-${label}-files.png`});
+   assert(archive);const downloadControl=fileSection.getByRole('link',{name:'Download ZIP',exact:true});await downloadControl.evaluate(e=>e.scrollIntoView({block:'center',behavior:'instant'}));await expect.poll(async()=>{const r=await downloadControl.boundingBox();return !!r&&r.y>=160&&r.y+r.height<850;}).toBe(true);await page.screenshot({path:prefix+`-${label}-download-controls.png`});await fileSection.getByRole('heading',{name:'Engagement review files',exact:true}).scrollIntoViewIfNeeded();await page.screenshot({path:prefix+`-${label}-files.png`});
    const layout=await page.locator('main').last().evaluate(e=>({width:e.clientWidth,scrollWidth:e.scrollWidth}));assert(layout.scrollWidth<=layout.width+1,'Report overflows narrow layout');
    await click(page,page.getByRole('link',{name:'Open consultation',exact:true}));await page.waitForURL(u=>u.pathname===`/engagement/${campaignId}`&&u.searchParams.get('tab')==='record');
    return {downloaded,archive,layout};

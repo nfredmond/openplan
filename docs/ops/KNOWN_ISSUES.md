@@ -447,3 +447,8 @@ files remain available. Correct that report detail workflow with the next report
 lineage increment. Privacy metadata has no dedicated UI toggle. The public map
 was unavailable in the isolated acceptance build; the accessible non-map path was
 exercised. No new map, human usefulness or participation-quality claim is made.
+
+
+## September 14 report context and private decision history, v0.61 candidate
+
+The [report-history engineering record](../reviews/2026-09-14-m9b-report-lineage/RELEASE_VERIFICATION.md) supersedes the earlier report-page warning and missing internal-history limitations for new snapshots. CORE-ENG-03/04 now have original, correction and withdrawal history in internal PDF/XLSX/ZIP, with exact retained bytes, whole-consultation scope disclosure and public exclusion. Earlier files remain unchanged. Desktop/390px keyboard, interrupted retry, retained downloads, live isolation and populated upgrade evidence are recorded there. Final release CI and publication remain separate. The generic report GET API's nullable-project assumption still needs correction. M9b, comparative usefulness and the remaining V1 requirements stay open; no capability rating or scientific claim is promoted.

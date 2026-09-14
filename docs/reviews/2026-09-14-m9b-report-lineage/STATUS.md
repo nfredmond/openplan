@@ -77,3 +77,12 @@ Current remaining work: install regular live CI coverage, restart our compatible
 The regular test:rls-live command now includes engagement-report-history-activation-rls.test.ts. Ten installed-database cases pass: baseline, harmless control, and eight targeted faults covering lost history, public exposure, missing exact payloads, metadata/raw column grants, viewer access and anonymous execution. A partial-NULL payload case checks each row rather than allowing bool_and to ignore missing evidence. The rollback proof was strengthened and rerun for the same case. All deliberate installed changes rolled back.
 
 The first full QA run passed lint, deadcode and 15,359 tests but failed the release-ordering test because Unreleased omitted migration 24. The changelog now names the migration and states the required app/worker upgrade order; a full rerun follows. The new report-history-browser.cjs runner is prepared but not yet executed. No v0.61 release or new browser claim.
+
+
+## September 14 final browser acceptance and release preparation
+
+[Release verification](RELEASE_VERIFICATION.md) is the current authority. Installed RLS coverage, all four local gates, exact-byte original/corrected/withdrawn/public browser files at desktop/390px and old-format recovery checks are complete. The failed corrected job was caused by an older session-owned worker left polling the new queue; the current parser accepted its exact snapshot, and the same job succeeded through UI retry after stopping the old worker. The earlier worker inventory incorrectly ignored MainThread processes. No application patch was required for that failure.
+
+All five pages of the browser-generated withdrawal PDF and the workbook's history, scope, sources, exact bytes and recalculated summary were inspected. Supplemental centered captures show actual narrow download controls. The release ledger passes its baseline, harmless control and three targeted faults. No owned worker/server is left running. v0.61 metadata is ready; final main CI, populated GitHub upgrade and actual tagging/publication remain pending. The full V1 goal and M9b remain open.
+
+The first final direction check caught stale contract and roadmap release fields after the package bump. The contract, roadmap and capability registry release fields now match v0.61.0; review dates, source commits and capability ratings remain unchanged.

@@ -20,6 +20,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.61.0 — 2026-09-14
+
 Saved consultation reports now open with their consultation context, retained
 files and permission-scoped title, summary and status editing. Metadata edits
 preserve the original file contents and citations.
@@ -32,11 +34,15 @@ that their old format did not retain this history. Unknown or unreadable formats
 remain unknown. Repeated source occurrences retain separate workbook continuation
 rows, and exact payload/context bytes remain available in the portable archive.
 
-Apply `20261014000024_engagement_report_decision_history.sql` before restarting
-the app and local Documents export worker. The additive migration preserves
+Stop all Documents export workers for this installation, apply
+`20261014000024_engagement_report_decision_history.sql`, then restart the app and
+workers from the matching release. An older process can claim a new-format job
+and fail it; after upgrading the worker, Retry saved snapshot retains the exact
+original request. The additive migration preserves
 existing snapshots, including unreadable legacy records. No paid service is
-required. This development increment still needs its final browser and release
-checks. It does not establish decision approval, implementation, representative
+required. Desktop/390px engineering journeys cover original/corrected/withdrawn
+downloads, exact retries, old-format files and public exclusion. Final release CI
+and publication are recorded separately. It does not establish decision approval, implementation, representative
 participation or agency publication authority.
 
 ## 0.60.0 — 2026-09-14
