@@ -1,0 +1,36 @@
+{
+  "sourceSha256": "72dcf7e490f095ccd7d24b5ad18ddf74d34b530aa65a03f3bf53723c1c3f8c16",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true
+    },
+    {
+      "case": "wrong-source-admitted",
+      "outcome": "killed",
+      "expectedFailure": "wrong source refused",
+      "expectedOutcome": true
+    },
+    {
+      "case": "wrong-model-admitted",
+      "outcome": "killed",
+      "expectedFailure": "wrong model refused",
+      "expectedOutcome": true
+    },
+    {
+      "case": "raw-newline-comparison",
+      "outcome": "killed",
+      "expectedFailure": "valid multiline synthetic packet",
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Executes the present worker wrapper source/model predicate against synthetic JSON. Does not validate the provider SDK or network path; separate desktop/390px actual-worker evidence covers that join."
+}

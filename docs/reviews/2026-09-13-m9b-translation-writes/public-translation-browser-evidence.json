@@ -1,0 +1,106 @@
+{
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-translation-browser-1789371356195",
+  "build": {
+    "commit": "c310690df38e7283327637037a1cb996ec5deab5",
+    "dirty": " M docs/reviews/2026-09-13-m9b-translation-writes/translation-generation-browser-worker.ts\n M openplan/src/test/workspace-write-role-gate-guard.test.ts\n?? docs/reviews/2026-09-13-m9b-translation-writes/PUBLIC_TRANSLATION_INTEGRATION_PROGRESS.md\n?? docs/reviews/2026-09-13-m9b-translation-writes/prove-public-route-role-scan.py\n?? docs/reviews/2026-09-13-m9b-translation-writes/prove-public-translation-http-client.py\n?? docs/reviews/2026-09-13-m9b-translation-writes/public-route-role-scan-controls.json\n?? docs/reviews/2026-09-13-m9b-translation-writes/public-translation-browser.cjs\n?? docs/reviews/2026-09-13-m9b-translation-writes/public-translation-http-client-controls.json\n?? openplan/supabase/migrations/20261014000020_engagement_public_translation_queue.sql\n",
+    "files": {
+      "src/components/engagement/use-public-comment-translations.ts": "11852d69bfdb415f56512073ae3640c5374b3f2d5622c2e96bdcd01b3b0a4ec3",
+      "src/app/api/engage/[shareToken]/items/[itemId]/translate/route.ts": "78125d43b6738224eb3012f4072101aaf0f3d020a2d15f033e3b13617b254693",
+      "supabase/migrations/20261014000020_engagement_public_translation_queue.sql": "c247f4ead091a3bc2f19570731a683a721dc147a50e2a967df195869523b18ff"
+    }
+  },
+  "journeys": [
+    {
+      "width": 1440,
+      "passed": true,
+      "campaignId": "d4f28603-5107-4fb2-820d-f18c42a2db63",
+      "itemId": "79f2e3e4-ba64-43c9-ade2-c48efd6120a2",
+      "requestId": "9e65b74d-6cfd-47b1-9632-35228f0e0b0a",
+      "fieldId": "0aa78469-784a-421d-bd9f-3d44425e778a",
+      "sourceHash": "81ac1a953b667cd35e595d4b748ee7e01ff691bda68af226a97f5e6ab31857bd",
+      "providerCalls": 1,
+      "workerResults": [
+        {
+          "mode": "output-loss",
+          "exit": 1
+        },
+        {
+          "mode": "resume",
+          "exit": 0
+        }
+      ],
+      "sourceMismatchStatus": 409,
+      "overflow": {
+        "viewport": 1440,
+        "document": 1440
+      },
+      "console": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "passed": true,
+      "campaignId": "f3e0f9fe-0c4a-4a85-a075-fa0391d634d9",
+      "itemId": "5858c9c4-e0db-4d7e-8f42-96aff9a900d6",
+      "requestId": "ef8108f1-dddb-4acb-9169-ec04264a15a0",
+      "fieldId": "3a5c6a21-b5e9-4579-85ef-4dccf1c9ad21",
+      "sourceHash": "8d36b12fc29b6a33cb482434ab491501c5eb37374c6eb74fdb0bedd21c3130cf",
+      "providerCalls": 1,
+      "workerResults": [
+        {
+          "mode": "output-loss",
+          "exit": 1
+        },
+        {
+          "mode": "resume",
+          "exit": 0
+        }
+      ],
+      "sourceMismatchStatus": 409,
+      "overflow": {
+        "viewport": 390,
+        "document": 390
+      },
+      "console": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+        }
+      ]
+    }
+  ],
+  "artifacts": {
+    "1440-worker-output-loss.log": "378ae61ba9f4859523ae1361ea60be0ac18fdae87047a9dca88397d539458c09",
+    "390-checkpoint.json": "068c006aa58359a788e4e56875628204ee04189b3c50676473bacb99eca01912",
+    "source.json": "2972ade85eacbd85047fb9de83e0ec06a0327d6e652a5d5242c44efaf68d84b8",
+    "390-worker-config.json": "6ab31ed05432fc2785ccd1042fe3c7560b1c1940fc8a6a421e8fb63c7cf6ae54",
+    "1440-queue-response.json": "ca6282d2e9ab20af40930df58804ca4130a9628a2f232d8b924321e938263b8c",
+    "390-worker-output-loss.log": "378ae61ba9f4859523ae1361ea60be0ac18fdae87047a9dca88397d539458c09",
+    "1440-checkpoint.json": "9a512e99ef606b1f877f2c3df3e4eeb2a603525de878a7853385080ccdef27e0",
+    "1440-item-response.json": "fad8d30de7f9e842d57cde79fca9e546cf0c6c445f08846099ea40eaef6bfb57",
+    "1440-worker-config.json": "6968d68f96d223992c4f2858a2e6e05593f2c6f4460601c917a023ba41def5f5",
+    "1440-completed.png": "538fe35b2b697e93940465787be7e2a0c4ab586c921c4bddfadd8debc4beb2bf",
+    "390-queue-response.json": "7be1f5284ff6918182edc081ded5976d75f6f8bf03307cfe83a87a7850b7faaf",
+    "identity.txt": "00bc71c714ee6a4cb21142c3c69cc4678842d4f760f60d3e177657010b86b69d",
+    "1440-pending.png": "e82d11b9b7498fd9fcf582b07e2a5f0708f4d28aeb739a2b2005dacaa2d5c3a6",
+    "390-pending.png": "6d2555e4a97e35f3ee7cc0c5f2a4c2301e996c266ba9ad4f753402d079ad0af4",
+    "390-worker-resume.log": "37bb1830006e22bd8dce3ed0abca139ecfb93e92b5cdbfe351a03ee7d987f00c",
+    "390-completed.png": "840e090319d650fff0561024804c38044e785a0f898064a8b3d54fa1853e07ce",
+    "1440-worker-resume.log": "0491f8e953c11e99c13c007d85dba3317741dd78c938db2d54558dc80773b03a",
+    "results.json": "aa10c68e4a8768cec33e7c67becbc6a11457ec1103c983f3f7a3223d351a6e9e",
+    "390-item-response.json": "0c21f0f27c9b17731dcadfa850af84c0edb211684e6fad1a90458b763fa0091a"
+  },
+  "limits": "Synthetic operator-created meeting records and anonymous browser contexts. Real UI navigation, installed queue, actual worker and SDK with locally intercepted Anthropic traffic; no paid call or translation-quality claim. Browser source mismatch is exercised, while revocation, failed successor retries, private PostgREST access and legacy-cache UI recovery remain separate work. No final release QA or exact main CI claim."
+}

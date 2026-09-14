@@ -55,9 +55,9 @@ function mutatingVerbs(source: string): string[] {
   );
 }
 
-/** A route "deals in workspaces" if it names one at all. */
+/** Include the public queue helper, which resolves its workspace from the share token. */
 function touchesWorkspace(source: string): boolean {
-  return /workspace_id|workspaceId/.test(source);
+  return /workspace_id|workspaceId|queuePublicTranslationGeneration\s*\(/.test(source);
 }
 
 /**
@@ -163,7 +163,7 @@ const UNGATED_BY_DESIGN: Record<string, string> = {
   "engage/[shareToken]/submit/route.ts": "public share-token submission; the submitter has no workspace role",
   "engage/[shareToken]/survey/submit/route.ts": "public share-token survey response; no session",
   "engage/[shareToken]/items/[itemId]/translate/route.ts":
-    "public share-token translation of an already-public item; its only write is a translation cache, and the caller holds no workspace role to check",
+    "public share-token translation queue; SQL checks current publication and exact source, and the anonymous caller has no workspace role",
 
   // Self-service account plumbing. Refusing a viewer here would break the
   // read-only tier rather than enforce it.

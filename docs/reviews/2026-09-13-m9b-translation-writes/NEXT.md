@@ -1,3 +1,7 @@
+# Current installed public translation integration
+
+Read [PUBLIC_TRANSLATION_INTEGRATION_PROGRESS.md](PUBLIC_TRANSLATION_INTEGRATION_PROGRESS.md) first. Migration 20 and desktop/390px public queue/worker recovery are now exercised. Explicit failed retries, privacy extensions, the discovered stale share-settings panel and final release checks remain. Older entries retain their dated evidence.
+
 # Current public translation HTTP and usage-reset checkpoint
 
 Read [PUBLIC_TRANSLATION_HTTP_RESET_CHECKPOINT.md](PUBLIC_TRANSLATION_HTTP_RESET_CHECKPOINT.md) first. The public queue route, source-matched cache read and browser recovery hook are saved. Actual browser/worker integration and final release checks remain unfinished. Older entries retain their dated evidence.

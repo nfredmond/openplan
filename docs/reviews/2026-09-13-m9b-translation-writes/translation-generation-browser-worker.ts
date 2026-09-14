@@ -18,7 +18,7 @@ async function main() {
     if (url.href === "https://api.anthropic.com/v1/messages") {
       if (request.headers.get("x-api-key") !== "SYNTHETIC-TRANSLATION-BROWSER-KEY") throw new Error("Wrong synthetic credential");
       const body = await request.json();
-      if (body.model !== "synthetic-browser-model" || !JSON.stringify(body).includes(config.sourceText)) throw new Error("Wrong synthetic source or model");
+      if (body.model !== "synthetic-browser-model" || !JSON.stringify(body).includes(JSON.stringify(config.sourceText).slice(1, -1))) throw new Error("Wrong synthetic source or model");
       const eventPath = join(directory, "provider-events.jsonl");
       appendFileSync(eventPath, JSON.stringify({ providerTransportIntercepted: true, fieldId: config.fieldId }) + "\n", { mode: 0o600 });
       const fd = openSync(eventPath, "r"); try { fsyncSync(fd); } finally { closeSync(fd); }

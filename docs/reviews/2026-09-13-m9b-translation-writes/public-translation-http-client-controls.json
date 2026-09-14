@@ -1,0 +1,361 @@
+{
+  "files": {
+    "src/app/api/engage/[shareToken]/items/[itemId]/translate/route.ts": "78125d43b6738224eb3012f4072101aaf0f3d020a2d15f033e3b13617b254693",
+    "src/components/engagement/use-public-comment-translations.ts": "11852d69bfdb415f56512073ae3640c5374b3f2d5622c2e96bdcd01b3b0a4ec3",
+    "src/lib/engagement/public-translation-generation.ts": "2c10c9e39b05b3d66d0f23aa127131d3e191132d42cfbf777ebbeb1cba90ab85"
+  },
+  "tests": {
+    "src/test/engagement-translate-route.test.ts": "0c87ccc82e1a41460f133caaaf2a9150a853f73f0dc455f1be1f8fa659da60a7",
+    "src/test/public-comment-translations.test.tsx": "4fecea52ab1bf0c27de6ae46a7361e594699304959a0035237e8a7edc57b701b",
+    "src/test/public-translation-generation.test.ts": "d893efd8e4adc7b04a1dbcc7a18d9a540d94adb32aebc595277bb677c8480885"
+  },
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-http-client-controls/20260914T002253",
+  "results": [
+    {
+      "case": "baseline",
+      "file": "src/app/api/engage/[shareToken]/items/[itemId]/translate/route.ts",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-route",
+      "file": "src/app/api/engage/[shareToken]/items/[itemId]/translate/route.ts",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-client",
+      "file": "src/components/engagement/use-public-comment-translations.ts",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-server",
+      "file": "src/lib/engagement/public-translation-generation.ts",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "agent-marker-presence",
+      "file": "src/app/api/engage/[shareToken]/items/[itemId]/translate/route.ts",
+      "outcome": "killed",
+      "expectedFailure": "refuses unregistered agent marker",
+      "failedTests": [
+        "public durable translation endpoint refuses unregistered agent marker x-openplan-assistant-execution-source",
+        "public durable translation endpoint refuses unregistered agent marker x-openplan-assistant-input-hash",
+        "public durable translation endpoint refuses unregistered agent marker x-openplan-assistant-approval-id"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "browser-origin",
+      "file": "src/app/api/engage/[shareToken]/items/[itemId]/translate/route.ts",
+      "outcome": "killed",
+      "expectedFailure": "refuses cross-origin creation",
+      "failedTests": [
+        "public durable translation endpoint refuses cross-origin creation {\"origin\":\"https://foreign.invalid\"}",
+        "public durable translation endpoint refuses cross-origin creation {\"origin\":\"\"}",
+        "public durable translation endpoint refuses cross-origin creation {\"sec-fetch-site\":\"cross-site\"}"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "actual-body-bound",
+      "file": "src/app/api/engage/[shareToken]/items/[itemId]/translate/route.ts",
+      "outcome": "killed",
+      "expectedFailure": "counts streamed bytes",
+      "failedTests": [
+        "public durable translation endpoint counts streamed bytes despite an understated content length"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "strict-intent",
+      "file": "src/app/api/engage/[shareToken]/items/[itemId]/translate/route.ts",
+      "outcome": "killed",
+      "expectedFailure": "refuses invalid intent",
+      "failedTests": [
+        "public durable translation endpoint refuses invalid intent {\"language\":\"es\",\"sourceHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"actorId\":\"33333333-3333-4333-8333-333333333333\"} before database use"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "route-scope",
+      "file": "src/app/api/engage/[shareToken]/items/[itemId]/translate/route.ts",
+      "outcome": "killed",
+      "expectedFailure": "refuses bad route identity",
+      "failedTests": [
+        "public durable translation endpoint refuses bad route identity"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "retry-cache-substitution",
+      "file": "src/app/api/engage/[shareToken]/items/[itemId]/translate/route.ts",
+      "outcome": "killed",
+      "expectedFailure": "retries the named attempt",
+      "failedTests": [
+        "public durable translation endpoint retries the named attempt without substituting a legacy cache"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "cache-creates-work",
+      "file": "src/app/api/engage/[shareToken]/items/[itemId]/translate/route.ts",
+      "outcome": "killed",
+      "expectedFailure": "returns valid legacy cache",
+      "failedTests": [
+        "public durable translation endpoint returns valid legacy cache without creating work"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "recovery-request-id",
+      "file": "src/app/api/engage/[shareToken]/items/[itemId]/translate/route.ts",
+      "outcome": "killed",
+      "expectedFailure": "recovers completed exact words through GET",
+      "failedTests": [
+        "public durable translation endpoint recovers completed exact words through GET"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "duplicate-query",
+      "file": "src/app/api/engage/[shareToken]/items/[itemId]/translate/route.ts",
+      "outcome": "killed",
+      "expectedFailure": "rejects ambiguous recovery query",
+      "failedTests": [
+        "public durable translation endpoint rejects ambiguous recovery query language=es&language=vi"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unknown-query",
+      "file": "src/app/api/engage/[shareToken]/items/[itemId]/translate/route.ts",
+      "outcome": "killed",
+      "expectedFailure": "rejects ambiguous recovery query",
+      "failedTests": [
+        "public durable translation endpoint rejects ambiguous recovery query language=es&extra=1",
+        "public durable translation endpoint rejects ambiguous recovery query language=es&retryOf=33333333-3333-4333-8333-333333333333"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "pending-status",
+      "file": "src/app/api/engage/[shareToken]/items/[itemId]/translate/route.ts",
+      "outcome": "killed",
+      "expectedFailure": "reports queued as pending",
+      "failedTests": [
+        "public durable translation endpoint reports queued as pending rather than missing output"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "public-response-cache",
+      "file": "src/app/api/engage/[shareToken]/items/[itemId]/translate/route.ts",
+      "outcome": "killed",
+      "expectedFailure": "queues the source-bound request",
+      "failedTests": [
+        "public durable translation endpoint queues the source-bound request without a session or inline model"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unvalidated-response",
+      "file": "src/app/api/engage/[shareToken]/items/[itemId]/translate/route.ts",
+      "outcome": "killed",
+      "expectedFailure": "refuses a malformed retained response",
+      "failedTests": [
+        "public durable translation endpoint refuses a malformed retained response without exposing private fields"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "client-original-hash",
+      "file": "src/components/engagement/use-public-comment-translations.ts",
+      "outcome": "killed",
+      "expectedFailure": "queues the exact displayed hash",
+      "failedTests": [
+        "public comment translation recovery queues the exact displayed hash and retains the pending request"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "client-read-is-write",
+      "file": "src/components/engagement/use-public-comment-translations.ts",
+      "outcome": "killed",
+      "expectedFailure": "recovers an unacknowledged request",
+      "failedTests": [
+        "public comment translation recovery recovers an unacknowledged request by lookup instead of resending it"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "client-exact-recovery",
+      "file": "src/components/engagement/use-public-comment-translations.ts",
+      "outcome": "killed",
+      "expectedFailure": "recovers the same pending request with GET",
+      "failedTests": [
+        "public comment translation recovery recovers the same pending request with GET and no new POST"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "client-retry-predecessor",
+      "file": "src/components/engagement/use-public-comment-translations.ts",
+      "outcome": "killed",
+      "expectedFailure": "creates an explicitly requested successor",
+      "failedTests": [
+        "public comment translation recovery creates an explicitly requested successor for failed",
+        "public comment translation recovery creates an explicitly requested successor for interrupted",
+        "public comment translation recovery creates an explicitly requested successor for incomplete",
+        "public comment translation recovery creates an explicitly requested successor for cancelled"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "client-unsafe-retry",
+      "file": "src/components/engagement/use-public-comment-translations.ts",
+      "outcome": "killed",
+      "expectedFailure": "recovers an unacknowledged request",
+      "failedTests": [
+        "public comment translation recovery recovers an unacknowledged request by lookup instead of resending it"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "client-no-clear-cancel",
+      "file": "src/components/engagement/use-public-comment-translations.ts",
+      "outcome": "killed",
+      "expectedFailure": "does not revive a cleared translation",
+      "failedTests": [
+        "public comment translation recovery does not revive a cleared translation after a late response",
+        "public comment translation recovery does not revive a cleared translation after a late body"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "client-late-cleared-write",
+      "file": "src/components/engagement/use-public-comment-translations.ts",
+      "outcome": "killed",
+      "expectedFailure": "does not revive a cleared translation",
+      "failedTests": [
+        "public comment translation recovery does not revive a cleared translation after a late response",
+        "public comment translation recovery does not revive a cleared translation after a late body"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "client-wrong-source",
+      "file": "src/components/engagement/use-public-comment-translations.ts",
+      "outcome": "killed",
+      "expectedFailure": "rejects substituted public response",
+      "failedTests": [
+        "public comment translation recovery rejects substituted public response (0)"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "client-wrong-language",
+      "file": "src/components/engagement/use-public-comment-translations.ts",
+      "outcome": "killed",
+      "expectedFailure": "rejects substituted public response",
+      "failedTests": [
+        "public comment translation recovery rejects substituted public response (1)"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "client-wrong-request",
+      "file": "src/components/engagement/use-public-comment-translations.ts",
+      "outcome": "killed",
+      "expectedFailure": "rejects another request",
+      "failedTests": [
+        "public comment translation recovery rejects another request during exact status recovery"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "client-unbounded-poll",
+      "file": "src/components/engagement/use-public-comment-translations.ts",
+      "outcome": "killed",
+      "expectedFailure": "polls existing work for a bounded period",
+      "failedTests": [
+        "public comment translation recovery polls existing work for a bounded period without creating another request"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "client-poll-recreates",
+      "file": "src/components/engagement/use-public-comment-translations.ts",
+      "outcome": "killed",
+      "expectedFailure": "polls existing work for a bounded period",
+      "failedTests": [
+        "public comment translation recovery polls existing work for a bounded period without creating another request"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "client-preview-write",
+      "file": "src/components/engagement/use-public-comment-translations.ts",
+      "outcome": "killed",
+      "expectedFailure": "sends no preview requests",
+      "failedTests": [
+        "public comment translation recovery sends no preview requests"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "client-missing-is-failed",
+      "file": "src/components/engagement/use-public-comment-translations.ts",
+      "outcome": "killed",
+      "expectedFailure": "allows a new root only after conclusive missing recovery",
+      "failedTests": [
+        "public comment translation recovery allows a new root only after conclusive missing recovery"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "cache-source-binding",
+      "file": "src/lib/engagement/public-translation-generation.ts",
+      "outcome": "killed",
+      "expectedFailure": "reads a valid cache with the exact original",
+      "failedTests": [
+        "public legacy translation cache reads a valid cache with the exact original and no credential"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "cache-failed-is-missing",
+      "file": "src/lib/engagement/public-translation-generation.ts",
+      "outcome": "killed",
+      "expectedFailure": "does not call a failed cache read a cache miss",
+      "failedTests": [
+        "public legacy translation cache does not call a failed cache read a cache miss"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "cache-invalid-words",
+      "file": "src/lib/engagement/public-translation-generation.ts",
+      "outcome": "killed",
+      "expectedFailure": "leaves invalid or absent legacy cache unused",
+      "failedTests": [
+        "public legacy translation cache leaves invalid or absent legacy cache unused (1)",
+        "public legacy translation cache leaves invalid or absent legacy cache unused (2)",
+        "public legacy translation cache leaves invalid or absent legacy cache unused (3)",
+        "public legacy translation cache leaves invalid or absent legacy cache unused (4)"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Real HTTP handlers, shared schemas and React hook with mocked RPC orchestration and fetch. No native database, provider dispatch, installed worker, browser navigation or rendered artifact proof. Overlapping cancellation guards may mask individual mutations; observed survivors must be investigated."
+}

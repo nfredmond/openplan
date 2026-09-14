@@ -1,0 +1,37 @@
+{
+  "fixtureSha256": "1ffeab372f55a97a8c3de65e0da3e01e82b1b2e9ab8e8ec13ca11a3637fd96ec",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-installed-rls-controls/20260914T003914",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true
+    },
+    {
+      "case": "grant-without-policy",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true
+    },
+    {
+      "case": "anonymous-rows",
+      "outcome": "killed",
+      "expectedFailure": "Private public queue leak: anonymous authority rows",
+      "expectedOutcome": true
+    },
+    {
+      "case": "authenticated-rows",
+      "outcome": "killed",
+      "expectedFailure": "Private public queue leak: authenticated authority rows",
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Installed native database roles with rollback-contained fixtures and permission changes. No actual browser bearer-token or remote PostgREST privacy proof. Public source, queue and retry semantics use the same fixture covered by the separate SQL mutation suite."
+}

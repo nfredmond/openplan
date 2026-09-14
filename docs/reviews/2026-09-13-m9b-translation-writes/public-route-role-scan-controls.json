@@ -1,0 +1,35 @@
+{
+  "testSha256": "a0c35ead84fb0946d71a67de56ec1be2760f17b39ecd4d1653185729bec3c6a4",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-role-scan/20260914T002931",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedOutcome": true,
+      "failedTests": []
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived",
+      "expectedOutcome": true,
+      "failedTests": []
+    },
+    {
+      "case": "invisible-queue-write",
+      "outcome": "killed",
+      "expectedOutcome": true,
+      "failedTests": [
+        "every mutating workspace route authorizes by ROLE, not by row visibility keeps the allowlist honest \u2014 no stale or unnecessary entries"
+      ]
+    },
+    {
+      "case": "unaccounted-anonymous-write",
+      "outcome": "killed",
+      "expectedOutcome": true,
+      "failedTests": [
+        "every mutating workspace route authorizes by ROLE, not by row visibility gates or explicitly exempts each one"
+      ]
+    }
+  ],
+  "limits": "Static named-call scan. This extension covers the present public queue helper but cannot infer arbitrary aliases, other indirect writes or runtime authorization. Native SQL and route behavior have separate controls."
+}
