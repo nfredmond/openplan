@@ -20,6 +20,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- Retire the earlier capped synthesis generator. Older POST requests receive an audited, private HTTP 410 without reading submitted text, invoking AI or changing stored summaries. Analysis retains explicitly limited historical summaries and directs new work to complete retained sources and reasoned staff reviews. Earlier results are not promoted to verified coverage or approved findings.
+
 - `20261014000027_engagement_synthesis_reviews.sql` retains private staff reviews and append-only corrections to wording, interpretation and contribution membership. Staff-only readers return the original preparation, exact revision history and checksums; the service writer refuses stale parents and changed retries. The connected editor is under verification. Exact-output approval, optional generation, response/decision links and reviewed exports remain unfinished.
 
 - `20261014000026_engagement_synthesis_source_list.sql` adds a staff-only paginated list of retained source selections. Source records can be reopened without recapturing current contributions.

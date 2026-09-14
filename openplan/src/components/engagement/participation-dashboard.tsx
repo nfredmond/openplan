@@ -182,7 +182,7 @@ export function ParticipationDashboard({
           <div className="space-y-2">
             {!hotspots.sentimentAvailable ? (
               <p className="text-xs text-amber-700 dark:text-amber-300">
-                Run AI synthesis to test whether any cluster has an elevated share of negative sentiment.
+                Sentiment is unassessed without earlier source-linked labels. New AI sentiment generation is not yet available.
               </p>
             ) : null}
             {topClusters.map((cluster, index) => {

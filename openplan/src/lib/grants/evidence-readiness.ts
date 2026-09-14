@@ -168,7 +168,7 @@ export function buildGrantEvidenceReadinessCues(
       nextAction: engagementEvidence
         ? engagementEvidence.leadCampaign.synthesis
           ? "Cite the synthesis as screening-level community input only; pair it with the representativeness screening before any equity or outreach-sufficiency language."
-          : "Run the campaign's AI synthesis so approved comments become citable narrative evidence."
+          : "Open Engagement Analysis to retain sources and review contributions. New AI synthesis is not yet available; staff drafts are not approved grant evidence."
         : "Launch an engagement campaign linked to this project (or link an existing one) before relying on community-support language.",
     },
   ];

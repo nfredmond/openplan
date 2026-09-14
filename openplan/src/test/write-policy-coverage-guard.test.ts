@@ -233,7 +233,7 @@ const UNVERIFIED_CALLER_WRITES: Record<string, number> = {
   "src/app/api/engagement/campaigns/[campaignId]/share-token/route.ts": 1,
   "src/app/api/engagement/campaigns/[campaignId]/survey/questions/[questionId]/options/[optionId]/route.ts": 1,
   "src/app/api/engagement/campaigns/[campaignId]/survey/questions/[questionId]/route.ts": 1,
-  "src/app/api/engagement/campaigns/[campaignId]/synthesis/route.ts": 1,
+  // Retired synthesis POST has no database writes; no unchecked-write allowance remains.
   // 1 -> 0: the award close-out UPDATE moved into
   // src/app/api/funding-awards/[awardId]/award-closure.ts, shared with the new
   // PATCH route, and now chains `.select("id").maybeSingle()` and answers zero

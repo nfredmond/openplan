@@ -1234,27 +1234,12 @@ export default async function EngagementCampaignDetailPage({
           moderation surfaces sit above them.
         */}
         {canManageContextLayers ? <EngagementSynthesisSources userId={user.id} workspaceId={campaign.workspace_id} campaignId={campaign.id} categories={builderCategories} /> : null}
-        {counts.statusCounts.approved > 0 ? (
-          <article className="module-section-surface">
-            <div className="module-section-header">
-              <div className="module-section-heading">
-                <p className="module-section-label">AI Synthesis</p>
-                <h2 className="module-section-title">Themes and cited narrative</h2>
-                <p className="module-section-description">
-                  Cluster the approved comments into themes with sentiment and a narrative where every
-                  sentence cites the source comments — screening-grade, not a representativeness finding.
-                  Falls back to a deterministic summary when AI is offline.
-                </p>
-              </div>
-            </div>
-            <div className="mt-5">
-              <EngagementSynthesisPanel
-                campaignId={campaign.id}
-                approvedItemCount={counts.statusCounts.approved}
-                initialSynthesis={campaign.ai_synthesis_json}
-                initialSynthesizedAt={campaign.ai_synthesized_at}
-              />
-            </div>
+        {campaign.ai_synthesis_json ? (
+          <article className="module-section-surface" aria-label="Earlier synthesis record">
+            <EngagementSynthesisPanel
+              initialSynthesis={campaign.ai_synthesis_json}
+              initialSynthesizedAt={campaign.ai_synthesized_at}
+            />
           </article>
         ) : null}
 

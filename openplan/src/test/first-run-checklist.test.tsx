@@ -147,7 +147,7 @@ describe("FirstRunChecklist", () => {
       // What stays off, and who pays whom: the four AI features by name, and
       // the free-product / provider-billing sentence.
       expect(step!.textContent).toMatch(
-        /Without a key, the Planner Agent, AI synthesis of public comments, narrative drafting, and comment translation are unavailable/
+        /Without a key, the Planner Agent, narrative drafting, and comment translation are unavailable/
       );
       expect(step!.textContent).toMatch(
         /OpenPlan itself is free — the key is your workspace's own account with the AI provider, and usage is billed by that provider, not by OpenPlan\./

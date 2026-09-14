@@ -1,0 +1,2258 @@
+{
+  "commit": "6bbdf6091064f97b7241e5e54e7e57388d5fd2f4",
+  "entries": [
+    {
+      "file": "synthesis-reviews-390-1789425085944.json",
+      "sha256": "63e136f72d0b160684a49a2c38255587aacfda9246b1211393aaead1760f0f92",
+      "identity": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-09-14T22:31:26.248Z",
+        "deployment": {
+          "commit": "6bbdf6091064",
+          "version": "0.61.1"
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "width": 390,
+      "completed": true,
+      "console": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET"
+      ],
+      "pageErrors": [],
+      "controlBounds": [
+        {
+          "stage": "pending",
+          "baseline": [
+            {
+              "text": "Retry retained review request",
+              "left": 75,
+              "right": 314.078125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Create staff review",
+              "left": 62,
+              "right": 226.765625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 62,
+              "right": 242.0625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Preserve edit and start another correction",
+              "left": 62,
+              "right": 328,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 4cd2d943",
+              "left": 75,
+              "right": 303.578125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 2d089dec",
+              "left": 75,
+              "right": 303.03125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            }
+          ],
+          "harmless": [
+            {
+              "text": "Retry retained review request",
+              "left": 75,
+              "right": 314.078125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Create staff review",
+              "left": 62,
+              "right": 226.765625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 62,
+              "right": 242.0625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Preserve edit and start another correction",
+              "left": 62,
+              "right": 328,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 4cd2d943",
+              "left": 75,
+              "right": 303.578125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 2d089dec",
+              "left": 75,
+              "right": 303.03125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            }
+          ],
+          "targeted": [
+            {
+              "text": "Retry retained review request",
+              "left": 75,
+              "right": 381,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Create staff review",
+              "left": 62,
+              "right": 226.765625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 62,
+              "right": 242.0625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Preserve edit and start another correction",
+              "left": 62,
+              "right": 328,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 4cd2d943",
+              "left": 75,
+              "right": 303.578125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 2d089dec",
+              "left": 75,
+              "right": 303.03125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            }
+          ]
+        },
+        {
+          "stage": "restored draft",
+          "baseline": [
+            {
+              "text": "Create staff review",
+              "left": 62,
+              "right": 226.765625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 62,
+              "right": 242.0625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Preserve edit and start another correction",
+              "left": 62,
+              "right": 328,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 57b5abbf",
+              "left": 75,
+              "right": 299.453125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 4cd2d943",
+              "left": 75,
+              "right": 303.578125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 2d089dec",
+              "left": 75,
+              "right": 303.03125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Save reasoned correction",
+              "left": 71,
+              "right": 281.828125,
+              "parentLeft": 71,
+              "parentRight": 319,
+              "viewport": 390
+            }
+          ],
+          "harmless": [
+            {
+              "text": "Create staff review",
+              "left": 62,
+              "right": 226.765625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 62,
+              "right": 242.0625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Preserve edit and start another correction",
+              "left": 62,
+              "right": 328,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 57b5abbf",
+              "left": 75,
+              "right": 299.453125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 4cd2d943",
+              "left": 75,
+              "right": 303.578125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 2d089dec",
+              "left": 75,
+              "right": 303.03125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Save reasoned correction",
+              "left": 71,
+              "right": 281.828125,
+              "parentLeft": 71,
+              "parentRight": 319,
+              "viewport": 390
+            }
+          ],
+          "targeted": [
+            {
+              "text": "Create staff review",
+              "left": 62,
+              "right": 368,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 62,
+              "right": 242.0625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Preserve edit and start another correction",
+              "left": 62,
+              "right": 328,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 57b5abbf",
+              "left": 75,
+              "right": 299.453125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 4cd2d943",
+              "left": 75,
+              "right": 303.578125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 2d089dec",
+              "left": 75,
+              "right": 303.03125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Save reasoned correction",
+              "left": 71,
+              "right": 281.828125,
+              "parentLeft": 71,
+              "parentRight": 319,
+              "viewport": 390
+            }
+          ]
+        },
+        {
+          "stage": "membership",
+          "baseline": [
+            {
+              "text": "Create staff review",
+              "left": 62,
+              "right": 226.765625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 62,
+              "right": 242.0625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Preserve edit and start another correction",
+              "left": 62,
+              "right": 328,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 57b5abbf",
+              "left": 75,
+              "right": 299.453125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 4cd2d943",
+              "left": 75,
+              "right": 303.578125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 2d089dec",
+              "left": 75,
+              "right": 303.03125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Previous membership page",
+              "left": 71,
+              "right": 290.546875,
+              "parentLeft": 71,
+              "parentRight": 319,
+              "viewport": 390
+            },
+            {
+              "text": "Next membership page",
+              "left": 71,
+              "right": 264.84375,
+              "parentLeft": 71,
+              "parentRight": 319,
+              "viewport": 390
+            },
+            {
+              "text": "Save reasoned correction",
+              "left": 71,
+              "right": 281.828125,
+              "parentLeft": 71,
+              "parentRight": 319,
+              "viewport": 390
+            },
+            {
+              "text": "Open revision 2",
+              "left": 62,
+              "right": 203.265625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open revision 1",
+              "left": 62,
+              "right": 201.125,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            }
+          ],
+          "harmless": [
+            {
+              "text": "Create staff review",
+              "left": 62,
+              "right": 226.765625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 62,
+              "right": 242.0625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Preserve edit and start another correction",
+              "left": 62,
+              "right": 328,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 57b5abbf",
+              "left": 75,
+              "right": 299.453125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 4cd2d943",
+              "left": 75,
+              "right": 303.578125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 2d089dec",
+              "left": 75,
+              "right": 303.03125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Previous membership page",
+              "left": 71,
+              "right": 290.546875,
+              "parentLeft": 71,
+              "parentRight": 319,
+              "viewport": 390
+            },
+            {
+              "text": "Next membership page",
+              "left": 71,
+              "right": 264.84375,
+              "parentLeft": 71,
+              "parentRight": 319,
+              "viewport": 390
+            },
+            {
+              "text": "Save reasoned correction",
+              "left": 71,
+              "right": 281.828125,
+              "parentLeft": 71,
+              "parentRight": 319,
+              "viewport": 390
+            },
+            {
+              "text": "Open revision 2",
+              "left": 62,
+              "right": 203.265625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open revision 1",
+              "left": 62,
+              "right": 201.125,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            }
+          ],
+          "targeted": [
+            {
+              "text": "Create staff review",
+              "left": 62,
+              "right": 368,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 62,
+              "right": 242.0625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Preserve edit and start another correction",
+              "left": 62,
+              "right": 328,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 57b5abbf",
+              "left": 75,
+              "right": 299.453125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 4cd2d943",
+              "left": 75,
+              "right": 303.578125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 2d089dec",
+              "left": 75,
+              "right": 303.03125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Previous membership page",
+              "left": 71,
+              "right": 290.546875,
+              "parentLeft": 71,
+              "parentRight": 319,
+              "viewport": 390
+            },
+            {
+              "text": "Next membership page",
+              "left": 71,
+              "right": 264.84375,
+              "parentLeft": 71,
+              "parentRight": 319,
+              "viewport": 390
+            },
+            {
+              "text": "Save reasoned correction",
+              "left": 71,
+              "right": 281.828125,
+              "parentLeft": 71,
+              "parentRight": 319,
+              "viewport": 390
+            },
+            {
+              "text": "Open revision 2",
+              "left": 62,
+              "right": 203.265625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open revision 1",
+              "left": 62,
+              "right": 201.125,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            }
+          ]
+        },
+        {
+          "stage": "original history",
+          "baseline": [
+            {
+              "text": "Create staff review",
+              "left": 62,
+              "right": 226.765625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 62,
+              "right": 242.0625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 57b5abbf",
+              "left": 75,
+              "right": 299.453125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 4cd2d943",
+              "left": 75,
+              "right": 303.578125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 2d089dec",
+              "left": 75,
+              "right": 303.03125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open current review",
+              "left": 62,
+              "right": 236.3125,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Save reasoned correction",
+              "left": 71,
+              "right": 281.828125,
+              "parentLeft": 71,
+              "parentRight": 319,
+              "viewport": 390
+            },
+            {
+              "text": "Open revision 5",
+              "left": 62,
+              "right": 203.3125,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open revision 4",
+              "left": 62,
+              "right": 203.78125,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open revision 3",
+              "left": 62,
+              "right": 203.40625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open revision 2",
+              "left": 62,
+              "right": 203.265625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open revision 1",
+              "left": 62,
+              "right": 201.125,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Restore preserved edit",
+              "left": 62,
+              "right": 254.3125,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Restore preserved edit",
+              "left": 62,
+              "right": 254.3125,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            }
+          ],
+          "harmless": [
+            {
+              "text": "Create staff review",
+              "left": 62,
+              "right": 226.765625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 62,
+              "right": 242.0625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 57b5abbf",
+              "left": 75,
+              "right": 299.453125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 4cd2d943",
+              "left": 75,
+              "right": 303.578125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 2d089dec",
+              "left": 75,
+              "right": 303.03125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open current review",
+              "left": 62,
+              "right": 236.3125,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Save reasoned correction",
+              "left": 71,
+              "right": 281.828125,
+              "parentLeft": 71,
+              "parentRight": 319,
+              "viewport": 390
+            },
+            {
+              "text": "Open revision 5",
+              "left": 62,
+              "right": 203.3125,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open revision 4",
+              "left": 62,
+              "right": 203.78125,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open revision 3",
+              "left": 62,
+              "right": 203.40625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open revision 2",
+              "left": 62,
+              "right": 203.265625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open revision 1",
+              "left": 62,
+              "right": 201.125,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Restore preserved edit",
+              "left": 62,
+              "right": 254.3125,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Restore preserved edit",
+              "left": 62,
+              "right": 254.3125,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            }
+          ],
+          "targeted": [
+            {
+              "text": "Create staff review",
+              "left": 62,
+              "right": 368,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 62,
+              "right": 242.0625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 57b5abbf",
+              "left": 75,
+              "right": 299.453125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 4cd2d943",
+              "left": 75,
+              "right": 303.578125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open staff review 2d089dec",
+              "left": 75,
+              "right": 303.03125,
+              "parentLeft": 75,
+              "parentRight": 315,
+              "viewport": 390
+            },
+            {
+              "text": "Open current review",
+              "left": 62,
+              "right": 236.3125,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Save reasoned correction",
+              "left": 71,
+              "right": 281.828125,
+              "parentLeft": 71,
+              "parentRight": 319,
+              "viewport": 390
+            },
+            {
+              "text": "Open revision 5",
+              "left": 62,
+              "right": 203.3125,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open revision 4",
+              "left": 62,
+              "right": 203.78125,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open revision 3",
+              "left": 62,
+              "right": 203.40625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open revision 2",
+              "left": 62,
+              "right": 203.265625,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Open revision 1",
+              "left": 62,
+              "right": 201.125,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Restore preserved edit",
+              "left": 62,
+              "right": 254.3125,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            },
+            {
+              "text": "Restore preserved edit",
+              "left": 62,
+              "right": 254.3125,
+              "parentLeft": 62,
+              "parentRight": 328,
+              "viewport": 390
+            }
+          ]
+        }
+      ],
+      "recoveryBounds": {
+        "baseline": {
+          "left": 62,
+          "right": 328,
+          "parentLeft": 62,
+          "parentRight": 328,
+          "viewport": 390
+        },
+        "harmless": {
+          "left": 62,
+          "right": 328,
+          "parentLeft": 62,
+          "parentRight": 328,
+          "viewport": 390
+        },
+        "targeted": {
+          "left": 62,
+          "right": 387.046875,
+          "parentLeft": 62,
+          "parentRight": 328,
+          "viewport": 390
+        }
+      },
+      "totalContributions": 6,
+      "sourceSha256": "abc68f0b41847603d60114c3a9ff63aafb584ef6d95d72072c41070e1b875865",
+      "preparationSha256": "33f3b8cb0a0c998cc074704cb7d5e22f7b25166049a2a6e0a09fb961a9c2e802",
+      "originalContentSha256": "b2b74feecc19a95a0b44defc4e3c1865d69d0e0e1b9c1fff2fc268d6022d658e",
+      "finalContentSha256": "fac9036c048450decb1d47c59131998834020f30bcfcc7882892a88775c2e65a",
+      "screenshots": [
+        {
+          "file": "synthesis-reviews-390-1789425085944-corrected.png",
+          "sha256": "74e0d3873b3aef4511df0e4b0d05145c8a0c7280a3bdafd4f95077804e7a83e2"
+        },
+        {
+          "file": "synthesis-reviews-390-1789425085944-membership-edit.png",
+          "sha256": "df17e142cb60e2c5a3c2aa645481c757a8c29fbfe2fe8a7e56485e31cbae9b6e"
+        },
+        {
+          "file": "synthesis-reviews-390-1789425085944-original-history.png",
+          "sha256": "2908a383a22f5a275fe8e2cd0e4c272e3b5bb9d13cf802eafbf27e9cf414a80a"
+        },
+        {
+          "file": "synthesis-reviews-390-1789425085944-pending.png",
+          "sha256": "976353ea4bf3d126ba723f05801e02c3d828e1f40595472790370e3795bb1b5a"
+        },
+        {
+          "file": "synthesis-reviews-390-1789425085944-quota-refocus.png",
+          "sha256": "a1f2ca04e62fdde4876ef0b3a1b0bfc3935ec2352b7cf9bfe69ae06e41b750ef"
+        },
+        {
+          "file": "synthesis-reviews-390-1789425085944-restored-draft.png",
+          "sha256": "05e9dbaa135c92182ff632bd652077e8dd8250980800f657f4395e4def2b9b37"
+        }
+      ]
+    },
+    {
+      "file": "synthesis-reviews-1440-1789425133001.json",
+      "sha256": "3626845c383fe323379830fd0f1d11e7a961beed1ac0c564ee414b3010f6f24f",
+      "identity": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-09-14T22:32:13.311Z",
+        "deployment": {
+          "commit": "6bbdf6091064",
+          "version": "0.61.1"
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "width": 1440,
+      "completed": true,
+      "console": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET"
+      ],
+      "pageErrors": [],
+      "controlBounds": [
+        {
+          "stage": "pending",
+          "baseline": [
+            {
+              "text": "Retry retained review request",
+              "left": 360,
+              "right": 599.078125,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Create staff review",
+              "left": 347,
+              "right": 511.765625,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 523.765625,
+              "right": 703.828125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Preserve edit and start another correction",
+              "left": 715.828125,
+              "right": 1040.875,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 49f0bb8d",
+              "left": 360,
+              "right": 587.21875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 244b2d28",
+              "left": 360,
+              "right": 588.109375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review c4222621",
+              "left": 360,
+              "right": 584.53125,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review adb196fd",
+              "left": 360,
+              "right": 583.359375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            }
+          ],
+          "harmless": [
+            {
+              "text": "Retry retained review request",
+              "left": 360,
+              "right": 599.078125,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Create staff review",
+              "left": 347,
+              "right": 511.765625,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 523.765625,
+              "right": 703.828125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Preserve edit and start another correction",
+              "left": 715.828125,
+              "right": 1040.875,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 49f0bb8d",
+              "left": 360,
+              "right": 587.21875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 244b2d28",
+              "left": 360,
+              "right": 588.109375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review c4222621",
+              "left": 360,
+              "right": 584.53125,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review adb196fd",
+              "left": 360,
+              "right": 583.359375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            }
+          ],
+          "targeted": [
+            {
+              "text": "Retry retained review request",
+              "left": 360,
+              "right": 1402,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Create staff review",
+              "left": 347,
+              "right": 511.765625,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 523.765625,
+              "right": 703.828125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Preserve edit and start another correction",
+              "left": 715.828125,
+              "right": 1040.875,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 49f0bb8d",
+              "left": 360,
+              "right": 587.21875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 244b2d28",
+              "left": 360,
+              "right": 588.109375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review c4222621",
+              "left": 360,
+              "right": 584.53125,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review adb196fd",
+              "left": 360,
+              "right": 583.359375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            }
+          ]
+        },
+        {
+          "stage": "restored draft",
+          "baseline": [
+            {
+              "text": "Create staff review",
+              "left": 347,
+              "right": 511.765625,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 523.765625,
+              "right": 703.828125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Preserve edit and start another correction",
+              "left": 715.828125,
+              "right": 1040.875,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 1fcfa0f1",
+              "left": 360,
+              "right": 574.796875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 49f0bb8d",
+              "left": 360,
+              "right": 587.21875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 244b2d28",
+              "left": 360,
+              "right": 588.109375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review c4222621",
+              "left": 360,
+              "right": 584.53125,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review adb196fd",
+              "left": 360,
+              "right": 583.359375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Save reasoned correction",
+              "left": 360,
+              "right": 570.828125,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            }
+          ],
+          "harmless": [
+            {
+              "text": "Create staff review",
+              "left": 347,
+              "right": 511.765625,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 523.765625,
+              "right": 703.828125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Preserve edit and start another correction",
+              "left": 715.828125,
+              "right": 1040.875,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 1fcfa0f1",
+              "left": 360,
+              "right": 574.796875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 49f0bb8d",
+              "left": 360,
+              "right": 587.21875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 244b2d28",
+              "left": 360,
+              "right": 588.109375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review c4222621",
+              "left": 360,
+              "right": 584.53125,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review adb196fd",
+              "left": 360,
+              "right": 583.359375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Save reasoned correction",
+              "left": 360,
+              "right": 570.828125,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            }
+          ],
+          "targeted": [
+            {
+              "text": "Create staff review",
+              "left": 347,
+              "right": 1389,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 347,
+              "right": 527.0625,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Preserve edit and start another correction",
+              "left": 539.0625,
+              "right": 864.109375,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 1fcfa0f1",
+              "left": 360,
+              "right": 574.796875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 49f0bb8d",
+              "left": 360,
+              "right": 587.21875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 244b2d28",
+              "left": 360,
+              "right": 588.109375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review c4222621",
+              "left": 360,
+              "right": 584.53125,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review adb196fd",
+              "left": 360,
+              "right": 583.359375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Save reasoned correction",
+              "left": 360,
+              "right": 570.828125,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            }
+          ]
+        },
+        {
+          "stage": "membership",
+          "baseline": [
+            {
+              "text": "Create staff review",
+              "left": 347,
+              "right": 511.765625,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 523.765625,
+              "right": 703.828125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Preserve edit and start another correction",
+              "left": 715.828125,
+              "right": 1040.875,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 1fcfa0f1",
+              "left": 360,
+              "right": 574.796875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 49f0bb8d",
+              "left": 360,
+              "right": 587.21875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 244b2d28",
+              "left": 360,
+              "right": 588.109375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review c4222621",
+              "left": 360,
+              "right": 584.53125,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review adb196fd",
+              "left": 360,
+              "right": 583.359375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Previous membership page",
+              "left": 360,
+              "right": 579.546875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Next membership page",
+              "left": 591.546875,
+              "right": 785.390625,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Save reasoned correction",
+              "left": 360,
+              "right": 570.828125,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open revision 2",
+              "left": 347,
+              "right": 488.265625,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open revision 1",
+              "left": 347,
+              "right": 486.125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            }
+          ],
+          "harmless": [
+            {
+              "text": "Create staff review",
+              "left": 347,
+              "right": 511.765625,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 523.765625,
+              "right": 703.828125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Preserve edit and start another correction",
+              "left": 715.828125,
+              "right": 1040.875,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 1fcfa0f1",
+              "left": 360,
+              "right": 574.796875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 49f0bb8d",
+              "left": 360,
+              "right": 587.21875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 244b2d28",
+              "left": 360,
+              "right": 588.109375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review c4222621",
+              "left": 360,
+              "right": 584.53125,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review adb196fd",
+              "left": 360,
+              "right": 583.359375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Previous membership page",
+              "left": 360,
+              "right": 579.546875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Next membership page",
+              "left": 591.546875,
+              "right": 785.390625,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Save reasoned correction",
+              "left": 360,
+              "right": 570.828125,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open revision 2",
+              "left": 347,
+              "right": 488.265625,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open revision 1",
+              "left": 347,
+              "right": 486.125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            }
+          ],
+          "targeted": [
+            {
+              "text": "Create staff review",
+              "left": 347,
+              "right": 1389,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 347,
+              "right": 527.0625,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Preserve edit and start another correction",
+              "left": 539.0625,
+              "right": 864.109375,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 1fcfa0f1",
+              "left": 360,
+              "right": 574.796875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 49f0bb8d",
+              "left": 360,
+              "right": 587.21875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 244b2d28",
+              "left": 360,
+              "right": 588.109375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review c4222621",
+              "left": 360,
+              "right": 584.53125,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review adb196fd",
+              "left": 360,
+              "right": 583.359375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Previous membership page",
+              "left": 360,
+              "right": 579.546875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Next membership page",
+              "left": 591.546875,
+              "right": 785.390625,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Save reasoned correction",
+              "left": 360,
+              "right": 570.828125,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open revision 2",
+              "left": 347,
+              "right": 488.265625,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open revision 1",
+              "left": 347,
+              "right": 486.125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            }
+          ]
+        },
+        {
+          "stage": "original history",
+          "baseline": [
+            {
+              "text": "Create staff review",
+              "left": 347,
+              "right": 511.765625,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 523.765625,
+              "right": 703.828125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 1fcfa0f1",
+              "left": 360,
+              "right": 574.796875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 49f0bb8d",
+              "left": 360,
+              "right": 587.21875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 244b2d28",
+              "left": 360,
+              "right": 588.109375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review c4222621",
+              "left": 360,
+              "right": 584.53125,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review adb196fd",
+              "left": 360,
+              "right": 583.359375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open current review",
+              "left": 347,
+              "right": 521.3125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Save reasoned correction",
+              "left": 360,
+              "right": 570.828125,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open revision 5",
+              "left": 347,
+              "right": 488.3125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open revision 4",
+              "left": 347,
+              "right": 488.78125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open revision 3",
+              "left": 347,
+              "right": 488.40625,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open revision 2",
+              "left": 347,
+              "right": 488.265625,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open revision 1",
+              "left": 347,
+              "right": 486.125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Restore preserved edit",
+              "left": 347,
+              "right": 539.3125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Restore preserved edit",
+              "left": 347,
+              "right": 539.3125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            }
+          ],
+          "harmless": [
+            {
+              "text": "Create staff review",
+              "left": 347,
+              "right": 511.765625,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 523.765625,
+              "right": 703.828125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 1fcfa0f1",
+              "left": 360,
+              "right": 574.796875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 49f0bb8d",
+              "left": 360,
+              "right": 587.21875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 244b2d28",
+              "left": 360,
+              "right": 588.109375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review c4222621",
+              "left": 360,
+              "right": 584.53125,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review adb196fd",
+              "left": 360,
+              "right": 583.359375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open current review",
+              "left": 347,
+              "right": 521.3125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Save reasoned correction",
+              "left": 360,
+              "right": 570.828125,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open revision 5",
+              "left": 347,
+              "right": 488.3125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open revision 4",
+              "left": 347,
+              "right": 488.78125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open revision 3",
+              "left": 347,
+              "right": 488.40625,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open revision 2",
+              "left": 347,
+              "right": 488.265625,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open revision 1",
+              "left": 347,
+              "right": 486.125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Restore preserved edit",
+              "left": 347,
+              "right": 539.3125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Restore preserved edit",
+              "left": 347,
+              "right": 539.3125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            }
+          ],
+          "targeted": [
+            {
+              "text": "Create staff review",
+              "left": 347,
+              "right": 1389,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Refresh staff reviews",
+              "left": 347,
+              "right": 527.0625,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 1fcfa0f1",
+              "left": 360,
+              "right": 574.796875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 49f0bb8d",
+              "left": 360,
+              "right": 587.21875,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review 244b2d28",
+              "left": 360,
+              "right": 588.109375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review c4222621",
+              "left": 360,
+              "right": 584.53125,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open staff review adb196fd",
+              "left": 360,
+              "right": 583.359375,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open current review",
+              "left": 347,
+              "right": 521.3125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Save reasoned correction",
+              "left": 360,
+              "right": 570.828125,
+              "parentLeft": 360,
+              "parentRight": 1336,
+              "viewport": 1440
+            },
+            {
+              "text": "Open revision 5",
+              "left": 347,
+              "right": 488.3125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open revision 4",
+              "left": 347,
+              "right": 488.78125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open revision 3",
+              "left": 347,
+              "right": 488.40625,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open revision 2",
+              "left": 347,
+              "right": 488.265625,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Open revision 1",
+              "left": 347,
+              "right": 486.125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Restore preserved edit",
+              "left": 347,
+              "right": 539.3125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            },
+            {
+              "text": "Restore preserved edit",
+              "left": 347,
+              "right": 539.3125,
+              "parentLeft": 347,
+              "parentRight": 1349,
+              "viewport": 1440
+            }
+          ]
+        }
+      ],
+      "recoveryBounds": {
+        "baseline": {
+          "left": 715.828125,
+          "right": 1040.875,
+          "parentLeft": 347,
+          "parentRight": 1349,
+          "viewport": 1440
+        },
+        "harmless": {
+          "left": 715.828125,
+          "right": 1040.875,
+          "parentLeft": 347,
+          "parentRight": 1349,
+          "viewport": 1440
+        },
+        "targeted": {
+          "left": 715.828125,
+          "right": 1040.875,
+          "parentLeft": 347,
+          "parentRight": 1349,
+          "viewport": 1440
+        }
+      },
+      "totalContributions": 7,
+      "sourceSha256": "55475e4dd383fa6de80b6c62fb57550c05b66974752b8dd1d1e1e2410c31d2dd",
+      "preparationSha256": "419d9014ce1841f96b48b195e94d9d7d8c2c4feb136dff1d7e05c65fda15f688",
+      "originalContentSha256": "e1a20720b42b6bac10c1b1e1113a3303d67d706e74fa5d4ba65be163ac39e9df",
+      "finalContentSha256": "0a470778226909cae941be24197bbb31355fc044f18e4598cc82241f336b9e44",
+      "screenshots": [
+        {
+          "file": "synthesis-reviews-1440-1789425133001-corrected.png",
+          "sha256": "d54fbfe0edc31747360a6b88bcc105b793292382063d478f12345a0b218d067d"
+        },
+        {
+          "file": "synthesis-reviews-1440-1789425133001-membership-edit.png",
+          "sha256": "7d9216d0f7d8168dd93756d439b8b5fb08fe8a32f400e2498b810561d2a20a63"
+        },
+        {
+          "file": "synthesis-reviews-1440-1789425133001-original-history.png",
+          "sha256": "40b45f8524b907a4f480127ebd4f68ab103347c8630cab8a484ea276fb1b183b"
+        },
+        {
+          "file": "synthesis-reviews-1440-1789425133001-pending.png",
+          "sha256": "f1d84970a431c67130d60d7342469daba1fb8f08de50ad79853c82319e4be477"
+        },
+        {
+          "file": "synthesis-reviews-1440-1789425133001-quota-refocus.png",
+          "sha256": "ba531e814241619222d5cd7bb7140f610670ea0f0a60496e8469d8ee5c90baf8"
+        },
+        {
+          "file": "synthesis-reviews-1440-1789425133001-restored-draft.png",
+          "sha256": "e74791666cbf77cc93b0ab70eea830405adbcec4ce689f4954102d1899762d8c"
+        }
+      ]
+    }
+  ],
+  "visualReview": "Pending, restored-draft, membership-edit, quota-refocus , corrected and original-history screenshots inspected at desktop and 390px. Controls fit their inner containers; long text remains scrollable and readable.",
+  "limits": [
+    "These runs precede the legacy route retirement.",
+    "The intentional interrupted response logs ERR_CONNECTION_RESET; no page errors.",
+    "Browser counts are seven and six contributions. Large-source coverage has separate native and React tests.",
+    "No approval, AI generation, public release, export or human usability acceptance is established."
+  ]
+}

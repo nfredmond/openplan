@@ -301,8 +301,8 @@ export function FirstRunChecklist({
         state={aiKeyState}
         unlocks={
           aiKeyConfigured
-            ? "The Planner Agent, AI synthesis of public comments, narrative drafting, and comment translation all run on this key. OpenPlan itself is free — the key is your workspace's own account with the AI provider, and usage is billed by that provider, not by OpenPlan."
-            : "Without a key, the Planner Agent, AI synthesis of public comments, narrative drafting, and comment translation are unavailable — everything else in OpenPlan still works. OpenPlan itself is free — the key is your workspace's own account with the AI provider, and usage is billed by that provider, not by OpenPlan."
+            ? "The Planner Agent, narrative drafting, and comment translation all run on this key. OpenPlan itself is free — the key is your workspace's own account with the AI provider, and usage is billed by that provider, not by OpenPlan."
+            : "Without a key, the Planner Agent, narrative drafting, and comment translation are unavailable — everything else in OpenPlan still works. OpenPlan itself is free — the key is your workspace's own account with the AI provider, and usage is billed by that provider, not by OpenPlan."
         }
         action={
           !aiKeyConfigured && canManageWorkspace && !aiKeyControlIsHere

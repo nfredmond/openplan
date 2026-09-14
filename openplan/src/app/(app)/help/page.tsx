@@ -172,9 +172,12 @@ export default function HelpPage() {
             </p>
           </div>
         </div>
+        <p className="mt-3 text-sm leading-6 text-muted-foreground">
+          Engagement source capture and staff synthesis reviews work without an AI key. The earlier AI
+          synthesis generator is retired; new AI theme generation is not yet available.
+        </p>
         <ul className="mt-4 list-disc space-y-1.5 pl-6 text-sm text-foreground/90">
           <li>The Planner Agent — the in-app assistant that answers from your workspace&apos;s own records.</li>
-          <li>AI synthesis of public comments collected through engagement campaigns.</li>
           <li>Narrative drafting for reports and grant applications.</li>
           <li>Comment translation on public engagement portals.</li>
         </ul>

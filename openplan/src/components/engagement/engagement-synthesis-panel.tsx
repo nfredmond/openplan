@@ -1,9 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Loader2, Sparkles, ShieldAlert } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ShieldAlert } from "lucide-react";
 import { listFlaggedNarrativeSentences, stripFactCitationTokens } from "@/lib/grants/narrative-grounding";
 import type { EngagementSynthesis, EngagementSentiment } from "@/lib/engagement/ai-synthesis";
 
@@ -22,50 +19,12 @@ const SENTIMENT_TONE: Record<EngagementSentiment, string> = {
 };
 
 type Props = {
-  campaignId: string;
-  approvedItemCount: number;
   initialSynthesis: EngagementSynthesis | null;
   initialSynthesizedAt: string | null;
 };
 
-export function EngagementSynthesisPanel({
-  campaignId,
-  approvedItemCount,
-  initialSynthesis,
-  initialSynthesizedAt,
-}: Props) {
-  const router = useRouter();
-  const [synthesis, setSynthesis] = useState<EngagementSynthesis | null>(initialSynthesis);
-  const [synthesizedAt, setSynthesizedAt] = useState<string | null>(initialSynthesizedAt);
-  const [isRunning, setIsRunning] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleGenerate() {
-    setError(null);
-    setIsRunning(true);
-    try {
-      const response = await fetch(`/api/engagement/campaigns/${campaignId}/synthesis`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-      });
-      const payload = (await response.json()) as {
-        error?: string;
-        synthesis?: EngagementSynthesis;
-        synthesizedAt?: string;
-      };
-      if (!response.ok || !payload.synthesis) {
-        throw new Error(payload.error || "Failed to synthesize engagement");
-      }
-      setSynthesis(payload.synthesis);
-      setSynthesizedAt(payload.synthesizedAt ?? new Date().toISOString());
-      router.refresh();
-    } catch (runError) {
-      setError(runError instanceof Error ? runError.message : "Failed to synthesize engagement");
-    } finally {
-      setIsRunning(false);
-    }
-  }
-
+/** Inspect the earlier mutable-format record without regenerating or assigning it new provenance. */
+export function EngagementSynthesisPanel({ initialSynthesis: synthesis, initialSynthesizedAt: synthesizedAt }: Props) {
   const isOffline = synthesis?.source === "deterministic-fallback";
   const grounded = synthesis?.grounding;
   const displayNarrative = synthesis ? stripFactCitationTokens(synthesis.narrative) : "";
@@ -73,46 +32,47 @@ export function EngagementSynthesisPanel({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-1">
-          <p className="text-sm font-semibold text-foreground">AI synthesis</p>
-          <p className="text-xs text-muted-foreground">
-            Themes, sentiment, and a source-cited narrative over {approvedItemCount} approved comment
-            {approvedItemCount === 1 ? "" : "s"}.
-          </p>
-        </div>
-        <Button type="button" variant="outline" onClick={() => void handleGenerate()} disabled={isRunning}>
-          {isRunning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-          {synthesis ? "Regenerate" : "Generate"}
-        </Button>
-      </div>
-
-      {error ? <p className="text-xs text-red-600 dark:text-red-300">{error}</p> : null}
+      <p className="text-sm font-semibold text-foreground">Earlier synthesis summary</p>
+      <p className="text-xs text-muted-foreground">
+        Read-only historical output from the retired generator. It could include at most 300 approved comments,
+        omit survey answers and shorten comment text. Complete source coverage, current relevance and staff
+        approval are not established. Citation markers alone do not establish accuracy.
+      </p>
+      <p className="text-xs text-muted-foreground">
+        For new work, use retained synthesis sources and staff reviews in Analysis. These preserve selected
+        contributions and reasoned corrections; they do not generate AI themes or approve findings.
+      </p>
 
       {!synthesis ? (
         <p className="text-xs text-muted-foreground">
-          No synthesis yet. Generate one to cluster the approved comments into themes with a cited summary.
+          No earlier synthesis summary is saved.
         </p>
       ) : (
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
             <span>
-              Overall sentiment:{" "}
+              Stored sentiment label:{" "}
               <span className={SENTIMENT_TONE[synthesis.overall_sentiment]}>
                 {SENTIMENT_LABEL[synthesis.overall_sentiment]}
               </span>
             </span>
             <span>
-              {grounded?.grounded_sentence_count ?? 0}/{grounded?.total_sentence_count ?? 0} sentences cited
+              {grounded?.grounded_sentence_count ?? 0}/{grounded?.total_sentence_count ?? 0} stored sentences carry citations
             </span>
             {isOffline ? (
               <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-300">
-                <ShieldAlert className="h-3.5 w-3.5" /> AI unavailable — automatic summary (no AI used)
+                <ShieldAlert className="h-3.5 w-3.5" /> Historical category grouping; neutral labels were not a sentiment assessment
               </span>
             ) : null}
-            {synthesizedAt ? <span>Generated {new Date(synthesizedAt).toLocaleString()}</span> : null}
+            {synthesizedAt ? <span>Recorded {new Date(synthesizedAt).toLocaleString()}</span> : null}
           </div>
 
+          <p className="text-xs text-muted-foreground">
+            Stored counts: {synthesis.analyzed_item_count} analyzed of {synthesis.item_count} supplied comments.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            These counts do not establish coverage of the full consultation.
+          </p>
           {synthesis.themes.length > 0 ? (
             <div className="space-y-2">
               {synthesis.themes.map((theme, index) => (
@@ -169,7 +129,7 @@ export function EngagementSynthesisPanel({
             </details>
           ) : null}
 
-          <p className="text-[0.7rem] leading-relaxed text-muted-foreground">{synthesis.caveat}</p>
+          <p className="text-[0.7rem] leading-relaxed text-muted-foreground">Original record caveat: {synthesis.caveat}</p>
         </div>
       )}
     </div>

@@ -1,0 +1,285 @@
+{
+  "cases": [
+    {
+      "case": "baseline",
+      "expected": "survives",
+      "exit": 0,
+      "passed": 130,
+      "failed": 0,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "expected": "survives",
+      "exit": 0,
+      "passed": 130,
+      "failed": 0,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "success-shaped-refusal",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 10,
+      "failed": 6,
+      "failedAssertions": [
+        "retired synthesis generator refuses old requests without effects or body consumption: ",
+        "retired synthesis generator refuses old requests without effects or body consumption: {\"text\":\"SYNTHETIC private unsaved words\"}",
+        "retired synthesis generator refuses old requests without effects or body consumption: not valid JSON",
+        "retired synthesis generator audits retirement without submitted text, query values or credentials",
+        "retired synthesis generator gives the same non-disclosing refusal to malformed scope, foreign origin and agent requests",
+        "every API route has a caller keeps the excused synthesis generator retired"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "cacheable-refusal",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 2,
+      "failed": 3,
+      "failedAssertions": [
+        "retired synthesis generator refuses old requests without effects or body consumption: ",
+        "retired synthesis generator refuses old requests without effects or body consumption: {\"text\":\"SYNTHETIC private unsaved words\"}",
+        "retired synthesis generator refuses old requests without effects or body consumption: not valid JSON"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-audit",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 4,
+      "failed": 1,
+      "failedAssertions": [
+        "retired synthesis generator audits retirement without submitted text, query values or credentials"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "query-disclosure",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 4,
+      "failed": 1,
+      "failedAssertions": [
+        "retired synthesis generator audits retirement without submitted text, query values or credentials"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "consumes-body",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 0,
+      "failed": 5,
+      "failedAssertions": [
+        "retired synthesis generator refuses old requests without effects or body consumption: ",
+        "retired synthesis generator refuses old requests without effects or body consumption: {\"text\":\"SYNTHETIC private unsaved words\"}",
+        "retired synthesis generator refuses old requests without effects or body consumption: not valid JSON",
+        "retired synthesis generator audits retirement without submitted text, query values or credentials",
+        "retired synthesis generator gives the same non-disclosing refusal to malformed scope, foreign origin and agent requests"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "database-effect",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 0,
+      "failed": 5,
+      "failedAssertions": [
+        "retired synthesis generator refuses old requests without effects or body consumption: ",
+        "retired synthesis generator refuses old requests without effects or body consumption: {\"text\":\"SYNTHETIC private unsaved words\"}",
+        "retired synthesis generator refuses old requests without effects or body consumption: not valid JSON",
+        "retired synthesis generator audits retirement without submitted text, query values or credentials",
+        "retired synthesis generator gives the same non-disclosing refusal to malformed scope, foreign origin and agent requests"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "provider-effect",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 0,
+      "failed": 5,
+      "failedAssertions": [
+        "retired synthesis generator refuses old requests without effects or body consumption: ",
+        "retired synthesis generator refuses old requests without effects or body consumption: {\"text\":\"SYNTHETIC private unsaved words\"}",
+        "retired synthesis generator refuses old requests without effects or body consumption: not valid JSON",
+        "retired synthesis generator audits retirement without submitted text, query values or credentials",
+        "retired synthesis generator gives the same non-disclosing refusal to malformed scope, foreign origin and agent requests"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-recovery-direction",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 2,
+      "failed": 3,
+      "failedAssertions": [
+        "retired synthesis generator refuses old requests without effects or body consumption: ",
+        "retired synthesis generator refuses old requests without effects or body consumption: {\"text\":\"SYNTHETIC private unsaved words\"}",
+        "retired synthesis generator refuses old requests without effects or body consumption: not valid JSON"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "lost-historical-narrative",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 1,
+      "failed": 2,
+      "failedAssertions": [
+        "earlier synthesis inspection preserves historical words and counts without generation controls or current-coverage claims",
+        "earlier synthesis inspection reads the current server record when refreshed without retaining another record in local state"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "invented-generation-button",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 1,
+      "failed": 2,
+      "failedAssertions": [
+        "earlier synthesis inspection preserves historical words and counts without generation controls or current-coverage claims",
+        "earlier synthesis inspection does not invent a saved summary for an empty record"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "undisclosed-coverage-limit",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 2,
+      "failed": 1,
+      "failedAssertions": [
+        "earlier synthesis inspection preserves historical words and counts without generation controls or current-coverage claims"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "invented-analysis-count",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 2,
+      "failed": 1,
+      "failedAssertions": [
+        "earlier synthesis inspection preserves historical words and counts without generation controls or current-coverage claims"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "hide-unassessed-fallback",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 2,
+      "failed": 1,
+      "failedAssertions": [
+        "earlier synthesis inspection preserves historical words and counts without generation controls or current-coverage claims"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "history-hidden-by-current-intake",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 58,
+      "failed": 1,
+      "failedAssertions": [
+        "EngagementCampaignDetailPage keeps exact earlier synthesis visible after all current comments disappear"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "wrong-history-prop",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 58,
+      "failed": 1,
+      "failedAssertions": [
+        "EngagementCampaignDetailPage keeps exact earlier synthesis visible after all current comments disappear"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unreachable-replacement",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 54,
+      "failed": 5,
+      "failedAssertions": [
+        "EngagementCampaignDetailPage mounts retained sources for an empty consultation with exact staff scope",
+        "EngagementCampaignDetailPage keeps exact earlier synthesis visible after all current comments disappear",
+        "EngagementCampaignDetailPage console section order keeps every key section mounted after the reorder",
+        "EngagementCampaignDetailPage console section order puts the publish flow and both builders above the analysis panels",
+        "EngagementCampaignDetailPage console section order keeps moderation above the analysis panels in the working column"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unverified-write-restored",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 5,
+      "failed": 1,
+      "failedAssertions": [
+        "write policy coverage adds no new UPDATE or DELETE that cannot see whether it changed anything"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "help-directions-removed",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 5,
+      "failed": 1,
+      "failedAssertions": [
+        "HelpPage lists which features need an AI key, in the checklist's own terms"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "onboarding-promotes-retired-generator",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 34,
+      "failed": 2,
+      "failedAssertions": [
+        "DashboardPage first run leads with the AI step and links to integration setup while no key resolves",
+        "FirstRunChecklist AI assistant step leads with the AI step, shows it outstanding without a key, and names what stays off"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "plain-copy-regression",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 3,
+      "failed": 1,
+      "failedAssertions": [
+        "planner copy says the plain thing uses no term from the ledger more often than the recorded baseline"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "sourcesRestored": true,
+  "sourceSha256": {
+    "src/app/api/engagement/campaigns/[campaignId]/synthesis/route.ts": "db7446a793d456bba7387a58c894c6b47e9a984c2d66bc7b6abd69baef4f4726",
+    "src/components/engagement/engagement-synthesis-panel.tsx": "63160fba1aff660babe8412e6677d4bf3de892cfdad94c13691e459288b8247f",
+    "src/app/(app)/engagement/[campaignId]/page.tsx": "d795dfbb88fd083cbaf8f45c6c43c7d97f193595b182d7150b0c9e53bb73be7b",
+    "src/app/(app)/help/page.tsx": "b88ce109f2cba1e04e312bb6931a92de2527853bc0b250489b53a05cf757d259",
+    "src/components/onboarding/first-run-checklist.tsx": "1278abc2b2e314ce2271c628a2fd82df269e0d40d6fad91e9f6e84ade43696d9"
+  },
+  "blindCategories": [
+    "Mocked dependency refusal does not prove database isolation.",
+    "Page test asserts projections and props, not rendering of the mocked child.",
+    "Text and DOM checks do not prove visual layout or planner usefulness.",
+    "The write inventory sees static Supabase calls, not arbitrary hidden database clients.",
+    "The broad copy scanner misses text following inline JSX values. This disclosure has its own text paragraph; rendered panel assertions separately protect its meaning."
+  ]
+}

@@ -1,0 +1,23 @@
+# Legacy synthesis retirement, candidate
+
+September 14, 2026. The capped, mutable legacy POST no longer generates or writes. It returns private HTTP 410 with a recovery direction and a metadata-only audit. The response does not read submitted text, authenticate to the database, infer source membership, redirect or invoke a provider. Its fixed non-disclosing response also applies to malformed IDs, anonymous requests and agent headers. Existing summaries are preserved for read-only inspection, including when all current comments disappear. Their limits and stored counts are explicit; automatic neutral labels are not a sentiment assessment. New source capture and staff reviews remain in Analysis. Help, onboarding and empty-state instructions no longer direct users to Generate.
+
+## Evidence at this checkpoint
+
+Nine focused suites pass 130 tests. The 22-case retirement proof includes a passing baseline and harmless comment, with targeted failures for false success, caching, missing audit, query disclosure, body consumption, database/provider effects, lost recovery direction, erased historical text, invented generation control, hidden coverage/fallback limits, fabricated counts, history hidden by current intake, wrong historical timestamp, missing replacement entry, an unverified database write and stale help/onboarding/plain copy. retirement-mutations.json retains exact assertion names and restored production hashes. Changed-file lint and subsequent browser/full QA results must be checked before landing.
+
+The first focused invocation mistakenly ran from repository root before the new test existed; it found no tests and is not verification. The application-root run found three old page-order assertions expecting the removed Generate panel and a copy-count difference. Those assertions now protect the retained source entry, with an additional exact historical-prop/projection test when current intake is empty. Reduced copy counts were banked; no vocabulary allowance was raised.
+
+Two proof failures are preserved privately. The unchecked-write fault correctly failed the production guard, but the runner expected the wrong assertion name; that matcher was corrected. A copy fault after inline JSX values survived the broad copy scanner. The disclosure now occupies its own paragraph, where the same targeted fault is detected. The scanner still has a mixed-JSX blind category; this is not a claim that every word in the app is covered. Rendered panel assertions separately protect the historical limitations and preserved text.
+
+## Browser evidence boundary
+
+The prior review layout build, 6bbdf609, completed desktop and 390px keyboard journeys, exact interrupted retry, original/corrected checksums, membership correction, full notes and storage-refusal recovery. All six screenshot states were visually inspected at both widths; corrected controls fit their immediate containers. review-browser-final-layout.json supersedes the earlier layout failure without erasing it. This does not establish browser acceptance of the subsequent retirement change.
+
+A read-only census of the named isolated database found zero non-null legacy summary values. The retirement browser runner therefore checks real navigation, the actual new source/review entry, authenticated/anonymous/invalid-agent 410 responses, unchanged scoped historical fields and zero unexpected console errors. A separate, explicitly synthetic historical-format component fixture uses the actual React panel and the identified build's CSS to check its layout. That fixture does not prove a historical database upgrade or user workflow. It never seeds a row or invokes a model. Browser execution remains pending at this checkpoint.
+
+## Remaining release and product work
+
+Run the candidate production build and identify it with which-openplan.sh; exercise browser-retirement.cjs at both widths and inspect the images. Run full QA and shuffled tests after the retirement changes. Existing installed RLS, worker and populated-upgrade results apply to unchanged schema/server custody, with final release CI and any required final upgrade run still outstanding. No new version is tagged by this checkpoint.
+
+Retirement removes an unsafe path; it does not fulfill the remaining AI-generation capability. Optional complete and resumable generation, exact-output staff approval, source-to-response/decision linkage and reviewed synthesis exports remain required M9b work. Existing downstream consumers of older summaries have not been migrated to approved retained reviews. No scientific, grant-readiness or agency-usefulness claim is promoted.

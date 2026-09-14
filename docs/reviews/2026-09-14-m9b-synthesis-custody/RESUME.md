@@ -1,3 +1,13 @@
+# Resume at legacy retirement browser and final QA
+
+September 14, 2026. This section supersedes the older checkpoint headings below. The isolated checkout and branch are unchanged. The legacy synthesis write is now retired, historical summaries remain readable, and outdated Generate directions are removed. Nine focused suites passed 130 tests; all 22 mutation cases produced expected outcomes and restored their sources. Read RETIREMENT_VERIFICATION.md and retirement-mutations.json for exact boundaries and retained proof errors. The final six screenshot states of the earlier 6bbdf609 review build have now all been inspected at desktop and 390px; review-browser-final-layout.json records the evidence.
+
+Next: finish changed-file lint, commit/push this candidate, stop only our identified 3262 production server, run full QA and shuffled seed 619145, build and identify the new candidate. render-legacy-fixture.ts runs through the application's installed tsx with its tsconfig and produces a private synthetic layout fragment. browser-retirement.cjs then runs at PROBE_WIDTH=1440 and 390 with PROBE_COMMIT set to the served 12-character SHA. It uses real navigation and native read-only before/after checks against the named isolated DB; the historical component-layout fixture is explicitly synthetic because that database has zero legacy summaries. Inspect both image sets, preserve failures, and update evidence before direct main landing and the next minor release. No PR, human release approval or paid provider is needed.
+
+Original/correction custody, 612 installed RLS checks, 52 worker suites and populated upgrade have earlier passing evidence; schema and these workers are unchanged by retirement. Final main/release CI is still required before tagging. The full M9b and V1 scope remains open, including optional complete resumable generation, exact-output approval, response/decision links and reviewed exports. Recheck processes after interruption and never assume a job survived. Do not touch the other checkout or pending reminder constraint.
+
+---
+
 # Usage reset checkpoint after final browser runs
 
 September 14, 2026. This section supersedes the older checkpoints below. Owned checkout: `/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13`; app package `openplan/`; branch `work/engagement-decision-traceability`. Application commit `6bbdf6091064f97b7241e5e54e7e57388d5fd2f4` is pushed. This checkpoint does not land or release the unfinished increment. User continues to authorize direct verified main landing without PRs and development through the full V1 contract.

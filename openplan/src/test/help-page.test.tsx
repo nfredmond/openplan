@@ -67,7 +67,7 @@ describe("HelpPage", () => {
     ).toBeInTheDocument();
     // The same four features the dashboard checklist's AI step names.
     expect(screen.getByText(/The Planner Agent/)).toBeInTheDocument();
-    expect(screen.getByText(/AI synthesis of public comments/)).toBeInTheDocument();
+    expect(screen.getByText(/Engagement source capture and staff synthesis reviews work without an AI key/)).toBeInTheDocument();
     expect(screen.getByText(/Narrative drafting for reports and grant applications/)).toBeInTheDocument();
     expect(screen.getByText(/Comment translation on public engagement portals/)).toBeInTheDocument();
     // Who pays whom: the provider bills the workspace's own account, never OpenPlan.

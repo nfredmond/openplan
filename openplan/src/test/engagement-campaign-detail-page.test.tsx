@@ -1,3 +1,4 @@
+import { historical } from "./fixtures/engagement/legacy-synthesis";
 import { render, screen, within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -423,7 +424,7 @@ vi.mock("@/components/engagement/engagement-synthesis-sources", () => ({
   EngagementSynthesisSources: (props: { userId: string; workspaceId: string; campaignId: string; categories: unknown[] }) => <div data-testid="synthesis-source-scope">{JSON.stringify(props)}</div>,
 }));
 vi.mock("@/components/engagement/engagement-synthesis-panel", () => ({
-  EngagementSynthesisPanel: () => <div data-testid="engagement-synthesis-panel" />,
+  EngagementSynthesisPanel: (props: unknown) => <div data-testid="engagement-synthesis-panel">{JSON.stringify(props)}</div>,
 }));
 vi.mock("@/components/engagement/representativeness-panel", () => ({
   RepresentativenessPanel: () => <div data-testid="representativeness-panel" />,
@@ -471,6 +472,17 @@ describe("EngagementCampaignDetailPage", () => {
     });
     expect(screen.queryByTestId("engagement-synthesis-panel")).not.toBeInTheDocument();
   });
+  it("keeps exact earlier synthesis visible after all current comments disappear", async () => {
+    const existing = await campaignMaybeSingleMock();
+    const synthesizedAt = "2026-09-01T12:00:00Z";
+    campaignMaybeSingleMock.mockResolvedValueOnce({ ...existing, data: { ...existing.data, ai_synthesis_json: historical, ai_synthesized_at: synthesizedAt } });
+    itemsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+    await renderPage({ tab: "analysis" });
+    expect(JSON.parse(screen.getByTestId("engagement-synthesis-panel").textContent!)).toEqual({ initialSynthesis: historical, initialSynthesizedAt: synthesizedAt });
+    expect(screen.getByTestId("synthesis-source-scope")).toBeInTheDocument();
+    expect(campaignSelectMock.mock.calls.some(([columns]) => columns?.includes("ai_synthesis_json") && columns.includes("ai_synthesized_at"))).toBe(true);
+  });
+
   it("shows a retry instead of an empty staff-response builder when the read fails", async () => {
     closeLoopReadError = { message: "SYNTHETIC connection lost" };
     await renderPage();
@@ -1692,7 +1704,7 @@ describe("EngagementCampaignDetailPage", () => {
       ).toBeInTheDocument();
       expect(screen.getByTestId("engagement-bulk-moderation")).toBeInTheDocument();
       expect(screen.getByTestId("engagement-item-registry")).toBeInTheDocument();
-      expect(screen.getByTestId("engagement-synthesis-panel")).toBeInTheDocument();
+      expect(screen.getByTestId("synthesis-source-scope")).toBeInTheDocument();
       expect(screen.getByTestId("representativeness-panel")).toBeInTheDocument();
       // Operator Actions footer.
       expect(screen.getByTestId("engagement-campaign-controls")).toBeInTheDocument();
@@ -1703,7 +1715,7 @@ describe("EngagementCampaignDetailPage", () => {
     it("puts the publish flow and both builders above the analysis panels", async () => {
       await renderPage();
 
-      const synthesis = screen.getByTestId("engagement-synthesis-panel");
+      const synthesis = screen.getByTestId("synthesis-source-scope");
       assertPrecedes(screen.getByTestId("campaign-publish-flow"), synthesis);
       assertPrecedes(screen.getByRole("heading", { name: /Survey & form questions/i }), synthesis);
       assertPrecedes(screen.getByRole("heading", { name: /You said \/ We did/i }), synthesis);
@@ -1712,7 +1724,7 @@ describe("EngagementCampaignDetailPage", () => {
     it("keeps moderation above the analysis panels in the working column", async () => {
       await renderPage();
 
-      const synthesis = screen.getByTestId("engagement-synthesis-panel");
+      const synthesis = screen.getByTestId("synthesis-source-scope");
       assertPrecedes(screen.getByTestId("engagement-bulk-moderation"), synthesis);
       assertPrecedes(screen.getByTestId("engagement-item-registry"), synthesis);
     });

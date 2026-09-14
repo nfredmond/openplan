@@ -67,6 +67,7 @@ import { stripSourceComments } from "./helpers/source-text";
  * `src/`. Every entry is a claim that can be checked by reading the route.
  */
 const EXTERNAL_CALLERS: Record<string, string> = {
+  "api/engagement/campaigns/[campaignId]/synthesis": "410 retirement response for earlier generator tabs and scripts. Retained sources and reviews replace its unsafe writes; engagement-synthesis-retired-route.test.ts proves refusal without body consumption or effects.",
   "api/engagement/campaigns/[campaignId]/translations": "410 retirement response for old editor tabs and external scripts that still send unversioned writes. Current UI uses generation and commands endpoints; engagement-translation-retired-route.test.ts proves refusal without body consumption or effects.",
   "api/assistant/providers/native": "workers/planner_agent_connector/connector-client.mjs calls this scoped-bearer endpoint for claims, status and retained result delivery; connector-worker.test.mjs exercises its actual HTTP redirect boundary and delivery recovery.",
   "api/knowledge-base/extraction-dispatch": "workers/ocr_worker/main.py polls its configured OPENPLAN_KB_OCR_DISPATCH_URL to recover queued documents and cancellation requests.",
@@ -418,6 +419,18 @@ describe("every API route has a caller", () => {
         expect(result.status, "An excused retired route must still refuse old writes").toBe(410);
         expect(await result.json()).toMatchObject({ kind: "retired" });
       }
+    } finally { quiet.mockRestore(); }
+  });
+
+  it("keeps the excused synthesis generator retired", async () => {
+    expect(EXTERNAL_CALLERS["api/engagement/campaigns/[campaignId]/synthesis"]).toContain("410");
+    const { NextRequest } = await import("next/server");
+    const { POST } = await import("@/app/api/engagement/campaigns/[campaignId]/synthesis/route");
+    const quiet = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      const result = POST(new NextRequest("http://localhost/api/engagement/campaigns/old/synthesis", { method: "POST" }));
+      expect(result.status, "An excused generator must refuse old writes").toBe(410);
+      expect(await result.json()).toMatchObject({ kind: "retired" });
     } finally { quiet.mockRestore(); }
   });
 

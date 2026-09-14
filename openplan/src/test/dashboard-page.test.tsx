@@ -692,7 +692,7 @@ describe("DashboardPage", () => {
       // First incomplete step in display order carries the one emphasis.
       expect(step!.textContent).toContain("Start here");
       expect(step!.textContent).toMatch(
-        /Without a key, the Planner Agent, AI synthesis of public comments, narrative drafting, and comment translation are unavailable/
+        /Without a key, the Planner Agent, narrative drafting, and comment translation are unavailable/
       );
 
       expect(screen.getByRole("link", { name: "Open integration setup" })).toHaveAttribute(
