@@ -37,7 +37,7 @@ try{
   await page.reload();await expect(page.getByRole('heading',{name:edited.title,exact:true})).toBeVisible();
   await expect(page.getByLabel('Title',{exact:true})).toHaveValue(edited.title);await expect(page.getByLabel('Summary',{exact:true})).toHaveValue(edited.summary);await expect(page.getByLabel('Status',{exact:true})).toHaveValue(edited.status);
   assert.deepEqual(requests,[edited,edited]);
-  await page.getByRole('heading',{name:'Edit report details',exact:true}).scrollIntoViewIfNeeded();await page.screenshot({path:prefix+'-metadata.png'});
+  await expect(page.locator('#campaign-review-files').getByRole('link',{name:'Download ZIP',exact:true})).toBeVisible();await page.getByRole('heading',{name:'Edit report details',exact:true}).evaluate(e=>e.scrollIntoView({block:'start'}));await page.screenshot({path:prefix+'-metadata.png'});await page.getByRole('button',{name:'Save metadata',exact:true}).evaluate(e=>e.scrollIntoView({block:'center'}));await page.screenshot({path:prefix+'-metadata-actions.png'});
   await page.getByLabel('Title',{exact:true}).fill(original.title);await page.getByLabel('Summary',{exact:true}).fill(original.summary);
   const restored=page.waitForResponse(r=>r.url()===routePath&&r.request().method()==='PATCH');await click(page,page.getByRole('button',{name:'Save metadata',exact:true}));assert.equal((await restored).status(),200);
   await page.reload();await expect(page.getByLabel('Title',{exact:true})).toHaveValue(original.title);await expect(page.getByLabel('Summary',{exact:true})).toHaveValue(original.summary);

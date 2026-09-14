@@ -40,3 +40,14 @@ See [restart checkpoint](RESUME.md) for the exact continuation. No v0.61 release
 ## Metadata follow-up
 
 The remaining campaign count was a scanner false positive on the JSX expression `: !campaign.data ?`, not visible copy. Renaming the local result to consultation removes the false positive without changing the guard or its baseline. Metadata-only status and unsaved-edit help now describe retained files. The focused page/editor/copy run passes 28 tests. The updated mutation runner has a 24-test baseline, a surviving harmless comment and 20 targeted failures, including viewer permissions, user/workspace filters, missing role projection, exposed model/generation controls and accidentally cleared citations. The first runner attempt caught a JSX syntax mistake before tests could collect; it was corrected and the complete runner rerun. See report-page-metadata-mutations.json. Final browser acceptance and full QA remain pending.
+
+
+## Main landing evidence
+
+Full local QA on d6b0a4fc passed: 1,307 test files, 15,332 tests, 523 skipped tests, lint, configured deadcode check, provider connectors, zero dependency vulnerabilities and production webpack/TypeScript build. Local QA did not run live RLS; final GitHub isolation remains a separate check. No migrations, worker sources or upgrade workflows changed.
+
+The identified d6b0a4fc build passed desktop and 390px journeys from sign-in through Engagement, Record and the retained report. Each journey saved title/summary, deliberately lost the successful PATCH response, retained the edits for retry, successfully retried, reloaded the saved values and restored the original metadata. The three PATCH requests contain only title, summary and status; no generation request occurred. All PDF/XLSX/ZIP bytes match the original retained hashes after editing. Anonymous report/file access was refused. Each console has exactly one expected injected network failure and no other errors. The editor, controls and context screenshots were inspected at both widths. The acceptance server was stopped afterward. See report-page-metadata-browser-results.json.
+
+The original server start supplied an eight-character SHA and the identity check correctly refused a match. Restarting our server with the full commit produced MATCH before browser acceptance. Initial editor captures missed controls after the asynchronous file list expanded; the runner now waits for file links and captures the save controls explicitly. These were acceptance setup/capture corrections, with no application changes after full QA.
+
+This fix is ready for direct main landing and final CI, with no PR or new release tag. Continue internal decision-history exports. The generic report GET API still assumes a project ID; the specialized page and metadata PATCH avoid that path, so do not claim that API coherence gap is fixed.

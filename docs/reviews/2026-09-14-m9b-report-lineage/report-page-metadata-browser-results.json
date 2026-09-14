@@ -1,0 +1,158 @@
+{
+  "sourceCommit": "d6b0a4fc8d41ae87841383c2ab829b2992f9d26a",
+  "qa": {
+    "exit": 0,
+    "testsPassed": 15332,
+    "testsSkipped": 523,
+    "filesPassed": 1307,
+    "filesSkipped": 53,
+    "logSha256": "46fbe9c6a0d1691b5b951ae66e3cd9e17412dbb4f56291dc93d53db2176f4f7d",
+    "liveRlsRunHere": false
+  },
+  "journeys": [
+    {
+      "width": 1440,
+      "fixed": true,
+      "completed": true,
+      "console": [],
+      "downloads": [
+        {
+          "format": "pdf",
+          "checksum": "c2b2dffba0d79a9fb0c92da3dccbed37ad077b5fd05767b330c671c98b38e52d",
+          "byteLength": 59868
+        },
+        {
+          "format": "xlsx",
+          "checksum": "b1449a67d40c2e8f47acd7de6bcb5747572dc40c90b254db25de330d1a403d78",
+          "byteLength": 15882
+        },
+        {
+          "format": "zip",
+          "checksum": "2b871db7a85fc1c7fa970f6518a29711b0c6a34fbc40cbcaf9282ae69173f652",
+          "byteLength": 61703
+        }
+      ],
+      "identity": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-09-14T15:35:49.792Z",
+        "deployment": {
+          "commit": "d6b0a4fc8d41",
+          "version": "0.60.0"
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "reportId": "9611d8ec-f836-4928-8926-cfd994d1b320",
+      "metadata": {
+        "committedBeforeLoss": true,
+        "retrySaved": true,
+        "reloaded": true,
+        "restored": true,
+        "patchCount": 3,
+        "generationRequests": 0
+      },
+      "expectedInterruptedConsole": [
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "anonymousReportStatus": 307,
+      "anonymousFiles": [
+        {
+          "format": "pdf",
+          "status": 401
+        },
+        {
+          "format": "xlsx",
+          "status": 401
+        },
+        {
+          "format": "zip",
+          "status": 401
+        }
+      ],
+      "layout": {
+        "width": 1024,
+        "scrollWidth": 1024
+      },
+      "returnedToCampaign": true,
+      "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/report-page-after-1440-1789400149489"
+    },
+    {
+      "width": 390,
+      "fixed": true,
+      "completed": true,
+      "console": [],
+      "downloads": [
+        {
+          "format": "pdf",
+          "checksum": "cd365b822b95f8ac60a8900f4745afcfba2b3edc0a33fe199a93135c74a8f9d8",
+          "byteLength": 59459
+        },
+        {
+          "format": "xlsx",
+          "checksum": "f3b87fc2486447f193436610a3fa1a008b54331e8673167c351c5eb7d0c7f722",
+          "byteLength": 15878
+        },
+        {
+          "format": "zip",
+          "checksum": "217d616308009c4d7f9109a1ef2ce18b020086a43f4579b593803a82b8e410fe",
+          "byteLength": 61254
+        }
+      ],
+      "identity": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-09-14T15:36:04.692Z",
+        "deployment": {
+          "commit": "d6b0a4fc8d41",
+          "version": "0.60.0"
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "reportId": "4107e08b-7f3a-4757-8139-928081b39ddd",
+      "metadata": {
+        "committedBeforeLoss": true,
+        "retrySaved": true,
+        "reloaded": true,
+        "restored": true,
+        "patchCount": 3,
+        "generationRequests": 0
+      },
+      "expectedInterruptedConsole": [
+        "Failed to load resource: net::ERR_FAILED"
+      ],
+      "anonymousReportStatus": 307,
+      "anonymousFiles": [
+        {
+          "format": "pdf",
+          "status": 401
+        },
+        {
+          "format": "xlsx",
+          "status": 401
+        },
+        {
+          "format": "zip",
+          "status": 401
+        }
+      ],
+      "layout": {
+        "width": 292,
+        "scrollWidth": 292
+      },
+      "returnedToCampaign": true,
+      "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/report-page-after-390-1789400164391"
+    }
+  ],
+  "limits": [
+    "Synthetic retained reports created through the existing UI; does not prove professional usefulness.",
+    "One expected ERR_FAILED per journey was injected after a genuine successful PATCH; other console errors would fail.",
+    "Downloads match retained checksums; these checks do not add decision history to legacy files.",
+    "Database, worker and upgrade sources are unchanged; final GitHub CI and RLS are separate."
+  ]
+}
