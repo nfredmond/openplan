@@ -1,0 +1,44 @@
+{
+  "synthetic": true,
+  "cases": [
+    {
+      "supplied": 300,
+      "reportedTotal": 300,
+      "reportedAnalyzed": 300,
+      "retainedFacts": 300,
+      "firstSourceRetained": true,
+      "finalSourceRetained": true,
+      "themeCounts": [
+        {
+          "label": "SYNTHETIC routine",
+          "count": 299
+        },
+        {
+          "label": "SYNTHETIC distinct concern",
+          "count": 1
+        }
+      ],
+      "overallSentiment": "neutral",
+      "faithfulnessChecked": false
+    },
+    {
+      "supplied": 301,
+      "reportedTotal": 301,
+      "reportedAnalyzed": 300,
+      "retainedFacts": 300,
+      "firstSourceRetained": true,
+      "finalSourceRetained": false,
+      "themeCounts": [
+        {
+          "label": "SYNTHETIC routine",
+          "count": 300
+        }
+      ],
+      "overallSentiment": "neutral",
+      "faithfulnessChecked": false
+    }
+  ],
+  "limits": "Pure deterministic function. The 300-item control proves the final-source check can be true; the 301-item case loses the last distinct category. This is not a native route or browser reproduction.",
+  "invocation": "buildDeterministicSynthesis only; no model function invoked",
+  "networkInstrumented": false
+}
