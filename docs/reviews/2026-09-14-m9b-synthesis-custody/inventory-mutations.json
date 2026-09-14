@@ -1,0 +1,23 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "failed": []
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "failed": []
+    },
+    {
+      "case": "stale-relation-count",
+      "exitCode": 1,
+      "failed": [
+        "migration schema inventory reads every relation the migrations declare"
+      ]
+    }
+  ],
+  "restored": true,
+  "limits": "Checks SQL declaration census, not live PostgreSQL or browser behavior."
+}

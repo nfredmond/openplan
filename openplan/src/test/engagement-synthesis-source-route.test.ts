@@ -8,7 +8,7 @@ vi.mock("@/lib/observability/audit", () => ({ createApiAuditLogger: () => ({ inf
 import { GET, POST } from "@/app/api/engagement/campaigns/[campaignId]/synthesis/sources/route";
 const context = { params: Promise.resolve({ campaignId: sourceScope.campaignId }) };
 const path = `http://localhost/api/engagement/campaigns/${sourceScope.campaignId}/synthesis/sources`;
-function request(extra: Record<string, string> = {}, body: unknown = { requestId: sourceScope.requestId, selection: makeSourceSnapshot().selection }) {
+function request(extra: Record<string, string> = {}, body: unknown = { requestId: sourceScope.requestId, actorId: sourceActor, workspaceId: sourceScope.workspaceId, selection: makeSourceSnapshot().selection }) {
   return new NextRequest(path, { method: "POST", headers: { origin: "http://localhost", "content-type": "application/json", ...extra }, body: JSON.stringify(body) });
 }
 beforeEach(() => {
@@ -17,6 +17,42 @@ beforeEach(() => {
   mocks.rpc.mockReset();
 });
 describe("synthesis source API", () => {
+  it("refuses a capture after the signed-in actor or workspace changes", async () => {
+    for (const field of ["actorId", "workspaceId"]) {
+      const body = { requestId: sourceScope.requestId, actorId: sourceActor, workspaceId: sourceScope.workspaceId, selection: makeSourceSnapshot().selection, [field]: crypto.randomUUID() };
+      expect((await POST(request({}, body), context)).status).toBe(403);
+    }
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+  it("refuses stale browser identity for source reads and lists", async () => {
+    for (const query of ["", `?requestId=${sourceScope.requestId}`]) for (const header of ["x-openplan-expected-user", "x-openplan-expected-workspace"]) {
+      expect((await GET(new NextRequest(`${path}${query}`, { headers: { [header]: crypto.randomUUID() } }), context)).status).toBe(403);
+    }
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+  it("lists saved source metadata and forwards a complete keyset cursor", async () => {
+    const page = { campaignId: sourceScope.campaignId, workspaceId: sourceScope.workspaceId, pageSize: 25, entries: [], nextCursor: null };
+    mocks.rpc.mockResolvedValue({ data: page, error: null });
+    const response = await GET(new NextRequest(path), context);
+    expect(response.status).toBe(200); expect(await response.json()).toEqual(page);
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
+    expect(mocks.rpc).toHaveBeenLastCalledWith("list_engagement_synthesis_sources", { p_campaign: sourceScope.campaignId, p_before: null });
+    const before = { id: sourceScope.requestId, createdAt: sourceReceipt().createdAt };
+    expect((await GET(new NextRequest(`${path}?${new URLSearchParams({ beforeId: before.id, beforeCreatedAt: before.createdAt })}`), context)).status).toBe(200);
+    expect(mocks.rpc).toHaveBeenLastCalledWith("list_engagement_synthesis_sources", { p_campaign: sourceScope.campaignId, p_before: before });
+  });
+  it("refuses partial, mixed and unknown list query parameters", async () => {
+    for (const query of [`beforeId=${sourceScope.requestId}`, `beforeCreatedAt=${sourceReceipt().createdAt}`, `requestId=${sourceScope.requestId}&beforeId=${sourceScope.requestId}`, "unknown=1"]) {
+      expect((await GET(new NextRequest(`${path}?${query}`), context)).status).toBe(400);
+    }
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+  it("does not turn failed or foreign history into an empty list", async () => {
+    for (const result of [{ data: null, error: { code: "XX000" } }, { data: { campaignId: sourceScope.campaignId, workspaceId: sourceScope.requestId, pageSize: 25, entries: [], nextCursor: null }, error: null }]) {
+      mocks.rpc.mockResolvedValue(result);
+      expect((await GET(new NextRequest(path), context)).status).toBe(503);
+    }
+  });
   it("confirms a new retained source and an exact replay with the complete count", async () => {
     mocks.rpc.mockResolvedValueOnce({ data: sourceReceipt(), error: null }).mockResolvedValueOnce({ data: sourceReceipt(true), error: null });
     const first = await POST(request(), context); const retry = await POST(request(), context);
@@ -61,9 +97,9 @@ describe("synthesis source API", () => {
     expect((await method(req, context)).status).toBe(503);
     expect(mocks.rpc).not.toHaveBeenCalled();
   });
-  it("refuses invalid route identifiers, missing read identity and malformed request bytes", async () => {
+  it("refuses invalid route identifiers, invalid read identity and malformed request bytes", async () => {
     expect((await POST(request(), { params: Promise.resolve({ campaignId: "invalid" }) })).status).toBe(400);
-    expect((await GET(new NextRequest(path), context)).status).toBe(400);
+    expect((await GET(new NextRequest(`${path}?requestId=invalid`), context)).status).toBe(400);
     expect((await POST(new NextRequest(path, { method: "POST", headers: { origin: "http://localhost" }, body: "{" }), context)).status).toBe(400);
     expect(mocks.rpc).not.toHaveBeenCalled();
   });

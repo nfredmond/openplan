@@ -1,0 +1,66 @@
+import { act, fireEvent, render, screen, waitFor, cleanup } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { EngagementSynthesisSources } from "@/components/engagement/engagement-synthesis-sources";
+import { makeSourceSnapshot, sourceActor, sourceReceipt, sourceScope } from "./fixtures/engagement/synthesis-source";
+import { retainPendingSynthesisSource } from "@/lib/engagement/pending-synthesis-source";
+const mocks = vi.hoisted(() => ({ changed: null as null | ((event: string, session: { user: { id: string } } | null) => void) }));
+vi.mock("@/lib/supabase/client", () => ({ createClient: () => ({ auth: { onAuthStateChange: (callback: typeof mocks.changed) => { mocks.changed = callback; return { data: { subscription: { unsubscribe() {} } } }; } } }) }));
+const props = { userId: sourceActor, workspaceId: sourceScope.workspaceId, campaignId: sourceScope.campaignId, categories: [] };
+const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
+const history = { campaignId: sourceScope.campaignId, workspaceId: sourceScope.workspaceId, pageSize: 25, entries: [], nextCursor: null };
+const inspection = () => ({ ...sourceReceipt(), snapshot: makeSourceSnapshot() });
+beforeEach(() => { localStorage.clear(); mocks.changed = null; });
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+describe("retained source panel", () => {
+  it("opens complete original sources and searches beyond the 300th comment", async () => {
+    const { replayed: _, ...receipt } = sourceReceipt();
+    vi.stubGlobal("fetch", vi.fn<typeof fetch>().mockImplementation(async url => String(url).includes("?requestId=") ? json(inspection()) : json({ ...history, entries: [{ ...receipt, selection: makeSourceSnapshot().selection }] })));
+    render(<EngagementSynthesisSources {...props} />);
+    fireEvent.click(await screen.findByRole("button", { name: /Open saved source/ }));
+    expect(await screen.findByLabelText("Saved source inspection")).toBeTruthy();
+    fireEvent.change(screen.getByLabelText("Search all retained contributions"), { target: { value: "FINAL SOURCE TAIL" } });
+    expect(screen.getByText(/SYNTHETIC long concern é/, { selector: "p" }).textContent).toContain("FINAL SOURCE TAIL");
+    expect(screen.getByText(/1 matching contributions/)).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Comment: SYNTHETIC retained category" })).toBeTruthy();
+  });
+  it("restores an interrupted save and keeps confirmation after inspection fails", async () => {
+    const intent = { requestId: sourceScope.requestId, actorId: sourceActor, workspaceId: sourceScope.workspaceId, selection: { ...makeSourceSnapshot().selection, statuses: ["pending" as const], includeItems: false } };
+    retainPendingSynthesisSource(localStorage, { version: 1, userId: props.userId, workspaceId: props.workspaceId, campaignId: props.campaignId, intent });
+    const transport = vi.fn<typeof fetch>().mockImplementation(async (url, options) => options?.method === "POST" ? json(sourceReceipt(true)) : String(url).includes("?requestId=") ? json({}, 503) : json(history));
+    vi.stubGlobal("fetch", transport); render(<EngagementSynthesisSources {...props} />);
+    await screen.findByRole("button", { name: "Retry retained source request" });
+    expect(screen.getByLabelText("Comments and replies")).not.toBeChecked();
+    expect(screen.getByLabelText("Pending")).toBeChecked();
+    expect(screen.getByLabelText("Approved")).not.toBeChecked();
+    fireEvent.click(screen.getByRole("button", { name: "Retry retained source request" }));
+    expect(await screen.findByText(/^Source saved: 301/)).toBeTruthy();
+    expect(await screen.findByRole("button", { name: "Retry opening saved source" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Retry opening saved source" }));
+    await waitFor(() => expect(transport.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1));
+    expect(JSON.parse(String(transport.mock.calls.find(([, init]) => init?.method === "POST")![1]?.body))).toEqual(intent);
+    expect(localStorage.length).toBe(0);
+  });
+  it("shows the source controls when no approved comments exist and captures survey-only selection", async () => {
+    const transport = vi.fn<typeof fetch>().mockImplementation(async (_url, options) => options?.method === "POST" ? json({}, 503) : json(history));
+    vi.stubGlobal("fetch", transport); render(<EngagementSynthesisSources {...props} />);
+    await screen.findByText("No saved sources were found.");
+    fireEvent.click(screen.getByLabelText("Comments and replies"));
+    fireEvent.click(screen.getByRole("button", { name: "Save selected sources" }));
+    await screen.findByText(/The save is unconfirmed/);
+    const body = JSON.parse(String(transport.mock.calls.find(([, init]) => init?.method === "POST")![1]?.body));
+    expect(body.selection).toMatchObject({ includeItems: false, includeSurveys: true });
+    expect(localStorage.length).toBe(1);
+  });
+  it("erases private content on account change and ignores an in-flight read", async () => {
+    const { replayed: _, ...receipt } = sourceReceipt();
+    let resolve: (response: Response) => void = () => {};
+    vi.stubGlobal("fetch", vi.fn<typeof fetch>().mockImplementation(async url => String(url).includes("?requestId=") ? new Promise<Response>(done => { resolve = done; }) : json({ ...history, entries: [{ ...receipt, selection: makeSourceSnapshot().selection }] })));
+    render(<EngagementSynthesisSources {...props} />);
+    fireEvent.click(await screen.findByRole("button", { name: /Open saved source/ }));
+    act(() => { mocks.changed?.("SIGNED_OUT", null); });
+    await act(async () => { resolve(json(inspection())); });
+    expect(screen.getByRole("alert").textContent).toContain("signed-in account changed");
+    expect(screen.queryByLabelText("Saved source inspection")).toBeNull();
+    expect(screen.queryByRole("button", { name: /Open saved source/ })).toBeNull();
+  });
+});

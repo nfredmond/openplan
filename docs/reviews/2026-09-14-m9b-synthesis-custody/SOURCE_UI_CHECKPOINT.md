@@ -1,0 +1,25 @@
+# Retained source interface, implementation checkpoint
+
+September 14, 2026. This extends the source backend in 44dac9e5. It is not a release or completion of M9b. Browser acceptance and broad QA are being collected separately.
+
+The campaign Analysis tab now mounts a private source panel for staff independently of approved-comment counts. It selects contribution kinds, moderation statuses, a category and explicit dates; retains an exact request in user/workspace/campaign-scoped browser storage before sending; lists saved captures by keyset pages; and opens retained text with historical category labels, full-source search and display pages. Survey-only and empty campaigns can reach the source controls. Original typed fields remain inspectable. Attachment contents and spatial interpretation remain unassessed. The old capped synthesis generator remains separate and is not repaired by this capture/inspection checkpoint.
+
+POST binds the intended actor and workspace to current authentication. Browser reads supply expected actor/workspace headers. Account changes erase private panel state and invalidate in-flight reads. Failed persistence or acknowledgement retains the request ID. Confirmed persistence stays confirmed when cleanup or subsequent inspection fails. A separate action preserves unreadable/abandoned recovery bytes before allowing a fresh selection. Native capture still decides exact-retry identity.
+
+Migration 26 adds a staff-only metadata list with 25 visible records and a 26th-row lookahead. The continuation uses creation time plus UUID. Native tests share transaction timestamps to exercise tie handling. Candidate migrations and synthetic fixtures run inside rolled-back transactions. The list does not return source text.
+
+## Evidence and corrections
+
+The focused application run covers 68 source, route, recovery and panel checks. source-api-mutations.json records a passing baseline and harmless comment, plus 45 targeted detected faults. These cover the earlier custody checks and new actor/workspace binding, list scope/cursor, browser recovery, receipt identity, account-change clearing and a reintroduced 300-item inspection cap. Every mutated file was restored to its original bytes. Mocked transport and authentication do not establish real browser reachability or database policy behavior.
+
+The native candidate suite passed 16 tests: baseline/harmless source custody, seven source faults, baseline/harmless list pagination and five list faults. A first pagination assertion used SQL IS NOT NULL on a JSON value. The missing-lookahead mutation exposed that JSON null survived it; the assertion now requires an object and the fault fails for missing continuation. An application storage test initially supplied unchanged bytes while claiming to model lost readback; it now supplies semantically equal but different raw bytes and verifies no transport occurs. A DOM text query initially matched the visible paragraph and exact-field details; it now checks the visible paragraph explicitly.
+
+TypeScript and changed-file ESLint passed before the last list assertion/test additions. The connected caller and corrected inventory checks also passed in the focused run. Full QA and production browser evidence must be read from their final recorded result, not inferred from these checks.
+
+Both additive migrations were applied to the named isolated restore-target stack only, using Supabase migration up with its explicit workdir. PostgreSQL now reports 345 installed migrations through 20261014000026. No reset/drop was used. The older candidate-only proof script requiring a 343-migration baseline must not be rerun against this upgraded stack; registered native tests should use installed mode there.
+
+## Remaining full outcome
+
+Complete free deterministic preparation and category/question coverage, resumable optional generation with explicit unresolved dispatch, retained theme review/corrections, response/decision links and usable exports remain required by IMPLEMENTATION_BOUNDARY.md. No paid model is called by capture/list/inspection. Staff approval within the eventual agency workflow remains distinct from the user's removal of human software-release gates.
+
+The first full QA attempt after connection failed 54 tests across two files: 53 campaign-page tests initialized the real browser client without test credentials, and the copy guard detected two added jargon terms. The page suite now mocks the new client at its established server/client boundary and explicitly checks empty-consultation reachability and exact scope props. Its separate baseline/harmless and missing-entry/wrong-actor mutations are in page-handoff-mutations.json. The real client remains tested in the panel suite and will be exercised in the browser. Copy was reworded without changing the guard baseline. inventory-mutations.json records the corrected 29-test baseline, harmless survivor and stale-count failure; two earlier runner attempts refused an incorrect expected test count and absent replacement seam, and are not counted as mutation evidence.

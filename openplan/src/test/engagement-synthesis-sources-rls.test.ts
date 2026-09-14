@@ -7,19 +7,21 @@ import { requireContractVerificationStack } from "./helpers/contract-verificatio
 
 const fixture = readFileSync("src/test/fixtures/engagement/synthesis-source-custody.sql", "utf8");
 const migration = readFileSync("supabase/migrations/20261014000025_engagement_synthesis_sources.sql", "utf8");
+const listFixture = readFileSync("src/test/fixtures/engagement/synthesis-source-list.sql", "utf8");
+const listMigration = readFileSync("supabase/migrations/20261014000026_engagement_synthesis_source_list.sql", "utf8");
 const signature = "public.capture_engagement_synthesis_sources(uuid,uuid,jsonb)";
-function changeCapture(old: string, replacement: string) {
+function changeCapture(old: string, replacement: string, target = signature) {
   const literal = (value: string) => "'" + value.replaceAll("'", "''") + "'";
-  return `DO $fault$ DECLARE body text; BEGIN body=pg_get_functiondef('${signature}'::regprocedure); IF position(${literal(old)} IN body)=0 THEN RAISE EXCEPTION 'Missing source capture mutation seam'; END IF; EXECUTE replace(body,${literal(old)},${literal(replacement)}); END $fault$;`;
+  return `DO $fault$ DECLARE body text; BEGIN body=pg_get_functiondef('${target}'::regprocedure); IF position(${literal(old)} IN body)=0 THEN RAISE EXCEPTION 'Missing source capture mutation seam'; END IF; EXECUTE replace(body,${literal(old)},${literal(replacement)}); END $fault$;`;
 }
 
 /** Native fixtures and faults roll back. Explicit candidate mode also rolls back the unapplied migration. */
-function run(before = "") {
+function run(before = "", list = false) {
   const container = resolveLocalDbContainer(); requireContractVerificationStack(container);
-  const candidate = process.env.OPENPLAN_SYNTHESIS_SOURCE_CANDIDATE === "1" ? migration : "";
+  const candidate = process.env.OPENPLAN_SYNTHESIS_SOURCE_CANDIDATE === "1" ? migration + "\n" + listMigration : "";
   return execFileSync("docker", ["exec", "-i", container, "psql", "-U", "postgres", "-d", "postgres", "-X", "-qAt", "-v", "ON_ERROR_STOP=1"], {
     encoding: "utf8", stdio: ["pipe", "pipe", "pipe"], timeout: 45_000,
-    input: `BEGIN; SET LOCAL statement_timeout='30s'; SET LOCAL lock_timeout='2s';\n${candidate}\n${before}\n${fixture}\nROLLBACK;`,
+    input: `BEGIN; SET LOCAL statement_timeout='30s'; SET LOCAL lock_timeout='2s';\n${candidate}\n${before}\n${fixture}\n${list ? listFixture : ""}\nROLLBACK;`,
   }).trim().split("\n").at(-1);
 }
 describe.skipIf(!LIVE_RLS)("native synthesis source custody", () => {
@@ -39,5 +41,23 @@ describe.skipIf(!LIVE_RLS)("native synthesis source custody", () => {
     try { run(mutation); } catch (error) { failure = error; }
     expect(failure).toBeDefined();
     expect(String((failure as { stderr?: unknown }).stderr)).toContain(expected);
+  });
+});
+
+
+describe.skipIf(!LIVE_RLS)("native synthesis source history", () => {
+  it.each(["", "-- Harmless source list comment."])("paginates every retained source with staff-only metadata %s", before => {
+    expect(run(before, true)).toBe("synthesis-source-list-verified");
+  });
+  it.each([
+    ["inclusive cursor", "(s.created_at,s.id)<(before_time,before_id)", "(s.created_at,s.id)<=(before_time,before_id)", "Source list lost the second page"],
+    ["missing lookahead", "DESC LIMIT 26", "DESC LIMIT 25", "Source list page size or continuation was lost"],
+    ["first entry cursor", "ORDER BY created_at,id LIMIT 1", "ORDER BY created_at DESC,id DESC LIMIT 1", "Source list lost the second page"],
+    ["relative cursor", "IF p_before->>'createdAt' !~", "IF false AND p_before->>'createdAt' !~", "Source list accepted a relative cursor"],
+    ["viewer metadata", "('owner','admin','member')", "('owner','admin','member','viewer')", "Source list allowed revoked staff"],
+  ])("detects %s", (_label, old, replacement, expected) => {
+    let failure: unknown;
+    try { run(changeCapture(old, replacement, "public.list_engagement_synthesis_sources(uuid,jsonb)"), true); } catch (error) { failure = error; }
+    expect(failure).toBeDefined(); expect(String((failure as { stderr?: unknown }).stderr)).toContain(expected);
   });
 });

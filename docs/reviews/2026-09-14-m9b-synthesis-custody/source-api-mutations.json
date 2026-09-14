@@ -4,21 +4,21 @@
     {
       "case": "baseline",
       "exitCode": 0,
-      "passed": 47,
+      "passed": 68,
       "failed": [],
       "expectedOutcome": true
     },
     {
       "case": "harmless-comment",
       "exitCode": 0,
-      "passed": 47,
+      "passed": 68,
       "failed": [],
       "expectedOutcome": true
     },
     {
       "case": "outer-scope",
       "exitCode": 1,
-      "passed": 46,
+      "passed": 67,
       "failed": [
         "retained synthesis source verification refuses a receipt from a different workspace"
       ],
@@ -27,7 +27,7 @@
     {
       "case": "source-checksum",
       "exitCode": 1,
-      "passed": 45,
+      "passed": 66,
       "failed": [
         "synthesis source API keeps failed or corrupt reads unavailable",
         "retained synthesis source verification refuses changed bytes even when the content would still parse"
@@ -37,7 +37,7 @@
     {
       "case": "inner-scope",
       "exitCode": 1,
-      "passed": 45,
+      "passed": 66,
       "failed": [
         "retained synthesis source verification refuses inner workspace even with a matching outer hash",
         "retained synthesis source verification refuses campaign owner even with a matching outer hash"
@@ -47,7 +47,7 @@
     {
       "case": "counts",
       "exitCode": 1,
-      "passed": 45,
+      "passed": 66,
       "failed": [
         "retained synthesis source verification refuses missing counted source even with a matching outer hash",
         "retained synthesis source verification refuses campaign total smaller than selection even with a matching outer hash"
@@ -57,7 +57,7 @@
     {
       "case": "source-duplicates",
       "exitCode": 1,
-      "passed": 46,
+      "passed": 67,
       "failed": [
         "retained synthesis source verification refuses duplicate source even with a matching outer hash"
       ],
@@ -66,7 +66,7 @@
     {
       "case": "selected-kinds",
       "exitCode": 1,
-      "passed": 46,
+      "passed": 67,
       "failed": [
         "retained synthesis source verification refuses excluded comment kind even with a matching outer hash"
       ],
@@ -75,7 +75,7 @@
     {
       "case": "contribution-scope",
       "exitCode": 1,
-      "passed": 46,
+      "passed": 67,
       "failed": [
         "retained synthesis source verification refuses another campaign source even with a matching outer hash"
       ],
@@ -84,7 +84,7 @@
     {
       "case": "unselected-metadata",
       "exitCode": 1,
-      "passed": 46,
+      "passed": 67,
       "failed": [
         "retained synthesis source verification refuses unexpected private contact even with a matching outer hash"
       ],
@@ -93,7 +93,7 @@
     {
       "case": "selection-status-dates",
       "exitCode": 1,
-      "passed": 45,
+      "passed": 66,
       "failed": [
         "retained synthesis source verification refuses out-of-scope status even with a matching outer hash",
         "retained synthesis source verification refuses out-of-scope date even with a matching outer hash"
@@ -103,7 +103,7 @@
     {
       "case": "answer-session",
       "exitCode": 1,
-      "passed": 46,
+      "passed": 67,
       "failed": [
         "retained synthesis source verification refuses missing session even with a matching outer hash"
       ],
@@ -112,7 +112,7 @@
     {
       "case": "definition-reference",
       "exitCode": 1,
-      "passed": 46,
+      "passed": 67,
       "failed": [
         "retained synthesis source verification refuses lost definition even with a matching outer hash"
       ],
@@ -121,7 +121,7 @@
     {
       "case": "definition-integrity",
       "exitCode": 1,
-      "passed": 45,
+      "passed": 66,
       "failed": [
         "retained synthesis source verification refuses changed historical bytes even with a matching outer hash",
         "retained synthesis source verification refuses foreign definition even with a matching outer hash"
@@ -131,7 +131,7 @@
     {
       "case": "definition-duplicates",
       "exitCode": 1,
-      "passed": 46,
+      "passed": 67,
       "failed": [
         "retained synthesis source verification refuses duplicate category identities inside a validly hashed historical definition"
       ],
@@ -140,7 +140,7 @@
     {
       "case": "item-category",
       "exitCode": 1,
-      "passed": 46,
+      "passed": 67,
       "failed": [
         "retained synthesis source verification refuses unselected category even with a matching outer hash"
       ],
@@ -149,7 +149,7 @@
     {
       "case": "answer-category",
       "exitCode": 1,
-      "passed": 46,
+      "passed": 67,
       "failed": [
         "retained synthesis source verification refuses missing selected question even with a matching outer hash"
       ],
@@ -158,7 +158,7 @@
     {
       "case": "selection-unknown-field",
       "exitCode": 1,
-      "passed": 46,
+      "passed": 67,
       "failed": [
         "retained synthesis source verification refuses unknown/duplicate/empty selection and inverted dates"
       ],
@@ -167,7 +167,7 @@
     {
       "case": "selection-uniqueness",
       "exitCode": 1,
-      "passed": 46,
+      "passed": 67,
       "failed": [
         "retained synthesis source verification refuses unknown/duplicate/empty selection and inverted dates"
       ],
@@ -176,7 +176,7 @@
     {
       "case": "selection-empty-kinds",
       "exitCode": 1,
-      "passed": 46,
+      "passed": 67,
       "failed": [
         "retained synthesis source verification refuses unknown/duplicate/empty selection and inverted dates"
       ],
@@ -185,7 +185,7 @@
     {
       "case": "selection-date-order",
       "exitCode": 1,
-      "passed": 46,
+      "passed": 67,
       "failed": [
         "retained synthesis source verification refuses unknown/duplicate/empty selection and inverted dates"
       ],
@@ -194,7 +194,7 @@
     {
       "case": "agent-write-refusal",
       "exitCode": 1,
-      "passed": 44,
+      "passed": 65,
       "failed": [
         "synthesis source API refuses unsupported agent write header x-openplan-assistant-execution-source",
         "synthesis source API refuses unsupported agent write header x-openplan-assistant-input-hash",
@@ -205,7 +205,7 @@
     {
       "case": "browser-origin",
       "exitCode": 1,
-      "passed": 46,
+      "passed": 67,
       "failed": [
         "synthesis source API uses the real origin guard before reading or saving source selections"
       ],
@@ -214,7 +214,7 @@
     {
       "case": "request-size",
       "exitCode": 1,
-      "passed": 46,
+      "passed": 67,
       "failed": [
         "synthesis source API bounds the selection request without truncating the selected corpus"
       ],
@@ -223,7 +223,7 @@
     {
       "case": "receipt-scope",
       "exitCode": 1,
-      "passed": 46,
+      "passed": 67,
       "failed": [
         "synthesis source API refuses a missing or foreign receipt"
       ],
@@ -232,8 +232,9 @@
     {
       "case": "private-cache",
       "exitCode": 1,
-      "passed": 44,
+      "passed": 64,
       "failed": [
+        "synthesis source API lists saved source metadata and forwards a complete keyset cursor",
         "synthesis source API confirms a new retained source and an exact replay with the complete count",
         "synthesis source API bounds the selection request without truncating the selected corpus",
         "synthesis source API reads and verifies saved source bytes without re-reading current comments"
@@ -243,22 +244,208 @@
     {
       "case": "rpc-request-id",
       "exitCode": 1,
-      "passed": 45,
+      "passed": 66,
       "failed": [
         "synthesis source API reads and verifies saved source bytes without re-reading current comments",
         "retained synthesis source verification loads through the scoped RPC and refuses a failed read instead of returning no sources"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "capture-actor",
+      "exitCode": 1,
+      "passed": 67,
+      "failed": [
+        "synthesis source API refuses a capture after the signed-in actor or workspace changes"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "capture-workspace",
+      "exitCode": 1,
+      "passed": 67,
+      "failed": [
+        "synthesis source API refuses a capture after the signed-in actor or workspace changes"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "read-actor",
+      "exitCode": 1,
+      "passed": 67,
+      "failed": [
+        "synthesis source API refuses stale browser identity for source reads and lists"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "read-workspace",
+      "exitCode": 1,
+      "passed": 67,
+      "failed": [
+        "synthesis source API refuses stale browser identity for source reads and lists"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "list-scope",
+      "exitCode": 1,
+      "passed": 67,
+      "failed": [
+        "synthesis source API does not turn failed or foreign history into an empty list"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "list-cursor",
+      "exitCode": 1,
+      "passed": 67,
+      "failed": [
+        "synthesis source API lists saved source metadata and forwards a complete keyset cursor"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "list-entry-scope",
+      "exitCode": 1,
+      "passed": 67,
+      "failed": [
+        "saved source list parsing accepts an empty page and a complete page with matching continuation"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "list-entry-cursor",
+      "exitCode": 1,
+      "passed": 67,
+      "failed": [
+        "saved source list parsing accepts an empty page and a complete page with matching continuation"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "pending-context",
+      "exitCode": 1,
+      "passed": 67,
+      "failed": [
+        "pending synthesis source recovery isolates users, workspaces and campaigns without erasing other copies"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "pending-replacement",
+      "exitCode": 1,
+      "passed": 67,
+      "failed": [
+        "pending synthesis source recovery refuses mismatched account intent and replacement or clearing of another pending request"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "pending-readback",
+      "exitCode": 1,
+      "passed": 67,
+      "failed": [
+        "pending synthesis source recovery refuses storage that throws or silently loses the retained bytes"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "pending-cleanup-scope",
+      "exitCode": 1,
+      "passed": 67,
+      "failed": [
+        "pending synthesis source recovery refuses mismatched account intent and replacement or clearing of another pending request"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "pending-cleanup-check",
+      "exitCode": 1,
+      "passed": 67,
+      "failed": [
+        "pending synthesis source recovery keeps a confirmed save distinct from cleanup failure"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "pending-archive-copy",
+      "exitCode": 1,
+      "passed": 67,
+      "failed": [
+        "pending synthesis source recovery archives unreadable bytes only after a verified recovery copy"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "pending-missing-or-changed",
+      "exitCode": 1,
+      "passed": 67,
+      "failed": [
+        "pending synthesis source recovery refuses changed or missing recovery copies before transport"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "pending-receipt-scope",
+      "exitCode": 1,
+      "passed": 67,
+      "failed": [
+        "pending synthesis source recovery keeps malformed and foreign receipts for recovery"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "pending-retry-id",
+      "exitCode": 1,
+      "passed": 66,
+      "failed": [
+        "retained source panel restores an interrupted save and keeps confirmation after inspection fails",
+        "pending synthesis source recovery recovers lost acknowledgements with exactly the original request"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "inspection-tail",
+      "exitCode": 1,
+      "passed": 67,
+      "failed": [
+        "retained source panel opens complete original sources and searches beyond the 300th comment"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "panel-restored-selection",
+      "exitCode": 1,
+      "passed": 67,
+      "failed": [
+        "retained source panel restores an interrupted save and keeps confirmation after inspection fails"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "panel-lost-identity",
+      "exitCode": 1,
+      "passed": 67,
+      "failed": [
+        "retained source panel erases private content on account change and ignores an in-flight read"
       ],
       "expectedOutcome": true
     }
   ],
   "sourceSha256": {
     "src/lib/engagement/synthesis-sources-server.ts": "c9862e4bd3301f6243c2a723c871a15dd9be71591266f726232e6322c6d39393",
-    "src/app/api/engagement/campaigns/[campaignId]/synthesis/sources/route.ts": "d8ba85e041ceaddd4a7491757802397b3d3f56b6e1bb4f1069a4a0dfe6276871",
-    "src/lib/engagement/synthesis-sources.ts": "751be5c381f3b4cff4c875792d58d0e783e1a1c490f6b06272151c201260f24a"
+    "src/app/api/engagement/campaigns/[campaignId]/synthesis/sources/route.ts": "c863ed553c5d7aa55163d56667d6b093f159e015403920bf5bdc79bd0d6c7eaa",
+    "src/lib/engagement/synthesis-sources.ts": "cabb79e9b047f5b5273523d4633f3d55666b4e9db6d484d19b5a58da73e883b1",
+    "src/lib/engagement/pending-synthesis-source.ts": "0b536c0382d054f6f0258ece35d1ec36601dc28c018e379d40348a1ffc5b3180",
+    "src/components/engagement/engagement-synthesis-sources.tsx": "2b4990f991f73ee80b1bc5222d7b3840d1800eb7b5e7d7d693a618ca9df3e2ac",
+    "src/components/engagement/synthesis-source-inspection.tsx": "8823c6741cec9d9894c5a4c55fef4fa678125d9f85eb232058641231865b1ef7"
   },
   "testSha256": {
-    "src/test/engagement-synthesis-sources.test.ts": "f7e93b2a06bbb0dd11f64050d220425dbb593f8ede5142d1892124e0a0459a7f",
-    "src/test/engagement-synthesis-source-route.test.ts": "29abfefc76e7b2af63a719f1d04ed91efb7fe1a57d56bfb794113deec86b2c97"
+    "src/test/engagement-synthesis-sources.test.ts": "35e8dd89e404a869500985c69b4e06a06aaddd95f172f97210da16931b965f0a",
+    "src/test/engagement-synthesis-source-route.test.ts": "e3e6bcb2015f73bb97b4807bbe71ac5b84561ed26bc9dd6123f13be95857fd6b",
+    "src/test/pending-synthesis-source.test.ts": "cc12996a22fe0db61535db189bc2895439315c84ccb4971e58c047127c045481",
+    "src/test/engagement-synthesis-source-panel.test.tsx": "f75ff3f320a6c03ae608e436d065cba6f563d0d3324cc8fdd9d40291e257b71f"
   },
   "limits": "Real route, selection schema, byte verification and browser-origin guard with mocked authentication/database and audit logger. Native database roles/capture are proved separately. This does not prove browser reachability, complete database query coverage by itself, worker recovery, synthesis quality, reviews or exports."
 }

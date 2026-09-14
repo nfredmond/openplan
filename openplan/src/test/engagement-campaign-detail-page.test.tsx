@@ -418,6 +418,10 @@ vi.mock("@/components/engagement/engagement-bulk-moderation", () => ({
   EngagementBulkModeration: () => <div data-testid="engagement-bulk-moderation" />,
 }));
 
+// This suite checks the server page's scope handoff; the actual client is tested in engagement-synthesis-source-panel.test.tsx.
+vi.mock("@/components/engagement/engagement-synthesis-sources", () => ({
+  EngagementSynthesisSources: (props: { userId: string; workspaceId: string; campaignId: string; categories: unknown[] }) => <div data-testid="synthesis-source-scope">{JSON.stringify(props)}</div>,
+}));
 vi.mock("@/components/engagement/engagement-synthesis-panel", () => ({
   EngagementSynthesisPanel: () => <div data-testid="engagement-synthesis-panel" />,
 }));
@@ -459,6 +463,14 @@ async function renderPage(searchParams?: { created?: string; tab?: string }) {
 }
 
 describe("EngagementCampaignDetailPage", () => {
+  it("mounts retained sources for an empty consultation with exact staff scope", async () => {
+    itemsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+    await renderPage({ tab: "analysis" });
+    expect(JSON.parse(screen.getByTestId("synthesis-source-scope").textContent!)).toMatchObject({
+      userId: "50000000-0000-4000-8000-000000000003", workspaceId: "50000000-0000-4000-8000-000000000002", campaignId: "50000000-0000-4000-8000-000000000001",
+    });
+    expect(screen.queryByTestId("engagement-synthesis-panel")).not.toBeInTheDocument();
+  });
   it("shows a retry instead of an empty staff-response builder when the read fails", async () => {
     closeLoopReadError = { message: "SYNTHETIC connection lost" };
     await renderPage();

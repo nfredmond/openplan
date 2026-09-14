@@ -495,11 +495,12 @@ const EXPECTED = {
   // Installed isolated catalog confirms all three; no application view or policy is added.
   // Migration 20 adds the private public-translation mapping table, RLS and no policies.
   // Migrations 21/22 add two private tables; 23 adds one service-only public-copy view.
-  // Excludes extension-owned relations: 252 tables, 14 views, 252 RLS tables.
-  relations: 266,
-  tables: 252,
+  // Migration 25 adds one private synthesis source table, RLS enabled and no policies.
+  // Verified with the candidate in a rolled-back native catalog transaction: 253 tables, 14 views.
+  relations: 267,
+  tables: 253,
   views: 14,
-  rlsEnabledTables: 252,
+  rlsEnabledTables: 253,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

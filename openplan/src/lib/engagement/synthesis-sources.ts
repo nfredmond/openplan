@@ -17,7 +17,7 @@ export const synthesisSourceSelectionSchema = z.object({
   if (selection.from && selection.to && Date.parse(selection.to) <= Date.parse(selection.from)) context.addIssue({ code: "custom", message: "End must follow start." });
 });
 export type SynthesisSourceSelection = z.infer<typeof synthesisSourceSelectionSchema>;
-export const synthesisSourceIntentSchema = z.object({ requestId: uuid, selection: synthesisSourceSelectionSchema }).strict();
+export const synthesisSourceIntentSchema = z.object({ requestId: uuid, actorId: uuid, workspaceId: uuid, selection: synthesisSourceSelectionSchema }).strict();
 export type SynthesisSourceIntent = z.infer<typeof synthesisSourceIntentSchema>;
 
 export const synthesisSourceCountsSchema = z.object({
@@ -51,3 +51,20 @@ export const synthesisSourceSnapshotSchema = z.object({
   definitions: z.array(z.object({ id: uuid, campaignId: uuid, sha256: z.string().regex(/^[a-f0-9]{64}$/), definitionText: z.string() }).strict()),
 }).strict();
 export type SynthesisSourceSnapshot = z.infer<typeof synthesisSourceSnapshotSchema>;
+
+export const synthesisSourceListEntrySchema = synthesisSourceReceiptSchema.omit({ replayed: true }).extend({ selection: synthesisSourceSelectionSchema }).strict();
+export type SynthesisSourceListEntry = z.infer<typeof synthesisSourceListEntrySchema>;
+export const synthesisSourceCursorSchema = z.object({ createdAt: date, id: uuid }).strict();
+export type SynthesisSourceCursor = z.infer<typeof synthesisSourceCursorSchema>;
+export const synthesisSourceListSchema = z.object({
+  campaignId: uuid, workspaceId: uuid, pageSize: z.literal(25),
+  entries: z.array(synthesisSourceListEntrySchema).max(25), nextCursor: synthesisSourceCursorSchema.nullable(),
+}).strict().superRefine((page, context) => {
+  if (new Set(page.entries.map(entry => entry.requestId)).size !== page.entries.length || page.entries.some(entry => entry.campaignId !== page.campaignId || entry.workspaceId !== page.workspaceId)) {
+    context.addIssue({ code: "custom", message: "Saved source list scope or identifiers differ." });
+  }
+  const last = page.entries.at(-1);
+  if (page.nextCursor && (!last || page.entries.length !== 25 || page.nextCursor.id !== last.requestId || page.nextCursor.createdAt !== last.createdAt)) {
+    context.addIssue({ code: "custom", message: "Saved source continuation differs." });
+  }
+});

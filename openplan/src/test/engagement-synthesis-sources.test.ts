@@ -87,3 +87,23 @@ describe("retained synthesis source verification", () => {
     await expect(loadSynthesisSource({ rpc }, sourceScope)).rejects.toThrow("unavailable");
   });
 });
+
+// The list must preserve its scope and carry a cursor for the last complete page.
+describe("saved source list parsing", () => {
+  it("accepts an empty page and a complete page with matching continuation", async () => {
+    const { synthesisSourceListSchema } = await import("@/lib/engagement/synthesis-sources");
+    const snapshot = makeSourceSnapshot();
+    const entry = { requestId: snapshot.requestId, campaignId: snapshot.campaignId, workspaceId: snapshot.workspaceId, createdAt: snapshot.capturedAt, snapshotSha256: "a".repeat(64), counts: snapshot.counts, selection: snapshot.selection };
+    const base = { campaignId: snapshot.campaignId, workspaceId: snapshot.workspaceId, pageSize: 25, entries: [], nextCursor: null };
+    expect(synthesisSourceListSchema.parse(base)).toEqual(base);
+    const entries = Array.from({ length: 25 }, (_, i) => ({ ...entry, requestId: `f0000000-0000-4000-8000-${String(i).padStart(12, "0")}` }));
+    const page = { ...base, entries, nextCursor: { id: entries[24].requestId, createdAt: entry.createdAt } };
+    expect(synthesisSourceListSchema.parse(page)).toEqual(page);
+    for (const broken of [
+      { ...page, entries: [entry, entry], nextCursor: null },
+      { ...page, entries: [{ ...entry, workspaceId: crypto.randomUUID() }], nextCursor: null },
+      { ...page, nextCursor: { ...page.nextCursor, id: entry.requestId } },
+      { ...page, entries: entries.slice(0, 24) },
+    ]) expect(synthesisSourceListSchema.safeParse(broken).success).toBe(false);
+  });
+});

@@ -1,0 +1,30 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "passed": 58,
+      "failed": []
+    },
+    {
+      "case": "harmless-comment",
+      "passed": 58,
+      "failed": []
+    },
+    {
+      "case": "missing-survey-only-entry",
+      "passed": 57,
+      "failed": [
+        "EngagementCampaignDetailPage mounts retained sources for an empty consultation with exact staff scope"
+      ]
+    },
+    {
+      "case": "wrong-actor-prop",
+      "passed": 57,
+      "failed": [
+        "EngagementCampaignDetailPage mounts retained sources for an empty consultation with exact staff scope"
+      ]
+    }
+  ],
+  "restored": true,
+  "limits": "Server page component handoff with mocked client components; actual source client tested separately. Browser navigation is a separate check."
+}

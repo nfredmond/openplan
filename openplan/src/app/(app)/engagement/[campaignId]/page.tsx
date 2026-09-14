@@ -62,6 +62,7 @@ import { loadCampaignContextLayerSummaries, loadParticipantContextLayers } from 
 import { getPublicPortalState } from "@/lib/engagement/public-portal";
 import { loadPortalPlaceCandidates } from "@/lib/engagement/public-portal-data";
 import { loadCampaignAccess } from "@/lib/engagement/api";
+import { EngagementSynthesisSources } from "@/components/engagement/engagement-synthesis-sources";
 import { EngagementSynthesisPanel } from "@/components/engagement/engagement-synthesis-panel";
 import type { HeatmapPoint } from "@/components/engagement/participation-heatmap-map";
 import { SpatialHotspotTuner } from "@/components/engagement/spatial-hotspot-tuner";
@@ -1232,6 +1233,7 @@ export default async function EngagementCampaignDetailPage({
           blank space between a planner and the moderation queue. Setup and
           moderation surfaces sit above them.
         */}
+        {canManageContextLayers ? <EngagementSynthesisSources userId={user.id} workspaceId={campaign.workspace_id} campaignId={campaign.id} categories={builderCategories} /> : null}
         {counts.statusCounts.approved > 0 ? (
           <article className="module-section-surface">
             <div className="module-section-header">

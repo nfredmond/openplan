@@ -5,7 +5,7 @@ import { loadCampaignAccess } from "@/lib/engagement/api";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { requireProviderBrowserOrigin } from "@/lib/assistant/provider-server";
 import { readBytesWithLimitStreaming } from "@/lib/http/body-limit";
-import { synthesisSourceIntentSchema, synthesisSourceReceiptSchema } from "@/lib/engagement/synthesis-sources";
+import { synthesisSourceIntentSchema, synthesisSourceReceiptSchema, synthesisSourceListSchema, synthesisSourceCursorSchema } from "@/lib/engagement/synthesis-sources";
 import { loadSynthesisSource } from "@/lib/engagement/synthesis-sources-server";
 
 const headers = { "Cache-Control": "private, no-store" };
@@ -36,9 +36,11 @@ export async function POST(request: NextRequest, context: Context) {
     const client = await createClient();
     const { data: { user } } = await client.auth.getUser();
     if (!user) return NextResponse.json({ kind: "forbidden", error: "Sign in to save the synthesis source." }, { status: 401, headers });
+    if (intent.data.actorId !== user.id) return NextResponse.json({ kind: "forbidden", error: "The signed-in account changed. Reopen the source selection." }, { status: 403, headers });
     const access = await loadCampaignAccess(client, params.data.campaignId, user.id, "engagement.write");
     if (access.error) return NextResponse.json(unavailable, { status: 503, headers });
     if (!access.campaign || !access.allowed) return NextResponse.json({ kind: "forbidden", error: "Staff campaign access is required." }, { status: 403, headers });
+    if (intent.data.workspaceId !== access.campaign.workspace_id) return NextResponse.json({ kind: "forbidden", error: "The campaign workspace changed. Reopen the source selection." }, { status: 403, headers });
     const result = await client.rpc("capture_engagement_synthesis_sources", { p_campaign: params.data.campaignId, p_request: intent.data.requestId, p_selection: intent.data.selection });
     if (result.error) {
       if (result.error.code === "PT409") return NextResponse.json({ kind: "conflict", error: "This request already belongs to a different source selection." }, { status: 409, headers });
@@ -60,15 +62,25 @@ export async function POST(request: NextRequest, context: Context) {
 export async function GET(request: NextRequest, context: Context) {
   try {
     const params = paramsSchema.safeParse(await context.params);
-    const requestId = z.string().uuid().safeParse(request.nextUrl.searchParams.get("requestId"));
-    if (!params.success || !requestId.success) return NextResponse.json(invalid, { status: 400, headers });
+    const query = z.object({ requestId: z.string().uuid().optional(), beforeId: z.string().uuid().optional(), beforeCreatedAt: z.string().datetime({ offset: true }).optional() }).strict().safeParse(Object.fromEntries(request.nextUrl.searchParams));
+    if (!params.success || !query.success || (query.data.requestId && (query.data.beforeId || query.data.beforeCreatedAt)) || Boolean(query.data.beforeId) !== Boolean(query.data.beforeCreatedAt)) return NextResponse.json(invalid, { status: 400, headers });
     const client = await createClient();
     const { data: { user } } = await client.auth.getUser();
     if (!user) return NextResponse.json({ kind: "forbidden", error: "Sign in to read the saved source." }, { status: 401, headers });
     const access = await loadCampaignAccess(client, params.data.campaignId, user.id, "engagement.write");
     if (access.error) return NextResponse.json(unavailable, { status: 503, headers });
     if (!access.campaign || !access.allowed) return NextResponse.json({ kind: "forbidden", error: "Staff campaign access is required." }, { status: 403, headers });
-    const saved = await loadSynthesisSource(client, { campaignId: params.data.campaignId, workspaceId: access.campaign.workspace_id, requestId: requestId.data });
+    if ((request.headers.has("x-openplan-expected-user") && request.headers.get("x-openplan-expected-user") !== user.id)
+      || (request.headers.has("x-openplan-expected-workspace") && request.headers.get("x-openplan-expected-workspace") !== access.campaign.workspace_id)) return NextResponse.json({ kind: "forbidden", error: "The campaign session changed. Reopen this campaign." }, { status: 403, headers });
+    if (!query.data.requestId) {
+      const before = query.data.beforeId ? synthesisSourceCursorSchema.parse({ id: query.data.beforeId, createdAt: query.data.beforeCreatedAt }) : null;
+      const listed = await client.rpc("list_engagement_synthesis_sources", { p_campaign: params.data.campaignId, p_before: before });
+      if (listed.error) return NextResponse.json(unavailable, { status: 503, headers });
+      const page = synthesisSourceListSchema.parse(listed.data);
+      if (page.campaignId !== params.data.campaignId || page.workspaceId !== access.campaign.workspace_id) throw new Error("Saved source list scope differs");
+      return NextResponse.json(page, { headers });
+    }
+    const saved = await loadSynthesisSource(client, { campaignId: params.data.campaignId, workspaceId: access.campaign.workspace_id, requestId: query.data.requestId });
     return NextResponse.json(saved, { headers });
   } catch {
     return NextResponse.json(unavailable, { status: 503, headers });
