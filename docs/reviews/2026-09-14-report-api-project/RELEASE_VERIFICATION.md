@@ -1,6 +1,6 @@
 # v0.61.1 optional-project report API fix
 
-September 14, 2026. Local engineering acceptance is complete. Final release-commit CI and publication are recorded separately; this document alone does not establish a published tag.
+September 14, 2026. Local engineering acceptance is complete. Final release-commit CI passed and v0.61.1 is published; [publication](PUBLICATION.md) records the exact tag and evidence.
 
 The generic report detail API returned 500 for a saved consultation report whose project_id is null. It tried to compare a project UUID column with null before reading the report sections and artifacts. The actual producer stores a consultation-owned board_packet without a project. The specialized report page already worked; v0.61 documented the remaining API defect.
 
