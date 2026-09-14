@@ -1,0 +1,230 @@
+{
+  "sourceSha256": {
+    "route": "73094a9f95d6496642bcb6ce445ce860972fe16d0b67372350b41152e0e0d1cc",
+    "server": "6c3662048ba0b421a5384468daf12668dd0210625fb0e08b4a692e6ec49a739b",
+    "read": "a7a8a1bc8dd77ee54c6e769d51ce14ecd316a2371bd343106eced8b2e080735a"
+  },
+  "testSha256": "e8b910804edc212139d26091c0ba7bb81d128f85feab6b986ee0461bca07f82a",
+  "testCount": 30,
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/publication-command-controls/20260913T170346",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-route",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-server",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-read",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "origin",
+      "outcome": "killed",
+      "expectedFailure": "refuses foreign origin",
+      "failedAssertions": [
+        "publication command integration refuses foreign origin before authentication"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "agent-execution-source",
+      "outcome": "killed",
+      "expectedFailure": "refuses even empty unregistered agent marker x-openplan-assistant-execution-source",
+      "failedAssertions": [
+        "publication command integration refuses even empty unregistered agent marker x-openplan-assistant-execution-source"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "agent-input-hash",
+      "outcome": "killed",
+      "expectedFailure": "refuses even empty unregistered agent marker x-openplan-assistant-input-hash",
+      "failedAssertions": [
+        "publication command integration refuses even empty unregistered agent marker x-openplan-assistant-input-hash"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "agent-approval-id",
+      "outcome": "killed",
+      "expectedFailure": "refuses even empty unregistered agent marker x-openplan-assistant-approval-id",
+      "failedAssertions": [
+        "publication command integration refuses even empty unregistered agent marker x-openplan-assistant-approval-id"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "publisher",
+      "outcome": "killed",
+      "expectedFailure": "publishes once with the authenticated publisher",
+      "failedAssertions": [
+        "publication command integration publishes once with the authenticated publisher and exact references, then verifies raw retained output"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "publication-join",
+      "outcome": "killed",
+      "expectedFailure": "publishes once with the authenticated publisher",
+      "failedAssertions": [
+        "publication command integration publishes once with the authenticated publisher and exact references, then verifies raw retained output"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "parse-publication",
+      "outcome": "killed",
+      "expectedFailure": "publishes once with the authenticated publisher",
+      "failedAssertions": [
+        "publication command integration publishes once with the authenticated publisher and exact references, then verifies raw retained output"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "input-validation",
+      "outcome": "killed",
+      "expectedFailure": "validates direct helper input",
+      "failedAssertions": [
+        "publication command integration validates direct helper input before calling SQL"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "replace-request",
+      "outcome": "killed",
+      "expectedFailure": "publishes once with the authenticated publisher",
+      "failedAssertions": [
+        "publication command integration publishes once with the authenticated publisher and exact references, then verifies raw retained output"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-refusal",
+      "outcome": "killed",
+      "expectedFailure": "preserves transaction refusal PT409",
+      "failedAssertions": [
+        "publication command integration preserves transaction refusal PT409 without evidence reads"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "trust-receipt",
+      "outcome": "killed",
+      "expectedFailure": "withholds a receipt when words",
+      "failedAssertions": [
+        "publication command integration withholds a receipt when words does not match verified evidence"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "source-checksum",
+      "outcome": "killed",
+      "expectedFailure": "withholds a receipt when source_checksum",
+      "failedAssertions": [
+        "publication command integration withholds a receipt when source_checksum does not match verified evidence"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "skip-generation",
+      "outcome": "killed",
+      "expectedFailure": "publishes once with the authenticated publisher",
+      "failedAssertions": [
+        "publication command integration publishes once with the authenticated publisher and exact references, then verifies raw retained output"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "deduplicate",
+      "outcome": "killed",
+      "expectedFailure": "publishes once with the authenticated publisher",
+      "failedAssertions": [
+        "publication command integration publishes once with the authenticated publisher and exact references, then verifies raw retained output"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "concurrency",
+      "outcome": "killed",
+      "expectedFailure": "bounds concurrent evidence reads",
+      "failedAssertions": [
+        "publication command integration bounds concurrent evidence reads and retains every field across batches"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-batch",
+      "outcome": "killed",
+      "expectedFailure": "bounds concurrent evidence reads",
+      "failedAssertions": [
+        "publication command integration bounds concurrent evidence reads and retains every field across batches"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "total-timeout",
+      "outcome": "killed",
+      "expectedFailure": "stops after the shared command deadline",
+      "failedAssertions": [
+        "publication command integration stops after the shared command deadline without starting evidence reads"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-read-deadline",
+      "outcome": "killed",
+      "expectedFailure": "passes the same total deadline",
+      "failedAssertions": [
+        "publication command integration passes the same total deadline into in-flight evidence reads"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-final-deadline",
+      "outcome": "killed",
+      "expectedFailure": "passes the same total deadline",
+      "failedAssertions": [
+        "publication command integration passes the same total deadline into in-flight evidence reads"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-caller-deadline",
+      "outcome": "killed",
+      "expectedFailure": "passes the same total deadline",
+      "failedAssertions": [
+        "publication command integration passes the same total deadline into in-flight evidence reads"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "start-aborted-read",
+      "outcome": "killed",
+      "expectedFailure": "does not start a generation RPC",
+      "failedAssertions": [
+        "publication command integration does not start a generation RPC when its caller deadline already expired"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Native POST and helper using actual output codec/readers with mocked authenticated RPC transport. Does not establish SQL privileges, concurrent writes, browser recovery or provider execution."
+}

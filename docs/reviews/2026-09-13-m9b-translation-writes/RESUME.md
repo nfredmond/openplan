@@ -1,3 +1,7 @@
+# Latest publication-command checkpoint
+
+Read [PUBLICATION_COMMAND_PROGRESS.md](PUBLICATION_COMMAND_PROGRESS.md) first. Publication is joined to the commands API with retained-output verification and a shared deadline. Pending recovery and editor/producer integration remain unfinished.
+
 # Latest publication-history checkpoint
 
 Read [PUBLICATION_HISTORY_PROGRESS.md](PUBLICATION_HISTORY_PROGRESS.md) first. Publication history now verifies original generation evidence through acceptance and withdrawal. Pending recovery, API/editor and producer integration remain unfinished.

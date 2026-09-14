@@ -98,6 +98,8 @@ function failure(code?: string): TranslationWriteFailure {
   return { kind: "unavailable", status: 503, message: "OpenPlan could not confirm this save. Keep your words and retry the same request." };
 }
 
+export { failure as translationWriteFailureForCode };
+
 /** Send one validated intent once. Uncertain transport never creates a new identity or automatically retries. */
 export async function writeTranslations(client: Pick<SupabaseClient, "rpc">, scope: TranslationWriteScope, intent: TranslationWriteIntent): Promise<
   { result: TranslationWriteResult; error: null } | { result: null; error: TranslationWriteFailure }

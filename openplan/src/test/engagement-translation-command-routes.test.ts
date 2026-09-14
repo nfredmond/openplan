@@ -35,7 +35,7 @@ function snapshot(): TranslationSnapshot {
     counts: { categories: 0, questions: 0, options: 0, responses: 0, translations: 0 } };
 }
 function request(body: unknown = intent()) {
-  return new NextRequest("http://localhost/api/engagement/translation-test", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+  return new NextRequest("http://localhost/api/engagement/translation-test", { method: "POST", headers: { "content-type": "application/json", origin: "http://localhost" }, body: JSON.stringify(body) });
 }
 beforeEach(() => {
   vi.resetAllMocks();
@@ -86,7 +86,7 @@ describe("translation command routes", () => {
       if (reads === 1) controller.enqueue(new Uint8Array(TRANSLATION_WRITE_BODY_LIMIT + 1));
       else controller.error(new Error("The oversize tail must not be read"));
     }, cancel }, { highWaterMark: 0 });
-    const init = { method: "POST", body: stream, duplex: "half" as const };
+    const init = { method: "POST", headers: { origin: "http://localhost" }, body: stream, duplex: "half" as const };
     const response = await POST(new NextRequest("http://localhost/upload", init), context);
     expect(response.status).toBe(413);
     expect(await response.json()).toMatchObject({ maxBytes: 8 * 1024 * 1024 });
@@ -98,7 +98,7 @@ describe("translation command routes", () => {
     const invalidUtf8 = new TextEncoder().encode(JSON.stringify({ ...intent(), reason: "~" }));
     invalidUtf8[invalidUtf8.indexOf(0x7e)] = 0xff;
     const bytes = bad === "utf8" ? invalidUtf8 : bad === "json" ? "{" : JSON.stringify({ ...intent(), requestId: undefined });
-    const response = await POST(new NextRequest("http://localhost/upload", { method: "POST", body: bytes }), context);
+    const response = await POST(new NextRequest("http://localhost/upload", { method: "POST", headers: { origin: "http://localhost" }, body: bytes }), context);
     expect(response.status).toBe(400); expect(mocks.client).not.toHaveBeenCalled();
   });
 

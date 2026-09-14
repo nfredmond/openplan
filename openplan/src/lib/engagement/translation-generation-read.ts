@@ -56,8 +56,11 @@ export function readTranslationGenerationRequest(raw: unknown, scope: { requestI
     actorId: saved.actorId, locale: saved.locale, createdAt: saved.createdAt, fields });
 }
 
-export async function loadTranslationGenerationRequest(client: Pick<SupabaseClient, "rpc">, scope: { requestId: string; campaignId: string; workspaceId: string }) {
-  const response = await client.rpc("read_translation_generation_request", { p_campaign: scope.campaignId, p_request: scope.requestId }).abortSignal(AbortSignal.timeout(10000));
+export async function loadTranslationGenerationRequest(client: Pick<SupabaseClient, "rpc">, scope: { requestId: string; campaignId: string; workspaceId: string }, signal?: AbortSignal) {
+  const deadline = AbortSignal.timeout(10000);
+  const readSignal = signal ? AbortSignal.any([signal, deadline]) : deadline;
+  readSignal.throwIfAborted();
+  const response = await client.rpc("read_translation_generation_request", { p_campaign: scope.campaignId, p_request: scope.requestId }).abortSignal(readSignal);
   if (response.error) throw new TranslationQueueError(response.error.code === "42501" ? "forbidden" : "unavailable", response.error.code === "42501" ? 403 : 503);
   return readTranslationGenerationRequest(response.data, scope);
 }
