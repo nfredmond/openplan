@@ -72,6 +72,28 @@ function historicalHash() {
   await expect(page.getByRole('region', { name: 'Retained staff reviews' })).toBeVisible();
   await expect(page.getByRole('region', { name: 'Retained staff reviews' }).getByRole('button', { name: 'Create staff review', exact: true })).toBeEnabled();
   await expect(page.getByRole('region', { name: 'Retained staff reviews' }).getByRole('alert')).toHaveCount(0);
+  const earlierReviewName = width === 390 ? 'synthesis-reviews-390-1789425085944' : 'synthesis-reviews-1440-1789425133001';
+  const earlierReview = JSON.parse(fs.readFileSync(`${directory}/browser/${earlierReviewName}.json`));
+  const reviewId = earlierReview.originalReceipt.reviewId;
+  const reviews = page.getByRole('region', { name: 'Retained staff reviews' });
+  await click(page, reviews.getByRole('button', { name: `Open staff review ${reviewId.slice(0, 8)}`, exact: true }));
+  const saved = reviews.getByRole('article', { name: 'Saved staff review' });
+  await expect(saved.getByText(`Revision SHA256: ${earlierReview.finalContentSha256}`, { exact: true })).toBeVisible();
+  const readReview = async revisionId => {
+   const reply = await page.request.get(`${endpoint}/reviews?mode=read&reviewId=${reviewId}${revisionId ? `&revisionId=${revisionId}` : ''}`);
+   assert.equal(reply.status(), 200); return reply.json();
+  };
+  const latest = await readReview();
+  assert.equal(latest.revision.contentSha256, earlierReview.finalContentSha256);
+  assert.equal(sha(latest.revision.contentText), earlierReview.finalContentSha256);
+  await click(page, reviews.getByRole('button', { name: 'Open revision 1', exact: true }));
+  await expect(saved.getByText(`Revision SHA256: ${earlierReview.originalContentSha256}`, { exact: true })).toBeVisible();
+  const original = await readReview(earlierReview.originalReceipt.requestId);
+  assert.equal(sha(original.revision.contentText), earlierReview.originalContentSha256);
+  assert.equal(original.preparationSha256, earlierReview.preparationSha256);
+  assert.equal(original.sourceSha256, earlierReview.sourceSha256);
+  await expect(reviews.getByRole('textbox', { name: 'Staff review notes', exact: true })).toBeDisabled();
+  observed.retainedReview = { previousJourney: earlierReviewName, reviewId, originalSha256: sha(original.revision.contentText), correctedSha256: sha(latest.revision.contentText), preparationSha256: original.preparationSha256, sourceSha256: original.sourceSha256, originalReadOnly: true };
   await page.getByRole('region', { name: 'Retained staff reviews' }).scrollIntoViewIfNeeded();
   await page.screenshot({ path: prefix + '-reviews.png' });
   assert.equal(await page.getByRole('article', { name: 'Earlier synthesis record' }).count(), snapshot.hasEarlierSummary ? 1 : 0);

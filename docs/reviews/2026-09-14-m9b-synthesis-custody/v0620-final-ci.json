@@ -1,0 +1,60 @@
+{
+  "releaseCommit": "018cda5d8a33a45001bbd39c1c6362636101d785",
+  "checks": [
+    {
+      "name": "ci",
+      "headSha": "018cda5d8a33a45001bbd39c1c6362636101d785",
+      "conclusion": "success",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34907096050",
+      "jobs": [
+        {
+          "name": "verify (qa gate)",
+          "conclusion": "success"
+        },
+        {
+          "name": "modeling scripts (python unit tests)",
+          "conclusion": "success"
+        },
+        {
+          "name": "order independence (shuffled vitest)",
+          "conclusion": "success"
+        },
+        {
+          "name": "ops scripts (python unit tests)",
+          "conclusion": "success"
+        },
+        {
+          "name": "worker (python unit tests)",
+          "conclusion": "success"
+        }
+      ],
+      "logSha256": "ba6fc882c36bedfd2551dfec706ccf4547485278e81aea4b3b967ef855ee1f9b"
+    },
+    {
+      "name": "rls",
+      "headSha": "018cda5d8a33a45001bbd39c1c6362636101d785",
+      "conclusion": "success",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34907096003",
+      "jobs": [
+        {
+          "name": "live RLS isolation",
+          "conclusion": "success"
+        }
+      ],
+      "logSha256": "f71ebf5cea1da748b615f8ff952d146f68398312cc6dea970a74d5d4002643b0"
+    },
+    {
+      "name": "upgrade",
+      "headSha": "018cda5d8a33a45001bbd39c1c6362636101d785",
+      "conclusion": "success",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/34907095999",
+      "jobs": [
+        {
+          "name": "previous release -> seed -> HEAD migration up",
+          "conclusion": "success"
+        }
+      ],
+      "logSha256": "fd9b6b5cd5da2c7af4df53562b915d6bf8d7c76e6887230c279fc79176107e21"
+    }
+  ]
+}

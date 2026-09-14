@@ -103,4 +103,6 @@ Contract management: [operator workflow](ops/CONTRACT_RECONCILIATION.md) and [v0
 - [v0.61.0 report context and private history](reviews/2026-09-14-m9b-report-lineage/RELEASE_VERIFICATION.md): exact internal history, original/changed files, browser retry and upgrade evidence; published after final CI.
 - [v0.60.0 decision links and public-copy privacy](reviews/2026-09-14-m9b-decision-reports/RELEASE_VERIFICATION.md): retained private context, interrupted recovery and actual public artifact/privacy checks; final publication recorded separately.
 
-- [v0.62.0 retained synthesis source and staff review](reviews/2026-09-14-m9b-synthesis-custody/RELEASE_VERIFICATION.md): complete selected-source custody, reasoned revisions, interrupted retry and retirement of unsafe legacy generation; final release CI pending.
+- [v0.62.0 retained synthesis source and staff review](reviews/2026-09-14-m9b-synthesis-custody/RELEASE_VERIFICATION.md): complete selected-source custody, reasoned revisions, interrupted retry and retirement of unsafe legacy generation; [published after final CI](reviews/2026-09-14-m9b-synthesis-custody/PUBLICATION.md).
+
+- [Engagement synthesis operating guide](ops/ENGAGEMENT_SYNTHESIS_REVIEW.md): retained source selection, reasoned corrections, earlier history and interrupted-save recovery.

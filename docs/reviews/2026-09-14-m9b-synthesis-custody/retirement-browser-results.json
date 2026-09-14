@@ -139,5 +139,78 @@
     "No historical summary rows exist in the named isolated database; unchanged native before/after hashes cover null historical fields.",
     "Legacy non-null compatibility uses rendered component and exact server-page projection/prop tests, not an upgraded native row.",
     "Retirement does not provide new AI generation, approval or reviewed exports."
-  ]
+  ],
+  "retainedReviewFollowup": {
+    "entries": [
+      {
+        "file": "synthesis-retirement-1440-1789427916009.json",
+        "sha256": "6996f0e982be7a227a1d09cfe89ea54bffa12c48973a0c718023aecdf2ac45cd",
+        "width": 1440,
+        "identity": {
+          "status": "ok",
+          "service": "openplan",
+          "checkedAt": "2026-09-14T23:18:36.324Z",
+          "deployment": {
+            "commit": "a2e049357175",
+            "version": "0.61.1"
+          },
+          "checks": {
+            "app": "ok",
+            "database": "not_checked"
+          }
+        },
+        "runnerSha256": "2dffeb28baff8aaa616ca0d027bb1c4d307cab56257e2ee5ace35f5f1906112b",
+        "retainedReview": {
+          "previousJourney": "synthesis-reviews-1440-1789425133001",
+          "reviewId": "1fcfa0f1-bf53-46c0-b024-ab889aacded6",
+          "originalSha256": "e1a20720b42b6bac10c1b1e1113a3303d67d706e74fa5d4ba65be163ac39e9df",
+          "correctedSha256": "0a470778226909cae941be24197bbb31355fc044f18e4598cc82241f336b9e44",
+          "preparationSha256": "419d9014ce1841f96b48b195e94d9d7d8c2c4feb136dff1d7e05c65fda15f688",
+          "sourceSha256": "55475e4dd383fa6de80b6c62fb57550c05b66974752b8dd1d1e1e2410c31d2dd",
+          "originalReadOnly": true
+        },
+        "console": [],
+        "pageErrors": [],
+        "screenshot": {
+          "file": "synthesis-retirement-1440-1789427916009-reviews.png",
+          "sha256": "8d9aca65a0b3a8a66c5acc8d68fea61cd3688f49305b75923eddbc803434c7c7"
+        }
+      },
+      {
+        "file": "synthesis-retirement-390-1789427916048.json",
+        "sha256": "d3627f8c0dd50f107896f4333575ba05a96431c0d2f9b6013b219ea8a06ee628",
+        "width": 390,
+        "identity": {
+          "status": "ok",
+          "service": "openplan",
+          "checkedAt": "2026-09-14T23:18:36.363Z",
+          "deployment": {
+            "commit": "a2e049357175",
+            "version": "0.61.1"
+          },
+          "checks": {
+            "app": "ok",
+            "database": "not_checked"
+          }
+        },
+        "runnerSha256": "2dffeb28baff8aaa616ca0d027bb1c4d307cab56257e2ee5ace35f5f1906112b",
+        "retainedReview": {
+          "previousJourney": "synthesis-reviews-390-1789425085944",
+          "reviewId": "57b5abbf-01ca-4fc3-b61b-cce3c54d7c68",
+          "originalSha256": "b2b74feecc19a95a0b44defc4e3c1865d69d0e0e1b9c1fff2fc268d6022d658e",
+          "correctedSha256": "fac9036c048450decb1d47c59131998834020f30bcfcc7882892a88775c2e65a",
+          "preparationSha256": "33f3b8cb0a0c998cc074704cb7d5e22f7b25166049a2a6e0a09fb961a9c2e802",
+          "sourceSha256": "abc68f0b41847603d60114c3a9ff63aafb584ef6d95d72072c41070e1b875865",
+          "originalReadOnly": true
+        },
+        "console": [],
+        "pageErrors": [],
+        "screenshot": {
+          "file": "synthesis-retirement-390-1789427916048-reviews.png",
+          "sha256": "b37e7da175b7bf1914ff409e0c2a69d9f22930be1a852ec39a76783f600d94c5"
+        }
+      }
+    ],
+    "meaning": "Real navigation reopens the same review IDs on the retirement build. Both original and corrected content hashes match prior review journeys, as do original source/preparation hashes. Original revision fields are disabled. Both history screenshots were inspected."
+  }
 }
