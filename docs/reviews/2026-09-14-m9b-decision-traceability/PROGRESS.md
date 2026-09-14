@@ -1,6 +1,43 @@
 # Response-to-decision context in progress
 
-## Decision request recovery candidate and reader verified
+## Usage-reset resume checkpoint, September 14
+
+This section supersedes the candidate-only status immediately below. Resume in
+`/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13`,
+branch `work/engagement-decision-traceability`. Application commands run in its
+`openplan/` subdirectory. Original checkout and demo remain separate.
+
+The recovery API, browser controller, local copy archive and decision editor are
+now connected. Migration `20261014000022` is installed only in the isolated
+application stack `supabase_db_openplan-restore-target-2026091050`, database
+`postgres`, workdir `/home/nathaniel/.local/state/openplan/openplan-restore-target-2026091050`.
+Ledger is 341 migrations through 22. Nine existing table fingerprints are unchanged,
+and installed command definitions match the disconnected concurrent proof database.
+See `decision-recovery-activation.json`. Never reset or drop either database.
+
+Recovery integration baseline and harmless control each passed 92 tests; all 42
+targeted faults failed their intended assertions and source files were restored.
+See `decision-recovery-integration-results.json`. Installed recovery RLS suite
+passed all eight checks. Its private JSON is
+`/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/recovery-after-activation.json`.
+Both jobs are terminal. An earlier test failed to detect a held request because it
+asserted during loading; the test now waits until the editor is ready. Preserve
+`DECISION_RECOVERY_INTEGRATION_COVERAGE_GAP.json` as the original finding.
+
+This is an unfinished implementation checkpoint, not a release or full-QA claim.
+Next run focused ESLint and TypeScript with `NODE_OPTIONS=--max-old-space-size=8192`,
+prove the installed RLS census registration, then build and exercise recovery from
+real desktop and 390px navigation with keyboard and console inspection. Port 3262
+still serves old commit `ea474256`, not these changes; identify and rebuild this
+own server before claiming recovery browser evidence. Preserve original, page-held
+and damaged copies, lost acknowledgments, exact retries, archives, storage failures
+and account changes in those journeys. Public explanation and report/export lineage
+remain unfinished. Full QA, shuffled tests, isolated RLS, relevant worker/upgrade
+checks and final main CI still precede release. User authorizes direct main landing
+without PRs or human-review release gates once engineering evidence is satisfied.
+The pending reminder constraint is untouched. Continue the binding v1 roadmap.
+
+## Earlier decision request recovery candidate and reader verified
 
 `decision-resolution-candidate.sql` adds private immutable recovery receipts.
 The command verifies current staff scope and serializes against the existing

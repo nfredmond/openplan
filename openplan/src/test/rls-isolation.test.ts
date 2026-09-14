@@ -196,6 +196,8 @@ const SERVICE_ONLY_TABLES = new Set(["billing_webhook_receipts"]);
 // the same member-visible / outsider-hidden boundary plus their stricter write
 // rules. Keep this list exact so a filename alone cannot silently count.
 const DEDICATED_LIVE_RLS_PROBES = new Set([
+  // decision-resolution-activation-rls: original requester, exact copies and late-write cancellation.
+  "engagement_decision_request_resolutions",
   // engagement-decision-link-activation-rls: staff lifecycle, private history and direct-write refusal.
   "engagement_response_decision_links",
   // engagement-translation-command-activation-rls: exact staff receipt, viewer/outsider/anon refusal.
@@ -1754,6 +1756,7 @@ describe("workspace RLS isolation inventory", () => {
     ]);
     expect([...SERVICE_ONLY_TABLES]).toEqual(["billing_webhook_receipts"]);
     expect([...DEDICATED_LIVE_RLS_PROBES]).toEqual([
+      "engagement_decision_request_resolutions",
       "engagement_response_decision_links",
       "engagement_translation_write_receipts",
       "engagement_translation_generation_resolutions",

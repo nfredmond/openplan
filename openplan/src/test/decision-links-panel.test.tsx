@@ -1,11 +1,13 @@
 import { createHash } from "node:crypto";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import rawNative from "./fixtures/decision-link-native.json";
 import { DecisionLinksPanel } from "@/components/engagement/decision-links-panel";
 import { EngagementCloseLoopBuilder } from "@/components/engagement/close-loop-builder";
 import { decisionLinkIntentSchema, decisionLinkPayload } from "@/lib/engagement/decision-links";
 import type { DecisionLinkContext, DecisionLinkSnapshotPacket } from "@/lib/engagement/decision-links";
+import { resolutionTestPacket } from "./helpers/decision-resolution-fixture";
+import { readDecisionResolutionRecovery } from "@/lib/engagement/decision-resolution-recovery";
 import { pendingDecisionKey } from "@/lib/engagement/pending-decision-link";
 
 const native = rawNative as { scope: typeof rawNative.scope; initial: DecisionLinkSnapshotPacket };
@@ -147,12 +149,85 @@ describe("decision link editor", () => {
     expect(screen.getByRole("button", { name: "Download unreadable request" })).toBeEnabled();
     expect(localStorage.getItem(key)).toBe("{corrupt"); expect(backend.posts).toBe(0);
   });
+  it("resolves a damaged request through the actual editor and archives it before new writes", async () => {
+    const backend = server();
+    const key = `openplan:decision-link:${props.actorId}:${props.workspaceId}:${props.campaignId}:${crypto.randomUUID()}`;
+    localStorage.setItem(key, "{SYNTHETIC damaged copy");
+    const originalFetch = backend.fetcher.getMockImplementation()!;
+    backend.fetcher.mockImplementation(async (url, init) => {
+      if (String(url).endsWith("/resolutions")) return json(resolutionTestPacket(native.scope, JSON.parse(String(init?.body))));
+      return originalFetch(url, init);
+    });
+    render(<DecisionLinksPanel {...props} />);
+    fireEvent.click(screen.getByRole("button", { name: "Connect responses to decisions" }));
+    await screen.findByRole("button", { name: "Review damaged request recovery" });
+    fireEvent.click(screen.getByRole("button", { name: "Review damaged request recovery" }));
+    expect(screen.getByLabelText("Staff response")).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Confirm resolution and preserve copies" }));
+    await waitFor(() => expect(localStorage.getItem(key)).toBeNull());
+    await waitFor(() => expect(screen.getByLabelText("Staff response")).toBeEnabled());
+    const stored = readDecisionResolutionRecovery(localStorage, native.scope);
+    expect(stored.pending).toHaveLength(0); expect(stored.archives).toHaveLength(1);
+    expect(JSON.parse(JSON.parse(stored.archives[0].raw).request.intents[0].copyJson)).toBe("{SYNTHETIC damaged copy");
+    expect(backend.posts).toBe(0);
+  });
+  it("preserves page-held and corrupted copies when resolving a lost link acknowledgement", async () => {
+    const backend = server(); backend.setMode("lost");
+    render(<DecisionLinksPanel {...props} />); await open(); await review();
+    fireEvent.change(screen.getByLabelText("Reason for this link or change"), { target: { value: "SYNTHETIC uncertain original reason" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save decision link" }));
+    await screen.findByText(/The save is unconfirmed/);
+    await screen.findByRole("button", { name: "Retry exact request" });
+    const sourceKey = localStorage.key(0)!, originalBytes = localStorage.getItem(sourceKey)!;
+    localStorage.setItem(sourceKey, "SYNTHETIC changed stored bytes");
+    fireEvent(window, new StorageEvent("storage"));
+    await screen.findByRole("button", { name: "Review damaged request recovery" });
+    const originalFetch = backend.fetcher.getMockImplementation()!;
+    backend.fetcher.mockImplementation(async (url, init) => {
+      if (!String(url).endsWith("/resolutions")) return originalFetch(url, init);
+      const packet = resolutionTestPacket(native.scope, JSON.parse(String(init?.body)));
+      const result = JSON.parse(packet.resultText); result.state = "saved"; result.link = backend.snapshot.entries[0];
+      packet.resultText = JSON.stringify(result); packet.resultSha256 = hash(packet.resultText); return json(packet);
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Review damaged request recovery" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirm resolution and preserve copies" }));
+    await waitFor(() => expect(localStorage.getItem(sourceKey)).toBeNull());
+    await waitFor(() => expect(screen.getByLabelText("Staff response")).toBeEnabled());
+    expect(screen.queryByRole("button", { name: "Retry exact request" })).toBeNull();
+    const saved = readDecisionResolutionRecovery(localStorage, native.scope);
+    expect(saved.archives).toHaveLength(1);
+    const archive = JSON.parse(saved.archives[0].raw);
+    expect(archive.request.intents.map((intent: { copyJson: string }) => JSON.parse(intent.copyJson)))
+      .toEqual(["SYNTHETIC changed stored bytes", originalBytes]);
+    expect(archive.receipts.every((packet: { resultText: string }) => JSON.parse(packet.resultText).state === "saved")).toBe(true);
+    expect(backend.snapshot.entries).toHaveLength(1);
+  });
+  it("does not let a slow earlier storage read hide a newer damaged copy", async () => {
+    const pendingModule = await import("@/lib/engagement/pending-decision-link");
+    const { campaignId: _campaign, ...payload } = source.payload_json;
+    const request = { version: 1 as const, ...native.scope, phase: "unconfirmed" as const,
+      intent: { ...payload, requestId: source.id }, context: { contextText: source.context_text, contextSha256: source.context_sha256 } };
+    await pendingModule.retainPendingDecision(localStorage, request);
+    let finish!: (value: Awaited<ReturnType<typeof pendingModule.readPendingDecisions>>) => void;
+    const oldRead = new Promise<Awaited<ReturnType<typeof pendingModule.readPendingDecisions>>>(resolve => { finish = resolve; });
+    const reader = vi.spyOn(pendingModule, "readPendingDecisions").mockImplementationOnce(() => oldRead);
+    server(); render(<DecisionLinksPanel {...props} />);
+    fireEvent.click(screen.getByRole("button", { name: "Connect responses to decisions" }));
+    await waitFor(() => expect(reader).toHaveBeenCalledTimes(1));
+    localStorage.setItem(pendingDecisionKey(request), "SYNTHETIC newly damaged bytes");
+    fireEvent(window, new StorageEvent("storage"));
+    await screen.findByRole("button", { name: "Review damaged request recovery" });
+    await act(async () => { finish({ pending: [request], unreadable: [] }); });
+    expect(screen.getByRole("button", { name: "Review damaged request recovery" })).toBeVisible();
+    expect(localStorage.getItem(pendingDecisionKey(request))).toBe("SYNTHETIC newly damaged bytes");
+  });
   it("does not display a snapshot from another signed-in account", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(json({ snapshot: native.initial, actorId: crypto.randomUUID() }));
     render(<DecisionLinksPanel {...props} />);
     fireEvent.click(screen.getByRole("button", { name: "Connect responses to decisions" }));
     await screen.findByText(/Decision history could not be loaded/);
     expect(screen.queryByText("SYNTHETIC private rationale")).toBeNull();
+    expect(screen.queryByRole("region", { name: "Decision request recovery" })).toBeNull();
     expect(screen.queryByText(/No decision links have been saved/)).toBeNull();
     expect(screen.getByLabelText("Staff response")).toBeDisabled();
   });

@@ -1,0 +1,64 @@
+{
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "database": "postgres",
+  "beforeLedger": "340:20261014000021",
+  "afterLedger": "341:20261014000022",
+  "migration": "20261014000022_engagement_decision_request_resolution.sql",
+  "migrationSha256": "2fb5cf597d33da4eff4db0e38b33c48ae573428e0a4bdd4ae9388b36e184152c",
+  "existingSourceTablesUnchanged": true,
+  "tableFingerprints": [
+    {
+      "table": "engagement_campaigns",
+      "count": 240,
+      "sha256": "e3538370040aa185b1234e3147cfcca95f3d8740dc26e31be81a4d7355081f3c"
+    },
+    {
+      "table": "engagement_items",
+      "count": 62,
+      "sha256": "c715e8287b02aa279064bd5b1ff14e78eeffc1efda14f7701c2e70590e8f38f1"
+    },
+    {
+      "table": "engagement_closeloop_entries",
+      "count": 3089,
+      "sha256": "b816106411ff2da5bd8b0d36f161a19022476cbf1e2bc2a5e3cb5c04c6d7d3cb"
+    },
+    {
+      "table": "engagement_response_history",
+      "count": 3148,
+      "sha256": "ebf7bb500da26cf7670ed9c8753aa8cbc9bd59db5feaa428120a61f7b55f5861"
+    },
+    {
+      "table": "project_decisions",
+      "count": 37,
+      "sha256": "23fdd4793e0d3fb974275ce0fd3ba8d07ee1ff5c1d2d801d41a29c4a23b1376a"
+    },
+    {
+      "table": "workspace_members",
+      "count": 4004,
+      "sha256": "32d7a9824783747da7c41208831aeba8717a92762662e170cc21670a87f8b62b"
+    },
+    {
+      "table": "engagement_content_translations",
+      "count": 65,
+      "sha256": "9d84ecfd5ff636332ba73668a4402a47a9d415726351a5ac9cb11954c7cef96a"
+    },
+    {
+      "table": "engagement_translation_history",
+      "count": 198,
+      "sha256": "aabe20cb0c746fe97a13f75aa0c2929a5e33fd1366865b10ecdd7ec05e6cf2dc"
+    },
+    {
+      "table": "engagement_response_decision_links",
+      "count": 12,
+      "sha256": "2ca36811f5469dfc42bec31f722f3c2f87e402b70c99efc8adb5d1081847feb0"
+    }
+  ],
+  "newRecoveryCount": 0,
+  "installedFunctionsMatchConcurrentProof": {
+    "public.resolve_engagement_decision_request(uuid,uuid,uuid,text,text)": "309043909d085caf7546d04b41876f5b32d05e66f16995adb83c173ba3e2ea7f",
+    "public.write_engagement_response_decision_link(uuid,uuid,uuid,uuid,text,uuid,text,text)": "9c08c0a5a83798d49800199328fef3858f023a019b8b50662d43d26189a5a41b"
+  },
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context",
+  "preflightError": "First fingerprint query assumed every table had an id column. It stopped before copying or applying the migration. Corrected query sorts complete JSON rows, covering composite identities.",
+  "limits": "Installed additive schema and unchanged existing rows; live role and browser acceptance are separate."
+}

@@ -1,0 +1,6 @@
+{
+  "mutation": "parent-cleared-held-copy",
+  "expectedFailure": "preserves page-held and corrupted copies",
+  "actualFailures": [],
+  "log": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/recovery-integration-1789386607442961735/parent-cleared-held-copy.log"
+}

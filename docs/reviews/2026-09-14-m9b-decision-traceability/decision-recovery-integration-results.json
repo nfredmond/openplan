@@ -1,0 +1,380 @@
+{
+  "sourceSha256": {
+    "route": "bd58c236434dc37acba20dbeb67d459df65ec45e8248e8d2465ebc36643f398d",
+    "server": "1049c05f9b9d61a0315217931e36122fd7d8d10096eac85692395c156bccaf99",
+    "storage": "22038d3831c1d589d7ff3167ea1133f142d030a42c7590845c97d15ea9713e37",
+    "hook": "1ee98910aec6a23009601ac76c5454badb731795e88633cc4b950657eb93ab90",
+    "parent": "a350a7ab19c1261a05b61d9bd8724f5c88df8b8efe6babd305208eb149bc4cbb"
+  },
+  "testSha256": {
+    "src/test/decision-resolution-routes.test.ts": "0ae3c3903ff9ca73dca6ea88c499b2e2c23d3063097aa04ffcc694a06361f3bc",
+    "src/test/decision-resolution-recovery.test.ts": "82d2c7bcf0d87f5246016adc0d81e544f5077b63b4b7664b329ea762b9f6dcd6",
+    "src/test/decision-resolution-panel.test.tsx": "e3097d0d50c1079f77818731a264350169b98470225a630364e6a6950e61dc15",
+    "src/test/decision-links-panel.test.tsx": "a7c42a50399218a7eff0ac019385a359198b6b7a4ca6eb8e3df8b65ac0efcfd5"
+  },
+  "outcomes": [
+    {
+      "name": "baseline",
+      "outcome": "passed",
+      "tests": 92
+    },
+    {
+      "name": "harmless",
+      "outcome": "passed",
+      "tests": 92
+    },
+    {
+      "name": "route-origin",
+      "outcome": "killed",
+      "failedAssertions": [
+        "private decision recovery HTTP refuses changed browser origin or scope {\"origin\":\"https://foreign.invalid\"}",
+        "private decision recovery HTTP refuses changed browser origin or scope {\"sec-fetch-site\":\"cross-site\"}"
+      ]
+    },
+    {
+      "name": "route-user",
+      "outcome": "killed",
+      "failedAssertions": [
+        "private decision recovery HTTP refuses changed browser origin or scope {\"x-openplan-expected-user\":\"different\"}"
+      ]
+    },
+    {
+      "name": "route-workspace",
+      "outcome": "killed",
+      "failedAssertions": [
+        "private decision recovery HTTP refuses changed browser origin or scope {\"x-openplan-expected-workspace\":\"different\"}"
+      ]
+    },
+    {
+      "name": "route-agent",
+      "outcome": "killed",
+      "failedAssertions": [
+        "private decision recovery HTTP refuses even empty agent header x-openplan-assistant-execution-source",
+        "private decision recovery HTTP refuses even empty agent header x-openplan-assistant-input-hash",
+        "private decision recovery HTTP refuses even empty agent header x-openplan-assistant-approval-id"
+      ]
+    },
+    {
+      "name": "route-private",
+      "outcome": "killed",
+      "failedAssertions": [
+        "private decision recovery HTTP returns one verified receipt with exact native parameters and private caching",
+        "private decision recovery HTTP refuses even empty agent header x-openplan-assistant-execution-source",
+        "private decision recovery HTTP refuses even empty agent header x-openplan-assistant-input-hash",
+        "private decision recovery HTTP refuses even empty agent header x-openplan-assistant-approval-id",
+        "private decision recovery HTTP bounds streamed JSON bodies without trusting content length"
+      ]
+    },
+    {
+      "name": "route-body-bound",
+      "outcome": "killed",
+      "failedAssertions": [
+        "private decision recovery HTTP bounds streamed JSON bodies without trusting content length",
+        "private decision recovery HTTP stops oversized uploads before reading the remaining stream"
+      ]
+    },
+    {
+      "name": "route-replay-status",
+      "outcome": "killed",
+      "failedAssertions": [
+        "private decision recovery HTTP returns exact retry metadata without changing original bytes"
+      ]
+    },
+    {
+      "name": "server-copy-parameter",
+      "outcome": "killed",
+      "failedAssertions": [
+        "private decision recovery HTTP returns one verified receipt with exact native parameters and private caching"
+      ]
+    },
+    {
+      "name": "server-receipt-validation",
+      "outcome": "killed",
+      "failedAssertions": [
+        "private decision recovery HTTP does not acknowledge a damaged or foreign successful native receipt"
+      ]
+    },
+    {
+      "name": "storage-owned-key",
+      "outcome": "killed",
+      "failedAssertions": [
+        "resolution recovery custody refuses unowned or malformed source key openplan:decision-link:76000000-0000-4000-8000-000000000098:76000000-0000-4000-8000-000000000002:76000000-0000-4000-8000-000000000003:76000000-0000-4000-8000-000000000004",
+        "resolution recovery custody refuses unowned or malformed source key openplan:decision-link:76000000-0000-4000-8000-000000000001:76000000-0000-4000-8000-000000000002:76000000-0000-4000-8000-000000000098:76000000-0000-4000-8000-000000000004"
+      ]
+    },
+    {
+      "name": "storage-source-self-reference",
+      "outcome": "killed",
+      "failedAssertions": [
+        "resolution recovery custody rejects incoherent bundle source-collision"
+      ]
+    },
+    {
+      "name": "storage-request-identity",
+      "outcome": "killed",
+      "failedAssertions": [
+        "resolution recovery custody rejects incoherent bundle request"
+      ]
+    },
+    {
+      "name": "storage-resolution-identity",
+      "outcome": "killed",
+      "failedAssertions": [
+        "resolution recovery custody rejects incoherent bundle resolution"
+      ]
+    },
+    {
+      "name": "storage-copy-identity",
+      "outcome": "killed",
+      "failedAssertions": [
+        "resolution recovery custody rejects incoherent bundle copy"
+      ]
+    },
+    {
+      "name": "storage-page-copy",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision link editor preserves page-held and corrupted copies when resolving a lost link acknowledgement",
+        "decision resolution controller retains both copies before dispatch with pinned login and archives confirmed receipts",
+        "decision resolution controller retains both resolution identities after only the second acknowledgement is lost",
+        "resolution recovery custody freezes both exact copies including whitespace and damaged strings",
+        "resolution recovery custody preserves a page-held copy when storage has lost the source",
+        "resolution recovery custody refuses a readable foreign scope in the page copy",
+        "resolution recovery custody rejects incoherent bundle request",
+        "resolution recovery custody rejects incoherent bundle resolution",
+        "resolution recovery custody rejects incoherent bundle copy",
+        "resolution recovery custody requires every copy receipt before creating an archive"
+      ]
+    },
+    {
+      "name": "storage-readable-scope",
+      "outcome": "killed",
+      "failedAssertions": [
+        "resolution recovery custody refuses a readable foreign scope in the stored copy",
+        "resolution recovery custody refuses a readable foreign scope in the page copy"
+      ]
+    },
+    {
+      "name": "storage-readable-request",
+      "outcome": "killed",
+      "failedAssertions": [
+        "resolution recovery custody refuses a readable request identity misplaced under another key"
+      ]
+    },
+    {
+      "name": "storage-readable-resolution",
+      "outcome": "killed",
+      "failedAssertions": [
+        "resolution recovery custody refuses a readable request identity misplaced under another key"
+      ]
+    },
+    {
+      "name": "storage-preserve-null",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision resolution controller retains both copies before dispatch with pinned login and archives confirmed receipts",
+        "resolution access restoration retries the same resolution while the cancelled response is still pending",
+        "resolution recovery custody freezes both exact copies including whitespace and damaged strings",
+        "resolution recovery custody preserves a page-held copy when storage has lost the source",
+        "resolution recovery custody archives verified receipts and exact copies before retiring both source and intent",
+        "resolution recovery custody retries after failed source retirement using replay receipts and the existing archive",
+        "resolution recovery custody preserves a pending bundle changed during source retirement"
+      ]
+    },
+    {
+      "name": "storage-retain-overwrite",
+      "outcome": "killed",
+      "failedAssertions": [
+        "resolution recovery custody retains exact intent for retry and refuses overwriting another retained intent"
+      ]
+    },
+    {
+      "name": "storage-retain-readback",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision resolution controller does not dispatch when the intent has readback storage failure",
+        "resolution recovery custody refuses unretained dispatch intent on readback failure"
+      ]
+    },
+    {
+      "name": "storage-inventory",
+      "outcome": "killed",
+      "failedAssertions": [
+        "resolution recovery custody requires every copy receipt before creating an archive"
+      ]
+    },
+    {
+      "name": "storage-receipt-verification",
+      "outcome": "killed",
+      "failedAssertions": [
+        "resolution recovery custody rejects invalid payloadSha256 before touching originals",
+        "resolution recovery custody rejects invalid resultSha256 before touching originals"
+      ]
+    },
+    {
+      "name": "storage-pending-preserved",
+      "outcome": "killed",
+      "failedAssertions": [
+        "resolution recovery custody refuses a missing pending bundle before archiving",
+        "resolution recovery custody refuses a different pending bundle before archiving"
+      ]
+    },
+    {
+      "name": "storage-archive-conflict",
+      "outcome": "killed",
+      "failedAssertions": [
+        "resolution recovery custody refuses replacing an existing different archive"
+      ]
+    },
+    {
+      "name": "storage-archive-readback",
+      "outcome": "killed",
+      "failedAssertions": [
+        "resolution recovery custody preserves originals when archive write has readback failure",
+        "resolution recovery custody preserves originals when archive write has pending-changed failure"
+      ]
+    },
+    {
+      "name": "storage-original-match",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision resolution controller keeps a different source from another tab after successful resolution",
+        "resolution recovery custody preserves changed or absent original different"
+      ]
+    },
+    {
+      "name": "storage-source-retirement",
+      "outcome": "killed",
+      "failedAssertions": [
+        "resolution recovery custody retries after failed source retirement using replay receipts and the existing archive"
+      ]
+    },
+    {
+      "name": "storage-pending-retirement",
+      "outcome": "killed",
+      "failedAssertions": [
+        "resolution recovery custody retries after failed pending retirement using replay receipts and the existing archive"
+      ]
+    },
+    {
+      "name": "storage-pending-concurrent-change",
+      "outcome": "killed",
+      "failedAssertions": [
+        "resolution recovery custody preserves a pending bundle changed during source retirement"
+      ]
+    },
+    {
+      "name": "storage-final-scope",
+      "outcome": "killed",
+      "failedAssertions": [
+        "resolution recovery custody aborts stale lifecycle at checkpoint 2 before retiring originals"
+      ]
+    },
+    {
+      "name": "hook-retention",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision link editor resolves a damaged request through the actual editor and archives it before new writes",
+        "decision link editor preserves page-held and corrupted copies when resolving a lost link acknowledgement",
+        "decision resolution controller retains both copies before dispatch with pinned login and archives confirmed receipts",
+        "decision resolution controller does not dispatch when the intent has quota storage failure",
+        "decision resolution controller does not dispatch when the intent has readback storage failure",
+        "decision resolution controller retries the exact resolution after acknowledgement loss and lost browser storage",
+        "decision resolution controller retains both resolution identities after only the second acknowledgement is lost",
+        "decision resolution controller keeps original and pending copies on bad-checksum response",
+        "decision resolution controller keeps original and pending copies on different-intent response",
+        "decision resolution controller keeps original and pending copies on refused response",
+        "decision resolution controller keeps a different source from another tab after successful resolution",
+        "resolution access restoration retries the same resolution while the cancelled response is still pending"
+      ]
+    },
+    {
+      "name": "hook-response-status",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision resolution controller keeps original and pending copies on refused response"
+      ]
+    },
+    {
+      "name": "hook-lifecycle",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision resolution controller ignores late acknowledgement after unmount",
+        "decision resolution controller ignores late acknowledgement after access-revoked",
+        "decision resolution controller ignores late acknowledgement after workspace-changed",
+        "resolution access restoration does not revive an old response after edit access returns",
+        "resolution access restoration does not revive an old body after edit access returns",
+        "resolution access restoration retries the same resolution while the cancelled response is still pending"
+      ]
+    },
+    {
+      "name": "hook-same-request",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision link editor resolves a damaged request through the actual editor and archives it before new writes",
+        "decision link editor preserves page-held and corrupted copies when resolving a lost link acknowledgement",
+        "decision resolution controller retains both copies before dispatch with pinned login and archives confirmed receipts",
+        "decision resolution controller retries the exact resolution after acknowledgement loss and lost browser storage",
+        "decision resolution controller retains both resolution identities after only the second acknowledgement is lost",
+        "decision resolution controller keeps a different source from another tab after successful resolution",
+        "resolution access restoration retries the same resolution while the cancelled response is still pending"
+      ]
+    },
+    {
+      "name": "hook-held-recovery",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision resolution controller retries the exact resolution after acknowledgement loss and lost browser storage"
+      ]
+    },
+    {
+      "name": "parent-read-version",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision link editor does not let a slow earlier storage read hide a newer damaged copy"
+      ]
+    },
+    {
+      "name": "parent-page-copy",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision link editor preserves page-held and corrupted copies when resolving a lost link acknowledgement"
+      ]
+    },
+    {
+      "name": "parent-cleared-held-copy",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision link editor preserves page-held and corrupted copies when resolving a lost link acknowledgement"
+      ]
+    },
+    {
+      "name": "parent-unverified-access",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision link editor does not display a snapshot from another signed-in account"
+      ]
+    },
+    {
+      "name": "route-utf8",
+      "outcome": "killed",
+      "failedAssertions": [
+        "private decision recovery HTTP refuses malformed UTF-8 before interpreting a recovery intent"
+      ]
+    },
+    {
+      "name": "route-stream-stop",
+      "outcome": "killed",
+      "failedAssertions": [
+        "private decision recovery HTTP stops oversized uploads before reading the remaining stream"
+      ]
+    }
+  ],
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/recovery-integration-1789386864165982357",
+  "restored": true,
+  "limits": [
+    "HTTP and controller tests use synthetic transport; native cancellation and RLS have separate evidence.",
+    "No browser geometry/layout claim or installed migration claim from these tests.",
+    "The storage API has no cross-tab compare-and-swap primitive; it preserves exact observed copies and checks readbacks before cleanup."
+  ]
+}
