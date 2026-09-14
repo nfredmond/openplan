@@ -20,6 +20,25 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Saved consultation reports now open with their consultation context, retained
+files and permission-scoped title, summary and status editing. Metadata edits
+preserve the original file contents and citations.
+
+New internal PDF/XLSX/ZIP snapshots retain the entire consultation's private
+decision-link history, including original links, reviewed corrections and
+withdrawals. Contribution date, status and category filters do not narrow that
+history. Public packets exclude it. Earlier files remain unchanged and disclose
+that their old format did not retain this history. Unknown or unreadable formats
+remain unknown. Repeated source occurrences retain separate workbook continuation
+rows, and exact payload/context bytes remain available in the portable archive.
+
+Apply `20261014000024_engagement_report_decision_history.sql` before restarting
+the app and local Documents export worker. The additive migration preserves
+existing snapshots, including unreadable legacy records. No paid service is
+required. This development increment still needs its final browser and release
+checks. It does not establish decision approval, implementation, representative
+participation or agency publication authority.
+
 ## 0.60.0 — 2026-09-14
 
 Staff can link an engagement response to a saved project decision, retain the

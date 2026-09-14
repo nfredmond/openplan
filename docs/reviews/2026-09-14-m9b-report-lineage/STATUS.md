@@ -70,3 +70,10 @@ The first populated local upgrade failed on an existing non-JSON RLS test snapsh
 Verification setup errors are preserved in private logs: a renderer patch first used an app-relative path from the app directory with an extra openplan prefix and changed nothing. One pagination command ran from repository root and npm fetched temporary tsx; it was rerun with the app's existing dependency. No repository dependency changed. The corrected runs are the cited evidence.
 
 Current remaining work: install regular live CI coverage, restart our compatible document worker, collect identified-build desktop/390px browser history/download/privacy/retry acceptance, run the full QA/shuffled/RLS/worker/upgrade checks and publish only after final main CI. No v0.61 release or M9b completion is claimed.
+
+
+## Installed CI coverage and QA follow-up
+
+The regular test:rls-live command now includes engagement-report-history-activation-rls.test.ts. Ten installed-database cases pass: baseline, harmless control, and eight targeted faults covering lost history, public exposure, missing exact payloads, metadata/raw column grants, viewer access and anonymous execution. A partial-NULL payload case checks each row rather than allowing bool_and to ignore missing evidence. The rollback proof was strengthened and rerun for the same case. All deliberate installed changes rolled back.
+
+The first full QA run passed lint, deadcode and 15,359 tests but failed the release-ordering test because Unreleased omitted migration 24. The changelog now names the migration and states the required app/worker upgrade order; a full rerun follows. The new report-history-browser.cjs runner is prepared but not yet executed. No v0.61 release or new browser claim.

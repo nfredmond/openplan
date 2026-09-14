@@ -1,0 +1,53 @@
+{
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "database": "postgres",
+  "passed": 10,
+  "failed": 0,
+  "tests": [
+    {
+      "name": "installed engagement report history retains history, old retries and private access ",
+      "status": "passed"
+    },
+    {
+      "name": "installed engagement report history retains history, old retries and private access -- Harmless installed archive comment.",
+      "status": "passed"
+    },
+    {
+      "name": "installed engagement report history detects missing history through the installed database",
+      "status": "passed"
+    },
+    {
+      "name": "installed engagement report history detects public history exposure through the installed database",
+      "status": "passed"
+    },
+    {
+      "name": "installed engagement report history detects lost exact payload through the installed database",
+      "status": "passed"
+    },
+    {
+      "name": "installed engagement report history detects one missing exact payload through the installed database",
+      "status": "passed"
+    },
+    {
+      "name": "installed engagement report history detects lost format permission through the installed database",
+      "status": "passed"
+    },
+    {
+      "name": "installed engagement report history detects raw snapshot exposure through the installed database",
+      "status": "passed"
+    },
+    {
+      "name": "installed engagement report history detects viewer private access through the installed database",
+      "status": "passed"
+    },
+    {
+      "name": "installed engagement report history detects anonymous queue grant through the installed database",
+      "status": "passed"
+    }
+  ],
+  "logSha256": "221af8e1fd72d73be740b8c8dd7336a606ceccbb90876f1a635b557a75dcd0ec",
+  "limits": [
+    "Installed SQL, role policies and native fixture transactions; no browser or rendered file claim.",
+    "Historical snapshot proof and access fixtures roll back after every case."
+  ]
+}
