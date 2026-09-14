@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslationGeneration } from "./translation-generation-panel";
+import { prepareTranslationGeneration, prepareRetainedPublication } from "@/lib/engagement/translation-generation-editor";
+import type { TranslationGenerationRead } from "@/lib/engagement/translation-generation-request";
 import { useTranslationWrites } from "./translation-write-recovery";
 import { useTranslationDrafts } from "./translation-draft-recovery";
 import { translationSnapshotSource, type TranslationSnapshot } from "@/lib/engagement/translation-snapshot";
@@ -210,6 +213,12 @@ export function CampaignTranslationsPanel({
   });
 
 
+  const generation = useTranslationGeneration({ userId, workspaceId, campaignId, canWrite,
+    publicationBlocked: writes.blocked || writes.busy || needsRefresh || state.busy !== null || !draftStore.ready,
+    onPublish: publishRetained,
+    onRefresh: () => { setNeedsRefresh(true); router.refresh(); },
+  });
+
   const direction = PORTAL_LOCALE_DIRECTION[locale];
   const sourceDirection = unsupportedSource ? "auto" : PORTAL_LOCALE_DIRECTION[sourceLocale];
   const sourceLanguage = recordedSource ?? sourceLocale;
@@ -288,43 +297,6 @@ export function CampaignTranslationsPanel({
     if (snapshot) draftStore.setText(snapshot, { entityType: field.entity, entityId: field.entityId, field: field.field }, locale, value);
   }
 
-  function clearDrafts(keys: string[]) { draftStore.clear(keys, locale); }
-
-  async function post(busyKey: string, payload: Record<string, unknown>): Promise<Record<string, unknown> | null> {
-    setState({ busy: busyKey, error: null, notice: null });
-    try {
-      const response = await fetch(`/api/engagement/campaigns/${campaignId}/translations`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const body = (await response.json()) as Record<string, unknown>;
-      if (!response.ok) {
-        // The route's refusal is shown verbatim: it already names the real cause
-        // — an archived field, a missing table, a rate limit — and replacing it
-        // with a generic sentence would throw that away.
-        throw new Error(
-          (typeof body.error === "string" ? body.error : null) ??
-            (typeof body.details === "string" ? body.details : null) ??
-            "The translation could not be saved."
-        );
-      }
-      return body;
-    } catch (error) {
-      setState({
-        busy: null,
-        error: error instanceof Error ? error.message : "The translation could not be saved.",
-        notice: null,
-      });
-      return null;
-    }
-  }
-
-  function finish(notice: string | null, refresh: boolean) {
-    setState({ busy: null, error: null, notice });
-    if (refresh) { setHistoryRevision(value => value + 1); router.refresh(); }
-  }
-
   async function submitManual(operation: "save" | "accept" | "withdraw", keys: string[], targetLocale: string = locale) {
     if (!canWrite || !draftStore.ready || writes.blocked || needsRefresh || !snapshot || snapshot.campaignId !== campaignId) return;
     try {
@@ -359,60 +331,34 @@ export function CampaignTranslationsPanel({
 
   async function save(keys: string[]) { await submitManual("save", keys); }
 
-  async function suggest(keys: string[]) {
-    const body = await post(`suggest:${keys.join(",")}`, {
-      action: "suggest",
-      locale,
-      fieldKeys: keys.slice(0, machineBatchMax),
-    });
-    if (!body) return;
-
-    if (body.available === false) {
-      // Not an empty box: the reason, named.
-      finish(typeof body.reason === "string" ? body.reason : null, false);
-      return;
-    }
-
-    const suggestions = Array.isArray(body.suggestions)
-      ? (body.suggestions as Array<{ fieldKey?: unknown; text?: unknown }>)
-      : [];
-    for (const suggestion of suggestions) {
-      if (typeof suggestion.fieldKey === "string" && typeof suggestion.text === "string") {
-        const field = fields.find(field => field.key === suggestion.fieldKey);
-        if (field) setDraft(field, suggestion.text);
-      }
-    }
-
-    const drafted = `${suggestions.length} draft ${suggestions.length === 1 ? "translation" : "translations"} placed in the boxes below. Nothing is saved yet — read them, correct them, then save them as your wording.`;
-    finish(typeof body.partial === "string" && body.partial ? `${drafted} ${body.partial}` : drafted, false);
+  async function requestGeneration(keys: string[]) {
+    if (!canWrite || !snapshot || writes.blocked || needsRefresh || !draftStore.ready) return;
+    try {
+      const addresses = keys.slice(0, machineBatchMax).map(key => {
+        const field = fields.find(field => field.key === key);
+        if (!field) throw new Error("Generation field is unavailable");
+        return { entityType: field.entity, entityId: field.entityId, field: field.field };
+      });
+      await generation.start(prepareTranslationGeneration({ userId, workspaceId, campaignId }, snapshot, addresses, locale));
+    } catch { setState({ busy: null, error: "Refresh and review complete source and saved translations before requesting generation.", notice: null }); }
   }
 
-  async function publishMachine(keys: string[]) {
-    // The consequence constant is passed through untouched: the panel and the
-    // dialog must warn about the same thing in the same words.
-    const confirmed = await confirm({
-      headline: "Publish the model's wording to the public portal?",
-      consequence: PUBLISH_MACHINE_CONSEQUENCE,
-      confirmLabel: "Publish as a machine translation",
-      cancelLabel: "Not yet",
-      tone: "caution",
-    });
-    if (!confirmed) return;
-    const body = await post(`machine:${keys.join(",")}`, {
-      action: "publish_machine",
-      locale,
-      fieldKeys: keys.slice(0, machineBatchMax),
-    });
-    if (!body) return;
-
-    if (body.available === false) {
-      finish(typeof body.reason === "string" ? body.reason : null, false);
-      return;
-    }
-
-    const notice = [body.publishedNotice, body.partial].filter((part): part is string => typeof part === "string" && part.length > 0);
-    clearDrafts(keys);
-    finish(notice.join(" ") || null, true);
+  async function publishRetained(viewed: TranslationGenerationRead, fieldIds: string[]) {
+    if (!canWrite || writes.blocked || writes.busy || needsRefresh || state.busy !== null || !draftStore.ready) return;
+    setState({ busy: "publication-review", error: null, notice: null });
+    try {
+      let history: unknown = [];
+      if (viewed.fields.some(field => fieldIds.includes(field.id) && field.address.expectedTranslation !== null)) {
+        const response = await fetch(`/api/engagement/campaigns/${campaignId}/translations/history`, { cache: "no-store", signal: AbortSignal.timeout(30000) });
+        if (!response.ok) throw new Error("Original baseline history unavailable");
+        history = (await response.json()).history;
+      }
+      const pending = prepareRetainedPublication({ userId, workspaceId, campaignId }, viewed, fieldIds, reason, history);
+      const approved = await confirm({ headline: "Publish this retained output to the public portal?", consequence: PUBLISH_MACHINE_CONSEQUENCE,
+        confirmLabel: "Publish as a machine translation", cancelLabel: "Not yet", tone: "caution" });
+      if (approved) await writes.submit(pending);
+      setState({ busy: null, error: null, notice: null });
+    } catch { setState({ busy: null, error: "Publication needs its original saved version, complete retained output and a reason. Your viewed output remains available.", notice: null }); }
   }
 
   async function accept(keys: string[]) {
@@ -437,7 +383,7 @@ export function CampaignTranslationsPanel({
     if (confirmed) await submitManual("withdraw", [field.key], targetLocale);
   }
 
-  const busy = state.busy !== null || writes.busy || writes.blocked || needsRefresh || !draftStore.ready;
+  const busy = state.busy !== null || generation.busy || writes.busy || writes.blocked || needsRefresh || !draftStore.ready;
   /**
    * WRITING REQUIRES HAVING READ, in two different senses.
    *
@@ -477,6 +423,7 @@ export function CampaignTranslationsPanel({
       {canWrite ? <TranslationHistory campaignId={campaignId} revision={historyRevision} /> : null}
       {writes.recovery}
       {draftStore.recovery}
+      {generation.panel}
       {needsRefresh && <p role="status" className="mt-3 text-sm">Loading the current saved versions… <Button type="button" variant="outline" onClick={() => router.refresh()}>Refresh saved translations</Button></p>}
       {editable && <label className="mt-4 block space-y-1 text-sm">
         <span>Reason for changing saved wording</span>
@@ -685,21 +632,11 @@ export function CampaignTranslationsPanel({
                 type="button"
                 size="sm"
                 variant="outline"
-                disabled={busy}
-                onClick={() => void suggest(untranslatedKeys)}
+                disabled={busy || generation.blocked}
+                onClick={() => void requestGeneration(untranslatedKeys)}
               >
-                {state.busy?.startsWith("suggest:") ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                Draft the {Math.min(untranslatedKeys.length, machineBatchMax)} untranslated with machine
-                translation
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="secondary"
-                disabled={busy}
-                onClick={() => void publishMachine(untranslatedKeys)}
-              >
-                Publish those as labelled machine translations
+                {generation.busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                Generate {Math.min(untranslatedKeys.length, machineBatchMax)} untranslated fields for review
               </Button>
             </>
           ) : null}
@@ -848,19 +785,10 @@ export function CampaignTranslationsPanel({
                                 type="button"
                                 size="sm"
                                 variant="outline"
-                                disabled={busy}
-                                onClick={() => void suggest([field.key])}
+                                disabled={busy || generation.blocked}
+                                onClick={() => void requestGeneration([field.key])}
                               >
-                                Draft with machine translation
-                              </Button>
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="outline"
-                                disabled={busy}
-                                onClick={() => void publishMachine([field.key])}
-                              >
-                                Publish as machine translation
+                                Generate translation for review
                               </Button>
                             </>
                           ) : null}

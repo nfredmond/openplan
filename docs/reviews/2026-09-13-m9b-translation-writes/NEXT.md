@@ -1,3 +1,7 @@
+# Latest generation-editor usage-reset checkpoint
+
+Read [GENERATION_EDITOR_RESET_CHECKPOINT.md](GENERATION_EDITOR_RESET_CHECKPOINT.md) first. The new editor integration is saved but unverified. Resume its implementation and acceptance before enabling or releasing the translation workflow.
+
 # Latest outline-hover checkpoint
 
 Read [OUTLINE_HOVER_PROGRESS.md](OUTLINE_HOVER_PROGRESS.md) first. Shared outline hover contrast is corrected and browser-checked in all five palettes and both modes at desktop and 390px. Resume the staff generation/catalog/editor integration in PENDING_PUBLICATION_PROGRESS.md.
