@@ -1,0 +1,22 @@
+{
+  "sourceSha256": "178a0c047a5fccec388e2dde7a32f9153668e53d331e7302e38224ada40eb679",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/resolution-census-1789358961422354130",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless",
+      "outcome": "survived",
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-resolution-probe",
+      "outcome": "killed",
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Actual installed database table inventory. Proves coverage omission detection; dedicated native tests separately exercise receipt privacy. Does not prove every future fixture is sufficient or that removing a package script entry is detected."
+}

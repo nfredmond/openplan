@@ -1,0 +1,113 @@
+{
+  "database": "openplan_translation_resolution_proof_20260913",
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/resolution-concurrency-1789358116539490683",
+  "results": [
+    {
+      "case": "baseline-resolution-first",
+      "outcome": "survived",
+      "requestId": "5d40fcfe-1f8c-4129-a5f7-698e4afc314f",
+      "overlapRefused": true
+    },
+    {
+      "case": "baseline-create-first",
+      "outcome": "survived",
+      "requestId": "0938fb8b-5b1a-48ed-bdd9-133048a4449b",
+      "overlapRefused": true
+    },
+    {
+      "case": "baseline-resolution-replay",
+      "outcome": "survived",
+      "requestId": "56a00d28-3e74-46c7-a5bf-7840b9199c4c",
+      "overlapRefused": true
+    },
+    {
+      "case": "baseline-resolution-rollback",
+      "outcome": "survived",
+      "requestId": "4ff441e0-6a56-493d-8ebe-0f57e7d90ea0",
+      "overlapRefused": true
+    },
+    {
+      "case": "baseline-resolution-before-claim",
+      "outcome": "survived",
+      "requestId": "67266dfc-6091-474c-9422-e60a6db6a840",
+      "overlapRefused": true
+    },
+    {
+      "case": "baseline-claim-before-resolution",
+      "outcome": "survived",
+      "requestId": "6d78b0fd-42b0-4160-aec2-08902b1c6671",
+      "overlapRefused": true
+    },
+    {
+      "case": "baseline-dispatch-before-resolution",
+      "outcome": "survived",
+      "requestId": "5398a36a-cd2d-4572-904f-dbb1d4ee3b2a",
+      "overlapRefused": true
+    },
+    {
+      "case": "harmless-resolution-first",
+      "outcome": "survived",
+      "requestId": "71644b73-2925-4105-9ed6-a30296a114bf",
+      "overlapRefused": true
+    },
+    {
+      "case": "harmless-create-first",
+      "outcome": "survived",
+      "requestId": "f4efdaf8-505d-4a17-9947-9ff5d79d5967",
+      "overlapRefused": true
+    },
+    {
+      "case": "harmless-resolution-replay",
+      "outcome": "survived",
+      "requestId": "09a2197c-bc5a-4dc4-9c11-ee38c6c37670",
+      "overlapRefused": true
+    },
+    {
+      "case": "harmless-resolution-rollback",
+      "outcome": "survived",
+      "requestId": "9ae90f29-0d28-43ca-a346-c8c0d9c56952",
+      "overlapRefused": true
+    },
+    {
+      "case": "harmless-resolution-before-claim",
+      "outcome": "survived",
+      "requestId": "86524992-5033-41e8-979f-7d96933dc788",
+      "overlapRefused": true
+    },
+    {
+      "case": "harmless-claim-before-resolution",
+      "outcome": "survived",
+      "requestId": "be570936-d97c-4907-a153-6729f1fc657f",
+      "overlapRefused": true
+    },
+    {
+      "case": "harmless-dispatch-before-resolution",
+      "outcome": "survived",
+      "requestId": "11141c38-3486-4488-8cc7-ac1f2e7b9b8c",
+      "overlapRefused": true
+    },
+    {
+      "case": "fault-resolve-lock",
+      "outcome": "killed",
+      "failure": "fault-resolve-lock: must refuse overlap as busy"
+    },
+    {
+      "case": "fault-create-lock",
+      "outcome": "killed",
+      "failure": "fault-create-lock: must refuse overlap as busy"
+    },
+    {
+      "case": "fault-create-tombstone",
+      "outcome": "killed",
+      "failure": "fault-create-tombstone: must refuse late creation as resolved"
+    }
+  ],
+  "definitionsRestored": true,
+  "terminalFieldCounts": {
+    "cancelled": 27,
+    "interrupted": 3
+  },
+  "sourceSha256": "fd119b912465ca05089c89fb4d1cdcbbf1b9b499030673ce29ba6a077c36d1c0",
+  "limits": "Independent live psql sessions on a disconnected schema-only database. Actual transaction readiness and liveness checked; no provider, worker, browser or HTTP invocation. Synthetic records retained. Fault competitors roll back even if erroneously accepted; failed held transactions roll back."
+}

@@ -17,7 +17,7 @@ const hash = (value: string) => createHash("sha256").update(value).digest("hex")
 const candidate = process.env.OPENPLAN_TRANSLATION_RESOLUTION_CANDIDATE === "1";
 
 live("durable translation resolution in PostgreSQL", () => {
-  let container: string, migration: string, seed: string, create: string, running: string, deliver: string;
+  let container: string, migration: string, seed: string, create: string, running: string, deliver: string, deliverIncomplete: string;
   const actorId = randomUUID(), staff = randomUUID(), viewer = randomUUID(), outsider = randomUUID();
   const campaignId = randomUUID(), workspaceId = randomUUID(), requestId = randomUUID(), fieldId = randomUUID();
   const attemptId = randomUUID(), reservationId = randomUUID();
@@ -49,7 +49,7 @@ live("durable translation resolution in PostgreSQL", () => {
     expect(result.error).toContain(code);
     expect(result.error).toContain(message);
   }
-  const snapshot = `RESET ROLE; SELECT json_build_object('intent',r.intent,'state',f.state,'output',(SELECT row_to_json(o) FROM public.engagement_translation_generation_outputs o WHERE o.field_id=f.id)) FROM public.engagement_translation_generation_requests r JOIN public.engagement_translation_generation_fields f ON f.request_id=r.id WHERE r.id='${requestId}';`;
+  const snapshot = `RESET ROLE; SELECT json_build_object('intent',r.intent,'state',f.state,'field',row_to_json(f),'output',(SELECT row_to_json(o) FROM public.engagement_translation_generation_outputs o WHERE o.field_id=f.id)) FROM public.engagement_translation_generation_requests r JOIN public.engagement_translation_generation_fields f ON f.request_id=r.id WHERE r.id='${requestId}';`;
   beforeAll(() => {
     container = resolveLocalDbContainer(); requireContractVerificationStack(container);
     migration = candidate ? readFileSync("supabase/migrations/20261014000019_engagement_translation_generation_resolution.sql", "utf8") : "";
@@ -72,6 +72,8 @@ live("durable translation resolution in PostgreSQL", () => {
       credentialId: credential.credentialId, configurationHash: credential.configurationHash, packetHash: hash(packetCanonical), model: "synthetic-resolution-model", credentialSource: "env", recipeVersion: 1,
       targetLanguage: "es", sourceHash: hash(source), outputHash: hash(output), finishReason: "stop", inputTokens: null, outputTokens: null, responseId: "synthetic\0response", reportedModel: "synthetic\ud800model" } });
     deliver = `RESET ROLE; SET LOCAL ROLE service_role; SELECT public.retain_translation_generation_output('${fieldId}','${attemptId}','completed',${quote(delivery.outputJson)},${quote(delivery.bindingCanonical)},${quote(delivery.providerMetadataJson)},'${delivery.digest}');`;
+    const incomplete = encodeTranslationGenerationDelivery({ status: "incomplete", output, receipt: { ...JSON.parse(delivery.bindingCanonical), ...JSON.parse(delivery.providerMetadataJson), finishReason: "length" } });
+    deliverIncomplete = `RESET ROLE; SET LOCAL ROLE service_role; SELECT public.retain_translation_generation_output('${fieldId}','${attemptId}','incomplete',${quote(incomplete.outputJson)},${quote(incomplete.bindingCanonical)},${quote(incomplete.providerMetadataJson)},'${incomplete.digest}');`;
   });
 
   it("retains exact damaged bytes and replays the original receipt", () => {
@@ -125,13 +127,33 @@ live("durable translation resolution in PostgreSQL", () => {
     expect(saved).toMatchObject({ state: "interrupted", output: { accepted_state: "interrupted", output_json: JSON.stringify(output) } });
     expect(packets.at(-1)).toEqual({ ...receipt, replayed: true });
   });
-  it("preserves completed output and the original request exactly", () => {
-    const packets = success(create + running + deliver + snapshot + auth() + resolve() + snapshot);
+  it.each(["completed", "incomplete"])("preserves %s output and the original request exactly", status => {
+    const packets = success(create + running + (status === "completed" ? deliver : deliverIncomplete) + snapshot + auth() + resolve() + snapshot);
     const snapshots = packets.filter(value => value.intent);
     expect(snapshots).toHaveLength(2);
     expect(snapshots[1]).toEqual(snapshots[0]);
     const receipt = verifyTranslationGenerationResolution(packets.find(value => value.payloadText), scope, intent);
-    expect(receipt.result.fields).toEqual([{ fieldId, previousState: "completed", state: "completed", attemptId, outputRetained: true }]);
+    expect(receipt.result.fields).toEqual([{ fieldId, previousState: status, state: status, attemptId, outputRetained: true }]);
+  });
+  it.each(["failed", "interrupted", "cancelled"])("preserves prior terminal %s outcome and attempt", state => {
+    const stop = `RESET ROLE; SET LOCAL ROLE service_role; SELECT public.stop_translation_generation_field('${fieldId}','${attemptId}','${state}','synthetic_terminal');`;
+    const packets = success(create + running + stop + snapshot + auth() + resolve() + snapshot);
+    const snapshots = packets.filter(value => value.intent);
+    expect(snapshots).toHaveLength(2); expect(snapshots[1]).toEqual(snapshots[0]);
+    expect(verifyTranslationGenerationResolution(packets.find(value => value.payloadText), scope, intent).result.fields).toEqual([{ fieldId, previousState: state, state, attemptId, outputRetained: false }]);
+  });
+  it.each(["viewer", "outsider"])("hides retained receipts from %s", kind => {
+    const packets = success(auth() + resolve() + auth(kind === "viewer" ? viewer : outsider) + `SELECT json_build_object('count',count(*)) FROM public.engagement_translation_generation_resolutions WHERE request_id='${requestId}';`);
+    expect(packets.at(-1)).toEqual({ count: 0 });
+  });
+  it("denies anonymous receipt enumeration", () => {
+    refused(auth() + resolve() + auth("", "anon") + `SELECT payload_json FROM public.engagement_translation_generation_resolutions;`, "42501", "permission denied");
+  });
+  it("denies direct authenticated receipt changes", () => {
+    refused(auth() + resolve() + `UPDATE public.engagement_translation_generation_resolutions SET request_id='${randomUUID()}';`, "42501", "permission denied");
+  });
+  it("denies service invocation of the authenticated resolution command", () => {
+    refused(auth(actorId, "service_role") + resolve(), "42501", "permission denied");
   });
   it.each(["staff", "viewer", "outsider", "anonymous"])("refuses %s resolution of another actor's request", kind => {
     const user = { staff, viewer, outsider, anonymous: "" }[kind]!;

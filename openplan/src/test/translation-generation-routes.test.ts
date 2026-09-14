@@ -8,7 +8,7 @@ vi.mock("@/lib/engagement/api", () => ({ loadCampaignAccess: mocks.access }));
 vi.mock("@/lib/observability/audit", () => ({ createApiAuditLogger: mocks.audit }));
 import { POST, GET } from "@/app/api/engagement/campaigns/[campaignId]/translations/generation/route";
 import { TRANSLATION_GENERATION_BODY_LIMIT, type TranslationGenerationRequest } from "@/lib/engagement/translation-generation-request";
-import { queueTranslationGeneration, TRANSLATION_GENERATION_REPLAY_COLUMNS } from "@/lib/engagement/translation-generation-queue";
+import { queueTranslationGeneration, TRANSLATION_GENERATION_REPLAY_COLUMNS, TRANSLATION_GENERATION_RESOLUTION_COLUMNS } from "@/lib/engagement/translation-generation-queue";
 import { encodeTranslationGenerationDelivery } from "@/lib/engagement/translation-generation-delivery";
 import { translationGenerationPacketCanonical } from "@/lib/engagement/translation-generation";
 import { readTranslationGenerationRequest } from "@/lib/engagement/translation-generation-read";
@@ -38,7 +38,7 @@ function fixture() {
   const queries:Array<{table:string;calls:Array<[string,...unknown[]]>}>=[];
   const from=vi.fn((table:string)=>{
     const trace={table,calls:[] as Array<[string,...unknown[]]>};queries.push(trace);
-    const q:Record<string,unknown>={};for(const name of ["select","eq","abortSignal"])q[name]=(...a:unknown[])=>{trace.calls.push([name,...a]);return q;};
+    const q:Record<string,unknown>={};for(const name of ["select","eq","limit","abortSignal"])q[name]=(...a:unknown[])=>{trace.calls.push([name,...a]);return q;};
     q.maybeSingle=()=>lookup(table);q.then=(ok:(v:unknown)=>unknown,bad:(e:unknown)=>unknown)=>lookup(table).then(ok,bad);return q;
   });
   const create=vi.fn(async (_args:Record<string,unknown>):Promise<{data:unknown;error:{code:string}|null}>=>({data:{requestId,created:true},error:null}));
@@ -61,6 +61,22 @@ describe("staff generation queue routes",()=>{
     expect(JSON.stringify(f.create.mock.calls)).not.toContain("SYNTHETIC-ROUTE-KEY");expect(JSON.stringify([mocks.info.mock.calls,mocks.warn.mock.calls])).not.toContain("PRIVATE");
     expect(TRANSLATION_GENERATION_REPLAY_COLUMNS).toBe("id,workspace_id,campaign_id,actor_id,locale,intent");
     expect(f.queries[0]).toEqual({table:"engagement_translation_generation_requests",calls:[["select",TRANSLATION_GENERATION_REPLAY_COLUMNS],["eq","id",requestId],["eq","workspace_id",workspaceId],["eq","campaign_id",campaignId],["eq","actor_id",actorId],["abortSignal",expect.any(AbortSignal)]]});
+  });
+  it("refuses a resolved absent request before credential reads using only permitted metadata",async()=>{
+    const f=fixture();vi.stubEnv("ANTHROPIC_API_KEY","");
+    f.lookup.mockImplementation(async table=>({data:table==="engagement_translation_generation_resolutions"?{request_id:requestId,workspace_id:workspaceId,campaign_id:campaignId,actor_id:actorId}:null,error:null}));
+    const response=await POST(request(),context);expect(response.status).toBe(409);expect(f.create).not.toHaveBeenCalled();
+    expect(TRANSLATION_GENERATION_RESOLUTION_COLUMNS).toBe("request_id,workspace_id,campaign_id,actor_id");
+    expect(f.queries[1]).toEqual({table:"engagement_translation_generation_resolutions",calls:[["select",TRANSLATION_GENERATION_RESOLUTION_COLUMNS],["eq","request_id",requestId],["eq","workspace_id",workspaceId],["eq","campaign_id",campaignId],["eq","actor_id",actorId],["limit",1],["abortSignal",expect.any(AbortSignal)]]});
+    expect(f.lookup.mock.calls.map(([table])=>table)).toEqual(["engagement_translation_generation_requests","engagement_translation_generation_resolutions"]);
+  });
+  it.each(["request_id","workspace_id","campaign_id","actor_id"])("does not trust mismatched resolution metadata %s",async key=>{
+    const f=fixture();f.lookup.mockImplementation(async table=>({data:table==="engagement_translation_generation_resolutions"?{request_id:requestId,workspace_id:workspaceId,campaign_id:campaignId,actor_id:actorId,[key]:id(99)}:null,error:null}));
+    const response=await POST(request(),context);expect(response.status).toBe(503);expect(f.create).not.toHaveBeenCalled();expect(f.lookup).toHaveBeenCalledTimes(2);
+  });
+  it("preserves resolution lookup failure instead of preparing a fallback credential",async()=>{
+    const f=fixture();f.lookup.mockImplementation(async table=>({data:null,error:table==="engagement_translation_generation_resolutions"?{code:"FETCH_ERROR"}:null}));
+    const response=await POST(request(),context);expect(response.status).toBe(503);expect(f.create).not.toHaveBeenCalled();expect(f.lookup).toHaveBeenCalledTimes(2);
   });
   it("confirms the same request after lost acknowledgement and key removal without preparing another key",async()=>{
     const f=fixture();f.create.mockRejectedValueOnce(new Error("Synthetic response loss"));expect((await POST(request(),context)).status).toBe(503);
@@ -105,7 +121,7 @@ describe("staff generation queue routes",()=>{
     expect(response.status).toBe(413);expect(reads).toBe(1);expect(cancel).toHaveBeenCalledOnce();expect(mocks.client).not.toHaveBeenCalled();
   });
   it("keeps key-read errors unavailable and does not create a request with an ambient fallback",async()=>{
-    const f=fixture();f.lookup.mockResolvedValueOnce({data:null,error:null}).mockResolvedValueOnce({data:[],error:{code:"FETCH_ERROR"}});
+    const f=fixture();f.lookup.mockResolvedValueOnce({data:null,error:null}).mockResolvedValueOnce({data:null,error:null}).mockResolvedValueOnce({data:[],error:{code:"FETCH_ERROR"}});
     const response=await POST(request(),context);expect(response.status).toBe(503);expect(await response.json()).toMatchObject({kind:"credential_unavailable"});expect(f.create).not.toHaveBeenCalled();
   });
   it.each(["wrong_id","false_replay"])("does not confirm a %s acknowledgement",async kind=>{

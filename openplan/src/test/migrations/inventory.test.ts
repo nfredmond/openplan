@@ -481,18 +481,20 @@ const EXPECTED = {
   // 20261014000009 adds one immutable translation history table with staff SELECT only.
   // 20261014000010 adds one RLS receipt table and one staff SELECT policy.
   // Confirmed in openplan_translation_command_proof_20260913; no direct write policy.
-  policies: 753,
-  permissive: 502,
+  // 20261014000019 adds one immutable resolution table with RLS and one actor/staff SELECT policy.
+  // Confirmed in the isolated installed catalog; no new write policy or view.
+  policies: 754,
+  permissive: 503,
   restrictive: 251,
   permissiveWrites: 277,
   expanded: 286,
-  tablesWithPolicies: 222,
+  tablesWithPolicies: 223,
   // 20261014000013 adds three generation custody tables with RLS and no client policies.
   // Installed isolated catalog confirms all three; no application view or policy is added.
-  relations: 261,
-  tables: 248,
+  relations: 262,
+  tables: 249,
   views: 13,
-  rlsEnabledTables: 248,
+  rlsEnabledTables: 249,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

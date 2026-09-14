@@ -5,10 +5,10 @@
     "server": "89a4f58f13f0bc17a23a9e3ada750742de868ef605f19e91c16f6dda141f3ea7"
   },
   "testSha256": {
-    "sql": "349fcafe8c1d8cb0babda20385093e652590882ab9b14ae642dfd85e9aeec446",
+    "sql": "0d9ff7f93cfc628f25f550c042920b992b3d5b67662a3efed486a00fb8efaffc",
     "unit": "85621c2b92540339b0742513aba1123dd1b97d6c6d9e731fea020eefc171a653"
   },
-  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-resolution-controls-1789357595427459951",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-resolution-controls-1789358679281889446",
   "results": [
     {
       "case": "baseline-sql",
@@ -310,6 +310,60 @@
       "expectedFailure": "cancels queued work and refuses its original creation replay",
       "failedTests": [
         "durable translation resolution in PostgreSQL cancels queued work and refuses its original creation replay"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "erase-terminal-outcome",
+      "outcome": "killed",
+      "expectedFailure": "preserves prior terminal failed outcome and attempt",
+      "failedTests": [
+        "durable translation resolution in PostgreSQL preserves prior terminal failed outcome and attempt"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "lose-incomplete-output-flag",
+      "outcome": "killed",
+      "expectedFailure": "preserves incomplete output and the original request exactly",
+      "failedTests": [
+        "durable translation resolution in PostgreSQL preserves incomplete output and the original request exactly"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "leak-receipts-to-outsider",
+      "outcome": "killed",
+      "expectedFailure": "hides retained receipts from outsider",
+      "failedTests": [
+        "durable translation resolution in PostgreSQL hides retained receipts from outsider"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-anonymous-enumeration",
+      "outcome": "killed",
+      "expectedFailure": "denies anonymous receipt enumeration",
+      "failedTests": [
+        "durable translation resolution in PostgreSQL denies anonymous receipt enumeration"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-direct-receipt-change",
+      "outcome": "killed",
+      "expectedFailure": "denies direct authenticated receipt changes",
+      "failedTests": [
+        "durable translation resolution in PostgreSQL denies direct authenticated receipt changes"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-service-resolution",
+      "outcome": "killed",
+      "expectedFailure": "denies service invocation of the authenticated resolution command",
+      "failedTests": [
+        "durable translation resolution in PostgreSQL denies service invocation of the authenticated resolution command"
       ],
       "expectedOutcome": true
     }

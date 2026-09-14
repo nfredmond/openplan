@@ -1,0 +1,9 @@
+{
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "database": "openplan_translation_resolution_proof_20260913",
+  "schemaSource": "postgres 337 through 20261014000018",
+  "schemaSha256": "e5f064d34d049380ba434915da12fb836fb54f8ff239deb7e916e786c02a2c37",
+  "candidateSha256": "fd119b912465ca05089c89fb4d1cdcbbf1b9b499030673ce29ba6a077c36d1c0",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/resolution-proof-setup",
+  "scope": "Schema-only proof database; original owners retained; no application, PostgREST or worker is connected. No source records copied. Migration bookkeeping is intentionally empty."
+}

@@ -1,0 +1,40 @@
+{
+  "sourceSha256": "fd119b912465ca05089c89fb4d1cdcbbf1b9b499030673ce29ba6a077c36d1c0",
+  "testSha256": "954a665239715157a7e6cc8771b30a0b33177dc6550e5e9eeecf77f9f19a1217",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/resolution-inventory-1789359642659028679",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-policy",
+      "outcome": "killed",
+      "expectedFailure": "counts what the database actually has",
+      "failedTests": [
+        "migration policy inventory counts what the database actually has"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-rls",
+      "outcome": "killed",
+      "expectedFailure": "reads every relation the migrations declare",
+      "failedTests": [
+        "migration schema inventory reads every relation the migrations declare"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Source policy/schema inventory; temporary source changes restored without applying any SQL. The installed live suite independently verifies actual database behavior."
+}

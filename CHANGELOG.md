@@ -44,8 +44,9 @@ the migrations before using this development code.
 
 Migration 19 adds immutable resolution receipts for damaged generation requests,
 blocks late creation retries and preserves retained output. Its SQL and receipt
-validation have isolated candidate checks; resolution API and editor integration
-are still unfinished. It has not been installed in the browser verification stack.
+validation have isolated database checks. The authenticated resolution API and
+queue preflight are implemented; editor recovery integration remains unfinished.
+Migration 19 is installed in the isolated browser verification stack.
 
 The queue API and editor retain exact request identities across retries. The
 local worker has process-restart and exact-delivery evidence. Staff browser

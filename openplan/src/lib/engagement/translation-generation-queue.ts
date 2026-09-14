@@ -11,6 +11,8 @@ type Service = ReturnType<typeof createServiceRoleClient>;
 const scopeSchema = z.object({ workspaceId: z.string().uuid(), campaignId: z.string().uuid(), actorId: z.string().uuid() }).strict();
 export type TranslationGenerationScope = z.infer<typeof scopeSchema>;
 export const TRANSLATION_GENERATION_REPLAY_COLUMNS = "id,workspace_id,campaign_id,actor_id,locale,intent";
+export const TRANSLATION_GENERATION_RESOLUTION_COLUMNS = "request_id,workspace_id,campaign_id,actor_id";
+const resolutionSchema = z.object({ request_id: z.string().uuid(), workspace_id: z.string().uuid(), campaign_id: z.string().uuid(), actor_id: z.string().uuid() }).strict();
 const replaySchema = z.object({ id: z.string().uuid(), workspace_id: z.string().uuid(), campaign_id: z.string().uuid(), actor_id: z.string().uuid(),
   locale: z.string(), intent: z.unknown() }).strict();
 export class TranslationQueueError extends Error {
@@ -46,6 +48,19 @@ export async function queueTranslationGeneration(service: Service, rawScope: Tra
     if (saved.id !== body.requestId || saved.workspace_id !== scope.workspaceId || saved.campaign_id !== scope.campaignId ||
       saved.actor_id !== scope.actorId || saved.locale !== body.locale || !isDeepStrictEqual(saved.intent, intent)) throw new TranslationQueueError("conflict", 409);
   } else {
+    // A resolved absent request needs no credential. SQL repeats this decision
+    // under the shared writer lock if resolution commits after this lookup.
+    const resolution = await service.from("engagement_translation_generation_resolutions").select(TRANSLATION_GENERATION_RESOLUTION_COLUMNS)
+      .eq("request_id", body.requestId).eq("workspace_id", scope.workspaceId).eq("campaign_id", scope.campaignId).eq("actor_id", scope.actorId)
+      .limit(1).abortSignal(AbortSignal.timeout(10000)).maybeSingle();
+    rpcError(resolution.error);
+    if (resolution.data !== null) {
+      const saved = resolutionSchema.parse(resolution.data);
+      if (saved.request_id !== body.requestId || saved.workspace_id !== scope.workspaceId || saved.campaign_id !== scope.campaignId || saved.actor_id !== scope.actorId) {
+        throw new TranslationQueueError("unavailable", 503);
+      }
+      throw new TranslationQueueError("conflict", 409);
+    }
     try {
       selection = await prepareWorkspaceTranslationSelection({ workspaceId: scope.workspaceId, requestId: body.requestId,
         credentialId: randomUUID(), modelId: process.env.OPENPLAN_ENGAGEMENT_TRANSLATION_MODEL?.trim() || "claude-haiku-4-5-20251001",

@@ -1,0 +1,25 @@
+{
+  "url": "http://127.0.0.1:29821",
+  "table": "engagement_translation_generation_resolutions",
+  "results": [
+    {
+      "role": "service",
+      "projection": "request_id,workspace_id,campaign_id,actor_id",
+      "status": 200,
+      "code": null
+    },
+    {
+      "role": "service",
+      "projection": "payload_json",
+      "status": 403,
+      "code": "42501"
+    },
+    {
+      "role": "anonymous",
+      "projection": "payload_json",
+      "status": 401,
+      "code": "42501"
+    }
+  ],
+  "limits": "Read-only PostgREST queries limited to zero rows. Confirms schema-cache visibility and column grants, not positive row-level isolation or the authenticated resolution HTTP route."
+}

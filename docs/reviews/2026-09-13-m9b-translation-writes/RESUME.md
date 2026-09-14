@@ -1,3 +1,7 @@
+# Latest resolution API and installation checkpoint
+
+Read [RESOLUTION_API_PROGRESS.md](RESOLUTION_API_PROGRESS.md) first. Migration 19 is installed at 338/19. API, queue preflight and concurrent SQL checks are in place; all 525 isolated RLS tests pass. The full unit run has one failure because the editor does not yet call the new endpoint. Finish reachable browser recovery next.
+
 # Latest resolution database checkpoint
 
 Read [RESOLUTION_DATABASE_PROGRESS.md](RESOLUTION_DATABASE_PROGRESS.md) first. Candidate SQL and receipt verification have native and fault evidence; migration 19 remains uninstalled. Next prove simultaneous resolution/creation and connect the API, queue preflight and editor recovery.

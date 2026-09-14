@@ -8,7 +8,7 @@ private=Path('/home/nathaniel/.local/state/openplan/response-write-probe-2026091
 cases=[('baseline',original,None),('harmless',original+'\n# Harmless wrapper control.\n',None)]
 def mutate(name,old,new,expected):
  assert original.count(old)==1,(name,original.count(old));cases.append((name,original.replace(old,new),expected))
-mutate('omit-installation-check',"assert before['count'] == 337 and before['latest'] == '20261014000018', 'Expected installed translation migration 18'",'pass','test_wrong_installation_never_launches_child')
+mutate('omit-installation-check',"assert before['count'] == 338 and before['latest'] == '20261014000019', 'Expected installed translation migration 19'",'pass','test_wrong_installation_never_launches_child')
 for name,old in [('staff-command',"before['command'] and "),('anonymous-command',"not before['anonymousCommand'] and "),('direct-writes'," and not before['directWrites']")]:
  mutate('omit-'+name,old,'','test_wrong_installation_never_launches_child')
 mutate('omit-preservation-check',"assert preserved, 'Browser child changed installed translation permissions or migrations'",'pass','test_child_cannot_silently_change_installed_state')
@@ -36,4 +36,4 @@ for access in [False,True]:
   assert proof['installedPermissionsPreserved'] and proof['before']==proof['after'] and proof['childExit']==code
   results.append({'case':f'installed-{access}-{mode}','exit':code,'installedPermissionsPreserved':True,'expectedOutcome':True})
   print('installed',access,mode,'preserved',flush=True)
-(review/'translation-browser-wrapper-337-controls.json').write_text(json.dumps({'sourceSha256':hashlib.sha256(original.encode()).hexdigest(),'testSha256':hashlib.sha256(test.read_bytes()).hexdigest(),'privateEvidence':str(private),'results':results,'limits':'Source faults run only against mocked process/SQL boundaries. Four actual child exits read installed 337/18 grants before and after; no permission changes, browser journeys or model calls occur in this script.'},indent=2)+'\n')
+(review/'translation-browser-wrapper-338-controls.json').write_text(json.dumps({'sourceSha256':hashlib.sha256(original.encode()).hexdigest(),'testSha256':hashlib.sha256(test.read_bytes()).hexdigest(),'privateEvidence':str(private),'results':results,'limits':'Source faults run only against mocked process/SQL boundaries. Four actual child exits read installed 338/19 grants before and after; no permission changes, browser journeys or model calls occur in this script.'},indent=2)+'\n')

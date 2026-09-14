@@ -198,6 +198,8 @@ const SERVICE_ONLY_TABLES = new Set(["billing_webhook_receipts"]);
 const DEDICATED_LIVE_RLS_PROBES = new Set([
   // engagement-translation-command-activation-rls: exact staff receipt, viewer/outsider/anon refusal.
   "engagement_translation_write_receipts",
+  // translation-generation-resolution-live: original actor, current staff, private bytes and write refusal.
+  "engagement_translation_generation_resolutions",
   "workspace_provider_api_connections",
   "workspace_provider_api_revisions",
   "assistant_provider_connections",
@@ -1751,6 +1753,7 @@ describe("workspace RLS isolation inventory", () => {
     expect([...SERVICE_ONLY_TABLES]).toEqual(["billing_webhook_receipts"]);
     expect([...DEDICATED_LIVE_RLS_PROBES]).toEqual([
       "engagement_translation_write_receipts",
+      "engagement_translation_generation_resolutions",
       "workspace_provider_api_connections",
       "workspace_provider_api_revisions",
       "assistant_provider_connections",
@@ -2083,7 +2086,7 @@ liveDescribe("the probe list covers the schema", () => {
     );
     expect(
       uncovered.map(({ table }) => table),
-      "these workspace-scoped tables are neither probed by this suite, nor provably deny-all, nor excused — add a fixture to WORKSPACE_RLS_PROBES, or excuse them by name with the reason"
+      `these workspace-scoped tables are neither probed by this suite, nor provably deny-all, nor excused: ${uncovered.map(({ table }) => table).join(", ")}. Add a fixture to WORKSPACE_RLS_PROBES, or excuse them by name with the reason`
     ).toEqual([]);
 
     // The ratchet's staleness half: an excuse that is no longer needed is a

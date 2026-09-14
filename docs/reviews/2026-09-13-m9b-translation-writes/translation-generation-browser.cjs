@@ -72,7 +72,7 @@ async function journey(browser,width){
 }
 (async()=>{
  fs.writeFileSync(path.join(prefix,'identity.log'),execFileSync('bash',[path.join(app,'scripts/ops/which-openplan.sh'),base],{cwd:root,encoding:'utf8'}));
- expect(sql("select count(*)||':'||max(version) from supabase_migrations.schema_migrations")).toBe('337:20261014000018');
+ expect(sql("select count(*)||':'||max(version) from supabase_migrations.schema_migrations")).toBe('338:20261014000019');
  expect(sql("select count(*) from engagement_translation_generation_fields where state in ('queued','reserved','running')")).toBe('0');
  console.log('Generation browser evidence',prefix);
  const browser=await chromium.launch({channel:'chrome',headless:true});try{for(const width of [1440,390])await journey(browser,width)}finally{await browser.close()}

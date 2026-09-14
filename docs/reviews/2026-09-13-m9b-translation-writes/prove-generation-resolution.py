@@ -51,6 +51,13 @@ mutate('lose-refusal-kind', 'server', 'const code = response.error.code;', 'cons
 mutate('lose-replay-marker', 'sql', "'resultText',saved.result_json::text,'resultSha256',saved.result_sha256,'replayed',true)", "'resultText',saved.result_json::text,'resultSha256',saved.result_sha256,'replayed',false)", 'retains exact damaged bytes and replays the original receipt')
 mutate('reject-second-copy', 'sql', 'CREATE INDEX translation_generation_resolved_request ON', 'CREATE UNIQUE INDEX translation_generation_resolved_request ON', 'preserves two distinct copies without rewriting the first')
 mutate('lose-queued-cancellation', 'sql', "WHEN field.state IN ('queued','reserved') THEN 'cancelled'", "WHEN field.state IN ('queued','reserved') THEN field.state", 'cancels queued work and refuses its original creation replay')
+mutate('erase-terminal-outcome', 'sql', "ELSE field.state END;", "ELSE 'cancelled' END;", 'preserves prior terminal failed outcome and attempt')
+mutate('lose-incomplete-output-flag', 'sql', "'outputRetained',EXISTS(SELECT 1 FROM engagement_translation_generation_outputs WHERE field_id=field.id)", "'outputRetained',false", 'preserves incomplete output and the original request exactly')
+policy = "USING(actor_id=auth.uid() AND EXISTS(SELECT 1 FROM public.workspace_members m\n  WHERE m.workspace_id=engagement_translation_generation_resolutions.workspace_id AND m.user_id=auth.uid() AND m.role IN ('owner','admin','member')));"
+mutate('leak-receipts-to-outsider', 'sql', policy, 'USING(true);', 'hides retained receipts from outsider')
+mutate('allow-anonymous-enumeration', 'sql', 'GRANT SELECT ON public.engagement_translation_generation_resolutions TO authenticated;', 'GRANT SELECT ON public.engagement_translation_generation_resolutions TO authenticated,anon;', 'denies anonymous receipt enumeration')
+mutate('allow-direct-receipt-change', 'sql', 'GRANT SELECT ON public.engagement_translation_generation_resolutions TO authenticated;', 'GRANT SELECT,UPDATE ON public.engagement_translation_generation_resolutions TO authenticated;', 'denies direct authenticated receipt changes')
+mutate('allow-service-resolution', 'sql', 'GRANT EXECUTE ON FUNCTION public.resolve_translation_generation_request(uuid,uuid,uuid,text,text) TO authenticated;', 'GRANT EXECUTE ON FUNCTION public.resolve_translation_generation_request(uuid,uuid,uuid,text,text) TO authenticated,service_role;', 'denies service invocation of the authenticated resolution command')
 results = []
 try:
  for name, key, body, expected in cases:
@@ -66,7 +73,7 @@ try:
   (private / (name + '.log')).write_text(run.stdout + run.stderr)
   report = json.loads(target.read_text())
   failed = [a['fullName'] for suite in report['testResults'] for a in suite['assertionResults'] if a['status'] == 'failed']
-  correct = run.returncode == 0 and report['numPassedTests'] == (21 if key == 'sql' else 39) if expected is None else run.returncode != 0 and any(expected in test for test in failed)
+  correct = run.returncode == 0 and report['numPassedTests'] == (30 if key == 'sql' else 39) if expected is None else run.returncode != 0 and any(expected in test for test in failed)
   results.append({'case': name, 'outcome': 'survived' if run.returncode == 0 else 'killed', 'expectedFailure': expected, 'failedTests': failed, 'expectedOutcome': correct})
   print(name, results[-1]['outcome'], flush=True)
   assert correct, (name, failed, run.stderr)
