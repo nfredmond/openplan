@@ -19,7 +19,7 @@ for mode,expected in [('baseline',None),('harmless',None),('viewer-history-leak'
     (logs/(mode+'.log')).write_text(run.stdout+run.stderr)
     prefixes=re.findall(r'Checking translation access 1440 (.+)',run.stdout)
     if not prefixes: raise RuntimeError('Access runner did not reach its role checks; inspect private log')
-    prefix=Path(prefixes[0]);cleanup=json.loads((private/'translation-editor-cleanup-access-journey.json').read_text())
+    prefix=Path(prefixes[0]);cleanup=json.loads((private/'translation-editor-installed-permissions-access-journey.json').read_text())
     matched=run.returncode==1 and expected in run.stderr if expected else run.returncode==0
     if expected:
         detail=json.loads(Path(str(prefix)+'-failure.json').read_text());matched=matched and expected in detail['message']
@@ -27,8 +27,8 @@ for mode,expected in [('baseline',None),('harmless',None),('viewer-history-leak'
         result=Path(str(prefix)+'-result.json')
         detail=json.loads(result.read_text()) if result.exists() else {}
         matched=matched and detail.get('passed',False) and [r['width'] for r in detail.get('results',[])]==[1440,390]
-    matched=matched and cleanup['grantRevoked'] and cleanup['childExit']==run.returncode
-    results.append({'case':mode,'expectedFailure':expected,'exit':run.returncode,'matched':matched,'grantRevoked':cleanup['grantRevoked'],'artifactPrefix':prefix.name})
+    matched=matched and cleanup['installedPermissionsPreserved'] and cleanup['childExit']==run.returncode
+    results.append({'case':mode,'expectedFailure':expected,'exit':run.returncode,'matched':matched,'installedPermissionsPreserved':cleanup['installedPermissionsPreserved'],'artifactPrefix':prefix.name})
     (review/'translation-access-browser-controls.json').write_text(json.dumps({'sourceSha256':{name:hashlib.sha256((review/name).read_bytes()).hexdigest() for name in ['translation-access-browser.cjs','run-translation-editor-browser.py']},'results':results,'limits':'Faults inject response bodies to prove browser refusal assertions. They do not mutate application authorization or substitute for installed RLS controls.'},indent=2)+'\n')
     print(mode,'expected outcome' if matched else 'UNEXPECTED',flush=True)
     assert matched,mode

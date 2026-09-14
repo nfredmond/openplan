@@ -1,0 +1,143 @@
+{
+  "sourceCommit": "255a011953fb2840e32effa27e3b45ed459b40fc",
+  "checkout": "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13",
+  "url": "http://127.0.0.1:3260",
+  "identity": "Live Next dev launch identified by which-openplan.sh; not a stamped production build.",
+  "sourceHashes": {
+    "openplan/src/components/engagement/campaign-translations-panel.tsx": "b15e747009bb9da5c9c21385cc0e477fc40fec4dcb6a79aa858f6f9099c16bab",
+    "openplan/src/components/engagement/translation-write-recovery.tsx": "0658453ffc77e7f010a1f1daec3bd7e499153e66ff13a9f8e3c3498b18f6b856",
+    "openplan/src/lib/engagement/campaign-translations.ts": "c07c534546e7db5317719ae39063ee655afc99f9e308e5b49b80e8d2c958dac7",
+    "openplan/src/lib/engagement/pending-translation.ts": "88a62ec79b725321cf5766ed9f530d1eaf48cb2411abebc84a9c703a52b971a1",
+    "openplan/src/lib/engagement/translation-write.ts": "f2dee0dc4d9929c65928084cde990d4f6012286f804a36eba22bac375e1048ff",
+    "openplan/src/app/api/engagement/campaigns/[campaignId]/translations/commands/route.ts": "73094a9f95d6496642bcb6ce445ce860972fe16d0b67372350b41152e0e0d1cc",
+    "openplan/src/app/api/engagement/campaigns/[campaignId]/translations/snapshot/route.ts": "631d87757a8141b6fb148cfa26238eef84430c9ddfe1e4a0358160534e776e05",
+    "openplan/src/components/engagement/translation-draft-recovery.tsx": "1d9cd144c7652d2832c60bd6f6100b0922c385c286f444aa16eb07d17514124c",
+    "openplan/src/lib/engagement/translation-drafts.ts": "564283435aac0792f133d59d72f462cc08f78cb1596ed5eaacb443b4bd520495",
+    "openplan/src/lib/engagement/translation-snapshot.ts": "2fe4e45bc95aa4decdcb023838051dd049cac8459115307a8afb495ab7e1c39b",
+    "openplan/src/app/(app)/engagement/[campaignId]/page.tsx": "f0da9b3b93e2e01421fe192f865481b8bbee627ab8fa30855759d4fabc492d7e",
+    "openplan/src/lib/engagement/translation-history.ts": "73f6bfbb5cab92dafe3a811a5de99a62b20ef6c329fc077e0ca810ef9b92aa7d",
+    "openplan/src/lib/engagement/translation-history-server.ts": "2bc1fe13cfd03538545642238cd08831ef481ac44645b8e911a73d71af3ed2b9",
+    "openplan/src/components/engagement/translation-history.tsx": "3504cb29f72b28a49620fb671ddc188c6ee2b825110f20d5319c6588e022d40d",
+    "openplan/supabase/migrations/20261014000012_engagement_translation_history_receipts.sql": "5ed0aada4a21e364197ac7874e2ba890d734a7504605c53d06833dbabddc9544",
+    "openplan/supabase/migrations/20261014000017_engagement_translation_command_activation.sql": "43bb8638b703ebd1ee6d7c705da88ec00bcaaf3208a1eeda9e2651aa79e1e1fb",
+    "openplan/src/lib/engagement/translation-publication.ts": "14eb393c39201986ea46dfc9f6000c1899d996823fc38c8d3873a155d621dc97",
+    "openplan/src/lib/engagement/translation-publication-reference.ts": "6cabaf8f9e69e91b7ae790318a004a7f8c90d2197b75935251e3e0828d5d8a23",
+    "openplan/src/lib/engagement/translation-generation-request.ts": "a170e2ef38fc4278f76fa7b87ef43c057e90f0349169aad23ccc7e63c8a0ff1d",
+    "openplan/src/lib/engagement/translation-publication-server.ts": "6c3662048ba0b421a5384468daf12668dd0210625fb0e08b4a692e6ec49a739b",
+    "openplan/src/lib/engagement/translation-generation-read.ts": "a7a8a1bc8dd77ee54c6e769d51ce14ecd316a2371bd343106eced8b2e080735a"
+  },
+  "harnessSha256": {
+    "run-translation-editor-browser.py": "253609525c80ee6c4172d5f15188071390edf64f55f01ba1a15147fc8bc1cb3a",
+    "translation-editor-browser.cjs": "0a47ee6a75f7ed55c8ab886f73437396684c1efaa2f5aababfcd16dab172fc1f"
+  },
+  "installedState": {
+    "childExit": 0,
+    "installedPermissionsPreserved": true,
+    "before": {
+      "count": 336,
+      "latest": "20261014000017",
+      "command": true,
+      "tableAcl": "{postgres=arwdDxtm/postgres,authenticated=rm/postgres,service_role=arwdDxtm/postgres}",
+      "commandAcl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "directWrites": false,
+      "anonymousCommand": false
+    },
+    "after": {
+      "count": 336,
+      "latest": "20261014000017",
+      "command": true,
+      "tableAcl": "{postgres=arwdDxtm/postgres,authenticated=rm/postgres,service_role=arwdDxtm/postgres}",
+      "commandAcl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "directWrites": false,
+      "anonymousCommand": false
+    }
+  },
+  "results": [
+    {
+      "width": 1440,
+      "campaignId": "acbd0e72-ae60-438e-87ea-2172f8470bf0",
+      "passed": true,
+      "overflow": {
+        "viewport": 1440,
+        "document": 1440
+      },
+      "commandCount": 8,
+      "downloadSha256": "b2cecba1e635cf26a461e4f7dc39ea3d6c778904db9040e565fc2e6dbeed0b13",
+      "console": {
+        "pageErrors": 0,
+        "injectedRequestFailures": 2,
+        "expectedCorrectionConflicts": 1,
+        "preloadWarnings": 8
+      },
+      "captures": {
+        "translation-editor-1440-1789352021622-unreadable-draft.png": "faf67b2a452345f217c13c9f6de010bd12a9acb0cf5d5d3783b2c8ebfa0756f4",
+        "translation-editor-1440-1789352021622-interrupted-archive.png": "4bc4653365c3a3edc9119b0e44634bd6ee88a097f106c8baf3d05b342af79b5b",
+        "translation-editor-1440-1789352021622-request-storage-conflict.png": "8a8c3fdd4fedd1588d5de72ad62f21f888b3870318b17680508e79bad36cb1a7",
+        "translation-editor-1440-1789352021622-retained-history.png": "d184f3d4da0f4e24c4513717e80583c5fcd4b371a0edff9234ec81e6e7dffaa7",
+        "translation-editor-1440-1789352021622-storage-deletion-observed.png": "47f7c015e63ea1bc5401421b025d9c7db2e1866627ca46ee7d755106e951c122",
+        "translation-editor-1440-1789352021622-deleted-inflight-request.png": "9ebfad7aa0475c69c0f30347fb327c82fee83b04354c9a42300e8e527834cd84",
+        "translation-editor-1440-1789352021622-unconfirmed.png": "2516d27f542170a3959f7d440f6d1bc5f40e6f5f1e74e506baa64871467e145e",
+        "translation-editor-1440-1789352021622-quota-draft.png": "a9e8b3f3146881f41f9dc78084e070cbcf1c80f55487cd949bf53bd97fc72de5",
+        "translation-editor-1440-1789352021622-conflict-review.png": "195cf177a5c2f07063e6096e83b13cbd687e0cf33a1f3208e7452e711f4f053f",
+        "translation-editor-1440-1789352021622-differing-stored-request.json": "c8d5238dc6cc460adb7036cfaecd9bc86367130533e29284785d145a1011366b",
+        "translation-editor-1440-1789352021622-archive-2.json": "4b95b33996333bb2b06aaec986def4863c97349b5a8b9e05e0391799c294cb59",
+        "translation-editor-1440-1789352021622-volatile-request-after-archive.json": "51d04d7ce17a398d75dfaea5cc941e4f1ca005139447cf45b53f7f2b110e3f06",
+        "translation-editor-1440-1789352021622-differing-request-archive.json": "c8d5238dc6cc460adb7036cfaecd9bc86367130533e29284785d145a1011366b",
+        "translation-editor-1440-1789352021622-quota-page-draft.json": "412983afff061532b0fdd5c2e0a50f20a57ed97c8b8d8e241aa14b82f0e2e48e",
+        "translation-editor-1440-1789352021622-result.json": "5910f389d0533123a3f76e49b792c08d06c0196503b92a8a69041e44abd76c68",
+        "translation-editor-1440-1789352021622-retained-request.json": "b2cecba1e635cf26a461e4f7dc39ea3d6c778904db9040e565fc2e6dbeed0b13",
+        "translation-editor-1440-1789352021622-volatile-request-after-storage-event.json": "51d04d7ce17a398d75dfaea5cc941e4f1ca005139447cf45b53f7f2b110e3f06",
+        "translation-editor-1440-1789352021622-volatile-request.json": "51d04d7ce17a398d75dfaea5cc941e4f1ca005139447cf45b53f7f2b110e3f06",
+        "translation-editor-1440-1789352021622-unreadable-after-reload.json": "ffc8d646ce0eea2a7ac686d2e94db00cafbd0252558bd89ce21d5898a64ad0c8",
+        "translation-editor-1440-1789352021622-archive-3.json": "4b95b33996333bb2b06aaec986def4863c97349b5a8b9e05e0391799c294cb59",
+        "translation-editor-1440-1789352021622-damaged-stored-copy.json": "4b95b33996333bb2b06aaec986def4863c97349b5a8b9e05e0391799c294cb59",
+        "translation-editor-1440-1789352021622-archive-1.json": "24b89eef1effcb4d511200af6079d64c8a7433f08592a00a31269cc70050e339",
+        "translation-editor-1440-1789352021622-deleted-inflight-request.json": "51d04d7ce17a398d75dfaea5cc941e4f1ca005139447cf45b53f7f2b110e3f06"
+      }
+    },
+    {
+      "width": 390,
+      "campaignId": "e0d0966f-307a-4a9f-8527-fc510f1cb3e7",
+      "passed": true,
+      "overflow": {
+        "viewport": 390,
+        "document": 390
+      },
+      "commandCount": 8,
+      "downloadSha256": "22b4b4a383b822290532af6c78c9913365857121dffb80022ba9ebe74d6bfd52",
+      "console": {
+        "pageErrors": 0,
+        "injectedRequestFailures": 2,
+        "expectedCorrectionConflicts": 1,
+        "preloadWarnings": 0
+      },
+      "captures": {
+        "translation-editor-390-1789352091047-retained-history.png": "343dba736ed88bbe51c0d505d90de719ca0f2d918cf1c6427041a65e1eea7857",
+        "translation-editor-390-1789352091047-request-storage-conflict.png": "5b9d2c1169a7c04665077425a3e14b07580907cb8e0ddb5a01434fdae590aa16",
+        "translation-editor-390-1789352091047-interrupted-archive.png": "c83063850769dc4f04ace69db7466d8be871c4ce05a458d661cc25029cdc8104",
+        "translation-editor-390-1789352091047-conflict-review.png": "c9376d3f681a5666db1e96bf12696b6c8da70fa24494a5e217a947a4da72e109",
+        "translation-editor-390-1789352091047-unconfirmed.png": "ee6b5184c4e16ef54bb8352ca2cf0a351e7888467af1ba18fa08bbef56f84f6d",
+        "translation-editor-390-1789352091047-deleted-inflight-request.png": "1ff4f2b09f8c278104eef67a4e01ab582efacc6907b0bfa8591f1438b34e3487",
+        "translation-editor-390-1789352091047-unreadable-draft.png": "c1e8df4a643abdb1fd41f2ef1313c271068c96f240d6cb6ce28c25de12bdcc26",
+        "translation-editor-390-1789352091047-storage-deletion-observed.png": "5f4b49944ce6651a918ac589fc7c3728c2f00db68f9eaac6405c8844ad5c9b88",
+        "translation-editor-390-1789352091047-quota-draft.png": "9810fa45a7beb244a2494bc11c744c93e40a9d10c85c19c2888d2a7198f287f8",
+        "translation-editor-390-1789352091047-damaged-stored-copy.json": "4b95b33996333bb2b06aaec986def4863c97349b5a8b9e05e0391799c294cb59",
+        "translation-editor-390-1789352091047-quota-page-draft.json": "60eaa8bf143e100d0df9cb2297c1cbe28b7b1f267fb1f898f1bda82980f089ca",
+        "translation-editor-390-1789352091047-archive-2.json": "4b95b33996333bb2b06aaec986def4863c97349b5a8b9e05e0391799c294cb59",
+        "translation-editor-390-1789352091047-result.json": "261f705fb709791367c68f01825032c838324b45462eb223881ee132e55d22f5",
+        "translation-editor-390-1789352091047-volatile-request-after-archive.json": "8f3a54b05ceadb32b41388960af01db93068a5ba2aba48ee1b8c42e86d59ea83",
+        "translation-editor-390-1789352091047-unreadable-after-reload.json": "ffc8d646ce0eea2a7ac686d2e94db00cafbd0252558bd89ce21d5898a64ad0c8",
+        "translation-editor-390-1789352091047-archive-3.json": "4b95b33996333bb2b06aaec986def4863c97349b5a8b9e05e0391799c294cb59",
+        "translation-editor-390-1789352091047-differing-request-archive.json": "9256c2446740857da07619c0343cb56a78526a9338b791e458fe7033ff1a5957",
+        "translation-editor-390-1789352091047-retained-request.json": "22b4b4a383b822290532af6c78c9913365857121dffb80022ba9ebe74d6bfd52",
+        "translation-editor-390-1789352091047-volatile-request-after-storage-event.json": "8f3a54b05ceadb32b41388960af01db93068a5ba2aba48ee1b8c42e86d59ea83",
+        "translation-editor-390-1789352091047-volatile-request.json": "8f3a54b05ceadb32b41388960af01db93068a5ba2aba48ee1b8c42e86d59ea83",
+        "translation-editor-390-1789352091047-archive-1.json": "e3efc3a50d88a5a01e1fc59bbfb507493819ea8a25310a832f4437954be95970",
+        "translation-editor-390-1789352091047-differing-stored-request.json": "9256c2446740857da07619c0343cb56a78526a9338b791e458fe7033ff1a5957",
+        "translation-editor-390-1789352091047-deleted-inflight-request.json": "8f3a54b05ceadb32b41388960af01db93068a5ba2aba48ee1b8c42e86d59ea83"
+      }
+    }
+  ],
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913",
+  "limits": "Real navigation and keyboard manual write/retry/history/download journeys at desktop and 390px, synthetic UI-created campaigns. Console review accounts for intentional interrupted requests, a correction conflict and observed preload warnings. Does not prove machine generation through the worker, public comment durability or production build behavior."
+}

@@ -10,7 +10,7 @@ const sourceFiles=['openplan/src/components/engagement/campaign-translations-pan
  'openplan/src/lib/engagement/campaign-translations.ts','openplan/src/lib/engagement/pending-translation.ts','openplan/src/lib/engagement/translation-write.ts',
  'openplan/src/app/api/engagement/campaigns/[campaignId]/translations/commands/route.ts','openplan/src/app/api/engagement/campaigns/[campaignId]/translations/snapshot/route.ts'];
 sourceFiles.push('openplan/src/components/engagement/translation-draft-recovery.tsx','openplan/src/lib/engagement/translation-drafts.ts','openplan/src/lib/engagement/translation-snapshot.ts','openplan/src/app/(app)/engagement/[campaignId]/page.tsx');
-sourceFiles.push('openplan/src/lib/engagement/translation-history.ts','openplan/src/lib/engagement/translation-history-server.ts','openplan/src/components/engagement/translation-history.tsx','openplan/supabase/migrations/20261014000012_engagement_translation_history_receipts.sql');
+sourceFiles.push('openplan/src/lib/engagement/translation-history.ts','openplan/src/lib/engagement/translation-history-server.ts','openplan/src/components/engagement/translation-history.tsx','openplan/supabase/migrations/20261014000012_engagement_translation_history_receipts.sql','openplan/supabase/migrations/20261014000017_engagement_translation_command_activation.sql');
 sourceFiles.push('openplan/src/lib/engagement/translation-publication.ts','openplan/src/lib/engagement/translation-publication-reference.ts','openplan/src/lib/engagement/translation-generation-request.ts','openplan/src/lib/engagement/translation-publication-server.ts','openplan/src/lib/engagement/translation-generation-read.ts');
 const handled=promise=>{promise.catch(()=>{});return promise;};
 const responseFor=(page,predicate)=>handled(page.waitForResponse(predicate));
@@ -27,6 +27,7 @@ async function login(page){
 const panelFor=page=>page.locator('article').filter({has:page.getByRole('heading',{name:/Publish this campaign in your community/})});
 const titleRow=panel=>panel.getByRole('listitem').filter({hasText:'Campaign title'}).filter({has:panel.getByRole('textbox')});
 async function setup(page){await page.getByTestId('page-tabs-nav').getByRole('link',{name:'Setup',exact:true}).click();
+ await page.waitForURL(u=>u.pathname.startsWith('/engagement/')&&u.searchParams.get('tab')==='setup');
  const panel=panelFor(page);await keyClick(page,panel.getByRole('button',{name:/Español.*Spanish/}));
  const row=panel.getByRole('listitem').filter({has:page.getByText('Campaign title',{exact:true})});
  return {panel,row,input:row.getByRole('textbox'),reason:panel.getByRole('textbox',{name:'Reason for changing saved wording',exact:true})};}
@@ -245,7 +246,7 @@ async function journey(browser,width){
 }
 (async()=>{
  const before=sourceHashes();const identity=execFileSync('bash',[root+'/openplan/scripts/ops/which-openplan.sh',base],{cwd:root,encoding:'utf8'});fs.writeFileSync(evidence+'/translation-editor-browser-identity.log',identity);
- expect(sql('select count(*)||\':\'||max(version) from supabase_migrations.schema_migrations')).toBe('331:20261014000012');
+ expect(sql('select count(*)||\':\'||max(version) from supabase_migrations.schema_migrations')).toBe('336:20261014000017');
  expect(sql(`select has_function_privilege('authenticated','${signature}','EXECUTE')`)).toBe('t');
  if(process.env.OPENPLAN_TRANSLATION_CLEANUP_PROBE==='control')process.exit(0);
  if(process.env.OPENPLAN_TRANSLATION_CLEANUP_PROBE==='1')process.exit(23);

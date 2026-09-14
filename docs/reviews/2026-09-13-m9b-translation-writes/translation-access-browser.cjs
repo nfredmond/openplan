@@ -21,12 +21,12 @@ async function keyClick(page,locator){await expect(locator).toBeEnabled();await 
 async function credentials(page,account){await page.getByLabel('Work email',{exact:true}).fill(account.email);await page.getByLabel('Password',{exact:true}).fill(account.password);}
 async function login(page,account){await page.goto(base);await page.getByRole('link',{name:/Sign in/i}).first().click();await credentials(page,account);await keyClick(page,page.getByRole('button',{name:'Sign in',exact:true}));await page.waitForURL(u=>!u.pathname.includes('sign-in'));}
 async function engagement(page){await keyClick(page,page.getByRole('link',{name:'Engagement',exact:true}).first());await page.waitForURL('**/engagement');}
-async function campaign(page){await engagement(page);await keyClick(page,page.locator(`a[href="/engagement/${campaignId}"]`).first());await page.waitForURL(u=>u.pathname===`/engagement/${campaignId}`);await keyClick(page,page.getByTestId('page-tabs-nav').getByRole('link',{name:'Setup',exact:true}));return page.locator('article').filter({has:page.getByRole('heading',{name:/Publish this campaign in your community/})});}
+async function campaign(page){await engagement(page);await keyClick(page,page.locator(`a[href="/engagement/${campaignId}"]`).first());await page.waitForURL(u=>u.pathname===`/engagement/${campaignId}`);await keyClick(page,page.getByTestId('page-tabs-nav').getByRole('link',{name:'Setup',exact:true}));await page.waitForURL(u=>u.pathname===`/engagement/${campaignId}`&&u.searchParams.get('tab')==='setup');return page.locator('article').filter({has:page.getByRole('heading',{name:/Publish this campaign in your community/})});}
 async function api(page,endpoint,body){return page.evaluate(async({campaignId,endpoint,body})=>{const response=await fetch(`/api/engagement/campaigns/${campaignId}/translations/${endpoint}`,body?{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}:{cache:'no-store'});return {status:response.status,cache:response.headers.get('cache-control'),body:await response.json()};},{campaignId,endpoint,body});}
 const consoleEvents=[],network=[],results=[];
 (async()=>{
  const before=sourceHashes();fs.writeFileSync(prefix+'-identity.log',execFileSync('bash',[root+'/openplan/scripts/ops/which-openplan.sh',base],{cwd:root,encoding:'utf8'}));
- expect(sql("select count(*)||':'||max(version) from supabase_migrations.schema_migrations")).toBe('331:20261014000012');
+ expect(sql("select count(*)||':'||max(version) from supabase_migrations.schema_migrations")).toBe('336:20261014000017');
  expect(sql("select has_function_privilege('authenticated','public.write_engagement_translations(uuid,uuid,text,text,text,jsonb)','EXECUTE')")).toBe('t');
  if(process.env.OPENPLAN_TRANSLATION_CLEANUP_PROBE==='control')process.exit(0);
  if(process.env.OPENPLAN_TRANSLATION_CLEANUP_PROBE==='1')process.exit(23);

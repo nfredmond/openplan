@@ -1,7 +1,7 @@
 {
   "sourceSha256": {
-    "translation-access-browser.cjs": "3d39fc6708af4b2f0b542d99c82deae67c4485c8373fb3c3d404eadee5b77e2a",
-    "run-translation-editor-browser.py": "baceaffa7008a179e91e69678209a0a15b059f5a6fa0d011186fc95a6cf37ee8"
+    "translation-access-browser.cjs": "fd597ef87c21dad35b48108bc51c59887ff975909eede0b4bc8d5a4cd5d9ebc7",
+    "run-translation-editor-browser.py": "253609525c80ee6c4172d5f15188071390edf64f55f01ba1a15147fc8bc1cb3a"
   },
   "results": [
     {
@@ -9,33 +9,39 @@
       "expectedFailure": null,
       "exit": 0,
       "matched": true,
-      "grantRevoked": true,
-      "artifactPrefix": "translation-access-baseline-1789327469039"
+      "installedPermissionsPreserved": true,
+      "artifactPrefix": "translation-access-baseline-1789352233762"
     },
     {
       "case": "harmless",
       "expectedFailure": null,
       "exit": 0,
       "matched": true,
-      "grantRevoked": true,
-      "artifactPrefix": "translation-access-harmless-1789327554059"
+      "installedPermissionsPreserved": true,
+      "artifactPrefix": "translation-access-harmless-1789352309682"
     },
     {
       "case": "viewer-history-leak",
       "expectedFailure": "Viewer refusal contains no private history",
       "exit": 1,
       "matched": true,
-      "grantRevoked": true,
-      "artifactPrefix": "translation-access-viewer-history-leak-1789327597618"
+      "installedPermissionsPreserved": true,
+      "artifactPrefix": "translation-access-viewer-history-leak-1789352356094"
     },
     {
       "case": "outsider-snapshot-leak",
       "expectedFailure": "Outsider refusal contains no campaign snapshot",
       "exit": 1,
       "matched": true,
-      "grantRevoked": true,
-      "artifactPrefix": "translation-access-outsider-snapshot-leak-1789327612217"
+      "installedPermissionsPreserved": true,
+      "artifactPrefix": "translation-access-outsider-snapshot-leak-1789352371782"
     }
   ],
-  "limits": "Faults inject response bodies to prove browser refusal assertions. They do not mutate application authorization or substitute for installed RLS controls."
+  "limits": "Faults inject response bodies to prove browser refusal assertions. They do not mutate application authorization or substitute for installed RLS controls.",
+  "consoleReview": {
+    "pageErrors": 0,
+    "unexpectedReactError": "Script-tag rendering error observed on outsider 404 pages at both widths; also reproduced on a missing public engagement link. Root cause and production-build behavior remain unverified.",
+    "normalStartPageControl": "HTTP 200 with no console errors",
+    "detail": "INSTALLED_BROWSER_PROGRESS.md"
+  }
 }

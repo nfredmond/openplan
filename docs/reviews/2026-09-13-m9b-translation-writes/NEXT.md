@@ -1,3 +1,7 @@
+# Latest installed browser checkpoint
+
+Read [INSTALLED_BROWSER_PROGRESS.md](INSTALLED_BROWSER_PROGRESS.md) first. Manual write/recovery/history and access journeys now ran on installed 336/17 with permissions preserved. A shared 404 console error remains recorded; the actual generation-worker-publication journey is next.
+
 # Latest integration guard checkpoint
 
 Read [INTEGRATION_GUARDS_PROGRESS.md](INTEGRATION_GUARDS_PROGRESS.md) first. It records the retired refusal audit, measured generation inventory, command-only privilege guard and copy repairs. Old browser-wrapper cautions and the remaining browser/worker/public generation work still apply.
