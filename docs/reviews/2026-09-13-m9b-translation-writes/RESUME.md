@@ -1,3 +1,7 @@
+# Latest usage-reset checkpoint
+
+Read [RESOLUTION_IN_PROGRESS.md](RESOLUTION_IN_PROGRESS.md) first. The new resolution files are saved but unverified and uninstalled. Resume this implementation from the recorded seam; the tested predecessor is `1b14ed6c`.
+
 # Latest portable isolation checkpoint
 
 Read [PORTABLE_ISOLATION_PROGRESS.md](PORTABLE_ISOLATION_PROGRESS.md) first. The regular isolated suite passes on migration 18; safe resolution of unreadable generation requests is the next software gap.
