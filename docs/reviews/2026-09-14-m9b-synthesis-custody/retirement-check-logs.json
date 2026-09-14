@@ -1,0 +1,33 @@
+{
+  "commit": "a2e0493571758542c01d1a81d6851d12b83e7e70",
+  "fullQa": {
+    "passed": 15502,
+    "skipped": 583,
+    "filesPassed": 1325,
+    "filesSkipped": 57,
+    "lint": "passed",
+    "configuredDeadcode": "passed with existing unused-export inventory",
+    "auditVulnerabilities": 0,
+    "productionBuild": "passed",
+    "liveRls": "not run inside QA; separate installed evidence"
+  },
+  "shuffle": {
+    "seed": 619145,
+    "passed": 15502,
+    "skipped": 583
+  },
+  "logs": [
+    {
+      "file": "openplan-retirement-full-qa.log",
+      "sha256": "22d06aed06fbf17784f6e9ff9d1e3de31023d18e98b05a92ccf9c735847c2c1e"
+    },
+    {
+      "file": "openplan-retirement-shuffle.log",
+      "sha256": "f4b179de7076a8e4109ab48518c1a17d2e0471fcda597fec35c2b8ef5cbf71f6"
+    },
+    {
+      "file": "openplan-retirement-lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

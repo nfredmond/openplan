@@ -20,13 +20,38 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-- Retire the earlier capped synthesis generator. Older POST requests receive an audited, private HTTP 410 without reading submitted text, invoking AI or changing stored summaries. Analysis retains explicitly limited historical summaries and directs new work to complete retained sources and reasoned staff reviews. Earlier results are not promoted to verified coverage or approved findings.
+## 0.62.0 — 2026-09-14
 
-- `20261014000027_engagement_synthesis_reviews.sql` retains private staff reviews and append-only corrections to wording, interpretation and contribution membership. Staff-only readers return the original preparation, exact revision history and checksums; the service writer refuses stale parents and changed retries. The connected editor is under verification. Exact-output approval, optional generation, response/decision links and reviewed exports remain unfinished.
+Engagement Analysis now preserves complete selected comments and survey answers,
+including their historical definitions, before staff prepare a private synthesis.
+Staff can reopen source history, inspect full contribution text, create reviews,
+correct wording and group membership with reasons, and inspect earlier versions.
+Original source, preparation and revision checksums remain available. Exact saved
+requests can be retried after interrupted acknowledgement without creating a
+second review. Browser storage failures block transport and keep the newest text
+on screen for preservation; unavailable storage cannot guarantee recovery after
+leaving or reloading.
 
-- `20261014000026_engagement_synthesis_source_list.sql` adds a staff-only paginated list of retained source selections. Source records can be reopened without recapturing current contributions.
+The earlier generator is retired because it omitted comments beyond 300 and
+survey input and could report success after a failed save. Old POST requests now
+receive a private, audited HTTP 410 without model or database writes. Earlier
+summaries remain read-only with their original counts and explicit coverage
+limits. New source preparation begins unassessed; staff drafts do not approve or
+publish findings. Optional complete AI generation, exact-output approval,
+response/decision linkage and reviewed synthesis exports remain unfinished.
 
-- Begin private retained synthesis sources: `20261014000025_engagement_synthesis_sources.sql` adds immutable complete selected comments/survey answers, historical definitions, exact hashes and staff-only capture/read RPCs. The Analysis tab now has a staff source-selection/history/inspection panel with exact browser retries. Desktop/390px source-selection, history, keyboard retry, original/corrected checksums and private-read checks passed. Generation/review workers and portable reviewed outputs are not yet connected. This is unfinished M9b work, not a released synthesis fix.
+**Database update required before restarting the app:**
+
+- `20261014000025_engagement_synthesis_sources.sql` retains immutable selected sources and staff-only capture/read functions.
+- `20261014000026_engagement_synthesis_source_list.sql` provides scoped source history without recapturing current contributions.
+- `20261014000027_engagement_synthesis_reviews.sql` retains private reviews and append-only reasoned corrections with exact retry and stale-parent protection.
+
+Run `npm exec -- supabase migration up` on the configured local deployment, then
+build and restart. No provider key, paid service or new worker is required for
+source preparation and staff review. Desktop/390px engineering journeys, full
+QA, shuffled tests, installed isolation and populated-upgrade evidence are
+recorded in the release verification; no broader planning or scientific claim
+is promoted.
 
 ## 0.61.1 — 2026-09-14
 

@@ -1,3 +1,13 @@
+# Resume at v0.62.0 final release CI
+
+September 14, 2026. This section supersedes the earlier statuses below. Source/review and retirement application code is verified at a2e0493571758542c01d1a81d6851d12b83e7e70. Local full QA and shuffled seed 619145 each passed 15,502 tests with 583 explicit skips; lint, configured dead-code check, provider checks, audit and webpack/TypeScript build passed. The 22 retirement mutations and five release-ledger controls passed. Both desktop/390px retirement journeys completed with enabled review controls, actual 410 refusals, unchanged native historical fields and no console/page errors. Historical-format component layout is explicitly synthetic; initial charset and proof-runner errors are retained. Read RELEASE_VERIFICATION.md and linked manifests.
+
+Release metadata is prepared for v0.62.0 with 346 migrations through 20261014000027. Next: inspect final main CI, RLS Isolation and populated Upgrade Path on the release commit before creating the non-draft v0.62.0 tag/release. The main/branch push is the next checkpoint action; verify remote heads rather than assuming it completed. No PR or human software-release review is needed. After publication, record actual identities/results and continue M9b exact-output approval, source-to-response/decision links, reviewed exports and optional complete resumable generation. Do not mark M9b or V1 complete.
+
+The owned production server was started at port3262 from a2e049357175 with exec session97599 and log /tmp/openplan-retirement-server.log. Recheck actual processes after interruption. Its application code matches the release except package/release metadata. The named DB remains supabase_db_openplan-restore-target-2026091050 on API29821/DB29822, installed migrations mode. Prior full isolation passed 612 tests; all 52 worker suites and populated upgrade run34901731600 passed on unchanged schema/worker/server custody. Keep the other checkout and pending reminder constraint untouched.
+
+---
+
 # Resume at legacy retirement browser and final QA
 
 September 14, 2026. This section supersedes the older checkpoint headings below. The isolated checkout and branch are unchanged. The legacy synthesis write is now retired, historical summaries remain readable, and outdated Generate directions are removed. Nine focused suites passed 130 tests; all 22 mutation cases produced expected outcomes and restored their sources. Read RETIREMENT_VERIFICATION.md and retirement-mutations.json for exact boundaries and retained proof errors. The final six screenshot states of the earlier 6bbdf609 review build have now all been inspected at desktop and 390px; review-browser-final-layout.json records the evidence.

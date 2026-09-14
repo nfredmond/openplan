@@ -1,3 +1,5 @@
+Current disposition: [v0.62.0 release verification](RELEASE_VERIFICATION.md) supersedes the checkpoint statuses below. Historical failures and earlier limits remain evidence.
+
 # Retained review editor verification in progress
 
 September 14, 2026. This is an implementation checkpoint, not browser acceptance or a release. Main remains 09c1cd17 and v0.61.1 remains the latest published release at the last remote inspection.

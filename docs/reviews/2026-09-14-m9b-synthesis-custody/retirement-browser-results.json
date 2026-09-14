@@ -1,0 +1,143 @@
+{
+  "build": "a2e0493571758542c01d1a81d6851d12b83e7e70",
+  "entries": [
+    {
+      "file": "synthesis-retirement-1440-1789426786507.json",
+      "sha256": "5de4c4eb6bfcc83cd92bee2ae27a2caa43110e64cb7955ccf8437250b958ac09",
+      "width": 1440,
+      "completed": true,
+      "console": [],
+      "pageErrors": [],
+      "runnerSha256": "c9310a3d99f9e290382904ef9ac83466fabc20a867c2ba17cac30c7423f4c074",
+      "identity": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-09-14T22:59:46.836Z",
+        "deployment": {
+          "commit": "a2e049357175",
+          "version": "0.61.1"
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "controls": {
+        "baseline": 0,
+        "harmless": 0,
+        "targeted": 1
+      },
+      "before": {
+        "sha256": "e6c37e4d588a752e52a660d6eadaa8a2a20fb6124e73ada235f022b2a53b8e88",
+        "hasEarlierSummary": false
+      },
+      "after": {
+        "sha256": "e6c37e4d588a752e52a660d6eadaa8a2a20fb6124e73ada235f022b2a53b8e88",
+        "hasEarlierSummary": false
+      },
+      "refusals": {
+        "authenticated": 410,
+        "anonymous": 410,
+        "malformedAgent": 410
+      },
+      "fixtureEncoding": {
+        "baseline": "UTF-8",
+        "harmless": "survives",
+        "omittedCharset": "detected",
+        "restored": true
+      },
+      "legacyLayout": {
+        "synthetic": true,
+        "persisted": false,
+        "fixtureSha256": "3d4b681f2a76b60d48277d3612ff007e31285a51b4af059d1be50820e183ed0d",
+        "errors": []
+      },
+      "screenshots": [
+        {
+          "file": "synthesis-retirement-1440-1789426786507-entry.png",
+          "sha256": "e68a149b5f4502c4f3579a9172b68ef7df4940fe917fa8ad78edec144432271c"
+        },
+        {
+          "file": "synthesis-retirement-1440-1789426786507-reviews.png",
+          "sha256": "1f02afeb89f2ea0ac897178f23c7a777d12401dea4a8df90eb24ce8f2d834886"
+        },
+        {
+          "file": "synthesis-retirement-1440-1789426786507-synthetic-legacy-layout.png",
+          "sha256": "7517c4737d1ca34dc2d450fd4377069b165bb978e0bdacdef196fbf7b12abdb5"
+        }
+      ]
+    },
+    {
+      "file": "synthesis-retirement-390-1789426786535.json",
+      "sha256": "c7d5156a0cb598d9fcc84827c76e154057aee1bc6ccf05c2f8031042d1f2e3e3",
+      "width": 390,
+      "completed": true,
+      "console": [],
+      "pageErrors": [],
+      "runnerSha256": "c9310a3d99f9e290382904ef9ac83466fabc20a867c2ba17cac30c7423f4c074",
+      "identity": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-09-14T22:59:46.843Z",
+        "deployment": {
+          "commit": "a2e049357175",
+          "version": "0.61.1"
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "controls": {
+        "baseline": 0,
+        "harmless": 0,
+        "targeted": 1
+      },
+      "before": {
+        "sha256": "e6c37e4d588a752e52a660d6eadaa8a2a20fb6124e73ada235f022b2a53b8e88",
+        "hasEarlierSummary": false
+      },
+      "after": {
+        "sha256": "e6c37e4d588a752e52a660d6eadaa8a2a20fb6124e73ada235f022b2a53b8e88",
+        "hasEarlierSummary": false
+      },
+      "refusals": {
+        "authenticated": 410,
+        "anonymous": 410,
+        "malformedAgent": 410
+      },
+      "fixtureEncoding": {
+        "baseline": "UTF-8",
+        "harmless": "survives",
+        "omittedCharset": "detected",
+        "restored": true
+      },
+      "legacyLayout": {
+        "synthetic": true,
+        "persisted": false,
+        "fixtureSha256": "3d4b681f2a76b60d48277d3612ff007e31285a51b4af059d1be50820e183ed0d",
+        "errors": []
+      },
+      "screenshots": [
+        {
+          "file": "synthesis-retirement-390-1789426786535-entry.png",
+          "sha256": "5273ec1e83fb1d2f370575a9e5bcef25f2ed2ff26559e411b80ef5c8c15f44fe"
+        },
+        {
+          "file": "synthesis-retirement-390-1789426786535-reviews.png",
+          "sha256": "8baaa7a00eae026cf92494d5fa58b6bb834492d0d7a24184bb129624d5bf4028"
+        },
+        {
+          "file": "synthesis-retirement-390-1789426786535-synthetic-legacy-layout.png",
+          "sha256": "1427e5504cba8e450514166d5b47261b4a6b21c06992f7fd6d402d7bc53edae8"
+        }
+      ]
+    }
+  ],
+  "visualReview": "Real source-selection entry and ready review controls inspected at both widths. Historical-format component layout inspected separately using actual component/build CSS and explicit synthetic values. Earlier fixture lacked charset; the corrected fixture preserves the middle dot and detects an omitted UTF-8 declaration.",
+  "limits": [
+    "No historical summary rows exist in the named isolated database; unchanged native before/after hashes cover null historical fields.",
+    "Legacy non-null compatibility uses rendered component and exact server-page projection/prop tests, not an upgraded native row.",
+    "Retirement does not provide new AI generation, approval or reviewed exports."
+  ]
+}
