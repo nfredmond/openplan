@@ -1,0 +1,20 @@
+{
+  "sourceCommit": "dfebc1af3a683a82c8a9da02a3d9215f47af5236",
+  "outcome": "passed",
+  "testsPassed": 15315,
+  "testsSkipped": 523,
+  "vulnerabilities": 0,
+  "checks": [
+    "lint",
+    "configured advisory deadcode check",
+    "unit suite",
+    "provider connector tests",
+    "dependency audit",
+    "webpack production build"
+  ],
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/public-copy-full-qa-dfeb.log",
+  "limits": [
+    "Ordinary QA explicitly skipped live RLS; separate full RLS process remains running.",
+    "Shuffled tests, worker check, concurrency, browser/artifact acceptance and final main/release CI remain outstanding."
+  ]
+}

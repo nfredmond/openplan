@@ -217,3 +217,40 @@ reads. Inspect direct response publication too: its source guard currently reads
 eligibility without taking the response advisory lock, while the ordinary response
 command already takes that lock. This is an untested concurrency question, not a
 confirmed additional defect. Preserve a demonstrated failure before fixing it.
+
+
+## Full QA passed; acceptance continues on dfebc1af
+
+Full QA completed successfully on `dfebc1af3a683a82c8a9da02a3d9215f47af5236`:
+15,315 passing tests, 523 skipped, lint, configured advisory deadcode check,
+provider connectors, zero audited dependency vulnerabilities and webpack build.
+`public-copy-full-qa-results.json` records that result. Do not reinterpret the
+skipped live RLS gate as isolation evidence.
+
+The separately started complete isolated RLS suite is still live at this note,
+tool session `64706`. Its log is `public-copy-full-rls-dfeb.log` under the private
+decision-context directory. Re-poll that exact process before restarting anything.
+Full QA session `65461` is terminal-success. First failed QA session `34158` is
+terminal-failure and its original log remains retained.
+
+Own new server is running in tool session `56011` on port 3262 with the Anthropic
+network guard and synthetic key. `which-openplan.sh` confirmed the serving
+checkout and health commit `dfebc1af3a68`, version 0.59.0. Browser acceptance has
+not run on this build yet. The following evidence-only commit does not change
+application source. Do not rebuild or alter application files while collecting
+acceptance. Use the repository Playwright harness and isolated contexts.
+
+The direct-response-publication concurrency question was narrowed by live grants:
+anon, authenticated and service_role all lack direct INSERT and UPDATE on
+engagement_closeloop_entries. The application uses the response command, which
+already takes the response advisory lock. A privileged owner's direct SQL
+interleaving is not evidence of an application bypass. Preserve those grants;
+exercise the actual command if testing response publication concurrency.
+
+Next finish native multi-connection privacy cases, actual public navigation and
+legacy/current public report downloads with corrected originals retained, then
+shuffled, workers and final applicable upgrade checks. Public explanation can use
+the existing response editor and private decision links. Private decision lineage
+in internal PDF/XLSX/ZIP reports is still unimplemented. Main remains 50188138;
+implementation/evidence checkpoints are on the work branch pending acceptance,
+with no PR or human-review gate. Merge directly once the increment is verified.
