@@ -14,7 +14,7 @@ The old capped synthesis generator remains separate and does not consume these s
 
 26eded0c passed full local QA and shuffled seed 619142: 15,431 tests, 549 skipped. Complete installed RLS passed 578 tests in 62 files. All 52 worker suites passed. f3b7edff passed its changed-file lint, eight panel/copy tests, fresh production build and both complete browser journeys. Database/worker/server logic is unchanged between those two commits.
 
-GitHub CI 34886882906 and Upgrade Path 34886882938 succeeded on 26eded0c. RLS 34886882895 first failed at Supabase startup because the runner's port 54324 was occupied; the failed job was rerun and remained active at this note. Inspect it, and the new final commit's CI runs, directly before any release claim. A push is not passing CI. No source/UI test failure was relabeled as infrastructure.
+GitHub CI 34886882906 and Upgrade Path 34886882938 succeeded on 26eded0c. RLS 34886882895 first failed at Supabase startup because the runner's port 54324 was occupied; the failed job was rerun and succeeded. At the weekly-reset checkpoint, main and the work branch were clean at 40e54ca813589392beeed11ff1a4dedf6eda5bec. Its CI 34888577052 and RLS Isolation 34888577005 were still in progress. Inspect their terminal results and any newer commit runs directly before any release claim. A push is not passing CI. No source/UI test failure was relabeled as infrastructure.
 
 Logs have been copied from /tmp into the private artifact directory and hashed in source-ui-browser-results.json. The earlier failed full-QA run and runner mistakes are documented in SOURCE_UI_CHECKPOINT.md; do not restart them or treat them as current results. No owned test/browser job remains active locally; check current process state after interruptions.
 
@@ -23,3 +23,7 @@ Logs have been copied from /tmp into the private artifact directory and hashed i
 The named isolated stack is supabase_db_openplan-restore-target-2026091050, workdir /home/nathaniel/.local/state/openplan/openplan-restore-target-2026091050, API 29821 / DB 29822. It now has 345 installed migrations through 20261014000026. Migrations 25/26 were applied additively. Never reset/drop. Registered native tests use installed mode here; the old candidate-only script requires baseline 343 and must not run here.
 
 The owned production server at port 3262 served f3b7edff4b35 during acceptance. The owned server was stopped after acceptance; recheck the port/process rather than trusting this note. Credentials remain in the existing private account file used by browser-sources.cjs. Private evidence is under /home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/. The weekly-reset seven-file backup is superseded and must not overwrite newer work.
+
+## Weekly-reset restart checkpoint
+
+The user expects to resume this same thread after the weekly allowance resets. No new preparation implementation has started since the source acceptance checkpoint. Resume with the current repository and CI state, then implement complete preparation and retained review under IMPLEMENTATION_BOUNDARY.md. All completed application work is pushed to main; this note is also committed and pushed. Conversation continuity does not require a browser or app server to remain running. Recheck process ownership, served-build identity and the named database before using them.
