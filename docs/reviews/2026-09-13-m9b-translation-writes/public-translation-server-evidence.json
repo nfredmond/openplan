@@ -1,0 +1,36 @@
+{
+  "checkpointParent": "1a6eae7c",
+  "checks": [
+    {
+      "artifact": "public-translation-server-controls.json",
+      "sourceSha256": "366cbff9211713617b0a7a914d64a932f119df759f717efb61540c90f9b74310",
+      "cases": 28
+    },
+    {
+      "artifact": "public-generation-queue-controls.json",
+      "sourceSha256": "27235fc51d9d2cdb9786ad6c96dcb113735207182433ad0ccac6794023be990a",
+      "cases": 38
+    },
+    {
+      "artifact": "public-generation-concurrency-evidence.json",
+      "sourceSha256": "27235fc51d9d2cdb9786ad6c96dcb113735207182433ad0ccac6794023be990a",
+      "cases": 5
+    }
+  ],
+  "unitRegression": {
+    "passed": 183,
+    "files": 4,
+    "exitCode": 0,
+    "log": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-translation-server-regression.log",
+    "logSha256": "9c58ce7f03e4829e9017c2f82b7ac04759a7ae0395216cafe9e820b805e9afff"
+  },
+  "typescript": {
+    "exitCode": 0,
+    "log": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-translation-server-types.log"
+  },
+  "limits": [
+    "Server queue helper is not connected to HTTP or the public portal.",
+    "Candidate is installed only in schema-only proof databases, not the application database.",
+    "Provider/worker join, live RLS, browser workflows and final release checks remain."
+  ]
+}

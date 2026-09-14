@@ -1,3 +1,7 @@
+# Current public translation server checkpoint
+
+Read [PUBLIC_TRANSLATION_SERVER_PROGRESS.md](PUBLIC_TRANSLATION_SERVER_PROGRESS.md) first. Explicit retry chains, source-pinned discovery and server queue/read helpers are implemented and tested. HTTP, public browser and actual worker integration remain. Older entries preserve their dated evidence.
+
 # Current public generation database checkpoint
 
 Read [PUBLIC_GENERATION_DATABASE_PROGRESS.md](PUBLIC_GENERATION_DATABASE_PROGRESS.md) first. Public authority, deduplication and atomic allowance support now have serial/fault/concurrent database evidence in an uninstalled candidate. HTTP, worker/browser joins and release gates remain. Older entries retain their dated evidence.

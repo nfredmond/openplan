@@ -16,7 +16,7 @@ BEGIN
 END $$;
 -- SQL-only fixture. Credential strings are conspicuously synthetic and cannot
 -- invoke a provider. A separate SDK/worker exercise must prove encrypted keys.
-CREATE FUNCTION pg_temp.queue_public_fixture(campaign uuid,item uuid,token text,locale text DEFAULT 'es') RETURNS jsonb LANGUAGE plpgsql AS $$
+CREATE FUNCTION pg_temp.queue_public_fixture(campaign uuid,item uuid,token text,locale text DEFAULT 'es',prior uuid DEFAULT NULL) RETURNS jsonb LANGUAGE plpgsql AS $$
 DECLARE request uuid:=gen_random_uuid(); field uuid:=gen_random_uuid(); source jsonb; credential jsonb; packet text; words text;
 BEGIN
  source:=read_public_translation_source(token,item);
@@ -27,7 +27,8 @@ BEGIN
  packet:=format('{"schemaVersion":1,"workspaceId":%s,"campaignId":%s,"fieldId":%s,"sourceText":%s,"targetLanguage":%s}',
  to_json(source->>'workspaceId'),to_json(campaign),to_json(field),to_json(words),to_json(locale));
  RETURN jsonb_build_object('request',request,'field',field,'source',source,'credential',credential,'packet',packet,
- 'ack',create_public_translation_request(request,field,token,item,locale,source,packet,credential,NULL));
+ 'ack',CASE WHEN prior IS NULL THEN create_public_translation_request(request,field,token,item,locale,source,packet,credential,NULL)
+ ELSE retry_public_translation_request(request,field,token,item,locale,source,packet,credential,NULL,prior) END);
 END $$;
 DO $probe$
 DECLARE workspace uuid:=gen_random_uuid(); actor uuid:=gen_random_uuid(); campaign uuid:=gen_random_uuid(); item uuid:=gen_random_uuid();
@@ -123,6 +124,7 @@ call_sql:=format('SELECT create_public_translation_request(%L,%L,%L,%L,%L,%L,%L,
  PERFORM retain_translation_generation_output(field,(claim->>'attempt_id')::uuid,'completed',output_json,binding_json,'{}',digest);
  ack:=read_public_translation_request(request,token,item);
  IF ack IS DISTINCT FROM jsonb_build_object('requestId',request,'language','es','state','completed','translated','SINTÉTICO resultado') THEN RAISE EXCEPTION 'Completed public output or DTO privacy failed'; END IF;
+ PERFORM pg_temp.require_public_refusal(format('SELECT pg_temp.queue_public_fixture(%L,%L,%L,%L,%L)',campaign,item,token,'es',request),'PT409','completed request cannot be retried');
  RESET ROLE;
  UPDATE engagement_campaigns SET share_token=token||'-replaced' WHERE id=campaign;
  SET LOCAL ROLE service_role;
@@ -172,3 +174,56 @@ call_sql:=format('SELECT create_public_translation_request(%L,%L,%L,%L,%L,%L,%L,
  PERFORM pg_temp.require_public_refusal(format('UPDATE engagement_translation_generation_requests SET actor_id=%L WHERE id=%L',actor,request),'23514','public request immutable');
  RAISE NOTICE 'PUBLIC_QUEUE_PROBE_PASSED';
 END $probe$;
+
+DO $retry_probe$
+DECLARE workspace uuid:=gen_random_uuid(); actor uuid:=gen_random_uuid(); campaign uuid:=gen_random_uuid(); item uuid:=gen_random_uuid();
+ other_item uuid:=gen_random_uuid(); token text:='SYNTHETIC-retry-'||gen_random_uuid()::text;
+ root jsonb; child jsonb; leaf jsonb; replay jsonb; claim jsonb; found jsonb; request uuid; field uuid;
+BEGIN
+ INSERT INTO auth.users(id,aud,role,email) VALUES(actor,'authenticated','authenticated',actor::text||'@public-retry.invalid');
+ INSERT INTO workspaces(id,name,slug) VALUES(workspace,'SYNTHETIC public retry',workspace::text);
+ INSERT INTO workspace_members(workspace_id,user_id,role) VALUES(workspace,actor,'owner');
+ INSERT INTO engagement_campaigns(id,workspace_id,title,created_by,status,share_token) VALUES(campaign,workspace,'SYNTHETIC public retry',actor,'active',token);
+ INSERT INTO engagement_items(id,campaign_id,body,status,source_type) VALUES(item,campaign,'SYNTHETIC exact retry source','approved','internal'),
+ (other_item,campaign,'SYNTHETIC different item','approved','internal');
+ SET LOCAL ROLE service_role;
+ IF find_public_translation_request(token,item,'es') IS NOT NULL THEN RAISE EXCEPTION 'Missing request fabricated'; END IF;
+ root:=pg_temp.queue_public_fixture(campaign,item,token);request:=(root->>'request')::uuid;field:=(root->>'field')::uuid;
+ PERFORM pg_temp.require_public_refusal(format('SELECT find_public_translation_request(%L,%L,%L,NULL,%L)',token,item,'es',jsonb_set(root->'source','{body}','"SYNTHETIC old page"')),'PT409','lookup displayed source changed');
+ PERFORM pg_temp.require_public_refusal(format('SELECT read_public_translation_request(%L,%L,%L,%L)',request,token,item,jsonb_set(root->'source','{body}','"SYNTHETIC old page"')),'PT409','receipt displayed source changed');
+ found:=find_public_translation_request(token,item,'es');
+ IF found->>'requestId' IS DISTINCT FROM request::text OR found->>'state' IS DISTINCT FROM 'queued' THEN RAISE EXCEPTION 'Public precredential lookup failed'; END IF;
+ IF find_public_translation_request(token,item,'vi') IS NOT NULL THEN RAISE EXCEPTION 'Public lookup ignored locale'; END IF;
+ PERFORM pg_temp.require_public_refusal(format('SELECT pg_temp.queue_public_fixture(%L,%L,%L,%L,%L)',campaign,item,token,'es',request),'PT409','queued request cannot be retried');
+ PERFORM pg_temp.require_public_refusal(format('SELECT find_public_translation_request(%L,%L,%L,%L)',token,other_item,'es',request),'42501','lookup predecessor item mismatch');
+ PERFORM pg_temp.require_public_refusal(format('SELECT retry_public_translation_request(%L,%L,%L,%L,%L,%L,%L,%L,NULL,NULL)',request,field,token,item,'es',root->'source',root->>'packet',root->'credential'),'22023','retry needs predecessor');
+ PERFORM stop_translation_generation_field(field,NULL,'failed','synthetic_no_dispatch');
+ PERFORM pg_temp.require_public_refusal(format('SELECT pg_temp.queue_public_fixture(%L,%L,%L,%L,%L)',campaign,other_item,token,'es',request),'42501','retry predecessor item mismatch');
+
+ IF find_public_translation_request(token,item,'es',request) IS NOT NULL THEN RAISE EXCEPTION 'Absent successor fabricated'; END IF;
+ child:=pg_temp.queue_public_fixture(campaign,item,token,'es',request);
+ IF child#>>'{ack,created}' IS DISTINCT FROM 'true' OR child#>>'{ack,requestId}'=request::text THEN RAISE EXCEPTION 'Explicit retry did not create successor'; END IF;
+ replay:=pg_temp.queue_public_fixture(campaign,item,token,'es',request)->'ack';
+ IF replay IS DISTINCT FROM jsonb_build_object('requestId',child->>'request','created',false) THEN RAISE EXCEPTION 'Public retry duplicated successor'; END IF;
+ found:=find_public_translation_request(token,item,'es');
+ IF found->>'requestId' IS DISTINCT FROM child->>'request' THEN RAISE EXCEPTION 'Public lookup stranded failed root'; END IF;
+ IF (SELECT previous_request_id::text FROM engagement_public_translation_requests WHERE request_id=(child->>'request')::uuid) IS DISTINCT FROM request::text THEN RAISE EXCEPTION 'Public retry lost predecessor'; END IF;
+ claim:=claim_translation_generation_field((child->>'field')::uuid);
+ PERFORM authorize_translation_generation_dispatch((child->>'field')::uuid,(claim->>'attempt_id')::uuid,(claim->>'reservation_id')::uuid);
+ PERFORM stop_translation_generation_field((child->>'field')::uuid,(claim->>'attempt_id')::uuid,'interrupted','synthetic_uncertain_dispatch');
+ leaf:=pg_temp.queue_public_fixture(campaign,item,token,'es',(child->>'request')::uuid);
+ IF find_public_translation_request(token,item,'es')->>'requestId' IS DISTINCT FROM leaf->>'request' THEN RAISE EXCEPTION 'Public lookup ignored latest explicit retry'; END IF;
+ -- Lost acknowledgement of the first retry recovers its exact original child.
+ found:=find_public_translation_request(token,item,'es',request);
+ IF found->>'requestId' IS DISTINCT FROM child->>'request' THEN RAISE EXCEPTION 'Retry lookup followed a different attempt'; END IF;
+ replay:=create_public_translation_request(gen_random_uuid(),gen_random_uuid(),token,item,'es',root->'source',NULL,NULL,NULL);
+ IF replay->>'requestId' IS DISTINCT FROM request::text THEN RAISE EXCEPTION 'Original root replay changed identity'; END IF;
+ replay:=retry_public_translation_request(gen_random_uuid(),gen_random_uuid(),token,item,'es',root->'source',NULL,NULL,NULL,request);
+ IF replay IS DISTINCT FROM jsonb_build_object('requestId',child->>'request','created',false) THEN RAISE EXCEPTION 'Retry replay needs another credential'; END IF;
+ IF (SELECT count(*) FROM engagement_public_translation_requests WHERE campaign_id=campaign)<>3
+ OR (SELECT state FROM engagement_translation_generation_fields WHERE id=field)<>'failed'
+ OR (SELECT state FROM engagement_translation_generation_fields WHERE id=(child->>'field')::uuid)<>'interrupted'
+ OR (SELECT count(*) FROM usage_events WHERE workspace_id=workspace)<>1 THEN RAISE EXCEPTION 'Retry overwrote history or repeated dispatch'; END IF;
+ RESET ROLE;
+ RAISE NOTICE 'PUBLIC_RETRY_PROBE_PASSED';
+END $retry_probe$;

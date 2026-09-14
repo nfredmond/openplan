@@ -50,7 +50,7 @@ for role in ['anon', 'authenticated']:
     cases.append((f'harmless-{role}-grant-with-rls', original + grant, None))
     label = 'anonymous' if role == 'anon' else role
     cases.append((f'{role}-authority-leak', original + grant + f'CREATE POLICY synthetic_leak ON engagement_public_translation_requests FOR SELECT TO {role} USING(true);\n', f'Private public queue leak: {label} authority rows'))
-cases.append(('anonymous-direct-command', original + '\nGRANT EXECUTE ON FUNCTION public.read_public_translation_request(uuid,text,uuid) TO anon;\n', 'Guard failed: anonymous direct RPC'))
+cases.append(('anonymous-direct-command', original + '\nGRANT EXECUTE ON FUNCTION public.read_public_translation_request(uuid,text,uuid,jsonb) TO anon;\n', 'Guard failed: anonymous direct RPC'))
 
 mutate('foreign-public-credential', "p_credential->>'workspaceId' IS DISTINCT FROM workspace::text", 'false', 'Guard failed: foreign public credential')
 mutate('mix-public-staff-reservations', 'AND r.authority_kind=request.authority_kind', '', 'Translation dispatch allowance reserved')
@@ -58,10 +58,24 @@ mutate('ignore-staff-source', 'PERFORM assert_translation_generation_source(requ
 
 mutate('omit-dispatch-allowance-recheck', 'IF recent_dispatches>=allowance THEN', 'IF false THEN', 'Guard failed: public dispatch allowance recheck')
 mutate('blur-public-staff-identity', "((authority_kind='staff' AND actor_id IS NOT NULL) OR (authority_kind='public' AND actor_id IS NULL))", '(true)', 'Guard failed: public request cannot impersonate staff')
-dedup = original.replace("AND locale=p_locale AND share_token_hash=token_hash AND source_snapshot=actual;", "AND false;")
-dedup = dedup.replace(" STORED,\n UNIQUE(campaign_id,item_id,locale,share_token_hash,source_fingerprint)", " STORED")
+dedup = original.replace("AND locale=p_locale AND share_token_hash=token_hash AND source_snapshot=actual AND previous_request_id IS NOT DISTINCT FROM p_previous;", "AND false;")
+dedup = dedup.replace("CREATE UNIQUE INDEX public_translation_root ON public.engagement_public_translation_requests(campaign_id,item_id,locale,share_token_hash,source_fingerprint) WHERE previous_request_id IS NULL;", "")
 assert dedup != original
 cases.append(('duplicate-public-work', dedup, 'Public replay duplicated work'))
+
+mutate('retry-active-request', "IF previous_state NOT IN ('failed','interrupted','incomplete','cancelled') THEN", 'IF false THEN', 'Guard failed: completed request cannot be retried')
+mutate('retry-without-predecessor', "IF p_previous IS NULL THEN RAISE EXCEPTION 'Public retry requires its original request' USING ERRCODE='22023'; END IF;", 'NULL;', 'Guard failed: retry needs predecessor')
+mutate('lookup-wrong-locale', 'r.item_id=p_item AND r.locale=p_locale', 'r.item_id=p_item', 'Public lookup ignored locale')
+mutate('lookup-failed-root', "NOT EXISTS(SELECT 1 FROM engagement_public_translation_requests next WHERE next.previous_request_id=r.request_id)", 'r.previous_request_id IS NULL', 'Public lookup stranded failed root')
+mutate('retry-lookup-wrong-attempt', 'ELSE r.previous_request_id=p_previous END;', 'ELSE r.request_id=p_previous END;', 'Absent successor fabricated')
+mutate('retry-foreign-item', 'request_id=p_previous AND campaign_id=campaign AND item_id=p_item\n   AND locale=p_locale AND share_token_hash=token_hash AND source_snapshot=actual;', 'request_id=p_previous;', 'Guard failed: retry predecessor item mismatch')
+mutate('lookup-foreign-predecessor', "request_id=p_previous AND item_id=p_item\n   AND campaign_id=(source->>'campaignId')::uuid AND locale=p_locale AND source_snapshot=source\n   AND share_token_hash=encode(extensions.digest(p_share_token,'sha256'),'hex');", 'request_id=p_previous;', 'Guard failed: lookup predecessor item mismatch')
+
+snapshot_guard = "IF p_snapshot IS NOT NULL AND source IS DISTINCT FROM p_snapshot THEN RAISE EXCEPTION 'Displayed public original changed' USING ERRCODE='PT409'; END IF;"
+assert original.count(snapshot_guard) == 2
+cases.append(('receipt-ignores-displayed-source', original.replace(snapshot_guard, 'NULL;', 1), 'Guard failed: receipt displayed source changed'))
+left, right = original.rsplit(snapshot_guard, 1)
+cases.append(('lookup-ignores-displayed-source', left + 'NULL;' + right, 'Guard failed: lookup displayed source changed'))
 
 fixture_run = subprocess.run(['npm', 'exec', '--', 'tsx', str(review / 'generation-queue-fixture.ts')], cwd=review.parents[2] / 'openplan', capture_output=True, text=True, timeout=30)
 assert fixture_run.returncode == 0, fixture_run.stderr
@@ -81,10 +95,10 @@ for name, candidate, expected in cases:
     run = subprocess.run(base, input='BEGIN;\n' + candidate + '\n' + probe + '\nROLLBACK;\n', text=True, capture_output=True, timeout=30)
     output = run.stdout + run.stderr
     (private / (name + '.log')).write_text(output)
-    correct = run.returncode == 0 and 'PUBLIC_QUEUE_PROBE_PASSED' in output and '"queueProbePassed": true' in output and 'ROLLBACK' in run.stdout if expected is None else run.returncode != 0 and expected in output
+    correct = run.returncode == 0 and 'PUBLIC_QUEUE_PROBE_PASSED' in output and 'PUBLIC_RETRY_PROBE_PASSED' in output and '"queueProbePassed": true' in output and 'ROLLBACK' in run.stdout if expected is None else run.returncode != 0 and expected in output
     custody()
     results.append({'case': name, 'outcome': 'survived' if run.returncode == 0 else 'killed', 'expectedFailure': expected, 'expectedOutcome': correct, 'rollbackContained': True})
-    (review / 'public-generation-queue-controls.json').write_text(json.dumps({'sourceSha256': hashlib.sha256(original.encode()).hexdigest(), 'composedProbeSha256': hashlib.sha256(probe.encode()).hexdigest(), 'publicProbeSha256': hashlib.sha256((review / 'public-generation-queue-probe.sql').read_bytes()).hexdigest(), 'staffProbeSha256': hashlib.sha256(staff_probe.encode()).hexdigest(), 'privateEvidence': str(private), 'results': results, 'limits': 'Uninstalled SQL candidate in a schema-only proof database. Serial transactions with synthetic unopenable credentials, not concurrent sessions, actual provider calls, worker journal recovery, HTTP or browser acceptance. No public retry-after-failure implementation yet.'}, indent=2) + '\n')
+    (review / 'public-generation-queue-controls.json').write_text(json.dumps({'sourceSha256': hashlib.sha256(original.encode()).hexdigest(), 'composedProbeSha256': hashlib.sha256(probe.encode()).hexdigest(), 'publicProbeSha256': hashlib.sha256((review / 'public-generation-queue-probe.sql').read_bytes()).hexdigest(), 'staffProbeSha256': hashlib.sha256(staff_probe.encode()).hexdigest(), 'privateEvidence': str(private), 'results': results, 'limits': 'Uninstalled SQL candidate in a schema-only proof database. Serial transactions with synthetic unopenable credentials, not concurrent sessions, actual provider calls, worker journal recovery, HTTP or browser acceptance. Explicit SQL successor retry is exercised; HTTP/client recovery is not yet integrated.'}, indent=2) + '\n')
     print(name, results[-1]['outcome'], 'expected' if correct else 'UNEXPECTED', flush=True)
     assert correct, (name, expected, output[-3000:])
 assert source.read_text() == original

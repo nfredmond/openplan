@@ -1,7 +1,7 @@
 {
-  "sourceSha256": "33cc6c962b0a8fd98adf7105ca4981bd6e54b29a9742754f20abed766d63489e",
-  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-queue-concurrency/20260913T233228",
-  "database": "openplan_public_translation_proof_20260913",
+  "sourceSha256": "27235fc51d9d2cdb9786ad6c96dcb113735207182433ad0ccac6794023be990a",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-queue-concurrency/20260913T235024",
+  "database": "openplan_public_translation_retry_proof_20260913",
   "results": [
     {
       "case": "overlapping-create",
@@ -9,6 +9,14 @@
       "competingResponse": "PT503",
       "retrySameRequest": true,
       "retainedRequests": 1
+    },
+    {
+      "case": "overlapping-explicit-retry",
+      "originalTransactionHeld": true,
+      "competingResponse": "PT503",
+      "sameSuccessorRecovered": true,
+      "latestLookupRecoveredSuccessor": true,
+      "retainedRequests": 2
     },
     {
       "case": "baseline",

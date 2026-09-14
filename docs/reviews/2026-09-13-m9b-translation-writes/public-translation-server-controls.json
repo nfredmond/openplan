@@ -1,0 +1,270 @@
+{
+  "sourceSha256": "366cbff9211713617b0a7a914d64a932f119df759f717efb61540c90f9b74310",
+  "testSha256": "9895294e0985c561d650d3e67dbd59b2ba6cf93ed9a24c974f9104de0f1b260d",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-server-controls/20260913T234842",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "trim-source",
+      "outcome": "killed",
+      "expectedFailure": "preserves null and empty title as different original identities",
+      "failedTests": [
+        "public translation durable server queue preserves null and empty title as different original identities"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-original-hash",
+      "outcome": "killed",
+      "expectedFailure": "refuses a changed displayed original before looking for a job",
+      "failedTests": [
+        "public translation durable server queue refuses a changed displayed original before looking for a job"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-item-identity",
+      "outcome": "killed",
+      "expectedFailure": "refuses a source from another item",
+      "failedTests": [
+        "public translation durable server queue refuses a source from another item"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "recreate-on-recovery",
+      "outcome": "killed",
+      "expectedFailure": "recovers retained output without selecting a replacement credential",
+      "failedTests": [
+        "public translation durable server queue recovers retained output without selecting a replacement credential"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-active-predecessor",
+      "outcome": "killed",
+      "expectedFailure": "recovers rather than retries",
+      "failedTests": [
+        "public translation durable server queue recovers rather than retries queued",
+        "public translation durable server queue recovers rather than retries reserved",
+        "public translation durable server queue recovers rather than retries running",
+        "public translation durable server queue recovers rather than retries completed"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "create-root-for-retry",
+      "outcome": "killed",
+      "expectedFailure": "creates one explicit successor",
+      "failedTests": [
+        "public translation durable server queue creates one explicit successor for failed",
+        "public translation durable server queue creates one explicit successor for interrupted",
+        "public translation durable server queue creates one explicit successor for incomplete",
+        "public translation durable server queue creates one explicit successor for cancelled"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "retry-wrong-predecessor",
+      "outcome": "killed",
+      "expectedFailure": "creates one explicit successor",
+      "failedTests": [
+        "public translation durable server queue creates one explicit successor for failed",
+        "public translation durable server queue creates one explicit successor for interrupted",
+        "public translation durable server queue creates one explicit successor for incomplete",
+        "public translation durable server queue creates one explicit successor for cancelled"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "lookup-without-snapshot",
+      "outcome": "killed",
+      "expectedFailure": "captures the exact original and one credential after conclusive discovery",
+      "failedTests": [
+        "public translation durable server queue captures the exact original and one credential after conclusive discovery"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-without-snapshot",
+      "outcome": "killed",
+      "expectedFailure": "pins the displayed snapshot in exact receipt recovery",
+      "failedTests": [
+        "public translation durable server queue pins the displayed snapshot in exact receipt recovery"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "wrong-queue-original",
+      "outcome": "killed",
+      "expectedFailure": "captures the exact original and one credential after conclusive discovery",
+      "failedTests": [
+        "public translation durable server queue captures the exact original and one credential after conclusive discovery"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-source-title",
+      "outcome": "killed",
+      "expectedFailure": "captures the exact original and one credential after conclusive discovery",
+      "failedTests": [
+        "public translation durable server queue captures the exact original and one credential after conclusive discovery"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "accept-wrong-acknowledgement",
+      "outcome": "killed",
+      "expectedFailure": "refuses a created acknowledgement with a different identity",
+      "failedTests": [
+        "public translation durable server queue refuses a created acknowledgement with a different identity"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-competing-creator",
+      "outcome": "killed",
+      "expectedFailure": "recovers a competing creator's exact retained request",
+      "failedTests": [
+        "public translation durable server queue recovers a competing creator's exact retained request"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "accept-other-receipt",
+      "outcome": "killed",
+      "expectedFailure": "refuses an exact receipt for another request",
+      "failedTests": [
+        "public translation durable server queue refuses an exact receipt for another request"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "accept-other-locale",
+      "outcome": "killed",
+      "expectedFailure": "refuses an invalid retained public DTO",
+      "failedTests": [
+        "public translation durable server queue refuses an invalid retained public DTO (0)"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "fail-open-discovery",
+      "outcome": "killed",
+      "expectedFailure": "does not treat failed discovery",
+      "failedTests": [
+        "public translation durable server queue does not treat failed discovery PT409 as an empty queue",
+        "public translation durable server queue does not treat failed discovery 42501 as an empty queue",
+        "public translation durable server queue does not treat failed discovery PT429 as an empty queue",
+        "public translation durable server queue does not treat failed discovery 22023 as an empty queue",
+        "public translation durable server queue does not treat failed discovery PT503 as an empty queue",
+        "public translation durable server queue does not treat failed discovery UNKNOWN as an empty queue"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "late-response-after-abort",
+      "outcome": "killed",
+      "expectedFailure": "never returns a translation after the caller has left",
+      "failedTests": [
+        "public translation durable server queue never returns a translation after the caller has left"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "create-after-abort",
+      "outcome": "killed",
+      "expectedFailure": "does not create work after credential preparation is interrupted",
+      "failedTests": [
+        "public translation durable server queue does not create work after credential preparation is interrupted"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "strip-unknown-input",
+      "outcome": "killed",
+      "expectedFailure": "refuses invalid or unsupported intent before database access",
+      "failedTests": [
+        "public translation durable server queue refuses invalid or unsupported intent before database access {\"language\":\"es\",\"sourceHash\":\"8ee37c82aa36827a43e836583cb2e2c6a2f75bbe9004fd12f5c912ca452fa2c2\",\"extra\":true}"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "strip-private-dto",
+      "outcome": "killed",
+      "expectedFailure": "refuses an invalid retained public DTO",
+      "failedTests": [
+        "public translation durable server queue refuses an invalid retained public DTO (2)"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unsupported-language-before-db",
+      "outcome": "killed",
+      "expectedFailure": "refuses invalid or unsupported intent before database access",
+      "failedTests": [
+        "public translation durable server queue refuses invalid or unsupported intent before database access {\"language\":\"nv\",\"sourceHash\":\"8ee37c82aa36827a43e836583cb2e2c6a2f75bbe9004fd12f5c912ca452fa2c2\"}"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "publish-incomplete-words",
+      "outcome": "killed",
+      "expectedFailure": "refuses an invalid retained public DTO",
+      "failedTests": [
+        "public translation durable server queue refuses an invalid retained public DTO (3)"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "accept-empty-output",
+      "outcome": "killed",
+      "expectedFailure": "refuses an invalid retained public DTO",
+      "failedTests": [
+        "public translation durable server queue refuses an invalid retained public DTO (5)"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "accept-oversized-output",
+      "outcome": "killed",
+      "expectedFailure": "refuses an invalid retained public DTO",
+      "failedTests": [
+        "public translation durable server queue refuses an invalid retained public DTO (6)"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "accept-broken-unicode",
+      "outcome": "killed",
+      "expectedFailure": "refuses an invalid retained public DTO",
+      "failedTests": [
+        "public translation durable server queue refuses an invalid retained public DTO (8)"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "accept-null-byte",
+      "outcome": "killed",
+      "expectedFailure": "refuses an invalid retained public DTO",
+      "failedTests": [
+        "public translation durable server queue refuses an invalid retained public DTO (7)"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Actual server helper and shared packet validation with mocked RPC responses/credential selection. RPC names and source snapshots are asserted. Native SQL, RLS, concurrency, credential encryption, provider execution, HTTP and real browser behavior require separate evidence."
+}

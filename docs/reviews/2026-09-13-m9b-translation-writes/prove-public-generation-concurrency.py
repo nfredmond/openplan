@@ -11,7 +11,7 @@ probe=(review/'public-generation-queue-probe.sql').read_text()
 helper=probe[probe.index('CREATE FUNCTION pg_temp.queue_public_fixture'):probe.index('DO $probe$')]
 private=Path('/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-queue-concurrency')/time.strftime('%Y%m%dT%H%M%S')
 private.mkdir(parents=True,exist_ok=False)
-command=['docker','exec','-i','supabase_db_openplan-restore-target-2026091050','psql','-X','-U','supabase_admin','-d','openplan_public_translation_proof_20260913','-qAt','-v','ON_ERROR_STOP=1','-v','VERBOSITY=verbose']
+command=['docker','exec','-i','supabase_db_openplan-restore-target-2026091050','psql','-X','-U','supabase_admin','-d','openplan_public_translation_retry_proof_20260913','-qAt','-v','ON_ERROR_STOP=1','-v','VERBOSITY=verbose']
 def literal(value):return "'"+str(value).replace("'","''")+"'"
 def sql(statement,label):
  run=subprocess.run(command,input=statement,text=True,capture_output=True,timeout=20)
@@ -79,6 +79,23 @@ count=int(must('SELECT count(*) FROM engagement_public_translation_requests WHER
 assert count==1,count
 results.append({'case':'overlapping-create','originalTransactionHeld':True,'competingResponse':'PT503','retrySameRequest':True,'retainedRequests':count})
 
+# Explicit retry creation also keeps one successor across overlapping callers.
+parsed(call('stop_translation_generation_field('+literal(value['field'])+",NULL,'failed','synthetic_retry_no_dispatch')",'retry-stop',True))
+retry_expression='pg_temp.queue_public_fixture('+','.join(map(literal,[f['campaign'],f['items'][0],f['token'],'es',value['request']]))+')'
+held,child=begin_held(retry_expression,'successor')
+try:
+ contention=call(retry_expression,'successor-contended')
+ assert held.poll() is None
+ assert contention['code']!=0 and 'PT503' in contention['error'],contention
+finally:finish(held,'successor',True)
+replayed=parsed(call(retry_expression,'successor-replayed',True))
+assert child['ack']['created'] is True and replayed['ack']=={'requestId':child['request'],'created':False},(child,replayed)
+found=parsed(call('find_public_translation_request('+','.join(map(literal,[f['token'],f['items'][0],'es']))+')','successor-lookup'))
+assert found['requestId']==child['request'],found
+count=int(must('SELECT count(*) FROM engagement_public_translation_requests WHERE campaign_id='+literal(f['campaign'])+';','successor-count'))
+assert count==2,count
+results.append({'case':'overlapping-explicit-retry','originalTransactionHeld':True,'competingResponse':'PT503','sameSuccessorRecovered':True,'latestLookupRecoveredSuccessor':True,'retainedRequests':count})
+
 start=source.index('CREATE OR REPLACE FUNCTION public.claim_translation_generation_field(');end=source.index('END $$;',start)+len('END $$;')
 original=source[start:end]
 lock="PERFORM pg_advisory_xact_lock(hashtextextended(CASE WHEN request.authority_kind='public' THEN 'public_translation_dispatch:' ELSE 'assistant_api_dispatch:' END||request.workspace_id::text,0));"
@@ -116,5 +133,5 @@ finally:
  must(original,'restored-function')
  installed=must("SELECT pg_get_functiondef('public.claim_translation_generation_field(uuid)'::regprocedure);",'restored-definition')
  assert lock in installed and "IF recent_dispatches+active_reservations>=allowance THEN" in installed
- (review/'public-generation-concurrency-evidence.json').write_text(json.dumps({'sourceSha256':hashlib.sha256(source.encode()).hexdigest(),'privateEvidence':str(private),'database':'openplan_public_translation_proof_20260913','results':results,'claimFunctionRestored':True,'limits':'Real overlapping PostgreSQL transactions with synthetic unopenable credentials. No provider calls, actual worker/browser recovery or application migration. Synthetic queue rows remain in this schema-only proof database, which must never be connected to a worker.'},indent=2)+'\n')
+ (review/'public-generation-concurrency-evidence.json').write_text(json.dumps({'sourceSha256':hashlib.sha256(source.encode()).hexdigest(),'privateEvidence':str(private),'database':'openplan_public_translation_retry_proof_20260913','results':results,'claimFunctionRestored':True,'limits':'Real overlapping PostgreSQL transactions with synthetic unopenable credentials. No provider calls, actual worker/browser recovery or application migration. Synthetic queue rows remain in this schema-only proof database, which must never be connected to a worker.'},indent=2)+'\n')
 print(json.dumps(results,indent=2))

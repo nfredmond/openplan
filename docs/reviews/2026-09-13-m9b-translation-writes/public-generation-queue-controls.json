@@ -1,9 +1,9 @@
 {
-  "sourceSha256": "33cc6c962b0a8fd98adf7105ca4981bd6e54b29a9742754f20abed766d63489e",
-  "composedProbeSha256": "1e195a82c71a6185915de6c3c4df825c5a80ff00c86e70484db2619a1905a7a3",
-  "publicProbeSha256": "fe0f493568ccca5cf2ad8db13c817b74ed1cd8088769abdb0857f5b757a7fd3e",
+  "sourceSha256": "27235fc51d9d2cdb9786ad6c96dcb113735207182433ad0ccac6794023be990a",
+  "composedProbeSha256": "6a813d802987c70f7b7640b1c9401ab309b9c57e8e91df104a2753e1b25e34dc",
+  "publicProbeSha256": "f9ce4d0048a3a9b08c340c6e4ac7c77e7f39e228357cc8411a5e84fda73dcde3",
   "staffProbeSha256": "1e60680f590b1a567f85473a7ed6111e20e9d6148ff0d972d12c7ad4f9efb6c3",
-  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-queue-controls/20260913T233346",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-queue-controls/20260913T234420",
   "results": [
     {
       "case": "baseline",
@@ -207,7 +207,70 @@
       "expectedFailure": "Public replay duplicated work",
       "expectedOutcome": true,
       "rollbackContained": true
+    },
+    {
+      "case": "retry-active-request",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: completed request cannot be retried",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "retry-without-predecessor",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: retry needs predecessor",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "lookup-wrong-locale",
+      "outcome": "killed",
+      "expectedFailure": "Public lookup ignored locale",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "lookup-failed-root",
+      "outcome": "killed",
+      "expectedFailure": "Public lookup stranded failed root",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "retry-lookup-wrong-attempt",
+      "outcome": "killed",
+      "expectedFailure": "Absent successor fabricated",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "retry-foreign-item",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: retry predecessor item mismatch",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "lookup-foreign-predecessor",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: lookup predecessor item mismatch",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "receipt-ignores-displayed-source",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: receipt displayed source changed",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "lookup-ignores-displayed-source",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: lookup displayed source changed",
+      "expectedOutcome": true,
+      "rollbackContained": true
     }
   ],
-  "limits": "Uninstalled SQL candidate in a schema-only proof database. Serial transactions with synthetic unopenable credentials, not concurrent sessions, actual provider calls, worker journal recovery, HTTP or browser acceptance. No public retry-after-failure implementation yet."
+  "limits": "Uninstalled SQL candidate in a schema-only proof database. Serial transactions with synthetic unopenable credentials, not concurrent sessions, actual provider calls, worker journal recovery, HTTP or browser acceptance. Explicit SQL successor retry is exercised; HTTP/client recovery is not yet integrated."
 }

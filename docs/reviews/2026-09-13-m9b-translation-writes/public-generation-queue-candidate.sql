@@ -7,12 +7,13 @@ ALTER TABLE public.engagement_translation_generation_requests ADD CONSTRAINT tra
  ((authority_kind='staff' AND actor_id IS NOT NULL) OR (authority_kind='public' AND actor_id IS NULL));
 CREATE TABLE public.engagement_public_translation_requests (
  request_id uuid PRIMARY KEY REFERENCES public.engagement_translation_generation_requests(id),
+ previous_request_id uuid UNIQUE REFERENCES public.engagement_public_translation_requests(request_id),
  campaign_id uuid NOT NULL, item_id uuid NOT NULL, locale text NOT NULL,
  share_token_hash text NOT NULL CHECK(share_token_hash ~ '^[a-f0-9]{64}$'),
  source_snapshot jsonb NOT NULL,
- source_fingerprint text GENERATED ALWAYS AS (encode(extensions.digest(source_snapshot::text,'sha256'),'hex')) STORED,
- UNIQUE(campaign_id,item_id,locale,share_token_hash,source_fingerprint)
+ source_fingerprint text GENERATED ALWAYS AS (encode(extensions.digest(source_snapshot::text,'sha256'),'hex')) STORED
 );
+CREATE UNIQUE INDEX public_translation_root ON public.engagement_public_translation_requests(campaign_id,item_id,locale,share_token_hash,source_fingerprint) WHERE previous_request_id IS NULL;
 ALTER TABLE public.engagement_public_translation_requests ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.engagement_public_translation_requests FROM PUBLIC,anon,authenticated,service_role;
 GRANT SELECT ON public.engagement_public_translation_requests TO service_role;
@@ -53,10 +54,10 @@ END $$;
 REVOKE ALL ON FUNCTION public.read_public_translation_source(text,uuid) FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.read_public_translation_source(text,uuid) TO service_role;
 
-CREATE FUNCTION public.create_public_translation_request(p_request uuid,p_field uuid,p_share_token text,p_item uuid,p_locale text,
- p_snapshot jsonb,p_packet_canonical text,p_credential jsonb,p_selected_hash text) RETURNS jsonb
+CREATE FUNCTION public.create_public_translation_attempt(p_request uuid,p_field uuid,p_share_token text,p_item uuid,p_locale text,
+ p_snapshot jsonb,p_packet_canonical text,p_credential jsonb,p_selected_hash text,p_previous uuid) RETURNS jsonb
  LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
-DECLARE actual jsonb; token_hash text; old_request uuid; workspace uuid; campaign uuid; source_text text; packet jsonb;
+DECLARE actual jsonb; token_hash text; old_request uuid; workspace uuid; campaign uuid; source_text text; packet jsonb; previous public.engagement_public_translation_requests; previous_state text;
 BEGIN
  actual:=read_public_translation_source(p_share_token,p_item);
  IF actual IS DISTINCT FROM p_snapshot THEN RAISE EXCEPTION 'Public translation source changed' USING ERRCODE='PT409'; END IF;
@@ -65,8 +66,17 @@ BEGIN
  IF p_request IS NULL OR p_field IS NULL OR p_locale IS NULL OR p_locale !~ '^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$' OR length(p_locale)>35 THEN
   RAISE EXCEPTION 'Invalid public translation identity' USING ERRCODE='22023';
  END IF;
+ IF p_previous IS NOT NULL THEN
+  SELECT * INTO previous FROM engagement_public_translation_requests WHERE request_id=p_previous AND campaign_id=campaign AND item_id=p_item
+   AND locale=p_locale AND share_token_hash=token_hash AND source_snapshot=actual;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Public retry does not match this original' USING ERRCODE='42501'; END IF;
+  SELECT state INTO STRICT previous_state FROM engagement_translation_generation_fields WHERE request_id=previous.request_id AND ordinal=1;
+  IF previous_state NOT IN ('failed','interrupted','incomplete','cancelled') THEN
+   RAISE EXCEPTION 'Public translation has not failed; recover its existing request' USING ERRCODE='PT409';
+  END IF;
+ END IF;
  SELECT request_id INTO old_request FROM engagement_public_translation_requests WHERE campaign_id=campaign AND item_id=p_item
-  AND locale=p_locale AND share_token_hash=token_hash AND source_snapshot=actual;
+  AND locale=p_locale AND share_token_hash=token_hash AND source_snapshot=actual AND previous_request_id IS NOT DISTINCT FROM p_previous;
  IF FOUND THEN RETURN jsonb_build_object('requestId',old_request,'created',false); END IF;
  IF EXISTS(SELECT 1 FROM engagement_translation_generation_requests WHERE id=p_request) THEN
   RAISE EXCEPTION 'Public translation request identity differs' USING ERRCODE='PT409';
@@ -91,16 +101,35 @@ BEGIN
  PERFORM (p_credential->>'credentialId')::uuid;
  PERFORM assert_translation_generation_selection(workspace,p_credential,p_selected_hash);
  INSERT INTO engagement_translation_generation_requests(id,campaign_id,workspace_id,actor_id,authority_kind,locale,intent,credential,selected_key_ciphertext_hash)
- VALUES(p_request,campaign,workspace,NULL,'public',p_locale,jsonb_build_object('requestId',p_request,'source',actual,'locale',p_locale),p_credential,p_selected_hash);
- INSERT INTO engagement_public_translation_requests(request_id,campaign_id,item_id,locale,share_token_hash,source_snapshot)
- VALUES(p_request,campaign,p_item,p_locale,token_hash,actual);
+ VALUES(p_request,campaign,workspace,NULL,'public',p_locale,jsonb_build_object('requestId',p_request,'source',actual,'locale',p_locale,'previousRequestId',p_previous),p_credential,p_selected_hash);
+ INSERT INTO engagement_public_translation_requests(request_id,campaign_id,item_id,locale,share_token_hash,source_snapshot,previous_request_id)
+ VALUES(p_request,campaign,p_item,p_locale,token_hash,actual,p_previous);
  INSERT INTO engagement_translation_generation_fields(id,request_id,ordinal,address,packet_canonical)
  VALUES(p_field,p_request,1,jsonb_build_object('entityType','public_item','entityId',p_item),p_packet_canonical);
  RETURN jsonb_build_object('requestId',p_request,'created',true);
 EXCEPTION WHEN lock_not_available OR deadlock_detected THEN RAISE EXCEPTION 'Public translation creation is busy' USING ERRCODE='PT503';
 END $$;
+REVOKE ALL ON FUNCTION public.create_public_translation_attempt(uuid,uuid,text,uuid,text,jsonb,text,jsonb,text,uuid) FROM PUBLIC,anon,authenticated,service_role;
+
+CREATE FUNCTION public.create_public_translation_request(p_request uuid,p_field uuid,p_share_token text,p_item uuid,p_locale text,
+ p_snapshot jsonb,p_packet_canonical text,p_credential jsonb,p_selected_hash text) RETURNS jsonb
+ LANGUAGE sql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
+ SELECT create_public_translation_attempt(p_request,p_field,p_share_token,p_item,p_locale,p_snapshot,p_packet_canonical,p_credential,p_selected_hash,NULL);
+$$;
 REVOKE ALL ON FUNCTION public.create_public_translation_request(uuid,uuid,text,uuid,text,jsonb,text,jsonb,text) FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.create_public_translation_request(uuid,uuid,text,uuid,text,jsonb,text,jsonb,text) TO service_role;
+
+-- Only an explicit retry of a named terminal attempt may create its successor.
+-- A repeated retry returns that same successor, even if later attempts exist.
+CREATE FUNCTION public.retry_public_translation_request(p_request uuid,p_field uuid,p_share_token text,p_item uuid,p_locale text,
+ p_snapshot jsonb,p_packet_canonical text,p_credential jsonb,p_selected_hash text,p_previous uuid) RETURNS jsonb
+ LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
+BEGIN
+ IF p_previous IS NULL THEN RAISE EXCEPTION 'Public retry requires its original request' USING ERRCODE='22023'; END IF;
+ RETURN create_public_translation_attempt(p_request,p_field,p_share_token,p_item,p_locale,p_snapshot,p_packet_canonical,p_credential,p_selected_hash,p_previous);
+END $$;
+REVOKE ALL ON FUNCTION public.retry_public_translation_request(uuid,uuid,text,uuid,text,jsonb,text,jsonb,text,uuid) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.retry_public_translation_request(uuid,uuid,text,uuid,text,jsonb,text,jsonb,text,uuid) TO service_role;
 
 -- Shared worker entry: public requests assert the retained anonymous authority;
 -- staff requests keep the existing membership and publication-version checks.
@@ -292,12 +321,13 @@ END $$;
 -- The public HTTP route may return only this DTO. Stored credentials, packet,
 -- provider metadata and staff requests never enter it. Recheck current public
 -- authority even for completed output; removing a comment withdraws its copy.
-CREATE FUNCTION public.read_public_translation_request(p_request uuid,p_share_token text,p_item uuid) RETURNS jsonb
+CREATE FUNCTION public.read_public_translation_request(p_request uuid,p_share_token text,p_item uuid,p_snapshot jsonb DEFAULT NULL) RETURNS jsonb
  LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
 DECLARE source jsonb; saved public.engagement_public_translation_requests; job public.engagement_translation_generation_fields;
  output public.engagement_translation_generation_outputs;
 BEGIN
  source:=read_public_translation_source(p_share_token,p_item);
+ IF p_snapshot IS NOT NULL AND source IS DISTINCT FROM p_snapshot THEN RAISE EXCEPTION 'Displayed public original changed' USING ERRCODE='PT409'; END IF;
  SELECT * INTO saved FROM engagement_public_translation_requests WHERE request_id=p_request AND item_id=p_item
   AND campaign_id=(source->>'campaignId')::uuid AND share_token_hash=encode(extensions.digest(p_share_token,'sha256'),'hex');
  IF NOT FOUND THEN RAISE EXCEPTION 'Public translation is unavailable' USING ERRCODE='42501'; END IF;
@@ -315,5 +345,31 @@ BEGIN
   'translated',CASE WHEN job.state='completed' THEN output.output_json::jsonb ELSE 'null'::jsonb END);
 EXCEPTION WHEN lock_not_available OR deadlock_detected THEN RAISE EXCEPTION 'Public translation read is busy' USING ERRCODE='PT503';
 END $$;
-REVOKE ALL ON FUNCTION public.read_public_translation_request(uuid,text,uuid) FROM PUBLIC,anon,authenticated;
-GRANT EXECUTE ON FUNCTION public.read_public_translation_request(uuid,text,uuid) TO service_role;
+REVOKE ALL ON FUNCTION public.read_public_translation_request(uuid,text,uuid,jsonb) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.read_public_translation_request(uuid,text,uuid,jsonb) TO service_role;
+
+-- Discover a retained current request before selecting/sealing another key.
+-- For an explicit retry, return only its exact successor. Ordinary discovery
+-- follows the leaf of the immutable chain, not a prior failed root.
+CREATE FUNCTION public.find_public_translation_request(p_share_token text,p_item uuid,p_locale text,p_previous uuid DEFAULT NULL,p_snapshot jsonb DEFAULT NULL) RETURNS jsonb
+ LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
+DECLARE source jsonb; request uuid; previous public.engagement_public_translation_requests;
+BEGIN
+ source:=read_public_translation_source(p_share_token,p_item);
+ IF p_snapshot IS NOT NULL AND source IS DISTINCT FROM p_snapshot THEN RAISE EXCEPTION 'Displayed public original changed' USING ERRCODE='PT409'; END IF;
+ IF p_previous IS NOT NULL THEN
+  SELECT * INTO previous FROM engagement_public_translation_requests WHERE request_id=p_previous AND item_id=p_item
+   AND campaign_id=(source->>'campaignId')::uuid AND locale=p_locale AND source_snapshot=source
+   AND share_token_hash=encode(extensions.digest(p_share_token,'sha256'),'hex');
+  IF NOT FOUND THEN RAISE EXCEPTION 'Public retry does not match this original' USING ERRCODE='42501'; END IF;
+ END IF;
+ SELECT r.request_id INTO request FROM engagement_public_translation_requests r WHERE r.item_id=p_item AND r.locale=p_locale
+  AND r.campaign_id=(source->>'campaignId')::uuid AND r.source_snapshot=source
+  AND r.share_token_hash=encode(extensions.digest(p_share_token,'sha256'),'hex')
+  AND CASE WHEN p_previous IS NULL THEN NOT EXISTS(SELECT 1 FROM engagement_public_translation_requests next WHERE next.previous_request_id=r.request_id)
+   ELSE r.previous_request_id=p_previous END;
+ IF request IS NULL THEN RETURN NULL; END IF;
+ RETURN read_public_translation_request(request,p_share_token,p_item,source);
+END $$;
+REVOKE ALL ON FUNCTION public.find_public_translation_request(text,uuid,text,uuid,jsonb) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.find_public_translation_request(text,uuid,text,uuid,jsonb) TO service_role;
