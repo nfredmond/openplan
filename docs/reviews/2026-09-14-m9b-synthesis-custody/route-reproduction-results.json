@@ -1,0 +1,35 @@
+{
+  "sourceSha256": "f2ef09040699ba51c9cde6f145a7d60f45c6672ef0b91a3090228b7a82716c85",
+  "sourceRestored": true,
+  "cases": [
+    {
+      "name": "baseline",
+      "exitCode": 0,
+      "passed": 3,
+      "failed": []
+    },
+    {
+      "name": "harmless-comment",
+      "exitCode": 0,
+      "passed": 3,
+      "failed": []
+    },
+    {
+      "name": "fetch-301-counterexample",
+      "exitCode": 1,
+      "passed": 2,
+      "failed": [
+        "DEFECT: 301 approved sources report only 300 and lose the last category"
+      ]
+    },
+    {
+      "name": "report-save-failure-counterexample",
+      "exitCode": 1,
+      "passed": 2,
+      "failed": [
+        "DEFECT: failed save returns the same success shape while retaining no result"
+      ]
+    }
+  ],
+  "limits": "Historical defect characterization, not desired-behavior regression tests. Real POST handler and synthesis library with mocked database, authentication, integration context and model access. Query calls asserted; database truncation/update semantics simulated. No native database, RLS, browser, model quality or network telemetry proof. Counterexamples are diagnostic only and were restored; fetching 301 does not fix complete corpus coverage or retained review custody."
+}

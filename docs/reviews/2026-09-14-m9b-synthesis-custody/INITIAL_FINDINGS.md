@@ -6,6 +6,12 @@ September 14, 2026, inspected at release candidate 291ce88a. Read-only investiga
 
 [Pure deterministic reproduction](cap-reproduction.json) supplied a different last category in 300 and 301 synthetic comments, by directly invoking the deterministic function; no model function was invoked and network traffic was not instrumented. At 300, the final source fact and its one-comment category survive. At 301, the final source fact and its category disappear, while item_count reports 301 and analyzed_item_count 300. The first source fact is present in both; the control proves the absence check can be true or false. This is not yet a route or browser reproduction.
 
+## Controlled route reproduction
+
+[Route diagnostic](route-reproduction-results.json) now executes the real POST handler and synthesis library with a simulated database and disabled model access. The 300-source control saves all 300 and retains the distinct final category. Supplying 301 approved rows returns item_count 300, analyzed_item_count 300 and loses the final category. A database save error returns HTTP 200 with the same synthesis/synthesizedAt keys, while the simulated stored value remains absent. Access action, source projection, campaign/status filters and ordering are asserted.
+
+The baseline and harmless comment each pass all three historical characterization tests. Temporarily fetching 301 changes the expected truncated total and fails only its diagnostic. Temporarily returning 503 on save failure fails only that diagnostic. These counterexamples demonstrate that the probes distinguish the faulty branches; they are not production fixes. All route bytes were restored. The probe stays outside the ordinary app test suite because it records defects rather than the required corrected behavior. Database, RLS and browser reproduction remain unperformed for synthesis.
+
 ## Source findings, not runtime claims
 
 - `openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/route.ts` authorizes engagement.write, then reads only 300 approved items, oldest first. It passes that partial list to the generator. The query selects no total count or retained configuration identity; current category labels are looked up separately.
