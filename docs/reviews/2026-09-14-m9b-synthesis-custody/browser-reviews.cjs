@@ -16,6 +16,8 @@ async function click(page, locator) { await expect(locator).toBeVisible(); await
  const browser = await chromium.launch({ channel: 'chrome', headless: true });
  const context = await browser.newContext({ viewport: { width, height: 1000 } });
  const page = await context.newPage();
+ // Playwright otherwise emulates focus on every tab, suppressing actual blur/focus transitions.
+ await (await context.newCDPSession(page)).send('Emulation.setFocusEmulationEnabled', { enabled: false });
  page.on('console', entry => { if (entry.type() === 'error') observed.console.push(entry.text()); });
  page.on('pageerror', error => observed.pageErrors.push(error.message));
  try {
@@ -40,6 +42,23 @@ async function click(page, locator) { await expect(locator).toBeVisible(); await
   }
   await openSource();
   const reviews = page.getByRole('region', { name: 'Retained staff reviews' });
+  async function checkControls(stage) {
+   const result = await reviews.locator('button').evaluateAll(buttons => {
+    const measure = () => buttons.filter(button => button.getClientRects().length && button.getBoundingClientRect().width).map(button => {
+     const box = button.getBoundingClientRect(), parent = button.parentElement.getBoundingClientRect(), style = getComputedStyle(button.parentElement);
+     return { text: button.textContent, left: box.left, right: box.right, parentLeft: parent.left + parseFloat(style.paddingLeft) + parseFloat(style.borderLeftWidth), parentRight: parent.right - parseFloat(style.paddingRight) - parseFloat(style.borderRightWidth), viewport: innerWidth };
+    });
+    const visible = buttons.filter(button => button.getClientRects().length && button.getBoundingClientRect().width), first = visible[0];
+    const baseline = measure(); if (!first) return { baseline, harmless: [], targeted: [] };
+    const before = first.getAttribute('style');
+    try { first.style.position = 'relative'; const harmless = measure(); first.style.maxWidth = 'none'; first.style.minWidth = `${first.parentElement.getBoundingClientRect().width + 40}px`; return { baseline, harmless, targeted: measure() }; }
+    finally { if (before === null) first.removeAttribute('style'); else first.setAttribute('style', before); }
+   });
+   (observed.controlBounds ??= []).push({ stage, ...result });
+   assert(result.baseline.length > 0); assert(result.baseline.every(fits), `Review controls exceed their inner container at ${stage}: ${JSON.stringify(result.baseline.filter(row => !fits(row)))}`);
+   assert(result.harmless.every(fits)); assert(result.targeted.some(row => !fits(row)), 'Inner-container control check missed an oversized button');
+  }
+
   const endpoint = `${base}/api/engagement/campaigns/${sourceReceipt.campaignId}/synthesis/reviews`;
   const sourceResponse = await page.request.get(`${base}/api/engagement/campaigns/${sourceReceipt.campaignId}/synthesis/sources?requestId=${sourceReceipt.requestId}`);
   assert.equal(sourceResponse.status(), 200); const source = await sourceResponse.json();
@@ -65,7 +84,7 @@ async function click(page, locator) { await expect(locator).toBeVisible(); await
   });
   assert(fits(observed.recoveryBounds.baseline)); assert(fits(observed.recoveryBounds.harmless));
   if (width === 390) assert(!fits(observed.recoveryBounds.targeted), 'Narrow recovery control guard missed an unwrapped label');
-  await page.screenshot({ path: prefix + '-pending.png' });
+  await checkControls('pending'); await page.screenshot({ path: prefix + '-pending.png' });
   await page.unroute(endpoint); await page.reload();
   await expect(sources.getByText("Unfinished staff review in this browser", { exact: true }).first()).toBeVisible(); await openSource();
   const replayResponse = page.waitForResponse(response => response.url() === endpoint && response.request().method() === 'POST');
@@ -87,12 +106,12 @@ async function click(page, locator) { await expect(locator).toBeVisible(); await
   observed.originalContentSha256 = original.revision.contentSha256; observed.preparationSha256 = original.preparationSha256;
   const notes = `SYNTHETIC retained staff interpretation ${width} é `.repeat(30) + 'REVIEW NOTE TAIL ' + crypto.randomUUID();
   const reason = `SYNTHETIC staff wording correction ${width}`;
-  await saved.getByLabel('Staff review notes', { exact: true }).fill(notes);
-  await saved.getByLabel('Reason for correction', { exact: true }).fill(reason);
+  await saved.getByRole('textbox', { name: 'Staff review notes', exact: true }).fill(notes);
+  await saved.getByRole('textbox', { name: 'Reason for correction', exact: true }).fill(reason);
   await page.reload(); await openSource();
-  await expect(saved.getByLabel('Staff review notes', { exact: true })).toHaveValue(notes);
-  await expect(saved.getByLabel('Reason for correction', { exact: true })).toHaveValue(reason);
-  await saved.getByLabel('Staff review notes', { exact: true }).scrollIntoViewIfNeeded(); await page.screenshot({ path: prefix + '-restored-draft.png' });
+  await expect(saved.getByRole('textbox', { name: 'Staff review notes', exact: true })).toHaveValue(notes);
+  await expect(saved.getByRole('textbox', { name: 'Reason for correction', exact: true })).toHaveValue(reason);
+  await checkControls('restored draft'); await saved.getByRole('textbox', { name: 'Staff review notes', exact: true }).scrollIntoViewIfNeeded(); await page.screenshot({ path: prefix + '-restored-draft.png' });
   const correctionResponse = page.waitForResponse(response => response.url() === endpoint && response.request().method() === 'POST');
   await click(page, saved.getByRole('button', { name: 'Save reasoned correction', exact: true }));
   const correctedResponse = await correctionResponse; assert.equal(correctedResponse.status(), 201); observed.correctedReceipt = await correctedResponse.json();
@@ -109,10 +128,10 @@ async function click(page, locator) { await expect(locator).toBeVisible(); await
   const checkbox = saved.getByRole('checkbox'); await expect(checkbox).toHaveCount(1); await expect(checkbox).toBeChecked();
   await checkbox.scrollIntoViewIfNeeded(); await checkbox.focus(); await page.keyboard.press('Space');
   await saved.getByLabel('Group label', { exact: true }).fill(`SYNTHETIC reviewed group ${width}`);
-  await saved.getByLabel('Staff group summary', { exact: true }).fill('SYNTHETIC complete staff-authored group summary.');
+  await saved.getByRole('textbox', { name: 'Staff group summary', exact: true }).fill('SYNTHETIC complete staff-authored group summary.');
   await saved.getByRole('combobox', { name: 'Staff sentiment assessment', exact: true }).selectOption('mixed');
-  await saved.getByLabel('Reason for correction', { exact: true }).fill('SYNTHETIC distinct concern needs its own review group.');
-  await page.screenshot({ path: prefix + '-membership-edit.png' });
+  await saved.getByRole('textbox', { name: 'Reason for correction', exact: true }).fill('SYNTHETIC distinct concern needs its own review group.');
+  await checkControls('membership'); await page.screenshot({ path: prefix + '-membership-edit.png' });
   await click(page, saved.getByRole('button', { name: 'Save reasoned correction', exact: true }));
   await expect(saved.getByRole('heading', { name: /revision 3$/ })).toBeVisible();
   const regrouped = await read(); assert.deepEqual(regrouped.content.unassignedSourceIds, [memberId]); assert.equal(regrouped.content.assignedSourceCount, total - 1);
@@ -121,7 +140,7 @@ async function click(page, locator) { await expect(locator).toBeVisible(); await
   await saved.getByLabel('Group label', { exact: true }).fill(`SYNTHETIC distinct retained concern ${width}`);
   await saved.getByLabel('Find contributions for this group', { exact: true }).fill(searchText);
   await saved.getByRole('checkbox').check();
-  await saved.getByLabel('Reason for correction', { exact: true }).fill('SYNTHETIC keep the distinct concern visible without dropping its source.');
+  await saved.getByRole('textbox', { name: 'Reason for correction', exact: true }).fill('SYNTHETIC keep the distinct concern visible without dropping its source.');
   await click(page, saved.getByRole('button', { name: 'Save reasoned correction', exact: true }));
   await expect(saved.getByRole('heading', { name: /revision 4$/ })).toBeVisible();
   let final = await read(); assert.equal(final.content.assignedSourceCount, total); assert.deepEqual(final.content.unassignedSourceIds, []);
@@ -135,25 +154,29 @@ async function click(page, locator) { await expect(locator).toBeVisible(); await
     return window.__reviewQuota.original.call(this, key, value);
    };
   });
-  try { await saved.getByLabel('Staff review notes', { exact: true }).fill(quotaNotes); }
+  try { await saved.getByRole('textbox', { name: 'Staff review notes', exact: true }).fill(quotaNotes); }
   finally { await page.evaluate(() => { Storage.prototype.setItem = window.__reviewQuota.original; }); }
   assert.equal(await page.evaluate(() => window.__reviewQuota.failures), 1);
-  await expect(saved.getByLabel('Staff review notes', { exact: true })).toHaveValue(quotaNotes);
+  await expect(saved.getByRole('textbox', { name: 'Staff review notes', exact: true })).toHaveValue(quotaNotes);
   await expect(saved.getByRole('button', { name: 'Save reasoned correction', exact: true })).toBeDisabled();
   const beforeFocus = await page.evaluate(() => window.__reviewQuota.focusEvents);
-  const elsewhere = await context.newPage(); await elsewhere.goto('about:blank'); await elsewhere.bringToFront(); await page.bringToFront();
+  const revalidation = Promise.all([page.waitForResponse(response => response.url().includes(`/synthesis/sources?requestId=${sourceReceipt.requestId}`)), page.waitForResponse(response => response.url().includes('/synthesis/reviews?mode=read'))]);
+  void revalidation.catch(() => undefined);
+  const elsewhere = await context.newPage(); await (await context.newCDPSession(elsewhere)).send('Emulation.setFocusEmulationEnabled', { enabled: false });
+  await elsewhere.goto('about:blank'); await elsewhere.bringToFront(); await page.bringToFront();
+  const [reopenedSource, reopenedReview] = await revalidation; assert.equal(reopenedSource.status(), 200); assert.equal(reopenedReview.status(), 200);
   await expect.poll(() => page.evaluate(() => window.__reviewQuota.focusEvents)).toBeGreaterThan(beforeFocus);
-  await expect(saved.getByLabel('Staff review notes', { exact: true })).toHaveValue(quotaNotes);
+  await expect(saved.getByRole('textbox', { name: 'Staff review notes', exact: true })).toHaveValue(quotaNotes);
   await expect(saved.getByRole('button', { name: 'Save reasoned correction', exact: true })).toBeDisabled();
-  await saved.getByLabel('Staff review notes', { exact: true }).scrollIntoViewIfNeeded(); await page.screenshot({ path: prefix + '-quota-refocus.png' });
+  await saved.getByRole('textbox', { name: 'Staff review notes', exact: true }).scrollIntoViewIfNeeded(); await page.screenshot({ path: prefix + '-quota-refocus.png' });
   await elsewhere.close();
   await click(page, reviews.getByRole('button', { name: 'Preserve edit and start another correction', exact: true }));
   const copies = reviews.getByRole('region', { name: 'Preserved review recovery copies' });
   await click(page, copies.getByText('Preserved correction to revision 4', { exact: true }).last());
   await expect(copies.getByText(quotaNotes, { exact: false })).toBeVisible();
   await click(page, copies.getByRole('button', { name: 'Restore preserved edit', exact: true }).last());
-  await expect(saved.getByLabel('Staff review notes', { exact: true })).toHaveValue(quotaNotes);
-  await saved.getByLabel('Reason for correction', { exact: true }).fill('SYNTHETIC preserved and restored after storage refusal and real tab refocus.');
+  await expect(saved.getByRole('textbox', { name: 'Staff review notes', exact: true })).toHaveValue(quotaNotes);
+  await saved.getByRole('textbox', { name: 'Reason for correction', exact: true }).fill('SYNTHETIC preserved and restored after storage refusal and real tab refocus.');
   await click(page, saved.getByRole('button', { name: 'Save reasoned correction', exact: true }));
   await expect(saved.getByRole('heading', { name: /revision 5$/ })).toBeVisible();
   final = await read(); assert.equal(final.content.notes, quotaNotes); assert.equal(final.content.assignedSourceCount, total);
@@ -162,13 +185,13 @@ async function click(page, locator) { await expect(locator).toBeVisible(); await
   await click(page, saved.getByRole('button', { name: 'Open revision 1', exact: true }));
   await expect(saved.getByRole('heading', { name: /revision 1$/ })).toBeVisible();
   await expect(saved.getByRole('button', { name: 'Save reasoned correction', exact: true })).toBeDisabled();
-  await expect(saved.getByLabel('Staff review notes', { exact: true })).toBeDisabled();
+  await expect(saved.getByRole('textbox', { name: 'Staff review notes', exact: true })).toBeDisabled();
   await expect(saved.getByRole('button', { name: 'Open current review', exact: true })).toBeVisible();
   const originalAgain = await read(createReceipt.requestId);
   assert.equal(originalAgain.revision.contentText, original.revision.contentText); assert.equal(originalAgain.preparationText, original.preparationText);
   const sourceAgain = await (await page.request.get(`${base}/api/engagement/campaigns/${sourceReceipt.campaignId}/synthesis/sources?requestId=${sourceReceipt.requestId}`)).json();
   assert.equal(sourceAgain.snapshotText, source.snapshotText);
-  await saved.getByRole('heading', { level: 4 }).scrollIntoViewIfNeeded(); await page.screenshot({ path: prefix + '-original-history.png' });
+  await checkControls('original history'); await saved.getByRole('heading', { level: 4 }).scrollIntoViewIfNeeded(); await page.screenshot({ path: prefix + '-original-history.png' });
   const anonymous = await browser.newContext();
   for (const query of [{ mode: 'read', reviewId: createReceipt.reviewId }, { mode: 'reviews', sourceId: sourceReceipt.requestId }, { mode: 'revisions', reviewId: createReceipt.reviewId }]) {
    assert.equal((await anonymous.request.get(`${endpoint}?${new URLSearchParams(query)}`)).status(), 401);
@@ -179,6 +202,13 @@ async function click(page, locator) { await expect(locator).toBeVisible(); await
   assert.equal(observed.pageErrors.length, 0); assert(observed.console.every(message => /ERR_CONNECTION_RESET/.test(message)), 'Unexpected browser console errors');
   observed.completed = true; observed.finalContentSha256 = final.revision.contentSha256; observed.totalContributions = total;
   fs.writeFileSync(prefix + '-original.json', JSON.stringify(original, null, 2)); fs.writeFileSync(prefix + '-corrected.json', JSON.stringify(final, null, 2));
- } catch (error) { observed.error = error.stack; await page.screenshot({ path: prefix + '-failure.png' }); fs.writeFileSync(prefix + '-failure.txt', await page.locator('body').ariaSnapshot()); throw error; }
+ } catch (error) {
+  observed.error = error.stack;
+  observed.fieldDiagnostic = { byLabel: await page.getByLabel('Staff review notes', { exact: true }).count(), byRole: await page.getByRole('textbox', { name: 'Staff review notes', exact: true }).count(), textareas: await page.locator('textarea').evaluateAll(rows => rows.map(row => ({ label: row.labels?.[0]?.textContent?.slice(0, 90), valueLength: row.value.length }))) };
+  await page.screenshot({ path: prefix + '-failure.png' }); fs.writeFileSync(prefix + '-failure.txt', await page.locator('body').ariaSnapshot());
+  const field = page.locator('article[aria-label="Saved staff review"] textarea').first();
+  if (await field.count()) { await field.scrollIntoViewIfNeeded(); await page.screenshot({ path: prefix + '-failure-field.png' }); observed.fieldDiagnostic.afterScrollByLabel = await page.getByLabel('Staff review notes', { exact: true }).count(); }
+  throw error;
+ }
  finally { fs.writeFileSync(prefix + '.json', JSON.stringify(observed, null, 2)); await browser.close(); console.log(prefix + '.json'); }
 })().catch(error => { console.error(error.message); process.exitCode = 1; });

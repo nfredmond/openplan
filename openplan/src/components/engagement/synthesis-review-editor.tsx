@@ -144,24 +144,24 @@ function ReviewPanel({ snapshot, onAccessLost, recoveryMemory: sourceMemory, ...
 
   const draft = working.draft, oldRevision = saved && saved.currentRevisionId !== saved.revision.requestId;
   if (accessLost) return <section><p role="alert">Staff access changed. Reopen this consultation to check access.</p></section>;
-  return <section aria-label="Retained staff reviews" className="rounded border p-4 space-y-4 min-w-0">
+  return <section aria-label="Retained staff reviews" className="space-y-4 min-w-0 sm:rounded sm:border sm:p-4">
     <h3 className="font-semibold">Staff synthesis reviews</h3>
     <p>Create a private draft from this complete saved source. Historical categories begin unassessed. Staff wording and membership corrections retain their reasons and earlier versions.</p>
     <p className="text-sm">These drafts do not approve or publish findings. Contribution counts do not measure distinct people or representative support.</p>
     {error ? <p role="alert" className="break-words">{error}</p> : null}{notice ? <p role="status">{notice}</p> : null}
     {blocked ? <><p role="alert">Browser recovery needs attention. Preserve or copy the latest text before leaving or reloading this page.</p>{working.draft ? <details><summary>Latest edit retained on screen</summary><pre className="mt-2 whitespace-pre-wrap break-all text-xs">{JSON.stringify(working.draft, null, 2)}</pre></details> : null}</> : null}
-    {working.pending ? <div className="rounded border p-3 space-y-2"><p>An exact review request is retained for retry. Its text and parent are fixed.</p><p className="text-xs break-all">Request {working.pending.intent.requestId}</p><Button type="button" disabled={busy || blocked} onClick={() => void send()}>Retry retained review request</Button></div> : null}
+    {working.pending ? <div className="rounded border p-3 space-y-2"><p>An exact review request is retained for retry. Its text and parent are fixed.</p><p className="text-xs break-all">Request {working.pending.intent.requestId}</p><Button type="button" className="h-auto min-h-10 max-w-full whitespace-normal" disabled={busy || blocked} onClick={() => void send()}>Retry retained review request</Button></div> : null}
     <div className="flex flex-wrap gap-3">
-      <Button type="button" disabled={!ready || blocked || busy || Boolean(draft || working.pending)} onClick={() => void send({ operation: "create", requestId: crypto.randomUUID(), actorId: userId, workspaceId, sourceId, sourceSha256 })}>Create staff review</Button>
-      <Button type="button" variant="outline" onClick={() => void list()}>Refresh staff reviews</Button>
-      {draft || working.pending || blocked ? <Button type="button" variant="outline" className="h-auto min-h-10 max-w-full whitespace-normal" disabled={busy} onClick={() => {
+      <Button type="button" className="h-auto min-h-10 max-w-full whitespace-normal" disabled={!ready || blocked || busy || Boolean(draft || working.pending)} onClick={() => void send({ operation: "create", requestId: crypto.randomUUID(), actorId: userId, workspaceId, sourceId, sourceSha256 })}>Create staff review</Button>
+      <Button type="button" className="h-auto min-h-10 max-w-full whitespace-normal" variant="outline" onClick={() => void list()}>Refresh staff reviews</Button>
+      {draft || working.pending || blocked ? <Button type="button" className="h-auto min-h-10 max-w-full whitespace-normal" variant="outline" disabled={busy} onClick={() => {
         try { preserveReviewWorkingCopy(localStorage, scope, working); adopt(readReviewWorkingCopy(localStorage, scope)); recoveryMemory.current = null; setCopies(listPreservedReviewCopies(localStorage, scope)); setBlocked(false); setError(null); setNotice("Recovery copy preserved below. Open the current review before starting another correction."); }
         catch (cause) { setError(errorText(cause)); }
       }}>Preserve edit and start another correction</Button> : null}
     </div>
     {page?.entries.length === 0 ? <p>No staff reviews have been saved for this source.</p> : null}
-    <ul className="space-y-2">{page?.entries.map(row => <li key={row.reviewId} className="rounded border p-3 space-y-2"><p className="break-words">{row.title} · latest revision {row.revisionNo}</p><Button type="button" variant="outline" onClick={() => { if (!blocked) update({ ...workingRef.current, activeReviewId: row.reviewId }); void open(row.reviewId); }}>Open staff review {row.reviewId.slice(0, 8)}</Button></li>)}</ul>
-    {page?.nextCursor ? <Button type="button" variant="outline" onClick={() => void list(page.nextCursor)}>Load older staff reviews</Button> : null}
+    <ul className="space-y-2">{page?.entries.map(row => <li key={row.reviewId} className="rounded border p-3 space-y-2"><p className="break-words">{row.title} · latest revision {row.revisionNo}</p><Button type="button" className="h-auto min-h-10 max-w-full whitespace-normal" variant="outline" onClick={() => { if (!blocked) update({ ...workingRef.current, activeReviewId: row.reviewId }); void open(row.reviewId); }}>Open staff review {row.reviewId.slice(0, 8)}</Button></li>)}</ul>
+    {page?.nextCursor ? <Button type="button" className="h-auto min-h-10 max-w-full whitespace-normal" variant="outline" onClick={() => void list(page.nextCursor)}>Load older staff reviews</Button> : null}
     {saved ? <article aria-label="Saved staff review" className="space-y-3 min-w-0">
       <h4 className="font-semibold break-words">{saved.content.title} · revision {saved.revision.revisionNo}</h4>
       <p>{saved.content.assignedSourceCount} assigned contributions; {saved.content.unassignedSourceIds.length} unassigned; {saved.content.overlappingSourceCount} appear in more than one group.</p>
@@ -170,15 +170,15 @@ function ReviewPanel({ snapshot, onAccessLost, recoveryMemory: sourceMemory, ...
       <p className="text-sm break-words">{saved.revision.reason ? `Correction reason: ${saved.revision.reason}` : "Original draft from historical source preparation."}</p>
       {saved.content.groups.map(group => <details key={group.id} className="rounded border p-3"><summary className="break-words">{group.label} · {group.sourceIds.length} contributions · {group.sentiment.replaceAll("_", " ")}</summary><p className="mt-2 whitespace-pre-wrap break-words">{group.summary || "No staff summary."}</p><pre className="mt-2 whitespace-pre-wrap break-all text-xs">{group.sourceIds.join("\n")}</pre></details>)}
       <details><summary>Original preparation and unassigned membership</summary><p className="mt-2 text-xs break-all">Preparation SHA256: {saved.preparationSha256}</p><pre className="mt-2 whitespace-pre-wrap break-all text-xs">{saved.preparationText}</pre><pre className="mt-2 whitespace-pre-wrap break-all text-xs">Unassigned: {saved.content.unassignedSourceIds.join(", ") || "none"}</pre></details>
-      {oldRevision ? <div><p>This is an earlier revision. Open the current review before editing.</p><Button type="button" variant="outline" onClick={() => void open(saved.reviewId)}>Open current review</Button></div> : null}
+      {oldRevision ? <div><p>This is an earlier revision. Open the current review before editing.</p><Button type="button" className="h-auto min-h-10 max-w-full whitespace-normal" variant="outline" onClick={() => void open(saved.reviewId)}>Open current review</Button></div> : null}
       <ReviewCorrectionForm key={`${saved.reviewId}:${saved.revision.requestId}`} saved={saved} snapshot={snapshot} draft={draft?.reviewId === saved.reviewId && draft.parentId === saved.revision.requestId ? draft : null}
         disabled={!ready || blocked || busy || Boolean(working.pending) || Boolean(oldRevision) || Boolean(draft && (draft.reviewId !== saved.reviewId || draft.parentId !== saved.revision.requestId))}
         onChange={value => update({ ...workingRef.current, activeReviewId: saved.reviewId, draft: value })} onSave={correct} />
       {draft && (draft.reviewId !== saved.reviewId || draft.parentId !== saved.revision.requestId) ? <p>A different parent has an unfinished correction. Preserve that edit before starting another.</p> : null}
-      <h5 className="font-semibold">Revision history</h5><ul className="space-y-2">{history?.entries.map(row => <li key={row.requestId}><Button type="button" variant="outline" className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => void open(saved.reviewId, row.requestId)}>Open revision {row.revisionNo}</Button><p className="text-sm break-words">{row.reason ?? "Original staff draft"}</p></li>)}</ul>
-      {history?.nextCursor ? <Button type="button" variant="outline" onClick={() => void olderRevisions()}>Load older revisions</Button> : null}
+      <h5 className="font-semibold">Revision history</h5><ul className="space-y-2">{history?.entries.map(row => <li key={row.requestId}><Button type="button" className="h-auto min-h-10 max-w-full whitespace-normal" variant="outline" onClick={() => void open(saved.reviewId, row.requestId)}>Open revision {row.revisionNo}</Button><p className="text-sm break-words">{row.reason ?? "Original staff draft"}</p></li>)}</ul>
+      {history?.nextCursor ? <Button type="button" className="h-auto min-h-10 max-w-full whitespace-normal" variant="outline" onClick={() => void olderRevisions()}>Load older revisions</Button> : null}
     </article> : null}
-    {copies.length ? <section aria-label="Preserved review recovery copies" className="space-y-2"><h4 className="font-semibold">Preserved browser recovery copies</h4>{copies.map(copy => <details key={copy.key}><summary>Preserved {copy.value?.draft ? `correction to revision ${copy.value.draft.parentNumber}` : "review request"}</summary><pre className="mt-2 whitespace-pre-wrap break-all text-xs">{copy.raw}</pre>{copy.value ? <Button type="button" variant="outline" disabled={busy || blocked || Boolean(draft || working.pending)} onClick={() => {
+    {copies.length ? <section aria-label="Preserved review recovery copies" className="space-y-2"><h4 className="font-semibold">Preserved browser recovery copies</h4>{copies.map(copy => <details key={copy.key}><summary>Preserved {copy.value?.draft ? `correction to revision ${copy.value.draft.parentNumber}` : "review request"}</summary><pre className="mt-2 whitespace-pre-wrap break-all text-xs">{copy.raw}</pre>{copy.value ? <Button type="button" className="h-auto min-h-10 max-w-full whitespace-normal" variant="outline" disabled={busy || blocked || Boolean(draft || working.pending)} onClick={() => {
       try { const next = writeReviewWorkingCopy(localStorage, workingRef.current, copy.value!); adopt(next); if (next.draft) void open(next.draft.reviewId, next.draft.parentId); else if (next.activeReviewId) void open(next.activeReviewId); }
       catch (cause) { setError(errorText(cause)); }
     }}>Restore preserved edit</Button> : <p>This copy is unreadable; its exact text is retained above.</p>}</details>)}</section> : null}
@@ -199,7 +199,7 @@ function ReviewCorrectionForm({ saved, snapshot, draft, disabled, onChange, onSa
     ...snapshot.answers.map(row => ({ id: `answer:${row.id}`, label: `Survey: ${row.question_prompt_snapshot ?? row.question_type}`, text: row.answer_text ?? JSON.stringify(row.answer_json) }))], [snapshot]);
   const filtered = contributions.filter(row => `${row.label} ${row.text}`.toLocaleLowerCase().includes(search.toLocaleLowerCase()));
   const set = (patch: Partial<ReviewDraft>) => onChange({ ...current, ...patch });
-  return <fieldset disabled={disabled} className="rounded border p-3 space-y-3 min-w-0">
+  return <fieldset disabled={disabled} className="rounded border p-2 space-y-3 min-w-0 sm:p-3">
     <legend className="font-semibold">Reasoned correction</legend>
     <p className="text-sm">Edits are retained in this browser as you type. Save one correction at a time. Earlier saved versions remain unchanged.</p>
     {draft ? <p role="status">Unfinished correction retained for revision {draft.parentNumber}.</p> : null}
@@ -212,11 +212,11 @@ function ReviewCorrectionForm({ saved, snapshot, draft, disabled, onChange, onSa
       <label className="block">Staff sentiment assessment<select className="block w-full rounded border p-2" value={current.sentiment} onChange={event => set({ sentiment: event.target.value as ReviewDraft["sentiment"] })}>{["not_assessed", "positive", "mixed", "neutral", "negative"].map(value => <option key={value} value={value}>{value.replaceAll("_", " ")}</option>)}</select></label>
       <label className="block">Find contributions for this group<input type="search" className="block w-full rounded border p-2" value={search} onChange={event => { setSearch(event.target.value); setPage(0); }} /></label>
       <p>{current.members.length} selected contributions. {filtered.length} match this search; page {page + 1} of {Math.max(1, Math.ceil(filtered.length / 25))}.</p>
-      <div className="flex flex-wrap gap-3"><Button type="button" variant="outline" disabled={page === 0} onClick={() => setPage(page - 1)}>Previous membership page</Button><Button type="button" variant="outline" disabled={(page + 1) * 25 >= filtered.length} onClick={() => setPage(page + 1)}>Next membership page</Button></div>
+      <div className="flex flex-wrap gap-3"><Button type="button" className="h-auto min-h-10 max-w-full whitespace-normal" variant="outline" disabled={page === 0} onClick={() => setPage(page - 1)}>Previous membership page</Button><Button type="button" className="h-auto min-h-10 max-w-full whitespace-normal" variant="outline" disabled={(page + 1) * 25 >= filtered.length} onClick={() => setPage(page + 1)}>Next membership page</Button></div>
       {filtered.slice(page * 25, (page + 1) * 25).map(row => <label key={row.id} className="block rounded border p-3 break-words"><input type="checkbox" checked={current.members.includes(row.id)} onChange={event => set({ members: event.target.checked ? [...current.members, row.id] : current.members.filter(id => id !== row.id) })} /> {row.label}<span className="block whitespace-pre-wrap">{row.text}</span></label>)}
     </> : null}
     {current.kind === "group_remove" ? <p>Removing this group preserves every source. Contributions with no other group become explicitly unassigned.</p> : null}
     <label className="block">Reason for correction<textarea rows={3} className="block w-full rounded border p-2" value={current.reason} onChange={event => set({ reason: event.target.value })} /></label>
-    <Button type="button" disabled={!draft} onClick={onSave}>Save reasoned correction</Button>
+    <Button type="button" className="h-auto min-h-10 max-w-full whitespace-normal" disabled={!draft} onClick={onSave}>Save reasoned correction</Button>
   </fieldset>;
 }

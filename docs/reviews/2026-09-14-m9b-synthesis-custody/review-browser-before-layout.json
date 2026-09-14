@@ -1,0 +1,109 @@
+{
+  "commit": "7608831f7e7ff5315eefbd055e9864d6a57a0a00",
+  "visualAcceptance": false,
+  "reason": "390px retry, history, save and membership buttons exceed inner containers despite remaining within viewport. Inspected screenshots; new inner-container assertion fails at pending on original build.",
+  "entries": [
+    {
+      "file": "synthesis-reviews-1440-1789424631797.json",
+      "sha256": "559e378e4f878e5556d19e91433b16ed5679fb9003b72a1c3a3d3c37f737971b",
+      "completed": true,
+      "width": 1440,
+      "identity": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-09-14T22:23:52.107Z",
+        "deployment": {
+          "commit": "7608831f7e7f",
+          "version": "0.61.1"
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "cases": null,
+      "error": null
+    },
+    {
+      "file": "synthesis-reviews-390-1789424666735.json",
+      "sha256": "f9d901cb0a26e057963352cb7c1055e088350cfd7758fabcfee85e597343a702",
+      "completed": true,
+      "width": 390,
+      "identity": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-09-14T22:24:27.030Z",
+        "deployment": {
+          "commit": "7608831f7e7f",
+          "version": "0.61.1"
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "cases": null,
+      "error": null
+    },
+    {
+      "file": "synthesis-reviews-390-1789424854238.json",
+      "sha256": "1ee77ae961f088c70285f0c908b5f3d27b3109bfdd51cd628429559209fa9568",
+      "completed": false,
+      "width": 390,
+      "identity": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-09-14T22:27:34.537Z",
+        "deployment": {
+          "commit": "7608831f7e7f",
+          "version": "0.61.1"
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "cases": null,
+      "error": "AssertionError [ERR_ASSERTION]: Review controls exceed their inner container at pending: [{\"text\":\"Retry retained review request\",\"left\":104,\"right\":343.078125,\"parentLeft\":104,\"parentRight\":286,\"viewport\":390},{\"text\":\"Open staff review 2d089dec\",\"left\":104,\"right\":332.03125,\"parentLeft\":104,\"parentRight\":286,\"viewport\":390}]"
+    },
+    {
+      "file": "synthesis-review-concurrency-1789424729262.json",
+      "sha256": "bb3823f6840d75c3dd13a1c11eb7cbf4362a84bbe0f344259e33381d2b0d2043",
+      "completed": true,
+      "width": null,
+      "identity": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-09-14T22:25:29.568Z",
+        "deployment": {
+          "commit": "7608831f7e7f",
+          "version": "0.61.1"
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "cases": [
+        {
+          "name": "concurrent exact retry retains one revision",
+          "statuses": [
+            201,
+            200
+          ],
+          "requestId": "52da32fa-9534-4b7c-af19-5acbec7acf84"
+        },
+        {
+          "name": "competing parents retain one correction and refuse stale or changed retries",
+          "statuses": [
+            201,
+            409
+          ],
+          "winner": "77fd90a3-b71f-4499-b35e-851aab25a44e",
+          "refused": "5451715d-70b8-42be-999a-6760fb2bd56c"
+        }
+      ],
+      "error": null
+    }
+  ]
+}

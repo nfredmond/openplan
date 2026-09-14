@@ -147,7 +147,7 @@ function SourcePanel({ userId, workspaceId, campaignId, categories }: SynthesisC
   }
 
   if (accessLost) return <section className="module-section-surface"><p role="alert">The signed-in account changed. Reopen this consultation to check access.</p></section>;
-  return <section className="module-section-surface space-y-4" aria-label="Retained synthesis sources">
+  return <section className="module-section-surface p-3 space-y-4 sm:p-6" aria-label="Retained synthesis sources">
     <h2 className="module-section-title">Retained synthesis sources</h2>
     <p className="text-sm">Save a private, complete copy of a selected contribution scope before preparing a synthesis. This records sources; it does not analyze sentiment, approve findings or publish participant text.</p>
     <fieldset disabled={!ready || busy || Boolean(pending) || unreadable} className="space-y-3">
