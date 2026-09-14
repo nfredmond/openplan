@@ -1,0 +1,304 @@
+{
+  "sourcesRestored": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "failed": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "failed": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "Saved review scope differs",
+      "exitCode": 1,
+      "failed": [
+        "retained review server custody refuses foreign records and altered exact bytes before using their content"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "Saved review checksum differs",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review API reads a verified review and distinguishes absent work from failed or corrupt reads",
+        "retained review server custody refuses foreign records and altered exact bytes before using their content"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "Saved review authorship differs",
+      "exitCode": 1,
+      "failed": [
+        "retained review server custody binds source checksums, authorship, original identity and reasoned lineage"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "Saved review original differs",
+      "exitCode": 1,
+      "failed": [
+        "retained review server custody binds source checksums, authorship, original identity and reasoned lineage"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "Saved review correction lineage differs",
+      "exitCode": 1,
+      "failed": [
+        "retained review server custody binds source checksums, authorship, original identity and reasoned lineage"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "Saved review source checksum differs",
+      "exitCode": 1,
+      "failed": [
+        "retained review server custody binds source checksums, authorship, original identity and reasoned lineage"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "Saved review preparation differs from its source",
+      "exitCode": 1,
+      "failed": [
+        "retained review server custody refuses dishonest preparation or content even when their checksums were recomputed"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "Saved review parent differs",
+      "exitCode": 1,
+      "failed": [
+        "retained review server custody refuses missing or discontinuous parents and any failed source or review query"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "Saved review content differs from its command",
+      "exitCode": 1,
+      "failed": [
+        "retained review server custody refuses dishonest preparation or content even when their checksums were recomputed"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "Saved review receipt differs",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review API does not acknowledge failed, conflicting or corrupt saves",
+        "retained review server custody refuses failed, foreign or inconsistent persistence receipts"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "failed-query-as-missing",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review API reads a verified review and distinguishes absent work from failed or corrupt reads",
+        "retained review server custody refuses missing or discontinuous parents and any failed source or review query",
+        "retained review server custody refuses failed, foreign or inconsistent persistence receipts"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "changed-retry",
+      "exitCode": 1,
+      "failed": [
+        "retained review server custody recovers exact original and correction requests after newer revisions without writing again"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "stale-parent",
+      "exitCode": 1,
+      "failed": [
+        "retained review server custody refuses stale parents, changed source selection and invalid membership before any persistence"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "changed-selection",
+      "exitCode": 1,
+      "failed": [
+        "retained review server custody refuses stale parents, changed source selection and invalid membership before any persistence"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missed-concurrent-recovery",
+      "exitCode": 1,
+      "failed": [
+        "retained review server custody recovers the same request when another tab commits between lookup and the parent check"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "lost-correction",
+      "exitCode": 1,
+      "failed": [
+        "retained review server custody computes complete original and corrected bytes for the service-only writer",
+        "retained review server custody refuses stale parents, changed source selection and invalid membership before any persistence"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "agent-markers",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review API requires the real browser origin and refuses every unsupported agent write marker"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "foreign-origin",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review API requires the real browser origin and refuses every unsupported agent write marker"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "actor-binding",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review API protects both read and write against missing staff access and changed identities"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "workspace-binding",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review API protects both read and write against missing staff access and changed identities"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "read-user-binding",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review API protects both read and write against missing staff access and changed identities"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "read-workspace-binding",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review API protects both read and write against missing staff access and changed identities"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "staff-access",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review API protects both read and write against missing staff access and changed identities"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "access-outage",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review API protects both read and write against missing staff access and changed identities"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "command-limit",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review API bounds commands, rejects machine bytes and malformed input before querying"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "repeated-query",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review API bounds commands, rejects machine bytes and malformed input before querying"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "partial-cursor",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review API bounds commands, rejects machine bytes and malformed input before querying"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "history-scope",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review API refuses foreign or failed history without presenting it as an empty page"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "root-page-identities",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review API checks history page identities and continuation while accepting full valid pages"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "revision-page-identities",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review API checks history page identities and continuation while accepting full valid pages"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "revision-page-numbers",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review API checks history page identities and continuation while accepting full valid pages"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "root-cursor-id",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review API checks history page identities and continuation while accepting full valid pages"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "root-cursor-date",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review API checks history page identities and continuation while accepting full valid pages"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "revision-cursor",
+      "exitCode": 1,
+      "failed": [
+        "retained synthesis review API checks history page identities and continuation while accepting full valid pages"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "sourceSha256": {
+    "src/lib/engagement/synthesis-review-server.ts": "7fe6fb50b9c0b3f5395719fe16752b53e4c0d0e97b33e2edfb607e1adeb306e3",
+    "src/app/api/engagement/campaigns/[campaignId]/synthesis/reviews/route.ts": "8e68b3f576b8517b4cc8f4f9ca7e282f0652300bfdba1ead7862dd302000e730",
+    "src/lib/engagement/synthesis-review-records.ts": "b0cc0e9de2d33bd53714b68b25d1772ac7e740683d062910de7d273434f5f7eb"
+  },
+  "testSha256": {
+    "src/test/engagement-synthesis-review-server.test.ts": "38807afc5485c6e9b5bf96802d66bf68d32edd8b34216ecc3e7ed399ad6e7331",
+    "src/test/engagement-synthesis-review-route.test.ts": "8060c7c6651da4aace82b19020532bf8162f724490f0383f03880c64af4b9c62"
+  },
+  "limits": "Actual server/model and route code with mocked database transport and session/access reads. Not native RPC interoperability, concurrency, browser recovery or planner usefulness."
+}

@@ -1,3 +1,15 @@
+# Latest: retained review server and API
+
+September 14, 2026. This section supersedes the checkpoint state below. Read REVIEW_SERVER_VERIFICATION.md and review-server-evidence.json before resuming. The previous goal turn made progress by saving 2f23e0eb; this turn adds real review server/API behavior and native TypeScript-to-RPC evidence.
+
+The source preparation code remains on main at 09c1cd17. CI 34892120409 and RLS 34892120481 were rechecked live and are successful. The current review work is backed up on work/engagement-decision-traceability; that branch has no GitHub runs for 2f23e0eb. Do not confuse the successful main runs with verification of the unfinished review interface.
+
+Review records, server read/retain logic, strict private API reads/history and bound correction POST now exist. Pure/server/API mutation checks and the native production TypeScript/RPC join are documented. The previously missing server/API work in the historical next-step list below is implemented. **The next task is the connected review editor and pending-command recovery in the saved-source inspector.** The unchanged route-caller guard currently fails exactly for the new reviews endpoint. Do not add an exception or a fake caller.
+
+The named stack still has 345 installed migrations. Migration 27 has only run in rollback transactions. Review UI/browser evidence, actual multi-session concurrency, full QA/shuffle/installed isolation/upgrade remain outstanding. No release was tagged and V1 remains active. Use the same isolated checkout and preserve the other session's original checkout. All synthetic native fixtures and injected SQL faults roll back; no owned application server was started.
+
+---
+
 # Weekly reset checkpoint: retained review implementation
 
 September 14, 2026. This section supersedes the older restart state below. The user asked whether work can resume in this thread after the weekly reset. Preserve this checkpoint and resume the same V1 objective; no new product decision or permission request is needed.

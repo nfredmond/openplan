@@ -1,0 +1,73 @@
+{
+  "status": "Incomplete connected review workflow; checkpoint only",
+  "stack": "supabase_db_openplan-restore-target-2026091050",
+  "migration27": "candidate-only, rolled back",
+  "applicationCatalog": {
+    "relations": 269,
+    "tables": 255,
+    "rlsTables": 255,
+    "excludes": "pg_depend extension-owned relations"
+  },
+  "logs": [
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/openplan-review-server-mutations.log",
+      "result": "36 expected outcomes; 19 tests per case",
+      "sha256": "e9bde4d39f88e9889c9047d0b44f35ae21161e380978bf90fd113fad06b5fbd0"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/openplan-review-native-join-final.log",
+      "result": "3 passed",
+      "sha256": "c6da9c6018bf26a049425f2e28537a30325ccbb77aec9aa106d3da4093a0930f"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/openplan-review-source-regression.log",
+      "result": "16 passed",
+      "sha256": "306f9032d625a8c251ba3651cfa51b4d88e9f53c48cd329cdb464b1137454413"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/openplan-review-typecheck-final.log",
+      "result": "exit 0 with 6144 MB heap",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/openplan-review-eslint-final.log",
+      "result": "exit 0",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/openplan-review-route-reachability.log",
+      "result": "expected incomplete-work failure: reviews route has no caller; 9 other tests passed",
+      "sha256": "a7210f44aace6674d28f23ccc8fe729b1b31e7a8028940434c39370fb1c8f9ad"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/openplan-review-retry-race-before.log",
+      "result": "targeted pre-fix race failed with conflict",
+      "sha256": "b5d99cc07d21cd75f64a370484be9d19adb91f8515c0347158b607a3b5223cf3"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/openplan-review-typecheck.log",
+      "result": "failed: default 4 GB Node heap exhausted",
+      "sha256": "62f23e81e7da5462052b128e7c36d788b10982d173b3007b603b18b32f6354b4"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/openplan-review-typecheck-6144.log",
+      "result": "failed: TS2339 in new native test; subsequently corrected",
+      "sha256": "3c6fa94a960e9c9a15b47a9de81f5b8a8436cf5e8fa6afffe9849ef3f31af705"
+    }
+  ],
+  "sourceSha256": {
+    "src/lib/engagement/synthesis-review-server.ts": "7fe6fb50b9c0b3f5395719fe16752b53e4c0d0e97b33e2edfb607e1adeb306e3",
+    "src/lib/engagement/synthesis-review-records.ts": "b0cc0e9de2d33bd53714b68b25d1772ac7e740683d062910de7d273434f5f7eb",
+    "src/app/api/engagement/campaigns/[campaignId]/synthesis/reviews/route.ts": "8e68b3f576b8517b4cc8f4f9ca7e282f0652300bfdba1ead7862dd302000e730",
+    "src/test/engagement-synthesis-review-server.test.ts": "38807afc5485c6e9b5bf96802d66bf68d32edd8b34216ecc3e7ed399ad6e7331",
+    "src/test/engagement-synthesis-review-route.test.ts": "8060c7c6651da4aace82b19020532bf8162f724490f0383f03880c64af4b9c62",
+    "src/test/engagement-synthesis-review-join-rls.test.ts": "a3be545db7b290909351ee4e27b4cbd37bd733e79a64a999e0612fb9dff244f2"
+  },
+  "remaining": [
+    "Real editor and scoped pending-command recovery",
+    "Actual multi-session concurrency",
+    "Desktop and 390px identified-build navigation, keyboard, console and recovery",
+    "Full QA, shuffled tests, installed RLS and upgrade checks",
+    "Direct main landing and final CI before tagging"
+  ]
+}
