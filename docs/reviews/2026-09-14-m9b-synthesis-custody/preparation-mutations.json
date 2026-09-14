@@ -249,7 +249,7 @@
   ],
   "sourceSha256": {
     "src/lib/engagement/synthesis-preparation.ts": "857ac40b2a6a412196a77b0d2fd7a9a33bc482cd2cb71b342d8efc5838abcdf0",
-    "src/components/engagement/synthesis-source-inspection.tsx": "e3d470d8400be8acb37d8bb1503b24e25219e954477067ec73b675f29c8faca2"
+    "src/components/engagement/synthesis-source-inspection.tsx": "d7820103929b17ce1fbccda4db5055d996a9fd36f067a62e64a2f4e06be50e46"
   },
   "testSha256": {
     "src/test/engagement-synthesis-preparation.test.ts": "566589d4cc8cb89a6382ac5bcdcb1d89ae46e19552d5b776cd0ee983cd55324d",

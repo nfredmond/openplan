@@ -57,7 +57,7 @@ export function SynthesisSourceInspection({ snapshot, sha256 }: { snapshot: Synt
       {selectedGroup ? <div className="text-sm space-y-1 break-words">
         <p>{groupLabel(selectedGroup)}: {selectedGroup.sourceIds.length} contributions. {contextLabels[selectedGroup.context]}.</p>
         <p>Historical version: {selectedGroup.versionId ?? "unavailable"}. {selectedGroup.questionType ? `Question type: ${selectedGroup.questionType}.` : ""}</p>
-        <details><summary>Complete group membership</summary><pre className="whitespace-pre-wrap break-all text-xs">{selectedGroup.sourceIds.join("\n")}</pre></details>
+        <details><summary>Complete group membership</summary><pre className="mt-2 whitespace-pre-wrap break-all text-xs">{selectedGroup.sourceIds.join("\n")}</pre></details>
       </div> : null}
     </section>
     <label className="block">Search all retained contributions<input type="search" className="block w-full rounded border p-2" value={search} onChange={event => { setSearch(event.target.value); setPage(0); }} /></label>

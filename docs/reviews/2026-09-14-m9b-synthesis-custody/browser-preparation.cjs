@@ -6,7 +6,7 @@ const directory = '/home/nathaniel/.local/state/openplan/response-write-probe-20
 const previous = JSON.parse(fs.readFileSync(directory + '/' + (width === 390 ? 'public-privacy-390-1789393604792' : 'public-privacy-1440-1789393515387') + '.json'));
 const account = JSON.parse(fs.readFileSync('/home/nathaniel/.local/state/openplan/api-provider-research-2026-09-12/api-settings-account.json'));
 const prefix = `${directory}/synthesis-preparation-${width}-${Date.now()}`;
-const observed = { width, completed: false, console: [], pageErrors: [] };
+const observed = { width, completed: false, console: [], pageErrors: [], runnerSha256: crypto.createHash('sha256').update(fs.readFileSync(__filename)).digest('hex') };
 const fits = bounds => bounds.left >= bounds.parentLeft - 1 && bounds.right <= bounds.parentRight + 1 && bounds.right <= bounds.viewport;
 const sha = value => crypto.createHash('sha256').update(value).digest('hex');
 async function click(page, locator) { await expect(locator).toBeVisible(); await expect(locator).toBeEnabled(); await locator.scrollIntoViewIfNeeded(); await locator.focus(); await page.keyboard.press('Enter'); }
@@ -37,30 +37,39 @@ async function click(page, locator) { await expect(locator).toBeVisible(); await
   await click(page, page.getByRole('button', { name: 'Add category', exact: true }));
   assert.equal((await categoryCreated).status(), 201);
   const questionPrompt = `SYNTHETIC preparation question ${width} ${Date.now()}`;
-  const surveyText = 'SYNTHETIC full survey concern '.repeat(30) + 'UNIQUE SURVEY PREPARATION TAIL';
+  const surveyTail = 'UNIQUE SURVEY PREPARATION TAIL ' + crypto.randomUUID();
+  const surveyText = 'SYNTHETIC full survey concern '.repeat(30) + surveyTail;
   const builder = page.locator('article').filter({ has: page.getByRole('heading', { name: 'Survey & form questions', exact: true }) });
-  const questionForm = builder.locator('form');
-  await questionForm.getByLabel('Type', { exact: true }).selectOption('free_text');
-  await questionForm.getByLabel('Section (optional)', { exact: true }).selectOption({ label: sourceCategoryLabel });
+  observed.builder = await page.getByRole('heading', { name: 'Survey & form questions', exact: true }).evaluate(element => ({ parentTag: element.closest('article')?.tagName, forms: element.closest('article')?.querySelectorAll('form').length }));
+  const questionForm = builder;
+  observed.builder.locators = { articles: await builder.count(), labelType: await builder.getByLabel('Type', { exact: true }).count(), roleType: await builder.getByRole('combobox', { name: 'Type', exact: true }).count() };
+  console.log('Survey builder controls', JSON.stringify(observed.builder));
+  await questionForm.getByRole('combobox', { name: 'Type', exact: true }).selectOption('free_text');
+  await questionForm.getByRole('combobox', { name: 'Section (optional)', exact: true }).selectOption({ label: sourceCategoryLabel });
   await questionForm.getByLabel('Prompt', { exact: true }).fill(questionPrompt);
   const questionCreated = page.waitForResponse(response => response.url().endsWith('/survey/questions') && response.request().method() === 'POST');
   await click(page, questionForm.getByRole('button', { name: 'Add question', exact: true }));
   const questionResponse = await questionCreated; assert.equal(questionResponse.status(), 201);
   const question = (await questionResponse.json()).question;
+  observed.question = { id: question.id, status: question.status };
+  assert(['draft', 'published'].includes(question.status));
   await click(page, builder.getByRole('button', { name: new RegExp(questionPrompt) }));
   const questionCard = builder.getByRole('button', { name: new RegExp(questionPrompt) }).locator('..').locator('..');
   const publish = questionCard.getByRole('button', { name: 'Publish to the public survey', exact: true });
-  if (await publish.count()) {
+  if (question.status === 'draft') {
     const published = page.waitForResponse(response => response.url().endsWith(`/survey/questions/${question.id}`) && response.request().method() === 'PATCH');
     await click(page, publish); assert.equal((await published).status(), 200);
+    await expect(questionCard.getByRole('button', { name: 'Unpublish', exact: true })).toBeVisible();
   }
-  const popup = context.waitForEvent('page');
-  await click(page, page.getByRole('link', { name: 'Open portal', exact: true }));
-  const participant = await popup;
+  const [participant] = await Promise.all([context.waitForEvent('page'), click(page, page.getByTestId('campaign-publish-flow').getByRole('link', { name: 'Open portal', exact: true }))]);
   participant.on('console', entry => { if (entry.type() === 'error') observed.console.push('participant: ' + entry.text()); });
   participant.on('pageerror', error => observed.pageErrors.push('participant: ' + error.message));
   await participant.waitForLoadState('domcontentloaded');
   await click(participant, participant.getByTestId('portal-details-link'));
+  await participant.waitForURL('**/about');
+  await click(participant, participant.getByRole('button', { name: /^Survey \(\d+\)$/ }));
+  await participant.screenshot({ path: prefix + '-survey-form.png' });
+  fs.writeFileSync(prefix + '-survey-form.txt', await participant.locator('body').ariaSnapshot());
   await participant.getByLabel(questionPrompt, { exact: true }).fill(surveyText);
   const submitted = participant.waitForResponse(response => response.url().includes('/survey/submit') && response.request().method() === 'POST');
   await click(participant, participant.getByRole('button', { name: 'Submit survey', exact: true }));
@@ -138,7 +147,7 @@ async function click(page, locator) { await expect(locator).toBeVisible(); await
   await expect(preparation).toBeVisible();
   const countText = `${original.snapshot.items.length + original.snapshot.answers.length} contributions accounted for:`;
   await expect(preparation.getByText(new RegExp('^' + countText))).toBeVisible();
-  const groupSelect = preparation.getByLabel('Inspect a prepared group');
+  const groupSelect = preparation.getByRole('combobox', { name: 'Inspect a prepared group', exact: true });
   const surveyOption = await groupSelect.locator('option').allTextContents();
   const questionOption = surveyOption.find(label => label.startsWith('Question: ' + questionPrompt));
   assert(questionOption, 'Question group is missing');
@@ -147,15 +156,44 @@ async function click(page, locator) { await expect(locator).toBeVisible(); await
   await expect(preparation.getByText(/1 contributions. Historical definition retained/)).toBeVisible();
   await click(page, preparation.getByText('Complete group membership', { exact: true }));
   await expect(preparation.locator('pre')).toHaveText('answer:' + surveyAnswer.id);
+  observed.membershipSpacing = await preparation.locator('pre').evaluate(element => {
+    const summary = element.previousElementSibling;
+    const css = getComputedStyle(summary), ring = parseFloat(css.outlineWidth) + Math.max(0, parseFloat(css.outlineOffset));
+    const originalClass = element.className, originalStyle = element.getAttribute('style');
+    const measure = () => ({ gap: element.getBoundingClientRect().top - summary.getBoundingClientRect().bottom, ring });
+    try {
+      const baseline = measure(); element.classList.add('relative'); const harmless = measure();
+      element.style.marginTop = '0px'; const targeted = measure();
+      return { baseline, harmless, targeted };
+    } finally { element.className = originalClass; if (originalStyle === null) element.removeAttribute('style'); else element.setAttribute('style', originalStyle); }
+  });
+  const outsideFocusRing = bounds => bounds.gap >= Math.max(6, bounds.ring);
+  assert(outsideFocusRing(observed.membershipSpacing.baseline), 'Keyboard focus ring overlaps membership text');
+  assert(outsideFocusRing(observed.membershipSpacing.harmless), 'Harmless membership spacing control failed');
+  assert(!outsideFocusRing(observed.membershipSpacing.targeted), 'Membership guard missed removed spacing');
+  await preparation.scrollIntoViewIfNeeded();
+  await preparation.locator('pre').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: prefix + '-question-group.png' });
   await groupSelect.focus(); await page.keyboard.press('Home'); await page.keyboard.press('Enter');
   await expect(groupSelect).toHaveValue('');
-  await inspection.getByLabel('Search all retained contributions').fill('UNIQUE SURVEY PREPARATION TAIL');
+  await inspection.getByLabel('Search all retained contributions').fill(surveyTail);
   await expect(inspection.getByText(surveyText, { exact: true })).toBeVisible();
   await inspection.getByLabel('Search all retained contributions').fill('');
   observed.preparation = { sourceCount: original.snapshot.items.length + original.snapshot.answers.length, questionGroup: questionOption, memberId: 'answer:' + surveyAnswer.id, fullSurveyTailVisible: true };
   await preparation.scrollIntoViewIfNeeded();
   observed.preparation.bounds = await groupSelect.evaluate(element => { const rect = element.getBoundingClientRect(), parent = element.parentElement.getBoundingClientRect(); return { left: rect.left, right: rect.right, parentLeft: parent.left, parentRight: parent.right, viewport: innerWidth }; });
   assert(fits(observed.preparation.bounds), 'Prepared group selector is clipped');
+  observed.preparation.layoutGuard = await groupSelect.evaluate(element => {
+    const originalClass = element.className, originalStyle = element.getAttribute('style');
+    const bounds = () => { const rect = element.getBoundingClientRect(), parent = element.parentElement.getBoundingClientRect(); return { left: rect.left, right: rect.right, parentLeft: parent.left, parentRight: parent.right, viewport: innerWidth }; };
+    try {
+      element.classList.add('relative'); const harmless = bounds();
+      element.style.width = '2000px'; element.style.maxWidth = 'none'; const targeted = bounds();
+      return { harmless, targeted };
+    } finally { element.className = originalClass; if (originalStyle === null) element.removeAttribute('style'); else element.setAttribute('style', originalStyle); }
+  });
+  assert(fits(observed.preparation.layoutGuard.harmless), 'Harmless prepared selector control failed');
+  assert(!fits(observed.preparation.layoutGuard.targeted), 'Prepared selector layout guard missed forced overflow');
   await page.screenshot({ path: prefix + '-preparation.png' });
   // Correct a current category through its real editor; the previous source must retain its original definition.
   await tab('Setup');
@@ -186,6 +224,12 @@ async function click(page, locator) { await expect(locator).toBeVisible(); await
   await click(page, panel.getByRole('button', { name: `Open saved source ${originalReceipt.requestId.slice(0, 8)}`, exact: true }));
   await expect(panel.getByText(`Source SHA256: ${original.snapshotSha256}`, { exact: true })).toBeVisible();
   observed.reopenedThroughHistory = true;
+  const reopenedPreparation = panel.getByRole('region', { name: 'Complete source preparation' });
+  await reopenedPreparation.getByRole('combobox', { name: 'Inspect a prepared group', exact: true }).selectOption({ label: questionOption });
+  await click(page, reopenedPreparation.getByText('Complete group membership', { exact: true }));
+  await expect(reopenedPreparation.locator('pre')).toHaveText('answer:' + surveyAnswer.id);
+  await expect(panel.getByText(surveyText, { exact: true })).toBeVisible();
+  observed.originalPreparedMembershipPreserved = true;
   await panel.getByRole('article', { name: 'Saved source inspection' }).getByRole('heading', { level: 3 }).evaluate(element => element.scrollIntoView({ block: 'start', behavior: 'instant' }));
   await page.screenshot({ path: prefix + '-reopened-original.png' });
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));

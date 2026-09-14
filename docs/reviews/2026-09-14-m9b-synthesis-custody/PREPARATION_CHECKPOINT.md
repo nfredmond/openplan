@@ -15,3 +15,11 @@ Fourteen focused tests include existing source-panel integration and ten new pre
 The current source verifier and preparation consumed the retained native PostgreSQL RPC sample with 301 items and two survey answers. All 303 distinct members reconcile. A harmless control survives and dropping the final item fails the source-count guard. See native-preparation.json and native-preparation-mutations.json. This reuses a checksummed prior native result; it is not a fresh database run.
 
 browser-preparation.cjs extends the existing real navigation/recovery/history journey with a question created/published through the survey builder, a public-form submission and full-text/group membership checks. Its first run and screenshots remain pending at this checkpoint. Do not treat the runner's existence as acceptance.
+
+## Keyboard spacing correction
+
+The first complete desktop and 390px runs on 8ab73ec5 passed their data, group, recovery and privacy assertions. Screenshot inspection then found that the focused membership summary's ring overlapped the first source-ID line. Those automated passes did not establish readable focused membership. Add spacing before that line and require its bounding box to clear the actual focus ring. The browser guard keeps a harmless class change and removes the spacing as a targeted counterexample, restoring both.
+
+The spacing-only correction passed changed-file lint, all fourteen focused tests, the repeated ten-test/25-fault preparation proof and a fresh webpack production build. Full QA and shuffled seed 619143 passed before this CSS-only correction, both with 15,441 tests and 549 skipped. No database, worker, API or grouping logic changed after those broad runs. Corrected-build browser acceptance remains the next check at this paragraph.
+
+Earlier runner failures are retained privately. Chrome exposed the Type select by its combobox role while the exact getByLabel locator matched nothing; two Open portal links required explicit publishing-flow scope; public surveys require their own Survey tab; and repeated identical synthetic answers needed unique per-run search text. These are runner corrections, not demonstrated application defects. The question publish action now follows the returned draft/published state and waits for its visible confirmation. Prior synthetic contributions remain intact.
