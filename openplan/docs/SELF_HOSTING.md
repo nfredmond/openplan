@@ -6,6 +6,12 @@ usage. Start with the [local setup](../../README.md). Use
 [FIRST_DEPLOYMENT](FIRST_DEPLOYMENT.md) to record what actually works on your
 chosen installation; use this page for configuration and operating requirements.
 
+Production builds allow a 6 GiB Node heap for TypeScript checking. Leave memory
+for the operating system and other build processes as well. The default 4 GiB
+heap exhausted during a clean v0.60 build; `npm run build` sets the larger
+allowance without skipping type checks. This is a build-time requirement, not
+the application server's runtime allocation.
+
 ## Deployment profiles and current evidence
 
 | Profile | What exists | What remains unproved |

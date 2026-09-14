@@ -36,6 +36,10 @@ source is no longer publicly available. Staff can download unchanged internal
 originals and prepare corrected public PDF/XLSX/ZIP packets. An interrupted export
 request recovers the same saved job.
 
+Production builds now give TypeScript subprocesses a 6 GiB heap after a clean CI
+build exhausted Node's default allowance. Type checks remain required. Leave
+memory for the operating system and other build processes as well.
+
 Apply `20261014000021_engagement_response_decision_links.sql`,
 `20261014000022_engagement_decision_request_resolution.sql` and
 `20261014000023_engagement_public_copy_privacy.sql` before restarting the app and

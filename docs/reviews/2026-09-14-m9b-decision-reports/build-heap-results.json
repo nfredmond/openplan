@@ -1,0 +1,156 @@
+{
+  "baseCommit": "28be41642bd39f41bea6ddaac7a7325419cbd8a0",
+  "buildCommand": "NODE_OPTIONS=\"$NODE_OPTIONS --max-old-space-size=6144\" next build --webpack",
+  "outcome": "local cold build and controls passed; corrected commit CI pending",
+  "results": [
+    {
+      "typeCheckProcesses": [
+        {
+          "pid": 498270,
+          "argv": [
+            "/usr/bin/node",
+            "/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/typescript/bin/tsc",
+            "--project",
+            "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/tsconfig.json",
+            "--noEmit",
+            "--declarationMap",
+            "false",
+            "--emitDeclarationOnly",
+            "false",
+            "--tsBuildInfoFile",
+            "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/.next/cache/.tsbuildinfo"
+          ],
+          "heapLimitMiB": 6336
+        }
+      ],
+      "case": "cold-baseline",
+      "exit": 0,
+      "expectedOutcome": true,
+      "log": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/v060-build-heap-controls/cold-baseline.log",
+      "sha256": "6120ec69a15cb417e4c8aa19872e5737f0b03ece97946b678c266d75353222a2"
+    },
+    {
+      "typeCheckProcesses": [
+        {
+          "pid": 513641,
+          "argv": [
+            "/usr/bin/node",
+            "/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/typescript/bin/tsc",
+            "--project",
+            "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/tsconfig.json",
+            "--noEmit",
+            "--declarationMap",
+            "false",
+            "--emitDeclarationOnly",
+            "false",
+            "--tsBuildInfoFile",
+            "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/.next/cache/.tsbuildinfo"
+          ],
+          "heapLimitMiB": 6336
+        }
+      ],
+      "case": "harmless-comment",
+      "exit": 0,
+      "expectedOutcome": true,
+      "log": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/v060-build-heap-controls/harmless-comment.log",
+      "sha256": "9756a1a35088915a92409ef4200f7fe1e655e19e47c508e042a84d330b50cb87"
+    },
+    {
+      "typeCheckProcesses": [
+        {
+          "pid": 520875,
+          "argv": [
+            "/usr/bin/node",
+            "/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/typescript/bin/tsc",
+            "--project",
+            "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/tsconfig.json",
+            "--noEmit",
+            "--declarationMap",
+            "false",
+            "--emitDeclarationOnly",
+            "false",
+            "--tsBuildInfoFile",
+            "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/.next/cache/.tsbuildinfo"
+          ],
+          "heapLimitMiB": 6336
+        }
+      ],
+      "case": "target-type-error",
+      "exit": 1,
+      "expectedOutcome": true,
+      "log": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/v060-build-heap-controls/target-type-error.log",
+      "sha256": "f172d110f35d3a520e08c125a9e4772b3e8454134f6746a9100477e3a31d5823"
+    },
+    {
+      "typeCheckProcesses": [
+        {
+          "pid": 525656,
+          "argv": [
+            "/usr/bin/node",
+            "/home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/typescript/bin/tsc",
+            "--project",
+            "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/tsconfig.json",
+            "--noEmit",
+            "--declarationMap",
+            "false",
+            "--emitDeclarationOnly",
+            "false",
+            "--tsBuildInfoFile",
+            "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/.next/cache/.tsbuildinfo"
+          ],
+          "heapLimitMiB": 6336
+        }
+      ],
+      "case": "restored",
+      "exit": 0,
+      "expectedOutcome": true,
+      "log": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/v060-build-heap-controls/restored.log",
+      "sha256": "8c922dc5a1f7b73f8e9b86cedc7a1ee6c7739aebb71fc6915a6f215a2a8bf1c0"
+    }
+  ],
+  "focusedTests": {
+    "passed": 10,
+    "files": 2
+  },
+  "originalCi": {
+    "run": 34853274851,
+    "outcome": "failed: TypeScript Node heap exhaustion after passing QA tests and audit",
+    "rlsRun": 34853275281,
+    "rlsTests": 552,
+    "upgradeRun": 34853275009,
+    "upgradeCountsBeforeAndAfter": "2:2:1:1:1:1:1"
+  },
+  "logs": [
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/v060-ci-qa-failed.log",
+      "sha256": "bdabe20e969557d539c201ce046ca35fabad8c192804673cf28094953d85e149"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/v060-ci-rls.log",
+      "sha256": "1cd4a4fd22a9247901c94c2aaec7b7c844a7300b3ffb83a8196b0e1c8c651472"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/v060-ci-upgrade.log",
+      "sha256": "be803c46d9329d1aac6ee456bd93f8e2e79641de7d0070d29fcda4d38455af5b"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/v060-cold-tsc-4096.log",
+      "sha256": "da2514475381984601f934adf28a357b3ceafd628a4ab1a59686771c229befcf"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/v060-cold-tsc-6144.log",
+      "sha256": "ae6de5f4491d7c224e5ea48c95cb9be07e313c5811c23c98d56de1002445311f"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/v060-build-script-tests.log",
+      "sha256": "dccd90f1cffec04e210021aa0d740cf81b3b9443e9933fa5a89a24f6b4039b0d"
+    }
+  ],
+  "limits": [
+    "Local standalone TypeScript passed at both 4096 and 6144 MiB; the exact original CI failure was not reproduced locally.",
+    "Direct parent CLI heap arguments did not propagate to the observed TypeScript child; the committed environment setting did.",
+    "Heap observation proves the installed Next TypeScript CLI child, not other Next checker modes or every deployment capacity.",
+    "The cache was preserved outside the checkout before this run; the retained runner now performs that preservation itself. Configuration-only TypeScript invocations were excluded when rechecking raw observations.",
+    "Unchanged application/browser, worker and migration evidence remains separately attributable to its earlier source; final corrected-commit CI must pass before tagging."
+  ]
+}

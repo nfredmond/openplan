@@ -97,6 +97,25 @@ cross-user checks remain. Its harmless and targeted fault checks passed.
 records cover migrations 21 and 22. Final GitHub upgrade rehearsal is still
 required before tagging. Local migration evidence is not final CI evidence.
 
+## Final candidate CI failure
+
+The first final-main attempt, `28be41642bd39f41bea6ddaac7a7325419cbd8a0`,
+passed shuffled tests, all 552 live RLS tests and the populated upgrade from
+v0.59.0. Its QA job passed the unit suite, connector checks and dependency audit,
+then exhausted the roughly 4 GiB Node heap during TypeScript checking. The
+[failed run](https://github.com/nfredmond/openplan/actions/runs/34853274851)
+is retained; this commit was not tagged.
+
+The correction gives production builds a 6 GiB heap through inherited
+`NODE_OPTIONS`, preserving other existing Node options and all type checking.
+A direct `node --max-old-space-size` parent argument did not reach the locally
+observed TypeScript CLI child and was replaced before committing. Standalone
+cold TypeScript checks passed locally at both 4 and 6 GiB; those runs did not
+reproduce the exact Next.js/CI failure. The build probe observes the actual child
+heap, uses a harmless source and rejects a deliberately invalid TypeScript
+assignment. [Corrected local builds and controls](build-heap-results.json) passed: cold build, harmless source, expected type-error refusal and restored build. Ten package/release tests passed. Final corrected-commit CI remains required before tagging.
+No application, migration, worker or artifact behavior changes in this build fix.
+
 ## Limits and next work
 
 Internal review files do not yet carry private decision-link lineage. Opening an

@@ -8,7 +8,7 @@
     "predev": "npm run db:sync",
     "dev": "next dev",
     "db:sync": "node scripts/ops/sync-local-db.mjs",
-    "build": "next build --webpack",
+    "build": "NODE_OPTIONS=\"$NODE_OPTIONS --max-old-space-size=6144\" next build --webpack",
     "start": "next start",
     "lint": "eslint --max-warnings 0",
     "test": "vitest run",

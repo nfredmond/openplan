@@ -1,0 +1,85 @@
+{
+  "journeys": [
+    {
+      "width": 1440,
+      "fixed": false,
+      "completed": true,
+      "console": [],
+      "downloads": [
+        {
+          "format": "pdf",
+          "checksum": "c2b2dffba0d79a9fb0c92da3dccbed37ad077b5fd05767b330c671c98b38e52d",
+          "byteLength": 59868
+        },
+        {
+          "format": "xlsx",
+          "checksum": "b1449a67d40c2e8f47acd7de6bcb5747572dc40c90b254db25de330d1a403d78",
+          "byteLength": 15882
+        },
+        {
+          "format": "zip",
+          "checksum": "2b871db7a85fc1c7fa970f6518a29711b0c6a34fbc40cbcaf9282ae69173f652",
+          "byteLength": 61703
+        }
+      ],
+      "identity": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-09-14T14:14:54.421Z",
+        "deployment": {
+          "commit": "28be41642bd3",
+          "version": "0.60.0"
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "reportId": "9611d8ec-f836-4928-8926-cfd994d1b320",
+      "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/report-page-before-1440-1789395294126"
+    },
+    {
+      "width": 390,
+      "fixed": false,
+      "completed": true,
+      "console": [],
+      "downloads": [
+        {
+          "format": "pdf",
+          "checksum": "cd365b822b95f8ac60a8900f4745afcfba2b3edc0a33fe199a93135c74a8f9d8",
+          "byteLength": 59459
+        },
+        {
+          "format": "xlsx",
+          "checksum": "f3b87fc2486447f193436610a3fa1a008b54331e8673167c351c5eb7d0c7f722",
+          "byteLength": 15878
+        },
+        {
+          "format": "zip",
+          "checksum": "217d616308009c4d7f9109a1ef2ce18b020086a43f4579b593803a82b8e410fe",
+          "byteLength": 61254
+        }
+      ],
+      "identity": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-09-14T14:21:17.520Z",
+        "deployment": {
+          "commit": "28be41642bd3",
+          "version": "0.60.0"
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "reportId": "4107e08b-7f3a-4757-8139-928081b39ddd",
+      "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/report-page-before-390-1789395677230"
+    }
+  ],
+  "limits": [
+    "These reproduce the existing warning and checksum-preserving downloads, not a corrected report page.",
+    "Repeat runner failures from an ambiguous PDF link and unfinished Record navigation are retained in the private evidence folder; scoped links and an explicit tab wait corrected those runner assumptions.",
+    "Screenshots were inspected; exhaustive keyboard and assistive-technology coverage is unproved."
+  ]
+}
