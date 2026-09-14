@@ -1,0 +1,105 @@
+{
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "database": "postgres",
+  "baseLedger": "339:20261014000020",
+  "candidateSha256": "44e599b5ab9b1e082179587c02a7c67a031dae813f28eec026f7be948156c342",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived",
+      "expectedFailure": null
+    },
+    {
+      "case": "viewer-access",
+      "outcome": "killed",
+      "expectedFailure": "viewer read was not refused"
+    },
+    {
+      "case": "foreign-source",
+      "outcome": "killed",
+      "expectedFailure": "Foreign source leaked"
+    },
+    {
+      "case": "unlinked-project",
+      "outcome": "killed",
+      "expectedFailure": "unlinkedDecision read was not refused"
+    },
+    {
+      "case": "missing-history-comparison",
+      "outcome": "killed",
+      "expectedFailure": "Inconsistent response history was not refused"
+    },
+    {
+      "case": "wrong-history-order",
+      "outcome": "killed",
+      "expectedFailure": "Response history does not match"
+    },
+    {
+      "case": "fabricated-configuration",
+      "outcome": "killed",
+      "expectedFailure": "Unknown configuration was fabricated"
+    },
+    {
+      "case": "trimmed-title",
+      "outcome": "killed",
+      "expectedFailure": "Source wording changed"
+    },
+    {
+      "case": "lost-geometry",
+      "outcome": "killed",
+      "expectedFailure": "Source geometry changed"
+    },
+    {
+      "case": "dropped-source",
+      "outcome": "killed",
+      "expectedFailure": "Source references dropped"
+    },
+    {
+      "case": "private-contact",
+      "outcome": "killed",
+      "expectedFailure": "Unneeded private fields leaked"
+    },
+    {
+      "case": "decision-promoted",
+      "outcome": "killed",
+      "expectedFailure": "Decision status was promoted"
+    },
+    {
+      "case": "missing-definition",
+      "outcome": "killed",
+      "expectedFailure": "Known configuration was lost"
+    },
+    {
+      "case": "missing-source-body",
+      "outcome": "killed",
+      "expectedFailure": "Source body changed"
+    },
+    {
+      "case": "anonymous-grant",
+      "outcome": "killed",
+      "expectedFailure": "anon authenticated execution was not refused"
+    },
+    {
+      "case": "service-grant",
+      "outcome": "killed",
+      "expectedFailure": "service_role authenticated execution was not refused"
+    },
+    {
+      "case": "wrong-context-checksum",
+      "outcome": "killed",
+      "expectedFailure": "Context checksum differs"
+    },
+    {
+      "case": "current-definition-substitution",
+      "outcome": "killed",
+      "expectedFailure": "Wrong source configuration reference"
+    }
+  ],
+  "candidateAndFixturesRolledBack": true,
+  "limits": "Native SQL snapshot and role evidence only. No link commands, concurrent writes, HTTP or browser acceptance. Source words are observed at preview time. Missing referenced definitions cannot normally be stored because the existing foreign key refuses them."
+}

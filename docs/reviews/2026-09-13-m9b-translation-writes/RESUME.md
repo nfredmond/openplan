@@ -1,5 +1,9 @@
 # v0.59.0 published; continue decision traceability
 
+Decision-link implementation has started. Read the current
+[decision traceability progress](../2026-09-14-m9b-decision-traceability/PROGRESS.md)
+for the isolated checkout, candidate code, native results and remaining work.
+
 Read [PUBLICATION.md](PUBLICATION.md) and [NEXT_DECISION_TRACEABILITY.md](NEXT_DECISION_TRACEABILITY.md) first. The release is tagged at `47bde77d`; all required final checks passed. The next task extends existing responses and project decisions. Preserve the full V1 objective and dated evidence below.
 
 # v0.59.0 release candidate

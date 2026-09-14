@@ -1,0 +1,71 @@
+{
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "database": "postgres",
+  "baseLedger": "339:20261014000020",
+  "candidateSha256": "ceb9f226283f0c95232a1db9719fc6b18e1d01041ecd3753a5b387171fa78541",
+  "contextCandidateSha256": "44e599b5ab9b1e082179587c02a7c67a031dae813f28eec026f7be948156c342",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived",
+      "expectedFailure": null
+    },
+    {
+      "case": "request-payload-reuse",
+      "outcome": "killed",
+      "expectedFailure": "Different payload reused request"
+    },
+    {
+      "case": "request-actor-reuse",
+      "outcome": "killed",
+      "expectedFailure": "Different staff actor reused receipt"
+    },
+    {
+      "case": "viewer-command",
+      "outcome": "killed",
+      "expectedFailure": "Viewer replay was not refused"
+    },
+    {
+      "case": "viewer-history",
+      "outcome": "killed",
+      "expectedFailure": "Viewer read leaked history"
+    },
+    {
+      "case": "stale-source",
+      "outcome": "killed",
+      "expectedFailure": "Stale context was not refused"
+    },
+    {
+      "case": "overwritten-history",
+      "outcome": "killed",
+      "expectedFailure": "Retained receipt update was not refused"
+    },
+    {
+      "case": "forked-history",
+      "outcome": "killed",
+      "expectedFailure": "Unique predecessor constraint did not refuse fork"
+    },
+    {
+      "case": "withdrawal-original-context",
+      "outcome": "killed",
+      "expectedFailure": "Withdrawal lost retained context"
+    },
+    {
+      "case": "withdrawal-requires-live-source",
+      "outcome": "killed",
+      "expectedFailure": "Response or decision is unavailable"
+    },
+    {
+      "case": "empty-reason",
+      "outcome": "killed",
+      "expectedFailure": "Empty reason was not refused"
+    }
+  ],
+  "candidateAndFixturesRolledBack": true,
+  "limits": "Native serial lifecycle and mutation evidence only. Concurrency, direct command grants, all malformed intents, PostgREST recovery, UI, public disclosure and exports remain to test before installation and release."
+}
