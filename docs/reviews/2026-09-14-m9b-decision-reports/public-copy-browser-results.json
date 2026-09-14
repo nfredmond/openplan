@@ -1,0 +1,246 @@
+{
+  "journeys": [
+    {
+      "width": 1440,
+      "build": {
+        "commit": "dfebc1af3a68",
+        "version": "0.59.0"
+      },
+      "evidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/public-privacy-1440-1789393515387.json",
+      "artifacts": [
+        {
+          "label": "original-public",
+          "jobId": "34261882-48c7-4844-a0b8-e436a0090e23",
+          "snapshotSha256": "659a4a76f91d9dd745c1788a0439cd6aeee6da634854640e53e03912ce2bc5ae",
+          "downloads": [
+            {
+              "format": "pdf",
+              "sha256": "89eb23383b073accd0045e976f1ad780fedc3121a5d333da1732f180a20067a8",
+              "bytes": 60278
+            },
+            {
+              "format": "xlsx",
+              "sha256": "1b39c7810d6d3b55581c4c82fd4a6662d4800fe59d886eeb561744a1344015fb",
+              "bytes": 15851
+            },
+            {
+              "format": "zip",
+              "sha256": "9f7b27fbe9008a50063800bfba9594dab9648bd17e7b4a496ebe3069d0cec5ba",
+              "bytes": 62068
+            }
+          ],
+          "zipCompanionsExact": true,
+          "snapshotCounts": [
+            2,
+            1
+          ]
+        },
+        {
+          "label": "internal",
+          "jobId": "248dfeb4-628c-4c91-b2b9-0d6580b15975",
+          "snapshotSha256": "80694e285b02d69c37371a0b19b3d5779a3e513a71ebedec916db5fb450f3b0a",
+          "downloads": [
+            {
+              "format": "pdf",
+              "sha256": "c2b2dffba0d79a9fb0c92da3dccbed37ad077b5fd05767b330c671c98b38e52d",
+              "bytes": 59868
+            },
+            {
+              "format": "xlsx",
+              "sha256": "b1449a67d40c2e8f47acd7de6bcb5747572dc40c90b254db25de330d1a403d78",
+              "bytes": 15882
+            },
+            {
+              "format": "zip",
+              "sha256": "2b871db7a85fc1c7fa970f6518a29711b0c6a34fbc40cbcaf9282ae69173f652",
+              "bytes": 61703
+            }
+          ],
+          "zipCompanionsExact": true,
+          "snapshotCounts": [
+            2,
+            1
+          ]
+        },
+        {
+          "label": "corrected-public",
+          "jobId": "d981bece-b465-4586-aaa2-7ec3bace10d0",
+          "snapshotSha256": "3d6a98a7ca504b1d83e118801b7c78e4a32bd3d9bb6cb060046e8f6a56b94b3a",
+          "downloads": [
+            {
+              "format": "pdf",
+              "sha256": "7376adfe1cac0ae955f47bab27c18ad110660cc4bde59c552c1e1fa5ede9a713",
+              "bytes": 57548
+            },
+            {
+              "format": "xlsx",
+              "sha256": "b850caab11968d97f21c2e398463fa1a0a08f582691462e03c75cd989ec39831",
+              "bytes": 15479
+            },
+            {
+              "format": "zip",
+              "sha256": "9106e05ee6975505a3a889892db7d3903912785d2732d282d3b826c6648ff838",
+              "bytes": 59831
+            }
+          ],
+          "zipCompanionsExact": true,
+          "snapshotCounts": [
+            1,
+            0
+          ]
+        }
+      ],
+      "withdrawnDownloads": [
+        {
+          "format": "pdf",
+          "status": 404
+        },
+        {
+          "format": "xlsx",
+          "status": 404
+        },
+        {
+          "format": "zip",
+          "status": 404
+        }
+      ],
+      "anonymousFileStatus": 401,
+      "hiddenVoteStatus": 404,
+      "interruptedRetry": false,
+      "console": [],
+      "publicConsole": [],
+      "expectedFaultConsole": [],
+      "layout": {
+        "viewport": 1440,
+        "documentWidth": 1440
+      }
+    },
+    {
+      "width": 390,
+      "build": {
+        "commit": "dfebc1af3a68",
+        "version": "0.59.0"
+      },
+      "evidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/public-privacy-390-1789393604792.json",
+      "artifacts": [
+        {
+          "label": "original-public",
+          "jobId": "f53356c0-0e57-4ee1-b47e-2cfdabd05385",
+          "snapshotSha256": "e10a8d28270ae455c937131e9eb8a083f0a3160f051ceaa28bbbe36af4a0d189",
+          "downloads": [
+            {
+              "format": "pdf",
+              "sha256": "384a43c74609f96e9f60aa637b3b96fbd78e233586d8e4168af4272b107eeec5",
+              "bytes": 59965
+            },
+            {
+              "format": "xlsx",
+              "sha256": "df881092cb31232182ab7aecf3c748d07ed2ccc8f6c6b9df95da3f2a7eafdfb3",
+              "bytes": 15849
+            },
+            {
+              "format": "zip",
+              "sha256": "7ac2a6231e799eba3064487bd2a2ce7cce861f7768bb244773584c73513c5d31",
+              "bytes": 61710
+            }
+          ],
+          "zipCompanionsExact": true,
+          "snapshotCounts": [
+            2,
+            1
+          ]
+        },
+        {
+          "label": "internal",
+          "jobId": "e3c350d1-9e3a-4dd5-a6cc-685bcc311125",
+          "snapshotSha256": "5ede1a1fe74c7113d3d8ed73d90f315bcbf6079f46a7a38d1c74969f946d0d35",
+          "downloads": [
+            {
+              "format": "pdf",
+              "sha256": "cd365b822b95f8ac60a8900f4745afcfba2b3edc0a33fe199a93135c74a8f9d8",
+              "bytes": 59459
+            },
+            {
+              "format": "xlsx",
+              "sha256": "f3b87fc2486447f193436610a3fa1a008b54331e8673167c351c5eb7d0c7f722",
+              "bytes": 15878
+            },
+            {
+              "format": "zip",
+              "sha256": "217d616308009c4d7f9109a1ef2ce18b020086a43f4579b593803a82b8e410fe",
+              "bytes": 61254
+            }
+          ],
+          "zipCompanionsExact": true,
+          "snapshotCounts": [
+            2,
+            1
+          ]
+        },
+        {
+          "label": "corrected-public",
+          "jobId": "ae4bd3c8-bc63-4e30-bc49-eee1c9a3c305",
+          "snapshotSha256": "591a3cbf139a47a82f012cac9be197b84d3331173a490ac76f84ac9291ccd0b6",
+          "downloads": [
+            {
+              "format": "pdf",
+              "sha256": "b0afa7a0e56e7f4c4697a70b9205bb955ac957f89285c62eeb3696115df2ff91",
+              "bytes": 56958
+            },
+            {
+              "format": "xlsx",
+              "sha256": "9c9ad75c049191564f68a1d09771def802d63dc2e19557bf60e6e0a397b986b0",
+              "bytes": 15479
+            },
+            {
+              "format": "zip",
+              "sha256": "8be9dc155a3b457e5821c5d685a62e14375682732571d9356ea8ea0ed81e28b1",
+              "bytes": 59245
+            }
+          ],
+          "zipCompanionsExact": true,
+          "snapshotCounts": [
+            1,
+            0
+          ]
+        }
+      ],
+      "withdrawnDownloads": [
+        {
+          "format": "pdf",
+          "status": 404
+        },
+        {
+          "format": "xlsx",
+          "status": 404
+        },
+        {
+          "format": "zip",
+          "status": 404
+        }
+      ],
+      "anonymousFileStatus": 401,
+      "hiddenVoteStatus": 404,
+      "interruptedRetry": true,
+      "console": [],
+      "publicConsole": [],
+      "expectedFaultConsole": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        }
+      ],
+      "layout": {
+        "viewport": 390,
+        "documentWidth": 390
+      }
+    }
+  ],
+  "limits": [
+    "Privacy flag applied through existing authenticated item edit API after UI-created source; no privacy checkbox exists.",
+    "Synthetic campaign uses the accessible non-map path; no geography, map or photo acceptance claimed.",
+    "Originals in this journey were created before the privacy edit under migration 23; earlier release snapshots are not reconstructed.",
+    "Internal reports still omit private decision lineage.",
+    "Keyboard activation of actual controls is exercised; exhaustive tab order is not assessed."
+  ]
+}

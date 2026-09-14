@@ -299,3 +299,74 @@ native concurrent privacy checks. Complete corrected full RLS, shuffle, workers
 and applicable upgrade checks. Merge directly to main once verified, inspect final
 CI before tagging. Internal-report decision lineage remains unimplemented after
 this privacy increment; preserve the broader roadmap and independent model scope.
+
+
+## September 14 resumed privacy acceptance
+
+The prior goal turn made progress by pushing checkpoint 52b100d8. This resumption
+identified the same served application dfebc1af3a68 on port 3262. Changes since
+that build are evidence and a native fixture correction, not application code.
+`product:direction:check` passed with its unchanged strategy-age reminders.
+
+The first publication failure was a runner omission: the screenshot showed the
+required change reason blank and the correct refusal. The runner now fills it.
+The next attempt expected comments on the map entry page; actual navigation uses
+“See what other people said” to open the accessible details page. Another attempt
+used exact getByLabel on a label containing option text; it now locates the actual
+Disclosure scope combobox by accessible role/name. The report queue returns 202,
+not the runner's initially assumed 201. None required changing application code.
+Retain those private failed captures instead of presenting them as successes.
+
+`public-copy-browser-results.json` records successful desktop 1440px and 390px
+journeys through Projects, Engagement, public entry/details, the actual published
+explanation and Record downloads. All 18 PDF/XLSX/ZIP downloads match retained
+checksums and sizes. Each ZIP contains exact PDF/XLSX companions and snapshot bytes
+matching its retained SHA. Original/internal snapshots contain two contributions
+and one response; corrected public snapshots contain the remaining control and no
+withdrawn response. Approved source text, private decision link context and old
+artifact metadata remain retained after the explicit privacy edit. Old public
+artifact downloads return 404; internal originals remain byte-identical; anonymous
+internal download returns 401; hidden-item vote returns 404.
+
+At 390px the server accepted the report request before the browser connection was
+aborted. The UI reported the failure, preserved its request in browser storage,
+and reload/retry sent the exact same payload and obtained the same job. Exactly
+one expected injected network-console error was retained separately. Otherwise
+operator and resident consoles were empty. Screenshot inspection covered public
+feedback, explanation, withdrawal and corrected download controls at both widths.
+All nine pages across the desktop original/internal/corrected PDFs were rendered
+and inspected. The original workbook's nine sheets were opened with LibreOffice
+and rendered read-only. Wide record tables require horizontal browsing; complete
+cells/companion bytes were inspected separately. No workbook was overwritten.
+The first XML inspection assumed sharedStrings; this writer uses inline strings,
+so the corrected read inspected sheet XML. Original and corrected workbook values
+agree with the source/response inclusion checks; no error-typed cells were found.
+
+`public-copy-concurrency-results.json` records ten native cases in the disconnected
+`openplan_decision_link_proof_20260914` database. Migration 23 definitions were
+installed there, with six retained source/history/report table fingerprints
+unchanged and all eleven function definitions matching the application stack.
+The first installation attempt used postgres, which lacks schema creation rights
+in this proof database. It rolled back. The existing proof setup uses its actual
+owner supabase_admin; the runner now follows that setup without changing grants.
+Native pg_stat_activity/pg_blocking_pids confirmed overlap for waiting item votes,
+reply votes, reply inserts and report capture. Committed private metadata caused
+refusal/exclusion; harmless metadata allowed each operation. Translation reads
+returned busy while the holder was live, then unavailable for private content or
+success for the harmless control. Synthetic source edits remain in that proof DB;
+waiting writes/report captures roll back. No app or worker connects to it.
+
+Shuffled tests passed: 15,315 passing and 523 skipped. All 52 worker suites passed.
+The corrected complete isolated RLS suite is now terminal-success: 552 tests in
+60 files, 404.75 seconds. Logs/checksums are in the new result JSONs. No running
+QA/RLS job needs recovery from this turn. The owned app and document worker remain.
+
+Photo acceptance is in progress in `public-photo-browser.cjs`, reusing the actual
+browser-created campaigns. Initial attempts incorrectly looked for draft-only
+publication controls on a live campaign. The current runner uses the real Public
+access checkbox and Save share settings. Do not claim its success until its
+private JSON says completed and the pictures/console have been inspected. Next
+finish photo access at both widths, prepare the bounded v0.60 release with private
+decision-link/recovery and privacy evidence, merge directly and inspect final CI
+including populated upgrade before tagging. Internal export decision lineage
+remains unimplemented. No PR or human-review gate applies.

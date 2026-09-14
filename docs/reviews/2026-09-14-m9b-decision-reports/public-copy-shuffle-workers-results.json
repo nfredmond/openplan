@@ -1,0 +1,18 @@
+{
+  "sourceCommit": "52b100d8f6f6ef09d0a5c3301e0f5b17ffc8ebeb",
+  "applicationCommit": "dfebc1af3a683a82c8a9da02a3d9215f47af5236",
+  "checks": [
+    {
+      "name": "shuffled",
+      "result": "15315 passed | 523 skipped",
+      "log": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/public-copy-shuffled-52b.log",
+      "sha256": "08fb34ce7ebc64987702e048cb9089c96486779b77af64bb4c5e75a6b6d7d242"
+    },
+    {
+      "name": "workers",
+      "result": "52 suite(s) passed, 0 failed, 0 not run.",
+      "log": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/public-copy-workers-52b.log",
+      "sha256": "8b8846e4ef3297f09e6fbda5be687dc64e3101c9542080ba6236b86bb2566ac8"
+    }
+  ]
+}

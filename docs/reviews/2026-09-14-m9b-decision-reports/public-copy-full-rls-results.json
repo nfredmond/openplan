@@ -1,0 +1,14 @@
+{
+  "sourceCommit": "52b100d8f6f6ef09d0a5c3301e0f5b17ffc8ebeb",
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "database": "postgres",
+  "command": "OPENPLAN_SUPABASE_WORKDIR=/home/nathaniel/.local/state/openplan/openplan-restore-target-2026091050 npm run test:rls-live",
+  "passedTests": 552,
+  "passedFiles": 60,
+  "exitCode": 0,
+  "log": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/public-copy-full-rls-52b.log",
+  "logSha256": "cfa80fb5b90a454e2958a2a9e9448ae832ba34dbca176b192383c5f8724bc50e",
+  "limits": [
+    "Native isolated fixtures and deliberate fault checks; browser and artifact evidence are separate."
+  ]
+}

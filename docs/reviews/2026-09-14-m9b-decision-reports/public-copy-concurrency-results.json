@@ -1,0 +1,196 @@
+{
+  "activation": {
+    "database": "openplan_decision_link_proof_20260914",
+    "container": "supabase_db_openplan-restore-target-2026091050",
+    "migrationSha256": "28c5ae6e7f3e161a08dea904605a8637beb54a21f798865e6e163e6bd086ca3c",
+    "retainedTables": {
+      "engagement_campaigns": "448:54272be8f86f91a52d29d5258a5e2f5a",
+      "engagement_items": "672:b5823a4ee6d7cc12292b119085ea8f57",
+      "engagement_item_history": "683:6d5226d2005275087eb97948754778f8",
+      "engagement_closeloop_entries": "448:2ad202b7353a84cbc28d148c6ed3fc37",
+      "engagement_response_history": "672:da1ede114e8edd253690177b484bfb6c",
+      "engagement_report_jobs": "0:d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "matchingFunctions": {
+      "queue_engagement_report": "bbdc1525e527e193130d7bab944d335a",
+      "guard_engagement_public_copy": "8297e7494ccb705c7df07ad3010de999",
+      "guard_engagement_public_vote": "ee41c3d7a90ad6a7886418658c17f241",
+      "lock_public_translation_source": "821d4b2f601a757e5d3b3a12249b95bf",
+      "retain_engagement_item_history": "d98bc341b379ec01ff61297a898f78ee",
+      "require_engagement_review_intent": "9f39eabfc51398c68c47fe92adf7c994",
+      "engagement_cache_item_translation": "347ba72937d88328059a85c248521c26",
+      "read_engagement_response_snapshot": "7c3756c9a2f760447e69f0949fa0c4a2",
+      "engagement_item_public_copy_allowed": "0f9aa2ff56fc0a4eb134a81d63e601bb",
+      "engagement_cache_reviewed_translation": "d5dd21b8ecec153df3673b3c2ff327f8",
+      "guard_engagement_response_publication": "0c07c9db36c44d512712a847ac7bf5ac"
+    }
+  },
+  "cases": [
+    {
+      "kind": "vote",
+      "privateEdit": false,
+      "ids": {
+        "actor": "5e43ec09-1520-4687-84c8-7419cea15a1a",
+        "workspace": "be7dc5f8-d397-4973-bd9c-b809868c3c66",
+        "campaign": "279f744c-ce77-4c6b-8590-d2de70dfb610",
+        "item": "163ffc71-f889-479c-8dbc-7b3c25aef2cf",
+        "child": "5ac023cf-66df-49f7-a7fd-60fd40e73fc6",
+        "write": "cfc682d4-277f-4cca-a7b5-82368a624813"
+      },
+      "lockOverlap": true,
+      "exitCode": 0,
+      "output": "VOTE_ACCEPTED\n",
+      "error": ""
+    },
+    {
+      "kind": "vote",
+      "privateEdit": true,
+      "ids": {
+        "actor": "76186922-61e9-4b59-8388-3863c3ba925e",
+        "workspace": "8e658a90-c75e-42ca-8f31-ac873e7a9095",
+        "campaign": "c2e8c3bf-0913-4a4a-80be-a34b5a89f572",
+        "item": "2c75d3e4-3de0-461f-9c45-a5722ee194ad",
+        "child": "9aab3160-20a7-41bb-96a6-a9c095450bc3",
+        "write": "b20fe290-1c26-4485-ac5c-aa5d4d0bd32d"
+      },
+      "lockOverlap": true,
+      "exitCode": 3,
+      "output": "",
+      "error": "ERROR:  PT409: Feedback item is unavailable\nCONTEXT:  PL/pgSQL function guard_engagement_public_vote() line 6 at RAISE\nLOCATION:  exec_stmt_raise, pl_exec.c:3911\n"
+    },
+    {
+      "kind": "parent-vote",
+      "privateEdit": false,
+      "ids": {
+        "actor": "045eb7d3-63bf-4cb9-9e6c-0e2e99704eaf",
+        "workspace": "4c71fb4e-4868-4afb-8ede-69ca05586490",
+        "campaign": "26618952-2614-4fc8-888f-5f75c61eed5b",
+        "item": "68d443e1-84cb-4fce-88b3-0b78f7949985",
+        "child": "4b0dc5c0-77a8-492e-88c2-b738fa9229c4",
+        "write": "a0bf00e4-985b-4f1a-a799-9e2bdc974a6e"
+      },
+      "lockOverlap": true,
+      "exitCode": 0,
+      "output": "VOTE_ACCEPTED\n",
+      "error": ""
+    },
+    {
+      "kind": "parent-vote",
+      "privateEdit": true,
+      "ids": {
+        "actor": "c3f8f15d-b039-451a-9a3b-a823f1ace9ff",
+        "workspace": "aac4bff0-3c2e-4850-b485-3251a74499c4",
+        "campaign": "478e88fc-b1ad-4b19-a4cf-4ef764102208",
+        "item": "4bee04a2-e94d-4e94-a194-751ae1dadcd5",
+        "child": "92e95a8a-f550-4e9c-a657-d4a449976e2f",
+        "write": "0dd41975-e604-46f0-823e-7e3e4f326ebd"
+      },
+      "lockOverlap": true,
+      "exitCode": 3,
+      "output": "",
+      "error": "ERROR:  PT409: Feedback item is unavailable\nCONTEXT:  PL/pgSQL function guard_engagement_public_vote() line 11 at RAISE\nLOCATION:  exec_stmt_raise, pl_exec.c:3911\n"
+    },
+    {
+      "kind": "reply",
+      "privateEdit": false,
+      "ids": {
+        "actor": "0f591450-314a-459d-97dc-30ecb40f366c",
+        "workspace": "ac19ff99-4e95-45d9-8135-595674732336",
+        "campaign": "8a252f31-7197-4a99-8fb2-bea3f495fa69",
+        "item": "a8ddec60-a8f7-4d42-bf89-469e069a531f",
+        "child": "5ac4129b-8a6e-46e6-836f-9dff88558090",
+        "write": "c671825b-2a6c-4e6b-81b5-17c29604fef6"
+      },
+      "lockOverlap": true,
+      "exitCode": 0,
+      "output": "REPLY_ACCEPTED\n",
+      "error": ""
+    },
+    {
+      "kind": "reply",
+      "privateEdit": true,
+      "ids": {
+        "actor": "3cdb781d-0ee4-4c78-b83f-f974024bb60e",
+        "workspace": "d69013f3-4c20-415e-88e9-d787c047a35f",
+        "campaign": "abafd884-8718-4922-b7f4-db12029e7abf",
+        "item": "3fee7666-384d-4bcc-9e87-f3d8474585e3",
+        "child": "e7034ab3-6126-46e7-8399-4cde5cc5d57d",
+        "write": "09e9254a-28ea-4418-90d7-26c1b2958327"
+      },
+      "lockOverlap": true,
+      "exitCode": 3,
+      "output": "",
+      "error": "ERROR:  PT409: Reply target is unavailable\nCONTEXT:  PL/pgSQL function guard_engagement_public_copy() line 19 at RAISE\nLOCATION:  exec_stmt_raise, pl_exec.c:3911\n"
+    },
+    {
+      "kind": "report",
+      "privateEdit": false,
+      "ids": {
+        "actor": "db48e6db-834e-4d1a-89c7-02b940c8e6b9",
+        "workspace": "0e7d584d-f84b-4588-971f-b9adb834b149",
+        "campaign": "bb9d2aad-153d-43a5-959a-4c58cedc14bb",
+        "item": "16122dd6-0a94-4e1f-b1d8-4553d8a80fad",
+        "child": "28648810-89b8-4f1d-9f51-e6a0034c5613",
+        "write": "8bfe51ab-fa51-47c5-b6bb-eb3c45d3ed64"
+      },
+      "lockOverlap": true,
+      "exitCode": 0,
+      "output": "db48e6db-834e-4d1a-89c7-02b940c8e6b9\n{\"jobId\": \"c9b4774d-186e-40ea-b168-408067371049\", \"reportId\": \"5a9c63ec-9cfd-413a-932f-c5fe1c7036ed\", \"snapshotSha256\": \"d263f3de52eda112c63bc6d03dafd038755b011c2aac1f8c9234857cf233e2d5\"}\nITEM_COUNT:2\n",
+      "error": ""
+    },
+    {
+      "kind": "report",
+      "privateEdit": true,
+      "ids": {
+        "actor": "3fa729de-1c2f-44bd-9c01-bdbe747f2cec",
+        "workspace": "527067b0-acb2-4726-b4b1-228f51b80830",
+        "campaign": "c6d08f40-0851-4307-ac6b-a7d3cda1debc",
+        "item": "9213f20e-c9ce-4431-91d6-3b8bb1674d79",
+        "child": "ece23a00-6e07-4ab5-abf3-9ba436f3cf74",
+        "write": "33a2e779-5c2b-4372-b835-2dcd0e63ba02"
+      },
+      "lockOverlap": true,
+      "exitCode": 0,
+      "output": "3fa729de-1c2f-44bd-9c01-bdbe747f2cec\n{\"jobId\": \"50510ef6-fc2e-458a-a7b5-21a359b6992c\", \"reportId\": \"793dbdbf-0f31-439c-8ac2-aa37f8ad43f2\", \"snapshotSha256\": \"4003afb59a55cb84b4c3c2e2ed1731b899dae182c034b2b064b9bfbc1f80a4af\"}\nITEM_COUNT:0\n",
+      "error": ""
+    },
+    {
+      "kind": "translation",
+      "privateEdit": false,
+      "ids": {
+        "actor": "f626468a-4c76-4524-982f-08cb1f845899",
+        "workspace": "fd4fe569-7948-4d49-a9d9-ab77d3cffe7c",
+        "campaign": "afa244ef-277f-4bb8-863c-5866d519dc05",
+        "item": "2359970d-faa7-4284-9490-2ef02c1d753a",
+        "child": "0ea9450f-581a-4182-a82d-f4c509740bf4",
+        "write": "a5c18968-c6c2-41f1-b568-1ad91fb9733d"
+      },
+      "lockOverlap": "busy while holder live",
+      "exitCode": 0,
+      "output": "{\"body\": \"SYNTHETIC parent words\", \"title\": \"SYNTHETIC parent\", \"itemId\": \"2359970d-faa7-4284-9490-2ef02c1d753a\", \"campaignId\": \"afa244ef-277f-4bb8-863c-5866d519dc05\", \"workspaceId\": \"fd4fe569-7948-4d49-a9d9-ab77d3cffe7c\"}\n",
+      "error": ""
+    },
+    {
+      "kind": "translation",
+      "privateEdit": true,
+      "ids": {
+        "actor": "154b82bf-7685-4579-9aca-f908a5cd01c7",
+        "workspace": "a5f40a89-e484-4e7d-b1bd-624425e413c6",
+        "campaign": "8df80410-66ee-4769-9137-6b66e2a38f03",
+        "item": "db5bf3aa-3858-4919-a079-572eeaded16c",
+        "child": "d979f8c5-e788-45db-a718-21695bf5c274",
+        "write": "b3345571-605d-4f2a-a3af-3103aeb306c3"
+      },
+      "lockOverlap": "busy while holder live",
+      "exitCode": 3,
+      "output": "",
+      "error": "ERROR:  42501: Public translation is unavailable\nCONTEXT:  PL/pgSQL function lock_public_translation_source(uuid,text,uuid) line 11 at RAISE\nPL/pgSQL function read_public_translation_source(text,uuid) line 6 at RETURN\nLOCATION:  exec_stmt_raise, pl_exec.c:3911\n"
+    }
+  ],
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/public-copy-concurrency-1789393864074441304",
+  "limits": [
+    "Native synthetic concurrency only; browser navigation and artifacts have separate evidence.",
+    "No application or worker connects to the proof database; synthetic source histories remain there.",
+    "Waiting write transactions roll back; source edits commit so waiters must evaluate the newly private version."
+  ]
+}
