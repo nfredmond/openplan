@@ -254,3 +254,48 @@ the existing response editor and private decision links. Private decision lineag
 in internal PDF/XLSX/ZIP reports is still unimplemented. Main remains 50188138;
 implementation/evidence checkpoints are on the work branch pending acceptance,
 with no PR or human-review gate. Merge directly once the increment is verified.
+
+
+## Usage-reset checkpoint, September 14
+
+User requested a safe resumption point before the weekly usage reset. Continue
+the full v1 goal in this thread after resumption; no draft PRs or human release
+gates. Do not declare this increment released. Latest released version remains
+v0.59.0. Work checkout is
+`/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13`,
+branch `work/engagement-decision-traceability`. Original checkout remains read-only.
+
+The complete isolated RLS run has now terminated: **551 passed, one failed**
+across 60 files. Its failure was the recovery fixture's unscoped positive receipt
+count under a deliberately broadened read policy. Both positive counts now name
+the exact receipts created by the fixture; other-staff and lost-membership denial
+checks still inspect all visible rows. Focused rerun passed all eight tests,
+including the harmless control and six targeted faults. Private results are
+`decision-resolution-populated-before.json`, `decision-resolution-populated-after.json`
+and `decision-resolution-populated-final.json` in the decision-context directory.
+The complete RLS suite must be rerun with this correction before landing.
+
+The new `public-copy-browser.cjs` runner is an **unfinished acceptance checkpoint**.
+Its first 1440px attempt terminated before public portal/report acceptance, waiting
+for Unpublish after clicking Publish. Diagnose the retained page/response evidence
+before deciding whether this is an app defect or runner issue. Do not claim browser
+acceptance, successful downloads or 390px coverage. Private failure evidence:
+`/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/public-privacy-1440-1789393048383.json`
+and adjacent screenshots/text. Synthetic campaign/decision/source identities are
+in that JSON; avoid duplicating fixtures without inspecting it. Runner syntax
+should be checked before committing; runtime remains failed as described.
+
+At checkpoint, no browser or full-RLS process remains. Own production server
+PID 3962356 still serves dfebc1af3a68 on port 3262; own document worker
+PID 4038996 uses the isolated restore-target stack, API 29821, ledger 342 through
+20261014000023. Verify process ownership, ports and served build again after reset.
+Do not kill unrelated demo workers or reset databases. Process survival is not
+required for recovery. Full QA passed on dfebc1af as recorded above.
+
+Resume with the publication failure, then actual public response visibility before
+and after privacy changes, original/internal/corrected PDF/XLSX/ZIP downloads and
+checksums, desktop/390px keyboard/console inspection, relevant photo/retry and
+native concurrent privacy checks. Complete corrected full RLS, shuffle, workers
+and applicable upgrade checks. Merge directly to main once verified, inspect final
+CI before tagging. Internal-report decision lineage remains unimplemented after
+this privacy increment; preserve the broader roadmap and independent model scope.
