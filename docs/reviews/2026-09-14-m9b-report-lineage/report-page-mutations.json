@@ -1,0 +1,129 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "exit": 0,
+      "testsPassed": 11,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "exit": 0,
+      "testsPassed": 11,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "job-read-error-hidden",
+      "exit": 1,
+      "testsPassed": 10,
+      "failedTests": [
+        "saved engagement report context refuses the generic route on a failed job read instead of treating failure as absence"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "legacy-job-absence-hidden",
+      "exit": 1,
+      "testsPassed": 10,
+      "failedTests": [
+        "saved engagement report context keeps the legacy route when a successful lookup finds no review job"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "job-workspace-scope-removed",
+      "exit": 1,
+      "testsPassed": 10,
+      "failedTests": [
+        "saved engagement report context scopes the real job and campaign queries and keeps the retained report selection"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "campaign-projection-incomplete",
+      "exit": 1,
+      "testsPassed": 10,
+      "failedTests": [
+        "saved engagement report context scopes the real job and campaign queries and keeps the retained report selection"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "project-projection-incomplete",
+      "exit": 1,
+      "testsPassed": 10,
+      "failedTests": [
+        "saved engagement report context only reads a project when the current campaign supplies its ID"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "null-project-query",
+      "exit": 1,
+      "testsPassed": 9,
+      "failedTests": [
+        "saved engagement report context uses the saved job before any generic project, grant or model reads in the real route",
+        "saved engagement report context scopes the real job and campaign queries and keeps the retained report selection"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "campaign-failure-hidden",
+      "exit": 1,
+      "testsPassed": 10,
+      "failedTests": [
+        "saved engagement report context retains file controls with unavailable campaign context; failed read=true"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "project-failure-hidden",
+      "exit": 1,
+      "testsPassed": 10,
+      "failedTests": [
+        "saved engagement report context retains file controls with unavailable project context; failed read=true"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "report-file-scope-wrong",
+      "exit": 1,
+      "testsPassed": 9,
+      "failedTests": [
+        "saved engagement report context uses the saved job before any generic project, grant or model reads in the real route",
+        "saved engagement report context scopes the real job and campaign queries and keeps the retained report selection"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "route-caller-removed",
+      "exit": 1,
+      "testsPassed": 8,
+      "failedTests": [
+        "saved engagement report context preserves the land-use report owner before campaign review lookup",
+        "saved engagement report context uses the saved job before any generic project, grant or model reads in the real route",
+        "saved engagement report context refuses the generic route on a failed job read instead of treating failure as absence"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "land-use-owner-removed",
+      "exit": 1,
+      "testsPassed": 10,
+      "failedTests": [
+        "saved engagement report context preserves the land-use report owner before campaign review lookup"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "sources": {
+    "openplan/src/components/reports/specialized-report-page.tsx": "4b8c3ac3f5fdcf1d4c22eac48dc1d50f1b4c61eeea5542e725ed5eb663d8d6ab",
+    "openplan/src/app/(app)/reports/[reportId]/page.tsx": "abd9960827744b1b398e62e457e4671ec834d24dd8d1d1352003fbb3d2cc05ee"
+  },
+  "limits": [
+    "Mocked reads assert projections and filters; they do not prove live RLS or browser delivery.",
+    "Retained file component is replaced in this page unit suite; real downloads require the separate browser journey."
+  ]
+}

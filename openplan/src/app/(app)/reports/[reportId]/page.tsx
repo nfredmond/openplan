@@ -97,15 +97,13 @@ import {
   buildReportUnreadableByTab,
 } from "./_components/_read-failures";
 import { ReportStandardDetail } from "./_components/report-standard-detail";
-import { LandUsePlanReportPage } from "@/components/reports/land-use-plan-report-page";
+import { loadSpecializedReportPage } from "@/components/reports/specialized-report-page";
 import { PlanningContextStripForProject } from "@/components/projects/planning-context-strip";
 
 export default async function ReportDetailPage({ params, searchParams }: ReportDetailRouteParams) {
   const { reportId } = await params; const query = searchParams ? await searchParams : {}; const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
     redirect("/sign-in");
@@ -128,7 +126,8 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     notFound();
   }
 
-  if (report.land_use_plan_id) return <LandUsePlanReportPage report={report} />;
+  const specializedReport = await loadSpecializedReportPage(supabase, report);
+  if (specializedReport) return specializedReport;
 
   /**
    * What this render could not read. Everything below is a side panel or a
