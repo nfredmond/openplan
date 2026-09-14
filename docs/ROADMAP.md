@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: e6d25edd
-current_release: v0.61.0
+current_release: v0.61.1
 review_by: 2026-10-05
 paths:
 - AGENTS.md
@@ -716,3 +716,6 @@ completion, usefulness or nationwide model validation is claimed by this increme
 ## September 14 report context and private decision history, v0.61.0
 
 The [report-history engineering record](reviews/2026-09-14-m9b-report-lineage/RELEASE_VERIFICATION.md) supersedes the earlier report-page warning and missing internal-history limitations for new snapshots. CORE-ENG-03/04 now have original, correction and withdrawal history in internal PDF/XLSX/ZIP, with exact retained bytes, whole-consultation scope disclosure and public exclusion. Earlier files remain unchanged. Desktop/390px keyboard, interrupted retry, retained downloads, live isolation and populated upgrade evidence are recorded there. Final release CI passed and v0.61.0 is published; the linked publication record retains exact identities. The generic report GET API's nullable-project assumption still needs correction. M9b, comparative usefulness and the remaining V1 requirements stay open; no capability rating or scientific claim is promoted.
+
+
+September 14 v0.61.1 API follow-up: [verification](reviews/2026-09-14-report-api-project/RELEASE_VERIFICATION.md) closes the generic report GET null-project failure documented in the preceding increment. This does not change the active queue or complete M9b. Final CI/publication remain separate.

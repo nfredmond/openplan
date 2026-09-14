@@ -20,6 +20,16 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.61.1 — 2026-09-14
+
+Saved consultation reports without a project now load through the report detail
+API instead of returning a project lookup error. The response preserves the
+report's sections, cited runs and artifact records, with an explicit null project.
+Reports that name a project still load it and report genuine lookup failures.
+Desktop/390px checks retained original PDF/XLSX/ZIP hashes and denied anonymous
+access. **No migrations or worker changes.** Pull, build and restart the app.
+
+
 ## 0.61.0 — 2026-09-14
 
 Saved consultation reports now open with their consultation context, retained

@@ -452,3 +452,8 @@ exercised. No new map, human usefulness or participation-quality claim is made.
 ## September 14 report context and private decision history, v0.61.0
 
 The [report-history engineering record](../reviews/2026-09-14-m9b-report-lineage/RELEASE_VERIFICATION.md) supersedes the earlier report-page warning and missing internal-history limitations for new snapshots. CORE-ENG-03/04 now have original, correction and withdrawal history in internal PDF/XLSX/ZIP, with exact retained bytes, whole-consultation scope disclosure and public exclusion. Earlier files remain unchanged. Desktop/390px keyboard, interrupted retry, retained downloads, live isolation and populated upgrade evidence are recorded there. Final release CI passed and v0.61.0 is published; the linked publication record retains exact identities. The generic report GET API's nullable-project assumption still needs correction. M9b, comparative usefulness and the remaining V1 requirements stay open; no capability rating or scientific claim is promoted.
+
+
+## September 14 optional-project report API, v0.61.1 candidate
+
+The generic report GET limitation recorded for v0.61 is corrected in the [API follow-up](../reviews/2026-09-14-report-api-project/RELEASE_VERIFICATION.md). A report without a project now returns its retained metadata/sections/artifacts with project:null; actual project reads and errors remain. Desktop/390px native API, keyboard, retained-file and anonymous-access controls passed. Final CI and publication remain separate. No broader report or planning capability is promoted.

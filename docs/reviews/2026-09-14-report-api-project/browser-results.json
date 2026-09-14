@@ -1,0 +1,137 @@
+{
+  "sourceCommit": "b0b947b3ee23a2b3b385fca8f66f4be8b559b248",
+  "identifiedBuild": "b0b947b3ee23",
+  "synthetic": true,
+  "journeys": [
+    {
+      "recordSha256": "4e2c3f35f0727aa7a880081901a49d0121af8b7e6f59c32f314963d74570801c",
+      "record": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/report-project-api-after-1440-1789407928219.json",
+      "width": 1440,
+      "api": {
+        "status": 200,
+        "project": null,
+        "reportId": "9611d8ec-f836-4928-8926-cfd994d1b320",
+        "sections": 0,
+        "runs": 0,
+        "artifacts": 1
+      },
+      "projectControl": {
+        "reportId": "f6aff52c-16ae-45d5-9067-4542760fa9c9",
+        "projectId": "48cb65e5-bb0c-49ca-8f5c-7b764484a47f",
+        "status": 200,
+        "sectionCount": 9
+      },
+      "downloads": [
+        {
+          "format": "pdf",
+          "checksum": "c2b2dffba0d79a9fb0c92da3dccbed37ad077b5fd05767b330c671c98b38e52d",
+          "byteLength": 59868
+        },
+        {
+          "format": "xlsx",
+          "checksum": "b1449a67d40c2e8f47acd7de6bcb5747572dc40c90b254db25de330d1a403d78",
+          "byteLength": 15882
+        },
+        {
+          "format": "zip",
+          "checksum": "2b871db7a85fc1c7fa970f6518a29711b0c6a34fbc40cbcaf9282ae69173f652",
+          "byteLength": 61703
+        }
+      ],
+      "anonymous": [
+        {
+          "reportId": "9611d8ec-f836-4928-8926-cfd994d1b320",
+          "status": 401
+        },
+        {
+          "reportId": "f6aff52c-16ae-45d5-9067-4542760fa9c9",
+          "status": 401
+        }
+      ],
+      "console": [],
+      "layout": {
+        "width": 1024,
+        "scrollWidth": 1024
+      },
+      "screenshots": [
+        {
+          "file": "consultation-files",
+          "sha256": "f76f436c1d960ae3289d3dd0acc87c42952772fd1bd606e833e04d1835594a02"
+        },
+        {
+          "file": "project-control",
+          "sha256": "e6bfbe99eea14ebc1905a6be554493ccf077a31add38b5eeb042a47082dc6c9e"
+        }
+      ]
+    },
+    {
+      "recordSha256": "5dc42b7541d5a654e4281fb1c36efa5dda5cb81f14edc73db4d637b4017a80e5",
+      "record": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/report-project-api-after-390-1789407972354.json",
+      "width": 390,
+      "api": {
+        "status": 200,
+        "project": null,
+        "reportId": "4107e08b-7f3a-4757-8139-928081b39ddd",
+        "sections": 0,
+        "runs": 0,
+        "artifacts": 1
+      },
+      "projectControl": {
+        "reportId": "186c9129-5d8a-4936-a944-c2a091c5da89",
+        "projectId": "48cb65e5-bb0c-49ca-8f5c-7b764484a47f",
+        "status": 200,
+        "sectionCount": 9
+      },
+      "downloads": [
+        {
+          "format": "pdf",
+          "checksum": "cd365b822b95f8ac60a8900f4745afcfba2b3edc0a33fe199a93135c74a8f9d8",
+          "byteLength": 59459
+        },
+        {
+          "format": "xlsx",
+          "checksum": "f3b87fc2486447f193436610a3fa1a008b54331e8673167c351c5eb7d0c7f722",
+          "byteLength": 15878
+        },
+        {
+          "format": "zip",
+          "checksum": "217d616308009c4d7f9109a1ef2ce18b020086a43f4579b593803a82b8e410fe",
+          "byteLength": 61254
+        }
+      ],
+      "anonymous": [
+        {
+          "reportId": "4107e08b-7f3a-4757-8139-928081b39ddd",
+          "status": 401
+        },
+        {
+          "reportId": "186c9129-5d8a-4936-a944-c2a091c5da89",
+          "status": 401
+        }
+      ],
+      "console": [],
+      "layout": {
+        "width": 292,
+        "scrollWidth": 292
+      },
+      "screenshots": [
+        {
+          "file": "consultation-files",
+          "sha256": "7f727d26b8093a137ace752c44fc21181b3731d5d9703172ec6a20695f87c3a1"
+        },
+        {
+          "file": "project-control",
+          "sha256": "97acdb7d1ae3c1f5bb1f0f91ba3aad664cdd4d3b616f250b4745c4ff3dee9cde"
+        }
+      ]
+    }
+  ],
+  "qa": {
+    "passed": 15362,
+    "skipped": 533,
+    "fileCount": 1312,
+    "logSha256": "253aff278993a678093694d4a6eaefbfc615a85746aeab04447419f79bcfd376",
+    "completed": true
+  },
+  "limits": "Actual scoped test account and normal UI navigation, with synthetic reports. Does not establish every report subtype or agency usefulness."
+}
