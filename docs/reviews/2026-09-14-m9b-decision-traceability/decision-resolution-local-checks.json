@@ -1,0 +1,47 @@
+{
+  "checks": {
+    "focusedRelatedVitest": {
+      "files": 4,
+      "passed": 74,
+      "failed": 0
+    },
+    "readerMutation": {
+      "tests": 32,
+      "harmlessSurvived": true,
+      "targetedFaultsKilled": 13
+    },
+    "nativeSerial": {
+      "harmlessSurvived": true,
+      "targetedFaultsKilled": 10,
+      "applicationRolledBack": true
+    },
+    "nativeConcurrency": {
+      "baselineScenarios": 12,
+      "harmlessScenarios": 12,
+      "targetedFaultsKilled": 7,
+      "proofFunctionsRestored": true
+    },
+    "typescript": {
+      "firstRun": "Default 4 GB Node heap exhausted; exit 134. No typecheck result.",
+      "rerunCommand": "NODE_OPTIONS=--max-old-space-size=8192 ./node_modules/.bin/tsc --noEmit --pretty false",
+      "rerunExitCode": 0
+    },
+    "eslint": {
+      "files": [
+        "openplan/src/lib/engagement/decision-request-resolution.ts",
+        "openplan/src/test/decision-request-resolution.test.ts"
+      ],
+      "exitCode": 0
+    }
+  },
+  "hashes": {
+    "openplan/src/lib/engagement/decision-request-resolution.ts": "6a103d1b25623e20cc65c5e562a6f0ed32e6c9b31826dce3806fe124d1a6528c",
+    "openplan/src/test/decision-request-resolution.test.ts": "85b3d99a909d654a5913253c58a8bc1fcefae0f7e402649dd9910f10187ed73f",
+    "openplan/src/test/fixtures/decision-resolution-native.json": "79822300baeae59afcd1a997111b22c93a69dfffad7ce64871a0acdd9246a828"
+  },
+  "limits": [
+    "Candidate recovery is not installed in application postgres.",
+    "No recovery API, browser button or local archive integration yet.",
+    "No full QA or release CI claimed for this checkpoint."
+  ]
+}

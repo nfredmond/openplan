@@ -1,0 +1,128 @@
+{
+  "sourceSha256": "6a103d1b25623e20cc65c5e562a6f0ed32e6c9b31826dce3806fe124d1a6528c",
+  "testSha256": "85b3d99a909d654a5913253c58a8bc1fcefae0f7e402649dd9910f10187ed73f",
+  "results": [
+    {
+      "name": "baseline",
+      "outcome": "passed",
+      "tests": 32
+    },
+    {
+      "name": "harmless",
+      "outcome": "passed",
+      "tests": 32
+    },
+    {
+      "name": "outer-hashes",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision request recovery evidence refuses changed payload bytes without recomputed hashes",
+        "decision request recovery evidence refuses changed result bytes without recomputed hashes"
+      ]
+    },
+    {
+      "name": "payload-binding",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision request recovery evidence binds payload actorId despite a recomputed checksum",
+        "decision request recovery evidence binds payload workspaceId despite a recomputed checksum",
+        "decision request recovery evidence binds payload campaignId despite a recomputed checksum",
+        "decision request recovery evidence binds payload resolutionId despite a recomputed checksum",
+        "decision request recovery evidence binds payload requestId despite a recomputed checksum",
+        "decision request recovery evidence binds payload copyJson despite a recomputed checksum",
+        "decision request recovery evidence binds payload reason despite a recomputed checksum"
+      ]
+    },
+    {
+      "name": "scope-binding",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision request recovery evidence binds result actorId despite a recomputed checksum",
+        "decision request recovery evidence binds result workspaceId despite a recomputed checksum",
+        "decision request recovery evidence binds result campaignId despite a recomputed checksum"
+      ]
+    },
+    {
+      "name": "identity-binding",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision request recovery evidence binds result resolutionId despite a recomputed checksum",
+        "decision request recovery evidence binds result requestId despite a recomputed checksum"
+      ]
+    },
+    {
+      "name": "outcome-completeness",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision request recovery evidence refuses incoherent state saved_without_link",
+        "decision request recovery evidence refuses incoherent state cancelled_with_link"
+      ]
+    },
+    {
+      "name": "original-evidence",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision request recovery evidence validates original source evidence inside a recovered receipt"
+      ]
+    },
+    {
+      "name": "saved-actor-and-request",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision request recovery evidence binds saved link id",
+        "decision request recovery evidence binds saved link actor_id"
+      ]
+    },
+    {
+      "name": "copy-encoding",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision request recovery evidence refuses invalid opaque-copy encoding {}",
+        "decision request recovery evidence refuses invalid opaque-copy encoding null",
+        "decision request recovery evidence refuses invalid opaque-copy encoding  \"noncanonical\""
+      ]
+    },
+    {
+      "name": "copy-byte-limit",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision request recovery evidence counts encoded bytes rather than characters for large copies"
+      ]
+    },
+    {
+      "name": "reason-whitespace",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision request recovery evidence refuses invalid reasons of length ",
+        "decision request recovery evidence refuses invalid reasons of length  ",
+        "decision request recovery evidence refuses invalid reasons of length \u00a0\ufeff"
+      ]
+    },
+    {
+      "name": "reason-size",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision request recovery evidence refuses invalid reasons of length xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      ]
+    },
+    {
+      "name": "reason-encoding",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision request recovery evidence refuses invalid reasons of length reason\ud800"
+      ]
+    },
+    {
+      "name": "reason-null",
+      "outcome": "killed",
+      "failedAssertions": [
+        "decision request recovery evidence refuses invalid reasons of length reason\u0000"
+      ]
+    }
+  ],
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/resolution-reader-1789385566568990097",
+  "limits": [
+    "Native receipts are retained synthetic fixtures; SQL concurrency and live role checks are separate.",
+    "This reader does not yet transport or archive local copies."
+  ]
+}

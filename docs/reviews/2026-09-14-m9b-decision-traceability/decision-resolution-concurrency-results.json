@@ -1,0 +1,62 @@
+{
+  "database": "openplan_decision_link_proof_20260914",
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "candidateSha256": "1a206f6577e96ba811e5bfd2c6316a4c0449bb908f6c54e0e1d52ed1ee701a4d",
+  "applicationMigration": "340:20261014000021",
+  "applicationRecoveryInstalled": false,
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/concurrency-1789385565409540383",
+  "outcomes": [
+    {
+      "name": "baseline",
+      "scenarios": 12,
+      "outcome": "passed"
+    },
+    {
+      "name": "harmless",
+      "scenarios": 12,
+      "outcome": "survived"
+    },
+    {
+      "name": "resolver-request-lock",
+      "outcome": "killed",
+      "assertion": "broken-request isolated lock was not respected: "
+    },
+    {
+      "name": "resolution-identity-lock",
+      "outcome": "killed",
+      "assertion": "broken-resolution isolated lock was not respected: "
+    },
+    {
+      "name": "cancelled-write-guard",
+      "outcome": "killed",
+      "assertion": "broken-late cancelled late write was not refused: "
+    },
+    {
+      "name": "resolution-membership-lock",
+      "outcome": "killed",
+      "assertion": "broken-membership isolated lock was not respected: "
+    },
+    {
+      "name": "resolution-workspace-lock",
+      "outcome": "killed",
+      "assertion": "broken-workspace isolated lock was not respected: "
+    },
+    {
+      "name": "resolution-campaign-lock",
+      "outcome": "killed",
+      "assertion": "broken-campaign isolated lock was not respected: "
+    },
+    {
+      "name": "foreign-scope-before-lock",
+      "outcome": "killed",
+      "assertion": "broken-foreign foreign campaign lock leaked: ERROR:  PT503: Decision recovery is busy; retry the same resolution\nCONTEXT:  PL/pgSQL function resolve_engagement_decision_request(uuid,uuid,uuid,text,text) line 71 at RAISE\nLOCATION:  exec_stmt_raise, pl_exec.c:3911\n"
+    }
+  ],
+  "proofFunctionsRestored": true,
+  "applicationUnchanged": true,
+  "limits": [
+    "Synthetic native transactions; no browser or HTTP recovery integration yet.",
+    "Persistent proof fixtures are isolated from application users and workers.",
+    "Checks hold actual idle-in-transaction backends and observe competing calls; this is not a load test."
+  ]
+}
