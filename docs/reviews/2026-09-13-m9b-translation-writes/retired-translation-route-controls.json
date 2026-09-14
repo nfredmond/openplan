@@ -1,0 +1,144 @@
+{
+  "sourceSha256": {
+    "route": "f4b08400629309788401cc29e8e4db19de6e9a5bb289bb091aabf2286763f602",
+    "write": "f2dee0dc4d9929c65928084cde990d4f6012286f804a36eba22bac375e1048ff"
+  },
+  "testSha256": {
+    "src/test/engagement-translation-retired-route.test.ts": "f552b8f325bf27776ac48ee9fe8208d75772e3a285f4b9762e60ede3a172423f",
+    "src/test/an-operator-can-author-a-campaigns-translations.test.tsx": "25492547fed748c2b6ded86e4790c4ed86fcbd58dd39660566903fddb6e836ed"
+  },
+  "testCount": 47,
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/retired-translation-route-controls/20260913T182112",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-route",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-write",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "false-success",
+      "outcome": "killed",
+      "expectedFailure": "refuses legacy POST save",
+      "failedAssertions": [
+        "retired translation write route refuses legacy POST save without reading or replaying it"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "cache-retirement",
+      "outcome": "killed",
+      "expectedFailure": "refuses legacy DELETE",
+      "failedAssertions": [
+        "retired translation write route refuses legacy DELETE without withdrawing or redirecting"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "redirect-legacy-body",
+      "outcome": "killed",
+      "expectedFailure": "refuses legacy POST save",
+      "failedAssertions": [
+        "retired translation write route refuses legacy POST save without reading or replaying it"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "discard-unsaved-instructions",
+      "outcome": "killed",
+      "expectedFailure": "refuses legacy POST save",
+      "failedAssertions": [
+        "retired translation write route refuses legacy POST save without reading or replaying it"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "claim-write-happened",
+      "outcome": "killed",
+      "expectedFailure": "refuses legacy POST publish_machine",
+      "failedAssertions": [
+        "retired translation write route refuses legacy POST publish_machine without reading or replaying it"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "reflect-private-words",
+      "outcome": "killed",
+      "expectedFailure": "refuses legacy POST save",
+      "failedAssertions": [
+        "retired translation write route refuses legacy POST save without reading or replaying it"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "consume-old-body",
+      "outcome": "killed",
+      "expectedFailure": "refuses legacy POST save",
+      "failedAssertions": [
+        "retired translation write route refuses legacy POST save without reading or replaying it"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "reopen-user-db",
+      "outcome": "killed",
+      "expectedFailure": "refuses legacy POST save",
+      "failedAssertions": [
+        "retired translation write route refuses legacy POST save without reading or replaying it"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "reopen-service-db",
+      "outcome": "killed",
+      "expectedFailure": "refuses legacy DELETE",
+      "failedAssertions": [
+        "retired translation write route refuses legacy DELETE without withdrawing or redirecting"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "call-model",
+      "outcome": "killed",
+      "expectedFailure": "refuses legacy POST publish_machine",
+      "failedAssertions": [
+        "retired translation write route refuses legacy POST publish_machine without reading or replaying it"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "accept-cap-199",
+      "outcome": "killed",
+      "expectedFailure": "bounds the accept button by the same constant the route enforces",
+      "failedAssertions": [
+        "the operator panel bounds the accept button by the same constant the route enforces"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "accept-cap-201",
+      "outcome": "killed",
+      "expectedFailure": "bounds the accept button by the same constant the route enforces",
+      "failedAssertions": [
+        "the operator panel bounds the accept button by the same constant the route enforces"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Native exported route refusal and current command parser batch limits with synthetic requests and mocked forbidden dependencies. Does not verify live middleware, database isolation, worker behavior, or browser navigation. Other active command invariants retain separate evidence."
+}

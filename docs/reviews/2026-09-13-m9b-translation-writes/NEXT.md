@@ -1,3 +1,7 @@
+# Latest retired staff route checkpoint
+
+Read [RETIRED_STAFF_ROUTE_PROGRESS.md](RETIRED_STAFF_ROUTE_PROGRESS.md) first. The old staff write route now refuses safely; the current editor uses retained generation and commands. Command activation, public generation recovery and browser-worker acceptance remain unfinished.
+
 # Latest generation-editor evidence
 
 Read [GENERATION_EDITOR_PROGRESS.md](GENERATION_EDITOR_PROGRESS.md) first. Native and React recovery/publication integration now has focused fault evidence. Legacy producers, isolated migration activation and the full browser-worker journey remain unfinished.

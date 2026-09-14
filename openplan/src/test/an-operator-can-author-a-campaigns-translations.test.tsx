@@ -20,6 +20,7 @@ import {
   type CampaignTranslatableField,
   type CampaignTranslationRow,
 } from "@/lib/engagement/campaign-translations";
+import { translationWriteIntentSchema } from "@/lib/engagement/translation-write";
 import type { TranslationSnapshot } from "@/lib/engagement/translation-snapshot";
 import { loadSurveyDefinition } from "@/lib/engagement/survey-responses";
 import { loadPublishedCloseLoopEntries } from "@/lib/engagement/close-loop";
@@ -897,16 +898,14 @@ describe("the operator panel", () => {
   });
 
   it("bounds the accept button by the same constant the route enforces", () => {
-    // The other half: a cap the panel honours but the route does not share is
-    // two numbers drifting apart. Both must name the one exported constant.
-    const route = readFileSync(
-      path.join(
-        process.cwd(),
-        "src/app/api/engagement/campaigns/[campaignId]/translations/route.ts"
-      ),
-      "utf8"
-    );
-    expect(route).toContain("fieldKeys: z.array(fieldKeySchema).min(1).max(TRANSLATION_ACCEPT_BATCH_MAX)");
+    const entries = Array.from({ length: TRANSLATION_ACCEPT_BATCH_MAX + 1 }, (_, index) => ({
+      entityType: "category", entityId: `61000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`, field: "label",
+      expectedSource: { available: true, sourceLocale: null, text: "SYNTHETIC source" },
+      expectedTranslation: { id: `62000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`, revision: 1 },
+    }));
+    const intent = { operation: "accept", requestId: "63000000-0000-4000-8000-000000000001", locale: "es", reason: "SYNTHETIC batch acceptance" };
+    expect(translationWriteIntentSchema.safeParse({ ...intent, entries: entries.slice(0, TRANSLATION_ACCEPT_BATCH_MAX) }).success).toBe(true);
+    expect(translationWriteIntentSchema.safeParse({ ...intent, entries }).success).toBe(false);
 
     const page = readFileSync(
       path.join(process.cwd(), "src/app/(app)/engagement/[campaignId]/page.tsx"),
