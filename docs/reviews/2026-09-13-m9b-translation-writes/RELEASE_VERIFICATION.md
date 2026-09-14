@@ -94,3 +94,19 @@ full nationwide planning contract, California depth, territories and tribal or
 overlapping authorities, and independent AequilibraE and ActivitySim validation.
 No human review gates this engineering release; agency approval inside actual
 planning workflows remains distinct from software publication.
+
+
+## Installation documentation correction before tagging
+
+The first release candidate at `32848d3f` still had an outdated runbook paragraph
+calling the routes unfinished and naming migration 13 alone. The corrected
+runbook and self-hosting guide require migrations through 20, explain the shared
+staff/public worker, retained local directory, manual operation and explicit
+public successors. This is a documentation correction; application, worker and
+migration sources are unchanged from the tested candidate. Final main CI and RLS
+are required on the corrected commit before tagging. A manually triggered
+duplicate upgrade run, 34822872731, was cancelled; the original main upgrade
+34822840046 passed. The cancelled duplicate is not passing evidence.
+
+[Next decision traceability assessment](NEXT_DECISION_TRACEABILITY.md) records
+the next existing M9b software boundary after publication.

@@ -168,6 +168,20 @@ monitor disk use. Print the workbook's selected **Print summary** sheet; use the
 PDF for the complete formatted program. Wide editable workbook tabs are intended
 for on-screen review, not entire-workbook printing.
 
+**Engagement translation worker.** Staff and public comment generation uses
+`npm run worker:translation-generation` from `openplan/`. Apply all migrations
+through `20261014000020_engagement_public_translation_queue.sql` first; an
+upgrade from v0.58.1 applies eleven migrations without resetting saved data.
+Use the app's Supabase service credential and integration encryption secret.
+Keep `OPENPLAN_TRANSLATION_GENERATION_WORK_DIR` on private durable storage and
+reuse it after restart so retained output can be delivered without another model
+call. The default directory is partitioned by database beneath
+`~/.local/state/openplan/translation-generation-worker/`. Back it up with the
+database. Requests stay queued until the worker runs; `-- --once` performs one
+claim or recovery cycle. The [runbook](ops/RUNBOOK.md#translation-recovery-worker)
+explains interrupted attempts and retained output. Manual translation wording
+and saved reads do not require new provider usage.
+
 **Saved API generation worker.** The retained API-job worker
 can be started with `npm run worker:provider-api` from `openplan/`, after applying
 migration `20261012000002_assistant_api_turns.sql`. `npm run worker:provider-api --

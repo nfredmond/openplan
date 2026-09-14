@@ -178,14 +178,22 @@ fail runs and a deadline sweep can send messages. Model-page loading also has
 reconciliation behavior. HTTP method and page navigation are not reliable
 indicators that an action is read-only.
 
-### Development translation worker
+### Translation recovery worker
 
-The unreleased translation queue uses `npm run worker:translation-generation`
-from `openplan/`; append `-- --once` for one claim or recovery cycle. It requires
-migration `20261014000013`, the configured local Supabase service credential and
-`OPENPLAN_INTEGRATION_KEY_SECRET`. Staff queue routes and public translation
-producer conversion are still being connected; this worker alone does not make
-the complete translation workflow available.
+The v0.59.0 translation queue uses `npm run worker:translation-generation`
+from `openplan/`; append `-- --once` for one claim or recovery cycle. Apply all
+migrations through `20261014000020_engagement_public_translation_queue.sql`
+before running the app or worker. Upgrading from v0.58.1 applies eleven new
+migrations, 20261014000010 through 20261014000020, with migration up. Do not reset
+an existing database. Restart the app and worker after upgrading.
+
+Use the app's configured local Supabase service credential and
+`OPENPLAN_INTEGRATION_KEY_SECRET`. Staff and public comment requests stay queued
+until a worker handles them. Retained output and valid legacy cached text can be
+read without new generation. Checking an interrupted request does not request a
+new attempt; the public reader must explicitly request a successor after failure.
+Manual staff wording remains available without model generation. Configuring a
+provider is separate and does not make provider usage free.
 
 `OPENPLAN_TRANSLATION_GENERATION_WORK_DIR` may name an absolute private directory.
 The default is beneath `~/.local/state/openplan/translation-generation-worker/`,
