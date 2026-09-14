@@ -1,3 +1,7 @@
+# Current public generation database checkpoint
+
+Read [PUBLIC_GENERATION_DATABASE_PROGRESS.md](PUBLIC_GENERATION_DATABASE_PROGRESS.md) first. Public authority, deduplication and atomic allowance support now have serial/fault/concurrent database evidence in an uninstalled candidate. HTTP, worker/browser joins and release gates remain. Older entries retain their dated evidence.
+
 # Current resolution lifecycle and reset checkpoint
 
 Read [RESOLUTION_LIFECYCLE_RESET_CHECKPOINT.md](RESOLUTION_LIFECYCLE_RESET_CHECKPOINT.md) first. Access-restoration recovery and same-account logout/login journeys are saved. Public translation durability and final release checks remain. Older entries retain their dated evidence.

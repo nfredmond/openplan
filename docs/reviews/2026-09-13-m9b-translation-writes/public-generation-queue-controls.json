@@ -1,0 +1,213 @@
+{
+  "sourceSha256": "33cc6c962b0a8fd98adf7105ca4981bd6e54b29a9742754f20abed766d63489e",
+  "composedProbeSha256": "1e195a82c71a6185915de6c3c4df825c5a80ff00c86e70484db2619a1905a7a3",
+  "publicProbeSha256": "fe0f493568ccca5cf2ad8db13c817b74ed1cd8088769abdb0857f5b757a7fd3e",
+  "staffProbeSha256": "1e60680f590b1a567f85473a7ed6111e20e9d6148ff0d972d12c7ad4f9efb6c3",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-queue-controls/20260913T233346",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "allow-unapproved-parent",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: unapproved parent",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "allow-unapproved-item",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: unapproved item",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "allow-closed-campaign",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: closed campaign completed output",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "ignore-packet",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: wrong packet identity",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "ignore-creation-source",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: changed creation source",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "ignore-worker-source",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: changed source before dispatch",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "ignore-public-read-source",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: changed public read",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "ignore-request-share-token",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: replaced token old request",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "staff-reader-public-request",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: public request in staff reader",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "staff-catalog-public-request",
+      "outcome": "killed",
+      "expectedFailure": "Public request leaked into staff catalog",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "public-allowance-too-large",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: public reservations exhausted",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "omit-reservations",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: public reservations exhausted",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "wrong-dispatch-bucket",
+      "outcome": "killed",
+      "expectedFailure": "Public dispatch isolation or exactly-once metering failed",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "ignore-attempt",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: wrong dispatch attempt",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "leak-public-dto",
+      "outcome": "killed",
+      "expectedFailure": "Public DTO leaked private fields",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "mutable-public-authority",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: public authority immutable",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "harmless-anon-grant-with-rls",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "anon-authority-leak",
+      "outcome": "killed",
+      "expectedFailure": "Private public queue leak: anonymous authority rows",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "harmless-authenticated-grant-with-rls",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "authenticated-authority-leak",
+      "outcome": "killed",
+      "expectedFailure": "Private public queue leak: authenticated authority rows",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "anonymous-direct-command",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: anonymous direct RPC",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "foreign-public-credential",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: foreign public credential",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "mix-public-staff-reservations",
+      "outcome": "killed",
+      "expectedFailure": "Translation dispatch allowance reserved",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "ignore-staff-source",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: source changed before claim",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "omit-dispatch-allowance-recheck",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: public dispatch allowance recheck",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "blur-public-staff-identity",
+      "outcome": "killed",
+      "expectedFailure": "Guard failed: public request cannot impersonate staff",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    },
+    {
+      "case": "duplicate-public-work",
+      "outcome": "killed",
+      "expectedFailure": "Public replay duplicated work",
+      "expectedOutcome": true,
+      "rollbackContained": true
+    }
+  ],
+  "limits": "Uninstalled SQL candidate in a schema-only proof database. Serial transactions with synthetic unopenable credentials, not concurrent sessions, actual provider calls, worker journal recovery, HTTP or browser acceptance. No public retry-after-failure implementation yet."
+}

@@ -1,0 +1,49 @@
+{
+  "sourceSha256": "33cc6c962b0a8fd98adf7105ca4981bd6e54b29a9742754f20abed766d63489e",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-queue-concurrency/20260913T233228",
+  "database": "openplan_public_translation_proof_20260913",
+  "results": [
+    {
+      "case": "overlapping-create",
+      "originalTransactionHeld": true,
+      "competingResponse": "PT503",
+      "retrySameRequest": true,
+      "retainedRequests": 1
+    },
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "originalTransactionHeld": true,
+      "crossCampaignCompetition": true,
+      "competingResponse": "PT503",
+      "afterRelease": "reserved",
+      "overLimit": "PT429",
+      "providerDispatchEvents": 0,
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived",
+      "originalTransactionHeld": true,
+      "crossCampaignCompetition": true,
+      "competingResponse": "PT503",
+      "afterRelease": "reserved",
+      "overLimit": "PT429",
+      "providerDispatchEvents": 0,
+      "expectedOutcome": true
+    },
+    {
+      "case": "remove-budget-lock",
+      "outcome": "killed",
+      "originalTransactionHeld": true,
+      "crossCampaignCompetition": true,
+      "competingResponse": "reserved without required serialization",
+      "afterRelease": "reserved",
+      "overLimit": "PT429",
+      "providerDispatchEvents": 0,
+      "expectedOutcome": true
+    }
+  ],
+  "claimFunctionRestored": true,
+  "limits": "Real overlapping PostgreSQL transactions with synthetic unopenable credentials. No provider calls, actual worker/browser recovery or application migration. Synthetic queue rows remain in this schema-only proof database, which must never be connected to a worker."
+}
