@@ -1,0 +1,35 @@
+{
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/translation-resolution-lifecycle-browser-1789365913638",
+  "browserWidths": [
+    1440,
+    390
+  ],
+  "browserPassed": true,
+  "artifacts": {
+    "1440-archive.json": "f535835115de9eb0b4aad5463909bae7268ade71fc72f93981bd89f04c5975f7",
+    "1440-checkpoint.json": "366e0c138cb24bd0f7b58517629df54f8cc8c04194c3c4f950fef78d2f738d99",
+    "1440-original-pending.json": "4b3c63c675fa6550eb8d6c79261fb93094ee45b4ce276006c52254b8e1dd55d6",
+    "1440-original-resolution.json": "e7485a612e1add415a00677f8c78cfe63618c9f3770fb9c5731345c2bdb11403",
+    "1440-recovered-after-sign-in.png": "6399f2f9bac4035017a22a0647632a1728c5187054376351092eb1b7be4933a8",
+    "1440-retained-request.json": "340abb3eb54fabe1d4e3eddf77b92e87af91139658ad9cfa3022b1a9b277c81c",
+    "1440-sign-out.png": "97b6bf92ae8129e4e34159c97238dc9dc964711c72dbb4ad70f38fc483e14fa7",
+    "390-archive.json": "ad5102657019fb1f679d9bf8399533b73ea93bf05263826de9c88362a01c19eb",
+    "390-checkpoint.json": "b0d1b7e6663869962c627bb4d9dffaf606f9f5e6d643d2d6729bac312bc64f95",
+    "390-original-pending.json": "91596f0fe3fd9a634bc0c2bbc52723cc42d5aa2285877d004ca0d59bcc5c26e6",
+    "390-original-resolution.json": "c452edb2ecc5091f3e3ee7198e976e597863fdcc03b01ac173bbab064c79b51b",
+    "390-recovered-after-sign-in.png": "cb080ffd86a86660e1f454b155ab75f22609227071352593f632df67bb776eb8",
+    "390-retained-request.json": "a2e801061ed225a770205c4871db9dcdb3f8c386ae9225f272d17e36a5ea1108",
+    "390-sign-out.png": "4cb40f0fb08ee51ab6b2276e5059cb3af87cabf1b950068cd69abb904488eb2e",
+    "identity.log": "f090d3f4ef90a86e5ffdf00b4b9b5b8c1f29f037013b32861fa3f9ec8eaf686d",
+    "results.json": "c9182c88034ae8bf37663ddb36b299cad334003d7595f07550344a068e4d1be0",
+    "source-sha256.json": "8f00ce33f1684f2196d67836fa169645f4be80bd34391493b1439bbdec2232e4"
+  },
+  "currentSourceSha256": "3ecd1b1ae1f4f9d286abb35457b18a7fe2681bdf1cde965c813d6a3316bd23bc",
+  "limits": [
+    "Browser run preceded dependency destructuring lint-only adjustment; recorded source-sha256.json binds the exercised source.",
+    "Current final source passed all 19 resolution tests and zero-warning focused ESLint.",
+    "21 targeted faults failed as expected; baseline and harmless mutation survived.",
+    "Browser exercised same-account logout/login, not a live membership change or different-account switch.",
+    "No release or final-commit CI claim."
+  ]
+}

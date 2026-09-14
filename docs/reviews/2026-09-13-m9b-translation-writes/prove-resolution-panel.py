@@ -20,7 +20,13 @@ mutate('ignore-refusal','if (!response.ok)','if (false)','keeps original and pen
 scope_fault=original.replace('current.current.identity === identity && current.current.canWrite','current.current.canWrite').replace('controller.signal.throwIfAborted();','/* Abort check removed in combined lifecycle fault. */')
 assert scope_fault != original
 cases.append(('missing-scope-and-abort-lifecycle',scope_fault,'ignores late acknowledgement after workspace-changed'))
-mutate('missing-access-lifecycle','current.current.identity === identity && current.current.canWrite','current.current.identity === identity','ignores late acknowledgement after access-revoked')
+# Both immediate cancellation and the response-time permission check protect loss.
+access_fault=original.replace('current.current.identity === identity && current.current.canWrite','current.current.identity === identity').replace('if (canWrite || !controller) return;', 'if (true) return;')
+cases.append(('missing-access-and-cancellation-lifecycle',access_fault,'ignores late acknowledgement after access-revoked'))
+mutate('omit-access-abort','    controller.abort();','    /* Missing access abort. */','does not revive an old response after edit access returns')
+mutate('keep-cancelled-active-token','    active.current = null;\n    release();','    release();','retries the same resolution while the cancelled response is still pending')
+mutate('keep-cancelled-busy-state','    release();\n  }, [canWrite, release]);','    /* Missing busy release. */\n  }, [canWrite, release]);','retries the same resolution while the cancelled response is still pending')
+mutate('old-finally-releases-new-resolution','if (active.current === controller) { active.current = null;','if (true) { active.current = null;','retries the same resolution while the cancelled response is still pending')
 mutate('missing-abort','active.current?.abort();','/* No abort on unmount. */','ignores late acknowledgement after unmount')
 mutate('skip-archive','const archived = await archiveResolvedGeneration(localStorage, retained, receipts, assertCurrent);','const archived = { sourceChanged: false };','retains both copies before dispatch with pinned login and archives confirmed receipts')
 mutate('forget-resolution-callback','options.onResolved(retained); restore();','restore();','retains both copies before dispatch with pinned login and archives confirmed receipts')
@@ -37,7 +43,7 @@ try:
   finally:source.write_text(original)
   (private/(name+'.log')).write_text(run.stdout+run.stderr);report=json.loads(target.read_text())
   failed=[a['fullName'] for s in report['testResults'] for a in s['assertionResults'] if a['status']=='failed']
-  correct=run.returncode==0 and report['numPassedTests']==16 if expected is None else run.returncode!=0 and any(expected in f for f in failed)
+  correct=run.returncode==0 and report['numPassedTests']==19 if expected is None else run.returncode!=0 and any(expected in f for f in failed)
   results.append({'case':name,'outcome':'survived' if run.returncode==0 else 'killed','expectedFailure':expected,'failedTests':failed,'expectedOutcome':correct});print(name,results[-1]['outcome'],flush=True);assert correct,(name,failed)
 finally:
  assert source.read_text()==original

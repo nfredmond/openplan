@@ -46,6 +46,15 @@ export function useTranslationResolution(scope: GenerationEditorScope, options: 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [identity]);
 
+  const { canWrite, release } = options;
+  useEffect(() => {
+    const controller = active.current;
+    if (canWrite || !controller) return;
+    controller.abort();
+    active.current = null;
+    release();
+  }, [canWrite, release]);
+
   function hasPending() {
     const state = restore();
     return candidate !== null || state === null || state.pending.length > 0 || state.unreadable.length > 0;

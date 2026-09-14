@@ -1,3 +1,7 @@
+# Current resolution lifecycle and reset checkpoint
+
+Read [RESOLUTION_LIFECYCLE_RESET_CHECKPOINT.md](RESOLUTION_LIFECYCLE_RESET_CHECKPOINT.md) first. Access-restoration recovery and same-account logout/login journeys are saved. Public translation durability and final release checks remain. Older entries retain their dated evidence.
+
 # Current generation lifecycle checkpoint
 
 Read [GENERATION_LIFECYCLE_PROGRESS.md](GENERATION_LIFECYCLE_PROGRESS.md) first. Late generation responses now preserve recovery after page/access changes, and real sign-out/sign-in recovery passed desktop/390px with a reachable mobile sign-out action. Resolution-controller access restoration, public generation and final release checks remain. Older notes preserve historical states.

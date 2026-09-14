@@ -130,3 +130,35 @@ describe("generation resolution controller", () => {
     expect(fetch).not.toHaveBeenCalled(); expect(localStorage.getItem(key)).toBe(original);
   });
 });
+
+describe("resolution access restoration", () => {
+  it.each(["response", "body"] as const)("does not revive an old %s after edit access returns", async stage => {
+    const responseWait = deferred<Response>(), bodyWait = deferred<unknown>(), response = reply(null);
+    const body = vi.spyOn(response, "json").mockImplementation(() => bodyWait.promise);
+    const fetch = successfulFetch(); fetch.mockImplementationOnce(() => stage === "response" ? responseWait.promise : Promise.resolve(response));
+    const view = render(<Editor/>); fireEvent.click(screen.getByText("Review recovery")); fireEvent.click(confirm());
+    await waitFor(() => expect(fetch).toHaveBeenCalledOnce()); if (stage === "body") await waitFor(() => expect(body).toHaveBeenCalledOnce());
+    const before = readResolutionRecovery(localStorage, scope).pending;
+    view.rerender(<Editor canWrite={false}/>); view.rerender(<Editor/>);
+    const digest = vi.spyOn(webcrypto.subtle, "digest"), packet = resolutionTestPacket(scope, JSON.parse(String(fetch.mock.calls[0][1]?.body)));
+    await act(async () => { if (stage === "response") responseWait.resolve(reply(packet)); else bodyWait.resolve(packet); });
+    expect(digest, "restored access cannot revive stale receipt verification").not.toHaveBeenCalled();
+    expect(fetch.mock.calls[0][1]?.signal?.aborted, "access loss permanently cancels the request").toBe(true);
+    expect(localStorage.getItem(key)).toBe(original); expect(readResolutionRecovery(localStorage, scope).pending).toEqual(before);
+    expect(readResolutionRecovery(localStorage, scope).archives).toHaveLength(0); expect(resolved).not.toHaveBeenCalled();
+    expect(retry()).toBeEnabled();
+  });
+  it("retries the same resolution while the cancelled response is still pending", async () => {
+    const first = deferred<Response>(), second = deferred<Response>(), fetch = successfulFetch();
+    fetch.mockImplementationOnce(() => first.promise).mockImplementationOnce(() => second.promise);
+    const view = render(<Editor/>); fireEvent.click(screen.getByText("Review recovery")); fireEvent.click(confirm()); await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+    const sent = String(fetch.mock.calls[0][1]?.body), packet = resolutionTestPacket(scope, JSON.parse(sent));
+    view.rerender(<Editor canWrite={false}/>); view.rerender(<Editor/>); expect(retry()).toBeEnabled(); fireEvent.click(retry()); await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+    expect(String(fetch.mock.calls[1][1]?.body)).toBe(sent); const digest = vi.spyOn(webcrypto.subtle, "digest");
+    await act(async () => { first.resolve(reply(packet)); });
+    expect(digest).not.toHaveBeenCalled(); expect(retry(), "old completion cannot release the new resolution").toBeDisabled();
+    expect(localStorage.getItem(key)).toBe(original); expect(resolved).not.toHaveBeenCalled();
+    await act(async () => { second.resolve(reply(packet)); }); await screen.findByText(/Resolution confirmed and copies archived/);
+    expect(resolved).toHaveBeenCalledOnce(); expect(localStorage.getItem(key)).toBeNull(); expect(readResolutionRecovery(localStorage, scope).archives).toHaveLength(1);
+  });
+});

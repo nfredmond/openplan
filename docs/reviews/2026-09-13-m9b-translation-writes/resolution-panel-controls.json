@@ -1,7 +1,7 @@
 {
-  "sourceSha256": "ea55a1a17550386472b3af12feaacd005776a9dc71650f8bcec66cbfe2ad16e1",
-  "testSha256": "53261d760632b41305fdaa5acf2b1e80dafa4526c8ee93b43d40f3239d872907",
-  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/resolution-panel-controls-1789362054712840259",
+  "sourceSha256": "3ecd1b1ae1f4f9d286abb35457b18a7fe2681bdf1cde965c813d6a3316bd23bc",
+  "testSha256": "8408c50da0605b3e19dae43f3d22d126c257c68aa4a3602df469728e93f2a9e2",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/resolution-panel-controls-1789366329676197108",
   "results": [
     {
       "case": "baseline",
@@ -108,11 +108,47 @@
       "expectedOutcome": true
     },
     {
-      "case": "missing-access-lifecycle",
+      "case": "missing-access-and-cancellation-lifecycle",
       "outcome": "killed",
       "expectedFailure": "ignores late acknowledgement after access-revoked",
       "failedTests": [
         "generation resolution controller ignores late acknowledgement after access-revoked"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-access-abort",
+      "outcome": "killed",
+      "expectedFailure": "does not revive an old response after edit access returns",
+      "failedTests": [
+        "resolution access restoration does not revive an old response after edit access returns"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "keep-cancelled-active-token",
+      "outcome": "killed",
+      "expectedFailure": "retries the same resolution while the cancelled response is still pending",
+      "failedTests": [
+        "resolution access restoration retries the same resolution while the cancelled response is still pending"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "keep-cancelled-busy-state",
+      "outcome": "killed",
+      "expectedFailure": "retries the same resolution while the cancelled response is still pending",
+      "failedTests": [
+        "resolution access restoration retries the same resolution while the cancelled response is still pending"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "old-finally-releases-new-resolution",
+      "outcome": "killed",
+      "expectedFailure": "retries the same resolution while the cancelled response is still pending",
+      "failedTests": [
+        "resolution access restoration retries the same resolution while the cancelled response is still pending"
       ],
       "expectedOutcome": true
     },
