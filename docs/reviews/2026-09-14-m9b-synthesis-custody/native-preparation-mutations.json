@@ -1,0 +1,20 @@
+{
+  "sourcesRestored": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "expectedOutcome": true
+    },
+    {
+      "case": "drop-native-tail",
+      "exitCode": 1,
+      "expectedOutcome": true
+    }
+  ]
+}
