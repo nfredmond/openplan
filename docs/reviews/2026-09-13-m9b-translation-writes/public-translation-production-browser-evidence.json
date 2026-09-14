@@ -1,0 +1,177 @@
+{
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-translation-browser-1789374172476",
+  "build": {
+    "commit": "5a93ae99c32412ccf6a9620d705a4cc9de63f81c",
+    "dirty": "",
+    "files": {
+      "src/components/engagement/use-public-comment-translations.ts": "11852d69bfdb415f56512073ae3640c5374b3f2d5622c2e96bdcd01b3b0a4ec3",
+      "src/components/engagement/engagement-share-controls.tsx": "ff144bda42e8acda21f0a84fe7b6c9a03b47a139e38c1b35250bafae7dfecc1a",
+      "src/components/engagement/public-engagement-portal.tsx": "c5f5332b6c41b4f868c68e434f894e5316014d2bd776cdc56141a83735bf8bbc",
+      "src/app/api/engage/[shareToken]/items/[itemId]/translate/route.ts": "78125d43b6738224eb3012f4072101aaf0f3d020a2d15f033e3b13617b254693",
+      "supabase/migrations/20261014000020_engagement_public_translation_queue.sql": "c247f4ead091a3bc2f19570731a683a721dc147a50e2a967df195869523b18ff"
+    }
+  },
+  "journeys": [
+    {
+      "width": 1440,
+      "passed": true,
+      "campaignId": "162daa40-28b5-474b-800f-a8faca852ab7",
+      "itemId": "c0baa96b-0c58-4244-8ec7-8c3eec545a40",
+      "requestId": "51b8f74a-c1c5-460e-8dba-d6a02c82e7c3",
+      "fieldId": "2be6559b-27e5-45be-a14d-70a360c2aeca",
+      "sourceHash": "81ac1a953b667cd35e595d4b748ee7e01ff691bda68af226a97f5e6ab31857bd",
+      "providerCalls": 3,
+      "failedRequest": {
+        "requestId": "d76175eb-f3ee-4429-b990-7013c1b48ce4",
+        "fieldId": "5a6c8315-365a-4307-ac6a-f864c0d55ef2"
+      },
+      "successorRequest": {
+        "requestId": "711ec4b9-b4cc-4a6b-a2c2-8a3ee7379628",
+        "fieldId": "2e0e53b1-f682-4ca3-aed2-b598360b2b74"
+      },
+      "revokedStatus": 404,
+      "workerResults": [
+        {
+          "mode": "output-loss",
+          "exit": 1
+        },
+        {
+          "mode": "resume",
+          "exit": 0
+        }
+      ],
+      "shareSettingsSavedOnlyDraft": true,
+      "legacyCacheWithoutRequest": true,
+      "revokedLegacyCacheStatus": 404,
+      "emptyMapGuard": {
+        "emptyHidden": true,
+        "nonemptyVisible": true,
+        "removedGuardVisible": true,
+        "restoredHidden": true
+      },
+      "sourceMismatchStatus": 409,
+      "overflow": {
+        "viewport": 1440,
+        "document": 1440
+      },
+      "console": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "passed": true,
+      "campaignId": "065a3313-93c6-4a90-aeaf-fbd1eb7a3160",
+      "itemId": "dafd1c27-6336-413a-8149-646e5c9b8969",
+      "requestId": "d6a6891c-94cb-4395-9ee9-71f45b7729ff",
+      "fieldId": "c1940b3c-5fb8-425a-b5fd-96e9857e3c23",
+      "sourceHash": "8d36b12fc29b6a33cb482434ab491501c5eb37374c6eb74fdb0bedd21c3130cf",
+      "providerCalls": 3,
+      "failedRequest": {
+        "requestId": "00f292dd-6cff-4fa5-85dd-f85f17bffe09",
+        "fieldId": "0db43e22-6591-4365-9cdd-71fa30f4c1df"
+      },
+      "successorRequest": {
+        "requestId": "742f8c9c-1d85-4aa9-be65-9c9a5049d27e",
+        "fieldId": "a5cca059-1f06-4577-9b9f-2de4ac70edee"
+      },
+      "revokedStatus": 404,
+      "workerResults": [
+        {
+          "mode": "output-loss",
+          "exit": 1
+        },
+        {
+          "mode": "resume",
+          "exit": 0
+        }
+      ],
+      "shareSettingsSavedOnlyDraft": true,
+      "legacyCacheWithoutRequest": true,
+      "revokedLegacyCacheStatus": 404,
+      "emptyMapGuard": {
+        "emptyHidden": true,
+        "nonemptyVisible": true,
+        "removedGuardVisible": true,
+        "restoredHidden": true
+      },
+      "sourceMismatchStatus": 409,
+      "overflow": {
+        "viewport": 390,
+        "document": 390
+      },
+      "console": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        }
+      ]
+    }
+  ],
+  "artifacts": {
+    "1440-successor.png": "e6d85c136c0e1c10b78d2aecbfc6b7bdf14c58f4389b64f4f021a232e3118f86",
+    "390-checkpoint.json": "47419b2b8c1a84ab579ba5bdedcbd5362dac1aeac1df5d50bc36917fc00729e7",
+    "source.json": "ea99d120bac120955679d47a3aed229b0911d50a94475efe331469f0c87a9aa1",
+    "390-worker-config.json": "961a7a7c40d8cbc6574eab086898990f87cad0d2750fd812640645ce7d7f5c08",
+    "1440-queue-response.json": "94ab3907e77de84084c45afd22cae2849f76d128656b762521398ce0bf9cd8a7",
+    "1440-successor-config.json": "62ccef3f98dc0cd234d049da24c8db47d2ab724d0b979355036bd4972050ba7d",
+    "1440-share-saved.png": "38aee5435176be9eea5c244465b629445998b792e381265769aec7fb1727e08a",
+    "390-share-saved.png": "556a039644ddb7dd6e161b2a3a43fa75f963ab9e14245877b57299df50b491ea",
+    "1440-checkpoint.json": "fb566874467a784532781f256482c7b40c17191e251672e83fb1572ef00277cc",
+    "390-legacy-cache.png": "7721b20d112dc64552feadd8a2131a45d25261b702692b8644932648a16f40eb",
+    "1440-item-response.json": "f73acdaf4601fe38af09345ef13d8ba6f12c50dace96ff6cf4750d710511697a",
+    "1440-legacy-cache.png": "ed512c1dd3ed4b4a25560a15427361d67d4685f54252a9fd6f7e973f38d1ff13",
+    "1440-worker-config.json": "b62623376bc5f8c52ee946b5a2cbdf25a023662aabafffc8af5f6bb5f6037cb6",
+    "1440-completed.png": "6806ea37044cd0b9b367e0d3e3475b847987846687a9006b739c5cc539967325",
+    "1440-failed.png": "957b86774a2b1a70535f382553ce71dbc2e4ca6e104fd0f85df316a68c289b27",
+    "390-queue-response.json": "adf17d85b0a276858b307d5d6ddcee13c7e195b497929313b2f0ff12cca4e386",
+    "identity.txt": "c9b6c71a7a0fb2cf9238a8c9950204752d44bb86f5bbba4539d9bda0b2bf890a",
+    "1440-pending.png": "1e3821b02f74ca64864b008ef292b55f67bfa0289f573f05eb74477ae3a08867",
+    "390-failed-config.json": "f7add8ea6f9942d9606fed156227b86436dda24b100d1d7a7b3eb9b30bcaad0f",
+    "390-pending.png": "592b3ffd0e3631d0dc5b3db7ab380c1cbc35702da98c4d04535d75b6d85f503a",
+    "390-completed.png": "8468eed8a127b7d0082ae88198dbc937d3360d2688dcbf8e0c36ff695b8c4993",
+    "390-successor.png": "61c7a7a757381ce45013ae5fd747b85af07a232a99b2989043501d7894d0b6e7",
+    "results.json": "a4f7fec0550b1962b618edbe2616fbfa2c598019675a0a2115ee955a1de98fbe",
+    "390-item-response.json": "8177036c988f317af7d2e5e366d17eaac24779ce8a8274eb8ed2a43e942e5a37",
+    "390-failed.png": "7fb0a805a4694bf2bcdbfd311d2db5a29b5b40bcb31e6a6d41650c646446d691",
+    "390-successor-config.json": "b25f9cc7e81aba462e576f9208e05de85709aa5d7f127d1bdc6ddde566bedf16",
+    "1440-failed-config.json": "888602cb80cac008546ca98829302f13b5e748f9cd866d3ae50a94020e309cf5"
+  },
+  "inspection": "Production next start, exact commit 5a93ae99, fresh server and fresh desktop/mobile contexts. First real navigation succeeded without warming or retry. Original and retained translation and participant caveat inspected in both completion screenshots; no horizontal overflow. No pageerrors, warnings, network-change errors or unexpected console failures. Only deliberate lost-acknowledgement, wrong-source and revoked-link ERR_FAILED/409/404 checks remain.",
+  "limits": "Locally intercepted synthetic provider proves engineering recovery and retained artifacts, not translation quality or field usefulness. Dev cold-navigation anomaly remains historical and unexplained; it was not reproduced in production."
+}

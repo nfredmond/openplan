@@ -1,0 +1,40 @@
+{
+  "commit": "5a93ae99c32412ccf6a9620d705a4cc9de63f81c",
+  "checkout": "/home/nathaniel/.local/state/openplan/translation-resolution-qa-20260913-125bf2a3",
+  "checks": {
+    "full-qa": {
+      "exit": 0,
+      "log": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-translation-full-qa-5a93ae99.log",
+      "sha256": "1548b24e29722310734a2cac01b80e4022a3f694c912536eaa7177fcb1cc0ea9"
+    },
+    "workers": {
+      "exit": 0,
+      "log": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-translation-workers-5a93ae99.log",
+      "sha256": "8a07ba71de05510939bc6535aa58135692086beacdabd37b43de1aa7c4efbc89"
+    },
+    "shuffled": {
+      "exit": 0,
+      "log": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-translation-shuffled-5a93ae99.log",
+      "sha256": "2819f396e1cefee9dca069a1c5669ea9f5267ab3d587c846488ea374118e3bba"
+    },
+    "rls": {
+      "exit": 0,
+      "log": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-translation-rls-5a93ae99.log",
+      "sha256": "157730d0d2972bdcf221ae550b20c855382f7190cf537bea15c499051742ec1d",
+      "tests": 526,
+      "files": 57,
+      "container": "supabase_db_openplan-restore-target-2026091050"
+    }
+  },
+  "unitTests": 15134,
+  "unitSkipped": 497,
+  "shuffledSeed": 914059,
+  "workerSuites": 52,
+  "upgradeWorkflow": {
+    "runId": 34821797265,
+    "base": "v0.58.1",
+    "conclusion": "success",
+    "url": "https://github.com/nfredmond/openplan/actions/runs/34821797265"
+  },
+  "limits": "All recorded checks are on 5a93ae99 before version-only release metadata. Production browser acceptance is recorded separately. Final main CI and release tagging remain."
+}

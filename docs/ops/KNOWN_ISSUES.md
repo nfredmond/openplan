@@ -409,16 +409,27 @@ remain open. An identical lost-acknowledgement save retry is not a general
 concurrent-write or paid-generation recovery guarantee. M9b remains unfinished.
 
 
-## Unreleased staff generation recovery
+## v0.59.0 candidate translation recovery
 
-The translation development branch now has retained generation/browser evidence
-and portable concurrent-read isolation checks. It remains unreleased. An
-unreadable local generation request whose server record cannot be retrieved
-has preservation and download controls, but no complete self-service resolution
-path yet. New generation stays blocked. Do not clear it merely because a read
-failed: an earlier request may still commit.
+The translation development branch now supports exact-source staff writes,
+retained generation output, explicit resolution receipts, public queue recovery
+and failed-attempt successors. Desktop and 390px synthetic journeys cover
+interrupted acknowledgements, originals, correction history and rotated-link
+refusals. Share settings now follow confirmed publication changes while keeping
+unsaved drafts. Existing valid public cache text stays readable without new
+requests; its old metadata still cannot prove output completeness.
 
-[Current engineering evidence and next repair](../reviews/2026-09-13-m9b-translation-writes/PORTABLE_ISOLATION_PROGRESS.md)
-record this limit. Public comment generation durability, remaining recovery
-cases and final release verification also remain open. The historical release
-limits above are unchanged.
+Full QA and shuffled tests at `5a93ae99` passed 15,134 tests each, and all 52
+worker suites passed. The populated v0.58.1 GitHub upgrade workflow passed.
+The separate translation rehearsal preserves existing row contents across all
+eleven migrations and confirms its checks detect damaged saved/cache wording.
+All 526 isolated RLS tests passed. Production cold-navigation, retry and cache
+journeys passed at desktop and 390px with no unexpected console errors. Earlier
+dev runs returned the map after a first public navigation or reported a mobile
+network-change error; their causes remain unproved, and neither reproduced in
+the production run.
+
+[Release verification](../reviews/2026-09-13-m9b-translation-writes/RELEASE_VERIFICATION.md)
+retains the evidence and final main CI/publication boundary. Translation quality, actual agency usefulness and the broader M9b
+workflow are not established by synthetic engineering journeys. Historical
+release limitations above remain dated records.

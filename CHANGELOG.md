@@ -20,7 +20,11 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-Engagement translation work is being prepared for release. Staff can save exact
+No additional changes recorded.
+
+## 0.59.0 — 2026-09-14
+
+Engagement translations now recover interrupted work while retaining originals. Staff can save exact
 source-bound wording, retain reasons and original versions, review durable
 machine output, and recover interrupted writes, generation and resolution
 requests. Publication uses the retained output; accepting or withdrawing it
@@ -36,7 +40,7 @@ Share settings follow saved publish changes while preserving local drafts, and
 Save sends only edited fields. Empty feedback map frames no longer leave a blank
 box above the comment list.
 
-Apply these development migrations before running the code:
+Apply these migrations before running the code:
 `20261014000010_engagement_translation_commands.sql`,
 `20261014000011_engagement_translation_snapshot.sql`,
 `20261014000012_engagement_translation_history_receipts.sql`,
@@ -60,8 +64,9 @@ Desktop and 390px synthetic journeys cover staff and public recovery, retained
 output, explicit public retries, link revocation, original history and legacy
 cache compatibility. Provider traffic is intercepted locally in those checks.
 They establish engineering behavior, not translation quality or agency approval.
-Final QA, isolated upgrade and production-build acceptance remain required before
-this development increment is released.
+Full QA, shuffled tests, isolated RLS, worker checks, populated upgrade and
+production-browser acceptance passed. The release record tracks final main CI
+and publication separately.
 
 ## 0.58.1 — 2026-09-13
 

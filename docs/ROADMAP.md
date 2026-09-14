@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: e6d25edd
-current_release: v0.58.1
+current_release: v0.59.0
 review_by: 2026-10-05
 paths:
 - AGENTS.md
@@ -689,3 +689,14 @@ records successful final CI, RLS, upgrade and tagging. Continue exact-version re
 translation writes, retained source wording, durable generation/spend accounting
 and cache completeness, then the remaining M9b and early priorities above.
 This does not close M9b or change the complete V1 contract.
+
+
+The v0.59.0 candidate completes exact-source translation commands, retained
+worker generation and self-service recovery for staff and public comment readers.
+[Release verification](reviews/2026-09-13-m9b-translation-writes/RELEASE_VERIFICATION.md)
+records desktop/390px production journeys, 339 migrations, preserved originals,
+explicit retry custody and local/upgrade checks. Final main CI and publication
+are recorded separately. Old cached text retains its original provenance limits;
+synthetic words do not establish language quality. Continue the remaining M9b
+source-to-decision follow-through and the other early priorities above. This
+increment does not close M9b or narrow the complete V1 contract.

@@ -1,0 +1,60 @@
+{
+  "container": "supabase_db_openplan-restore-target-2731143",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/translation-populated-upgrade-1789374115585430028",
+  "baseLedger": "328:20261014000009",
+  "migrations": {
+    "20261014000010_engagement_translation_commands.sql": "a412defaa6b0436f965e504f428e3e22cb88defc1cd904a9878c29fa3b96ca74",
+    "20261014000011_engagement_translation_snapshot.sql": "356abae21f596df1738e39d194b845bcd6c04607c710570901af803af5a6415a",
+    "20261014000012_engagement_translation_history_receipts.sql": "5ed0aada4a21e364197ac7874e2ba890d734a7504605c53d06833dbabddc9544",
+    "20261014000013_engagement_translation_generation.sql": "3daf131f02d2476a293cccde3ab5e74e73182dd0d5291db696df791bf0873cad",
+    "20261014000014_engagement_translation_generation_reads.sql": "af4ac71c095242f1620f403fa774ff82e2450d5a95bc2b36078dc4c6011e17f6",
+    "20261014000015_engagement_translation_generation_catalog.sql": "1139b5a904801475dfc4357a04f0c89823d4763077e734828472e82416cf6987",
+    "20261014000016_engagement_translation_retained_publication.sql": "4f5d2d33b62798dd57d113e4751d3b107d792f7082ad0f2f7dc7c43b4928b757",
+    "20261014000017_engagement_translation_command_activation.sql": "43bb8638b703ebd1ee6d7c705da88ec00bcaaf3208a1eeda9e2651aa79e1e1fb",
+    "20261014000018_engagement_translation_shared_reads.sql": "0d9c268becfcdee8c9faf4017e786a49e5e1d6574ae4fba3064e97c55113d188",
+    "20261014000019_engagement_translation_generation_resolution.sql": "fd119b912465ca05089c89fb4d1cdcbbf1b9b499030673ce29ba6a077c36d1c0",
+    "20261014000020_engagement_public_translation_queue.sql": "c247f4ead091a3bc2f19570731a683a721dc147a50e2a967df195869523b18ff"
+  },
+  "results": [
+    {
+      "case": "baseline",
+      "exit": 0,
+      "expectedOutcome": true,
+      "expectedFailure": null,
+      "output": [
+        "{\"tablesCompared\" : 278, \"populatedTables\" : 152, \"retainedRows\" : 13777, \"preserved\" : true}"
+      ]
+    },
+    {
+      "case": "harmless-comment",
+      "exit": 0,
+      "expectedOutcome": true,
+      "expectedFailure": null,
+      "output": [
+        "{\"tablesCompared\" : 278, \"populatedTables\" : 152, \"retainedRows\" : 13777, \"preserved\" : true}"
+      ]
+    },
+    {
+      "case": "changed-saved-wording",
+      "exit": 3,
+      "expectedOutcome": true,
+      "expectedFailure": "Upgrade changed existing rows: public.engagement_content_translations",
+      "output": [
+        "ERROR:  Upgrade changed existing rows: public.engagement_content_translations",
+        "CONTEXT:  PL/pgSQL function inline_code_block line 4 at RAISE"
+      ]
+    },
+    {
+      "case": "changed-cached-wording",
+      "exit": 3,
+      "expectedOutcome": true,
+      "expectedFailure": "Upgrade changed existing rows: public.engagement_items",
+      "output": [
+        "ERROR:  Upgrade changed existing rows: public.engagement_items",
+        "CONTEXT:  PL/pgSQL function inline_code_block line 4 at RAISE"
+      ]
+    }
+  ],
+  "baselineSchemaRestored": true,
+  "limits": "Rolled-back application of all eleven migrations on an installed v0.58.1 schema, preserving original columns of all existing public/auth/storage tables. Synthetic legacy writes use the old allowed direct staff producer and cache RPC. Not a committed CLI installation, archive restoration or translation quality test. The separate GitHub upgrade workflow covers committed CLI application."
+}

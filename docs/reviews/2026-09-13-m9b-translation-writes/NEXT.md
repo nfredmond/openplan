@@ -1,3 +1,7 @@
+# v0.59.0 release candidate
+
+Read [RELEASE_VERIFICATION.md](RELEASE_VERIFICATION.md) first. Full QA, shuffled tests, all 526 isolated RLS tests, 52 worker suites, populated upgrade and desktop/390px production browser recovery pass. Final main CI and publication remain. Preserve the full V1 objective and dated evidence below.
+
 # Latest weekly reset checkpoint
 
 Read [WEEKLY_RESET_CHECKPOINT_2026-09-14.md](WEEKLY_RESET_CHECKPOINT_2026-09-14.md) first. The three full-QA accounting failures are repaired and mutation-checked; legacy-cache browser journeys passed. Full QA rerun and final release checks remain. Older entries preserve their dated evidence.

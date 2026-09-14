@@ -1,0 +1,52 @@
+{
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/v059-release-records-1789374361541980906",
+  "sources": {
+    "openplan/src/test/migrations/release-ordering.test.ts": "297d51cd16f20768ab048cdf37b38357d936d5c5840adf5738ba409bddea76a6",
+    "CHANGELOG.md": "d6690318154db9b58b379a9f0fb92ce38833bb18929a512eccf9c80983231e9b"
+  },
+  "results": [
+    {
+      "case": "baseline",
+      "passedTests": 6,
+      "failedTests": [],
+      "exit": 0,
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "passedTests": 6,
+      "failedTests": [],
+      "exit": 0,
+      "expectedOutcome": true
+    },
+    {
+      "case": "wrong-migration-count",
+      "passedTests": 4,
+      "failedTests": [
+        "released migration ordering no migration has been inserted at or below a shipped high-water mark",
+        "released migration ordering new work sorts strictly after the latest release (no version collisions)"
+      ],
+      "exit": 1,
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-last-migration",
+      "passedTests": 5,
+      "failedTests": [
+        "released migration ordering every release's recorded last migration exists on disk"
+      ],
+      "exit": 1,
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-operator-migration",
+      "passedTests": 5,
+      "failedTests": [
+        "released migration ordering the CHANGELOG's newest release section exists and its migration references resolve"
+      ],
+      "exit": 1,
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Release metadata and operator migration accounting only. Does not prove installed upgrade, database isolation or browser behavior; those have separate runtime evidence."
+}
