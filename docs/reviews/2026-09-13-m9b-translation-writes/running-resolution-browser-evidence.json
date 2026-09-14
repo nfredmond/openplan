@@ -1,0 +1,110 @@
+{
+  "implementationCommit": "125bf2a31ccf34a3eb088454f2699acd85915620",
+  "privateEvidenceDirectory": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/translation-running-resolution-browser-1789364087184",
+  "recordedEvidenceNotRerun": true,
+  "finalControlExit": 0,
+  "mutationSourceRestored": true,
+  "workerSuiteExit": 0,
+  "shuffledExit": 0,
+  "results": [
+    {
+      "width": 1440,
+      "passed": true,
+      "providerEvents": [
+        {
+          "providerTransportIntercepted": true,
+          "fieldId": "af54be43-bf79-41e9-8b44-ba502f324820"
+        },
+        {
+          "event": "provider_abort_observed",
+          "fieldId": "af54be43-bf79-41e9-8b44-ba502f324820"
+        }
+      ],
+      "providerCalls": 1,
+      "readStatuses": [
+        {
+          "url": "http://127.0.0.1:3260/api/engagement/campaigns/c38683c8-c68c-4f50-b796-046e4b0c1b3d/translations/generation?requestId=acf44ec3-a0b9-4266-a788-5aa0e17319c9",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:3260/api/engagement/campaigns/c38683c8-c68c-4f50-b796-046e4b0c1b3d/translations/generation?requestId=acf44ec3-a0b9-4266-a788-5aa0e17319c9",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:3260/api/engagement/campaigns/c38683c8-c68c-4f50-b796-046e4b0c1b3d/translations/generation?requestId=acf44ec3-a0b9-4266-a788-5aa0e17319c9",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:3260/api/engagement/campaigns/c38683c8-c68c-4f50-b796-046e4b0c1b3d/translations/generation?requestId=acf44ec3-a0b9-4266-a788-5aa0e17319c9",
+          "status": 200
+        }
+      ],
+      "retainedDownloadSha256": "74f6d1f4254c069894e28b1d13b4893e6ce07702b0d29a5258dfe821207524e3",
+      "archiveDownloadSha256": "63eedf317b3c5e93ff875ae622c7c6c40865f970e8103d4ed72db25154c40294",
+      "lateCreationStatus": 409,
+      "changedWorkspaceStatus": 403,
+      "anonymousStatus": 401,
+      "overflow": {
+        "viewport": 1440,
+        "document": 1440
+      }
+    },
+    {
+      "width": 390,
+      "passed": true,
+      "providerEvents": [
+        {
+          "providerTransportIntercepted": true,
+          "fieldId": "be5dacca-5e76-46ef-8b41-d82ea7854b7d"
+        },
+        {
+          "event": "provider_abort_observed",
+          "fieldId": "be5dacca-5e76-46ef-8b41-d82ea7854b7d"
+        }
+      ],
+      "providerCalls": 1,
+      "readStatuses": [
+        {
+          "url": "http://127.0.0.1:3260/api/engagement/campaigns/22952308-006b-4ef8-b211-3b07067fa4ea/translations/generation?requestId=15ae1b91-db8e-473a-904b-6578305014e5",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:3260/api/engagement/campaigns/22952308-006b-4ef8-b211-3b07067fa4ea/translations/generation?requestId=15ae1b91-db8e-473a-904b-6578305014e5",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:3260/api/engagement/campaigns/22952308-006b-4ef8-b211-3b07067fa4ea/translations/generation?requestId=15ae1b91-db8e-473a-904b-6578305014e5",
+          "status": 200
+        },
+        {
+          "url": "http://127.0.0.1:3260/api/engagement/campaigns/22952308-006b-4ef8-b211-3b07067fa4ea/translations/generation?requestId=15ae1b91-db8e-473a-904b-6578305014e5",
+          "status": 200
+        }
+      ],
+      "retainedDownloadSha256": "31f7e064b0dc0e68f67dbc79edf8a146ebc223437590636a4f4b15d81aaaeb37",
+      "archiveDownloadSha256": "53817b939b268485f109ff4b3dc81b31d46fdd252dd002d91f954bfa4365a5fc",
+      "lateCreationStatus": 409,
+      "changedWorkspaceStatus": 403,
+      "anonymousStatus": 401,
+      "overflow": {
+        "viewport": 390,
+        "document": 390
+      }
+    }
+  ],
+  "sha256": {
+    "translation-running-resolution-browser-1789364087184/results.json": "59aa89c2f0e54043f6bd1a3ec2c21f73f223c95c6d91a38c69ee28ffa247a890",
+    "translation-running-resolution-browser-1789364087184/identity.log": "6b183314993ec9955aa9b0c4272826a1a8511e5d5e4a7088eec9f843a7aa6173",
+    "translation-running-resolution-browser-1789364087184/source-sha256.json": "4cfdb4722165339a8f3558b8137d96ed94d898ac19f8f9f16827c8b46c6d7028",
+    "translation-resolution-workers.log": "8a07ba71de05510939bc6535aa58135692086beacdabd37b43de1aa7c4efbc89",
+    "translation-resolution-workers.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "translation-resolution-shuffled-913058.log": "5056eb4dc890d90a502d183f28f08ddf5d4c0ba32f93c0d106d0d51dd6f9b7cb",
+    "translation-resolution-shuffled-913058.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+  },
+  "processState": "Browser control and shuffled/worker suites are terminal. Synthetic server stopped; ordinary server restart recorded in progress note. No active database field should be assumed without a fresh read.",
+  "limits": [
+    "Final successful journey used a harmless comment appended to the unchanged production worker.",
+    "Baseline original-source browser evidence is translation-running-resolution-browser-1789363733194.",
+    "Live provider cost/quality and account-lifecycle acceptance are unproved."
+  ]
+}

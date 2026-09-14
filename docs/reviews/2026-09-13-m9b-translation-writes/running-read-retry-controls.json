@@ -1,0 +1,36 @@
+{
+  "sourceSha256": "0c0bc55457a4a9485ffc038e7f0abdec61ace172f20c8cfa386058e6588063ee",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "observedFailure": null
+    },
+    {
+      "case": "harmless",
+      "outcome": "survived",
+      "observedFailure": null
+    },
+    {
+      "case": "skip-unavailable-retry",
+      "outcome": "killed",
+      "observedFailure": "temporary unavailable read\n\n503 !== 200\n"
+    },
+    {
+      "case": "retry-permission-refusal",
+      "outcome": "killed",
+      "observedFailure": "permission failure preserved\n\n200 !== 401\n"
+    },
+    {
+      "case": "omit-status-evidence",
+      "outcome": "killed",
+      "observedFailure": "all statuses retained\n+ actual - expected\n\n+ []\n- [\n-   503,\n-   200\n- ]\n"
+    },
+    {
+      "case": "exceed-five-read-bound",
+      "outcome": "killed",
+      "observedFailure": "five read bound\n\n6 !== 5\n"
+    }
+  ],
+  "limits": "Executes the browser runner read helper with controlled HTTP statuses. Does not prove the cause of a real 503 or alter application retry behavior."
+}

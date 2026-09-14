@@ -1,0 +1,21 @@
+{
+  "sourceSha256": "94322942982b34ea6d108a64fb8cfd3b14ed47b227f1da06f19a48c6987d9f17",
+  "runnerSha256": "0c0bc55457a4a9485ffc038e7f0abdec61ace172f20c8cfa386058e6588063ee",
+  "results": [
+    {
+      "case": "harmless-worker-comment",
+      "outcome": "survived",
+      "exit": 0,
+      "log": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/running-resolution-controls-1789364086/harmless-worker-comment.log",
+      "logSha256": "bc799c2b063d84e2e6904210383954463ea7bdba26f42fa3d83ea0d5103f938a"
+    },
+    {
+      "case": "ignore-running-state-change",
+      "outcome": "killed",
+      "exit": 1,
+      "log": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/running-resolution-controls-1789364086/ignore-running-state-change.log",
+      "logSha256": "cc67423dba418aac818e334fbe68a1c07b5b4cee5357fe7ee93536efa502b8ac"
+    }
+  ],
+  "limits": "Actual SDK transport is synthetic and held locally. The targeted mutation removes only the worker status-state abort condition. This proves request closure reaches the active provider signal through the browser/API/database/worker; it does not prove live provider billing, arbitrary network failures or every copied archive assertion."
+}

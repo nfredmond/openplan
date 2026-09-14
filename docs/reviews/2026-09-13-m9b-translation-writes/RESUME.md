@@ -1,3 +1,7 @@
+# Current running-request cancellation checkpoint
+
+Read [RUNNING_RESOLUTION_PROGRESS.md](RUNNING_RESOLUTION_PROGRESS.md) first. Running-request closure now has desktop/390px worker-signal evidence and a real killed cancellation fault. All 52 worker suites and shuffled tests passed. Account lifecycle, public producers and final release work remain. Older notes preserve historical states.
+
 # Current completed-request and weekly reset checkpoint
 
 Read [COMPLETED_RESOLUTION_RESET_CHECKPOINT.md](COMPLETED_RESOLUTION_RESET_CHECKPOINT.md) first. Completed-output recovery and archive-failure retry ran at desktop/390px; fresh isolated RLS passed all 525 tests. This note records terminal jobs, QA exit-status uncertainty and the exact remaining work. Older entries below preserve historical states.
