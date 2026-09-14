@@ -1,0 +1,107 @@
+{
+  "files": {
+    "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts": "ddc22a9f5ba2649e3a63e7f356b61ac2f93e782281d464be4c2670e0b3933cff",
+    "openplan/src/test/migrations/schema-inventory.ts": "4ad4d32735ea602100f2c06be2dfaed96858cd5d42fb4dc8eac25374cbd8e4bd",
+    "CHANGELOG.md": "d20b40247abb94b532d6cf0b6dec0345331ece8b7162ece7f5ff239c4767d494"
+  },
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/public-release-record-controls/20260914T010912",
+  "results": [
+    {
+      "case": "baseline",
+      "file": "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "file": "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unaccounted-previous_request_id",
+      "file": "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "outcome": "killed",
+      "expectedFailure": "finds no unread column that is not accounted for",
+      "failedTests": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unaccounted-share_token_hash",
+      "file": "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "outcome": "killed",
+      "expectedFailure": "finds no unread column that is not accounted for",
+      "failedTests": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unaccounted-source_snapshot",
+      "file": "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "outcome": "killed",
+      "expectedFailure": "finds no unread column that is not accounted for",
+      "failedTests": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unaccounted-authority_kind",
+      "file": "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "outcome": "killed",
+      "expectedFailure": "finds no unread column that is not accounted for",
+      "failedTests": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "invisible-relation",
+      "file": "openplan/src/test/migrations/schema-inventory.ts",
+      "outcome": "killed",
+      "expectedFailure": "reads every relation the migrations declare",
+      "failedTests": [
+        "migration schema inventory reads every relation the migrations declare"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "invisible-table",
+      "file": "openplan/src/test/migrations/schema-inventory.ts",
+      "outcome": "killed",
+      "expectedFailure": "reads every relation the migrations declare",
+      "failedTests": [
+        "migration schema inventory reads every relation the migrations declare"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "invisible-rls",
+      "file": "openplan/src/test/migrations/schema-inventory.ts",
+      "outcome": "killed",
+      "expectedFailure": "reads every relation the migrations declare",
+      "failedTests": [
+        "migration schema inventory reads every relation the migrations declare"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-upgrade-migration",
+      "file": "CHANGELOG.md",
+      "outcome": "killed",
+      "expectedFailure": "the CHANGELOG's Unreleased section names every migration landed since the newest tag",
+      "failedTests": [
+        "released migration ordering the CHANGELOG's Unreleased section names every migration landed since the newest tag"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Static source/schema accounting and changelog inclusion. The census checks parser visibility, not database enforcement; installed RLS/custody faults and browser journeys establish runtime behavior separately. The SQL-only column reasons are backed by the recorded native queue tests, not inferred from their prose."
+}

@@ -73,6 +73,10 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "engagement_public_translation_requests.previous_request_id", category: "READ_IN_SQL", reason: "create_public_translation_attempt deduplicates an explicit successor by predecessor; find_public_translation_request follows the current leaf while preserving failed attempts." },
+  { column: "engagement_public_translation_requests.share_token_hash", category: "READ_IN_SQL", reason: "Public request creation, discovery and reads compare the retained token hash with the current published campaign token; rotation refuses access through the old link." },
+  { column: "engagement_public_translation_requests.source_snapshot", category: "READ_IN_SQL", reason: "Public creation, read, discovery and worker authority compare the retained original with the currently approved item; displayed-source mismatches cannot return another translation." },
+  { column: "engagement_translation_generation_requests.authority_kind", category: "READ_IN_SQL", reason: "The queue authority constraint distinguishes real staff actors from anonymous public requests. Worker authority and allowance checks branch on it, and staff readers exclude public requests." },
   { column: "engagement_translation_generation_fields.dispatch_authorized_at", category: "READ_IN_SQL", reason: "The dispatch command records first authorization, the immutable-field trigger refuses replacement, and retain_translation_generation_output requires it before accepting a delivered model result." },
   { column: "engagement_translation_generation_fields.reserved_at", category: "READ_IN_SQL", reason: "The reservation transaction writes the timestamp; the field state constraint requires it for reserved work and the immutable-field trigger preserves the original reservation identity." },
   { column: "engagement_translation_generation_outputs.field_id", category: "READ_IN_SQL", reason: "The output receipt foreign key binds its generation field and attempt. read_translation_generation_request joins on that exact pair before returning output to the staff reader." },

@@ -491,10 +491,12 @@ const EXPECTED = {
   tablesWithPolicies: 223,
   // 20261014000013 adds three generation custody tables with RLS and no client policies.
   // Installed isolated catalog confirms all three; no application view or policy is added.
-  relations: 262,
-  tables: 249,
+  // Migration 20 adds the private public-translation mapping table, RLS and no policies.
+  // Installed isolated catalog, excluding extension-owned relations: 250 tables, 13 views, 250 RLS tables.
+  relations: 263,
+  tables: 250,
   views: 13,
-  rlsEnabledTables: 249,
+  rlsEnabledTables: 250,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

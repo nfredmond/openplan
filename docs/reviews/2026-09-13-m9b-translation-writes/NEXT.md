@@ -1,3 +1,7 @@
+# Latest weekly reset checkpoint
+
+Read [WEEKLY_RESET_CHECKPOINT_2026-09-14.md](WEEKLY_RESET_CHECKPOINT_2026-09-14.md) first. The three full-QA accounting failures are repaired and mutation-checked; legacy-cache browser journeys passed. Full QA rerun and final release checks remain. Older entries preserve their dated evidence.
+
 # Current public retry and share-settings checkpoint
 
 Read [PUBLIC_RETRY_SHARE_SETTINGS_PROGRESS.md](PUBLIC_RETRY_SHARE_SETTINGS_PROGRESS.md) first. Failed-attempt successors, rotated-link refusals and repaired share settings now pass desktop/390px journeys. Full QA, isolated release checks, legacy-cache browser compatibility and production cold navigation remain. Older entries retain their dated evidence.

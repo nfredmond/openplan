@@ -20,7 +20,23 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-Translation workflow integration is in progress. The development migrations are
+Engagement translation work is being prepared for release. Staff can save exact
+source-bound wording, retain reasons and original versions, review durable
+machine output, and recover interrupted writes, generation and resolution
+requests. Publication uses the retained output; accepting or withdrawing it
+preserves the generation and history records. The old staff write route returns
+410 and directs callers to preserve their unsaved wording and reopen the editor.
+
+Public comment translations now use the retained worker queue. Checking an
+uncertain request does not create another attempt. A failed attempt needs an
+explicit new request, and its predecessor stays retained. Existing valid cached
+words remain readable without new generation. The original comment stays visible;
+source changes and public-link rotation prevent access through stale requests.
+Share settings follow saved publish changes while preserving local drafts, and
+Save sends only edited fields. Empty feedback map frames no longer leave a blank
+box above the comment list.
+
+Apply these development migrations before running the code:
 `20261014000010_engagement_translation_commands.sql`,
 `20261014000011_engagement_translation_snapshot.sql`,
 `20261014000012_engagement_translation_history_receipts.sql`,
@@ -29,32 +45,23 @@ Translation workflow integration is in progress. The development migrations are
 `20261014000015_engagement_translation_generation_catalog.sql`,
 `20261014000016_engagement_translation_retained_publication.sql`,
 `20261014000017_engagement_translation_command_activation.sql`,
-`20261014000018_engagement_translation_shared_reads.sql` and
-`20261014000019_engagement_translation_generation_resolution.sql`. They retain
-command receipts, source and saved versions, private generation attempts and
-outputs, and paginated staff history. Publication resolves retained output and
-preserves the original generation evidence through acceptance and withdrawal.
+`20261014000018_engagement_translation_shared_reads.sql`,
+`20261014000019_engagement_translation_generation_resolution.sql`, and
+`20261014000020_engagement_public_translation_queue.sql`.
 
-Migration 17 enables authenticated staff commands and revokes ordinary direct
-translation writes. The old staff HTTP write route returns 410 and tells callers
-to preserve unsaved words and reopen the editor. It never repeats an old write
-or starts generation. Migration 18 lets retained generation and history readers
-share locks while preserving exclusive writes and staff access checks. Apply
-the migrations before using this development code.
+Migration 17 enables authenticated staff commands and retires ordinary direct
+translation writes. Migration 18 permits concurrent retained reads while keeping
+exclusive writes and staff access checks. Migration 19 adds immutable resolution
+receipts and blocks late creation retries. Migration 20 adds anonymous public
+source authority, private request mapping and atomic public allowance reservations
+through the existing worker, without inventing a staff actor.
 
-Migration 19 adds immutable resolution receipts for damaged generation requests,
-blocks late creation retries and preserves retained output. Its SQL and receipt
-validation have isolated database checks. The authenticated resolution API and
-queue preflight are implemented; editor recovery integration remains unfinished.
-Migration 19 is installed in the isolated browser verification stack.
-
-The queue API and editor retain exact request identities across retries. The
-local worker has process-restart and exact-delivery evidence. Staff browser
-journeys at desktop and 390px cover queue retries, retained output, publication,
-acceptance and original history with a locally intercepted synthetic provider.
-Generation controls wrap within narrow panels. Remaining editor recovery cases,
-public comment generation durability and final release verification are still
-unfinished. This development entry does not claim the workflow is released.
+Desktop and 390px synthetic journeys cover staff and public recovery, retained
+output, explicit public retries, link revocation, original history and legacy
+cache compatibility. Provider traffic is intercepted locally in those checks.
+They establish engineering behavior, not translation quality or agency approval.
+Final QA, isolated upgrade and production-build acceptance remain required before
+this development increment is released.
 
 ## 0.58.1 — 2026-09-13
 
