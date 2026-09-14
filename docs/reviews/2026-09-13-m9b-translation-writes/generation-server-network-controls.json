@@ -1,0 +1,24 @@
+{
+  "sourceSha256": "d3eee377717497c000310f825c20fcbca7edf2856d1cbc82e32d1db68d54db27",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-provider",
+      "outcome": "killed",
+      "expectedFailure": "Provider traffic must be blocked",
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Node fetch preload with a recording fake transport. Proves Anthropic blocking and local Request forwarding in this acceptance harness, not an operating-system egress firewall or arbitrary SDK network implementations."
+}

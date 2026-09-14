@@ -62,7 +62,7 @@ async function journey(browser,width){
   await expect(input).toHaveValue(outputText);await expect(row.getByRole('button',{name:'Accept as our wording',exact:true})).toBeEnabled();checkpoint('retained publication recovered');
   await reason.fill('SYNTHETIC acceptance after reviewing retained output');await keyClick(page,row.getByRole('button',{name:'Accept as our wording',exact:true}));await keyClick(page,page.getByRole('alertdialog').getByRole('button',{name:'Accept this wording',exact:true}));await expect(row.getByRole('button',{name:'Accept as our wording',exact:true})).toHaveCount(0);await expect(input).toHaveValue(outputText);
   await keyClick(page,panel.getByRole('button',{name:'Translation history',exact:true}));const history=panel.getByRole('region',{name:'Translation history',exact:true});await expect(history).toBeVisible();
-  const finalHistory=await page.evaluate(async url=>{const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('Final history unavailable');return(await r.json()).history},historyPath);
+  const finalHistory=await page.evaluate(async url=>{const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('Final history unavailable: HTTP '+r.status+' '+await r.text());return(await r.json()).history},historyPath);
   expect(finalHistory).toHaveLength(3);expect(finalHistory.find(r=>r.id===originalHistory[0].id)).toEqual(originalHistory[0]);expect(JSON.stringify(finalHistory)).toContain(fieldId);expect(JSON.stringify(finalHistory)).toContain('SYNTHETIC reviewed publication reason');
   await history.scrollIntoViewIfNeeded();await page.screenshot({path:path.join(prefix,width+'-history.png')});
   const overflow=await page.evaluate(()=>({viewport:innerWidth,document:document.documentElement.scrollWidth}));expect(overflow.document).toBeLessThanOrEqual(width);expect(consoleEvents.filter(e=>e.type==='pageerror')).toEqual([]);if(routeError)throw routeError;
@@ -72,7 +72,7 @@ async function journey(browser,width){
 }
 (async()=>{
  fs.writeFileSync(path.join(prefix,'identity.log'),execFileSync('bash',[path.join(app,'scripts/ops/which-openplan.sh'),base],{cwd:root,encoding:'utf8'}));
- expect(sql("select count(*)||':'||max(version) from supabase_migrations.schema_migrations")).toBe('336:20261014000017');
+ expect(sql("select count(*)||':'||max(version) from supabase_migrations.schema_migrations")).toBe('337:20261014000018');
  expect(sql("select count(*) from engagement_translation_generation_fields where state in ('queued','reserved','running')")).toBe('0');
  console.log('Generation browser evidence',prefix);
  const browser=await chromium.launch({channel:'chrome',headless:true});try{for(const width of [1440,390])await journey(browser,width)}finally{await browser.close()}

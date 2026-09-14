@@ -1,0 +1,17 @@
+{
+  "database": "supabase_db_openplan-restore-target-2026091050",
+  "campaignId": "8e2b0137-5fc8-4506-88eb-2850508a0563",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/shared-read-controls-1789354182230527836",
+  "sourceSha256": "0d9c268becfcdee8c9faf4017e786a49e5e1d6574ae4fba3064e97c55113d188",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "killed",
+      "expectedFailure": null,
+      "failure": "concurrent detail readers coexist",
+      "expectedOutcome": false
+    }
+  ],
+  "historyReceiptsAndFunctionsUnchanged": true,
+  "limits": "Real independent database sessions and held locks using a browser-created synthetic campaign. Function mutations roll back. No provider calls. Does not prove high-volume performance, arbitrary source adapters, browser rendering, or complete release acceptance."
+}

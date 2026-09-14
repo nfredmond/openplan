@@ -27,8 +27,9 @@ Translation workflow integration is in progress. The development migrations are
 `20261014000013_engagement_translation_generation.sql`,
 `20261014000014_engagement_translation_generation_reads.sql`,
 `20261014000015_engagement_translation_generation_catalog.sql`,
-`20261014000016_engagement_translation_retained_publication.sql` and
-`20261014000017_engagement_translation_command_activation.sql`. They retain
+`20261014000016_engagement_translation_retained_publication.sql`,
+`20261014000017_engagement_translation_command_activation.sql` and
+`20261014000018_engagement_translation_shared_reads.sql`. They retain
 command receipts, source and saved versions, private generation attempts and
 outputs, and paginated staff history. Publication resolves retained output and
 preserves the original generation evidence through acceptance and withdrawal.
@@ -36,13 +37,17 @@ preserves the original generation evidence through acceptance and withdrawal.
 Migration 17 enables authenticated staff commands and revokes ordinary direct
 translation writes. The old staff HTTP write route returns 410 and tells callers
 to preserve unsaved words and reopen the editor. It never repeats an old write
-or starts generation. Apply the migrations before using this development code.
+or starts generation. Migration 18 lets retained generation and history readers
+share locks while preserving exclusive writes and staff access checks. Apply
+the migrations before using this development code.
 
 The queue API and editor retain exact request identities across retries. The
-local worker has process-restart and exact-delivery evidence. Complete browser
-and worker acceptance, remaining editor recovery cases, and public comment
-generation durability are still unfinished. This development entry does not
-claim that the complete workflow is released.
+local worker has process-restart and exact-delivery evidence. Staff browser
+journeys at desktop and 390px cover queue retries, retained output, publication,
+acceptance and original history with a locally intercepted synthetic provider.
+Generation controls wrap within narrow panels. Remaining editor recovery cases,
+public comment generation durability and final release verification are still
+unfinished. This development entry does not claim the workflow is released.
 
 ## 0.58.1 — 2026-09-13
 

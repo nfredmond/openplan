@@ -1,0 +1,73 @@
+{
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/translation-generation-browser-1789354327298",
+  "sourceSha256": {
+    "openplan/src/components/engagement/translation-generation-panel.tsx": "df3c5a9815a46674cfbb49ddd9923fc87ceab8f740ee3f9ba36281884851acec",
+    "openplan/src/lib/engagement/translation-history-server.ts": "2bc1fe13cfd03538545642238cd08831ef481ac44645b8e911a73d71af3ed2b9",
+    "openplan/src/lib/engagement/translation-generation-read.ts": "a7a8a1bc8dd77ee54c6e769d51ce14ecd316a2371bd343106eced8b2e080735a",
+    "openplan/src/lib/engagement/translation-generation-worker.ts": "94322942982b34ea6d108a64fb8cfd3b14ed47b227f1da06f19a48c6987d9f17",
+    "openplan/supabase/migrations/20261014000018_engagement_translation_shared_reads.sql": "0d9c268becfcdee8c9faf4017e786a49e5e1d6574ae4fba3064e97c55113d188",
+    "docs/reviews/2026-09-13-m9b-translation-writes/translation-generation-browser-worker.ts": "9c33fd9f698c0b69bb67c0a3a29a9c568b996f3609ac4fab883c046fc3637bcf",
+    "docs/reviews/2026-09-13-m9b-translation-writes/translation-generation-browser.cjs": "973079516406c8953c12c45eceb8d4a6d685801a423ed79b42ca31bf061c93bc"
+  },
+  "artifactsSha256": {
+    "1440-worker-output-loss.log": "378ae61ba9f4859523ae1361ea60be0ac18fdae87047a9dca88397d539458c09",
+    "1440-generation-request.json": "0e118255da1a752bd076f125bf2a5b17cae947698333966133c5ef7877516ce9",
+    "390-checkpoint.json": "30a07b393217269f73e6d751f5e2302de6e6a158e6df0af88fee2d6e428980bf",
+    "390-worker-config.json": "4dae7ffa0da09c282b5b977fd1503532f2b2d96d9ea364a9ab10826a133f1443",
+    "390-history.png": "d888e38a725e37449df35f11e575d481092096a291063d5bc2855e1ed99afeab",
+    "390-worker-output-loss.log": "378ae61ba9f4859523ae1361ea60be0ac18fdae87047a9dca88397d539458c09",
+    "1440-checkpoint.json": "af8a8b6e4a8b355e860569e0517f7d88db58e04257ce9969e65e9151e0f9568f",
+    "1440-worker-config.json": "252ebb4841f12c9400c6c35e6d3f2e4afcfae60ddf97f1e39e4e17be1bf90563",
+    "1440-history.png": "72b1ddea34ebded780c007eb54325d8c05a81335927b80a77b6e67c2d4ff20c7",
+    "390-generation-request.json": "774ffe1da05a416946730c2da8362fb1d45364b70073d40d450c319284ed74ba",
+    "390-worker-resume.log": "cbe102da38804eed7ca016b73421e31d9f58049126e1f4e245c115b915a87dba",
+    "390-retained-output.png": "e6588b90017e39d586a79030f860528d97e2adf50687f79242802ef44c1ac0f7",
+    "1440-worker-resume.log": "bb1192d8a198c5c48dc1da2bd1625f0040252b743e822b743fdbe29227fb812f",
+    "results.json": "6958208e59bc8a199cfa0d80bde6ed236331a82eb8434ef94480351931d5f1ee",
+    "1440-retained-output.png": "95da67cf669f0142356316a277194b96bb831bd7c3128737c79400c126bf16f3",
+    "identity.log": "c998c881f2202f0e3d041e79bf50e0d9532cec8aa08b2200612a32deb4c6129c"
+  },
+  "results": [
+    {
+      "width": 1440,
+      "campaignId": "6331274d-22e1-4e56-a686-f6d10b13d61b",
+      "passed": true,
+      "providerCalls": 1,
+      "console": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        }
+      ],
+      "overflow": {
+        "viewport": 1440,
+        "document": 1440
+      }
+    },
+    {
+      "width": 390,
+      "campaignId": "89f5c220-b7f6-4297-8e4b-a036e5e3e611",
+      "passed": true,
+      "providerCalls": 1,
+      "console": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        },
+        {
+          "type": "error",
+          "text": "Failed to load resource: net::ERR_FAILED"
+        }
+      ],
+      "overflow": {
+        "viewport": 390,
+        "document": 390
+      }
+    }
+  ],
+  "limits": "Synthetic provider response intercepted locally through real worker SDK; not translation quality or real provider service validation. Campaigns remain draft: saved publication tested, not public portal visibility. Image review found a clipped refresh button at 390px despite document-width assertions; repair and focused browser controls follow separately."
+}

@@ -1,0 +1,58 @@
+{
+  "sourceSha256": "db3fd0a7e9ab05b3daab297bae22b6e61ba46b97b44dd75436a64f6e55cde201",
+  "probeSha256": "a14094f434570a77b6eef9860cdfcd881f3836d0313dd01a5cf7f5184d375b47",
+  "before": [
+    {
+      "label": "Hide machine translation requests",
+      "width": 242,
+      "parentWidth": 242,
+      "fits": true
+    },
+    {
+      "label": "Refresh saved generation requests",
+      "width": 274.328125,
+      "parentWidth": 242,
+      "fits": false
+    },
+    {
+      "label": "Spanish \u00b7 9/13/2026, 7:38:37 PM \u00b7 1 of 1 fields completed",
+      "width": 216,
+      "parentWidth": 216,
+      "fits": true
+    }
+  ],
+  "after": [
+    {
+      "label": "Hide machine translation requests",
+      "width": 242,
+      "parentWidth": 242,
+      "fits": true
+    },
+    {
+      "label": "Refresh saved generation requests",
+      "width": 216,
+      "parentWidth": 242,
+      "fits": true
+    },
+    {
+      "label": "Spanish \u00b7 9/13/2026, 7:38:37 PM \u00b7 1 of 1 fields completed",
+      "width": 216,
+      "parentWidth": 216,
+      "fits": true
+    }
+  ],
+  "results": [
+    {
+      "case": "harmless",
+      "outcome": "survived",
+      "expectedOutcome": true
+    },
+    {
+      "case": "broken",
+      "outcome": "killed",
+      "expectedOutcome": true
+    }
+  ],
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913",
+  "limits": "390px retained campaign reached through login, Engagement list and Setup. Harmless border-color control; targeted nowrap/unbounded-width CSS reproduces clipping. Covers visible generation catalog buttons, not every hidden recovery state or all mobile UI."
+}

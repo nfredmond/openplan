@@ -1,3 +1,5 @@
+Superseded by [SHARED_READ_BROWSER_PROGRESS.md](SHARED_READ_BROWSER_PROGRESS.md). The synthetic server configuration was removed after the completed browser run. The details below preserve the earlier investigation.
+
 # Generation browser work in progress
 
 Continues b456fb20 in the same owned checkout. This note is temporary recovery guidance, not acceptance evidence.

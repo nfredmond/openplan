@@ -1,6 +1,6 @@
-# Active synthetic generation browser server
+# Latest shared-read and browser checkpoint
 
-Read [GENERATION_BROWSER_IN_PROGRESS.md](GENERATION_BROWSER_IN_PROGRESS.md) first for the temporary server configuration and restoration instructions.
+Read [SHARED_READ_BROWSER_PROGRESS.md](SHARED_READ_BROWSER_PROGRESS.md) first. The database is now 337/18 and the server has returned to ordinary configuration. Concurrent reads and generation browser journeys pass; remaining release work is listed there.
 
 # Latest installed browser checkpoint
 

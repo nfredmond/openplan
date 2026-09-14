@@ -169,7 +169,7 @@ export function useTranslationGeneration({ userId, workspaceId, campaignId, canW
     </Button>
     {(open || pending.length > 0 || unreadable.length > 0 || message !== null) && <div className="space-y-3 rounded-lg border border-border p-3">
       {message && <p role="status">{message}</p>}
-      {!ready && <Button type="button" variant="outline" onClick={restore}>Retry generation recovery</Button>}
+      {!ready && <Button type="button" variant="outline" className="h-auto min-h-10 max-w-full whitespace-normal" onClick={restore}>Retry generation recovery</Button>}
       {pending.map(value => <section key={value.intent.requestId} aria-label="Retained generation request" className="space-y-2 rounded-lg border border-amber-400 p-3 break-words">
         <h3 className="font-semibold">{value.phase === "refused" ? "Refused generation request" : "Unconfirmed generation request"}</h3>
         <p>{TRANSLATION_LANGUAGE_LABELS[value.intent.locale]}. Keep this request&apos;s original source and identity when retrying.</p>
@@ -179,26 +179,26 @@ export function useTranslationGeneration({ userId, workspaceId, campaignId, canW
           {value.phase === "refused" && <Button type="button" variant="outline" disabled={busy} className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => archive(value)}>Archive refused request and refresh source</Button>}</div>
       </section>)}
       {unreadable.map(key => <div key={key} className="space-y-2 break-words"><p role="alert">A generation recovery copy could not be read or differs from this page&apos;s request. Preserve both copies and check saved requests before generating again.</p>
-        <Button type="button" variant="outline" onClick={() => { try { const raw = localStorage.getItem(key); if (raw !== null) download(raw, "unreadable-generation-request.json"); }
+        <Button type="button" variant="outline" className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => { try { const raw = localStorage.getItem(key); if (raw !== null) download(raw, "unreadable-generation-request.json"); }
           catch { setMessage("The stored generation copy could not be read. Keep this page open and retry recovery."); } }}>Download stored generation copy</Button>
-        <Button type="button" variant="outline" disabled={busy} onClick={() => void recover(key)}>Recover saved generation request</Button>
+        <Button type="button" variant="outline" disabled={busy} className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => void recover(key)}>Recover saved generation request</Button>
       </div>)}
       {archives.length > 0 && <details><summary>Earlier generation requests ({archives.length})</summary>
         {archives.map((copy,index) => <Button key={copy.key} type="button" variant="outline" className="m-1 h-auto min-h-10 max-w-full whitespace-normal" onClick={() => download(copy.raw, `earlier-generation-${index + 1}.json`)}>Download earlier generation request {index + 1}</Button>)}
       </details>}
-      <Button type="button" variant="outline" disabled={busy} onClick={() => void list()}>Refresh saved generation requests</Button>
+      <Button type="button" variant="outline" disabled={busy} className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => void list()}>Refresh saved generation requests</Button>
       {catalog && <><p>{catalog.requests.length ? "Saved requests at the last refresh:" : "No saved generation requests were returned."}</p>
         <ul className="space-y-2">{catalog.requests.map(request => <li key={request.id}>
           <Button type="button" variant="outline" disabled={busy} className="h-auto min-h-10 max-w-full whitespace-normal text-left" onClick={() => void view(request.id)}>
             {TRANSLATION_LANGUAGE_LABELS[request.locale]} · {new Date(request.createdAt).toLocaleString()} · {request.counts.completed} of {request.fieldCount} fields completed
           </Button>
         </li>)}</ul>
-        {catalog.next && <Button type="button" variant="outline" disabled={busy} onClick={() => void list(catalog.next)}>Load older generation requests</Button>}</>}
+        {catalog.next && <Button type="button" variant="outline" disabled={busy} className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => void list(catalog.next)}>Load older generation requests</Button>}</>}
       {viewed && <section aria-label="Retained machine output" className="space-y-3 border-t border-border pt-3">
         <h3 className="font-semibold">{TRANSLATION_LANGUAGE_LABELS[viewed.locale]} output for review</h3>
         <p>{viewed.actorId === userId ? "Requested by you." : "Requested by another staff member."} Publication records you separately as the publisher.</p>
         <p>Review the retained output and its original source. Add a publication reason above before publishing with a machine label.</p>
-        <Button type="button" variant="outline" disabled={busy} onClick={() => void view(viewed.requestId)}>Refresh request status</Button>
+        <Button type="button" variant="outline" disabled={busy} className="h-auto min-h-10 max-w-full whitespace-normal" onClick={() => void view(viewed.requestId)}>Refresh request status</Button>
         <details><summary>Request record</summary><p className="break-all">Request: {viewed.requestId}</p><p className="break-all">Requested by: {viewed.actorId}</p><p>{new Date(viewed.createdAt).toLocaleString()}</p></details>
         {viewed.fields.map(field => <div key={field.id} className="space-y-2 rounded-lg border border-border p-3 break-words">
           <h4 className="font-semibold">{field.address.field.replaceAll("_", " ")}: {stateNames[field.state]}</h4>
