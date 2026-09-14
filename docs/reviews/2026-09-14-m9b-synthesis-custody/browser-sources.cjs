@@ -7,8 +7,9 @@ const previous = JSON.parse(fs.readFileSync(directory + '/' + (width === 390 ? '
 const account = JSON.parse(fs.readFileSync('/home/nathaniel/.local/state/openplan/api-provider-research-2026-09-12/api-settings-account.json'));
 const prefix = `${directory}/synthesis-sources-${width}-${Date.now()}`;
 const observed = { width, completed: false, console: [], pageErrors: [] };
+const fits = bounds => bounds.left >= bounds.parentLeft - 1 && bounds.right <= bounds.parentRight + 1 && bounds.right <= bounds.viewport;
 const sha = value => crypto.createHash('sha256').update(value).digest('hex');
-async function click(page, locator) { await expect(locator).toBeEnabled(); await locator.focus(); await page.keyboard.press('Enter'); }
+async function click(page, locator) { await expect(locator).toBeVisible(); await expect(locator).toBeEnabled(); await locator.scrollIntoViewIfNeeded(); await locator.focus(); await page.keyboard.press('Enter'); }
 (async () => {
  const browser = await chromium.launch({ channel: 'chrome', headless: true });
  const context = await browser.newContext({ viewport: { width, height: 1000 } });
@@ -28,10 +29,18 @@ async function click(page, locator) { await expect(locator).toBeEnabled(); await
   await page.waitForURL('**/engagement');
   await click(page, page.locator(`a[href="/engagement/${previous.campaignId}"]`).first());
   await page.waitForURL(url => url.pathname === `/engagement/${previous.campaignId}`);
-  async function tab(name) { await click(page, page.getByTestId('page-tabs-nav').getByRole('link', { name, exact: true })); }
+  async function tab(name) { await click(page, page.getByTestId('page-tabs-nav').getByRole('link', { name, exact: true })); await page.waitForURL(url => url.searchParams.get('tab') === name.toLowerCase()); }
+  await tab('Setup');
+  const sourceCategoryLabel = `SYNTHETIC retained category ${width} ${Date.now()}`;
+  await page.locator('#engagement-category-label').fill(sourceCategoryLabel);
+  const categoryCreated = page.waitForResponse(response => response.url().endsWith(`/campaigns/${previous.campaignId}/categories`) && response.request().method() === 'POST');
+  await click(page, page.getByRole('button', { name: 'Add category', exact: true }));
+  assert.equal((await categoryCreated).status(), 201);
   await tab('Analysis');
   const panel = page.getByRole('region', { name: 'Retained synthesis sources' });
   await expect(panel).toBeVisible();
+  await panel.getByRole('heading', { name: 'Retained synthesis sources', exact: true }).evaluate(element => element.scrollIntoView({ block: 'start', behavior: 'instant' }));
+  await page.screenshot({ path: prefix + '-selection.png' });
   await expect(panel.getByRole('button', { name: 'Save selected sources', exact: true })).toBeEnabled();
   for (const label of ['Pending', 'Flagged', 'Rejected']) await panel.getByLabel(label, { exact: true }).check();
   const endpoint = base + `/api/engagement/campaigns/${previous.campaignId}/synthesis/sources`;
@@ -46,6 +55,35 @@ async function click(page, locator) { await expect(locator).toBeEnabled(); await
   await expect(panel.getByRole('button', { name: 'Retry retained source request' })).toBeEnabled();
   await expect(panel.getByRole('alert')).toBeVisible();
   assert(originalReceipt); observed.originalReceipt = originalReceipt;
+  await panel.getByRole("button", { name: "Retry retained source request" }).scrollIntoViewIfNeeded();
+  observed.retryStyle = await panel.getByRole("button", { name: "Retry retained source request" }).evaluate(element => {
+    const css = getComputedStyle(element), rect = element.getBoundingClientRect();
+    return { color: css.color, background: css.backgroundColor, opacity: css.opacity, display: css.display, visibility: css.visibility, width: rect.width, height: rect.height };
+  });
+  await panel.getByRole("button", { name: "Retry retained source request" }).screenshot({ path: prefix + "-retry-control.png" });
+  await page.screenshot({ path: prefix + "-pending.png" });
+  const preserve = panel.getByRole('button', { name: 'Preserve request and start another selection' });
+  await preserve.scrollIntoViewIfNeeded();
+  observed.recoveryControl = await preserve.evaluate(element => {
+    const rect = element.getBoundingClientRect(), parent = element.parentElement.getBoundingClientRect();
+    return { left: rect.left, right: rect.right, width: rect.width, parentLeft: parent.left, parentRight: parent.right, viewport: innerWidth };
+  });
+  await page.screenshot({ path: prefix + '-recovery-control.png' });
+  assert(fits(observed.recoveryControl), 'Recovery control is clipped by its container');
+  if (width === 390) {
+    observed.layoutGuard = await preserve.evaluate(element => {
+      const originalClass = element.className, originalStyle = element.getAttribute('style');
+      const bounds = () => { const rect = element.getBoundingClientRect(), parent = element.parentElement.getBoundingClientRect(); return { left: rect.left, right: rect.right, parentLeft: parent.left, parentRight: parent.right, viewport: innerWidth }; };
+      try {
+        element.classList.add('relative'); const harmless = bounds();
+        element.style.maxWidth = 'none'; element.style.whiteSpace = 'nowrap'; const targeted = bounds();
+        return { harmless, targeted };
+      } finally { element.className = originalClass; if (originalStyle === null) element.removeAttribute('style'); else element.setAttribute('style', originalStyle); }
+    });
+    assert(fits(observed.layoutGuard.harmless), 'Harmless control failed');
+    assert(!fits(observed.layoutGuard.targeted), 'Layout guard missed the unwrapped recovery label');
+  }
+  assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), "Pending request layout overflows viewport");
   await page.unroute(endpoint);
   await page.reload();
   const replayResponse = page.waitForResponse(response => response.url() === endpoint && response.request().method() === 'POST');
@@ -58,13 +96,14 @@ async function click(page, locator) { await expect(locator).toBeEnabled(); await
   async function read(requestId) { const response = await page.request.get(`${endpoint}?requestId=${requestId}`); assert.equal(response.status(), 200); const result = await response.json(); assert.equal(sha(result.snapshotText), result.snapshotSha256); return result; }
   const original = await read(originalReceipt.requestId);
   observed.counts = original.snapshot.counts; assert(original.snapshot.items.length + original.snapshot.answers.length > 0);
-  await panel.getByRole('article', { name: 'Saved source inspection' }).scrollIntoViewIfNeeded();
+  await panel.getByRole('article', { name: 'Saved source inspection' }).getByRole('heading', { level: 3 }).evaluate(element => element.scrollIntoView({ block: 'start', behavior: 'instant' }));
   await page.screenshot({ path: prefix + '-original.png' });
   observed.originalSha256 = original.snapshotSha256;
   // Correct a current category through its real editor; the previous source must retain its original definition.
   await tab('Setup');
-  const editor = page.locator('details').filter({ has: page.locator('summary').filter({ hasText: /^Edit / }) }).first();
-  await click(page, editor.locator('summary'));
+  const editSummary = page.getByText(`Edit ${sourceCategoryLabel}`, { exact: true });
+  await click(page, editSummary);
+  const editor = editSummary.locator('..');
   const label = editor.getByLabel('Category label', { exact: true });
   const beforeLabel = await label.inputValue(), afterLabel = `SYNTHETIC source history ${width} ${Date.now()}`;
   await label.fill(afterLabel);
@@ -84,7 +123,7 @@ async function click(page, locator) { await expect(locator).toBeEnabled(); await
   assert(!original.snapshotText.includes(afterLabel));
   observed.correction = { beforeLabel, afterLabel, originalPreserved: true, correctedSha256: corrected.snapshotSha256 };
   await expect(panel.getByRole('article', { name: 'Saved source inspection' })).toBeVisible();
-  await panel.getByRole('article', { name: 'Saved source inspection' }).scrollIntoViewIfNeeded();
+  await panel.getByRole('article', { name: 'Saved source inspection' }).getByRole('heading', { level: 3 }).evaluate(element => element.scrollIntoView({ block: 'start', behavior: 'instant' }));
   await page.screenshot({ path: prefix + '-corrected.png' });
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
   const anonymous = await browser.newContext();

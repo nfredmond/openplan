@@ -138,7 +138,7 @@ function SourcePanel({ userId, workspaceId, campaignId, categories }: SynthesisC
     {unreadable ? <p role="alert">The browser’s pending request is unreadable. Preserve it before starting another selection.</p> : null}
     {error ? <p role="alert">{error}</p> : null}{notice ? <p role="status">{notice}</p> : null}
     <div className="flex flex-wrap gap-3"><Button type="button" disabled={!ready || busy || unreadable} onClick={() => void save()}>{busy ? "Confirming save…" : pending ? "Retry retained source request" : "Save selected sources"}</Button>
-      {pending || unreadable ? <Button type="button" variant="outline" disabled={busy} onClick={() => {
+      {pending || unreadable ? <Button type="button" variant="outline" className="h-auto min-h-10 max-w-full whitespace-normal" disabled={busy} onClick={() => {
         try { archivePendingSynthesisSource(localStorage, { userId, workspaceId, campaignId }); setPending(null); setUnreadable(false); setError(null); setNotice("Recovery copy preserved in this browser. Any source already saved remains in history. Check history before creating another capture."); }
         catch (cause) { setError(message(cause)); }
       }}>Preserve request and start another selection</Button> : null}</div>
