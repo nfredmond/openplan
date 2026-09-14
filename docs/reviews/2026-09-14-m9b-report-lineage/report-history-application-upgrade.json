@@ -1,0 +1,25 @@
+{
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "database": "postgres",
+  "migrationSha256": "8bffa4278b2c51d05c6de3f5551e36d8da0c52abd8c9975d24be1735abf80d1e",
+  "before": {
+    "migrations": 342,
+    "latest": "20261014000023",
+    "snapshots": 42,
+    "snapshotInventorySha256": "ab54dd34475d626611e12dd8fb46811034d6124ad3f7383254996a8f490ac433"
+  },
+  "after": {
+    "migrations": 343,
+    "latest": "20261014000024",
+    "snapshots": 42,
+    "snapshotInventorySha256": "ab54dd34475d626611e12dd8fb46811034d6124ad3f7383254996a8f490ac433",
+    "legacyFormat1": 6,
+    "unknownFormat": 36
+  },
+  "initialFailure": "Unsafe JSON cast rejected an existing non-JSON test snapshot. Migration rolled back with unchanged snapshot inventory.",
+  "correction": "CASE protects the JSON cast; exact known numeric schema values map to formats 1 and 2; unknown or unreadable values remain NULL.",
+  "logSha256": "d6cefeb1af88401cd6a5e0a6c595822b2116d3eb2c625ca193505864c035eed0",
+  "limits": [
+    "Additive local populated-stack upgrade; no full release upgrade matrix or final CI claim."
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "synthetic": true,
+  "snapshotSha256": "332def0c9e73811d5ae7befddee5711ea7bdc6631d1648f98656ecec86690ee2",
+  "rendererSha256": "400cc52c24313cc25bb0d145e1655972da9768ffe00824a651c4e373bc591b3d",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "pages": 6,
+      "headingPages": [
+        0,
+        0,
+        1,
+        1,
+        1,
+        0
+      ],
+      "contentPages": [
+        0,
+        0,
+        1,
+        1,
+        1,
+        0
+      ],
+      "sha256": "b45a8c406993e9ea9a35ab6572dd60fed66cb2dc290035ee33e1eb609b5e87c2"
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived",
+      "pages": 6,
+      "headingPages": [
+        0,
+        0,
+        1,
+        1,
+        1,
+        0
+      ],
+      "contentPages": [
+        0,
+        0,
+        1,
+        1,
+        1,
+        0
+      ],
+      "sha256": "f43ecfc87958fe75b5710dbf1160c695e8bd0f087077027a59e1413a601a6b77"
+    },
+    {
+      "case": "heading-keep-removed",
+      "outcome": "killed",
+      "pages": 6,
+      "headingPages": [
+        0,
+        1,
+        0,
+        1,
+        1,
+        0
+      ],
+      "contentPages": [
+        0,
+        0,
+        1,
+        1,
+        1,
+        0
+      ],
+      "sha256": "e0a73275687a5d175852e7f457ffc33a486ec377c168b77b33e89722c18fdab5"
+    }
+  ],
+  "limits": [
+    "Real Chrome PDF and extracted page boundaries for this native fixture; visual inspection is separately recorded.",
+    "Does not prove every possible narrative length or the browser download workflow."
+  ]
+}

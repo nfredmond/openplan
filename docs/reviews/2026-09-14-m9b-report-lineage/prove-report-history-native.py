@@ -17,10 +17,17 @@ SET LOCAL ROLE authenticated;
 INSERT INTO report_probe SELECT 'old',queue_engagement_report('10c5cdd7-16c6-4b91-b9c0-d2f67598a54f','a0000000-0000-4000-8000-000000000001','internal','{}');
 RESET ROLE;
 INSERT INTO report_probe SELECT 'original-bytes',to_jsonb(j) FROM engagement_report_jobs j WHERE request_id='a0000000-0000-4000-8000-000000000001';
+INSERT INTO engagement_report_jobs(workspace_id,campaign_id,report_id,requested_by,request_id,scope,filters_json,snapshot_text,snapshot_sha256,status)
+ SELECT j.workspace_id,j.campaign_id,j.report_id,j.requested_by,gen_random_uuid(),'internal','{"nativeUnknown":true}',raw,encode(extensions.digest(raw,'sha256'),'hex'),'failed'
+ FROM engagement_report_jobs j CROSS JOIN (VALUES ('SYNTHETIC unreadable snapshot'),('{}'),('[]'),('{"schema":"1"}'),('{"schema":1.5}'),('{"schema":99999999999}'),('{"schema":null}')) unknown(raw)
+ WHERE request_id='a0000000-0000-4000-8000-000000000001';
+INSERT INTO report_probe SELECT 'unknown-bytes',to_jsonb(j) FROM engagement_report_jobs j WHERE filters_json='{"nativeUnknown":true}';
+
 RESET ROLE;
 '''
 after='''
 RESET ROLE;
+SELECT pg_temp.assert_true((SELECT count(*)=7 AND bool_and(j.snapshot_format IS NULL AND j.snapshot_text=p.value->>'snapshot_text' AND j.snapshot_sha256=p.value->>'snapshot_sha256') FROM report_probe p JOIN engagement_report_jobs j ON j.id=(p.value->>'id')::uuid WHERE p.key='unknown-bytes'),'Unreadable legacy snapshots changed or invented a format');
 SELECT pg_temp.assert_true((SELECT snapshot_format=1 AND snapshot_text=(SELECT value->>'snapshot_text' FROM report_probe WHERE key='original-bytes') AND snapshot_sha256=(SELECT value->>'snapshot_sha256' FROM report_probe WHERE key='original-bytes') FROM engagement_report_jobs WHERE request_id='a0000000-0000-4000-8000-000000000001'),'Upgrade changed original snapshot');
 SET LOCAL ROLE authenticated;
 SELECT pg_temp.assert_true(queue_engagement_report('10c5cdd7-16c6-4b91-b9c0-d2f67598a54f','a0000000-0000-4000-8000-000000000001','internal','{}')=(SELECT value FROM report_probe WHERE key='old'),'Old request was recaptured');
@@ -47,7 +54,7 @@ SELECT pg_temp.assert_true((SELECT count(*)=0 FROM engagement_report_jobs WHERE 
 RESET ROLE;
 SELECT 'report-history-native-verified';
 '''
-cases=[('baseline',None,None,None),('harmless-comment','-- Preserve every original','-- Keep every original',None),('history-missing',"d.campaign_id=p_campaign AND d.workspace_id=c.workspace_id","false",'Filtered export lost complete private history'),('payload-text-missing',"jsonb_build_object('payload_text',d.payload_json::text)","'{}'::jsonb",'Exact payload or context bytes differ'),('format-read-grant-missing','GRANT SELECT(snapshot_format) ON public.engagement_report_jobs TO authenticated;','','permission denied for table engagement_report_jobs'),('format-not-derived',"((snapshot_text::jsonb->>'schema')::integer)",'(1)','New format or snapshot checksum differs'),('public-history-leaked',"CASE WHEN p_scope='internal' THEN jsonb_build_object(","CASE WHEN true THEN jsonb_build_object(",'Public snapshot exposed private history')]
+cases=[('baseline',None,None,None),('harmless-comment','-- Preserve every original','-- Keep every original',None),('history-missing',"d.campaign_id=p_campaign AND d.workspace_id=c.workspace_id","false",'Filtered export lost complete private history'),('payload-text-missing',"jsonb_build_object('payload_text',d.payload_json::text)","'{}'::jsonb",'Exact payload or context bytes differ'),('format-read-grant-missing','GRANT SELECT(snapshot_format) ON public.engagement_report_jobs TO authenticated;','','permission denied for table engagement_report_jobs'),('format-not-derived',"(CASE WHEN snapshot_text IS JSON OBJECT THEN\n    CASE snapshot_text::jsonb->'schema' WHEN '1'::jsonb THEN 1 WHEN '2'::jsonb THEN 2 END\n  END)",'(1)','Unreadable legacy snapshots changed or invented a format'),('unsafe-legacy-parse', 'CASE WHEN snapshot_text IS JSON OBJECT THEN', 'CASE WHEN true THEN', 'invalid input syntax for type json'),('public-history-leaked',"CASE WHEN p_scope='internal' THEN jsonb_build_object(","CASE WHEN true THEN jsonb_build_object(",'Public snapshot exposed private history')]
 results=[]
 for label,old,new,expected in cases:
  changed=migration

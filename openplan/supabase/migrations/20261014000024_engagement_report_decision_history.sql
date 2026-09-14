@@ -1,9 +1,11 @@
--- Preserve every original snapshot and retry. The format is derived from immutable saved bytes.
+-- Preserve every original snapshot and retry. Unreadable or unknown legacy formats remain NULL.
 ALTER TABLE public.engagement_report_jobs
-  ADD COLUMN snapshot_format integer GENERATED ALWAYS AS ((snapshot_text::jsonb->>'schema')::integer) STORED;
+  ADD COLUMN snapshot_format integer GENERATED ALWAYS AS (CASE WHEN snapshot_text IS JSON OBJECT THEN
+    CASE snapshot_text::jsonb->'schema' WHEN '1'::jsonb THEN 1 WHEN '2'::jsonb THEN 2 END
+  END) STORED;
 GRANT SELECT(snapshot_format) ON public.engagement_report_jobs TO authenticated;
 COMMENT ON COLUMN public.engagement_report_jobs.snapshot_format IS
-  'Saved snapshot format: 1 has no retained decision history; 2 is a private campaign-wide history archive.';
+  'Saved snapshot format: 1 has no retained decision history; 2 is a private campaign-wide history archive; NULL is unknown or unreadable.';
 
 CREATE OR REPLACE FUNCTION public.queue_engagement_report(p_campaign uuid,p_request uuid,p_scope text,p_filters jsonb DEFAULT '{}'::jsonb)
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=public,extensions,pg_temp AS $$
@@ -59,8 +61,5 @@ BEGIN
  VALUES(c.workspace_id,c.id,r,auth.uid(),p_request,p_scope,p_filters,snap,encode(digest(snap,'sha256'),'hex')) RETURNING * INTO j;
  RETURN jsonb_build_object('jobId',j.id,'reportId',j.report_id,'snapshotSha256',j.snapshot_sha256);
 END $$;
-REVOKE ALL ON FUNCTION public.queue_engagement_report(uuid,uuid,text,jsonb) FROM PUBLIC,anon;
-GRANT EXECUTE ON FUNCTION public.queue_engagement_report(uuid,uuid,text,jsonb) TO authenticated;
-
 REVOKE ALL ON FUNCTION public.queue_engagement_report(uuid,uuid,text,jsonb) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.queue_engagement_report(uuid,uuid,text,jsonb) TO authenticated;

@@ -1,0 +1,247 @@
+{
+  "results": [
+    {
+      "case": "baseline",
+      "exit": 0,
+      "passed": 54,
+      "failed": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "exit": 0,
+      "passed": 54,
+      "failed": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "public-history-field-guard-removed",
+      "exit": 1,
+      "passed": 50,
+      "failed": [
+        "private decision history in engagement exports rejects private workspaceId even when empty in a public schema-1 snapshot",
+        "private decision history in engagement exports rejects private decisionLinkHistoryScope even when empty in a public schema-1 snapshot",
+        "private decision history in engagement exports rejects private decisionLinkCount even when empty in a public schema-1 snapshot",
+        "private decision history in engagement exports rejects private decisionLinks even when empty in a public schema-1 snapshot"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "public-schema-two-allowed",
+      "exit": 1,
+      "passed": 53,
+      "failed": [
+        "private decision history in engagement exports rejects schema-2 public output and unknown history scope"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "job-campaign-scope-ignored",
+      "exit": 1,
+      "passed": 52,
+      "failed": [
+        "private decision history in engagement exports matches campaign, workspace and disclosure scope to the authenticated job",
+        "retained review download checks history before delivering bytes refuses a private snapshot substituted for a public job"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "job-workspace-scope-ignored",
+      "exit": 1,
+      "passed": 51,
+      "failed": [
+        "private decision history in engagement exports matches campaign, workspace and disclosure scope to the authenticated job",
+        "retained review download checks history before delivering bytes refuses a snapshot from another authenticated job workspace",
+        "private decision-history worker recovery validates history and job scope before trusting an existing cache"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "history-count-ignored",
+      "exit": 1,
+      "passed": 53,
+      "failed": [
+        "private decision history in engagement exports refuses incomplete inventories and orphan withdrawals"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "history-chains-skipped",
+      "exit": 1,
+      "passed": 48,
+      "failed": [
+        "retained engagement decision links reads native context and originals after withdrawal",
+        "retained engagement decision links refuses incomplete counts, duplicate rows and missing predecessors",
+        "retained engagement decision links refuses forks and duplicate roots",
+        "retained engagement decision links refuses a cycle whose referenced rows all exist",
+        "private decision history in engagement exports refuses incomplete inventories and orphan withdrawals",
+        "retained review download checks history before delivering bytes refuses orphan history even when the saved snapshot hash matches"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "exact-payload-check-skipped",
+      "exit": 1,
+      "passed": 52,
+      "failed": [
+        "retained engagement decision links refuses changed request bytes and contradictory row fields",
+        "private decision history in engagement exports refuses altered exact bytes even when the outer snapshot hash is recomputed"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "history-html-missing",
+      "exit": 1,
+      "passed": 52,
+      "failed": [
+        "private decision history in engagement exports keeps legacy internal and public snapshots readable without inventing zero history",
+        "private decision history in engagement exports discloses campaign-wide private history and renders the original source positions"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "source-number-shifted",
+      "exit": 1,
+      "passed": 53,
+      "failed": [
+        "private decision history in engagement exports discloses campaign-wide private history and renders the original source positions"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "workbook-original-context-lost",
+      "exit": 1,
+      "passed": 53,
+      "failed": [
+        "private decision history in engagement exports retains all operations and exact context text through workbook continuation rows"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "workbook-total-lost",
+      "exit": 1,
+      "passed": 53,
+      "failed": [
+        "private decision history in engagement exports retains all operations and exact context text through workbook continuation rows"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "repeated-source-key-collides",
+      "exit": 1,
+      "passed": 53,
+      "failed": [
+        "private decision history in engagement exports reconstructs repeated source occurrences without combining their continuation rows"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "portable-snapshot-reencoded",
+      "exit": 1,
+      "passed": 51,
+      "failed": [
+        "private decision history in engagement exports retains exact snapshot bytes and an operation CSV in the internal ZIP only",
+        "private decision-history worker recovery reuses a verified cache on an interrupted retry without rendering again",
+        "private decision-history worker recovery rebuilds a damaged cache from the original retained snapshot"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "portable-history-csv-missing",
+      "exit": 1,
+      "passed": 53,
+      "failed": [
+        "private decision history in engagement exports retains exact snapshot bytes and an operation CSV in the internal ZIP only"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "worker-job-scope-ignored",
+      "exit": 1,
+      "passed": 53,
+      "failed": [
+        "private decision-history worker recovery validates history and job scope before trusting an existing cache"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "worker-cache-corruption-ignored",
+      "exit": 1,
+      "passed": 53,
+      "failed": [
+        "private decision-history worker recovery rebuilds a damaged cache from the original retained snapshot"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "preparation-disclosure-missing",
+      "exit": 1,
+      "passed": 53,
+      "failed": [
+        "decision-history scope at report preparation and retrieval shows the broader private history scope before queueing and removes it for public selection"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "legacy-format-mislabelled",
+      "exit": 1,
+      "passed": 52,
+      "failed": [
+        "decision-history scope at report preparation and retrieval distinguishes old, new and unknown saved formats instead of showing absent history as zero",
+        "decision-history scope at report preparation and retrieval retains the old-format notice when opening that exact saved report"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unknown-format-mislabelled",
+      "exit": 1,
+      "passed": 53,
+      "failed": [
+        "decision-history scope at report preparation and retrieval distinguishes old, new and unknown saved formats instead of showing absent history as zero"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "retained-report-filter-removed",
+      "exit": 1,
+      "passed": 53,
+      "failed": [
+        "decision-history scope at report preparation and retrieval retains the old-format notice when opening that exact saved report"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "format-projection-missing",
+      "exit": 1,
+      "passed": 53,
+      "failed": [
+        "saved engagement review format listing projects the derived format without fetching raw private snapshot text"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "internal-download-validation-skipped",
+      "exit": 1,
+      "passed": 52,
+      "failed": [
+        "retained review download checks history before delivering bytes refuses orphan history even when the saved snapshot hash matches",
+        "retained review download checks history before delivering bytes refuses a snapshot from another authenticated job workspace"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "sources": {
+    "openplan/src/lib/engagement/review-export.ts": "400cc52c24313cc25bb0d145e1655972da9768ffe00824a651c4e373bc591b3d",
+    "openplan/src/lib/engagement/decision-links.ts": "805528a862bbd61354ae699c50462197f7285e67159d32054327ba2de4eba672",
+    "openplan/src/lib/engagement/review-export-download.ts": "7a2d46f67dfbf84300861e18d60c2621f8e9c7f54acc9a8bd85ac316125c1ff6",
+    "openplan/src/lib/engagement/review-export-worker.ts": "2d36a4750a61e3dcb69575f857735ef3e7cf447ee16b055c4e530fd414ca432f",
+    "openplan/src/components/engagement/engagement-review-files.tsx": "41e80635d360dbc9a4070291fed8bc84baa29907f9a18560a73d08379240b2d6",
+    "openplan/src/app/api/engagement/campaigns/[campaignId]/reports/route.ts": "aa0bcf266d51a91de8571effa172764cd9417f16aaa563aa2f9ef2aa01a74a5e"
+  },
+  "limits": [
+    "Native synthetic decision rows exercise real hash/chain validators, not the report queue SQL.",
+    "PDF rendering is replaced; real PDF layout needs Chrome and artifact inspection.",
+    "Download storage and membership queries are controlled doubles, not live RLS.",
+    "Worker disk-cache checks use actual files and the real parser; storage delivery and queue leases remain mocked."
+  ]
+}

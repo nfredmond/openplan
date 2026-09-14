@@ -29,6 +29,7 @@ cases = [
  ('source-number-shifted',export,'Source ${source.position}:','Source ${source.position + 1}:','original source positions'),
  ('workbook-original-context-lost',export,"cell('decision action',row.id,'context_text',row.context_text)","cell('decision action',row.id,'context_text','')",'workbook continuation rows'),
  ('workbook-total-lost',export,'if(snapshot.schema===2)totals.push','if(false)totals.push','workbook continuation rows'),
+ ('repeated-source-key-collides',export,'`${row.id}/${source.position}/${source.itemId}`','`${row.id}/${source.itemId}`','reconstructs repeated source occurrences'),
  ('portable-snapshot-reencoded',export,"addText('snapshot.json',snapshotText)","addText('snapshot.json',JSON.stringify(snapshot))",'retains exact snapshot bytes'),
  ('portable-history-csv-missing',export,"if(snapshot.schema===2)addText('decision-history.csv'","if(false)addText('decision-history.csv'",'retains exact snapshot bytes'),
  ('worker-job-scope-ignored',worker,',job.snapshot_sha256,{campaignId:job.campaign_id,workspaceId:job.workspace_id,scope:job.scope}',',job.snapshot_sha256','validates history and job scope'),
@@ -54,7 +55,7 @@ try:
   with (out/(label+'.log')).open('w') as log:
    result=subprocess.run(['npm','exec','--','vitest','run','src/test/engagement-decision-links.test.ts','src/test/engagement-review-export.test.ts','src/test/engagement-review-decision-history.test.ts','src/test/engagement-review-history-download.test.ts','src/test/engagement-review-history-worker.test.ts','src/test/engagement-review-history-ui.test.tsx','src/test/engagement-review-history-list-route.test.ts','--reporter=json','--outputFile='+str(report)],cwd=app,stdout=log,stderr=subprocess.STDOUT)
   data=json.loads(report.read_text());failed=[a['fullName'] for t in data['testResults'] for a in t['assertionResults'] if a['status']=='failed']
-  correct=(result.returncode==0 and data['numPassedTests']==53 and not failed) if expected is None else (result.returncode!=0 and any(expected in name for name in failed))
+  correct=(result.returncode==0 and data['numPassedTests']==54 and not failed) if expected is None else (result.returncode!=0 and any(expected in name for name in failed))
   results.append({'case':label,'exit':result.returncode,'passed':data['numPassedTests'],'failed':failed,'expectedOutcome':correct})
   print(label,correct,flush=True)
   assert correct,label

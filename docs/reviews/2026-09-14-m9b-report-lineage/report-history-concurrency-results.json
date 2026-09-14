@@ -1,0 +1,52 @@
+{
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "database": "openplan_report_history_concurrency_20260914",
+  "migrationSha256": "8bffa4278b2c51d05c6de3f5551e36d8da0c52abd8c9975d24be1735abf80d1e",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "campaign": "23aac2d0-03db-4e2a-89a7-f00adca7c1ca",
+      "busySqlstate": "PT503",
+      "observedQueueLockWait": true,
+      "oldHistoryCount": 0,
+      "newHistoryCount": 1,
+      "exactOldRetry": true,
+      "queuedReceipt": {
+        "jobId": "f355ffd8-71bf-4390-a2e3-13b8040d18ae",
+        "reportId": "a13660d8-3d97-433a-8e4a-98bf09373f5f",
+        "snapshotSha256": "57129d798c6a458f3b53e7db8a2158c6ce023ffeab3b268401b8f3973a2ca16c"
+      }
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived",
+      "campaign": "d080b812-ea75-4866-ba31-e5731422545c",
+      "busySqlstate": "PT503",
+      "observedQueueLockWait": true,
+      "oldHistoryCount": 0,
+      "newHistoryCount": 1,
+      "exactOldRetry": true,
+      "queuedReceipt": {
+        "jobId": "2cd554f0-a0f2-4e30-9c9c-03e7263cb083",
+        "reportId": "780b0fd0-0832-475b-8c9b-9922b8a8e410",
+        "snapshotSha256": "703509f8b56c5869b9d9e4998c96efbadc406cfb09d0fcb3942f6b21a354ab35"
+      }
+    },
+    {
+      "case": "queue-lock-removed",
+      "outcome": "killed",
+      "expectedFailure": "Link did not refuse the active report transaction"
+    },
+    {
+      "case": "link-lock-removed",
+      "outcome": "killed",
+      "expectedFailure": "Link did not refuse the active report transaction"
+    }
+  ],
+  "limits": [
+    "Synthetic committed fixtures remain only in a disconnected proof database.",
+    "Real queue/link transactions and database lock waits; no HTTP interruption, worker delivery or browser claim.",
+    "Original/refresh/withdrawal completeness is covered separately by rollback native proof."
+  ]
+}

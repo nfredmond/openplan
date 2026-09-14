@@ -1,0 +1,53 @@
+{
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "database": "openplan_decision_link_proof_20260914",
+  "rollbackOnly": true,
+  "migrationSha256": "8bffa4278b2c51d05c6de3f5551e36d8da0c52abd8c9975d24be1735abf80d1e",
+  "results": [
+    {
+      "case": "baseline",
+      "exit": 0,
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "exit": 0,
+      "expectedOutcome": true
+    },
+    {
+      "case": "history-missing",
+      "exit": 3,
+      "expectedOutcome": true
+    },
+    {
+      "case": "payload-text-missing",
+      "exit": 3,
+      "expectedOutcome": true
+    },
+    {
+      "case": "format-read-grant-missing",
+      "exit": 3,
+      "expectedOutcome": true
+    },
+    {
+      "case": "format-not-derived",
+      "exit": 3,
+      "expectedOutcome": true
+    },
+    {
+      "case": "unsafe-legacy-parse",
+      "exit": 3,
+      "expectedOutcome": true
+    },
+    {
+      "case": "public-history-leaked",
+      "exit": 3,
+      "expectedOutcome": true
+    }
+  ],
+  "limits": [
+    "Synthetic native lifecycle after source deletion; does not prove UI reachability or generated file layout.",
+    "No concurrent queue/link transaction overlap is exercised here.",
+    "No application stack migration was committed."
+  ]
+}

@@ -72,3 +72,18 @@ Before activation: add worker cache/recovery and UI disclosure tests, finish fau
 ## Usage-reset checkpoint update
 
 Migration 20261014000024 now exists in source and passed rollback-only native proof; it remains unapplied on the application stack. The generated-format column requires a narrow SELECT grant because raw snapshots are column-restricted. Focused tests, final lint/TypeScript and mutation controls completed. Real renderer files exist but visual inspection, concurrency, application activation and full browser/release gates remain. See RESUME.md and copied proof results for the authoritative continuation.
+
+
+## September 14 artifact, concurrency and upgrade corrections
+
+The first actual PDF inspection caught an orphan h4 heading; h4 now shares heading pagination protection. Real Chrome renders retain the heading with its content, while removing that protection reproduces the split. The harmless HTML comment survives. All six corrected pages were inspected.
+
+Workbook inspection exposed repeated source occurrences using the same action/source continuation ID. The ID now includes the original source position, so occurrences 1 and 3 retain independent continuation sequences. A native-fixture test reconstructs all six repeated long source occurrences across original, refresh and withdrawal actions. The targeted old-key mutation fails. The full proof has 54 baseline tests and 22 targeted faults. Lint and TypeScript passed after both renderer fixes.
+
+Real native queue/link concurrency proves both ordering cases, observes the queue's actual database lock wait, includes the committed link after release, and preserves the earlier report on exact retry. Removing either explicit lock is detected. The first lock-removal probe hit its subprocess timeout because a foreign-key lock still waited; the runner now bounds that deliberate failure with a database statement timeout and verifies the lost retryable response. The complete proof was rerun. No application connections or other agents were interrupted.
+
+The first populated local upgrade failed on an existing non-JSON RLS test snapshot. That exposed a genuine migration weakness absent from the original synthetic proof. The failure rolled back without changing 42 saved snapshots. A guarded CASE expression now retains unknown or unreadable formats as NULL. The expanded rollback proof preserves seven malformed/unknown inputs and detects an unsafe cast. The corrected migration is installed locally, with 343 migrations and the same snapshot inventory checksum. Six existing snapshots have format 1; 36 non-JSON fixture snapshots have unknown format. No raw snapshot SELECT grant was added.
+
+Verification setup errors are preserved in private logs: a renderer patch first used an app-relative path from the app directory with an extra openplan prefix and changed nothing. One pagination command ran from repository root and npm fetched temporary tsx; it was rerun with the app's existing dependency. No repository dependency changed. The corrected runs are the cited evidence.
+
+Current remaining work: install regular live CI coverage, restart our compatible document worker, collect identified-build desktop/390px browser history/download/privacy/retry acceptance, run the full QA/shuffled/RLS/worker/upgrade checks and publish only after final main CI. No v0.61 release or M9b completion is claimed.

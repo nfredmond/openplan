@@ -1,0 +1,39 @@
+{
+  "synthetic": true,
+  "snapshotSha256": "332def0c9e73811d5ae7befddee5711ea7bdc6631d1648f98656ecec86690ee2",
+  "operations": [
+    "link",
+    "refresh",
+    "withdraw"
+  ],
+  "files": [
+    {
+      "format": "pdf",
+      "bytes": 90938,
+      "sha256": "ee2b825fc89d63a553149c40a6534d14c9e8d8f7cc20d01afebb4d3d2dcce5fb"
+    },
+    {
+      "format": "xlsx",
+      "bytes": 24627,
+      "sha256": "2910a2a43373feab2c07348aec809caeda38edcb33d4f96f57ce1d9ceea50751"
+    },
+    {
+      "format": "zip",
+      "bytes": 88811,
+      "sha256": "675dda3d5af3681053cd77da126a0b5f698c77cfaa28bb49a1e517842ed41a1e"
+    }
+  ],
+  "sourceCommit": "8a9058c3 plus pagination and repeated-source-position fixes",
+  "pdfInspection": "All six pages of the corrected HTML rendering inspected; retained headings stay with their content. Original, refresh and withdrawal remain readable.",
+  "workbookInspection": "LibreOffice 26.2 exported all 13 sheets. Inspected history across all columns, scope, exact-context and source sheets, read-me, definitions, summary and first long-text rows. Empty register headers were text-inspected. Long-text exact reconstruction is separately tested for each repeated source occurrence.",
+  "spreadsheetCalculation": {
+    "engine": "LibreOffice Calc",
+    "historyActions": 3,
+    "scannedFormulaErrors": []
+  },
+  "zipInspection": "Original snapshot.json bytes and every manifest file hash matched; decision CSV contains link, refresh and withdrawal.",
+  "limits": [
+    "Synthetic native SQL fixture; no new real-navigation download or staff-usefulness claim.",
+    "Did not visually inspect every long-text row or every possible narrative length."
+  ]
+}

@@ -82,6 +82,31 @@ describe("private decision history in engagement exports", () => {
       expect(context.map(row => row.Part)).toEqual(context.map((_, index) => index + 1));
     }
   });
+  it("reconstructs repeated source occurrences without combining their continuation rows", async () => {
+    const snapshot = await parseReviewSnapshot(nativeQueue.snapshotText, nativeQueue.snapshotSha256, nativeQueue);
+    const book = XLSX.read(await buildCampaignReviewWorkbook(snapshot, nativeQueue.snapshotSha256), { type: "buffer" });
+    const sources = XLSX.utils.sheet_to_json<Record<string, unknown>>(book.Sheets["Decision sources"]);
+    const parts = XLSX.utils.sheet_to_json<Record<string, unknown>>(book.Sheets["Long text"]);
+    let repeatedLongSources = 0;
+    for (const entry of snapshot.decisionLinks ?? []) {
+      for (const source of entry.context.sources) {
+        const row = sources.find(value => value["Action ID"] === entry.id && value.Position === source.position);
+        expect(row).toBeDefined();
+        const recordId = `${entry.id}/${source.position}/${source.itemId}`;
+        const continuation = parts.filter(value => value["Record type"] === "decision source" && value["Record ID"] === recordId && value.Field === "source");
+        const raw = source.record ? JSON.stringify(source.record) : "";
+        if (String(row!["Original source JSON"]).includes("[Full value:")) {
+          expect(row!["Original source JSON"]).toContain(`/ ${recordId} / source]`);
+          expect(continuation.map(value => value.Part)).toEqual(continuation.map((_, index) => index + 1));
+          expect(continuation.map(value => value.Text).join("")).toBe(raw);
+          if (source.position === 1 || source.position === 3) repeatedLongSources++;
+        } else {
+          expect(row!["Original source JSON"] ?? "").toBe(raw);
+        }
+      }
+    }
+    expect(repeatedLongSources).toBe(6);
+  });
   it("retains exact snapshot bytes and an operation CSV in the internal ZIP only", async () => {
     const raw = JSON.stringify(archive());
     const files = await renderCampaignReviewFiles(raw, hash(raw));
