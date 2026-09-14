@@ -407,3 +407,18 @@ complete. Exact-version atomic translation writes, reasons and source-word
 custody, durable generation/request receipts and attempt-based spend accounting
 remain open. An identical lost-acknowledgement save retry is not a general
 concurrent-write or paid-generation recovery guarantee. M9b remains unfinished.
+
+
+## Unreleased staff generation recovery
+
+The translation development branch now has retained generation/browser evidence
+and portable concurrent-read isolation checks. It remains unreleased. An
+unreadable local generation request whose server record cannot be retrieved
+has preservation and download controls, but no complete self-service resolution
+path yet. New generation stays blocked. Do not clear it merely because a read
+failed: an earlier request may still commit.
+
+[Current engineering evidence and next repair](../reviews/2026-09-13-m9b-translation-writes/PORTABLE_ISOLATION_PROGRESS.md)
+record this limit. Public comment generation durability, remaining recovery
+cases and final release verification also remain open. The historical release
+limits above are unchanged.

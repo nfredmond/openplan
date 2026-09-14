@@ -1,0 +1,137 @@
+{
+  "sourceSha256": "0d9c268becfcdee8c9faf4017e786a49e5e1d6574ae4fba3064e97c55113d188",
+  "testSha256": "8ed75e92135a4570440c50ce0e5ec50133b316a0c1a1a4a7b9bb9c3ab55bae6e",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/portable-read-controls-1789355816853361315",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailures": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless",
+      "outcome": "survived",
+      "expectedFailures": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "exclusive-reader",
+      "outcome": "killed",
+      "expectedFailures": [
+        "detail readers coexist",
+        "catalog readers coexist"
+      ],
+      "failedTests": [
+        "retained translation read concurrency detail readers coexist with both retained reads",
+        "retained translation read concurrency catalog readers coexist with both retained reads"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "exclusive-campaign-reader",
+      "outcome": "killed",
+      "expectedFailures": [
+        "detail readers coexist"
+      ],
+      "failedTests": [
+        "retained translation read concurrency detail readers coexist with both retained reads"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-source-lock",
+      "outcome": "killed",
+      "expectedFailures": [
+        "source changes exclude"
+      ],
+      "failedTests": [
+        "retained translation read concurrency source changes exclude both readers while locks are held"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-campaign-lock",
+      "outcome": "killed",
+      "expectedFailures": [
+        "campaign changes exclude"
+      ],
+      "failedTests": [
+        "retained translation read concurrency campaign changes exclude both readers while locks are held"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-membership-lock",
+      "outcome": "killed",
+      "expectedFailures": [
+        "membership changes exclude"
+      ],
+      "failedTests": [
+        "retained translation read concurrency membership changes exclude both readers while locks are held"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-viewer",
+      "outcome": "killed",
+      "expectedFailures": [
+        "viewer cannot read",
+        "revoked staff access refuses"
+      ],
+      "failedTests": [
+        "retained translation read concurrency viewer cannot read either retained record",
+        "retained translation read concurrency revoked staff access refuses both readers without returning saved requests"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-outsider",
+      "outcome": "killed",
+      "expectedFailures": [
+        "outsider cannot read"
+      ],
+      "failedTests": [
+        "retained translation read concurrency outsider cannot read either retained record"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-anonymous",
+      "outcome": "killed",
+      "expectedFailures": [
+        "anonymous cannot read"
+      ],
+      "failedTests": [
+        "retained translation read concurrency anonymous cannot read either retained record"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-helper",
+      "outcome": "killed",
+      "expectedFailures": [
+        "callers cannot invoke"
+      ],
+      "failedTests": [
+        "retained translation read concurrency callers cannot invoke the private read helper with another actor"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unlocked-write-replay",
+      "outcome": "killed",
+      "expectedFailures": [
+        "a retained reader excludes generation writes"
+      ],
+      "failedTests": [
+        "retained translation read concurrency a retained reader excludes generation writes until its transaction ends"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "functionsAndGrantsRestored": true,
+  "limits": "Portable Vitest live tests against actual independent PostgreSQL sessions on the named disposable stack. SQL faults restored between runs. Synthetic requests are cancelled before commit and retained; no model calls, real staff data or browser operations. Does not measure high-volume performance or complete release readiness."
+}

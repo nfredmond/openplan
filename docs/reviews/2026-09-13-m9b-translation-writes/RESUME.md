@@ -1,3 +1,7 @@
+# Latest portable isolation checkpoint
+
+Read [PORTABLE_ISOLATION_PROGRESS.md](PORTABLE_ISOLATION_PROGRESS.md) first. The regular isolated suite passes on migration 18; safe resolution of unreadable generation requests is the next software gap.
+
 # Latest shared-read and browser checkpoint
 
 Read [SHARED_READ_BROWSER_PROGRESS.md](SHARED_READ_BROWSER_PROGRESS.md) first. The database is now 337/18 and the server has returned to ordinary configuration. Concurrent reads and generation browser journeys pass; remaining release work is listed there.

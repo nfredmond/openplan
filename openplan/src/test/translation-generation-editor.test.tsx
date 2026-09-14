@@ -164,4 +164,60 @@ describe("generation editor custody", () => {
     expect(screen.getByRole("button", { name: "Publish this retained output with a machine label" })).toBeDisabled();
     expect(screen.getByText(/SYNTHETIC retained output/).textContent).toBe(f.viewed.fields[0].output!.text);
   });
+  it("refuses dispatch when retained request readback differs", async () => {
+    const f = fixture(), key = pendingGenerationKey(f.pending);
+    const fetch = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(reply({ requestId: f.pending.intent.requestId, created: true }, 202)).mockResolvedValueOnce(reply(f.viewed));
+    const nativeGet = Storage.prototype.getItem;
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(function (this: Storage, name: string) {
+      const raw = nativeGet.call(this, name);
+      return name === key && raw !== null ? "SYNTHETIC mismatched readback" : raw;
+    });
+    render(<Editor pending={f.pending}/>); fireEvent.click(sendButton());
+    await screen.findByText(/generation was not sent/);
+    expect(fetch).not.toHaveBeenCalled(); expect(sendButton()).toBeDisabled();
+    expect(JSON.parse(nativeGet.call(localStorage, key)!)).toEqual(f.pending);
+    expect(screen.getByRole("button", { name: "Download generation request" })).toBeEnabled();
+  });
+  it("retains a refused phase in memory when its storage update fails", async () => {
+    const f = fixture(), key = pendingGenerationKey(f.pending);
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(reply({ kind: "conflict" }, 409));
+    const nativePut = Storage.prototype.setItem; let writes = 0;
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(function (this: Storage, name: string, raw: string) {
+      if (name === key && ++writes === 2) throw new Error("SYNTHETIC refusal storage failure");
+      nativePut.call(this, name, raw);
+    });
+    render(<Editor pending={f.pending}/>); fireEvent.click(sendButton());
+    await screen.findByRole("button", { name: "Archive refused request and refresh source" });
+    expect(JSON.parse(localStorage.getItem(key)!).phase).toBe("unconfirmed");
+    act(() => window.dispatchEvent(new StorageEvent("storage")));
+    expect(screen.getByRole("button", { name: "Archive refused request and refresh source" })).toBeEnabled();
+    expect(sendButton()).toBeDisabled(); expect(refresh).not.toHaveBeenCalled();
+  });
+  it("preserves unreadable recovery when the saved request cannot be retrieved", async () => {
+    const f = fixture(), key = pendingGenerationKey(f.pending), raw = "SYNTHETIC unreadable generation request";
+    localStorage.setItem(key, raw);
+    const fetch = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(reply({ kind: "forbidden" }, 403));
+    render(<Editor pending={f.pending}/>);
+    fireEvent.click(screen.getByRole("button", { name: "Recover saved generation request" }));
+    await screen.findByText(/saved request could not be matched/);
+    expect(localStorage.getItem(key)).toBe(raw); expect(sendButton()).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Download stored generation copy" })).toBeEnabled();
+    expect(fetch).toHaveBeenCalledOnce(); expect(fetch.mock.calls[0][1]?.method ?? "GET").toBe("GET");
+    expect(publish).not.toHaveBeenCalled(); expect(refresh).not.toHaveBeenCalled();
+  });
+  it("keeps the refused source copy when archive readback fails", async () => {
+    const f = fixture(), refused = { ...f.pending, phase: "refused" as const }, key = pendingGenerationKey(refused);
+    retainPendingGeneration(localStorage, refused); const original = localStorage.getItem(key);
+    const nativeGet = Storage.prototype.getItem;
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(function (this: Storage, name: string) {
+      const raw = nativeGet.call(this, name);
+      return name.startsWith("openplan:translation-generation-archive:") && raw !== null ? "SYNTHETIC archive mismatch" : raw;
+    });
+    const fetch = vi.spyOn(globalThis, "fetch"); render(<Editor pending={refused}/>);
+    fireEvent.click(screen.getByRole("button", { name: "Archive refused request and refresh source" }));
+    await screen.findByText(/could not be archived/);
+    expect(localStorage.getItem(key)).toBe(original); expect(sendButton()).toBeDisabled();
+    expect(refresh).not.toHaveBeenCalled(); expect(fetch).not.toHaveBeenCalled();
+  });
+
 });

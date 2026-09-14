@@ -1,0 +1,80 @@
+{
+  "sourceSha256": "b2aaec6ce277ec70947f514ff363e572899027fbf66615cadbd9273272b56f36",
+  "testSha256": "f0bf6ec04163ee1dbb11482ccc61c39b530e727d037953e30d1f17f87f1e958d",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/translation-browser-wrapper-controls-20260913T201026",
+  "results": [
+    {
+      "case": "baseline",
+      "expectedFailure": null,
+      "exit": 0,
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless",
+      "expectedFailure": null,
+      "exit": 0,
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-installation-check",
+      "expectedFailure": "test_wrong_installation_never_launches_child",
+      "exit": 1,
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-staff-command",
+      "expectedFailure": "test_wrong_installation_never_launches_child",
+      "exit": 1,
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-anonymous-command",
+      "expectedFailure": "test_wrong_installation_never_launches_child",
+      "exit": 1,
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-direct-writes",
+      "expectedFailure": "test_wrong_installation_never_launches_child",
+      "exit": 1,
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-preservation-check",
+      "expectedFailure": "test_child_cannot_silently_change_installed_state",
+      "exit": 1,
+      "expectedOutcome": true
+    },
+    {
+      "case": "lose-child-exit-code",
+      "expectedFailure": "test_normal_and_abrupt_children_preserve_installed_state",
+      "exit": 1,
+      "expectedOutcome": true
+    },
+    {
+      "case": "installed-False-control",
+      "exit": 0,
+      "installedPermissionsPreserved": true,
+      "expectedOutcome": true
+    },
+    {
+      "case": "installed-False-1",
+      "exit": 23,
+      "installedPermissionsPreserved": true,
+      "expectedOutcome": true
+    },
+    {
+      "case": "installed-True-control",
+      "exit": 0,
+      "installedPermissionsPreserved": true,
+      "expectedOutcome": true
+    },
+    {
+      "case": "installed-True-1",
+      "exit": 23,
+      "installedPermissionsPreserved": true,
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Source faults run only against mocked process/SQL boundaries. Four actual child exits read installed 337/18 grants before and after; no permission changes, browser journeys or model calls occur in this script."
+}

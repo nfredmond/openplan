@@ -5,7 +5,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock,patch
 spec=importlib.util.spec_from_file_location('translation_browser_wrapper',Path(__file__).with_name('run-translation-editor-browser.py'))
 wrapper=importlib.util.module_from_spec(spec);spec.loader.exec_module(wrapper)
-STATE={'count':336,'latest':'20261014000017','command':True,'anonymousCommand':False,'directWrites':False,'tableAcl':'synthetic-table-acl','commandAcl':'synthetic-function-acl'}
+STATE={'count':337,'latest':'20261014000018','command':True,'anonymousCommand':False,'directWrites':False,'tableAcl':'synthetic-table-acl','commandAcl':'synthetic-function-acl'}
 
 class WrapperTests(unittest.TestCase):
     def run_wrapper(self,before,after,code=0,error=None):
@@ -33,7 +33,7 @@ class WrapperTests(unittest.TestCase):
                 with self.assertRaisesRegex(AssertionError,'Expected installed|Installed translation permissions differ'):wrapper.main()
                 child.assert_not_called()
     def test_child_cannot_silently_change_installed_state(self):
-        for key,value in [('command',False),('tableAcl','changed-table-acl'),('commandAcl','changed-function-acl'),('latest','20261014000018')]:
+        for key,value in [('command',False),('tableAcl','changed-table-acl'),('commandAcl','changed-function-acl'),('latest','20261014000019')]:
             with self.subTest(key=key), self.assertRaisesRegex(AssertionError,'Browser child changed installed'):self.run_wrapper(STATE,{**STATE,key:value})
     def test_launch_error_still_checks_installed_state(self):
         with patch.object(wrapper,'installed_state',return_value=STATE) as state, patch.object(wrapper.subprocess,'run',side_effect=OSError('SYNTHETIC child launch failure')), patch.object(wrapper,'base',MagicMock()):

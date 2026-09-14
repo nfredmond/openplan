@@ -1,0 +1,68 @@
+{
+  "sourceSha256": {
+    "helper": "5f3107dd7fb62c6ee0ef9c65b1617fe1ad933a9e58c5f584e6b0c367cdacb5c8",
+    "panel": "db3fd0a7e9ab05b3daab297bae22b6e61ba46b97b44dd75436a64f6e55cde201"
+  },
+  "testSha256": "31ca8615d497ad1d2949c232697066a4350cb3fd7dcfaee6b03c761762d1e275",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-recovery-controls-1789355808293966258",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-helper",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-panel",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-request-readback",
+      "outcome": "killed",
+      "expectedFailure": "refuses dispatch when retained request readback differs",
+      "failedTests": [
+        "generation editor custody refuses dispatch when retained request readback differs"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "lose-refusal-phase",
+      "outcome": "killed",
+      "expectedFailure": "retains a refused phase in memory when its storage update fails",
+      "failedTests": [
+        "generation editor custody retains a refused phase in memory when its storage update fails"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "erase-unretrieved-request",
+      "outcome": "killed",
+      "expectedFailure": "preserves unreadable recovery when the saved request cannot be retrieved",
+      "failedTests": [
+        "generation editor custody preserves unreadable recovery when the saved request cannot be retrieved"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-archive-readback",
+      "outcome": "killed",
+      "expectedFailure": "keeps the refused source copy when archive readback fails",
+      "failedTests": [
+        "generation editor custody keeps the refused source copy when archive readback fails"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "React and storage failures with synthetic records and mocked HTTP. Tests protect retention and refusal behavior; they do not provide a new way to resolve an unreadable request with no retrievable server record, prove real downloads, or test lifecycle cancellation or public generation."
+}

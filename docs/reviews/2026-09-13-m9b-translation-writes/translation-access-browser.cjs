@@ -26,7 +26,7 @@ async function api(page,endpoint,body){return page.evaluate(async({campaignId,en
 const consoleEvents=[],network=[],results=[];
 (async()=>{
  const before=sourceHashes();fs.writeFileSync(prefix+'-identity.log',execFileSync('bash',[root+'/openplan/scripts/ops/which-openplan.sh',base],{cwd:root,encoding:'utf8'}));
- expect(sql("select count(*)||':'||max(version) from supabase_migrations.schema_migrations")).toBe('336:20261014000017');
+ expect(sql("select count(*)||':'||max(version) from supabase_migrations.schema_migrations")).toBe('337:20261014000018');
  expect(sql("select has_function_privilege('authenticated','public.write_engagement_translations(uuid,uuid,text,text,text,jsonb)','EXECUTE')")).toBe('t');
  if(process.env.OPENPLAN_TRANSLATION_CLEANUP_PROBE==='control')process.exit(0);
  if(process.env.OPENPLAN_TRANSLATION_CLEANUP_PROBE==='1')process.exit(23);

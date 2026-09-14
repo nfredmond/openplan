@@ -21,7 +21,7 @@ def installed_state():
 
 def main():
     before = installed_state()
-    assert before['count'] == 336 and before['latest'] == '20261014000017', 'Expected installed translation migration 17'
+    assert before['count'] == 337 and before['latest'] == '20261014000018', 'Expected installed translation migration 18'
     assert before['command'] and not before['anonymousCommand'] and not before['directWrites'], 'Installed translation permissions differ'
     code = None
     try:

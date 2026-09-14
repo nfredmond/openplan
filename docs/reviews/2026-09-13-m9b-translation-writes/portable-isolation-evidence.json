@@ -1,0 +1,18 @@
+{
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913",
+  "logsSha256": {
+    "translation-migration18-full-rls.log": "d464c87626ac1d530a8359ff272299dc5834f9cceb48ccc294d04df1b7df2708",
+    "translation-portable-concurrency.log": "06300e321389f38aada744a83adefda3a4bd943d43fc65a17c7679365197f63b",
+    "translation-recovery-cases.log": "a0bc6bc48956ab1f059874a3fd83e5f1dc21edcbc7fa4c693bb63fbf85fbabce",
+    "translation-wrapper-337.log": "fb8514c87804c7ab925fd1f82104022f2cecb6ca28078687c0b2d90e161204bb"
+  },
+  "rls": {
+    "files": 55,
+    "tests": 495,
+    "seconds": 360.75,
+    "migrationCount": 337,
+    "latestMigration": "20261014000018"
+  },
+  "editorTests": 32,
+  "limits": "Isolated SQL and native/React checks. The four added recovery cases preserve evidence; they do not complete missing-record resolution or public generation durability."
+}
