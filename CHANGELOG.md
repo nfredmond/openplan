@@ -28,8 +28,9 @@ Translation workflow integration is in progress. The development migrations are
 `20261014000014_engagement_translation_generation_reads.sql`,
 `20261014000015_engagement_translation_generation_catalog.sql`,
 `20261014000016_engagement_translation_retained_publication.sql`,
-`20261014000017_engagement_translation_command_activation.sql` and
-`20261014000018_engagement_translation_shared_reads.sql`. They retain
+`20261014000017_engagement_translation_command_activation.sql`,
+`20261014000018_engagement_translation_shared_reads.sql` and
+`20261014000019_engagement_translation_generation_resolution.sql`. They retain
 command receipts, source and saved versions, private generation attempts and
 outputs, and paginated staff history. Publication resolves retained output and
 preserves the original generation evidence through acceptance and withdrawal.
@@ -40,6 +41,11 @@ to preserve unsaved words and reopen the editor. It never repeats an old write
 or starts generation. Migration 18 lets retained generation and history readers
 share locks while preserving exclusive writes and staff access checks. Apply
 the migrations before using this development code.
+
+Migration 19 adds immutable resolution receipts for damaged generation requests,
+blocks late creation retries and preserves retained output. Its SQL and receipt
+validation have isolated candidate checks; resolution API and editor integration
+are still unfinished. It has not been installed in the browser verification stack.
 
 The queue API and editor retain exact request identities across retries. The
 local worker has process-restart and exact-delivery evidence. Staff browser

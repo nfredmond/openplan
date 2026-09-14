@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { TranslationQueueError } from "./translation-generation-queue";
-import { readTranslationGenerationResolution, translationGenerationResolutionIntentSchema, translationGenerationResolutionPacketSchema,
+import { readTranslationGenerationResolution, translationGenerationResolutionIntentSchema, translationGenerationResolutionPacketSchema, translationGenerationResolutionScopeSchema,
   type TranslationGenerationResolutionIntent, type TranslationGenerationResolutionScope } from "./translation-generation-resolution";
 
 /** Check stored bytes as well as identity before confirming a resolution. */
@@ -12,7 +12,8 @@ export function verifyTranslationGenerationResolution(raw: unknown, scope: Trans
   return readTranslationGenerationResolution(packet, scope, intent);
 }
 
-export async function resolveTranslationGenerationRequest(client: Pick<SupabaseClient, "rpc">, scope: TranslationGenerationResolutionScope, raw: TranslationGenerationResolutionIntent) {
+export async function resolveTranslationGenerationRequest(client: Pick<SupabaseClient, "rpc">, rawScope: TranslationGenerationResolutionScope, raw: TranslationGenerationResolutionIntent) {
+  const scope = translationGenerationResolutionScopeSchema.parse(rawScope);
   const intent = translationGenerationResolutionIntentSchema.parse(raw);
   const response = await client.rpc("resolve_translation_generation_request", { p_resolution: intent.resolutionId, p_request: intent.requestId,
     p_campaign: scope.campaignId, p_copy_json: intent.copyJson, p_reason: intent.reason }).abortSignal(AbortSignal.timeout(10000));

@@ -1,0 +1,318 @@
+{
+  "sourceSha256": {
+    "sql": "fd119b912465ca05089c89fb4d1cdcbbf1b9b499030673ce29ba6a077c36d1c0",
+    "schema": "3d1dae97cd26c0a0bc1528b6c0a3f9c9ac7b1b7e1edfdb3c7fe2d99deadc1434",
+    "server": "89a4f58f13f0bc17a23a9e3ada750742de868ef605f19e91c16f6dda141f3ea7"
+  },
+  "testSha256": {
+    "sql": "349fcafe8c1d8cb0babda20385093e652590882ab9b14ae642dfd85e9aeec446",
+    "unit": "85621c2b92540339b0742513aba1123dd1b97d6c6d9e731fea020eefc171a653"
+  },
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-resolution-controls-1789357595427459951",
+  "results": [
+    {
+      "case": "baseline-sql",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-sql",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "baseline-schema",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-schema",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "baseline-server",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-server",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-late-create",
+      "outcome": "killed",
+      "expectedFailure": "refuses a late create after resolving an absent request",
+      "failedTests": [
+        "durable translation resolution in PostgreSQL refuses a late create after resolving an absent request"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "overwrite-replay",
+      "outcome": "killed",
+      "expectedFailure": "refuses a different payload for the same resolution identity",
+      "failedTests": [
+        "durable translation resolution in PostgreSQL refuses a different payload for the same resolution identity"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "allow-other-requester",
+      "outcome": "killed",
+      "expectedFailure": "refuses staff resolution of another actor's request",
+      "failedTests": [
+        "durable translation resolution in PostgreSQL refuses staff resolution of another actor's request"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "leak-to-staff",
+      "outcome": "killed",
+      "expectedFailure": "hides receipt bytes from other staff and revoked original staff",
+      "failedTests": [
+        "durable translation resolution in PostgreSQL hides receipt bytes from other staff and revoked original staff"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "leak-to-service",
+      "outcome": "killed",
+      "expectedFailure": "exposes only resolution metadata to the service role",
+      "failedTests": [
+        "durable translation resolution in PostgreSQL exposes only resolution metadata to the service role"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "mutable-receipt",
+      "outcome": "killed",
+      "expectedFailure": "refuses direct receipt mutation even for the database owner",
+      "failedTests": [
+        "durable translation resolution in PostgreSQL refuses direct receipt mutation even for the database owner"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "retain-running",
+      "outcome": "killed",
+      "expectedFailure": "interrupts dispatched work and retains late output without reviving it",
+      "failedTests": [
+        "durable translation resolution in PostgreSQL interrupts dispatched work and retains late output without reviving it"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "lose-inventory",
+      "outcome": "killed",
+      "expectedFailure": "refuses an incomplete field inventory instead of confirming resolution",
+      "failedTests": [
+        "durable translation resolution in PostgreSQL refuses an incomplete field inventory instead of confirming resolution"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-missing-output",
+      "outcome": "killed",
+      "expectedFailure": "refuses a claimed completed field without retained output",
+      "failedTests": [
+        "durable translation resolution in PostgreSQL refuses a claimed completed field without retained output"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "cross-actor-tombstone",
+      "outcome": "killed",
+      "expectedFailure": "does not let an absent resolution block another actor's request identity",
+      "failedTests": [
+        "durable translation resolution in PostgreSQL does not let an absent resolution block another actor's request identity"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-payload-binding",
+      "outcome": "killed",
+      "expectedFailure": "rejects a different payload copyJson even with valid digests",
+      "failedTests": [
+        "generation resolution receipt binding rejects a different payload copyJson even with valid digests"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-result-binding",
+      "outcome": "killed",
+      "expectedFailure": "rejects a different result actorId even with valid digests",
+      "failedTests": [
+        "generation resolution receipt binding rejects a different result actorId even with valid digests"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-result-identity",
+      "outcome": "killed",
+      "expectedFailure": "rejects a different result requestId even with valid digests",
+      "failedTests": [
+        "generation resolution receipt binding rejects a different result requestId even with valid digests"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-field-inventory",
+      "outcome": "killed",
+      "expectedFailure": "rejects incoherent outcome missing_fields",
+      "failedTests": [
+        "generation resolution receipt binding rejects incoherent outcome missing_fields"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-state-transition",
+      "outcome": "killed",
+      "expectedFailure": "rejects incoherent outcome revived_running",
+      "failedTests": [
+        "generation resolution receipt binding rejects incoherent outcome revived_running"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-output-loss",
+      "outcome": "killed",
+      "expectedFailure": "rejects incoherent outcome lost_output",
+      "failedTests": [
+        "generation resolution receipt binding rejects incoherent outcome lost_output"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-attempt-loss",
+      "outcome": "killed",
+      "expectedFailure": "rejects incoherent outcome lost_attempt",
+      "failedTests": [
+        "generation resolution receipt binding rejects incoherent outcome lost_attempt"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-queued-attempt",
+      "outcome": "killed",
+      "expectedFailure": "rejects incoherent outcome queued_attempt",
+      "failedTests": [
+        "generation resolution receipt binding rejects incoherent outcome queued_attempt"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-opaque-encoding",
+      "outcome": "killed",
+      "expectedFailure": "refuses unsafe copy encoding {}",
+      "failedTests": [
+        "generation resolution receipt binding refuses unsafe copy encoding {}"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-reason-validity",
+      "outcome": "killed",
+      "expectedFailure": "refuses an invalid reason \"  \"",
+      "failedTests": [
+        "generation resolution receipt binding refuses an invalid reason \"  \""
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-payload-hash",
+      "outcome": "killed",
+      "expectedFailure": "rejects a mismatched payloadSha256 before acknowledgement",
+      "failedTests": [
+        "generation resolution receipt binding rejects a mismatched payloadSha256 before acknowledgement"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-result-hash",
+      "outcome": "killed",
+      "expectedFailure": "rejects a mismatched resultSha256 before acknowledgement",
+      "failedTests": [
+        "generation resolution receipt binding rejects a mismatched resultSha256 before acknowledgement"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "write-before-scope-validation",
+      "outcome": "killed",
+      "expectedFailure": "refuses an invalid scope before any write",
+      "failedTests": [
+        "generation resolution server refuses an invalid scope before any write"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "write-before-intent-validation",
+      "outcome": "killed",
+      "expectedFailure": "refuses an invalid intent before any write",
+      "failedTests": [
+        "generation resolution server refuses an invalid intent before any write"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "acknowledge-unchecked",
+      "outcome": "killed",
+      "expectedFailure": "does not acknowledge unchecked database output",
+      "failedTests": [
+        "generation resolution server does not acknowledge unchecked database output"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "lose-refusal-kind",
+      "outcome": "killed",
+      "expectedFailure": "preserves refusal 42501",
+      "failedTests": [
+        "generation resolution server preserves refusal 42501"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "lose-replay-marker",
+      "outcome": "killed",
+      "expectedFailure": "retains exact damaged bytes and replays the original receipt",
+      "failedTests": [
+        "durable translation resolution in PostgreSQL retains exact damaged bytes and replays the original receipt"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "reject-second-copy",
+      "outcome": "killed",
+      "expectedFailure": "preserves two distinct copies without rewriting the first",
+      "failedTests": [
+        "durable translation resolution in PostgreSQL preserves two distinct copies without rewriting the first"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "lose-queued-cancellation",
+      "outcome": "killed",
+      "expectedFailure": "cancels queued work and refuses its original creation replay",
+      "failedTests": [
+        "durable translation resolution in PostgreSQL cancels queued work and refuses its original creation replay"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Candidate SQL and synthetic records run only inside rolled-back transactions on the named disposable stack. Native output custody and unit receipt/server binding are exercised. No browser/API integration, simultaneous create/resolve, installed migration, full QA or release acceptance is established."
+}

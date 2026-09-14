@@ -1,3 +1,7 @@
+# Latest resolution database checkpoint
+
+Read [RESOLUTION_DATABASE_PROGRESS.md](RESOLUTION_DATABASE_PROGRESS.md) first. Candidate SQL and receipt verification have native and fault evidence; migration 19 remains uninstalled. Next prove simultaneous resolution/creation and connect the API, queue preflight and editor recovery.
+
 # Latest usage-reset checkpoint
 
 Read [RESOLUTION_IN_PROGRESS.md](RESOLUTION_IN_PROGRESS.md) first. The new resolution files are saved but unverified and uninstalled. Resume this implementation from the recorded seam; the tested predecessor is `1b14ed6c`.
