@@ -1,0 +1,234 @@
+{
+  "sourceSha256": "2b8a892d03de748b02549f0b7d5db9e31bfc164286024a05f5e9825da383d806",
+  "testSha256": "f8023498d239b1f23e0a35974e0c22bb0ee15fb7d180da31161138d12aa26686",
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/generation-lifecycle-controls-1789364609089507574",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "outcome": "survived",
+      "expectedFailure": null,
+      "failedTests": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-operation-ownership",
+      "outcome": "killed",
+      "expectedFailure": "preserves pending recovery",
+      "failedTests": [
+        {
+          "name": "generation editor asynchronous custody preserves pending recovery after unmount during its verified read",
+          "messages": [
+            "AssertionError: late read must preserve original recovery: expected null to be '{\"version\":1,\"userId\":\"60000000-0000-\u2026' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:257:84\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "generation editor asynchronous custody preserves pending recovery after access during its verified read",
+          "messages": [
+            "AssertionError: late read must preserve original recovery: expected null to be '{\"version\":1,\"userId\":\"60000000-0000-\u2026' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:257:84\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "generation editor asynchronous custody does not start a read after unmount while the queue acknowledgement body is pending",
+          "messages": [
+            "AssertionError: stale acknowledgement cannot start another request: expected \"fetch\" to be called once, but got 2 times\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:270:73\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "generation editor asynchronous custody does not start a read after access while the queue acknowledgement body is pending",
+          "messages": [
+            "AssertionError: stale acknowledgement cannot start another request: expected \"fetch\" to be called once, but got 2 times\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:270:73\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "generation editor asynchronous custody ignores a delayed list after access is revoked and restored",
+          "messages": [
+            "Error: expect(element).not.toBeInTheDocument()\n\nexpected document not to contain element, found <button\n  class=\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 max-w-full whitespace-normal text-left\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"outline\"\n  type=\"button\"\n>\n  Spanish\n   \u00b7 \n  9/12/2026, 5:00:00 PM\n   \u00b7 \n  1\n   of \n  1\n   fields completed\n</button> instead\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:290:109\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "generation editor asynchronous custody ignores a delayed view after access is revoked and restored",
+          "messages": [
+            "Error: expect(element).not.toBeInTheDocument()\n\nexpected document not to contain element, found <section\n  aria-label=\"Retained machine output\"\n  class=\"space-y-3 border-t border-border pt-3\"\n>\n  <h3\n    class=\"font-semibold\"\n  >\n    Spanish\n     output for review\n  </h3>\n  <p>\n    Requested by you.\n     Publication records you separately as the publisher.\n  </p>\n  <p>\n    Review the retained output and its original source. Add a publication reason above before publishing with a machine label.\n  </p>\n  <button\n    class=\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 max-w-full whitespace-normal\"\n    data-size=\"default\"\n    data-slot=\"button\"\n    data-variant=\"outline\"\n    type=\"button\"\n  >\n    Refresh request status\n  </button>\n  <details>\n    <summary>\n      Request record\n    </summary>\n    <p\n      class=\"break-all\"\n    >\n      Request: \n      0d33009b-4c42-46af-b5e1-64b22f4fbe0f\n    </p>\n    <p\n      class=\"break-all\"\n    >\n      Requested by: \n      60000000-0000-4000-8000-000000000003\n    </p>\n    <p>\n      9/13/2026, 10:43:37 PM\n    </p>\n  </details>\n  <div\n    class=\"space-y-2 rounded-lg border border-border p-3 break-words\"\n  >\n    <h4\n      class=\"font-semibold\"\n    >\n      title\n      : \n      Ready to review\n    </h4>\n    <p>\n      Source used:\n    </p>\n    <p\n      class=\"whitespace-pre-wrap\"\n      dir=\"auto\"\n    >\n      \u00a0SYNTHETIC source title\ufeff\n    </p>\n    <p>\n      Started from saved revision 3.\n    </p>\n    <p\n      class=\"whitespace-pre-wrap\"\n      dir=\"ltr\"\n      lang=\"es\"\n    >\n       \u00a0SYNTHETIC retained output\ufeff \n    </p>\n    <p>\n      Model: \n      synthetic-model\n    </p>\n    <button\n      class=\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 max-w-full whitespace-normal\"\n      data-size=\"default\"\n      data-slot=\"button\"\n      data-variant=\"default\"\n      type=\"button\"\n    >\n      Publish this retained output with a machine label\n    </button>\n  </div>\n</section> instead\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:289:68\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "generation editor asynchronous custody ignores a delayed recover after access is revoked and restored",
+          "messages": [
+            "Error: expect(element).not.toBeInTheDocument()\n\nexpected document not to contain element, found <section\n  aria-label=\"Retained machine output\"\n  class=\"space-y-3 border-t border-border pt-3\"\n>\n  <h3\n    class=\"font-semibold\"\n  >\n    Spanish\n     output for review\n  </h3>\n  <p>\n    Requested by you.\n     Publication records you separately as the publisher.\n  </p>\n  <p>\n    Review the retained output and its original source. Add a publication reason above before publishing with a machine label.\n  </p>\n  <button\n    class=\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 max-w-full whitespace-normal\"\n    data-size=\"default\"\n    data-slot=\"button\"\n    data-variant=\"outline\"\n    type=\"button\"\n  >\n    Refresh request status\n  </button>\n  <details>\n    <summary>\n      Request record\n    </summary>\n    <p\n      class=\"break-all\"\n    >\n      Request: \n      7fadd0f3-d14f-4c25-86a0-8c4fdd920ffe\n    </p>\n    <p\n      class=\"break-all\"\n    >\n      Requested by: \n      60000000-0000-4000-8000-000000000003\n    </p>\n    <p>\n      9/13/2026, 10:43:37 PM\n    </p>\n  </details>\n  <div\n    class=\"space-y-2 rounded-lg border border-border p-3 break-words\"\n  >\n    <h4\n      class=\"font-semibold\"\n    >\n      title\n      : \n      Ready to review\n    </h4>\n    <p>\n      Source used:\n    </p>\n    <p\n      class=\"whitespace-pre-wrap\"\n      dir=\"auto\"\n    >\n      \u00a0SYNTHETIC source title\ufeff\n    </p>\n    <p>\n      Started from saved revision 3.\n    </p>\n    <p\n      class=\"whitespace-pre-wrap\"\n      dir=\"ltr\"\n      lang=\"es\"\n    >\n       \u00a0SYNTHETIC retained output\ufeff \n    </p>\n    <p>\n      Model: \n      synthetic-model\n    </p>\n    <button\n      class=\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 max-w-full whitespace-normal\"\n      data-size=\"default\"\n      data-slot=\"button\"\n      data-variant=\"default\"\n      type=\"button\"\n    >\n      Publish this retained output with a machine label\n    </button>\n  </div>\n</section> instead\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:289:68\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "generation editor operation ownership keeps a newer read busy when an older cancelled body finishes",
+          "messages": [
+            "Error: expect(element).not.toBeInTheDocument()\n\nexpected document not to contain element, found <button\n  class=\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 max-w-full whitespace-normal text-left\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"outline\"\n  disabled=\"\"\n  type=\"button\"\n>\n  Spanish\n   \u00b7 \n  9/12/2026, 5:00:00 PM\n   \u00b7 \n  1\n   of \n  1\n   fields completed\n</button> instead\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:310:83\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "detach-read-signal",
+      "outcome": "killed",
+      "expectedFailure": "active read cancelled",
+      "failedTests": [
+        {
+          "name": "generation editor asynchronous custody preserves pending recovery after unmount during its verified read",
+          "messages": [
+            "AssertionError: active read cancelled: expected false to be true // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:258:78\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "generation editor asynchronous custody preserves pending recovery after access during its verified read",
+          "messages": [
+            "AssertionError: active read cancelled: expected false to be true // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:258:78\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "generation editor asynchronous custody ignores a delayed view after access is revoked and restored",
+          "messages": [
+            "AssertionError: revocation permanently cancels this operation: expected false to be true // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:287:108\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "generation editor asynchronous custody ignores a delayed recover after access is revoked and restored",
+          "messages": [
+            "AssertionError: revocation permanently cancels this operation: expected false to be true // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:287:108\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "omit-unmount-abort",
+      "outcome": "killed",
+      "expectedFailure": "active read cancelled",
+      "failedTests": [
+        {
+          "name": "generation editor asynchronous custody preserves pending recovery after unmount during its verified read",
+          "messages": [
+            "AssertionError: active read cancelled: expected false to be true // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:258:78\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "generation editor asynchronous custody does not start a read after unmount while the queue acknowledgement body is pending",
+          "messages": [
+            "AssertionError: expected false to be true // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:271:98\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "ignore-access-loss",
+      "outcome": "killed",
+      "expectedFailure": "revocation permanently cancels this operation",
+      "failedTests": [
+        {
+          "name": "generation editor asynchronous custody preserves pending recovery after access during its verified read",
+          "messages": [
+            "AssertionError: active read cancelled: expected false to be true // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:258:78\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "generation editor asynchronous custody does not start a read after access while the queue acknowledgement body is pending",
+          "messages": [
+            "AssertionError: expected false to be true // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:271:98\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "generation editor asynchronous custody ignores a delayed list after access is revoked and restored",
+          "messages": [
+            "AssertionError: revocation permanently cancels this operation: expected false to be true // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:287:108\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "generation editor asynchronous custody ignores a delayed view after access is revoked and restored",
+          "messages": [
+            "AssertionError: revocation permanently cancels this operation: expected false to be true // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:287:108\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "generation editor asynchronous custody ignores a delayed recover after access is revoked and restored",
+          "messages": [
+            "AssertionError: revocation permanently cancels this operation: expected false to be true // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:287:108\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "generation editor operation ownership keeps a newer read busy when an older cancelled body finishes",
+          "messages": [
+            "Error: expect(element).toBeEnabled()\n\nReceived element is not enabled:\n  <button\n  class=\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 max-w-full whitespace-normal\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"outline\"\n  disabled=\"\"\n  type=\"button\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:307:25\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "generation editor operation ownership requires a fresh retained-output read after edit access returns",
+          "messages": [
+            "Error: expect(element).toBeDisabled()\n\nReceived element is not disabled:\n  <button\n  class=\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 max-w-full whitespace-normal\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"default\"\n  type=\"button\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:320:50\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "old-completion-releases-new-operation",
+      "outcome": "killed",
+      "expectedFailure": "old completion cannot release the newer operation",
+      "failedTests": [
+        {
+          "name": "generation editor operation ownership keeps a newer read busy when an older cancelled body finishes",
+          "messages": [
+            "Error: old completion cannot release the newer operation: expect(element).toBeDisabled()\n\nReceived element is not disabled:\n  <button\n  class=\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 max-w-full whitespace-normal\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"outline\"\n  type=\"button\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:309:78\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "keep-publication-enabled-after-access-loss",
+      "outcome": "killed",
+      "expectedFailure": "requires a fresh retained-output read",
+      "failedTests": [
+        {
+          "name": "generation editor operation ownership requires a fresh retained-output read after edit access returns",
+          "messages": [
+            "Error: expect(element).toBeDisabled()\n\nReceived element is not disabled:\n  <button\n  class=\"inline-flex items-center justify-center gap-2 border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 px-4.5 py-2 has-[>svg]:px-3.5 h-auto min-h-10 max-w-full whitespace-normal\"\n  data-size=\"default\"\n  data-slot=\"button\"\n  data-variant=\"default\"\n  type=\"button\"\n/>\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:320:50\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "publish-stale-error",
+      "outcome": "killed",
+      "expectedFailure": "ignores a delayed",
+      "failedTests": [
+        {
+          "name": "generation editor asynchronous custody ignores a delayed list after access is revoked and restored",
+          "messages": [
+            "Error: expect(element).not.toBeInTheDocument()\n\nexpected document not to contain element, found <p\n  role=\"status\"\n>\n  Saved generation requests could not be read completely. Retry the list; this does not mean there are no saved requests.\n</p> instead\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:288:111\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "generation editor asynchronous custody ignores a delayed view after access is revoked and restored",
+          "messages": [
+            "Error: expect(element).not.toBeInTheDocument()\n\nexpected document not to contain element, found <p\n  role=\"status\"\n>\n  This request's retained output could not be verified. Keep any viewed copy and retry its read before publishing.\n</p> instead\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:288:111\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "generation editor asynchronous custody ignores a delayed recover after access is revoked and restored",
+          "messages": [
+            "Error: expect(element).not.toBeInTheDocument()\n\nexpected document not to contain element, found <p\n  role=\"status\"\n>\n  The saved request could not be matched, or its browser copy changed. The server copy has not been verified. Keep your browser copies and retry recovery or resolve the retained request below.\n</p> instead\n    at Proxy.__VITEST_EXTEND_ASSERTION__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1888:12)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/translation-generation-editor.test.tsx:288:111\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Actual React hook with controlled delayed HTTP responses, including bodies fulfilled after abort. No real authentication, browser navigation, live database authorization or provider execution is established by these tests. Scope identity is also enforced by the keyed parent; predicate removal can be masked by redundant token/abort guards."
+}

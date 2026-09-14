@@ -116,6 +116,9 @@ export async function CartographicShell({ children }: { children: React.ReactNod
           workspaceName={shellState.workspaceName}
           workspaces={workspaceOptions}
           currentWorkspaceId={membership?.workspace_id ?? null}
+          accountControl={user ? <form action={handleSignOut}>
+            <button type="submit" className="op-cart-account__signout">Sign out</button>
+          </form> : <Link href="/sign-in" className="op-cart-account__signout">Sign in</Link>}
         />
 
         <CartographicOverviewSurface>

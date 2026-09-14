@@ -1,0 +1,82 @@
+{
+  "precedingCommit": "7c9d768b96c9b3fc8767df9305f50dac3829a17c",
+  "privateEvidenceDirectory": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/translation-generation-lifecycle-browser-1789365105185",
+  "recordedEvidenceNotRerun": true,
+  "exit": 0,
+  "results": [
+    {
+      "width": 1440,
+      "passed": true,
+      "signOutVisibilityControls": {
+        "harmless": "survived",
+        "hidden": "killed"
+      },
+      "signOutBox": {
+        "x": 515,
+        "y": 947.21875,
+        "width": 69.609375,
+        "height": 23.796875
+      },
+      "routeDisposition": "response delivered or discarded by cancelled browser request",
+      "retainedSha256": "5611fa52d200709e6d3f8b467edb9a2602e15706764f124ad296e061a08c07f5",
+      "downloadSha256": "2405b67ef797bb8f138c1066a4a71371ee13c5b5cf4fe002b3c99e6f9788fd02",
+      "signedOutRead": 401,
+      "overflow": {
+        "viewport": 1440,
+        "document": 1440
+      },
+      "console": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "location": "http://127.0.0.1:3260/api/engagement/campaigns/c6afd4c6-7445-4e28-944f-237b1051c102/reports",
+          "phase": "signing-out"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "passed": true,
+      "signOutVisibilityControls": {
+        "harmless": "survived",
+        "hidden": "killed"
+      },
+      "signOutBox": {
+        "x": 304.390625,
+        "y": 68,
+        "width": 69.609375,
+        "height": 40
+      },
+      "routeDisposition": "response delivered or discarded by cancelled browser request",
+      "retainedSha256": "2999b23cced535f402d90520c8e524f5f066e3ee8f764d496d522f8d42ec9611",
+      "downloadSha256": "4486c20bb832f32bb39586dff2a972384c03d7bf521b259bc39f0caf3dde7334",
+      "signedOutRead": 401,
+      "overflow": {
+        "viewport": 390,
+        "document": 390
+      },
+      "console": [
+        {
+          "type": "error",
+          "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+          "location": "http://127.0.0.1:3260/api/engagement/campaigns/8a858229-6902-4fc2-a014-0c5f7222e326/reports",
+          "phase": "signed-out"
+        }
+      ]
+    }
+  ],
+  "sha256": {
+    "translation-generation-lifecycle-browser-1789365105185/results.json": "990cfa30ea1d59c5b322b229c9ba545587b7d340b57dd8fe5d2bcc2decac699b",
+    "translation-generation-lifecycle-browser-1789365105185/identity.log": "910896f09274a94a9065daeed3cb50f37ec0c1836779f95f9eb379eeed6878a7",
+    "translation-generation-lifecycle-browser-1789365105185/source-sha256.json": "bb7215a8c0889fba4f88bc72f92593d87b796e102baea00e1e21e308c78e0dc7",
+    "generation-lifecycle-before.log": "87c99350377ddc225240a1c8ce0e69d0091cb80a9ed77ad6896f6122224bd635",
+    "generation-lifecycle-final-focused.log": "e3ad835fde3d80502456734e392157a4189882b0dd63dd266474410a5c80d8f4",
+    "generation-lifecycle-final-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "generation-lifecycle-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "limits": [
+    "Actual sign-out/sign-in uses the same test account, not a switch to another account.",
+    "Access revocation and restoration are React tests with delayed HTTP responses; live membership changes are not a claim.",
+    "No provider worker ran. Queues were created by the real UI and closed through the resolution UI. The abandoned selector-failure request was cancelled through the existing service worker stop RPC."
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "sourceSha256": "cc91592d4b88360c00a606c16b28a6825de42223431df16497b96fa4a21559d7",
+  "results": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "failure": null
+    },
+    {
+      "case": "harmless",
+      "outcome": "survived",
+      "failure": null
+    },
+    {
+      "case": "ignore-phase",
+      "outcome": "killed",
+      "failure": "other phase"
+    },
+    {
+      "case": "ignore-url",
+      "outcome": "killed",
+      "failure": "other path"
+    },
+    {
+      "case": "ignore-status",
+      "outcome": "killed",
+      "failure": "server failure"
+    }
+  ],
+  "limits": "Executes the actual console exception predicate. It recognizes one logout-phase report poll denial and controlled aborts; runtime exceptions and other HTTP failures remain failures in the browser runner."
+}

@@ -36,6 +36,24 @@ export function useTranslationGeneration({ userId, workspaceId, campaignId, canW
   const remembered = useRef<PendingGeneration[]>([]), volatile = useRef(new Map<string, PendingGeneration>()), busyRef = useRef(false);
   const callbacks = useRef({ onPublish, onRefresh }); callbacks.current = { onPublish, onRefresh };
   const api = `/api/engagement/campaigns/${campaignId}/translations/generation`;
+  const identity = `${userId}:${workspaceId}:${campaignId}`;
+  const current = useRef({ identity, canWrite }); current.current = { identity, canWrite };
+  const mounted = useRef(false), active = useRef<AbortController | null>(null);
+  function operation() {
+    const controller = new AbortController(); active.current = controller;
+    const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(30000)]);
+    const isCurrent = () => mounted.current && current.current.identity === identity && current.current.canWrite &&
+      active.current === controller && !controller.signal.aborted;
+    return {
+      signal, isCurrent,
+      assertCurrent: () => { if (!isCurrent()) throw new Error("Generation editor scope changed"); signal.throwIfAborted(); },
+      finish: () => {
+        if (active.current !== controller) return;
+        active.current = null; busyRef.current = false;
+        if (mounted.current && current.current.identity === identity) setBusy(false);
+      },
+    };
+  }
   function remember(values: PendingGeneration[]) { remembered.current = values; setPending(values); }
   function restore() {
     try {
@@ -59,10 +77,16 @@ export function useTranslationGeneration({ userId, workspaceId, campaignId, canW
     } catch { setReady(false); setMessage("Generation recovery could not be read. Keep this page open and retry recovery before requesting more output."); }
   }
   useEffect(() => {
-    restore(); window.addEventListener("storage", restore); return () => window.removeEventListener("storage", restore);
+    mounted.current = true; restore(); window.addEventListener("storage", restore);
+    return () => { mounted.current = false; active.current?.abort(); active.current = null; busyRef.current = false; window.removeEventListener("storage", restore); };
     // The editor is keyed by authenticated user, workspace and campaign.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, workspaceId, campaignId]);
+  useEffect(() => {
+    if (!canWrite) {
+      active.current?.abort(); active.current = null; busyRef.current = false; setBusy(false); setReadFailed(true);
+    }
+  }, [canWrite]);
 
   const resolution = useTranslationResolution(scope, {
     canWrite, busy,
@@ -77,10 +101,13 @@ export function useTranslationGeneration({ userId, workspaceId, campaignId, canW
     },
   });
 
-  async function readRequest(id: string, retained?: PendingGeneration, signal = AbortSignal.timeout(30000)) {
-    const response = await fetch(`${api}?requestId=${encodeURIComponent(id)}`, { cache: "no-store", signal });
+  async function readRequest(id: string, run: ReturnType<typeof operation>, retained?: PendingGeneration) {
+    run.assertCurrent();
+    const response = await fetch(`${api}?requestId=${encodeURIComponent(id)}`, { cache: "no-store", signal: run.signal });
+    run.assertCurrent();
     if (!response.ok) throw new Error("Generation evidence is unavailable");
-    return readViewedTranslationGeneration(await response.json(), { campaignId, workspaceId, requestId: id }, retained);
+    const raw: unknown = await response.json(); run.assertCurrent();
+    return readViewedTranslationGeneration(raw, { campaignId, workspaceId, requestId: id }, retained);
   }
   async function send(value: PendingGeneration) {
     if (!canWrite || busyRef.current || resolution.hasPending()) return;
@@ -89,6 +116,7 @@ export function useTranslationGeneration({ userId, workspaceId, campaignId, canW
       setMessage("No generation was requested. Refresh and review the original source and saved versions."); return;
     }
     busyRef.current = true; setBusy(true); setOpen(true); setMessage(null);
+    const run = operation();
     let retained = { ...parsed.data, phase: "unconfirmed" as const } as PendingGeneration;
     try {
       try { retained = retainPendingGeneration(localStorage, retained); volatile.current.delete(retained.intent.requestId); restore(); }
@@ -96,9 +124,11 @@ export function useTranslationGeneration({ userId, workspaceId, campaignId, canW
         volatile.current.set(retained.intent.requestId, retained); remember([...remembered.current.filter(row => row.intent.requestId !== retained.intent.requestId), retained]);
         setMessage("This browser could not retain the request, so generation was not sent. Keep this page open and download your copy before retrying."); return;
       }
-      const signal = AbortSignal.timeout(30000);
+      run.assertCurrent();
+      const signal = run.signal;
       const response = await fetch(api, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(retained.intent), signal });
-      const raw = await response.json();
+      run.assertCurrent();
+      const raw = await response.json(); run.assertCurrent();
       if (!response.ok) {
         const refused = response.status === 409 && raw?.kind === "conflict" || response.status === 400 && raw?.kind === "invalid" || response.status === 413;
         if (refused) {
@@ -110,14 +140,14 @@ export function useTranslationGeneration({ userId, workspaceId, campaignId, canW
       }
       const ack = translationGenerationRequestAckSchema.parse(raw);
       if (ack.requestId !== retained.intent.requestId) throw new Error("Generation acknowledgement identity differs");
-      const found = await readRequest(retained.intent.requestId, retained, signal); setViewed(found); setReadFailed(false);
+      const found = await readRequest(retained.intent.requestId, run, retained); run.assertCurrent(); setViewed(found); setReadFailed(false);
       try {
         clearPendingGeneration(localStorage, retained); volatile.current.delete(retained.intent.requestId);
         remember(remembered.current.filter(row => row.intent.requestId !== retained.intent.requestId)); restore();
         setMessage("Generation request retained on the server. Review its status and output below.");
       } catch { setMessage("The server retained this request, but browser recovery could not be cleared. Retrying the same request is safe."); }
-    } catch { setMessage("Generation is unconfirmed. Keep the retained request and retry it with the same identity."); }
-    finally { busyRef.current = false; setBusy(false); }
+    } catch { if (run.isCurrent()) setMessage("Generation is unconfirmed. Keep the retained request and retry it with the same identity."); }
+    finally { run.finish(); }
   }
   async function start(value: PendingGeneration) {
     if (!ready || busyRef.current || pending.length || unreadable.length || resolution.blocked || resolution.hasPending()) { setOpen(true); return; }
@@ -130,42 +160,48 @@ export function useTranslationGeneration({ userId, workspaceId, campaignId, canW
   async function list(cursor: TranslationGenerationCursor | null = null) {
     if (busyRef.current || !canWrite) return;
     busyRef.current = true; setBusy(true); setOpen(true); setMessage(null);
+    const run = operation();
     try {
       const query = cursor ? `?${new URLSearchParams({ beforeCreatedAt: cursor.createdAt, beforeId: cursor.id })}` : "";
-      const response = await fetch(api + query, { cache: "no-store", signal: AbortSignal.timeout(30000) });
+      run.assertCurrent();
+      const response = await fetch(api + query, { cache: "no-store", signal: run.signal });
+      run.assertCurrent();
       if (!response.ok) throw new Error("Saved requests unavailable");
-      const page = readTranslationGenerationCatalog(await response.json(), scope, cursor);
+      const raw: unknown = await response.json(); run.assertCurrent();
+      const page = readTranslationGenerationCatalog(raw, scope, cursor);
       const requests = cursor && catalog ? [...catalog.requests, ...page.requests] : page.requests;
       if (new Set(requests.map(request => request.id)).size !== requests.length) throw new Error("Saved request pages overlap");
       setCatalog({ ...page, requests });
-    } catch { setMessage("Saved generation requests could not be read completely. Retry the list; this does not mean there are no saved requests."); }
-    finally { busyRef.current = false; setBusy(false); }
+    } catch { if (run.isCurrent()) setMessage("Saved generation requests could not be read completely. Retry the list; this does not mean there are no saved requests."); }
+    finally { run.finish(); }
   }
   async function view(id: string) {
     if (busyRef.current || !canWrite) return;
     busyRef.current = true; setBusy(true); setOpen(true); setMessage(null);
+    const run = operation();
     try {
-      const found = await readRequest(id);
+      const found = await readRequest(id, run); run.assertCurrent();
       const listed = catalog?.requests.find(request => request.id === id);
       if (listed && listed.fieldCount !== found.fields.length) throw new Error("Saved generation field count differs");
       setViewed(found); setReadFailed(false);
-    } catch { setReadFailed(true); setMessage("This request's retained output could not be verified. Keep any viewed copy and retry its read before publishing."); }
-    finally { busyRef.current = false; setBusy(false); }
+    } catch { if (run.isCurrent()) { setReadFailed(true); setMessage("This request's retained output could not be verified. Keep any viewed copy and retry its read before publishing."); } }
+    finally { run.finish(); }
   }
   async function recover(key: string) {
     if (busyRef.current || !canWrite) return;
     busyRef.current = true; setBusy(true);
+    const run = operation();
     try {
       const raw = localStorage.getItem(key); if (raw === null) throw new Error("Stored recovery copy disappeared");
       const id = key.split(":").at(-1)!;
       const known = remembered.current.find(value => pendingGenerationKey(value) === key);
-      const found = await readRequest(id, known);
+      const found = await readRequest(id, run, known); run.assertCurrent();
       if (found.actorId !== userId || localStorage.getItem(key) !== raw) throw new Error("Saved request or browser copy changed");
       archivePendingGeneration(localStorage, key, scope);
       volatile.current.delete(id); remember(remembered.current.filter(value => value.intent.requestId !== id)); restore();
       setViewed(found); setReadFailed(false); setMessage("The saved request was recovered from the server. Its earlier browser copy remains archived below.");
-    } catch { setMessage("The saved request could not be matched, or its browser copy changed. The server copy has not been verified. Keep your browser copies and retry recovery or resolve the retained request below."); }
-    finally { busyRef.current = false; setBusy(false); }
+    } catch { if (run.isCurrent()) setMessage("The saved request could not be matched, or its browser copy changed. The server copy has not been verified. Keep your browser copies and retry recovery or resolve the retained request below."); }
+    finally { run.finish(); }
   }
   const completed = viewed?.fields.filter(field => field.state === "completed" && field.output?.status === "completed" && field.output.acceptedState === "completed").map(field => field.id) ?? [];
   const blocked = !ready || pending.length > 0 || unreadable.length > 0 || resolution.blocked;

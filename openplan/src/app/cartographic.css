@@ -955,6 +955,12 @@ html.dark .op-cart-zoom button:hover {
   color: var(--ink);
 }
 
+/* The desktop account card is hidden on narrow screens. Keep its action
+   reachable beside the appearance controls instead. */
+.op-cart-mobile-account {
+  display: none;
+}
+
 /* ---------- WORKSPACE PENDING ALERT ---------- */
 
 .op-cart-alert {
@@ -1366,6 +1372,12 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
   }
   .op-cart-account {
     display: none;
+  }
+  .op-cart-mobile-account {
+    display: block;
+  }
+  .op-cart-mobile-account .op-cart-account__signout {
+    min-height: 40px;
   }
 }
 

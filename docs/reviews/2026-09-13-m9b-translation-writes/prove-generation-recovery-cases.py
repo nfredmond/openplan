@@ -10,7 +10,7 @@ def mutate(name,key,old,new,expected):
  assert original[key].count(old)==1,(name,original[key].count(old));cases.append((name,key,original[key].replace(old,new),expected))
 mutate('omit-request-readback','helper','if (storage.getItem(key) !== raw) throw new Error("Generation request was not retained");','/* Missing retained request readback. */','refuses dispatch when retained request readback differs')
 mutate('lose-refusal-phase','panel','catch { volatile.current.set(retained.intent.requestId, retained); }','catch { /* Lost refusal memory. */ }','retains a refused phase in memory when its storage update fails')
-mutate('erase-unretrieved-request','panel','} catch { setMessage("The saved request could not be matched,','} catch { localStorage.removeItem(key); restore(); setMessage("The saved request could not be matched,','preserves unreadable recovery when the saved request cannot be retrieved')
+mutate('erase-unretrieved-request','panel','} catch { if (run.isCurrent()) setMessage("The saved request could not be matched,','} catch { localStorage.removeItem(key); restore(); setMessage("The saved request could not be matched,','preserves unreadable recovery when the saved request cannot be retrieved')
 mutate('stale-generation-message','panel','onResolved: bundle => {\n      setMessage(null);','onResolved: bundle => {','clears the earlier unconfirmed message after verified resolution')
 mutate('omit-archive-readback','resolution','if (storage.getItem(archive) !== archiveRaw || storage.getItem(key) !== pending)','if (storage.getItem(key) !== pending)','keeps the refused source copy when archive readback fails')
 results=[]
@@ -23,7 +23,7 @@ try:
   finally:paths[key].write_text(original[key])
   (private/(name+'.log')).write_text(run.stdout+run.stderr);report=json.loads(target.read_text())
   failed=[a['fullName'] for suite in report['testResults'] for a in suite['assertionResults'] if a['status']=='failed']
-  correct=run.returncode==0 and report['numPassedTests']==33 if expected is None else run.returncode!=0 and any(expected in f for f in failed)
+  correct=run.returncode==0 and report['numPassedTests']==42 if expected is None else run.returncode!=0 and any(expected in f for f in failed)
   results.append({'case':name,'outcome':'survived' if run.returncode==0 else 'killed','expectedFailure':expected,'failedTests':failed,'expectedOutcome':correct});print(name,results[-1]['outcome'],flush=True);assert correct,(name,failed)
 finally:
  assert all(p.read_text()==original[k] for k,p in paths.items())

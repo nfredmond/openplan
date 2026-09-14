@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Search } from "lucide-react";
 import type { WorkspaceOption } from "@/lib/workspaces/current";
 import { WorkspaceSwitcher } from "@/components/workspaces/workspace-switcher";
@@ -10,12 +10,14 @@ import { ThemeControls } from "@/components/theme-controls";
 
 type CartographicHeaderProps = {
   workspaceName: string;
+  accountControl?: ReactNode;
   workspaces?: WorkspaceOption[];
   currentWorkspaceId?: string | null;
 };
 
 export function CartographicHeader({
   workspaceName,
+  accountControl,
   workspaces = [],
   currentWorkspaceId = null,
 }: CartographicHeaderProps) {
@@ -60,6 +62,7 @@ export function CartographicHeader({
             primary action can name what will be created. */}
         <div className="op-cart-hdr__actions">
           <ThemeControls className="op-cart-appearance" />
+          <div className="op-cart-mobile-account">{accountControl}</div>
         </div>
       </header>
 

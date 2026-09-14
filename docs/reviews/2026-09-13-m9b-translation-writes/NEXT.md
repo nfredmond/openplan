@@ -1,3 +1,7 @@
+# Current generation lifecycle checkpoint
+
+Read [GENERATION_LIFECYCLE_PROGRESS.md](GENERATION_LIFECYCLE_PROGRESS.md) first. Late generation responses now preserve recovery after page/access changes, and real sign-out/sign-in recovery passed desktop/390px with a reachable mobile sign-out action. Resolution-controller access restoration, public generation and final release checks remain. Older notes preserve historical states.
+
 # Current running-request cancellation checkpoint
 
 Read [RUNNING_RESOLUTION_PROGRESS.md](RUNNING_RESOLUTION_PROGRESS.md) first. Running-request closure now has desktop/390px worker-signal evidence and a real killed cancellation fault. All 52 worker suites and shuffled tests passed. Account lifecycle, public producers and final release work remain. Older notes preserve historical states.

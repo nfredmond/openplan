@@ -242,3 +242,83 @@ describe("generation editor custody", () => {
   });
 
 });
+
+// Fulfil responses after cancellation: queued bodies can outlive the page.
+describe("generation editor asynchronous custody", () => {
+  it.each(["unmount", "access"] as const)("preserves pending recovery after %s during its verified read", async transition => {
+    const f = fixture(); let settle!: (response: Response) => void;
+    const fetch = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(reply({ requestId: f.pending.intent.requestId, created: true }, 202))
+      .mockImplementationOnce(() => new Promise<Response>(resolve => { settle = resolve; }));
+    const editor = render(<Editor pending={f.pending}/>); fireEvent.click(sendButton());
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+    const key = pendingGenerationKey(f.pending), raw = localStorage.getItem(key); expect(raw).not.toBeNull();
+    if (transition === "unmount") editor.unmount(); else editor.rerender(<Editor pending={f.pending} canWrite={false}/>);
+    await act(async () => { settle(reply(f.viewed)); });
+    expect(localStorage.getItem(key), "late read must preserve original recovery").toBe(raw);
+    expect(fetch.mock.calls[1][1]?.signal?.aborted, "active read cancelled").toBe(true);
+    if (transition === "access") { editor.rerender(<Editor pending={f.pending}/>); expect(screen.queryByLabelText("Retained machine output")).not.toBeInTheDocument(); expect(retryButton()).toBeEnabled(); }
+    expect(publish).not.toHaveBeenCalled(); expect(refresh).not.toHaveBeenCalled();
+  });
+  it.each(["unmount", "access"] as const)("does not start a read after %s while the queue acknowledgement body is pending", async transition => {
+    const f = fixture(); let settle!: (value: unknown) => void;
+    const response = reply(null, 202), body = vi.spyOn(response, "json").mockImplementation(() => new Promise(resolve => { settle = resolve; }));
+    const fetch = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(response).mockResolvedValue(reply(f.viewed));
+    const editor = render(<Editor pending={f.pending}/>); fireEvent.click(sendButton()); await waitFor(() => expect(body).toHaveBeenCalledOnce());
+    const key = pendingGenerationKey(f.pending), raw = localStorage.getItem(key);
+    if (transition === "unmount") editor.unmount(); else editor.rerender(<Editor pending={f.pending} canWrite={false}/>);
+    await act(async () => { settle({ requestId: f.pending.intent.requestId, created: true }); });
+    expect(fetch, "stale acknowledgement cannot start another request").toHaveBeenCalledOnce();
+    expect(localStorage.getItem(key)).toBe(raw); expect(fetch.mock.calls[0][1]?.signal?.aborted).toBe(true);
+    if (transition === "access") { editor.rerender(<Editor pending={f.pending}/>); expect(retryButton()).toBeEnabled(); }
+  });
+  it.each(["list", "view", "recover"] as const)("ignores a delayed %s after access is revoked and restored", async operation => {
+    const f = fixture(); let settle!: (value: unknown) => void;
+    const response = reply(null), body = vi.spyOn(response, "json").mockImplementation(() => new Promise(resolve => { settle = resolve; }));
+    const fetch = vi.spyOn(globalThis, "fetch"), key = pendingGenerationKey(f.pending), damaged = "SYNTHETIC damaged recovery";
+    if (operation === "recover") localStorage.setItem(key, damaged);
+    if (operation === "view") fetch.mockResolvedValueOnce(reply(catalog(f)));
+    fetch.mockResolvedValueOnce(response);
+    const editor = render(<Editor pending={f.pending}/>);
+    if (operation === "recover") fireEvent.click(screen.getByRole("button", { name: "Recover saved generation request" }));
+    else { fireEvent.click(screen.getByRole("button", { name: "Machine translation requests" })); if (operation === "view") fireEvent.click(await screen.findByRole("button", { name: /1 of 1 fields completed/ })); }
+    await waitFor(() => expect(body).toHaveBeenCalledOnce());
+    editor.rerender(<Editor pending={f.pending} canWrite={false}/>); editor.rerender(<Editor pending={f.pending}/>);
+    await act(async () => { settle(operation === "list" ? catalog(f) : f.viewed); });
+    expect(fetch.mock.calls.at(-1)?.[1]?.signal?.aborted, "revocation permanently cancels this operation").toBe(true);
+    expect(screen.queryByText(/could not be read completely|could not be verified|could not be matched/)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Retained machine output")).not.toBeInTheDocument();
+    if (operation === "list") expect(screen.queryByRole("button", { name: /1 of 1 fields completed/ })).not.toBeInTheDocument();
+    if (operation === "recover") { expect(localStorage.getItem(key)).toBe(damaged); expect(Object.keys(localStorage)).toEqual([key]); expect(screen.getByRole("button", { name: "Recover saved generation request" })).toBeEnabled(); }
+    expect(publish).not.toHaveBeenCalled(); expect(refresh).not.toHaveBeenCalled();
+  });
+});
+
+describe("generation editor operation ownership", () => {
+  it("keeps a newer read busy when an older cancelled body finishes", async () => {
+    const f = fixture(); let finishOld!: (value: unknown) => void, finishNew!: (value: unknown) => void;
+    const old = reply(null), fresh = reply(null);
+    const oldBody = vi.spyOn(old, "json").mockImplementation(() => new Promise(resolve => { finishOld = resolve; }));
+    const newBody = vi.spyOn(fresh, "json").mockImplementation(() => new Promise(resolve => { finishNew = resolve; }));
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(old).mockResolvedValueOnce(fresh);
+    const editor = render(<Editor pending={f.pending}/>); fireEvent.click(screen.getByRole("button", { name: "Machine translation requests" }));
+    await waitFor(() => expect(oldBody).toHaveBeenCalledOnce());
+    editor.rerender(<Editor pending={f.pending} canWrite={false}/>); editor.rerender(<Editor pending={f.pending}/>);
+    const refreshList = screen.getByRole("button", { name: "Refresh saved generation requests" });
+    expect(refreshList).toBeEnabled(); fireEvent.click(refreshList); await waitFor(() => expect(newBody).toHaveBeenCalledOnce());
+    await act(async () => { finishOld(catalog(f)); });
+    expect(refreshList, "old completion cannot release the newer operation").toBeDisabled();
+    expect(screen.queryByRole("button", { name: /1 of 1 fields completed/ })).not.toBeInTheDocument();
+    await act(async () => { finishNew(catalog(f)); });
+    expect(refreshList).toBeEnabled(); expect(screen.getByRole("button", { name: /1 of 1 fields completed/ })).toBeVisible();
+  });
+  it("requires a fresh retained-output read after edit access returns", async () => {
+    const f = fixture(); vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(reply(catalog(f))).mockResolvedValueOnce(reply(f.viewed)).mockResolvedValueOnce(reply(f.viewed));
+    const editor = render(<Editor pending={f.pending}/>); fireEvent.click(screen.getByRole("button", { name: "Machine translation requests" }));
+    fireEvent.click(await screen.findByRole("button", { name: /1 of 1 fields completed/ })); await screen.findByLabelText("Retained machine output");
+    const name = "Publish this retained output with a machine label"; expect(screen.getByRole("button", { name })).toBeEnabled();
+    editor.rerender(<Editor pending={f.pending} canWrite={false}/>); editor.rerender(<Editor pending={f.pending}/>);
+    expect(screen.getByRole("button", { name })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Refresh request status" })); await waitFor(() => expect(screen.getByRole("button", { name })).toBeEnabled());
+    expect(publish).not.toHaveBeenCalled();
+  });
+});
