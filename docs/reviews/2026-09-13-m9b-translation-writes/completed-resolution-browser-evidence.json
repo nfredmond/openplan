@@ -1,0 +1,47 @@
+{
+  "implementationCommit": "125bf2a31ccf34a3eb088454f2699acd85915620",
+  "privateEvidenceDirectory": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/translation-completed-resolution-browser-1789362805582",
+  "recordedEvidenceNotRerun": true,
+  "results": [
+    {
+      "width": 1440,
+      "passed": true,
+      "providerCalls": 1,
+      "retainedDownloadSha256": "f2a86279e728ba72b3953f98887b2d60e6e02d93db6b6362da0d4ff064532a73",
+      "archiveDownloadSha256": "6e6cd9277225c6d4cf320fc7a7a237bd4eb154081897716c22688abc35d5adc6",
+      "lateCreationStatus": 409,
+      "changedWorkspaceStatus": 403,
+      "anonymousStatus": 401,
+      "overflow": {
+        "viewport": 1440,
+        "document": 1440
+      }
+    },
+    {
+      "width": 390,
+      "passed": true,
+      "providerCalls": 1,
+      "retainedDownloadSha256": "4db1d10c450c0431bf69a39911daf48d780515ce16fbe4635957fb0a4da0f8ae",
+      "archiveDownloadSha256": "344acf2da8333546de28e277b70bf1af9d29911fa2cbcaf0c48e909277536007",
+      "lateCreationStatus": 409,
+      "changedWorkspaceStatus": 403,
+      "anonymousStatus": 401,
+      "overflow": {
+        "viewport": 390,
+        "document": 390
+      }
+    }
+  ],
+  "sha256": {
+    "translation-completed-resolution-browser-1789362805582/results.json": "b310883d539c30c9cc7014e9dad4e2f05d86f85b910274c91cafddec7c47eb8b",
+    "translation-completed-resolution-browser-1789362805582/source-sha256.json": "270b483a9c05ad140dfe569dffe4dd582476be37444dbdeaf8738f4f5d3c7a22",
+    "translation-completed-resolution-browser-1789362805582/identity.log": "f24dcce5af86375b893cb6746ea33a00645b6c9c51c0cdf70ddecd9996255b77",
+    "translation-resolution-full-qa.log": "c82a4c21a01a95ddb252ead3fc8545d7826d79e135a0872d5f6ee7960254f006",
+    "translation-resolution-editor-full-rls.log": "04349ea3ad66c273efc12c14bdd88e46bfeddac1c29c0479d72c85947e5c0c64"
+  },
+  "limits": [
+    "Synthetic provider transport only; no paid provider call.",
+    "New composed browser assertions have not received a dedicated mutation run. Existing underlying controls remain recorded in RESOLUTION_EDITOR_PROGRESS.md.",
+    "QA terminal output was lost at compaction; log reaches final production route table, but exit status was not recovered."
+  ]
+}

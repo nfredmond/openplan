@@ -1,3 +1,7 @@
+# Current completed-request and weekly reset checkpoint
+
+Read [COMPLETED_RESOLUTION_RESET_CHECKPOINT.md](COMPLETED_RESOLUTION_RESET_CHECKPOINT.md) first. Completed-output recovery and archive-failure retry ran at desktop/390px; fresh isolated RLS passed all 525 tests. This note records terminal jobs, QA exit-status uncertainty and the exact remaining work. Older entries below preserve historical states.
+
 # Current resolution editor and browser checkpoint
 
 Read [RESOLUTION_EDITOR_PROGRESS.md](RESOLUTION_EDITOR_PROGRESS.md) first. The editor now calls the resolution API; absent-request recovery and downloaded receipts passed desktop/390px journeys, and the full unit suite passed. Existing-request browser recovery, remaining producers and release gates are still open. Older entries below preserve their dated states.
