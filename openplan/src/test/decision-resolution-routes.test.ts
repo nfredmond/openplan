@@ -45,9 +45,9 @@ describe("private decision recovery HTTP", () => {
     const response = await POST(request(body, { [header]: "" }), params());
     expect(response.status).toBe(403); expect(response.headers.get("cache-control")).toBe("private, no-store"); expect(mocks.rpc).not.toHaveBeenCalled();
   });
-  it.each([{ origin: "https://foreign.invalid" }, { "sec-fetch-site": "cross-site" },
+  it.each<Record<string, string>>([{ origin: "https://foreign.invalid" }, { "sec-fetch-site": "cross-site" },
     { "x-openplan-expected-user": "different" }, { "x-openplan-expected-workspace": "different" }])("refuses changed browser origin or scope %j", async headers => {
-    expect((await POST(request(body, headers as Record<string, string>), params())).status).toBe(403); expect(mocks.rpc).not.toHaveBeenCalled();
+    expect((await POST(request(body, headers), params())).status).toBe(403); expect(mocks.rpc).not.toHaveBeenCalled();
   });
   it("requires current staff including when retrying old identity", async () => {
     mocks.getUser.mockResolvedValue({ data: { user: null }, error: null });
@@ -75,7 +75,7 @@ describe("private decision recovery HTTP", () => {
       pull(controller) { pulls++; if (pulls === 1) controller.enqueue(new Uint8Array(DECISION_RESOLUTION_BODY_LIMIT + 1)); else controller.close(); },
       cancel() { cancelled = true; },
     }, { highWaterMark: 0 });
-    const streamed = new NextRequest(url, { method: "POST", headers: request().headers, body: stream, duplex: "half" } as RequestInit & { duplex: "half" });
+    const streamed = new NextRequest(url, { method: "POST", headers: request().headers, body: stream, duplex: "half" } as NonNullable<ConstructorParameters<typeof NextRequest>[1]> & { duplex: "half" });
     expect((await POST(streamed, params())).status).toBe(413);
     expect(cancelled).toBe(true); expect(pulls).toBe(1); expect(mocks.rpc).not.toHaveBeenCalled();
   });

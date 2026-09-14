@@ -25,8 +25,13 @@ asserted during loading; the test now waits until the editor is ready. Preserve
 `DECISION_RECOVERY_INTEGRATION_COVERAGE_GAP.json` as the original finding.
 
 This is an unfinished implementation checkpoint, not a release or full-QA claim.
-Next run focused ESLint and TypeScript with `NODE_OPTIONS=--max-old-space-size=8192`,
-prove the installed RLS census registration, then build and exercise recovery from
+Focused ESLint and TypeScript with an 8 GB heap now pass. Two fixture-only
+TypeScript errors were corrected using explicit header and NextRequest constructor
+types. The installed census passes baseline and harmless control, and fails when
+the recovery table is removed from its actual registration. See
+`decision-recovery-census-results.json`. API caller checks pass. The release-ordering
+check identified missing migration 21/22 changelog entries; those are now recorded
+under Unreleased with unfinished boundaries. Next build and exercise recovery from
 real desktop and 390px navigation with keyboard and console inspection. Port 3262
 still serves old commit `ea474256`, not these changes; identify and rebuild this
 own server before claiming recovery browser evidence. Preserve original, page-held

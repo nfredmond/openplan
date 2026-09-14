@@ -20,7 +20,16 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No additional changes recorded.
+Private engagement response-to-decision links are in development. Staff can
+retain reviewed source context and reasons, correct or withdraw a link while
+keeping its original evidence, and resolve interrupted requests with retained
+recovery copies. Browser acceptance of request recovery and final release checks
+remain unfinished; public explanations and report/export lineage remain open.
+
+Apply `20261014000021_engagement_response_decision_links.sql` and
+`20261014000022_engagement_decision_request_resolution.sql` before running this
+code. These additive migrations retain link history and private recovery receipts;
+resolving an unsaved request prevents its late arrival without deleting saved links.
 
 ## 0.59.0 — 2026-09-14
 

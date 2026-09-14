@@ -1,0 +1,40 @@
+{
+  "sourceSha256": "bcbcb20825a07c871c33f948494ea5ac7e2e747b02283b2da22b65d2d05e9e9b",
+  "outcomes": [
+    {
+      "name": "baseline",
+      "passed": 1,
+      "failed": 0,
+      "failureAssertions": []
+    },
+    {
+      "name": "harmless",
+      "passed": 1,
+      "failed": 0,
+      "failureAssertions": []
+    },
+    {
+      "name": "missing-recovery-registration",
+      "passed": 0,
+      "failed": 1,
+      "failureAssertions": [
+        {
+          "ancestorTitles": [
+            "the probe list covers the schema"
+          ],
+          "fullName": "the probe list covers the schema every workspace_id table is probed, provably deny-all, or excused by name",
+          "status": "failed",
+          "title": "every workspace_id table is probed, provably deny-all, or excused by name",
+          "duration": 1577.09118,
+          "failureMessages": [
+            "AssertionError: these workspace-scoped tables are neither probed by this suite, nor provably deny-all, nor excused: engagement_decision_request_resolutions. Add a fixture to WORKSPACE_RLS_PROBES, or excuse them by name with the reason: expected [ Array(1) ] to deeply equal []\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/rls-isolation.test.ts:2095:7\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+          ],
+          "meta": {},
+          "tags": []
+        }
+      ]
+    }
+  ],
+  "restored": true,
+  "limits": "Catalog registration coverage only; actual private-row access and writes are exercised separately by installed recovery fixtures."
+}
