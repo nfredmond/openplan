@@ -271,11 +271,14 @@ describe("reference count projections", () => {
     // `project_decision_package_my_work` is a security-invoker caller queue;
     // its exact projection and workspace isolation are covered by the My Work
     // unit tests and `decision-package-rls-live.test.ts`.
+    // engagement_public_items projections are executed against the installed view
+    // under service_role in engagement-public-copy-privacy-rls.test.ts.
     expect(
       [...new Set(selectSites.filter((site) => site.table && schema.isView(site.table)).map((site) => site.table))].sort()
     ).toEqual([
       "census_tracts_map",
       "contract_participant_my_work",
+      "engagement_public_items",
       "gtfs_stops_map",
       "project_bca_screenings_latest",
       "project_decision_package_my_work",

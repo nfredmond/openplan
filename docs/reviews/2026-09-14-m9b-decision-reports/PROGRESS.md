@@ -187,3 +187,33 @@ production build and desktop/390px browser/artifact acceptance. The old port-326
 server still serves `6604a87e` and is not browser evidence for this fix. No v0.60
 release or full M9b completion is claimed. Decision lineage in internal exports and
 the actual public explanation journey remain next after this privacy correction.
+
+
+The first full QA on `d31c2093` passed lint/deadcode and reached all unit tests,
+then failed with 15,313 passing, 520 skipped and two failures. The new migration
+was missing from the changelog, and the source projection guard's pinned view
+list did not include the new restricted view. Both omissions are corrected.
+The view entry is backed by live service-role SQL resolution of every literal
+public-view projection plus the portal's imported projection constant. Renaming
+its body column inside a rolled-back transaction makes that check fail at actual
+column resolution. Baseline and harmless control pass. All 23 follow-up tests
+passed, including 11 installed checks and the two corrected six-test suites.
+`public-copy-followup-checks.json` records the result. The first QA log remains
+`public-copy-full-qa.log`; no successful full QA is claimed by that record.
+
+`d31c2093` is pushed to the work branch as an implementation checkpoint. Main's
+`50188138` CI `34845675293` and RLS `34845675264` are both green. No PR or tag was
+created. The owned old port-3262 server, PID 3278208 at the time, was stopped after
+verifying its checkout and original commit environment. Port 3262 needs a newly
+identified build before browser acceptance; other servers remain untouched.
+
+The disconnected decision proof database was inspected read-only and is 46 MB.
+It still has no public-items view. If used for concurrency evidence, install the
+exact privacy definitions there explicitly, verify them against the application's
+retained function hashes, and keep it disconnected. Do not reset or drop it.
+Use committed, clearly synthetic concurrency fixtures only in that proof database.
+Test source-private edits against waiting vote/reply/report writes and translation
+reads. Inspect direct response publication too: its source guard currently reads
+eligibility without taking the response advisory lock, while the ordinary response
+command already takes that lock. This is an untested concurrency question, not a
+confirmed additional defect. Preserve a demonstrated failure before fixing it.

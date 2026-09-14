@@ -1,0 +1,10 @@
+{
+  "numTotalTests": 23,
+  "numPassedTests": 23,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "success": true,
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/public-copy-installed-rls-followup.json",
+  "scope": "11 installed public-privacy tests plus 6 projection-guard and 6 release-ordering tests",
+  "limits": "Serial database and source checks; no browser or concurrent-interleaving claim."
+}

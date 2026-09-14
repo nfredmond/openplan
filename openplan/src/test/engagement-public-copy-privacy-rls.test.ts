@@ -1,6 +1,8 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { PUBLIC_ITEM_COLUMNS } from '@/lib/engagement/public-approved-items';
+import { collectSupabaseSelectSites } from './supabase-call-sites';
 import { LIVE_RLS } from './local-supabase-env';
 import { resolveLocalDbContainer } from './helpers/live-catalog';
 import { requireContractVerificationStack } from './helpers/contract-verification-stack';
@@ -34,5 +36,33 @@ describe.skipIf(!LIVE_RLS)('installed public-copy privacy', () => {
     expect(failure).toBeDefined();
     expect(String((failure as { stderr?: unknown }).stderr)).toContain(`Public privacy assertions failed:`);
     expect(String((failure as { stderr?: unknown }).stderr)).toContain(expected);
+  });
+});
+
+// Native column resolution covers the public view excluded by the table-only
+// source census, including the portal's imported projection constant.
+function runPublicProjections(fault = '') {
+  const container = resolveLocalDbContainer();
+  requireContractVerificationStack(container);
+  const sites = collectSupabaseSelectSites().filter(site => site.table === 'engagement_public_items' && site.projection !== null);
+  expect(sites.length).toBeGreaterThanOrEqual(7);
+  const projections = [...new Set([PUBLIC_ITEM_COLUMNS, ...sites.map(site => site.projection as string)])];
+  for (const projection of projections) expect(projection).toMatch(/^[a-z_]+(?:,\s*[a-z_]+)*$/);
+  const selects = projections.map(projection => `SELECT ${projection} FROM public.engagement_public_items LIMIT 0;`).join('\n');
+  return execFileSync('docker', ['exec', '-i', container, 'psql', '-U', 'postgres', '-d', 'postgres', '-X', '-qAt', '-v', 'ON_ERROR_STOP=1'], {
+    encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 45_000,
+    input: `BEGIN; SET LOCAL lock_timeout='3s';\n${fault}\nSET LOCAL ROLE service_role;\n${selects}\nSELECT 'public-projections-verified';\nROLLBACK;`,
+  }).trim();
+}
+
+describe.skipIf(!LIVE_RLS)('installed public-copy projections', () => {
+  it.each(['', '-- Harmless public projection comment.'])('resolves actual selected columns under the caller role %s', comment => {
+    expect(runPublicProjections(comment)).toBe('public-projections-verified');
+  });
+  it('detects a selected column missing from the installed view', () => {
+    let failure: unknown;
+    try { runPublicProjections('ALTER VIEW public.engagement_public_items RENAME COLUMN body TO missing_body;'); } catch (error) { failure = error; }
+    expect(failure).toBeDefined();
+    expect(String((failure as { stderr?: unknown }).stderr)).toContain('column "body" does not exist');
   });
 });

@@ -23,13 +23,20 @@ stable enough to promise smooth upgrades indefinitely.
 Private engagement response-to-decision links are in development. Staff can
 retain reviewed source context and reasons, correct or withdraw a link while
 keeping its original evidence, and resolve interrupted requests with retained
-recovery copies. Browser acceptance of request recovery and final release checks
-remain unfinished; public explanations and report/export lineage remain open.
+recovery copies. Desktop and 390px request-recovery journeys passed. Final release
+checks, public explanations and report/export lineage remain open.
 
 Apply `20261014000021_engagement_response_decision_links.sql` and
-`20261014000022_engagement_decision_request_resolution.sql` before running this
-code. These additive migrations retain link history and private recovery receipts;
+`20261014000022_engagement_decision_request_resolution.sql`, plus
+`20261014000023_engagement_public_copy_privacy.sql` before running this code.
+These additive migrations retain link history and private recovery receipts;
 resolving an unsaved request prevents its late arrival without deleting saved links.
+
+Explicit private/internal contribution flags now restrict public reads, photographs,
+translation sources, replies, votes and report selection independently of approval
+status. Privacy edits require a current review and retain history while withdrawing
+affected staff responses. Migration 23 preserves existing records. Browser acceptance
+of this privacy correction and the handling of legacy public files remain unfinished.
 
 ## 0.59.0 — 2026-09-14
 
