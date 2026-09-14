@@ -1,0 +1,106 @@
+{
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "baselineMigrations": 343,
+  "transactionRollbackVerified": true,
+  "migrationSha256": "2774a958e79959d423d24d8e2cd971c1ed7f297b29bbfdbd2ca3bc338f4704e4",
+  "fixtureSha256": "0237de6d5cc508816c29f3ad45cb08d6cb3ede252d048b48e2bfbca79d11f857",
+  "cases": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "expectedOutcome": true
+    },
+    {
+      "case": "lost-tail",
+      "exitCode": 3,
+      "expectedFailure": "Complete source capture lost the 301st concern",
+      "expectedOutcome": true
+    },
+    {
+      "case": "truncated-source-text",
+      "exitCode": 3,
+      "expectedFailure": "Source text was truncated",
+      "expectedOutcome": true
+    },
+    {
+      "case": "current-definition-only",
+      "exitCode": 3,
+      "expectedFailure": "Historical definition set or exact bytes differ",
+      "expectedOutcome": true
+    },
+    {
+      "case": "lost-survey-answers",
+      "exitCode": 3,
+      "expectedFailure": "300-source control was not retained",
+      "expectedOutcome": true
+    },
+    {
+      "case": "viewer-read",
+      "exitCode": 3,
+      "expectedFailure": "Viewer read private source text",
+      "expectedOutcome": true
+    },
+    {
+      "case": "raw-table-read",
+      "exitCode": 3,
+      "expectedFailure": "Direct private source table read was allowed",
+      "expectedOutcome": true
+    },
+    {
+      "case": "anonymous-rpc",
+      "exitCode": 3,
+      "expectedFailure": "Anonymous source read was allowed",
+      "expectedOutcome": true
+    },
+    {
+      "case": "mutable-source",
+      "exitCode": 3,
+      "expectedFailure": "Retained source mutation was allowed",
+      "expectedOutcome": true
+    },
+    {
+      "case": "deleted-source",
+      "exitCode": 3,
+      "expectedFailure": "Retained source deletion was allowed",
+      "expectedOutcome": true
+    },
+    {
+      "case": "wrong-requested-campaign",
+      "exitCode": 3,
+      "expectedFailure": "Saved source read ignored requested campaign",
+      "expectedOutcome": true
+    },
+    {
+      "case": "request-actor",
+      "exitCode": 3,
+      "expectedFailure": "Another actor reused the source request",
+      "expectedOutcome": true
+    },
+    {
+      "case": "relative-date",
+      "exitCode": 3,
+      "expectedFailure": "Relative source date was accepted",
+      "expectedOutcome": true
+    },
+    {
+      "case": "category-filter",
+      "exitCode": 3,
+      "expectedFailure": "Historical category selection differs",
+      "expectedOutcome": true
+    },
+    {
+      "case": "swallowed-save-error",
+      "exitCode": 3,
+      "expectedFailure": "Failed persistence returned a source receipt",
+      "expectedOutcome": true
+    }
+  ],
+  "limits": "Real PostgreSQL roles, functions, triggers, capture and retry semantics. Candidate migration exists only within each rolled-back transaction; no application activation. No concurrent sessions, browser, worker generation, reviewed themes, public exports or provider invocation are proved here."
+}

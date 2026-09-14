@@ -1,0 +1,264 @@
+{
+  "sourcesRestored": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "passed": 47,
+      "failed": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "passed": 47,
+      "failed": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "outer-scope",
+      "exitCode": 1,
+      "passed": 46,
+      "failed": [
+        "retained synthesis source verification refuses a receipt from a different workspace"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "source-checksum",
+      "exitCode": 1,
+      "passed": 45,
+      "failed": [
+        "synthesis source API keeps failed or corrupt reads unavailable",
+        "retained synthesis source verification refuses changed bytes even when the content would still parse"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "inner-scope",
+      "exitCode": 1,
+      "passed": 45,
+      "failed": [
+        "retained synthesis source verification refuses inner workspace even with a matching outer hash",
+        "retained synthesis source verification refuses campaign owner even with a matching outer hash"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "counts",
+      "exitCode": 1,
+      "passed": 45,
+      "failed": [
+        "retained synthesis source verification refuses missing counted source even with a matching outer hash",
+        "retained synthesis source verification refuses campaign total smaller than selection even with a matching outer hash"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "source-duplicates",
+      "exitCode": 1,
+      "passed": 46,
+      "failed": [
+        "retained synthesis source verification refuses duplicate source even with a matching outer hash"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "selected-kinds",
+      "exitCode": 1,
+      "passed": 46,
+      "failed": [
+        "retained synthesis source verification refuses excluded comment kind even with a matching outer hash"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "contribution-scope",
+      "exitCode": 1,
+      "passed": 46,
+      "failed": [
+        "retained synthesis source verification refuses another campaign source even with a matching outer hash"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unselected-metadata",
+      "exitCode": 1,
+      "passed": 46,
+      "failed": [
+        "retained synthesis source verification refuses unexpected private contact even with a matching outer hash"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "selection-status-dates",
+      "exitCode": 1,
+      "passed": 45,
+      "failed": [
+        "retained synthesis source verification refuses out-of-scope status even with a matching outer hash",
+        "retained synthesis source verification refuses out-of-scope date even with a matching outer hash"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "answer-session",
+      "exitCode": 1,
+      "passed": 46,
+      "failed": [
+        "retained synthesis source verification refuses missing session even with a matching outer hash"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "definition-reference",
+      "exitCode": 1,
+      "passed": 46,
+      "failed": [
+        "retained synthesis source verification refuses lost definition even with a matching outer hash"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "definition-integrity",
+      "exitCode": 1,
+      "passed": 45,
+      "failed": [
+        "retained synthesis source verification refuses changed historical bytes even with a matching outer hash",
+        "retained synthesis source verification refuses foreign definition even with a matching outer hash"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "definition-duplicates",
+      "exitCode": 1,
+      "passed": 46,
+      "failed": [
+        "retained synthesis source verification refuses duplicate category identities inside a validly hashed historical definition"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "item-category",
+      "exitCode": 1,
+      "passed": 46,
+      "failed": [
+        "retained synthesis source verification refuses unselected category even with a matching outer hash"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "answer-category",
+      "exitCode": 1,
+      "passed": 46,
+      "failed": [
+        "retained synthesis source verification refuses missing selected question even with a matching outer hash"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "selection-unknown-field",
+      "exitCode": 1,
+      "passed": 46,
+      "failed": [
+        "retained synthesis source verification refuses unknown/duplicate/empty selection and inverted dates"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "selection-uniqueness",
+      "exitCode": 1,
+      "passed": 46,
+      "failed": [
+        "retained synthesis source verification refuses unknown/duplicate/empty selection and inverted dates"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "selection-empty-kinds",
+      "exitCode": 1,
+      "passed": 46,
+      "failed": [
+        "retained synthesis source verification refuses unknown/duplicate/empty selection and inverted dates"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "selection-date-order",
+      "exitCode": 1,
+      "passed": 46,
+      "failed": [
+        "retained synthesis source verification refuses unknown/duplicate/empty selection and inverted dates"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "agent-write-refusal",
+      "exitCode": 1,
+      "passed": 44,
+      "failed": [
+        "synthesis source API refuses unsupported agent write header x-openplan-assistant-execution-source",
+        "synthesis source API refuses unsupported agent write header x-openplan-assistant-input-hash",
+        "synthesis source API refuses unsupported agent write header x-openplan-assistant-approval-id"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "browser-origin",
+      "exitCode": 1,
+      "passed": 46,
+      "failed": [
+        "synthesis source API uses the real origin guard before reading or saving source selections"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "request-size",
+      "exitCode": 1,
+      "passed": 46,
+      "failed": [
+        "synthesis source API bounds the selection request without truncating the selected corpus"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-scope",
+      "exitCode": 1,
+      "passed": 46,
+      "failed": [
+        "synthesis source API refuses a missing or foreign receipt"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "private-cache",
+      "exitCode": 1,
+      "passed": 44,
+      "failed": [
+        "synthesis source API confirms a new retained source and an exact replay with the complete count",
+        "synthesis source API bounds the selection request without truncating the selected corpus",
+        "synthesis source API reads and verifies saved source bytes without re-reading current comments"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "rpc-request-id",
+      "exitCode": 1,
+      "passed": 45,
+      "failed": [
+        "synthesis source API reads and verifies saved source bytes without re-reading current comments",
+        "retained synthesis source verification loads through the scoped RPC and refuses a failed read instead of returning no sources"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "sourceSha256": {
+    "src/lib/engagement/synthesis-sources-server.ts": "c9862e4bd3301f6243c2a723c871a15dd9be71591266f726232e6322c6d39393",
+    "src/app/api/engagement/campaigns/[campaignId]/synthesis/sources/route.ts": "d8ba85e041ceaddd4a7491757802397b3d3f56b6e1bb4f1069a4a0dfe6276871",
+    "src/lib/engagement/synthesis-sources.ts": "751be5c381f3b4cff4c875792d58d0e783e1a1c490f6b06272151c201260f24a"
+  },
+  "testSha256": {
+    "src/test/engagement-synthesis-sources.test.ts": "f7e93b2a06bbb0dd11f64050d220425dbb593f8ede5142d1892124e0a0459a7f",
+    "src/test/engagement-synthesis-source-route.test.ts": "29abfefc76e7b2af63a719f1d04ed91efb7fe1a57d56bfb794113deec86b2c97"
+  },
+  "limits": "Real route, selection schema, byte verification and browser-origin guard with mocked authentication/database and audit logger. Native database roles/capture are proved separately. This does not prove browser reachability, complete database query coverage by itself, worker recovery, synthesis quality, reviews or exports."
+}

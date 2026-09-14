@@ -1,0 +1,17 @@
+{
+  "synthetic": true,
+  "inputSha256": "cd2c88f1607eae6b3f42a8ca3064aa6aa5984e3b600cec19e300eb2830c3239d",
+  "snapshotSha256": "96a72105590f7c00e5f1af99232474e77b7f399c54058a22a5b79c7483f972fa",
+  "verifiedBy": "verifySynthesisSource through the actual TypeScript module using the PostgreSQL RPC result",
+  "counts": {
+    "items": 301,
+    "answers": 2,
+    "sessions": 1,
+    "campaignItems": 301,
+    "campaignAnswers": 2,
+    "campaignSessions": 1
+  },
+  "definitionCount": 2,
+  "finalSourceTailRetained": true,
+  "limits": "Candidate migration and fixtures rolled back on the named restore stack. This is a native database to TypeScript parser handoff, not HTTP or browser acceptance."
+}

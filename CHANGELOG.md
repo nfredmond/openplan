@@ -20,6 +20,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+- Begin private retained synthesis sources: `20261014000025_engagement_synthesis_sources.sql` adds immutable complete selected comments/survey answers, historical definitions, exact hashes and staff-only capture/read RPCs. The new backend has focused API and native transaction checks; the existing synthesis UI, generation/review worker and portable reviewed outputs are not yet connected. This is unfinished M9b work, not a released synthesis fix.
+
 ## 0.61.1 — 2026-09-14
 
 Saved consultation reports without a project now load through the report detail

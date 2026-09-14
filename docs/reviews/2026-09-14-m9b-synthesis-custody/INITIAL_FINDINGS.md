@@ -1,5 +1,6 @@
 # M9b synthesis source coverage and saved review
 
+Current implementation status: [backend checkpoint](BACKEND_CHECKPOINT.md). The initial investigation/design below remains the source of the complete M9b outcome.
 September 14, 2026, inspected at release candidate 291ce88a. Read-only investigation while v0.61.1 final CI runs. No synthesis implementation has started. The roadmap remains the queue and the complete V1 contract remains binding. Extend Engagement; do not create a new module or paid service.
 
 ## Reproduced finding
