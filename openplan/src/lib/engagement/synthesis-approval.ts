@@ -35,10 +35,13 @@ export type VerifiedSynthesisApproval = z.infer<typeof eventSchema> & SynthesisA
 const sameIntent = (left: SynthesisApprovalIntent, right: SynthesisApprovalIntent) =>
   JSON.stringify(synthesisApprovalIntentSchema.parse(left)) === JSON.stringify(synthesisApprovalIntentSchema.parse(right));
 
+/** A valid retained event can belong to a different command; corruption and failed access are separate failures. */
+export class SynthesisApprovalConflictError extends Error {}
+
 function checkScope(value: SynthesisApprovalScope, expected: SynthesisApprovalScope) {
   if (value.campaignId !== expected.campaignId || value.workspaceId !== expected.workspaceId || value.reviewId !== expected.reviewId
     || value.sourceId !== expected.sourceId || value.sourceSha256 !== expected.sourceSha256 || value.preparationSha256 !== expected.preparationSha256) {
-    throw new Error("Approval source or review scope differs");
+    throw new SynthesisApprovalConflictError("Approval source or review scope differs");
   }
 }
 function sameRevision(left: SynthesisApprovalContext, right: SynthesisApprovalContext) {
@@ -124,6 +127,6 @@ export async function readSynthesisApprovalReceipt(raw: unknown, expected: Synth
     campaignId: intent.campaignId, workspaceId: intent.workspaceId, reviewId: intent.reviewId,
     sourceId: intent.sourceId, sourceSha256: intent.sourceSha256, preparationSha256: intent.preparationSha256,
   });
-  if (!sameIntent(event.intent, intent)) throw new Error("Approval receipt does not match the exact request");
+  if (!sameIntent(event.intent, intent)) throw new SynthesisApprovalConflictError("Approval receipt does not match the exact request");
   return { event, replayed: receipt.replayed };
 }

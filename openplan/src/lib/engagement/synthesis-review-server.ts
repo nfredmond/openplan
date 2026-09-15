@@ -37,7 +37,8 @@ async function readRecord(client: Client, scope: Scope) {
 }
 
 /** Check the complete lineage against its immutable source, including replaying each retained staff command. */
-export async function loadSynthesisReview(client: Client, scope: Scope) {
+export async function loadSynthesisReview(client: Client, scope: Scope,
+  onVerifiedRevision?: (revision: Readonly<Pick<SynthesisReviewRecord["revision"], "requestId" | "revisionNo" | "contentSha256">>) => void) {
   const saved = await readRecord(client, scope);
   if (!saved) return null;
   const source = await loadSynthesisSource(client, { campaignId: scope.campaignId, workspaceId: scope.workspaceId, requestId: saved.sourceId });
@@ -58,6 +59,7 @@ export async function loadSynthesisReview(client: Client, scope: Scope) {
     if (record.revision.intent.operation === "correct") content = applySynthesisReviewChange(content, record.revision.intent.change, source.snapshot, source.snapshotSha256);
     const retained = verifySynthesisReviewContent(JSON.parse(record.revision.contentText), source.snapshot, source.snapshotSha256);
     if (!isDeepStrictEqual(retained, content)) throw new Error("Saved review content differs from its command");
+    onVerifiedRevision?.({ requestId: record.revision.requestId, revisionNo: record.revision.revisionNo, contentSha256: record.revision.contentSha256 });
   }
   return { ...saved, preparation: initial.preparation, content, source };
 }
