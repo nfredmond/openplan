@@ -1,0 +1,156 @@
+{
+  "cases": [
+    {
+      "case": "baseline",
+      "expected": "survives",
+      "expectedOutcome": true,
+      "exit": 0,
+      "passed": 40,
+      "failed": 0,
+      "failedAssertions": []
+    },
+    {
+      "case": "harmless-comment",
+      "expected": "survives",
+      "expectedOutcome": true,
+      "exit": 0,
+      "passed": 40,
+      "failed": 0,
+      "failedAssertions": []
+    },
+    {
+      "case": "unclassified-engagement_synthesis_approval_events.event_no",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 39,
+      "failed": 1,
+      "failedAssertions": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ]
+    },
+    {
+      "case": "unclassified-engagement_synthesis_approval_events.event_sha256",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 39,
+      "failed": 1,
+      "failedAssertions": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ]
+    },
+    {
+      "case": "unclassified-engagement_synthesis_approval_events.event_text",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 39,
+      "failed": 1,
+      "failedAssertions": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ]
+    },
+    {
+      "case": "unclassified-engagement_synthesis_approval_events.intent_json",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 39,
+      "failed": 1,
+      "failedAssertions": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ]
+    },
+    {
+      "case": "unclassified-engagement_synthesis_approval_events.predecessor_sha256",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 39,
+      "failed": 1,
+      "failedAssertions": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ]
+    },
+    {
+      "case": "unclassified-engagement_synthesis_approval_events.review_id",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 39,
+      "failed": 1,
+      "failedAssertions": [
+        "a column the application never reads has to say why finds no unread column that is not accounted for"
+      ]
+    },
+    {
+      "case": "relation-count",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 39,
+      "failed": 1,
+      "failedAssertions": [
+        "migration schema inventory reads every relation the migrations declare"
+      ]
+    },
+    {
+      "case": "table-count",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 39,
+      "failed": 1,
+      "failedAssertions": [
+        "migration schema inventory reads every relation the migrations declare"
+      ]
+    },
+    {
+      "case": "rls-count",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 39,
+      "failed": 1,
+      "failedAssertions": [
+        "migration schema inventory reads every relation the migrations declare"
+      ]
+    },
+    {
+      "case": "rls-disabled",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 38,
+      "failed": 2,
+      "failedAssertions": [
+        "migration schema inventory reads every relation the migrations declare",
+        "migration schema inventory distinguishes a table with no RLS from a table with no policy"
+      ]
+    },
+    {
+      "case": "undisclosed-migration",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 39,
+      "failed": 1,
+      "failedAssertions": [
+        "released migration ordering the CHANGELOG's Unreleased section names every migration landed since the newest tag"
+      ]
+    }
+  ],
+  "sourcesRestored": true,
+  "sourceSha256": {
+    "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts": "92f98aa7b580ffc3a131148f5ddae70e04d7875376a704d8a3b2b8d5b46009cb",
+    "openplan/src/test/migrations/inventory.test.ts": "9970fc8a59f6cab12bd36dbf712d29fe188c02126095c3e96d5c910ed7e01232",
+    "openplan/supabase/migrations/20261014000028_engagement_synthesis_approvals.sql": "846765f12641c83baed1ebfcdf38bede6a6f9715a91c03b1c08047641effefce",
+    "CHANGELOG.md": "538a7f4b02ab1a6543f8eb50a2b735c484f59b7928cba77b899c6cb7a52ad74b"
+  },
+  "blindCategories": [
+    "Static schema counts do not establish runtime access or transaction safety.",
+    "SQL-read classifications document real SQL references but do not establish a connected browser consumer.",
+    "Migration disclosure does not prove an upgrade was applied or a release published."
+  ]
+}

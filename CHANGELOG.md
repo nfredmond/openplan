@@ -20,6 +20,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+### Required migration
+
+- `20261014000028_engagement_synthesis_approvals.sql` adds private, append-only internal synthesis approval events tied to exact retained review versions. It preserves draft content, correction history and the original approval receipt on retry. This is database preparation; the connected staff approval workflow is still under development.
+
 ## 0.62.0 — 2026-09-14
 
 Engagement Analysis now preserves complete selected comments and survey answers,

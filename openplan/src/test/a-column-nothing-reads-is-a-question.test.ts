@@ -73,6 +73,12 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "engagement_synthesis_approval_events.event_no", category: "READ_IN_SQL", reason: "The approval writer allocates this sequence under the shared review lock; the private history RPC orders every retained event and identifies its head. Browser approval remains under development." },
+  { column: "engagement_synthesis_approval_events.event_sha256", category: "READ_IN_SQL", reason: "Private approval packet/history RPCs return the generated exact-byte hash; the writer compares the expected predecessor and the composite foreign key binds stored predecessor hashes." },
+  { column: "engagement_synthesis_approval_events.event_text", category: "READ_IN_SQL", reason: "The private packet and history RPCs return the original event bytes. Native custody tests read them; the staff browser connection is still under development." },
+  { column: "engagement_synthesis_approval_events.intent_json", category: "READ_IN_SQL", reason: "The service-only approval writer compares the complete stored command before recovering an exact retry, including actor, reason and all version/source bindings." },
+  { column: "engagement_synthesis_approval_events.predecessor_sha256", category: "READ_IN_SQL", reason: "The composite predecessor foreign key reads this hash with review_id and predecessor_id to enforce the same exact earlier event independently of the writer's comparison." },
+  { column: "engagement_synthesis_approval_events.review_id", category: "READ_IN_SQL", reason: "Approval readers bind events through the retained review to current staff access; the writer scopes the history head and exact retry to this review." },
   { column: "engagement_synthesis_review_revisions.content_text", category: "READ_IN_SQL", reason: "read_engagement_synthesis_review returns exact contentText for server verification and staff display; the retain RPC compares unchanged correction bytes." },
   { column: "engagement_synthesis_review_revisions.content_title", category: "READ_IN_SQL", reason: "list_engagement_synthesis_reviews reads this generated title from the current revision and returns it in staff source history." },
   { column: "engagement_synthesis_review_revisions.intent_json", category: "READ_IN_SQL", reason: "The retain RPC compares exact retry commands; read_engagement_synthesis_review returns intent for server replay and lineage verification." },

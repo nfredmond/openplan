@@ -1,0 +1,184 @@
+{
+  "mode": "rollback candidate, installed baseline through 20261014000027",
+  "database": "supabase_db_openplan-restore-target-2026091050",
+  "passed": 39,
+  "failed": 0,
+  "skipped": 0,
+  "tests": [
+    {
+      "name": "native exact synthesis approval custody retains approvals, corrections and withdrawals with exact private history ",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody retains approvals, corrections and withdrawals with exact private history -- Harmless approval transaction control.",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody retains approvals, corrections and withdrawals with exact private history -- Harmless administrator constraint control.",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects direct table read",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects direct authenticated write",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects private packet helper",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects changed retry",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects other retry actor",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects wrong source identifier",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects wrong source checksum",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects wrong preparation checksum",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects wrong revision checksum",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects wrong revision number",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects wrong predecessor identifier",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects wrong predecessor checksum",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects duplicate approval",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects approval after correction",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects wrong withdrawal version",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects duplicate withdrawal",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects blank reason",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects Unicode blank reason",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects overlong reason",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects mutable approval",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects predecessor checksum constraint",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects revoked writer",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects viewer event",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects viewer history",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects anonymous event",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects anonymous history",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects anonymous write",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects missing history tail",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects reverse history",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody detects public authority",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody uses a real second-session lock barrier: same review",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody uses a real second-session lock barrier: same request",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody uses a real second-session lock barrier: unrelated review",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody uses a real second-session lock barrier: harmless comment",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody uses a real second-session lock barrier: broken review lock",
+      "status": "passed"
+    },
+    {
+      "name": "native exact synthesis approval custody uses a real second-session lock barrier: broken request lock",
+      "status": "passed"
+    }
+  ],
+  "sourceSha256": {
+    "openplan/supabase/migrations/20261014000028_engagement_synthesis_approvals.sql": "846765f12641c83baed1ebfcdf38bede6a6f9715a91c03b1c08047641effefce",
+    "openplan/src/test/engagement-synthesis-approvals-rls.test.ts": "181789e390d27423d4fb56e967bf8993313f0c90095a65dcc8213f37bc695e08",
+    "openplan/src/test/fixtures/engagement/synthesis-approval-custody.sql": "b47b736d90c767a38b7fc991f5560cb08ade1d3e7145ae2beb8c23d1b0bfee37",
+    "openplan/src/test/helpers/rollback-sql-connection.ts": "7ead54185d0decb6707a8a6758fae586eb220b907efbe2c6d4879e73d7839025"
+  },
+  "catalog": {
+    "relations": 270,
+    "tables": 256,
+    "views": 14,
+    "rlsTables": 256,
+    "approvalPolicies": 0
+  },
+  "limits": [
+    "Candidate schema and fixtures roll back; migration 28 is not installed in this database.",
+    "Lock probes use real separate PostgreSQL sessions with explicit synthetic rows; they do not run two committed correction/approval writers.",
+    "The packet and history join uses the production TypeScript protocol, not a connected application server or browser.",
+    "Fixtures use synthetic persistence preparation; production full-source review derivation retains its separate existing verification."
+  ]
+}

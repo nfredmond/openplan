@@ -1,3 +1,15 @@
+# Resume at exact-review approval database checkpoint
+
+September 14, 2026. Read `APPROVAL_NATIVE_VERIFICATION.md` and `approval-native-results.json`. Migration 28 now implements private immutable exact-version approval/withdrawal, current membership, original request recovery, shared correction locks and full private history. The native candidate passed 39 cases, including real separate-session lock probes and actual database packets read by the production TypeScript protocol. The native tests are registered in `npm run test:rls-live`; schema counts and Unreleased migration disclosure are updated. API/server/UI approval remains unimplemented and v0.62.0 remains the latest release.
+
+Local database `supabase_db_openplan-restore-target-2026091050` is still installed through migration 27, 346 migrations. All new schema, fixtures and faults ran in rollback transactions; migration 28 has not been applied. Use `OPENPLAN_SYNTHESIS_APPROVAL_CANDIDATE=1` only until it is installed. Native lock setup uses explicit synthetic rows so setup does not already own correction's lock. This proves mutex exclusion/release and detects broken keys; it is not full concurrent committed writer evidence.
+
+Next inspect checkpoint CI, apply additive migration 28 to this named stack, then build the production server/API and exact browser command recovery. Reuse the verified protocol and existing review loader; authenticate/bind the actor locally and preserve assistant refusal. Prove actual identical/competing writes, both approval/correction orders, installed RLS, the full TypeScript writer join and desktop/390px browser navigation before release. The latest tests found and repaired an anonymous-fixture input block and native Unicode blank-reason acceptance; preserve those errors in the verification record. Do not mark M9b or V1 complete.
+
+Owned checkout/package/branch remain unchanged below. Previous main `061cd24fb8813ce9152f7d045bc1d6201ca58754` has completed successful CI `34910274557` and RLS `34910274599`. Recheck the new checkpoint's push and CI separately. Keep the original checkout, reminder constraint and other session untouched.
+
+---
+
 # Resume at exact-review approval protocol
 
 September 14, 2026. This section supersedes earlier checkpoints. v0.62.0 remains published; no later release exists. The next approval increment now has an implemented pure protocol in `openplan/src/lib/engagement/synthesis-approval.ts`, a focused test suite and `prove-approval-domain.py`. Read `APPROVAL_PROTOCOL_VERIFICATION.md` and `approval-domain-mutations.json`. There are 29 new protocol tests, 46 tests in the focused protocol/review run, and 43 mutation/control cases with expected outcomes. This is not a usable approval workflow yet. No new migration, API or UI exists.

@@ -498,10 +498,11 @@ const EXPECTED = {
   // Migration 25 adds one private synthesis source table, RLS enabled and no policies.
   // Verified with the candidate in a rolled-back native catalog transaction: 253 tables, 14 views.
   // Two private retained synthesis review tables; no client policies or new views.
-  relations: 269,
-  tables: 255,
+  // Migration 28 adds one private approval-event table, with RLS and no client policies.
+  relations: 270,
+  tables: 256,
   views: 14,
-  rlsEnabledTables: 255,
+  rlsEnabledTables: 256,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
