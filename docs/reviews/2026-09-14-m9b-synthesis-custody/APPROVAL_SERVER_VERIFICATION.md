@@ -1,0 +1,35 @@
+# Exact-review approval application server
+
+September 14, 2026. This extends the native checkpoint `203326b5` and local server checkpoint `3f808162`. It is an implementation and verification record, not a usable approval workflow or release. v0.62.0 remains the latest published version. API routes, browser controls and exact pending-command recovery remain to be connected.
+
+The production server binds the authenticated actor, workspace and campaign before reading or writing. It checks every approval against the immutable review lineage verified by the existing source/preparation/content loader. It loads that lineage once, with a callback after each revision has passed command/content verification. Review content and return shapes remain unchanged.
+
+An exact old request is recovered before loading current content. The server also recovers a request committed during a history read or native 409/503 response. Changed commands return conflict; failed access and corrupt saved bytes do not become a missing request. Pure protocol scope/receipt mismatches now have a typed conflict error so callers can preserve those distinctions. Native writers remain authoritative for current membership, both heads and transaction locks.
+
+## Fault evidence
+
+`prove-approval-server.py` ran 28 cases: baseline and harmless comment change survived, and 26 targeted faults produced the named failed assertions. Removing historical revision identity or checksum checks admitted forged history. Removing exact recovery forced old committed requests through current-state checks. Removing native 409/503 recovery lost committed acknowledgements. Tests also detect unbound route identities, failed reads interpreted as absence, invalid commands, wrong service arguments, unchecked sequence/receipt intent, stale heads, lost error distinctions, omission of verified revisions and review content inconsistent with its command.
+
+`approval-server-mutations.json` retains the named failures and messages. The test that removes revision-ID binding resolves forged history instead of rejecting it; the unchecked receipt-intent mutation similarly accepts a forged actor. Typed-error faults fail the expected conflict classification. These are distinct failure categories, not proof that every fault exposes private data.
+
+`prove-approval-domain.py --output approval-domain-server-mutations.json` reran all 43 protocol cases against the changed typed errors. Baseline and harmless comment survived; all 41 targeted faults failed. The original `approval-domain-mutations.json` remains the historical protocol evidence. Both new reports were checked after restoration and their source hashes match the actual files.
+
+Focused server/protocol/review tests exercised 65 assertions; the final run with schema inventory, unread-column and release-ordering guards passed 105 tests in six files. Changed-file ESLint and TypeScript with an 8 GB heap passed. Full QA subsequently passed 15,557 tests with 628 explicit skips, lint, configured dead-code checks, provider connector tests, dependency audit and the webpack production build. The dead-code check still emits existing unused-export/type warnings; it is not a zero-warning claim. Live RLS is explicitly skipped by QA and runs separately. Shuffled seed 619146 and full installed RLS are still running at this checkpoint; do not infer their results from QA.
+
+## Installed database and join
+
+After CI `34912383802`, RLS `34912383822` and Upgrade `34912383841` completed successfully on `203326b5`, additive migration 28 was copied byte-for-byte and applied to `supabase_db_openplan-restore-target-2026091050`. The migration ledger reports 347 migrations through `20261014000028`; immediately after installation the approval table contained zero events. API/DB ports are 29821/29822. No reset or drop occurred. Omit `OPENPLAN_SYNTHESIS_APPROVAL_CANDIDATE=1` when testing this installed stack.
+
+The new `engagement-synthesis-approval-join-rls.test.ts` is registered in `test:rls-live`. It sends actual production source, review and approval loaders/writers through native SQL RPCs in a rollback transaction. It covers all 303 selected synthetic contributions, lost acknowledgement recovery without another insert, original approval, correction left unapproved, withdrawal, corrected-version approval, changed retries, preserved original bytes and revoked access. Its explicit harmless SQL comment and targeted rehashed wrong-revision reader check distinguish valid packets from history that cannot be joined to real verified content.
+
+## Installed run exposed an older fixture defect
+
+The first installed run finished with 46 passing and 30 failing cases. All 39 approval custody cases, the three approval join cases and three prior review join cases passed. Thirty older review-custody checks stopped at `Review retry duplicated roots`, before reaching their intended behavior. The database retained eight browser-test reviews and 29 revisions, while the fixture asserted global counts of one or two.
+
+The fixture now scopes its three count assertions to the synthetic campaign. Every case also seeds and confirms an unrelated campaign review and revision, so an empty CI database exercises the same boundary. Three targeted controls restore each old global count separately and require its precise failure. This repairs test isolation; it does not change production review data or waive access/immutability checks. The corrected installed review suite passed all 34 cases, including baseline, harmless comment, tied timestamps, all prior custody faults and the three old global counts. The original failed log is preserved privately in the usage-pause checkpoint directory. Post-run counts remained eight original browser reviews and 29 revisions; synthetic review/approval fixtures rolled back.
+
+## Limits and next work
+
+Mocked RPC transport tests cannot establish database permissions or durability. The native join uses a temporary SQL adapter and rollback transaction; it does not establish PostgREST/HTTP behavior, two simultaneously committed writers or browser usability. A self-consistent corrupted authority cannot be detected merely by hashing its packets. Native access and immutable custody remain necessary.
+
+Before release, connect authenticated private API routes, refuse unregistered assistant writes, and preserve exact account/source/review-scoped commands in the browser. Show approvals only for the exact retained revision, with explicit reasons and internal staff purpose. Strip enriched internal event objects to exact `eventText`/`eventSha256` packets in API responses. Exercise competing/identical writes and both approval/correction orders, desktop and 390px real navigation, keyboard use, console review, interruption and revoked access. Run applicable QA, shuffled tests, installed isolation, workers and upgrade checks; inspect final release CI before tagging. Full M9b and the full V1 contract remain unfinished.

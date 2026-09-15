@@ -1,0 +1,95 @@
+{
+  "recordedAt": "2026-09-15T00:47:43.873307+00:00",
+  "checkout": "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13",
+  "baseMain": "203326b52a6b60a7dd16c36972e66988a427f1c6",
+  "release": "v0.62.0",
+  "sourceSha256": {
+    "openplan/src/lib/engagement/synthesis-approval.ts": "1c9f6a4832ae9fd07fb975f9fbcef4d1d0e5be6b5222a73fd7a659787532befe",
+    "openplan/src/lib/engagement/synthesis-approval-server.ts": "bd557bb6e8d52a4b13277bde38238ad1ce7814b6746f1171acaa65a99da4458c",
+    "openplan/src/lib/engagement/synthesis-review-server.ts": "d771b5d80e5daa9880e08628b50bbb50ae3fce031ea17ea5faec9352872d4639",
+    "openplan/src/test/engagement-synthesis-approval-server.test.ts": "32f27043b2168efbb97bf4014428af495de842dd2116fb2660a46f78039526b6",
+    "openplan/src/test/engagement-synthesis-approval-join-rls.test.ts": "195ac1a0a7a97daf9c9751afd6f821910311f96be85a243b637b7e01eb46f468",
+    "openplan/src/test/engagement-synthesis-reviews-rls.test.ts": "5d21db31c3d1aac761e944a2b48ecad16138235b2514bd2e3db0e3612b26c761",
+    "openplan/src/test/fixtures/engagement/synthesis-review-custody.sql": "9439dc4c610ef067210d4da9cc7e7d702f7e359cfca8273c61e67d51c19e45d8",
+    "openplan/package.json": "4563d621e1d0e50fa2d1647c3a9aa27a1f94c2c32aa0726488130d47935be5a7"
+  },
+  "checks": {
+    "serverMutations": {
+      "cases": 28,
+      "controls": 2,
+      "targetedFaults": 26,
+      "allExpected": true
+    },
+    "protocolMutations": {
+      "cases": 43,
+      "controls": 2,
+      "targetedFaults": 41,
+      "allExpected": true
+    },
+    "focusedFinal": {
+      "passed": 105,
+      "files": 6
+    },
+    "initialInstalledNative": {
+      "passed": 46,
+      "failed": 30,
+      "files": 4,
+      "failure": "Older review fixture counted unrelated retained reviews globally; fixed with explicit other-campaign control and three targeted old-count faults."
+    },
+    "correctedInstalledReview": {
+      "passed": 34,
+      "files": 1
+    },
+    "typescript": {
+      "exit": 0,
+      "heapMiB": 8192
+    },
+    "changedFileLint": {
+      "exit": 0
+    },
+    "qa": {
+      "exit": 0,
+      "passed": 15557,
+      "skipped": 628,
+      "filesPassed": 1327,
+      "filesSkipped": 59,
+      "includes": [
+        "lint",
+        "configured dead-code check",
+        "unit tests",
+        "provider connector tests",
+        "dependency audit",
+        "webpack production build"
+      ],
+      "excludes": [
+        "live RLS, explicitly skipped in QA and running separately"
+      ]
+    },
+    "shuffled": {
+      "status": "running",
+      "seed": 619146,
+      "execSession": 24183,
+      "log": "/tmp/openplan-approval-server-shuffled.log"
+    },
+    "fullRls": {
+      "status": "running",
+      "execSession": 84361,
+      "log": "/tmp/openplan-approval-server-rls-full.log"
+    }
+  },
+  "database": {
+    "container": "supabase_db_openplan-restore-target-2026091050",
+    "migrationCount": 347,
+    "lastMigration": "20261014000028",
+    "postFocusedCounts": {
+      "approvalEvents": 0,
+      "reviews": 8,
+      "reviewRevisions": 29
+    }
+  },
+  "limits": [
+    "No approval HTTP route or browser control exists yet.",
+    "Native production join uses a rollback transaction and SQL adapter, not PostgREST or simultaneous committed writers.",
+    "CI and release status for a later pushed checkpoint must be checked separately."
+  ]
+}

@@ -1,3 +1,21 @@
+# Resume at approval server verification and live broad checks
+
+September 14, 2026. This section supersedes all older checkpoints. The previous goal turn made progress by saving the server WIP; this turn completed its mutation proof, installed migration 28, repaired a demonstrated older fixture failure and completed full QA. Continue the full V1 goal. No release or main push is implied by this local checkpoint.
+
+Owned checkout/package/branch remain `/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13`, `openplan/`, `work/engagement-decision-traceability`. The original checkout still has another live Codex and remains untouched. Main was rechecked remotely at `203326b5`; its CI 34912383802, RLS 34912383822 and Upgrade 34912383841 are all completed/success. Latest published release remains v0.62.0.
+
+Read `APPROVAL_SERVER_VERIFICATION.md`, `approval-server-results.json` and the newest implementation handoff in `NEXT_APPROVAL_BOUNDARY.md`. The server now has 28 mutation/control cases, the protocol rerun has 43, all expected and exact sources restored. Focused final checks passed 105 tests. Installed approval custody plus production joins passed; older review tests exposed unscoped global counts before their intended assertions. Those counts now include only the fixture campaign, with an always-present unrelated review and three targeted restorations of the old broken counts. The corrected native review suite passed all 34 cases. Both the original failure and corrected results are preserved.
+
+Full QA completed successfully in exec 26500: 15,557 passing tests, 628 explicit skips, lint, configured dead-code check, provider connector, audit and production webpack/TypeScript build. Log `/tmp/openplan-approval-server-qa.log` is copied to the private usage-pause directory. QA does not include live RLS here.
+
+LIVE JOBS: shuffled seed 619146 is exec session **24183**, log `/tmp/openplan-approval-server-shuffled.log`; full installed RLS is exec session **84361**, log `/tmp/openplan-approval-server-rls-full.log`. Both handles were confirmed live at this checkpoint. Poll these exact handles/processes; do not restart because a read yielded no output. They are running on the frozen application/test files of this checkpoint. Update results only after terminal outcomes. If either fails, investigate the exact assertion and preserve the original failure. Once they pass, finish verification documentation, commit and push directly to main without a PR, then inspect that new commit's CI. Do not report this unfinished approval workflow as released.
+
+The isolated stack now has **347 installed migrations through 20261014000028**. Migration 28 was applied additively and byte identity checked. Do not use OPENPLAN_SYNTHESIS_APPROVAL_CANDIDATE=1 on this stack. No reset/drop. The new approval join is registered in test:rls-live. Post-focused-run counts were zero approval events, eight pre-existing browser reviews and 29 revisions. Full native suite runs against the named restore-target stack at API29821/DB29822. Never substitute a demo database.
+
+Next connect private authenticated approval API, separate exact browser working-copy recovery and the existing saved review UI. API must strip enriched receipt fields to exact packets, preserve assistant refusal and catch review-loader errors too. Source-owned memory is needed across focus/source revalidation and temporary review unmounts; preserve current review recovery schema. Actual simultaneous committed writers, both correction/approval orders, browser/PostgREST integration and desktop/390px keyboard/console journeys remain required. See the dated next-boundary handoff for details. The server on3262 was not changed or reidentified this turn; no new browser evidence is claimed. Keep reminder constraint and scientific claims unchanged.
+
+---
+
 # Weekly usage pause: approval server work in progress
 
 September 14, 2026. This section supersedes the historical checkpoints below. The user is pausing for a weekly usage reset. Resume in this same thread with the full V1 objective unchanged. This local checkpoint is unfinished work, not a release or an approval to skip verification.

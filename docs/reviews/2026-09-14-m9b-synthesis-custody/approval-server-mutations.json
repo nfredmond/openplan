@@ -1,0 +1,485 @@
+{
+  "cases": [
+    {
+      "case": "baseline",
+      "expected": "survives",
+      "exit": 0,
+      "passed": 65,
+      "failed": 0,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "expected": "survives",
+      "exit": 0,
+      "passed": 65,
+      "failed": 0,
+      "failedAssertions": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unbound-actorId",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 64,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server binds authenticated actorId before reading or writing",
+          "messages": [
+            "Error: promise resolved \"{ event: { \u2026(7) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:122:105\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unbound-workspaceId",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 64,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server binds authenticated workspaceId before reading or writing",
+          "messages": [
+            "Error: expected Error: Saved review scope differs to match object { kind: 'forbidden' }\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:122:105\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unbound-campaignId",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 64,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server binds authenticated campaignId before reading or writing",
+          "messages": [
+            "Error: expected AssertionError: expected 'e3000000-0000-4\u2026 { \u2026(4) } to match object { kind: 'forbidden' }\n(5 matching properties omitted from actual)\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:122:105\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unvalidated-command",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 64,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server rejects invalid commands before a database call",
+          "messages": [
+            "Error: expected Error: Open the current review and approv\u2026 { kind: '\u2026' } to match object { kind: 'invalid' }\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:126:105\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unbound-historical-revision-id",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 64,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server refuses rehashed historical revisionId that does not match a verified revision",
+          "messages": [
+            "Error: promise resolved \"{ current: { \u2026(9) }, \u2026(2) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:140:61\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unbound-historical-revision-number",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 64,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server refuses rehashed historical revisionNo that does not match a verified revision",
+          "messages": [
+            "Error: promise resolved \"{ current: { \u2026(9) }, \u2026(2) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:140:61\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unbound-historical-revision-sha",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 64,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server refuses rehashed historical revisionSha256 that does not match a verified revision",
+          "messages": [
+            "Error: promise resolved \"{ current: { \u2026(9) }, \u2026(2) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:140:61\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2027:60\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "no-exact-recovery-first",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 63,
+      "failed": 2,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server recovers an exact old acknowledgement after correction and withdrawal without loading current content or writing again",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ \u2026(2) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n-   \"read_engagement_synthesis_approval\",\n+   \"read_engagement_synthesis_review\",\n    {\n      \"p_campaign\": \"c0000000-0000-4000-8000-000000000001\",\n-     \"p_request\": \"f3000000-0000-4000-8000-000000000001\",\n+     \"p_review\": \"e3000000-0000-4000-8000-000000000001\",\n+     \"p_revision\": null,\n    },\n  ]\n\n  2nd vi.fn() call:\n\n  [\n-   \"read_engagement_synthesis_approval\",\n+   \"read_engagement_synthesis_sources\",\n    {\n      \"p_campaign\": \"c0000000-0000-4000-8000-000000000001\",\n-     \"p_request\": \"f3000000-0000-4000-8000-000000000001\",\n+     \"p_request\": \"d0000000-0000-4000-8000-000000000001\",\n    },\n  ]\n\n  3rd vi.fn() call:\n\n  [\n-   \"read_engagement_synthesis_approval\",\n+   \"read_engagement_synthesis_review\",\n    {\n      \"p_campaign\": \"c0000000-0000-4000-8000-000000000001\",\n-     \"p_request\": \"f3000000-0000-4000-8000-000000000001\",\n+     \"p_review\": \"e3000000-0000-4000-8000-000000000001\",\n+     \"p_revision\": \"e3000000-0000-4000-8000-000000000001\",\n    },\n  ]\n\n  4th vi.fn() call:\n\n  [\n-   \"read_engagement_synthesis_approval\",\n+   \"read_engagement_synthesis_approval_history\",\n    {\n      \"p_campaign\": \"c0000000-0000-4000-8000-000000000001\",\n-     \"p_request\": \"f3000000-0000-4000-8000-000000000001\",\n+     \"p_review\": \"e3000000-0000-4000-8000-000000000001\",\n    },\n  ]\n\n  5th vi.fn() call:\n\nCompared values have no visual difference.\n\n\nNumber of calls: 5\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:107:17\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "exact approval application server refuses changed retries as conflicts while keeping corrupt receipts and failed access distinct",
+          "messages": [
+            "Error: expected AssertionError: expected 'e3000000-0000-4\u2026 { \u2026(4) } to match object { kind: 'conflict' }\n(5 matching properties omitted from actual)\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:113:83\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "no-recovery-after-history-race",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 64,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server recovers the exact event when newer approval history races ahead of the loaded review lineage",
+          "messages": [
+            "Error: Approval history differs from the verified review revisions\n    at loadSynthesisApprovalState (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-approval-server.ts:41:13)\n    at retainSynthesisApproval (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-approval-server.ts:85:13)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:165:12\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "no-recovery-after-head-race",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 64,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server recovers when a peer commits the same request during the state read",
+          "messages": [
+            "Error: Open the current review and approval history before changing approval\n    at retainSynthesisApproval (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-approval-server.ts:98:11)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:153:12\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "no-native-503-recovery",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 64,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server recovers an exact committed request after native PT503 without submitting another write",
+          "messages": [
+            "Error: The saved approval operation could not be confirmed\n    at databaseError (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-approval-server.ts:18:10)\n    at retainSynthesisApproval (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-approval-server.ts:109:11)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:170:12\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "no-native-409-recovery",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 64,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server recovers an exact committed request after native PT409 without submitting another write",
+          "messages": [
+            "Error: The saved approval operation could not be confirmed\n    at databaseError (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-approval-server.ts:18:10)\n    at retainSynthesisApproval (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-approval-server.ts:109:11)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:170:12\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "failed-lookup-means-absence",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 62,
+      "failed": 3,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server refuses failed request lookup 42501 before persistence",
+          "messages": [
+            "Error: promise resolved \"{ event: { \u2026(7) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:175:76\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+          ]
+        },
+        {
+          "name": "exact approval application server refuses failed request lookup PT503 before persistence",
+          "messages": [
+            "Error: promise resolved \"{ event: { \u2026(7) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:175:76\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+          ]
+        },
+        {
+          "name": "exact approval application server refuses failed request lookup XX000 before persistence",
+          "messages": [
+            "Error: promise resolved \"{ event: { \u2026(7) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:175:76\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-history-means-absence",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 64,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server does not turn missing or failed history into an empty approval state",
+          "messages": [
+            "Error: promise resolved \"null\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:186:63\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unbound-request-id",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 64,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server rejects a different returned request and malformed or wrong-sequence write receipts",
+          "messages": [
+            "Error: promise resolved \"{ \u2026(7) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:191:76\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unchecked-sequence",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 64,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server rejects a different returned request and malformed or wrong-sequence write receipts",
+          "messages": [
+            "Error: promise resolved \"{ event: { \u2026(7) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:195:78\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unchecked-native-receipt-intent",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 64,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server rejects a different returned request and malformed or wrong-sequence write receipts",
+          "messages": [
+            "Error: promise resolved \"{ event: { \u2026(7) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:195:78\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "wrong-writer-actor",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 64,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server sends only the exact bound command to the service writer and validates the retained result",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ \u2026(2) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n@@ -1,9 +1,9 @@\n  [\n    \"retain_engagement_synthesis_approval\",\n    {\n-     \"p_actor\": \"a0000000-0000-4000-8000-000000000002\",\n+     \"p_actor\": \"a0000000-0000-4000-8000-000000000001\",\n      \"p_campaign\": \"c0000000-0000-4000-8000-000000000001\",\n      \"p_intent\": {\n        \"actorId\": \"a0000000-0000-4000-8000-000000000002\",\n        \"campaignId\": \"c0000000-0000-4000-8000-000000000001\",\n        \"operation\": \"approve\",\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:97:21\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unchecked-stale-head",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 63,
+      "failed": 2,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server refuses stale revision or history heads and absent reviews without writing",
+          "messages": [
+            "Error: promise resolved \"{ event: { \u2026(7) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:131:76\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+          ]
+        },
+        {
+          "name": "exact approval application server recovers when a peer commits the same request during the state read",
+          "messages": [
+            "AssertionError: expected { event: { \u2026(7) }, replayed: false } to match object { replayed: true }\n(8 matching properties omitted from actual)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1283:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:153:78\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "forbidden-becomes-unavailable",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 63,
+      "failed": 2,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server refuses failed request lookup 42501 before persistence",
+          "messages": [
+            "Error: expected Error: The saved approval operation could\u2026 { kind: '\u2026' } to match object { kind: 'forbidden' }\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:175:76\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+          ]
+        },
+        {
+          "name": "exact approval application server preserves native writer failure 42501 when there is no committed receipt",
+          "messages": [
+            "Error: expected Error: The saved approval operation could\u2026 { kind: '\u2026' } to match object { kind: 'forbidden' }\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:180:76\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "conflict-becomes-unavailable",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 64,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server preserves native writer failure PT409 when there is no committed receipt",
+          "messages": [
+            "Error: expected Error: The saved approval operation could\u2026 { kind: '\u2026' } to match object { kind: 'conflict' }\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:180:76\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "invalid-becomes-unavailable",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 64,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server preserves native writer failure 22023 when there is no committed receipt",
+          "messages": [
+            "Error: expected Error: The saved approval operation could\u2026 { kind: '\u2026' } to match object { kind: 'invalid' }\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:180:76\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "absent-verified-revision-callback",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 64,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server verifies every historical approval against one complete review lineage and preserves draft bytes",
+          "messages": [
+            "Error: Approval history differs from the verified review revisions\n    at loadSynthesisApprovalState (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-approval-server.ts:41:13)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:85:19\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "unchecked-review-command-content",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 63,
+      "failed": 2,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server never approves a corrupted review even if its approval command names the recomputed checksum",
+          "messages": [
+            "Error: promise resolved \"{ event: { \u2026(7) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:145:122\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+          ]
+        },
+        {
+          "name": "retained review server custody refuses dishonest preparation or content even when their checksums were recomputed",
+          "messages": [
+            "Error: promise resolved \"{ \u2026(14) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-review-server.test.ts:73:52\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "scope-conflict-loses-type",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 64,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server refuses changed retries as conflicts while keeping corrupt receipts and failed access distinct",
+          "messages": [
+            "Error: expected Error: Approval source or review scope di\u2026 to match object { kind: 'conflict' }\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:113:83\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "receipt-conflict-loses-type",
+      "expected": "fails",
+      "exit": 1,
+      "passed": 64,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "exact approval application server refuses changed retries as conflicts while keeping corrupt receipts and failed access distinct",
+          "messages": [
+            "Error: expected Error: Approval receipt does not match th\u2026 to match object { kind: 'conflict' }\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-server.test.ts:113:83\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+          ]
+        }
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "sourcesRestored": true,
+  "sourceSha256": {
+    "openplan/src/lib/engagement/synthesis-approval-server.ts": "bd557bb6e8d52a4b13277bde38238ad1ce7814b6746f1171acaa65a99da4458c",
+    "openplan/src/lib/engagement/synthesis-approval.ts": "1c9f6a4832ae9fd07fb975f9fbcef4d1d0e5be6b5222a73fd7a659787532befe",
+    "openplan/src/lib/engagement/synthesis-review-server.ts": "d771b5d80e5daa9880e08628b50bbb50ae3fce031ea17ea5faec9352872d4639"
+  },
+  "blindCategories": [
+    "RPC transport is mocked; these cases cannot establish native permissions, locking, durable writes or HTTP routes.",
+    "The real TypeScript review and source loaders run, but a coherently forged authoritative database can evade client checks.",
+    "No browser control, storage recovery, keyboard access or human usefulness is established."
+  ]
+}

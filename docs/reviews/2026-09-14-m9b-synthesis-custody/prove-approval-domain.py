@@ -1,5 +1,6 @@
 """Mutate only the new approval protocol, restore exact bytes, and require named assertion failures."""
 from pathlib import Path
+import argparse
 import hashlib
 import json
 import subprocess
@@ -9,6 +10,9 @@ review = Path(__file__).resolve().parent
 repo = review.parents[2]
 app = repo / "openplan"
 source = app / "src/lib/engagement/synthesis-approval.ts"
+parser = argparse.ArgumentParser()
+parser.add_argument("--output", default="approval-domain-mutations.json")
+args = parser.parse_args()
 original = source.read_bytes()
 cases = [("baseline", "", "", None), ("harmless-comment", "/** Verify retained bytes", "/** Confirm retained bytes", None)]
 
@@ -77,7 +81,7 @@ try:
                 raise AssertionError((name, failures, run.stdout[-2000:], run.stderr[-2000:]))
 finally:
     source.write_bytes(original)
-    (review / "approval-domain-mutations.json").write_text(json.dumps({"cases": results, "sourceRestored": source.read_bytes() == original,
+    (review / args.output).write_text(json.dumps({"cases": results, "sourceRestored": source.read_bytes() == original,
         "sourceSha256": hashlib.sha256(original).hexdigest(), "blindCategories": [
             "Pure protocol tests do not establish database locking, access control, membership revocation, or durable idempotency.",
             "A checksum establishes byte consistency, not who authorized the bytes; native access and authenticated route checks are still required.",

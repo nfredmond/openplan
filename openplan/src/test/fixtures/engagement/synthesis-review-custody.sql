@@ -2,6 +2,18 @@
 -- These are synthetic service-persistence inputs. TypeScript preparation and
 -- correction semantics have separate tests; this fixture proves native custody.
 RESET ROLE;
+-- An unrelated campaign always has a synthetic review, even on an otherwise empty stack.
+-- Direct fixture rows establish count isolation, not production preparation semantics.
+INSERT INTO engagement_synthesis_reviews(id,campaign_id,workspace_id,source_id,source_sha256,actor_id,preparation_text)
+SELECT 'e0000000-0000-4000-8000-000000000900',campaign_id,workspace_id,id,snapshot_sha256,
+ '14a71429-1cb2-49b5-8711-c696a2f394c3','{"syntheticUnrelatedReview":true}'
+FROM engagement_synthesis_sources WHERE id='d0000000-0000-4000-8000-000000000900';
+INSERT INTO engagement_synthesis_review_revisions(id,review_id,revision_no,actor_id,intent_json,content_text)
+VALUES('e0000000-0000-4000-8000-000000000900','e0000000-0000-4000-8000-000000000900',1,
+ '14a71429-1cb2-49b5-8711-c696a2f394c3','{"syntheticUnrelatedReview":true}','{"syntheticUnrelatedReview":true}');
+SELECT pg_temp.assert_true(EXISTS(SELECT 1 FROM engagement_synthesis_reviews
+ WHERE id='e0000000-0000-4000-8000-000000000900' AND campaign_id='250f0f62-7225-48b3-a2f7-5a134d3b9f78'),
+ 'Unrelated review count control is missing');
 CREATE TEMP TABLE review_probe(key text PRIMARY KEY,value jsonb);
 GRANT SELECT,INSERT ON review_probe TO authenticated,service_role;
 INSERT INTO review_probe SELECT 'sha',to_jsonb(snapshot_sha256) FROM engagement_synthesis_sources WHERE id='d0000000-0000-4000-8000-000000000002';
@@ -36,8 +48,8 @@ INSERT INTO review_probe SELECT 'receipt',pg_temp.create_review();
 SELECT pg_temp.assert_true((SELECT value->>'revisionNo'='1' AND value->>'replayed'='false' FROM review_probe WHERE key='receipt'),'Initial review receipt differs');
 SELECT pg_temp.assert_true(pg_temp.create_review()=(SELECT value||'{"replayed":true}'::jsonb FROM review_probe WHERE key='receipt'),'Exact review retry changed its receipt');
 RESET ROLE;
-SELECT pg_temp.assert_true((SELECT count(*)=1 FROM engagement_synthesis_reviews),'Review retry duplicated roots');
-SELECT pg_temp.assert_true((SELECT count(*)=1 FROM engagement_synthesis_review_revisions),'Review retry duplicated revisions');
+SELECT pg_temp.assert_true((SELECT count(*)=1 FROM engagement_synthesis_reviews WHERE campaign_id='10c5cdd7-16c6-4b91-b9c0-d2f67598a54f'),'Review retry duplicated roots');
+SELECT pg_temp.assert_true((SELECT count(*)=1 FROM engagement_synthesis_review_revisions WHERE review_id IN (SELECT id FROM engagement_synthesis_reviews WHERE campaign_id='10c5cdd7-16c6-4b91-b9c0-d2f67598a54f')),'Review retry duplicated revisions');
 SELECT set_config('request.jwt.claim.sub','13466ed2-dcb7-4861-a528-68cc5579eea9',true);
 SET LOCAL ROLE authenticated;
 INSERT INTO review_probe SELECT 'originalRead',pg_temp.read_review();
@@ -96,7 +108,7 @@ SET LOCAL ROLE service_role;
 SELECT pg_temp.expect_error($q$SELECT pg_temp.create_review('e0000000-0000-4000-8000-000000000099')$q$,'P0001','Failed review persistence returned an acknowledgement');
 RESET ROLE;
 SELECT pg_temp.assert_true(NOT EXISTS(SELECT 1 FROM engagement_synthesis_reviews WHERE id='e0000000-0000-4000-8000-000000000099'),'Failed initial revision left an orphan review');
-SELECT pg_temp.assert_true((SELECT count(*)=2 FROM engagement_synthesis_review_revisions),'Refusals inserted revision rows');
+SELECT pg_temp.assert_true((SELECT count(*)=2 FROM engagement_synthesis_review_revisions WHERE review_id IN (SELECT id FROM engagement_synthesis_reviews WHERE campaign_id='10c5cdd7-16c6-4b91-b9c0-d2f67598a54f')),'Refusals inserted revision rows');
 SELECT pg_temp.expect_error($q$UPDATE engagement_synthesis_reviews SET preparation_text='{}' WHERE id='e0000000-0000-4000-8000-000000000001'$q$,'P0001','Original preparation was mutable');
 SELECT pg_temp.expect_error($q$DELETE FROM engagement_synthesis_reviews WHERE id='e0000000-0000-4000-8000-000000000001'$q$,'P0001','Original review could be deleted');
 SELECT pg_temp.expect_error($q$UPDATE engagement_synthesis_review_revisions SET content_text='{}' WHERE id='e0000000-0000-4000-8000-000000000002'$q$,'P0001','Revision content was mutable');

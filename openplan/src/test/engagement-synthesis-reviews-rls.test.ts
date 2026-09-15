@@ -17,14 +17,28 @@ function change(signature: string, old: string, replacement: string) {
   const literal = (value: string) => "'" + value.replaceAll("'", "''") + "'";
   return `DO $fault$ DECLARE body text; BEGIN body=pg_get_functiondef('${signature}'::regprocedure); IF position(${literal(old)} IN body)=0 THEN RAISE EXCEPTION 'Missing review mutation seam'; END IF; EXECUTE replace(body,${literal(old)},${literal(replacement)}); END $fault$;`;
 }
+const reviewCounts = [
+  ["roots", "count(*)=1 FROM engagement_synthesis_reviews", "Review retry duplicated roots"],
+  ["initial revisions", "count(*)=1 FROM engagement_synthesis_review_revisions", "Review retry duplicated revisions"],
+  ["refusal revisions", "count(*)=2 FROM engagement_synthesis_review_revisions", "Refusals inserted revision rows"],
+] as const;
+type ReviewCount = typeof reviewCounts[number][0];
+function reviewCountFixture(fault?: ReviewCount) {
+  if (!fault) return fixture;
+  const [, query] = reviewCounts.find(([name]) => name === fault)!;
+  const scope = fault === "roots" ? " WHERE campaign_id='10c5cdd7-16c6-4b91-b9c0-d2f67598a54f'"
+    : " WHERE review_id IN (SELECT id FROM engagement_synthesis_reviews WHERE campaign_id='10c5cdd7-16c6-4b91-b9c0-d2f67598a54f')";
+  expect(fixture.split(query + scope)).toHaveLength(2);
+  return fixture.replace(query + scope, query);
+}
 /** Each native case rolls back its data and faults, and candidate mode also rolls back the new migration. */
-function run(fault = "", unscopedSourceCount = false) {
+function run(fault = "", unscopedSourceCount = false, unscopedReviewCount?: ReviewCount) {
   const container = resolveLocalDbContainer(); requireContractVerificationStack(container);
   const candidate = process.env.OPENPLAN_SYNTHESIS_REVIEW_CANDIDATE === "1" ? migration : "";
   const source = unscopedSourceCount ? sourceFixture.replace("count(*)=5 FROM engagement_synthesis_sources WHERE campaign_id='10c5cdd7-16c6-4b91-b9c0-d2f67598a54f'", "count(*)=5 FROM engagement_synthesis_sources") : sourceFixture;
   return execFileSync("docker", ["exec", "-i", container, "psql", "-U", "postgres", "-d", "postgres", "-X", "-qAt", "-v", "ON_ERROR_STOP=1"], {
     encoding: "utf8", stdio: ["pipe", "pipe", "pipe"], timeout: 45_000,
-    input: `BEGIN; SET LOCAL statement_timeout='35s'; SET LOCAL lock_timeout='2s';\n${candidate}\n${fault}\n${source}\n${fixture}\nROLLBACK;`,
+    input: `BEGIN; SET LOCAL statement_timeout='35s'; SET LOCAL lock_timeout='2s';\n${candidate}\n${fault}\n${source}\n${reviewCountFixture(unscopedReviewCount)}\nROLLBACK;`,
   }).trim().split("\n").at(-1);
 }
 function refuses(fault: string, expected: string, unscoped = false) {
@@ -38,6 +52,11 @@ describe.skipIf(!LIVE_RLS)("native synthesis review custody", () => {
   });
   it("ignores another campaign in source-fixture counts and detects the old global count", () => {
     refuses("", "Source request count differs after refusals/retries", true);
+  });
+  it.each(reviewCounts)("ignores unrelated campaign reviews and detects the old global %s count", (name, _query, reason) => {
+    let failure: unknown;
+    try { run("", false, name); } catch (error) { failure = error; }
+    expect(failure).toBeDefined(); expect(String((failure as { stderr?: unknown }).stderr)).toContain(reason);
   });
   it.each([
     ["direct review read", "GRANT SELECT ON engagement_synthesis_reviews TO authenticated; CREATE POLICY synthetic_allow_review ON engagement_synthesis_reviews FOR SELECT TO authenticated USING(true);", "Direct private review read was allowed"],
