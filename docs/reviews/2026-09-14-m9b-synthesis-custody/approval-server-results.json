@@ -66,10 +66,15 @@
       ]
     },
     "shuffled": {
-      "status": "running",
+      "status": "completed",
       "seed": 619146,
       "execSession": 24183,
-      "log": "/tmp/openplan-approval-server-shuffled.log"
+      "log": "/tmp/openplan-approval-server-shuffled.log",
+      "exit": 0,
+      "passed": 15557,
+      "skipped": 628,
+      "filesPassed": 1327,
+      "filesSkipped": 59
     },
     "fullRls": {
       "status": "running",
