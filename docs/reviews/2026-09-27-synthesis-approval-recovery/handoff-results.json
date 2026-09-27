@@ -1,0 +1,69 @@
+{
+  "recordedAt": "2026-09-27T22:06:18.753176+00:00",
+  "commit": "4364812a9e3a180c87b7288bff3d14107d8ccf13",
+  "canonical": {
+    "head": "4364812a9e3a180c87b7288bff3d14107d8ccf13",
+    "status": "?? .directory",
+    "dependenciesMatch": true,
+    "nativeSqliteControl": true,
+    "esbuildTransformControl": true,
+    "resolverLoad": true,
+    "healthTestsPassed": 6
+  },
+  "demo": {
+    "phase": "ready",
+    "previousCommit": "203326b52a6b60a7dd16c36972e66988a427f1c6",
+    "commit": "4364812a9e3a180c87b7288bff3d14107d8ccf13",
+    "receiptSha256": "215cb9deb04e905df6bbce84081dd079a79aa3cc155106adaeffc14e9f5f9d46",
+    "runtimeDatabaseIdentified": true,
+    "migrations": 347,
+    "pendingMigrations": 0,
+    "readOnlyBrowser": {
+      "completed": true,
+      "console": [],
+      "pageErrors": [],
+      "purpose": "Read-only demo navigation, not a rerun of isolated approval writes.",
+      "identity": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-09-27T22:04:14.218Z",
+        "deployment": {
+          "commit": "4364812a9e3a",
+          "version": "0.63.0"
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "heading": "Engagement"
+    }
+  },
+  "artifacts": [
+    {
+      "name": "demo-update.log",
+      "sha256": "06efe2ee2c4bb4995c099753ef972139d7f7b8a771fd42f2e9f0ccd2fa6544d5"
+    },
+    {
+      "name": "demo-smoke.json",
+      "sha256": "74c54700a850bd062593fb0c152af0817701b0a43860ed3b00052e65ed864265"
+    },
+    {
+      "name": "demo-smoke.png",
+      "sha256": "00f10223e694f97a133e79fb362a78cfef5d6669aea71eb759f7c7d6dd9d0edc"
+    },
+    {
+      "name": "canonical-sync.log",
+      "sha256": "aee9656c0bd2a3653be2f8c204e40dbae69774ef25f1ba7c7b31863922d00814"
+    },
+    {
+      "name": "canonical-install.log",
+      "sha256": "425cc3fadf5b232e6e31fed6486a50b9c36fff0dbd942a085740c4c424a9646f"
+    },
+    {
+      "name": "canonical-smoke-tests.log",
+      "sha256": "188f64db6632bb43abe6630936beef8de6253706cd9cfd7a908f08df308c65db"
+    }
+  ],
+  "limits": "Demo browser check is sign-in and Engagement navigation only. Full approval writes and recovery were exercised separately against the named isolated acceptance stack. No destructive reset or other worktree cleanup occurred."
+}

@@ -1,6 +1,6 @@
-# v0.63.0 exact staff synthesis approval candidate
+# v0.63.0 exact staff synthesis approval
 
-September 27, 2026. This release candidate completes internal staff approval and withdrawal for exact retained synthesis revisions. It is not yet tagged or published. Final main CI and populated upgrade remain pending. Fresh local installed isolation passes all 657 tests in 66 files after the browser histories. Release accounting and direction checks pass.
+September 27, 2026. This release completes internal staff approval and withdrawal for exact retained synthesis revisions. [Publication](PUBLICATION.md) records the September 27 release after final main CI, RLS isolation and the populated upgrade passed on commit `4364812a`. Fresh local installed isolation passes all 657 tests in 66 files after the browser histories. Release accounting and direction checks pass.
 
 The [operating guide](../../ops/ENGAGEMENT_SYNTHESIS_REVIEW.md) explains selection, corrections, exact approval and separate recovery copies. Staff reach the workflow through Engagement, the consultation, Analysis, a retained source and its saved review. Approval reasons and exact event history stay private to current campaign staff. Corrections do not inherit approval. The original source, preparation, review and approval bytes remain unchanged. Approval does not publish findings, establish representative public support or confer agency authority.
 
@@ -18,7 +18,7 @@ Two independent browser contexts exercise actual committed requests. Identical a
 
 Apply `20261014000028_engagement_synthesis_approvals.sql` before app restart. The migration adds private immutable approval events, exact retry, current membership checks and a shared review/correction transaction lock. It preserves earlier review data. The release has 347 migrations through that file. No provider key, new worker, paid service or destructive reset is required. Agent-origin writes remain explicitly refused.
 
-No release tag may precede the final declared checks. Inspect the exact final main commit's CI and RLS results, and run Upgrade Path from v0.62.0. Record actual publication separately after successful checks. Human software-release review is not required.
+[Final CI](final-ci.json) records all successful workflows on release commit `4364812a`, including Upgrade Path from v0.62.0. The tag followed those checks. Human software-release review is not required.
 
 ## Remaining scope
 

@@ -5,3 +5,5 @@ Interrupted acknowledgements retain the same request for retry, even after a cor
 Apply `20261014000028_engagement_synthesis_approvals.sql` before rebuilding and restarting. No provider key, new worker or paid service is required.
 
 Approval does not publish findings, establish representative support or confer agency authority. Response/decision links, reviewed synthesis exports and optional complete AI generation remain unfinished. See the [release evidence](https://github.com/nfredmond/openplan/blob/v0.63.0/docs/reviews/2026-09-27-synthesis-approval-recovery/RELEASE_VERIFICATION.md) for checks and limits.
+
+Final CI, shuffled tests, RLS isolation and the populated upgrade from v0.62.0 passed on release commit `4364812a`. [Publication and handoff](https://github.com/nfredmond/openplan/blob/main/docs/reviews/2026-09-27-synthesis-approval-recovery/PUBLICATION.md) record the run identities and remaining work.

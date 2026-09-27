@@ -1,0 +1,105 @@
+{
+  "recordedAt": "2026-09-27T22:14:46.866836+00:00",
+  "release": "v0.63.0",
+  "commit": "4364812a9e3a180c87b7288bff3d14107d8ccf13",
+  "upgradeBase": "v0.62.0",
+  "runs": [
+    {
+      "name": "ci",
+      "id": 36353429929,
+      "status": "completed",
+      "conclusion": "success",
+      "headSha": "4364812a9e3a180c87b7288bff3d14107d8ccf13",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/36353429929",
+      "createdAt": "2026-09-27T21:54:51Z",
+      "updatedAt": "2026-09-27T22:14:17Z",
+      "jobs": [
+        {
+          "name": "modeling scripts (python unit tests)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-09-27T21:54:53Z",
+          "completedAt": "2026-09-27T21:56:06Z"
+        },
+        {
+          "name": "order independence (shuffled vitest)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-09-27T21:54:53Z",
+          "completedAt": "2026-09-27T22:08:56Z"
+        },
+        {
+          "name": "worker (python unit tests)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-09-27T21:54:54Z",
+          "completedAt": "2026-09-27T21:55:28Z"
+        },
+        {
+          "name": "ops scripts (python unit tests)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-09-27T21:54:54Z",
+          "completedAt": "2026-09-27T21:56:13Z"
+        },
+        {
+          "name": "verify (qa gate)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-09-27T21:55:29Z",
+          "completedAt": "2026-09-27T22:14:17Z"
+        }
+      ],
+      "logSha256": "bc9a87db15e5c8b91922b53f0c7045402e27814d7897028e46e928bd7ca6e93a"
+    },
+    {
+      "name": "rls",
+      "id": 36353429992,
+      "status": "completed",
+      "conclusion": "success",
+      "headSha": "4364812a9e3a180c87b7288bff3d14107d8ccf13",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/36353429992",
+      "createdAt": "2026-09-27T21:54:51Z",
+      "updatedAt": "2026-09-27T22:06:08Z",
+      "jobs": [
+        {
+          "name": "live RLS isolation",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-09-27T21:54:53Z",
+          "completedAt": "2026-09-27T22:06:08Z"
+        }
+      ],
+      "logSha256": "3a00f7af574ce1163ae8e2fe712af75027c357c899c248e48189bf6b11bda3ab"
+    },
+    {
+      "name": "upgrade",
+      "id": 36353438727,
+      "status": "completed",
+      "conclusion": "success",
+      "headSha": "4364812a9e3a180c87b7288bff3d14107d8ccf13",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/36353438727",
+      "createdAt": "2026-09-27T21:55:02Z",
+      "updatedAt": "2026-09-27T21:58:39Z",
+      "jobs": [
+        {
+          "name": "previous release -> seed -> HEAD migration up",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-09-27T21:55:06Z",
+          "completedAt": "2026-09-27T21:58:38Z"
+        }
+      ],
+      "logSha256": "aef279b23db575d8d8b6a6ccbc7b6286694a500f5fbd6ff85e3cfad5a2814900"
+    }
+  ],
+  "limits": "CI checks repository behavior and representative populated upgrade. Browser evidence and installed local isolation are recorded separately. No national scientific or practitioner-usefulness claim.",
+  "shuffledLogSha256": "e1ead3ef5d66d8010239d8afa23e00ae939c2663bddd308ca329a85c9d0c2d5d",
+  "shuffledSeed": 131439,
+  "ciQa": {
+    "passed": 15614,
+    "skipped": 635,
+    "passingFiles": 1330,
+    "skippedFiles": 59
+  }
+}

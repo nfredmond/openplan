@@ -1,4 +1,6 @@
-# Resume after approval browser acceptance
+# Historical checkpoint after approval browser acceptance
+
+Superseded by [publication](PUBLICATION.md) and [the next implementation boundary](NEXT_IMPLEMENTATION.md). The statements below describe the earlier unpushed checkpoint, not current release state.
 
 September 27, 2026. Continue the full V1 goal. Direct verified main pushes, no PRs, local/free operation and the repository Playwright harness remain authorized. No software-release human approval gate applies.
 
