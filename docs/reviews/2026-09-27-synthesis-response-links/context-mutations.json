@@ -1,0 +1,308 @@
+{
+  "recordedAt": "2026-09-27T22:28:40.385947+00:00",
+  "cases": [
+    {
+      "case": "baseline",
+      "exit": 0,
+      "passedTests": 30,
+      "failures": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "exit": 0,
+      "passedTests": 30,
+      "failures": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "invalid-text",
+      "exit": 1,
+      "passedTests": 28,
+      "failures": [
+        "complete private synthesis response context rejects changed outer bytes, malformed text and unsupported visibility or version",
+        "complete private synthesis response context rejects invalid Unicode in retained source bytes before hashing can replace it"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "context-digest",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects changed outer bytes, malformed text and unsupported visibility or version"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "source-text",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects invalid Unicode in retained source bytes before hashing can replace it"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "source-binding",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects source binding even when the context checksum is recomputed"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "preparation-digest",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects preparation bytes even when the context checksum is recomputed"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "preparation-derivation",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects preparation derivation even when the context checksum is recomputed"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "review-digest",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects review bytes even when the context checksum is recomputed"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "review-coverage",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects a rehashed review that silently drops coverage"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "approval-operation",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects withdrawal events and approvals bound to a different source or review"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "group-selection",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects group even when the context checksum is recomputed"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "response-digest",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects response bytes even when the context checksum is recomputed"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "removed-history",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects removed history even when the context checksum is recomputed"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "private-purpose",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects changed outer bytes, malformed text and unsupported visibility or version"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "private-visibility",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects changed outer bytes, malformed text and unsupported visibility or version"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "context-version",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects changed outer bytes, malformed text and unsupported visibility or version"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "complete-membership",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context retains all 301 comments and survey answers without coercing them into legacy response IDs"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "answer-membership",
+      "exit": 1,
+      "passedTests": 28,
+      "failures": [
+        "complete private synthesis response context retains all 301 comments and survey answers without coercing them into legacy response IDs",
+        "complete private synthesis response context retains answer-only groups, historical question wording and private authority"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "complete-wording",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context preserves overlap, unassigned input and full Unicode without mutating the original review"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "source-verifier-call",
+      "exit": 1,
+      "passedTests": 28,
+      "failures": [
+        "complete private synthesis response context rejects rehashed source private metadata before using its review",
+        "complete private synthesis response context rejects rehashed source missing definition before using its review"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "approval-verifier-call",
+      "exit": 1,
+      "passedTests": 28,
+      "failures": [
+        "complete private synthesis response context rejects approval bytes even when the context checksum is recomputed",
+        "complete private synthesis response context rejects withdrawal events and approvals bound to a different source or review"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "scope-campaignId",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects different expected campaignId"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "scope-workspaceId",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects different expected workspaceId"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "scope-reviewId",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects different expected reviewId"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "scope-responseId",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects different expected responseId"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "approval-revisionId",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects approval of different revisionId"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "approval-revisionNo",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects approval of different revisionNo"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "approval-revisionSha256",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects approval of different revisionSha256"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "history-campaign_id",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects history campaign even when the context checksum is recomputed"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "history-response_id",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects history response even when the context checksum is recomputed"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "record-id",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects a rehashed response with foreign id"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "record-campaign_id",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "complete private synthesis response context rejects a rehashed response with foreign campaign_id"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "sourcesRestored": true,
+  "sources": {
+    "openplan/src/lib/engagement/synthesis-response-context-server.ts": "e4f132094e20805dcc1761e0feff19ffc1c9b03bcd3f2dfc9cf6ebdb23c5db16",
+    "openplan/src/test/engagement-synthesis-response-context.test.ts": "50f50740f840c7391063c70ae5ce00e67b3de6b9d7f5ba336c9efa4638ca2578"
+  },
+  "limits": "Protocol byte, scope and coverage checks only. Some scope checks overlap. Does not prove authentication, saved review lineage, current approval, native locks, public withdrawal, browser behavior or report usability."
+}
