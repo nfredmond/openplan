@@ -1,3 +1,15 @@
+# September 27 resume and server landing
+
+The isolated checkout, branch and full V1 objective remain unchanged. Main was rechecked at `203326b5`; its CI remains successful. The September 14 RLS process and temporary log no longer exist. Its outcome is unknown. The named stack retained all 347 migrations through 28. A fresh September 27 full installed RLS run completed successfully: **657 tests in 66 files**, exec22806, durable log `/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/rls-full.log`. Historical full QA and shuffled seed619146 evidence remains valid for the unchanged server checkpoint. No approval release is declared.
+
+The verified server commits and this result are ready for direct main push. Inspect the resulting CI separately. New September27 approval recovery/API/UI work is still local and excluded from this server landing. Its notes will live in `docs/reviews/2026-09-27-synthesis-approval-recovery/`. Recovery has 37 focused tests and 42 fault/control cases; the route has 14 focused tests and 30 fault/control cases, all expected. The first recovery fixture contained a recursive mock and wrong JSON field-order expectation; both were corrected. The route's invalid UTF-8 probe now uses an otherwise valid command so schema rejection cannot mask the decoder check.
+
+The new UI is connected locally in synthesis-approval-panel.tsx, synthesis-review-editor.tsx and engagement-synthesis-sources.tsx. It is not yet component/browser verified. Do not include it in claims about the server checkpoint's prior QA. Next run its component tests and targeted faults, fix any demonstrated defects, then build an identified candidate and exercise real desktop/390px navigation, account/privacy changes, interrupted retries, original/correction approvals and both concurrent writer orders. API assistant refusal remains explicit; exact reasons stay private. No source/preparation/draft approval status is rewritten.
+
+Browser inventory currently lists no controllable tabs, but the explicitly authorized repo Playwright harness launched Chrome154 to about:blank and closed it. This is tool availability, not app acceptance. No old app server has been assumed alive. Reidentify any server before browser evidence. The original checkout has only an unrelated untracked `.directory` file and remains untouched. Updated planner-writing instructions apply; OpenPlan remains separate from Drago Vantage work.
+
+---
+
 # Resume at approval server verification and live broad checks
 
 September 14, 2026. This section supersedes all older checkpoints. The previous goal turn made progress by saving the server WIP; this turn completed its mutation proof, installed migration 28, repaired a demonstrated older fixture failure and completed full QA. Continue the full V1 goal. No release or main push is implied by this local checkpoint.

@@ -77,9 +77,14 @@
       "filesSkipped": 59
     },
     "fullRls": {
-      "status": "running",
-      "execSession": 84361,
-      "log": "/tmp/openplan-approval-server-rls-full.log"
+      "status": "completed",
+      "exit": 0,
+      "passed": 657,
+      "filesPassed": 66,
+      "verifiedOn": "2026-09-27",
+      "execSession": 22806,
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/rls-full.log",
+      "previousRun": "September 14 process and temporary log were absent after the reset; its outcome remains unknown."
     }
   },
   "database": {
