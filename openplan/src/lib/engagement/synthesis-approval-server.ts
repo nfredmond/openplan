@@ -45,7 +45,7 @@ export async function loadSynthesisApprovalState(client: Client, address: Addres
     revisionNo: review.revision.revisionNo, revisionSha256: review.revision.contentSha256 };
   const packet = { ...scope, headId: history.head?.intent.requestId ?? null, headSha256: history.head?.eventSha256 ?? null,
     eventCount: history.entries.length, entries: history.entries.map(({ eventText, eventSha256 }) => ({ eventText, eventSha256 })) };
-  return { current, history, packet };
+  return { current, history, packet, review };
 }
 
 /** A staff read checks current database access even when recovering an old, already committed request. */

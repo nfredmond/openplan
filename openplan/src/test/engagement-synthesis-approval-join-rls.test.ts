@@ -5,6 +5,9 @@ import { loadSynthesisApprovalState, retainSynthesisApproval } from "@/lib/engag
 import { loadSynthesisReview, retainSynthesisReview } from "@/lib/engagement/synthesis-review-server";
 import { loadSynthesisSource } from "@/lib/engagement/synthesis-sources-server";
 import { synthesisApprovalForRevision, type SynthesisApprovalIntent } from "@/lib/engagement/synthesis-approval";
+import { loadSynthesisResponseContext } from "@/lib/engagement/synthesis-response-links-server";
+import { readSynthesisResponseContext } from "@/lib/engagement/synthesis-response-context-server";
+import { writeResponse } from "@/lib/engagement/response-write";
 import { LIVE_RLS } from "./local-supabase-env";
 import { resolveLocalDbContainer } from "./helpers/live-catalog";
 import { rollbackSqlConnection } from "./helpers/rollback-sql-connection";
@@ -22,10 +25,12 @@ const signatures: Record<string, string[]> = {
   read_engagement_synthesis_approval: ["p_campaign", "p_request"],
   read_engagement_synthesis_approval_history: ["p_campaign", "p_review"],
   retain_engagement_synthesis_approval: ["p_campaign", "p_actor", "p_workspace", "p_intent"],
+  read_engagement_response_history: ["p_campaign"],
+  write_engagement_response: ["p_campaign", "p_request", "p_operation", "p_response", "p_expected_updated_at", "p_reason", "p_changes"],
 };
 
 describe.skipIf(!LIVE_RLS)("native synthesis approval application join", () => {
-  it.each(["baseline", "harmless SQL comment", "corrupt rehashed revision reference"])("uses real source, review and approval RPCs through the production server: %s", async mode => {
+  it.each(["baseline", "harmless SQL comment", "corrupt rehashed revision reference", "corrupt response history text"])("uses real source, review and approval RPCs through the production server: %s", async mode => {
     const database = rollbackSqlConnection(resolveLocalDbContainer());
     try {
       const candidate = process.env.OPENPLAN_SYNTHESIS_APPROVAL_CANDIDATE === "1" ? readFileSync("supabase/migrations/20261014000028_engagement_synthesis_approvals.sql", "utf8") : "";
@@ -40,7 +45,7 @@ describe.skipIf(!LIVE_RLS)("native synthesis approval application join", () => {
         END $rpc$;
         SELECT set_config('request.jwt.claim.sub',${literal(actorId)},true);`);
       let loseNextApprovalAck = false;
-      const makeClient = (role: "authenticated" | "service_role") => ({ rpc: async (name: string, args: Record<string, unknown>) => {
+      const makeClient = (role: "authenticated" | "service_role" | "anon") => ({ rpc: async (name: string, args: Record<string, unknown>) => {
         const keys = signatures[name]; if (!keys) throw new Error("Unexpected native approval RPC");
         expect(Object.keys(args).sort()).toEqual([...keys].sort());
         const call = `SELECT public.${name}(${keys.map(key => literal(args[key])).join(",")})`;
@@ -65,6 +70,28 @@ describe.skipIf(!LIVE_RLS)("native synthesis approval application join", () => {
       const first = await retainSynthesisApproval(client, service, actor, intent);
       expect(first).toMatchObject({ replayed: true, event: { eventNo: 1, intent } });
       expect((await database.query(`SELECT count(*) FROM engagement_synthesis_approval_events WHERE review_id='${reviewId}';`)).at(-1)).toBe("1");
+      const created = await writeResponse(client, campaignId, { operation: "create", body: {
+        requestId: "f4000000-0000-4000-8000-000000000020", themeTitle: "SYNTHETIC reviewed response", weDid: "SYNTHETIC original answer 中文",
+      } });
+      expect(created.error).toBeNull();
+      const responseId = created.result!.entryId;
+      const groupId = original!.content.groups.reduce((a, b) => a.sourceIds.length > b.sourceIds.length ? a : b).id;
+      const contextAddress = { ...address, responseId, groupId };
+      const responseContext = await loadSynthesisResponseContext(client, contextAddress);
+      expect(responseContext.source.snapshot.items.length + responseContext.source.snapshot.answers.length).toBe(303);
+      expect(responseContext.context.approval.eventText).toBe(first.event.eventText);
+      expect(responseContext.context.source).toMatchObject({ snapshotText: source.snapshotText });
+      expect(responseContext.packet.contextText).not.toContain("SYNTHETIC private contact");
+      const nativeRecord = (await database.query(`SELECT record_json::text FROM engagement_response_history WHERE id=${literal(responseContext.context.responseHistory.id)};`)).at(-1);
+      expect(responseContext.context.responseHistory.recordText).toBe(nativeRecord);
+      if (mode === "corrupt response history text") {
+        await database.query(`DO $fault$ DECLARE body text; BEGIN
+          body=pg_get_functiondef('public.read_engagement_response_history(uuid)'::regprocedure);
+          IF position('h.record_json::text' IN body)=0 THEN RAISE EXCEPTION 'Missing response text fault seam'; END IF;
+          EXECUTE replace(body,'h.record_json::text',${literal("(h.record_json::text || ' ')")}); END $fault$;`);
+        await expect(loadSynthesisResponseContext(client, contextAddress)).rejects.toMatchObject({ kind: "unavailable" });
+        return;
+      }
       if (mode === "corrupt rehashed revision reference") {
         const altered = "jsonb_set(event_text::jsonb,'{intent,revisionSha256}',to_jsonb(repeat('0',64)))::text";
         const oldPacket = "jsonb_build_object('eventText',event_text,'eventSha256',event_sha256)";
@@ -76,6 +103,7 @@ describe.skipIf(!LIVE_RLS)("native synthesis approval application join", () => {
           body=replace(body,'SELECT event_sha256 FROM events',${literal(`SELECT encode(extensions.digest(${altered},'sha256'),'hex') FROM events`)});
           EXECUTE body; END $fault$;`);
         await expect(loadSynthesisApprovalState(client, address)).rejects.toThrow("Approval history differs from the verified review revisions");
+        await expect(loadSynthesisResponseContext(client, contextAddress)).rejects.toMatchObject({ kind: "conflict" });
         return;
       }
       await retainSynthesisReview(client, service, campaignId, { requestId: correctedId, actorId, workspaceId, operation: "correct", reviewId,
@@ -83,11 +111,13 @@ describe.skipIf(!LIVE_RLS)("native synthesis approval application join", () => {
         change: { kind: "notes", title: "SYNTHETIC corrected native review", notes: "SYNTHETIC complete native corrected text 中文 ".repeat(50) } });
       const state = await loadSynthesisApprovalState(client, address);
       expect(synthesisApprovalForRevision(state!.history, state!.current).state).toBe("unapproved");
+      await expect(loadSynthesisResponseContext(client, contextAddress)).rejects.toMatchObject({ kind: "conflict" });
       expect((await retainSynthesisApproval(client, service, actor, intent)).event).toEqual(first.event);
       const withdrawal: SynthesisApprovalIntent = { ...intent, requestId: withdrawalId, operation: "withdraw", reason: "SYNTHETIC withdrawal of the older exact approval",
         predecessorId: requestId, predecessorSha256: first.event.eventSha256 };
       const second = await retainSynthesisApproval(client, service, actor, withdrawal);
       expect(second.event.eventNo).toBe(2);
+      await expect(loadSynthesisResponseContext(client, contextAddress)).rejects.toMatchObject({ kind: "conflict" });
       const renewed: SynthesisApprovalIntent = { ...state!.current, actorId, requestId: renewedId, operation: "approve", reason: "SYNTHETIC explicit review of corrected wording",
         predecessorId: withdrawalId, predecessorSha256: second.event.eventSha256 };
       const third = await retainSynthesisApproval(client, service, actor, renewed);
@@ -100,9 +130,39 @@ describe.skipIf(!LIVE_RLS)("native synthesis approval application join", () => {
       const old = await loadSynthesisReview(client, { ...address, revisionId: reviewId });
       expect(old?.revision.contentText).toBe(original?.revision.contentText); expect(old?.preparationText).toBe(original?.preparationText);
       expect(old?.source.snapshotText).toBe(source.snapshotText);
+      const changed = await writeResponse(client, campaignId, { operation: "update", entryId: responseId, body: {
+        requestId: "f4000000-0000-4000-8000-000000000021", expectedUpdatedAt: created.result!.entry.updated_at,
+        reason: "SYNTHETIC corrected response", weDid: "SYNTHETIC corrected answer 中文",
+      } });
+      expect(changed.error).toBeNull();
+      const correctedContext = await loadSynthesisResponseContext(client, contextAddress);
+      expect(correctedContext.context.revision.id).toBe(correctedId);
+      expect(correctedContext.context.responseHistory.revision).toBe(2);
+      expect(correctedContext.response.we_did).toBe("SYNTHETIC corrected answer 中文");
+      await expect(loadSynthesisResponseContext(makeClient("anon"), contextAddress)).rejects.toMatchObject({ kind: "forbidden" });
+      // Keep the shared fixture's second owner for its later owner-floor checks.
+      const viewer = "834c2286-5578-4944-91e7-d652d4e8315b";
+      await database.query(`INSERT INTO auth.users(id,aud,role,email) VALUES('${viewer}','authenticated','authenticated','${viewer}@synthetic-decision.invalid');
+        INSERT INTO workspace_members(workspace_id,user_id,role) VALUES('${workspaceId}','${viewer}','viewer');`);
+      expect((await database.query(`SELECT role FROM workspace_members WHERE workspace_id='${workspaceId}' AND user_id='${viewer}';`)).at(-1)).toBe("viewer");
+      for (const other of [viewer, "14a71429-1cb2-49b5-8711-c696a2f394c3"]) {
+        await database.query(`SELECT set_config('request.jwt.claim.sub',${literal(other)},true);`);
+        await expect(loadSynthesisResponseContext(client, contextAddress)).rejects.toMatchObject({ kind: "forbidden" });
+      }
+      await database.query(`SELECT set_config('request.jwt.claim.sub',${literal(actorId)},true);`);
+      expect((await loadSynthesisResponseContext(client, contextAddress)).packet).toEqual(correctedContext.packet);
+      const removed = await writeResponse(client, campaignId, { operation: "remove", entryId: responseId, body: {
+        requestId: "f4000000-0000-4000-8000-000000000022", expectedUpdatedAt: changed.result!.entry.updated_at, reason: "SYNTHETIC retired response",
+      } });
+      expect(removed.error).toBeNull();
+      await expect(loadSynthesisResponseContext(client, contextAddress)).rejects.toMatchObject({ kind: "conflict" });
+      const retained = await readSynthesisResponseContext(responseContext.packet, { ...address, responseId });
+      expect(retained.response.we_did).toBe("SYNTHETIC original answer 中文");
+      expect(retained.context.approval.eventText).toBe(first.event.eventText);
       await database.query(`UPDATE workspace_members SET role='viewer' WHERE workspace_id='${workspaceId}' AND user_id='${actorId}';`);
       await expect(retainSynthesisApproval(client, service, actor, intent)).rejects.toMatchObject({ kind: "forbidden" });
       await expect(loadSynthesisApprovalState(client, address)).rejects.toMatchObject({ kind: "forbidden" });
+      await expect(loadSynthesisResponseContext(client, contextAddress)).rejects.toMatchObject({ kind: "forbidden" });
       expect((await database.query(`SELECT count(*) FROM engagement_synthesis_approval_events WHERE review_id='${reviewId}';`)).at(-1)).toBe("3");
     } finally { await database.close(); }
   }, 60_000);

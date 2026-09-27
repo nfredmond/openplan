@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { describe, expect, it, vi } from "vitest";
-import { loadResponseHistory } from "@/lib/engagement/response-history-server";
+import { loadResponseHistory, readResponseHistorySnapshot } from "@/lib/engagement/response-history-server";
 
 const campaignId = "10000000-0000-4000-8000-000000000001";
 const responseId = "20000000-0000-4000-8000-000000000001";
@@ -23,6 +23,15 @@ async function read(data: unknown) {
 }
 
 describe("private response history verification", () => {
+  it("preserves stored text for evidence without adding raw packets to existing staff responses", async () => {
+    const data = snapshot(), before = JSON.stringify(data);
+    const verified = readResponseHistorySnapshot(data, campaignId);
+    expect(verified.records[0].record_text).toBe(data.entries[0].record_text);
+    expect(verified.records[0].record_sha256).toBe(data.entries[0].record_sha256);
+    expect(verified.records[0].record_text).not.toBe(JSON.stringify(verified.rows[0].record));
+    expect(await read(data)).toEqual({ rows: verified.rows, error: null });
+    expect(JSON.stringify(data)).toBe(before);
+  });
   it("retains original, correction and removed copies without a current-row query", async () => {
     const result = await read(snapshot([revision(), revision(2, "corrected"), revision(3, "removed")]));
     expect(result.error).toBeNull();
@@ -79,5 +88,11 @@ describe("private response history verification", () => {
     for (const rpc of [vi.fn().mockResolvedValue({ data: null, error: { message: "offline" } }), vi.fn().mockRejectedValue(new Error("interrupted"))]) {
       expect((await loadResponseHistory({ rpc } as never, campaignId)).error).not.toBeNull();
     }
+  });
+  it("refuses stale valid rows returned alongside a database error", async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: snapshot(), error: { code: "XX000", message: "failed read" } });
+    const result = await loadResponseHistory({ rpc } as never, campaignId);
+    expect(result.rows).toEqual([]);
+    expect(result.error).not.toBeNull();
   });
 });

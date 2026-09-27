@@ -1,0 +1,294 @@
+{
+  "recordedAt": "2026-09-27T22:51:29.963266+00:00",
+  "cases": [
+    {
+      "case": "baseline",
+      "exit": 0,
+      "passedTests": 35,
+      "failures": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "exit": 0,
+      "passedTests": 35,
+      "failures": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "invalid-address",
+      "exit": 1,
+      "passedTests": 34,
+      "failures": [
+        "saved synthesis response context loader refuses malformed or expanded addresses before reading private records"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-review",
+      "exit": 1,
+      "passedTests": 34,
+      "failures": [
+        "saved synthesis response context loader refuses missing reviews, groups and response rows"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "approval-absence",
+      "exit": 1,
+      "passedTests": 34,
+      "failures": [
+        "saved synthesis response context loader refuses absent approval before loading response content"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "approval-withdrawn",
+      "exit": 1,
+      "passedTests": 34,
+      "failures": [
+        "saved synthesis response context loader refuses withdrawn approval before loading response content"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "approval-current",
+      "exit": 1,
+      "passedTests": 34,
+      "failures": [
+        "saved synthesis response context loader verifies corrected review lineage and requires its own exact current approval"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "observed-review-head",
+      "exit": 1,
+      "passedTests": 34,
+      "failures": [
+        "saved synthesis response context loader refuses an inconsistent observed current revision instead of presenting it as the head"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "selected-group",
+      "exit": 1,
+      "passedTests": 34,
+      "failures": [
+        "saved synthesis response context loader refuses missing reviews, groups and response rows"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "response-read-error",
+      "exit": 1,
+      "passedTests": 33,
+      "failures": [
+        "saved synthesis response context loader returns no context after denied read_engagement_response_history",
+        "saved synthesis response context loader refuses a failed response read even when it carries a valid earlier payload"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "response-history-completeness",
+      "exit": 1,
+      "passedTests": 34,
+      "failures": [
+        "saved synthesis response context loader rejects corrupt or incomplete history even when the selected response itself is valid"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "response-latest",
+      "exit": 1,
+      "passedTests": 34,
+      "failures": [
+        "saved synthesis response context loader selects the latest response version without reserializing or falling back to an earlier copy"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "response-identity",
+      "exit": 1,
+      "passedTests": 34,
+      "failures": [
+        "saved synthesis response context loader selects the latest response version without reserializing or falling back to an earlier copy"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "response-removed",
+      "exit": 1,
+      "passedTests": 34,
+      "failures": [
+        "saved synthesis response context loader selects the latest response version without reserializing or falling back to an earlier copy"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "response-missing",
+      "exit": 1,
+      "passedTests": 34,
+      "failures": [
+        "saved synthesis response context loader refuses missing reviews, groups and response rows"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "response-original-bytes",
+      "exit": 1,
+      "passedTests": 32,
+      "failures": [
+        "saved synthesis response context loader uses one complete verified review read and preserves source, review, approval and response bytes",
+        "saved synthesis response context loader selects the latest response version without reserializing or falling back to an earlier copy",
+        "saved synthesis response context loader verifies corrected review lineage and requires its own exact current approval"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "verified-review-reuse",
+      "exit": 1,
+      "passedTests": 29,
+      "failures": [
+        "saved synthesis response context loader uses one complete verified review read and preserves source, review, approval and response bytes",
+        "saved synthesis response context loader selects the latest response version without reserializing or falling back to an earlier copy",
+        "saved synthesis response context loader verifies corrected review lineage and requires its own exact current approval",
+        "saved synthesis response context loader refuses missing reviews, groups and response rows",
+        "saved synthesis response context loader refuses an inconsistent observed current revision instead of presenting it as the head",
+        "saved synthesis response context loader returns no context after denied read_engagement_response_history"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "snapshot-envelope",
+      "exit": 1,
+      "passedTests": 34,
+      "failures": [
+        "private response history verification rejects all rows on foreign envelope"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "snapshot-count",
+      "exit": 1,
+      "passedTests": 34,
+      "failures": [
+        "private response history verification rejects all rows on count mismatch"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "history-campaign",
+      "exit": 1,
+      "passedTests": 34,
+      "failures": [
+        "private response history verification rejects all rows on foreign row"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "history-duplicate",
+      "exit": 1,
+      "passedTests": 34,
+      "failures": [
+        "private response history verification rejects all rows on duplicate identity with valid revisions"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "history-sequence",
+      "exit": 1,
+      "passedTests": 33,
+      "failures": [
+        "private response history verification rejects all rows on revision gap",
+        "saved synthesis response context loader rejects corrupt or incomplete history even when the selected response itself is valid"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "history-terminal",
+      "exit": 1,
+      "passedTests": 34,
+      "failures": [
+        "private response history verification rejects all rows on identity reused after removal"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "history-digest",
+      "exit": 1,
+      "passedTests": 33,
+      "failures": [
+        "private response history verification rejects all rows on checksum corruption",
+        "saved synthesis response context loader rejects corrupt or incomplete history even when the selected response itself is valid"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "history-record-response",
+      "exit": 1,
+      "passedTests": 34,
+      "failures": [
+        "private response history verification rejects all rows on foreign retained response"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "history-record-campaign",
+      "exit": 1,
+      "passedTests": 34,
+      "failures": [
+        "private response history verification rejects all rows on foreign retained campaign"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "history-baseline",
+      "exit": 1,
+      "passedTests": 34,
+      "failures": [
+        "private response history verification rejects all rows on wrong initial event"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "history-stored-text",
+      "exit": 1,
+      "passedTests": 31,
+      "failures": [
+        "private response history verification preserves stored text for evidence without adding raw packets to existing staff responses",
+        "saved synthesis response context loader uses one complete verified review read and preserves source, review, approval and response bytes",
+        "saved synthesis response context loader selects the latest response version without reserializing or falling back to an earlier copy",
+        "saved synthesis response context loader verifies corrected review lineage and requires its own exact current approval"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "history-existing-contract",
+      "exit": 1,
+      "passedTests": 33,
+      "failures": [
+        "private response history verification preserves stored text for evidence without adding raw packets to existing staff responses",
+        "private response history verification accepts a truthful legacy baseline and a healthy empty snapshot"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "history-error-with-data",
+      "exit": 1,
+      "passedTests": 34,
+      "failures": [
+        "private response history verification refuses stale valid rows returned alongside a database error"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "sourcesRestored": true,
+  "sources": {
+    "openplan/src/lib/engagement/synthesis-response-links-server.ts": "3ce58f2a3de2e1611051fb927585c370bf4cbd1a3946834917725fa8e733c607",
+    "openplan/src/lib/engagement/response-history-server.ts": "174fedd6a13a85e27bea067370920b556564c6204d6c3ae37eb32fb459e8f813",
+    "openplan/src/lib/engagement/synthesis-approval-server.ts": "d78172221a7f82eba28835d49d9b0588c9d2289a21945dcc7f47f4764b11c11f",
+    "openplan/src/test/engagement-synthesis-response-loader.test.ts": "8a2bea5a899358dbb23351b5d4ded80d250ef084900a23845b52f0e98c268618",
+    "openplan/src/test/engagement-response-history.test.ts": "9b7646f32729e944d61a4caf5ba6692bb490ca0c53d618f642088d05df028aa9"
+  },
+  "limits": "Application logic and preserved history contract only. Some nested scope checks overlap. Native access, transaction locks, races, HTTP authorization and browser behavior require separate checks."
+}

@@ -1,0 +1,93 @@
+{
+  "recordedAt": "2026-09-27T23:04:33.038345+00:00",
+  "baseCommit": "85b94b83b46ae01288aacf842be8630a40a234c7",
+  "qa": {
+    "exit": 0,
+    "session": 15662,
+    "passedTests": 15669,
+    "skippedTests": 629,
+    "passingFiles": 1332,
+    "skippedFiles": 59,
+    "rlsOptIn": false
+  },
+  "shuffled": {
+    "exit": 0,
+    "session": 54212,
+    "seed": 865719,
+    "passedTests": 15669,
+    "skippedTests": 629
+  },
+  "rls": {
+    "exit": 0,
+    "session": 6585,
+    "passedTests": 658,
+    "passingFiles": 66,
+    "container": "supabase_db_openplan-restore-target-2026091050",
+    "containerId": "a4181e334bb0",
+    "port": 29822,
+    "candidateMode": false
+  },
+  "nativeJoin": {
+    "exit": 0,
+    "cases": 4,
+    "earlierFixtureFailures": [
+      "shared peer was owner after fixture promotion",
+      "demoting peer broke existing owner-floor case"
+    ],
+    "correction": "Dedicated synthetic viewer in rollback transaction; no product permission changes"
+  },
+  "proof": {
+    "cases": 30,
+    "harmlessControls": 1,
+    "targetedFaults": 28,
+    "allExpected": true,
+    "sourcesRestored": true
+  },
+  "sources": {
+    "openplan/src/lib/engagement/response-history-server.ts": "174fedd6a13a85e27bea067370920b556564c6204d6c3ae37eb32fb459e8f813",
+    "openplan/src/lib/engagement/synthesis-approval-server.ts": "d78172221a7f82eba28835d49d9b0588c9d2289a21945dcc7f47f4764b11c11f",
+    "openplan/src/lib/engagement/synthesis-response-links-server.ts": "3ce58f2a3de2e1611051fb927585c370bf4cbd1a3946834917725fa8e733c607",
+    "openplan/src/test/engagement-response-history.test.ts": "9b7646f32729e944d61a4caf5ba6692bb490ca0c53d618f642088d05df028aa9",
+    "openplan/src/test/engagement-synthesis-response-loader.test.ts": "8a2bea5a899358dbb23351b5d4ded80d250ef084900a23845b52f0e98c268618",
+    "openplan/src/test/engagement-synthesis-approval-join-rls.test.ts": "905aa0b30758d0894fc55743523f09ed71c6d8cee4fde1306d6c74b3cfde2c46"
+  },
+  "logs": [
+    {
+      "name": "response-loader-focused.log",
+      "sha256": "73b4fdb845b4a1355ef93288ea08ce42e372b65e1d8572158dc4057d98cbde61"
+    },
+    {
+      "name": "response-loader-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "response-loader-native.log",
+      "sha256": "e39278987a59494702d715b2f999a23625ac847c0f8a10a75183dbb5f448c6b0"
+    },
+    {
+      "name": "response-loader-native-fixed.log",
+      "sha256": "0ce9a3f2d58fab19e7ffa43ab05ca1bf6169dd771211ae6d4ddcdac14fc1a933"
+    },
+    {
+      "name": "response-loader-native-final.log",
+      "sha256": "9ec973e613adb40b92672ca3274bbd8f32affdb5e66fc6c09d4931dd24e4f865"
+    },
+    {
+      "name": "response-loader-proof.log",
+      "sha256": "e111e046e784e5623a3d3ead122ee0850dc1d75b7b90f0009de797ad7d7340ae"
+    },
+    {
+      "name": "response-loader-qa.log",
+      "sha256": "6c222646048ac819a4c62dd4fecc146a1b3f74f908947875402fd005a444c850"
+    },
+    {
+      "name": "response-loader-shuffled.log",
+      "sha256": "223c42d126623c7482bdac201d4e0cd23b502bbb2e49b4d9fd9f76f0be542eec"
+    },
+    {
+      "name": "response-loader-rls.log",
+      "sha256": "b1cdc5ad29fb29b27034f45180ed88f8ac339b4a48029df0d5e51c7d296bd24c"
+    }
+  ],
+  "limits": "Internal preview loader only. Native join uses rollback SQL, not HTTP. No native link writer, atomic multi-read head guarantee, public derivative, new UI, browser acceptance or release claim. No migration or worker implementation change."
+}

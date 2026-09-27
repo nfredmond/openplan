@@ -8,7 +8,7 @@ September 27, 2026. Unreleased implementation after v0.63.0. This advances M9b w
 
 The reader reuses the existing source, preparation, review-content and approval verifiers. It verifies the response history bytes and their campaign/response identity. It rejects a withdrawal event as the approval for a new context and rejects a removed response history event as the original link target. Later withdrawal, correction or removal must leave previously retained contexts readable and visibly historical.
 
-This is a protocol reader, not an authorization mechanism. Hashes bind bytes, not authority. It does not establish that the supplied approval is current or that the response still exists. The future authenticated loader and native writer must verify complete saved review lineage, current membership, both current version heads and exact retry identity. Context readers must not substitute for those transaction checks. No new route, writer, migration, browser control or public export uses this reader yet.
+This is a protocol reader, not an authorization mechanism. Hashes bind bytes, not authority. It does not establish that the supplied approval is current or that the response still exists. The authenticated loader below now verifies complete saved review lineage and observes current approval and response heads through staff readers. The future native writer must recheck current membership, both version heads and exact retry identity under transaction locks. Context readers must not substitute for those transaction checks. No new route, writer, migration, browser control or public export uses this reader yet.
 
 ## Verification so far
 
@@ -18,6 +18,10 @@ The focused suite has 30 checks. It covers 301 comments plus a survey answer, an
 
 The first test run used an unsupported `toEndWith` matcher. Replacing it with a supported regular-expression assertion yields the expected passing baseline. A standalone type check exhausts Node's default heap; the implementation passes with the repository's 6144 MB build allowance. The final full QA run exits successfully with 15,651 passing and 628 explicitly skipped tests in 1,331 passing and 59 skipped files. Lint, the configured dead-code check, provider connector checks, dependency audit and production build pass. Existing unused export/type warnings remain visible. The final build also checks the refined test fixtures. [Check evidence](checks.json) retains private log hashes. No database or worker implementation changes here; live isolation and worker execution were not rerun for this protocol-only checkpoint. Native-write and browser acceptance remain required when those paths are implemented.
 
+## Authenticated context loader
+
+The subsequent loader checkpoint reuses the verified saved review and approval state, reads complete response history, selects the latest matching response and preserves its exact PostgreSQL text. It refuses absent or withdrawn approval, approval of an older revision, removed responses and failed or incomplete reads. Existing staff history and approval HTTP payloads remain unchanged. [Loader verification](LOADER_VERIFICATION.md) records application fault controls, actual native reads and separate limitations. No native link write or visible workflow is connected yet.
+
 ## Survey change and public-copy boundary
 
 Source inspection finds one definition of `review_engagement_survey`, in `20260908000006_engagement_survey_receipts.sql`. It locks a survey session, compares its version, changes answer text/JSON for reviewed redactions, changes session status and retains before/after history. It does not acquire the response campaign lock or call `withdraw_engagement_source_responses`. The current withdrawal helper selects legacy comment IDs and reply parents. These are existing independent workflows; a new survey-derived response link must join them before becoming publishable.
@@ -26,7 +30,7 @@ Current public report selection in `20261014000023_engagement_public_copy_privac
 
 ## Next implementation boundary
 
-1. Add authenticated context loading from complete saved review/approval and response histories. Preserve actual stored response text instead of reserializing it against an old hash.
+1. Authenticated context loading is implemented and verified as described above. It supplies an observed preview; it does not authorize a later write or public disclosure.
 2. Add immutable link events and complete normalized source dependencies for comments, replies and answers. Enforce current staff scope, exact old retry, current approval/review/response heads and a consistent transaction lock order. Keep historical contexts readable after changes.
 3. Join source changes, survey review/redaction, response edits, link withdrawal and public eligibility. Test both commit orders and genuine concurrent requests. Trace every existing public portal/report/export reader before enabling publication.
 4. Extend response-to-decision context with independently verified synthesis provenance while keeping original schema 1 bytes readable.
