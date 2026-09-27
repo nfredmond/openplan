@@ -1,0 +1,77 @@
+{
+  "recordedAt": "2026-09-27T23:43:40.721729+00:00",
+  "baseCommit": "461726255c2ba2f7b841d9fc3a1544a8bf544f5c",
+  "state": "rollback-only publication eligibility extension; activation incomplete",
+  "native": {
+    "exit": 0,
+    "session": 21143,
+    "tests": 58,
+    "baselineAndLockControls": 9,
+    "deliberateFaultCases": 49,
+    "initialFailures": [
+      "Rollback JSONB adapter needed explicit boolean to_jsonb conversion",
+      "Direct DML in rollback adapter needed RETURNING NULL::jsonb"
+    ]
+  },
+  "typescript": {
+    "exit": 0,
+    "session": 9963,
+    "heapMiB": 6144
+  },
+  "eslint": {
+    "exit": 0,
+    "session": 75488
+  },
+  "database": {
+    "container": "supabase_db_openplan-restore-target-2026091050",
+    "port": 29822,
+    "installedMigrations": 347,
+    "candidateTablesPresentAfterRun": false,
+    "candidateEligibilityFunctionPresentAfterRun": false,
+    "publicationGuardRestored": true
+  },
+  "sources": {
+    "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-links.candidate.sql": "5de80c660d2ca1fbd37db98b4ced790cca24ad8124b1bd0ad87c1e7ba31b68c8",
+    "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-public.candidate.sql": "4cdf5df411e07a417e3db0f8ad7918dbe5837c17a47366cd6383b0bcace591f6",
+    "openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts": "fc9c504f08280acf3ef60d01c3f72a4123a533fe67b79d958869a352e7c091e1"
+  },
+  "logs": [
+    {
+      "name": "response-public-candidate.log",
+      "sha256": "1d028ffff67ad7450d02ac655ddc4636e72258be82455a0abadfd8c6c2025937"
+    },
+    {
+      "name": "response-public-debug.log",
+      "sha256": "25b0c80ac92a7a727ce4768e9cbb3b4d8f7a39ec5e4d0790cc23eabc027f2c5c"
+    },
+    {
+      "name": "response-public-fixed.log",
+      "sha256": "625145049f0b1378aba49dda1546d4a179b0a9c1806f9288021138c35d6d5736"
+    },
+    {
+      "name": "response-public-adapter-fixed.log",
+      "sha256": "6c58f0c6c42c4e6d3579b619d50575c01674955b0dbceabf9f6d7b5460b88750"
+    },
+    {
+      "name": "response-public-filtered.log",
+      "sha256": "ce3053ee66906996005ca16876432a20d98b086ab6458fd563347ef1b4c2c291"
+    },
+    {
+      "name": "response-public-parents.log",
+      "sha256": "0e9830aa2411ef65ee8047115dca0cca4a578dfd0d2b63c55b083b151ca5bf18"
+    },
+    {
+      "name": "response-public-proof.log",
+      "sha256": "a0139c65b57cf3ab4326565e379e2ce7bc56c2cc181919a4071d944156dec778"
+    },
+    {
+      "name": "response-public-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "response-public-lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "limits": "Rollback-only native/public query checks. No installed migration, automatic stored-status withdrawal, retained-download acceptance, application route, browser, worker export or release claim. Remaining relational/validation faults and actual concurrent source-change commit orders remain."
+}

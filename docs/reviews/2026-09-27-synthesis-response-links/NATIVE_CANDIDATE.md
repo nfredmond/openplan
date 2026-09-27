@@ -26,6 +26,10 @@ OPENPLAN_RLS_LIVE_TEST=1 node --env-file-if-exists=.env.local node_modules/vites
   src/test/engagement-synthesis-response-candidate-rls.test.ts
 ```
 
+## Public eligibility extension
+
+The [public eligibility candidate](PUBLIC_ELIGIBILITY.md) adds current dependency checks to publication, public response reads and filtered public reports. Its 58-case run includes the earlier native controls with a corrected direct-DML test adapter. Automatic status withdrawal and retained-download checks remain unfinished. The SQL remains outside the migration directory.
+
 ## Required before activation
 
 - Complete mutation coverage for remaining native validation and relational constraints. Retain the current positive controls and targeted fault cases.

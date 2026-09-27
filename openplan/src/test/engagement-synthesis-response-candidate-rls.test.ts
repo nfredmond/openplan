@@ -38,8 +38,16 @@ type NativeProbe = { database: ReturnType<typeof rollbackSqlConnection>; query: 
 type Result = { data: unknown; error: { code: string; message: string } | null };
 
 /** Candidate DDL and synthetic fixtures remain in one rollback transaction on the named isolated stack. */
-async function scenario(sql = candidate, probe?: (native: NativeProbe) => Promise<void>) {
+async function scenario(sql = candidate, probe?: (native: NativeProbe) => Promise<void>, replyFixture = false) {
   const database = rollbackSqlConnection(resolveLocalDbContainer());
+  let sourceFixture = readFileSync("src/test/fixtures/engagement/synthesis-source-custody.sql", "utf8");
+  if (replyFixture) {
+    const columns = "INSERT INTO engagement_items(id,campaign_id,body,title,status,source_type,category_id,configuration_version_id,created_at)";
+    const values = "configuration_version_id,'2026-01-02T12:00:00Z' FROM engagement_campaigns WHERE id='10c5cdd7-16c6-4b91-b9c0-d2f67598a54f'";
+    expect(sourceFixture.split(columns)).toHaveLength(2); expect(sourceFixture.split(values)).toHaveLength(2);
+    sourceFixture = sourceFixture.replace(columns, columns.slice(0, -1) + ",parent_item_id)")
+      .replace(values, values.replace(" FROM", ",'b0000000-0000-4000-8000-000000000001' FROM"));
+  }
   try {
     await database.query(`BEGIN; SET LOCAL statement_timeout='30s'; SET LOCAL lock_timeout='2s';
       ${sql}
@@ -49,7 +57,7 @@ async function scenario(sql = candidate, probe?: (native: NativeProbe) => Promis
         DO $setup$ DECLARE row record; BEGIN FOR row IN SELECT body FROM original_link_lock_functions LOOP
           EXECUTE replace(replace(row.body,'engagement-response:','synthetic-setup-response:'),'engagement-synthesis-review:','synthetic-setup-review:');
         END LOOP; END $setup$;` : ""}
-      ${readFileSync("src/test/fixtures/engagement/synthesis-source-custody.sql", "utf8")}
+      ${sourceFixture}
       CREATE FUNCTION pg_temp.link_rpc(statement text) RETURNS jsonb LANGUAGE plpgsql AS $rpc$
       DECLARE value jsonb; code text; message text; BEGIN
         BEGIN EXECUTE statement INTO value;
@@ -58,7 +66,8 @@ async function scenario(sql = candidate, probe?: (native: NativeProbe) => Promis
         RETURN jsonb_build_object('data',value,'error',NULL);
       END $rpc$;`);
     const query = async (statement: string, role = "authenticated"): Promise<Result> => {
-      const rows = await database.query(`SET LOCAL ROLE ${role}; SELECT pg_temp.link_rpc(${literal(statement)}); RESET ROLE;`);
+      const command = /^(UPDATE|DELETE|INSERT)\s/i.test(statement) ? statement + " RETURNING NULL::jsonb" : statement;
+      const rows = await database.query(`SET LOCAL ROLE ${role}; SELECT pg_temp.link_rpc(${literal(command)}); RESET ROLE;`);
       return JSON.parse(rows.at(-1) ?? "null") as Result;
     };
     const makeClient = (role: string) => ({ rpc: async (name: string, args: Record<string, unknown>) => {
@@ -75,7 +84,7 @@ async function scenario(sql = candidate, probe?: (native: NativeProbe) => Promis
     await retainSynthesisReview(client, service, campaignId, { requestId: id(2), actorId, workspaceId, operation: "correct", reviewId,
       expectedRevisionId: reviewId, expectedRevisionSha256: initial.revision.contentSha256, reason: "SYNTHETIC complete theme membership",
       change: { kind: "group_update", groupId: group.id, label: group.label, summary: "SYNTHETIC all selected input", sentiment: "not_assessed",
-        addSourceIds: all.filter(key => !group.sourceIds.includes(key)), removeSourceIds: [] } });
+        addSourceIds: all.filter(key => !group.sourceIds.includes(key)), removeSourceIds: replyFixture ? ["item:b0000000-0000-4000-8000-000000000001"] : [] } });
     const state = (await loadSynthesisApprovalState(client, address))!;
     const approval = await retainSynthesisApproval(client, service, actor, { ...state.current, actorId, requestId: id(3), operation: "approve",
       reason: "SYNTHETIC reviewed source wording", predecessorId: null, predecessorSha256: null });
@@ -83,7 +92,7 @@ async function scenario(sql = candidate, probe?: (native: NativeProbe) => Promis
     expect(created.error).toBeNull();
     const responseId = created.result!.entryId, groupId = group.id, scope = { ...address, responseId, groupId };
     const context = await loadSynthesisResponseContext(client, scope);
-    expect(context.group.sourceIds).toHaveLength(303);
+    expect(context.group.sourceIds).toHaveLength(replyFixture ? 302 : 303);
     const intent: Intent = { ...actor, ...scope, requestId: id(10), operation: "link", reason: "SYNTHETIC private linkage",
       predecessorId: null, predecessorSha256: null, expectedContextSha256: context.packet.contextSha256 };
     const statement = (value: unknown, text: string | null, who = actorId, workspace = workspaceId) =>
@@ -276,5 +285,134 @@ const nativeDdlFaults = [
 describe.skipIf(!LIVE_RLS)("candidate synthesis response access and history fault controls", () => {
   it.each(nativeDdlFaults)("detects %s", async (_name, ddl, assertion) => {
     await expect(scenario(candidate + "\n" + ddl)).rejects.toThrow(assertion);
+  }, 60_000);
+});
+
+const publicCandidate = readFileSync("../docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-public.candidate.sql", "utf8");
+async function publicScenario(sql = publicCandidate) {
+  await scenario(candidate + "\n" + sql, async ({ database, query, intent, contextText, statement }) => {
+    await database.query("SAVEPOINT legacy_response;");
+    const legacy = await query(`SELECT public.write_engagement_response('${campaignId}','${id(99)}','create',NULL,NULL,NULL,'{"theme_title":"SYNTHETIC unrelated legacy response","status":"published"}')`);
+    expect(legacy.error, "unlinked publication control failed").toBeNull();
+    expect(legacy.data).toMatchObject({ entry: { status: "published" } });
+    await database.query("ROLLBACK TO SAVEPOINT legacy_response; RELEASE SAVEPOINT legacy_response;");
+    const saved = await query(statement(intent, contextText), "service_role"); expect(saved.error).toBeNull();
+    const eligible = `SELECT to_jsonb(public.read_engagement_synthesis_response_public_eligibility('${campaignId}','${intent.responseId}'))`;
+    const publicRead = `SELECT public.read_engagement_response_snapshot('${campaignId}',true)`;
+    const privateRead = `SELECT public.read_engagement_response_snapshot('${campaignId}',false)`;
+    const response = async () => (await query(`SELECT to_jsonb(e) FROM engagement_closeloop_entries e WHERE id='${intent.responseId}'`, "postgres")).data as { updated_at: string; status: string };
+    let command = 100;
+    const changeResponse = async (changes: Record<string, unknown>) => query(`SELECT public.write_engagement_response('${campaignId}','${id(++command)}','update','${intent.responseId}',${literal((await response()).updated_at)},'SYNTHETIC publication check',${literal(changes)})`);
+    const invalidScope = await query(`SELECT to_jsonb(public.engagement_synthesis_response_public_allowed('${campaignId}','${intent.responseId}','{}'))`, "postgres");
+    expect(invalidScope.error).toBeNull(); expect(invalidScope.data, "wrong response record scope accepted").toBe(false);
+    const missingResponse = await query(`SELECT to_jsonb(public.read_engagement_synthesis_response_public_eligibility('${campaignId}','${id(999)}'))`);
+    expect(missingResponse.error).toBeNull(); expect(missingResponse.data, "missing response treated as eligible").toBe(false);
+    const readiness = await query(eligible);
+    expect(readiness.error, "eligibility query failed").toBeNull();
+    expect(readiness.data, "current complete source not eligible").toBe(true);
+    expect((await changeResponse({ status: "published" })).error, "valid link publication failed").toBeNull();
+    expect((await query(eligible)).data, "publication invalidated its own link").toBe(true);
+    expect((await query(publicRead, "service_role")).data).toMatchObject({ count: 1 });
+    expect((await changeResponse({ sort_order: 4 })).error, "display ordering invalidated review").toBeNull();
+    expect((await query(eligible)).data).toBe(true);
+    const report = async (scope: string, filters: Record<string, unknown> = {}) => {
+      const queued = await query(`SELECT public.queue_engagement_report('${campaignId}','${id(++command)}',${literal(scope)},${literal(filters)})`);
+      expect(queued.error, "report fixture did not queue").toBeNull();
+      const job = (queued.data as { jobId: string }).jobId;
+      return (await query(`SELECT (snapshot_text::jsonb)->'responses' FROM engagement_report_jobs WHERE id=${literal(job)}`, "postgres")).data as unknown[];
+    };
+    expect(await report("public")).toHaveLength(1);
+    for (const scope of ["public", "internal"]) {
+      expect(await report(scope, { categoryIds: ["a0000000-0000-4000-8000-000000000002"] }), "filtered report omitted linked source dependencies").toHaveLength(0);
+    }
+    expect((await query(eligible, "anon")).error?.code, "anonymous eligibility read allowed").toBe("42501");
+    expect((await query(`SELECT public.engagement_synthesis_response_public_allowed('${campaignId}','${intent.responseId}','{}')`)).error?.code, "private evaluator callable").toBe("42501");
+    await database.query(`SELECT set_config('request.jwt.claim.sub','14a71429-1cb2-49b5-8711-c696a2f394c3',true);`);
+    expect((await query(eligible)).error?.code, "foreign eligibility read allowed").toBe("42501");
+    await database.query(`SELECT set_config('request.jwt.claim.sub','',true);`);
+    expect((await query(eligible, "service_role")).data, "service public reader requires a staff identity").toBe(true);
+    await database.query(`SELECT set_config('request.jwt.claim.sub','${actorId}',true);`);
+    // Each isolated change must actually alter eligibility, and rollback must recover the same published response.
+    const changed = async (sqlChange: string, label: string, status = "published") => {
+      await database.query("SAVEPOINT public_change;");
+      expect((await query(sqlChange, "postgres")).error, `${label} fixture failed`).toBeNull();
+      expect((await query(eligible)).data, `${label} remained eligible`).toBe(false);
+      expect((await response()).status, `${label} changed response status unexpectedly`).toBe(status);
+      expect((await query(publicRead, "service_role")).data, `${label} escaped public snapshot`).toMatchObject({ count: 0, entries: [] });
+      expect((await query(privateRead)).data, `${label} lost staff response`).toMatchObject({ count: 1 });
+      expect(await report("public"), `${label} escaped public report`).toHaveLength(0);
+      expect(await report("internal"), `${label} changed internal published-response selection`).toHaveLength(status === "published" ? 1 : 0);
+      expect((await changeResponse({ status: "published" })).error?.code, `${label} publication was accepted`).toBe("PT409");
+      await database.query("ROLLBACK TO SAVEPOINT public_change; RELEASE SAVEPOINT public_change;");
+      expect((await query(eligible)).data, `${label} rollback failed to restore control`).toBe(true);
+    };
+    const itemId = "b0000000-0000-4000-8000-000000000002", answerId = "c0000000-0000-4000-8000-000000000002", sessionId = "c0000000-0000-4000-8000-000000000001";
+    await changed(`UPDATE engagement_items SET body='SYNTHETIC changed source',review_expected_updated_at=updated_at,review_reason='SYNTHETIC source correction' WHERE id='${itemId}'`, "comment correction");
+    await changed(`UPDATE engagement_items SET metadata_json=metadata_json||'{"visibility":"private"}',review_expected_updated_at=updated_at,review_reason='SYNTHETIC privacy change' WHERE id='${itemId}'`, "private comment");
+    await changed(`UPDATE engagement_items SET status='rejected',review_expected_updated_at=updated_at,review_reason='SYNTHETIC status change' WHERE id='${itemId}'`, "unpublished comment");
+    await changed(`UPDATE engagement_items SET body='SYNTHETIC changed reply parent',review_expected_updated_at=updated_at,review_reason='SYNTHETIC parent correction' WHERE id='b0000000-0000-4000-8000-000000000001'`, "reply parent correction");
+    await changed(`UPDATE engagement_items SET metadata_json=metadata_json||'{"visibility":"private"}',review_expected_updated_at=updated_at,review_reason='SYNTHETIC parent privacy' WHERE id='b0000000-0000-4000-8000-000000000001'`, "private reply parent");
+    await changed(`UPDATE engagement_survey_answers SET answer_text='SYNTHETIC changed answer' WHERE id='${answerId}'`, "answer wording");
+    await changed(`UPDATE engagement_survey_answers SET answer_json='{"text":"SYNTHETIC changed structured answer"}' WHERE id='${answerId}'`, "answer structured value");
+    await changed(`SELECT to_jsonb(public.review_engagement_survey('${campaignId}','${sessionId}',(SELECT updated_at FROM engagement_survey_response_sessions WHERE id='${sessionId}'),'approved','SYNTHETIC actual reviewed redaction',${literal({ [answerId]: "SYNTHETIC reviewed replacement" })}))`, "reviewed survey redaction");
+    await changed(`SELECT to_jsonb(public.review_engagement_survey('${campaignId}','${sessionId}',(SELECT updated_at FROM engagement_survey_response_sessions WHERE id='${sessionId}'),'rejected','SYNTHETIC actual review change','{}'))`, "survey review withdrawal");
+    await changed(`UPDATE engagement_survey_response_sessions SET metadata_json=metadata_json||'{"visibility":"private"}' WHERE id='${sessionId}'`, "private survey");
+    // Publication metadata and votes do not change the contribution's reviewed meaning.
+    await database.query("SAVEPOINT harmless_votes;");
+    expect((await query(`UPDATE engagement_items SET votes_count=votes_count+1 WHERE id='${itemId}'`, "postgres")).error).toBeNull();
+    expect((await query(eligible)).data, "vote count invalidated source meaning").toBe(true);
+    await database.query("ROLLBACK TO SAVEPOINT harmless_votes; RELEASE SAVEPOINT harmless_votes;");
+    const originalContext = JSON.parse(contextText) as { revision: { id: string; contentText: string; contentSha256: string }; sourceId: string; sourceSha256: string; approval: Packet };
+    const approvedIntent = (JSON.parse(originalContext.approval.eventText) as { intent: Record<string, unknown> }).intent;
+    await changed(`SELECT public.retain_engagement_synthesis_approval('${campaignId}','${actorId}','${workspaceId}',${literal({ ...approvedIntent, requestId: id(800), operation: "withdraw", reason: "SYNTHETIC withdrawn publication basis", predecessorId: approvedIntent.requestId, predecessorSha256: originalContext.approval.eventSha256 })})`, "synthesis approval withdrawal");
+    const correction = { requestId: id(801), actorId, workspaceId, operation: "correct", reviewId,
+      expectedRevisionId: originalContext.revision.id, expectedRevisionSha256: originalContext.revision.contentSha256,
+      reason: "SYNTHETIC updated review", change: { kind: "notes", title: "SYNTHETIC corrected public basis", notes: "SYNTHETIC corrected interpretation" } };
+    const content = JSON.stringify({ ...JSON.parse(originalContext.revision.contentText), title: correction.change.title, notes: correction.change.notes });
+    await changed(`SELECT public.retain_engagement_synthesis_review('${campaignId}','${actorId}','${workspaceId}',${literal(correction)},'${originalContext.sourceId}','${originalContext.sourceSha256}',NULL,${literal(content)})`, "synthesis review correction");
+    await database.query("ALTER TABLE engagement_synthesis_response_members DISABLE TRIGGER synthesis_response_members_immutable;");
+    await changed(`DELETE FROM engagement_synthesis_response_members WHERE event_id='${intent.requestId}' AND source_id='${itemId}'`, "incomplete dependency index");
+    await database.query("ALTER TABLE engagement_synthesis_response_members ENABLE TRIGGER synthesis_response_members_immutable;");
+    const latest = await response();
+    await changed(`SELECT public.write_engagement_response('${campaignId}','${id(700)}','update','${intent.responseId}',${literal(latest.updated_at)},'SYNTHETIC corrected answer','{"status":"draft","we_did":"SYNTHETIC new response meaning"}')`, "response wording", "draft");
+    const withdrawal = { ...intent, requestId: id(701), operation: "withdraw", expectedContextSha256: null,
+      predecessorId: intent.requestId, predecessorSha256: (saved.data as Receipt).event.eventSha256 };
+    await changed(statement(withdrawal, null), "withdrawn final link");
+  }, true);
+}
+
+describe.skipIf(!LIVE_RLS)("candidate synthesis response public eligibility", () => {
+  it("checks complete survey and comment dependencies across publication, public reads and reports", () => publicScenario(), 60_000);
+  it("accepts a harmless public evaluator comment", () => publicScenario("-- Harmless public evaluator control.\n" + publicCandidate), 60_000);
+});
+
+const publicFaults = [
+  ["comment privacy", "NOT public.engagement_item_public_copy_allowed(item.status,item.metadata_json)", "false", "private comment remained eligible"],
+  ["comment meaning", "retained IS NULL OR public.engagement_synthesis_item_meaning(retained) IS DISTINCT FROM public.engagement_synthesis_item_meaning(to_jsonb(item))", "false", "comment correction remained eligible"],
+  ["reply parent privacy", "NOT public.engagement_item_public_copy_allowed(parent.status,parent.metadata_json)", "false", "private reply parent remained eligible"],
+  ["reply parent meaning", "retained_parent IS NULL OR public.engagement_synthesis_item_meaning(retained_parent) IS DISTINCT FROM public.engagement_synthesis_item_meaning(to_jsonb(parent))", "false", "reply parent correction remained eligible"],
+  ["answer content", "retained IS DISTINCT FROM to_jsonb(answer)", "false", "answer wording remained eligible"],
+  ["survey privacy", "NOT public.engagement_item_public_copy_allowed(session.status,session.metadata_json)", "false", "private survey remained eligible"],
+  ["public snapshot", "AND public.read_engagement_synthesis_response_public_eligibility(p_campaign,id)", "", "comment correction escaped public snapshot"],
+  ["public write", "IF NEW.status='published' AND NOT public.engagement_synthesis_response_public_allowed(NEW.campaign_id,NEW.id,to_jsonb(NEW)) THEN", "IF false THEN", "comment correction publication was accepted"],
+  ["public report", " AND (p_scope=''internal'' OR public.engagement_synthesis_response_public_allowed(p_campaign,e.id,to_jsonb(e)))", "", "comment correction escaped public report"],
+  ["report selection", "||selection);", ");", "filtered report omitted linked source dependencies"],
+  ["withdrawn final link", "RETURN seen;", "RETURN true;", "withdrawn final link remained eligible"],
+  ["response meaning", "IF ((context#>>'{responseHistory,recordText}')::jsonb-ARRAY['status','published_at','updated_at','sort_order'])\n   IS DISTINCT FROM (p_record-ARRAY['status','published_at','updated_at','sort_order']) THEN RETURN false; END IF;", "", "response wording remained eligible"],
+  ["approval and review heads", "IF revision.id::text IS DISTINCT FROM context#>>'{revision,id}' OR approval.operation IS DISTINCT FROM 'approve'\n   OR approval.revision_id IS DISTINCT FROM revision.id OR approval.event_text IS DISTINCT FROM context#>>'{approval,eventText}'\n   OR approval.event_sha256 IS DISTINCT FROM context#>>'{approval,eventSha256}' THEN RETURN false; END IF;", "", "synthesis approval withdrawal remained eligible"],
+  ["complete dependencies", "IF (SELECT COALESCE(jsonb_agg(source_kind||':'||source_id::text ORDER BY source_kind||':'||source_id::text),'[]'::jsonb)\n    FROM engagement_synthesis_response_members WHERE event_id=link.id)\n   IS DISTINCT FROM (SELECT jsonb_agg(value ORDER BY value) FROM jsonb_array_elements_text(selected->'sourceIds')) THEN RETURN false; END IF;", "", "incomplete dependency index remained eligible"],
+] as const;
+
+describe.skipIf(!LIVE_RLS)("candidate public dependency fault controls", () => {
+  it.each(publicFaults)("detects %s", async (_name, before, after, assertion) => {
+    expect(publicCandidate.split(before)).toHaveLength(2);
+    await expect(publicScenario(publicCandidate.replace(before, after))).rejects.toThrow(assertion);
+  }, 60_000);
+  it.each([
+    ["anonymous eligibility", "GRANT EXECUTE ON FUNCTION public.read_engagement_synthesis_response_public_eligibility(uuid,uuid) TO anon;", "anonymous eligibility read allowed"],
+    ["private evaluator", "GRANT EXECUTE ON FUNCTION public.engagement_synthesis_response_public_allowed(uuid,uuid,jsonb) TO authenticated;", "private evaluator callable"],
+    ["foreign eligibility", alterFunction("public.read_engagement_synthesis_response_public_eligibility(uuid,uuid)", "m.user_id=auth.uid()", "true"), "foreign eligibility read allowed"],
+  ])("detects %s", async (_name, ddl, assertion) => {
+    await expect(publicScenario(publicCandidate + "\n" + ddl)).rejects.toThrow(assertion);
   }, 60_000);
 });
