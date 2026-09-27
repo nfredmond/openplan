@@ -47,6 +47,18 @@
     {
       "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/browser-concurrency.log",
       "sha256": "943e3218bdc0fa160ed985840c08fa623bb4066c0e72a5d30a421b57075a9790"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/ui-rls-after-browser.log",
+      "sha256": "5c2a1b09ba1d46f987527225ab53d7d1c9cdfa6087545cda48b0d7ac1e755652"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/release-records-proof.log",
+      "sha256": "8b5ec6e14d883fe34c6f679bedeab2ba496ce302f7f903662c4996bb7273d885"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/release-metadata-tests-fixed.log",
+      "sha256": "1f479c157029727e62b6d5be2a673bc1ea011b9adc500edaf05daa9766602d04"
     }
   ],
   "fullQa": {
@@ -65,5 +77,11 @@
     "failed": 0,
     "notRun": 0
   },
-  "pending": "Fresh full installed RLS after browser histories, exec93358; do not infer its outcome from the earlier 657-test run."
+  "installedRls": {
+    "passed": 657,
+    "filesPassed": 66,
+    "durationSeconds": 575.5,
+    "stack": "supabase_db_openplan-restore-target-2026091050",
+    "afterBrowserHistories": true
+  }
 }

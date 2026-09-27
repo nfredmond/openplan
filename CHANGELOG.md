@@ -20,9 +20,32 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-### Required migration
+No changes yet.
 
-- `20261014000028_engagement_synthesis_approvals.sql` adds private, append-only internal synthesis approval events tied to exact retained review versions. It preserves draft content, correction history and the original approval receipt on retry. This is database preparation; the connected staff approval workflow is still under development.
+## 0.63.0 (2026-09-27)
+
+Staff can approve an exact saved synthesis revision, withdraw that approval with
+a reason, and inspect the private approval history in Engagement Analysis.
+Corrections keep their own approval state. Earlier sources, preparation, drafts
+and approval evidence remain unchanged. Approval does not publish findings,
+establish representative support or grant agency authority.
+
+An interrupted acknowledgement preserves the exact request for retry, including
+when a later correction exists. Browser storage failures keep the latest reason
+on screen and require preservation before another operation. Recovery across a
+reload cannot be guaranteed while storage is unavailable. Concurrent requests
+retain one event for an identical command and refuse competing stale commands.
+
+**Database update required before restarting the app:**
+
+- `20261014000028_engagement_synthesis_approvals.sql` adds private append-only approval events and current-staff read/write functions tied to exact retained review versions.
+
+Run `npm exec -- supabase migration up` on the configured local stack, then build
+and restart. No new worker, provider key or paid service is required. Agent-origin
+approval writes remain refused until the action registry supports them.
+Source-to-response/decision links, reviewed synthesis exports and optional
+complete resumable AI generation remain unfinished. This release makes no new
+planning-usefulness, legal-sufficiency or scientific-accuracy claim.
 
 ## 0.62.0 — 2026-09-14
 

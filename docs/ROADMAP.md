@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: e6d25edd
-current_release: v0.62.0
+current_release: v0.63.0
 review_by: 2026-10-05
 paths:
 - AGENTS.md
@@ -344,6 +344,8 @@ Deliver in these useful increments without reducing the end state:
 | M9a: publish and participate | Repair feed/thread completeness, durable receipt and comment-draft continuity first. A planner starts from the project, tailors an editable template or blank map to its planning context, previews and publishes a real campaign, then reviews contributions in a usable queue before public release; participants contribute points/routes/areas or an equivalent non-map response, with understandable receipt and privacy. | Agency setup and public submission observed; captured question/version and geometry survive recovery and export. Selected M1/M4/M5 foundations in place. |
 | M9b: moderate, interpret and respond | Staff use linked response map/list/detail, scoped counts and filters, moderate with reasons and review history, review grounded themes, answer contributions and connect issues to alternative/project decisions. | Trace source-to-theme-to-response-to-decision; conflicting/minority input retained; no unsupported representativeness claim; appropriate recipient approves output. |
 | M9c: demonstrate superiority and repeatability | An agency reuses the workflow with less effort and better public understanding across contexts, with migration/portability. | Comparative human task evidence, accessibility review, independent install/operation and complete export; disclose competitor version/access limits. No marketing claim substitutes for this gate. |
+
+September 27 v0.63.0 release candidate: [exact approval evidence](reviews/2026-09-27-synthesis-approval-recovery/RELEASE_VERIFICATION.md) connects private approval and withdrawal to exact retained review versions, with original history, browser recovery and concurrent-write checks. Final release CI and populated upgrade remain required before tagging. Continue M9b with source-to-response/decision links, reviewed synthesis exports and optional complete resumable generation. Exact approval does not complete M9b or promote a national capability rating.
 
 September 14 v0.62.0: [retained synthesis verification](reviews/2026-09-14-m9b-synthesis-custody/RELEASE_VERIFICATION.md) connects complete selected sources to private staff drafts, reasoned membership/wording corrections, original history and exact browser recovery. The unsafe earlier Generate write is retired and old summaries remain explicitly limited history. [Publication](reviews/2026-09-14-m9b-synthesis-custody/PUBLICATION.md) records passing final CI and tagging. Continue M9b with exact-output approval, source-to-response/decision links, reviewed exports and optional complete resumable generation; no M9b completion or capability-rating promotion is implied.
 

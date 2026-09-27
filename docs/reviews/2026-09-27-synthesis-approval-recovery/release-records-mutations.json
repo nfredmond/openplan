@@ -1,0 +1,62 @@
+{
+  "recordedAt": "2026-09-27T21:47:09.264830+00:00",
+  "cases": [
+    {
+      "case": "baseline",
+      "exit": 0,
+      "passedTests": 6,
+      "failures": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "harmless-comment",
+      "exit": 0,
+      "passedTests": 6,
+      "failures": [],
+      "expectedOutcome": true
+    },
+    {
+      "case": "wrong-migration-count",
+      "exit": 1,
+      "passedTests": 4,
+      "failures": [
+        "released migration ordering no migration has been inserted at or below a shipped high-water mark",
+        "released migration ordering new work sorts strictly after the latest release (no version collisions)"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-migration",
+      "exit": 1,
+      "passedTests": 5,
+      "failures": [
+        "released migration ordering every release's recorded last migration exists on disk"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-release-section",
+      "exit": 1,
+      "passedTests": 5,
+      "failures": [
+        "released migration ordering the CHANGELOG's newest release section exists and its migration references resolve"
+      ],
+      "expectedOutcome": true
+    },
+    {
+      "case": "missing-migration-disclosure",
+      "exit": 1,
+      "passedTests": 5,
+      "failures": [
+        "released migration ordering the CHANGELOG's newest release section exists and its migration references resolve"
+      ],
+      "expectedOutcome": true
+    }
+  ],
+  "sourcesRestored": true,
+  "sources": {
+    "openplan/src/test/migrations/release-ordering.test.ts": "8bd73f6885ebdf39be06e49a938fab1b943ca567b19bd166efc424b8c1018250",
+    "CHANGELOG.md": "e1e71944731fdbd301ef6405b5536f17808829c732b185e92c1e2285db356e42"
+  },
+  "limits": "Metadata accounting only. Does not prove populated upgrade, private database permissions or browser behavior."
+}
