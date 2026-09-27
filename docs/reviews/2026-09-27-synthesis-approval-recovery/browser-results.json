@@ -1,0 +1,350 @@
+{
+  "recordedAt": "2026-09-27T21:44:16.370085+00:00",
+  "build": "62c5b1c9a887",
+  "journeys": [
+    {
+      "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-approvals-1440-1790545243679.json",
+      "sha256": "669238e552d2f09cbe5e35b1510ff2162e3c9bed58d96a2b4c858e55188b2e42",
+      "completed": true,
+      "identity": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-09-27T21:40:43.939Z",
+        "deployment": {
+          "commit": "62c5b1c9a887",
+          "version": "0.62.0"
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "runnerSha256": "ea162c1235167f4cbe5fdab5260a2147cac4ed18fa0063d5cbf62c160f5871c2",
+      "width": 1440,
+      "console": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+      ],
+      "pageErrors": [],
+      "originalSha256": "e1a20720b42b6bac10c1b1e1113a3303d67d706e74fa5d4ba65be163ac39e9df",
+      "correctedSha256": "7d0d263abcc1b747eb1b12f572a77110bcb6f9a5744d31ef5c8924d856d8d34e",
+      "preparationSha256": "419d9014ce1841f96b48b195e94d9d7d8c2c4feb136dff1d7e05c65fda15f688",
+      "sourceSha256": "55475e4dd383fa6de80b6c62fb57550c05b66974752b8dd1d1e1e2410c31d2dd",
+      "bounds": {
+        "baseline": [
+          {
+            "text": "Approve revision 2",
+            "left": 360,
+            "right": 522.03125,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Withdraw approval of revision 2",
+            "left": 534.03125,
+            "right": 784.96875,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Refresh approval history",
+            "left": 796.96875,
+            "right": 1001.328125,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          }
+        ],
+        "harmless": [
+          {
+            "text": "Approve revision 2",
+            "left": 360,
+            "right": 522.03125,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Withdraw approval of revision 2",
+            "left": 534.03125,
+            "right": 784.96875,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Refresh approval history",
+            "left": 796.96875,
+            "right": 1001.328125,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Restore preserved approval copy",
+            "left": 360,
+            "right": 621.890625,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          }
+        ],
+        "targeted": [
+          {
+            "text": "Approve revision 2",
+            "left": 360,
+            "right": 1376,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Withdraw approval of revision 2",
+            "left": 360,
+            "right": 610.9375,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Refresh approval history",
+            "left": 622.9375,
+            "right": 827.296875,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Restore preserved approval copy",
+            "left": 360,
+            "right": 621.890625,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          }
+        ]
+      },
+      "actualFocusEvents": 1,
+      "eventCount": 3,
+      "screenshots": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-approvals-1440-1790545243679-history.png",
+          "sha256": "eadae2f3985f9488475571267c540e26cfde88bb6a94cb5a0cbe21133e42e3c9"
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-approvals-1440-1790545243679-quota.png",
+          "sha256": "5ed99dd13db7fb34eabc4bcab4973f44e4f183fc444ae045e7e74e16241a28df"
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-approvals-1440-1790545243679-recovered.png",
+          "sha256": "e0df27c6e386f22b0743f4cda686919812e2fddf2185fcf36e022f7adf3dfe13"
+        }
+      ]
+    },
+    {
+      "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-approvals-390-1790545262875.json",
+      "sha256": "88205e67e4946d8142f5c1db5dc3912841f90f0c1bb6632e1a0ff605f96e291d",
+      "completed": true,
+      "identity": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-09-27T21:41:03.116Z",
+        "deployment": {
+          "commit": "62c5b1c9a887",
+          "version": "0.62.0"
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "runnerSha256": "ea162c1235167f4cbe5fdab5260a2147cac4ed18fa0063d5cbf62c160f5871c2",
+      "width": 390,
+      "console": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+      ],
+      "pageErrors": [],
+      "originalSha256": "b2b74feecc19a95a0b44defc4e3c1865d69d0e0e1b9c1fff2fc268d6022d658e",
+      "correctedSha256": "058c89ec3c98ffd66fea76ea5321190b5194cd58c272d729df24f9a258654518",
+      "preparationSha256": "33f3b8cb0a0c998cc074704cb7d5e22f7b25166049a2a6e0a09fb961a9c2e802",
+      "sourceSha256": "abc68f0b41847603d60114c3a9ff63aafb584ef6d95d72072c41070e1b875865",
+      "bounds": {
+        "baseline": [
+          {
+            "text": "Approve revision 2",
+            "left": 75,
+            "right": 237.03125,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Withdraw approval of revision 2",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Refresh approval history",
+            "left": 75,
+            "right": 279.359375,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          }
+        ],
+        "harmless": [
+          {
+            "text": "Approve revision 2",
+            "left": 75,
+            "right": 237.03125,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Withdraw approval of revision 2",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Refresh approval history",
+            "left": 75,
+            "right": 279.359375,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Restore preserved approval copy",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          }
+        ],
+        "targeted": [
+          {
+            "text": "Approve revision 2",
+            "left": 75,
+            "right": 355,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Withdraw approval of revision 2",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Refresh approval history",
+            "left": 75,
+            "right": 279.359375,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Restore preserved approval copy",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          }
+        ]
+      },
+      "actualFocusEvents": 1,
+      "eventCount": 3,
+      "screenshots": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-approvals-390-1790545262875-history.png",
+          "sha256": "bdf3ea43dcdc649ac795609a01f4b94428b279d445c084d8310d107d1aeb44e1"
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-approvals-390-1790545262875-quota.png",
+          "sha256": "987b8afb41a17689e9e71063ec596d3bf6e911a4bc594d910ad86ae91eff83df"
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-approvals-390-1790545262875-recovered.png",
+          "sha256": "2c25362eb8974578986bc756a19ee4bcaa64ca6ddd9cd8a85d9e0454e564068a"
+        }
+      ]
+    },
+    {
+      "privateEvidence": "/home/nathaniel/.local/state/openplan/response-write-probe-20260913/decision-context/browser/synthesis-approval-concurrency-1790545279802.json",
+      "sha256": "e54b680f0a89539b25848da89e7debf549b5b328707fa899c50b10ab5060ec83",
+      "completed": true,
+      "identity": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-09-27T21:41:20.045Z",
+        "deployment": {
+          "commit": "62c5b1c9a887",
+          "version": "0.62.0"
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "runnerSha256": "2b45f7c7a9e3b23a3eb85d3511a8aa74f569e1e5554d7e371ccc7af7c967bd3d",
+      "cases": [
+        {
+          "name": "identical committed approval requests retain one event",
+          "statuses": [
+            201,
+            200
+          ],
+          "requestId": "1a5da809-e743-4077-a059-862aa1b1aee7"
+        },
+        {
+          "name": "competing committed approvals retain one winner and reject changed retries",
+          "statuses": [
+            201,
+            409
+          ],
+          "winner": "906eb01e-23aa-46d4-a43a-749c3a7eecc7",
+          "refused": "592e255b-df58-4672-bd0d-84a56c740e62"
+        },
+        {
+          "name": "approval commits before correction and stays on its original version",
+          "approved": "1246f5c9-9e3b-4ded-b5e8-f97a7d3f4f53",
+          "corrected": "6be6e187-4eef-42df-abcb-185b8bf88bb8"
+        },
+        {
+          "name": "correction commits before stale approval and refuses it",
+          "refused": "821b0ebb-6321-4a06-8f4d-4531fd2089fe",
+          "corrected": "5ea79930-276a-4c29-986b-1bbabe4a2aca"
+        },
+        {
+          "name": "simultaneous actual approval and correction preserve exact version boundary",
+          "statuses": [
+            409,
+            201
+          ],
+          "approval": "8499b6b5-6d20-4341-abfa-0bf16684aff5",
+          "correction": "935b840c-e2da-4b67-bda2-1fb1a1657f1d"
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "Small explicitly synthetic contributions created through application workflows, not real planner usefulness or representative public participation.",
+    "Explicit commit-order checks and one simultaneous pair do not enumerate all scheduler interleavings.",
+    "Console entries are deliberate lost acknowledgement and real stale-account denial; both navigation journeys have zero page errors."
+  ]
+}

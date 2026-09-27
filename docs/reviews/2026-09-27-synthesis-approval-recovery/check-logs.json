@@ -1,0 +1,69 @@
+{
+  "completedLogs": [
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/ui-qa.log",
+      "sha256": "32e9082e023d155e442da4fd396e871a760a2073d50a44adf9ed162b71c4dc58"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/ui-shuffled-fixed.log",
+      "sha256": "59f57e1824c7a3b5d846888c271c69ed681e4a9b6376c3688259314d5df56680"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/ui-workers.log",
+      "sha256": "7ccee7410ed26b76df28880a4720598346affcc8c2f7410591350986c7ead9eb"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/ui-types-final2.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/ui-lint-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/panel-copy-fixed.log",
+      "sha256": "29d239e9b8b7794140b8e980840b3e2dbbe3b86ce8c85b77e7634014d6c64e4e"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/panel-proof-final.log",
+      "sha256": "5541bab670f58bc446c68738e4348dfb20dee4769d53992e50f584d044ae7a33"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/recovery-proof.log",
+      "sha256": "773ede722f49def2cc5058dc4e8ee0ef92d6dae113362d6a5602190035960158"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/route-proof.log",
+      "sha256": "4d2a72db184d737156c799ef8d131c01c29502c32c4fbb49551bb6fa34a5f2bf"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/browser-desktop.log",
+      "sha256": "46d6d04afa260aef974117516079d12a3cff1e5c27300c4ebfaeff98a7b33e82"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/browser-phone.log",
+      "sha256": "40f5ff2c73bc3558955800c30f2f110065b4973c69b9bb9537ced79f7d279c70"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/browser-concurrency.log",
+      "sha256": "943e3218bdc0fa160ed985840c08fa623bb4066c0e72a5d30a421b57075a9790"
+    }
+  ],
+  "fullQa": {
+    "passed": 15621,
+    "skipped": 628,
+    "filesPassed": 1330,
+    "filesSkipped": 59
+  },
+  "shuffle": {
+    "seed": 619147,
+    "passed": 15621,
+    "skipped": 628
+  },
+  "workers": {
+    "suitesPassed": 52,
+    "failed": 0,
+    "notRun": 0
+  },
+  "pending": "Fresh full installed RLS after browser histories, exec93358; do not infer its outcome from the earlier 657-test run."
+}
