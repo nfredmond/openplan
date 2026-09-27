@@ -38,6 +38,14 @@ async function server(url: RequestInfo | URL, options?: RequestInit) {
     const meta = { requestId: source.requestId, campaignId: scope.campaignId, workspaceId: scope.workspaceId, createdAt: sourceDate, snapshotSha256: source.snapshotSha256, counts: snapshot.counts, selection: snapshot.selection };
     return json(path.searchParams.has("requestId") ? { ...meta, snapshot } : { campaignId: scope.campaignId, workspaceId: scope.workspaceId, pageSize: 25, entries: [meta], nextCursor: null });
   }
+  if (path.pathname.endsWith("/approvals")) {
+    if (options?.method === "POST") throw new Error("This review fixture does not simulate approval writes");
+    const record = records.get(head); if (!record) return json({}, 404);
+    const approvalScope = { campaignId: scope.campaignId, workspaceId: scope.workspaceId, sourceId: scope.sourceId, sourceSha256: scope.sourceSha256,
+      reviewId: record.reviewId, preparationSha256: record.preparationSha256 };
+    return json({ current: { ...approvalScope, revisionId: record.revision.requestId, revisionNo: record.revision.revisionNo, revisionSha256: record.revision.contentSha256 },
+      history: { ...approvalScope, headId: null, headSha256: null, eventCount: 0, entries: [] } });
+  }
   if (options?.method === "POST") {
     const intent = synthesisReviewIntentSchema.parse(JSON.parse(String(options.body)));
     const old = records.get(intent.requestId); if (old) return json(receipt(old, true));
@@ -76,7 +84,7 @@ async function openSeeded() {
   fireEvent.click(await screen.findByRole("button", { name: /Open staff review/ }));
   await screen.findByLabelText("Saved staff review"); return view;
 }
-async function waitRevision(number: number) { await screen.findByRole("heading", { name: new RegExp(`revision ${number}$`) }); }
+async function waitRevision(number: number) { await screen.findByRole("heading", { name: new RegExp(`revision ${number}$`), level: 4 }); }
 describe("retained staff review editor", () => {
   it("creates a retained review from the real saved-source panel and keeps its complete membership", async () => {
     render(<EngagementSynthesisSources userId={scope.userId} workspaceId={scope.workspaceId} campaignId={scope.campaignId} categories={[]} />);
@@ -222,8 +230,8 @@ describe("retained staff review editor", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Open revision 1" }));
     fireEvent.click(screen.getByRole("button", { name: /Open staff review/ })); await waitRevision(2);
     await act(async () => finish(json({ ...records.get(reviewId), currentRevisionId: head })));
-    expect(screen.getByRole("heading", { name: /revision 2$/ })).toBeTruthy();
-    expect(screen.queryByRole("heading", { name: /revision 1$/ })).toBeNull();
+    expect(screen.getByRole("heading", { name: /revision 2$/, level: 4 })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: /revision 1$/, level: 4 })).toBeNull();
   });
   it("refuses foreign saved review and history identities before rendering them", async () => {
     for (const patch of [{ reviewId: sourceActor }, { campaignId: sourceActor }, { workspaceId: sourceActor }, { sourceId: sourceActor }, { sourceSha256: "f".repeat(64) }]) {
@@ -283,4 +291,21 @@ describe("retained staff review editor", () => {
     foreignTail = true; fireEvent.click(await screen.findByRole("button", { name: "Load older revisions" }));
     await screen.findByText("Revision continuation belongs to another review"); expect(screen.queryByLabelText("Saved staff review")).toBeNull();
   });
+  it.each(["focus", "storage"])("keeps quota-failed approval reasons through real source %s revalidation", async event => {
+    seed(); render(<EngagementSynthesisSources userId={scope.userId} workspaceId={scope.workspaceId} campaignId={scope.campaignId} categories={[]} />);
+    fireEvent.click(await screen.findByRole("button", { name: /Open saved source/ }));
+    fireEvent.click(await screen.findByRole("button", { name: /Open staff review/ }));
+    await screen.findByText("Revision 1 is unapproved.");
+    const quota = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => { throw new Error("SYNTHETIC approval quota"); });
+    fireEvent.change(screen.getByRole("textbox", { name: "Reason for approval or withdrawal" }), { target: { value: "SYNTHETIC latest approval before source revalidation" } });
+    act(() => window.dispatchEvent(new Event(event)));
+    await screen.findByText("This approval reason could not be stored. Preserve or copy the latest text before continuing.");
+    await screen.findByText("Revision 1 is unapproved.");
+    expect(screen.getByRole("textbox", { name: "Reason for approval or withdrawal" })).toHaveValue("SYNTHETIC latest approval before source revalidation");
+    expect(screen.getByRole("button", { name: "Approve revision 1" })).toBeDisabled();
+    quota.mockRestore(); fireEvent.click(screen.getByRole("button", { name: "Preserve approval reason and start another" }));
+    expect(await screen.findByLabelText("Preserved approval recovery copies")).toHaveTextContent("SYNTHETIC latest approval before source revalidation");
+    expect(transport.mock.calls.some(([url, options]) => String(url).includes("/approvals") && options?.method === "POST")).toBe(false);
+  });
+
 });

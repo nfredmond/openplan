@@ -6,12 +6,14 @@ import { applySynthesisReviewChange, synthesisReviewIntentSchema, verifySynthesi
 import { synthesisReviewListSchema, synthesisReviewRecordSchema, synthesisReviewRevisionListSchema, type SynthesisReviewRecord } from "@/lib/engagement/synthesis-review-records";
 import { emptyReviewWorkingCopy, freezeReviewRequest, listPreservedReviewCopies, preserveReviewWorkingCopy, readReviewWorkingCopy, sendReviewRequest, writeReviewWorkingCopy, ReviewSaveError,
   type ReviewClientScope, type ReviewDraft, type ReviewWorkingCopy } from "@/lib/engagement/synthesis-review-recovery";
+import { SynthesisApprovalPanel } from "./synthesis-approval-panel";
+import type { ApprovalWorkingCopy } from "@/lib/engagement/synthesis-approval-recovery";
 import type { SynthesisSourceSnapshot } from "@/lib/engagement/synthesis-sources";
 
 type SavedReview = SynthesisReviewRecord & { content: SynthesisReviewContent };
 type ReviewPage = z.infer<typeof synthesisReviewListSchema>;
 type RevisionPage = z.infer<typeof synthesisReviewRevisionListSchema>;
-type Props = ReviewClientScope & { snapshot: SynthesisSourceSnapshot; onAccessLost: () => void; recoveryMemory?: { current: ReviewWorkingCopy | null } };
+type Props = ReviewClientScope & { snapshot: SynthesisSourceSnapshot; onAccessLost: () => void; recoveryMemory?: { current: ReviewWorkingCopy | null }; approvalMemories?: Map<string, { current: ApprovalWorkingCopy | null }> };
 const errorText = (cause: unknown) => cause instanceof Error ? cause.message : "The saved review is unavailable. Keep your recovery copy.";
 
 /** The parent owns campaign authentication; scope changes remount every private editor state. */
@@ -19,10 +21,18 @@ export function SynthesisReviewEditor(props: Props) {
   return <ReviewPanel key={`${props.userId}:${props.workspaceId}:${props.campaignId}:${props.sourceId}`} {...props} />;
 }
 
-function ReviewPanel({ snapshot, onAccessLost, recoveryMemory: sourceMemory, ...scope }: Props) {
+function ReviewPanel({ snapshot, onAccessLost, recoveryMemory: sourceMemory, approvalMemories: sourceApprovalMemories, ...scope }: Props) {
   const { userId, workspaceId, campaignId, sourceId, sourceSha256 } = scope;
   const localMemory = useRef<ReviewWorkingCopy | null>(null);
   const recoveryMemory = sourceMemory ?? localMemory;
+  const localApprovalMemories = useRef(new Map<string, { current: ApprovalWorkingCopy | null }>());
+  const approvalMemories = sourceApprovalMemories ?? localApprovalMemories.current;
+  function approvalMemory(review: SavedReview) {
+    const key = `${sourceId}:${sourceSha256}:${review.reviewId}:${review.preparationSha256}`;
+    let memory = approvalMemories.get(key);
+    if (!memory) { memory = { current: null }; approvalMemories.set(key, memory); }
+    return memory;
+  }
   const [working, setWorking] = useState(() => emptyReviewWorkingCopy(scope));
   const workingRef = useRef(working), epoch = useRef(0), reading = useRef(0), listing = useRef(0), sending = useRef(false);
   const [ready, setReady] = useState(false), [blocked, setBlocked] = useState(false), [busy, setBusy] = useState(false);
@@ -147,7 +157,7 @@ function ReviewPanel({ snapshot, onAccessLost, recoveryMemory: sourceMemory, ...
   return <section aria-label="Retained staff reviews" className="space-y-4 min-w-0 sm:rounded sm:border sm:p-4">
     <h3 className="font-semibold">Staff synthesis reviews</h3>
     <p>Create a private draft from this complete saved source. Historical categories begin unassessed. Staff wording and membership corrections retain their reasons and earlier versions.</p>
-    <p className="text-sm">These drafts do not approve or publish findings. Contribution counts do not measure distinct people or representative support.</p>
+    <p className="text-sm">Saving a draft does not approve or publish findings. Contribution counts do not measure distinct people or representative support.</p>
     {error ? <p role="alert" className="break-words">{error}</p> : null}{notice ? <p role="status">{notice}</p> : null}
     {blocked ? <><p role="alert">Browser recovery needs attention. Preserve or copy the latest text before leaving or reloading this page.</p>{working.draft ? <details><summary>Latest edit retained on screen</summary><pre className="mt-2 whitespace-pre-wrap break-all text-xs">{JSON.stringify(working.draft, null, 2)}</pre></details> : null}</> : null}
     {working.pending ? <div className="rounded border p-3 space-y-2"><p>An exact review request is retained for retry. Its text and parent are fixed.</p><p className="text-xs break-all">Request {working.pending.intent.requestId}</p><Button type="button" className="h-auto min-h-10 max-w-full whitespace-normal" disabled={busy || blocked} onClick={() => void send()}>Retry retained review request</Button></div> : null}
@@ -171,6 +181,10 @@ function ReviewPanel({ snapshot, onAccessLost, recoveryMemory: sourceMemory, ...
       {saved.content.groups.map(group => <details key={group.id} className="rounded border p-3"><summary className="break-words">{group.label} · {group.sourceIds.length} contributions · {group.sentiment.replaceAll("_", " ")}</summary><p className="mt-2 whitespace-pre-wrap break-words">{group.summary || "No staff summary."}</p><pre className="mt-2 whitespace-pre-wrap break-all text-xs">{group.sourceIds.join("\n")}</pre></details>)}
       <details><summary>Original preparation and unassigned membership</summary><p className="mt-2 text-xs break-all">Preparation SHA256: {saved.preparationSha256}</p><pre className="mt-2 whitespace-pre-wrap break-all text-xs">{saved.preparationText}</pre><pre className="mt-2 whitespace-pre-wrap break-all text-xs">Unassigned: {saved.content.unassignedSourceIds.join(", ") || "none"}</pre></details>
       {oldRevision ? <div><p>This is an earlier revision. Open the current review before editing.</p><Button type="button" className="h-auto min-h-10 max-w-full whitespace-normal" variant="outline" onClick={() => void open(saved.reviewId)}>Open current review</Button></div> : null}
+      <SynthesisApprovalPanel key={`${saved.reviewId}:${saved.preparationSha256}`} scope={{ ...scope, reviewId: saved.reviewId, preparationSha256: saved.preparationSha256 }}
+        revision={{ campaignId, workspaceId, sourceId, sourceSha256, reviewId: saved.reviewId, preparationSha256: saved.preparationSha256,
+          revisionId: saved.revision.requestId, revisionNo: saved.revision.revisionNo, revisionSha256: saved.revision.contentSha256 }}
+        memory={approvalMemory(saved)} hasUnsavedReview={Boolean(working.draft || working.pending)} onAccessLost={onAccessLost} />
       <ReviewCorrectionForm key={`${saved.reviewId}:${saved.revision.requestId}`} saved={saved} snapshot={snapshot} draft={draft?.reviewId === saved.reviewId && draft.parentId === saved.revision.requestId ? draft : null}
         disabled={!ready || blocked || busy || Boolean(working.pending) || Boolean(oldRevision) || Boolean(draft && (draft.reviewId !== saved.reviewId || draft.parentId !== saved.revision.requestId))}
         onChange={value => update({ ...workingRef.current, activeReviewId: saved.reviewId, draft: value })} onSave={correct} />

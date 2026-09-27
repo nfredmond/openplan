@@ -1,0 +1,532 @@
+{
+  "recordedAt": "2026-09-27T21:03:54.465137+00:00",
+  "cases": [
+    {
+      "case": "baseline",
+      "expected": "survives",
+      "expectedOutcome": true,
+      "exit": 0,
+      "passed": 14,
+      "failed": 0,
+      "failedAssertions": []
+    },
+    {
+      "case": "harmless-comment",
+      "expected": "survives",
+      "expectedOutcome": true,
+      "exit": 0,
+      "passed": 14,
+      "failed": 0,
+      "failedAssertions": []
+    },
+    {
+      "case": "missing-current-user",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API denies missing or changed staff access before reaching private server functions",
+          "messages": [
+            "AssertionError: expected 503 to be 401 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:54:120\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "access-failure-as-denial",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API denies missing or changed staff access before reaching private server functions",
+          "messages": [
+            "AssertionError: expected 403 to be 503 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:57:143\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "missing-campaign-check",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API denies missing or changed staff access before reaching private server functions",
+          "messages": [
+            "AssertionError: expected 503 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:55:128\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "missing-staff-permission",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API denies missing or changed staff access before reaching private server functions",
+          "messages": [
+            "AssertionError: expected 200 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:56:160\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "missing-expected-user",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API denies missing or changed staff access before reaching private server functions",
+          "messages": [
+            "AssertionError: expected 200 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:60:53\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "missing-expected-workspace",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API denies missing or changed staff access before reaching private server functions",
+          "messages": [
+            "AssertionError: expected 200 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:60:53\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "missing-command-actorId",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API binds command actorId to the authenticated route",
+          "messages": [
+            "AssertionError: expected 201 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:66:80\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "missing-command-workspaceId",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API binds command workspaceId to the authenticated route",
+          "messages": [
+            "AssertionError: expected 201 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:66:80\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "missing-command-campaignId",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API binds command campaignId to the authenticated route",
+          "messages": [
+            "AssertionError: expected 201 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:66:80\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "assistant-marker-execution-source",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API requires browser origin and refuses each unregistered assistant marker",
+          "messages": [
+            "AssertionError: expected 201 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:71:82\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "assistant-marker-input-hash",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API requires browser origin and refuses each unregistered assistant marker",
+          "messages": [
+            "AssertionError: expected 201 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:71:82\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "assistant-marker-approval-id",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API requires browser origin and refuses each unregistered assistant marker",
+          "messages": [
+            "AssertionError: expected 201 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:71:82\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "no-origin-check",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API requires browser origin and refuses each unregistered assistant marker",
+          "messages": [
+            "AssertionError: expected 201 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:69:95\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "expanded-body-limit",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API rejects oversized, malformed and extra command content before database access",
+          "messages": [
+            "AssertionError: expected 400 to be 413 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:77:25\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "replace-invalid-utf8",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API rejects oversized, malformed and extra command content before database access",
+          "messages": [
+            "AssertionError: expected 201 to be 400 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:82:134\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "unchecked-command",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API rejects oversized, malformed and extra command content before database access",
+          "messages": [
+            "AssertionError: expected 201 to be 400 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:78:162\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "extra-query-fields",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API rejects invalid routes, duplicate query keys and unexpected query fields",
+          "messages": [
+            "AssertionError: expected 200 to be 400 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:89:194\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "duplicate-query-keys",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API rejects invalid routes, duplicate query keys and unexpected query fields",
+          "messages": [
+            "AssertionError: expected 200 to be 400 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:89:194\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "wrong-read-scope",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API returns replay status and private complete history from the application server",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ Anything, { \u2026(3) } ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n-   Anything,\n+   {\n+     \"auth\": {\n+       \"getUser\": [Function Mock],\n+     },\n+   },\n    {\n      \"campaignId\": \"b6000000-0000-4000-8000-000000000001\",\n      \"reviewId\": \"b6000000-0000-4000-8000-000000000003\",\n-     \"workspaceId\": \"b6000000-0000-4000-8000-000000000002\",\n+     \"workspaceId\": \"b6000000-0000-4000-8000-000000000005\",\n    },\n  ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:48:24\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "wrong-writer-scope",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API binds the writer identity and returns a strict receipt without enriched internal fields",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ Anything, \u2026(3) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n@@ -1,14 +1,18 @@\n  [\n-   Anything,\n+   {\n+     \"auth\": {\n+       \"getUser\": [Function Mock],\n+     },\n+   },\n    {\n      \"rpc\": [Function Mock],\n    },\n    {\n      \"actorId\": \"b6000000-0000-4000-8000-000000000005\",\n      \"campaignId\": \"b6000000-0000-4000-8000-000000000001\",\n-     \"workspaceId\": \"b6000000-0000-4000-8000-000000000002\",\n+     \"workspaceId\": \"b6000000-0000-4000-8000-000000000005\",\n    },\n    {\n      \"actorId\": \"b6000000-0000-4000-8000-000000000005\",\n      \"campaignId\": \"b6000000-0000-4000-8000-000000000001\",\n      \"operation\": \"approve\",\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:38:26\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "always-created-status",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API returns replay status and private complete history from the application server",
+          "messages": [
+            "AssertionError: expected 201 to be 200 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:45:69\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "cache-private-history",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 7,
+      "failed": 7,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API binds the writer identity and returns a strict receipt without enriched internal fields",
+          "messages": [
+            "AssertionError: expected 'public, max-age=600' to be 'private, no-store' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:35:117\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "private exact synthesis approval API returns replay status and private complete history from the application server",
+          "messages": [
+            "AssertionError: expected 'public, max-age=600' to be 'private, no-store' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:46:115\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "private exact synthesis approval API rejects oversized, malformed and extra command content before database access",
+          "messages": [
+            "AssertionError: expected 'public, max-age=600' to be 'private, no-store' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:77:78\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "private exact synthesis approval API preserves invalid errors from approval and review loaders without exposing private details",
+          "messages": [
+            "AssertionError: expected 'public, max-age=600' to be 'private, no-store' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:97:83\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "private exact synthesis approval API preserves forbidden errors from approval and review loaders without exposing private details",
+          "messages": [
+            "AssertionError: expected 'public, max-age=600' to be 'private, no-store' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:97:83\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "private exact synthesis approval API preserves conflict errors from approval and review loaders without exposing private details",
+          "messages": [
+            "AssertionError: expected 'public, max-age=600' to be 'private, no-store' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:97:83\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "private exact synthesis approval API preserves unavailable errors from approval and review loaders without exposing private details",
+          "messages": [
+            "AssertionError: expected 'public, max-age=600' to be 'private, no-store' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:97:83\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "enriched-receipt-exposed",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 12,
+      "failed": 2,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API binds the writer identity and returns a strict receipt without enriched internal fields",
+          "messages": [
+            "AssertionError: expected { \u2026(2) } to deeply equal { event: { \u2026(2) }, replayed: false }\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:36:49\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "private exact synthesis approval API returns replay status and private complete history from the application server",
+          "messages": [
+            "AssertionError: expected { \u2026(2) } to deeply equal { event: { \u2026(2) }, replayed: true }\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:45:107\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "internal-history-exposed",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API returns replay status and private complete history from the application server",
+          "messages": [
+            "AssertionError: expected { Object (current, history) } to deeply equal { current: { \u2026(9) }, \u2026(1) }\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:47:30\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "private-reason-in-audit",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API binds the writer identity and returns a strict receipt without enriched internal fields",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ 'synthesis_approval_retained', \u2026(1) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n@@ -2,10 +2,11 @@\n    \"synthesis_approval_retained\",\n    {\n      \"campaignId\": \"b6000000-0000-4000-8000-000000000001\",\n      \"eventSha256\": \"d38082cc88455af2c01e53f3ef98baab65ab13c6fc502207fa9918350580a4b8\",\n      \"operation\": \"approve\",\n+     \"reason\": \"SYNTHETIC private approval reason\",\n      \"replayed\": false,\n      \"requestId\": \"b6000000-0000-4000-8000-000000000006\",\n      \"reviewId\": \"b6000000-0000-4000-8000-000000000003\",\n    },\n  ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:40:24\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "lost-review-error-kind",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 11,
+      "failed": 3,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API preserves invalid errors from approval and review loaders without exposing private details",
+          "messages": [
+            "AssertionError: expected 503 to be 400 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:97:28\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "private exact synthesis approval API preserves forbidden errors from approval and review loaders without exposing private details",
+          "messages": [
+            "AssertionError: expected 503 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:97:28\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "private exact synthesis approval API preserves conflict errors from approval and review loaders without exposing private details",
+          "messages": [
+            "AssertionError: expected 503 to be 409 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:97:28\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "unexpected-failure-is-invalid",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API returns unavailable rather than success after unexpected server failures",
+          "messages": [
+            "AssertionError: expected 400 to be 503 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:104:65\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "case": "missing-review-is-success",
+      "expected": "fails",
+      "expectedOutcome": true,
+      "exit": 1,
+      "passed": 13,
+      "failed": 1,
+      "failedAssertions": [
+        {
+          "name": "private exact synthesis approval API returns replay status and private complete history from the application server",
+          "messages": [
+            "AssertionError: expected 200 to be 404 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-approval-route.test.ts:49:88\n    at file:///home/nathaniel/.local/state/openplan/agent-hold-receipts-2026-09-10/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    }
+  ],
+  "sourceRestored": true,
+  "sourceSha256": "552e18b3804de4358bc9ea8345fa475334127efebd579e3d5073fe0c80e3cb70",
+  "blindCategories": [
+    "Authentication, campaign access and application server results are mocked; native tests protect the underlying database boundary.",
+    "The real HTTP handlers, origin guard, streaming limit, command schema and receipt parser run. No browser navigation or deployed HTTP server is exercised.",
+    "Route errors must remain distinct even where another server guard would also reject the request."
+  ]
+}
