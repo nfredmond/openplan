@@ -31,7 +31,7 @@ Current public report selection in `20261014000023_engagement_public_copy_privac
 ## Next implementation boundary
 
 1. Authenticated context loading is implemented and verified as described above. It supplies an observed preview; it does not authorize a later write or public disclosure.
-2. Add immutable link events and complete normalized source dependencies for comments, replies and answers. Enforce current staff scope, exact old retry, current approval/review/response heads and a consistent transaction lock order. Keep historical contexts readable after changes.
+2. The [rollback-only native candidate](NATIVE_CANDIDATE.md) now exercises immutable link events and complete normalized source dependencies for comments, replies and answers. Complete its remaining constraints and public-change joins before activation. Enforce current staff scope, exact old retry, current approval/review/response heads and a consistent transaction lock order. Keep historical contexts readable after changes.
 3. Join source changes, survey review/redaction, response edits, link withdrawal and public eligibility. Test both commit orders and genuine concurrent requests. Trace every existing public portal/report/export reader before enabling publication.
 4. Extend response-to-decision context with independently verified synthesis provenance while keeping original schema 1 bytes readable.
 5. Connect the existing Analysis, response and decision controls. Exercise original/corrected history, current access loss, interrupted retries, public/private artifacts and desktop/390px keyboard navigation on an identified build.

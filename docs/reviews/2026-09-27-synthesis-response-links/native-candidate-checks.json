@@ -1,0 +1,64 @@
+{
+  "recordedAt": "2026-09-27T23:24:41.015176+00:00",
+  "baseCommit": "959448f711798fae13617bed8dadeb4655afcec7",
+  "state": "rollback-only candidate; activation incomplete",
+  "native": {
+    "exit": 0,
+    "session": 38266,
+    "tests": 39,
+    "baselineAndLockControls": 7,
+    "deliberateFaultCases": 32,
+    "initialExpandedRun": {
+      "exit": 1,
+      "passed": 37,
+      "failed": 2,
+      "reason": "Actor-filter removal first tripped viewer assertions; reorder foreign checks before role revocation for distinct fault attribution."
+    }
+  },
+  "typescript": {
+    "exit": 0,
+    "session": 53511,
+    "heapMiB": 6144
+  },
+  "eslint": {
+    "exit": 0,
+    "session": 86147
+  },
+  "database": {
+    "container": "supabase_db_openplan-restore-target-2026091050",
+    "port": 29822,
+    "installedMigrations": 347,
+    "candidateTablesPresentAfterRun": false
+  },
+  "sources": {
+    "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-links.candidate.sql": "5de80c660d2ca1fbd37db98b4ced790cca24ad8124b1bd0ad87c1e7ba31b68c8",
+    "openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts": "2085ad1e78f5a2a340f198a57dcd2e23e646cafbfc00bae61ef1024ccdcb992d"
+  },
+  "logs": [
+    {
+      "name": "response-native-candidate.log",
+      "sha256": "77aa16e87dbd0d3c42a51f36e9513eddf65617ce68a5940e9bf29e7e1dd3eb0d"
+    },
+    {
+      "name": "response-native-proof.log",
+      "sha256": "c7c95b0bc8d1eb0fd23a2b665f8a84acab5aff55f30cd042eb432eed69476563"
+    },
+    {
+      "name": "response-native-proof-expanded.log",
+      "sha256": "a0002795df8669a4110fee6af24af02dbab20fcd69c2d2f1eb97560814883e38"
+    },
+    {
+      "name": "response-native-proof-final.log",
+      "sha256": "5b0afabc540336aea2f9cdba742a652ac521def2370be65b7e0143dc535f26eb"
+    },
+    {
+      "name": "response-native-types-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "response-native-lint-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "limits": "Rollback SQL candidate, not installed migration or application activation. Native lock barriers are not every concurrent commit order. Remaining validation/relational mutation coverage, live source/public joins, application protocol/routes, browser and upgrade acceptance remain."
+}
