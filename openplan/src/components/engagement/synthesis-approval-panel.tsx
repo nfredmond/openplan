@@ -114,7 +114,7 @@ function ApprovalPanel({ scope, revision, hasUnsavedReview, memory, onAccessLost
   const disabled = !ready || !loaded || !status || blocked || busy || Boolean(working.pending) || Boolean(otherDraft);
   return <section aria-label="Exact revision approval" className="space-y-3 min-w-0 rounded border p-3">
     <h5 className="font-semibold">Staff approval of revision {revision.revisionNo}</h5>
-    <p>Approval records staff review of this exact saved version. It does not publish findings, establish representative support or change unassessed interpretation.</p>
+    <p>Staff approval applies to this exact saved version. It does not publish findings, establish representative support or change unassessed interpretation.</p>
     <p role="status">{status ? `Revision ${revision.revisionNo} is ${status.state}.` : "Approval status is unavailable until its history is verified."}</p>
     {notice ? <p role="status">{notice}</p> : null}{error ? <p role="alert" className="break-words">{error}</p> : null}
     {blocked ? <p role="alert">Browser recovery needs attention. Preserve or copy the latest reason before leaving or reloading.</p> : null}
