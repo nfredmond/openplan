@@ -2,7 +2,7 @@
 
 September 27, 2026. This release candidate completes internal staff approval and withdrawal for exact retained synthesis revisions. It is not yet tagged or published. Final main CI and populated upgrade remain pending. Fresh local installed isolation passes all 657 tests in 66 files after the browser histories. Release accounting and direction checks pass.
 
-Staff reach the workflow through Engagement, the consultation, Analysis, a retained source and its saved review. Approval reasons and exact event history stay private to current campaign staff. Corrections do not inherit approval. The original source, preparation, review and approval bytes remain unchanged. Approval does not publish findings, establish representative public support or confer agency authority.
+The [operating guide](../../ops/ENGAGEMENT_SYNTHESIS_REVIEW.md) explains selection, corrections, exact approval and separate recovery copies. Staff reach the workflow through Engagement, the consultation, Analysis, a retained source and its saved review. Approval reasons and exact event history stay private to current campaign staff. Corrections do not inherit approval. The original source, preparation, review and approval bytes remain unchanged. Approval does not publish findings, establish representative public support or confer agency authority.
 
 ## Engineering evidence
 
