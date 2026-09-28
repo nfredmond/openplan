@@ -35,3 +35,5 @@ The final native suite passes all 122 cases: 48 positive or harmless controls an
 These tests use native PostgreSQL sessions and synthetic records. They do not exercise HTTP retries, browser navigation, storage delivery, production contention, or a transaction spanning an eligibility check and streamed artifact bytes. The copy/cleanup unit tests mock process calls; the native two-session control separately exercises the actual schema copy and cross-session visibility.
 
 Continue with remaining native constraints, verified application link/history records, authenticated routes, durable client recovery and decision provenance. Promote an additive migration only with populated-upgrade evidence. Verify the integrated workflow at desktop and 390px with keyboard navigation, console inspection and saved artifacts before a release claim. Reviewed synthesis exports and optional complete resumable generation remain M9b work. The full V1 contract is unchanged.
+
+The next [record-reader increment](RECORD_VERIFICATION.md) verifies application event/history/receipt parsing against the native candidate while retaining the remaining authorization and activation boundaries.

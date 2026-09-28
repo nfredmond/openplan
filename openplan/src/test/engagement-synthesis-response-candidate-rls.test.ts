@@ -7,6 +7,7 @@ import { loadSynthesisReview, retainSynthesisReview } from "@/lib/engagement/syn
 import { loadSynthesisSource } from "@/lib/engagement/synthesis-sources-server";
 import { loadSynthesisResponseContext } from "@/lib/engagement/synthesis-response-links-server";
 import { readSynthesisResponseContext } from "@/lib/engagement/synthesis-response-context-server";
+import { readSynthesisResponseLinkHistory, readSynthesisResponseLinkReceipt, synthesisResponseLinkIntentSchema } from "@/lib/engagement/synthesis-response-records-server";
 import { writeResponse } from "@/lib/engagement/response-write";
 import { publicReviewStillCurrent } from "@/lib/engagement/survey-responses";
 import { parseReviewSnapshot, type EngagementReviewSnapshot } from "@/lib/engagement/review-export";
@@ -814,4 +815,36 @@ describe.skipIf(!LIVE_RLS)("candidate publication isolation controls", () => {
   }, 120_000);
   it.each(["READ COMMITTED", "REPEATABLE READ", "SERIALIZABLE"])("allows draft edits under %s", isolation => publicationIsolationControl(isolation, "draft"), 120_000);
   it.each(["READ COMMITTED", "REPEATABLE READ", "SERIALIZABLE"])("checks publication under %s", isolation => publicationIsolationControl(isolation, "published"), 120_000);
+});
+
+
+describe.skipIf(!LIVE_RLS)("candidate application link record readers", () => {
+  it("verifies native retained link, withdrawal and renewed link receipts and history", async () => {
+    await scenario(raceCandidate, async ({ query, intent, contextText, statement }) => {
+      const scope = { campaignId, workspaceId, reviewId, responseId: intent.responseId, groupId: intent.groupId };
+      const original = await query(statement(intent, contextText), "service_role"); expect(original.error).toBeNull();
+      const first = await readSynthesisResponseLinkReceipt(original.data, synthesisResponseLinkIntentSchema.parse(intent));
+      expect(first.replayed).toBe(false); expect(first.event.context.contextText).toBe(contextText);
+      expect(first.event.eventText, "native event bytes were reserialized").toBe((original.data as Receipt).event.eventText);
+      const withdrawal = { ...intent, requestId: id(1100), operation: "withdraw", predecessorId: intent.requestId,
+        predecessorSha256: first.event.eventSha256, expectedContextSha256: null };
+      const withdrawn = await query(statement(withdrawal, null), "service_role"); expect(withdrawn.error).toBeNull();
+      const second = await readSynthesisResponseLinkReceipt(withdrawn.data, synthesisResponseLinkIntentSchema.parse(withdrawal));
+      const refresh = { ...intent, requestId: id(1101), operation: "refresh", predecessorId: withdrawal.requestId,
+        predecessorSha256: second.event.eventSha256 };
+      const renewed = await query(statement(refresh, contextText), "service_role"); expect(renewed.error).toBeNull();
+      const third = await readSynthesisResponseLinkReceipt(renewed.data, synthesisResponseLinkIntentSchema.parse(refresh));
+      const history = await query(`SELECT public.read_engagement_synthesis_response_links('${campaignId}','${reviewId}','${intent.responseId}',${literal(intent.groupId)})`);
+      expect(history.error).toBeNull();
+      const verified = await readSynthesisResponseLinkHistory(history.data, scope);
+      expect(verified.entries.map(row => row.intent.operation)).toEqual(["link", "withdraw", "refresh"]);
+      expect(verified.entries[0].eventText).toBe(first.event.eventText);
+      expect(verified.entries[1].context).toEqual(first.event.context);
+      expect(verified.head?.eventSha256).toBe(third.event.eventSha256);
+      expect(verified.head?.evidence.group.sourceIds).toHaveLength(302);
+      const replay = await query(statement(intent, contextText), "service_role"); expect(replay.error).toBeNull();
+      const retained = await readSynthesisResponseLinkReceipt(replay.data, synthesisResponseLinkIntentSchema.parse(intent));
+      expect(retained.replayed).toBe(true); expect(retained.event.eventText).toBe(first.event.eventText);
+    }, true);
+  }, 60_000);
 });

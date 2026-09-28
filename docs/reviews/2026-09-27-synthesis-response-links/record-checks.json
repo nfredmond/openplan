@@ -1,0 +1,575 @@
+{
+  "recordedAt": "2026-09-28T01:24:22.130585+00:00",
+  "baseCommit": "52973a701b632c7cb7b9c91909ec7ca546ca4aa2",
+  "state": "Verified private application record readers; no route, activation or release claim",
+  "qa": {
+    "session": 43186,
+    "exit": 0,
+    "testsPassed": 15759,
+    "testsSkipped": 752,
+    "filesPassed": 1335,
+    "filesSkipped": 60,
+    "build": "passed",
+    "liveRls": "not run through this QA invocation"
+  },
+  "shuffled": {
+    "session": 12265,
+    "exit": 0,
+    "seed": 266644,
+    "testsPassed": 15759,
+    "testsSkipped": 752
+  },
+  "focused": {
+    "unitTests": 49,
+    "mutationSession": 94231,
+    "unitControls": 2,
+    "unitFaults": 39,
+    "nativeControls": 2,
+    "nativeFaults": 2,
+    "exit": 0
+  },
+  "database": {
+    "observation": "0|||347",
+    "probeDatabases": 0,
+    "candidateObjectsAbsent": true,
+    "installedMigrations": 347
+  },
+  "parentRls": {
+    "id": 36364723672,
+    "conclusion": "success"
+  },
+  "sources": {
+    "openplan/src/lib/engagement/synthesis-response-records-server.ts": "93bf3701e47800ce306dd187a5c6281b5137f56168e4fe3b807ad883a6ef5525",
+    "openplan/src/test/engagement-synthesis-response-records.test.ts": "c12db1cc49630ac31b96031a6092f616733e8109fa1c4eb59765afb8686d5333",
+    "openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts": "9bc093a01d19c642cf57550db309e9d260ec3670aff66cc9ff786d2d3534634b"
+  },
+  "logs": [
+    {
+      "name": "response-records-unit.log",
+      "sha256": "ef5e34950c15f82e4c8a1862300cb4303e98bc1daad1888493db7c64bafb7371"
+    },
+    {
+      "name": "response-records-identity-gap.log",
+      "sha256": "31c5eaa1d22ae4a0cad0c517ecdf086983b80f9128089336b4e9be14391f9251"
+    },
+    {
+      "name": "response-records-mutations-final.log",
+      "sha256": "34b4f1820dcae468717bf194d030bdc1ffd044382bd2b880c9c269f57f40a114"
+    },
+    {
+      "name": "response-records-mutations.json",
+      "sha256": "d0cd689c0d13c9f83ffc519de2457d9b43fcd564df8b8ba6e99cd4035ba2f92c"
+    },
+    {
+      "name": "response-records-native-mutations-final.log",
+      "sha256": "6300b5611253c0bb8d778e7596351be144deabfff8271fe132951422f9f4f631"
+    },
+    {
+      "name": "response-records-native-mutations.json",
+      "sha256": "f5385da86f52d484ad1c0d0473f96602f09322f510c7ae4fb81dff8a2262b7ea"
+    },
+    {
+      "name": "response-records-qa.log",
+      "sha256": "442944581a1ffa7d33e6af2033b137aa9918a429bbcdadfdee268460f0b5ccf1"
+    },
+    {
+      "name": "response-records-shuffled.log",
+      "sha256": "0a323f266590b6ae6bbe2a2a61dbbcfd7d0c42ec91e238a466e8924a008f60ee"
+    }
+  ],
+  "unitMutationResults": [
+    {
+      "case": "baseline",
+      "exit": 0,
+      "expectedFailingTest": null,
+      "failedTests": [],
+      "verified": true,
+      "report": "response-records-baseline.json",
+      "sha256": "13523ceaabe5241a418b3aae4b862685eda15363126cd47233d4c08941e7cc8b"
+    },
+    {
+      "case": "harmless",
+      "exit": 0,
+      "expectedFailingTest": null,
+      "failedTests": [],
+      "verified": true,
+      "report": "response-records-harmless.json",
+      "sha256": "e2cd822a50e41bc5740f1143bc27ab2645a1e16e5e8431da6c242e1cdc737b6c"
+    },
+    {
+      "case": "serialized-event",
+      "exit": 1,
+      "expectedFailingTest": "verifies complete original",
+      "failedTests": [
+        "retained synthesis response records verifies complete original, refresh, withdrawal and relink bytes"
+      ],
+      "verified": true,
+      "report": "response-records-serialized-event.json",
+      "sha256": "aa152ee455eaf26ce1167e49eafff9f2598ad4ae9b7a2e94e030a1e177a8e6df"
+    },
+    {
+      "case": "event-version",
+      "exit": 1,
+      "expectedFailingTest": "rejects unsupported event",
+      "failedTests": [
+        "retained synthesis response records rejects unsupported event {\"schemaVersion\":2}"
+      ],
+      "verified": true,
+      "report": "response-records-event-version.json",
+      "sha256": "8ec2285ee11afd8f1c7036260abcd5d39a6944a738e7734ce842b7001cdfa5ed"
+    },
+    {
+      "case": "event-purpose",
+      "exit": 1,
+      "expectedFailingTest": "rejects unsupported event",
+      "failedTests": [
+        "retained synthesis response records rejects unsupported event {\"purpose\":\"public_authority\"}"
+      ],
+      "verified": true,
+      "report": "response-records-event-purpose.json",
+      "sha256": "52c2a765e5fe730757846e565cca4989cfe3f92937303491c287d52af3e3bc2a"
+    },
+    {
+      "case": "event-extra",
+      "exit": 1,
+      "expectedFailingTest": "rejects unsupported event",
+      "failedTests": [
+        "retained synthesis response records rejects unsupported event {\"extra\":true}"
+      ],
+      "verified": true,
+      "report": "response-records-event-extra.json",
+      "sha256": "d23469fc6c35f6cbf5cdf8213fc02e53e1a2e5e98f22f890f2119b6f071b5ae8"
+    },
+    {
+      "case": "reason-utf16",
+      "exit": 1,
+      "expectedFailingTest": "retains a reason containing 2000",
+      "failedTests": [
+        "retained synthesis response records retains a reason containing 2000 supplementary Unicode characters"
+      ],
+      "verified": true,
+      "report": "response-records-reason-utf16.json",
+      "sha256": "6e036f2fbeff1a6ac9e7e12a20ec73eca343f988ea7bd10e121ac144f633f34e"
+    },
+    {
+      "case": "immutable-id",
+      "exit": 1,
+      "expectedFailingTest": "rejects reuse of a",
+      "failedTests": [
+        "retained synthesis response immutable record identities rejects reuse of a review record ID at a newer version",
+        "retained synthesis response immutable record identities rejects reuse of a response record ID at a newer version",
+        "retained synthesis response immutable record identities rejects reuse of a approval record ID at a newer version"
+      ],
+      "verified": true,
+      "report": "response-records-immutable-id.json",
+      "sha256": "e7887dab1da888fbe0ac48cd0570376974e34da30af619b0f926b6fde8563e6c"
+    },
+    {
+      "case": "event-hash",
+      "exit": 1,
+      "expectedFailingTest": "rejects changed bytes",
+      "failedTests": [
+        "retained synthesis response records rejects changed bytes and invalid text"
+      ],
+      "verified": true,
+      "report": "response-records-event-hash.json",
+      "sha256": "dff7d6fc32ed7ea276d1f156382616f72b4f86c4ec04a1b9b6f43144d8d5b93d"
+    },
+    {
+      "case": "text",
+      "exit": 1,
+      "expectedFailingTest": "rejects changed bytes",
+      "failedTests": [
+        "retained synthesis response records rejects changed bytes and invalid text"
+      ],
+      "verified": true,
+      "report": "response-records-text.json",
+      "sha256": "be5e1a83680a86cb5e18baf8d9a3fe9dc830991d5887f697d8a8eb4b85fcfada"
+    },
+    {
+      "case": "scope",
+      "exit": 1,
+      "expectedFailingTest": "rejects foreign",
+      "failedTests": [
+        "retained synthesis response records rejects foreign campaignId",
+        "retained synthesis response records rejects foreign workspaceId",
+        "retained synthesis response records rejects foreign reviewId",
+        "retained synthesis response records rejects foreign responseId",
+        "retained synthesis response records rejects foreign groupId"
+      ],
+      "verified": true,
+      "report": "response-records-scope.json",
+      "sha256": "dd32a54afa8176bf310d86b4401e695fd4660a51621456ee2e20d8a5d79ccbc2"
+    },
+    {
+      "case": "sequence",
+      "exit": 1,
+      "expectedFailingTest": "rejects a first link numbered",
+      "failedTests": [
+        "retained synthesis response records rejects a first link numbered as a later event"
+      ],
+      "verified": true,
+      "report": "response-records-sequence.json",
+      "sha256": "6802e67c7f432e58920d4ad3eb5cbefa8b33dc4ae23479035348cf3f1488b897"
+    },
+    {
+      "case": "inner-verifier",
+      "exit": 1,
+      "expectedFailingTest": "verifies inner evidence",
+      "failedTests": [
+        "retained synthesis response records verifies inner evidence even after recomputing the outer event hash"
+      ],
+      "verified": true,
+      "report": "response-records-inner-verifier.json",
+      "sha256": "f72424235772713b27b8ad0c7f14596ee9ea4fea7703811aeca1070be4db0c2b"
+    },
+    {
+      "case": "context-group",
+      "exit": 1,
+      "expectedFailingTest": "binds the context group",
+      "failedTests": [
+        "retained synthesis response records binds the context group and intended context hash"
+      ],
+      "verified": true,
+      "report": "response-records-context-group.json",
+      "sha256": "1d1bbc46c44983ae3d6199726f5fbcd263aaf18f9b38d7774d19ca331277f711"
+    },
+    {
+      "case": "intended-context",
+      "exit": 1,
+      "expectedFailingTest": "binds the context group",
+      "failedTests": [
+        "retained synthesis response records binds the context group and intended context hash"
+      ],
+      "verified": true,
+      "report": "response-records-intended-context.json",
+      "sha256": "6a589896c8e5cf69530057866b5dfefe7c0aa3f9c526f376ce52aa80645f4c07"
+    },
+    {
+      "case": "complete-history",
+      "exit": 1,
+      "expectedFailingTest": "rejects omitted events",
+      "failedTests": [
+        "retained synthesis response records rejects omitted events and reordered history"
+      ],
+      "verified": true,
+      "report": "response-records-complete-history.json",
+      "sha256": "fa9bef70352a136903b68d1c8fcddf2b20d2aacdc85a64b6327ad4140b4fa1b9"
+    },
+    {
+      "case": "duplicate-id",
+      "exit": 1,
+      "expectedFailingTest": "rejects reused event identity",
+      "failedTests": [
+        "retained synthesis response version identity rejects reused event identity with a valid nonadjacent predecessor"
+      ],
+      "verified": true,
+      "report": "response-records-duplicate-id.json",
+      "sha256": "06e078df823bd744a2f394b63d3fc356204dc5d5b96fcab46516fcb992160cf1"
+    },
+    {
+      "case": "order",
+      "exit": 1,
+      "expectedFailingTest": "rejects omitted events",
+      "failedTests": [
+        "retained synthesis response records rejects omitted events and reordered history",
+        "retained synthesis response records rejects omitted events even when metadata count matches the entries"
+      ],
+      "verified": true,
+      "report": "response-records-order.json",
+      "sha256": "e26d764287fd17b5a9f521ddbbb9602ef2058a3f28ec491b92dcd9939d7b9fcf"
+    },
+    {
+      "case": "predecessor-id",
+      "exit": 1,
+      "expectedFailingTest": "rejects changed predecessorId",
+      "failedTests": [
+        "retained synthesis response records rejects changed predecessorId"
+      ],
+      "verified": true,
+      "report": "response-records-predecessor-id.json",
+      "sha256": "7c88bb8b659a0aa2df0f4dffc442d81560f722cf395605c527525fff2fb5ad43"
+    },
+    {
+      "case": "predecessor-hash",
+      "exit": 1,
+      "expectedFailingTest": "rejects changed predecessorSha256",
+      "failedTests": [
+        "retained synthesis response records rejects changed predecessorSha256"
+      ],
+      "verified": true,
+      "report": "response-records-predecessor-hash.json",
+      "sha256": "08b4674688fe7a2cee36518ee459831eaa65625c03e20fda08013d8afa1211f4"
+    },
+    {
+      "case": "withdrawal-context",
+      "exit": 1,
+      "expectedFailingTest": "rejects a withdrawal that changes",
+      "failedTests": [
+        "retained synthesis response records rejects a withdrawal that changes retained context"
+      ],
+      "verified": true,
+      "report": "response-records-withdrawal-context.json",
+      "sha256": "14dec49042d1d3ed3b9ec950f7e57b2ba9a7dd630e45dab52649c261544852f4"
+    },
+    {
+      "case": "duplicate-withdrawal",
+      "exit": 1,
+      "expectedFailingTest": "rejects duplicate withdrawal",
+      "failedTests": [
+        "retained synthesis response records rejects duplicate withdrawal and formatting-only active refresh"
+      ],
+      "verified": true,
+      "report": "response-records-duplicate-withdrawal.json",
+      "sha256": "e1d50022c3a63096a763e94df4746220d71dcf69aedf808261e635e036c4ae66"
+    },
+    {
+      "case": "empty-refresh",
+      "exit": 1,
+      "expectedFailingTest": "rejects duplicate withdrawal",
+      "failedTests": [
+        "retained synthesis response records rejects duplicate withdrawal and formatting-only active refresh"
+      ],
+      "verified": true,
+      "report": "response-records-empty-refresh.json",
+      "sha256": "0e2daabea11f2d4863fb92508778ac39449e44b5c8992e76556abb7ca55dc9fe"
+    },
+    {
+      "case": "source-binding",
+      "exit": 1,
+      "expectedFailingTest": "rejects a changed source",
+      "failedTests": [
+        "retained synthesis response version identity rejects a changed source within one review history"
+      ],
+      "verified": true,
+      "report": "response-records-source-binding.json",
+      "sha256": "aab68b8ce694b3e3f993b0b93986b39c237fb3461154f1a6a7227096e4cc3e5c"
+    },
+    {
+      "case": "review-regression",
+      "exit": 1,
+      "expectedFailingTest": "rejects a return to an older review",
+      "failedTests": [
+        "retained synthesis response version identity rejects a return to an older review version"
+      ],
+      "verified": true,
+      "report": "response-records-review-regression.json",
+      "sha256": "9b4f8c7eef6ec822f0bf3904019bd65e4d869c0a2fe37916dda9dc35ac242ed3"
+    },
+    {
+      "case": "response-regression",
+      "exit": 1,
+      "expectedFailingTest": "rejects a return to an older response",
+      "failedTests": [
+        "retained synthesis response version identity rejects a return to an older response version"
+      ],
+      "verified": true,
+      "report": "response-records-response-regression.json",
+      "sha256": "1acb6ed67892f7b05a7d6936b7f960ee200b20afce33174b44c212ba781d1770"
+    },
+    {
+      "case": "approval-regression",
+      "exit": 1,
+      "expectedFailingTest": "rejects a return to an older approval",
+      "failedTests": [
+        "retained synthesis response version identity rejects a return to an older approval version"
+      ],
+      "verified": true,
+      "report": "response-records-approval-regression.json",
+      "sha256": "ec906d745f586a10f92eced10665b53052daa228a945231c1ee29cb40b083bfa"
+    },
+    {
+      "case": "review-identity",
+      "exit": 1,
+      "expectedFailingTest": "rejects conflicting identity for the same review",
+      "failedTests": [
+        "retained synthesis response version identity rejects conflicting identity for the same review version"
+      ],
+      "verified": true,
+      "report": "response-records-review-identity.json",
+      "sha256": "d78eadbd69a23982053e1c2fd9881b202831e775b7334aca8100aee860f80eb3"
+    },
+    {
+      "case": "response-identity",
+      "exit": 1,
+      "expectedFailingTest": "rejects conflicting identity for the same response",
+      "failedTests": [
+        "retained synthesis response version identity rejects conflicting identity for the same response version"
+      ],
+      "verified": true,
+      "report": "response-records-response-identity.json",
+      "sha256": "eb7c797d81c575cb4bcd5f4efaa1469a6009c1bb45008d2e730cf20d379016bf"
+    },
+    {
+      "case": "approval-identity",
+      "exit": 1,
+      "expectedFailingTest": "rejects conflicting identity for the same approval",
+      "failedTests": [
+        "retained synthesis response version identity rejects conflicting identity for the same approval version"
+      ],
+      "verified": true,
+      "report": "response-records-approval-identity.json",
+      "sha256": "86d943cca80b60a1dc29aabca38b48bb117ffc89674a3ed6c5f0b9f6b097db32"
+    },
+    {
+      "case": "head-id",
+      "exit": 1,
+      "expectedFailingTest": "rejects incorrect headId",
+      "failedTests": [
+        "retained synthesis response records rejects incorrect headId"
+      ],
+      "verified": true,
+      "report": "response-records-head-id.json",
+      "sha256": "56830504e77e2ee1bace600e275d9cbb52b4e0797721d9e88809dba746b1b616"
+    },
+    {
+      "case": "head-hash",
+      "exit": 1,
+      "expectedFailingTest": "rejects incorrect headSha256",
+      "failedTests": [
+        "retained synthesis response records rejects incorrect headSha256"
+      ],
+      "verified": true,
+      "report": "response-records-head-hash.json",
+      "sha256": "6a523c4290caedae308aa26bce4e34e6273a4216649473464d7cf4795ba6e8ca"
+    },
+    {
+      "case": "receipt",
+      "exit": 1,
+      "expectedFailingTest": "rejects a receipt with different",
+      "failedTests": [
+        "retained synthesis response records rejects a receipt with different actorId",
+        "retained synthesis response records rejects a receipt with different reason",
+        "retained synthesis response records rejects a receipt with different requestId"
+      ],
+      "verified": true,
+      "report": "response-records-receipt.json",
+      "sha256": "583662f52feedfd54e9624b63485f445daeadd34e5adb072f5f4018ada7c58c3"
+    },
+    {
+      "case": "intent-predecessor",
+      "exit": 1,
+      "expectedFailingTest": "rejects invalid exact intent",
+      "failedTests": [
+        "retained synthesis response records rejects invalid exact intent 0",
+        "retained synthesis response records rejects invalid exact intent 1"
+      ],
+      "verified": true,
+      "report": "response-records-intent-predecessor.json",
+      "sha256": "5aa467d384054fb01671339c24a072486ba31dd6ee21ac370df0ef06b1aea521"
+    },
+    {
+      "case": "intent-predecessor-pair",
+      "exit": 1,
+      "expectedFailingTest": "rejects invalid exact intent",
+      "failedTests": [
+        "retained synthesis response records rejects invalid exact intent 3"
+      ],
+      "verified": true,
+      "report": "response-records-intent-predecessor-pair.json",
+      "sha256": "65af18da3ba378ff3a61b76411aacfc03582e500251ad97c4aeb518c16a65114"
+    },
+    {
+      "case": "intent-self",
+      "exit": 1,
+      "expectedFailingTest": "rejects invalid exact intent",
+      "failedTests": [
+        "retained synthesis response records rejects invalid exact intent 4"
+      ],
+      "verified": true,
+      "report": "response-records-intent-self.json",
+      "sha256": "5168f3d18c9b66fd8a453dc7c5f33b377a373fb5febea7545b6841f67e823d8c"
+    },
+    {
+      "case": "intent-context",
+      "exit": 1,
+      "expectedFailingTest": "rejects invalid exact intent",
+      "failedTests": [
+        "retained synthesis response records rejects invalid exact intent 9"
+      ],
+      "verified": true,
+      "report": "response-records-intent-context.json",
+      "sha256": "93dd4a94910872dbd118823913bc6585b5cc1dcb3953aef3234ec1f3668b788d"
+    },
+    {
+      "case": "reason-whitespace",
+      "exit": 1,
+      "expectedFailingTest": "rejects invalid exact intent",
+      "failedTests": [
+        "retained synthesis response records rejects invalid exact intent 5"
+      ],
+      "verified": true,
+      "report": "response-records-reason-whitespace.json",
+      "sha256": "af44652b9416566aaa62f4e0429ff0e4b275bbba58144f2bd2f36e5a4f08c1cf"
+    },
+    {
+      "case": "reason-unicode",
+      "exit": 1,
+      "expectedFailingTest": "rejects invalid exact intent",
+      "failedTests": [
+        "retained synthesis response records rejects invalid exact intent 6"
+      ],
+      "verified": true,
+      "report": "response-records-reason-unicode.json",
+      "sha256": "a8413ab9c798d425184f4af6af2ad06cbe4a3c932fbfef281969b12409e0145f"
+    },
+    {
+      "case": "reason-zero",
+      "exit": 1,
+      "expectedFailingTest": "rejects invalid exact intent",
+      "failedTests": [
+        "retained synthesis response records rejects invalid exact intent 7"
+      ],
+      "verified": true,
+      "report": "response-records-reason-zero.json",
+      "sha256": "c377042abbd1b5e237b6d678ce365902f144aa7344e0900f869a42bd9748c6b6"
+    },
+    {
+      "case": "reason-length",
+      "exit": 1,
+      "expectedFailingTest": "rejects invalid exact intent",
+      "failedTests": [
+        "retained synthesis response records rejects invalid exact intent 8"
+      ],
+      "verified": true,
+      "report": "response-records-reason-length.json",
+      "sha256": "ca5da769296988ce44e7f9504bd3205c5f7a934f966fcb4a0a953abe97636ec0"
+    }
+  ],
+  "nativeMutationResults": [
+    {
+      "case": "baseline",
+      "exit": 0,
+      "verified": true,
+      "log": "response-records-native-baseline.log",
+      "sha256": "cc0ec7deed9f1d01b322ce4e12c807fa5a8fa9f4754cbb4cc7c7f66967aca83a"
+    },
+    {
+      "case": "harmless",
+      "exit": 0,
+      "verified": true,
+      "log": "response-records-native-harmless.log",
+      "sha256": "98b0ed92dd1936049259362ed7aa354be51596584fa01c5156917442c85d23b6"
+    },
+    {
+      "case": "serialized-event",
+      "exit": 1,
+      "verified": true,
+      "log": "response-records-native-serialized-event.log",
+      "sha256": "46a15d86b5b77cce89f994a8ae5fd9933314cc84157ddd698bbf9368d60e4149"
+    },
+    {
+      "case": "truncated-members",
+      "exit": 1,
+      "verified": true,
+      "log": "response-records-native-truncated-members.log",
+      "sha256": "d9a5c3a9648b320d6a99fee1aef437d932153705cb12f2d7fe18c11d1b4610df"
+    }
+  ],
+  "limits": [
+    "Record and history integrity, not access authority or current public eligibility.",
+    "Synthetic native rollback integration; no HTTP, browser or real artifact-delivery claim.",
+    "Candidate is not installed. No populated upgrade or new worker execution.",
+    "Some malformed-text rejection guards overlap; their mutations also protect error classification."
+  ]
+}
