@@ -1,0 +1,78 @@
+{
+  "recordedAt": "2026-09-28T00:00:24.808932+00:00",
+  "baseCommit": "240bc4f2235f3bba104e17e2d56370129762d81b",
+  "state": "Rollback-only stored withdrawal candidate; application activation incomplete",
+  "native": {
+    "exit": 0,
+    "session": 26348,
+    "tests": 83,
+    "baselineIsolationAndLockControls": 17,
+    "deliberateFaultCases": 66,
+    "durationSeconds": 205.9
+  },
+  "typescript": {
+    "exit": 0,
+    "session": 90530,
+    "heapMiB": 6144
+  },
+  "eslint": {
+    "exit": 0,
+    "session": 27263
+  },
+  "database": {
+    "container": "supabase_db_openplan-restore-target-2026091050",
+    "port": 29822,
+    "installedMigrations": 347,
+    "candidateObjectsPresentAfterRun": false,
+    "historyActorDefinitionRestored": true
+  },
+  "sources": {
+    "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-links.candidate.sql": "5de80c660d2ca1fbd37db98b4ced790cca24ad8124b1bd0ad87c1e7ba31b68c8",
+    "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-public.candidate.sql": "4cdf5df411e07a417e3db0f8ad7918dbe5837c17a47366cd6383b0bcace591f6",
+    "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-withdrawal.candidate.sql": "63fb641eebf0eb1745d7ff0b1e78c3c3e02f44e522f7dbabe62bf94d8dd738a2",
+    "openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts": "7193873b65b788ac8b486655844fad498172dd7348bcd989367414a5f6e9acbf"
+  },
+  "logs": [
+    {
+      "name": "response-withdrawal-baseline-run.log",
+      "sha256": "e27c40bdc5ee0dffde5ce1f8d72b71f9b457e20c7f0004dd7323d7a8d3824570"
+    },
+    {
+      "name": "response-withdrawal-baseline.log",
+      "sha256": "30a6a8f46acb8d46e30eefe220ad4f607c8816f6c4dc22b175f07d8ff2fc0859"
+    },
+    {
+      "name": "response-withdrawal-custody.log",
+      "sha256": "2f35a0588b7aa5c8d8d515056af6fa8a18677d9f367fcd7d3ddcf00e589778a1"
+    },
+    {
+      "name": "response-withdrawal-faults.log",
+      "sha256": "96d2c4455ba0d28ea68625cc8cb4ed6d2ee12c048600eb16b3b9a9faf25bc6c1"
+    },
+    {
+      "name": "response-withdrawal-lint-initial.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "response-withdrawal-lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "response-withdrawal-locks.log",
+      "sha256": "c094a4bd14eb8aa88f95dc752ea2d0bc38f1f364544356619bff3672669f43cf"
+    },
+    {
+      "name": "response-withdrawal-proof.log",
+      "sha256": "09312cde4802e62c83a67cfe44d4bacb7e35b3efe3e4bfc852f386a62448fca9"
+    },
+    {
+      "name": "response-withdrawal-types-initial.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "response-withdrawal-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "limits": "Candidate only. Held-lock source rollback and retry are proved; both actual concurrent commit orders remain unproved. No installed migration, retained-download acceptance, application route, browser, populated upgrade or release claim."
+}

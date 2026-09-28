@@ -30,6 +30,10 @@ OPENPLAN_RLS_LIVE_TEST=1 node --env-file-if-exists=.env.local node_modules/vites
 
 The [public eligibility candidate](PUBLIC_ELIGIBILITY.md) adds current dependency checks to publication, public response reads and filtered public reports. Its 58-case run includes the earlier native controls with a corrected direct-DML test adapter. Automatic status withdrawal and retained-download checks remain unfinished. The SQL remains outside the migration directory.
 
+## Stored withdrawal extension
+
+The [stored withdrawal candidate](STORED_WITHDRAWAL.md) adds automatic draft status, private receipts and history for changed synthesis dependencies. Source rollback, exact link recovery, fixed-snapshot refusal and second-session lock barriers have focused evidence. Actual concurrent commit orders, retained downloads and application activation remain unfinished.
+
 ## Required before activation
 
 - Complete mutation coverage for remaining native validation and relational constraints. Retain the current positive controls and targeted fault cases.

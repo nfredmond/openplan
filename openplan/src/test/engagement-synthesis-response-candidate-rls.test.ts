@@ -289,7 +289,7 @@ describe.skipIf(!LIVE_RLS)("candidate synthesis response access and history faul
 });
 
 const publicCandidate = readFileSync("../docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-public.candidate.sql", "utf8");
-async function publicScenario(sql = publicCandidate) {
+async function publicScenario(sql = publicCandidate, withdraw = false) {
   await scenario(candidate + "\n" + sql, async ({ database, query, intent, contextText, statement }) => {
     await database.query("SAVEPOINT legacy_response;");
     const legacy = await query(`SELECT public.write_engagement_response('${campaignId}','${id(99)}','create',NULL,NULL,NULL,'{"theme_title":"SYNTHETIC unrelated legacy response","status":"published"}')`);
@@ -307,6 +307,15 @@ async function publicScenario(sql = publicCandidate) {
     expect(invalidScope.error).toBeNull(); expect(invalidScope.data, "wrong response record scope accepted").toBe(false);
     const missingResponse = await query(`SELECT to_jsonb(public.read_engagement_synthesis_response_public_eligibility('${campaignId}','${id(999)}'))`);
     expect(missingResponse.error).toBeNull(); expect(missingResponse.data, "missing response treated as eligible").toBe(false);
+    if (withdraw) {
+      for (const role of ["anon", "authenticated", "service_role"]) {
+        const denied = await query(`SELECT public.withdraw_ineligible_synthesis_responses('${campaignId}','${actorId}','forged',NULL,NULL)`, role);
+        expect(denied.error?.code, "direct withdrawal helper permission opened").toBe("42501");
+        const grant = await query(`SELECT to_jsonb(has_function_privilege('${role}','public.withdraw_ineligible_synthesis_responses(uuid,uuid,text,jsonb,jsonb)','EXECUTE'))`, "postgres");
+        expect(grant.error).toBeNull();
+        expect(grant.data, "direct withdrawal helper permission opened").toBe(false);
+      }
+    }
     const readiness = await query(eligible);
     expect(readiness.error, "eligibility query failed").toBeNull();
     expect(readiness.data, "current complete source not eligible").toBe(true);
@@ -333,9 +342,40 @@ async function publicScenario(sql = publicCandidate) {
     expect((await query(eligible, "service_role")).data, "service public reader requires a staff identity").toBe(true);
     await database.query(`SELECT set_config('request.jwt.claim.sub','${actorId}',true);`);
     // Each isolated change must actually alter eligibility, and rollback must recover the same published response.
-    const changed = async (sqlChange: string, label: string, status = "published") => {
+    const changed = async (sqlChange: string, label: string, status = withdraw && label !== "incomplete dependency index" ? "draft" : "published") => {
       await database.query("SAVEPOINT public_change;");
+      const before = await response();
+      const priorHistory = await query(`SELECT public.read_engagement_response_history('${campaignId}')`);
+      if (withdraw) {
+        await database.query(`SELECT set_config('openplan.response_request','${id(998)}',true);`);
+        // Native review/link writes retain an explicit actor and do not require a user JWT.
+        if (label.startsWith("synthesis") || label === "withdrawn final link") await database.query("SELECT set_config('request.jwt.claim.sub','',true);");
+      }
       expect((await query(sqlChange, "postgres")).error, `${label} fixture failed`).toBeNull();
+      await database.query(`SELECT set_config('request.jwt.claim.sub','${actorId}',true);`);
+      if (withdraw && label !== "incomplete dependency index" && label !== "response wording") {
+        const receipts = await query(`SELECT jsonb_agg(to_jsonb(r)) FROM engagement_response_write_receipts r WHERE response_id='${intent.responseId}' AND operation='source_withdrawal'`, "postgres");
+        expect(receipts.error).toBeNull();
+        const entries = receipts.data as { request_id: string; actor_id: string; before_record: unknown; payload_json: { reason: string; causeKind: string }; result_json: { entry: { status: string; published_at: unknown } } }[];
+        expect(entries, `${label} withdrawal receipt count differs`).toHaveLength(1);
+        expect(entries[0].actor_id, `${label} withdrawal actor lost`).toBe(actorId);
+        expect(entries[0].before_record, `${label} withdrawal before record differs`).toEqual(before);
+        expect(entries[0].payload_json.causeKind, `${label} withdrawal cause lost`).toBeTruthy();
+        expect(entries[0].result_json, `${label} withdrawal receipt not finalized`).toMatchObject({ entry: { status: "draft", published_at: null } });
+        const history = await query(`SELECT to_jsonb(h) FROM engagement_response_history h WHERE response_id='${intent.responseId}' ORDER BY revision DESC LIMIT 1`, "postgres");
+        expect(history.data, `${label} withdrawal history provenance lost`).toMatchObject({ actor_id: actorId, event: "unpublished", change_origin: "source_withdrawal", write_request_id: entries[0].request_id, change_reason: entries[0].payload_json.reason });
+        const original = await query(`SELECT public.read_engagement_synthesis_response_link('${campaignId}','${intent.requestId}')`);
+        expect(original.data, `${label} changed original link bytes`).toEqual((saved.data as Receipt).event);
+        const replay = await query(statement(intent, contextText), "service_role");
+        expect(replay.error).toBeNull();
+        expect(replay.data, `${label} exact link retry lost`).toEqual({ ...(saved.data as Receipt), replayed: true });
+        expect((await response()).status, `${label} retry restored publication`).toBe("draft");
+        // Running reconciliation again cannot manufacture another withdrawal or alter old history.
+        expect((await query(`SELECT to_jsonb(public.withdraw_ineligible_synthesis_responses('${campaignId}','${actorId}','synthetic_retry',NULL,NULL))`, "postgres")).error).toBeNull();
+        const again = await query(`SELECT jsonb_agg(to_jsonb(r)) FROM engagement_response_write_receipts r WHERE response_id='${intent.responseId}' AND operation='source_withdrawal'`, "postgres");
+        expect(again.data, `${label} duplicate reconciliation differs`).toEqual(entries);
+        expect((await query("SELECT to_jsonb(current_setting('openplan.response_request',true))")).data, `${label} request context not restored`).toBe(id(998));
+      }
       expect((await query(eligible)).data, `${label} remained eligible`).toBe(false);
       expect((await response()).status, `${label} changed response status unexpectedly`).toBe(status);
       expect((await query(publicRead, "service_role")).data, `${label} escaped public snapshot`).toMatchObject({ count: 0, entries: [] });
@@ -345,6 +385,7 @@ async function publicScenario(sql = publicCandidate) {
       expect((await changeResponse({ status: "published" })).error?.code, `${label} publication was accepted`).toBe("PT409");
       await database.query("ROLLBACK TO SAVEPOINT public_change; RELEASE SAVEPOINT public_change;");
       expect((await query(eligible)).data, `${label} rollback failed to restore control`).toBe(true);
+      expect((await query(`SELECT public.read_engagement_response_history('${campaignId}')`)).data, `${label} rollback changed prior history`).toEqual(priorHistory.data);
     };
     const itemId = "b0000000-0000-4000-8000-000000000002", answerId = "c0000000-0000-4000-8000-000000000002", sessionId = "c0000000-0000-4000-8000-000000000001";
     await changed(`UPDATE engagement_items SET body='SYNTHETIC changed source',review_expected_updated_at=updated_at,review_reason='SYNTHETIC source correction' WHERE id='${itemId}'`, "comment correction");
@@ -352,6 +393,13 @@ async function publicScenario(sql = publicCandidate) {
     await changed(`UPDATE engagement_items SET status='rejected',review_expected_updated_at=updated_at,review_reason='SYNTHETIC status change' WHERE id='${itemId}'`, "unpublished comment");
     await changed(`UPDATE engagement_items SET body='SYNTHETIC changed reply parent',review_expected_updated_at=updated_at,review_reason='SYNTHETIC parent correction' WHERE id='b0000000-0000-4000-8000-000000000001'`, "reply parent correction");
     await changed(`UPDATE engagement_items SET metadata_json=metadata_json||'{"visibility":"private"}',review_expected_updated_at=updated_at,review_reason='SYNTHETIC parent privacy' WHERE id='b0000000-0000-4000-8000-000000000001'`, "private reply parent");
+    if (withdraw) {
+      const deletion = await query(`DELETE FROM engagement_items WHERE id='${itemId}'`, "postgres");
+      expect(deletion.error?.code, "retained comment deletion bypassed custody").toBe("23503");
+      expect((await query(eligible)).data, "failed deletion invalidated publication").toBe(true);
+      expect((await response()).status, "failed deletion withdrew publication").toBe("published");
+      await changed(`DELETE FROM engagement_survey_answers WHERE id='${answerId}'`, "answer deletion");
+    }
     await changed(`UPDATE engagement_survey_answers SET answer_text='SYNTHETIC changed answer' WHERE id='${answerId}'`, "answer wording");
     await changed(`UPDATE engagement_survey_answers SET answer_json='{"text":"SYNTHETIC changed structured answer"}' WHERE id='${answerId}'`, "answer structured value");
     await changed(`SELECT to_jsonb(public.review_engagement_survey('${campaignId}','${sessionId}',(SELECT updated_at FROM engagement_survey_response_sessions WHERE id='${sessionId}'),'approved','SYNTHETIC actual reviewed redaction',${literal({ [answerId]: "SYNTHETIC reviewed replacement" })}))`, "reviewed survey redaction");
@@ -361,6 +409,7 @@ async function publicScenario(sql = publicCandidate) {
     await database.query("SAVEPOINT harmless_votes;");
     expect((await query(`UPDATE engagement_items SET votes_count=votes_count+1 WHERE id='${itemId}'`, "postgres")).error).toBeNull();
     expect((await query(eligible)).data, "vote count invalidated source meaning").toBe(true);
+    expect((await response()).status, "vote count withdrew publication").toBe("published");
     await database.query("ROLLBACK TO SAVEPOINT harmless_votes; RELEASE SAVEPOINT harmless_votes;");
     const originalContext = JSON.parse(contextText) as { revision: { id: string; contentText: string; contentSha256: string }; sourceId: string; sourceSha256: string; approval: Packet };
     const approvedIntent = (JSON.parse(originalContext.approval.eventText) as { intent: Record<string, unknown> }).intent;
@@ -414,5 +463,102 @@ describe.skipIf(!LIVE_RLS)("candidate public dependency fault controls", () => {
     ["foreign eligibility", alterFunction("public.read_engagement_synthesis_response_public_eligibility(uuid,uuid)", "m.user_id=auth.uid()", "true"), "foreign eligibility read allowed"],
   ])("detects %s", async (_name, ddl, assertion) => {
     await expect(publicScenario(publicCandidate + "\n" + ddl)).rejects.toThrow(assertion);
+  }, 60_000);
+});
+
+
+const withdrawalCandidate = readFileSync("../docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-withdrawal.candidate.sql", "utf8");
+describe.skipIf(!LIVE_RLS)("candidate synthesis stored withdrawal", () => {
+  it("retains automatic withdrawal receipts and service actor history across all source kinds", () => publicScenario(publicCandidate + "\n" + withdrawalCandidate, true), 60_000);
+  it("accepts a harmless withdrawal comment", () => publicScenario(publicCandidate + "\n-- Harmless withdrawal control.\n" + withdrawalCandidate, true), 60_000);
+});
+
+
+const withdrawalFaults = [
+  ["comment custody", "ALTER TABLE engagement_item_history DROP CONSTRAINT engagement_item_history_item_id_fkey;", "retained comment deletion bypassed custody"],
+  ["current eligibility", alterFunction("public.withdraw_ineligible_synthesis_responses(uuid,uuid,text,jsonb,jsonb)", "AND NOT public.engagement_synthesis_response_public_allowed(p_campaign,e.id,to_jsonb(e))", ""), "vote count withdrew publication"],
+  ["draft reconciliation", alterFunction("public.withdraw_ineligible_synthesis_responses(uuid,uuid,text,jsonb,jsonb)", "AND e.status='published'", ""), "comment correction duplicate reconciliation differs"],
+  ["receipt finalization", alterFunction("public.withdraw_ineligible_synthesis_responses(uuid,uuid,text,jsonb,jsonb)", "WHERE campaign_id=p_campaign AND request_id=request", "WHERE false AND campaign_id=p_campaign AND request_id=request"), "comment correction withdrawal receipt not finalized"],
+  ["comment trigger", "ALTER TABLE engagement_items DISABLE TRIGGER synthesis_item_publication;", "comment correction withdrawal receipt count differs"],
+  ["answer trigger", "ALTER TABLE engagement_survey_answers DISABLE TRIGGER synthesis_answer_publication;", "answer deletion withdrawal receipt count differs"],
+  ["session trigger", "ALTER TABLE engagement_survey_response_sessions DISABLE TRIGGER synthesis_session_publication;", "survey review withdrawal withdrawal receipt count differs"],
+  ["revision trigger", "ALTER TABLE engagement_synthesis_review_revisions DISABLE TRIGGER synthesis_revision_publication;", "synthesis review correction withdrawal receipt count differs"],
+  ["approval trigger", "ALTER TABLE engagement_synthesis_approval_events DISABLE TRIGGER synthesis_approval_publication;", "synthesis approval withdrawal withdrawal receipt count differs"],
+  ["link reconciliation", alterFunction("public.retain_engagement_synthesis_response_link(uuid,uuid,uuid,jsonb,text)", "PERFORM public.withdraw_ineligible_synthesis_responses(p_campaign,p_actor,'synthesis_response_link',", "PERFORM public.withdraw_ineligible_synthesis_responses(NULL,p_actor,'synthesis_response_link',"), "withdrawn final link withdrawal receipt count differs"],
+  ["receipt actor", alterFunction("public.withdraw_ineligible_synthesis_responses(uuid,uuid,text,jsonb,jsonb)", "previous.id,p_actor,'source_withdrawal'", "previous.id,auth.uid(),'source_withdrawal'"), "synthesis approval withdrawal withdrawal actor lost"],
+  ["history actor", alterFunction("public.retain_engagement_response_history()", "CASE WHEN write_receipt.request_id IS NOT NULL THEN write_receipt.actor_id ELSE auth.uid() END", "auth.uid()"), "synthesis approval withdrawal withdrawal history provenance lost"],
+  ["history receipt", alterFunction("public.retain_engagement_response_history()", " OR r.operation = 'source_withdrawal'", ""), "synthesis approval withdrawal withdrawal history provenance lost"],
+  ["request restoration", alterFunction("public.withdraw_ineligible_synthesis_responses(uuid,uuid,text,jsonb,jsonb)", "COALESCE(previous_context,'')", "''"), "comment correction request context not restored"],
+  ["withdrawal grant", "GRANT EXECUTE ON FUNCTION public.withdraw_ineligible_synthesis_responses(uuid,uuid,text,jsonb,jsonb) TO service_role;", "direct withdrawal helper permission opened"],
+] as const;
+describe.skipIf(!LIVE_RLS)("candidate stored withdrawal fault controls", () => {
+  it.each(withdrawalFaults)("detects %s", async (_name, sql, assertion) => {
+    await expect(publicScenario(publicCandidate + "\n" + withdrawalCandidate + "\n" + sql, true)).rejects.toThrow(assertion);
+  }, 60_000);
+});
+
+async function withdrawalIsolation(isolation: string, sql = withdrawalCandidate) {
+  const database = rollbackSqlConnection(resolveLocalDbContainer());
+  try {
+    await database.query(`BEGIN ISOLATION LEVEL ${isolation}; ${candidate} ${publicCandidate} ${sql}
+      CREATE FUNCTION pg_temp.withdrawal_isolation_probe() RETURNS text LANGUAGE plpgsql AS $probe$
+      BEGIN PERFORM public.withdraw_ineligible_synthesis_responses('${campaignId}','${actorId}','isolation',NULL,NULL);
+       RETURN 'accepted'; EXCEPTION WHEN OTHERS THEN RETURN SQLSTATE; END $probe$;`);
+    const result = await database.query("SELECT pg_temp.withdrawal_isolation_probe();");
+    expect(result, "fixed snapshot withdrawal was accepted").toEqual([isolation === "READ COMMITTED" ? "accepted" : "25001"]);
+  } finally { await database.close(); }
+}
+describe.skipIf(!LIVE_RLS)("candidate stored withdrawal isolation", () => {
+  it.each(["READ COMMITTED", "REPEATABLE READ", "SERIALIZABLE"])("checks %s", isolation => withdrawalIsolation(isolation), 60_000);
+  it("detects a removed fixed snapshot guard", async () => {
+    const sql = withdrawalCandidate.replace("IF current_setting('transaction_isolation')<>'read committed' THEN", "IF false THEN");
+    expect(sql).not.toBe(withdrawalCandidate);
+    await expect(withdrawalIsolation("REPEATABLE READ", sql)).rejects.toThrow("fixed snapshot withdrawal was accepted");
+  }, 60_000);
+});
+
+
+async function withdrawalLock(mode: "held" | "unrelated" | "harmless" | "broken") {
+  let sql = withdrawalCandidate;
+  if (mode === "harmless") sql = "-- Harmless withdrawal lock comment.\n" + sql;
+  if (mode === "broken") {
+    sql = sql.replace("hashtextextended('engagement-response:'||p_campaign", "hashtextextended('broken-withdrawal-response:'||p_campaign");
+    expect(sql).not.toBe(withdrawalCandidate);
+  }
+  const holder = rollbackSqlConnection(resolveLocalDbContainer());
+  try {
+    await scenario(candidate + "\n" + publicCandidate + "\n" + sql, async ({ database, query, intent, contextText, statement }) => {
+      // Build the published control on distinct keys, then restore all original lock definitions.
+      await database.query(`CREATE TEMP TABLE withdrawal_lock_functions AS SELECT pg_get_functiondef(p.oid) AS body
+       FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND p.prokind='f'
+        AND p.prosrc LIKE '%engagement-response:%';
+       DO $setup$ DECLARE row record; BEGIN FOR row IN SELECT body FROM withdrawal_lock_functions LOOP
+        EXECUTE replace(row.body,'engagement-response:','synthetic-withdrawal-setup:'); END LOOP; END $setup$;`);
+      const linked = await query(statement(intent, contextText), "service_role"); expect(linked.error).toBeNull();
+      const published = await query(`SELECT public.write_engagement_response('${campaignId}','${id(950)}','update','${intent.responseId}',
+       (SELECT updated_at FROM engagement_closeloop_entries WHERE id='${intent.responseId}'),'SYNTHETIC barrier control','{"status":"published"}')`);
+      expect(published.error).toBeNull();
+      await database.query(`DO $restore$ DECLARE row record; BEGIN FOR row IN SELECT body FROM withdrawal_lock_functions LOOP
+       EXECUTE row.body; END LOOP; END $restore$;`);
+      const lockKey = mode === "unrelated" || mode === "harmless" ? "synthetic-unrelated-withdrawal" : `engagement-response:${campaignId}`;
+      await holder.query(`BEGIN; SELECT pg_advisory_xact_lock(hashtextextended(${literal(lockKey)},0));`);
+      const change = "UPDATE engagement_survey_answers SET answer_text='SYNTHETIC source retry' WHERE id='c0000000-0000-4000-8000-000000000002'";
+      const first = await query(change, "postgres");
+      if (mode === "held" || mode === "broken") {
+        expect(first.error?.code, "held withdrawal lock was ignored").toBe("PT503");
+        expect((await query(`SELECT to_jsonb(status) FROM engagement_closeloop_entries WHERE id='${intent.responseId}'`, "postgres")).data).toBe("published");
+        expect((await query("SELECT to_jsonb(answer_text) FROM engagement_survey_answers WHERE id='c0000000-0000-4000-8000-000000000002'", "postgres")).data).toBe("SYNTHETIC survey concern");
+      } else expect(first.error, "unrelated lock blocked source correction").toBeNull();
+      await holder.query("ROLLBACK;");
+      expect((await query(change, "postgres")).error, "source retry failed after lock release").toBeNull();
+      expect((await query(`SELECT to_jsonb(status) FROM engagement_closeloop_entries WHERE id='${intent.responseId}'`, "postgres")).data, "source retry did not withdraw publication").toBe("draft");
+      expect((await query(`SELECT to_jsonb(count(*)) FROM engagement_response_write_receipts WHERE response_id='${intent.responseId}' AND operation='source_withdrawal'`, "postgres")).data, "source retry duplicated withdrawal").toBe(1);
+    });
+  } finally { await holder.close(); }
+}
+describe.skipIf(!LIVE_RLS)("candidate stored withdrawal lock", () => {
+  it.each(["held", "unrelated", "harmless"] as const)("uses a real source-change barrier: %s", mode => withdrawalLock(mode), 60_000);
+  it("detects a removed withdrawal campaign lock", async () => {
+    await expect(withdrawalLock("broken")).rejects.toThrow("held withdrawal lock was ignored");
   }, 60_000);
 });

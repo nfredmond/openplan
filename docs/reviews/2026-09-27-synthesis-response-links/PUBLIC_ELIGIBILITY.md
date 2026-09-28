@@ -29,3 +29,7 @@ Automatic withdrawal must update the stored response to draft, retain a receipt/
 `publicReviewStillCurrent` currently reads response rows directly when authorizing retained downloads. Join that path to the new dependency rules and verify approval withdrawal, source changes and later republication with original bytes preserved. Public reports, export workers and download authorization are separate checks. The current candidate does not prove every artifact reader safe.
 
 Complete the remaining native validation and relational-constraint fault coverage, application event/history verification, route and client recovery, decision provenance and usable staff controls. Then promote an additive migration with installed-schema, populated-upgrade and identified desktop/390px browser evidence. Reviewed synthesis exports and optional complete resumable generation remain M9b work; the full V1 contract is unchanged.
+
+## Subsequent candidate
+
+The [stored withdrawal extension](STORED_WITHDRAWAL.md) adds receipt-backed draft status after dependency changes. This later rollback candidate preserves the earlier public-read checks. Its report states the remaining concurrency, download and installation boundaries.
