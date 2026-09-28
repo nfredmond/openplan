@@ -121,7 +121,8 @@ RETURNS jsonb LANGUAGE sql STABLE STRICT SET search_path=pg_catalog,public AS $$
 $$;
 
 -- Candidate-only patch against the installed report definition; promotion must retain this exact seam check.
-DO $reports$ DECLARE body text; seam text:='AND e.status=''published'''; selection text:=$selection$
+DO $reports$ DECLARE body text; seam text:='AND e.status=''published''';
+ session_seam text:='(p_scope=''internal'' OR s.status=''approved'')'; selection text:=$selection$
  AND NOT EXISTS(SELECT 1 FROM engagement_synthesis_response_events link JOIN engagement_synthesis_response_members member ON member.event_id=link.id
   WHERE link.campaign_id=p_campaign AND link.response_id=e.id AND link.operation<>'withdraw'
    AND NOT EXISTS(SELECT 1 FROM engagement_synthesis_response_events newer WHERE newer.campaign_id=link.campaign_id
@@ -131,5 +132,7 @@ DO $reports$ DECLARE body text; seam text:='AND e.status=''published'''; selecti
  $selection$; BEGIN
  body:=pg_get_functiondef('public.queue_engagement_report(uuid,uuid,text,jsonb)'::regprocedure);
  IF (length(body)-length(replace(body,seam,'')))/length(seam)<>1 THEN RAISE EXCEPTION 'Report response eligibility seam differs'; END IF;
+ IF (length(body)-length(replace(body,session_seam,'')))/length(session_seam)<>1 THEN RAISE EXCEPTION 'Report survey privacy seam differs'; END IF;
+ body:=replace(body,session_seam,'(p_scope=''internal'' OR public.engagement_item_public_copy_allowed(s.status,s.metadata_json))');
  EXECUTE replace(body,seam,seam||' AND (p_scope=''internal'' OR public.engagement_synthesis_response_public_allowed(p_campaign,e.id,to_jsonb(e)))'||selection);
 END $reports$;

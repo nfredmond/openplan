@@ -83,15 +83,14 @@ export function isPublicEngagementComment(item: EngagementCommentMatrixItemLike)
   );
 }
 
+/** Explicit privacy markers apply to reviewed comments and survey sessions alike. */
+export function hasPrivateEngagementMetadata(metadata: Record<string, unknown> | null | undefined): boolean {
+  return metadataString(metadata, "visibility")?.toLowerCase() === "private"
+    || metadataBoolean(metadata, "private_note") || metadataBoolean(metadata, "internal_note");
+}
+
 export function isInternalOrPrivateEngagementNote(item: EngagementCommentMatrixItemLike): boolean {
-  const visibility = metadataString(item.metadata_json, "visibility")?.toLowerCase();
-  if (
-    visibility === "private" ||
-    metadataBoolean(item.metadata_json, "private_note") ||
-    metadataBoolean(item.metadata_json, "internal_note")
-  ) {
-    return true;
-  }
+  if (hasPrivateEngagementMetadata(item.metadata_json)) return true;
 
   if (isPublicEngagementComment(item)) return false;
 

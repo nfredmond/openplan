@@ -1,0 +1,302 @@
+{
+  "recordedAt": "2026-09-28T00:34:39.443921+00:00",
+  "baseCommit": "ca1dafd4daa2aae2a218ee9e765a917c0a90edf3",
+  "state": "Verified application download repair and uninstalled synthesis candidate; no release claim",
+  "qa": {
+    "session": 4022,
+    "exit": 0,
+    "testsPassed": 15696,
+    "testsSkipped": 715,
+    "filesPassed": 1333,
+    "filesSkipped": 60,
+    "build": "passed"
+  },
+  "shuffled": {
+    "session": 85978,
+    "exit": 0,
+    "seed": 865721,
+    "testsPassed": 15696,
+    "testsSkipped": 715
+  },
+  "native": {
+    "pipelineSession": 83986,
+    "exit": 0,
+    "testsPassed": 86,
+    "controls": 19,
+    "faultCases": 67,
+    "durationSeconds": 356.05
+  },
+  "rls": {
+    "pipelineSession": 83986,
+    "exit": 0,
+    "status": "passed",
+    "isolatedWorkdir": "/home/nathaniel/.local/state/openplan/openplan-restore-target-2026091050",
+    "testsPassed": 658,
+    "filesPassed": 66
+  },
+  "focusedTests": 41,
+  "mutationCases": {
+    "cases": 19,
+    "controlsSurvived": 2,
+    "faultsDetected": 17,
+    "exit": 0
+  },
+  "sources": {
+    "openplan/src/lib/engagement/comment-matrix.ts": "3c6055adb0102b8d2c69593e4820847562b21ef832754bb37141261b6b57cc76",
+    "openplan/src/lib/engagement/survey-responses.ts": "c138bf01a52b31de9a4556990efa128051a33383a65acd612e21fee837698b2b",
+    "openplan/src/test/engagement-public-review-current.test.ts": "215bbe4c7fb96955b48843a62172746ebe9bd17b626176dba70c5312134d44b4",
+    "openplan/src/test/engagement-public-download-eligibility.test.ts": "92ddf7dd21612365b9d14f54e5a74427b7a358acf190af8881adb5fc24bd7191",
+    "openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts": "493ee0ca4fabcf154be6658dfc762ed388ce2f7c4ebfb7090124f966353d3b56",
+    "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-public.candidate.sql": "5e6be3dd7b4eb9e3a7919413fa640df5c7be1b70b87dafaf6c9226cf242b42ad"
+  },
+  "logs": [
+    {
+      "name": "response-download-privacy-unit.log",
+      "sha256": "5358ae41b4ddc1e06dceba3b41c8be2b18d4f19d2ad5154de402068326368148"
+    },
+    {
+      "name": "response-download-privacy-mutations.log",
+      "sha256": "d2582c68cbd75a6c315cbb709f6d475a3869a6d40760abcc0b7f9f5c55c47f84"
+    },
+    {
+      "name": "response-download-privacy-mutations.json",
+      "sha256": "2ebe27215197dd6a60e6533aabd8cde88194a23861161ea4c03b0444f8e59eb7"
+    },
+    {
+      "name": "response-download-privacy-native.log",
+      "sha256": "27b0781762b3125bd014e4d7c0e9b5c4473a75fa1027a07d5b4cacd2fd8a0945"
+    },
+    {
+      "name": "response-download-survey-only-gap.log",
+      "sha256": "f50f652aeb45c9e05e960a8f81b175cf303c033fdb87eb5cb2aabe0ef808ca90"
+    },
+    {
+      "name": "response-download-survey-only-fixed.log",
+      "sha256": "e16ccbc8e9d09740d7a0c215be21bc18eccfae61d2a413f785d58676b2684bf3"
+    },
+    {
+      "name": "response-download-final-qa.log",
+      "sha256": "3c3b7f2ac38976fe390963b4f434448bc6cdbf8bc0d551469ad07e35fc5fc9f2"
+    },
+    {
+      "name": "response-download-final-shuffled.log",
+      "sha256": "b05cfd309605c27137edf2d1b08e3c5f84b41e3187f2c2fe97f6f2fc8af96188"
+    },
+    {
+      "name": "response-download-final-native.log",
+      "sha256": "52afd517a93a347727d2bc5fcd44ffa4f929df0a2e971ccdf3f63f26bd0717f8"
+    },
+    {
+      "name": "response-download-final-rls.log",
+      "sha256": "78f281339ab2ae51cabb8574d565801288fd2b5844d2045515175d48162fee56"
+    }
+  ],
+  "limits": "Uninstalled synthesis SQL candidate. Real workbook bytes and native report snapshots, but mocked job/storage transport for function-level downloads. No browser, installed upgrade, or both concurrent commit-order claim.",
+  "database": {
+    "installedMigrations": 347,
+    "candidateObjectsAbsentAfterChecks": true,
+    "installedPublicationGuardRestored": true
+  },
+  "mutationResults": [
+    {
+      "name": "baseline",
+      "expected": null,
+      "exit": 0,
+      "failed": [],
+      "outcome": "survived"
+    },
+    {
+      "name": "harmless",
+      "expected": null,
+      "exit": 0,
+      "failed": [],
+      "outcome": "survived"
+    },
+    {
+      "name": "omitted eligibility",
+      "expected": "refuses a response omitted from public eligibility",
+      "exit": 1,
+      "failed": [
+        "public retained XLSX download eligibility denies ineligible published rows before storage and recovers the same original bytes",
+        "public retained XLSX download eligibility denies corrected wording without changing the original workbook",
+        "public retained XLSX download eligibility refuses an interrupted eligibility read even with valid stale data and permits retry",
+        "public report withdrawal permits unchanged copies with exact projections, campaign scope and public response RPC",
+        "public report withdrawal withdraws after engagement_closeloop_entries theme_title changes",
+        "public report withdrawal withdraws after engagement_closeloop_entries you_said changes",
+        "public report withdrawal withdraws after engagement_closeloop_entries we_did changes",
+        "public report withdrawal withdraws after engagement_closeloop_entries source_item_ids changes",
+        "public report withdrawal refuses a response omitted from public eligibility even if its raw row remains published",
+        "public report withdrawal does not substitute another eligible response with the same wording",
+        "public report withdrawal refuses error with stale valid data",
+        "public report withdrawal refuses absent snapshot",
+        "public report withdrawal refuses incomplete snapshot",
+        "public report withdrawal refuses foreign campaign",
+        "public report withdrawal refuses private snapshot",
+        "public report withdrawal refuses draft response"
+      ],
+      "outcome": "detected"
+    },
+    {
+      "name": "error accepted",
+      "expected": "refuses error with stale valid data",
+      "exit": 1,
+      "failed": [
+        "public retained XLSX download eligibility refuses an interrupted eligibility read even with valid stale data and permits retry",
+        "public report withdrawal refuses error with stale valid data",
+        "public report withdrawal refuses absent snapshot",
+        "public report withdrawal refuses incomplete snapshot",
+        "public report withdrawal refuses foreign campaign",
+        "public report withdrawal refuses private snapshot",
+        "public report withdrawal refuses draft response"
+      ],
+      "outcome": "detected"
+    },
+    {
+      "name": "response identity",
+      "expected": "does not substitute another eligible response",
+      "exit": 1,
+      "failed": [
+        "public report withdrawal does not substitute another eligible response with the same wording"
+      ],
+      "outcome": "detected"
+    },
+    {
+      "name": "field theme_title",
+      "expected": "withdraws after engagement_closeloop_entries theme_title changes",
+      "exit": 1,
+      "failed": [
+        "public report withdrawal withdraws after engagement_closeloop_entries theme_title changes"
+      ],
+      "outcome": "detected"
+    },
+    {
+      "name": "field you_said",
+      "expected": "withdraws after engagement_closeloop_entries you_said changes",
+      "exit": 1,
+      "failed": [
+        "public report withdrawal withdraws after engagement_closeloop_entries you_said changes"
+      ],
+      "outcome": "detected"
+    },
+    {
+      "name": "field we_did",
+      "expected": "withdraws after engagement_closeloop_entries we_did changes",
+      "exit": 1,
+      "failed": [
+        "public retained XLSX download eligibility denies corrected wording without changing the original workbook",
+        "public report withdrawal withdraws after engagement_closeloop_entries we_did changes"
+      ],
+      "outcome": "detected"
+    },
+    {
+      "name": "field source_item_ids",
+      "expected": "withdraws after engagement_closeloop_entries source_item_ids changes",
+      "exit": 1,
+      "failed": [
+        "public report withdrawal withdraws after engagement_closeloop_entries source_item_ids changes"
+      ],
+      "outcome": "detected"
+    },
+    {
+      "name": "empty response gate",
+      "expected": "does not require response reads for a snapshot without responses",
+      "exit": 1,
+      "failed": [
+        "public report withdrawal does not require response reads for a snapshot without responses"
+      ],
+      "outcome": "detected"
+    },
+    {
+      "name": "survey privacy guard",
+      "expected": "denies a survey-only report with private metadata",
+      "exit": 1,
+      "failed": [
+        "public report withdrawal denies a survey-only report with private metadata {\"visibility\":\"private\"}",
+        "public report withdrawal denies a survey-only report with private metadata {\"visibility\":\"\ufeff Private \u00a0\"}",
+        "public report withdrawal denies a survey-only report with private metadata {\"private_note\":true}",
+        "public report withdrawal denies a survey-only report with private metadata {\"private_note\":\" TRUE \"}",
+        "public report withdrawal denies a survey-only report with private metadata {\"internal_note\":true}",
+        "public report withdrawal denies a survey-only report with private metadata {\"internal_note\":\"\u2003TRUE\u2003\"}",
+        "public report withdrawal refuses missing survey privacy fields"
+      ],
+      "outcome": "detected"
+    },
+    {
+      "name": "survey privacy projection",
+      "expected": "permits unchanged copies with exact projections",
+      "exit": 1,
+      "failed": [
+        "public report withdrawal permits unchanged copies with exact projections, campaign scope and public response RPC"
+      ],
+      "outcome": "detected"
+    },
+    {
+      "name": "missing survey privacy",
+      "expected": "refuses missing survey privacy fields",
+      "exit": 1,
+      "failed": [
+        "public report withdrawal refuses missing survey privacy fields"
+      ],
+      "outcome": "detected"
+    },
+    {
+      "name": "visibility marker",
+      "expected": "denies a survey-only report with private metadata",
+      "exit": 1,
+      "failed": [
+        "public report withdrawal denies a survey-only report with private metadata {\"visibility\":\"private\"}",
+        "public report withdrawal denies a survey-only report with private metadata {\"visibility\":\"\ufeff Private \u00a0\"}"
+      ],
+      "outcome": "detected"
+    },
+    {
+      "name": "private note marker",
+      "expected": "denies a survey-only report with private metadata",
+      "exit": 1,
+      "failed": [
+        "public report withdrawal denies a survey-only report with private metadata {\"private_note\":true}",
+        "public report withdrawal denies a survey-only report with private metadata {\"private_note\":\" TRUE \"}"
+      ],
+      "outcome": "detected"
+    },
+    {
+      "name": "internal note marker",
+      "expected": "denies a survey-only report with private metadata",
+      "exit": 1,
+      "failed": [
+        "public report withdrawal denies a survey-only report with private metadata {\"internal_note\":true}",
+        "public report withdrawal denies a survey-only report with private metadata {\"internal_note\":\"\u2003TRUE\u2003\"}"
+      ],
+      "outcome": "detected"
+    },
+    {
+      "name": "download entry point",
+      "expected": "denies ineligible published rows before storage",
+      "exit": 1,
+      "failed": [
+        "public retained XLSX download eligibility denies ineligible published rows before storage and recovers the same original bytes",
+        "public retained XLSX download eligibility denies corrected wording without changing the original workbook",
+        "public retained XLSX download eligibility refuses an interrupted eligibility read even with valid stale data and permits retry"
+      ],
+      "outcome": "detected"
+    },
+    {
+      "name": "native dependency join",
+      "expected": "synthesis approval withdrawal retained download eligibility differs",
+      "exit": 1,
+      "failed": [
+        "candidate retained download eligibility checks real retained reports against changed approval and source dependencies"
+      ],
+      "outcome": "detected"
+    },
+    {
+      "name": "native survey privacy",
+      "expected": "private survey-only retained download was allowed",
+      "exit": 1,
+      "failed": [
+        "candidate retained download eligibility checks real retained reports against changed approval and source dependencies"
+      ],
+      "outcome": "detected"
+    }
+  ]
+}

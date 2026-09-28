@@ -1,4 +1,6 @@
 import type { EngagementReviewSnapshot } from "./review-export";
+import { loadPublishedCloseLoopEntries } from "./close-loop";
+import { hasPrivateEngagementMetadata } from "./comment-matrix";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { readEveryPage } from "@/lib/supabase/paged-read";
 import { isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
@@ -1058,10 +1060,12 @@ export async function publicReviewStillCurrent(service: SupabaseClient, snapshot
   async function matches(table: string, saved: CampaignPublicCopyRow[], fields: string[], state?: [string, string]): Promise<boolean> {
     for (let offset = 0; offset < saved.length; offset += 100) {
       const batch = saved.slice(offset, offset + 100);
-      const projection = [...new Set(['id', ...fields, ...(state ? [state[0]] : [])])].join(',');
+      const projection = [...new Set(['id', ...fields, ...(state ? [state[0]] : []), ...(table === 'engagement_survey_response_sessions' ? ['metadata_json'] : [])])].join(',');
       const current = await (table === 'engagement_survey_response_sessions' ? service.from('engagement_survey_response_sessions').select(projection).eq('campaign_id', snapshot.campaign.id).in('id', batch.map(row => String(row.id))) : table === 'engagement_survey_answers' ? service.from('engagement_survey_answers').select(projection).eq('campaign_id', snapshot.campaign.id).in('id', batch.map(row => String(row.id))) : service.from(table).select(projection).eq('campaign_id', snapshot.campaign.id).in('id', batch.map(row => String(row.id))));
       if (current.error || !current.data || current.data.length !== batch.length) return false;
       const rows = current.data as unknown as CampaignPublicCopyRow[];
+      if (table === 'engagement_survey_response_sessions' && rows.some(now => now.metadata_json === undefined
+        || hasPrivateEngagementMetadata(now.metadata_json as Record<string, unknown> | null))) return false;
       if (batch.some(row => !rows.some(now => now.id === row.id && (!state || now[state[0]] === state[1]) && fields.every(field => JSON.stringify(now[field]) === JSON.stringify(row[field]))))) return false;
     }
     return true;
@@ -1071,7 +1075,12 @@ export async function publicReviewStillCurrent(service: SupabaseClient, snapshot
   if (!await matches('engagement_public_items', parents, ['parent_item_id'], ['status','approved'])) return false;
   if (!await matches('engagement_survey_response_sessions', snapshot.sessions, [], ['status','approved'])) return false;
   if (!await matches('engagement_survey_answers', snapshot.answers, ['session_id','question_id','question_prompt_snapshot','question_type','answer_text','answer_json'])) return false;
-  return matches('engagement_closeloop_entries', snapshot.responses, ['theme_title','you_said','we_did','source_item_ids'], ['status','published']);
+  if (snapshot.responses.length === 0) return true;
+  const current = await loadPublishedCloseLoopEntries(service, snapshot.campaign.id);
+  if (current.error) return false;
+  const fields = ['theme_title','you_said','we_did','source_item_ids'] as const;
+  return snapshot.responses.every(saved => current.rows.some(now => now.id === saved.id
+    && fields.every(field => JSON.stringify(now[field]) === JSON.stringify(saved[field]))));
 }
 
 /** Staff-authorized callers inspect one attachment-bearing answer, never a campaign-wide raw feed. */

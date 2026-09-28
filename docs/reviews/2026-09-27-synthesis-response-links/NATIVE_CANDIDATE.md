@@ -34,6 +34,10 @@ The [public eligibility candidate](PUBLIC_ELIGIBILITY.md) adds current dependenc
 
 The [stored withdrawal candidate](STORED_WITHDRAWAL.md) adds automatic draft status, private receipts and history for changed synthesis dependencies. Source rollback, exact link recovery, fixed-snapshot refusal and second-session lock barriers have focused evidence. Actual concurrent commit orders, retained downloads and application activation remain unfinished.
 
+## Retained download extension
+
+The [download eligibility repair](DOWNLOAD_ELIGIBILITY.md) joins retained responses to the existing complete public snapshot and checks survey privacy even when a report has no responses. Its native cases preserve the retained snapshot bytes. The report-capture candidate also excludes private survey records from public snapshots. Installation, concurrent commit-order evidence and browser acceptance remain unfinished.
+
 ## Required before activation
 
 - Complete mutation coverage for remaining native validation and relational constraints. Retain the current positive controls and targeted fault cases.

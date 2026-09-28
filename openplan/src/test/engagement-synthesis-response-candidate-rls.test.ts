@@ -8,6 +8,8 @@ import { loadSynthesisSource } from "@/lib/engagement/synthesis-sources-server";
 import { loadSynthesisResponseContext } from "@/lib/engagement/synthesis-response-links-server";
 import { readSynthesisResponseContext } from "@/lib/engagement/synthesis-response-context-server";
 import { writeResponse } from "@/lib/engagement/response-write";
+import { publicReviewStillCurrent } from "@/lib/engagement/survey-responses";
+import { parseReviewSnapshot, type EngagementReviewSnapshot } from "@/lib/engagement/review-export";
 import { LIVE_RLS } from "./local-supabase-env";
 import { resolveLocalDbContainer } from "./helpers/live-catalog";
 import { rollbackSqlConnection } from "./helpers/rollback-sql-connection";
@@ -289,7 +291,7 @@ describe.skipIf(!LIVE_RLS)("candidate synthesis response access and history faul
 });
 
 const publicCandidate = readFileSync("../docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-public.candidate.sql", "utf8");
-async function publicScenario(sql = publicCandidate, withdraw = false) {
+async function publicScenario(sql = publicCandidate, withdraw = false, checkDownloads = false) {
   await scenario(candidate + "\n" + sql, async ({ database, query, intent, contextText, statement }) => {
     await database.query("SAVEPOINT legacy_response;");
     const legacy = await query(`SELECT public.write_engagement_response('${campaignId}','${id(99)}','create',NULL,NULL,NULL,'{"theme_title":"SYNTHETIC unrelated legacy response","status":"published"}')`);
@@ -324,13 +326,56 @@ async function publicScenario(sql = publicCandidate, withdraw = false) {
     expect((await query(publicRead, "service_role")).data).toMatchObject({ count: 1 });
     expect((await changeResponse({ sort_order: 4 })).error, "display ordering invalidated review").toBeNull();
     expect((await query(eligible)).data).toBe(true);
+    let lastReport: { responses: unknown[]; sessions: unknown[]; answers: unknown[] } | undefined;
+    let retained: { jobId: string; text: string; checksum: string; snapshot: EngagementReviewSnapshot } | undefined;
+    const nativeDownloadClient = {
+      async rpc(name: string, args: { p_campaign: string; p_published_only: boolean }) {
+        expect(name).toBe("read_engagement_response_snapshot");
+        expect(args).toEqual({ p_campaign: campaignId, p_published_only: true });
+        return query(publicRead, "service_role");
+      },
+      from(table: string) {
+        expect(["engagement_public_items", "engagement_survey_response_sessions", "engagement_survey_answers"]).toContain(table);
+        return { select(projection: string) {
+          expect(projection).toMatch(/^[a-z_,]+$/);
+          return { eq(column: string, value: string) {
+            expect(column).toBe("campaign_id"); expect(value).toBe(campaignId);
+            return { async in(idColumn: string, ids: string[]) {
+              expect(idColumn).toBe("id");
+              return query(`SELECT COALESCE(jsonb_agg(to_jsonb(row)),'[]'::jsonb) FROM (SELECT ${projection} FROM ${table} WHERE campaign_id='${campaignId}' AND id IN (${ids.map(literal).join(",")})) row`, "service_role");
+            } };
+          } };
+        } };
+      },
+    } as unknown as SupabaseClient;
+    const checkRetainedDownload = async (allowed: boolean, label: string) => {
+      if (!checkDownloads) return;
+      expect(retained, "retained report fixture missing").toBeDefined();
+      expect(await publicReviewStillCurrent(nativeDownloadClient, retained!.snapshot), `${label} retained download eligibility differs`).toBe(allowed);
+      if (label === "private survey") {
+        expect(await publicReviewStillCurrent(nativeDownloadClient, { ...retained!.snapshot, responses: [] }), "private survey-only retained download was allowed").toBe(false);
+      }
+      const saved = await query(`SELECT jsonb_build_object('text',snapshot_text,'checksum',snapshot_sha256) FROM engagement_report_jobs WHERE id='${retained!.jobId}'`, "postgres");
+      expect(saved.error).toBeNull();
+      expect(saved.data, `${label} changed retained snapshot bytes`).toEqual({ text: retained!.text, checksum: retained!.checksum });
+    };
     const report = async (scope: string, filters: Record<string, unknown> = {}) => {
       const queued = await query(`SELECT public.queue_engagement_report('${campaignId}','${id(++command)}',${literal(scope)},${literal(filters)})`);
       expect(queued.error, "report fixture did not queue").toBeNull();
       const job = (queued.data as { jobId: string }).jobId;
-      return (await query(`SELECT (snapshot_text::jsonb)->'responses' FROM engagement_report_jobs WHERE id=${literal(job)}`, "postgres")).data as unknown[];
+      if (checkDownloads && !retained && scope === "public" && Object.keys(filters).length === 0) {
+        const row = await query(`SELECT jsonb_build_object('text',snapshot_text,'checksum',snapshot_sha256) FROM engagement_report_jobs WHERE id='${job}'`, "postgres");
+        expect(row.error).toBeNull();
+        const saved = row.data as { text: string; checksum: string };
+        retained = { jobId: job, ...saved, snapshot: await parseReviewSnapshot(saved.text, saved.checksum, { campaignId, workspaceId, scope: "public" }) };
+      }
+      lastReport = (await query(`SELECT snapshot_text::jsonb FROM engagement_report_jobs WHERE id=${literal(job)}`, "postgres")).data as typeof lastReport;
+      return lastReport!.responses;
     };
     expect(await report("public")).toHaveLength(1);
+    expect(lastReport!.sessions, "public control lost approved survey").toHaveLength(1);
+    expect(lastReport!.answers, "public control lost approved answers").toHaveLength(2);
+    await checkRetainedDownload(true, "published control");
     for (const scope of ["public", "internal"]) {
       expect(await report(scope, { categoryIds: ["a0000000-0000-4000-8000-000000000002"] }), "filtered report omitted linked source dependencies").toHaveLength(0);
     }
@@ -380,12 +425,22 @@ async function publicScenario(sql = publicCandidate, withdraw = false) {
       expect((await response()).status, `${label} changed response status unexpectedly`).toBe(status);
       expect((await query(publicRead, "service_role")).data, `${label} escaped public snapshot`).toMatchObject({ count: 0, entries: [] });
       expect((await query(privateRead)).data, `${label} lost staff response`).toMatchObject({ count: 1 });
+      await checkRetainedDownload(false, label);
       expect(await report("public"), `${label} escaped public report`).toHaveLength(0);
+      if (label === "private survey") {
+        expect(lastReport!.sessions, "private survey escaped public report capture").toHaveLength(0);
+        expect(lastReport!.answers, "private survey answers escaped public report capture").toHaveLength(0);
+      }
       expect(await report("internal"), `${label} changed internal published-response selection`).toHaveLength(status === "published" ? 1 : 0);
+      if (label === "private survey") {
+        expect(lastReport!.sessions, "private survey lost internal report custody").toHaveLength(1);
+        expect(lastReport!.answers, "private survey answers lost internal report custody").toHaveLength(2);
+      }
       expect((await changeResponse({ status: "published" })).error?.code, `${label} publication was accepted`).toBe("PT409");
       await database.query("ROLLBACK TO SAVEPOINT public_change; RELEASE SAVEPOINT public_change;");
       expect((await query(eligible)).data, `${label} rollback failed to restore control`).toBe(true);
       expect((await query(`SELECT public.read_engagement_response_history('${campaignId}')`)).data, `${label} rollback changed prior history`).toEqual(priorHistory.data);
+      await checkRetainedDownload(true, `${label} rollback`);
     };
     const itemId = "b0000000-0000-4000-8000-000000000002", answerId = "c0000000-0000-4000-8000-000000000002", sessionId = "c0000000-0000-4000-8000-000000000001";
     await changed(`UPDATE engagement_items SET body='SYNTHETIC changed source',review_expected_updated_at=updated_at,review_reason='SYNTHETIC source correction' WHERE id='${itemId}'`, "comment correction");
@@ -436,6 +491,7 @@ describe.skipIf(!LIVE_RLS)("candidate synthesis response public eligibility", ()
 });
 
 const publicFaults = [
+  ["report survey privacy", "public.engagement_item_public_copy_allowed(s.status,s.metadata_json)", "s.status=''approved''", "private survey escaped public report capture"],
   ["comment privacy", "NOT public.engagement_item_public_copy_allowed(item.status,item.metadata_json)", "false", "private comment remained eligible"],
   ["comment meaning", "retained IS NULL OR public.engagement_synthesis_item_meaning(retained) IS DISTINCT FROM public.engagement_synthesis_item_meaning(to_jsonb(item))", "false", "comment correction remained eligible"],
   ["reply parent privacy", "NOT public.engagement_item_public_copy_allowed(parent.status,parent.metadata_json)", "false", "private reply parent remained eligible"],
@@ -561,4 +617,10 @@ describe.skipIf(!LIVE_RLS)("candidate stored withdrawal lock", () => {
   it("detects a removed withdrawal campaign lock", async () => {
     await expect(withdrawalLock("broken")).rejects.toThrow("held withdrawal lock was ignored");
   }, 60_000);
+});
+
+
+describe.skipIf(!LIVE_RLS)("candidate retained download eligibility", () => {
+  it("checks real retained reports against changed approval and source dependencies", () => publicScenario(publicCandidate, false, true), 60_000);
+  it("keeps original report bytes while stored withdrawals deny downloads", () => publicScenario(publicCandidate + "\n" + withdrawalCandidate, true, true), 60_000);
 });

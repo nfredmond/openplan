@@ -31,3 +31,7 @@ Run actual concurrent publication/source and publication/review transactions in 
 Join retained-download authorization to current public eligibility. `publicReviewStillCurrent` still compares raw response rows. The existing `read_engagement_response_snapshot` RPC provides a migration-compatible path for checking current public response eligibility, but its application join and artifact evidence remain unfinished. Test withdrawal, changed approval, later republication, exact retained files and original checksums. Public report selection, export workers and retained downloads are distinct paths.
 
 Application link/history verification, authorization, exact-request recovery, durable client intent, decision provenance and staff controls remain unfinished. Installation requires an additive migration, populated upgrade and isolated installed-schema evidence. UI claims require identified desktop and 390px journeys, keyboard use, console inspection and usable artifacts. Reviewed synthesis exports and optional complete resumable generation remain M9b work. The full V1 contract remains unchanged.
+
+## Subsequent download repair
+
+The [download eligibility repair](DOWNLOAD_ELIGIBILITY.md) replaces the raw response read described above and adds independent survey privacy checks. Its report distinguishes current application protection from the uninstalled native candidate and remaining browser/concurrency acceptance.
