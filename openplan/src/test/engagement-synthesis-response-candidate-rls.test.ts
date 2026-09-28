@@ -13,6 +13,7 @@ import { parseReviewSnapshot, type EngagementReviewSnapshot } from "@/lib/engage
 import { LIVE_RLS } from "./local-supabase-env";
 import { resolveLocalDbContainer } from "./helpers/live-catalog";
 import { rollbackSqlConnection } from "./helpers/rollback-sql-connection";
+import { withSynthesisProbeDatabase } from "./helpers/synthesis-probe-database";
 
 const campaignId = "10c5cdd7-16c6-4b91-b9c0-d2f67598a54f", workspaceId = "d51d566d-28c6-49d2-95d2-3a7a2f0902e1";
 const actorId = "13466ed2-dcb7-4861-a528-68cc5579eea9", sourceId = "d0000000-0000-4000-8000-000000000002";
@@ -39,9 +40,9 @@ type NativeProbe = { database: ReturnType<typeof rollbackSqlConnection>; query: 
   intent: Intent; contextText: string; statement: (value: unknown, text: string | null, who?: string, workspace?: string) => string };
 type Result = { data: unknown; error: { code: string; message: string } | null };
 
-/** Candidate DDL and synthetic fixtures remain in one rollback transaction on the named isolated stack. */
-async function scenario(sql = candidate, probe?: (native: NativeProbe) => Promise<void>, replyFixture = false) {
-  const database = rollbackSqlConnection(resolveLocalDbContainer());
+/** Default fixtures roll back; committed probes must select an owned disposable schema copy. */
+async function scenario(sql = candidate, probe?: (native: NativeProbe) => Promise<void>, replyFixture = false, targetDatabase = "postgres") {
+  const database = rollbackSqlConnection(resolveLocalDbContainer(), targetDatabase);
   let sourceFixture = readFileSync("src/test/fixtures/engagement/synthesis-source-custody.sql", "utf8");
   if (replyFixture) {
     const columns = "INSERT INTO engagement_items(id,campaign_id,body,title,status,source_type,category_id,configuration_version_id,created_at)";
@@ -623,4 +624,194 @@ describe.skipIf(!LIVE_RLS)("candidate stored withdrawal lock", () => {
 describe.skipIf(!LIVE_RLS)("candidate retained download eligibility", () => {
   it("checks real retained reports against changed approval and source dependencies", () => publicScenario(publicCandidate, false, true), 60_000);
   it("keeps original report bytes while stored withdrawals deny downloads", () => publicScenario(publicCandidate + "\n" + withdrawalCandidate, true, true), 60_000);
+});
+
+
+describe.skipIf(!LIVE_RLS)("candidate committed synthesis database", () => {
+  it("commits a linked fixture in a disposable schema copy visible to another session", async () => {
+    const container = resolveLocalDbContainer();
+    await withSynthesisProbeDatabase(container, async target => {
+      const reader = rollbackSqlConnection(container, target);
+      try {
+        await scenario(candidate + "\n" + publicCandidate + "\n" + withdrawalCandidate, async ({ database, query, intent, contextText, statement }) => {
+          expect((await query(statement(intent, contextText), "service_role")).error).toBeNull();
+          await database.query("COMMIT;");
+          expect(await reader.query("SELECT current_database();"), "probe connected to wrong database").toEqual([target]);
+          expect(await reader.query(`SELECT count(*) FROM engagement_synthesis_response_events WHERE id='${intent.requestId}';`), "other session cannot see committed link").toEqual(["1"]);
+          expect(await reader.query("SELECT count(*) FROM auth.users;"), "schema copy contains unrelated source users").toEqual(["3"]);
+        }, true, target);
+      } finally { await reader.close(); }
+    });
+  }, 120_000);
+});
+
+
+type RaceSource = "comment" | "parent" | "answer" | "survey_review" | "survey_privacy" | "approval" | "review" | "link" | "vote";
+const changeActor = "7a50d4fb-35b7-41f4-9bce-8a4e7d157569";
+const rpcAdapter = `CREATE FUNCTION pg_temp.link_rpc(statement text) RETURNS jsonb LANGUAGE plpgsql AS $rpc$
+ DECLARE value jsonb; code text; message text; BEGIN
+  BEGIN EXECUTE statement INTO value;
+  EXCEPTION WHEN OTHERS THEN GET STACKED DIAGNOSTICS code=RETURNED_SQLSTATE,message=MESSAGE_TEXT;
+   RETURN jsonb_build_object('data',NULL,'error',jsonb_build_object('code',code,'message',message)); END;
+  RETURN jsonb_build_object('data',value,'error',NULL);
+ END $rpc$;`;
+function raceQuery(database: ReturnType<typeof rollbackSqlConnection>) {
+  return async (statement: string, role = "authenticated"): Promise<Result> => {
+    const command = /^(UPDATE|DELETE|INSERT)\s/i.test(statement) ? statement + " RETURNING NULL::jsonb" : statement;
+    const rows = await database.query(`SET LOCAL ROLE ${role}; SELECT pg_temp.link_rpc(${literal(command)}); RESET ROLE;`);
+    return JSON.parse(rows.at(-1) ?? "null") as Result;
+  };
+}
+async function beginRace(database: ReturnType<typeof rollbackSqlConnection>, user: string, isolation = "READ COMMITTED") {
+  await database.query(`BEGIN ISOLATION LEVEL ${isolation}; SET LOCAL statement_timeout='20s'; SET LOCAL lock_timeout='15s'; SELECT set_config('request.jwt.claim.sub','${user}',true);`);
+}
+async function observedBlock(observer: ReturnType<typeof rollbackSqlConnection>, waiting: string, holder: string) {
+  const deadline = Date.now() + 5_000;
+  while (Date.now() < deadline) {
+    const result = await observer.query(`SELECT ${holder}=ANY(pg_blocking_pids(${waiting}));`);
+    if (result.at(-1) === "t") return;
+    await new Promise(resolve => setTimeout(resolve, 25));
+  }
+  throw new Error("Concurrent writer did not wait on the expected transaction");
+}
+
+async function committedRace(kind: RaceSource, order: "publication_first" | "source_first", sql = candidate + "\n" + publicCandidate + "\n" + withdrawalCandidate, publicationIsolation = "READ COMMITTED") {
+  const container = resolveLocalDbContainer();
+  await withSynthesisProbeDatabase(container, async target => {
+    const changer = rollbackSqlConnection(container, target);
+    try {
+      await changer.query(rpcAdapter);
+      await scenario(sql, async ({ database, query, intent, contextText, statement }) => {
+        await database.query(`UPDATE workspace_members SET role='member' WHERE workspace_id='${workspaceId}' AND user_id='${changeActor}';`);
+        const saved = await query(statement(intent, contextText), "service_role"); expect(saved.error).toBeNull();
+        const version = (await query(`SELECT to_jsonb(updated_at) FROM engagement_closeloop_entries WHERE id='${intent.responseId}'`, "postgres")).data as string;
+        const sessionVersion = (await query("SELECT to_jsonb(updated_at) FROM engagement_survey_response_sessions WHERE id='c0000000-0000-4000-8000-000000000001'", "postgres")).data as string;
+        await database.query("COMMIT;");
+        const publisherPid = (await database.query("SELECT pg_backend_pid();")).at(-1)!;
+        const changerPid = (await changer.query("SELECT pg_backend_pid();")).at(-1)!;
+        const changeQuery = raceQuery(changer);
+        const publish = `SELECT public.write_engagement_response('${campaignId}','${id(1000)}','update','${intent.responseId}',${literal(version)},'SYNTHETIC concurrent publication','{"status":"published"}')`;
+        const item = kind === "parent" ? "b0000000-0000-4000-8000-000000000001" : "b0000000-0000-4000-8000-000000000002";
+        const answer = "c0000000-0000-4000-8000-000000000002", session = "c0000000-0000-4000-8000-000000000001";
+        const context = JSON.parse(contextText) as { sourceId: string; sourceSha256: string; revision: { id: string; contentText: string; contentSha256: string }; approval: Packet };
+        const approved = (JSON.parse(context.approval.eventText) as { intent: Record<string, unknown> }).intent;
+        const correction = { requestId: id(1001), actorId: changeActor, workspaceId, operation: "correct", reviewId,
+          expectedRevisionId: context.revision.id, expectedRevisionSha256: context.revision.contentSha256,
+          reason: "SYNTHETIC concurrent review", change: { kind: "notes", title: "SYNTHETIC revised basis", notes: "SYNTHETIC new interpretation" } };
+        const content = JSON.stringify({ ...JSON.parse(context.revision.contentText), title: correction.change.title, notes: correction.change.notes });
+        const change = kind === "comment" || kind === "parent" ? `UPDATE engagement_items SET body='SYNTHETIC concurrent source correction',review_expected_updated_at=updated_at,review_reason='SYNTHETIC concurrent change' WHERE id='${item}'`
+          : kind === "vote" ? `UPDATE engagement_items SET votes_count=votes_count+1 WHERE id='${item}'`
+          : kind === "answer" ? `UPDATE engagement_survey_answers SET answer_text='SYNTHETIC concurrent answer' WHERE id='${answer}'`
+          : kind === "survey_review" ? `SELECT to_jsonb(public.review_engagement_survey('${campaignId}','${session}',${literal(sessionVersion)},'rejected','SYNTHETIC concurrent survey review','{}'))`
+          : kind === "survey_privacy" ? `UPDATE engagement_survey_response_sessions SET metadata_json=metadata_json||'{"visibility":"private"}' WHERE id='${session}'`
+          : kind === "approval" ? `SELECT public.retain_engagement_synthesis_approval('${campaignId}','${changeActor}','${workspaceId}',${literal({ ...approved, actorId: changeActor, requestId: id(1001), operation: "withdraw", reason: "SYNTHETIC concurrent approval withdrawal", predecessorId: approved.requestId, predecessorSha256: context.approval.eventSha256 })})`
+          : kind === "review" ? `SELECT public.retain_engagement_synthesis_review('${campaignId}','${changeActor}','${workspaceId}',${literal(correction)},'${context.sourceId}','${context.sourceSha256}',NULL,${literal(content)})`
+          : statement({ ...intent, actorId: changeActor, requestId: id(1001), operation: "withdraw", expectedContextSha256: null, predecessorId: intent.requestId, predecessorSha256: (saved.data as Receipt).event.eventSha256 }, null, changeActor);
+        const changeRole = kind === "survey_review" || kind === "comment" || kind === "parent" || kind === "vote" ? "authenticated" : "service_role";
+        let publication: Result;
+        if (order === "publication_first") {
+          await beginRace(database, actorId);
+          publication = await query(publish); expect(publication.error, "publication control failed").toBeNull();
+          await beginRace(changer, changeActor);
+          if (kind === "comment" || kind === "parent") {
+            const pending = changeQuery(change, changeRole);
+            try { await observedBlock(database, changerPid, publisherPid); }
+            finally { await database.query("COMMIT;"); }
+            expect((await pending).error, "source change failed after publication commit").toBeNull();
+          } else {
+            const busy = await changeQuery(change, changeRole);
+            await changer.query("ROLLBACK;");
+            await database.query("COMMIT;");
+            expect(busy.error?.code, "source change ignored pending publication").toBe("PT503");
+            await beginRace(changer, changeActor);
+            expect((await changeQuery(change, changeRole)).error, "source retry failed after publication commit").toBeNull();
+          }
+          await changer.query("COMMIT;");
+        } else {
+          if (publicationIsolation !== "READ COMMITTED") {
+            await beginRace(database, actorId, publicationIsolation);
+            await database.query("SELECT count(*) FROM engagement_survey_answers;");
+          }
+          await beginRace(changer, changeActor);
+          expect((await changeQuery(change, changeRole)).error, "source control failed").toBeNull();
+          if (publicationIsolation === "READ COMMITTED") await beginRace(database, actorId);
+          const pending = query(publish);
+          try { await observedBlock(changer, publisherPid, changerPid); }
+          finally { await changer.query("COMMIT;"); }
+          publication = await pending;
+          await database.query("COMMIT;");
+          if (publicationIsolation !== "READ COMMITTED") {
+            const status = (await database.query(`SELECT status FROM engagement_closeloop_entries WHERE id='${intent.responseId}';`)).at(-1);
+            expect({ error: publication.error?.code ?? null, status }, "fixed snapshot committed stale publication").toEqual({ error: "25001", status: "draft" });
+          } else expect(publication.error?.code ?? null, "source-first invalid publication accepted").toBe(kind === "vote" ? null : "PT409");
+        }
+        const expected = kind === "vote" ? "published" : "draft";
+        expect(await database.query(`SELECT status FROM engagement_closeloop_entries WHERE id='${intent.responseId}';`), `${order} source change left response published`).toEqual([expected]);
+        const withdrawals = order === "publication_first" && kind !== "vote" ? 1 : 0;
+        expect(await database.query(`SELECT count(*) FROM engagement_response_write_receipts WHERE response_id='${intent.responseId}' AND operation='source_withdrawal';`), "concurrent withdrawal receipt count differs").toEqual([String(withdrawals)]);
+        if (withdrawals) {
+          expect(await database.query(`SELECT actor_id::text||':'||change_origin FROM engagement_response_history WHERE response_id='${intent.responseId}' ORDER BY revision DESC LIMIT 1;`), "concurrent withdrawal actor differs").toEqual([`${changeActor}:source_withdrawal`]);
+        }
+        await beginRace(database, actorId);
+        expect((await query(`SELECT public.read_engagement_synthesis_response_link('${campaignId}','${intent.requestId}')`)).data, "concurrent change rewrote original link bytes").toEqual((saved.data as Receipt).event);
+        expect((await query(`SELECT public.read_engagement_response_snapshot('${campaignId}',true)`)).data).toMatchObject({ count: kind === "vote" ? 1 : 0 });
+        if (order === "publication_first") {
+          const replay = await query(publish); expect(replay.error).toBeNull();
+          expect(replay.data, "exact publication recovery differs after source change").toEqual({ ...(publication.data as Record<string, unknown>), replayed: true });
+          expect((await query(`SELECT to_jsonb(status) FROM engagement_closeloop_entries WHERE id='${intent.responseId}'`, "postgres")).data, "exact publication retry changed current status").toBe(expected);
+        }
+        await database.query("COMMIT;");
+      }, true, target);
+    } finally { await changer.close(); }
+  });
+}
+
+describe.skipIf(!LIVE_RLS)("candidate synthesis concurrent commits", () => {
+  it.each(["comment", "parent", "answer", "survey_review", "survey_privacy", "approval", "review", "link", "vote"] as const)("handles publication first: %s", kind => committedRace(kind, "publication_first"), 120_000);
+  it.each(["comment", "parent", "answer", "survey_review", "survey_privacy", "approval", "review", "link", "vote"] as const)("handles source first: %s", kind => committedRace(kind, "source_first"), 120_000);
+});
+
+
+describe.skipIf(!LIVE_RLS)("candidate synthesis fixed snapshot publication", () => {
+  it("refuses an older repeatable-read snapshot after a concurrent answer commit", () => committedRace("answer", "source_first", undefined, "REPEATABLE READ"), 120_000);
+});
+
+const raceCandidate = candidate + "\n" + publicCandidate + "\n" + withdrawalCandidate;
+describe.skipIf(!LIVE_RLS)("candidate concurrency fault controls", () => {
+  it("accepts a harmless publication comment", () => committedRace("answer", "source_first", raceCandidate + "\n-- Harmless concurrency control.\n", "REPEATABLE READ"), 120_000);
+  it.each([
+    ["fixed publication snapshot", alterFunction("public.guard_engagement_response_publication()", "NEW.status='published' AND current_setting('transaction_isolation')<>'read committed'", "false"), "source_first", "REPEATABLE READ", "fixed snapshot committed stale publication"],
+    ["withdrawal campaign lock", alterFunction("public.withdraw_ineligible_synthesis_responses(uuid,uuid,text,jsonb,jsonb)", "hashtextextended('engagement-response:'||p_campaign", "hashtextextended('broken-concurrent-response:'||p_campaign"), "source_first", "READ COMMITTED", "Concurrent writer did not wait on the expected transaction"],
+    ["publication campaign lock", alterFunction("public.write_engagement_response(uuid,uuid,text,uuid,timestamp with time zone,text,jsonb)", "PERFORM pg_advisory_xact_lock(hashtextextended('engagement-response:' || p_campaign::text, 0));", ""), "source_first", "READ COMMITTED", "Concurrent writer did not wait on the expected transaction"],
+    ["answer reconciliation", "ALTER TABLE engagement_survey_answers DISABLE TRIGGER synthesis_answer_publication;", "publication_first", "READ COMMITTED", "source change ignored pending publication"],
+    ["stored withdrawal", alterFunction("public.withdraw_ineligible_synthesis_responses(uuid,uuid,text,jsonb,jsonb)", "AND NOT public.engagement_synthesis_response_public_allowed(p_campaign,e.id,to_jsonb(e))", "AND false"), "publication_first", "READ COMMITTED", "publication_first source change left response published"],
+    ["current publication basis", alterFunction("public.guard_engagement_response_publication()", "NEW.status='published' AND NOT public.engagement_synthesis_response_public_allowed(NEW.campaign_id,NEW.id,to_jsonb(NEW))", "false"), "source_first", "READ COMMITTED", "source-first invalid publication accepted"],
+  ] as const)("detects %s", async (_name, ddl, order, isolation, assertion) => {
+    await expect(committedRace("answer", order, raceCandidate + "\n" + ddl, isolation)).rejects.toThrow(assertion);
+  }, 120_000);
+});
+
+async function publicationIsolationControl(isolation: string, status: "draft" | "published", linked = true, sql = raceCandidate) {
+  const container = resolveLocalDbContainer();
+  await withSynthesisProbeDatabase(container, async target => {
+    await scenario(sql, async ({ database, query, intent, contextText, statement }) => {
+      if (linked) expect((await query(statement(intent, contextText), "service_role")).error).toBeNull();
+      const version = (await query(`SELECT to_jsonb(updated_at) FROM engagement_closeloop_entries WHERE id='${intent.responseId}'`, "postgres")).data;
+      await database.query("COMMIT;");
+      await beginRace(database, actorId, isolation);
+      const result = await query(`SELECT public.write_engagement_response('${campaignId}','${id(1010)}','update','${intent.responseId}',${literal(version)},'SYNTHETIC isolation control','{"status":"${status}"}')`);
+      expect(result.error?.code ?? null, "publication isolation policy differs").toBe(status === "published" && isolation !== "READ COMMITTED" ? "25001" : null);
+      await database.query("COMMIT;");
+      expect(await database.query(`SELECT status FROM engagement_closeloop_entries WHERE id='${intent.responseId}';`)).toEqual([status === "published" && isolation === "READ COMMITTED" ? "published" : "draft"]);
+    }, true, target);
+  });
+}
+describe.skipIf(!LIVE_RLS)("candidate publication isolation controls", () => {
+  it.each(["READ COMMITTED", "REPEATABLE READ"])("checks publication with no visible links under %s", isolation => publicationIsolationControl(isolation, "published", false), 120_000);
+  it("detects a guard limited to visible synthesis links", async () => {
+    const fault = alterFunction("public.guard_engagement_response_publication()", "NEW.status='published' AND current_setting('transaction_isolation')<>'read committed'", "NEW.status='published' AND current_setting('transaction_isolation')<>'read committed' AND EXISTS(SELECT 1 FROM engagement_synthesis_response_events WHERE response_id=NEW.id)");
+    await expect(publicationIsolationControl("REPEATABLE READ", "published", false, raceCandidate + "\n" + fault)).rejects.toThrow("publication isolation policy differs");
+  }, 120_000);
+  it.each(["READ COMMITTED", "REPEATABLE READ", "SERIALIZABLE"])("allows draft edits under %s", isolation => publicationIsolationControl(isolation, "draft"), 120_000);
+  it.each(["READ COMMITTED", "REPEATABLE READ", "SERIALIZABLE"])("checks publication under %s", isolation => publicationIsolationControl(isolation, "published"), 120_000);
 });

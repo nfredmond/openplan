@@ -91,6 +91,11 @@ GRANT EXECUTE ON FUNCTION public.read_engagement_synthesis_response_public_eligi
 CREATE OR REPLACE FUNCTION public.guard_engagement_response_publication()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
 BEGIN
+ -- A fixed snapshot can miss source changes or new links committed before the campaign lock.
+ -- Require a fresh snapshot even when no synthesis link is visible in this transaction.
+ IF NEW.status='published' AND current_setting('transaction_isolation')<>'read committed' THEN
+  RAISE EXCEPTION 'Response publication requires read committed isolation' USING ERRCODE='25001';
+ END IF;
  IF NEW.status='published' AND EXISTS(SELECT 1 FROM unnest(NEW.source_item_ids) source_id WHERE NOT EXISTS(
   SELECT 1 FROM engagement_items i WHERE i.id=source_id AND i.campaign_id=NEW.campaign_id AND public.engagement_item_public_copy_allowed(i.status,i.metadata_json)
    AND (i.parent_item_id IS NULL OR EXISTS(SELECT 1 FROM engagement_items p WHERE p.id=i.parent_item_id AND p.campaign_id=NEW.campaign_id

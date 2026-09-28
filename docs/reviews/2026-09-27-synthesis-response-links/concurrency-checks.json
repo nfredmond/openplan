@@ -1,0 +1,218 @@
+{
+  "recordedAt": "2026-09-28T01:06:45.382135+00:00",
+  "baseCommit": "9ea82cdeebbb68b67214c3837c5bf551a6ada050",
+  "state": "Verified native concurrency repair; uninstalled candidate, no release claim",
+  "native": {
+    "session": 38918,
+    "exit": 0,
+    "testsPassed": 122,
+    "controls": 48,
+    "faults": 74,
+    "durationSeconds": 419.6
+  },
+  "helper": {
+    "testsPassed": 14,
+    "mutationSession": 45357,
+    "controlsSurvived": 2,
+    "faultsDetected": 14,
+    "exit": 0
+  },
+  "lintAndTypes": {
+    "session": 49516,
+    "exit": 0
+  },
+  "database": {
+    "disposableDatabases": 0,
+    "candidateObjectsAbsent": true,
+    "installedPublicationGuardUnchanged": true,
+    "migrationCount": 347,
+    "observation": "0||||347|0"
+  },
+  "parentCI": {
+    "CI": {
+      "id": 36362757235,
+      "conclusion": "success"
+    },
+    "RLS": {
+      "id": 36362757271,
+      "conclusion": "success"
+    }
+  },
+  "sources": {
+    "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-public.candidate.sql": "9ef2f606330c9eecbc060b6c5306dc8a72af66553f411f3054e48fb1114bd831",
+    "openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts": "d099d7e6990468aca226962c9aa4f9378f2f4327d0af6c53810040df759fdcf8",
+    "openplan/src/test/helpers/rollback-sql-connection.ts": "afb81d5d8dc12a432bb8dea058e1cdeceb0f07fb7fe8f61bd7a6495afff6be73",
+    "openplan/src/test/helpers/synthesis-probe-database.ts": "1bec677d6391b7c2a7809b887f1ce45588bd273ba6266cd12562bd69ccd845d4",
+    "openplan/src/test/synthesis-probe-database.test.ts": "e6f19746d3e08275e3cf6e36c682d6814bfd07801d1e5f5175e12429ed451b5f"
+  },
+  "logs": [
+    {
+      "name": "response-concurrency-fixed-snapshot-probe.log",
+      "sha256": "9235c52d1fe3730d8c0492971caee45bbb21b33d1116c3f532b3fa4ddc9aaaca"
+    },
+    {
+      "name": "response-concurrency-repair.log",
+      "sha256": "e7a570bbbaa5ff6d185a8f1a0eb5fbe276f097957c238226e0b3b30b8a303e2e"
+    },
+    {
+      "name": "response-concurrency-final.log",
+      "sha256": "c5d9050518ba32c428055b3762cbd8d1021958803a0372821e346cebee891215"
+    },
+    {
+      "name": "response-concurrency-native-full.log",
+      "sha256": "96ff49ff6335753182fac31b7bfef5c878f07c614dfa3f8a92abbe2dffa53e42"
+    },
+    {
+      "name": "response-concurrency-helper-baseline.log",
+      "sha256": "674a88bf50885c192541c1d7a859b9652ef66790e513af29582bf1268103b2b8"
+    },
+    {
+      "name": "concurrency-helper-proof-final.log",
+      "sha256": "d39272ca638d6a3d37c4dec1ff5249603eb0c6aabc203b4f10762325c2593468"
+    },
+    {
+      "name": "concurrency-helper-mutations.json",
+      "sha256": "60cd703b44a1d61fb33abb252d9602fc9bdae6a588497604b6c2abe3148a3b4e"
+    },
+    {
+      "name": "response-concurrency-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "helperMutations": [
+    {
+      "case": "baseline",
+      "exit": 0,
+      "expectedFailure": null,
+      "verified": true,
+      "log": "concurrency-helper-baseline.log",
+      "logSha256": "ef6ca27d1dbabbf107c6448df961b25b9a884eadb8985661357b180be7b93a0f"
+    },
+    {
+      "case": "harmless",
+      "exit": 0,
+      "expectedFailure": null,
+      "verified": true,
+      "log": "concurrency-helper-harmless.log",
+      "logSha256": "4b8663148fc4320bebb71d6e78908d988618f87c82d7eb045aeb7b8608bc28cf"
+    },
+    {
+      "case": "stack",
+      "exit": 1,
+      "expectedFailure": "refuses an unrelated database stack",
+      "verified": true,
+      "log": "concurrency-helper-stack.log",
+      "logSha256": "331e63249b5f0338aa114d3cbba7a08678efab5d0dae2bedb1cbcdafd064e261"
+    },
+    {
+      "case": "name",
+      "exit": 1,
+      "expectedFailure": "refuses unsafe disposable name postgres",
+      "verified": true,
+      "log": "concurrency-helper-name.log",
+      "logSha256": "4f2befe5e25b531103482a8e129405b45a9e09b00ce83d5acd2381631b910b11"
+    },
+    {
+      "case": "owner",
+      "exit": 1,
+      "expectedFailure": "refuses a changed cleanup owner",
+      "verified": true,
+      "log": "concurrency-helper-owner.log",
+      "logSha256": "7907ddfb11f0d4dc7e106f251d8d903f30cc9327fbdf32669d1afc477610c42c"
+    },
+    {
+      "case": "dump-data",
+      "exit": 1,
+      "expectedFailure": "copies schema and cleans up only its marked database",
+      "verified": true,
+      "log": "concurrency-helper-dump-data.log",
+      "logSha256": "7cd27911f6008d35e9952f36144aa03685c6c13e0aef5d6934822fe69b84316d"
+    },
+    {
+      "case": "restore-data",
+      "exit": 1,
+      "expectedFailure": "copies schema and cleans up only its marked database",
+      "verified": true,
+      "log": "concurrency-helper-restore-data.log",
+      "logSha256": "1eac287d48b7959e02d08b7e6319259a2bea6238547a26c7a8f56655659dba71"
+    },
+    {
+      "case": "restore-error",
+      "exit": 1,
+      "expectedFailure": "copies schema and cleans up only its marked database",
+      "verified": true,
+      "log": "concurrency-helper-restore-error.log",
+      "logSha256": "5805e1d87f20b0f4d99c08e40048847af0cae02618c23f857a35b0645c23a8b0"
+    },
+    {
+      "case": "restore-atomic",
+      "exit": 1,
+      "expectedFailure": "copies schema and cleans up only its marked database",
+      "verified": true,
+      "log": "concurrency-helper-restore-atomic.log",
+      "logSha256": "09e44316c00eac9449b00d917ff0768ee907eb75fa82761518f874418770d989"
+    },
+    {
+      "case": "force-cleanup",
+      "exit": 1,
+      "expectedFailure": "copies schema and cleans up only its marked database",
+      "verified": true,
+      "log": "concurrency-helper-force-cleanup.log",
+      "logSha256": "51ffd165b76aa86a176ae77208f3156a57e60b99f1afd2934dd6346a734fa001"
+    },
+    {
+      "case": "restore-target",
+      "exit": 1,
+      "expectedFailure": "copies schema and cleans up only its marked database",
+      "verified": true,
+      "log": "concurrency-helper-restore-target.log",
+      "logSha256": "7d1fad18c9a68ba4dcdd79d985ea98667d87c2520cf640777a14318b3c991543"
+    },
+    {
+      "case": "connection-target",
+      "exit": 1,
+      "expectedFailure": "refuses an unrelated SQL target",
+      "verified": true,
+      "log": "concurrency-helper-connection-target.log",
+      "logSha256": "76845f208ee4775edaac0ec9b46a46711525231919b4042b43f9d102cf26f392"
+    },
+    {
+      "case": "connection-ignored",
+      "exit": 1,
+      "expectedFailure": "connects only to the explicit allowed target openplan_synthesis_probe_",
+      "verified": true,
+      "log": "concurrency-helper-connection-ignored.log",
+      "logSha256": "ffac3a4ec249a28541080d79e342a5081e2f104444626b7a9926ccb9024249fd"
+    },
+    {
+      "case": "connection-default",
+      "exit": 1,
+      "expectedFailure": "defaults the rollback connection to postgres",
+      "verified": true,
+      "log": "concurrency-helper-connection-default.log",
+      "logSha256": "9526229dbb5822584e98fffe7b5d35e59bb5862c38e2705754836dd67c2d70c3"
+    },
+    {
+      "case": "cleanup-skipped",
+      "exit": 1,
+      "expectedFailure": "cleans up its marked database when the probe fails",
+      "verified": true,
+      "log": "concurrency-helper-cleanup-skipped.log",
+      "logSha256": "107e29215301a00105f92b796e4e522a60910caed07df7b0c00be139f9d160b8"
+    },
+    {
+      "case": "marker-in-try",
+      "exit": 1,
+      "expectedFailure": "leaves an unmarked database untouched if its marker cannot be saved",
+      "verified": true,
+      "log": "concurrency-helper-marker-in-try.log",
+      "logSha256": "0a150793301fee7ba026038dd706ea0f81ffec0f670eb3002e49761bc0869cd3"
+    }
+  ],
+  "limits": [
+    "Native SQL sessions and synthetic records; no browser, HTTP, storage or production-contention claim.",
+    "No candidate migration installed and no populated-upgrade claim.",
+    "Copy/cleanup unit tests mock process calls; actual schema-copy visibility is checked separately.",
+    "Full local QA and workers were not rerun for this candidate-only checkpoint."
+  ]
+}

@@ -29,3 +29,5 @@ The final full QA gate passes, including lint, dead-code checks, 15,696 unit tes
 Finish actual concurrent commit-order tests for publication versus source/review changes. A download currentness check and storage delivery remain separate operations; these tests do not claim a transaction spanning the byte stream. Keep that boundary explicit when assessing revocation behavior.
 
 The synthesis candidate still needs complete constraint coverage, application link/history verification, route authorization, durable client recovery, decision provenance and staff controls. Promote an additive migration only after native concurrency and populated-upgrade evidence. Verify the integrated workflow from identified desktop and 390px navigation, including keyboard use, console inspection and saved files. Reviewed synthesis exports and optional complete resumable generation remain M9b work; the full V1 contract is unchanged.
+
+The subsequent [committed concurrency investigation](CONCURRENCY.md) reproduces and repairs fixed-snapshot publication and exercises both commit orders. It retains the remaining activation and browser boundaries.

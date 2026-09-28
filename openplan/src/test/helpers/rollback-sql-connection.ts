@@ -1,11 +1,13 @@
 import { spawn } from "node:child_process";
 import { createInterface } from "node:readline";
 import { requireContractVerificationStack } from "./contract-verification-stack";
+import { assertSynthesisProbeDatabase } from "./synthesis-probe-database";
 
-/** One owned psql session permits explicit transaction barriers without committing synthetic fixtures. */
-export function rollbackSqlConnection(container: string) {
+/** One owned psql session permits transaction barriers and rolls back any open transaction on close. */
+export function rollbackSqlConnection(container: string, database = "postgres") {
   requireContractVerificationStack(container);
-  const child = spawn("docker", ["exec", "-i", container, "psql", "-U", "postgres", "-d", "postgres", "-X", "-qAt", "-v", "ON_ERROR_STOP=1"], { stdio: ["pipe", "pipe", "pipe"] });
+  if (database !== "postgres") assertSynthesisProbeDatabase(database);
+  const child = spawn("docker", ["exec", "-i", container, "psql", "-U", "postgres", "-d", database, "-X", "-qAt", "-v", "ON_ERROR_STOP=1"], { stdio: ["pipe", "pipe", "pipe"] });
   const lines = createInterface({ input: child.stdout });
   let stderr = "", serial = 0, closed = false;
   let pending: { marker: string; lines: string[]; resolve: (rows: string[]) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> } | null = null;
