@@ -102,6 +102,10 @@ describe("synthesis CLI process recovery over HTTP", () => {
     ["--authorization", "a0000000-0000-4000-8000-000000000001", "--task-index", "1.5"],
     ["--authorization", "a0000000-0000-4000-8000-000000000001", "--task-index", "01"],
     ["--authorization", "a0000000-0000-4000-8000-000000000001", "--task-index", "9007199254740992"],
+    ["--authorization", "a0000000-0000-4000-8000-000000000001", "--all-tasks", "0"],
+    ["--authorization", "a0000000-0000-4000-8000-000000000001", "--all-tasks", "--task-index", "0"],
+    ["--authorization", "invalid", "--all-tasks"],
+    ["--unknown", "a0000000-0000-4000-8000-000000000001", "--all-tasks"],
   ].map(argv => ({ argv })))("rejects invalid CLI options before any HTTP request: $argv", async ({ argv }) => {
     const t = await fixture(), result = await t.start(argv).ended;
     expect(result.code).toBe(1); expect(t.requests).toHaveLength(0); expect(t.f.providerCalls).toHaveLength(0);

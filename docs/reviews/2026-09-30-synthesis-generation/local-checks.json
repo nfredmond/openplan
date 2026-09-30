@@ -1,0 +1,71 @@
+{
+  "version": "0.65.0",
+  "qa": {
+    "exit": 0,
+    "passed": 16347,
+    "skipped": 1021,
+    "filesPassed": 1362,
+    "filesSkipped": 66,
+    "auditVulnerabilities": 0,
+    "build": "Next.js 16.3.8 webpack"
+  },
+  "shuffle": {
+    "exit": 0,
+    "seed": 775665,
+    "passed": 16347,
+    "skipped": 1021
+  },
+  "nativeRLS": {
+    "exit": 0,
+    "passed": 925,
+    "skipped": 125,
+    "filesPassed": 73,
+    "durationSeconds": 1261.4,
+    "note": "Started before version alignment; executable and SQL fixture bytes stayed unchanged throughout. Final remote checks must identify the release commit."
+  },
+  "pythonWorkers": {
+    "exit": 0,
+    "suitesPassed": 52,
+    "implementationUnchanged": true
+  },
+  "typescript": {
+    "exit": 0,
+    "heapMiB": 6144
+  },
+  "selectionScopeFix": {
+    "exit": 0,
+    "passed": 30
+  },
+  "logs": [
+    {
+      "file": "v065-final-qa-rerun.log",
+      "sha256": "00b1f71da7fdb63a09144a18544ea2291d98feb5ac2fea3634f9b8833e06b8e2",
+      "retainedPrivately": true
+    },
+    {
+      "file": "v065-final-shuffle-rerun.log",
+      "sha256": "c569fef212db1639ecbbc1eb98eb14f9d4d9e75e844d8fc7de0cdb435123e65a",
+      "retainedPrivately": true
+    },
+    {
+      "file": "generation-scheduler-final-rls-corrected.log",
+      "sha256": "abfdcbf4e75a03345a1c029450ebfb4bee2a0d78d4f4f415a20dc4989c6996c9",
+      "retainedPrivately": true
+    },
+    {
+      "file": "generation-scheduler-final-workers.log",
+      "sha256": "7994281a987770ad5413f572571b22da242116986dd77c58e0190de1927f5762",
+      "retainedPrivately": true
+    },
+    {
+      "file": "generation-scheduler-final-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retainedPrivately": true
+    },
+    {
+      "file": "generation-scheduler-selection-scope-fix.log",
+      "sha256": "ad24c1723a6161fc901c214653a1286e55caa28598198cce02fac0b95f2cca69",
+      "retainedPrivately": true
+    }
+  ]
+}

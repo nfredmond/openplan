@@ -275,3 +275,10 @@ transport. Other operator proxy configurations require their own delivery check.
 Record and context consolidation, retained machine-review import, installed CLI
 provider scope, the generation interface and identified desktop/mobile acceptance
 remain open. This foundation does not complete M9b or change the V1 contract.
+
+## Subsequent coordinator candidate
+
+The [coordinator candidate](SCHEDULER_DRAFT.md) adds saved task lists over the same
+explicit authorization and single-task journals. It records its own tests and
+remaining gates. It does not enable the staff generation interface or complete
+record/context consolidation.

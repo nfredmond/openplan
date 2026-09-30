@@ -12,6 +12,7 @@ const SYNTHESIS_WORKER_COLUMNS = {
   request: "id,campaign_id,workspace_id,actor_id,source_id,configuration_revision_id,intent_text,intent_sha256",
   source: "id,campaign_id,workspace_id,snapshot_text,snapshot_sha256,created_at",
   task: "request_id,task_index,task_text,task_sha256,task_bytes",
+  plan: "request_id,header_text,header_sha256", seal: "request_id,receipt_text,receipt_sha256",
   revision: "id,connection_id,workspace_id,configuration,configuration_canonical,configuration_hash",
   credential: "revision_id,connection_id,workspace_id,credential_ciphertext",
 } as const;
@@ -20,6 +21,8 @@ const requestSchema = z.object({ id, campaign_id: id, workspace_id: id, actor_id
   configuration_revision_id: id, intent_text: z.string(), intent_sha256: hash }).strict();
 const sourceSchema = z.object({ id, campaign_id: id, workspace_id: id, snapshot_text: z.string(), snapshot_sha256: hash,
   created_at: z.string().datetime({ offset: true }) }).strict();
+const planSchema = z.object({ request_id: id, header_text: z.string().max(4096), header_sha256: hash }).strict();
+const sealSchema = z.object({ request_id: id, receipt_text: z.string(), receipt_sha256: hash }).strict();
 const taskSchema = z.object({ request_id: id, task_index: natural, task_text: z.string(), task_sha256: hash, task_bytes: natural }).strict();
 const revisionSchema = z.object({ id, connection_id: id, workspace_id: id, configuration: providerApiConfigurationSchema,
   configuration_canonical: z.string().max(32000), configuration_hash: hash }).strict();
@@ -60,12 +63,13 @@ async function read(service: Service, table: string, columns: string, filters: R
   return response.data;
 }
 
-/** Reconstruct the complete saved source, verify the native seal and compare the
- * chosen task before claiming it. A service read never impersonates a staff JWT.
+/** Reconstruct immutable authorization and source identity. Historical custody
+ * remains readable after cancellation or expiry; native claims and dispatches
+ * separately enforce current permission before any new provider call.
  */
-export async function loadSynthesisWorkerJob(service: Service, args: { authorizationId: string; taskIndex: number; attemptId: string }, signal: AbortSignal) {
+export async function loadSynthesisWorkerAuthorization(service: Service, rawAuthorizationId: string, signal: AbortSignal) {
   signal.throwIfAborted();
-  const authorizationId = id.parse(args.authorizationId), taskIndex = natural.parse(args.taskIndex), attemptId = id.parse(args.attemptId);
+  const authorizationId = id.parse(rawAuthorizationId);
   const grant = grantSchema.parse(await read(service, "engagement_synthesis_generation_authorizations", SYNTHESIS_WORKER_COLUMNS.authorization, { id: authorizationId }, signal));
   if (grant.id !== authorizationId || digest(grant.intent_text) !== grant.intent_sha256) differs();
   const request = requestSchema.parse(await read(service, "engagement_synthesis_generation_requests", SYNTHESIS_WORKER_COLUMNS.request, { id: grant.request_id }, signal));
@@ -78,10 +82,31 @@ export async function loadSynthesisWorkerJob(service: Service, args: { authoriza
   const plan = createSynthesisGenerationPlan({ id: request.id, intentText: request.intent_text, intentSha256: request.intent_sha256 },
     { requestId: source.id, campaignId: source.campaign_id, workspaceId: source.workspace_id,
       snapshotText: source.snapshot_text, snapshotSha256: source.snapshot_sha256, createdAt: source.created_at }, scope);
+  const retained = planSchema.parse(await read(service, "engagement_synthesis_generation_plans", SYNTHESIS_WORKER_COLUMNS.plan, { request_id: request.id }, signal));
+  const seal = sealSchema.parse(await read(service, "engagement_synthesis_generation_plan_seals", SYNTHESIS_WORKER_COLUMNS.seal, { request_id: request.id }, signal));
+  if (retained.request_id !== request.id || seal.request_id !== request.id) differs();
+  verifySynthesisGenerationPlanState(plan, { schemaVersion: 1, requestId: request.id, headerText: retained.header_text,
+    headerSha256: retained.header_sha256, nextIndex: plan.entries.length, taskBytes: plan.header.taskBytes,
+    tailSha256: plan.header.tailSha256, cancelled: false, seal: { receiptText: seal.receipt_text, receiptSha256: seal.receipt_sha256 } });
+  const authorization = authorizationIntentSchema.parse(JSON.parse(grant.intent_text));
+  if (plan.header.contributionCount === 0 || authorization.headerSha256 !== plan.headerSha256 ||
+    authorization.maxAttempts > plan.entries.length ||
+    (authorization.retryOfAttemptId === null) !== (authorization.retryTaskIndex === null) ||
+    (authorization.retryTaskIndex !== null && (authorization.retryTaskIndex >= plan.entries.length || authorization.maxAttempts !== 1))) differs();
+  return { grant, request, intent, authorization, plan };
+}
+
+/** Compare the chosen task before claiming it. A service read never impersonates
+ * a staff JWT. Current execution still requires native claim and dispatch checks.
+ */
+export async function loadSynthesisWorkerJob(service: Service, args: { authorizationId: string; taskIndex: number; attemptId: string }, signal: AbortSignal) {
+  signal.throwIfAborted();
+  const authorizationId = id.parse(args.authorizationId), taskIndex = natural.parse(args.taskIndex), attemptId = id.parse(args.attemptId);
+  const { grant, request, intent, plan } = await loadSynthesisWorkerAuthorization(service, authorizationId, signal);
   const response = await service.rpc("read_engagement_synthesis_generation_plan", { p_request: request.id }).abortSignal(synthesisWorkerRequestSignal(signal));
   if (response.error) throw new Error("Synthesis worker plan unavailable");
   const state = verifySynthesisGenerationPlanState(plan, response.data);
-  if (!state.seal || state.cancelled || plan.header.contributionCount === 0 || taskIndex >= plan.entries.length) differs();
+  if (!state.seal || state.cancelled || taskIndex >= plan.entries.length) differs();
   const task = taskSchema.parse(await read(service, "engagement_synthesis_generation_plan_tasks", SYNTHESIS_WORKER_COLUMNS.task,
     { request_id: request.id, task_index: taskIndex }, signal));
   const expected = plan.entries[taskIndex];

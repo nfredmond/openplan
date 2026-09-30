@@ -30,7 +30,9 @@ INSERT INTO selection_probe VALUES('other',read_engagement_synthesis_generation_
 SELECT pg_temp.assert_true((SELECT jsonb_array_length(value->'entries')=2 AND (value#>>'{entries,0,receiptText}')::jsonb->'attemptId'='null'::jsonb
  AND (value#>>'{entries,1,receiptText}')::jsonb->>'attemptId'='a2000000-0000-4000-8000-000000000010' FROM selection_probe WHERE key='other'),'Other request choice or pre-claim clear was lost');
 INSERT INTO selection_probe VALUES('initial',pg_temp.selection_read());
-SELECT pg_temp.assert_true((SELECT value->>'throughSequence'='2' AND jsonb_array_length(value->'entries')=2 AND value->>'hasMore'='false'
+-- Retained requests can expose a missing sequence scope before the later choice.
+SELECT pg_temp.assert_true((SELECT value->>'throughSequence'='2' FROM selection_probe WHERE key='initial'),'Another request changed selection sequence');
+SELECT pg_temp.assert_true((SELECT jsonb_array_length(value->'entries')=2 AND value->>'hasMore'='false'
  AND (value#>>'{entries,0,receiptText}')::jsonb->>'attemptId'='a2000000-0000-4000-8000-000000000001'
  AND (value#>>'{entries,1,receiptText}')::jsonb->>'attemptId'='a2000000-0000-4000-8000-000000000002'
  AND (value#>>'{entries,0,receiptText}')::jsonb->>'origin'='authorization' FROM selection_probe WHERE key='initial'),'Initial selection or explicit retry policy differs');

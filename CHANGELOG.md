@@ -20,6 +20,12 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+No unreleased changes.
+
+## 0.65.0 (2026-09-30)
+
+[Verification](docs/reviews/2026-09-30-synthesis-generation/RELEASE_VERIFICATION.md) records the release scope, engineering checks and publication status.
+
 Pin Next.js and its lint configuration to 16.3.8, which includes the fix for
 [GHSA-vcvr-r3jv-pc5j](https://github.com/advisories/GHSA-vcvr-r3jv-pc5j).
 
@@ -33,6 +39,11 @@ commands support an explicit local worker for one authorized task. Its private
 journal retains the same attempt and original response across interruption.
 An unknown dispatch outcome makes no replacement call. The staff generation
 interface remains unfinished.
+The local worker also accepts `--authorization UUID --all-tasks`. It saves the
+authorized task list, respects the remaining attempt allowance and reuses the
+single-task journals. Uncertain dispatches remain unobserved; they do not trigger
+automatic replacement calls. Saved outputs recover after requester access is
+revoked. Draining a grant does not establish complete or valid synthesis.
 Current-status reads do not extend dispatch permission. Explicit result choices
 retain predecessor history and stable sequence-based pagination. Retried or late
 outputs do not silently replace a choice; clearing one preserves its source task.
@@ -63,9 +74,9 @@ Complete logical records retain historical relationships and exact numeric token
 without clipping long contributions. Typed fields preserve complete literal text,
 container counts and unambiguous paths for request planning. Bounded segment tasks
 and retained result accounting preserve original outputs, exact configuration
-revisions and incomplete processing states. The worker above executes one
-explicitly authorized task; scheduling and consolidating the complete corpus
-into the staff generation workflow remain unfinished.
+revisions and incomplete processing states. The worker above executes an
+explicitly authorized task or saved task list. Record/context consolidation and
+the complete staff generation workflow remain unfinished.
 
 ## 0.64.0 (2026-09-30)
 

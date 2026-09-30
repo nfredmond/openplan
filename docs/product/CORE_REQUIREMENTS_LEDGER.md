@@ -276,3 +276,8 @@ September 30 v0.64.0 release: [release evidence](../reviews/2026-09-27-synthesis
 
 
 September 30 unreleased generation execution: [worker evidence](../reviews/2026-09-30-synthesis-generation/EXECUTION_DRAFT.md) advances the optional generation preparation under CORE-ENG-03. Native resource authorization, source-bound task claims and private original-byte custody now support one explicit worker task and interrupted delivery recovery. This does not supply a consolidated synthesis or extend staff approval authority. Complete corpus scheduling, record/context consolidation and staff generation controls remain M9b work; no overall requirement or national capability rating is promoted.
+
+
+## September 30 local synthesis execution candidate, v0.65.0
+
+The [candidate verification](../reviews/2026-09-30-synthesis-generation/RELEASE_VERIFICATION.md) advances the execution foundation for CORE-ENG-03/04. Complete selected-source preparation, immutable plans, explicit resource grants, retained original responses and interrupted local task scheduling preserve incomplete and uncertain work. Publication checks remain pending. Record/context consolidation, machine-draft import, complete staff generation and measured usefulness remain open. No capability rating or national scientific claim changes.

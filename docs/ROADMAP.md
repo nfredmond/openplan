@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: e6d25edd
-current_release: v0.64.0
+current_release: v0.65.0
 review_by: 2026-10-05
 paths:
 - AGENTS.md
@@ -43,6 +43,8 @@ ship completed increments with relevant regression and workflow evidence.
 Strategy-review expiry and every intervening commit no longer require fresh
 whole-product approval. Vercel is inactive and hosted deployment is deferred.
 Control's UI and local updater repair now have [native-button deployment evidence](reviews/2026-09-07-control-release/VERIFICATION.md). Vercel's repository connection is removed. This changes release sequencing, not the v1 contract.
+
+September 30 v0.65.0 candidate: [release verification](reviews/2026-09-30-synthesis-generation/RELEASE_VERIFICATION.md) records complete-input preparation and recoverable local execution of explicitly authorized synthesis tasks. The saved coordinator preserves uncertain attempts and original outputs. Candidate metadata is aligned. Local QA, shuffled tests, isolation and identified desktop/390px navigation pass; exact final-commit CI and publication remain pending. Complete record/context consolidation, machine-draft import, staff generation and the wider M9b workflow remain open. This does not change the queue below or any V1 requirement.
 
 ## Destination and sequencing
 

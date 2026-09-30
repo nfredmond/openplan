@@ -41,7 +41,7 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
       input: statement, encoding: "utf8", stdio: ["pipe", "pipe", "pipe"], timeout: 30000,
     }).trim().split("\n").at(-1)!;
   }
-  async function fixture(options: { mode?: "api_key" | "none"; bytes?: number; loss?: "output" | "dispatch"; cancel?: boolean } = {}) {
+  async function fixture(options: { mode?: "api_key" | "none"; bytes?: number; loss?: "output" | "dispatch"; cancel?: boolean; allTasks?: boolean } = {}) {
     const owner = randomUUID(), custodian = randomUUID(), workspace = randomUUID(), campaign = randomUUID(), sourceId = randomUUID();
     const connection = randomUUID(), revision = randomUUID(), requestId = randomUUID(), authorizationId = randomUUID();
     const root = await mkdtemp(join(tmpdir(), "openplan-synthesis-native-"));
@@ -90,7 +90,7 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     }
     const sealed = checked(await service.rpc("seal_engagement_synthesis_generation_plan", { p_request: requestId, p_header_sha256: plan.headerSha256 }));
     expect(verifySynthesisGenerationPlanState(plan, sealed).seal).not.toBeNull();
-    const grant = { schemaVersion: 1, headerSha256: plan.headerSha256, maxAttempts: 1, maxOutputTokens: 8192, responseByteLimit: options.bytes ?? 4096,
+    const grant = { schemaVersion: 1, headerSha256: plan.headerSha256, maxAttempts: options.allTasks ? plan.entries.length : 1, maxOutputTokens: 8192, responseByteLimit: options.bytes ?? 4096,
       expiresAt: new Date(Date.now() + 3600000).toISOString(), chargesAcknowledged: true, retryTaskIndex: null, retryOfAttemptId: null };
     asOwner(`SELECT authorize_engagement_synthesis_generation('${requestId}','${authorizationId}',${literal(JSON.stringify(grant))})`);
     const proxyErrors: string[] = [];
@@ -119,8 +119,9 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
       } catch (error) { proxyErrors.push(String(error)); res.statusCode = 502; res.end("Synthetic proxy failed"); }
     }));
     const directory = join(root, hash(target), authorizationId, "0");
-    async function run() {
-      const child = spawn(process.execPath, ["--conditions=react-server", "--import", "tsx", "scripts/workers/synthesis-generation.ts", "--authorization", authorizationId, "--task-index", "0"], {
+    async function run(allTasks = false) {
+      const child = spawn(process.execPath, ["--conditions=react-server", "--import", "tsx", "scripts/workers/synthesis-generation.ts", "--authorization", authorizationId,
+        ...(allTasks ? ["--all-tasks"] : ["--task-index", "0"])], {
         cwd: process.cwd(), stdio: ["ignore", "pipe", "pipe"], env: { ...process.env, NEXT_PUBLIC_SUPABASE_URL: target,
           SUPABASE_SERVICE_ROLE_KEY: environment.SERVICE_ROLE_KEY, OPENPLAN_SYNTHESIS_GENERATION_WORK_DIR: root,
           OPENPLAN_INTEGRATION_KEY_SECRET: secret, OPENPLAN_AI_LOCAL_ENDPOINTS: JSON.stringify([endpoint]), NODE_DEBUG: "" },
@@ -160,6 +161,60 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     expect(rows![0].capture_sha256).toBe(f.deliveries[0].body.p_capture_sha256);
     expect(JSON.parse(rows![0].capture_text).outputText).toBe(f.outputText);
     expect((await f.journal()).observation).toEqual(original.observation);
+  }, 60000);
+  it("drains a complete grant through native task journals after a lost output acknowledgement", async () => {
+    const f = await fixture({ allTasks: true, loss: "output" });
+    expect(f.plan.entries.length).toBeGreaterThan(2);
+    expect((await f.run(true)).code).toBe(1);
+    const original = await f.journal(); expect(original.phase).toBe("observed");
+    const resumed = await f.run(true); expect(resumed.code, resumed.stderr).toBe(0);
+    expect(f.calls).toHaveLength(f.plan.entries.length);
+    const attempts = checked(await service.from("engagement_synthesis_generation_attempts")
+      .select("id,task_index,binding_text").eq("authorization_id", f.authorizationId).order("task_index"));
+    expect(attempts!.map(row => row.task_index)).toEqual(f.plan.entries.map(task => task.index));
+    const outputs = checked(await service.from("engagement_synthesis_generation_outputs")
+      .select("attempt_id,capture_text,capture_sha256").in("attempt_id", attempts!.map(row => row.id)).order("attempt_id"));
+    expect(outputs).toHaveLength(f.plan.entries.length);
+    for (const attempt of attempts!) {
+      const output = outputs!.find(row => row.attempt_id === attempt.id)!;
+      expect(output.capture_sha256).toBe(hash(output.capture_text));
+      expect(JSON.parse(output.capture_text).binding).toEqual(JSON.parse(attempt.binding_text));
+      expect(JSON.parse(attempt.binding_text).taskSha256).toBe(f.plan.entries[attempt.task_index].sha256);
+    }
+    expect((await f.journal()).observation).toEqual(original.observation);
+    expect((await f.run(true)).code).toBe(0); expect(f.calls).toHaveLength(f.plan.entries.length);
+    expect(checked(await service.from("engagement_synthesis_generation_outputs")
+      .select("attempt_id,capture_text,capture_sha256").in("attempt_id", attempts!.map(row => row.id)).order("attempt_id"))).toEqual(outputs);
+    expect(f.proxyErrors).toEqual([]);
+  }, 60000);
+  it("recovers the same single-task directory when continuing with the complete grant", async () => {
+    const f = await fixture({ allTasks: true }); expect((await f.run()).code).toBe(0);
+    const original = await f.journal(); expect((await f.run(true)).code).toBe(0);
+    expect(f.calls).toHaveLength(f.plan.entries.length);
+    expect((await f.journal()).attemptId).toBe(original.attemptId);
+  }, 60000);
+  it("reports a limited grant as partial and makes no call beyond its allowance", async () => {
+    const f = await fixture(); expect((await f.run(true)).code).toBe(2);
+    expect(f.calls).toHaveLength(1); expect(await f.outputs()).toHaveLength(1);
+    expect((await f.run(true)).code).toBe(2); expect(f.calls).toHaveLength(1);
+  }, 30000);
+  it("recovers the saved first output after cancellation without dispatching later tasks", async () => {
+    const f = await fixture({ allTasks: true, loss: "output", cancel: true });
+    expect((await f.run(true)).code).toBe(1); const original = await f.journal(); expect(original.phase).toBe("observed");
+    expect((await f.run(true)).code).toBe(1); expect(f.calls).toHaveLength(1);
+    expect((await f.journal()).phase).toBe("delivered"); expect((await f.journal()).observation).toEqual(original.observation);
+    const attempts = checked(await service.from("engagement_synthesis_generation_attempts").select("id").eq("authorization_id", f.authorizationId));
+    expect(attempts).toHaveLength(1);
+  }, 30000);
+  it("keeps an unknown dispatch unresolved while processing the other authorized tasks", async () => {
+    const f = await fixture({ allTasks: true, loss: "dispatch" }); expect((await f.run(true)).code).toBe(1);
+    expect((await f.journal()).phase).toBe("dispatching");
+    expect((await f.run(true)).code).toBe(2); expect((await f.journal()).phase).toBe("unobserved");
+    expect(f.calls).toHaveLength(f.plan.entries.length - 1); expect(await f.outputs()).toHaveLength(0);
+    const attempts = checked(await service.from("engagement_synthesis_generation_attempts").select("id,task_index").eq("authorization_id", f.authorizationId));
+    expect(attempts).toHaveLength(f.plan.entries.length);
+    expect(attempts!.filter(row => row.task_index === 0)).toHaveLength(1);
+    expect((await f.run(true)).code).toBe(2); expect(f.calls).toHaveLength(f.plan.entries.length - 1);
   }, 60000);
   it("does not call the model or invent output after a lost native dispatch acknowledgement", async () => {
     const f = await fixture({ loss: "dispatch" }); expect((await f.run()).code).toBe(1);

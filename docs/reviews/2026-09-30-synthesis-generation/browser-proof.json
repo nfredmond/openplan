@@ -1,0 +1,126 @@
+{
+  "version": "0.65.0",
+  "baseCommit": "7726b58e91f738f07d909fe23120a2746df50aa3",
+  "candidateBuildId": "1NkAyOZSWPDxmlxsNSJu6",
+  "nextVersion": "16.3.8",
+  "applicationSourceHashes": {
+    "openplan/src/lib/engagement/synthesis-generation-scheduler.ts": "f0e607785e12958729f28c4ec2db88ebd92513b2eb5d4cbb67dadeb4dfbc0de0",
+    "openplan/src/test/engagement-synthesis-generation-scheduler.test.ts": "12521c27c6e31907e8c1251b488c0f69e357e0f99e1ee3dd1439f4b7d715c789",
+    "openplan/package-lock.json": "e499ba73977844bc2543644ae036b5d9143445b99f3f32faca3c8db96d3d47cb",
+    "openplan/package.json": "ae6973e58f30d85f6f75969eb0ef67b87009d4c6ae647cacdd55339b935a9474",
+    "openplan/scripts/workers/synthesis-generation.ts": "9fa0ca73b3f8208266f0362f4a067f1115ffb73c0f88f4d2ae010b349a5c1fdc",
+    "openplan/src/lib/engagement/synthesis-generation-worker-load.ts": "9d1f9e8c4883fcb5a9607b282c5b2d46ebbb4cc04c09e1e543cce1a11617c74a",
+    "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts": "25be1629d6014d564ed723c239150361f490fd592d83491ccc0c9bb4974ae308",
+    "openplan/src/test/engagement-synthesis-generation-worker-live.test.ts": "b4e5b3d70fbfe4d1971f23f722571c6523ca57a3527f5edbde7e5c98d4fe875a",
+    "openplan/src/test/engagement-synthesis-generation-worker-load.test.ts": "b804a7280ad8e1fcf61c0e791d00a9240cec5178ab636ea846894cadfa49c254",
+    "openplan/src/test/engagement-synthesis-generation-worker-process.test.ts": "b8e52c3a315d625c2ef44a961feb38f499fab3a78a7f525bf71d173817286003",
+    "openplan/src/test/fixtures/engagement/synthesis-generation-selections.sql": "3bf1a7baf276e2ea8ec167b18e68c048261fe393330cee1567a8fe311e17aba3",
+    "openplan/src/test/fixtures/engagement/synthesis-worker.ts": "c59a83ff8e80c7cf6b5f0ba755a572f9045019ed5e0bc756ae40a502aed5a708",
+    "openplan/src/test/migrations/release-ordering.test.ts": "748c43e3ca61742445534212873cf9db9511e9a33711d11daec19a2622b09187"
+  },
+  "cases": [
+    {
+      "case": "baseline",
+      "width": 1440,
+      "exit": 0,
+      "expectedPass": true,
+      "verified": true,
+      "completed": true,
+      "consoleErrors": 0,
+      "pageErrors": 0,
+      "log": "v065-browser-1440-baseline.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "baseline",
+      "width": 390,
+      "exit": 0,
+      "expectedPass": true,
+      "verified": true,
+      "completed": true,
+      "consoleErrors": 0,
+      "pageErrors": 0,
+      "log": "v065-browser-390-baseline.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "harmless",
+      "width": 390,
+      "exit": 0,
+      "expectedPass": true,
+      "verified": true,
+      "completed": true,
+      "consoleErrors": 0,
+      "pageErrors": 0,
+      "log": "v065-browser-390-harmless.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "overflow-fault",
+      "width": 390,
+      "exit": 1,
+      "expectedPass": false,
+      "verified": true,
+      "completed": false,
+      "consoleErrors": 0,
+      "pageErrors": 0,
+      "log": "v065-browser-390-overflow-fault.log",
+      "logSha256": "f6f5a3d29702ed817c697ed5ace6e84048f9180d65dd729c922615d371c3b35f"
+    },
+    {
+      "case": "wrong-build",
+      "width": 390,
+      "exit": 1,
+      "expectedPass": false,
+      "verified": true,
+      "completed": false,
+      "consoleErrors": 0,
+      "pageErrors": 0,
+      "log": "v065-browser-390-wrong-build.log",
+      "logSha256": "8787608ef8f3d2bcff2414ad99e57286d80f7c3a7665e901f1bed2c19a5d6d23"
+    },
+    {
+      "case": "wrong-version",
+      "width": 390,
+      "exit": 1,
+      "expectedPass": false,
+      "verified": true,
+      "completed": false,
+      "consoleErrors": 0,
+      "pageErrors": 0,
+      "log": "v065-browser-390-wrong-version.log",
+      "logSha256": "9a4183f46d479648c7ab3fc8912782ccbe98b52b6a49f7ca8df899332a79f12d"
+    },
+    {
+      "case": "wrong-source",
+      "width": 390,
+      "exit": 1,
+      "expectedPass": false,
+      "verified": true,
+      "completed": false,
+      "consoleErrors": 0,
+      "pageErrors": 0,
+      "log": "v065-browser-390-wrong-source.log",
+      "logSha256": "f38f12d97d1e8f46f63eaebb530c743a2e565656a92703ca8cdcf5f0235ccaad"
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "v065-browser-1440-baseline.png",
+      "width": 1440,
+      "sha256": "258f937013eae07479dc4caeb2d74ae232b2e1a6124b3edc4997b06dfaad21fc",
+      "retainedPrivately": true
+    },
+    {
+      "file": "v065-browser-390-baseline.png",
+      "width": 390,
+      "sha256": "b273a5bdd9b62999a3b51d6ccbed6ffc99fda52ca54886fd9a92c25c87ac92ee",
+      "retainedPrivately": true
+    }
+  ],
+  "visualInspection": "Desktop and 390px screenshots inspected. Heading, campaign creation control and focused navigation are visible; no page-wide horizontal overflow. The synthetic workspace has no campaigns.",
+  "limits": [
+    "Existing sign-in and Engagement navigation compatibility only",
+    "No new staff-facing generation UI or synthesis output-quality claim"
+  ]
+}

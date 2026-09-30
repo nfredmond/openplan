@@ -1,0 +1,65 @@
+[
+  {
+    "case": "baseline",
+    "exit": 0,
+    "expectedPass": true,
+    "diagnosticMatched": true,
+    "verified": true,
+    "log": "baseline.log",
+    "logSha256": "de8d8a079fcd8653e83b7ba86a153afad9c8e7fa0ac6fe90ca059207bc2105a5"
+  },
+  {
+    "case": "harmless-comment",
+    "exit": 0,
+    "expectedPass": true,
+    "diagnosticMatched": true,
+    "verified": true,
+    "log": "harmless-comment.log",
+    "logSha256": "92ae1294f66ba9e7ab64e12c26e9eefedf2ff6c9d6929fa48f48212baf3485d5"
+  },
+  {
+    "case": "wrong-count",
+    "exit": 1,
+    "expectedPass": false,
+    "diagnosticMatched": true,
+    "verified": true,
+    "log": "wrong-count.log",
+    "logSha256": "6f9c68ec45c41c7f2b55d0e5bb0acb2793c8bec6bcd7ba73906ea01290af8ea6"
+  },
+  {
+    "case": "missing-recorded-file",
+    "exit": 1,
+    "expectedPass": false,
+    "diagnosticMatched": true,
+    "verified": true,
+    "log": "missing-recorded-file.log",
+    "logSha256": "a8c1673621a3a96c87d5375f47802f2cc8d7783997ed87089864df5cc5affb0c"
+  },
+  {
+    "case": "missing-heading",
+    "exit": 1,
+    "expectedPass": false,
+    "diagnosticMatched": true,
+    "verified": true,
+    "log": "missing-heading.log",
+    "logSha256": "723497d2c6da471e282608785328965ebc7adb18acb2d6a8f15b6a11bf187b7a"
+  },
+  {
+    "case": "missing-disclosure",
+    "exit": 1,
+    "expectedPass": false,
+    "diagnosticMatched": true,
+    "verified": true,
+    "log": "missing-disclosure.log",
+    "logSha256": "426217757263000afb9b944a7363f8fbadb8e1f0bcaf66e693f3ceac23141931"
+  },
+  {
+    "case": "missing-release-row",
+    "exit": 1,
+    "expectedPass": false,
+    "diagnosticMatched": true,
+    "verified": true,
+    "log": "missing-release-row.log",
+    "logSha256": "0e87d550eaccbd593b2599f9a824610116bc0bcab12f8246236db363f8d607be"
+  }
+]

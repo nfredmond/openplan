@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { randomUUID } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { checkedSynthesisWorkerJob, loadSynthesisWorkerJob, loadSynthesisWorkerCredential } from "@/lib/engagement/synthesis-generation-worker-load";
+import { checkedSynthesisWorkerJob, loadSynthesisWorkerAuthorization, loadSynthesisWorkerJob, loadSynthesisWorkerCredential } from "@/lib/engagement/synthesis-generation-worker-load";
 import { synthesisWorkerFixture, synthesisWorkerHash } from "./fixtures/engagement/synthesis-worker";
 
 const fixtures: Awaited<ReturnType<typeof synthesisWorkerFixture>>[] = [];
@@ -20,6 +20,8 @@ describe("synthesis worker authoritative loading", () => {
       { table: "engagement_synthesis_generation_requests", columns: "id,campaign_id,workspace_id,actor_id,source_id,configuration_revision_id,intent_text,intent_sha256", filters: { id: job.binding.jobId } },
       { table: "engagement_synthesis_sources", columns: "id,campaign_id,workspace_id,snapshot_text,snapshot_sha256,created_at",
         filters: { id: f.saved.requestId, campaign_id: job.campaignId, workspace_id: job.workspaceId } },
+      { table: "engagement_synthesis_generation_plans", columns: "request_id,header_text,header_sha256", filters: { request_id: job.binding.jobId } },
+      { table: "engagement_synthesis_generation_plan_seals", columns: "request_id,receipt_text,receipt_sha256", filters: { request_id: job.binding.jobId } },
       { table: "engagement_synthesis_generation_plan_tasks", columns: "request_id,task_index,task_text,task_sha256,task_bytes", filters: { request_id: job.binding.jobId, task_index: 0 } },
       { table: "workspace_provider_api_revisions", columns: "id,connection_id,workspace_id,configuration,configuration_canonical,configuration_hash",
         filters: { id: job.binding.configurationRevisionId, connection_id: job.connectionId, workspace_id: job.workspaceId } },
@@ -37,6 +39,9 @@ describe("synthesis worker authoritative loading", () => {
     ["engagement_synthesis_generation_requests", "id"], ["engagement_synthesis_generation_requests", "source_id"],
     ["engagement_synthesis_generation_requests", "configuration_revision_id"],
     ["engagement_synthesis_sources", "id"], ["engagement_synthesis_sources", "campaign_id"], ["engagement_synthesis_sources", "workspace_id"],
+    ["engagement_synthesis_generation_plans", "request_id"], ["engagement_synthesis_generation_plans", "header_text"],
+    ["engagement_synthesis_generation_plans", "header_sha256"], ["engagement_synthesis_generation_plan_seals", "request_id"],
+    ["engagement_synthesis_generation_plan_seals", "receipt_text"], ["engagement_synthesis_generation_plan_seals", "receipt_sha256"],
     ["engagement_synthesis_sources", "snapshot_sha256"], ["engagement_synthesis_generation_plan_tasks", "request_id"],
     ["engagement_synthesis_generation_plan_tasks", "task_index"], ["engagement_synthesis_generation_plan_tasks", "task_text"],
     ["engagement_synthesis_generation_plan_tasks", "task_sha256"], ["engagement_synthesis_generation_plan_tasks", "task_bytes"],
@@ -67,6 +72,17 @@ describe("synthesis worker authoritative loading", () => {
     f.resealGrant();
     await expect(loadSynthesisWorkerJob(f.service, chosen, f.args.signal)).rejects.toThrow();
     if (mode === "out-of-range") expect(f.queryTrace.some(row => row.table === "engagement_synthesis_generation_plan_tasks")).toBe(false);
+  });
+  it.each(["oversized-allowance", "retry-outside-plan", "retry-allowance", "header", "retry-pair"])("refuses invalid immutable authorization %s before task loading", async mode => {
+    const f = await fixture();
+    if (mode === "oversized-allowance") f.authorizationIntent.maxAttempts = f.plan.entries.length + 1;
+    if (mode === "retry-outside-plan") Object.assign(f.authorizationIntent, { retryTaskIndex: f.plan.entries.length, retryOfAttemptId: randomUUID(), maxAttempts: 1 });
+    if (mode === "retry-allowance") Object.assign(f.authorizationIntent, { retryTaskIndex: 0, retryOfAttemptId: randomUUID(), maxAttempts: 2 });
+    if (mode === "header") f.authorizationIntent.headerSha256 = "e".repeat(64);
+    if (mode === "retry-pair") Object.assign(f.authorizationIntent, { retryTaskIndex: 0, maxAttempts: 1 });
+    f.resealGrant();
+    await expect(loadSynthesisWorkerAuthorization(f.service, f.args.authorizationId, f.args.signal)).rejects.toThrow("retained identity differs");
+    expect(f.queryTrace.some(row => row.table === "engagement_synthesis_generation_plan_tasks")).toBe(false);
   });
   it("retains an explicit matching retry without choosing another task", async () => {
     const f = await fixture(); Object.assign(f.authorizationIntent, { retryTaskIndex: 0, retryOfAttemptId: randomUUID(), maxAttempts: 1 }); f.resealGrant();

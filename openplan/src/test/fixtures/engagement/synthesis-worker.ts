@@ -11,7 +11,7 @@ import { createSynthesisGenerationPlan } from "@/lib/engagement/synthesis-genera
 import { makeSourceSnapshot, savedSource, sourceScope } from "./synthesis-source";
 
 export const synthesisWorkerHash = (text: string) => createHash("sha256").update(text).digest("hex");
-export async function synthesisWorkerFixture() {
+export async function synthesisWorkerFixture(sourceCount = 2) {
   vi.stubEnv("OPENPLAN_INTEGRATION_KEY_SECRET", "SYNTHETIC-WORKER-SECRET");
   const directory = await mkdtemp(join(tmpdir(), "openplan-synthesis-worker-test-"));
   const providerCalls: Array<{ body: string; auth: string | undefined }> = [];
@@ -34,7 +34,7 @@ export async function synthesisWorkerFixture() {
   const connectionId = randomUUID(), revision = prepareProviderApiRevision({ workspaceId: sourceScope.workspaceId, revisionId: randomUUID(),
     configuration: { label: "Synthetic worker provider", protocol: "openai_chat_completions", endpoint,
       modelIds: ["synthetic"], structuredOutput: true, authMode: "api_key", timeoutSeconds: 30 }, apiKey: "SYNTHETIC-SAVED-KEY" });
-  const saved = savedSource(makeSourceSnapshot(2)), requestId = randomUUID(), authorizationId = randomUUID(), actorId = randomUUID();
+  const saved = savedSource(makeSourceSnapshot(sourceCount)), requestId = randomUUID(), authorizationId = randomUUID(), actorId = randomUUID();
   const requestIntent = { schemaVersion: 1, sourceId: saved.requestId, sourceSha256: saved.snapshotSha256,
     connectionId, configurationRevisionId: revision.revisionId, configurationHash: revision.configurationHash, modelId: "synthetic", taskByteLimit: 4096 };
   const intentText = JSON.stringify(requestIntent), request = { id: requestId, intentText, intentSha256: synthesisWorkerHash(intentText) };
@@ -55,6 +55,8 @@ export async function synthesisWorkerFixture() {
       source_id: saved.requestId, configuration_revision_id: revision.revisionId, intent_text: intentText, intent_sha256: request.intentSha256 },
     engagement_synthesis_sources: { id: saved.requestId, campaign_id: sourceScope.campaignId, workspace_id: sourceScope.workspaceId,
       snapshot_text: saved.snapshotText, snapshot_sha256: saved.snapshotSha256, created_at: saved.createdAt },
+    engagement_synthesis_generation_plans: { request_id: requestId, header_text: plan.headerText, header_sha256: plan.headerSha256 },
+    engagement_synthesis_generation_plan_seals: { request_id: requestId, receipt_text: sealText, receipt_sha256: synthesisWorkerHash(sealText) },
     engagement_synthesis_generation_plan_tasks: { request_id: requestId, task_index: 0, task_text: task.canonical, task_sha256: task.sha256, task_bytes: task.utf8Bytes },
     workspace_provider_api_revisions: { id: revision.revisionId, connection_id: connectionId, workspace_id: sourceScope.workspaceId,
       configuration: revision.configuration, configuration_canonical: JSON.stringify(revision.configuration), configuration_hash: revision.configurationHash },
