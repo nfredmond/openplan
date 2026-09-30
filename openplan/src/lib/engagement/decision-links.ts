@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { canonicalizeActionPayload } from "@/lib/runtime/action-metadata";
 import { closeLoopEntrySchema } from "./close-loop";
+import { decisionSynthesisHistorySchema, readDecisionSynthesisHistory } from "./decision-synthesis-history";
 
 const id = z.string().uuid();
 const sha = z.string().regex(/^[a-f0-9]{64}$/);
@@ -25,7 +26,7 @@ const source = z.object({
     parent_item_id: id.nullable(), configuration_version_id: id.nullable(), created_at: time, updated_at: time,
   }).strict().nullable(),
 }).strict();
-const contextSchema = z.object({
+const legacyContextSchema = z.object({
   schema: z.literal(1), visibility: z.literal("private"), sourceObservation: z.literal("current_at_link_preview"),
   campaign: z.object({ id, workspaceId: id, title: z.string() }).strict(),
   project: z.object({ id, workspaceId: id, name: z.string() }).strict(),
@@ -37,6 +38,8 @@ const contextSchema = z.object({
   decision: projectDecisionSchema, sourceCount: count, sources: source.array(), configurationCount: count,
   configurations: z.object({ id, campaignId: id, createdAt: time, definitionText: z.string(), definitionSha256: sha }).strict().array(),
 }).strict();
+const contextSchema = z.discriminatedUnion("schema", [legacyContextSchema,
+  legacyContextSchema.extend({ schema: z.literal(2), synthesisHistory: decisionSynthesisHistorySchema }).strict()]);
 export type DecisionLinkContext = z.infer<typeof contextSchema>;
 export type DecisionLinkScope = { campaignId: string; workspaceId: string };
 export type DecisionLinkAddress = DecisionLinkScope & { responseId: string; decisionId: string };
@@ -129,6 +132,7 @@ export async function readDecisionContext(raw: unknown, scope: DecisionLinkAddre
     if (configuration !== null && definitions.has(configuration)) used.add(configuration);
   }
   if (used.size !== definitions.size) throw new Error("Decision context has unrelated definitions");
+  if (context.schema === 2) await readDecisionSynthesisHistory(context.synthesisHistory, scope, history);
   return { packet, context };
 }
 

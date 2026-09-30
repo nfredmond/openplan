@@ -1,0 +1,165 @@
+{
+  "baseCommit": "10e0d694237abfae2862677bdc34f5cf6b78ff0d",
+  "status": "unreleased candidate; migration not installed",
+  "relatedTests": 110,
+  "focusedNativeProbes": 15,
+  "excludedNativeTestsInFocusedRun": 177,
+  "typescript": "pass with 8192 MB heap",
+  "eslint": "pass",
+  "mutations": [
+    {
+      "name": "baseline",
+      "file": null,
+      "exit": 0,
+      "valid": true,
+      "expected": null
+    },
+    {
+      "name": "harmless-1",
+      "file": "src/lib/engagement/decision-synthesis-history.ts",
+      "exit": 0,
+      "valid": true,
+      "expected": null
+    },
+    {
+      "name": "harmless-2",
+      "file": "src/lib/engagement/decision-links.ts",
+      "exit": 0,
+      "valid": true,
+      "expected": null
+    },
+    {
+      "name": "harmless-3",
+      "file": "src/lib/engagement/decision-links-server.ts",
+      "exit": 0,
+      "valid": true,
+      "expected": null
+    },
+    {
+      "name": "harmless-4",
+      "file": "src/lib/engagement/decision-synthesis-history-server.ts",
+      "exit": 0,
+      "valid": true,
+      "expected": null
+    },
+    {
+      "name": "harmless-5",
+      "file": "src/lib/engagement/review-export.ts",
+      "exit": 0,
+      "valid": true,
+      "expected": null
+    },
+    {
+      "name": "history-count",
+      "file": "src/lib/engagement/decision-synthesis-history.ts",
+      "exit": 1,
+      "valid": true,
+      "expected": "refuses history count"
+    },
+    {
+      "name": "event-count",
+      "file": "src/lib/engagement/decision-synthesis-history.ts",
+      "exit": 1,
+      "valid": true,
+      "expected": "refuses event count"
+    },
+    {
+      "name": "duplicate-history",
+      "file": "src/lib/engagement/decision-synthesis-history.ts",
+      "exit": 1,
+      "valid": true,
+      "expected": "refuses duplicate address"
+    },
+    {
+      "name": "duplicate-event",
+      "file": "src/lib/engagement/decision-synthesis-history.ts",
+      "exit": 1,
+      "valid": true,
+      "expected": "refuses cross-review event identity conflicts"
+    },
+    {
+      "name": "future-response",
+      "file": "src/lib/engagement/decision-synthesis-history.ts",
+      "exit": 1,
+      "valid": true,
+      "expected": "refuses future response"
+    },
+    {
+      "name": "response-identity",
+      "file": "src/lib/engagement/decision-synthesis-history.ts",
+      "exit": 1,
+      "valid": true,
+      "expected": "refuses replaced response identity"
+    },
+    {
+      "name": "response-bytes",
+      "file": "src/lib/engagement/decision-synthesis-history.ts",
+      "exit": 1,
+      "valid": true,
+      "expected": "refuses replaced response bytes"
+    },
+    {
+      "name": "cross-review-identity",
+      "file": "src/lib/engagement/decision-synthesis-history.ts",
+      "exit": 1,
+      "valid": true,
+      "expected": "refuses cross-review revision identity conflicts"
+    },
+    {
+      "name": "context-boundary",
+      "file": "src/lib/engagement/decision-links.ts",
+      "exit": 1,
+      "valid": true,
+      "expected": "refuses history count"
+    },
+    {
+      "name": "server-preview",
+      "file": "src/lib/engagement/decision-links-server.ts",
+      "exit": 1,
+      "valid": true,
+      "expected": "server preview, history and save verify nested evidence true"
+    },
+    {
+      "name": "server-history",
+      "file": "src/lib/engagement/decision-links-server.ts",
+      "exit": 1,
+      "valid": true,
+      "expected": "server preview, history and save verify nested evidence true"
+    },
+    {
+      "name": "server-receipt",
+      "file": "src/lib/engagement/decision-links-server.ts",
+      "exit": 1,
+      "valid": true,
+      "expected": "server preview, history and save verify nested evidence true"
+    },
+    {
+      "name": "server-nested",
+      "file": "src/lib/engagement/decision-synthesis-history-server.ts",
+      "exit": 1,
+      "valid": true,
+      "expected": "requires full nested source verification"
+    },
+    {
+      "name": "export-boundary",
+      "file": "src/lib/engagement/review-export.ts",
+      "exit": 1,
+      "valid": true,
+      "expected": "reviewed exports verify nested evidence true"
+    },
+    {
+      "name": "restored-baseline",
+      "file": null,
+      "exit": 0,
+      "valid": true,
+      "expected": null
+    }
+  ],
+  "restoredSourceSha256": {
+    "src/lib/engagement/decision-synthesis-history.ts": "b3c89f573324ac157c04355e55c95cc8b056fe99efe8fb785e26d8f1001f377a",
+    "src/lib/engagement/decision-links.ts": "b034a979d0d80b14f76c1344a15d06cbf3ec86cd8a225721f36c8df94653e4a7",
+    "src/lib/engagement/decision-links-server.ts": "6dd6badbc12f65da0ab1bfe92e51f3b44caeabe0fa91562af6e3a13bfba0e538",
+    "src/lib/engagement/decision-synthesis-history-server.ts": "6ff42fd6c190cbc60cf6e2f89a6769cd36e6076ab8d94d91854f468d1d3b9a62",
+    "src/lib/engagement/review-export.ts": "19207bac4ec24316fed069d0130d906a10a674bf41c9af462e4d35ce1fa78986"
+  }
+}

@@ -5,6 +5,7 @@ import { renderReportPdf } from "@/lib/reports/pdf";
 import { escapeCsvField } from "@/lib/export/csv";
 import { readStoredEngagementGeometry } from "./geometry";
 import { readDecisionLinkHistory, type VerifiedDecisionLink } from "./decision-links";
+import { verifyDecisionSynthesisSources } from "./decision-synthesis-history-server";
 
 type RecordData = Record<string, unknown>;
 export type EngagementReviewSnapshot = {
@@ -40,6 +41,7 @@ export async function parseReviewSnapshot(snapshotText: string, checksum: string
     const history = await readDecisionLinkHistory({ entryCount: value.decisionLinkCount, entries: value.decisionLinks },
       { campaignId: value.campaign.id, workspaceId: value.workspaceId });
     value.decisionLinks = history.entries;
+    for (const row of history.entries) await verifyDecisionSynthesisSources(row.context);
   }
   const ids = new Set(value.items.map((row) => row.id));
   if (ids.size !== value.items.length || new Set(value.answers.map((row) => row.id)).size !== value.answers.length) throw new Error("Duplicate snapshot identifiers");

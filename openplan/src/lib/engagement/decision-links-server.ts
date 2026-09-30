@@ -3,6 +3,7 @@ import {
   decisionLinkIntentSchema, readDecisionContext, readDecisionLinkReceipt, readDecisionLinkSnapshot,
 } from "./decision-links";
 import type { DecisionLinkAddress, DecisionLinkIntent, DecisionLinkScope } from "./decision-links";
+import { verifyDecisionSynthesisSources } from "./decision-synthesis-history-server";
 
 type Client = Pick<SupabaseClient, "rpc">;
 export type DecisionLinkFailure = { kind: "invalid" | "forbidden" | "missing" | "conflict" | "unavailable"; status: number; message: string };
@@ -20,7 +21,8 @@ export async function loadDecisionLinks(client: Client, scope: DecisionLinkScope
   try {
     const reply = await client.rpc("read_engagement_decision_links", { p_campaign: scope.campaignId });
     if (reply.error) return { packet: null, error: decisionLinkFailure(reply.error.code) };
-    await readDecisionLinkSnapshot(reply.data, scope);
+    const snapshot = await readDecisionLinkSnapshot(reply.data, scope);
+    for (const row of snapshot.entries) await verifyDecisionSynthesisSources(row.context);
     return { packet: reply.data as unknown, error: null };
   } catch { return { packet: null, error: decisionLinkFailure() }; }
 }
@@ -33,6 +35,7 @@ export async function loadDecisionContext(client: Client, scope: DecisionLinkAdd
     });
     if (reply.error) return { packet: null, error: decisionLinkFailure(reply.error.code) };
     const result = await readDecisionContext(reply.data, scope);
+    await verifyDecisionSynthesisSources(result.context);
     return { packet: result.packet, error: null };
   } catch { return { packet: null, error: decisionLinkFailure() }; }
 }
@@ -50,6 +53,7 @@ export async function writeDecisionLink(client: Client, scope: DecisionLinkScope
     });
     if (reply.error) return { receipt: null, error: decisionLinkFailure(reply.error.code) };
     const verified = await readDecisionLinkReceipt(reply.data, scope, intent);
+    await verifyDecisionSynthesisSources(verified.link.context);
     return { receipt: verified.receipt, error: null };
   } catch { return { receipt: null, error: decisionLinkFailure() }; }
 }

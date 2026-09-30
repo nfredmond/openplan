@@ -11,6 +11,9 @@ import { readSynthesisResponseLinkHistory, readSynthesisResponseLinkReceipt, syn
 import { loadSynthesisResponseLinkHistory, retainSynthesisResponseLink, retainSynthesisResponseLinkCommand } from "@/lib/engagement/synthesis-response-write-server";
 import { loadSynthesisResponseLinkIndex } from "@/lib/engagement/synthesis-response-index-server";
 import { writeResponse } from "@/lib/engagement/response-write";
+import { readDecisionContext, readDecisionLink, type DecisionLinkIntent } from "@/lib/engagement/decision-links";
+import { verifyDecisionSynthesisSources } from "@/lib/engagement/decision-synthesis-history-server";
+import { loadDecisionContext, writeDecisionLink } from "@/lib/engagement/decision-links-server";
 import { publicReviewStillCurrent } from "@/lib/engagement/survey-responses";
 import { parseReviewSnapshot, type EngagementReviewSnapshot } from "@/lib/engagement/review-export";
 import { LIVE_RLS } from "./local-supabase-env";
@@ -39,6 +42,8 @@ const signatures: Record<string, string[]> = {
   read_engagement_synthesis_response_link: ["p_campaign", "p_request"],
   read_engagement_synthesis_response_links: ["p_campaign", "p_review", "p_response", "p_group"],
   retain_engagement_synthesis_response_link: ["p_campaign", "p_actor", "p_workspace", "p_intent", "p_context_text"],
+  read_engagement_response_decision_context: ["p_campaign", "p_response", "p_decision"],
+  write_engagement_response_decision_link: ["p_campaign", "p_response", "p_decision", "p_request", "p_operation", "p_predecessor", "p_expected_context_sha256", "p_reason"],
   write_engagement_response: ["p_campaign", "p_request", "p_operation", "p_response", "p_expected_updated_at", "p_reason", "p_changes"],
 };
 type Packet = { eventText: string; eventSha256: string };
@@ -984,4 +989,213 @@ describe.skipIf(!LIVE_RLS || CANDIDATE_RLS)("installed synthesis response links"
   }, 60_000);
   it.each(["publication_first", "source_first"] as const)("serializes installed answer correction: %s", order => committedRace("answer", order, ""), 120_000);
   it("refuses installed fixed snapshots after a concurrent answer commit", () => committedRace("answer", "source_first", "", "REPEATABLE READ"), 120_000);
+});
+
+// Preactivation probes opt in explicitly; normal live QA requires the installed migration.
+const decisionSynthesisMigration = readFileSync("supabase/migrations/20261014000030_engagement_decision_synthesis_history.sql", "utf8");
+const DECISION_SYNTHESIS_CANDIDATE = process.env.OPENPLAN_DECISION_SYNTHESIS_CANDIDATE === "1";
+const decisionSynthesisSetup = DECISION_SYNTHESIS_CANDIDATE ? decisionSynthesisMigration : "";
+async function decisionSynthesisScenario(sql = decisionSynthesisSetup) {
+  await scenario(sql, async ({ database, query, client, service, intent, contextText, statement }) => {
+    const decisionId = id(801), decisionScope = { ...actor, responseId: intent.responseId, decisionId };
+    await database.query(`INSERT INTO project_decisions(id,project_id,title,rationale,status)
+      VALUES('${decisionId}','cf0b2bac-b1b0-4032-8f37-748f0c67a5b3','SYNTHETIC decision','SYNTHETIC rationale','proposed');`);
+    const preview = async () => {
+      const result = await loadDecisionContext(client, decisionScope);
+      expect(result.error, "native decision preview failure").toBeNull();
+      return (await readDecisionContext(result.packet, decisionScope));
+    };
+    const empty = await preview();
+    expect(empty.context, "new decision capture omitted observed zero").toMatchObject({ schema: 2, synthesisHistory: { historyCount: 0, eventCount: 0, histories: [] } });
+    const command: DecisionLinkIntent = { requestId: id(802), responseId: intent.responseId, decisionId, operation: "link", predecessorId: null,
+      expectedContextSha256: empty.packet.contextSha256, reason: "SYNTHETIC original decision evidence" };
+    // The command must honor the exact campaign lock used by synthesis-link writes.
+    const competitor = rollbackSqlConnection(resolveLocalDbContainer());
+    try {
+      await competitor.query(`BEGIN; SELECT pg_advisory_xact_lock(hashtextextended('engagement-response:${campaignId}',0));`);
+      expect((await writeDecisionLink(client, actor, command)).error?.status, "decision ignored response serialization").toBe(503);
+    } finally { await competitor.close(); }
+    const original = await writeDecisionLink(client, actor, command);
+    expect(original.error, "original decision save failure").toBeNull();
+    expect(original.receipt!.link.context_text).toBe(empty.packet.contextText);
+    const first = await query(statement(intent, contextText), "service_role"); expect(first.error).toBeNull();
+    const linked = await preview();
+    expect(linked.context, "synthesis link missing from decision preview").toMatchObject({ schema: 2, synthesisHistory: { historyCount: 1, eventCount: 1 } });
+    if (linked.context.schema !== 2) throw new Error("New decision context lost version two");
+    expect(linked.context.synthesisHistory.histories[0].entries).toEqual([(first.data as Receipt).event]);
+    const refresh: DecisionLinkIntent = { ...command, requestId: id(803), operation: "refresh", predecessorId: command.requestId };
+    expect((await writeDecisionLink(client, actor, refresh)).error?.status, "stale synthesis preview accepted").toBe(409);
+    refresh.expectedContextSha256 = linked.packet.contextSha256;
+    const refreshed = await writeDecisionLink(client, actor, refresh); expect(refreshed.error).toBeNull();
+    expect((await writeDecisionLink(client, actor, command)).receipt, "old exact decision receipt lost").toEqual({ ...original.receipt, replayed: true });
+    const close = { ...intent, requestId: id(810), operation: "withdraw", predecessorId: intent.requestId,
+      predecessorSha256: (first.data as Receipt).event.eventSha256, expectedContextSha256: null };
+    const withdrawn = await query(statement(close, null), "service_role"); expect(withdrawn.error).toBeNull();
+    const afterWithdrawal = await preview();
+    expect(afterWithdrawal.context, "withdrawn synthesis events disappeared").toMatchObject({ schema: 2, synthesisHistory: { historyCount: 1, eventCount: 2 } });
+    if (afterWithdrawal.context.schema !== 2) throw new Error("New decision context lost version two");
+    expect(afterWithdrawal.context.synthesisHistory.histories[0].entries, "retained event order differs").toEqual([(first.data as Receipt).event, (withdrawn.data as Receipt).event]);
+    // A different response on the same review must never enter this response's evidence.
+    const otherResponse = await writeResponse(client, campaignId, { operation: "create", body: { requestId: id(811), themeTitle: "SYNTHETIC unrelated response", weDid: "SYNTHETIC other answer" } });
+    expect(otherResponse.error).toBeNull();
+    const otherScope = { ...address, responseId: otherResponse.result!.entryId, groupId: intent.groupId };
+    const otherContext = await loadSynthesisResponseContext(client, otherScope);
+    const otherLink = { ...intent, ...otherScope, requestId: id(812), expectedContextSha256: otherContext.packet.contextSha256 };
+    expect((await query(statement(otherLink, otherContext.packet.contextText), "service_role")).error).toBeNull();
+    expect((await preview()).packet, "foreign response history leaked into decision").toEqual(afterWithdrawal.packet);
+    // Retain an independent review address, without relying on today's group list.
+    const savedContext = JSON.parse(contextText), secondReview = id(820);
+    await retainSynthesisReview(client, service, campaignId, { requestId: secondReview, actorId, workspaceId, operation: "create", sourceId, sourceSha256: savedContext.sourceSha256 });
+    const state = (await loadSynthesisApprovalState(client, { ...address, reviewId: secondReview }))!;
+    await retainSynthesisApproval(client, service, actor, { ...state.current, actorId, requestId: id(821), operation: "approve", reason: "SYNTHETIC second review", predecessorId: null, predecessorSha256: null });
+    const reviewed = (await loadSynthesisReview(client, { ...address, reviewId: secondReview }))!;
+    const secondScope = { ...address, reviewId: secondReview, responseId: intent.responseId, groupId: reviewed.content.groups[0].id };
+    const secondContext = await loadSynthesisResponseContext(client, secondScope);
+    const secondLink = { ...intent, ...secondScope, requestId: id(822), expectedContextSha256: secondContext.packet.contextSha256 };
+    expect((await query(statement(secondLink, secondContext.packet.contextText), "service_role")).error).toBeNull();
+    const complete = await preview();
+    expect(complete.context, "second retained review disappeared").toMatchObject({ schema: 2, synthesisHistory: { historyCount: 2, eventCount: 3 } });
+    await verifyDecisionSynthesisSources(complete.context);
+    const oldReview = (await loadSynthesisReview(client, address))!;
+    await retainSynthesisReview(client, service, campaignId, { requestId: id(824), actorId, workspaceId, operation: "correct", reviewId,
+      expectedRevisionId: oldReview.revision.requestId, expectedRevisionSha256: oldReview.revision.contentSha256, reason: "SYNTHETIC remove withdrawn review group",
+      change: { kind: "group_remove", groupId: intent.groupId } });
+    expect((await preview()).packet, "removed review group lost retained decision history").toEqual(complete.packet);
+    // Current source correction cannot replace the words already captured in a link.
+    await database.query(`UPDATE engagement_items SET body='SYNTHETIC later correction',status='rejected',review_expected_updated_at=updated_at,review_reason='SYNTHETIC later source review' WHERE id='b0000000-0000-4000-8000-000000000001';`);
+    expect((await preview()).packet, "current source correction changed retained synthesis evidence").toEqual(complete.packet);
+    const finalCommand = { ...refresh, requestId: id(823), predecessorId: refresh.requestId, expectedContextSha256: complete.packet.contextSha256 };
+    const final = await writeDecisionLink(client, actor, finalCommand); expect(final.error).toBeNull();
+    const retained = await readDecisionLink(final.receipt!.link, actor); await verifyDecisionSynthesisSources(retained.context);
+    // Capture stays private even when the caller tries the original version-one helper.
+    for (const role of ["anon", "authenticated", "service_role"]) {
+      expect((await query(`SELECT public.engagement_response_decision_context_v1('${campaignId}','${intent.responseId}','${decisionId}')`, role)).error?.code, "legacy helper grant exposed").toBe("42501");
+    }
+    for (const role of ["anon", "service_role"]) {
+      expect((await query(`SELECT public.read_engagement_response_decision_context('${campaignId}','${intent.responseId}','${decisionId}')`, role)).error?.code, "new private preview grant exposed").toBe("42501");
+    }
+    await database.query(`UPDATE workspace_members SET role='viewer' WHERE workspace_id='${workspaceId}' AND user_id='7a50d4fb-35b7-41f4-9bce-8a4e7d157569';`);
+    expect(await database.query(`SELECT role FROM workspace_members WHERE workspace_id='${workspaceId}' AND user_id='7a50d4fb-35b7-41f4-9bce-8a4e7d157569';`)).toEqual(["viewer"]);
+    for (const user of ["7a50d4fb-35b7-41f4-9bce-8a4e7d157569", "14a71429-1cb2-49b5-8711-c696a2f394c3"]) {
+      await database.query(`SELECT set_config('request.jwt.claim.sub','${user}',true);`);
+      expect((await query(`SELECT public.read_engagement_response_decision_context('${campaignId}','${intent.responseId}','${decisionId}')`)).error?.code, "viewer or foreign actor preview exposed").toBe("42501");
+    }
+  });
+}
+
+/** Faults replace one installed function inside the surrounding rollback transaction. */
+function decisionSynthesisFault(before: string, after: string) {
+  if (before === "FROM PUBLIC, anon, authenticated, service_role;") return "GRANT EXECUTE ON FUNCTION public.engagement_response_decision_context_v1(uuid,uuid,uuid) TO authenticated;";
+  const writer = before.includes("engagement-response:") || before.includes("transaction_isolation");
+  const signature = writer ? "public.write_engagement_response_decision_link(uuid,uuid,uuid,uuid,text,uuid,text,text)"
+    : "public.read_engagement_response_decision_context(uuid,uuid,uuid)";
+  return `DO $fault$ DECLARE definition text; BEGIN SELECT pg_get_functiondef('${signature}'::regprocedure) INTO definition;
+    IF position(${literal(before)} IN definition)=0 THEN RAISE EXCEPTION 'Native decision fault target missing'; END IF;
+    EXECUTE replace(definition,${literal(before)},${literal(after)}); END $fault$;`;
+}
+
+describe.skipIf(!LIVE_RLS)("decision synthesis capture", () => {
+  it("captures complete retained chains and keeps originals private", () => decisionSynthesisScenario(), 120_000);
+  it("survives a harmless migration comment", () => decisionSynthesisScenario("-- Harmless decision history control.\n" + decisionSynthesisSetup), 120_000);
+  it.each([
+    ["missing synthesis events", "WHERE campaign_id = p_campaign AND workspace_id = workspace AND response_id = p_response", "WHERE false AND campaign_id = p_campaign AND workspace_id = workspace AND response_id = p_response", "synthesis link missing"],
+    ["lost withdrawals", "FROM public.engagement_synthesis_response_events\n    WHERE", "FROM public.engagement_synthesis_response_events\n    WHERE operation <> 'withdraw' AND", "withdrawn synthesis events disappeared"],
+    ["foreign response inventory", "AND response_id = p_response", "", "native decision preview failure"],
+    ["reversed history", "'eventSha256', event_sha256) ORDER BY event_no)", "'eventSha256', event_sha256) ORDER BY event_no DESC)", "native decision preview failure"],
+    ["wrong shared lock", "'engagement-response:' || p_campaign::text", "'synthetic-wrong-response:' || p_campaign::text", "decision ignored response serialization"],
+    ["legacy helper exposure", "FROM PUBLIC, anon, authenticated, service_role;", "FROM PUBLIC, anon, service_role;", "legacy helper grant exposed"],
+  ])("detects %s", async (_name, before, after, expected) => {
+    expect(decisionSynthesisMigration.includes(before)).toBe(true);
+    await expect(decisionSynthesisScenario(decisionSynthesisSetup + "\n" + decisionSynthesisFault(before, after))).rejects.toThrow(expected);
+  }, 120_000);
+});
+
+async function decisionSynthesisSnapshotRace(sql = decisionSynthesisSetup, isolation = "REPEATABLE READ") {
+  const container = resolveLocalDbContainer();
+  await withSynthesisProbeDatabase(container, async target => {
+    const reader = rollbackSqlConnection(container, target);
+    try {
+      await scenario(sql, async ({ database, query, intent, contextText, statement }) => {
+        const decisionId = id(840), legacyRequest = id(841), reason = "SYNTHETIC retained version-one intent";
+        const scope = { ...actor, responseId: intent.responseId, decisionId };
+        await database.query(`INSERT INTO project_decisions(id,project_id,title,rationale,status)
+          VALUES('${decisionId}','cf0b2bac-b1b0-4032-8f37-748f0c67a5b3','SYNTHETIC legacy decision','SYNTHETIC original rationale','proposed');
+          WITH packet AS (SELECT public.engagement_response_decision_context_v1('${campaignId}','${intent.responseId}','${decisionId}') AS value)
+          INSERT INTO engagement_response_decision_links(id,workspace_id,campaign_id,response_id,decision_id,project_id,predecessor_id,operation,actor_id,reason,payload_json,context_text)
+          SELECT '${legacyRequest}','${workspaceId}','${campaignId}','${intent.responseId}','${decisionId}','cf0b2bac-b1b0-4032-8f37-748f0c67a5b3',NULL,'link','${actorId}','${reason}',
+            jsonb_build_object('campaignId','${campaignId}','responseId','${intent.responseId}','decisionId','${decisionId}',
+              'operation','link','predecessorId',NULL,'expectedContextSha256',value->>'contextSha256','reason','${reason}'),value->>'contextText' FROM packet;
+          COMMIT;`);
+        await reader.query(rpcAdapter);
+        await beginRace(reader, actorId, isolation);
+        const read = raceQuery(reader);
+        const legacy = (await reader.query(`SELECT to_jsonb(l)||jsonb_build_object('payload_text',payload_json::text)
+          FROM engagement_response_decision_links l WHERE id='${legacyRequest}';`)).map(value => JSON.parse(value))[0];
+        const retained = await readDecisionLink(legacy, actor); expect(retained.context.schema).toBe(1);
+        const preview = await read(`SELECT public.read_engagement_response_decision_context('${campaignId}','${intent.responseId}','${decisionId}')`);
+        expect(preview.error).toBeNull();
+        const observed = await readDecisionContext(preview.data, scope);
+        expect(observed.context).toMatchObject({ schema: 2, synthesisHistory: { eventCount: 0 } });
+        // Commit after the second session has established its transaction snapshot.
+        await beginRace(database, actorId);
+        expect((await query(statement(intent, contextText), "service_role")).error).toBeNull();
+        await database.query("COMMIT;");
+        const command = (request: string, operation: string, previous: string | null, digest: string | null) =>
+          `SELECT public.write_engagement_response_decision_link('${campaignId}','${intent.responseId}','${decisionId}',
+            '${request}','${operation}',${literal(previous)},${literal(digest)},'${reason}')`;
+        const replay = await read(command(legacyRequest, "link", null, retained.context_sha256));
+        expect(replay.error, "legacy exact retry was blocked by new capture guards").toBeNull();
+        expect(replay.data, "legacy exact retry changed saved bytes").toEqual({ link: legacy, replayed: true });
+        const newCapture = await read(command(id(842), "refresh", legacyRequest, observed.packet.contextSha256));
+        expect(newCapture.error?.code, "stale transaction captured incomplete synthesis history").toBe("PT409");
+        // Withdrawal does not consult current context and retains the exact version-one packet.
+        const withdrawal = await read(command(id(843), "withdraw", legacyRequest, null));
+        expect(withdrawal.error, "legacy withdrawal was blocked by new capture guards").toBeNull();
+        expect((withdrawal.data as { link: { context_text: string } }).link.context_text).toBe(legacy.context_text);
+      }, false, target);
+    } finally { await reader.close(); }
+  });
+}
+
+describe.skipIf(!LIVE_RLS)("decision synthesis transaction snapshots", () => {
+  it.each(["READ COMMITTED", "REPEATABLE READ"])("refuses stale capture while preserving old retries and withdrawals under %s", isolation => decisionSynthesisSnapshotRace(decisionSynthesisSetup, isolation), 120_000);
+  it("accepts a harmless transaction comment", () => decisionSynthesisSnapshotRace("-- Harmless snapshot control.\n" + decisionSynthesisSetup), 120_000);
+  it("detects fixed-snapshot guard removal", async () => {
+    const before = "IF current_setting('transaction_isolation') <> 'read committed' THEN";
+    expect(decisionSynthesisMigration.includes(before)).toBe(true);
+    await expect(decisionSynthesisSnapshotRace(decisionSynthesisSetup + "\n" + decisionSynthesisFault(before, "IF false THEN"))).rejects.toThrow("stale transaction captured incomplete synthesis history");
+  }, 120_000);
+});
+
+async function decisionSynthesisUpgrade(sql = decisionSynthesisMigration) {
+  await scenario("", async ({ database, client, intent }) => {
+    const decisionId = id(850), scope = { ...actor, responseId: intent.responseId, decisionId };
+    await database.query(`INSERT INTO project_decisions(id,project_id,title,rationale,status)
+      VALUES('${decisionId}','cf0b2bac-b1b0-4032-8f37-748f0c67a5b3','SYNTHETIC upgrade decision','SYNTHETIC upgrade rationale','proposed');
+      PREPARE synthetic_decision_preview AS SELECT public.read_engagement_response_decision_context('${campaignId}','${intent.responseId}','${decisionId}');`);
+    const oldId = await database.query("SELECT 'public.read_engagement_response_decision_context(uuid,uuid,uuid)'::regprocedure::oid;");
+    const originalPacket = JSON.parse((await database.query("EXECUTE synthetic_decision_preview;"))[0]);
+    const original = await readDecisionContext(originalPacket, scope); expect(original.context.schema).toBe(1);
+    const command: DecisionLinkIntent = { requestId: id(851), responseId: intent.responseId, decisionId, operation: "link", predecessorId: null,
+      expectedContextSha256: original.packet.contextSha256, reason: "SYNTHETIC actual pre-upgrade write" };
+    const saved = await writeDecisionLink(client, actor, command); expect(saved.error).toBeNull();
+    await database.query(sql);
+    const packet = JSON.parse((await database.query("EXECUTE synthetic_decision_preview;"))[0]);
+    expect((await readDecisionContext(packet, scope)).context, "prepared preview stayed on the old capture format").toMatchObject({ schema: 2, synthesisHistory: { eventCount: 0 } });
+    expect(await database.query("SELECT 'public.read_engagement_response_decision_context(uuid,uuid,uuid)'::regprocedure::oid;"), "upgrade replaced the authenticated entry point identity").toEqual(oldId);
+    expect((await writeDecisionLink(client, actor, command)).receipt, "upgrade changed the original saved receipt").toEqual({ ...saved.receipt, replayed: true });
+    const rows = await database.query(`SELECT context_text FROM engagement_response_decision_links WHERE id='${command.requestId}';`);
+    expect(rows).toEqual([original.packet.contextText]);
+  });
+}
+
+describe.skipIf(!LIVE_RLS || !DECISION_SYNTHESIS_CANDIDATE)("preactivation decision synthesis upgrade", () => {
+  it("preserves actual old writes and prepared entry points", () => decisionSynthesisUpgrade(), 120_000);
+  it("accepts a harmless upgrade comment", () => decisionSynthesisUpgrade("-- Harmless upgrade control.\n" + decisionSynthesisMigration), 120_000);
+  it("detects replacement of the existing entry point", async () => {
+    const before = "CREATE OR REPLACE FUNCTION public.read_engagement_response_decision_context(";
+    expect(decisionSynthesisMigration.split(before)).toHaveLength(2);
+    const after = "ALTER FUNCTION public.read_engagement_response_decision_context(uuid,uuid,uuid) RENAME TO synthetic_old_decision_context;\nCREATE FUNCTION public.read_engagement_response_decision_context(";
+    await expect(decisionSynthesisUpgrade(decisionSynthesisMigration.replace(before, after))).rejects.toThrow(/prepared preview stayed|entry point identity/);
+  }, 120_000);
 });
