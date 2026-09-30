@@ -81,7 +81,7 @@ it("retains before transport, refuses duplicate clicks, and clears only after a 
   await waitFor(() => expect(sessionStorage.getItem(key)).toBeNull());
   expect(screen.queryByRole("region", { name: "Pending response change" })).toBeNull();
   expect(screen.getByText("My retained words")).toBeVisible();
-  expect(screen.getByText("Response saved.")).toHaveFocus();
+  await waitFor(() => expect(screen.getByText("Response saved.")).toHaveFocus());
 });
 
 it("does not contact the server when the tab cannot retain the request", async () => {

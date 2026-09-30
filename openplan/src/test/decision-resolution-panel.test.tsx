@@ -121,6 +121,8 @@ describe("decision resolution controller", () => {
     fireEvent.click(button); fireEvent.click(button); await waitFor(() => expect(fetch).toHaveBeenCalledOnce()); expect(retry()).toBeDisabled();
     await act(async () => { pending.resolve(reply(resolutionTestPacket(scope, JSON.parse(String(fetch.mock.calls[0][1]?.body))))); });
     expect(fetch).toHaveBeenCalledOnce();
+    await screen.findByText(/Recovery confirmed and copies archived/);
+    expect(resolved).toHaveBeenCalledOnce();
   });
   it.each(["access", "busy"])("does not prepare resolution when blocked by %s", kind => {
     const fetch = successfulFetch(), view = render(<Editor canWrite={kind !== "access"} locked={kind === "busy"}/>);

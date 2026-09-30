@@ -8,6 +8,7 @@ import { loadSynthesisSource } from "@/lib/engagement/synthesis-sources-server";
 import { loadSynthesisResponseContext } from "@/lib/engagement/synthesis-response-links-server";
 import { readSynthesisResponseContext } from "@/lib/engagement/synthesis-response-context-server";
 import { readSynthesisResponseLinkHistory, readSynthesisResponseLinkReceipt, synthesisResponseLinkIntentSchema } from "@/lib/engagement/synthesis-response-records-server";
+import { loadSynthesisResponseLinkHistory, retainSynthesisResponseLink } from "@/lib/engagement/synthesis-response-write-server";
 import { writeResponse } from "@/lib/engagement/response-write";
 import { publicReviewStillCurrent } from "@/lib/engagement/survey-responses";
 import { parseReviewSnapshot, type EngagementReviewSnapshot } from "@/lib/engagement/review-export";
@@ -31,13 +32,16 @@ const signatures: Record<string, string[]> = {
   read_engagement_synthesis_approval_history: ["p_campaign", "p_review"],
   retain_engagement_synthesis_approval: ["p_campaign", "p_actor", "p_workspace", "p_intent"],
   read_engagement_response_history: ["p_campaign"],
+  read_engagement_synthesis_response_link: ["p_campaign", "p_request"],
+  read_engagement_synthesis_response_links: ["p_campaign", "p_review", "p_response", "p_group"],
+  retain_engagement_synthesis_response_link: ["p_campaign", "p_actor", "p_workspace", "p_intent", "p_context_text"],
   write_engagement_response: ["p_campaign", "p_request", "p_operation", "p_response", "p_expected_updated_at", "p_reason", "p_changes"],
 };
 type Packet = { eventText: string; eventSha256: string };
 type Receipt = { event: Packet; replayed: boolean };
 type Intent = typeof actor & { requestId: string; reviewId: string; responseId: string; groupId: string;
   operation: string; reason: string; predecessorId: string | null; predecessorSha256: string | null; expectedContextSha256: string | null };
-type NativeProbe = { database: ReturnType<typeof rollbackSqlConnection>; query: (statement: string, role?: string) => Promise<Result>;
+type NativeProbe = { client: Pick<SupabaseClient, "rpc">; service: Pick<SupabaseClient, "rpc">; database: ReturnType<typeof rollbackSqlConnection>; query: (statement: string, role?: string) => Promise<Result>;
   intent: Intent; contextText: string; statement: (value: unknown, text: string | null, who?: string, workspace?: string) => string };
 type Result = { data: unknown; error: { code: string; message: string } | null };
 
@@ -105,7 +109,7 @@ async function scenario(sql = candidate, probe?: (native: NativeProbe) => Promis
     if (probe) {
       // Setup commands took different advisory keys. Restore every production definition before testing real locks.
       await database.query(`DO $restore$ DECLARE row record; BEGIN FOR row IN SELECT body FROM original_link_lock_functions LOOP EXECUTE row.body; END LOOP; END $restore$;`);
-      await probe({ database, query, intent, contextText: context.packet.contextText, statement });
+      await probe({ client, service, database, query, intent, contextText: context.packet.contextText, statement });
       return;
     }
     const mustFail = async (value: unknown, text: string, code: string, label: string) => expect((await write(value, text)).error?.code, label).toBe(code);
@@ -847,4 +851,64 @@ describe.skipIf(!LIVE_RLS)("candidate application link record readers", () => {
       expect(retained.replayed).toBe(true); expect(retained.event.eventText).toBe(first.event.eventText);
     }, true);
   }, 60_000);
+});
+
+
+describe.skipIf(!LIVE_RLS)("candidate application link write recovery", () => {
+  it("retains exact native context, refreshes, withdraws after removal and denies departed staff recovery", async () => {
+    await scenario(raceCandidate, async ({ database, client, service, query, intent, contextText }) => {
+      const scope = { campaignId, workspaceId, reviewId, responseId: intent.responseId, groupId: intent.groupId };
+      const text = "\n" + contextText, command = { intent: { ...intent, expectedContextSha256: hash(text) }, contextText: text };
+      const first = await retainSynthesisResponseLink(client, service, actor, command);
+      expect(first.event.context.contextText).toBe(text); expect(first.replayed).toBe(false);
+      const before = JSON.parse(first.event.evidence.context.responseHistory.recordText) as { updated_at: string };
+      expect((await query(`SELECT public.write_engagement_response('${campaignId}','${id(1200)}','update','${intent.responseId}',${literal(before.updated_at)},'SYNTHETIC corrected response','{"we_did":"SYNTHETIC changed response"}')`)).error).toBeNull();
+      expect((await retainSynthesisResponseLink(client, service, actor, command)).replayed).toBe(true);
+      const current = await loadSynthesisResponseContext(client, scope);
+      const refresh = { ...intent, requestId: id(1201), operation: "refresh", predecessorId: intent.requestId,
+        predecessorSha256: first.event.eventSha256, expectedContextSha256: current.packet.contextSha256 };
+      const second = await retainSynthesisResponseLink(client, service, actor, { intent: refresh, contextText: current.packet.contextText });
+      expect(second.event.eventNo).toBe(2);
+      expect((await query(`SELECT public.write_engagement_response('${campaignId}','${id(1202)}','remove','${intent.responseId}',${literal(current.response.updated_at)},'SYNTHETIC removed response','{}')`)).error).toBeNull();
+      const withdrawal = { ...intent, requestId: id(1203), operation: "withdraw", predecessorId: refresh.requestId,
+        predecessorSha256: second.event.eventSha256, expectedContextSha256: null };
+      const third = await retainSynthesisResponseLink(client, service, actor, { intent: withdrawal, contextText: null });
+      expect(third.event.context).toEqual(second.event.context);
+      const retained = await loadSynthesisResponseLinkHistory(client, scope);
+      expect(retained.entries.map(row => row.intent.operation)).toEqual(["link", "refresh", "withdraw"]);
+      expect(retained.entries[0].eventText).toBe(first.event.eventText);
+      expect((await retainSynthesisResponseLink(client, service, actor, command)).event.eventText).toBe(first.event.eventText);
+      await database.query(`UPDATE workspace_members SET role='viewer' WHERE workspace_id='${workspaceId}' AND user_id='${actorId}';`);
+      await expect(retainSynthesisResponseLink(client, service, actor, command)).rejects.toMatchObject({ kind: "forbidden" });
+    }, true);
+  }, 60_000);
+  it("recovers the exact saved native request after a simulated lost acknowledgement", async () => {
+    const container = resolveLocalDbContainer();
+    await withSynthesisProbeDatabase(container, async target => {
+      await scenario(raceCandidate, async ({ database, query, intent, contextText }) => {
+        await database.query("COMMIT;");
+        const makeClient = (role: string) => ({ rpc: async (name: string, args: Record<string, unknown>) => {
+          const keys = signatures[name]; if (!keys) throw new Error("Unexpected committed application RPC");
+          expect(Object.keys(args).sort()).toEqual([...keys].sort());
+          await beginRace(database, actorId);
+          const result = await query(`SELECT public.${name}(${keys.map(key => literal(args[key])).join(",")})`, role);
+          await database.query("COMMIT;");
+          return result;
+        } }) as unknown as Pick<SupabaseClient, "rpc">;
+        const client = makeClient("authenticated"), service = makeClient("service_role");
+        let writes = 0;
+      const interrupted = { rpc: async (...args: Parameters<typeof service.rpc>) => {
+        writes++; const result = await service.rpc(...args); expect(result.error).toBeNull();
+        throw new Error("SYNTHETIC lost native acknowledgement");
+      } } as unknown as Pick<SupabaseClient, "rpc">;
+      const receipt = await retainSynthesisResponseLink(client, interrupted, actor, { intent, contextText });
+      expect(receipt.replayed).toBe(true); expect(writes).toBe(1);
+      const reader = rollbackSqlConnection(container, target);
+      try {
+        expect(await reader.query(`SELECT count(*) FROM engagement_synthesis_response_events WHERE id='${intent.requestId}';`), "committed acknowledgement recovery duplicated or lost the event").toEqual(["1"]);
+      } finally { await reader.close(); }
+      expect(receipt.event.context.contextText).toBe(contextText);
+      }, true, target);
+    });
+  }, 120_000);
 });

@@ -29,3 +29,5 @@ Full QA passes lint, dead-code checks, 15,759 tests, provider connector checks, 
 ## Remaining integration
 
 Add authenticated request and history loaders, service-write recovery bound to route-authenticated identity, and durable client intent. Connect the existing Analysis, response and decision controls; extend decision provenance without rewriting schema 1 history. Promote the candidate with populated-upgrade and installed-schema evidence. Complete identified desktop/390px navigation, keyboard, console and artifact verification before a release claim. These record readers do not complete M9b, reviewed exports, resumable generation or V1.
+
+The [authenticated write-service checkpoint](WRITE_VERIFICATION.md) continues request recovery and transactional integration.

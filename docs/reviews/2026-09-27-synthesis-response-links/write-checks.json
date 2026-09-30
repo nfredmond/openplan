@@ -1,0 +1,766 @@
+{
+  "recordedAt": "2026-09-30T04:41:18.324309+00:00",
+  "baseCommit": "9863684f623da45c55b59eb2876fa2300e585911",
+  "state": "Verified private application write service and validation repairs; no route, migration activation or release claim.",
+  "sources": {
+    "openplan/src/lib/engagement/synthesis-response-records-server.ts": "5e9448cac177dedd1d48f8198682f65fb9fcb6d1d0b70f901d027a535d3e5b79",
+    "openplan/src/lib/engagement/synthesis-response-write-server.ts": "e4333a2dedba2c8419add960c1f66c31f72adf9f674e756f54bf2be83816fa69",
+    "openplan/src/test/engagement-synthesis-response-records.test.ts": "02bd8d30e611548bdd731f6855362b915b202f19426dde6068807f363efaf79e",
+    "openplan/src/test/engagement-synthesis-response-write.test.ts": "bccaaa229c2f2bf73c27627bb667c4739d0aff1c4f152657a8e44069598f9d31",
+    "openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts": "8dd0bf86f61a36da2f7cdbc1878036b2374d5b61dfb1fa11858ca46631caaf51",
+    "openplan/src/test/fixtures/engagement/synthesis-response-link.ts": "61491aed818ec99e0e9a6a24ea8acd3279c0f800b61edb4809fbe5b4237fa791",
+    "openplan/src/test/engagement-response-recovery.test.tsx": "edd03106dc08f7e31c0ae1627d372d0ff8fa6fececf50201c113a8630eec519a",
+    "openplan/src/test/decision-resolution-panel.test.tsx": "c18c2bacde1b6e7309807992ddccb1d9a0d6917bb93e3c4cbc8d4b1d2e3ff8a5",
+    "openplan/src/test/translation-resolution-panel.test.tsx": "8a8e96cfbc1c40ef87be1629f256d720e8732bbb760b7b7a7609fb3865120a7e",
+    "openplan/package.json": "9232f2bdafdbb0358d497ab5a0f83c9b12f9ade5c2ad4c64c6fc28ef3251477d",
+    "openplan/package-lock.json": "c4b738aaaab2046ad343fe471a247320a6524201d1426a30fba5acf2aff8c195"
+  },
+  "focused": {
+    "writerUnitTests": 43,
+    "recordUnitTests": 49,
+    "nativeTestsPassed": 3,
+    "nativeTestsSkipped": 122
+  },
+  "unitMutationResults": [
+    {
+      "case": "baseline",
+      "exit": 0,
+      "expectedFailingTest": null,
+      "failedTests": [],
+      "verified": true,
+      "report": "response-write-baseline.json",
+      "sha256": "617ff7cf409885c5714e8809925f8c6074d23a2bfa4d8ee9a070e914b63d8e8b"
+    },
+    {
+      "case": "harmless",
+      "exit": 0,
+      "expectedFailingTest": null,
+      "failedTests": [],
+      "verified": true,
+      "report": "response-write-harmless.json",
+      "sha256": "f1c657859b973b0589296a65b307a2d2d1b8bcc352950ab28e5bd8531e9b4f32"
+    },
+    {
+      "case": "actor",
+      "exit": 1,
+      "expectedFailingTest": "denies a mismatched authenticated",
+      "failedTests": [
+        "authenticated synthesis response link writes denies a mismatched authenticated campaignId before any read or write",
+        "authenticated synthesis response link writes denies a mismatched authenticated workspaceId before any read or write",
+        "authenticated synthesis response link writes denies a mismatched authenticated actorId before any read or write"
+      ],
+      "verified": true,
+      "report": "response-write-actor.json",
+      "sha256": "ac650564182ba2b1912e17cedbf94f7c1aa070440e035440b3cacda84412a53d"
+    },
+    {
+      "case": "expanded-command",
+      "exit": 1,
+      "expectedFailingTest": "rejects malformed commands",
+      "failedTests": [
+        "authenticated synthesis response link writes rejects malformed commands and incorrect context presence"
+      ],
+      "verified": true,
+      "report": "response-write-expanded-command.json",
+      "sha256": "53c907a5c109ef043ca383fb4dbab14e86a1198139f07b95f9720684d379b277"
+    },
+    {
+      "case": "context-presence",
+      "exit": 1,
+      "expectedFailingTest": "rejects malformed commands",
+      "failedTests": [
+        "authenticated synthesis response link writes rejects malformed commands and incorrect context presence"
+      ],
+      "verified": true,
+      "report": "response-write-context-presence.json",
+      "sha256": "a33d1e6ebff4f752cce7dcd7e022265877a413413892d5ea4a35b791758c9e7d"
+    },
+    {
+      "case": "request-address",
+      "exit": 1,
+      "expectedFailingTest": "refuses malformed lookup",
+      "failedTests": [
+        "authenticated synthesis response link writes refuses malformed lookup addresses without invoking RPC"
+      ],
+      "verified": true,
+      "report": "response-write-request-address.json",
+      "sha256": "56369d8c92240972212dba0c2338b13090c5ae632541c567954ba1c4ea4572bb"
+    },
+    {
+      "case": "history-address",
+      "exit": 1,
+      "expectedFailingTest": "refuses malformed lookup",
+      "failedTests": [
+        "authenticated synthesis response link writes refuses malformed lookup addresses without invoking RPC"
+      ],
+      "verified": true,
+      "report": "response-write-history-address.json",
+      "sha256": "1242faeb8f7eb651808bbd06fc961e48f57e8b1729edeefdb2a2b949ca2ae26c"
+    },
+    {
+      "case": "request-error",
+      "exit": 1,
+      "expectedFailingTest": "denies a failed request read",
+      "failedTests": [
+        "authenticated synthesis response link writes denies a failed request read carrying valid data: 42501",
+        "authenticated synthesis response link writes denies a failed request read carrying valid data: XX000"
+      ],
+      "verified": true,
+      "report": "response-write-request-error.json",
+      "sha256": "92e80e408c0e3c976989fcb6b388f371aee0c49196cea640fe06a8817b6cb4f2"
+    },
+    {
+      "case": "request-id",
+      "exit": 1,
+      "expectedFailingTest": "preserves unavailable versus absent",
+      "failedTests": [
+        "authenticated synthesis response link writes preserves unavailable versus absent and rejects a different returned request ID"
+      ],
+      "verified": true,
+      "report": "response-write-request-id.json",
+      "sha256": "bf2ff8d2d6878ce2e6e6d5a3ff71a0dedd9430d8c323dfc8d52767e1ad9e2cd6"
+    },
+    {
+      "case": "request-binding",
+      "exit": 1,
+      "expectedFailingTest": "uses staff reads",
+      "failedTests": [
+        "authenticated synthesis response link writes uses staff reads, exact context bytes and route-authenticated service identity",
+        "authenticated synthesis response link writes recovers an exact old request before current review and history checks",
+        "authenticated synthesis response link writes classifies a verified request for another group as a conflict",
+        "authenticated synthesis response link writes recovers an exact committed request after PT409",
+        "authenticated synthesis response link writes recovers an exact committed request after PT503",
+        "authenticated synthesis response link writes recovers an exact committed request after transport"
+      ],
+      "verified": true,
+      "report": "response-write-request-binding.json",
+      "sha256": "89ca8553852b855a7a4958dcd9ce0f2b65e4573a7311760af7771f2dc9274714"
+    },
+    {
+      "case": "history-error",
+      "exit": 1,
+      "expectedFailingTest": "requires a clean history read",
+      "failedTests": [
+        "synthesis response write boundaries requires a clean history read even when it includes valid data"
+      ],
+      "verified": true,
+      "report": "response-write-history-error.json",
+      "sha256": "60ce2aa6a4cbb48ce10e7e4435c7814883ab312531488cb22853984b3e9cece6"
+    },
+    {
+      "case": "history-verifier",
+      "exit": 1,
+      "expectedFailingTest": "refuses missing or incomplete history",
+      "failedTests": [
+        "authenticated synthesis response link writes refuses missing or incomplete history null",
+        "authenticated synthesis response link writes refuses missing or incomplete history {\"campaignId\":\"c0000000-0000-4000-8000-000000000001\",\"workspaceId\":\"a0000000-0000-4000-8000-000000000001\",\"reviewId\":\"e0000000-0000-4000-8000-000000000001\",\"responseId\":\"e0000000-0000-4000-8000-000000000002\",\"groupId\":\"category-1\",\"entries\":[],\"eventCount\":1,\"headId\":null,\"headSha256\":null}",
+        "authenticated synthesis response link writes recovers a concurrent exact request after the observed history head changes",
+        "authenticated synthesis response link writes refuses an unrelated changed head when the exact request is absent",
+        "authenticated synthesis response link writes withdraws retained context without loading current source or response state",
+        "synthesis response write boundaries refreshes changed context with the exact observed predecessor",
+        "synthesis response write boundaries refuses a fresh acknowledgement with a missing intermediate event",
+        "synthesis response write boundaries refuses an acknowledgement that changes withdrawn context"
+      ],
+      "verified": true,
+      "report": "response-write-history-verifier.json",
+      "sha256": "2038e46180f191aa7a71253830dac3ad330172606e172f357430cd2889c792f4"
+    },
+    {
+      "case": "typed-conflict",
+      "exit": 1,
+      "expectedFailingTest": "classifies a verified request",
+      "failedTests": [
+        "authenticated synthesis response link writes classifies a verified request for another group as a conflict",
+        "authenticated synthesis response link writes verifies acknowledgement bytes and exact intent before success"
+      ],
+      "verified": true,
+      "report": "response-write-typed-conflict.json",
+      "sha256": "7ba047a4f0109384737947cfb4f84b7cec172c4f6be9e4e4b2bdf35119f2e19e"
+    },
+    {
+      "case": "recovered-intent",
+      "exit": 1,
+      "expectedFailingTest": "refuses a different retained command",
+      "failedTests": [
+        "authenticated synthesis response link writes refuses a different retained command reason",
+        "authenticated synthesis response link writes refuses a different retained command actorId"
+      ],
+      "verified": true,
+      "report": "response-write-recovered-intent.json",
+      "sha256": "1898932089e60b78a9d901b1ee646847b895a5632c95d1ce9f389ffaae07e136"
+    },
+    {
+      "case": "recovered-context",
+      "exit": 1,
+      "expectedFailingTest": "refuses a different retained command contextText",
+      "failedTests": [
+        "authenticated synthesis response link writes refuses a different retained command contextText"
+      ],
+      "verified": true,
+      "report": "response-write-recovered-context.json",
+      "sha256": "c6db577a228d3a7d29d2ff330b39dfceb0725b6932968f52b0122aed0f565b46"
+    },
+    {
+      "case": "recover-first",
+      "exit": 1,
+      "expectedFailingTest": "recovers an exact old request before",
+      "failedTests": [
+        "authenticated synthesis response link writes uses staff reads, exact context bytes and route-authenticated service identity",
+        "authenticated synthesis response link writes recovers an exact old request before current review and history checks",
+        "authenticated synthesis response link writes recovers a concurrent exact request after the observed history head changes",
+        "authenticated synthesis response link writes rejects stale context and recovers a racing exact request after current-state conflict",
+        "synthesis response write boundaries rejects a context for a different group before current reads or writes",
+        "synthesis response write boundaries requires a clean history read even when it includes valid data"
+      ],
+      "verified": true,
+      "report": "response-write-recover-first.json",
+      "sha256": "f0cb033f824ecca3cc14de781f91f775fbf6f4b30943ab7a4b9ad62b2df383cd"
+    },
+    {
+      "case": "predecessor-id",
+      "exit": 1,
+      "expectedFailingTest": "rejects a wrong predecessor ID",
+      "failedTests": [
+        "synthesis response write boundaries rejects a wrong predecessor ID even when its digest matches the current head"
+      ],
+      "verified": true,
+      "report": "response-write-predecessor-id.json",
+      "sha256": "b0d0fa6f0a88e2d40fffe68ece5e7b59071928e9595a1ab0213165d2ad2dcdce"
+    },
+    {
+      "case": "predecessor-sha",
+      "exit": 1,
+      "expectedFailingTest": "rejects a wrong predecessor digest",
+      "failedTests": [
+        "synthesis response write boundaries rejects a wrong predecessor digest before current reads or writes"
+      ],
+      "verified": true,
+      "report": "response-write-predecessor-sha.json",
+      "sha256": "9f8c4f7a0301acfd3f8ffaa3ef345009a42bda4035ff91a35ed8ba060c55159f"
+    },
+    {
+      "case": "withdrawal",
+      "exit": 1,
+      "expectedFailingTest": "does not withdraw an already withdrawn",
+      "failedTests": [
+        "synthesis response write boundaries does not withdraw an already withdrawn link"
+      ],
+      "verified": true,
+      "report": "response-write-withdrawal.json",
+      "sha256": "ccedcee68ee9afe34308bece6a733bb5d680e35ef76ec4556e3bdad9bfa16371"
+    },
+    {
+      "case": "context-verifier",
+      "exit": 1,
+      "expectedFailingTest": "verifies submitted context",
+      "failedTests": [
+        "authenticated synthesis response link writes uses staff reads, exact context bytes and route-authenticated service identity",
+        "authenticated synthesis response link writes verifies submitted context before current reads or service writes",
+        "authenticated synthesis response link writes recovers an exact committed request after PT409",
+        "authenticated synthesis response link writes recovers an exact committed request after PT503",
+        "authenticated synthesis response link writes recovers an exact committed request after transport",
+        "authenticated synthesis response link writes keeps unrecovered PT503 distinct as unavailable",
+        "authenticated synthesis response link writes keeps unrecovered 22023 distinct as invalid",
+        "authenticated synthesis response link writes keeps unrecovered 42501 distinct as forbidden",
+        "authenticated synthesis response link writes keeps unrecovered XX000 distinct as unavailable",
+        "authenticated synthesis response link writes keeps an interrupted write unconfirmed when its request is still absent",
+        "authenticated synthesis response link writes verifies acknowledgement bytes and exact intent before success",
+        "synthesis response write boundaries refreshes changed context with the exact observed predecessor",
+        "synthesis response write boundaries refuses a fresh acknowledgement with a missing intermediate event"
+      ],
+      "verified": true,
+      "report": "response-write-context-verifier.json",
+      "sha256": "7e1fc0f03f99ee9f1dfd67e3843deb42b0cf123b2d76927d0f1c1d35d3b668d2"
+    },
+    {
+      "case": "context-group",
+      "exit": 1,
+      "expectedFailingTest": "rejects a context for a different group",
+      "failedTests": [
+        "synthesis response write boundaries rejects a context for a different group before current reads or writes"
+      ],
+      "verified": true,
+      "report": "response-write-context-group.json",
+      "sha256": "0f640904ee4f7a4c80430df4be4e70fa4c8db21d4147fd08590ae87d7af41d47"
+    },
+    {
+      "case": "current-context",
+      "exit": 1,
+      "expectedFailingTest": "rejects stale context",
+      "failedTests": [
+        "authenticated synthesis response link writes rejects stale context and recovers a racing exact request after current-state conflict"
+      ],
+      "verified": true,
+      "report": "response-write-current-context.json",
+      "sha256": "9bc4dd665513ddd65da45b7f71046c6605ecfa231412f129523736bda46bdc84"
+    },
+    {
+      "case": "current-read-error",
+      "exit": 1,
+      "expectedFailingTest": "keeps failed current-context reads unavailable",
+      "failedTests": [
+        "synthesis response write boundaries keeps failed current-context reads unavailable without exposing details"
+      ],
+      "verified": true,
+      "report": "response-write-current-read-error.json",
+      "sha256": "d780768a86116c11f12be02e4d52decca23e635d2c99c8c6a9ab612340ff1c7e"
+    },
+    {
+      "case": "current-recovery",
+      "exit": 1,
+      "expectedFailingTest": "rejects stale context and recovers",
+      "failedTests": [
+        "authenticated synthesis response link writes rejects stale context and recovers a racing exact request after current-state conflict"
+      ],
+      "verified": true,
+      "report": "response-write-current-recovery.json",
+      "sha256": "1dc11c3af00df8da07406661dcd32f38bb567f72b04e9202edebf2a0fe4f4c78"
+    },
+    {
+      "case": "transport-recovery",
+      "exit": 1,
+      "expectedFailingTest": "recovers an exact committed request after transport",
+      "failedTests": [
+        "authenticated synthesis response link writes recovers an exact committed request after transport"
+      ],
+      "verified": true,
+      "report": "response-write-transport-recovery.json",
+      "sha256": "e2d9e381b85664074c6d969fae019458c14875a62da8a71e37c8c59252f25c7d"
+    },
+    {
+      "case": "error-recovery",
+      "exit": 1,
+      "expectedFailingTest": "recovers an exact committed request after PT",
+      "failedTests": [
+        "authenticated synthesis response link writes recovers an exact committed request after PT409",
+        "authenticated synthesis response link writes recovers an exact committed request after PT503"
+      ],
+      "verified": true,
+      "report": "response-write-error-recovery.json",
+      "sha256": "5e160da9dca643e65bd665988d3326220a6047b4894e8cd6d838eb4527dc040f"
+    },
+    {
+      "case": "service-error",
+      "exit": 1,
+      "expectedFailingTest": "keeps unrecovered",
+      "failedTests": [
+        "authenticated synthesis response link writes recovers an exact committed request after PT409",
+        "authenticated synthesis response link writes recovers an exact committed request after PT503",
+        "authenticated synthesis response link writes keeps unrecovered PT409 distinct as conflict",
+        "authenticated synthesis response link writes keeps unrecovered PT503 distinct as unavailable",
+        "authenticated synthesis response link writes keeps unrecovered 22023 distinct as invalid",
+        "authenticated synthesis response link writes keeps unrecovered 42501 distinct as forbidden",
+        "authenticated synthesis response link writes keeps unrecovered XX000 distinct as unavailable"
+      ],
+      "verified": true,
+      "report": "response-write-service-error.json",
+      "sha256": "47cd8d10f3b7229c488af8d9535aec0811fab65703845772fe5f8b76c975ec6c"
+    },
+    {
+      "case": "service-actor",
+      "exit": 1,
+      "expectedFailingTest": "uses staff reads",
+      "failedTests": [
+        "authenticated synthesis response link writes uses staff reads, exact context bytes and route-authenticated service identity"
+      ],
+      "verified": true,
+      "report": "response-write-service-actor.json",
+      "sha256": "1c974c51dc2385d5b6778f4a4290279d35c0999a1e27fbedc3bb3b3e5720ee2c"
+    },
+    {
+      "case": "service-bytes",
+      "exit": 1,
+      "expectedFailingTest": "uses staff reads",
+      "failedTests": [
+        "authenticated synthesis response link writes uses staff reads, exact context bytes and route-authenticated service identity"
+      ],
+      "verified": true,
+      "report": "response-write-service-bytes.json",
+      "sha256": "7b8425fa0ea61ee8e0b605a664d0835c7c4555b4d602ccf31a04978f24e33058"
+    },
+    {
+      "case": "receipt-command",
+      "exit": 1,
+      "expectedFailingTest": "verifies acknowledgement bytes and exact intent",
+      "failedTests": [
+        "authenticated synthesis response link writes verifies acknowledgement bytes and exact intent before success"
+      ],
+      "verified": true,
+      "report": "response-write-receipt-command.json",
+      "sha256": "56a23c4f172b3ea9f722576a38c42407810e6236ed89334b01147f0515fab9ef"
+    },
+    {
+      "case": "receipt-chain",
+      "exit": 1,
+      "expectedFailingTest": "refuses a fresh acknowledgement",
+      "failedTests": [
+        "synthesis response write boundaries refuses a fresh acknowledgement with a missing intermediate event",
+        "synthesis response write boundaries refuses an acknowledgement that changes withdrawn context"
+      ],
+      "verified": true,
+      "report": "response-write-receipt-chain.json",
+      "sha256": "1899f390357b9923965bb24b335e452c279f9a79d045b78c40de456ef6514b19"
+    }
+  ],
+  "integrationMutationResults": [
+    {
+      "case": "scope-baseline",
+      "exit": 0,
+      "verified": true,
+      "expectedFailingTest": null,
+      "failedTests": [],
+      "report": "response-write-scope-baseline.json",
+      "sha256": "cfe165872fae19fffdd16eb7e904924e94d27c99fe37e1ded13e05652b8f10a6"
+    },
+    {
+      "case": "scope-harmless",
+      "exit": 0,
+      "verified": true,
+      "expectedFailingTest": null,
+      "failedTests": [],
+      "report": "response-write-scope-harmless.json",
+      "sha256": "fdb8ea693b396788ff11b369bd9cb82e796e1dab2b8dfc188c716331b295f2e0"
+    },
+    {
+      "case": "scope-before-integrity",
+      "exit": 1,
+      "verified": true,
+      "expectedFailingTest": "keeps corrupt evidence unavailable",
+      "failedTests": [
+        "authenticated synthesis response link writes keeps corrupt evidence unavailable even when the retained command has another group"
+      ],
+      "report": "response-write-scope-before-integrity.json",
+      "sha256": "d1c1c55e45eecdab94681dc6650ec34c6b5a06d3dd6f4f9d4e0dec875ed5bae5"
+    },
+    {
+      "case": "native-baseline",
+      "exit": 0,
+      "verified": true,
+      "expectedFailingTest": null,
+      "failedTests": [],
+      "report": "response-write-native-baseline.json",
+      "sha256": "a75073a223c1165ec1bdd2d1a1193187af98709a3fa30441e34fa05da7e259a4"
+    },
+    {
+      "case": "native-harmless",
+      "exit": 0,
+      "verified": true,
+      "expectedFailingTest": null,
+      "failedTests": [],
+      "report": "response-write-native-harmless.json",
+      "sha256": "233ba8ee2cbcc390535848fc979ed0c2c2414a253a2cb2d4bdd019073a74400e"
+    },
+    {
+      "case": "native-recovery",
+      "exit": 1,
+      "verified": true,
+      "expectedFailingTest": "recovers the exact saved native request",
+      "failedTests": [
+        "candidate application link write recovery retains exact native context, refreshes, withdraws after removal and denies departed staff recovery",
+        "candidate application link write recovery recovers the exact saved native request after a simulated lost acknowledgement"
+      ],
+      "report": "response-write-native-recovery.json",
+      "sha256": "86a102f55d2182a356cc7e13e0e287c07a24ae244d63bf575301349e9ab3129c"
+    },
+    {
+      "case": "native-bytes",
+      "exit": 1,
+      "verified": true,
+      "expectedFailingTest": "retains exact native context",
+      "failedTests": [
+        "candidate application link write recovery retains exact native context, refreshes, withdraws after removal and denies departed staff recovery"
+      ],
+      "report": "response-write-native-bytes.json",
+      "sha256": "058726809b871cda273d258145dbe6a97ab033885765fc74c43763938144918c"
+    }
+  ],
+  "focusAssertionMutationResults": [
+    {
+      "case": "baseline",
+      "exit": 0,
+      "verified": true,
+      "failedTests": [],
+      "report": "response-write-focus-baseline.json",
+      "sha256": "4a9a7ac5978bede81275ce98fbcb4f22a5f519419803be4666fbb39aef914663"
+    },
+    {
+      "case": "harmless",
+      "exit": 0,
+      "verified": true,
+      "failedTests": [],
+      "report": "response-write-focus-harmless.json",
+      "sha256": "1270e8b413013ed5c754b3e69f240d893937932a9cf7ec6f0ca7d6d2f6b79fcf"
+    },
+    {
+      "case": "missing-focus",
+      "exit": 1,
+      "verified": true,
+      "failedTests": [
+        "retains before transport, refuses duplicate clicks, and clears only after a confirmed receipt"
+      ],
+      "report": "response-write-focus-missing-focus.json",
+      "sha256": "a7243b7e3166ff3f7bcf243ae59f4dc6d8fdb78f352871b83a54a51497e97581"
+    }
+  ],
+  "database": {
+    "result": "0|||347",
+    "probeDatabases": 0,
+    "candidateObjectsAbsent": true,
+    "installedMigrations": 347,
+    "afterUpdatedDependencies": "0|||347"
+  },
+  "parentCI": {
+    "CI": {
+      "id": 36365848419,
+      "conclusion": "success"
+    },
+    "RLS": {
+      "id": 36365848440,
+      "conclusion": "success"
+    }
+  },
+  "logs": [
+    {
+      "name": "response-write-native-final.log",
+      "sha256": "84b8a4d21e101213fbb6590f88f3dd2fa0659e562a24470970da84170f962acb"
+    },
+    {
+      "name": "response-write-types-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "response-write-mutations-final.log",
+      "sha256": "cb01e88c01ece842e32c6034a9ef7ff75430be89d9cd2a1a561a7d96e9371bd8"
+    },
+    {
+      "name": "response-write-mutations.json",
+      "sha256": "7a10536cd126d08fcdba9987ba5dc59564ca3fe5252d0eb8d56ea92f16f25380"
+    },
+    {
+      "name": "response-write-integration-mutations.log",
+      "sha256": "a5f99702e664d4c6e0028613fde92611b9b97a1b8695c9dc1c486aac2ffbd12f"
+    },
+    {
+      "name": "response-write-integration-mutations.json",
+      "sha256": "13a730fb92e9316b29699d58324e71935a33a77207ff8849b5db329c9ddab179"
+    },
+    {
+      "name": "response-write-scope-gap-app.log",
+      "sha256": "0193095aa7408a6b8921149c6c82844fa29607d53e5f755f87e435744ce57f18"
+    },
+    {
+      "name": "response-write-qa.log",
+      "sha256": "64533dbafee1c8b4e16bf50e6f3faf8c2ea6f90acdf1c7963a91d9cf59980e0a"
+    },
+    {
+      "name": "response-write-shuffled.log",
+      "sha256": "1b7164bb22b5935caa02532509153bdb1362d1be01c2fe380c1a97cf24973edb"
+    },
+    {
+      "name": "response-write-qa-after-crash.log",
+      "sha256": "dc3eeb91b84fbbe2757b6c17379a95e3300f18aabc1d10ff07cef33a1ce59560"
+    },
+    {
+      "name": "response-write-shuffled-after-crash.log",
+      "sha256": "d046db20443646e634183e7be9df2d32dac00cb5bfa9fc7bfdf2d121a6266a01"
+    },
+    {
+      "name": "response-write-recovery-investigation.json",
+      "sha256": "2992a79080bd38827e7bc763044c57610071170f0240ec1237a0c3ecf24053e6"
+    },
+    {
+      "name": "response-write-focus-mutations.log",
+      "sha256": "9bb841abc09232e3eb9a840d4c5e212aeb53fae05ef247ce013394ca48b69a1b"
+    },
+    {
+      "name": "response-write-focus-mutations.json",
+      "sha256": "69ebf1d03249f67707ffca416b5bb18e5d7cac1d450efc1e52e9d9fce86f7419"
+    },
+    {
+      "name": "response-write-qa-final-after-crash.log",
+      "sha256": "d6657106e4a88943958144191d1de12e157f902108645b83419e648f09b39069"
+    },
+    {
+      "name": "response-write-qa-final-after-crash.json",
+      "sha256": "a3bce494c5b3fc82dbe048c04adcbf7caf687b59557f3c16e071b8e1173a6d0c"
+    },
+    {
+      "name": "response-write-shuffled-final-after-crash.log",
+      "sha256": "4e9f3870abb8efadecbefdc5fae2aaaad8d3e0cb8942411207cbba5535e6dc78"
+    },
+    {
+      "name": "response-write-shuffled-final-after-crash.json",
+      "sha256": "f2ca6cd42b762fd31aa1aa23cd54ec040588d74f4017da8bc563fec33d9b3b03"
+    },
+    {
+      "name": "response-write-resolution-unfinished.json",
+      "sha256": "f74dc831dad37003929683fea7918696866f6cbc0fa97d2b2f2f2ee08f8ba519"
+    },
+    {
+      "name": "response-write-resolution-mutations.json",
+      "sha256": "9fe567bcb52f1d03aa5d9cd268e0110045333cf05fec8f6c6b7c61321f3be9eb"
+    },
+    {
+      "name": "response-write-resolution-mutations.log",
+      "sha256": "929ff9d1fb1fef60c15c9bf0afa050693dc0296acc4adeb388f9ca2a336e48aa"
+    },
+    {
+      "name": "response-write-audit-before.json",
+      "sha256": "fdaf3bb3cdd33e8cfd94b35d142c5276b3e07fb25f8686e4d23485eb587a3859"
+    },
+    {
+      "name": "response-write-dependency-update.log",
+      "sha256": "2103804259ca0d472b1408249e737a7ea530483825a07b28db066ae2338eeb80"
+    },
+    {
+      "name": "response-write-isolated-install.log",
+      "sha256": "425cc3fadf5b232e6e31fed6486a50b9c36fff0dbd942a085740c4c424a9646f"
+    },
+    {
+      "name": "response-write-qa-verified.json",
+      "sha256": "cd24ec5691be10e10792695a83e94e5d888f02d5380f3f6f29a626ae56766fa2"
+    },
+    {
+      "name": "response-write-qa-verified.log",
+      "sha256": "a59dd4f31ef30edf8e72589b4b9848b5e03f59bd586b640b3524439877d034db"
+    },
+    {
+      "name": "response-write-shuffled-verified.json",
+      "sha256": "65f1030ba15ec6eb16f05f418bb246af20bd6891e5ef2cb7621a8164289ae56e"
+    },
+    {
+      "name": "response-write-shuffled-verified.log",
+      "sha256": "9f99b34b3bb24b086a94c6f0dd7d6d765893aedc63e2ed5414ea27bb718c2a4e"
+    },
+    {
+      "name": "response-write-native-verified.json",
+      "sha256": "fe5723f0ab9cfd3b4d356f8d57fc31511840f04218f2da40bbe56f6c83a518e4"
+    },
+    {
+      "name": "response-write-native-verified.log",
+      "sha256": "5299085a53edd799bd468bfccf5a9ec7aa168a80077fa2f0ba736595fa67e013"
+    }
+  ],
+  "limits": [
+    "Current-context and RPC transport are mocked in write unit tests; record and context verification are real.",
+    "Focused native integration uses synthetic data and a disposable committed database; not HTTP or browser evidence.",
+    "The three-case focused native run does not repeat the complete 122-case concurrency result.",
+    "No installed candidate, populated upgrade or worker change.",
+    "Focus test uses jsdom; it does not establish browser usability.",
+    "v0.63.0 remains the latest release."
+  ],
+  "resolutionCompletionMutationResults": [
+    {
+      "case": "baseline",
+      "exit": 0,
+      "verified": true,
+      "failedTests": [],
+      "report": "response-write-resolution-baseline.json",
+      "sha256": "00ecff9ad81820a8f55be8102fd7a558574765f7f07a01ce69e4407700ceedcd"
+    },
+    {
+      "case": "harmless",
+      "exit": 0,
+      "verified": true,
+      "failedTests": [],
+      "report": "response-write-resolution-harmless.json",
+      "sha256": "87b73a9e663e84331742761aaf511c92a702a1c4983a4d98bdb4d6d3bd1b3e68"
+    },
+    {
+      "case": "decision-resolution-panel",
+      "exit": 1,
+      "verified": true,
+      "failedTests": [
+        "decision resolution controller retains both copies before dispatch with pinned login and archives confirmed receipts",
+        "decision resolution controller retries the exact resolution after acknowledgement loss and lost browser storage",
+        "decision resolution controller prevents double dispatch while a resolution is in flight",
+        "resolution access restoration retries the same resolution while the cancelled response is still pending"
+      ],
+      "report": "response-write-resolution-decision-resolution-panel.json",
+      "sha256": "5fedb9d346629116bf006242a21e4aba85c80e90f43f49e30b1c3af7525ae103"
+    },
+    {
+      "case": "translation-resolution-panel",
+      "exit": 1,
+      "verified": true,
+      "failedTests": [
+        "generation resolution controller retains both copies before dispatch with pinned login and archives confirmed receipts",
+        "generation resolution controller retries the exact resolution after acknowledgement loss and lost browser storage",
+        "generation resolution controller prevents double dispatch while a resolution is in flight",
+        "resolution access restoration retries the same resolution while the cancelled response is still pending"
+      ],
+      "report": "response-write-resolution-translation-resolution-panel.json",
+      "sha256": "d393ef4af43cc0dc9388da2c43f0c1d2502fafdfa13f947830255ee8d3b8c55f"
+    }
+  ],
+  "dependencyInstall": {
+    "startedAt": "2026-09-30T04:32:31.484639+00:00",
+    "state": "completed",
+    "sharedModulesPreservedAt": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/response-write-original-node-modules",
+    "exit": 0,
+    "finishedAt": "2026-09-30T04:32:39.487336+00:00"
+  },
+  "qa": {
+    "check": "qa",
+    "command": [
+      "npm",
+      "run",
+      "qa:gate"
+    ],
+    "cwd": "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan",
+    "startedAt": "2026-09-30T04:33:40.854471+00:00",
+    "wrapperPid": 2407961,
+    "state": "completed",
+    "pid": 2408238,
+    "exit": 0,
+    "finishedAt": "2026-09-30T04:40:22.341688+00:00",
+    "testsPassed": 15802,
+    "testsSkipped": 754,
+    "filesPassed": 1336,
+    "filesSkipped": 60,
+    "providerPassed": 382,
+    "providerSkipped": 4,
+    "dependencyVulnerabilities": 0,
+    "build": "passed",
+    "liveRls": "Not run through ordinary QA; separate focused native candidate and parent-main isolation evidence."
+  },
+  "shuffled": {
+    "check": "shuffled",
+    "command": [
+      "node",
+      "scripts/ops/test-shuffled.mjs",
+      "672286"
+    ],
+    "cwd": "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan",
+    "startedAt": "2026-09-30T04:33:40.853234+00:00",
+    "wrapperPid": 2407962,
+    "state": "completed",
+    "pid": 2408237,
+    "exit": 0,
+    "finishedAt": "2026-09-30T04:35:52.227336+00:00",
+    "testsPassed": 15802,
+    "testsSkipped": 754,
+    "seed": 672286
+  },
+  "native": {
+    "check": "native",
+    "command": [
+      "node",
+      "--env-file-if-exists=.env.local",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "src/test/engagement-synthesis-response-candidate-rls.test.ts",
+      "-t",
+      "candidate application link"
+    ],
+    "cwd": "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan",
+    "startedAt": "2026-09-30T04:33:40.855694+00:00",
+    "wrapperPid": 2407963,
+    "state": "completed",
+    "pid": 2408240,
+    "exit": 0,
+    "finishedAt": "2026-09-30T04:34:02.231609+00:00",
+    "testsPassed": 3,
+    "testsSkipped": 122
+  }
+}

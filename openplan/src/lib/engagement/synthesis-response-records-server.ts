@@ -32,10 +32,13 @@ const eventSchema = z.object({
   context: z.object({ contextText: z.string(), contextSha256: digest }).strict(),
 }).strict();
 
+/** A verified retained record may belong to another command; corruption remains a separate failure. */
+export class SynthesisResponseLinkConflictError extends Error {}
+
 function checkScope(actual: SynthesisResponseLinkScope, expected: SynthesisResponseLinkScope) {
   if (actual.campaignId !== expected.campaignId || actual.workspaceId !== expected.workspaceId
     || actual.reviewId !== expected.reviewId || actual.responseId !== expected.responseId || actual.groupId !== expected.groupId) {
-    throw new Error("Synthesis response link scope differs");
+    throw new SynthesisResponseLinkConflictError("Synthesis response link scope differs");
   }
 }
 
@@ -47,14 +50,14 @@ export async function readSynthesisResponseLinkEvent(raw: unknown, expected: Syn
     throw new Error("Synthesis response event checksum differs");
   }
   const event = eventSchema.parse(JSON.parse(packet.eventText));
-  checkScope(event.intent, scope);
   if ((event.eventNo === 1) !== (event.intent.operation === "link")) throw new Error("Synthesis response event sequence differs");
-  const { groupId, ...contextScope } = scope;
-  const evidence = await readSynthesisResponseContext(event.context, contextScope);
+  const { campaignId, workspaceId, reviewId, responseId, groupId } = event.intent;
+  const evidence = await readSynthesisResponseContext(event.context, { campaignId, workspaceId, reviewId, responseId });
   if (evidence.context.groupId !== groupId) throw new Error("Synthesis response context group differs");
   if (event.intent.operation !== "withdraw" && event.intent.expectedContextSha256 !== event.context.contextSha256) {
     throw new Error("Synthesis response intended context differs");
   }
+  checkScope(event.intent, scope);
   return { ...packet, ...event, evidence };
 }
 type VerifiedEvent = Awaited<ReturnType<typeof readSynthesisResponseLinkEvent>>;
@@ -117,6 +120,6 @@ export async function readSynthesisResponseLinkReceipt(raw: unknown, expected: S
   const receipt = z.object({ event: packetSchema, replayed: z.boolean() }).strict().parse(raw);
   const { campaignId, workspaceId, reviewId, responseId, groupId } = intent;
   const event = await readSynthesisResponseLinkEvent(receipt.event, { campaignId, workspaceId, reviewId, responseId, groupId });
-  if (!isDeepStrictEqual(event.intent, intent)) throw new Error("Synthesis response receipt differs from the exact command");
+  if (!isDeepStrictEqual(event.intent, intent)) throw new SynthesisResponseLinkConflictError("Synthesis response receipt differs from the exact command");
   return { event, replayed: receipt.replayed };
 }
