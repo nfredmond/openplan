@@ -191,5 +191,6 @@
   "retain_engagement_synthesis_generation_output(uuid,uuid,text,text)",
   "read_engagement_synthesis_generation_execution_status(uuid,uuid)",
   "select_engagement_synthesis_generation_attempt(uuid,bigint,uuid,uuid,uuid,text)",
-  "read_engagement_synthesis_generation_selections(uuid,bigint,bigint,integer)"
+  "read_engagement_synthesis_generation_selections(uuid,bigint,bigint,integer)",
+  "read_engagement_synthesis_generation_selection_history(uuid,uuid,bigint,bigint,integer)"
 ]

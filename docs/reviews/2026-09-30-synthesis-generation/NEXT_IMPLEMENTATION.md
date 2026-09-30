@@ -36,3 +36,16 @@ Read-only inspection while exact release CI runs. These findings refine the next
 - The segment recipe declares references with `includedInTask:false`, and marks a record complete only when it fits one task. A complete segment result is not record-level or historical-context interpretation. The next stage must load the retained referenced definitions and all selected segment outputs, and preserve explicit incomplete status if a configured resource ceiling prevents complete contextual processing.
 
 The native selected-output join remains the first missing implementation. Complete generation still also needs resumable contextual stages, retained machine proposals, explicit staff import/review, current-staff historical inspection and browser recovery. Do not advertise the first join as completion of that outcome.
+
+
+## Context input requirements after the historical-reader candidate
+
+The selected-output join is now on main `6b25a6d9`, with passing exact-commit CI and isolation checks. The [authenticated historical-reader candidate](HISTORY_ACCESS.md) adds current-staff access separately from execution permission. Its remaining gate status is recorded there. Neither increment implements contextual processing.
+
+A retained selection sequence fixes the chosen attempts, but an output may arrive later for an already-selected attempt. A contextual-stage request must therefore retain the verified result inventory checksum and exact native output/capture hashes as well as the sequence. Missing, invalid, interrupted and provider-incomplete results cannot become complete inputs merely because the sequence is stable. Historical reads still allow inspection of these incomplete states.
+
+The source records declare campaign context, historical definitions, parent comments and survey sessions as references. Resolve the entire reachable dependency graph from the saved snapshot. Use deterministic ordering and an iterative visited set, preserving cycle edges and unavailable reference identities. Do not replace a missing historical definition with a current mutable definition. Context and session records remain dependencies, not additional participant contributions.
+
+Retain every segment observation, citation, uncertainty statement and exact source reference through subsequent processing. Part-level coverage proves accounting, not record-level or contextual interpretation. A bounded resource ceiling may leave work explicitly incomplete; it cannot silently discard a long record or prior continuation state. Final staff acceptance must retain machine authorship and dependency checksums, create a new review revision, and preserve approvals on their original revision.
+
+These requirements guide the next implementation. No contextual stage, machine proposal or staff import is implemented by this note.

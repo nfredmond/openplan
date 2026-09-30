@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { describe, expect, it, vi } from "vitest";
-import { readSynthesisGenerationSelections } from "@/lib/engagement/synthesis-generation-selections-server";
+import { readSynthesisGenerationSelections, readSynthesisGenerationHistoricalSelections } from "@/lib/engagement/synthesis-generation-selections-server";
 import { createSynthesisGenerationPlan } from "@/lib/engagement/synthesis-generation-plan";
 import { makeSourceSnapshot, savedSource, sourceScope, sourceHash } from "./fixtures/engagement/synthesis-source";
 
@@ -27,6 +27,31 @@ function fixture(pages: unknown[] = [page()], error: unknown = null) {
   return { service: { rpc } as unknown as Pick<SupabaseClient, "rpc">, rpc, abortSignal };
 }
 describe("retained synthesis selection inventory", () => {
+  it("replays an explicit earlier sequence instead of reading current choices", async () => {
+    const f = fixture([page({ throughSequence: 1, entries: [receipt(0)] })]);
+    const result = await readSynthesisGenerationSelections(f.service, { ...args, throughSequence: 1 });
+    expect(result.throughSequence).toBe(1); expect(result.entries).toHaveLength(1);
+    expect(f.rpc).toHaveBeenCalledExactlyOnceWith("read_engagement_synthesis_generation_selections", {
+      p_request: request.id, p_through_sequence: 1, p_after_task_index: -1, p_limit: 128,
+    });
+    await expect(readSynthesisGenerationSelections(fixture().service, { ...args, throughSequence: 1 })).rejects.toThrow("selections differ");
+  });
+  it("preserves explicit sequence zero and rejects invalid saved sequence values before querying", async () => {
+    const f = fixture([page({ throughSequence: 0, entries: [] })]);
+    expect((await readSynthesisGenerationSelections(f.service, { ...args, throughSequence: 0 })).entries).toEqual([]);
+    expect(f.rpc).toHaveBeenCalledWith("read_engagement_synthesis_generation_selections", expect.objectContaining({ p_through_sequence: 0 }));
+    for (const throughSequence of [-1, 0.5, Number.MAX_SAFE_INTEGER + 1, NaN]) {
+      const invalid = fixture(); await expect(readSynthesisGenerationSelections(invalid.service, { ...args, throughSequence })).rejects.toThrow();
+      expect(invalid.rpc).not.toHaveBeenCalled();
+    }
+  });
+  it("uses the authenticated history command and retains original receipt actors", async () => {
+    const f = fixture(); const result = await readSynthesisGenerationHistoricalSelections(f.service, { ...args, throughSequence: 2 });
+    expect(result.entries.every(entry => entry.receipt.actorId === actorId)).toBe(true);
+    expect(f.rpc).toHaveBeenCalledExactlyOnceWith("read_engagement_synthesis_generation_selection_history", {
+      p_campaign: sourceScope.campaignId, p_request: request.id, p_through_sequence: 2, p_after_task_index: -1, p_limit: 128,
+    });
+  });
   it("uses explicit receipt choices and preserves an anchored cursor across pages", async () => {
     const f = fixture([page({ entries: [receipt(0)], hasMore: true }), page({ afterTaskIndex: 0, entries: [receipt(1)] })]);
     const result = await readSynthesisGenerationSelections(f.service, args);

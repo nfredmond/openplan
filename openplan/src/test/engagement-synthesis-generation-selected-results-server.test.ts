@@ -2,7 +2,7 @@
 import { randomUUID } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { readSynthesisGenerationSelectedResults } from "@/lib/engagement/synthesis-generation-selected-results-server";
+import { readSynthesisGenerationSelectedResults, loadSynthesisGenerationHistory } from "@/lib/engagement/synthesis-generation-selected-results-server";
 import { createSynthesisGenerationApiResult } from "@/lib/engagement/synthesis-generation-api-result";
 import { verifySynthesisGenerationApiDispatchReceipt, verifySynthesisGenerationApiDispatch } from "@/lib/engagement/synthesis-generation-api";
 import { createSynthesisGenerationResult, type SynthesisGenerationAttemptBinding } from "@/lib/engagement/synthesis-generation-results";
@@ -71,11 +71,63 @@ async function fixture() {
     return Object.assign(result, { abortSignal: () => result });
   });
   const service = { from, rpc } as unknown as Pick<SupabaseClient, "from" | "rpc">;
+  const historyRecord = { schemaVersion: 1, campaignId: sourceScope.campaignId, workspaceId: sourceScope.workspaceId,
+    request: { ...request, actorId: args.actorId, createdAt: "2026-09-30T00:00:00Z" }, cancellation: null };
+  const historyOptions = { failRequest: false, failSource: false, loseAccessAtEnd: false, changeAtEnd: false };
+  let requestReads = 0;
+  const historyRpc = vi.fn((name: string) => {
+    let data: unknown, error: { code: string } | null = null;
+    if (name === "read_engagement_synthesis_generation_request") {
+      requestReads++; data = structuredClone(historyRecord);
+      if (historyOptions.failRequest || (requestReads > 1 && historyOptions.loseAccessAtEnd)) error = { code: "42501" };
+      if (requestReads > 1 && historyOptions.changeAtEnd) data = { ...historyRecord, request: { ...historyRecord.request, actorId: randomUUID() } };
+    } else if (name === "read_engagement_synthesis_sources") {
+      data = f.saved; if (historyOptions.failSource) error = { code: "42501" };
+    } else if (name === "read_engagement_synthesis_generation_selection_history") return rpc("read_engagement_synthesis_generation_selections");
+    else throw new Error(`Unexpected history RPC ${name}`);
+    const result = Promise.resolve({ data, error }); return Object.assign(result, { abortSignal: () => result });
+  });
+  const historyClient = { rpc: historyRpc } as unknown as Pick<SupabaseClient, "rpc">;
+  const historyScope = { campaignId: sourceScope.campaignId, workspaceId: sourceScope.workspaceId, requestId: request.id };
   return { ...f, service, args, binding, attemptId, workerId, authorizationId, dispatch, selection, rows, trace, options, from, rpc,
-    selections, additionalRows, sealDispatch, capture, read: () => readSynthesisGenerationSelectedResults(service, args, f.controller.signal) };
+    selections, additionalRows, sealDispatch, capture, read: () => readSynthesisGenerationSelectedResults(service, args, f.controller.signal),
+    historyRecord, historyOptions, historyRpc, historyScope, historyClient,
+    history: () => loadSynthesisGenerationHistory(historyClient, service, historyScope, f.controller.signal) };
 }
 
 describe("native selected synthesis output custody", () => {
+  it("loads historical authority and source through the authenticated client and rechecks access", async () => {
+    const f = await fixture(), result = await f.history();
+    expect(result.requesterId).toBe(f.args.actorId); expect(result.inventory.status).toBe("ready_for_record_consolidation");
+    expect(f.historyRpc.mock.calls).toEqual([
+      ["read_engagement_synthesis_generation_request", { p_campaign: f.historyScope.campaignId, p_request: f.historyScope.requestId }],
+      ["read_engagement_synthesis_sources", { p_campaign: f.historyScope.campaignId, p_request: f.saved.requestId }],
+      ["read_engagement_synthesis_generation_selection_history", { p_campaign: f.historyScope.campaignId, p_request: f.historyScope.requestId,
+        p_through_sequence: null, p_after_task_index: -1, p_limit: 128 }],
+      ["read_engagement_synthesis_generation_request", { p_campaign: f.historyScope.campaignId, p_request: f.historyScope.requestId }],
+    ]);
+    expect(f.providerCalls).toHaveLength(0);
+  });
+  it.each(["campaignId", "workspaceId", "requestId"])("refuses historical request scope drift %s before service reads", async field => {
+    const f = await fixture(); if (field === "requestId") f.historyRecord.request.id = randomUUID();
+    else f.historyRecord[field as "campaignId" | "workspaceId"] = randomUUID();
+    await expect(f.history()).rejects.toThrow("differs"); expect(f.from).not.toHaveBeenCalled();
+    expect(f.historyRpc).toHaveBeenCalledTimes(1);
+  });
+  it.each(["failRequest", "failSource", "loseAccessAtEnd", "changeAtEnd"] as const)("refuses historical %s", async mode => {
+    const f = await fixture(); f.historyOptions[mode] = true;
+    await expect(f.history()).rejects.toThrow(mode === "changeAtEnd" ? "differs" : "unavailable");
+    if (mode === "failRequest" || mode === "failSource") expect(f.from).not.toHaveBeenCalled();
+  });
+  it("does not read private history after an aborted request", async () => {
+    const f = await fixture(); f.controller.abort(); await expect(f.history()).rejects.toMatchObject({ name: "AbortError" });
+    expect(f.historyRpc).not.toHaveBeenCalled(); expect(f.from).not.toHaveBeenCalled();
+  });
+  it("passes a retained history sequence through without replacing it with latest", async () => {
+    const f = await fixture();
+    await loadSynthesisGenerationHistory(f.historyClient, f.service, { ...f.historyScope, throughSequence: f.plan.entries.length }, f.controller.signal);
+    expect(f.historyRpc).toHaveBeenCalledWith("read_engagement_synthesis_generation_selection_history", expect.objectContaining({ p_through_sequence: f.plan.entries.length }));
+  });
   it("joins source-bound choices to original bytes with explicit projections and no provider calls", async () => {
     const f = await fixture(), result = await f.read();
     expect(result.inventory.status).toBe("ready_for_record_consolidation");

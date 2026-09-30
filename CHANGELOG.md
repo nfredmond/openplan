@@ -20,7 +20,15 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No unreleased changes.
+Internal synthesis readers join selected attempts to their original provider
+responses, task records and execution receipts. Current campaign staff can inspect
+retained choices after cancellation or the original requester's departure, using
+their own authenticated access. Explicit sequence anchors preserve earlier choices.
+These reads do not renew execution permission or make provider calls. Complete
+context consolidation, machine-draft import and the staff generation interface
+remain unfinished. Apply
+`20261014000036_engagement_synthesis_generation_history.sql` before using the
+new authenticated history command.
 
 ## 0.65.0 (2026-09-30)
 

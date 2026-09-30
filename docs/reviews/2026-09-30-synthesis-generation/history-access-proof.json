@@ -1,0 +1,231 @@
+{
+  "state": "Locally verified unreleased checkpoint. Exact-commit GitHub checks follow the push.",
+  "baseCommit": "6b25a6d9ce9661579ea740b6b617623061a1ff6c",
+  "sourceHashes": {
+    "openplan/src/test/engagement-synthesis-generation-history-rls.test.ts": "4fed1bbe91e3b383d7d1e5a13f2c891f8dd712f63251a7c584b51e40d5d41946",
+    "openplan/src/test/fixtures/engagement/synthesis-generation-history.sql": "3095bffeaf4a4109360dd02bb8a35fb56d8eee3688a7e02c09a8e3cf8421a7b1",
+    "openplan/supabase/migrations/20261014000036_engagement_synthesis_generation_history.sql": "d86ef9d1f28996c863237387a62b66db168b9bda0efd860a35c5a69f425cfb11",
+    "openplan/package.json": "141db74609ff6647d0adb015db8942ae3ff2266d9409acf144a1cafb0a039310",
+    "openplan/src/lib/engagement/synthesis-generation-selected-results-server.ts": "b0072cfbed976389946d32c9b4f2c3b68545422b56ea2fdf1f9d1844146fe7b4",
+    "openplan/src/lib/engagement/synthesis-generation-selections-server.ts": "4cd6aa77de5beb413076aadb35477ed0ef70024e42942a41eaddcae3b6e61585",
+    "openplan/src/test/engagement-synthesis-generation-selected-results-server.test.ts": "492b07973a93e50fb854a5dc2d02395e0b35dd5bc00252d571372eefb0980b70",
+    "openplan/src/test/engagement-synthesis-generation-selections-server.test.ts": "7c4c36983605fbe31b451710f0df23e5927f1373f3eb03714380be245696a066",
+    "openplan/src/test/engagement-synthesis-generation-worker-live.test.ts": "dfc55bc5691511e30042f74e71613a76e9b3fd4e10d999a7941b1441d005398f",
+    "openplan/src/test/fixtures/application-trusted-search-paths.json": "77f186358afafb3e705aab87250706d3a215720931a093ea8019843a966db147"
+  },
+  "unitMutations": [
+    {
+      "case": "harmless-history",
+      "control": true,
+      "exit": 0,
+      "status": "survived",
+      "logSha256": "e1b179d1787abdb88e70d56c6ba4232efbd20d671e6041be3af2c9c064138ad3"
+    },
+    {
+      "case": "wrong-read-client",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "608a14648dd23342ced0f425c117b4dd3bc990096ac11f735d78a238c88198e9"
+    },
+    {
+      "case": "ignore-campaign",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "855bf9a8ba389de539dc538bbc6cb475e1d3ed8b03aacb26fe742534ee344e9a"
+    },
+    {
+      "case": "ignore-workspace",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "a8744222fdec208a15390bd6002cad0de4ee547bfd61616ae0dc107f8e63e27c"
+    },
+    {
+      "case": "ignore-request",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "ebc0b063eecb9fa9405be6997c90c01c2feba23dbd05be25cb697c95f5c08237"
+    },
+    {
+      "case": "ignore-request-denial",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "b8fe5a9324672ffa5d86b99bac088cac4b004af71ae4038e0c11bd729e08145f"
+    },
+    {
+      "case": "ignore-source-denial",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "11bcbc27998f66e742bcf4812c5aef0971ae0877edb529c8e357a501181e1d0e"
+    },
+    {
+      "case": "omit-final-access-check",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "47972f828bc5537439d1c957af4d428d27d2bc73a034deb09777a4ad760ba48b"
+    },
+    {
+      "case": "service-source-read",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "4d0f019f9e0ca3a90453c679d1f7625937a9605a5be1bdfc1c268a0305413de1"
+    },
+    {
+      "case": "discard-anchor",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "8f61a06dc28ebeb55e1e0f21b890247f4af4b2db698780957256686d9a9395e7"
+    },
+    {
+      "case": "zero-becomes-latest",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "38b85e014d9c3870b3a7a5f1fa6beb0d368383534c82a6589fd2955c3419d82a"
+    },
+    {
+      "case": "history-without-campaign",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "1f5436f56ba72cee90af4d462bdccf738ec986c4fd272a7b60a648c70c3a9483"
+    }
+  ],
+  "nativeMutations": {
+    "cases": [
+      {
+        "case": "harmless",
+        "exit": 0,
+        "expectedExit": 0,
+        "valid": true,
+        "log": "generation-history-native-harmless.log",
+        "sha256": "6d7b97a715243c18b328337fbbb6b92e5dcabbfb3b21ebc6dd127e1c51bdac92"
+      },
+      {
+        "case": "dropped-output",
+        "exit": 1,
+        "expectedExit": 1,
+        "valid": true,
+        "log": "generation-history-native-dropped-output.log",
+        "sha256": "4d061195f95f038e6922ab9de13b7c9d294f6a27e606346ea2121dfa05131417"
+      },
+      {
+        "case": "wrong-client",
+        "exit": 1,
+        "expectedExit": 1,
+        "valid": true,
+        "log": "generation-history-native-wrong-client.log",
+        "sha256": "0fdc3a9fbe2db53f61dbb61ceca24308949c5cc4f1b53b392a97477a792ae410"
+      }
+    ],
+    "restored": true
+  },
+  "populatedUpgrade": {
+    "at": "2026-09-30T20:18:17.163828+00:00",
+    "migration": "20261014000036_engagement_synthesis_generation_history.sql",
+    "sha256": "d86ef9d1f28996c863237387a62b66db168b9bda0efd860a35c5a69f425cfb11",
+    "before": {
+      "outputs": 440,
+      "attempts": 468,
+      "requests": 112,
+      "selections": 468,
+      "outputCustody": "65fa98e58a065fcb90c03fb86d711a2c",
+      "selectionCustody": "178bb387bf0d77673ec32902bc47a21d"
+    },
+    "after": {
+      "outputs": 440,
+      "attempts": 468,
+      "requests": 112,
+      "selections": 468,
+      "outputCustody": "65fa98e58a065fcb90c03fb86d711a2c",
+      "selectionCustody": "178bb387bf0d77673ec32902bc47a21d"
+    },
+    "equal": true,
+    "exit": 0
+  },
+  "logs": {
+    "generation-history-unit.log": "70a9db3485a18a16694dff16d728f3ca3c5bbee2176b1d8c49b654a45adcf2e2",
+    "generation-history-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "generation-history-recovery-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "generation-history-candidate-native.log": "693f6ca4b4ac43238400442c47c8a934014c65837af29d27bf399977ca7b4b21",
+    "generation-history-candidate-native-corrected.log": "2ea7a1a51c48a0aba3fc8135e18ab6af18620b6c97c25de16086956a260a2671",
+    "generation-history-candidate-native-anchored.log": "f1f3160e50e91aac42f81304c54beed59279c4527463afd2e9397e82118e2c58",
+    "generation-history-candidate-native-final.log": "ef59391250b175e5c0be555f875bfef3f730a9e2ca9ae495951ee341f6fc9dc0",
+    "generation-history-corrected-control.log": "c941c3e8ec35593c556dad8aef046ce61e75b3bcaee5815a995b3ce53ca570ad",
+    "generation-history-installed-native.log": "2fecc0c2fbae43c16c182470e4bf0e3eadc61770fc0e6afc2b2256a3a4ce532d",
+    "generation-history-authenticated-native.log": "88ecb60ff9d5d41352a3a768385cb0f4ebdc4829a6e0340454579c9ef88a8094",
+    "generation-history-full-native.log": "f4378d901a39f2843b1a564f5d555fc0ddc31e8cf6120145db0994547aa3fc35",
+    "generation-history-qa.log": "0f4d23d58ae57951e8f0fbd98b79c010ff69380bb0b254e312594d088fe2ca97",
+    "generation-history-shuffle.log": "64a06724ecfcea6e18eee3bab1d22e48b14b212a7b246894f811bcc3effd98e9",
+    "generation-selected-final-ci.log": "622edd2e94a1ad5d5463e0518256e4220bf8fb2f2c4345e5be2407c66a2be021",
+    "generation-selected-final-rls.log": "11d9ed2f6f1849e92a2efecb35f767c0630c8b1e8bb1722e7c6aac2eddb313c9",
+    "generation-history-rls.log": "d3407a22b212e4888262506eb7594a03b8c5c7675beaab3f6fa0372ffe3372f2",
+    "generation-history-final-docs.log": "6f45009e23edc55adf8d0b8da7f61d04dc68e5ad7c2d7535985d353f1d510b3d"
+  },
+  "checks": {
+    "unitPassed": 86,
+    "installedHistoryPassed": 18,
+    "workerAndTrustedPathsPassed": 17,
+    "typecheckExit": 0,
+    "lintExit": 0,
+    "fullQA": {
+      "exit": 0,
+      "passed": 16401,
+      "skipped": 1041,
+      "filesPassed": 1363,
+      "filesSkipped": 67,
+      "build": "Next.js 16.3.8 webpack passed",
+      "auditVulnerabilities": 0
+    },
+    "shuffle": {
+      "exit": 0,
+      "seed": 481937,
+      "passed": 16401,
+      "skipped": 1041
+    },
+    "fullRLS": {
+      "exit": 0,
+      "passed": 945,
+      "skipped": 125,
+      "filesPassed": 74,
+      "durationSeconds": 1316.7
+    },
+    "documentation": {
+      "exit": 0,
+      "passed": 13,
+      "filesPassed": 3
+    }
+  },
+  "initialFixtureFailures": [
+    "Last owner cannot be demoted; added independent owner.",
+    "Shared selection fixture has sequence six, not five.",
+    "Earlier historical assertion preceded expected fault label.",
+    "Renaming entries also changed public JSON key; replaced with local variable control."
+  ],
+  "limits": [
+    "No browser route, UI, semantic quality or representativeness claim.",
+    "Synthetic provider; no real provider billing or quality proof.",
+    "No large-corpus capacity or physical power-loss recovery proof."
+  ],
+  "priorMainCI": {
+    "commit": "6b25a6d9ce9661579ea740b6b617623061a1ff6c",
+    "CI": {
+      "run": 36769976974,
+      "conclusion": "success"
+    },
+    "RLS": {
+      "run": 36769976808,
+      "conclusion": "success",
+      "passed": 926,
+      "skipped": 125
+    }
+  }
+}

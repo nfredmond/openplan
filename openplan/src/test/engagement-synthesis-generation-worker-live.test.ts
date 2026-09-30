@@ -12,7 +12,7 @@ import { createSynthesisGenerationPlan, synthesisGenerationPlanBatch, verifySynt
 import { LIVE_RLS, getLocalSupabaseEnv, liveClient, type LocalSupabaseEnv } from "./local-supabase-env";
 import { resolveLocalDbContainer } from "./helpers/live-catalog";
 import { requireContractVerificationStack } from "./helpers/contract-verification-stack";
-import { readSynthesisGenerationSelectedResults } from "@/lib/engagement/synthesis-generation-selected-results-server";
+import { readSynthesisGenerationSelectedResults, loadSynthesisGenerationHistory } from "@/lib/engagement/synthesis-generation-selected-results-server";
 
 const cleanup: Array<() => Promise<void>> = [];
 afterEach(async () => { for (const close of cleanup.splice(0).reverse()) await close(); vi.unstubAllEnvs(); });
@@ -141,7 +141,20 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
       scope: { requestId: sourceId, campaignId: campaign, workspaceId: workspace }, actorId: owner,
     }, new AbortController().signal);
     const revokeRequester = () => sql(`UPDATE workspace_members SET role='viewer' WHERE workspace_id='${workspace}' AND user_id='${owner}'`);
-    return { run, journal, outputs, calls, deliveries, proxyErrors, providerBody, outputText, key, plan, authorizationId, selectedResults, revokeRequester };
+    async function staffHistoryClient() {
+      const email = `${randomUUID()}@synthetic.invalid`, password = `SYNTHETIC-${randomUUID()}`;
+      const created = await service.auth.admin.createUser({ email, password, email_confirm: true });
+      if (created.error || !created.data.user) throw new Error("Synthetic history staff could not be created");
+      const userId = created.data.user.id;
+      sql(`INSERT INTO workspace_members(workspace_id,user_id,role) VALUES('${workspace}','${userId}','member')`);
+      const client = liveClient(environment.API_URL, environment.ANON_KEY, "synthesis-history-staff");
+      const signedIn = await client.auth.signInWithPassword({ email, password });
+      if (signedIn.error || !signedIn.data.session) throw new Error("Synthetic history staff could not sign in");
+      return { read: (throughSequence?: number) => loadSynthesisGenerationHistory(client, service,
+        { campaignId: campaign, workspaceId: workspace, requestId, throughSequence }, new AbortController().signal),
+        revoke: () => sql(`UPDATE workspace_members SET role='viewer' WHERE workspace_id='${workspace}' AND user_id='${userId}'`) };
+    }
+    return { run, journal, outputs, calls, deliveries, proxyErrors, providerBody, outputText, key, plan, authorizationId, selectedResults, revokeRequester, staffHistoryClient, owner };
   }
 
   it("joins native selections to original worker outputs without authorizing another call", async () => {
@@ -158,6 +171,22 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     expect(f.calls).toHaveLength(f.plan.entries.length);
     f.revokeRequester(); await expect(f.selectedResults()).rejects.toThrow("inventory unavailable");
     expect(f.calls).toHaveLength(f.plan.entries.length);
+  }, 60000);
+
+  it("lets current authenticated staff inspect cancelled output after requester revocation", async () => {
+    const f = await fixture({ allTasks: true, loss: "output", cancel: true });
+    expect((await f.run(true)).code).toBe(1);
+    expect((await f.run(true)).code).toBe(1); expect(f.calls).toHaveLength(1);
+    await expect(f.selectedResults()).rejects.toThrow("inventory unavailable");
+    const staff = await f.staffHistoryClient(), history = await staff.read();
+    expect(history.requesterId).toBe(f.owner); expect(history.inventory.status).toBe("incomplete");
+    expect(history.inventory.results).toHaveLength(1);
+    expect(JSON.parse(history.inventory.results[0].canonical).outputText).toBe(f.outputText);
+    expect(history.inventory.results[0].sha256).toBe((await f.outputs())![0].capture_sha256);
+    const beforeChoice = await staff.read(0); expect(beforeChoice.selections.throughSequence).toBe(0);
+    expect(beforeChoice.inventory.results).toEqual([]); expect(beforeChoice.inventory.status).toBe("incomplete");
+    staff.revoke(); await expect(staff.read()).rejects.toThrow("history access unavailable");
+    expect(f.calls).toHaveLength(1);
   }, 60000);
 
   for (const mode of ["api_key", "none"] as const) it(`delivers the source-bound original with ${mode}`, async () => {

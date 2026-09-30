@@ -8,7 +8,8 @@ import { createSynthesisGenerationRecords } from "./synthesis-generation-records
 import { synthesisGenerationRequestIntentSchema } from "./synthesis-generation-plan";
 import { assembleSynthesisGenerationResults, synthesisGenerationAttemptBindingSchema,
   type SynthesisGenerationResult } from "./synthesis-generation-results";
-import { readSynthesisGenerationSelections } from "./synthesis-generation-selections-server";
+import { readSynthesisGenerationSelections, readSynthesisGenerationHistoricalSelections } from "./synthesis-generation-selections-server";
+import { verifySynthesisSource } from "./synthesis-sources-server";
 import { loadSynthesisWorkerAuthorization, synthesisWorkerRequestSignal } from "./synthesis-generation-worker-load";
 
 const id = z.string().uuid(), hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -32,10 +33,12 @@ const differs = (): never => { throw new Error("Selected synthesis output differ
  * Current-staff historical access needs its own permission boundary. Missing
  * output remains incomplete, and later arrivals require another read.
  */
-export async function readSynthesisGenerationSelectedResults(service: Pick<SupabaseClient, "from" | "rpc">,
+async function readSelectedResults(service: Pick<SupabaseClient, "from" | "rpc">,
   args: Parameters<typeof readSynthesisGenerationSelections>[1], signal: AbortSignal,
+  historicalClient?: Pick<SupabaseClient, "rpc">,
 ) {
-  const selected = await readSynthesisGenerationSelections(service, args, signal);
+  const selected = historicalClient ? await readSynthesisGenerationHistoricalSelections(historicalClient, args, signal)
+    : await readSynthesisGenerationSelections(service, args, signal);
   const results: SynthesisGenerationResult[] = [];
   const executions: Array<{ taskIndex: number; attemptId: string; authorizationId: string;
     dispatchSha256: string | null; outputSha256: string | null }> = [];
@@ -102,4 +105,52 @@ export async function readSynthesisGenerationSelectedResults(service: Pick<Supab
     selections: selected.selections, results, plan: selected.plan.taskPlan, records, input,
     saved: args.saved, scope: args.scope, taskByteLimit: intent.taskByteLimit });
   return { selections: selected, executions, inventory };
+}
+
+export function readSynthesisGenerationSelectedResults(service: Pick<SupabaseClient, "from" | "rpc">,
+  args: Parameters<typeof readSynthesisGenerationSelections>[1], signal: AbortSignal,
+) {
+  return readSelectedResults(service, args, signal);
+}
+
+const historyScopeSchema = z.object({ campaignId: id, workspaceId: id, requestId: id,
+  throughSequence: z.number().int().nonnegative().safe().optional() }).strict();
+const historyRequestSchema = z.object({ schemaVersion: z.literal(1), campaignId: id, workspaceId: id,
+  request: z.object({ id, actorId: id, intentText: z.string().max(4096), intentSha256: hash, createdAt: date }).strict(),
+  cancellation: z.unknown(),
+}).strict();
+
+/** Load authority and source through the current staff member's authenticated
+ * client before using private service reads. Recheck that access before returning.
+ * Neither historical membership nor the request's author can stand in for it.
+ */
+export async function loadSynthesisGenerationHistory(client: Pick<SupabaseClient, "rpc">,
+  service: Pick<SupabaseClient, "from" | "rpc">,
+  rawScope: z.infer<typeof historyScopeSchema>, signal: AbortSignal,
+) {
+  signal.throwIfAborted();
+  const scope = historyScopeSchema.parse(rawScope);
+  async function readRequest() {
+    signal.throwIfAborted();
+    const response = await client.rpc("read_engagement_synthesis_generation_request", { p_campaign: scope.campaignId, p_request: scope.requestId })
+      .abortSignal(synthesisWorkerRequestSignal(signal));
+    if (response.error) throw new Error("Synthesis history access unavailable; reload with current staff access");
+    signal.throwIfAborted();
+    const record = historyRequestSchema.parse(response.data);
+    if (record.campaignId !== scope.campaignId || record.workspaceId !== scope.workspaceId || record.request.id !== scope.requestId) differs();
+    return record.request;
+  }
+  const request = await readRequest();
+  const intent = synthesisGenerationRequestIntentSchema.parse(JSON.parse(request.intentText));
+  const sourceScope = { requestId: intent.sourceId, campaignId: scope.campaignId, workspaceId: scope.workspaceId };
+  const response = await client.rpc("read_engagement_synthesis_sources", { p_campaign: scope.campaignId, p_request: intent.sourceId })
+    .abortSignal(synthesisWorkerRequestSignal(signal));
+  if (response.error) throw new Error("Synthesis history source unavailable");
+  signal.throwIfAborted();
+  const source = verifySynthesisSource(response.data, sourceScope);
+  const saved = { ...sourceScope, snapshotText: source.snapshotText, snapshotSha256: source.snapshotSha256, createdAt: source.createdAt };
+  const result = await readSelectedResults(service, { request: { id: request.id, intentText: request.intentText, intentSha256: request.intentSha256 },
+    saved, scope: sourceScope, actorId: request.actorId, throughSequence: scope.throughSequence }, signal, client);
+  if (!isDeepStrictEqual(request, await readRequest())) differs();
+  return { campaignId: scope.campaignId, workspaceId: scope.workspaceId, requesterId: request.actorId, ...result };
 }

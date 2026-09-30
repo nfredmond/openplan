@@ -25,18 +25,20 @@ const fail = (): never => { throw new Error("Retained synthesis selections diffe
  * a choice removes its selected attempt, never its task or source contribution.
  * Receipts remain provenance; selected output content needs separate validation.
  */
-export async function readSynthesisGenerationSelections(service: Pick<SupabaseClient, "rpc">, args: {
-  request: unknown; saved: unknown; scope: SynthesisSourceScope; actorId: string;
-}, signal?: AbortSignal) {
+type SelectionArgs = {
+  request: unknown; saved: unknown; scope: SynthesisSourceScope; actorId: string; throughSequence?: number;
+};
+async function readSelections(service: Pick<SupabaseClient, "rpc">, args: SelectionArgs, signal?: AbortSignal, historical = false) {
   signal?.throwIfAborted();
   const actor = id.parse(args.actorId);
   const plan = createSynthesisGenerationPlan(args.request, args.saved, args.scope);
   const entries: RetainedSelection[] = [];
   const seenIds = new Set<string>(), seenSequences = new Set<number>(), seenAttempts = new Set<string>();
-  let throughSequence: number | null = null, afterTaskIndex = -1;
+  let throughSequence: number | null = args.throughSequence === undefined ? null : natural.parse(args.throughSequence), afterTaskIndex = -1;
   for (;;) {
     signal?.throwIfAborted();
-    const { data, error } = await service.rpc("read_engagement_synthesis_generation_selections", {
+    const { data, error } = await service.rpc(historical ? "read_engagement_synthesis_generation_selection_history" : "read_engagement_synthesis_generation_selections", {
+      ...(historical ? { p_campaign: args.scope.campaignId } : {}),
       p_request: plan.header.requestId, p_through_sequence: throughSequence, p_after_task_index: afterTaskIndex, p_limit: 128,
     }).abortSignal(AbortSignal.any([...(signal ? [signal] : []), AbortSignal.timeout(10000)]));
     if (error) throw new Error("Synthesis selection inventory unavailable; reload the retained snapshot");
@@ -62,4 +64,15 @@ export async function readSynthesisGenerationSelections(service: Pick<SupabaseCl
     taskSha256: plan.entries[receipt.taskIndex].sha256, attemptId: receipt.attemptId,
   }]);
   return { schemaVersion: 1 as const, requestId: plan.header.requestId, throughSequence, entries, selections, plan };
+}
+
+export function readSynthesisGenerationSelections(service: Pick<SupabaseClient, "rpc">, args: SelectionArgs, signal?: AbortSignal) {
+  return readSelections(service, args, signal);
+}
+
+/** Current staff inspect historical choices through their own authenticated
+ * client. Receipt actors remain the original authors, not the current reader.
+ */
+export function readSynthesisGenerationHistoricalSelections(client: Pick<SupabaseClient, "rpc">, args: SelectionArgs, signal?: AbortSignal) {
+  return readSelections(client, args, signal, true);
 }
