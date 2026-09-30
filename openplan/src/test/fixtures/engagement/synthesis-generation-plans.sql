@@ -7,6 +7,11 @@ SELECT pg_temp.gen_create('f0000000-0000-4000-8000-000000000003');
 SELECT pg_temp.gen_create('f0000000-0000-4000-8000-000000000004');
 RESET ROLE;
 CREATE TEMP TABLE plan_probe(key text PRIMARY KEY,value jsonb);
+-- Earlier native worker checks retain immutable history in this same stack.
+INSERT INTO plan_probe SELECT 'rowCountsBefore',jsonb_build_object(
+ 'plans',(SELECT count(*) FROM engagement_synthesis_generation_plans),
+ 'tasks',(SELECT count(*) FROM engagement_synthesis_generation_plan_tasks),
+ 'seals',(SELECT count(*) FROM engagement_synthesis_generation_plan_seals));
 GRANT SELECT,INSERT ON plan_probe TO authenticated,anon,service_role;
 CREATE FUNCTION pg_temp.plan_task(n integer) RETURNS text LANGUAGE sql AS $$
  SELECT jsonb_build_object('schemaVersion',1,'instructions','SYNTHETIC structural custody probe',
@@ -176,7 +181,7 @@ RESET ROLE;
 SET LOCAL ROLE anon;
 SELECT pg_temp.expect_error($q$SELECT read_engagement_synthesis_generation_plan('f0000000-0000-4000-8000-000000000001')$q$,'42501','Anonymous plan reader exposed');
 RESET ROLE;
-SELECT pg_temp.assert_true((SELECT count(*)=3 FROM engagement_synthesis_generation_plans),'Unexpected retained plan count');
-SELECT pg_temp.assert_true((SELECT count(*)=4 FROM engagement_synthesis_generation_plan_tasks),'Unexpected retained task count');
-SELECT pg_temp.assert_true((SELECT count(*)=1 FROM engagement_synthesis_generation_plan_seals),'Unexpected retained seal count');
+SELECT pg_temp.assert_true((SELECT count(*)=(SELECT (value->>'plans')::bigint+3 FROM plan_probe WHERE key='rowCountsBefore') FROM engagement_synthesis_generation_plans),'Unexpected retained plan count');
+SELECT pg_temp.assert_true((SELECT count(*)=(SELECT (value->>'tasks')::bigint+4 FROM plan_probe WHERE key='rowCountsBefore') FROM engagement_synthesis_generation_plan_tasks),'Unexpected retained task count');
+SELECT pg_temp.assert_true((SELECT count(*)=(SELECT (value->>'seals')::bigint+1 FROM plan_probe WHERE key='rowCountsBefore') FROM engagement_synthesis_generation_plan_seals),'Unexpected retained seal count');
 SELECT 'synthesis-generation-plan-custody-verified';

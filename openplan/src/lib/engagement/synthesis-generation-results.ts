@@ -12,6 +12,7 @@ const jobSchema = z.object({
 }).strict();
 const selectionSchema = z.object({ taskSha256: hash, attemptId: z.string().uuid() }).strict();
 const bindingSchema = jobSchema.merge(selectionSchema);
+export { bindingSchema as synthesisGenerationAttemptBindingSchema };
 const tokenCount = z.number().int().nonnegative().safe().nullable();
 const captureSchema = z.object({
   schemaVersion: z.literal(1), binding: bindingSchema,

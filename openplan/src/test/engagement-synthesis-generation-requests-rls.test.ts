@@ -32,6 +32,33 @@ describe.skipIf(!LIVE_RLS)("native synthesis request custody", () => {
   it.each(["", change(create, "-- Lost acknowledgements", "-- Retained acknowledgement control")])("retains exact requests and cancellation receipts %s", before => {
     expect(run(before)).toContain("synthesis-generation-requests-verified");
   });
+  it("preserves pre-existing request and cancellation row counts", () => {
+    // Synthetic background rows test accounting, not the semantic request protocol.
+    const marker = "CREATE TEMP TABLE generation_probe";
+    const background = `INSERT INTO engagement_synthesis_generation_requests(id,campaign_id,workspace_id,actor_id,source_id,configuration_revision_id,intent_text)
+      VALUES('f0000000-0000-4000-8000-000000000777','10c5cdd7-16c6-4b91-b9c0-d2f67598a54f','d51d566d-28c6-49d2-95d2-3a7a2f0902e1',
+        '13466ed2-dcb7-4861-a528-68cc5579eea9','d0000000-0000-4000-8000-000000000002','e0000000-0000-4000-8000-000000000002','{}');
+      INSERT INTO engagement_synthesis_generation_cancellations(id,request_id,campaign_id,workspace_id,actor_id,receipt_text)
+      VALUES('f0000000-0000-4000-8000-000000000877','f0000000-0000-4000-8000-000000000777','10c5cdd7-16c6-4b91-b9c0-d2f67598a54f',
+        'd51d566d-28c6-49d2-95d2-3a7a2f0902e1','13466ed2-dcb7-4861-a528-68cc5579eea9','{}');`;
+    expect(fixture).toContain(marker);
+    expect(run("", fixture.replace(marker, background + "\n" + marker))).toContain("synthesis-generation-requests-verified");
+  });
+  it.each([
+    ["requests", `INSERT INTO engagement_synthesis_generation_requests(id,campaign_id,workspace_id,actor_id,source_id,configuration_revision_id,intent_text)
+      SELECT 'f0000000-0000-4000-8000-000000000006',campaign_id,workspace_id,actor_id,source_id,configuration_revision_id,intent_text
+      FROM engagement_synthesis_generation_requests WHERE id='f0000000-0000-4000-8000-000000000001';`],
+    ["cancellations", `INSERT INTO engagement_synthesis_generation_cancellations(id,request_id,campaign_id,workspace_id,actor_id,receipt_text)
+      SELECT 'f0000000-0000-4000-8000-000000000106','f0000000-0000-4000-8000-000000000006',campaign_id,workspace_id,actor_id,receipt_text
+      FROM engagement_synthesis_generation_cancellations WHERE request_id='f0000000-0000-4000-8000-000000000001';`],
+  ])("detects unexpected added %s in a populated stack", (name, injection) => {
+    const seam = "SELECT pg_temp.assert_true((SELECT count(*)=";
+    expect(fixture).toContain(seam);
+    let failure: unknown;
+    try { run("", fixture.replace(seam, injection + "\n" + seam)); } catch (error) { failure = error; }
+    expect(failure).toBeDefined();
+    expect(String((failure as { stderr?: unknown }).stderr)).toContain(`Refusals or retries added ${name}`);
+  });
   it("retains the redundant revision scope check when the connection scope fault survives", () => {
     expect(run(change(create, "AND workspace_id=workspace FOR SHARE NOWAIT", "FOR SHARE NOWAIT"))).toContain("synthesis-generation-requests-verified");
   });

@@ -94,14 +94,14 @@ describe.skipIf(!LIVE_RLS)("native synthesis plan staging", () => {
 });
 
 const custodyFixture = readFileSync("src/test/fixtures/engagement/synthesis-generation-plans.sql", "utf8");
-function nativeCustody(before = "") {
+function nativeCustody(before = "", body = custodyFixture) {
   const container = resolveLocalDbContainer();
   // The shared helper also checks the named isolated target before opening a session.
   requireContractVerificationStack(container);
   return execFileSync("docker", ["exec", "-i", container, "psql", "-U", "postgres", "-d", "postgres", "-X", "-qAt", "-v", "ON_ERROR_STOP=1"], {
     input: `BEGIN; SET LOCAL statement_timeout='30s'; SET LOCAL lock_timeout='2s';
     ${process.env.OPENPLAN_SYNTHESIS_PLAN_CANDIDATE === "1" ? migration : ""}
-    ${sourceFixture}\n${setup}\n${before}\n${custodyFixture}\nROLLBACK;`,
+    ${sourceFixture}\n${setup}\n${before}\n${body}\nROLLBACK;`,
     encoding: "utf8", stdio: ["pipe", "pipe", "pipe"], timeout: 45_000,
   });
 }
@@ -166,6 +166,35 @@ const planFaults = [
   ]),
 ];
 describe.skipIf(!LIVE_RLS)("native synthesis plan fault evidence", () => {
+  it("preserves pre-existing plan, task and seal row counts", () => {
+    // These structural rows isolate the accounting guard from native command checks.
+    const marker = "CREATE TEMP TABLE plan_probe";
+    const background = `INSERT INTO engagement_synthesis_generation_requests(id,campaign_id,workspace_id,actor_id,source_id,configuration_revision_id,intent_text)
+      SELECT 'f0000000-0000-4000-8000-000000000777',campaign_id,workspace_id,actor_id,source_id,configuration_revision_id,intent_text
+      FROM engagement_synthesis_generation_requests WHERE id='f0000000-0000-4000-8000-000000000001';
+      INSERT INTO engagement_synthesis_generation_plans(request_id,header_text) VALUES('f0000000-0000-4000-8000-000000000777','{}');
+      INSERT INTO engagement_synthesis_generation_plan_tasks(request_id,task_index,task_text,cumulative_bytes,chain_sha256)
+      VALUES('f0000000-0000-4000-8000-000000000777',0,'{}',2,repeat('a',64));
+      INSERT INTO engagement_synthesis_generation_plan_seals(request_id,receipt_text) VALUES('f0000000-0000-4000-8000-000000000777','{}');`;
+    expect(custodyFixture).toContain(marker);
+    expect(nativeCustody("", custodyFixture.replace(marker, background + "\n" + marker))).toContain("synthesis-generation-plan-custody-verified");
+  });
+  it.each([
+    ["plan", `INSERT INTO engagement_synthesis_generation_plans(request_id,header_text)
+      VALUES('f0000000-0000-4000-8000-000000000002','{}');`],
+    ["task", `INSERT INTO engagement_synthesis_generation_plan_tasks(request_id,task_index,task_text,cumulative_bytes,chain_sha256)
+      SELECT 'f0000000-0000-4000-8000-000000000003',100,task_text,cumulative_bytes,chain_sha256
+      FROM engagement_synthesis_generation_plan_tasks WHERE request_id='f0000000-0000-4000-8000-000000000001' AND task_index=0;`],
+    ["seal", `INSERT INTO engagement_synthesis_generation_plan_seals(request_id,receipt_text)
+      VALUES('f0000000-0000-4000-8000-000000000003','{}');`],
+  ])("detects an unexpected retained %s in a populated stack", (name, injection) => {
+    const seam = "SELECT pg_temp.assert_true((SELECT count(*)=";
+    expect(custodyFixture).toContain(seam);
+    let failure: unknown;
+    try { nativeCustody("", custodyFixture.replace(seam, injection + "\n" + seam)); } catch (error) { failure = error; }
+    expect(failure).toBeDefined();
+    expect(String((failure as { stderr?: unknown }).stderr)).toContain(`Unexpected retained ${name} count`);
+  });
   it("survives a harmless function comment change", () => {
     expect(nativeCustody(change(prepareFunction, "-- Exact acknowledgement recovery", "-- Retained acknowledgement control"))).toContain("synthesis-generation-plan-custody-verified");
   });

@@ -20,20 +20,39 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Pin Next.js and its lint configuration to 16.3.8, which includes the fix for
+[GHSA-vcvr-r3jv-pc5j](https://github.com/advisories/GHSA-vcvr-r3jv-pc5j).
+
+Private synthesis execution commands retain explicit resource authorizations,
+task claims, one-time dispatch permissions and original output captures. Exact
+dispatch retries do not renew permission to call a provider. Repeating an attempted
+task requires explicit retry authorization; cancellation and current access or API
+changes prevent new dispatch. Late outputs retain their original bytes after
+cancellation or access loss, including unusual Unicode strings. These internal
+commands support an explicit local worker for one authorized task. Its private
+journal retains the same attempt and original response across interruption.
+An unknown dispatch outcome makes no replacement call. The staff generation
+interface remains unfinished.
+Current-status reads do not extend dispatch permission. Explicit result choices
+retain predecessor history and stable sequence-based pagination. Retried or late
+outputs do not silently replace a choice; clearing one preserves its source task.
+Apply `20261014000035_engagement_synthesis_generation_execution.sql` before
+using these execution commands.
+
 Private synthesis plans now retain a versioned recipe, immutable task batches and
 completion receipts. Interrupted staging resumes at a verified task boundary;
 exact retries preserve the original bytes. Cancellation and revoked requester
 access prevent new planning work. Sealing checks the expected task count, byte
-total and ordered checksum chain. This remains internal preparation. Provider
-calls, final synthesis, staff adoption and a generation interface remain unfinished.
+total and ordered checksum chain. Plan preparation alone does not authorize
+execution. Final consolidation and the staff generation interface remain unfinished.
 Apply `20261014000034_engagement_synthesis_generation_plans.sql` before using
 these native planning commands.
 
 Private native synthesis requests now retain exact source and saved API revision
 references, original request bytes and cancellation receipts. Exact retries recover
 the original after a configuration change or cancellation. A cancellation received
-before creation prevents late creation. This remains internal preparation; it does
-not authorize or dispatch provider calls or enable a generation interface.
+before creation prevents late creation. A request alone does not authorize or
+dispatch provider calls; execution uses the separate resource authorization above.
 Apply `20261014000033_engagement_synthesis_generation_requests.sql` before using
 the new native request commands.
 
@@ -44,8 +63,9 @@ Complete logical records retain historical relationships and exact numeric token
 without clipping long contributions. Typed fields preserve complete literal text,
 container counts and unambiguous paths for request planning. Bounded segment tasks
 and retained result accounting preserve original outputs, exact configuration
-revisions and incomplete processing states. Model dispatch and the new generation
-workflow are not enabled yet.
+revisions and incomplete processing states. The worker above executes one
+explicitly authorized task; scheduling and consolidating the complete corpus
+into the staff generation workflow remain unfinished.
 
 ## 0.64.0 (2026-09-30)
 

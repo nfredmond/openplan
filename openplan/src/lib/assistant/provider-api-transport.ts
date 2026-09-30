@@ -1,5 +1,6 @@
+import { createHash } from "node:crypto";
 import { lookup as dnsLookup } from "node:dns/promises";
-import { Agent as HttpAgent, request as httpRequest, type RequestOptions } from "node:http";
+import { Agent as HttpAgent, request as httpRequest, type RequestOptions, type ClientRequest } from "node:http";
 import { Agent as HttpsAgent, request as httpsRequest } from "node:https";
 import { isIP, type LookupFunction, type TcpNetConnectOpts } from "node:net";
 import { classifyAddress, hostIsAllowlisted, resolveOutboundAllowedHosts } from "@/lib/http/outbound-url";
@@ -68,14 +69,15 @@ async function resolveEndpoint(endpoint: string, policy: ProviderApiNetworkPolic
   return { target: new URL("chat/completions", base), addresses: addresses.map(({ address, family }) => ({ address, family })) };
 }
 
-function checkedRequestBody(body: unknown, model: string): string {
-  if (typeof body !== "string" || Buffer.byteLength(body) > 256_000) fail("api_request_body_invalid");
+type RequestLimits = { bodyBytes: number; outputTokens: number };
+function checkedRequestBody(body: unknown, model: string, limits: RequestLimits): string {
+  if (typeof body !== "string" || Buffer.byteLength(body) > limits.bodyBytes) fail("api_request_body_invalid");
   let parsed: unknown;
   try { parsed = JSON.parse(body as string); } catch { return fail("api_request_body_invalid"); }
   if (!record(parsed) || parsed.model !== model || parsed.stream === true ||
     parsed.tools !== undefined || parsed.functions !== undefined || parsed.tool_choice !== undefined ||
     (parsed.n !== undefined && parsed.n !== 1) || !Number.isInteger(parsed.max_tokens) ||
-    (parsed.max_tokens as number) < 1 || (parsed.max_tokens as number) > 4000 ||
+    (parsed.max_tokens as number) < 1 || (parsed.max_tokens as number) > limits.outputTokens ||
     !record(parsed.response_format) || parsed.response_format.type !== "json_schema") fail("api_request_body_invalid");
   return body as string;
 }
@@ -93,13 +95,15 @@ function checkedResponseBody(body: string, model: string) {
     choice.message.function_call != null) fail("api_response_incomplete");
 }
 
-// A fresh closure belongs to one saved attempt. The SDK may not redirect,
-// substitute credentials, or make a second request through it. Caller owns
-// project authorization, immutable connection revisions and business approvals.
-export function createProviderApiFetch(args: {
+type ProviderApiRequestOptions = {
   endpoint: string; model: string; apiKey: string | null; signal: AbortSignal;
   policy?: ProviderApiNetworkPolicy; lookup?: Lookup; timeoutMs?: number;
-}): typeof fetch {
+};
+
+// Both response profiles use the same one-request, pinned-network boundary.
+function createProtectedApiRequest<T>(args: ProviderApiRequestOptions, limits: RequestLimits,
+  exchange: (request: ClientRequest, agent: HttpAgent, signal: AbortSignal) => Promise<T>,
+): (input: string | URL | Request, init?: RequestInit) => Promise<T> {
   const { endpoint, model, apiKey, signal: attemptSignal, lookup = defaultLookup } = args;
   const selectedPolicy = args.policy ?? providerApiNetworkPolicy();
   const policy = { localEndpoints: [...selectedPolicy.localEndpoints], allowedHosts: selectedPolicy.allowedHosts ? [...selectedPolicy.allowedHosts] : null };
@@ -116,27 +120,38 @@ export function createProviderApiFetch(args: {
     if (signal.aborted) fail("api_request_interrupted");
     if (!(typeof input === "string" || input instanceof URL) || String(input) !== new URL("chat/completions", base).href ||
       init?.method !== "POST") fail("api_request_destination_changed");
-    const body = checkedRequestBody(init.body, model);
+    const body = checkedRequestBody(init.body, model, limits);
     const headers = new Headers(init.headers);
     for (const key of headers.keys()) if (!["content-type", "authorization", "user-agent"].includes(key)) fail("api_request_headers_invalid");
     if (headers.get("content-type") !== "application/json" || headers.get("authorization") !==
       (apiKey === null ? null : `Bearer ${apiKey}`)) fail("api_request_headers_invalid");
     const resolved = await resolveEndpoint(endpoint, policy, lookup, signal);
     if (signal.aborted) fail("api_request_interrupted");
-    return new Promise<Response>((resolve, reject) => {
-      // New non-global agents do not inherit NODE_USE_ENV_PROXY or global pools.
-      const agent = resolved.target.protocol === "https:" ? new HttpsAgent({ keepAlive: false }) : new HttpAgent({ keepAlive: false });
-      const pinnedLookup: LookupFunction = (_host, options, callback) => {
-        if (options.all) callback(null, resolved.addresses);
-        else callback(null, resolved.addresses[0].address, resolved.addresses[0].family);
-      };
-      const requestOptions: RequestOptions & Pick<TcpNetConnectOpts, "autoSelectFamily"> = {
-        method: "POST", agent, lookup: pinnedLookup, autoSelectFamily: true, signal, maxHeaderSize: 16_384,
-        headers: { "content-type": "application/json", "content-length": Buffer.byteLength(body),
-          "accept": "application/json", "accept-encoding": "identity",
-          ...(apiKey === null ? {} : { authorization: `Bearer ${apiKey}` }) },
-      };
-      const request = (resolved.target.protocol === "https:" ? httpsRequest : httpRequest)(resolved.target, requestOptions);
+    // New non-global agents do not inherit NODE_USE_ENV_PROXY or global pools.
+    const agent = resolved.target.protocol === "https:" ? new HttpsAgent({ keepAlive: false }) : new HttpAgent({ keepAlive: false });
+    const pinnedLookup: LookupFunction = (_host, options, callback) => {
+      if (options.all) callback(null, resolved.addresses);
+      else callback(null, resolved.addresses[0].address, resolved.addresses[0].family);
+    };
+    const requestOptions: RequestOptions & Pick<TcpNetConnectOpts, "autoSelectFamily"> = {
+      method: "POST", agent, lookup: pinnedLookup, autoSelectFamily: true, signal, maxHeaderSize: 16_384,
+      headers: { "content-type": "application/json", "content-length": Buffer.byteLength(body),
+        "accept": "application/json", "accept-encoding": "identity",
+        ...(apiKey === null ? {} : { authorization: `Bearer ${apiKey}` }) },
+    };
+    const request = (resolved.target.protocol === "https:" ? httpsRequest : httpRequest)(resolved.target, requestOptions);
+    const pending = exchange(request, agent, signal);
+    request.end(body);
+    return pending;
+  };
+}
+
+// A fresh closure belongs to one saved project attempt. Preserve this strict
+// SDK profile and its original limits separately from synthesis byte custody.
+export function createProviderApiFetch(args: ProviderApiRequestOptions): typeof fetch {
+  const model = args.model;
+  return createProtectedApiRequest(args, { bodyBytes: 256_000, outputTokens: 4000 }, (request, agent, signal) =>
+    new Promise<Response>((resolve, reject) => {
       const stop = (code: string) => { request.destroy(); agent.destroy(); reject(new ProviderApiTransportError(code)); };
       request.on("error", () => stop(signal.aborted ? "api_request_interrupted" : "api_request_failed"));
       request.on("response", response => {
@@ -161,7 +176,71 @@ export function createProviderApiFetch(args: {
           } catch (error) { reject(error instanceof ProviderApiTransportError ? error : new ProviderApiTransportError("api_response_invalid")); }
         });
       });
-      request.end(body);
+    }));
+}
+
+export type ProviderApiResponseReceipt = {
+  schemaVersion: 1;
+  statusCode: number | null;
+  contentType: string | null;
+  contentEncoding: string | null;
+  bodyBase64: string;
+  bodySha256: string;
+  retainedBytes: number;
+  bodyComplete: boolean;
+  termination: "complete" | "response_limit" | "request_interrupted" | "response_interrupted" | "request_failed";
+};
+
+// Retain observed entity-body bytes before interpreting provider output. This
+// receipt is local custody, not proof of provider identity or semantic success.
+// Headers are an explicit small inventory; cookies and credentials stay out.
+function captureApiResponse(request: ClientRequest, agent: HttpAgent, signal: AbortSignal, byteLimit: number) {
+  return new Promise<ProviderApiResponseReceipt>(resolve => {
+    const chunks: Buffer[] = [];
+    let bytes = 0, settled = false, receivedHeaders = false;
+    let statusCode: number | null = null, contentType: string | null = null, contentEncoding: string | null = null;
+    const finish = (termination: ProviderApiResponseReceipt["termination"]) => {
+      if (settled) return;
+      settled = true;
+      const body = Buffer.concat(chunks, bytes);
+      resolve({ schemaVersion: 1, statusCode, contentType, contentEncoding,
+        bodyBase64: body.toString("base64"), bodySha256: createHash("sha256").update(body).digest("hex"),
+        retainedBytes: bytes, bodyComplete: termination === "complete", termination });
+      request.destroy(); agent.destroy();
+    };
+    request.on("error", () => finish(signal.aborted ? "request_interrupted" : receivedHeaders ? "response_interrupted" : "request_failed"));
+    request.on("response", response => {
+      receivedHeaders = true;
+      statusCode = response.statusCode ?? null;
+      contentType = response.headers["content-type"] ?? null;
+      contentEncoding = response.headers["content-encoding"] ?? null;
+      response.on("data", (chunk: Buffer) => {
+        if (settled) return;
+        const remaining = byteLimit - bytes;
+        const retained = chunk.subarray(0, remaining);
+        chunks.push(retained); bytes += retained.length;
+        if (chunk.length > remaining) finish("response_limit");
+      });
+      const interrupted = () => finish(signal.aborted ? "request_interrupted" : "response_interrupted");
+      response.on("error", interrupted);
+      response.on("aborted", interrupted);
+      response.on("end", () => finish(signal.aborted ? "request_interrupted" : response.complete ? "complete" : "response_interrupted"));
     });
-  };
+  });
+}
+
+// The worker supplies the already-authorized token and byte bounds. This path
+// never decodes, follows redirects, retries, or treats HTTP 200 as valid output.
+// The fixed request cap accommodates an escaped 1 MiB task plus its envelope.
+export function createProviderApiReceiptRequest(args: ProviderApiRequestOptions & {
+  maxOutputTokens: number; responseByteLimit: number;
+}): (body: string) => Promise<ProviderApiResponseReceipt> {
+  const { maxOutputTokens, responseByteLimit } = args;
+  if (!Number.isInteger(maxOutputTokens) || maxOutputTokens < 1 || maxOutputTokens > 65_536 ||
+    !Number.isInteger(responseByteLimit) || responseByteLimit < 4096 || responseByteLimit > 4_194_304) fail("api_receipt_limits_invalid");
+  const destination = new URL("chat/completions", apiEndpointUrl(args.endpoint)).href;
+  const headers = { "content-type": "application/json", ...(args.apiKey === null ? {} : { authorization: `Bearer ${args.apiKey}` }) };
+  const send = createProtectedApiRequest(args, { bodyBytes: 8 * 1024 * 1024, outputTokens: maxOutputTokens },
+    (request, agent, signal) => captureApiResponse(request, agent, signal, responseByteLimit));
+  return body => send(destination, { method: "POST", headers, body });
 }

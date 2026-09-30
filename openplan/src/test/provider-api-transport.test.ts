@@ -13,7 +13,7 @@ import type { AddressInfo } from "node:net";
 import { generateText, Output } from "ai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { z } from "zod";
-import { createProviderApiFetch, providerApiNetworkPolicy } from "@/lib/assistant/provider-api-transport";
+import { createProviderApiFetch, createProviderApiReceiptRequest, providerApiNetworkPolicy } from "@/lib/assistant/provider-api-transport";
 
 const cleanups: Array<() => Promise<void>> = [];
 afterEach(async () => { for (const close of cleanups.splice(0)) await close(); vi.unstubAllEnvs(); });
@@ -132,8 +132,8 @@ describe("one approved API request", () => {
 });
 
 describe("TLS identity with a real local server", () => {
-  for (const mode of ["trusted", "untrusted", "wrong-hostname"]) {
-    it(`keeps certificate verification: ${mode}`, async () => {
+  for (const profile of ["project", "receipt"]) for (const mode of ["trusted", "untrusted", "wrong-hostname"]) {
+    it(`keeps certificate verification: ${profile} ${mode}`, async () => {
       const root = await mkdtemp(join(tmpdir(), "openplan-api-tls-"));
       cleanups.push(() => rm(root, { recursive: true, force: true }));
       const key = join(root, "fixture-key.pem"), cert = join(root, "fixture-cert.pem");
@@ -156,11 +156,23 @@ describe("TLS identity with a real local server", () => {
       const args = { endpoint, model: "synthetic-model", apiKey: null, signal: new AbortController().signal,
         policy: providerApiNetworkPolicy({ NODE_ENV: "test", OPENPLAN_AI_LOCAL_ENDPOINTS: JSON.stringify([endpoint]) }),
         lookup: vi.fn(async () => [{ address: "127.0.0.1", family: 4 }]), timeoutMs: 1000 };
-      const pending = createProviderApiFetch(args)(`${endpoint}chat/completions`, {
-        method: "POST", body: JSON.stringify(requestBody()), headers: { "content-type": "application/json" },
-      });
-      if (mode === "trusted") { expect((await pending).status).toBe(200); expect(calls).toBe(1); }
-      else { await expect(pending).rejects.toMatchObject({ code: "api_request_failed" }); expect(calls).toBe(0); }
+      if (profile === "project") {
+        const pending = createProviderApiFetch(args)(`${endpoint}chat/completions`, {
+          method: "POST", body: JSON.stringify(requestBody()), headers: { "content-type": "application/json" },
+        });
+        if (mode === "trusted") { expect((await pending).status).toBe(200); expect(calls).toBe(1); }
+        else { await expect(pending).rejects.toMatchObject({ code: "api_request_failed" }); expect(calls).toBe(0); }
+      } else {
+        const receipt = await createProviderApiReceiptRequest({ ...args, maxOutputTokens: 4000, responseByteLimit: 4096 })(JSON.stringify(requestBody()));
+        if (mode === "trusted") {
+          expect(receipt).toMatchObject({ statusCode: 200, bodyComplete: true, termination: "complete",
+            bodyBase64: Buffer.from(JSON.stringify(responseBody())).toString("base64") });
+          expect(calls).toBe(1);
+        } else {
+          expect(receipt).toMatchObject({ statusCode: null, bodyComplete: false, termination: "request_failed", bodyBase64: "" });
+          expect(calls).toBe(0);
+        }
+      }
       expect(args.lookup).toHaveBeenCalledTimes(1);
     });
   }

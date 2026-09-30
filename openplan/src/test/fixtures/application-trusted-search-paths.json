@@ -183,5 +183,13 @@
   "read_engagement_synthesis_generation_plan(uuid)",
   "prepare_engagement_synthesis_generation_plan(uuid,text)",
   "stage_engagement_synthesis_generation_tasks(uuid,bigint,text,text)",
-  "seal_engagement_synthesis_generation_plan(uuid,text)"
+  "seal_engagement_synthesis_generation_plan(uuid,text)",
+  "assert_synthesis_generation_execution_current(uuid)",
+  "authorize_engagement_synthesis_generation(uuid,uuid,text)",
+  "claim_engagement_synthesis_generation_attempt(uuid,bigint,uuid,uuid)",
+  "dispatch_engagement_synthesis_generation_attempt(uuid,uuid)",
+  "retain_engagement_synthesis_generation_output(uuid,uuid,text,text)",
+  "read_engagement_synthesis_generation_execution_status(uuid,uuid)",
+  "select_engagement_synthesis_generation_attempt(uuid,bigint,uuid,uuid,uuid,text)",
+  "read_engagement_synthesis_generation_selections(uuid,bigint,bigint,integer)"
 ]

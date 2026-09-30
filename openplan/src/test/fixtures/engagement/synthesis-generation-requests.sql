@@ -7,6 +7,10 @@ SELECT save_workspace_provider_api_revision('14a71429-1cb2-49b5-8711-c696a2f394c
  'e0000000-0000-4000-8000-000000000003','e0000000-0000-4000-8000-000000000004',NULL,
  '{"label":"SYNTHETIC other API","protocol":"openai_chat_completions","endpoint":"http://localhost:9998/v1/","modelIds":["synthetic"],"structuredOutput":true,"authMode":"none","timeoutSeconds":10}',NULL);
 CREATE TEMP TABLE generation_probe(key text PRIMARY KEY,value jsonb);
+-- Compare this transaction's additions without assuming an empty test stack.
+INSERT INTO generation_probe SELECT 'rowCountsBefore',jsonb_build_object(
+ 'requests',(SELECT count(*) FROM engagement_synthesis_generation_requests),
+ 'cancellations',(SELECT count(*) FROM engagement_synthesis_generation_cancellations));
 GRANT SELECT,INSERT ON generation_probe TO authenticated;
 -- Let permission probes reach the native function instead of failing on this helper table.
 GRANT SELECT ON generation_probe TO anon,service_role;
@@ -132,6 +136,6 @@ SET LOCAL ROLE authenticated;
 SELECT pg_temp.assert_true(pg_temp.gen_create()=(SELECT value||'{"replayed":true}' FROM generation_probe WHERE key='cancelled'),'Revoked configuration lost original retry');
 SELECT pg_temp.expect_error($q$SELECT pg_temp.gen_create('f0000000-0000-4000-8000-000000000002',(SELECT value FROM generation_probe WHERE key='currentConfig'))$q$,'PT409','Revoked configuration accepted');
 RESET ROLE;
-SELECT pg_temp.assert_true((SELECT count(*)=2 FROM engagement_synthesis_generation_requests),'Refusals or retries added requests');
-SELECT pg_temp.assert_true((SELECT count(*)=2 FROM engagement_synthesis_generation_cancellations),'Refusals or retries added cancellations');
+SELECT pg_temp.assert_true((SELECT count(*)=(SELECT (value->>'requests')::bigint+2 FROM generation_probe WHERE key='rowCountsBefore') FROM engagement_synthesis_generation_requests),'Refusals or retries added requests');
+SELECT pg_temp.assert_true((SELECT count(*)=(SELECT (value->>'cancellations')::bigint+2 FROM generation_probe WHERE key='rowCountsBefore') FROM engagement_synthesis_generation_cancellations),'Refusals or retries added cancellations');
 SELECT 'synthesis-generation-requests-verified';

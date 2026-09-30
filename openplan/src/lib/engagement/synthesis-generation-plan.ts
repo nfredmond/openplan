@@ -15,6 +15,7 @@ const intentSchema = z.object({
   modelId: z.string().min(1).max(160).regex(/^\S+$/), taskByteLimit: z.number().int().min(4096).max(1_048_576),
 }).strict();
 const requestSchema = z.object({ id: z.string().uuid(), intentText: z.string(), intentSha256: hash }).strict();
+export { intentSchema as synthesisGenerationRequestIntentSchema };
 const stateSchema = z.object({
   schemaVersion: z.literal(1), requestId: z.string().uuid(), headerText: z.string(), headerSha256: hash,
   nextIndex: natural, taskBytes: natural, tailSha256: hash, cancelled: z.boolean(),
