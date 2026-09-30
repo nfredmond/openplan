@@ -30,6 +30,12 @@ remain unfinished. Apply
 `20261014000036_engagement_synthesis_generation_history.sql` before using the
 new authenticated history command.
 
+Internal context preparation now binds every retained record and selected result
+to a fixed dependency inventory. Bounded pages preserve reply cycles, unavailable
+parent references and exact replay without adding context records to participant
+counts. These pages contain dependency addresses. Contextual model execution and
+proposal import remain unfinished.
+
 ## 0.65.0 (2026-09-30)
 
 [Verification](docs/reviews/2026-09-30-synthesis-generation/RELEASE_VERIFICATION.md) records the release scope, engineering checks and publication status.

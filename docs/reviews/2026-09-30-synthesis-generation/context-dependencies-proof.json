@@ -1,0 +1,403 @@
+{
+  "state": "Locally verified unreleased context dependency protocol. Exact-commit GitHub checks follow the push.",
+  "baseCommit": "a20346a29e12fba9b0dde97fdca62bab3099b59f",
+  "sourceHashes": {
+    "openplan/src/lib/engagement/synthesis-generation-context.ts": "9a0ebdc1698f2d5f867a4035336aea2aa43bb375a34d627a74094c757aad00da",
+    "openplan/src/test/engagement-synthesis-generation-context.test.ts": "917cdeb9f4cf94ff179293093fba017f11024645ee4d5a587aaff1674671d56e"
+  },
+  "checks": {
+    "relatedPassed": 42,
+    "relatedFiles": 3,
+    "newSuiteTests": 10,
+    "typescriptExit": 0,
+    "lintExit": 0,
+    "QA": {
+      "exit": 0,
+      "passed": 16411,
+      "skipped": 1041,
+      "filesPassed": 1364,
+      "filesSkipped": 67,
+      "build": "Next.js 16.3.8 webpack passed",
+      "auditVulnerabilities": 0
+    },
+    "shuffle": {
+      "exit": 0,
+      "seed": 481938,
+      "passed": 16411,
+      "skipped": 1041
+    },
+    "documentation": {
+      "exit": 0,
+      "passed": 13,
+      "filesPassed": 3
+    }
+  },
+  "initialMutations": [
+    {
+      "case": "harmless-comment",
+      "control": true,
+      "exit": 0,
+      "status": "survived",
+      "logSha256": "0a41e66e7972168e59c3ed505c357ad227e97addad1a60679cf4a66f9346b1b2"
+    },
+    {
+      "case": "skip-authority",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "8e45f75f2873d98dffb9d64458bdea1d5bc86fe35431c5e24e82a2045912844d"
+    },
+    {
+      "case": "skip-graph-replay",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "c457b1febc5e36e14d6461b1c5d5fe962d978964242d8dd358ed181282fa3d72"
+    },
+    {
+      "case": "drop-record",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "15b6585d83a92a9e9b7f3ce6219e0b7bff310003cdec95d1ba95a216d1735883"
+    },
+    {
+      "case": "drop-segments",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "989c662c9b522921fd08f803d96fc10b424ea6240c0d5d2b784b967016236752"
+    },
+    {
+      "case": "drop-references",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "9338d474b6ff5326446d0ddd253dbfc31635b209a27e42bdf038306eef9efdc7"
+    },
+    {
+      "case": "inflate-participation",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "ef5632c372a63f090d13a7d371e6524976c0511ea99d3f1a75dd8aa475f1ba00"
+    },
+    {
+      "case": "ignore-output-inventory",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "bee7d40fe286a8a9acdfde623bfb6ffd7cd3ad7f859be9ccf27538b8d77fc5db"
+    },
+    {
+      "case": "discard-sequence",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "a1aaab1a46171d6499f85f2a4106501744abdc8a96aa3b19faa0260f05140642"
+    },
+    {
+      "case": "premature-ready",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "963f4bd98dbf02477de2b50e314249b6735ce042d42782bea89fcf546ddf7dec"
+    },
+    {
+      "case": "impossible-sequence",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "245a03f578b28eb08aef186d859cc4831ee5cdf9e6ce994f394434c66035ea97"
+    },
+    {
+      "case": "skip-closure",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "97745812cc8f0b763483d7d77be858bc8e5e2e8295f123dfa1758950eb352ced"
+    },
+    {
+      "case": "hide-unavailable-edge",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "93b340f77b078aa244db02f5c77318e12e538adeae5bc220c3a0c5eb27cb90dc"
+    },
+    {
+      "case": "duplicate-queue",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "227c13b5d6d75448ac228c9b7236001c4ebede0db3a440dff5bef759ea38a59e"
+    },
+    {
+      "case": "ignore-entry-bound",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "da0a4bb88fcdae96514f37fd9ab41a3cbe805361641102e3205d3b273f12793e"
+    },
+    {
+      "case": "ignore-byte-bound",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "a3d284bda5c92ba6f988836ff43b2cfb558a783bdb9f8f526f582cbb3686c050"
+    },
+    {
+      "case": "omit-terminal-reserve",
+      "control": false,
+      "exit": 0,
+      "status": "survived",
+      "logSha256": "205fe6d05fed7933dfa5b1ddde0d78afd2ef3c90fe7f9cb0dcc56a4f69d3b39e"
+    },
+    {
+      "case": "ignore-offset",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "bad15358c563e6d8b71c7ca9cca0cfe0ba7ab0393e8429e8070be8916e882852"
+    },
+    {
+      "case": "ignore-end-cursor",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "4a677141e262c0ac55c0a4ac9128e06ac91d0653544874c5b33644d13e21d21c"
+    },
+    {
+      "case": "empty-progress",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "60b962fc7eac8d77df343379876860bff5e9e082f0540a941f8a212f0dcbc4ac"
+    },
+    {
+      "case": "ignore-trusted-hash",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "50bad05da00a2029121eb16c8c97352c678be6e33e2fe1c52daa41cd6da08775"
+    },
+    {
+      "case": "ignore-digest",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "53c05c2ab6d342d34ddfaa351275d6a27940963a7fa502db1568e0e306f8daa0"
+    },
+    {
+      "case": "duplicate-record-address",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "51b7d452773608872fe1a143aaf791087455e46f634a51646a0c5a34d9fbcf5a"
+    },
+    {
+      "case": "reference-presence-drift",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "a59295a944460a5d361b44ac2ec2b7af2d15b4e353ae44c78e6cd244ed826bd1"
+    }
+  ],
+  "finalMutations": [
+    {
+      "case": "harmless-comment",
+      "control": true,
+      "exit": 0,
+      "status": "survived",
+      "logSha256": "10df038cbb5d49f325fda374c3fa6862aeef9ca2e90be45ad917882a2dffebdc"
+    },
+    {
+      "case": "ignore-header-bound",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "7f7dceeeee0f6b881cd075f732d9f39d5c896d74c50c0e69da967898574b4f8e"
+    },
+    {
+      "case": "skip-authority",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "679757cf6577227e60129e4dc211da8b023cad5e7c1a5d3987bbb328b065d267"
+    },
+    {
+      "case": "skip-graph-replay",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "8ce67e4ecc683436e842537fb382eecd89d133013cd5a943f6da7074da4cb0fd"
+    },
+    {
+      "case": "drop-record",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "c806e0862e2d7457fcbb4365574ec669881e9256648a7067a8150638a7011e6a"
+    },
+    {
+      "case": "drop-segments",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "94da0d3ef5cbf0e49228ee61443eddcdb9f7ae42ea7f8b126b3682ce7fc7a64c"
+    },
+    {
+      "case": "drop-references",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "ec3cfceec8f77369517b8053f7fcc10953457e37cdd717ef274a0d0fa6b36701"
+    },
+    {
+      "case": "inflate-participation",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "a8e481c9a812eca9e4d50e8efd8c2782930af03f23047fe95d22526f6c7bb5df"
+    },
+    {
+      "case": "ignore-output-inventory",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "af2674d8586cfc7eb9f224a752c9dd7205acd9d782ee99e3a15c4f5eac381fe1"
+    },
+    {
+      "case": "discard-sequence",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "66399306b28a223764a847d49719a117ecbe0ba68496086b736cf3dc5f048026"
+    },
+    {
+      "case": "premature-ready",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "89a17980381460c38a8a65a6506d72d51c0122da84003676e0453e1aaef1351b"
+    },
+    {
+      "case": "impossible-sequence",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "eb11cb163e1edfa629d85006e2dd93d14e6ce918c0314bf24650e15b49b3448b"
+    },
+    {
+      "case": "skip-closure",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "845e48272510e9ec4119d21c6fed65dfd19ee1e41aba95ac8a2533d644c2fcf6"
+    },
+    {
+      "case": "hide-unavailable-edge",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "fd26a123e83041438feb55ea8a894a0196354a0e11e6c712bf7548aafc6d63f2"
+    },
+    {
+      "case": "duplicate-queue",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "e3711d2f790d5df225b4062cdb6f2156dd29a6f46fa78387dd541a3e7cab4a2b"
+    },
+    {
+      "case": "ignore-entry-bound",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "7570410b6784be79991cbf7d814bb9eea3ff9f76a1c018cc63ef2f65c3ac0780"
+    },
+    {
+      "case": "ignore-byte-bound",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "db301678e6e65a1814246f3544195ff85aaa55725094930d2bc59fa5567d25b8"
+    },
+    {
+      "case": "omit-terminal-reserve",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "893e8372b642e78939041bb2ed9684531cce757cfc0c6c27947a59f0a072a829"
+    },
+    {
+      "case": "ignore-offset",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "52e44ba95b085ddcfdd0a0823b11d8bb2819060ad199a76b4e1c43784a5730f1"
+    },
+    {
+      "case": "ignore-end-cursor",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "7f205788ce66f8e4f55ea2146fe4aaba851a8489647d067daa88b59ba6c48bf5"
+    },
+    {
+      "case": "empty-progress",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "849c20c4036dc1f7ddb42b260c5945a0817167897a26f4f3eaa85cbd472892ac"
+    },
+    {
+      "case": "ignore-trusted-hash",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "1a609efaf5b34e6387fca75ab7f88b2c4f3fe02197302e754d10bb2a7b8130db"
+    },
+    {
+      "case": "ignore-digest",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "4f997404ca1e3f91ec773e895fc0c17c40dceea50c8ab6c5eea22c30e34d9678"
+    },
+    {
+      "case": "duplicate-record-address",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "a6ed1d5591004a52a9a17c7418cbdc0cf184406ec32f90f686c079315e16f19b"
+    },
+    {
+      "case": "reference-presence-drift",
+      "control": false,
+      "exit": 1,
+      "status": "killed",
+      "logSha256": "6e662a2fdf92c5eb28dc91f68e26fc31df288ca318e0e3a5e4d5910632a149c1"
+    }
+  ],
+  "restoration": {
+    "restored": true,
+    "sha256": "9a0ebdc1698f2d5f867a4035336aea2aa43bb375a34d627a74094c757aad00da"
+  },
+  "logs": {
+    "generation-context-unit.log": "2ac55d9ec1514ea4b1273d024c26cea76f5b7d1bc20e5fd4f0034db3801ed7e5",
+    "generation-context-related.log": "8da60c7c88753efe6f9448d19cf93e4243910006e251cd6de17b7a771ebb2b73",
+    "generation-context-related-corrected.log": "5c3a7e5e1137c3805af8e68ac62d5c953885c636e1c3c715fcb00659d8d0e44c",
+    "generation-context-terminal-before-fix.log": "d4b24d9db263d285247d44287ac0cbe9d5df498f867b3962d7a09c0e64646993",
+    "generation-context-terminal-corrected.log": "134d5fa14d6cadfb6ffd2df0659f1d5acddc56cbe8efadfa2c24899459a11b94",
+    "generation-context-final-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "generation-context-qa.log": "de400932a5a2aa9e2649ded31f8dae5a9aa435c5f6bac4aa8f0cec3f25f355d3",
+    "generation-context-shuffle.log": "dc1c3d5919388bba042fe4fbea3d3e883b7c3dd1ab65c8422dc08c102d12926d",
+    "generation-context-docs.log": "98d1ae5dd38f26e3d7ffff288d6e4e4b3e0e1c5abef2cfb37ad8ec5487fd29c8"
+  },
+  "limits": [
+    "Dependency addresses only; no contextual model execution or proposal import.",
+    "Memory-resident graph; no maximum-corpus capacity proof.",
+    "Native permission and selected-sequence authority remain with their separate readers and future stage writer.",
+    "No browser, semantic quality or representativeness claim."
+  ]
+}

@@ -168,7 +168,10 @@
     "generation-selected-final-ci.log": "622edd2e94a1ad5d5463e0518256e4220bf8fb2f2c4345e5be2407c66a2be021",
     "generation-selected-final-rls.log": "11d9ed2f6f1849e92a2efecb35f767c0630c8b1e8bb1722e7c6aac2eddb313c9",
     "generation-history-rls.log": "d3407a22b212e4888262506eb7594a03b8c5c7675beaab3f6fa0372ffe3372f2",
-    "generation-history-final-docs.log": "6f45009e23edc55adf8d0b8da7f61d04dc68e5ad7c2d7535985d353f1d510b3d"
+    "generation-history-final-docs.log": "6f45009e23edc55adf8d0b8da7f61d04dc68e5ad7c2d7535985d353f1d510b3d",
+    "generation-history-final-ci.log": "123d6262ae31797f8c4980b7f64f680eb7fb6ba0c47028307287015a6ba860c7",
+    "generation-history-final-rls.log": "b05b8ba273ec855af944500db20a8b012b277c714570223c8ccee8531da6a813",
+    "generation-history-final-upgrade.log": "7c4f578707925ccf6ed29976f24697efc6e252c2b1d8b67b4918d896eab8b2bf"
   },
   "checks": {
     "unitPassed": 86,
@@ -226,6 +229,29 @@
       "conclusion": "success",
       "passed": 926,
       "skipped": 125
+    }
+  },
+  "githubFollowup": {
+    "commit": "a20346a29e12fba9b0dde97fdca62bab3099b59f",
+    "CI": {
+      "run": 36775176542,
+      "conclusion": "success",
+      "qaPassed": 16394,
+      "qaSkipped": 1048
+    },
+    "RLS": {
+      "run": 36775176785,
+      "conclusion": "success",
+      "passed": 945,
+      "skipped": 125,
+      "filesPassed": 74
+    },
+    "Upgrade": {
+      "run": 36775176673,
+      "conclusion": "success",
+      "baseTag": "v0.65.0",
+      "seedCountsBefore": "2:2:1:1:1:1:1",
+      "seedCountsAfter": "2:2:1:1:1:1:1"
     }
   }
 }

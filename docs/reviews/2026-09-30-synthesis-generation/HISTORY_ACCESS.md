@@ -23,3 +23,8 @@ The initial SQL fixture failed when it tried to demote the last owner. Another s
 ## Remaining boundaries
 
 No browser route or staff generation interface uses this loader yet. These tests do not establish browser navigation, language quality, planner usefulness, provider billing or representative participation. Source and output assembly remains memory resident; large-corpus capacity is unproved. Complete record/context processing, retained machine proposals, explicit import into a new staff review revision and browser recovery remain required under M9b. Published v0.65.0 and the demo are unchanged.
+
+
+## Exact-commit GitHub follow-up
+
+Main `a20346a29e12fba9b0dde97fdca62bab3099b59f` passed [CI](https://github.com/nfredmond/openplan/actions/runs/36775176542), [isolation](https://github.com/nfredmond/openplan/actions/runs/36775176785) and [populated upgrade](https://github.com/nfredmond/openplan/actions/runs/36775176673). This supersedes the pending GitHub status at the start of this note. CI QA passes 16,394 tests with 1,048 skips; native isolation passes 945 with 125 skips across 74 files. The upgrade from v0.65.0 preserves representative nonempty counts `2:2:1:1:1:1:1`. These are engineering checks for this checkpoint, not a release or a completed contextual-generation workflow.
