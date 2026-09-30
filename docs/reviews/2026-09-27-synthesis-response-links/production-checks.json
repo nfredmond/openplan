@@ -1,0 +1,779 @@
+{
+  "testedCommit": "a7c349d55c621e5beba9ec462b0e60f16fdd54eb",
+  "productionIdentity": "a7c349d55c62",
+  "qa": {
+    "passed": 15951,
+    "skipped": 828,
+    "filesPassed": 1344,
+    "build": true,
+    "dependencyVulnerabilities": 0
+  },
+  "shuffled": {
+    "seed": 640932,
+    "passed": 15951,
+    "skipped": 828
+  },
+  "nativeRls": {
+    "passed": 732,
+    "skipped": 125,
+    "filesPassed": 68
+  },
+  "responseJourneys": [
+    {
+      "width": 1440,
+      "evidenceFile": "production-response-links-1440-1790760425724.json",
+      "evidenceSha256": "f970272803b46f29233671ecc9072a89869de280e4faf230f97e68e5f47b2507",
+      "runnerSha256": "6c3531a040fecd02dcf23c91fdf6ef699b7ec94496e2c4c4c477ab320322865b",
+      "completed": true,
+      "quotaRecovery": {
+        "failures": 1,
+        "actualFocusEvents": 1
+      },
+      "privateAccessCleared": true,
+      "bounds": {
+        "baseline": [
+          {
+            "text": "Refresh response choices and links",
+            "left": 360,
+            "right": 636.140625,
+            "parentLeft": 347,
+            "parentRight": 1349,
+            "viewport": 1440
+          },
+          {
+            "text": "Inspect response link",
+            "left": 360,
+            "right": 842,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Open link: SYNTHETIC response link browser 1440 7e3da89e-6ae5-4c02-9d83-e259311113c6 / SYNTHETIC retained category 1440 1789416526489",
+            "left": 360,
+            "right": 1336,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Save updated response link",
+            "left": 360,
+            "right": 583.859375,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Withdraw response link",
+            "left": 591.859375,
+            "right": 787.5,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          }
+        ],
+        "harmless": [
+          {
+            "text": "Refresh response choices and links",
+            "left": 360,
+            "right": 636.140625,
+            "parentLeft": 347,
+            "parentRight": 1349,
+            "viewport": 1440
+          },
+          {
+            "text": "Inspect response link",
+            "left": 360,
+            "right": 842,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Open link: SYNTHETIC response link browser 1440 7e3da89e-6ae5-4c02-9d83-e259311113c6 / SYNTHETIC retained category 1440 1789416526489",
+            "left": 360,
+            "right": 1336,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Save updated response link",
+            "left": 360,
+            "right": 583.859375,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Withdraw response link",
+            "left": 591.859375,
+            "right": 787.5,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Restore preserved response-link copy",
+            "left": 360,
+            "right": 655.328125,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          }
+        ],
+        "targeted": [
+          {
+            "text": "Refresh response choices and links",
+            "left": 360,
+            "right": 1402,
+            "parentLeft": 347,
+            "parentRight": 1349,
+            "viewport": 1440
+          },
+          {
+            "text": "Inspect response link",
+            "left": 360,
+            "right": 842,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Open link: SYNTHETIC response link browser 1440 7e3da89e-6ae5-4c02-9d83-e259311113c6 / SYNTHETIC retained category 1440 1789416526489",
+            "left": 360,
+            "right": 1336,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Save updated response link",
+            "left": 360,
+            "right": 583.859375,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Withdraw response link",
+            "left": 591.859375,
+            "right": 787.5,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Restore preserved response-link copy",
+            "left": 360,
+            "right": 655.328125,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          }
+        ]
+      },
+      "console": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+        "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+      ],
+      "pageErrors": []
+    },
+    {
+      "width": 390,
+      "evidenceFile": "production-response-links-390-1790760434557.json",
+      "evidenceSha256": "5c2a75bc919974d8ab07b8dd60202858740196f3f6b9e30bb38b28a8c2f63371",
+      "runnerSha256": "6c3531a040fecd02dcf23c91fdf6ef699b7ec94496e2c4c4c477ab320322865b",
+      "completed": true,
+      "quotaRecovery": {
+        "failures": 1,
+        "actualFocusEvents": 1
+      },
+      "privateAccessCleared": true,
+      "bounds": {
+        "baseline": [
+          {
+            "text": "Refresh response choices and links",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 62,
+            "parentRight": 328,
+            "viewport": 390
+          },
+          {
+            "text": "Inspect response link",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Open link: SYNTHETIC response link browser 390 a988868d-bca0-405b-afaa-4ae40b26ac8e / SYNTHETIC retained category 390 1789416450460",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Save updated response link",
+            "left": 75,
+            "right": 298.859375,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Withdraw response link",
+            "left": 75,
+            "right": 270.640625,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          }
+        ],
+        "harmless": [
+          {
+            "text": "Refresh response choices and links",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 62,
+            "parentRight": 328,
+            "viewport": 390
+          },
+          {
+            "text": "Inspect response link",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Open link: SYNTHETIC response link browser 390 a988868d-bca0-405b-afaa-4ae40b26ac8e / SYNTHETIC retained category 390 1789416450460",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Save updated response link",
+            "left": 75,
+            "right": 298.859375,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Withdraw response link",
+            "left": 75,
+            "right": 270.640625,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Restore preserved response-link copy",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          }
+        ],
+        "targeted": [
+          {
+            "text": "Refresh response choices and links",
+            "left": 75,
+            "right": 381,
+            "parentLeft": 62,
+            "parentRight": 328,
+            "viewport": 390
+          },
+          {
+            "text": "Inspect response link",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Open link: SYNTHETIC response link browser 390 a988868d-bca0-405b-afaa-4ae40b26ac8e / SYNTHETIC retained category 390 1789416450460",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Save updated response link",
+            "left": 75,
+            "right": 298.859375,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Withdraw response link",
+            "left": 75,
+            "right": 270.640625,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Restore preserved response-link copy",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          }
+        ]
+      },
+      "console": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+        "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+      ],
+      "pageErrors": []
+    }
+  ],
+  "decisionJourneys": [
+    {
+      "width": 1440,
+      "evidenceFile": "production-decision-synthesis-1440-1790760442570.json",
+      "evidenceSha256": "13122b329d3d5494ab18ed445bfaa065f8b3fecd8c238f6a29371a44490280f3",
+      "runnerSha256": "3245bba5d6a06575f4025e77c5cd0ade7579e38fddddb3828f9bb7c1ab4afe89",
+      "completed": true,
+      "globalReturnToEngagement": true,
+      "bounds": {
+        "baseline": {
+          "scroll": 1440,
+          "viewport": 1440,
+          "right": 1353
+        },
+        "harmless": {
+          "scroll": 1440,
+          "viewport": 1440,
+          "right": 1353
+        },
+        "targeted": {
+          "scroll": 1440,
+          "viewport": 1440,
+          "right": 1883
+        }
+      },
+      "console": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET"
+      ],
+      "pageErrors": [],
+      "cancellation": {
+        "lateStatus": 409,
+        "originalReplayStatus": 200,
+        "unchangedHistory": true,
+        "resultSha256": "56b72e830417c86d5f7fc22fd6302714c08384188e0cd73ccd67a3c0689cf3ef"
+      },
+      "downloads": [
+        {
+          "label": "original",
+          "format": "pdf",
+          "sha256": "2e272041bc6176d66eaeaf504bd6b1c89b20c90c4ba7b9ac309f66e3cb11c052",
+          "byteLength": 360979
+        },
+        {
+          "label": "original",
+          "format": "xlsx",
+          "sha256": "8d6eab99fb9a1bd25c81e05282fdfe428a773f252b1d7b24f9953b2fc16d133a",
+          "byteLength": 381816
+        },
+        {
+          "label": "original",
+          "format": "zip",
+          "sha256": "972700c5e1dd3431f499329ea38126159dfb85b8ea4324d0a7bde583d6635f0f",
+          "byteLength": 778667
+        },
+        {
+          "label": "corrected",
+          "format": "pdf",
+          "sha256": "ec9b8fee48a8c29f50b971e52779570406cecbfa5ac5eb3373b1204ca61f093b",
+          "byteLength": 402140
+        },
+        {
+          "label": "corrected",
+          "format": "xlsx",
+          "sha256": "e209cf848af058dab00afcce445fb376f5e3c5a8efb9109d575fce691a6c6ccd",
+          "byteLength": 432350
+        },
+        {
+          "label": "corrected",
+          "format": "zip",
+          "sha256": "d54279cec38a61302a6d4b6cf01be0f2dce780e53dbb8e3d2b68673ea284fc0d",
+          "byteLength": 874987
+        },
+        {
+          "label": "original-after-correction",
+          "format": "pdf",
+          "sha256": "2e272041bc6176d66eaeaf504bd6b1c89b20c90c4ba7b9ac309f66e3cb11c052",
+          "byteLength": 360979
+        },
+        {
+          "label": "original-after-correction",
+          "format": "xlsx",
+          "sha256": "8d6eab99fb9a1bd25c81e05282fdfe428a773f252b1d7b24f9953b2fc16d133a",
+          "byteLength": 381816
+        },
+        {
+          "label": "original-after-correction",
+          "format": "zip",
+          "sha256": "972700c5e1dd3431f499329ea38126159dfb85b8ea4324d0a7bde583d6635f0f",
+          "byteLength": 778667
+        },
+        {
+          "label": "public",
+          "format": "pdf",
+          "sha256": "9e6e3b74a784e41c1f932c10cb0d4ba912715260eb8416d53639eb8573d06942",
+          "byteLength": 62895
+        },
+        {
+          "label": "public",
+          "format": "xlsx",
+          "sha256": "21c3ff768f8c56b4b76caa084a6fec5418a05b36087b8b758ad112c3cbbbb423",
+          "byteLength": 16161
+        },
+        {
+          "label": "public",
+          "format": "zip",
+          "sha256": "1e22e027c0d29f6442b68b4ed72ba6afbe3a9375e947cb48c17351672df26dd8",
+          "byteLength": 63671
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "evidenceFile": "production-decision-synthesis-390-1790760486056.json",
+      "evidenceSha256": "1bf1543b1d26ba16981fd1cf9a4bbdd50fd75aa2f83a911cf2065f1174ac8e63",
+      "runnerSha256": "3245bba5d6a06575f4025e77c5cd0ade7579e38fddddb3828f9bb7c1ab4afe89",
+      "completed": true,
+      "globalReturnToEngagement": true,
+      "bounds": {
+        "baseline": {
+          "scroll": 390,
+          "viewport": 390,
+          "right": 303
+        },
+        "harmless": {
+          "scroll": 390,
+          "viewport": 390,
+          "right": 303
+        },
+        "targeted": {
+          "scroll": 390,
+          "viewport": 390,
+          "right": 577
+        }
+      },
+      "console": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: net::ERR_CONNECTION_RESET"
+      ],
+      "pageErrors": [],
+      "cancellation": {
+        "lateStatus": 409,
+        "originalReplayStatus": 200,
+        "unchangedHistory": true,
+        "resultSha256": "58e13c8914aa5fa338b363c4cd628bd88e7999f67bafd1e5f98144114719e714"
+      },
+      "downloads": [
+        {
+          "label": "original",
+          "format": "pdf",
+          "sha256": "b913ba89ecb875dfa8c117e0cac513ee8e777b6d9ea6f53b8549e3790db5672f",
+          "byteLength": 283900
+        },
+        {
+          "label": "original",
+          "format": "xlsx",
+          "sha256": "9bb22526c454f02ffe28aafc512d7eb35ec59da61820bf0cc2b5731decf42930",
+          "byteLength": 313066
+        },
+        {
+          "label": "original",
+          "format": "zip",
+          "sha256": "6de1c2b57b5d28c2e2b11f8de0aef791c202eb89e0b5501a0aed8e42723d3c49",
+          "byteLength": 641834
+        },
+        {
+          "label": "corrected",
+          "format": "pdf",
+          "sha256": "cafe7dd9942c26a7d33fa1aef5f307ce1ed38e14ac8a5447e1822927c0372dbc",
+          "byteLength": 325259
+        },
+        {
+          "label": "corrected",
+          "format": "xlsx",
+          "sha256": "82f34b8bf5e2e749b64c5117634bbfe07682433a57d7baf20d14ff9a95d98acb",
+          "byteLength": 369698
+        },
+        {
+          "label": "corrected",
+          "format": "zip",
+          "sha256": "061161547e27b2948438c0a5ecf1eeccf53c2f19bd726cf44d2759a3d4321963",
+          "byteLength": 748775
+        },
+        {
+          "label": "original-after-correction",
+          "format": "pdf",
+          "sha256": "b913ba89ecb875dfa8c117e0cac513ee8e777b6d9ea6f53b8549e3790db5672f",
+          "byteLength": 283900
+        },
+        {
+          "label": "original-after-correction",
+          "format": "xlsx",
+          "sha256": "9bb22526c454f02ffe28aafc512d7eb35ec59da61820bf0cc2b5731decf42930",
+          "byteLength": 313066
+        },
+        {
+          "label": "original-after-correction",
+          "format": "zip",
+          "sha256": "6de1c2b57b5d28c2e2b11f8de0aef791c202eb89e0b5501a0aed8e42723d3c49",
+          "byteLength": 641834
+        },
+        {
+          "label": "public",
+          "format": "pdf",
+          "sha256": "258add65432e08242557979151485e9fe247a3d3714d2f0e05d7491633feb830",
+          "byteLength": 66948
+        },
+        {
+          "label": "public",
+          "format": "xlsx",
+          "sha256": "1163572f0ab04b7083a8b1ccb5f6d77c5d5babbe241fdfc3efad8768f6dd83c9",
+          "byteLength": 16636
+        },
+        {
+          "label": "public",
+          "format": "zip",
+          "sha256": "a430e72d9376a338cc62fc16801df7606066726eafc79c6037bdfe185788b07f",
+          "byteLength": 66116
+        }
+      ]
+    }
+  ],
+  "pdf": [
+    {
+      "file": "production-decision-synthesis-1440-1790760442570-original.pdf",
+      "pages": 31,
+      "internalLinks": 49,
+      "namedDestinations": 8,
+      "validDestinations": true
+    },
+    {
+      "file": "production-decision-synthesis-1440-1790760442570-corrected.pdf",
+      "pages": 35,
+      "internalLinks": 55,
+      "namedDestinations": 8,
+      "validDestinations": true
+    },
+    {
+      "file": "production-decision-synthesis-1440-1790760442570-public.pdf",
+      "pages": 4,
+      "internalLinks": 6,
+      "namedDestinations": 6,
+      "validDestinations": true
+    },
+    {
+      "file": "production-decision-synthesis-390-1790760486056-original.pdf",
+      "pages": 24,
+      "internalLinks": 37,
+      "namedDestinations": 8,
+      "validDestinations": true
+    },
+    {
+      "file": "production-decision-synthesis-390-1790760486056-corrected.pdf",
+      "pages": 28,
+      "internalLinks": 43,
+      "namedDestinations": 8,
+      "validDestinations": true
+    },
+    {
+      "file": "production-decision-synthesis-390-1790760486056-public.pdf",
+      "pages": 4,
+      "internalLinks": 6,
+      "namedDestinations": 6,
+      "validDestinations": true
+    }
+  ],
+  "nativeWorkbooks": [
+    {
+      "file": "production-decision-synthesis-1440-1790760442570-original.xlsx",
+      "sha256": "8d6eab99fb9a1bd25c81e05282fdfe428a773f252b1d7b24f9953b2fc16d133a",
+      "openedSheets": 16,
+      "originalUnchanged": true,
+      "nativeRenderer": "LibreOffice Calc",
+      "limitations": "Wide audit registers need horizontal scrolling. This is a native rendering check, not a print-ready workbook or interactive Excel keyboard test."
+    },
+    {
+      "file": "production-decision-synthesis-390-1790760486056-original.xlsx",
+      "sha256": "9bb22526c454f02ffe28aafc512d7eb35ec59da61820bf0cc2b5731decf42930",
+      "openedSheets": 16,
+      "originalUnchanged": true,
+      "nativeRenderer": "LibreOffice Calc",
+      "limitations": "Wide audit registers need horizontal scrolling. This is a native rendering check, not a print-ready workbook or interactive Excel keyboard test."
+    }
+  ],
+  "artifactChecks": {
+    "1440": [
+      {
+        "label": "original",
+        "manifestFiles": 11,
+        "snapshotSha256": "07c190390cba98a13e559ac3c442a7a31e2b3bd76856bb9d7ffb7981dba5db6d",
+        "sheets": [
+          "Read me",
+          "Contributions",
+          "Survey sessions",
+          "Answers",
+          "Staff responses",
+          "Question summary",
+          "Definitions",
+          "Decision history scope",
+          "Decision history",
+          "Decision sources",
+          "Decision exact context",
+          "Synthesis coverage",
+          "Synthesis actions",
+          "Synthesis sources",
+          "Long text",
+          "Summary"
+        ],
+        "eventCount": 21,
+        "memberCount": 21,
+        "pdfTextBytes": 53515
+      },
+      {
+        "label": "corrected",
+        "manifestFiles": 11,
+        "snapshotSha256": "758c0c7d5edc77266245efcfc5988caf82a9dc40c84d2b38915b20cea9034ca9",
+        "sheets": [
+          "Read me",
+          "Contributions",
+          "Survey sessions",
+          "Answers",
+          "Staff responses",
+          "Question summary",
+          "Definitions",
+          "Decision history scope",
+          "Decision history",
+          "Decision sources",
+          "Decision exact context",
+          "Synthesis coverage",
+          "Synthesis actions",
+          "Synthesis sources",
+          "Long text",
+          "Summary"
+        ],
+        "eventCount": 24,
+        "memberCount": 24,
+        "pdfTextBytes": 59895
+      },
+      {
+        "label": "public",
+        "manifestFiles": 7,
+        "snapshotSha256": "991eba09d9c5241cb67279ae6c9f063778f7cc5c9e23539b240a955042deb805",
+        "sheets": [
+          "Read me",
+          "Contributions",
+          "Survey sessions",
+          "Answers",
+          "Staff responses",
+          "Question summary",
+          "Definitions",
+          "Long text",
+          "Summary"
+        ],
+        "eventCount": 0,
+        "memberCount": 0,
+        "pdfTextBytes": 4912
+      }
+    ],
+    "390": [
+      {
+        "label": "original",
+        "manifestFiles": 11,
+        "snapshotSha256": "2564c1a2510ac97e3da8ce01aeccffceb3aed3cc355bef3c96ec51f43ba4be07",
+        "sheets": [
+          "Read me",
+          "Contributions",
+          "Survey sessions",
+          "Answers",
+          "Staff responses",
+          "Question summary",
+          "Definitions",
+          "Decision history scope",
+          "Decision history",
+          "Decision sources",
+          "Decision exact context",
+          "Synthesis coverage",
+          "Synthesis actions",
+          "Synthesis sources",
+          "Long text",
+          "Summary"
+        ],
+        "eventCount": 15,
+        "memberCount": 15,
+        "pdfTextBytes": 41886
+      },
+      {
+        "label": "corrected",
+        "manifestFiles": 11,
+        "snapshotSha256": "1e22c3a96b82fcd3ce20e75a0670d9e04a82527a528f0c915573877cfb39120e",
+        "sheets": [
+          "Read me",
+          "Contributions",
+          "Survey sessions",
+          "Answers",
+          "Staff responses",
+          "Question summary",
+          "Definitions",
+          "Decision history scope",
+          "Decision history",
+          "Decision sources",
+          "Decision exact context",
+          "Synthesis coverage",
+          "Synthesis actions",
+          "Synthesis sources",
+          "Long text",
+          "Summary"
+        ],
+        "eventCount": 18,
+        "memberCount": 18,
+        "pdfTextBytes": 48231
+      },
+      {
+        "label": "public",
+        "manifestFiles": 7,
+        "snapshotSha256": "b29aec04edf5c11de7fcdd1f5ad74bcb8f4b327e55edfa46ac7fa893b6083b8a",
+        "sheets": [
+          "Read me",
+          "Contributions",
+          "Survey sessions",
+          "Answers",
+          "Staff responses",
+          "Question summary",
+          "Definitions",
+          "Long text",
+          "Summary"
+        ],
+        "eventCount": 0,
+        "memberCount": 0,
+        "pdfTextBytes": 5776
+      }
+    ]
+  }
+}

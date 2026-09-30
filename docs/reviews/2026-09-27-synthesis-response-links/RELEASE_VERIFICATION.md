@@ -1,8 +1,8 @@
 # v0.64.0 reviewed synthesis links and files
 
-September 30, 2026. Release preparation is in progress. This record does not
-establish publication, a tag or passing final-commit CI. The demo remains at
-v0.63.0 until the release and documented upgrade are complete.
+September 30, 2026. Local engineering verification is complete at application
+commit `a7c349d5`. This record does not establish a tag or passing final-commit
+GitHub CI. Publication and the retained demo upgrade are recorded separately.
 
 This increment connects exact approved staff synthesis to saved responses,
 project decisions and private review files. It preserves original sources,
@@ -75,14 +75,17 @@ final fixture creates the conflict before its first call. The catalog guard
 covers its explicit inventory, not future functions or every possible body
 branch. Full native checks and browser verification remain necessary.
 
-## Checks still being completed
+## Completed engineering checks
 
-Full QA and shuffled tests passed at c5e11856 with 15,951 tests passing and
-821 explicit skips. The cancellation-repair checkpoint b45642b8 also passes full QA and shuffled
-tests with 15,951 passes and 822 skips, plus native RLS with 726 passes and 125
-historical candidate skips. These are being repeated after migration 32. Final
-identified production journeys and exact-commit CI remain open. All 52 Python worker
-suites pass at the display checkpoint. The first full QA run found eight stale
+[Production verification](PRODUCTION_VERIFICATION.md) records the final local
+checks and all four browser journeys at `a7c349d5`. Full QA and shuffled tests
+pass 15,951 tests with 828 explicit skips. Native RLS passes 732 tests across 68
+files, with 125 historical candidate skips. All 52 Python worker suites pass at
+the display checkpoint; their implementation is unchanged. Original and corrected
+files, cancellation recovery, public exclusion and private denial pass at desktop
+and 390px. Final exact-commit GitHub checks remain required before tagging.
+
+The first full QA run found eight stale
 column-audit entries after export field names entered the application source.
 That run has one failure, 15,950 passes and 821 explicit skips.
 [Column-audit proof](column-audit-proof.json) records three controls and eight
