@@ -178,5 +178,10 @@
   "lock_synthesis_generation_request_scope(uuid,uuid)",
   "read_engagement_synthesis_generation_request(uuid,uuid)",
   "create_engagement_synthesis_generation_request(uuid,uuid,text)",
-  "cancel_engagement_synthesis_generation_request(uuid,uuid,uuid,text)"
+  "cancel_engagement_synthesis_generation_request(uuid,uuid,uuid,text)",
+  "lock_synthesis_generation_plan_scope(uuid)",
+  "read_engagement_synthesis_generation_plan(uuid)",
+  "prepare_engagement_synthesis_generation_plan(uuid,text)",
+  "stage_engagement_synthesis_generation_tasks(uuid,bigint,text,text)",
+  "seal_engagement_synthesis_generation_plan(uuid,text)"
 ]

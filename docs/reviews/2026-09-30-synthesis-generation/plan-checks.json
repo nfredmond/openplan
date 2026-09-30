@@ -1,0 +1,200 @@
+{
+  "date": "2026-09-30",
+  "baseCommit": "867e43682580875b061726e39473fd5f761b5246",
+  "scope": "Internal retained synthesis plans and staging driver; no provider dispatch or generation interface",
+  "checks": {
+    "qa": {
+      "exit": 0,
+      "passed": 16041,
+      "skipped": 917,
+      "filesPassed": 1352,
+      "filesSkipped": 63,
+      "build": "passed",
+      "dependencyVulnerabilities": 0,
+      "rlsGate": 0,
+      "providerConnector": {
+        "passed": 382,
+        "skipped": 4,
+        "failed": 0
+      }
+    },
+    "shuffle": {
+      "exit": 0,
+      "seed": 552067,
+      "passed": 16041,
+      "skipped": 917
+    },
+    "typecheck": {
+      "exit": 0,
+      "heapMiB": 6144
+    },
+    "rls": {
+      "exit": 0,
+      "passed": 821,
+      "skipped": 125,
+      "files": 70,
+      "seconds": 1092.17,
+      "newPlanTests": 49
+    },
+    "installedFocused": {
+      "exit": 0,
+      "passed": 55,
+      "files": 2,
+      "nativePlanTests": 49
+    },
+    "recipeWireCompatibility": {
+      "exit": 0,
+      "tests": 3,
+      "comparedCommit": "867e43682580875b061726e39473fd5f761b5246",
+      "taskByteLimits": [
+        4096,
+        65536,
+        1048576
+      ]
+    },
+    "directionCheck": {
+      "exit": 0,
+      "reminders": [
+        "jurisdiction readiness registry expired 2026-09-28",
+        "latest review covers v0.44.0 while package is v0.64.0",
+        "substantive intervening changes; deadline 2026-10-05"
+      ]
+    }
+  },
+  "isolatedMigration": {
+    "applied": "20261014000034",
+    "count": 353,
+    "reset": false,
+    "demoChanged": false
+  },
+  "sourceHashes": {
+    "openplan/package.json": "8c43be172b7cd0f390cfa6d64ff18c395b50efc8fb8fce60f94b3c059311fa08",
+    "openplan/src/lib/engagement/synthesis-generation-plan-server.ts": "3526a92e9b82893b114725dad74d861759133f284046b0330d9e56846689d30c",
+    "openplan/src/lib/engagement/synthesis-generation-plan.ts": "bfccb32f643e2f9247cc59f7d07425470af2da0805df3dbf6b0c929d67c34b47",
+    "openplan/src/lib/engagement/synthesis-generation-recipe.ts": "0479e9fe8a48a96c9376586a3b51d4a87924ad77d4e0977911d61b7e462b27b5",
+    "openplan/src/lib/engagement/synthesis-generation-segment-v1.json": "7f715e59a40caa77f38b765cc0d4f620a79049272c8e453a788d2dda192e0c1f",
+    "openplan/src/lib/engagement/synthesis-generation-tasks.ts": "d8cf6083b1ab87db197b31a8df9ea98fccdf4b63ae061d8c4addb8e52c2781d4",
+    "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts": "d53fc7a50978b4936720bd979100a897ee808b73688fd0dcc98f4ebb31043f81",
+    "openplan/src/test/engagement-synthesis-generation-plan-rls.test.ts": "c824f9a0c7ebb49b8700a4e3d0186a66d06e7b965e440f054844739449623826",
+    "openplan/src/test/engagement-synthesis-generation-plan-server.test.ts": "4bdce57bae331b4d4510fdaaf81dc6ef3f23e65a1a384eaafd5c74d084e323ca",
+    "openplan/src/test/engagement-synthesis-generation-plan.test.ts": "009bd44027c477b6942dce059f773ffb6fc7247fbb3730232f453ee7f346cadb",
+    "openplan/src/test/engagement-synthesis-generation-recipe.test.ts": "e350447186c5a4922f2ab98931bd9c5582b55ada5b61c9010ab265dc1836248b",
+    "openplan/src/test/fixtures/application-trusted-search-paths.json": "2ca0516f2e757044dd16fd154c5cee28b3a69cae8a14e64b0c8df3a0cb840526",
+    "openplan/src/test/fixtures/engagement/synthesis-generation-plans.sql": "1e4287278824be6fbc2f7b2825033503130ee4bcbd38b88d4421c5c43a301d22",
+    "openplan/src/test/migrations/inventory.test.ts": "0039fdbc96f325447fbc1660aced44ed1ea3e5f171e07a418c9fd7b4d547db04",
+    "openplan/supabase/migrations/20261014000034_engagement_synthesis_generation_plans.sql": "b425247b6900dee70aac12d53be5156b9c6ef9c6765906d239c497044ece9100",
+    "CHANGELOG.md": "31814707c76f62f0ec41d5c6de72b0f837f890c8cf15d926706518fe8154a558"
+  },
+  "installedFunctions": [
+    {
+      "function": "lock_synthesis_generation_plan_scope",
+      "bodySha256": "b324dbe67cd1c05f5210de214258db333e391a00642e0821577f4cea6ea224c0",
+      "sourceMatch": true,
+      "settings": [
+        "search_path=pg_catalog, public, pg_temp"
+      ]
+    },
+    {
+      "function": "read_engagement_synthesis_generation_plan",
+      "bodySha256": "f6e0114e184bc9c0e7ee27cd613003628742d6eeca117bad27501a947bb57754",
+      "sourceMatch": true,
+      "settings": [
+        "search_path=pg_catalog, public, pg_temp"
+      ]
+    },
+    {
+      "function": "prepare_engagement_synthesis_generation_plan",
+      "bodySha256": "9aa10eb714dd5b61ab656086d7238cb0078faaf1dbe9a0b4856a8dda7dd4105f",
+      "sourceMatch": true,
+      "settings": [
+        "search_path=pg_catalog, public, pg_temp"
+      ]
+    },
+    {
+      "function": "stage_engagement_synthesis_generation_tasks",
+      "bodySha256": "03db51840310fa93a24842643dd39d0fc42df5689d1eb01002b7693ef73e364a",
+      "sourceMatch": true,
+      "settings": [
+        "search_path=pg_catalog, public, pg_temp"
+      ]
+    },
+    {
+      "function": "seal_engagement_synthesis_generation_plan",
+      "bodySha256": "97af5c1588aeecbc0954ac94a04be14a436a0b5427facd343c0e214da686a99a",
+      "sourceMatch": true,
+      "settings": [
+        "search_path=pg_catalog, public, pg_temp"
+      ]
+    }
+  ],
+  "logs": {
+    "generation-plan-final-qa.log": {
+      "sha256": "baea8885f2d084fb9827fa0c534822b2f5b6349d7d834b06837343ce588fbe1d",
+      "bytes": 195584
+    },
+    "generation-plan-final-shuffle.log": {
+      "sha256": "53aef72435a91b9b1b9ad2c8ad847ac88c5571f2ea88270ed165efcbbaf8afc4",
+      "bytes": 664598
+    },
+    "generation-plan-final-typecheck.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "generation-plan-candidate-final.log": {
+      "sha256": "494a210c0b6892c9bab2a5ac641b3c85c7150df6538a4900a5dd70670232020d",
+      "bytes": 277
+    },
+    "generation-plan-installed-focused.log": {
+      "sha256": "7cfcc3c9c5e557a51efcd6d8247be91d77b7afa158d163d52770388f8a2b52ed",
+      "bytes": 280
+    },
+    "generation-plan-native-faults.log": {
+      "sha256": "815d0418492e34f7411ed64151df05a4f689b19ba52516fad89ddf690501e2aa",
+      "bytes": 1259
+    },
+    "generation-plan-corrected-faults.log": {
+      "sha256": "2b78cdb7e10848caa62e9299b5d94627de5297805cf30ccd4062f101d527bbef",
+      "bytes": 287
+    },
+    "generation-plan-unit-first-mutations.json": {
+      "sha256": "9a207dfcccc3cb53faf6bf49e60771db080da0391c0a38e7326b38f579edfc66",
+      "bytes": 5504
+    },
+    "generation-recipe-wire-compat.log": {
+      "sha256": "d6e20b0c7806e6133fe460f0fa2ad1a0ea67349c4de0ef970610ffcecf583821",
+      "bytes": 273
+    },
+    "generation-plan-migration-up.log": {
+      "sha256": "f23dccee00607c5791e4759011b2a130e79d844309d83b9ece3ea45618efef37",
+      "bytes": 308
+    },
+    "generation-plan-direction-check.log": {
+      "sha256": "f9e5960200c9ef0b800d3a80a99b61cd4edd5354128e9475d2fda737367a801c",
+      "bytes": 697
+    },
+    "generation-plan-final-rls.log": {
+      "sha256": "6b14a6c75ac1f5cc756e783fd78f3a63491210648526e1d6c65a5de29081ef73",
+      "bytes": 4250
+    },
+    "generation-plan-installed-function-hashes.json": {
+      "sha256": "3ba2908f3f87a0b2aea64e82c1549285c213d80c38926fdd4a67f3ee0bc66e8e",
+      "bytes": 1268
+    }
+  },
+  "privateLogDirectory": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27",
+  "limitations": [
+    "Memory-resident source planning, not streaming construction",
+    "No provider authorization, calls, raw output delivery or final synthesis",
+    "Native sealing verifies custody of the declared task inventory, not independent semantic extraction",
+    "Lost-response native join remains in one rollback transaction; no process-crash or power-loss trial",
+    "No generation UI, browser journey or usefulness claim",
+    "API-only request binding; installed CLI campaign scope requires a versioned additive extension"
+  ],
+  "github": "Inspect CI, RLS and populated upgrade on the final pushed commit. This local record does not assert a remote result or release.",
+  "fixtureRowsAfterRollback": {
+    "plans": 0,
+    "tasks": 0,
+    "seals": 0
+  },
+  "frozenSourceMatches": true
+}

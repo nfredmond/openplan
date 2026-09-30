@@ -73,6 +73,15 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "engagement_synthesis_generation_plans.header_text", category: "READ_IN_SQL", reason: "Native plan preparation compares exact bytes on retry; the private cursor returns the original header for source-based reconstruction." },
+  { column: "engagement_synthesis_generation_plans.header_sha256", category: "READ_IN_SQL", reason: "The native cursor returns this generated checksum; sealing requires the exact retained header identity." },
+  { column: "engagement_synthesis_generation_plan_tasks.task_text", category: "READ_IN_SQL", reason: "Native batch recovery compares each retained task text with the repeated packet before returning an acknowledgement." },
+  { column: "engagement_synthesis_generation_plan_tasks.task_index", category: "READ_IN_SQL", reason: "Native staging and cursor reads use this ordered primary key to enforce contiguous task prefixes and recover the next index." },
+  { column: "engagement_synthesis_generation_plan_tasks.cumulative_bytes", category: "READ_IN_SQL", reason: "Native cursor reads return the retained prefix byte total, which staging bounds and sealing compares with the expected inventory." },
+  { column: "engagement_synthesis_generation_plan_tasks.chain_sha256", category: "READ_IN_SQL", reason: "Native staging compares the preceding task chain; cursor reads and sealing retain and compare the final chain." },
+  { column: "engagement_synthesis_generation_plan_tasks.task_sha256", category: "UNBUILT", reason: "The immutable row computes an exact task checksum for the future provider worker reader. Native integration tests verify it against the full source-derived task, but dispatch remains unbuilt." },
+  { column: "engagement_synthesis_generation_plan_tasks.task_bytes", category: "UNBUILT", reason: "The immutable row computes each task byte count for the future provider worker reader. Native integration tests compare complete retained tasks; no dispatcher is enabled yet." },
+  { column: "engagement_synthesis_generation_plan_seals.receipt_text", category: "READ_IN_SQL", reason: "The native plan reader returns the immutable completion receipt and checksum; exact seal retries recover the same record." },
   { column: "engagement_synthesis_generation_requests.intent_text", category: "READ_IN_SQL", reason: "Native synthesis request creation compares exact intent bytes on retries; the private reader returns those original bytes. No generation interface is enabled yet." },
   { column: "engagement_synthesis_generation_requests.intent_sha256", category: "READ_IN_SQL", reason: "The private native synthesis request reader returns the generated checksum with exact original intent text; installed custody fixtures verify their agreement." },
   { column: "engagement_synthesis_generation_requests.configuration_revision_id", category: "READ_IN_SQL", reason: "The foreign key retains the selected API revision for the immutable request. Native creation validates the revision and records the same identity in the retained intent." },

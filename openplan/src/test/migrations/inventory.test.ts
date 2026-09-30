@@ -503,10 +503,11 @@ const EXPECTED = {
   // Native catalog: 258 RLS tables, 14 application views; no new policies.
   // 20261014000033 adds two private immutable synthesis request/cancellation tables.
   // Live catalog confirms RLS enabled with no policies on both.
-  relations: 274,
-  tables: 260,
+  // Migration 34 adds three immutable private plan tables with RLS and no policies.
+  relations: 277,
+  tables: 263,
   views: 14,
-  rlsEnabledTables: 260,
+  rlsEnabledTables: 263,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

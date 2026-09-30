@@ -1,0 +1,579 @@
+{
+  "date": "2026-09-30",
+  "baseCommit": "867e43682580875b061726e39473fd5f761b5246",
+  "scope": "Internal synthesis plan byte custody and resumable staging, no provider calls or UI claim",
+  "privateLogDirectory": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27",
+  "sections": [
+    {
+      "name": "recipe",
+      "testFile": "openplan/src/test/engagement-synthesis-generation-recipe.test.ts",
+      "results": [
+        {
+          "case": "comment-control",
+          "exit": 0,
+          "expectedEvidence": "Tests  2 passed",
+          "log": "generation-recipe-comment-control.log",
+          "sha256": "2fd15387a139e770eb1e8f67b363e67aa0872436247fe990d7b0ada1d979d81b"
+        },
+        {
+          "case": "runtime-converter",
+          "exit": 1,
+          "expectedEvidence": "futureRuntimeShape",
+          "log": "generation-recipe-runtime-converter.log",
+          "sha256": "6d62a0dca2d244a2cdef96a957f9573095e6146f8bb9de2a64f271168d5aecda"
+        },
+        {
+          "case": "shared-schema",
+          "exit": 1,
+          "expectedEvidence": "to be",
+          "log": "generation-recipe-shared-schema.log",
+          "sha256": "157c904630db54080a43e5c55f0ca2f607103f307a5b4c09724983b1e42cdd49"
+        },
+        {
+          "case": "changed-recipe",
+          "exit": 1,
+          "expectedEvidence": "to be",
+          "log": "generation-recipe-changed-recipe.log",
+          "sha256": "f9b859175e0039e5cf6059df2b54d556838536c86185576faff8c539cac279d5"
+        }
+      ],
+      "sourceRestored": true
+    },
+    {
+      "name": "plan",
+      "testFile": "openplan/src/test/engagement-synthesis-generation-plan.test.ts",
+      "results": [
+        {
+          "case": "comment-control",
+          "exit": 0,
+          "expectedExit": 0,
+          "expectedEvidence": "Tests  11 passed",
+          "log": "generation-plan-unit-comment-control.log",
+          "sha256": "bb55736550ac912d3b47d42a68a3ccdd1d82b94de3fb9d0dfd56b60c467d9c84"
+        },
+        {
+          "case": "request-hash",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "refuses an unrelated request",
+          "log": "generation-plan-unit-request-hash.log",
+          "sha256": "638b913a809b55b6ce5bca552abc668bb17556236e9eeeeb4f55512244cc813d"
+        },
+        {
+          "case": "request-source",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "refuses an unrelated request",
+          "log": "generation-plan-unit-request-source.log",
+          "sha256": "0db1187ceed6996b89e215b7353488304ac6bf18b326c5e8201b09f8931f09a3"
+        },
+        {
+          "case": "chain-order",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "binds every task byte",
+          "log": "generation-plan-unit-chain-order.log",
+          "sha256": "f9843d7c7a4efcabfb8784bf61de4528fe47b29285e0a3b98e7eea73b25f82d0"
+        },
+        {
+          "case": "bytes",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "binds every task byte",
+          "log": "generation-plan-unit-bytes.log",
+          "sha256": "a5deb2a7966304804457244ccb13da215167ec2cf7be813102f001edd7aeeb73"
+        },
+        {
+          "case": "state-request",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "refuses request identity",
+          "log": "generation-plan-unit-state-request.log",
+          "sha256": "e6d1148ebeb2d5f8a91bd79121ad9c23f12c81fb68e560ebdc4bc025810da38a"
+        },
+        {
+          "case": "state-header",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "refuses header bytes",
+          "log": "generation-plan-unit-state-header.log",
+          "sha256": "81e416aecfb3bae49f8799741a4cc02be227c1c2fe30e706198c414ac0266a72"
+        },
+        {
+          "case": "state-header-hash",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "refuses header checksum",
+          "log": "generation-plan-unit-state-header-hash.log",
+          "sha256": "0d040415d754ad4a35c3ca18b6d06e52c3f3f3160b154210b0cc8a327459281e"
+        },
+        {
+          "case": "state-count",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "refuses cursor beyond inventory",
+          "log": "generation-plan-unit-state-count.log",
+          "sha256": "f8010d373f7265ca1ea63fa5efb8b075648c17b0286253a7940f748758beb4f1"
+        },
+        {
+          "case": "state-bytes",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "refuses byte prefix",
+          "log": "generation-plan-unit-state-bytes.log",
+          "sha256": "b7e3fcab33eb93acaaa482cc321b72a080b4124df656a4f0589238499838b4dc"
+        },
+        {
+          "case": "state-tail",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "refuses chain prefix",
+          "log": "generation-plan-unit-state-tail.log",
+          "sha256": "fa6bc8edfe4eae8304fcdc66bb314dc6161e60a68bed5554448c2215552eab9a"
+        },
+        {
+          "case": "seal-count",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "refuses premature seal",
+          "log": "generation-plan-unit-seal-count.log",
+          "sha256": "8ab57187bb9536e0f5c19f9b261d5c7d0b49f2f573c0375551dece90d60d81d5"
+        },
+        {
+          "case": "seal-hash",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "refuses a self-hashed seal",
+          "log": "generation-plan-unit-seal-hash.log",
+          "sha256": "9bee74d7c64feabc76839ff98486bc7221008b0395906aa6062b885e9325c46f"
+        },
+        {
+          "case": "seal-identity",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "refuses a self-hashed seal",
+          "log": "generation-plan-unit-seal-identity.log",
+          "sha256": "94f37d5dea9d7a2721d41b98022b553a8d6a24dc4bdd62ceb83a328f68ba6638"
+        },
+        {
+          "case": "batch-count",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "batches the full sequence",
+          "log": "generation-plan-unit-batch-count.log",
+          "sha256": "99b6e7c56c88515958e608f5b57675b0f636e8b6830d491c76db990bdbeecbc5"
+        },
+        {
+          "case": "batch-bytes",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "batches the full sequence",
+          "log": "generation-plan-unit-batch-bytes.log",
+          "sha256": "b04d67bae97db3113837ecb091bfba6e45ec2f2d40f0c153cf812eee9480e156"
+        },
+        {
+          "case": "batch-index",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "batches the full sequence",
+          "log": "generation-plan-unit-batch-index.log",
+          "sha256": "22e7c8ca1c7b21b0c5f5c8dd5eb086b5315c5f4266f434323b827262da2bf5dd"
+        }
+      ],
+      "sourceRestored": true,
+      "sourceFile": "openplan/src/lib/engagement/synthesis-generation-plan.ts",
+      "mutations": [
+        {
+          "name": "comment-control",
+          "before": "Reconstruct a deterministic plan",
+          "after": "Reconstruct a repeatable plan"
+        },
+        {
+          "name": "request-hash",
+          "before": "digest(request.intentText) !== request.intentSha256",
+          "after": "false"
+        },
+        {
+          "name": "request-source",
+          "before": "intent.sourceId !== scope.requestId || intent.sourceSha256 !== records.source.sha256",
+          "after": "false"
+        },
+        {
+          "name": "chain-order",
+          "before": "${tail}:${task.index}:${task.sha256}:${task.utf8Bytes}",
+          "after": "${tail}:0:${task.sha256}:${task.utf8Bytes}"
+        },
+        {
+          "name": "bytes",
+          "before": "bytes += task.utf8Bytes",
+          "after": "bytes += 1"
+        },
+        {
+          "name": "state-request",
+          "before": "state.requestId !== plan.header.requestId ||",
+          "after": ""
+        },
+        {
+          "name": "state-header",
+          "before": "state.headerText !== plan.headerText ||",
+          "after": ""
+        },
+        {
+          "name": "state-header-hash",
+          "before": "state.headerSha256 !== plan.headerSha256 ||",
+          "after": ""
+        },
+        {
+          "name": "state-count",
+          "before": "state.nextIndex > plan.entries.length",
+          "after": "false"
+        },
+        {
+          "name": "state-bytes",
+          "before": "state.taskBytes !== (last?.cumulativeBytes ?? 0) ||",
+          "after": ""
+        },
+        {
+          "name": "state-tail",
+          "before": "state.tailSha256 !== (last?.chainSha256 ?? plan.seedSha256)",
+          "after": "false"
+        },
+        {
+          "name": "seal-count",
+          "before": "state.nextIndex !== plan.entries.length ||",
+          "after": ""
+        },
+        {
+          "name": "seal-hash",
+          "before": "digest(state.seal.receiptText) !== state.seal.receiptSha256",
+          "after": "false"
+        },
+        {
+          "name": "seal-identity",
+          "before": "receipt.parse(JSON.parse(state.seal.receiptText));",
+          "after": "void receipt;"
+        },
+        {
+          "name": "batch-count",
+          "before": "start + SYNTHESIS_PLAN_BATCH_TASKS",
+          "after": "start + SYNTHESIS_PLAN_BATCH_TASKS + 1"
+        },
+        {
+          "name": "batch-bytes",
+          "before": "Buffer.byteLength(candidate, \"utf8\") > SYNTHESIS_PLAN_BATCH_BYTES",
+          "after": "false"
+        },
+        {
+          "name": "batch-index",
+          "before": "natural.max(plan.entries.length).parse(start);",
+          "after": ""
+        }
+      ]
+    },
+    {
+      "name": "driver",
+      "testFile": "openplan/src/test/engagement-synthesis-generation-plan-server.test.ts",
+      "results": [
+        {
+          "case": "comment-control",
+          "exit": 0,
+          "expectedExit": 0,
+          "expectedEvidence": "Tests  6 passed",
+          "log": "generation-plan-driver-comment-control.log",
+          "sha256": "cd247b43f6cf0787e468f7196e21df86cdb7ec3b394786b4c98fa99df282c050"
+        },
+        {
+          "case": "unknown-ack",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "stops on an unknown acknowledgement",
+          "log": "generation-plan-driver-unknown-ack.log",
+          "sha256": "93f8057c57b9d7af0904489a773092506dcfecc0da1b2db97a3966cf6d347529"
+        },
+        {
+          "case": "cancel-loop",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "returns cancellation without staging",
+          "log": "generation-plan-driver-cancel-loop.log",
+          "sha256": "de953b0a447397101cedee7183265cea94e05dfd5bd87f3a0b66b9a69593a96f"
+        },
+        {
+          "case": "cancel-seal",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "returns cancellation without staging",
+          "log": "generation-plan-driver-cancel-seal.log",
+          "sha256": "5d8976886bfdc0859a6ac1f4c760d480bb10e5d576c872e01ec034f2d72c3542"
+        },
+        {
+          "case": "stalled-cursor",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "refuses a corrupt or stalled cursor",
+          "log": "generation-plan-driver-stalled-cursor.log",
+          "sha256": "8f2d352063244f75834186c6523fee7106b4354a86ebff8a4a09cbd09d77c780"
+        },
+        {
+          "case": "missing-seal",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "refuses a corrupt or stalled cursor",
+          "log": "generation-plan-driver-missing-seal.log",
+          "sha256": "8419763c2096634dac266f3f59ae65bec735c1feeb99bcad14315a38a70ee0ad"
+        },
+        {
+          "case": "cursor-verification",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "refuses a corrupt or stalled cursor",
+          "log": "generation-plan-driver-cursor-verification.log",
+          "sha256": "4044d222c8cfb246e5e2f29750ed518c1e37dc8583c74e8cdefcae81283a029d"
+        },
+        {
+          "case": "worker-interruption",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "honors worker interruption",
+          "log": "generation-plan-driver-worker-interruption.log",
+          "sha256": "ed6c591de925e690a84bd7f5f59917685deff38f3c50f43cc7b8c02ffae8e346"
+        },
+        {
+          "case": "batch-prefix",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "stages exact packets",
+          "log": "generation-plan-driver-batch-prefix.log",
+          "sha256": "a49248342c09d839df09c2e23707b1b96939c6cbf61f9e897b014d6106660c43"
+        },
+        {
+          "case": "batch-bytes",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "stages exact packets",
+          "log": "generation-plan-driver-batch-bytes.log",
+          "sha256": "dcee90eedc6f1b61d32d7e4a469d34b98e4e1c00e1475de5b258e5047f0be9cf"
+        },
+        {
+          "case": "seal-identity",
+          "exit": 1,
+          "expectedExit": 1,
+          "expectedEvidence": "stages exact packets",
+          "log": "generation-plan-driver-seal-identity.log",
+          "sha256": "63b7c5cc8e64b1054b2fc074fabc0c7319d4fd5df4fe418cd9ec1d327755424b"
+        }
+      ],
+      "sourceRestored": true,
+      "sourceFile": "openplan/src/lib/engagement/synthesis-generation-plan-server.ts",
+      "mutations": [
+        {
+          "name": "comment-control",
+          "before": "Stage preparation through service-only",
+          "after": "Retain preparation through service-only"
+        },
+        {
+          "name": "unknown-ack",
+          "before": "if (error) throw",
+          "after": "if (false && error) throw"
+        },
+        {
+          "name": "cancel-loop",
+          "before": "while (!state.cancelled && !state.seal)",
+          "after": "while (!state.seal)"
+        },
+        {
+          "name": "cancel-seal",
+          "before": "if (!state.cancelled && !state.seal) state =",
+          "after": "if (!state.seal) state ="
+        },
+        {
+          "name": "stalled-cursor",
+          "before": "if (state.nextIndex < batch.nextIndex) throw",
+          "after": "if (false && state.nextIndex < batch.nextIndex) throw"
+        },
+        {
+          "name": "missing-seal",
+          "before": "if (!state.cancelled && !state.seal) throw",
+          "after": "if (false && !state.cancelled && !state.seal) throw"
+        },
+        {
+          "name": "cursor-verification",
+          "before": "return verifySynthesisGenerationPlanState(plan, data);",
+          "after": "return data;"
+        },
+        {
+          "name": "worker-interruption",
+          "before": "signal?.throwIfAborted();",
+          "after": ""
+        },
+        {
+          "name": "batch-prefix",
+          "before": "p_previous_sha256: batch.previousSha256",
+          "after": "p_previous_sha256: plan.seedSha256"
+        },
+        {
+          "name": "batch-bytes",
+          "before": "p_tasks_text: batch.tasksText",
+          "after": "p_tasks_text: \"[]\""
+        },
+        {
+          "name": "seal-identity",
+          "before": "p_header_sha256: plan.headerSha256",
+          "after": "p_header_sha256: plan.seedSha256"
+        }
+      ]
+    }
+  ],
+  "integration": {
+    "results": [
+      {
+        "name": "harmless comments",
+        "expected": "survive",
+        "exit": 0,
+        "matched": true,
+        "log": "00.log",
+        "logSha256": "971848f65f01145398fd604c45d23ed1d7e774ffa83d8d84006fddbabc309ff6"
+      },
+      {
+        "name": "relations missing table",
+        "expected": "fail assertion",
+        "exit": 1,
+        "matched": true,
+        "log": "01.log",
+        "logSha256": "97c60c898d1b395359169496260caa9e1760a0952e871d9eec7078eaf1fc3a11"
+      },
+      {
+        "name": "tables missing table",
+        "expected": "fail assertion",
+        "exit": 1,
+        "matched": true,
+        "log": "02.log",
+        "logSha256": "16a9c5ccfb7446fcfafda577a6216f77c9eb3c475328bfc48e17cca772156de8"
+      },
+      {
+        "name": "rlsEnabledTables missing table",
+        "expected": "fail assertion",
+        "exit": 1,
+        "matched": true,
+        "log": "03.log",
+        "logSha256": "4a30eb044acb53f17690b3180311ea1c1fe8bc7b93523c30f0e1f469832164a2"
+      },
+      {
+        "name": "engagement_synthesis_generation_plans.header_text unaccounted",
+        "expected": "fail assertion",
+        "exit": 1,
+        "matched": true,
+        "log": "04.log",
+        "logSha256": "594f1d021dc1267929fa0d4bb58b7f8f45590f5c79714b256bed43b606606679"
+      },
+      {
+        "name": "engagement_synthesis_generation_plans.header_sha256 unaccounted",
+        "expected": "fail assertion",
+        "exit": 1,
+        "matched": true,
+        "log": "05.log",
+        "logSha256": "a1f5d48b054824cc4fec61fd5112704c973dceeae9924c93b49665e9d5577c94"
+      },
+      {
+        "name": "engagement_synthesis_generation_plan_tasks.task_text unaccounted",
+        "expected": "fail assertion",
+        "exit": 1,
+        "matched": true,
+        "log": "06.log",
+        "logSha256": "c0a03aa7922c037f2f5ac4300e70497d2484c3dac5146427dfe02f313bb19d56"
+      },
+      {
+        "name": "engagement_synthesis_generation_plan_tasks.task_index unaccounted",
+        "expected": "fail assertion",
+        "exit": 1,
+        "matched": true,
+        "log": "07.log",
+        "logSha256": "f5020f85e844ef6b1450edf6a63efa00769c9b00fdd973ba317d3c4351c7655b"
+      },
+      {
+        "name": "engagement_synthesis_generation_plan_tasks.cumulative_bytes unaccounted",
+        "expected": "fail assertion",
+        "exit": 1,
+        "matched": true,
+        "log": "08.log",
+        "logSha256": "a81c4a9395104ad0667261e2938d0476dce16c5a8453962f76a6b007072d2c3d"
+      },
+      {
+        "name": "engagement_synthesis_generation_plan_tasks.chain_sha256 unaccounted",
+        "expected": "fail assertion",
+        "exit": 1,
+        "matched": true,
+        "log": "09.log",
+        "logSha256": "7a363f495ac9d91081fca7ddc071ac8446fe7e41c8d8596e4bb823d2a286f053"
+      },
+      {
+        "name": "engagement_synthesis_generation_plan_tasks.task_sha256 unaccounted",
+        "expected": "fail assertion",
+        "exit": 1,
+        "matched": true,
+        "log": "10.log",
+        "logSha256": "86b81854b31baefd4f727964385c05e59fab6832bbb37bc603d1f4ccb8aa5475"
+      },
+      {
+        "name": "engagement_synthesis_generation_plan_tasks.task_bytes unaccounted",
+        "expected": "fail assertion",
+        "exit": 1,
+        "matched": true,
+        "log": "11.log",
+        "logSha256": "8e953355754a9a3540815f5ca1661d5eb1b149586c3357ffc3935098f0ffc9d6"
+      },
+      {
+        "name": "engagement_synthesis_generation_plan_seals.receipt_text unaccounted",
+        "expected": "fail assertion",
+        "exit": 1,
+        "matched": true,
+        "log": "12.log",
+        "logSha256": "d08f4ea0fb5d43eb7544d13d0a87abc5231d22bc6e828d3744f0536d8f697086"
+      },
+      {
+        "name": "missing operator migration",
+        "expected": "fail assertion",
+        "exit": 1,
+        "matched": true,
+        "log": "13.log",
+        "logSha256": "734e23be07b572a49188cc697d50dacff5558f071954e4b70cdf52ddb03daa3d"
+      }
+    ],
+    "restored": true,
+    "sha256": {
+      "openplan/src/test/migrations/inventory.test.ts": "0039fdbc96f325447fbc1660aced44ed1ea3e5f171e07a418c9fd7b4d547db04",
+      "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts": "d53fc7a50978b4936720bd979100a897ee808b73688fd0dcc98f4ebb31043f81",
+      "CHANGELOG.md": "31814707c76f62f0ec41d5c6de72b0f837f890c8cf15d926706518fe8154a558"
+    }
+  },
+  "native": {
+    "testFile": "openplan/src/test/engagement-synthesis-generation-plan-rls.test.ts",
+    "fixture": "openplan/src/test/fixtures/engagement/synthesis-generation-plans.sql",
+    "installedFocusedTests": 55,
+    "nativePlanTests": 49,
+    "targetedFailures": 40,
+    "redundantGuardSurvivors": 1,
+    "allChangesRolledBack": true
+  },
+  "observedSurvivors": [
+    {
+      "name": "sequence guard removed",
+      "meaning": "Independent prefix check still refuses. Survivor retained and combined fault caught."
+    },
+    {
+      "name": "packet size guard removed, first probe",
+      "meaning": "Empty array also invalid. Probe corrected to an otherwise valid oversized packet; targeted guard fault then caught."
+    },
+    {
+      "name": "batch index validator removed, first probe",
+      "meaning": "Generic throw assertion accepted a downstream TypeError. Corrected assertion requires ZodError and catches the fault."
+    }
+  ],
+  "blindCategories": [
+    "Model interpretation, provider authenticity and tokenizer fit",
+    "Independent SQL reproduction of semantic task extraction",
+    "Cross-process provider worker death or database power loss",
+    "Browser reachability and practice usefulness",
+    "Runtime behavior outside the named guards; inventory checks are static"
+  ]
+}

@@ -20,6 +20,15 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Private synthesis plans now retain a versioned recipe, immutable task batches and
+completion receipts. Interrupted staging resumes at a verified task boundary;
+exact retries preserve the original bytes. Cancellation and revoked requester
+access prevent new planning work. Sealing checks the expected task count, byte
+total and ordered checksum chain. This remains internal preparation. Provider
+calls, final synthesis, staff adoption and a generation interface remain unfinished.
+Apply `20261014000034_engagement_synthesis_generation_plans.sql` before using
+these native planning commands.
+
 Private native synthesis requests now retain exact source and saved API revision
 references, original request bytes and cancellation receipts. Exact retries recover
 the original after a configuration change or cancellation. A cancellation received
