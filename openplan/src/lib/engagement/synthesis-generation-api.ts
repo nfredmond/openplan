@@ -10,9 +10,8 @@ import { createSynthesisGenerationApiResult } from "./synthesis-generation-api-r
 
 const id = z.string().uuid(), hash = z.string().regex(/^[a-f0-9]{64}$/);
 const digest = (value: string) => createHash("sha256").update(value, "utf8").digest("hex");
-const dispatchSchema = z.object({ schemaVersion: z.literal(1), authorizedNow: z.literal(true),
-  receiptText: z.string().max(16384), receiptSha256: hash,
-}).strict();
+const retainedDispatchSchema = z.object({ receiptText: z.string().max(16384), receiptSha256: hash }).strict();
+const dispatchSchema = retainedDispatchSchema.extend({ schemaVersion: z.literal(1), authorizedNow: z.literal(true) }).strict();
 const receiptSchema = z.object({ schemaVersion: z.literal(1), attemptId: id, workerId: id, authorizationId: id,
   binding: synthesisGenerationAttemptBindingSchema,
   maxOutputTokens: z.number().int().min(1).max(65536), responseByteLimit: z.number().int().min(4096).max(4194304),
@@ -28,17 +27,27 @@ export type SynthesisGenerationApiObservation = {
 /** Check retained dispatch identity without renewing it or requiring a current
  * credential. Recovery uses this for byte custody, never for another API call.
  */
-export function verifySynthesisGenerationApiDispatch(args: {
+export function verifySynthesisGenerationApiDispatchReceipt(args: {
   binding: SynthesisGenerationAttemptBinding; dispatch: unknown; workerId: string; authorizationId: string;
 }) {
   const binding = synthesisGenerationAttemptBindingSchema.parse(args.binding);
-  const dispatch = dispatchSchema.parse(args.dispatch);
+  const dispatch = retainedDispatchSchema.parse(args.dispatch);
   const receipt = receiptSchema.parse(JSON.parse(dispatch.receiptText));
   if (digest(dispatch.receiptText) !== dispatch.receiptSha256 || binding.provider !== "api_connection" ||
     receipt.attemptId !== binding.attemptId || receipt.workerId !== id.parse(args.workerId) ||
     receipt.authorizationId !== id.parse(args.authorizationId) || !isDeepStrictEqual(receipt.binding, binding) ||
     Date.parse(receipt.expiresAt) <= Date.parse(receipt.authorizedAt)) throw new Error("Synthesis API dispatch differs from its attempt");
   return { binding, dispatch, receipt };
+}
+
+/** A fresh dispatch acknowledgement carries execution permission separately
+ * from the immutable receipt. Historical readers must not manufacture it.
+ */
+export function verifySynthesisGenerationApiDispatch(args: Parameters<typeof verifySynthesisGenerationApiDispatchReceipt>[0]) {
+  const dispatch = dispatchSchema.parse(args.dispatch);
+  const verified = verifySynthesisGenerationApiDispatchReceipt({ ...args,
+    dispatch: { receiptText: dispatch.receiptText, receiptSha256: dispatch.receiptSha256 } });
+  return { ...verified, dispatch };
 }
 
 /** Construct only from the current native dispatch acknowledgement. A saved

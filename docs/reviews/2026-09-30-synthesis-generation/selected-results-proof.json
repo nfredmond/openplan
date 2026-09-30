@@ -1,0 +1,274 @@
+{
+  "state": "Locally verified unreleased implementation; exact commit CI follows checkpoint push.",
+  "baseCommit": "87b28534ba8bc41543a51659f3461fbb266f2a2d",
+  "mutations": {
+    "generation-selected-mutations": [
+      {
+        "case": "harmless-reader",
+        "control": true,
+        "exit": 0,
+        "status": "survived",
+        "logSha256": "4493502fc45a537f5e93ec97d26a9a399d5b695c1ac3b7314b474968cf9811a3"
+      },
+      {
+        "case": "skip-attempt-id",
+        "control": false,
+        "exit": 0,
+        "status": "survived",
+        "logSha256": "3deee5da46336d824ee2185024c869968445da25cc34937d009141021e3958d3"
+      },
+      {
+        "case": "skip-request",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "logSha256": "d003f6890fc519868c1c4225bcad70daf7547c503d806afb26d309a504d8eafc"
+      },
+      {
+        "case": "skip-task",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "logSha256": "e8f15f7fcc158ec617f0ce74e6e4d464a662efbd60bbf8bf9ffabe5bd9d7d21a"
+      },
+      {
+        "case": "skip-selection-grant",
+        "control": false,
+        "exit": 0,
+        "status": "survived",
+        "logSha256": "b5f9f3a9b06db21b4ad99187fea33c726f0793b4cb66560902a9af765efa337e"
+      },
+      {
+        "case": "skip-actor",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "logSha256": "824eddb7db7bcd7da1d5c2541eded49905a0d87e6c12cf326cf17a74687e81e4"
+      },
+      {
+        "case": "skip-predecessor",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "logSha256": "0799c2c9b3fef8bad90a393c79e276ebb8c880ef884f0982e8473c3e76eb51c5"
+      },
+      {
+        "case": "skip-binding",
+        "control": false,
+        "exit": 0,
+        "status": "survived",
+        "logSha256": "905e002555b6c2520d8218f93d81564c3e467242f50d287e62a81995623397c5"
+      },
+      {
+        "case": "skip-dispatch-attempt",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "logSha256": "d4d607f84e5153b5030039cd2b01e5d08cb0649662583eb1f9e7f43830f0b526"
+      },
+      {
+        "case": "skip-dispatch-expiry",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "logSha256": "10a50d22fe6be9393769b17a4b40b2d5cfa0224013cbe08f9498fd1559f8c666"
+      },
+      {
+        "case": "skip-grant-expiry",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "logSha256": "d7c3b8f7039c721e1bf589dd892919027b070ae33885e7369bd7316f777fa420"
+      },
+      {
+        "case": "skip-token-bound",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "logSha256": "7ea540fd4ffba8cd61f6a78a66ddd1407e546e9005fe298ab215a4c8cdc18fb1"
+      },
+      {
+        "case": "skip-byte-bound",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "logSha256": "e35664d3c36f367c87695b2020e0df9087af8db7eea4a0c3335a8375248a3b25"
+      },
+      {
+        "case": "skip-output-attempt",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "logSha256": "f7bf7b420c9913092f23b5d600c3004bb411bbdfb21817833228c282b727bc98"
+      },
+      {
+        "case": "skip-original-bytes",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "logSha256": "af8ae16c7b96c948276d5fe2f7b2c6aa9c9e0adc5a4f6a70ad354b6873f21ec5"
+      },
+      {
+        "case": "hide-orphan-output",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "logSha256": "f6ab9c48b70a43b6b442af53a71db6e8384cf2813fdf0ba9b1e6b4548a9670af"
+      },
+      {
+        "case": "hide-read-error",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "logSha256": "330833c48f71f4fad9f1cf7444a59bc84961d0b64a545f9330950b57a59152ac"
+      },
+      {
+        "case": "drop-output",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "logSha256": "5c37f445fc280bb9048032c3f5cc55a7b400ac12d57e0e665d8bda406fef6aa1"
+      },
+      {
+        "case": "wrong-projection",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "logSha256": "cb682ee94ea2b5febf2c4a295d84fe2119722bb515bf1f29531aaf5897113f28"
+      },
+      {
+        "case": "wrong-filter",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "logSha256": "34791b1dfb10fc9778474f560a3fa044b486a081a216d483e8e9c2bd4b2dd9e4"
+      },
+      {
+        "case": "remove-fresh-authority",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "logSha256": "d56110f37f1aaa6e4d0bf7e0be9470033f46dcbba8063cb802a0bca8639009db"
+      },
+      {
+        "case": "remove-receipt-hash",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "logSha256": "cd0a9480df4745902e030d5149b8c81ffd74d3feaeb4a1ee29ca00f188426b00"
+      },
+      {
+        "case": "harmless-census",
+        "control": true,
+        "exit": 0,
+        "status": "survived",
+        "logSha256": "ca7d1c4bbce77f72fdcbc789db15d6664d6ed273e6a7b28196cc4b6400cc960c"
+      }
+    ],
+    "generation-selected-mutations-refined": [
+      {
+        "case": "harmless-reader",
+        "control": true,
+        "exit": 0,
+        "status": "survived",
+        "logSha256": "56216296c5494c22b9a50f4fb80944693a219c560075056ff7c7c68a3fd04afd"
+      },
+      {
+        "case": "skip-attempt-id",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "logSha256": "947cc0e0f20d9a30e5affe9f8872a82b402e4ca7dfdc4b61031c65c158c30371"
+      },
+      {
+        "case": "skip-selection-grant",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "logSha256": "94c1135b2dd9ff5fe249524b78dff1e0e4409f378e4987bd10bddea418cf0ecb"
+      },
+      {
+        "case": "skip-binding",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "logSha256": "aaa71688c02489ce179ec3ed92c8c60018d07bfb3f84274450cede94f3d96f77"
+      }
+    ],
+    "generation-selected-native-controls": [
+      {
+        "case": "native-harmless",
+        "control": true,
+        "exit": 0,
+        "status": "survived",
+        "logSha256": "92f361bbb90773fd1cdf206d9c2edb9ec3ae1c4a22c3c3b3743a4a72452f2479"
+      },
+      {
+        "case": "native-dropped-results",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "logSha256": "d2e4ee44d9579d799ec3e64c8d5632006101b936e9d10e124b1c49e77a11320e"
+      },
+      {
+        "case": "stale-column-exemption",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "logSha256": "616984e7db9b37be22db15120c05003d32ae2882e19de45f1cae62a14206c602"
+      }
+    ]
+  },
+  "initialFailures": [
+    "The first fixture selected one task but expected complete results. It also supplied null where the output schema requires an uncertainty string. The fixture now retains all comment segments and its survey answer.",
+    "The column census found three stale SQL-only exemptions after the native output reader began consuming those fields. The exemptions were removed."
+  ],
+  "sourceHashes": {
+    "openplan/src/lib/engagement/synthesis-generation-api.ts": "da93cf243dc5b28a2d7e051140b8592936b17c735455a17cc44360ac50de865c",
+    "openplan/src/lib/engagement/synthesis-generation-selected-results-server.ts": "eb48f857f10a0ce10cd8dee649ad3cc8693c7c6e529f93bc00e8292bc78e19ad",
+    "openplan/src/test/engagement-synthesis-generation-selected-results-server.test.ts": "29306ff683a04f83d5b8983a7fa8eea50323398abad01a8262ae5c5cbc00b3d2",
+    "openplan/src/test/engagement-synthesis-generation-worker-live.test.ts": "3a5fdce2d9f48ec69e17da6c8b6cf6ebe2bb50cb91c2f7effac57e3a9cfa40f2",
+    "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts": "021cb15f9d17dc85b01abc766764549bbd62217709014fdc30c413ecc04ae9ed"
+  },
+  "limits": [
+    "Service-only reader; caller access and current-staff historical permission remain separate.",
+    "Selected source and captures remain memory resident; this does not prove large-corpus capacity or resumable contextual processing.",
+    "Synthetic provider output and structural coverage do not establish semantic quality, billing, agency approval or model accuracy.",
+    "No new staff interface, proposal import or end-to-end generation outcome."
+  ],
+  "checks": {
+    "QA": {
+      "exit": 0,
+      "passed": 16388,
+      "skipped": 1022,
+      "filesPassed": 1363,
+      "filesSkipped": 66,
+      "build": "Next.js 16.3.8 webpack",
+      "auditVulnerabilities": 0
+    },
+    "shuffle": {
+      "exit": 0,
+      "seed": 481936,
+      "passed": 16388,
+      "skipped": 1022
+    },
+    "nativeWorker": {
+      "exit": 0,
+      "passed": 10,
+      "skipped": 0
+    },
+    "typescript": {
+      "exit": 0
+    }
+  },
+  "logs": {
+    "generation-selected-qa.log": "ebeecd3ac58ac353900baab60a7577814d3c472f72e9d6ff4181c09fd06a0f54",
+    "generation-selected-shuffle.log": "a52da17231745138dc03cb0574e1ee2a268e50eb36d4b6827898c6dbe66bb32f",
+    "generation-selected-full-native.log": "86e5e956f03dcb38a03f105ffda100845e3f8d6c0820ef2e0e96eba2ef86c014",
+    "generation-selected-final-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "generation-selected-results-tests.log": "f174769977b64115324780ddd2fd7e957608358f69aa65dc236ae9b27cd199c6",
+    "generation-selected-results-tests-corrected.log": "f1fec728c811c38e2461b7eedb00da8ab738eeecbd69ef6f54adeda18d0de521",
+    "generation-selected-results-tests-complete.log": "0fe85a11e7fea45f5eaf2b36fcb931abfe69300ab57ff59d8d534a11117565dd",
+    "generation-selected-column-check.log": "1e73484228caeb4e69c3cd70a35275854b478009344080132faab0621378cfa7"
+  }
+}

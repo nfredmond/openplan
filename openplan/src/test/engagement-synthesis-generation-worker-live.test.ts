@@ -12,6 +12,7 @@ import { createSynthesisGenerationPlan, synthesisGenerationPlanBatch, verifySynt
 import { LIVE_RLS, getLocalSupabaseEnv, liveClient, type LocalSupabaseEnv } from "./local-supabase-env";
 import { resolveLocalDbContainer } from "./helpers/live-catalog";
 import { requireContractVerificationStack } from "./helpers/contract-verification-stack";
+import { readSynthesisGenerationSelectedResults } from "@/lib/engagement/synthesis-generation-selected-results-server";
 
 const cleanup: Array<() => Promise<void>> = [];
 afterEach(async () => { for (const close of cleanup.splice(0).reverse()) await close(); vi.unstubAllEnvs(); });
@@ -135,8 +136,29 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     }
     const journal = async () => JSON.parse(await readFile(join(directory, "pending.json"), "utf8"));
     const outputs = async () => checked(await service.from("engagement_synthesis_generation_outputs").select("attempt_id,capture_text,capture_sha256").eq("attempt_id", (await journal()).attemptId));
-    return { run, journal, outputs, calls, deliveries, proxyErrors, providerBody, outputText, key, plan, authorizationId };
+    const selectedResults = () => readSynthesisGenerationSelectedResults(service, {
+      request: { id: request.id, intentText: request.intentText, intentSha256: request.intentSha256 }, saved,
+      scope: { requestId: sourceId, campaignId: campaign, workspaceId: workspace }, actorId: owner,
+    }, new AbortController().signal);
+    const revokeRequester = () => sql(`UPDATE workspace_members SET role='viewer' WHERE workspace_id='${workspace}' AND user_id='${owner}'`);
+    return { run, journal, outputs, calls, deliveries, proxyErrors, providerBody, outputText, key, plan, authorizationId, selectedResults, revokeRequester };
   }
+
+  it("joins native selections to original worker outputs without authorizing another call", async () => {
+    const f = await fixture({ allTasks: true });
+    const before = await f.selectedResults(); expect(before.inventory.status).toBe("incomplete"); expect(before.inventory.results).toEqual([]);
+    const run = await f.run(true); expect(run.code, run.stderr).toBe(0);
+    const result = await f.selectedResults(); expect(result.inventory.results).toHaveLength(f.plan.entries.length);
+    expect(result.executions).toHaveLength(f.plan.entries.length); expect(result.selections.throughSequence).toBe(f.plan.entries.length);
+    for (const output of result.inventory.results) {
+      expect(output.sha256).toBe(hash(output.canonical)); expect(JSON.parse(output.canonical).outputText).toBe(f.outputText);
+    }
+    expect(result.inventory.status).toBe("incomplete");
+    expect(result.inventory.entries.every(entry => entry.disposition === "invalid_output")).toBe(true);
+    expect(f.calls).toHaveLength(f.plan.entries.length);
+    f.revokeRequester(); await expect(f.selectedResults()).rejects.toThrow("inventory unavailable");
+    expect(f.calls).toHaveLength(f.plan.entries.length);
+  }, 60000);
 
   for (const mode of ["api_key", "none"] as const) it(`delivers the source-bound original with ${mode}`, async () => {
     const f = await fixture({ mode }), result = await f.run();
