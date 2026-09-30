@@ -1,0 +1,504 @@
+{
+  "recordedAt": "2026-09-30T23:05:06.772672+00:00",
+  "baseCommit": "6eb041f58af336cfec5044311ed3a5c0f8b039db",
+  "state": "locally verified pure protocol increment; final main CI pending",
+  "sourceSha256": {
+    "openplan/src/lib/engagement/synthesis-context-continuation.ts": "def7bd10beb7c733f21082840f5eecf1fb06a00f611eda635294312f84083a67",
+    "openplan/src/lib/engagement/synthesis-generation-context-v1.json": "9bcebbb5561568503dba63acdd6d5de5e08202820c976e92b4dfcd596c59ba8f",
+    "openplan/src/test/engagement-synthesis-context-continuation.test.ts": "4f2d90aa5910fe78b9c5df239aa1de7752f95b8360a4e059e50c4f54be958680"
+  },
+  "recipeCanonicalSha256": "1ef05631ff83fbf8a85e08110c800f820586580b91c76824728de944d0d88abc",
+  "related": {
+    "passed": 43,
+    "files": 4
+  },
+  "typescript": "passed",
+  "lint": "passed",
+  "mutations": {
+    "initial": {
+      "at": "2026-09-30T22:52:10.204505+00:00",
+      "sourceSha256": "def7bd10beb7c733f21082840f5eecf1fb06a00f611eda635294312f84083a67",
+      "restored": true,
+      "results": [
+        {
+          "name": "harmless-comment",
+          "exit": 0,
+          "passed": 10,
+          "failed": 0,
+          "failures": []
+        },
+        {
+          "name": "campaign",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "refuses changed proposed bindings even when their hashes are recomputed"
+          ]
+        },
+        {
+          "name": "workspace",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "refuses changed proposed bindings even when their hashes are recomputed"
+          ]
+        },
+        {
+          "name": "parent",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "refuses changed proposed bindings even when their hashes are recomputed"
+          ]
+        },
+        {
+          "name": "sequence",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "refuses changed proposed bindings even when their hashes are recomputed"
+          ]
+        },
+        {
+          "name": "results",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "refuses changed proposed bindings even when their hashes are recomputed"
+          ]
+        },
+        {
+          "name": "context",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "refuses changed proposed bindings even when their hashes are recomputed"
+          ]
+        },
+        {
+          "name": "content",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "refuses changed proposed bindings even when their hashes are recomputed"
+          ]
+        },
+        {
+          "name": "target",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "refuses changed proposed bindings even when their hashes are recomputed"
+          ]
+        },
+        {
+          "name": "frame-limit",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "refuses changed proposed bindings even when their hashes are recomputed"
+          ]
+        },
+        {
+          "name": "source-id",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "refuses changed proposed bindings even when their hashes are recomputed"
+          ]
+        },
+        {
+          "name": "source-hash",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "refuses changed proposed bindings even when their hashes are recomputed"
+          ]
+        },
+        {
+          "name": "ready-input",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "does not treat incomplete results as a context plan"
+          ]
+        },
+        {
+          "name": "task-limit",
+          "exit": 1,
+          "passed": 8,
+          "failed": 2,
+          "failures": [
+            "counts the full UTF-8 task and retains oversized original responses without clipping",
+            "retains original output whitespace, isolates caller mutation and stops at the complete task byte limit"
+          ]
+        },
+        {
+          "name": "task-limit-inclusive",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "counts the full UTF-8 task and retains oversized original responses without clipping"
+          ]
+        },
+        {
+          "name": "utf8",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "counts the full UTF-8 task and retains oversized original responses without clipping"
+          ]
+        },
+        {
+          "name": "task-identity",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "leaves malformed, truncated, partial and uncited outputs unaccepted"
+          ]
+        },
+        {
+          "name": "finish",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "leaves malformed, truncated, partial and uncited outputs unaccepted"
+          ]
+        },
+        {
+          "name": "output-limit",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "counts the full UTF-8 task and retains oversized original responses without clipping"
+          ]
+        },
+        {
+          "name": "complete",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "leaves malformed, truncated, partial and uncited outputs unaccepted"
+          ]
+        },
+        {
+          "name": "coverage",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "leaves malformed, truncated, partial and uncited outputs unaccepted"
+          ]
+        },
+        {
+          "name": "prior-notes",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "preserves prior notes and uncertainty, permitting new qualifications with earlier citations"
+          ]
+        },
+        {
+          "name": "prior-uncertainty",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "preserves prior notes and uncertainty, permitting new qualifications with earlier citations"
+          ]
+        },
+        {
+          "name": "note-order",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "leaves malformed, truncated, partial and uncited outputs unaccepted"
+          ]
+        },
+        {
+          "name": "duplicate-links",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "preserves prior notes and uncertainty, permitting new qualifications with earlier citations"
+          ]
+        },
+        {
+          "name": "forward-links",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "leaves malformed, truncated, partial and uncited outputs unaccepted"
+          ]
+        },
+        {
+          "name": "quote",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "leaves malformed, truncated, partial and uncited outputs unaccepted"
+          ]
+        },
+        {
+          "name": "citation-address",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "leaves malformed, truncated, partial and uncited outputs unaccepted"
+          ]
+        },
+        {
+          "name": "result-digest",
+          "exit": 0,
+          "passed": 10,
+          "failed": 0,
+          "failures": []
+        },
+        {
+          "name": "output-digest",
+          "exit": 0,
+          "passed": 10,
+          "failed": 0,
+          "failures": []
+        },
+        {
+          "name": "result-request",
+          "exit": 0,
+          "passed": 10,
+          "failed": 0,
+          "failures": []
+        },
+        {
+          "name": "result-header",
+          "exit": 0,
+          "passed": 10,
+          "failed": 0,
+          "failures": []
+        },
+        {
+          "name": "result-index",
+          "exit": 0,
+          "passed": 10,
+          "failed": 0,
+          "failures": []
+        },
+        {
+          "name": "result-predecessor",
+          "exit": 0,
+          "passed": 10,
+          "failed": 0,
+          "failures": []
+        },
+        {
+          "name": "exact-replay",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "binds every resumed result and rejects rehashed foreign, reordered or edited history"
+          ]
+        },
+        {
+          "name": "codepoint-limit",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "matches Unicode code-point limits without cleaning original unusual output"
+          ]
+        },
+        {
+          "name": "codepoint-units",
+          "exit": 1,
+          "passed": 9,
+          "failed": 1,
+          "failures": [
+            "matches Unicode code-point limits without cleaning original unusual output"
+          ]
+        },
+        {
+          "name": "clone-recipe",
+          "exit": 0,
+          "passed": 10,
+          "failed": 0,
+          "failures": []
+        },
+        {
+          "name": "copy-retained",
+          "exit": 0,
+          "passed": 10,
+          "failed": 0,
+          "failures": []
+        }
+      ]
+    },
+    "corrected": {
+      "at": "2026-09-30T22:53:50.896539+00:00",
+      "sourceSha256": "def7bd10beb7c733f21082840f5eecf1fb06a00f611eda635294312f84083a67",
+      "restored": true,
+      "results": [
+        {
+          "name": "harmless-comment",
+          "exactReplayBackstopRemoved": false,
+          "exit": 0,
+          "passed": 18,
+          "failed": 0,
+          "failures": []
+        },
+        {
+          "name": "clone-recipe",
+          "exactReplayBackstopRemoved": false,
+          "exit": 1,
+          "passed": 17,
+          "failed": 1,
+          "failures": [
+            "binds the independent recipe and reconstructs requested source and content"
+          ]
+        },
+        {
+          "name": "copy-retained",
+          "exactReplayBackstopRemoved": false,
+          "exit": 1,
+          "passed": 17,
+          "failed": 1,
+          "failures": [
+            "processes every long multilingual frame, preserving exact prior responses and replay"
+          ]
+        },
+        {
+          "name": "result-digest",
+          "exactReplayBackstopRemoved": true,
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "failures": [
+            "rejects changed resumed recordSha256"
+          ]
+        },
+        {
+          "name": "output-digest",
+          "exactReplayBackstopRemoved": true,
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "failures": [
+            "rejects changed resumed outputSha256"
+          ]
+        },
+        {
+          "name": "result-request",
+          "exactReplayBackstopRemoved": true,
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "failures": [
+            "rejects changed resumed requestId"
+          ]
+        },
+        {
+          "name": "result-header",
+          "exactReplayBackstopRemoved": true,
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "failures": [
+            "rejects changed resumed headerSha256"
+          ]
+        },
+        {
+          "name": "result-index",
+          "exactReplayBackstopRemoved": true,
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "failures": [
+            "rejects changed resumed frameIndex"
+          ]
+        },
+        {
+          "name": "result-predecessor",
+          "exactReplayBackstopRemoved": true,
+          "exit": 1,
+          "passed": 0,
+          "failed": 1,
+          "failures": [
+            "rejects changed resumed previousResultSha256"
+          ]
+        }
+      ]
+    },
+    "recipe": {
+      "restored": true,
+      "sourceSha256": "9bcebbb5561568503dba63acdd6d5de5e08202820c976e92b4dfcd596c59ba8f",
+      "results": [
+        {
+          "name": "harmless-format",
+          "exit": 0,
+          "passed": 1,
+          "failed": 0
+        },
+        {
+          "name": "changed-instruction",
+          "exit": 1,
+          "passed": 0,
+          "failed": 1
+        }
+      ]
+    }
+  },
+  "limits": [
+    "Pure in-memory processing, no native stage or provider execution.",
+    "Replay requires independent native custody and original-response verification; hashes alone do not establish authenticity.",
+    "Explicit task byte ceilings do not prove transport or provider token/context fit.",
+    "Frames complete remains machine_unreviewed; no semantic, representative, staff acceptance or capacity claim."
+  ],
+  "fullQA": {
+    "exit": 0,
+    "passed": 16444,
+    "skipped": 1073,
+    "filesPassed": 1367,
+    "filesSkipped": 68,
+    "productionBuild": "passed",
+    "dependencyVulnerabilities": 0
+  },
+  "shuffled": {
+    "exit": 0,
+    "seed": 481942,
+    "passed": 16444,
+    "skipped": 1073,
+    "filesPassed": 1367,
+    "filesSkipped": 68
+  },
+  "evidenceLogSha256": {
+    "generation-context-continuation-final-qa.log": "c2bcd60a336bea7734908db8841c221c260712a24f1e0cf351df644e74f3f3c4",
+    "generation-context-continuation-final-shuffle.log": "4a0641b254b66e6409ccfac657a45fb54df2a37a2ce87c08d2034c9b6c52c73a",
+    "generation-context-continuation-related.log": "2dfd51f2a5056458af859dc547311aea12f3168cc7d4435094de557de1f84a10",
+    "generation-context-continuation-mutations.json": "1957bd6e64561163b396a3ff838164943afa21f793e6d29b3db0cf2314e4ce8f",
+    "generation-context-continuation-mutations-corrected.json": "055bd3d9f8ea0346da2ab44b37389e3138b45a963e207adc4153dde7aca401cf",
+    "generation-context-recipe-mutations.json": "b14f8d47f2a4f0ad634874b39d8463742e5e5be9b1df6e476a4d7b83d61c023b"
+  }
+}

@@ -85,3 +85,20 @@ encoded task size and provider context fit independently. Preserve the remaining
 requirement for complete resumable context processing, including long records,
 historical dependencies, conflicting positions and exact final source membership.
 This candidate does not substitute request custody for that implementation.
+
+## Versioned continuation candidate after 6eb041f5
+
+The [pure continuation protocol](CONTEXT_CONTINUATION.md) now reconstructs the
+request-bound plan and processes complete frames with exact preceding output.
+Earlier notes and uncertainty remain unchanged prefixes; qualifications append
+linked notes. Replay verifies the full chain. A complete task beyond its byte
+limit remains held with the original state retained. This is not native custody,
+provider dispatch or staff acceptance.
+
+The next native protocol must bind this plan header and separate recipe, the
+current task hash, an anchored predecessor output and explicit resource approval.
+Do not pass context packets through the segment executor. Retain original
+provider bytes before validating a continuation, preserve unknown dispatches,
+and require explicit choice before another model attempt. Follow with thematic
+proposals and acceptance into a new staff review revision, preserving prior
+approvals and complete source membership.

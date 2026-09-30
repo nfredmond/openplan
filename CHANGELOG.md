@@ -51,6 +51,11 @@ and reconstructed source content, refusing incomplete inputs before the write.
 The segment executor explicitly refuses these requests. Contextual execution and
 staff controls remain unfinished.
 
+The internal context continuation protocol reconstructs its plan from retained
+inputs, preserves preceding response bytes and cumulative notes/uncertainty, and
+stops explicitly when the complete task exceeds its configured byte limit. It
+adds no provider call, native authorization or staff generation interface.
+
 ## 0.65.0 (2026-09-30)
 
 [Verification](docs/reviews/2026-09-30-synthesis-generation/RELEASE_VERIFICATION.md) records the release scope, engineering checks and publication status.

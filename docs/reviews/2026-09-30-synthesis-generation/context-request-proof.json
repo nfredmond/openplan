@@ -1,7 +1,7 @@
 {
   "recordedAt": "2026-09-30T22:38:03.846815+00:00",
   "baseCommit": "d7888144c9d3c42d5ea0d36f7996f4d3e1e83ae9",
-  "state": "locally verified internal checkpoint; final main CI pending",
+  "state": "main6eb041f5 passes exact CI, RLS Isolation and Upgrade Path",
   "sourceSha256": {
     "openplan/supabase/migrations/20261014000037_engagement_synthesis_context_requests.sql": "c2031af677b78aa6dd2bf061dafa430776a2764784ca567f5df6d6b07d485589",
     "openplan/src/lib/engagement/synthesis-context-requests-server.ts": "ed5f38674c8e777183422f8332626cb5fb9dd4d908dc9752a94c841393499129",
@@ -366,5 +366,28 @@
   "documentationChecks": {
     "passed": 14,
     "files": 3
+  },
+  "finalCI": {
+    "commit": "6eb041f58af336cfec5044311ed3a5c0f8b039db",
+    "checkedAt": "2026-09-30T23:05:06.772672+00:00",
+    "CI": {
+      "run": 36786783604,
+      "conclusion": "success",
+      "passed": 16419,
+      "skipped": 1080
+    },
+    "RLS": {
+      "run": 36786783586,
+      "conclusion": "success",
+      "passed": 977,
+      "skipped": 125,
+      "filesPassed": 75
+    },
+    "Upgrade": {
+      "run": 36786783626,
+      "conclusion": "success",
+      "before": "2:2:1:1:1:1:1",
+      "after": "2:2:1:1:1:1:1"
+    }
   }
 }

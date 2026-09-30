@@ -6,7 +6,10 @@ Combined QA and shuffled tests pass 16,426 tests each, with 1,073 skipped.
 The production build passes and the dependency audit reports zero vulnerabilities.
 The complete isolation suite passes 976 tests, with 125 skipped. The subsequent
 native worker suite includes the new authenticated HTTP case and passes all
-12 tests. Final main CI remains pending. This increment retains request custody;
+12 tests. Main `6eb041f5` subsequently passes CI, RLS isolation and the populated
+upgrade check. Remote isolation passes 977 tests with 125 skipped, including the
+new HTTP case. Seeded upgrade counts remain `2:2:1:1:1:1:1` before and after.
+This increment retains request custody;
 contextual execution and a staff browser capability remain unfinished.
 
 The new authenticated command creates a separate generation request and retains
