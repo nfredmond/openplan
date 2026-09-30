@@ -1,0 +1,182 @@
+{
+  "sourceSha256": "1266d80b1b106bc868877f8a95b958aea934e8711e072eaaf26c394d4d7f8089",
+  "cases": [
+    {
+      "case": "baseline",
+      "exit": 0,
+      "expected": "pass",
+      "valid": true,
+      "logSha256": "82f9dc2893c918e3017c001d3cfc972526f3c019e6b9daf32040fc255dda649c"
+    },
+    {
+      "case": "harmless-comment",
+      "exit": 0,
+      "expected": "pass",
+      "valid": true,
+      "logSha256": "44543a88cba516655e6e13218b03673dcf63d203a68c602aff390585ab62eeb8"
+    },
+    {
+      "case": "clip-source",
+      "exit": 1,
+      "expected": "assertion failure",
+      "valid": true,
+      "logSha256": "fcf8e2fa30adc03b3bc50651401e9363d85fe9760acb30de59ec630ac5fb05ce",
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-input.test.ts > complete retained input for resumable synthesis > reconstructs all 301 comments, the survey answer, full long text and original JSON bytes"
+    },
+    {
+      "case": "drop-comment-301",
+      "exit": 1,
+      "expected": "assertion failure",
+      "valid": true,
+      "logSha256": "8bd3fa602431a72bd476cdab06b493753723006cc3214df8d310e600d95747d4",
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-input.test.ts > complete retained input for resumable synthesis > reconstructs all 301 comments, the survey answer, full long text and original JSON bytes"
+    },
+    {
+      "case": "omit-survey-inventory",
+      "exit": 1,
+      "expected": "assertion failure",
+      "valid": true,
+      "logSha256": "dbfc182392fc7e7ca662860ee1f82e7971e7f1ddfe0ea208f665ea1c08557c0c",
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-input.test.ts > complete retained input for resumable synthesis > reconstructs all 301 comments, the survey answer, full long text and original JSON bytes"
+    },
+    {
+      "case": "invent-neutral-assessment",
+      "exit": 1,
+      "expected": "assertion failure",
+      "valid": true,
+      "logSha256": "84c0994fbf8919842d80d6981d2e88d274cb2ed849e88e20b482afad5f43d3b7",
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-input.test.ts > complete retained input for resumable synthesis > reconstructs all 301 comments, the survey answer, full long text and original JSON bytes"
+    },
+    {
+      "case": "erase-replies",
+      "exit": 1,
+      "expected": "assertion failure",
+      "valid": true,
+      "logSha256": "cd3666f035d5036d447af091bde100db0270dfb9e3ecb221821befe8408185a2",
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-input.test.ts > complete retained input for resumable synthesis > distinguishes reply and answer identities and keeps unanswered sessions explicit"
+    },
+    {
+      "case": "erase-unanswered-sessions",
+      "exit": 1,
+      "expected": "assertion failure",
+      "valid": true,
+      "logSha256": "415afdf161414e568cee2b560981b7a40e7b0767746e784a1551e44b1d131c1e",
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-input.test.ts > complete retained input for resumable synthesis > distinguishes reply and answer identities and keeps unanswered sessions explicit"
+    },
+    {
+      "case": "round-and-reserialize-source",
+      "exit": 1,
+      "expected": "assertion failure",
+      "valid": true,
+      "logSha256": "98c8994846ffc581258ee969f2bd05603a4529c7e6e1a0c615ad1f5b45b71e1b",
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-input.test.ts > complete retained input for resumable synthesis > reconstructs all 301 comments, the survey answer, full long text and original JSON bytes"
+    },
+    {
+      "case": "count-code-units-as-bytes",
+      "exit": 1,
+      "expected": "assertion failure",
+      "valid": true,
+      "logSha256": "2f022f64338cdcc316907ccbfe399dc196df7fe85881134ace14779f4881ba04",
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-input.test.ts > complete retained input for resumable synthesis > reconstructs all 301 comments, the survey answer, full long text and original JSON bytes"
+    },
+    {
+      "case": "split-surrogate-pairs",
+      "exit": 1,
+      "expected": "assertion failure",
+      "valid": true,
+      "logSha256": "a2df16edd86bce71e3d5f3a9f5545b464a74be181ee312c053514fc8b864f973",
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-input.test.ts > complete retained input for resumable synthesis > keeps multilingual characters, JSON escapes and long continuations without splitting surrogate pairs"
+    },
+    {
+      "case": "wrong-string-offset",
+      "exit": 1,
+      "expected": "assertion failure",
+      "valid": true,
+      "logSha256": "a6f6e4a807341c38bf0dd4ee76cc6ba169b8e2320ac23330fecafb88f66e1ec3",
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-input.test.ts > complete retained input for resumable synthesis > keeps multilingual characters, JSON escapes and long continuations without splitting surrogate pairs"
+    },
+    {
+      "case": "wrong-part-index",
+      "exit": 1,
+      "expected": "assertion failure",
+      "valid": true,
+      "logSha256": "f678e270ba94cc3d77652ff4b390c4f1fc88aa4771452813278176bbee5ec267",
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-input.test.ts > complete retained input for resumable synthesis > reconstructs all 301 comments, the survey answer, full long text and original JSON bytes"
+    },
+    {
+      "case": "byte-gap",
+      "exit": 1,
+      "expected": "assertion failure",
+      "valid": true,
+      "logSha256": "bebe7915d4083087a208ca08416944a8f2dc04edf9a1ffbc7f223c44898a3c89",
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-input.test.ts > complete retained input for resumable synthesis > reconstructs all 301 comments, the survey answer, full long text and original JSON bytes"
+    },
+    {
+      "case": "wrong-part-digest",
+      "exit": 1,
+      "expected": "assertion failure",
+      "valid": true,
+      "logSha256": "885592f123551c55d17f1a622e63ad7a9c0675c7b25ead66ab914cf18e918790",
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-input.test.ts > complete retained input for resumable synthesis > reconstructs all 301 comments, the survey answer, full long text and original JSON bytes"
+    },
+    {
+      "case": "wrong-manifest-digest",
+      "exit": 1,
+      "expected": "assertion failure",
+      "valid": true,
+      "logSha256": "c3f321db83c568eefb1573c10b564fa528ed8f244dfd0fa53b5ad145df4ae1a8",
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-input.test.ts > complete retained input for resumable synthesis > reconstructs all 301 comments, the survey answer, full long text and original JSON bytes"
+    },
+    {
+      "case": "wrong-source-digest",
+      "exit": 1,
+      "expected": "assertion failure",
+      "valid": true,
+      "logSha256": "7380ded323519116db573243c6df95840679fd44434d24b61baa5ec921ce3aa3",
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-input.test.ts > complete retained input for resumable synthesis > reconstructs all 301 comments, the survey answer, full long text and original JSON bytes"
+    },
+    {
+      "case": "accept-malformed-unicode",
+      "exit": 1,
+      "expected": "assertion failure",
+      "valid": true,
+      "logSha256": "de09b10ba35599dd772a7790c4c6a7c5ee230e5199ca9980477f4747f632ae2b",
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-input.test.ts > complete retained input for resumable synthesis > refuses an invalid Unicode source instead of replacing bytes"
+    },
+    {
+      "case": "accept-invalid-frame-limit",
+      "exit": 1,
+      "expected": "assertion failure",
+      "valid": true,
+      "logSha256": "d408764f24dfec31332d725ff002b7c84c9fa25cd2b0e31deec59984e90586b2",
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-input.test.ts > complete retained input for resumable synthesis > refuses invalid frame byte limit 0 without changing the source"
+    },
+    {
+      "case": "skip-authoritative-comparison",
+      "exit": 1,
+      "expected": "assertion failure",
+      "valid": true,
+      "logSha256": "df0da0d17d6bb9a89673bcd9d20b99de5d51ff9056ab0d12b00d3fd79fb56ed3",
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-input.test.ts > complete retained input for resumable synthesis > refuses missing part even when other retained parts remain readable"
+    },
+    {
+      "case": "skip-source-verification",
+      "exit": 1,
+      "expected": "assertion failure",
+      "valid": true,
+      "logSha256": "f0b22057210e4d8c89a4214f87e6b31bb7754ead07c2b0009b0f5d73f92690d6",
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-input.test.ts > complete retained input for resumable synthesis > rechecks authoritative source identity, bytes and membership before planning"
+    }
+  ],
+  "restored": true,
+  "blindCategories": [
+    "authenticated source loading",
+    "native storage and access",
+    "worker leases and recovery",
+    "provider interpretation and quality",
+    "staff review acceptance",
+    "browser workflows"
+  ],
+  "testFileSha256": "20b54d8812d973283ac59724657b9bc5d5e7f27da6799ff74a24e27d6fc11850",
+  "runnerSha256": "20348248073f25c995f708b6dd0f664e0038e76161274e1290a3b3e78a3d841a"
+}

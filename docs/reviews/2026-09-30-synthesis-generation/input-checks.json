@@ -1,0 +1,40 @@
+{
+  "fullQA": {
+    "exit": 0,
+    "passed": 15974,
+    "skipped": 828,
+    "filesPassed": 1345,
+    "filesSkipped": 61,
+    "productionBuild": "passed",
+    "dependencyVulnerabilities": 0
+  },
+  "shuffled": {
+    "exit": 0,
+    "seed": 650930,
+    "passed": 15974,
+    "skipped": 828
+  },
+  "related": {
+    "passed": 84,
+    "files": 4
+  },
+  "mutations": {
+    "controls": 2,
+    "targetedFailures": 19,
+    "restored": true
+  },
+  "logs": [
+    {
+      "name": "generation-input-full-qa.log",
+      "sha256": "4e8eecfbee81335122f4f8506bf1c4653805a44fa981bf8f805e8a2282922788"
+    },
+    {
+      "name": "generation-input-shuffle.log",
+      "sha256": "75a8ffbad6c543bb97dad1b910e16b55d51f9d233c53e1b655ca0acb27eefcc2"
+    },
+    {
+      "name": "generation-input-related-tests.log",
+      "sha256": "daa3f3381422e5d50dc768f6a1b9fdba340814a4ff59ffa4a58e09ab784db8a6"
+    }
+  ]
+}
