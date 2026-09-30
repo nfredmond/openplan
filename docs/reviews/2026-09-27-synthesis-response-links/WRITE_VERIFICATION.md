@@ -33,3 +33,5 @@ This checkout previously used another checkout's node_modules through a symlink.
 ## Remaining integration
 
 Resolve the browser command format, retaining exact intent without requiring private source packets in browser storage. Add authenticated context, history and write routes with executable agent-write refusal or the existing action registry. Connect the Analysis, response and decision controls, preserve earlier decision-history formats, install the additive migration with upgrade evidence, and exercise desktop and 390px navigation, keyboard use, console output and saved artifacts. Reviewed exports, resumable generation and the remaining V1 contract stay open.
+
+The [private HTTP and compact-command checkpoint](HTTP_VERIFICATION.md) continues this work with retained-link navigation. Browser controls, route registration and candidate activation remain open.

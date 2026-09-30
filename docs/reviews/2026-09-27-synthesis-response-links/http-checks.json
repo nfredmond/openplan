@@ -1,0 +1,2174 @@
+{
+  "baseCommit": "246b72fba3018449de817f90001e92d8b6e81ddf",
+  "recordedAt": "2026-09-30T05:16:29.068244+00:00",
+  "candidateInstalled": false,
+  "sourceSha256": {
+    "openplan/src/lib/engagement/synthesis-response-link.ts": "54d4a6a5f8be031572e982aca41efbb68f6fd20d2267bc8392b9e11a98eaf6e6",
+    "openplan/src/lib/engagement/synthesis-response-index.ts": "48fd7a5faa4da1166da5ccf80b74c54fe7cf9a4a2cf26723605b68fc2b313866",
+    "openplan/src/lib/engagement/synthesis-response-index-server.ts": "356507c9a797726a5cde9d73ae1c9a2d0fabcd873d4cb729677a1cfefdf82309",
+    "openplan/src/lib/engagement/synthesis-response-write-server.ts": "fc322678e8c868389cb7b8ddd72009ac295b70d7babdd9d5d2f036a484cb60ca",
+    "openplan/src/lib/engagement/synthesis-response-records-server.ts": "c94c37461751d4f445f306ef55b76fa2861edbdb8f5e927dc7dec1ddd6a8620c",
+    "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-index.candidate.sql": "4da15fd2e486942ef07154720b5ee05cd5eda2e6db54b54b897400e98a263f8d",
+    "openplan/src/test/engagement-synthesis-response-acknowledgement.test.ts": "7951a4b741a81c2280edc5d6b7dd89999197ba69ec53a0a31edea927682e10ed",
+    "openplan/src/test/engagement-synthesis-response-index.test.ts": "79077769110f2ba9da00a7ab9658818f44dc5841f23beb2a967a97a9c6d38b56",
+    "openplan/src/test/engagement-synthesis-response-link-route.test.ts": "b28fc61d27d30ec74817da2aade4e960c2991bd8d63173169d8b5a48e9a375c0",
+    "openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts": "5a70d527eb3442dae045b6fd6c51d4468b3bbd49f6a48499ec644f841b27ef61",
+    "openplan/src/test/engagement-synthesis-response-write.test.ts": "f0e4486b8faa3c04b95d874672ba094b7e48a3e62af2406e23abb73aaa19864e",
+    "openplan/src/lib/engagement/synthesis-response-link-http.ts": "088195e3c6e9d3af6e383b8cc2fe8530be4dc290aadc4d85c56f49c4ebcd562e"
+  },
+  "mutationRuns": [
+    {
+      "file": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/response-link-http-mutations/report.json",
+      "sha256": "602b7f8b144759ec4ddf9314f96ee734946dbd3785a031de53ec2a381f3f49d2",
+      "cases": [
+        {
+          "name": "route-baseline",
+          "file": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts",
+          "exitCode": 0,
+          "expectedFailure": null,
+          "valid": true,
+          "passed": 15,
+          "failed": [],
+          "seconds": 1.12,
+          "restoredSha256": "17c3c7cdee6c77d2731d344122f0e1756d8817c9aae4dda3914c8179cdf071d7",
+          "mutation": {
+            "before": null,
+            "after": null
+          }
+        },
+        {
+          "name": "route-harmless",
+          "file": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts",
+          "exitCode": 0,
+          "expectedFailure": null,
+          "valid": true,
+          "passed": 15,
+          "failed": [],
+          "seconds": 1.17,
+          "restoredSha256": "17c3c7cdee6c77d2731d344122f0e1756d8817c9aae4dda3914c8179cdf071d7",
+          "mutation": {
+            "before": "/** Private retained history",
+            "after": "/** Private saved history"
+          }
+        },
+        {
+          "name": "route-origin",
+          "file": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts",
+          "exitCode": 1,
+          "expectedFailure": "requires browser origin",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API requires browser origin and refuses each unregistered assistant marker",
+              "messages": [
+                "AssertionError: expected 201 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:82:100\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.07,
+          "restoredSha256": "17c3c7cdee6c77d2731d344122f0e1756d8817c9aae4dda3914c8179cdf071d7",
+          "mutation": {
+            "before": "requireProviderBrowserOrigin(request);",
+            "after": "void request;"
+          }
+        },
+        {
+          "name": "route-bind-actorId",
+          "file": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts",
+          "exitCode": 1,
+          "expectedFailure": "binds command actorId",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API binds command actorId to authenticated route scope",
+              "messages": [
+                "AssertionError: expected 201 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:79:85\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "17c3c7cdee6c77d2731d344122f0e1756d8817c9aae4dda3914c8179cdf071d7",
+          "mutation": {
+            "before": "intent.data.actorId !== access.user.id",
+            "after": "false"
+          }
+        },
+        {
+          "name": "route-bind-workspaceId",
+          "file": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts",
+          "exitCode": 1,
+          "expectedFailure": "binds command workspaceId",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API binds command workspaceId to authenticated route scope",
+              "messages": [
+                "AssertionError: expected 201 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:79:85\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.12,
+          "restoredSha256": "17c3c7cdee6c77d2731d344122f0e1756d8817c9aae4dda3914c8179cdf071d7",
+          "mutation": {
+            "before": "intent.data.workspaceId !== access.workspaceId",
+            "after": "false"
+          }
+        },
+        {
+          "name": "route-bind-campaignId",
+          "file": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts",
+          "exitCode": 1,
+          "expectedFailure": "binds command campaignId",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API binds command campaignId to authenticated route scope",
+              "messages": [
+                "AssertionError: expected 201 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:79:85\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "17c3c7cdee6c77d2731d344122f0e1756d8817c9aae4dda3914c8179cdf071d7",
+          "mutation": {
+            "before": "intent.data.campaignId !== params.data.campaignId",
+            "after": "false"
+          }
+        },
+        {
+          "name": "route-assistant-execution-source",
+          "file": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts",
+          "exitCode": 1,
+          "expectedFailure": "requires browser origin",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API requires browser origin and refuses each unregistered assistant marker",
+              "messages": [
+                "AssertionError: expected 201 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:84:87\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "17c3c7cdee6c77d2731d344122f0e1756d8817c9aae4dda3914c8179cdf071d7",
+          "mutation": {
+            "before": "\"x-openplan-assistant-execution-source\"",
+            "after": "\"x-unused-execution-source\""
+          }
+        },
+        {
+          "name": "route-assistant-input-hash",
+          "file": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts",
+          "exitCode": 1,
+          "expectedFailure": "requires browser origin",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API requires browser origin and refuses each unregistered assistant marker",
+              "messages": [
+                "AssertionError: expected 201 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:84:87\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.12,
+          "restoredSha256": "17c3c7cdee6c77d2731d344122f0e1756d8817c9aae4dda3914c8179cdf071d7",
+          "mutation": {
+            "before": "\"x-openplan-assistant-input-hash\"",
+            "after": "\"x-unused-input-hash\""
+          }
+        },
+        {
+          "name": "route-assistant-approval-id",
+          "file": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts",
+          "exitCode": 1,
+          "expectedFailure": "requires browser origin",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API requires browser origin and refuses each unregistered assistant marker",
+              "messages": [
+                "AssertionError: expected 201 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:84:87\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "17c3c7cdee6c77d2731d344122f0e1756d8817c9aae4dda3914c8179cdf071d7",
+          "mutation": {
+            "before": "\"x-openplan-assistant-approval-id\"",
+            "after": "\"x-unused-approval-id\""
+          }
+        },
+        {
+          "name": "route-staff",
+          "file": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts",
+          "exitCode": 1,
+          "expectedFailure": "denies missing or changed staff",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API denies missing or changed staff access before private readers or writes",
+              "messages": [
+                "AssertionError: expected 200 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:69:165\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "17c3c7cdee6c77d2731d344122f0e1756d8817c9aae4dda3914c8179cdf071d7",
+          "mutation": {
+            "before": "!access.allowed",
+            "after": "false"
+          }
+        },
+        {
+          "name": "route-access-error",
+          "file": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts",
+          "exitCode": 1,
+          "expectedFailure": "denies missing or changed staff",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API denies missing or changed staff access before private readers or writes",
+              "messages": [
+                "AssertionError: expected 403 to be 503 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:70:148\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "17c3c7cdee6c77d2731d344122f0e1756d8817c9aae4dda3914c8179cdf071d7",
+          "mutation": {
+            "before": "if (access.error)",
+            "after": "if (false)"
+          }
+        },
+        {
+          "name": "route-pinned-user",
+          "file": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts",
+          "exitCode": 1,
+          "expectedFailure": "denies missing or changed staff",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API denies missing or changed staff access before private readers or writes",
+              "messages": [
+                "AssertionError: expected 200 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:73:58\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "17c3c7cdee6c77d2731d344122f0e1756d8817c9aae4dda3914c8179cdf071d7",
+          "mutation": {
+            "before": "request.headers.has(\"x-openplan-expected-user\")",
+            "after": "false"
+          }
+        },
+        {
+          "name": "route-pinned-workspace",
+          "file": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts",
+          "exitCode": 1,
+          "expectedFailure": "denies missing or changed staff",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API denies missing or changed staff access before private readers or writes",
+              "messages": [
+                "AssertionError: expected 200 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:73:58\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "17c3c7cdee6c77d2731d344122f0e1756d8817c9aae4dda3914c8179cdf071d7",
+          "mutation": {
+            "before": "request.headers.has(\"x-openplan-expected-workspace\")",
+            "after": "false"
+          }
+        },
+        {
+          "name": "route-duplicate-query",
+          "file": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts",
+          "exitCode": 1,
+          "expectedFailure": "rejects invalid routes",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API rejects invalid routes, duplicate keys and unexpected query fields in every read mode",
+              "messages": [
+                "AssertionError: expected 200 to be 400 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:100:418\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.12,
+          "restoredSha256": "17c3c7cdee6c77d2731d344122f0e1756d8817c9aae4dda3914c8179cdf071d7",
+          "mutation": {
+            "before": "new Set(entries.map(([key]) => key)).size !== entries.length",
+            "after": "false"
+          }
+        },
+        {
+          "name": "route-stream-limit",
+          "file": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts",
+          "exitCode": 1,
+          "expectedFailure": "rejects oversized",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API rejects oversized, malformed and extra command content before database access",
+              "messages": [
+                "AssertionError: expected 400 to be 413 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:90:25\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.12,
+          "restoredSha256": "17c3c7cdee6c77d2731d344122f0e1756d8817c9aae4dda3914c8179cdf071d7",
+          "mutation": {
+            "before": "16_384",
+            "after": "65_536"
+          }
+        },
+        {
+          "name": "route-utf8",
+          "file": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts",
+          "exitCode": 1,
+          "expectedFailure": "rejects oversized",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API rejects oversized, malformed and extra command content before database access",
+              "messages": [
+                "AssertionError: expected 201 to be 400 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:94:176\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "17c3c7cdee6c77d2731d344122f0e1756d8817c9aae4dda3914c8179cdf071d7",
+          "mutation": {
+            "before": "{ fatal: true }",
+            "after": "{ fatal: false }"
+          }
+        },
+        {
+          "name": "route-private-cache",
+          "file": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts",
+          "exitCode": 1,
+          "expectedFailure": "binds compact commands",
+          "valid": true,
+          "passed": 7,
+          "failed": [
+            {
+              "name": "private synthesis response link API binds compact commands to current staff and returns exact bytes without internal enrichment",
+              "messages": [
+                "AssertionError: expected 'public, max-age=300' to be 'private, no-store' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:35:122\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            },
+            {
+              "name": "private synthesis response link API returns the index and distinguishes missing review from an empty retained index",
+              "messages": [
+                "AssertionError: expected 'public, max-age=300' to be 'private, no-store' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:46:120\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            },
+            {
+              "name": "private synthesis response link API returns exact current context and complete history with no enriched fields",
+              "messages": [
+                "AssertionError: expected 'public, max-age=300' to be 'private, no-store' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:55:84\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            },
+            {
+              "name": "private synthesis response link API rejects oversized, malformed and extra command content before database access",
+              "messages": [
+                "AssertionError: expected 'public, max-age=300' to be 'private, no-store' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:90:78\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            },
+            {
+              "name": "private synthesis response link API preserves invalid failures without disclosing private errors",
+              "messages": [
+                "AssertionError: expected 'public, max-age=300' to be 'private, no-store' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:107:81\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            },
+            {
+              "name": "private synthesis response link API preserves forbidden failures without disclosing private errors",
+              "messages": [
+                "AssertionError: expected 'public, max-age=300' to be 'private, no-store' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:107:81\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            },
+            {
+              "name": "private synthesis response link API preserves conflict failures without disclosing private errors",
+              "messages": [
+                "AssertionError: expected 'public, max-age=300' to be 'private, no-store' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:107:81\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            },
+            {
+              "name": "private synthesis response link API preserves unavailable failures without disclosing private errors",
+              "messages": [
+                "AssertionError: expected 'public, max-age=300' to be 'private, no-store' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:107:81\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "17c3c7cdee6c77d2731d344122f0e1756d8817c9aae4dda3914c8179cdf071d7",
+          "mutation": {
+            "before": "private, no-store",
+            "after": "public, max-age=300"
+          }
+        },
+        {
+          "name": "route-audit-private-reason",
+          "file": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts",
+          "exitCode": 1,
+          "expectedFailure": "binds compact commands",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API binds compact commands to current staff and returns exact bytes without internal enrichment",
+              "messages": [
+                "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ \u2026(2) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n@@ -2,10 +2,11 @@\n    \"synthesis_response_link_retained\",\n    {\n      \"campaignId\": \"c0000000-0000-4000-8000-000000000001\",\n      \"eventSha256\": \"c40ee8ed329b4cf015ed7a637990ef22fcfb87ee9c9cca2a5f69596229f91e12\",\n      \"operation\": \"link\",\n+     \"reason\": \"SYNTHETIC retained link \u00e9\ud83d\udeb2\",\n      \"replayed\": false,\n      \"requestId\": \"e0000000-0000-4000-8000-000000000011\",\n      \"responseId\": \"e0000000-0000-4000-8000-000000000002\",\n      \"reviewId\": \"e0000000-0000-4000-8000-000000000001\",\n "
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "17c3c7cdee6c77d2731d344122f0e1756d8817c9aae4dda3914c8179cdf071d7",
+          "mutation": {
+            "before": "replayed: receipt.replayed });",
+            "after": "replayed: receipt.replayed, reason: intent.data.reason });"
+          }
+        },
+        {
+          "name": "route-enriched-history",
+          "file": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts",
+          "exitCode": 1,
+          "expectedFailure": "returns exact current context",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API returns exact current context and complete history with no enriched fields",
+              "messages": [
+                "AssertionError: expected { history: { \u2026(9) } } to deeply equal { history: { \u2026(9) } }\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:59:34\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.22,
+          "restoredSha256": "17c3c7cdee6c77d2731d344122f0e1756d8817c9aae4dda3914c8179cdf071d7",
+          "mutation": {
+            "before": "({ eventText, eventSha256 }) => ({ eventText, eventSha256 })",
+            "after": "entry => entry"
+          }
+        },
+        {
+          "name": "ack-baseline",
+          "file": "openplan/src/lib/engagement/synthesis-response-link.ts",
+          "exitCode": 0,
+          "expectedFailure": null,
+          "valid": true,
+          "passed": 17,
+          "failed": [],
+          "seconds": 0.97,
+          "restoredSha256": "54d4a6a5f8be031572e982aca41efbb68f6fd20d2267bc8392b9e11a98eaf6e6",
+          "mutation": {
+            "before": null,
+            "after": null
+          }
+        },
+        {
+          "name": "ack-harmless",
+          "file": "openplan/src/lib/engagement/synthesis-response-link.ts",
+          "exitCode": 0,
+          "expectedFailure": null,
+          "valid": true,
+          "passed": 17,
+          "failed": [],
+          "seconds": 0.97,
+          "restoredSha256": "54d4a6a5f8be031572e982aca41efbb68f6fd20d2267bc8392b9e11a98eaf6e6",
+          "mutation": {
+            "before": "/** Browser acknowledgement",
+            "after": "/** Browser receipt"
+          }
+        },
+        {
+          "name": "ack-event-bytes",
+          "file": "openplan/src/lib/engagement/synthesis-response-link.ts",
+          "exitCode": 1,
+          "expectedFailure": "rejects changed event bytes",
+          "valid": true,
+          "passed": 16,
+          "failed": [
+            {
+              "name": "browser synthesis response acknowledgement rejects changed event bytes and invalid Unicode before parsing",
+              "messages": [
+                "Error: promise resolved \"{ event: { \u2026(8) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_m"
+              ]
+            }
+          ],
+          "seconds": 0.97,
+          "restoredSha256": "54d4a6a5f8be031572e982aca41efbb68f6fd20d2267bc8392b9e11a98eaf6e6",
+          "mutation": {
+            "before": "await verifyHash(receipt.event.eventText, receipt.event.eventSha256);",
+            "after": ""
+          }
+        },
+        {
+          "name": "ack-exact-intent",
+          "file": "openplan/src/lib/engagement/synthesis-response-link.ts",
+          "exitCode": 1,
+          "expectedFailure": "rejects a different exact command",
+          "valid": true,
+          "passed": 12,
+          "failed": [
+            {
+              "name": "browser synthesis response acknowledgement rejects a different exact command field: reason",
+              "messages": [
+                "Error: promise resolved \"{ event: { \u2026(8) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_m"
+              ]
+            },
+            {
+              "name": "browser synthesis response acknowledgement rejects a different exact command field: actorId",
+              "messages": [
+                "Error: promise resolved \"{ event: { \u2026(8) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_m"
+              ]
+            },
+            {
+              "name": "browser synthesis response acknowledgement rejects a different exact command field: requestId",
+              "messages": [
+                "Error: promise resolved \"{ event: { \u2026(8) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_m"
+              ]
+            },
+            {
+              "name": "browser synthesis response acknowledgement rejects a different exact command field: predecessorSha256",
+              "messages": [
+                "Error: promise resolved \"{ event: { \u2026(8) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_m"
+              ]
+            },
+            {
+              "name": "browser synthesis response acknowledgement rejects a different exact command field: expectedContextSha256",
+              "messages": [
+                "Error: promise resolved \"{ event: { \u2026(8) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_m"
+              ]
+            }
+          ],
+          "seconds": 0.97,
+          "restoredSha256": "54d4a6a5f8be031572e982aca41efbb68f6fd20d2267bc8392b9e11a98eaf6e6",
+          "mutation": {
+            "before": "JSON.stringify(event.intent) !== JSON.stringify(intent)",
+            "after": "false"
+          }
+        },
+        {
+          "name": "ack-sequence",
+          "file": "openplan/src/lib/engagement/synthesis-response-link.ts",
+          "exitCode": 1,
+          "expectedFailure": "rejects a first link",
+          "valid": true,
+          "passed": 16,
+          "failed": [
+            {
+              "name": "browser synthesis response acknowledgement rejects a first link numbered as a later event",
+              "messages": [
+                "Error: promise resolved \"{ event: { \u2026(8) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_m"
+              ]
+            }
+          ],
+          "seconds": 0.97,
+          "restoredSha256": "54d4a6a5f8be031572e982aca41efbb68f6fd20d2267bc8392b9e11a98eaf6e6",
+          "mutation": {
+            "before": "(event.eventNo === 1) !== (intent.operation === \"link\")",
+            "after": "false"
+          }
+        },
+        {
+          "name": "ack-inner-bytes",
+          "file": "openplan/src/lib/engagement/synthesis-response-link.ts",
+          "exitCode": 1,
+          "expectedFailure": "checks inner context bytes",
+          "valid": true,
+          "passed": 16,
+          "failed": [
+            {
+              "name": "browser synthesis response acknowledgement checks inner context bytes even when the outer event checksum is valid",
+              "messages": [
+                "Error: promise resolved \"{ event: { \u2026(8) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_m"
+              ]
+            }
+          ],
+          "seconds": 0.97,
+          "restoredSha256": "54d4a6a5f8be031572e982aca41efbb68f6fd20d2267bc8392b9e11a98eaf6e6",
+          "mutation": {
+            "before": "await verifyHash(event.context.contextText, event.context.contextSha256);",
+            "after": ""
+          }
+        },
+        {
+          "name": "ack-scope-campaignId",
+          "file": "openplan/src/lib/engagement/synthesis-response-link.ts",
+          "exitCode": 1,
+          "expectedFailure": "rejects a rehashed context with another campaignId",
+          "valid": true,
+          "passed": 16,
+          "failed": [
+            {
+              "name": "browser synthesis response acknowledgement rejects a rehashed context with another campaignId",
+              "messages": [
+                "Error: promise resolved \"{ event: { \u2026(8) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_m"
+              ]
+            }
+          ],
+          "seconds": 0.92,
+          "restoredSha256": "54d4a6a5f8be031572e982aca41efbb68f6fd20d2267bc8392b9e11a98eaf6e6",
+          "mutation": {
+            "before": "context.campaignId !== intent.campaignId",
+            "after": "false"
+          }
+        },
+        {
+          "name": "ack-scope-workspaceId",
+          "file": "openplan/src/lib/engagement/synthesis-response-link.ts",
+          "exitCode": 1,
+          "expectedFailure": "rejects a rehashed context with another workspaceId",
+          "valid": true,
+          "passed": 16,
+          "failed": [
+            {
+              "name": "browser synthesis response acknowledgement rejects a rehashed context with another workspaceId",
+              "messages": [
+                "Error: promise resolved \"{ event: { \u2026(8) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_m"
+              ]
+            }
+          ],
+          "seconds": 0.92,
+          "restoredSha256": "54d4a6a5f8be031572e982aca41efbb68f6fd20d2267bc8392b9e11a98eaf6e6",
+          "mutation": {
+            "before": "context.workspaceId !== intent.workspaceId",
+            "after": "false"
+          }
+        },
+        {
+          "name": "ack-scope-reviewId",
+          "file": "openplan/src/lib/engagement/synthesis-response-link.ts",
+          "exitCode": 1,
+          "expectedFailure": "rejects a rehashed context with another reviewId",
+          "valid": true,
+          "passed": 16,
+          "failed": [
+            {
+              "name": "browser synthesis response acknowledgement rejects a rehashed context with another reviewId",
+              "messages": [
+                "Error: promise resolved \"{ event: { \u2026(8) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_m"
+              ]
+            }
+          ],
+          "seconds": 0.97,
+          "restoredSha256": "54d4a6a5f8be031572e982aca41efbb68f6fd20d2267bc8392b9e11a98eaf6e6",
+          "mutation": {
+            "before": "context.reviewId !== intent.reviewId",
+            "after": "false"
+          }
+        },
+        {
+          "name": "ack-scope-responseId",
+          "file": "openplan/src/lib/engagement/synthesis-response-link.ts",
+          "exitCode": 1,
+          "expectedFailure": "rejects a rehashed context with another responseId",
+          "valid": true,
+          "passed": 16,
+          "failed": [
+            {
+              "name": "browser synthesis response acknowledgement rejects a rehashed context with another responseId",
+              "messages": [
+                "Error: promise resolved \"{ event: { \u2026(8) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_m"
+              ]
+            }
+          ],
+          "seconds": 0.92,
+          "restoredSha256": "54d4a6a5f8be031572e982aca41efbb68f6fd20d2267bc8392b9e11a98eaf6e6",
+          "mutation": {
+            "before": "context.responseId !== intent.responseId",
+            "after": "false"
+          }
+        },
+        {
+          "name": "ack-scope-groupId",
+          "file": "openplan/src/lib/engagement/synthesis-response-link.ts",
+          "exitCode": 1,
+          "expectedFailure": "rejects a rehashed context with another groupId",
+          "valid": true,
+          "passed": 16,
+          "failed": [
+            {
+              "name": "browser synthesis response acknowledgement rejects a rehashed context with another groupId",
+              "messages": [
+                "Error: promise resolved \"{ event: { \u2026(8) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_m"
+              ]
+            }
+          ],
+          "seconds": 0.92,
+          "restoredSha256": "54d4a6a5f8be031572e982aca41efbb68f6fd20d2267bc8392b9e11a98eaf6e6",
+          "mutation": {
+            "before": "context.groupId !== intent.groupId",
+            "after": "false"
+          }
+        },
+        {
+          "name": "ack-frozen-context",
+          "file": "openplan/src/lib/engagement/synthesis-response-link.ts",
+          "exitCode": 1,
+          "expectedFailure": "differs from the frozen command",
+          "valid": true,
+          "passed": 16,
+          "failed": [
+            {
+              "name": "browser synthesis response acknowledgement refuses a correctly hashed context that differs from the frozen command",
+              "messages": [
+                "Error: promise resolved \"{ event: { \u2026(8) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_m"
+              ]
+            }
+          ],
+          "seconds": 0.97,
+          "restoredSha256": "54d4a6a5f8be031572e982aca41efbb68f6fd20d2267bc8392b9e11a98eaf6e6",
+          "mutation": {
+            "before": "event.context.contextSha256 !== intent.expectedContextSha256",
+            "after": "false"
+          }
+        },
+        {
+          "name": "index-baseline",
+          "file": "openplan/src/lib/engagement/synthesis-response-index.ts",
+          "exitCode": 0,
+          "expectedFailure": null,
+          "valid": true,
+          "passed": 10,
+          "failed": [],
+          "seconds": 1.02,
+          "restoredSha256": "48fd7a5faa4da1166da5ccf80b74c54fe7cf9a4a2cf26723605b68fc2b313866",
+          "mutation": {
+            "before": null,
+            "after": null
+          }
+        },
+        {
+          "name": "index-harmless",
+          "file": "openplan/src/lib/engagement/synthesis-response-index.ts",
+          "exitCode": 0,
+          "expectedFailure": null,
+          "valid": true,
+          "passed": 10,
+          "failed": [],
+          "seconds": 1.02,
+          "restoredSha256": "48fd7a5faa4da1166da5ccf80b74c54fe7cf9a4a2cf26723605b68fc2b313866",
+          "mutation": {
+            "before": "/** An index names",
+            "after": "/** An index lists"
+          }
+        },
+        {
+          "name": "index-count",
+          "file": "openplan/src/lib/engagement/synthesis-response-index.ts",
+          "exitCode": 1,
+          "expectedFailure": "requires exact count",
+          "valid": true,
+          "passed": 8,
+          "failed": [
+            {
+              "name": "private retained response link index requires exact count, unique ordered addresses and strict fields",
+              "messages": [
+                "AssertionError: expected [Function] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/t"
+              ]
+            },
+            {
+              "name": "private retained response link index keeps unavailable and incomplete reads distinct from an empty index",
+              "messages": [
+                "Error: promise resolved \"{ \u2026(5) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1659:22"
+              ]
+            }
+          ],
+          "seconds": 1.02,
+          "restoredSha256": "48fd7a5faa4da1166da5ccf80b74c54fe7cf9a4a2cf26723605b68fc2b313866",
+          "mutation": {
+            "before": "index.entryCount !== index.entries.length",
+            "after": "false"
+          }
+        },
+        {
+          "name": "index-order",
+          "file": "openplan/src/lib/engagement/synthesis-response-index.ts",
+          "exitCode": 1,
+          "expectedFailure": "requires exact count",
+          "valid": true,
+          "passed": 9,
+          "failed": [
+            {
+              "name": "private retained response link index requires exact count, unique ordered addresses and strict fields",
+              "messages": [
+                "AssertionError: expected [Function] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/t"
+              ]
+            }
+          ],
+          "seconds": 1.02,
+          "restoredSha256": "48fd7a5faa4da1166da5ccf80b74c54fe7cf9a4a2cf26723605b68fc2b313866",
+          "mutation": {
+            "before": "previous !== null && previous >= key",
+            "after": "false"
+          }
+        },
+        {
+          "name": "index-scope-campaignId",
+          "file": "openplan/src/lib/engagement/synthesis-response-index.ts",
+          "exitCode": 1,
+          "expectedFailure": "rejects another campaignId",
+          "valid": true,
+          "passed": 9,
+          "failed": [
+            {
+              "name": "private retained response link index rejects another campaignId",
+              "messages": [
+                "AssertionError: expected [Function] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/t"
+              ]
+            }
+          ],
+          "seconds": 1.02,
+          "restoredSha256": "48fd7a5faa4da1166da5ccf80b74c54fe7cf9a4a2cf26723605b68fc2b313866",
+          "mutation": {
+            "before": "index.campaignId !== scope.campaignId",
+            "after": "false"
+          }
+        },
+        {
+          "name": "index-scope-workspaceId",
+          "file": "openplan/src/lib/engagement/synthesis-response-index.ts",
+          "exitCode": 1,
+          "expectedFailure": "rejects another workspaceId",
+          "valid": true,
+          "passed": 9,
+          "failed": [
+            {
+              "name": "private retained response link index rejects another workspaceId",
+              "messages": [
+                "AssertionError: expected [Function] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/t"
+              ]
+            }
+          ],
+          "seconds": 1.02,
+          "restoredSha256": "48fd7a5faa4da1166da5ccf80b74c54fe7cf9a4a2cf26723605b68fc2b313866",
+          "mutation": {
+            "before": "index.workspaceId !== scope.workspaceId",
+            "after": "false"
+          }
+        },
+        {
+          "name": "index-scope-reviewId",
+          "file": "openplan/src/lib/engagement/synthesis-response-index.ts",
+          "exitCode": 1,
+          "expectedFailure": "rejects another reviewId",
+          "valid": true,
+          "passed": 9,
+          "failed": [
+            {
+              "name": "private retained response link index rejects another reviewId",
+              "messages": [
+                "AssertionError: expected [Function] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.local/state/openplan/t"
+              ]
+            }
+          ],
+          "seconds": 1.02,
+          "restoredSha256": "48fd7a5faa4da1166da5ccf80b74c54fe7cf9a4a2cf26723605b68fc2b313866",
+          "mutation": {
+            "before": "index.reviewId !== scope.reviewId",
+            "after": "false"
+          }
+        },
+        {
+          "name": "index-rpc-error",
+          "file": "openplan/src/lib/engagement/synthesis-response-index-server.ts",
+          "exitCode": 1,
+          "expectedFailure": "does not accept valid data",
+          "valid": true,
+          "passed": 8,
+          "failed": [
+            {
+              "name": "private retained response link index does not accept valid data accompanying error 42501",
+              "messages": [
+                "Error: promise resolved \"{ \u2026(5) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1659:22"
+              ]
+            },
+            {
+              "name": "private retained response link index does not accept valid data accompanying error XX000",
+              "messages": [
+                "Error: promise resolved \"{ \u2026(5) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1659:22"
+              ]
+            }
+          ],
+          "seconds": 1.02,
+          "restoredSha256": "356507c9a797726a5cde9d73ae1c9a2d0fabcd873d4cb729677a1cfefdf82309",
+          "mutation": {
+            "before": "if (result.error)",
+            "after": "if (false)"
+          }
+        },
+        {
+          "name": "index-rpc-arguments",
+          "file": "openplan/src/lib/engagement/synthesis-response-index-server.ts",
+          "exitCode": 1,
+          "expectedFailure": "reads a complete index",
+          "valid": true,
+          "passed": 9,
+          "failed": [
+            {
+              "name": "private retained response link index reads a complete index above 300 addresses and distinguishes an empty retained review from missing review",
+              "messages": [
+                "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ \u2026(2) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n  [\n    \"list_engagement_synthesis_response_links\",\n    {\n      \"p_campaign\": \"c0000000-0000-4000-8000-000000000001\",\n-     \"p_review\": \"e0000000-0000-4000-8000-000000000001\",\n+     \"p_review\": \"c0000000-0000-4000-8000-000000000001\",\n    },\n  ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1504:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.l"
+              ]
+            }
+          ],
+          "seconds": 1.02,
+          "restoredSha256": "356507c9a797726a5cde9d73ae1c9a2d0fabcd873d4cb729677a1cfefdf82309",
+          "mutation": {
+            "before": "p_review: parsed.data.reviewId",
+            "after": "p_review: parsed.data.campaignId"
+          }
+        },
+        {
+          "name": "compact-baseline",
+          "file": "openplan/src/lib/engagement/synthesis-response-write-server.ts",
+          "exitCode": 0,
+          "expectedFailure": null,
+          "valid": true,
+          "passed": 54,
+          "failed": [],
+          "seconds": 1.12,
+          "restoredSha256": "fc322678e8c868389cb7b8ddd72009ac295b70d7babdd9d5d2f036a484cb60ca",
+          "mutation": {
+            "before": null,
+            "after": null
+          }
+        },
+        {
+          "name": "compact-harmless",
+          "file": "openplan/src/lib/engagement/synthesis-response-write-server.ts",
+          "exitCode": 0,
+          "expectedFailure": null,
+          "valid": true,
+          "passed": 54,
+          "failed": [],
+          "seconds": 1.12,
+          "restoredSha256": "fc322678e8c868389cb7b8ddd72009ac295b70d7babdd9d5d2f036a484cb60ca",
+          "mutation": {
+            "before": "/** Compact browser commands",
+            "after": "/** Compact staff commands"
+          }
+        },
+        {
+          "name": "compact-current-checksum",
+          "file": "openplan/src/lib/engagement/synthesis-response-write-server.ts",
+          "exitCode": 1,
+          "expectedFailure": "requires the current context checksum",
+          "valid": true,
+          "passed": 53,
+          "failed": [
+            {
+              "name": "compact synthesis response commands requires the current context checksum to match the frozen preview",
+              "messages": [
+                "AssertionError: expected \"vi.fn()\" to not be called at all, but actually been called 1 times\n\nReceived:\n\n  1st vi.fn() call:\n\n    Array [\n      \"retain_engagement_synthesis_response_link\",\n      [Object],\n    ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1467:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrappe"
+              ]
+            }
+          ],
+          "seconds": 1.12,
+          "restoredSha256": "fc322678e8c868389cb7b8ddd72009ac295b70d7babdd9d5d2f036a484cb60ca",
+          "mutation": {
+            "before": "current.packet.contextSha256 !== intent.expectedContextSha256",
+            "after": "false"
+          }
+        },
+        {
+          "name": "compact-recover-before-history",
+          "file": "openplan/src/lib/engagement/synthesis-response-write-server.ts",
+          "exitCode": 1,
+          "expectedFailure": "recovers exact old intent before unavailable",
+          "valid": true,
+          "passed": 46,
+          "failed": [
+            {
+              "name": "authenticated synthesis response link writes uses staff reads, exact context bytes and route-authenticated service identity",
+              "messages": [
+                "AssertionError: expected 1st \"vi.fn()\" call to have been called with [ \u2026(2) ]\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-write.test.ts:39:21\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            },
+            {
+              "name": "authenticated synthesis response link writes recovers an exact old request before current review and history checks",
+              "messages": [
+                "Error: The retained synthesis response records could not be verified\n    at readFailure (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-response-write-server.ts:27:9)\n    at loadSynthesisResponseLinkHistory (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-response-write-server.ts:54:21)\n    at retainLink (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-response-write-server.ts:88:25)\n    at M"
+              ]
+            },
+            {
+              "name": "authenticated synthesis response link writes recovers a concurrent exact request after the observed history head changes",
+              "messages": [
+                "Error: The retained synthesis response records could not be verified\n    at readFailure (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-response-write-server.ts:27:9)\n    at loadSynthesisResponseLinkHistory (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-response-write-server.ts:54:21)\n    at retainLink (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-response-write-server.ts:88:19)\n    at /"
+              ]
+            },
+            {
+              "name": "authenticated synthesis response link writes rejects stale context and recovers a racing exact request after current-state conflict",
+              "messages": [
+                "Error: The retained synthesis response records could not be verified\n    at readFailure (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-response-write-server.ts:27:9)\n    at loadSynthesisResponseLinkHistory (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-response-write-server.ts:54:21)\n    at retainLink (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-response-write-server.ts:88:19)\n    at /"
+              ]
+            },
+            {
+              "name": "synthesis response write boundaries rejects a context for a different group before current reads or writes",
+              "messages": [
+                "Error: expected Error: The retained synthesis response re\u2026 { kind: '\u2026' } to match object { kind: 'invalid' }\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2"
+              ]
+            },
+            {
+              "name": "synthesis response write boundaries requires a clean history read even when it includes valid data",
+              "messages": [
+                "Error: expected Error: The retained synthesis response re\u2026 { kind: '\u2026' } to match object { kind: 'forbidden' }\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow"
+              ]
+            },
+            {
+              "name": "compact synthesis response commands recovers exact old intent before unavailable current context or history",
+              "messages": [
+                "Error: The retained synthesis response records could not be verified\n    at readFailure (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-response-write-server.ts:27:9)\n    at loadSynthesisResponseLinkHistory (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-response-write-server.ts:54:21)\n    at retainLink (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-response-write-server.ts:88:25)\n    at M"
+              ]
+            },
+            {
+              "name": "compact synthesis response commands recovers a racing saved command after current context becomes unavailable",
+              "messages": [
+                "Error: The retained synthesis response records could not be verified\n    at readFailure (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-response-write-server.ts:27:9)\n    at loadSynthesisResponseLinkHistory (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-response-write-server.ts:54:21)\n    at retainLink (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-response-write-server.ts:88:19)\n    at /"
+              ]
+            }
+          ],
+          "seconds": 1.12,
+          "restoredSha256": "fc322678e8c868389cb7b8ddd72009ac295b70d7babdd9d5d2f036a484cb60ca",
+          "mutation": {
+            "before": "const old = await recover(); if (old) return old;",
+            "after": ""
+          }
+        },
+        {
+          "name": "compact-context-bytes",
+          "file": "openplan/src/lib/engagement/synthesis-response-write-server.ts",
+          "exitCode": 1,
+          "expectedFailure": "resolves the expected context on the server",
+          "valid": true,
+          "passed": 52,
+          "failed": [
+            {
+              "name": "compact synthesis response commands resolves the expected context on the server without a browser-supplied packet",
+              "messages": [
+                "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ \u2026(2) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n@@ -1,53 +1,11 @@\n  [\n    \"retain_engagement_synthesis_response_link\",\n    {\n      \"p_actor\": \"a0000000-0000-4000-8000-000000000002\",\n      \"p_campaign\": \"c0000000-0000-4000-8000-000000000001\",\n-     \"p_context_text\": \"{\n-   \\\"schemaVersion\\\": 1,\n-   \\\"visibility\\\": \\\"private\\\",\n-   \\\"purpose\\\": \\\"reviewed_synthesis_response\\\",\n-   \\\"campaignId\\\": \\\"c0000000-0000-4000-8000-000000000001\\\",\n-   \\\"workspaceId\\\": \\\"a0000000-0000-4000-8000-000000000001\\\",\n-   \\\"reviewId\\\": \\\"e0000000-0000-"
+              ]
+            },
+            {
+              "name": "compact synthesis response commands recovers a committed compact command after acknowledgement loss with one write",
+              "messages": [
+                "Error: This request belongs to a different response link command\n    at recover (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-response-write-server.ts:83:13)\n    at retainLink (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-response-write-server.ts:124:19)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-write.test.ts:285:20\n    at file:///home/nathaniel/.local/state/openpl"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "fc322678e8c868389cb7b8ddd72009ac295b70d7babdd9d5d2f036a484cb60ca",
+          "mutation": {
+            "before": "contextText = current.packet.contextText;",
+            "after": "contextText = null;"
+          }
+        },
+        {
+          "name": "native-baseline",
+          "file": "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-index.candidate.sql",
+          "exitCode": 0,
+          "expectedFailure": null,
+          "valid": true,
+          "passed": 1,
+          "failed": [],
+          "seconds": 3.07,
+          "restoredSha256": "4da15fd2e486942ef07154720b5ee05cd5eda2e6db54b54b897400e98a263f8d",
+          "mutation": {
+            "before": null,
+            "after": null
+          }
+        },
+        {
+          "name": "native-harmless",
+          "file": "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-index.candidate.sql",
+          "exitCode": 0,
+          "expectedFailure": null,
+          "valid": true,
+          "passed": 1,
+          "failed": [],
+          "seconds": 3.12,
+          "restoredSha256": "4da15fd2e486942ef07154720b5ee05cd5eda2e6db54b54b897400e98a263f8d",
+          "mutation": {
+            "before": "-- Private navigation metadata.",
+            "after": "-- Private saved navigation metadata."
+          }
+        },
+        {
+          "name": "native-viewer-access",
+          "file": "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-index.candidate.sql",
+          "exitCode": 1,
+          "expectedFailure": "discovers retained links",
+          "valid": true,
+          "passed": 0,
+          "failed": [
+            {
+              "name": "candidate retained link navigation and compact commands discovers retained links after response and review group removal, including withdrawal and old retry",
+              "messages": [
+                "Error: promise resolved \"{ \u2026(5) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1659:22"
+              ]
+            }
+          ],
+          "seconds": 3.17,
+          "restoredSha256": "4da15fd2e486942ef07154720b5ee05cd5eda2e6db54b54b897400e98a263f8d",
+          "mutation": {
+            "before": "m.role IN ('owner','admin','member')",
+            "after": "m.role IN ('owner','admin','member','viewer')"
+          }
+        },
+        {
+          "name": "native-foreign-actor",
+          "file": "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-index.candidate.sql",
+          "exitCode": 1,
+          "expectedFailure": "discovers retained links",
+          "valid": true,
+          "passed": 0,
+          "failed": [
+            {
+              "name": "candidate retained link navigation and compact commands discovers retained links after response and review group removal, including withdrawal and old retry",
+              "messages": [
+                "Error: promise resolved \"{ \u2026(5) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1659:22"
+              ]
+            }
+          ],
+          "seconds": 3.27,
+          "restoredSha256": "4da15fd2e486942ef07154720b5ee05cd5eda2e6db54b54b897400e98a263f8d",
+          "mutation": {
+            "before": "m.user_id=auth.uid()",
+            "after": "true"
+          }
+        },
+        {
+          "name": "native-distinct",
+          "file": "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-index.candidate.sql",
+          "exitCode": 1,
+          "expectedFailure": "discovers retained links",
+          "valid": true,
+          "passed": 0,
+          "failed": [
+            {
+              "name": "candidate retained link navigation and compact commands discovers retained links after response and review group removal, including withdrawal and old retry",
+              "messages": [
+                "Error: The retained response link index could not be verified\n    at loadSynthesisResponseLinkIndex (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-response-index-server.ts:16:11)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts:940:14\n    at scenario (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/e"
+              ]
+            }
+          ],
+          "seconds": 3.02,
+          "restoredSha256": "4da15fd2e486942ef07154720b5ee05cd5eda2e6db54b54b897400e98a263f8d",
+          "mutation": {
+            "before": "SELECT DISTINCT e.response_id,e.group_id",
+            "after": "SELECT e.response_id,e.group_id"
+          }
+        },
+        {
+          "name": "native-live-response-join",
+          "file": "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-index.candidate.sql",
+          "exitCode": 1,
+          "expectedFailure": "discovers retained links",
+          "valid": true,
+          "passed": 0,
+          "failed": [
+            {
+              "name": "candidate retained link navigation and compact commands discovers retained links after response and review group removal, including withdrawal and old retry",
+              "messages": [
+                "AssertionError: retained address disappeared with live response or group: expected { \u2026(5) } to deeply equal { \u2026(5) }\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts:934:129\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at scenario (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts:114:7)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow"
+              ]
+            }
+          ],
+          "seconds": 3.07,
+          "restoredSha256": "4da15fd2e486942ef07154720b5ee05cd5eda2e6db54b54b897400e98a263f8d",
+          "mutation": {
+            "before": "WHERE e.campaign_id=p_campaign",
+            "after": "WHERE EXISTS(SELECT 1 FROM engagement_closeloop_entries live WHERE live.id=e.response_id) AND e.campaign_id=p_campaign"
+          }
+        },
+        {
+          "name": "native-grant-anon",
+          "file": "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-index.candidate.sql",
+          "exitCode": 1,
+          "expectedFailure": "discovers retained links",
+          "valid": true,
+          "passed": 0,
+          "failed": [
+            {
+              "name": "candidate retained link navigation and compact commands discovers retained links after response and review group removal, including withdrawal and old retry",
+              "messages": [
+                "AssertionError: index exposed to anon: expected undefined to be '42501' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts:942:166\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at scenario (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts:114:7)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/sr"
+              ]
+            }
+          ],
+          "seconds": 3.42,
+          "restoredSha256": "4da15fd2e486942ef07154720b5ee05cd5eda2e6db54b54b897400e98a263f8d",
+          "mutation": {
+            "before": "TO authenticated;",
+            "after": "TO authenticated,anon;"
+          }
+        },
+        {
+          "name": "native-grant-service_role",
+          "file": "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-index.candidate.sql",
+          "exitCode": 1,
+          "expectedFailure": "discovers retained links",
+          "valid": true,
+          "passed": 0,
+          "failed": [
+            {
+              "name": "candidate retained link navigation and compact commands discovers retained links after response and review group removal, including withdrawal and old retry",
+              "messages": [
+                "AssertionError: index exposed to service_role: expected undefined to be '42501' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts:942:166\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at scenario (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts:114:7)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/ope"
+              ]
+            }
+          ],
+          "seconds": 3.17,
+          "restoredSha256": "4da15fd2e486942ef07154720b5ee05cd5eda2e6db54b54b897400e98a263f8d",
+          "mutation": {
+            "before": "TO authenticated;",
+            "after": "TO authenticated,service_role;"
+          }
+        }
+      ]
+    },
+    {
+      "file": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/response-link-http-expanded-mutations/report.json",
+      "sha256": "870c0a2c504d8a4a4c8ee9ad38b874eb42d00218648a67ec39327f50be5d21d1",
+      "cases": [
+        {
+          "name": "native-baseline",
+          "file": "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-index.candidate.sql",
+          "exitCode": 0,
+          "expectedFailure": null,
+          "valid": true,
+          "passed": 1,
+          "failed": [],
+          "seconds": 3.22,
+          "restoredSha256": "4da15fd2e486942ef07154720b5ee05cd5eda2e6db54b54b897400e98a263f8d",
+          "mutation": {
+            "before": null,
+            "after": null
+          }
+        },
+        {
+          "name": "native-harmless",
+          "file": "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-index.candidate.sql",
+          "exitCode": 0,
+          "expectedFailure": null,
+          "valid": true,
+          "passed": 1,
+          "failed": [],
+          "seconds": 3.17,
+          "restoredSha256": "4da15fd2e486942ef07154720b5ee05cd5eda2e6db54b54b897400e98a263f8d",
+          "mutation": {
+            "before": "-- Private navigation metadata.",
+            "after": "-- Private saved navigation metadata."
+          }
+        },
+        {
+          "name": "native-viewer-access",
+          "file": "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-index.candidate.sql",
+          "exitCode": 1,
+          "expectedFailure": "discovers retained links",
+          "valid": true,
+          "passed": 0,
+          "failed": [
+            {
+              "name": "candidate retained link navigation and compact commands discovers retained links after response and review group removal, including withdrawal and old retry",
+              "messages": [
+                "Error: promise resolved \"{ \u2026(5) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1659:22"
+              ]
+            }
+          ],
+          "seconds": 3.07,
+          "restoredSha256": "4da15fd2e486942ef07154720b5ee05cd5eda2e6db54b54b897400e98a263f8d",
+          "mutation": {
+            "before": "m.role IN ('owner','admin','member')",
+            "after": "m.role IN ('owner','admin','member','viewer')"
+          }
+        },
+        {
+          "name": "native-foreign-actor",
+          "file": "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-index.candidate.sql",
+          "exitCode": 1,
+          "expectedFailure": "discovers retained links",
+          "valid": true,
+          "passed": 0,
+          "failed": [
+            {
+              "name": "candidate retained link navigation and compact commands discovers retained links after response and review group removal, including withdrawal and old retry",
+              "messages": [
+                "Error: promise resolved \"{ \u2026(5) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1659:22"
+              ]
+            }
+          ],
+          "seconds": 3.37,
+          "restoredSha256": "4da15fd2e486942ef07154720b5ee05cd5eda2e6db54b54b897400e98a263f8d",
+          "mutation": {
+            "before": "m.user_id=auth.uid()",
+            "after": "true"
+          }
+        },
+        {
+          "name": "native-distinct",
+          "file": "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-index.candidate.sql",
+          "exitCode": 1,
+          "expectedFailure": "discovers retained links",
+          "valid": true,
+          "passed": 0,
+          "failed": [
+            {
+              "name": "candidate retained link navigation and compact commands discovers retained links after response and review group removal, including withdrawal and old retry",
+              "messages": [
+                "Error: The retained response link index could not be verified\n    at loadSynthesisResponseLinkIndex (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/lib/engagement/synthesis-response-index-server.ts:16:11)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts:950:14\n    at scenario (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/e"
+              ]
+            }
+          ],
+          "seconds": 3.17,
+          "restoredSha256": "4da15fd2e486942ef07154720b5ee05cd5eda2e6db54b54b897400e98a263f8d",
+          "mutation": {
+            "before": "SELECT DISTINCT e.response_id,e.group_id",
+            "after": "SELECT e.response_id,e.group_id"
+          }
+        },
+        {
+          "name": "native-live-response-join",
+          "file": "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-index.candidate.sql",
+          "exitCode": 1,
+          "expectedFailure": "discovers retained links",
+          "valid": true,
+          "passed": 0,
+          "failed": [
+            {
+              "name": "candidate retained link navigation and compact commands discovers retained links after response and review group removal, including withdrawal and old retry",
+              "messages": [
+                "AssertionError: retained address disappeared with live response or group: expected { \u2026(5) } to deeply equal { \u2026(5) }\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts:944:129\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at scenario (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts:114:7)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow"
+              ]
+            }
+          ],
+          "seconds": 3.27,
+          "restoredSha256": "4da15fd2e486942ef07154720b5ee05cd5eda2e6db54b54b897400e98a263f8d",
+          "mutation": {
+            "before": "WHERE e.campaign_id=p_campaign",
+            "after": "WHERE EXISTS(SELECT 1 FROM engagement_closeloop_entries live WHERE live.id=e.response_id) AND e.campaign_id=p_campaign"
+          }
+        },
+        {
+          "name": "native-grant-anon",
+          "file": "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-index.candidate.sql",
+          "exitCode": 1,
+          "expectedFailure": "discovers retained links",
+          "valid": true,
+          "passed": 0,
+          "failed": [
+            {
+              "name": "candidate retained link navigation and compact commands discovers retained links after response and review group removal, including withdrawal and old retry",
+              "messages": [
+                "AssertionError: index exposed to anon: expected undefined to be '42501' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts:952:166\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at scenario (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts:114:7)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/sr"
+              ]
+            }
+          ],
+          "seconds": 3.27,
+          "restoredSha256": "4da15fd2e486942ef07154720b5ee05cd5eda2e6db54b54b897400e98a263f8d",
+          "mutation": {
+            "before": "TO authenticated;",
+            "after": "TO authenticated,anon;"
+          }
+        },
+        {
+          "name": "native-grant-service_role",
+          "file": "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-index.candidate.sql",
+          "exitCode": 1,
+          "expectedFailure": "discovers retained links",
+          "valid": true,
+          "passed": 0,
+          "failed": [
+            {
+              "name": "candidate retained link navigation and compact commands discovers retained links after response and review group removal, including withdrawal and old retry",
+              "messages": [
+                "AssertionError: index exposed to service_role: expected undefined to be '42501' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts:952:166\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at scenario (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts:114:7)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/ope"
+              ]
+            }
+          ],
+          "seconds": 3.32,
+          "restoredSha256": "4da15fd2e486942ef07154720b5ee05cd5eda2e6db54b54b897400e98a263f8d",
+          "mutation": {
+            "before": "TO authenticated;",
+            "after": "TO authenticated,service_role;"
+          }
+        },
+        {
+          "name": "native-review-filter",
+          "file": "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-index.candidate.sql",
+          "exitCode": 1,
+          "expectedFailure": "discovers retained links",
+          "valid": true,
+          "passed": 0,
+          "failed": [
+            {
+              "name": "candidate retained link navigation and compact commands discovers retained links after response and review group removal, including withdrawal and old retry",
+              "messages": [
+                "AssertionError: another retained review inherited these links: expected { \u2026(5) } to deeply equal { \u2026(5) }\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts:929:122\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at scenario (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts:114:7)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13"
+              ]
+            }
+          ],
+          "seconds": 2.92,
+          "restoredSha256": "4da15fd2e486942ef07154720b5ee05cd5eda2e6db54b54b897400e98a263f8d",
+          "mutation": {
+            "before": "AND e.review_id=p_review",
+            "after": ""
+          }
+        },
+        {
+          "name": "native-correlated-limit",
+          "file": "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-index.candidate.sql",
+          "exitCode": 1,
+          "expectedFailure": "discovers retained links",
+          "valid": true,
+          "passed": 0,
+          "failed": [
+            {
+              "name": "candidate retained link navigation and compact commands discovers retained links after response and review group removal, including withdrawal and old retry",
+              "messages": [
+                "AssertionError: expected { \u2026(5) } to deeply equal { \u2026(5) }\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts:937:69\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at scenario (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts:114:7)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response"
+              ]
+            }
+          ],
+          "seconds": 3.02,
+          "restoredSha256": "4da15fd2e486942ef07154720b5ee05cd5eda2e6db54b54b897400e98a263f8d",
+          "mutation": {
+            "before": "AND e.review_id=p_review",
+            "after": "AND e.review_id=p_review LIMIT 1"
+          }
+        },
+        {
+          "name": "native-missing-review",
+          "file": "docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-index.candidate.sql",
+          "exitCode": 1,
+          "expectedFailure": "discovers retained links",
+          "valid": true,
+          "passed": 0,
+          "failed": [
+            {
+              "name": "candidate retained link navigation and compact commands discovers retained links after response and review group removal, including withdrawal and old retry",
+              "messages": [
+                "AssertionError: expected { \u2026(5) } to be null\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts:924:95\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at scenario (/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-candidate-rls.test.ts:114:7)\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-candidate-rls"
+              ]
+            }
+          ],
+          "seconds": 2.97,
+          "restoredSha256": "4da15fd2e486942ef07154720b5ee05cd5eda2e6db54b54b897400e98a263f8d",
+          "mutation": {
+            "before": "THEN RETURN NULL; END IF;",
+            "after": "THEN NULL; END IF;"
+          }
+        },
+        {
+          "name": "ack-expanded-baseline",
+          "file": "openplan/src/lib/engagement/synthesis-response-link.ts",
+          "exitCode": 0,
+          "expectedFailure": null,
+          "valid": true,
+          "passed": 17,
+          "failed": [],
+          "seconds": 0.92,
+          "restoredSha256": "54d4a6a5f8be031572e982aca41efbb68f6fd20d2267bc8392b9e11a98eaf6e6",
+          "mutation": {
+            "before": null,
+            "after": null
+          }
+        },
+        {
+          "name": "ack-expanded-harmless",
+          "file": "openplan/src/lib/engagement/synthesis-response-link.ts",
+          "exitCode": 0,
+          "expectedFailure": null,
+          "valid": true,
+          "passed": 17,
+          "failed": [],
+          "seconds": 0.92,
+          "restoredSha256": "54d4a6a5f8be031572e982aca41efbb68f6fd20d2267bc8392b9e11a98eaf6e6",
+          "mutation": {
+            "before": "/** Browser acknowledgement",
+            "after": "/** Browser receipt"
+          }
+        },
+        {
+          "name": "ack-unicode",
+          "file": "openplan/src/lib/engagement/synthesis-response-link.ts",
+          "exitCode": 1,
+          "expectedFailure": "rejects changed event bytes",
+          "valid": true,
+          "passed": 16,
+          "failed": [
+            {
+              "name": "browser synthesis response acknowledgement rejects changed event bytes and invalid Unicode before parsing",
+              "messages": [
+                "Error: expected [Function] to throw error matching /Invalid/ but got 'Bad control character in string liter\u2026'\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-"
+              ]
+            }
+          ],
+          "seconds": 0.97,
+          "restoredSha256": "54d4a6a5f8be031572e982aca41efbb68f6fd20d2267bc8392b9e11a98eaf6e6",
+          "mutation": {
+            "before": "!text.isWellFormed() || text.includes(\"\\0\")",
+            "after": "false"
+          }
+        },
+        {
+          "name": "ack-receipt-fields",
+          "file": "openplan/src/lib/engagement/synthesis-response-link.ts",
+          "exitCode": 1,
+          "expectedFailure": "rejects malformed receipts",
+          "valid": true,
+          "passed": 16,
+          "failed": [
+            {
+              "name": "browser synthesis response acknowledgement rejects malformed receipts, unsupported event purpose and version",
+              "messages": [
+                "Error: promise resolved \"{ event: { \u2026(8) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_m"
+              ]
+            }
+          ],
+          "seconds": 0.92,
+          "restoredSha256": "54d4a6a5f8be031572e982aca41efbb68f6fd20d2267bc8392b9e11a98eaf6e6",
+          "mutation": {
+            "before": "replayed: z.boolean() }).strict();",
+            "after": "replayed: z.boolean() });"
+          }
+        },
+        {
+          "name": "ack-event-fields",
+          "file": "openplan/src/lib/engagement/synthesis-response-link.ts",
+          "exitCode": 1,
+          "expectedFailure": "rejects malformed receipts",
+          "valid": true,
+          "passed": 16,
+          "failed": [
+            {
+              "name": "browser synthesis response acknowledgement rejects malformed receipts, unsupported event purpose and version",
+              "messages": [
+                "Error: promise resolved \"{ event: { \u2026(8) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_m"
+              ]
+            }
+          ],
+          "seconds": 0.97,
+          "restoredSha256": "54d4a6a5f8be031572e982aca41efbb68f6fd20d2267bc8392b9e11a98eaf6e6",
+          "mutation": {
+            "before": "contextSha256: digest }).strict(),\n}).strict();",
+            "after": "contextSha256: digest }).strict(),\n});"
+          }
+        },
+        {
+          "name": "ack-event-purpose",
+          "file": "openplan/src/lib/engagement/synthesis-response-link.ts",
+          "exitCode": 1,
+          "expectedFailure": "rejects malformed receipts",
+          "valid": true,
+          "passed": 16,
+          "failed": [
+            {
+              "name": "browser synthesis response acknowledgement rejects malformed receipts, unsupported event purpose and version",
+              "messages": [
+                "Error: promise resolved \"{ event: { \u2026(8) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_m"
+              ]
+            }
+          ],
+          "seconds": 0.92,
+          "restoredSha256": "54d4a6a5f8be031572e982aca41efbb68f6fd20d2267bc8392b9e11a98eaf6e6",
+          "mutation": {
+            "before": "z.literal(\"private_synthesis_response_link\")",
+            "after": "z.string()"
+          }
+        },
+        {
+          "name": "ack-event-version",
+          "file": "openplan/src/lib/engagement/synthesis-response-link.ts",
+          "exitCode": 1,
+          "expectedFailure": "rejects malformed receipts",
+          "valid": true,
+          "passed": 16,
+          "failed": [
+            {
+              "name": "browser synthesis response acknowledgement rejects malformed receipts, unsupported event purpose and version",
+              "messages": [
+                "Error: promise resolved \"{ event: { \u2026(8) }, replayed: false }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_m"
+              ]
+            }
+          ],
+          "seconds": 0.97,
+          "restoredSha256": "54d4a6a5f8be031572e982aca41efbb68f6fd20d2267bc8392b9e11a98eaf6e6",
+          "mutation": {
+            "before": "schemaVersion: z.literal(1), purpose:",
+            "after": "schemaVersion: z.number(), purpose:"
+          }
+        }
+      ]
+    },
+    {
+      "file": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/response-link-http-handler-mutations/report.json",
+      "sha256": "58c93b8233cef6cb0dfbdbc196d869c3603887e87d52288071181ee2fe01e108",
+      "cases": [
+        {
+          "name": "route-baseline",
+          "file": "openplan/src/lib/engagement/synthesis-response-link-http.ts",
+          "exitCode": 0,
+          "expectedFailure": null,
+          "valid": true,
+          "passed": 15,
+          "failed": [],
+          "seconds": 1.17,
+          "restoredSha256": "088195e3c6e9d3af6e383b8cc2fe8530be4dc290aadc4d85c56f49c4ebcd562e",
+          "mutation": {
+            "before": null,
+            "after": null
+          }
+        },
+        {
+          "name": "route-harmless",
+          "file": "openplan/src/lib/engagement/synthesis-response-link-http.ts",
+          "exitCode": 0,
+          "expectedFailure": null,
+          "valid": true,
+          "passed": 15,
+          "failed": [],
+          "seconds": 1.17,
+          "restoredSha256": "088195e3c6e9d3af6e383b8cc2fe8530be4dc290aadc4d85c56f49c4ebcd562e",
+          "mutation": {
+            "before": "/** Private retained history",
+            "after": "/** Private saved history"
+          }
+        },
+        {
+          "name": "route-origin",
+          "file": "openplan/src/lib/engagement/synthesis-response-link-http.ts",
+          "exitCode": 1,
+          "expectedFailure": "requires browser origin",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API requires browser origin and refuses each unregistered assistant marker",
+              "messages": [
+                "AssertionError: expected 201 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:82:100\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.07,
+          "restoredSha256": "088195e3c6e9d3af6e383b8cc2fe8530be4dc290aadc4d85c56f49c4ebcd562e",
+          "mutation": {
+            "before": "requireProviderBrowserOrigin(request);",
+            "after": "void request;"
+          }
+        },
+        {
+          "name": "route-bind-actorId",
+          "file": "openplan/src/lib/engagement/synthesis-response-link-http.ts",
+          "exitCode": 1,
+          "expectedFailure": "binds command actorId",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API binds command actorId to authenticated route scope",
+              "messages": [
+                "AssertionError: expected 201 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:79:85\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.22,
+          "restoredSha256": "088195e3c6e9d3af6e383b8cc2fe8530be4dc290aadc4d85c56f49c4ebcd562e",
+          "mutation": {
+            "before": "intent.data.actorId !== access.user.id",
+            "after": "false"
+          }
+        },
+        {
+          "name": "route-bind-workspaceId",
+          "file": "openplan/src/lib/engagement/synthesis-response-link-http.ts",
+          "exitCode": 1,
+          "expectedFailure": "binds command workspaceId",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API binds command workspaceId to authenticated route scope",
+              "messages": [
+                "AssertionError: expected 201 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:79:85\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "088195e3c6e9d3af6e383b8cc2fe8530be4dc290aadc4d85c56f49c4ebcd562e",
+          "mutation": {
+            "before": "intent.data.workspaceId !== access.workspaceId",
+            "after": "false"
+          }
+        },
+        {
+          "name": "route-bind-campaignId",
+          "file": "openplan/src/lib/engagement/synthesis-response-link-http.ts",
+          "exitCode": 1,
+          "expectedFailure": "binds command campaignId",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API binds command campaignId to authenticated route scope",
+              "messages": [
+                "AssertionError: expected 201 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:79:85\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "088195e3c6e9d3af6e383b8cc2fe8530be4dc290aadc4d85c56f49c4ebcd562e",
+          "mutation": {
+            "before": "intent.data.campaignId !== params.data.campaignId",
+            "after": "false"
+          }
+        },
+        {
+          "name": "route-assistant-execution-source",
+          "file": "openplan/src/lib/engagement/synthesis-response-link-http.ts",
+          "exitCode": 1,
+          "expectedFailure": "requires browser origin",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API requires browser origin and refuses each unregistered assistant marker",
+              "messages": [
+                "AssertionError: expected 201 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:84:87\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "088195e3c6e9d3af6e383b8cc2fe8530be4dc290aadc4d85c56f49c4ebcd562e",
+          "mutation": {
+            "before": "\"x-openplan-assistant-execution-source\"",
+            "after": "\"x-unused-execution-source\""
+          }
+        },
+        {
+          "name": "route-assistant-input-hash",
+          "file": "openplan/src/lib/engagement/synthesis-response-link-http.ts",
+          "exitCode": 1,
+          "expectedFailure": "requires browser origin",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API requires browser origin and refuses each unregistered assistant marker",
+              "messages": [
+                "AssertionError: expected 201 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:84:87\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "088195e3c6e9d3af6e383b8cc2fe8530be4dc290aadc4d85c56f49c4ebcd562e",
+          "mutation": {
+            "before": "\"x-openplan-assistant-input-hash\"",
+            "after": "\"x-unused-input-hash\""
+          }
+        },
+        {
+          "name": "route-assistant-approval-id",
+          "file": "openplan/src/lib/engagement/synthesis-response-link-http.ts",
+          "exitCode": 1,
+          "expectedFailure": "requires browser origin",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API requires browser origin and refuses each unregistered assistant marker",
+              "messages": [
+                "AssertionError: expected 201 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:84:87\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "088195e3c6e9d3af6e383b8cc2fe8530be4dc290aadc4d85c56f49c4ebcd562e",
+          "mutation": {
+            "before": "\"x-openplan-assistant-approval-id\"",
+            "after": "\"x-unused-approval-id\""
+          }
+        },
+        {
+          "name": "route-staff",
+          "file": "openplan/src/lib/engagement/synthesis-response-link-http.ts",
+          "exitCode": 1,
+          "expectedFailure": "denies missing or changed staff",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API denies missing or changed staff access before private readers or writes",
+              "messages": [
+                "AssertionError: expected 200 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:69:165\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "088195e3c6e9d3af6e383b8cc2fe8530be4dc290aadc4d85c56f49c4ebcd562e",
+          "mutation": {
+            "before": "!access.allowed",
+            "after": "false"
+          }
+        },
+        {
+          "name": "route-access-error",
+          "file": "openplan/src/lib/engagement/synthesis-response-link-http.ts",
+          "exitCode": 1,
+          "expectedFailure": "denies missing or changed staff",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API denies missing or changed staff access before private readers or writes",
+              "messages": [
+                "AssertionError: expected 403 to be 503 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:70:148\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "088195e3c6e9d3af6e383b8cc2fe8530be4dc290aadc4d85c56f49c4ebcd562e",
+          "mutation": {
+            "before": "if (access.error)",
+            "after": "if (false)"
+          }
+        },
+        {
+          "name": "route-pinned-user",
+          "file": "openplan/src/lib/engagement/synthesis-response-link-http.ts",
+          "exitCode": 1,
+          "expectedFailure": "denies missing or changed staff",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API denies missing or changed staff access before private readers or writes",
+              "messages": [
+                "AssertionError: expected 200 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:73:58\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "088195e3c6e9d3af6e383b8cc2fe8530be4dc290aadc4d85c56f49c4ebcd562e",
+          "mutation": {
+            "before": "request.headers.has(\"x-openplan-expected-user\")",
+            "after": "false"
+          }
+        },
+        {
+          "name": "route-pinned-workspace",
+          "file": "openplan/src/lib/engagement/synthesis-response-link-http.ts",
+          "exitCode": 1,
+          "expectedFailure": "denies missing or changed staff",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API denies missing or changed staff access before private readers or writes",
+              "messages": [
+                "AssertionError: expected 200 to be 403 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:73:58\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "088195e3c6e9d3af6e383b8cc2fe8530be4dc290aadc4d85c56f49c4ebcd562e",
+          "mutation": {
+            "before": "request.headers.has(\"x-openplan-expected-workspace\")",
+            "after": "false"
+          }
+        },
+        {
+          "name": "route-duplicate-query",
+          "file": "openplan/src/lib/engagement/synthesis-response-link-http.ts",
+          "exitCode": 1,
+          "expectedFailure": "rejects invalid routes",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API rejects invalid routes, duplicate keys and unexpected query fields in every read mode",
+              "messages": [
+                "AssertionError: expected 200 to be 400 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:100:418\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "088195e3c6e9d3af6e383b8cc2fe8530be4dc290aadc4d85c56f49c4ebcd562e",
+          "mutation": {
+            "before": "new Set(entries.map(([key]) => key)).size !== entries.length",
+            "after": "false"
+          }
+        },
+        {
+          "name": "route-stream-limit",
+          "file": "openplan/src/lib/engagement/synthesis-response-link-http.ts",
+          "exitCode": 1,
+          "expectedFailure": "rejects oversized",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API rejects oversized, malformed and extra command content before database access",
+              "messages": [
+                "AssertionError: expected 400 to be 413 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:90:25\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "088195e3c6e9d3af6e383b8cc2fe8530be4dc290aadc4d85c56f49c4ebcd562e",
+          "mutation": {
+            "before": "16_384",
+            "after": "65_536"
+          }
+        },
+        {
+          "name": "route-utf8",
+          "file": "openplan/src/lib/engagement/synthesis-response-link-http.ts",
+          "exitCode": 1,
+          "expectedFailure": "rejects oversized",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API rejects oversized, malformed and extra command content before database access",
+              "messages": [
+                "AssertionError: expected 201 to be 400 // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:94:176\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "088195e3c6e9d3af6e383b8cc2fe8530be4dc290aadc4d85c56f49c4ebcd562e",
+          "mutation": {
+            "before": "{ fatal: true }",
+            "after": "{ fatal: false }"
+          }
+        },
+        {
+          "name": "route-private-cache",
+          "file": "openplan/src/lib/engagement/synthesis-response-link-http.ts",
+          "exitCode": 1,
+          "expectedFailure": "binds compact commands",
+          "valid": true,
+          "passed": 7,
+          "failed": [
+            {
+              "name": "private synthesis response link API binds compact commands to current staff and returns exact bytes without internal enrichment",
+              "messages": [
+                "AssertionError: expected 'public, max-age=300' to be 'private, no-store' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:35:122\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            },
+            {
+              "name": "private synthesis response link API returns the index and distinguishes missing review from an empty retained index",
+              "messages": [
+                "AssertionError: expected 'public, max-age=300' to be 'private, no-store' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:46:120\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            },
+            {
+              "name": "private synthesis response link API returns exact current context and complete history with no enriched fields",
+              "messages": [
+                "AssertionError: expected 'public, max-age=300' to be 'private, no-store' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:55:84\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            },
+            {
+              "name": "private synthesis response link API rejects oversized, malformed and extra command content before database access",
+              "messages": [
+                "AssertionError: expected 'public, max-age=300' to be 'private, no-store' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:90:78\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            },
+            {
+              "name": "private synthesis response link API preserves invalid failures without disclosing private errors",
+              "messages": [
+                "AssertionError: expected 'public, max-age=300' to be 'private, no-store' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:107:81\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            },
+            {
+              "name": "private synthesis response link API preserves forbidden failures without disclosing private errors",
+              "messages": [
+                "AssertionError: expected 'public, max-age=300' to be 'private, no-store' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:107:81\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            },
+            {
+              "name": "private synthesis response link API preserves conflict failures without disclosing private errors",
+              "messages": [
+                "AssertionError: expected 'public, max-age=300' to be 'private, no-store' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:107:81\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            },
+            {
+              "name": "private synthesis response link API preserves unavailable failures without disclosing private errors",
+              "messages": [
+                "AssertionError: expected 'public, max-age=300' to be 'private, no-store' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:107:81\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "088195e3c6e9d3af6e383b8cc2fe8530be4dc290aadc4d85c56f49c4ebcd562e",
+          "mutation": {
+            "before": "private, no-store",
+            "after": "public, max-age=300"
+          }
+        },
+        {
+          "name": "route-audit-private-reason",
+          "file": "openplan/src/lib/engagement/synthesis-response-link-http.ts",
+          "exitCode": 1,
+          "expectedFailure": "binds compact commands",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API binds compact commands to current staff and returns exact bytes without internal enrichment",
+              "messages": [
+                "AssertionError: expected \"vi.fn()\" to be called once with arguments: [ \u2026(2) ]\n\nReceived:\n\n  1st vi.fn() call:\n\n@@ -2,10 +2,11 @@\n    \"synthesis_response_link_retained\",\n    {\n      \"campaignId\": \"c0000000-0000-4000-8000-000000000001\",\n      \"eventSha256\": \"c40ee8ed329b4cf015ed7a637990ef22fcfb87ee9c9cca2a5f69596229f91e12\",\n      \"operation\": \"link\",\n+     \"reason\": \"SYNTHETIC retained link \u00e9\ud83d\udeb2\",\n      \"replayed\": false,\n      \"requestId\": \"e0000000-0000-4000-8000-000000000011\",\n      \"responseId\": \"e0000000-0000-4000-8000-000000000002\",\n      \"reviewId\": \"e0000000-0000-4000-8000-000000000001\",\n "
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "088195e3c6e9d3af6e383b8cc2fe8530be4dc290aadc4d85c56f49c4ebcd562e",
+          "mutation": {
+            "before": "replayed: receipt.replayed });",
+            "after": "replayed: receipt.replayed, reason: intent.data.reason });"
+          }
+        },
+        {
+          "name": "route-enriched-history",
+          "file": "openplan/src/lib/engagement/synthesis-response-link-http.ts",
+          "exitCode": 1,
+          "expectedFailure": "returns exact current context",
+          "valid": true,
+          "passed": 14,
+          "failed": [
+            {
+              "name": "private synthesis response link API returns exact current context and complete history with no enriched fields",
+              "messages": [
+                "AssertionError: expected { history: { \u2026(9) } } to deeply equal { history: { \u2026(9) } }\n    at /home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/src/test/engagement-synthesis-response-link-route.test.ts:59:34\n    at file:///home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ]
+            }
+          ],
+          "seconds": 1.17,
+          "restoredSha256": "088195e3c6e9d3af6e383b8cc2fe8530be4dc290aadc4d85c56f49c4ebcd562e",
+          "mutation": {
+            "before": "({ eventText, eventSha256 }) => ({ eventText, eventSha256 })",
+            "after": "entry => entry"
+          }
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "Handler unit tests replace staff access and database services. Native probes cover the candidate functions separately, not a live HTTP session.",
+    "The native navigation probe has two linked response addresses. The 302-address completeness test uses an RPC fixture.",
+    "Browser controls, persistence and navigation are unfinished. No browser workflow or release claim.",
+    "New index membership-change interleavings, installed RLS and populated upgrade remain unproved.",
+    "Initial shuffled run detected the uncalled route; concurrent QA was stopped. Handler is now unregistered. Final QA and shuffled pass 15,855 cases each; four focused native cases pass. Ordinary QA skips live RLS. Final commit CI remains pending."
+  ],
+  "routeRegistered": false,
+  "checks": {
+    "response-link-http-qa-initial.json": {
+      "check": "qa",
+      "command": [
+        "npm",
+        "run",
+        "qa:gate"
+      ],
+      "cwd": "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan",
+      "startedAt": "2026-09-30T05:15:24.497882+00:00",
+      "wrapperPid": 2841874,
+      "state": "completed",
+      "pid": 2842090,
+      "exit": -15,
+      "finishedAt": "2026-09-30T05:18:39.191662+00:00"
+    },
+    "response-link-http-shuffled-initial.json": {
+      "check": "shuffled",
+      "command": [
+        "node",
+        "scripts/ops/test-shuffled.mjs",
+        "672286"
+      ],
+      "cwd": "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan",
+      "startedAt": "2026-09-30T05:15:24.496877+00:00",
+      "wrapperPid": 2841875,
+      "state": "completed",
+      "pid": 2842089,
+      "exit": 1,
+      "finishedAt": "2026-09-30T05:17:33.137663+00:00"
+    },
+    "response-link-http-native-verified.json": {
+      "check": "native",
+      "command": [
+        "node",
+        "--env-file-if-exists=.env.local",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "src/test/engagement-synthesis-response-candidate-rls.test.ts",
+        "-t",
+        "candidate application link|candidate retained link navigation and compact commands"
+      ],
+      "cwd": "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan",
+      "startedAt": "2026-09-30T05:15:24.501315+00:00",
+      "wrapperPid": 2841876,
+      "state": "completed",
+      "pid": 2842091,
+      "exit": 0,
+      "finishedAt": "2026-09-30T05:15:50.606737+00:00",
+      "logSha256": "c05800199383d1ec01856beb32c0455983ce60e4fd2c7d38e30c4c3b5988f314"
+    },
+    "focused": {
+      "unitTests": 145,
+      "routeRegistrationAndHandlerTests": 26,
+      "types": "passed standalone with 8192 MB heap and in final production build",
+      "lint": "passed focused and in final QA",
+      "databasePostcheck": "0|||347"
+    },
+    "response-link-http-qa-verified.json": {
+      "check": "qa",
+      "command": [
+        "npm",
+        "run",
+        "qa:gate"
+      ],
+      "cwd": "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan",
+      "startedAt": "2026-09-30T05:19:38.503061+00:00",
+      "wrapperPid": 2898382,
+      "state": "completed",
+      "pid": 2898520,
+      "exit": 0,
+      "finishedAt": "2026-09-30T05:25:08.446907+00:00",
+      "logSha256": "50593eef7a6fc51d82dd8a39b2a8247539fc55487bfd83fdcb2ae328ca1b6329"
+    },
+    "response-link-http-shuffled-verified.json": {
+      "check": "shuffled",
+      "command": [
+        "node",
+        "scripts/ops/test-shuffled.mjs",
+        "672286"
+      ],
+      "cwd": "/home/nathaniel/.local/state/openplan/translation-command-workflow-2026-09-13/openplan",
+      "startedAt": "2026-09-30T05:19:38.502168+00:00",
+      "wrapperPid": 2898381,
+      "state": "completed",
+      "pid": 2898519,
+      "exit": 0,
+      "finishedAt": "2026-09-30T05:21:45.857660+00:00",
+      "logSha256": "af71e411566abb1edd6c4e47b85707e1fe6310db23a8eae3ad63c4ca3728270e"
+    }
+  }
+}

@@ -3,34 +3,14 @@ import { isDeepStrictEqual } from "node:util";
 import { z } from "zod";
 import { readSynthesisResponseContext } from "./synthesis-response-context-server";
 
-const uuid = z.string().uuid();
-const digest = z.string().regex(/^[a-f0-9]{64}$/);
-const positive = z.number().int().positive().max(Number.MAX_SAFE_INTEGER);
-const scopeSchema = z.object({
-  campaignId: uuid, workspaceId: uuid, reviewId: uuid, responseId: uuid,
-  groupId: z.string().regex(/^[a-zA-Z0-9_-]{1,100}$/),
-}).strict();
-export type SynthesisResponseLinkScope = z.infer<typeof scopeSchema>;
-export const synthesisResponseLinkIntentSchema = scopeSchema.extend({
-  requestId: uuid, actorId: uuid, operation: z.enum(["link", "refresh", "withdraw"]),
-  reason: z.string().max(4000).refine(value => value.isWellFormed() && !value.includes("\0")
-    && value.trim().length > 0 && [...value].length <= 2000),
-  predecessorId: uuid.nullable(), predecessorSha256: digest.nullable(), expectedContextSha256: digest.nullable(),
-}).superRefine((value, ctx) => {
-  if ((value.operation === "link") !== (value.predecessorId === null)
-    || (value.predecessorId === null) !== (value.predecessorSha256 === null)
-    || value.predecessorId === value.requestId
-    || (value.operation === "withdraw") !== (value.expectedContextSha256 === null)) {
-    ctx.addIssue({ code: "custom", message: "Name the exact preceding link and context." });
-  }
-});
-export type SynthesisResponseLinkIntent = z.infer<typeof synthesisResponseLinkIntentSchema>;
-const packetSchema = z.object({ eventText: z.string(), eventSha256: digest }).strict();
-const eventSchema = z.object({
-  schemaVersion: z.literal(1), purpose: z.literal("private_synthesis_response_link"),
-  eventNo: positive, createdAt: z.string().datetime({ offset: true }), intent: synthesisResponseLinkIntentSchema,
-  context: z.object({ contextText: z.string(), contextSha256: digest }).strict(),
-}).strict();
+import {
+  synthesisResponseLinkScopeSchema as scopeSchema, synthesisResponseLinkPacketSchema as packetSchema,
+  synthesisResponseLinkEventSchema as eventSchema, synthesisResponseLinkIntentSchema,
+  type SynthesisResponseLinkIntent, type SynthesisResponseLinkScope,
+} from "./synthesis-response-link";
+export { synthesisResponseLinkIntentSchema, type SynthesisResponseLinkIntent, type SynthesisResponseLinkScope } from "./synthesis-response-link";
+
+const uuid = z.string().uuid(), digest = z.string().regex(/^[a-f0-9]{64}$/);
 
 /** A verified retained record may belong to another command; corruption remains a separate failure. */
 export class SynthesisResponseLinkConflictError extends Error {}

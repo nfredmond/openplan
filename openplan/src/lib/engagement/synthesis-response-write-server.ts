@@ -54,19 +54,32 @@ export async function loadSynthesisResponseLinkHistory(client: Client, rawAddres
   } catch (error) { readFailure(error); }
 }
 
-/** Recover exact intent before checking current heads; the native writer repeats authorization and locks. */
+/** Raw packet callers preserve their submitted context bytes, including noncanonical outer JSON. */
 export async function retainSynthesisResponseLink(client: Client, service: Client, actor: Actor, raw: unknown) {
   const parsed = writeSchema.safeParse(raw);
   if (!parsed.success) throw new SynthesisResponseLinkError("invalid", "Review the synthesis response link command");
-  const { intent, contextText } = parsed.data, scope = address(intent);
+  if ((parsed.data.intent.operation === "withdraw") !== (parsed.data.contextText === null)) {
+    throw new SynthesisResponseLinkError("invalid", "Use the exact context for this link operation");
+  }
+  return retainLink(client, service, actor, parsed.data.intent, parsed.data.contextText);
+}
+
+/** Compact browser commands recover saved requests before resolving their expected context on the server. */
+export async function retainSynthesisResponseLinkCommand(client: Client, service: Client, actor: Actor, raw: unknown) {
+  const parsed = synthesisResponseLinkIntentSchema.safeParse(raw);
+  if (!parsed.success) throw new SynthesisResponseLinkError("invalid", "Review the synthesis response link command");
+  return retainLink(client, service, actor, parsed.data, parsed.data.operation === "withdraw" ? null : undefined);
+}
+
+async function retainLink(client: Client, service: Client, actor: Actor, intent: SynthesisResponseLinkIntent, contextText: string | null | undefined) {
+  const scope = address(intent);
   if (intent.actorId !== actor.actorId || intent.workspaceId !== actor.workspaceId || intent.campaignId !== actor.campaignId) {
     throw new SynthesisResponseLinkError("forbidden", "Synthesis response link actor or consultation differs");
   }
-  if ((intent.operation === "withdraw") !== (contextText === null)) throw new SynthesisResponseLinkError("invalid", "Use the exact context for this link operation");
   const recover = async () => {
     const old = await loadSynthesisResponseLinkRequest(client, scope, intent.requestId);
     if (!old) return null;
-    if (!isDeepStrictEqual(old.intent, intent) || (intent.operation !== "withdraw" && old.context.contextText !== contextText)) {
+    if (!isDeepStrictEqual(old.intent, intent) || (contextText !== undefined && intent.operation !== "withdraw" && old.context.contextText !== contextText)) {
       throw new SynthesisResponseLinkError("conflict", "This request belongs to a different response link command");
     }
     return { event: old, replayed: true };
@@ -80,15 +93,22 @@ export async function retainSynthesisResponseLink(client: Client, service: Clien
   if (intent.operation === "withdraw") {
     if (!history.head || history.head.intent.operation === "withdraw") throw new SynthesisResponseLinkError("conflict", "There is no active response link to withdraw");
   } else {
-    let submitted: Awaited<ReturnType<typeof readSynthesisResponseContext>>;
-    try {
-      const { groupId, ...contextScope } = scope;
-      submitted = await readSynthesisResponseContext({ contextText, contextSha256: intent.expectedContextSha256 }, contextScope);
-      if (submitted.context.groupId !== groupId) throw new Error("Context differs");
-    } catch { throw new SynthesisResponseLinkError("invalid", "The submitted response evidence could not be verified"); }
+    let submitted: Awaited<ReturnType<typeof readSynthesisResponseContext>> | undefined;
+    if (contextText !== undefined) {
+      try {
+        const { groupId, ...contextScope } = scope;
+        submitted = await readSynthesisResponseContext({ contextText, contextSha256: intent.expectedContextSha256 }, contextScope);
+        if (submitted.context.groupId !== groupId) throw new Error("Context differs");
+      } catch { throw new SynthesisResponseLinkError("invalid", "The submitted response evidence could not be verified"); }
+    }
     try {
       const current = await loadSynthesisResponseContext(client, scope);
-      if (!isDeepStrictEqual(submitted.context, current.context)) throw new SynthesisResponseLinkError("conflict", "The reviewed response evidence has changed");
+      if (contextText === undefined) {
+        if (current.packet.contextSha256 !== intent.expectedContextSha256) throw new SynthesisResponseLinkError("conflict", "The reviewed response evidence has changed");
+        contextText = current.packet.contextText;
+      } else if (!submitted || !isDeepStrictEqual(submitted.context, current.context)) {
+        throw new SynthesisResponseLinkError("conflict", "The reviewed response evidence has changed");
+      }
     } catch (error) {
       if (error instanceof SynthesisResponseLinkError && error.kind === "conflict") {
         const raced = await recover(); if (raced) return raced;
@@ -99,7 +119,7 @@ export async function retainSynthesisResponseLink(client: Client, service: Clien
   let result: { data: unknown; error: { code: string } | null };
   try {
     result = await service.rpc("retain_engagement_synthesis_response_link", { p_campaign: actor.campaignId,
-      p_actor: actor.actorId, p_workspace: actor.workspaceId, p_intent: intent, p_context_text: contextText });
+      p_actor: actor.actorId, p_workspace: actor.workspaceId, p_intent: intent, p_context_text: contextText ?? null });
   } catch {
     const raced = await recover(); if (raced) return raced;
     throw new SynthesisResponseLinkError("unavailable", "The synthesis response link save could not be confirmed");

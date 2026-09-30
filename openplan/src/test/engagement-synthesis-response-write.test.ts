@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { loadSynthesisResponseLinkHistory, loadSynthesisResponseLinkRequest, retainSynthesisResponseLink } from "@/lib/engagement/synthesis-response-write-server";
+import { loadSynthesisResponseLinkHistory, loadSynthesisResponseLinkRequest, retainSynthesisResponseLink, retainSynthesisResponseLinkCommand } from "@/lib/engagement/synthesis-response-write-server";
 import { readSynthesisResponseContext } from "@/lib/engagement/synthesis-response-context-server";
 import { SynthesisResponseLinkError } from "@/lib/engagement/synthesis-response-links-server";
 import { synthesisResponseLinkIntentSchema } from "@/lib/engagement/synthesis-response-records-server";
@@ -226,5 +226,63 @@ describe("synthesis response write boundaries", () => {
     const { first, second, third } = chain(), next = JSON.parse(third.eventText); events = [first, second];
     writeRpc.mockResolvedValue({ data: { event: packet({ ...next, context: JSON.parse(first.eventText).context }), replayed: false }, error: null });
     await expect(retainSynthesisResponseLink(client, service, actor, { intent: next.intent, contextText: null })).rejects.toMatchObject({ kind: "unavailable" });
+  });
+});
+
+describe("compact synthesis response commands", () => {
+  it("resolves the expected context on the server without a browser-supplied packet", async () => {
+    const result = await retainSynthesisResponseLinkCommand(client, service, actor, command.intent);
+    expect(result.event.eventText).toBe(original.eventText);
+    expect(m.current).toHaveBeenCalledExactlyOnceWith(client, scope);
+    expect(writeRpc).toHaveBeenCalledExactlyOnceWith("retain_engagement_synthesis_response_link", {
+      p_campaign: actor.campaignId, p_actor: actor.actorId, p_workspace: actor.workspaceId,
+      p_intent: command.intent, p_context_text: command.contextText,
+    });
+  });
+  it("recovers exact old intent before unavailable current context or history", async () => {
+    events = [original]; m.current.mockRejectedValue(new Error("Removed response"));
+    readRpc.mockImplementation((name: string, args: Record<string, unknown>) => {
+      if (name !== "read_engagement_synthesis_response_link") throw new Error("Later history unavailable");
+      return read(name, args);
+    });
+    expect((await retainSynthesisResponseLinkCommand(client, service, actor, command.intent)).replayed).toBe(true);
+    expect(m.current).not.toHaveBeenCalled(); expect(writeRpc).not.toHaveBeenCalled();
+  });
+  it("refuses a different command reusing a retained request identity", async () => {
+    events = [original];
+    await expect(retainSynthesisResponseLinkCommand(client, service, actor, { ...command.intent, reason: "Different compact command" })).rejects.toMatchObject({ kind: "conflict" });
+    expect(writeRpc).not.toHaveBeenCalled();
+  });
+  it("requires the current context checksum to match the frozen preview", async () => {
+    await expect(retainSynthesisResponseLinkCommand(client, service, actor, { ...command.intent, expectedContextSha256: sourceHash("old preview") })).rejects.toMatchObject({ kind: "conflict" });
+    expect(writeRpc).not.toHaveBeenCalled();
+  });
+  it("recovers a racing saved command after current context becomes unavailable", async () => {
+    readRpc.mockResolvedValueOnce(missing).mockResolvedValueOnce({ data: history([]), error: null }).mockResolvedValueOnce({ data: original, error: null });
+    m.current.mockRejectedValue(new SynthesisResponseLinkError("conflict", "Response removed after save"));
+    expect((await retainSynthesisResponseLinkCommand(client, service, actor, command.intent)).replayed).toBe(true);
+    expect(writeRpc).not.toHaveBeenCalled();
+  });
+  it("withdraws after source removal without requesting a current packet", async () => {
+    const { first, second, third } = chain(); events = [first, second];
+    writeRpc.mockResolvedValue({ data: { event: third, replayed: false }, error: null });
+    const result = await retainSynthesisResponseLinkCommand(client, service, actor, JSON.parse(third.eventText).intent);
+    expect(result.event.eventText).toBe(third.eventText); expect(m.current).not.toHaveBeenCalled();
+    expect(writeRpc.mock.calls[0][1].p_context_text).toBeNull();
+  });
+  it.each(["campaignId", "workspaceId", "actorId"] as const)("binds compact command %s to the authenticated caller", async field => {
+    await expect(retainSynthesisResponseLinkCommand(client, service, { ...actor, [field]: id(99) }, command.intent)).rejects.toMatchObject({ kind: "forbidden" });
+    expect(readRpc).not.toHaveBeenCalled(); expect(writeRpc).not.toHaveBeenCalled();
+  });
+  it("rejects a full browser packet or extra fields instead of changing the command format", async () => {
+    for (const raw of [command, { ...command.intent, contextText: command.contextText }, { ...command.intent, reason: "" }]) {
+      await expect(retainSynthesisResponseLinkCommand(client, service, actor, raw)).rejects.toMatchObject({ kind: "invalid" });
+    }
+    expect(readRpc).not.toHaveBeenCalled(); expect(writeRpc).not.toHaveBeenCalled();
+  });
+  it("recovers a committed compact command after acknowledgement loss with one write", async () => {
+    writeRpc.mockImplementation(async () => { events = [original]; throw new Error("SYNTHETIC lost acknowledgement"); });
+    const result = await retainSynthesisResponseLinkCommand(client, service, actor, command.intent);
+    expect(result.replayed).toBe(true); expect(result.event.eventText).toBe(original.eventText); expect(writeRpc).toHaveBeenCalledTimes(1);
   });
 });

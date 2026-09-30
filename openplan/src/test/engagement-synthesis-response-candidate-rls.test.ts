@@ -8,7 +8,8 @@ import { loadSynthesisSource } from "@/lib/engagement/synthesis-sources-server";
 import { loadSynthesisResponseContext } from "@/lib/engagement/synthesis-response-links-server";
 import { readSynthesisResponseContext } from "@/lib/engagement/synthesis-response-context-server";
 import { readSynthesisResponseLinkHistory, readSynthesisResponseLinkReceipt, synthesisResponseLinkIntentSchema } from "@/lib/engagement/synthesis-response-records-server";
-import { loadSynthesisResponseLinkHistory, retainSynthesisResponseLink } from "@/lib/engagement/synthesis-response-write-server";
+import { loadSynthesisResponseLinkHistory, retainSynthesisResponseLink, retainSynthesisResponseLinkCommand } from "@/lib/engagement/synthesis-response-write-server";
+import { loadSynthesisResponseLinkIndex } from "@/lib/engagement/synthesis-response-index-server";
 import { writeResponse } from "@/lib/engagement/response-write";
 import { publicReviewStillCurrent } from "@/lib/engagement/survey-responses";
 import { parseReviewSnapshot, type EngagementReviewSnapshot } from "@/lib/engagement/review-export";
@@ -32,6 +33,7 @@ const signatures: Record<string, string[]> = {
   read_engagement_synthesis_approval_history: ["p_campaign", "p_review"],
   retain_engagement_synthesis_approval: ["p_campaign", "p_actor", "p_workspace", "p_intent"],
   read_engagement_response_history: ["p_campaign"],
+  list_engagement_synthesis_response_links: ["p_campaign", "p_review"],
   read_engagement_synthesis_response_link: ["p_campaign", "p_request"],
   read_engagement_synthesis_response_links: ["p_campaign", "p_review", "p_response", "p_group"],
   retain_engagement_synthesis_response_link: ["p_campaign", "p_actor", "p_workspace", "p_intent", "p_context_text"],
@@ -911,4 +913,50 @@ describe.skipIf(!LIVE_RLS)("candidate application link write recovery", () => {
       }, true, target);
     });
   }, 120_000);
+});
+
+
+const indexCandidate = readFileSync("../docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-index.candidate.sql", "utf8");
+describe.skipIf(!LIVE_RLS)("candidate retained link navigation and compact commands", () => {
+  it("discovers retained links after response and review group removal, including withdrawal and old retry", async () => {
+    await scenario(raceCandidate + indexCandidate, async ({ database, client, service, query, intent }) => {
+      expect(await loadSynthesisResponseLinkIndex(client, address)).toEqual({ ...address, entryCount: 0, entries: [] });
+      expect(await loadSynthesisResponseLinkIndex(client, { ...address, reviewId: id(990) })).toBeNull();
+      const first = await retainSynthesisResponseLinkCommand(client, service, actor, intent);
+      const source = await loadSynthesisSource(client, { campaignId, workspaceId, requestId: sourceId });
+      await retainSynthesisReview(client, service, campaignId, { requestId: id(1303), actorId, workspaceId, operation: "create", sourceId, sourceSha256: source.snapshotSha256 });
+      const otherReview = { ...address, reviewId: id(1303) };
+      expect(await loadSynthesisResponseLinkIndex(client, otherReview), "another retained review inherited these links").toEqual({ ...otherReview, entryCount: 0, entries: [] });
+      const secondResponse = await writeResponse(client, campaignId, { operation: "create", body: { requestId: id(1304), themeTitle: "SYNTHETIC second linked response", weDid: "SYNTHETIC second answer" } });
+      expect(secondResponse.error).toBeNull();
+      const secondScope = { ...address, responseId: secondResponse.result!.entryId, groupId: intent.groupId };
+      const secondContext = await loadSynthesisResponseContext(client, secondScope);
+      await retainSynthesisResponseLinkCommand(client, service, actor, { ...intent, ...secondScope, requestId: id(1305), expectedContextSha256: secondContext.packet.contextSha256 });
+      const entries = [intent.responseId, secondScope.responseId].sort().map(responseId => ({ responseId, groupId: intent.groupId }));
+      const expected = { ...address, entryCount: 2, entries };
+      expect(await loadSynthesisResponseLinkIndex(client, address)).toEqual(expected);
+      const context = first.event.evidence.context, row = JSON.parse(context.responseHistory.recordText) as { updated_at: string };
+      expect((await query(`SELECT public.write_engagement_response('${campaignId}','${id(1300)}','remove','${intent.responseId}',${literal(row.updated_at)},'SYNTHETIC removed linked response','{}')`)).error).toBeNull();
+      const current = (await loadSynthesisReview(client, address))!;
+      await retainSynthesisReview(client, service, campaignId, { requestId: id(1301), actorId, workspaceId, operation: "correct", reviewId,
+        expectedRevisionId: current.revision.requestId, expectedRevisionSha256: current.revision.contentSha256, reason: "SYNTHETIC remove retained group",
+        change: { kind: "group_remove", groupId: intent.groupId } });
+      expect(await loadSynthesisResponseLinkIndex(client, address), "retained address disappeared with live response or group").toEqual(expected);
+      expect((await retainSynthesisResponseLinkCommand(client, service, actor, intent)).event.eventText).toBe(first.event.eventText);
+      const withdrawal = { ...intent, requestId: id(1302), operation: "withdraw", expectedContextSha256: null,
+        predecessorId: intent.requestId, predecessorSha256: first.event.eventSha256 };
+      const removed = await retainSynthesisResponseLinkCommand(client, service, actor, withdrawal);
+      expect(removed.event.context).toEqual(first.event.context);
+      expect(await loadSynthesisResponseLinkIndex(client, address), "withdrawal duplicated or removed navigation address").toEqual(expected);
+      for (const role of ["anon", "service_role"]) {
+        expect((await query(`SELECT public.list_engagement_synthesis_response_links('${campaignId}','${reviewId}')`, role)).error?.code, `index exposed to ${role}`).toBe("42501");
+      }
+      await database.query(`SELECT set_config('request.jwt.claim.sub','14a71429-1cb2-49b5-8711-c696a2f394c3',true);`);
+      await expect(loadSynthesisResponseLinkIndex(client, address)).rejects.toMatchObject({ kind: "forbidden" });
+      // The source-custody fixture promotes this second account to owner. Restore the role under test.
+      await database.query(`UPDATE public.workspace_members SET role='viewer' WHERE workspace_id='${workspaceId}' AND user_id='7a50d4fb-35b7-41f4-9bce-8a4e7d157569';`);
+      await database.query(`SELECT set_config('request.jwt.claim.sub','7a50d4fb-35b7-41f4-9bce-8a4e7d157569',true);`);
+      await expect(loadSynthesisResponseLinkIndex(client, address)).rejects.toMatchObject({ kind: "forbidden" });
+    }, true);
+  }, 60_000);
 });
