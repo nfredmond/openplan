@@ -25,7 +25,9 @@ source bytes across verified input frames. It includes every selected contributi
 and retains original numeric values, long text and historical definitions.
 Complete logical records retain historical relationships and exact numeric tokens
 without clipping long contributions. Typed fields preserve complete literal text,
-container counts and unambiguous paths for request planning. Model dispatch and the new generation
+container counts and unambiguous paths for request planning. Bounded segment tasks
+and retained result accounting preserve original outputs, exact configuration
+revisions and incomplete processing states. Model dispatch and the new generation
 workflow are not enabled yet.
 
 ## 0.64.0 (2026-09-30)

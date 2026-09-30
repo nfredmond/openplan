@@ -1,0 +1,110 @@
+{
+  "sourceSha256": "233baa6fe56550264b97eedfbb3cb42a0588e94b38dd965a56a30c50a4ec9aa9",
+  "cases": [
+    {
+      "case": "baseline",
+      "exit": 0,
+      "expected": "pass",
+      "valid": true,
+      "firstFailure": null,
+      "logSha256": "54ccde6556097e449985777c062bd3a41d2d63512065cdbe3c80c57557ccac5a"
+    },
+    {
+      "case": "harmless-comment",
+      "exit": 0,
+      "expected": "pass",
+      "valid": true,
+      "firstFailure": null,
+      "logSha256": "4d46e5b59bdf422785ebf88f2f872f445b9b6d4819cadf0724f1a3af7aca3621"
+    },
+    {
+      "case": "ignore-resource-bounds",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > refuses invalid limits, oversized metadata and changed source authority",
+      "logSha256": "4af2704278fab94c66700b21e73ae4c5a25708852c32d2487a46a6e25bed4c63"
+    },
+    {
+      "case": "ignore-workspace-scope",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > refuses invalid limits, oversized metadata and changed source authority",
+      "logSha256": "a0749fa9fe7462608f77dff615c9403bb19deea47c3b2040e93b6051601d6d3e"
+    },
+    {
+      "case": "cap-records",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > bounds the actual frozen task encoding and reconstructs every field independently",
+      "logSha256": "ae45e22acb3814b93514b83136f6afc2426698ec3d33136a6836a85a5e1e0e8a"
+    },
+    {
+      "case": "false-record-kind",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > bounds the actual frozen task encoding and reconstructs every field independently",
+      "logSha256": "0148a44762847af6c7823b1482c09ab4832d7cccbd0a50a2daa26ca4c34f5971"
+    },
+    {
+      "case": "false-record-digest",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > bounds the actual frozen task encoding and reconstructs every field independently",
+      "logSha256": "678c52d265443dde874d5c383ebbcd44398774a766babb09a9463791a9f8ec07"
+    },
+    {
+      "case": "claim-absent-reference-content",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > bounds the actual frozen task encoding and reconstructs every field independently",
+      "logSha256": "adf919d3dfe7d0b35a80670472f698103c2a46e377ca89b1e8e958669ae5e805"
+    },
+    {
+      "case": "false-field-digest",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > bounds the actual frozen task encoding and reconstructs every field independently",
+      "logSha256": "3c3c12bc2474895383fb8bc22b3cbfb5b51d2e19a49e81be34dc896fc0232b5e"
+    },
+    {
+      "case": "drop-container-count",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > bounds the actual frozen task encoding and reconstructs every field independently",
+      "logSha256": "5645c2783f4f1aefb637a4183fb7bce9b15d0e1b317f4c89381eecfc51860322"
+    },
+    {
+      "case": "clip-fragment",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > bounds the actual frozen task encoding and reconstructs every field independently",
+      "logSha256": "9420f30e24abc130a7a8184cd73a1bd9b6066ecfd6de19066dc1e8970158c387"
+    },
+    {
+      "case": "wrong-range-unit",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > bounds the actual frozen task encoding and reconstructs every field independently",
+      "logSha256": "d85e1373491a2d096f33191c51fc97e9aa1ecfaa739a0496194cf72830636a3e"
+    },
+    {
+      "case": "split-valid-surrogates",
+      "exit": 0,
+      "expected": "named test failure",
+      "valid": false,
+      "firstFailure": null,
+      "logSha256": "ced4834443bb132276cc2c52c2b460674e3ee87ce90e7dcc93600c6f96804d1c"
+    }
+  ],
+  "restored": true
+}

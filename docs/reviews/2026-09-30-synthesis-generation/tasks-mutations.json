@@ -1,0 +1,254 @@
+{
+  "sourceSha256": "233baa6fe56550264b97eedfbb3cb42a0588e94b38dd965a56a30c50a4ec9aa9",
+  "cases": [
+    {
+      "case": "baseline",
+      "exit": 0,
+      "expected": "pass",
+      "valid": true,
+      "firstFailure": null,
+      "logSha256": "78b5127d985e6255d9d834e731c3e36d7ea778b1cb45f39e01bc003d942f02ac"
+    },
+    {
+      "case": "harmless-comment",
+      "exit": 0,
+      "expected": "pass",
+      "valid": true,
+      "firstFailure": null,
+      "logSha256": "ddf5d2d3cb02d84370a507046391952f7f4444c3f5b4b4c812014b784e467bf4"
+    },
+    {
+      "case": "ignore-resource-bounds",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > refuses invalid limits, oversized metadata and changed source authority",
+      "logSha256": "4fc584f1f0d3286f55979a37416deda8e3db51035cb46b98bf805da81fb4934d"
+    },
+    {
+      "case": "ignore-workspace-scope",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > refuses invalid limits, oversized metadata and changed source authority",
+      "logSha256": "764590f617dc6882c2b94d59107ee0ab6da15b321d78d1fb17050be78aeed1f1"
+    },
+    {
+      "case": "cap-records",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > bounds the actual frozen task encoding and reconstructs every field independently",
+      "logSha256": "8bc21ac53740f00c587326cf5df71b621c174ebfe64f254a7a765b83c2b5a571"
+    },
+    {
+      "case": "false-record-kind",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > bounds the actual frozen task encoding and reconstructs every field independently",
+      "logSha256": "be211800a8d0bb9f7a5e1158ff43a0004b93e1482116d5f6792552573bb508a0"
+    },
+    {
+      "case": "false-record-digest",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > bounds the actual frozen task encoding and reconstructs every field independently",
+      "logSha256": "0223dfb7504535afda26c86c17ce3a7f3b37ca774735042cfa97ca902d304c3f"
+    },
+    {
+      "case": "claim-absent-reference-content",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > bounds the actual frozen task encoding and reconstructs every field independently",
+      "logSha256": "0a91621bff5cb3223d5beca216bc0dee9944a36a425d7297ffe1dee0e2101a80"
+    },
+    {
+      "case": "false-field-digest",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > bounds the actual frozen task encoding and reconstructs every field independently",
+      "logSha256": "98c79b0752f4d6dba11380daa3e3bb4bb574ee277f05db22c08899baa82b26e9"
+    },
+    {
+      "case": "drop-container-count",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > bounds the actual frozen task encoding and reconstructs every field independently",
+      "logSha256": "356249a29c18fb7d134dbf3d33dec0b9c54ae5709812081b801861a6e1f02ea2"
+    },
+    {
+      "case": "clip-fragment",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > bounds the actual frozen task encoding and reconstructs every field independently",
+      "logSha256": "0d05fe31bc789a9bf6e7069f9a66e957be4f6d586f3b0cbba3d986b70d22860e"
+    },
+    {
+      "case": "wrong-range-unit",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > bounds the actual frozen task encoding and reconstructs every field independently",
+      "logSha256": "64182767ba89d1ce8273d911e5ecd32a004e1230ffe3145ac3ae8156dd4bffa7"
+    },
+    {
+      "case": "omit-surrogate-adjustment-survivor",
+      "exit": 0,
+      "expected": "observed survivor, not a fault kill",
+      "valid": true,
+      "firstFailure": null,
+      "logSha256": "ec8953f584cc5bdb6e84df79d2ab586bd9edd0b97708c6b322995d0c53714873"
+    },
+    {
+      "case": "force-surrogate-split",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > bounds the actual frozen task encoding and reconstructs every field independently",
+      "logSha256": "12f0238bec5301727d34c7c2ac3987b288b4b1ad313e8539186c1976f7aafb36"
+    },
+    {
+      "case": "unbound-part-ranges",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > bounds the actual frozen task encoding and reconstructs every field independently",
+      "logSha256": "3c48b2805747b2b498d910749fc4f3a514103481586d220a6e77c1089fa48560"
+    },
+    {
+      "case": "claim-whole-fragment",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > bounds the actual frozen task encoding and reconstructs every field independently",
+      "logSha256": "8a343d1f4c4fe7978fb3939b596aac2945916ad766407d26bbe3268ee337bb13"
+    },
+    {
+      "case": "wrong-task-bytes",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > bounds the actual frozen task encoding and reconstructs every field independently",
+      "logSha256": "9aa1c8d053b0a84786aaaeb2eed6874dd4cc54ab9438d990b98199bc105141d7"
+    },
+    {
+      "case": "wrong-task-digest",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > bounds the actual frozen task encoding and reconstructs every field independently",
+      "logSha256": "250cbae3cf7aed2743e94a81498d1bcf3459f4c3a9035faff5a6ba7ae54c4ab4"
+    },
+    {
+      "case": "wrong-plan-digest",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > bounds the actual frozen task encoding and reconstructs every field independently",
+      "logSha256": "c63b75dd51c7d7c7bb5b321f5c5316c024babd9f5eecb1633189fbc10ea37546"
+    },
+    {
+      "case": "ignore-task-byte-fit",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > bounds the actual frozen task encoding and reconstructs every field independently",
+      "logSha256": "c144333185c0261c335d6f91cf8fa914b6ad002a5e54c61b79baabf5baec16a2"
+    },
+    {
+      "case": "ignore-expected-limit",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > refuses invalid limits, oversized metadata and changed source authority",
+      "logSha256": "bc0946038b7c619319a703208f1e093e92f90e4428a363025b2776e3d7838135"
+    },
+    {
+      "case": "skip-task-authority",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > refuses invalid limits, oversized metadata and changed source authority",
+      "logSha256": "fb28d4f1afdfd72b44c531f81a71758eab6287789061fbfe5551ecfad46ca078"
+    },
+    {
+      "case": "skip-output-task-digest",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > accepts accounted observations while refusing missing coverage and invented quotes",
+      "logSha256": "ba60b83ce122e61e65013f0ae5d764b81edfd344c11a004447c9a5f3e46f3978"
+    },
+    {
+      "case": "skip-output-task-bytes",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > accepts accounted observations while refusing missing coverage and invented quotes",
+      "logSha256": "df34b9690ca127296de0a0d726d5892dfee37e33283ae880932db0e96bc402d6"
+    },
+    {
+      "case": "allow-duplicate-coverage",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > accepts accounted observations while refusing missing coverage and invented quotes",
+      "logSha256": "a8b90812d836bbc856e367ec4d47879f722020777dbd387340f3b74ea6a5b4ec"
+    },
+    {
+      "case": "allow-unknown-coverage",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > accepts accounted observations while refusing missing coverage and invented quotes",
+      "logSha256": "316d4f37ffdedf8fdd0f62f1b2d2102f53495126befc6dd849d91d3b3e4466e2"
+    },
+    {
+      "case": "allow-incomplete-coverage",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > accepts accounted observations while refusing missing coverage and invented quotes",
+      "logSha256": "ad8ad6f96f91ac72834f4894122305334b72f4486e9844951cd899538c5ad96e"
+    },
+    {
+      "case": "allow-uncovered-citation",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > accepts accounted observations while refusing missing coverage and invented quotes",
+      "logSha256": "ddb6a828e07ec4d9a30edd0064851afcd7efb9c936c2d99e8753dc603f827541"
+    },
+    {
+      "case": "allow-container-citation",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > accepts accounted observations while refusing missing coverage and invented quotes",
+      "logSha256": "b579b7b32305a1a39221c658da137b329bb5ca3d4699d81ba488fea4eec1b282"
+    },
+    {
+      "case": "allow-invented-quote",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > accepts accounted observations while refusing missing coverage and invented quotes",
+      "logSha256": "469e2de66a3a228dd8bfde97aebf183a2ea05bea53013225069ecb582d6956d8"
+    },
+    {
+      "case": "allow-extra-output",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-tasks.test.ts > complete synthesis segment tasks > accepts accounted observations while refusing missing coverage and invented quotes",
+      "logSha256": "d87d9129ccb513f268365f8712fa183e8601a3af9dcc41836a0f80fff84e8b57"
+    }
+  ],
+  "restored": true
+}

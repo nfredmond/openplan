@@ -1,0 +1,286 @@
+{
+  "sourceSha256": "edaee749058e985c9706aa02bf6466efd5dcb85a21949dcb20fe13d9634a1ccf",
+  "cases": [
+    {
+      "case": "baseline",
+      "exit": 0,
+      "expected": "pass",
+      "valid": true,
+      "firstFailure": null,
+      "logSha256": "8ccde36226699942bd353d958352a72a3e880d5121824a942a08a1dae7148870"
+    },
+    {
+      "case": "harmless-comment",
+      "exit": 0,
+      "expected": "pass",
+      "valid": true,
+      "firstFailure": null,
+      "logSha256": "d5bf31f692d35c2952405aa8c0f399e8e72e5867ac2d0b7535700db047db9ca9"
+    },
+    {
+      "case": "skip-attempt-binding",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > rejects source, plan, attempt, backend and result substitution even when self-hashed",
+      "logSha256": "9c1b1ca3c249eac185093176d3f77d3e7cf0ca8eeb98639107499007f62864ad"
+    },
+    {
+      "case": "skip-chronology",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > refuses contradictory captures, invalid chronology and invalid token counts",
+      "logSha256": "006ef7d746754d9877e90310c95a3aff965ef2ea79279551dde406dd3b7f44f8"
+    },
+    {
+      "case": "skip-contradictory-outcome",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > refuses contradictory captures, invalid chronology and invalid token counts",
+      "logSha256": "86217096310a7da1b07664d3ec8dd0d8288cbc31459d13839a75072100b700c2"
+    },
+    {
+      "case": "normalize-original-output",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > preserves original output bytes and unknown metadata, with deterministic exact replay",
+      "logSha256": "c3868b3acbd3ed3aa8088d9eaa4101e1ad1116b576312e7526973e119dc78f69"
+    },
+    {
+      "case": "normalize-provider-receipt",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > preserves original output bytes and unknown metadata, with deterministic exact replay",
+      "logSha256": "f21ecca9f7069dfbeb110146bcefa9a25deb0a3b43ba2817d6625b45205dfbfc"
+    },
+    {
+      "case": "unknown-input-usage-as-zero",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > preserves original output bytes and unknown metadata, with deterministic exact replay",
+      "logSha256": "d97abeb75a6fb2df044e81ea79c74f6c7e4aae8831c064388451a22c2a1dfcbb"
+    },
+    {
+      "case": "unknown-output-usage-as-zero",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > preserves original output bytes and unknown metadata, with deterministic exact replay",
+      "logSha256": "e8a4f1329e42b792caf258a253744b52dee7c5934bd770f16e2dd89a3c3b1844"
+    },
+    {
+      "case": "invalid-token-counts",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > refuses contradictory captures, invalid chronology and invalid token counts",
+      "logSha256": "d223c9d79b7724691697d046f6f5ba26cd77280ead335de3fc5e8cb04e1939d0"
+    },
+    {
+      "case": "accept-unknown-schema",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > refuses contradictory captures, invalid chronology and invalid token counts",
+      "logSha256": "4ad34c472bdbad2889b2baf0176c3113a68dac689bb30bca2b7160d31d8ebe0a"
+    },
+    {
+      "case": "accept-extra-capture-fields",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > refuses contradictory captures, invalid chronology and invalid token counts",
+      "logSha256": "423ad1cd3b7d3ee4e80ef8e0f3b0c78c0ea1da95cca00e25ae2d523e0bbe6e80"
+    },
+    {
+      "case": "skip-capture-integrity",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > rejects source, plan, attempt, backend and result substitution even when self-hashed",
+      "logSha256": "791cdcece092bc42fcfb5aa47dcb9b6446296993acd7109d4f95c8170e843563"
+    },
+    {
+      "case": "skip-source-plan-verification",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > rejects source, plan, attempt, backend and result substitution even when self-hashed",
+      "logSha256": "f248575184d678ba6fb3cb866b7204325d77ba13dbf1fa322f32bfbe4580a23e"
+    },
+    {
+      "case": "skip-job-plan-binding",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > rejects source, plan, attempt, backend and result substitution even when self-hashed",
+      "logSha256": "3fd1339aea264c7eaa80d8a6734b5c21afab7553b857766486cd340888cad400"
+    },
+    {
+      "case": "allow-unknown-selected-task",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > rejects ambiguous selections and original receipts substituted for a new attempt",
+      "logSha256": "e00a22c1bc01b23a3b41ace705f82e1f4fde22c9063f50853df0f73d293c1e49"
+    },
+    {
+      "case": "allow-two-attempts-per-task",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > rejects ambiguous selections and original receipts substituted for a new attempt",
+      "logSha256": "51d4cf45522ad13ff1995ab4b43d7beb7fe051ba1d025314825b43dd2c608c70"
+    },
+    {
+      "case": "allow-shared-attempt-id",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > rejects ambiguous selections and original receipts substituted for a new attempt",
+      "logSha256": "c5e9945867cb62c66a07122addbed1c52434105080b69f8ee5561f00cdc0f0f7"
+    },
+    {
+      "case": "allow-empty-selection-dispatch",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > retains an empty selection without requiring any model attempt",
+      "logSha256": "50819adc0dbfa8902439b4d76d5dbcd5ea0ca5db3108c9fc026546db88c220f3"
+    },
+    {
+      "case": "allow-duplicate-receipt",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > rejects ambiguous selections and original receipts substituted for a new attempt",
+      "logSha256": "4677af8860cb177e8e0b836668b22d53c3b70963b45b9576c8b4b0b1ec97b833"
+    },
+    {
+      "case": "discard-unselected-receipt",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > rejects ambiguous selections and original receipts substituted for a new attempt",
+      "logSha256": "87845431b8fb6052be517f3a38fcfdf8bc12652704a48068a30a6371cee7c20c"
+    },
+    {
+      "case": "trust-receipt-selected-attempt",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > rejects ambiguous selections and original receipts substituted for a new attempt",
+      "logSha256": "81555d020faf6a414adcecc69846a114e053f3f3a3f69b75c8d40a0e32f15c39"
+    },
+    {
+      "case": "cap-assembled-tasks",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > accounts for every task beyond 300 contributions without declaring a completed synthesis",
+      "logSha256": "8e4b16c8de56ef4090b33e0df58ffea38a95644f443fe3ac9e0de6ed0e27b0d9"
+    },
+    {
+      "case": "conflate-unstarted-awaiting",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > distinguishes unstarted, awaiting and missing results without treating them as zero or complete",
+      "logSha256": "b3c579414adf136b2bd02e7de979362648c8d739ad4357cf4400b5c38ce67f63"
+    },
+    {
+      "case": "treat-failed-return-as-success",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > retains failed despite valid JSON without allowing record consolidation",
+      "logSha256": "a9ed9f9867103cb2e01d481f34a13c0ab6d19aa1106d3edf6bfc833a484f04a0"
+    },
+    {
+      "case": "skip-model-output-validation",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > accounts for every task beyond 300 contributions without declaring a completed synthesis",
+      "logSha256": "6064cd999bf6b466892038cd77372bed08eb67fa43b461456bedcdd63cbf2ae9"
+    },
+    {
+      "case": "ignore-provider-finish",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > retains length finish without allowing record consolidation",
+      "logSha256": "7f41085a70d74bd9acba1f90020b4bd909daff18d00a3cdb30c2924f6a512d4b"
+    },
+    {
+      "case": "promote-incomplete-model-output",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > retains declared incomplete without allowing record consolidation",
+      "logSha256": "5d72c5ecab97dfe3119a5c9016d0b3af3553ffca7d1c0ea3e77682e4e92fd3a6"
+    },
+    {
+      "case": "missing-receipt-gets-hash",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > distinguishes unstarted, awaiting and missing results without treating them as zero or complete",
+      "logSha256": "a2b37410af58918725cf5ed6bacb6253898b968732f0b4890bce651722e5ffea"
+    },
+    {
+      "case": "any-task-makes-complete",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > distinguishes unstarted, awaiting and missing results without treating them as zero or complete",
+      "logSha256": "4ec9d195481867ed3cfb5e3d8ec3cf8267ba79f983f2cb60b74005861aa3d163"
+    },
+    {
+      "case": "drop-original-receipts",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > accounts for every task beyond 300 contributions without declaring a completed synthesis",
+      "logSha256": "e846de230ddb51c675b9cc820c0a4d5a60f621e788598bae3800b797e8b3dcf4"
+    },
+    {
+      "case": "invent-assessed-interpretation",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > accounts for every task beyond 300 contributions without declaring a completed synthesis",
+      "logSha256": "96df25b363ddaa70f8d9398f30b891aa9e4a7611526077aeb715ce1d9358c918"
+    },
+    {
+      "case": "drop-contribution-membership",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > accounts for every task beyond 300 contributions without declaring a completed synthesis",
+      "logSha256": "f179970bf0d0bb00cae98764bf46a1b217a57b87b37acecd2facd94851cf1c69"
+    },
+    {
+      "case": "wrong-inventory-digest",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > accounts for every task beyond 300 contributions without declaring a completed synthesis",
+      "logSha256": "7e1794f460b235a15fc08b9be0ad94eb636d1e22983f5943c23630840e18e19d"
+    },
+    {
+      "case": "skip-result-inventory-verification",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > refuses an altered assembled inventory",
+      "logSha256": "ea643b0b8bcd7f8ab46e4f72ff6492e400e7c4ed27c8e52aad0e9f15fc08022d"
+    }
+  ],
+  "restored": true
+}

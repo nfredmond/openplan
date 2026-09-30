@@ -1,0 +1,37 @@
+{
+  "focused": {
+    "passed": 18
+  },
+  "related": {
+    "exit": 0,
+    "passed": 132,
+    "files": 8
+  },
+  "lint": "pass",
+  "typecheck": "pass",
+  "fullQA": "pass; see protocol-checks.json",
+  "shuffled": {
+    "status": "pass; see protocol-checks.json",
+    "seed": 650933
+  },
+  "mutations": {
+    "controls": 2,
+    "targetedFailures": 33,
+    "restored": true,
+    "firstProbe": "Unknown-task fault initially survived because the fixture reused an existing attempt ID; corrected fixture isolates the guard."
+  },
+  "sourceHashes": {
+    "openplan/src/lib/engagement/synthesis-generation-results.ts": "edaee749058e985c9706aa02bf6466efd5dcb85a21949dcb20fe13d9634a1ccf",
+    "openplan/src/test/engagement-synthesis-generation-results.test.ts": "eae092d005351e29dd16bfb476fb450e0c1d15399d5965a888f951d002a0e4d3"
+  },
+  "logs": [
+    {
+      "name": "generation-results-related-tests.log",
+      "sha256": "f616f5ffdcc13e8ae0f3fc3bf42d8b51ff75074cb03daad416fdaf0e79de3026"
+    },
+    {
+      "name": "generation-results-typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "fullQA": {
+    "exit": 0,
+    "passed": 16022,
+    "skipped": 828,
+    "filesPassed": 1349,
+    "filesSkipped": 61,
+    "productionBuild": "passed",
+    "dependencyVulnerabilities": 0,
+    "liveDatabase": "explicitly skipped; no native writes or migrations changed"
+  },
+  "shuffled": {
+    "exit": 0,
+    "seed": 650933,
+    "passed": 16022,
+    "skipped": 828
+  },
+  "logs": [
+    {
+      "name": "generation-protocol-full-qa.log",
+      "sha256": "222d0e04a222f0f90748167c7f2f0ce0176008d10a6028aaa4841c3a952b21fb"
+    },
+    {
+      "name": "generation-protocol-shuffle.log",
+      "sha256": "a879b3039fbdfa7527a47efe76935940b3cd901555e50f26b95521e660d19a96"
+    }
+  ]
+}

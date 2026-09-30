@@ -1,0 +1,126 @@
+{
+  "sourceSha256": "d1b04eecb323a96cd81ee0ceef446435c0c85e2405944959001bf9f621e7d6d8",
+  "cases": [
+    {
+      "case": "baseline",
+      "exit": 0,
+      "expected": "pass",
+      "valid": true,
+      "firstFailure": null,
+      "logSha256": "2ce5ea8ed7f7768d7421106bb7145fb94a1dba17c0d0b0681f089db9c3833751"
+    },
+    {
+      "case": "harmless-comment",
+      "exit": 0,
+      "expected": "pass",
+      "valid": true,
+      "firstFailure": null,
+      "logSha256": "749d0ee105565d23e900ce63262eea7d1718e29f5403610be7cf702d41996773"
+    },
+    {
+      "case": "skip-attempt-binding",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > rejects source, plan, attempt, backend and result substitution even when self-hashed",
+      "logSha256": "4f828717193722d2a09dbf9f7cfd85664fbb1240f23ffe9dd8802f0a5081dbe1"
+    },
+    {
+      "case": "skip-chronology",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > refuses contradictory captures, invalid chronology and invalid token counts",
+      "logSha256": "86a94b0201c49a20493e79cc751fd2b2b4defdb9e00c5c17d458e5f58bde77a8"
+    },
+    {
+      "case": "skip-contradictory-outcome",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > refuses contradictory captures, invalid chronology and invalid token counts",
+      "logSha256": "8b91fc5d706df86528fcdd39b5045935542cdceaa8764409cd16580adb3f757b"
+    },
+    {
+      "case": "normalize-original-output",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > preserves original output bytes and unknown metadata, with deterministic exact replay",
+      "logSha256": "da5c2c8cc2853142f01266ceab48d678ebd92835e8d021fb81d413c51e671d0f"
+    },
+    {
+      "case": "unknown-input-usage-as-zero",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > preserves original output bytes and unknown metadata, with deterministic exact replay",
+      "logSha256": "3c68c20aa8964dea054d451428c5dfc3744a3daa01058ce351d0d3a40485b27b"
+    },
+    {
+      "case": "unknown-output-usage-as-zero",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > preserves original output bytes and unknown metadata, with deterministic exact replay",
+      "logSha256": "3937b10de456dd888dfc97f1a881b0affaaaff77d9458b1b70595671bc429039"
+    },
+    {
+      "case": "invalid-token-counts",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > refuses contradictory captures, invalid chronology and invalid token counts",
+      "logSha256": "6da15693c68ba7f26597c22396ed2d890b66c6da4d1938ae6b7858a9e9641fd7"
+    },
+    {
+      "case": "accept-unknown-schema",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > refuses contradictory captures, invalid chronology and invalid token counts",
+      "logSha256": "80b3f6c1411acefb2c68533cd4a6648b066ecebad3ee82441d2330cd5138909c"
+    },
+    {
+      "case": "accept-extra-capture-fields",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > refuses contradictory captures, invalid chronology and invalid token counts",
+      "logSha256": "99cf1a6a2433d7961d6c091f55f69cd794bede8404adca7bb27ac933de641769"
+    },
+    {
+      "case": "skip-capture-integrity",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > rejects source, plan, attempt, backend and result substitution even when self-hashed",
+      "logSha256": "0ecb1560e070452e60421028dbd6c505c31dfb800f342ce93a6800f5ebcb8df7"
+    },
+    {
+      "case": "skip-source-plan-verification",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > rejects source, plan, attempt, backend and result substitution even when self-hashed",
+      "logSha256": "efadfb715262ff292e44183d8bf407880875b0550c0dd58b780860d51e666b73"
+    },
+    {
+      "case": "skip-job-plan-binding",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-results.test.ts > retained synthesis task result accounting > rejects source, plan, attempt, backend and result substitution even when self-hashed",
+      "logSha256": "3cf057aa8d3944d4fc1ecaecc37f37758070be183ecd493a0703a2dfe60d2886"
+    },
+    {
+      "case": "allow-unknown-selected-task",
+      "exit": 0,
+      "expected": "named test failure",
+      "valid": false,
+      "firstFailure": null,
+      "logSha256": "d7ed36bc9bde403f6d10088d6171aa7519051e10f6c76f9ccce825ae8ed38531"
+    }
+  ],
+  "restored": true
+}

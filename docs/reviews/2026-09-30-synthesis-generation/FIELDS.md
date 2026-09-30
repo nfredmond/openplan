@@ -15,3 +15,5 @@ The focused field suite passes 12 tests. Combined source, input, record and fiel
 [Full QA and shuffled checks](fields-checks.json) pass with 16,000 tests passing and 828 explicit skips across 1,347 passing files. The shuffle seed is 650932. QA also passes lint, configured dead-code checks, 382 provider connector tests, a zero-vulnerability dependency audit and the production build with TypeScript. Ordinary QA skips the opt-in live database gate. The preceding record checkpoint passes GitHub CI and live RLS isolation; this extension changes no database writes or schema.
 
 These checks cover preservation and structural identity. They cannot establish interpretation quality, provider context fit, complete model reasoning, durable job recovery, disclosure or staff acceptance. The implementation holds complete source data in memory. It does not stream, generate, approve or publish a synthesis. The [generation boundary](../2026-09-27-synthesis-response-links/NEXT_GENERATION_BOUNDARY.md) remains open.
+
+The [segment-task implementation](TASKS.md) continues this work without enabling model dispatch.

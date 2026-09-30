@@ -1,0 +1,35 @@
+{
+  "related": {
+    "exit": 0,
+    "passed": 114,
+    "files": 7
+  },
+  "lint": "pass",
+  "typecheck": "pass",
+  "fullQA": "pass; see protocol-checks.json",
+  "mutations": {
+    "controls": 2,
+    "targetedFailures": 28,
+    "observedSurvivors": 1,
+    "restored": true,
+    "survivor": "Removing surrogate adjustment did not break tested JSON fragments; forced split failed well-formedness assertion."
+  },
+  "sourceHashes": {
+    "openplan/src/lib/engagement/synthesis-generation-tasks.ts": "233baa6fe56550264b97eedfbb3cb42a0588e94b38dd965a56a30c50a4ec9aa9",
+    "openplan/src/test/engagement-synthesis-generation-tasks.test.ts": "fa30c1c67b5cf7dea42eab6e9de8cd316bb20076bfc35f1de390aeea2e178e0d"
+  },
+  "logs": [
+    {
+      "name": "generation-tasks-related-tests.log",
+      "sha256": "f9f1748a0cf5dcf9589ddb9712bc4413d9ccee8a6f3a983061c45acd94de1f26"
+    },
+    {
+      "name": "generation-tasks-typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "shuffled": {
+    "status": "pass; see protocol-checks.json",
+    "seed": 650933
+  }
+}
