@@ -174,5 +174,9 @@
   "work_program_management_command(uuid,uuid,jsonb)",
   "work_program_period_closure_command(uuid,uuid,jsonb)",
   "work_program_reimbursement_command(uuid,uuid,jsonb)",
-  "work_program_revision_review_boundary()"
+  "work_program_revision_review_boundary()",
+  "lock_synthesis_generation_request_scope(uuid,uuid)",
+  "read_engagement_synthesis_generation_request(uuid,uuid)",
+  "create_engagement_synthesis_generation_request(uuid,uuid,text)",
+  "cancel_engagement_synthesis_generation_request(uuid,uuid,uuid,text)"
 ]

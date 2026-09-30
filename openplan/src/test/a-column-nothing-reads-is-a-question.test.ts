@@ -73,6 +73,10 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "engagement_synthesis_generation_requests.intent_text", category: "READ_IN_SQL", reason: "Native synthesis request creation compares exact intent bytes on retries; the private reader returns those original bytes. No generation interface is enabled yet." },
+  { column: "engagement_synthesis_generation_requests.intent_sha256", category: "READ_IN_SQL", reason: "The private native synthesis request reader returns the generated checksum with exact original intent text; installed custody fixtures verify their agreement." },
+  { column: "engagement_synthesis_generation_requests.configuration_revision_id", category: "READ_IN_SQL", reason: "The foreign key retains the selected API revision for the immutable request. Native creation validates the revision and records the same identity in the retained intent." },
+  { column: "engagement_synthesis_generation_cancellations.receipt_text", category: "READ_IN_SQL", reason: "Native cancellation compares the original reason on retry, and the private request reader returns exact retained cancellation text and its checksum." },
   { column: "engagement_synthesis_response_events.event_text", category: "READ_IN_SQL", reason: "Private packet and history functions return the original event bytes. Browser and server readers verify their checksum before displaying retained evidence." },
   { column: "engagement_synthesis_response_events.intent_json", category: "READ_IN_SQL", reason: "The writer compares the complete stored command before returning an exact retry. It includes actor, reason, scope and predecessor bindings." },
   { column: "engagement_synthesis_response_events.predecessor_sha256", category: "READ_IN_SQL", reason: "The composite predecessor foreign key reads this hash with the earlier event identity, enforcing exact predecessor custody independently of application checks." },

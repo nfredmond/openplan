@@ -501,10 +501,12 @@ const EXPECTED = {
   // Migration 28 adds one private approval-event table, with RLS and no client policies.
   // Migration 29 adds private response-link events and normalized members.
   // Native catalog: 258 RLS tables, 14 application views; no new policies.
-  relations: 272,
-  tables: 258,
+  // 20261014000033 adds two private immutable synthesis request/cancellation tables.
+  // Live catalog confirms RLS enabled with no policies on both.
+  relations: 274,
+  tables: 260,
   views: 14,
-  rlsEnabledTables: 258,
+  rlsEnabledTables: 260,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

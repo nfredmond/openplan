@@ -1,0 +1,83 @@
+{
+  "results": [
+    {
+      "name": "harmless comments",
+      "expected": "survive",
+      "exit": 0,
+      "matched": true,
+      "log": "00.log",
+      "logSha256": "ca15cc7c6e8c270913234669019066fb9741bded89e2701220ed3c8c43e4bd2c"
+    },
+    {
+      "name": "relations missing table",
+      "expected": "fail assertion",
+      "exit": 1,
+      "matched": true,
+      "log": "01.log",
+      "logSha256": "7da3be4c015fee9c44729c1e40d57b667b441119966a46d98239e2d147fe1deb"
+    },
+    {
+      "name": "tables missing table",
+      "expected": "fail assertion",
+      "exit": 1,
+      "matched": true,
+      "log": "02.log",
+      "logSha256": "6d57e36ff10c16bce46d4b1e35b750f6a6264aa9d28350ac108c3ad5ca7f96cc"
+    },
+    {
+      "name": "rlsEnabledTables missing table",
+      "expected": "fail assertion",
+      "exit": 1,
+      "matched": true,
+      "log": "03.log",
+      "logSha256": "7f31f36c3d2bcb6795ea9e7525e2be55b7e901db55765b925634b46c616424c0"
+    },
+    {
+      "name": "engagement_synthesis_generation_requests.intent_text unaccounted",
+      "expected": "fail assertion",
+      "exit": 1,
+      "matched": true,
+      "log": "04.log",
+      "logSha256": "90426e96714f1ce3d178b7ef9fb4e0527f96bc201514fbde7ea5df9765ceaced"
+    },
+    {
+      "name": "engagement_synthesis_generation_requests.intent_sha256 unaccounted",
+      "expected": "fail assertion",
+      "exit": 1,
+      "matched": true,
+      "log": "05.log",
+      "logSha256": "0763a62953db62a34f195c0d12e8ff40466aee614c8cdba21e52b2729dc18a1b"
+    },
+    {
+      "name": "engagement_synthesis_generation_requests.configuration_revision_id unaccounted",
+      "expected": "fail assertion",
+      "exit": 1,
+      "matched": true,
+      "log": "06.log",
+      "logSha256": "8599f2967cfa02dd73e1a8f4863e0c71f5673185bfcc18f8bc4601a6c8ccd926"
+    },
+    {
+      "name": "engagement_synthesis_generation_cancellations.receipt_text unaccounted",
+      "expected": "fail assertion",
+      "exit": 1,
+      "matched": true,
+      "log": "07.log",
+      "logSha256": "268d360dc81f3fa146d86cfb69bbff2c05f8c452bff460b955f3047e9be059e0"
+    },
+    {
+      "name": "missing operator migration",
+      "expected": "fail assertion",
+      "exit": 1,
+      "matched": true,
+      "log": "08.log",
+      "logSha256": "53f8bdceecf595a6239c5ccdd9a9187f25ed66fb8873ce6e1d7179383070ba1b"
+    }
+  ],
+  "restored": true,
+  "sha256": {
+    "openplan/src/test/migrations/inventory.test.ts": "efe3a43a75860dba96d835274b16ffa79b39595374b95db316667c1de8146930",
+    "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts": "d26806c8ca0659cc5447bc151bcf58ebf500f160f96ad9f562061f050b9a3248",
+    "CHANGELOG.md": "85a04a6b88a34021e714607ba3c29cafa6cec837247169b7a553509479b29548"
+  },
+  "logLocation": "Local private verification directory; logs are not included in this repository."
+}

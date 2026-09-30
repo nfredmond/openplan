@@ -20,6 +20,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Private native synthesis requests now retain exact source and saved API revision
+references, original request bytes and cancellation receipts. Exact retries recover
+the original after a configuration change or cancellation. A cancellation received
+before creation prevents late creation. This remains internal preparation; it does
+not authorize or dispatch provider calls or enable a generation interface.
+Apply `20261014000033_engagement_synthesis_generation_requests.sql` before using
+the new native request commands.
+
 Internal preparation for resumable engagement synthesis preserves complete saved
 source bytes across verified input frames. It includes every selected contribution
 and retains original numeric values, long text and historical definitions.

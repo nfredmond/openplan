@@ -1,0 +1,131 @@
+{
+  "date": "2026-09-30",
+  "baseCommit": "bddcd9f1c21e28a735a74ed44658559bd8e6ab6b",
+  "scope": "Internal native synthesis request custody; no provider dispatch or generation interface",
+  "checks": {
+    "qa": {
+      "exit": 0,
+      "passed": 16022,
+      "skipped": 868,
+      "filesPassed": 1349,
+      "filesSkipped": 62,
+      "build": "passed",
+      "dependencyVulnerabilities": 0
+    },
+    "shuffle": {
+      "exit": 0,
+      "seed": 650934,
+      "passed": 16022,
+      "skipped": 868
+    },
+    "rls": {
+      "exit": 0,
+      "passed": 772,
+      "skipped": 125,
+      "files": 69,
+      "seconds": 1016.38,
+      "newRequestSuiteTests": 40
+    },
+    "typecheck": {
+      "exit": 0,
+      "heapMiB": 6144,
+      "initialDefaultHeapRun": "exhausted heap, not passed"
+    },
+    "changedFileLint": "passed",
+    "integrationMutationProof": {
+      "controlSurvivors": 1,
+      "targetedFailures": 8,
+      "restored": true
+    },
+    "nativeRequestProof": {
+      "baseline": 1,
+      "harmlessCommentControl": 1,
+      "unrelatedLockControl": 1,
+      "sameRequestContention": 1,
+      "knownRedundantGuardSurvivor": 1,
+      "targetedFailures": 35,
+      "restored": true
+    }
+  },
+  "sourceHashes": {
+    "openplan/supabase/migrations/20261014000033_engagement_synthesis_generation_requests.sql": "37b3b347111d9858bac1d39c61cae64461ec240acd8498dd50f91d59d937720a",
+    "openplan/src/test/engagement-synthesis-generation-requests-rls.test.ts": "491a2442a8a1d13ec648fc686a554504820cf5df9b02954714c2f883415e1903",
+    "openplan/src/test/fixtures/engagement/synthesis-generation-requests.sql": "d1f89959d2c3093486ada1dc0ad79ed123a73a54121b60cc139a0445a8b10229",
+    "openplan/src/test/fixtures/application-trusted-search-paths.json": "93bce230c7c28cef7b88d5b57b5d4d460c55dae156e5fb7f287faafba3baaf91",
+    "openplan/package.json": "7232f5d6f05c1b7c2eccb1625af2a633dc83ec877f1fe04e3657a4d0aa5075d9",
+    "openplan/src/test/migrations/inventory.test.ts": "efe3a43a75860dba96d835274b16ffa79b39595374b95db316667c1de8146930",
+    "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts": "d26806c8ca0659cc5447bc151bcf58ebf500f160f96ad9f562061f050b9a3248",
+    "CHANGELOG.md": "85a04a6b88a34021e714607ba3c29cafa6cec837247169b7a553509479b29548"
+  },
+  "installedFunctions": {
+    "sourceMatchesInstalled": true,
+    "trustedPaths": true,
+    "functions": {
+      "cancel_engagement_synthesis_generation_request": "8001702052ca0469297cfbce853df99f3afc9f7db30df9718b6734e966a92ebd",
+      "create_engagement_synthesis_generation_request": "c423b4ec5e84f0e1979d9d4a2ad02010a7f0fb1ec057fa7724a24f92fe1ff5ce",
+      "lock_synthesis_generation_request_scope": "328360593e4195f11e5ce8a5320323900a4bbf3c3e9c1c84fbf21efbd4862104",
+      "read_engagement_synthesis_generation_request": "9c93a8deca57c7dd4e4c6207bfc232b4205d8ef5ee916e737c6b9781acb055c6"
+    }
+  },
+  "logs": [
+    {
+      "name": "generation-native-first-probe.log",
+      "sha256": "80aade0136f816dd47379134386ed530119876f712796d43a1ac798ac895d791"
+    },
+    {
+      "name": "generation-native-candidate.log",
+      "sha256": "58ab13f77cc176bb7fe0dc7f4f41f720001734a009d807bded18478aa8bc123c"
+    },
+    {
+      "name": "generation-native-absent-actor-probe.log",
+      "sha256": "53d60249cf54850709ea2f286bc96c6cc5dd31dbff454e9018bf69bd64b8e45f"
+    },
+    {
+      "name": "generation-native-absent-actor-regression.log",
+      "sha256": "a666ffa0ad42480821f05b0b1cdbd7be147396e1c2d8eaece2419d934d061d9c"
+    },
+    {
+      "name": "generation-native-corrected-focused.log",
+      "sha256": "322e07375dbb14875104466745c3807097279e35d7622201377edced2c9673f1"
+    },
+    {
+      "name": "generation-native-corrected-qa.log",
+      "sha256": "25cdb2630e3d4165c1caccf4dd67ce509f0182eab8e50f3581a0e918dd23d1cf"
+    },
+    {
+      "name": "generation-native-final40-shuffle.log",
+      "sha256": "a04c95ddd9c78284349b70755244064054492d39a11147f6cc2fe3be10e3eabb"
+    },
+    {
+      "name": "generation-native-corrected-rls.log",
+      "sha256": "c829a00618cf5f1704ef170e73b22419b7b52b225af2e79805892f785b2f7213"
+    },
+    {
+      "name": "generation-native-typecheck.log",
+      "sha256": "e93da8a0cad5484878894db1f1ec8b3f8d83421f138b812923a9031523b276f2"
+    },
+    {
+      "name": "generation-native-typecheck-6144.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "generation-native-final-changed-lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "generation-native-migration-up.log",
+      "sha256": "71aaf7aa9662cdc017cf5b4a7993262bfa104fbc6ddc4c73b28f2775f4597985"
+    },
+    {
+      "name": "generation-native-function-correction.log",
+      "sha256": "5cc33a5b7c890b03ba2c8b67437ae3dbe5f94bfb4c163defb7b8e717d099a64d"
+    }
+  ],
+  "logLocation": "Private local verification directory; raw logs are not included in this repository.",
+  "limits": [
+    "No provider calls, budget authorization, worker execution or browser generation workflow.",
+    "Original output custody, context consolidation, staff import and installed campaign provider dispatch remain incomplete.",
+    "Synthetic database checks do not establish live model usefulness or human interpretation.",
+    "Final GitHub CI and populated upgrade checks follow the main push; no new release is declared."
+  ]
+}
