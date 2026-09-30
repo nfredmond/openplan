@@ -20,21 +20,39 @@ The worker-generated PDFs use short source destinations and have no extraction
 warnings. Native and application checks preserve earlier packet formats and
 separate missing historical evidence from captured empty history.
 
-Apply migrations 29 and 30 before restarting the application:
+Apply migrations 29 through 31 before restarting the application:
 
 - `20261014000029_engagement_synthesis_response_links.sql`
 - `20261014000030_engagement_decision_synthesis_history.sql`
+- `20261014000031_engagement_decision_resolution_guard.sql`
 
-The release candidate records 349 migrations through migration 30. No database
+The release candidate records 350 migrations through migration 31. No database
 reset, new provider key, new worker or paid service is required. The existing
 Documents export worker prepares queued files. The isolated populated upgrade
 retains counts and checksums; the final populated release-upgrade workflow and
 exact final CI must still pass before tagging.
 
+## Cancelled-request regression repaired
+
+The full native run caught seven failures after migration 30. Its replacement
+writer omitted the existing cancelled-request check from migration 22. An absent
+request that staff had already resolved could arrive later and create a link.
+Migration 31 restores that check after exact saved-receipt replay and before new
+capture locks. Earlier migration files remain unchanged.
+
+[Cancellation repair proof](decision-cancellation-proof.json) records the
+before-repair failure, repaired baseline, harmless comment control and deliberate
+guard removal. Both defective cases fail with the expected late-request message.
+The installed recovery and decision-link suites pass all 16 tests. The isolated
+upgrade preserves counts and checksums for 3,350 rows across nine named tables.
+These checks cover database behavior and those retained records. They do not
+prove browser navigation or file usability.
+
 ## Checks still being completed
 
-Full QA, shuffled tests, installed RLS, final identified production journeys,
-release accounting and final CI remain to be recorded here. All 52 Python worker
+Full QA and shuffled tests passed at c5e11856 with 15,951 tests passing and
+821 explicit skips. They are being repeated after the additive repair. Full
+installed RLS, final identified production journeys and final CI remain open. All 52 Python worker
 suites pass at the display checkpoint. The first full QA run found eight stale
 column-audit entries after export field names entered the application source.
 That run has one failure, 15,950 passes and 821 explicit skips.

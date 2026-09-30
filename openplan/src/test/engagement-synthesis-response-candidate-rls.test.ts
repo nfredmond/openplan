@@ -992,7 +992,10 @@ describe.skipIf(!LIVE_RLS || CANDIDATE_RLS)("installed synthesis response links"
 });
 
 // Preactivation probes opt in explicitly; normal live QA requires the installed migration.
-const decisionSynthesisMigration = readFileSync("supabase/migrations/20261014000030_engagement_decision_synthesis_history.sql", "utf8");
+const decisionSynthesisMigration = [
+  "20261014000030_engagement_decision_synthesis_history.sql",
+  "20261014000031_engagement_decision_resolution_guard.sql",
+].map(name => readFileSync(`supabase/migrations/${name}`, "utf8")).join("\n");
 const DECISION_SYNTHESIS_CANDIDATE = process.env.OPENPLAN_DECISION_SYNTHESIS_CANDIDATE === "1";
 const decisionSynthesisSetup = DECISION_SYNTHESIS_CANDIDATE ? decisionSynthesisMigration : "";
 async function decisionSynthesisScenario(sql = decisionSynthesisSetup) {

@@ -476,8 +476,8 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
   },
   {
     tag: "0.64.0",
-    lastMigration: "20261014000030_engagement_decision_synthesis_history.sql",
-    migrationsAtRelease: 349,
+    lastMigration: "20261014000031_engagement_decision_resolution_guard.sql",
+    migrationsAtRelease: 350,
   },
 ];
 

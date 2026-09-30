@@ -1,0 +1,90 @@
+{
+  "repair": "20261014000031_engagement_decision_resolution_guard.sql",
+  "before": {
+    "fullNativeFailures": 7,
+    "fullNativePasses": 718,
+    "skippedHistoricalCandidates": 125,
+    "reason": "Resolved request arrived late: expected PT409, observed success"
+  },
+  "transactionControls": [
+    {
+      "case": "before",
+      "exit": 3,
+      "valid": true
+    },
+    {
+      "case": "repair",
+      "exit": 0,
+      "valid": true
+    },
+    {
+      "case": "harmless-comment",
+      "exit": 0,
+      "valid": true
+    },
+    {
+      "case": "removed-guard",
+      "exit": 3,
+      "valid": true
+    }
+  ],
+  "installed": {
+    "testsPassed": 16,
+    "filesPassed": 2,
+    "cancelledRequestFaultCaught": true,
+    "exactSavedReplayPreserved": true
+  },
+  "retainedTables": [
+    {
+      "table": "engagement_closeloop_entries",
+      "count": 3148,
+      "sha256": "0ce83f5d344642bc8fc3821bc9994589ccaff5304bbabb7aca6c6dbc9c5ace5d"
+    },
+    {
+      "table": "engagement_decision_request_resolutions",
+      "count": 21,
+      "sha256": "317014b85ac481b2cf07765a819dc2d0a630e4c9ad4c857148e6904fa81ace69"
+    },
+    {
+      "table": "engagement_response_decision_links",
+      "count": 40,
+      "sha256": "7aecb084861e0ab8470d7784a45e6ef825a3636acc22425a0a2e2cb9008041fc"
+    },
+    {
+      "table": "engagement_synthesis_approval_events",
+      "count": 20,
+      "sha256": "69c8d4451a512598c87769638a281acc7710a9f0baa04d6740b4bf85225ac648"
+    },
+    {
+      "table": "engagement_synthesis_response_events",
+      "count": 15,
+      "sha256": "c2582e28ebe33223e8b74fdfa78fd4d00b16e46cdc59ad5f6294684459645a81"
+    },
+    {
+      "table": "engagement_synthesis_response_members",
+      "count": 15,
+      "sha256": "8781e1bb45265dfd016aadfc476587845f1e356e153acf53a0a945bf895c66f0"
+    },
+    {
+      "table": "engagement_synthesis_review_revisions",
+      "count": 48,
+      "sha256": "f1114def76c6d353e9ae36a74d5ee9180b7dca39e07d15f5dbdfe46411ec2f43"
+    },
+    {
+      "table": "engagement_synthesis_reviews",
+      "count": 17,
+      "sha256": "e3bd4c00a66a8ecc1eb6b2b833371ce5cce711ba50262d7f885bb4ec6f55641e"
+    },
+    {
+      "table": "engagement_synthesis_sources",
+      "count": 26,
+      "sha256": "c4d1ebe467f52280650dc99598d95ec617748102fae9a1fbc744d75122b0c3c0"
+    }
+  ],
+  "retainedRows": 3350,
+  "unchanged": true,
+  "blindCategories": [
+    "Native fixtures do not prove browser navigation or downloaded file usability.",
+    "The retained-row comparison covers the nine named tables, not every database table."
+  ]
+}
