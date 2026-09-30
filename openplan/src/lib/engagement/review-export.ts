@@ -6,6 +6,7 @@ import { escapeCsvField } from "@/lib/export/csv";
 import { readStoredEngagementGeometry } from "./geometry";
 import { readDecisionLinkHistory, type VerifiedDecisionLink } from "./decision-links";
 import { verifyDecisionSynthesisSources } from "./decision-synthesis-history-server";
+import { decisionSynthesisReport, decisionSynthesisExportRows, decisionSynthesisCoverageFields, decisionSynthesisEventFields, decisionSynthesisMemberFields } from "./decision-synthesis-export";
 
 type RecordData = Record<string, unknown>;
 export type EngagementReviewSnapshot = {
@@ -143,6 +144,7 @@ export function campaignQuestionSummary(snapshot: EngagementReviewSnapshot) {
 function decisionHistoryHtml(snapshot: EngagementReviewSnapshot): string {
   if (snapshot.scope !== "internal") return "";
   if (snapshot.schema === 1) return '<h2 id="decision-history">Decision history unavailable in this saved format</h2><p>This earlier internal snapshot did not retain decision-link history. This is missing evidence, not a count of zero. Prepare a new internal review to capture the history now available; the earlier files remain unchanged.</p>';
+  const synthesis = decisionSynthesisReport(snapshot.decisionLinks, { escape, narrative: reportNarrative });
   return `<h2 id="decision-history">Private decision history</h2><p>${snapshot.decisionLinks.length} saved actions across the entire consultation, including original links, refreshed evidence and withdrawals. The contribution status, category and date filters above do not filter this history. These are the exact versions reviewed at each action, not current project or response content. A recorded link does not establish approval, implementation or representative public support. Full original context and definitions remain in the workbook and portable snapshot.</p>${snapshot.decisionLinks.map(row => {
     const context = row.context;
     return `<article class="entry"><h3>${escape(row.operation === "link" ? "Original link" : row.operation === "refresh" ? "Refreshed evidence" : "Withdrawn link")} · ${escape(context.decision.title)}</h3>
@@ -152,9 +154,9 @@ function decisionHistoryHtml(snapshot: EngagementReviewSnapshot): string {
     <h4>Retained decision rationale</h4>${reportNarrative(context.decision.rationale,row.id)}
     <h4>Retained staff response</h4><p>${escape(context.response.theme_title)} · ${escape(context.response.status)} · revision ${context.responseHistory.revision}</p>
     <h4>You said</h4>${reportNarrative(context.response.you_said,row.response_id)}<h4>Agency response</h4>${reportNarrative(context.response.we_did,row.response_id)}
-    <h4>Retained source contributions</h4>${context.sources.map(source=>`<section><p class="meta">Source ${source.position}: ${escape(source.itemId)} | ${source.availability} | original configuration ${source.configurationAvailability}</p>${source.record ? `<h4>${escape(source.record.title)}</h4>${reportNarrative(source.record.body,source.itemId)}` : '<p>Source content was unavailable when this evidence was saved.</p>'}</section>`).join('') || '<p>No source contributions were linked to this retained response.</p>'}
-    <p class="meta">Original configuration definitions: ${context.configurations.map(definition=>`${escape(definition.id)} / SHA-256 ${definition.definitionSha256}`).join('; ') || 'None retained'}</p></article>`;
-  }).join('')}`;
+    <h4>Direct contribution references</h4>${context.sources.map(source=>`<section><p class="meta">Source ${source.position}: ${escape(source.itemId)} | ${source.availability} | original configuration ${source.configurationAvailability}</p>${source.record ? `<h4>${escape(source.record.title)}</h4>${reportNarrative(source.record.body,source.itemId)}` : '<p>Source content was unavailable when this evidence was saved.</p>'}</section>`).join('') || '<p>No direct contribution references were linked to this retained response.</p>'}
+    <p class="meta">Original configuration definitions: ${context.configurations.map(definition=>`${escape(definition.id)} / SHA-256 ${definition.definitionSha256}`).join('; ') || 'None retained'}</p>${synthesis.sections.get(row.id) ?? ''}</article>`;
+  }).join('')}${synthesis.appendix}`;
 }
 
 export function buildCampaignReviewHtml(snapshot: EngagementReviewSnapshot, checksum: string, photos: Map<string,Buffer> = new Map()): string {
@@ -163,11 +165,11 @@ export function buildCampaignReviewHtml(snapshot: EngagementReviewSnapshot, chec
   const counts = ["pending","flagged","approved","rejected"].map((state) => `<tr><th>${state === 'approved' ? 'Published' : state === 'rejected' ? 'Withheld' : state}</th><td>${snapshot.items.filter((row)=>row.status===state).length}</td></tr>`).join('');
   const context = snapshot.definitions.find((row) => row.id === snapshot.campaign.configurationVersionId)?.definition.campaign;
   return `<!doctype html><html><head><meta charset="utf-8"><title>${escape(snapshot.campaign.title)} engagement review</title><style>
-  @page{size:A4;margin:18mm}*{box-sizing:border-box}body{font-family:"Noto Sans",Arial,sans-serif;font-size:10pt;line-height:1.5;color:#182f36}h1{font-size:27pt;line-height:1.15}h2{font-size:17pt;border-bottom:2px solid #136b73;padding-bottom:6px;margin-top:24px}h3{font-size:12pt}p,td,th{overflow-wrap:anywhere;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{padding:6px;border-bottom:1px solid #ccd6d8;text-align:left}thead{display:table-header-group}svg{width:100%;height:auto}figure{break-inside:avoid;margin:16px 0}figcaption,.meta{font-size:8pt;color:#4a626a}.map-detail{break-inside:avoid}.entry>.meta{break-after:avoid}.entry{border-top:1px solid #ccd6d8;padding:12px 0}h2,h3,h4{break-after:avoid}.narrative-part{break-inside:avoid}.definitions{break-before:page}.version{break-before:page}.version:first-of-type{break-before:auto}.question-summary{table-layout:fixed;font-size:8pt}.question-summary th{overflow-wrap:normal;white-space:normal}.question-summary th:first-child{width:35%}.badge{color:#136b73;font-weight:bold}img{max-width:100%;max-height:220px;object-fit:contain}</style></head><body>
+  @page{size:A4;margin:18mm}*{box-sizing:border-box}body{font-family:"Noto Sans",Arial,sans-serif;font-size:10pt;line-height:1.5;color:#182f36}h1{font-size:27pt;line-height:1.15}h2{font-size:17pt;border-bottom:2px solid #136b73;padding-bottom:6px;margin-top:24px}h3{font-size:12pt}h1,h2,h3,h4,li{overflow-wrap:anywhere}p,td,th{overflow-wrap:anywhere;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{padding:6px;border-bottom:1px solid #ccd6d8;text-align:left}thead{display:table-header-group}svg{width:100%;height:auto}figure{break-inside:avoid;margin:16px 0}figcaption,.meta{font-size:8pt;color:#4a626a}.map-detail{break-inside:avoid}.entry>.meta{break-after:avoid}.entry{border-top:1px solid #ccd6d8;padding:12px 0}h2,h3,h4{break-after:avoid}.narrative-part{break-inside:avoid}.definitions{break-before:page}.version{break-before:page}.version:first-of-type{break-before:auto}.question-summary{table-layout:fixed;font-size:8pt}.question-summary th{overflow-wrap:normal;white-space:normal}.question-summary th:first-child{width:35%}.badge{color:#136b73;font-weight:bold}img{max-width:100%;max-height:220px;object-fit:contain}</style></head><body>
   <p class="badge">${snapshot.scope.toUpperCase()} REVIEW COPY</p><h1>${escape(snapshot.campaign.title)}</h1><p>${escape(snapshot.campaign.summary)}</p>
   <p>Campaign snapshot ${escape(snapshot.capturedAt)}. This report describes received participation. Publication and a reviewed staff response are separate facts. Participation is not a representative survey of the population.</p>
   <p class="meta">Campaign ${escape(snapshot.campaign.id)}<br>Snapshot SHA-256 ${checksum}<br>Filters ${escape(JSON.stringify(snapshot.filters))}</p>
-  <nav><a href="#summary">Participation summary</a> · <a href="#questions">Question summary</a> · <a href="#contributions">Contribution register</a> · <a href="#answers">Survey answers</a> · <a href="#responses">Staff responses</a> · <a href="#definitions">Historical definitions</a></nav>
+  <nav><a href="#summary">Participation summary</a> · <a href="#questions">Question summary</a> · <a href="#contributions">Contribution register</a> · <a href="#answers">Survey answers</a> · <a href="#responses">Staff responses</a> · <a href="#definitions">Historical definitions</a>${snapshot.scope === "internal" ? ' · <a href="#decision-history">Decision history</a>' : ""}</nav>
   <h2>Campaign context</h2><p>${escape(context?.instructions ?? 'Historical campaign instructions unavailable.')}</p><p>Study area: ${escape(context?.place_label ?? 'Not supplied')}. Participation opens: ${escape(context?.participation_starts_at ?? 'No scheduled start')}. Closes: ${escape(context?.participation_ends_at ?? 'No scheduled end')}.</p>
   <h2 id="summary">Selected participation</h2><p>${snapshot.items.length} contributions, ${snapshot.sessions.length} survey sessions, ${snapshot.answers.length} recorded answers and ${snapshot.responses.length} reviewed staff response entries. Category filters apply to contributions and answers; survey sessions retain their own scope and dates. Missing answers are not zero answers.</p><table><tbody>${counts}</tbody></table><p>${missing} contributions have unavailable historical configuration. No current question or category has been substituted for their original definition.</p>
   <h2 id="questions">Question summary</h2><p>Each row uses the questions available to that session's retained configuration. Unanswered includes questions not shown by branching and answers outside the export filters; it does not establish refusal or noncompliance. Repeated counts are additional identical answers, retained as separate records.</p>
@@ -228,6 +230,13 @@ export async function buildCampaignReviewWorkbook(snapshot: EngagementReviewSnap
       add('Decision history', [[...fields,'Retained project','Retained decision','Retained decision status','Retained rationale','Response revision','You said','Agency response'],...snapshot.decisionLinks.map(row=>[...fields.map(field=>cell('decision action',row.id,field,row[field])),cell('decision action',row.id,'project_name',row.context.project.name),cell('decision action',row.id,'decision_title',row.context.decision.title),row.context.decision.status,cell('decision action',row.id,'decision_rationale',row.context.decision.rationale),row.context.responseHistory.revision,cell('decision action',row.id,'you_said',row.context.response.you_said),cell('decision action',row.id,'we_did',row.context.response.we_did)])]);
       add('Decision sources', [['Action ID','Source ID','Position','Availability','Original configuration availability','Original source JSON'],...snapshot.decisionLinks.flatMap(row=>row.context.sources.map(source=>[row.id,source.itemId,source.position,source.availability,source.configurationAvailability,cell('decision source',`${row.id}/${source.position}/${source.itemId}`,'source',source.record)]))]);
       add('Decision exact context', [['Action ID','Payload SHA-256','Exact payload text','Context SHA-256','Exact context text'],...snapshot.decisionLinks.map(row=>[row.id,row.payload_sha256,cell('decision action',row.id,'payload_text',row.payload_text),row.context_sha256,cell('decision action',row.id,'context_text',row.context_text)])]);
+      const synthesis = decisionSynthesisExportRows(snapshot.decisionLinks);
+      for (const [name, records, fields] of [
+        ['Synthesis coverage', synthesis.coverage, decisionSynthesisCoverageFields],
+        ['Synthesis actions', synthesis.events, decisionSynthesisEventFields],
+        ['Synthesis sources', synthesis.members, decisionSynthesisMemberFields],
+      ] as const) add(name, [[...fields], ...records.map((row, index) => fields.map(field => cell(name, `${row.decision_action_id}/${index + 1}`, field, row[field])))]);
+
     }
   }
   add('Long text',longText);
@@ -288,6 +297,12 @@ export async function renderCampaignReviewFiles(snapshotText:string,checksum:str
   addText('contributions.csv',csv(snapshot.items,['id','parent_item_id','configuration_version_id','category_id','title','body','status','created_at']));
   addText('answers.csv',csv(snapshot.answers,['id','session_id','question_id','question_prompt_snapshot','question_type','answer_text','answer_json']));
   if(snapshot.schema===2)addText('decision-history.csv',csv(snapshot.decisionLinks,['id','predecessor_id','operation','created_at','actor_id','response_id','decision_id','project_id','reason','payload_sha256','context_sha256']));
+  if (snapshot.schema === 2) {
+    const synthesis = decisionSynthesisExportRows(snapshot.decisionLinks);
+    addText('decision-synthesis-coverage.csv', csv(synthesis.coverage, decisionSynthesisCoverageFields));
+    addText('decision-synthesis-actions.csv', csv(synthesis.events, decisionSynthesisEventFields));
+    addText('decision-synthesis-sources.csv', csv(synthesis.members, decisionSynthesisMemberFields));
+  }
   addText('contributions.geojson',JSON.stringify({type:'FeatureCollection',features:snapshot.items.filter(row=>contributionGeometry(row)).map(row=>({type:'Feature',id:row.id,geometry:contributionGeometry(row),properties:{id:row.id,title:row.title,category:historicalCategory(snapshot,row),configurationVersionId:row.configuration_version_id}}))},null,2));
   for(const [path,bytes] of photos) zip.file(path,bytes);
   const manifestFiles = await Promise.all(Object.values(zip.files).filter(file=>!file.dir).map(async file=>{

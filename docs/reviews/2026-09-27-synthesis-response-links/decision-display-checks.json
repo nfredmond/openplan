@@ -1,0 +1,705 @@
+{
+  "date": "2026-09-30",
+  "status": "unreleased development, final production and release checks pending",
+  "foundationCommit": "6ea9804fa7e24ed200f0ba665b26d225ee3889ca",
+  "browser": [
+    {
+      "width": 1440,
+      "completed": true,
+      "freshRun": true,
+      "privateEvidenceFile": "decision-synthesis-browser-1440-1790756304295.json",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET"
+      ],
+      "pageErrors": [],
+      "artifacts": [
+        {
+          "label": "original",
+          "manifestFiles": 11,
+          "snapshotSha256": "dcbd67b79fe459c4e3d19a4a39b2f96a2580c753a2ae3de39d99a18ac895bbad",
+          "sheets": [
+            "Read me",
+            "Contributions",
+            "Survey sessions",
+            "Answers",
+            "Staff responses",
+            "Question summary",
+            "Definitions",
+            "Decision history scope",
+            "Decision history",
+            "Decision sources",
+            "Decision exact context",
+            "Synthesis coverage",
+            "Synthesis actions",
+            "Synthesis sources",
+            "Long text",
+            "Summary"
+          ],
+          "eventCount": 15,
+          "memberCount": 15,
+          "pdfTextBytes": 41017
+        },
+        {
+          "label": "corrected",
+          "manifestFiles": 11,
+          "snapshotSha256": "924a51813bf16e1620fb99bc12783fafa41223e429a0590d2e6d79d9cba4600a",
+          "sheets": [
+            "Read me",
+            "Contributions",
+            "Survey sessions",
+            "Answers",
+            "Staff responses",
+            "Question summary",
+            "Definitions",
+            "Decision history scope",
+            "Decision history",
+            "Decision sources",
+            "Decision exact context",
+            "Synthesis coverage",
+            "Synthesis actions",
+            "Synthesis sources",
+            "Long text",
+            "Summary"
+          ],
+          "eventCount": 18,
+          "memberCount": 18,
+          "pdfTextBytes": 47381
+        },
+        {
+          "label": "public",
+          "manifestFiles": 7,
+          "snapshotSha256": "a042b8a58526177e2f43ea944cbdff447c9aba1354d3edc896959273e7415d6c",
+          "sheets": [
+            "Read me",
+            "Contributions",
+            "Survey sessions",
+            "Answers",
+            "Staff responses",
+            "Question summary",
+            "Definitions",
+            "Long text",
+            "Summary"
+          ],
+          "eventCount": 0,
+          "memberCount": 0,
+          "pdfTextBytes": 4916
+        }
+      ],
+      "pdfInspection": [
+        {
+          "label": "original",
+          "pages": 24,
+          "sourceLinks": 30,
+          "readerWarnings": 0
+        },
+        {
+          "label": "corrected",
+          "pages": 28,
+          "sourceLinks": 36,
+          "readerWarnings": 0
+        },
+        {
+          "label": "original-after-correction",
+          "pages": 24,
+          "sourceLinks": 30,
+          "readerWarnings": 0
+        },
+        {
+          "label": "public",
+          "pages": 4,
+          "sourceLinks": 0,
+          "readerWarnings": 0
+        }
+      ],
+      "downloads": [
+        {
+          "label": "original",
+          "format": "pdf",
+          "checksum": "566744996970232023f65ddee894661a341aec4e831c950e41bd5c7b553153d4",
+          "byteLength": 280289
+        },
+        {
+          "label": "original",
+          "format": "xlsx",
+          "checksum": "c96c826d17aa5fd1251372ed640419051b4160ee6886efc2bdf942d815ffef86",
+          "byteLength": 280580
+        },
+        {
+          "label": "original",
+          "format": "zip",
+          "checksum": "cc5569d5eb580ada61e33da7138c960e6d763fb80ad489a47e72d9b50a1882e8",
+          "byteLength": 589321
+        },
+        {
+          "label": "corrected",
+          "format": "pdf",
+          "checksum": "4041564e181f468124e4ad9c0934f8f20170eab80e9e08ebd058a24183ff5612",
+          "byteLength": 321348
+        },
+        {
+          "label": "corrected",
+          "format": "xlsx",
+          "checksum": "84206aeb11acd6aa9813ffaf66cd7fffc9cbf22fdb8506467454f4fe4bc42226",
+          "byteLength": 331165
+        },
+        {
+          "label": "corrected",
+          "format": "zip",
+          "checksum": "ee38e3e37c1de249c7e5fc599ca9401c934ac1e9430b3afb3e03d5d908baefa3",
+          "byteLength": 686929
+        },
+        {
+          "label": "original-after-correction",
+          "format": "pdf",
+          "checksum": "566744996970232023f65ddee894661a341aec4e831c950e41bd5c7b553153d4",
+          "byteLength": 280289
+        },
+        {
+          "label": "original-after-correction",
+          "format": "xlsx",
+          "checksum": "c96c826d17aa5fd1251372ed640419051b4160ee6886efc2bdf942d815ffef86",
+          "byteLength": 280580
+        },
+        {
+          "label": "original-after-correction",
+          "format": "zip",
+          "checksum": "cc5569d5eb580ada61e33da7138c960e6d763fb80ad489a47e72d9b50a1882e8",
+          "byteLength": 589321
+        },
+        {
+          "label": "public",
+          "format": "pdf",
+          "checksum": "0ad103199b0101013f925acc0ef0bfe70faa96bb263aaa44d98935cd6bac8ffc",
+          "byteLength": 62935
+        },
+        {
+          "label": "public",
+          "format": "xlsx",
+          "checksum": "b141b486034ede4c1101e3f5cbad9321d996154007315b8cb1047df17374b7e3",
+          "byteLength": 16160
+        },
+        {
+          "label": "public",
+          "format": "zip",
+          "checksum": "15e0061ff837222c942036ba7958ff82e00314cf2b9b0fb3170563eae07fa3bc",
+          "byteLength": 63714
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "completed": true,
+      "freshRun": true,
+      "privateEvidenceFile": "decision-synthesis-browser-390-1790756443948.json",
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET"
+      ],
+      "pageErrors": [],
+      "artifacts": [
+        {
+          "label": "original",
+          "manifestFiles": 11,
+          "snapshotSha256": "771ef4977cdbab3a303f5c077ae267d9a13f5b6c8a697e6c03316a0b82329db2",
+          "sheets": [
+            "Read me",
+            "Contributions",
+            "Survey sessions",
+            "Answers",
+            "Staff responses",
+            "Question summary",
+            "Definitions",
+            "Decision history scope",
+            "Decision history",
+            "Decision sources",
+            "Decision exact context",
+            "Synthesis coverage",
+            "Synthesis actions",
+            "Synthesis sources",
+            "Long text",
+            "Summary"
+          ],
+          "eventCount": 9,
+          "memberCount": 9,
+          "pdfTextBytes": 29395
+        },
+        {
+          "label": "corrected",
+          "manifestFiles": 11,
+          "snapshotSha256": "7913cd829307d027fc889d15ac72372b0e8d4b8286dd809d759f82d93879206e",
+          "sheets": [
+            "Read me",
+            "Contributions",
+            "Survey sessions",
+            "Answers",
+            "Staff responses",
+            "Question summary",
+            "Definitions",
+            "Decision history scope",
+            "Decision history",
+            "Decision sources",
+            "Decision exact context",
+            "Synthesis coverage",
+            "Synthesis actions",
+            "Synthesis sources",
+            "Long text",
+            "Summary"
+          ],
+          "eventCount": 12,
+          "memberCount": 12,
+          "pdfTextBytes": 35569
+        },
+        {
+          "label": "public",
+          "manifestFiles": 7,
+          "snapshotSha256": "2ede6f276953321d358fb5210c8f0f5b90fc95bec1dde6fe03eae501ec1e8497",
+          "sheets": [
+            "Read me",
+            "Contributions",
+            "Survey sessions",
+            "Answers",
+            "Staff responses",
+            "Question summary",
+            "Definitions",
+            "Long text",
+            "Summary"
+          ],
+          "eventCount": 0,
+          "memberCount": 0,
+          "pdfTextBytes": 5776
+        }
+      ],
+      "pdfInspection": [
+        {
+          "label": "original",
+          "pages": 17,
+          "sourceLinks": 18,
+          "readerWarnings": 0
+        },
+        {
+          "label": "corrected",
+          "pages": 20,
+          "sourceLinks": 24,
+          "readerWarnings": 0
+        },
+        {
+          "label": "original-after-correction",
+          "pages": 17,
+          "sourceLinks": 18,
+          "readerWarnings": 0
+        },
+        {
+          "label": "public",
+          "pages": 4,
+          "sourceLinks": 0,
+          "readerWarnings": 0
+        }
+      ],
+      "downloads": [
+        {
+          "label": "original",
+          "format": "pdf",
+          "checksum": "5899d2bd92e0a37ae78e372f9142445b17398b46f3440a0350fffc1bc8310a5b",
+          "byteLength": 204046
+        },
+        {
+          "label": "original",
+          "format": "xlsx",
+          "checksum": "db2b5d47974cf9115407e797938d7931b2708ece8b8f49b78d2fa2e69b3552c9",
+          "byteLength": 199223
+        },
+        {
+          "label": "original",
+          "format": "zip",
+          "checksum": "1f2091d3a5f56ada9ddd3a2b8a4404ccca859ffd43fa4ba37931dd07bcef2284",
+          "byteLength": 426243
+        },
+        {
+          "label": "corrected",
+          "format": "pdf",
+          "checksum": "9a243c25140073b913565620704ee02de3449df7050af2e9d7f89d16172c0090",
+          "byteLength": 243517
+        },
+        {
+          "label": "corrected",
+          "format": "xlsx",
+          "checksum": "e7e79bb6f712489b13ad04a3714504d0bd6c9580ed6515f0a48aab67df1c3999",
+          "byteLength": 256168
+        },
+        {
+          "label": "corrected",
+          "format": "zip",
+          "checksum": "07f7fcaed4f0cdd5686609ae5311af796de855e48c3c43612e97612eb12c29e5",
+          "byteLength": 534699
+        },
+        {
+          "label": "original-after-correction",
+          "format": "pdf",
+          "checksum": "5899d2bd92e0a37ae78e372f9142445b17398b46f3440a0350fffc1bc8310a5b",
+          "byteLength": 204046
+        },
+        {
+          "label": "original-after-correction",
+          "format": "xlsx",
+          "checksum": "db2b5d47974cf9115407e797938d7931b2708ece8b8f49b78d2fa2e69b3552c9",
+          "byteLength": 199223
+        },
+        {
+          "label": "original-after-correction",
+          "format": "zip",
+          "checksum": "1f2091d3a5f56ada9ddd3a2b8a4404ccca859ffd43fa4ba37931dd07bcef2284",
+          "byteLength": 426243
+        },
+        {
+          "label": "public",
+          "format": "pdf",
+          "checksum": "38fcfeabf1293b46f3d60f018ebfbf7c988ca9564622bc56e07dba0c06bc1e1d",
+          "byteLength": 67060
+        },
+        {
+          "label": "public",
+          "format": "xlsx",
+          "checksum": "986edd20c356867871b8d8c9cbbf7c439407ba26ed69fc605844ddf88c587780",
+          "byteLength": 16634
+        },
+        {
+          "label": "public",
+          "format": "zip",
+          "checksum": "9dff7ebd40c569f283e1c46df987d4f9d90764e0637f781c0d7190b1de92ef97",
+          "byteLength": 66208
+        }
+      ]
+    }
+  ],
+  "mutationProof": {
+    "presentationControls": 7,
+    "presentationTargetedFaults": 16,
+    "shortDestinationControls": 3,
+    "shortDestinationTargetedFaults": 1
+  },
+  "pdfFix": {
+    "pages": 20,
+    "sourceLinks": 24,
+    "sourceDestinations": 1,
+    "readerWarnings": 0
+  },
+  "priorBrowser": [
+    {
+      "width": 1440,
+      "completed": true,
+      "privateEvidenceFile": "decision-synthesis-browser-1440-1790755796195.json",
+      "artifacts": [
+        {
+          "label": "original",
+          "manifestFiles": 11,
+          "snapshotSha256": "d436d25d792eb21e303dd85b48a5e95c376bd762235118134a2a352564364773",
+          "sheets": [
+            "Read me",
+            "Contributions",
+            "Survey sessions",
+            "Answers",
+            "Staff responses",
+            "Question summary",
+            "Definitions",
+            "Decision history scope",
+            "Decision history",
+            "Decision sources",
+            "Decision exact context",
+            "Synthesis coverage",
+            "Synthesis actions",
+            "Synthesis sources",
+            "Long text",
+            "Summary"
+          ],
+          "eventCount": 9,
+          "memberCount": 9,
+          "pdfTextBytes": 28453
+        },
+        {
+          "label": "corrected",
+          "manifestFiles": 11,
+          "snapshotSha256": "a161931ae603f5577e03507412a81b8e1ca2c591dcb29ed2194d9073b562b89c",
+          "sheets": [
+            "Read me",
+            "Contributions",
+            "Survey sessions",
+            "Answers",
+            "Staff responses",
+            "Question summary",
+            "Definitions",
+            "Decision history scope",
+            "Decision history",
+            "Decision sources",
+            "Decision exact context",
+            "Synthesis coverage",
+            "Synthesis actions",
+            "Synthesis sources",
+            "Long text",
+            "Summary"
+          ],
+          "eventCount": 12,
+          "memberCount": 12,
+          "pdfTextBytes": 34675
+        },
+        {
+          "label": "public",
+          "manifestFiles": 7,
+          "snapshotSha256": "1f278d2507f7d887b36a8c95d7ec61e71434ccd17f75da30506de32f9ac9334d",
+          "sheets": [
+            "Read me",
+            "Contributions",
+            "Survey sessions",
+            "Answers",
+            "Staff responses",
+            "Question summary",
+            "Definitions",
+            "Long text",
+            "Summary"
+          ],
+          "eventCount": 0,
+          "memberCount": 0,
+          "pdfTextBytes": 4914
+        }
+      ],
+      "downloadChecksums": [
+        {
+          "label": "original",
+          "format": "pdf",
+          "checksum": "63eac4d3b476b2bb1467e700e445f86c44a18160466281006c276b9fe0987f43",
+          "byteLength": 202586
+        },
+        {
+          "label": "original",
+          "format": "xlsx",
+          "checksum": "b062b0155ec88c8d459c470ba5277fe2d0498f76c097704013370d0663eb560a",
+          "byteLength": 179112
+        },
+        {
+          "label": "original",
+          "format": "zip",
+          "checksum": "b7166cf75bb4ee0d36ee26708e5101d08b5b5685266201548d3f257c15fa4d7a",
+          "byteLength": 391784
+        },
+        {
+          "label": "corrected",
+          "format": "pdf",
+          "checksum": "bb7cc4f1f5944e6d576ab483012b9b3e53320c01f66eda8691d47a4e28214e81",
+          "byteLength": 242774
+        },
+        {
+          "label": "corrected",
+          "format": "xlsx",
+          "checksum": "078ce78a96f4977f92c34847cdcc64bbd3602627bfc82f0de2733877f9eea321",
+          "byteLength": 229920
+        },
+        {
+          "label": "corrected",
+          "format": "zip",
+          "checksum": "eddb880a228da7403f7ae55e1cf41704e10c0ee01c5363f87c67d6e4bd8d847e",
+          "byteLength": 488344
+        },
+        {
+          "label": "original-after-correction",
+          "format": "pdf",
+          "checksum": "63eac4d3b476b2bb1467e700e445f86c44a18160466281006c276b9fe0987f43",
+          "byteLength": 202586
+        },
+        {
+          "label": "original-after-correction",
+          "format": "xlsx",
+          "checksum": "b062b0155ec88c8d459c470ba5277fe2d0498f76c097704013370d0663eb560a",
+          "byteLength": 179112
+        },
+        {
+          "label": "original-after-correction",
+          "format": "zip",
+          "checksum": "b7166cf75bb4ee0d36ee26708e5101d08b5b5685266201548d3f257c15fa4d7a",
+          "byteLength": 391784
+        },
+        {
+          "label": "public",
+          "format": "pdf",
+          "checksum": "35b1504b2b064f866fb31f5fc98beb921911e01b65fd49e21272c19508929dab",
+          "byteLength": 62995
+        },
+        {
+          "label": "public",
+          "format": "xlsx",
+          "checksum": "7c978eb064694d47269b446cfd657fbe6b073f8414e5542630ed7a33d85b9aa2",
+          "byteLength": 16160
+        },
+        {
+          "label": "public",
+          "format": "zip",
+          "checksum": "9bacfcf5ff2fbd433ca95d76adda5c138998e98b0198e8a667b0f5d58f8285b8",
+          "byteLength": 63793
+        }
+      ],
+      "resumption": "Original capture/retry and reports were completed across retained runner checkpoints; see private resumedFrom chain. Final production journey remains due."
+    },
+    {
+      "width": 390,
+      "completed": true,
+      "privateEvidenceFile": "decision-synthesis-browser-390-1790755811334.json",
+      "artifacts": [
+        {
+          "label": "original",
+          "manifestFiles": 11,
+          "snapshotSha256": "4f7632dbc64bb254126e8bb9b40d5e9ad760cb83ff3f9d180a10ffc806fe9659",
+          "sheets": [
+            "Read me",
+            "Contributions",
+            "Survey sessions",
+            "Answers",
+            "Staff responses",
+            "Question summary",
+            "Definitions",
+            "Decision history scope",
+            "Decision history",
+            "Decision sources",
+            "Decision exact context",
+            "Synthesis coverage",
+            "Synthesis actions",
+            "Synthesis sources",
+            "Long text",
+            "Summary"
+          ],
+          "eventCount": 3,
+          "memberCount": 3,
+          "pdfTextBytes": 16895
+        },
+        {
+          "label": "corrected",
+          "manifestFiles": 11,
+          "snapshotSha256": "9cd0ddaf930c0d50b583eac2bb7b365affd264c0e50a76014befcb17f9e5bae5",
+          "sheets": [
+            "Read me",
+            "Contributions",
+            "Survey sessions",
+            "Answers",
+            "Staff responses",
+            "Question summary",
+            "Definitions",
+            "Decision history scope",
+            "Decision history",
+            "Decision sources",
+            "Decision exact context",
+            "Synthesis coverage",
+            "Synthesis actions",
+            "Synthesis sources",
+            "Long text",
+            "Summary"
+          ],
+          "eventCount": 6,
+          "memberCount": 6,
+          "pdfTextBytes": 23097
+        },
+        {
+          "label": "public",
+          "manifestFiles": 7,
+          "snapshotSha256": "b2d46cd24712863ecf8b96a40ac54dd5e45a392a1c38889bab439abd98b300f7",
+          "sheets": [
+            "Read me",
+            "Contributions",
+            "Survey sessions",
+            "Answers",
+            "Staff responses",
+            "Question summary",
+            "Definitions",
+            "Long text",
+            "Summary"
+          ],
+          "eventCount": 0,
+          "memberCount": 0,
+          "pdfTextBytes": 5774
+        }
+      ],
+      "downloadChecksums": [
+        {
+          "label": "original",
+          "format": "pdf",
+          "checksum": "e09b940f7ae300c64d910ec070ea8820cba99b70f2d5f36600f8001112c531ad",
+          "byteLength": 125889
+        },
+        {
+          "label": "original",
+          "format": "xlsx",
+          "checksum": "66061cf4c5db3b0b88a00653e22fc63721a545188d81e24a37fcba096c3eb176",
+          "byteLength": 85147
+        },
+        {
+          "label": "original",
+          "format": "zip",
+          "checksum": "49c62ea086a1340b85a9ee324c2824ba0554a82afb688b7771a2e638ab89cceb",
+          "byteLength": 207258
+        },
+        {
+          "label": "corrected",
+          "format": "pdf",
+          "checksum": "3e26ed17357e5b9f8e87275a4d21ec1d26fd326c746838aefaf585862631daf2",
+          "byteLength": 165679
+        },
+        {
+          "label": "corrected",
+          "format": "xlsx",
+          "checksum": "105397b4e604948e8c772567639efd20c765a2c74b2023656f5e7b500ede46e2",
+          "byteLength": 142254
+        },
+        {
+          "label": "corrected",
+          "format": "zip",
+          "checksum": "b5371b9387482dd56e0fbe037ff3ca8ce70d305e66f011639b777fde79c872dc",
+          "byteLength": 316924
+        },
+        {
+          "label": "original-after-correction",
+          "format": "pdf",
+          "checksum": "e09b940f7ae300c64d910ec070ea8820cba99b70f2d5f36600f8001112c531ad",
+          "byteLength": 125889
+        },
+        {
+          "label": "original-after-correction",
+          "format": "xlsx",
+          "checksum": "66061cf4c5db3b0b88a00653e22fc63721a545188d81e24a37fcba096c3eb176",
+          "byteLength": 85147
+        },
+        {
+          "label": "original-after-correction",
+          "format": "zip",
+          "checksum": "49c62ea086a1340b85a9ee324c2824ba0554a82afb688b7771a2e638ab89cceb",
+          "byteLength": 207258
+        },
+        {
+          "label": "public",
+          "format": "pdf",
+          "checksum": "0f23954d702f4df7aa84040035415ff74c7860aa4fde0ca595a88981717aea98",
+          "byteLength": 66781
+        },
+        {
+          "label": "public",
+          "format": "xlsx",
+          "checksum": "f051b381dc3578472304762398cdf7fcee20ecdd08fba3bac3fe730deb1c5928",
+          "byteLength": 16638
+        },
+        {
+          "label": "public",
+          "format": "zip",
+          "checksum": "61ce9d516a11962f6891da5521b83744822872d5c4fe97279623bd83ef2d0ac4",
+          "byteLength": 65929
+        }
+      ],
+      "resumption": "Original capture/retry and reports were completed across retained runner checkpoints; see private resumedFrom chain. Final production journey remains due."
+    }
+  ],
+  "relatedTests": 106,
+  "sourceFiles": {
+    "openplan/src/components/engagement/decision-synthesis-evidence.tsx": "00fd2619ef61e264f877785a2996f744d553d87db0a5298b37f09cdff50b607b",
+    "openplan/src/lib/engagement/decision-synthesis-display.ts": "dfb5a134c3a85baec8c0d0865de2e56ec3b668d2c123854a6cb97a8c1b567ea6",
+    "openplan/src/lib/engagement/decision-synthesis-export.ts": "af9adcbf750b7beb75182a6827a95ca2250c7ec9c18e5d7bbc8611f8d2b74bb9",
+    "openplan/src/test/decision-synthesis-presentation.test.tsx": "521882c787586481bb1efc529bc50cc1b6c34f3f7784707e6f000d9edb6d807b",
+    "openplan/src/test/fixtures/engagement/decision-synthesis.ts": "2b9853b829ec0a17eaf285b4c0bc8d29e8a70ee94258cf2d759c4df4cd6ce04c",
+    "openplan/src/components/engagement/decision-links-panel.tsx": "28225ce7f9e273b3b0ca61be9632eb79a26afca352c7ed5068ed93687eabf466",
+    "openplan/src/lib/engagement/review-export.ts": "6cbf87de1f6e411bacb3330ba1ac8a0475226e6d5220e310c1bf7e3caf8a50d3",
+    "openplan/src/lib/engagement/synthesis-response-link-reader.ts": "f72f5def4496467fdd689f57de4be5402e6bb50f939a10445700a43f4446d768",
+    "openplan/src/test/engagement-decision-synthesis-history.test.ts": "a794377d2e55cc7ce4ad1dd56b432a86425c125f369fe932cb5653b62afa1a31"
+  }
+}

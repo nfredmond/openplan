@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { DecisionSynthesisEvidence } from "./decision-synthesis-evidence";
 import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { readDecisionContext, readDecisionLinkSnapshot } from "@/lib/engagement/decision-links";
@@ -29,7 +30,7 @@ function ContextSummary({ context }: { context: DecisionLinkContext }) {
     <p><strong>Response revision {context.responseHistory.revision}: {context.response.theme_title}</strong></p>
     <p className="whitespace-pre-wrap">You said: {context.response.you_said}</p>
     <p className="whitespace-pre-wrap">We did: {context.response.we_did || "No response explanation saved."}</p>
-    <p>{context.sourceCount} source references. Source words are observed at this review, not necessarily when the response was first written.</p>
+    <p>{context.sourceCount} direct contribution references. Source words are observed at this review, not necessarily when the response was first written.</p>
     <details><summary className="cursor-pointer">Review referenced contributions and original configurations</summary>
       <ol className="mt-2 space-y-3">
         {context.sources.map(source => <li key={`${source.position}:${source.itemId}`}>
@@ -43,6 +44,7 @@ function ContextSummary({ context }: { context: DecisionLinkContext }) {
         <pre className="whitespace-pre-wrap break-all text-xs">{configuration.definitionText}</pre>
       </details>)}
     </details>
+    <DecisionSynthesisEvidence context={context} />
   </div>;
 }
 
@@ -212,7 +214,7 @@ function DecisionEditor(props: Props) {
         const current = snapshot.current.find(state => state.linkId === row.id);
         return <article key={row.id} className="min-w-0 space-y-2 rounded border border-border p-3 text-sm">
           <p className="break-words"><strong>{row.context.response.theme_title} → {row.context.decision.title}</strong></p>
-          <p>{row.operation} · {new Date(row.created_at).toLocaleString()} · {current ? `Current sources: ${current.sourceState}` : "Earlier retained version"}</p>
+          <p>{row.operation} · {new Date(row.created_at).toLocaleString()} · {current ? `Current preview: ${current.sourceState}` : "Earlier retained version"}</p>
           <p className="whitespace-pre-wrap break-words">{row.reason}</p>
           <Link className="underline" href={`/projects/${row.project_id}`}>Open linked project</Link>
           {current && <Button type="button" variant="outline" disabled={busy} onClick={() => { setResponseId(row.response_id); setDecisionId(row.decision_id); setPreview(null); }}>Select this link</Button>}

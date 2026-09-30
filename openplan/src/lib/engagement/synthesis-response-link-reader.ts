@@ -8,7 +8,7 @@ import { readSynthesisResponseLinkAcknowledgement, synthesisResponseLinkEventSch
 
 const uuid = z.string().uuid(), digest = z.string().regex(/^[a-f0-9]{64}$/);
 const packetSchema = z.object({ contextText: z.string(), contextSha256: digest }).strict();
-const previewSchema = synthesisResponseLinkScopeSchema.extend({
+export const responseLinkContextPreviewSchema = synthesisResponseLinkScopeSchema.extend({
   schemaVersion: z.literal(1), visibility: z.literal("private"), purpose: z.literal("reviewed_synthesis_response"),
   sourceId: uuid, sourceSha256: digest, preparationSha256: digest,
   revision: z.object({ id: uuid, number: z.number().int().positive(), contentText: z.string(), contentSha256: digest }).strict(),
@@ -25,7 +25,7 @@ function checkScope(actual: SynthesisResponseLinkScope, expected: SynthesisRespo
 export async function readResponseLinkContextPreview(raw: unknown, expected: SynthesisResponseLinkScope) {
   const scope = synthesisResponseLinkScopeSchema.parse(expected), packet = packetSchema.parse(raw);
   await verifyResponseLinkText(packet.contextText, packet.contextSha256);
-  const context = previewSchema.parse(JSON.parse(packet.contextText)); checkScope(context, scope);
+  const context = responseLinkContextPreviewSchema.parse(JSON.parse(packet.contextText)); checkScope(context, scope);
   await verifyResponseLinkText(context.revision.contentText, context.revision.contentSha256);
   const content = synthesisReviewContentSchema.parse(JSON.parse(context.revision.contentText));
   if (content.sourceId !== context.sourceId || content.sourceSha256 !== context.sourceSha256) throw new Error("Response link review source differs");

@@ -28,12 +28,13 @@ unfinished reasons, including text held on screen after storage refusal.
 **Database update required before restarting the app:**
 
 - `20261014000029_engagement_synthesis_response_links.sql` adds private retained link events and source membership, complete history and navigation readers, current public-evidence checks, and automatic response withdrawal when linked evidence changes.
-- `20261014000030_engagement_decision_synthesis_history.sql` adds versioned private decision captures of retained synthesis history. Earlier packets and exact retries remain unchanged. The decision display and readable export integration are still in development.
+- `20261014000030_engagement_decision_synthesis_history.sql` adds versioned private decision captures of retained synthesis history. Earlier packets and exact retries remain unchanged. Private decision previews, saved history and review files now retain the source, staff review, approval and response chain.
 
 Apply migrations before building and restarting. No new worker, provider key or
 paid service is required. Links do not publish responses or grant agency
-approval. Decision packets and reviewed exports still need the retained
-synthesis chain; optional generation and the wider M9b workflow remain open.
+approval. Internal PDF, XLSX and ZIP files include the retained chain; public
+copies exclude it. Earlier files remain unchanged after correction. Optional
+generation and the wider M9b workflow remain open.
 This development entry does not declare a release.
 
 

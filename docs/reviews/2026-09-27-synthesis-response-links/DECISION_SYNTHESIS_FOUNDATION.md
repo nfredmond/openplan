@@ -73,7 +73,11 @@ Evidence logs and the mutation report are under the local
 prefix. The report in this directory contains only checks and source identities,
 not private consultation records.
 
-## Limits and next work
+## Limits and next work at the foundation checkpoint
+
+The later [display and export checkpoint](DECISION_DISPLAY_VERIFICATION.md)
+supersedes the implementation and activation status below. These paragraphs
+preserve what remained unproved when the foundation commit was prepared.
 
 These checks prove candidate custody and transaction behavior. They do not prove
 new browser reachability, readable PDF pagination, workbook navigation, downloaded

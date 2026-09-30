@@ -1,38 +1,16 @@
 import { createHash } from "node:crypto";
+import { address, makeContext, packet, row } from "./fixtures/engagement/decision-synthesis";
 import { describe, expect, it, vi } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import native from "./fixtures/decision-link-native.json";
 import reviewNative from "./fixtures/engagement-review-decision-history-native.json";
-import { chain, history, packet as eventPacket, id, scope, event } from "./fixtures/engagement/synthesis-response-link";
-import { readDecisionContext, readDecisionLink, readDecisionLinkReceipt, type DecisionLinkContext, type DecisionLinkIntent } from "@/lib/engagement/decision-links";
+import { chain, packet as eventPacket, id, event } from "./fixtures/engagement/synthesis-response-link";
+import { readDecisionContext, readDecisionLink, readDecisionLinkReceipt, type DecisionLinkIntent } from "@/lib/engagement/decision-links";
 import { verifyDecisionSynthesisSources } from "@/lib/engagement/decision-synthesis-history-server";
 import { loadDecisionContext, loadDecisionLinks, writeDecisionLink } from "@/lib/engagement/decision-links-server";
 import { parseReviewSnapshot } from "@/lib/engagement/review-export";
 
 const hash = (text: string) => createHash("sha256").update(text).digest("hex");
-const address = { campaignId: scope.campaignId, workspaceId: scope.workspaceId, responseId: scope.responseId, decisionId: native.initial.entries[0].decision_id };
-function makeContext() {
-  const values = chain(), retained = values.revised.responseHistory;
-  const context = JSON.parse(native.initial.entries[0].context_text);
-  context.schema = 2; context.campaign.id = scope.campaignId; context.campaign.workspaceId = scope.workspaceId;
-  context.project.workspaceId = scope.workspaceId; context.relationship.workspace_id = scope.workspaceId; context.relationship.campaign_id = scope.campaignId;
-  context.response = JSON.parse(retained.recordText);
-  context.responseHistory = { id: retained.id, revision: retained.revision, event: retained.event,
-    actorId: retained.actor_id, recordedAt: retained.recorded_at, recordText: retained.recordText, recordSha256: retained.record_sha256 };
-  context.sources = []; context.sourceCount = 0; context.configurations = []; context.configurationCount = 0;
-  context.synthesisHistory = { observation: "retained_at_link_preview", historyCount: 1, eventCount: 3,
-    histories: [history([values.first, values.second, values.third])] };
-  return context as Extract<DecisionLinkContext, { schema: 2 }>;
-}
-const packet = (context: DecisionLinkContext) => { const contextText = JSON.stringify(context); return { contextText, contextSha256: hash(contextText) }; };
-function row(context = makeContext()) {
-  const saved = structuredClone(native.initial.entries[0]), text = packet(context);
-  saved.campaign_id = address.campaignId; saved.workspace_id = address.workspaceId; saved.response_id = address.responseId;
-  saved.context_text = text.contextText; saved.context_sha256 = text.contextSha256;
-  saved.payload_json.campaignId = address.campaignId; saved.payload_json.responseId = address.responseId; saved.payload_json.expectedContextSha256 = text.contextSha256;
-  saved.payload_text = JSON.stringify(saved.payload_json); saved.payload_sha256 = hash(saved.payload_text);
-  return saved;
-}
 function changeEvent(context: ReturnType<typeof makeContext>, index: number, change: (value: ReturnType<typeof event>) => void) {
   const chain = context.synthesisHistory.histories[0], value = JSON.parse(chain.entries[index].eventText);
   change(value); chain.entries[index] = eventPacket(value);
