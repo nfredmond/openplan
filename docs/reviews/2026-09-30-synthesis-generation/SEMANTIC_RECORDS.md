@@ -16,6 +16,8 @@ The focused record suite passes 14 tests. The combined input/source/preparation/
 
 [Broader checks](records-checks.json) pass full QA and shuffled tests with 15,988 passes and 828 explicit skips across 1,346 passing files. The shuffle seed is 650931. Full QA also passes configured lint/dead-code checks, provider connector tests, a zero-vulnerability dependency audit and the production build/typecheck. No migration or database write is added; ordinary QA skips the opt-in live database gate. These tests do not establish model interpretation, context-window planning, provider disclosure/spending controls, native job custody, cancellation/revocation, worker recovery, staff acceptance or a usable browser workflow. The current producer holds the source in memory. It does not stream a database or make an oversized record fit a model.
 
+The [typed-field extension](FIELDS.md) preserves complete values for subsequent request planning.
+
 ## Next implementation boundary
 
 Plan complete processing across actual selected provider limits, including long records and their historical context. Retain every request and output, source coverage and incomplete/uncertain states. Do not substitute transport frames for independently meaningful model prompts or equate input delivery with complete analysis. Reuse existing request identities, leases, cancellation and local worker journals. Exact explicit staff acceptance must create a new retained draft with machine authorship disclosed; approval and publication stay separate.

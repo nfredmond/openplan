@@ -1,0 +1,51 @@
+{
+  "fullQA": {
+    "exit": 0,
+    "passed": 16000,
+    "skipped": 828,
+    "filesPassed": 1347,
+    "filesSkipped": 61,
+    "productionBuild": "passed",
+    "dependencyVulnerabilities": 0,
+    "providerConnectorPassed": 382,
+    "providerConnectorSkipped": 4
+  },
+  "shuffled": {
+    "exit": 0,
+    "seed": 650932,
+    "passed": 16000,
+    "skipped": 828
+  },
+  "related": {
+    "passed": 110,
+    "files": 6
+  },
+  "fieldMutations": {
+    "controls": 2,
+    "targetedFailures": 18,
+    "restored": true
+  },
+  "recordMutations": {
+    "controls": 2,
+    "targetedFailures": 20,
+    "restored": true
+  },
+  "logs": [
+    {
+      "name": "generation-fields-full-qa.log",
+      "sha256": "dacd9964f5ba2ba9183613be0bced80a9ad6cb00adcbf58df067bb86b5e19fdf"
+    },
+    {
+      "name": "generation-fields-shuffle.log",
+      "sha256": "1b5aaa0d0094ceee94c781a151b4cc7fa6701dce05a42eded322d0280472183f"
+    },
+    {
+      "name": "generation-fields-related-tests.log",
+      "sha256": "4b7d8cfffea04693e0ce1855d7c28da12d38fa5a3107d7f4998c9c466071b98b"
+    },
+    {
+      "name": "generation-fields-typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

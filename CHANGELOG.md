@@ -24,7 +24,8 @@ Internal preparation for resumable engagement synthesis preserves complete saved
 source bytes across verified input frames. It includes every selected contribution
 and retains original numeric values, long text and historical definitions.
 Complete logical records retain historical relationships and exact numeric tokens
-without clipping long contributions. Model dispatch and the new generation
+without clipping long contributions. Typed fields preserve complete literal text,
+container counts and unambiguous paths for request planning. Model dispatch and the new generation
 workflow are not enabled yet.
 
 ## 0.64.0 (2026-09-30)

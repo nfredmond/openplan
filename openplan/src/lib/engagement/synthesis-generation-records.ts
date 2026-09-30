@@ -13,6 +13,14 @@ export type SynthesisGenerationRecords = {
   source: SynthesisSourceScope & { sha256: string }; inputManifestSha256: string;
   contributionIds: string[]; records: SynthesisGenerationRecord[]; manifestSha256: string;
 };
+export type SynthesisGenerationField = { pointer: string } & (
+  | { kind: "object" | "array"; childCount: number }
+  | { kind: "string" | "number" | "boolean" | "null"; text: string }
+);
+export type SynthesisGenerationFields = {
+  schemaVersion: 1; recordsManifestSha256: string;
+  records: Array<{ recordId: string; recordSha256: string; fields: SynthesisGenerationField[]; fieldsSha256: string }>;
+};
 const sha256 = (value: string) => createHash("sha256").update(value, "utf8").digest("hex");
 
 // Node 24 supplies the original numeric token to the JSON reviver. Keep it in
@@ -99,5 +107,38 @@ export function createSynthesisGenerationRecords(input: unknown, saved: unknown,
 export function verifySynthesisGenerationRecords(raw: unknown, input: unknown, saved: unknown, scope: SynthesisSourceScope) {
   const expected = createSynthesisGenerationRecords(input, saved, scope);
   if (!isDeepStrictEqual(raw, expected)) throw new Error("Synthesis records differ from the retained input");
+  return expected;
+}
+
+/** Expose complete typed fields so later model tasks need not consume broken JSON fragments. */
+export function createSynthesisGenerationFields(rawRecords: unknown, input: unknown, saved: unknown, scope: SynthesisSourceScope): SynthesisGenerationFields {
+  const verified = verifySynthesisGenerationRecords(rawRecords, input, saved, scope);
+  const records = verified.records.map(record => {
+    const fields: SynthesisGenerationField[] = [];
+    function visit(pointer: string, value: unknown) {
+      if (value instanceof RetainedNumber) fields.push({ pointer, kind: "number", text: value.token });
+      else if (value === null) fields.push({ pointer, kind: "null", text: "null" });
+      else if (typeof value === "string") fields.push({ pointer, kind: "string", text: value });
+      else if (typeof value === "boolean") fields.push({ pointer, kind: "boolean", text: value ? "true" : "false" });
+      else if (Array.isArray(value)) {
+        fields.push({ pointer, kind: "array", childCount: value.length });
+        value.forEach((child, index) => visit(`${pointer}/${index}`, child));
+      } else {
+        const entries = Object.entries(object(value));
+        fields.push({ pointer, kind: "object", childCount: entries.length });
+        for (const [key, child] of entries) visit(`${pointer}/${key.replace(/~/g, "~0").replace(/\//g, "~1")}`, child);
+      }
+    }
+    visit("", parseRetainedJSON(record.text));
+    const value = { recordId: record.id, recordSha256: record.sha256, fields };
+    return { ...value, fieldsSha256: sha256(JSON.stringify(value)) };
+  });
+  return { schemaVersion: 1, recordsManifestSha256: verified.manifestSha256, records };
+}
+
+/** A field inventory must still account for the entire authoritative record set. */
+export function verifySynthesisGenerationFields(raw: unknown, rawRecords: unknown, input: unknown, saved: unknown, scope: SynthesisSourceScope) {
+  const expected = createSynthesisGenerationFields(rawRecords, input, saved, scope);
+  if (!isDeepStrictEqual(raw, expected)) throw new Error("Synthesis fields differ from the retained records");
   return expected;
 }

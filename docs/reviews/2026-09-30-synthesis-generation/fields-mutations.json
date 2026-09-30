@@ -1,0 +1,166 @@
+{
+  "sourceSha256": "e3f599e1962c23df745a0cba2f9eb0db95f2902db5aa4fa0f888fe30c6ed2992",
+  "cases": [
+    {
+      "case": "baseline",
+      "exit": 0,
+      "expected": "pass",
+      "valid": true,
+      "firstFailure": null,
+      "logSha256": "1d93f1c05a900e580bdb08741a4bbae7c5d99bf055851d45fc20c4f85b5c2054"
+    },
+    {
+      "case": "harmless-comment",
+      "exit": 0,
+      "expected": "pass",
+      "valid": true,
+      "firstFailure": null,
+      "logSha256": "3a2526d92c704be37a3924f194fc24e5935b5daca206d141450969508cb14fc7"
+    },
+    {
+      "case": "cap-field-records",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-fields.test.ts > complete typed fields for bounded synthesis tasks > preserves every field value beyond 300 comments and does not clip long text",
+      "logSha256": "3fc3e57ab9865fd330e974b07544f0f15783cf7d40ab71c1ecb3bee190a872d8"
+    },
+    {
+      "case": "skip-record-verification",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-fields.test.ts > complete typed fields for bounded synthesis tasks > refuses changed records and wrong workspace scope before projecting fields",
+      "logSha256": "fd1e68f7912b123c367468e515cd46c240313675f9ae87af8483be1d3d405561"
+    },
+    {
+      "case": "round-numeric-field",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-fields.test.ts > complete typed fields for bounded synthesis tasks > keeps exact numeric tokens distinguishable from participant strings",
+      "logSha256": "4c0f814a5457c01a22fe985bb83f2f8315c2ce9e36e6dd0685cf507dbe15100b"
+    },
+    {
+      "case": "escape-literal-field-text",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-fields.test.ts > complete typed fields for bounded synthesis tasks > retains complete field values, literal text and unambiguous paths",
+      "logSha256": "042f9241a8caa7a319928369a699bf8fcffba398a6916699138f8fa656a0b2f6"
+    },
+    {
+      "case": "mislabel-null-text",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-fields.test.ts > complete typed fields for bounded synthesis tasks > retains complete field values, literal text and unambiguous paths",
+      "logSha256": "e0a8fcbaab79401d23d2db2e08a25ebfb921775dfe76acd5e3aa0198f2288004"
+    },
+    {
+      "case": "false-for-all-booleans",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-fields.test.ts > complete typed fields for bounded synthesis tasks > retains complete field values, literal text and unambiguous paths",
+      "logSha256": "687cea077d32bc1a054b4be8f9f5f31d18a4312208ee372ed9c3fb2950f3102c"
+    },
+    {
+      "case": "boolean-as-string",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-fields.test.ts > complete typed fields for bounded synthesis tasks > retains complete field values, literal text and unambiguous paths",
+      "logSha256": "3b20a7d1d49406083f7915a7c238ca11c5f4d8ca684d16e4f80f2a6f4527436a"
+    },
+    {
+      "case": "drop-empty-strings",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-fields.test.ts > complete typed fields for bounded synthesis tasks > retains complete field values, literal text and unambiguous paths",
+      "logSha256": "a5a8e70a7844fcff9b67e7ae5b978be48250c515fa4462d4c4f981ea426a19f9"
+    },
+    {
+      "case": "false-array-count",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-fields.test.ts > complete typed fields for bounded synthesis tasks > retains complete field values, literal text and unambiguous paths",
+      "logSha256": "753fd5ca1b93ad952d889b7dc4bc39fa6d2047f93a5ef74cea5595addaf34ac8"
+    },
+    {
+      "case": "drop-array-tail",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-fields.test.ts > complete typed fields for bounded synthesis tasks > retains complete field values, literal text and unambiguous paths",
+      "logSha256": "9bc421a0bc603a3bdb09d4de7e5478e44a4169a39ea323705ccfe80f68ce7ce5"
+    },
+    {
+      "case": "false-object-count",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-fields.test.ts > complete typed fields for bounded synthesis tasks > retains complete field values, literal text and unambiguous paths",
+      "logSha256": "ccfc5b1e1dd19e6fdfda12ea83f3e162947bc08643da473d077ace231a247c58"
+    },
+    {
+      "case": "drop-object-tail",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-fields.test.ts > complete typed fields for bounded synthesis tasks > retains complete field values, literal text and unambiguous paths",
+      "logSha256": "668dcd57562f28e997d6ea8ebdd8431eb4fcc1f3b885210a072a352c83cee4f3"
+    },
+    {
+      "case": "ambiguous-pointer",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-fields.test.ts > complete typed fields for bounded synthesis tasks > retains complete field values, literal text and unambiguous paths",
+      "logSha256": "c5978101d8ab9d8d76afba07266a0d7490bb51e8109fc8a8f1c04baf5079c0bd"
+    },
+    {
+      "case": "wrong-record-binding",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-fields.test.ts > complete typed fields for bounded synthesis tasks > retains complete field values, literal text and unambiguous paths",
+      "logSha256": "9f74852180427b3018695b9cef70f89cde48cc5fa701f8243d3b4a9cb06bc3b5"
+    },
+    {
+      "case": "wrong-fields-digest",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-fields.test.ts > complete typed fields for bounded synthesis tasks > retains complete field values, literal text and unambiguous paths",
+      "logSha256": "c079313605d78d8e59126eae38ea710c3770fa01d4984534fd338f54abe2decf"
+    },
+    {
+      "case": "wrong-parent-manifest",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-fields.test.ts > complete typed fields for bounded synthesis tasks > retains complete field values, literal text and unambiguous paths",
+      "logSha256": "d698eb70975845b5f14b3535c41eed095eb14d5e665e022ffc88c69e2d8b84cd"
+    },
+    {
+      "case": "wrong-schema-version",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-fields.test.ts > complete typed fields for bounded synthesis tasks > retains complete field values, literal text and unambiguous paths",
+      "logSha256": "093dee04df1f3b8544da466f1aa061159b36798e5358f96ced76a23f8b6dc9a7"
+    },
+    {
+      "case": "skip-field-inventory-check",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-fields.test.ts > complete typed fields for bounded synthesis tasks > refuses missing record",
+      "logSha256": "ed78a96422b39bfa3cd7795b97b6d21136fb47eb8c441254d22448c45e940e6e"
+    }
+  ],
+  "restored": true
+}
