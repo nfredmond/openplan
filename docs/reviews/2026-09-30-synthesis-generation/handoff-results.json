@@ -1,0 +1,96 @@
+{
+  "checkedAt": "2026-09-30T19:41:58.541010+00:00",
+  "commit": "734052b5b8ad682f868570a2ab1bee260effc658",
+  "version": "0.65.0",
+  "canonical": {
+    "commit": "734052b5b8ad682f868570a2ab1bee260effc658",
+    "npmCi": "passed before publication",
+    "healthTests": 6,
+    "untrackedPreserved": [
+      ".directory"
+    ]
+  },
+  "demo": {
+    "previousCommit": "62dc74e9b14d48b4a60dee54c52da38357990503",
+    "phase": "ready",
+    "buildId": "dY2HbCg5DS3uF9hGVfK2F",
+    "nextVersion": "16.3.8",
+    "retainedPredecessorExists": true,
+    "databaseBackup": {
+      "sha256": "2f56c756b89362a7f96d6125cc636d40370f8590f2c057a71c6380b67828233d",
+      "bytes": 51764575,
+      "phase": "upgraded",
+      "checksumVerified": true
+    },
+    "appliedMigrationCount": 354,
+    "pendingMigrations": []
+  },
+  "browserCases": [
+    {
+      "width": 1440,
+      "case": "baseline",
+      "exit": 0,
+      "expectedExit": 0,
+      "completed": true,
+      "error": null
+    },
+    {
+      "width": 390,
+      "case": "baseline",
+      "exit": 0,
+      "expectedExit": 0,
+      "completed": true,
+      "error": null
+    },
+    {
+      "width": 390,
+      "case": "harmless",
+      "exit": 0,
+      "expectedExit": 0,
+      "completed": true,
+      "error": null
+    },
+    {
+      "width": 390,
+      "case": "overflow-fault",
+      "exit": 1,
+      "expectedExit": 1,
+      "completed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    },
+    {
+      "width": 390,
+      "case": "wrong-commit",
+      "exit": 1,
+      "expectedExit": 1,
+      "completed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Unexpected installed commit"
+    },
+    {
+      "width": 390,
+      "case": "wrong-version",
+      "exit": 1,
+      "expectedExit": 1,
+      "completed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Unexpected installed version"
+    }
+  ],
+  "visualInspection": {
+    "widths": [
+      1440,
+      390
+    ],
+    "observed": "Engagement heading and creation control visible; desktop navigation and mobile navigation focus visible; no page-wide horizontal overflow."
+  },
+  "artifacts": {
+    "v065-demo-smoke-1440-baseline.json": "f27745f7cb8b5de0f186f7b65dfea62ee55e155ad1263a7bd40419b158ea576a",
+    "v065-demo-smoke-1440-baseline.png": "53043324cb28541be39e2486bee224f6f229291e9a13e44d4e098fb61a908bbf",
+    "v065-demo-smoke-390-baseline.json": "179879550f2fffe16081b15bd8eec3673833337039a90aac7fdbc1b8bd48f410",
+    "v065-demo-smoke-390-baseline.png": "f3b8ba3ecae3210184e8862462a0c2b2edfd6547b50c0ccf887f71aade3daf8d"
+  },
+  "limits": [
+    "Read-only installed demo navigation, not a repeat of isolated write journeys.",
+    "Retained backup and updater completion do not establish a physical power-loss recovery.",
+    "No semantic synthesis or national scientific acceptance claim."
+  ]
+}

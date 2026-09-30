@@ -1,9 +1,9 @@
 # v0.65.0 recoverable local synthesis execution
 
-September 30, 2026. Local engineering verification is complete for this release
-candidate. Package and current-release metadata do not establish publication.
-The installed demo remains v0.64.0. Exact-commit GitHub checks and tagging remain
-pending; later publication evidence must identify their actual outcomes.
+September 30, 2026. This record preserves the local release-candidate evidence.
+[Publication](PUBLICATION.md) records the later passing exact-commit GitHub checks
+and v0.65.0 tag. Package metadata alone does not establish publication. The
+prepublication findings below retain their original evidence boundaries.
 
 ## Release scope
 
