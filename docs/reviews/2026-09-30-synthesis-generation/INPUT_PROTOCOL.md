@@ -18,6 +18,8 @@ These are input-integrity checks. They do not prove database retention, permissi
 
 Frames are continuations of one JSON document. They are not independent model prompts, per-contribution summaries or evidence that a provider read or understood anything. The later executor must use the reconstructed complete source, retain every planned semantic unit and return explicit incomplete states. Do not send an arbitrary fragment as a complete contribution or present byte coverage as analysis completion.
 
+[Complete logical records](SEMANTIC_RECORDS.md) now extend this input foundation, with separate historical context and exact numeric tokens. They do not enable model execution.
+
 ## Continue the connected workflow
 
 Follow the [generation boundary](../2026-09-27-synthesis-response-links/NEXT_GENERATION_BOUNDARY.md). Build complete semantic input planning and retained model-output receipts, then durable native request/attempt custody, provider dispatch and recovery, explicit staff acceptance into a new retained review version, and the Analysis interface. Reuse existing saved sources, revisions, approval history and worker journaling. Preserve manual preparation/review without a model. Keep the retired clipping generator disabled.

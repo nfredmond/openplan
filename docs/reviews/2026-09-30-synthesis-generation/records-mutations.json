@@ -1,0 +1,192 @@
+{
+  "sourceSha256": "4410fa3cf15fbe965d5a59d9b0d309d4d7aebd08e6ee22101e58e1b63b7ab836",
+  "cases": [
+    {
+      "case": "baseline",
+      "exit": 0,
+      "expected": "pass",
+      "valid": true,
+      "firstFailure": null,
+      "logSha256": "204b8409d3dbba303aa8ffddd3f4b9d719ef59ba3d205b6c91a1408d038c3ee7"
+    },
+    {
+      "case": "harmless-comment",
+      "exit": 0,
+      "expected": "pass",
+      "valid": true,
+      "firstFailure": null,
+      "logSha256": "8e39330435d1430eabeb4f9e494dcc5544d0443d59ff6a74e129c7100f532ed9"
+    },
+    {
+      "case": "cap-records-at-300",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-records.test.ts > whole semantic records for synthesis generation > preserves all contributions and historical context beyond the old 300-comment cap",
+      "logSha256": "e82da83c1a206d68faeb31a8502aafb9fe4769f76417c18c19906e3798de361f"
+    },
+    {
+      "case": "omit-survey-records",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-records.test.ts > whole semantic records for synthesis generation > preserves all contributions and historical context beyond the old 300-comment cap",
+      "logSha256": "7a52e328edaaa24cd9edbf418aecd9b9f58252246e4a3351d55c44f07c1110ac"
+    },
+    {
+      "case": "omit-definition-records",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-records.test.ts > whole semantic records for synthesis generation > preserves all contributions and historical context beyond the old 300-comment cap",
+      "logSha256": "5e1bbf6c51c69fd40c218591b3ff50513bcb4c577349c9aa6e34d6e1148b1d3b"
+    },
+    {
+      "case": "round-numeric-tokens",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-records.test.ts > whole semantic records for synthesis generation > preserves exact numeric tokens in nested answers instead of rounded values",
+      "logSha256": "c1346697c6a84f50c7ae55a5fffa7befbb56c86fb941c7a157133ff2b26a873c"
+    },
+    {
+      "case": "invent-neutral",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-records.test.ts > whole semantic records for synthesis generation > preserves all contributions and historical context beyond the old 300-comment cap",
+      "logSha256": "af4cec3d31c00df6e925f35fd193d028e1fafbdbb00d8041739c28ed62659494"
+    },
+    {
+      "case": "clip-long-strings",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-records.test.ts > whole semantic records for synthesis generation > preserves all contributions and historical context beyond the old 300-comment cap",
+      "logSha256": "ded5bef358c1468484a51a1b5520b02d6c397f17ef88725501e92e1f645d3b7e"
+    },
+    {
+      "case": "omit-context-counts",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-records.test.ts > whole semantic records for synthesis generation > preserves all contributions and historical context beyond the old 300-comment cap",
+      "logSha256": "3c62512f062c1588afca6bca1209d3365fa6548b779183a5777c1543c2eeb8de"
+    },
+    {
+      "case": "duplicate-source-in-context",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-records.test.ts > whole semantic records for synthesis generation > preserves all contributions and historical context beyond the old 300-comment cap",
+      "logSha256": "cd67dd5b58c150fb5aa0ea6878a599c9c7b0a6bb5ad81a15accf2a9b2dcb6157"
+    },
+    {
+      "case": "drop-parent-reference",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-records.test.ts > whole semantic records for synthesis generation > keeps reply parents outside the selection visibly unavailable and namespaces colliding identities",
+      "logSha256": "56df6d815ac423b3dcaf6995e20a72daace7370fd2451af5e8435476b726f8cb"
+    },
+    {
+      "case": "claim-missing-reference-retained",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-records.test.ts > whole semantic records for synthesis generation > keeps reply parents outside the selection visibly unavailable and namespaces colliding identities",
+      "logSha256": "d0196fdfbbbb537d8dfc20b92cf81bea95f14d6a9f66d325f4265181a94059b4"
+    },
+    {
+      "case": "drop-definition-reference",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-records.test.ts > whole semantic records for synthesis generation > retains historical definitions and answer-session links without treating a missing definition as current",
+      "logSha256": "df4108296ff5edfa1cabafed9628d4c586f0d6dc7d3c7f8c7977e7ead111b22b"
+    },
+    {
+      "case": "collapse-source-kind",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-records.test.ts > whole semantic records for synthesis generation > preserves all contributions and historical context beyond the old 300-comment cap",
+      "logSha256": "e12f562247ec90afb9e186328be60f6dae1c5af814a5bc40cde8adef8e428f24"
+    },
+    {
+      "case": "wrong-record-digest",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-records.test.ts > whole semantic records for synthesis generation > preserves all contributions and historical context beyond the old 300-comment cap",
+      "logSha256": "90901fdac189b5e9e5d9f3dde3f3523bd6644874a9ee24ba5a05cbe2420e34bc"
+    },
+    {
+      "case": "wrong-record-byte-count",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-records.test.ts > whole semantic records for synthesis generation > preserves all contributions and historical context beyond the old 300-comment cap",
+      "logSha256": "9b63df0c9b06e4ce0a3488f66f8ad0dd6395fd0438a95107236c46e522da6825"
+    },
+    {
+      "case": "wrong-manifest-digest",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-records.test.ts > whole semantic records for synthesis generation > preserves all contributions and historical context beyond the old 300-comment cap",
+      "logSha256": "838064544d2ba4a2b86561f3f44e960cc89bdb82787e5b32737fcf32d4e98179"
+    },
+    {
+      "case": "unbound-references",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-records.test.ts > whole semantic records for synthesis generation > preserves all contributions and historical context beyond the old 300-comment cap",
+      "logSha256": "dcf5966e972793dd1c3d242aa154bb7cfaf5f69aa030285ca951f557b7ede8b8"
+    },
+    {
+      "case": "skip-authoritative-record-check",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-records.test.ts > whole semantic records for synthesis generation > refuses incomplete input and another source's apparently consistent records",
+      "logSha256": "747be0efe999220c0fde56a12ac03d1c286b8226965c8a019dfbcee5a3a5fd8e"
+    },
+    {
+      "case": "skip-input-verification",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-records.test.ts > whole semantic records for synthesis generation > refuses incomplete input and another source's apparently consistent records",
+      "logSha256": "9d17da34f024368689a18a2e1c96ada118623a3d48acff94ed6805cab81f06a0"
+    },
+    {
+      "case": "round-on-missing-numeric-source",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-records.test.ts > whole semantic records for synthesis generation > refuses a runtime that cannot expose original numeric tokens",
+      "logSha256": "3ae16ec7e94d6c35da855810e3865d96be6bfc72a989e4faef1a3ed5cb9d40cf"
+    },
+    {
+      "case": "participant-object-as-numeric",
+      "exit": 1,
+      "expected": "named test failure",
+      "valid": true,
+      "firstFailure": "FAIL  src/test/engagement-synthesis-generation-records.test.ts > whole semantic records for synthesis generation > keeps participant token objects, escaped names, nulls and boolean values as participant data",
+      "logSha256": "415de5232909d7a0e75ebbc8d5ecec3125d31610e91ae2c71af0f8c07d1b0648"
+    }
+  ],
+  "restored": true,
+  "testFileSha256": "a6dd6c1a36ecd48de5fb0584b30ea6ff179120a58f31d3ec04f44536e438bba8",
+  "runnerSha256": "5bb0a7a3749239f255074341b8c1e5a86b145865856e058fcdd6056e0d2e7b2d",
+  "blindCategories": [
+    "model context and output coverage",
+    "native request and attempt custody",
+    "provider disclosure and spend",
+    "revocation and worker recovery",
+    "staff acceptance and browser workflows",
+    "semantic accuracy and representativeness"
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "fullQA": {
+    "exit": 0,
+    "passed": 15988,
+    "skipped": 828,
+    "filesPassed": 1346,
+    "filesSkipped": 61,
+    "productionBuild": "passed",
+    "dependencyVulnerabilities": 0
+  },
+  "shuffled": {
+    "exit": 0,
+    "seed": 650931,
+    "passed": 15988,
+    "skipped": 828
+  },
+  "related": {
+    "passed": 98,
+    "files": 5
+  },
+  "mutations": {
+    "controls": 2,
+    "targetedFailures": 20,
+    "restored": true
+  },
+  "logs": [
+    {
+      "name": "generation-records-full-qa.log",
+      "sha256": "146b95fb6ca26b5c4f1c160c9279799b5333886959c3a1601fb95da302561826"
+    },
+    {
+      "name": "generation-records-shuffle.log",
+      "sha256": "ed3f13ce563a113826a59cc3dfb43e280cef98353ead8458540382647aa1f42f"
+    },
+    {
+      "name": "generation-records-related-tests.log",
+      "sha256": "202a51baa96228e652064835e20805edcdcb8772b0e8751c33469be9dbbff400"
+    },
+    {
+      "name": "generation-records-typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}
