@@ -1,0 +1,121 @@
+{
+  "commit": "62dc74e9b14d48b4a60dee54c52da38357990503",
+  "runs": [
+    {
+      "conclusion": "success",
+      "databaseId": 36697019320,
+      "headSha": "62dc74e9b14d48b4a60dee54c52da38357990503",
+      "jobs": [
+        {
+          "databaseId": 109827296090,
+          "name": "order independence (shuffled vitest)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-09-30T09:34:54Z",
+          "completedAt": "2026-09-30T09:48:43Z",
+          "url": "https://github.com/nfredmond/openplan/actions/runs/36697019320/job/109827296090"
+        },
+        {
+          "databaseId": 109827296240,
+          "name": "ops scripts (python unit tests)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-09-30T09:34:54Z",
+          "completedAt": "2026-09-30T09:36:08Z",
+          "url": "https://github.com/nfredmond/openplan/actions/runs/36697019320/job/109827296240"
+        },
+        {
+          "databaseId": 109827296327,
+          "name": "modeling scripts (python unit tests)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-09-30T09:34:54Z",
+          "completedAt": "2026-09-30T09:35:51Z",
+          "url": "https://github.com/nfredmond/openplan/actions/runs/36697019320/job/109827296327"
+        },
+        {
+          "databaseId": 109827296445,
+          "name": "verify (qa gate)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-09-30T09:34:53Z",
+          "completedAt": "2026-09-30T09:49:16Z",
+          "url": "https://github.com/nfredmond/openplan/actions/runs/36697019320/job/109827296445"
+        },
+        {
+          "databaseId": 109827296481,
+          "name": "worker (python unit tests)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-09-30T09:34:53Z",
+          "completedAt": "2026-09-30T09:35:26Z",
+          "url": "https://github.com/nfredmond/openplan/actions/runs/36697019320/job/109827296481"
+        }
+      ],
+      "name": "CI",
+      "status": "completed",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/36697019320",
+      "retainedLogSha256": "b286977e3323683cf66b7c0972b955cf2cae84fa4ac9e1d6d47e1dd5d00586b1"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 36697019440,
+      "headSha": "62dc74e9b14d48b4a60dee54c52da38357990503",
+      "jobs": [
+        {
+          "databaseId": 109827295520,
+          "name": "live RLS isolation",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-09-30T09:34:54Z",
+          "completedAt": "2026-09-30T09:51:39Z",
+          "url": "https://github.com/nfredmond/openplan/actions/runs/36697019440/job/109827295520"
+        }
+      ],
+      "name": "RLS Isolation",
+      "status": "completed",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/36697019440",
+      "retainedLogSha256": "fc06a7e3354d9dfe29705d851cd57da36130c66c14f02c2ef37e7416e1c03c79"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 36697019364,
+      "headSha": "62dc74e9b14d48b4a60dee54c52da38357990503",
+      "jobs": [
+        {
+          "databaseId": 109827295626,
+          "name": "previous release -> seed -> HEAD migration up",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-09-30T09:34:53Z",
+          "completedAt": "2026-09-30T09:38:52Z",
+          "url": "https://github.com/nfredmond/openplan/actions/runs/36697019364/job/109827295626"
+        }
+      ],
+      "name": "Upgrade Path",
+      "status": "completed",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/36697019364",
+      "retainedLogSha256": "14979ef8a4b9a50ca574f367927e54363cc650df9441e6849a78e22f2461e8b3"
+    }
+  ],
+  "observedSummaries": {
+    "qa": {
+      "passed": 15944,
+      "skipped": 835,
+      "filesPassed": 1344,
+      "filesSkipped": 61
+    },
+    "rls": {
+      "passed": 732,
+      "skipped": 125,
+      "filesPassed": 68
+    },
+    "shuffled": {
+      "seed": 932774,
+      "jobConclusion": "success",
+      "numericSummary": "No numeric summary present in retrieved shuffled job log; no count inferred."
+    },
+    "localWorkerSuites": 52,
+    "ciDifference": "QA explicitly skips seven interpreter-dependent cases in every-worker-suite-can-actually-run.test.ts; local QA executes these."
+  }
+}

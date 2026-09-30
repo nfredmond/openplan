@@ -1,8 +1,9 @@
 # v0.64.0 reviewed synthesis links and files
 
 September 30, 2026. Local engineering verification is complete at application
-commit `a7c349d5`. This record does not establish a tag or passing final-commit
-GitHub CI. Publication and the retained demo upgrade are recorded separately.
+commit `a7c349d5`. [Publication](PUBLICATION.md) records the later passing exact-commit GitHub checks,
+tag and completed retained demo upgrade. This document preserves the local
+engineering evidence separately.
 
 This increment connects exact approved staff synthesis to saved responses,
 project decisions and private review files. It preserves original sources,
@@ -31,7 +32,7 @@ The release candidate records 351 migrations through migration 32. No database
 reset, new provider key, new worker or paid service is required. The existing
 Documents export worker prepares queued files. The isolated populated upgrade
 retains counts and checksums; the final populated release-upgrade workflow and
-exact final CI must still pass before tagging.
+exact final CI pass before tagging, as recorded in publication.
 
 ## Cancelled-request regression repaired
 
@@ -83,7 +84,7 @@ pass 15,951 tests with 828 explicit skips. Native RLS passes 732 tests across 68
 files, with 125 historical candidate skips. All 52 Python worker suites pass at
 the display checkpoint; their implementation is unchanged. Original and corrected
 files, cancellation recovery, public exclusion and private denial pass at desktop
-and 390px. Final exact-commit GitHub checks remain required before tagging.
+and 390px. Publication records passing exact-commit GitHub checks before tagging.
 
 The first full QA run found eight stale
 column-audit entries after export field names entered the application source.

@@ -1,0 +1,127 @@
+{
+  "recordedAt": "2026-09-30T09:58:05.295137+00:00",
+  "commit": "62dc74e9b14d48b4a60dee54c52da38357990503",
+  "canonical": {
+    "commit": "62dc74e9b14d48b4a60dee54c52da38357990503",
+    "status": "?? .directory",
+    "healthRouteTests": 6,
+    "dependencyLockChange": "Root version only"
+  },
+  "demo": {
+    "phase": "ready",
+    "previousCommit": "4364812a9e3a180c87b7288bff3d14107d8ccf13",
+    "commit": "62dc74e9b14d48b4a60dee54c52da38357990503",
+    "receiptSha256": "f369bc6b2638f17623d6b8ba1935c716bfb7c92e4a5c6c4c11165c78bf0c837a",
+    "databaseBackup": {
+      "bytes": 51696508,
+      "sha256": "15b99c1e7c602ad18ba39af083b2c31ae00008761fc5de75321375e27a78bcf4",
+      "phase": "upgraded",
+      "migrationsBefore": 347,
+      "applied": [
+        "20261014000029",
+        "20261014000030",
+        "20261014000031",
+        "20261014000032"
+      ]
+    },
+    "runtimeDatabaseIdentified": true,
+    "installedMigrations": 351,
+    "pendingMigrations": 0,
+    "readOnlyBrowser": [
+      {
+        "completed": true,
+        "console": [],
+        "pageErrors": [],
+        "purpose": "Read-only demo navigation, not a rerun of isolated synthesis and response writes.",
+        "identity": {
+          "status": "ok",
+          "service": "openplan",
+          "checkedAt": "2026-09-30T09:56:08.730Z",
+          "deployment": {
+            "commit": "62dc74e9b14d",
+            "version": "0.64.0"
+          },
+          "checks": {
+            "app": "ok",
+            "database": "not_checked"
+          }
+        },
+        "heading": "Engagement",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "overflow": false
+      },
+      {
+        "completed": true,
+        "console": [],
+        "pageErrors": [],
+        "purpose": "Read-only demo navigation, not a rerun of isolated synthesis and response writes.",
+        "identity": {
+          "status": "ok",
+          "service": "openplan",
+          "checkedAt": "2026-09-30T09:56:10.924Z",
+          "deployment": {
+            "commit": "62dc74e9b14d",
+            "version": "0.64.0"
+          },
+          "checks": {
+            "app": "ok",
+            "database": "not_checked"
+          }
+        },
+        "heading": "Engagement",
+        "viewport": {
+          "width": 390,
+          "height": 1000
+        },
+        "overflow": false
+      }
+    ],
+    "controls": [
+      {
+        "case": "harmless",
+        "exit": 0,
+        "caughtExpectedFailure": false,
+        "completed": true
+      },
+      {
+        "case": "identity-fault",
+        "exit": 1,
+        "caughtExpectedFailure": true,
+        "completed": false
+      },
+      {
+        "case": "overflow-fault",
+        "exit": 1,
+        "caughtExpectedFailure": true,
+        "completed": false
+      }
+    ]
+  },
+  "temporaryAcceptanceServer": "Owned port3193 server stopped after verification; export worker already stopped.",
+  "worktrees": "Historical worktrees retained; no deletion or destructive cleanup.",
+  "artifacts": [
+    {
+      "name": "v064-demo-update.log",
+      "sha256": "f3815f936e087b1f6fb804eea2d3dc30250e70afba950549081ca78990ef10ae"
+    },
+    {
+      "name": "v064-demo-smoke.cjs",
+      "sha256": "73cf498e53cc528b8dc30dfb78f81ef16fc048393249187e5f7656fafafa9c51"
+    },
+    {
+      "name": "v064-demo-smoke-1440-baseline.png",
+      "sha256": "70fd5e19a3426be433a3a83d44dcc4a8380ee6479698788e823d67398089abe0"
+    },
+    {
+      "name": "v064-demo-smoke-390-baseline.png",
+      "sha256": "f3b8ba3ecae3210184e8862462a0c2b2edfd6547b50c0ccf887f71aade3daf8d"
+    },
+    {
+      "name": "v064-demo-smoke-controls.json",
+      "sha256": "85f59ca945f799e9561d7a7d20cebedb5b495763fd8029d96e97c8ae5527b3ef"
+    }
+  ]
+}
