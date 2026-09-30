@@ -1,8 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { describe, expect, it, vi } from "vitest";
-import { readSynthesisResponseLinkIndex } from "@/lib/engagement/synthesis-response-index";
+import { readSynthesisResponseLinkIndex, readResponseLinkChoices } from "@/lib/engagement/synthesis-response-index";
 import { loadSynthesisResponseLinkIndex } from "@/lib/engagement/synthesis-response-index-server";
-import { id, scope } from "./fixtures/engagement/synthesis-response-link";
+import { id, scope, fixture } from "./fixtures/engagement/synthesis-response-link";
 const review = { campaignId: scope.campaignId, workspaceId: scope.workspaceId, reviewId: scope.reviewId };
 const rows = Array.from({ length: 302 }, (_, n) => ({ responseId: id(1000 + n), groupId: "retained_group" }));
 const index = { ...review, entryCount: rows.length, entries: rows };
@@ -43,5 +43,20 @@ describe("private retained response link index", () => {
     const c = client(index); c.rpc.mockRejectedValue(new Error("SYNTHETIC private transport detail"));
     await expect(loadSynthesisResponseLinkIndex(c.db, review)).rejects.toMatchObject({ kind: "unavailable" });
     await expect(loadSynthesisResponseLinkIndex(c.db, review)).rejects.not.toThrow(/private transport/);
+  });
+});
+
+describe("current response link choices", () => {
+  const response = JSON.parse(fixture().responseHistory.recordText), choices = { ...review, responseCount: 1, responses: [response] };
+  it("keeps an empty current response list distinct from retained link history", () => {
+    expect(readResponseLinkChoices(choices, review).responses[0].id).toBe(response.id);
+    expect(readResponseLinkChoices({ ...review, responseCount: 0, responses: [] }, review).responses).toEqual([]);
+  });
+  it.each(["campaignId", "workspaceId", "reviewId"] as const)("rejects current choices from another %s", field => {
+    expect(() => readResponseLinkChoices({ ...choices, [field]: id(99) }, review)).toThrow(/incomplete or belong/);
+  });
+  it("refuses truncated counts, duplicate choices and foreign response records", () => {
+    for (const raw of [{ ...choices, responseCount: 2 }, { ...choices, responseCount: 2, responses: [response, response] },
+      { ...choices, responses: [{ ...response, campaign_id: id(99) }] }, { ...choices, extra: true }]) expect(() => readResponseLinkChoices(raw, review)).toThrow();
   });
 });

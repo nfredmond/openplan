@@ -499,10 +499,12 @@ const EXPECTED = {
   // Verified with the candidate in a rolled-back native catalog transaction: 253 tables, 14 views.
   // Two private retained synthesis review tables; no client policies or new views.
   // Migration 28 adds one private approval-event table, with RLS and no client policies.
-  relations: 270,
-  tables: 256,
+  // Migration 29 adds private response-link events and normalized members.
+  // Native catalog: 258 RLS tables, 14 application views; no new policies.
+  relations: 272,
+  tables: 258,
   views: 14,
-  rlsEnabledTables: 256,
+  rlsEnabledTables: 258,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

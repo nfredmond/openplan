@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { closeLoopEntrySchema } from "./close-loop";
 import { synthesisResponseLinkScopeSchema } from "./synthesis-response-link";
 
 export const synthesisResponseLinkReviewSchema = synthesisResponseLinkScopeSchema.pick({ campaignId: true, workspaceId: true, reviewId: true });
@@ -22,4 +23,14 @@ export function readSynthesisResponseLinkIndex(raw: unknown, expected: Synthesis
     previous = key;
   }
   return index;
+}
+
+const choicesSchema = synthesisResponseLinkReviewSchema.extend({ responseCount: z.number().int().nonnegative(), responses: z.array(closeLoopEntrySchema) });
+/** Current choices and retained addresses are separate; a removed response still has an index entry. */
+export function readResponseLinkChoices(raw: unknown, expected: SynthesisResponseLinkReview) {
+  const scope = synthesisResponseLinkReviewSchema.parse(expected), value = choicesSchema.parse(raw);
+  if (value.campaignId !== scope.campaignId || value.workspaceId !== scope.workspaceId || value.reviewId !== scope.reviewId
+    || value.responseCount !== value.responses.length || new Set(value.responses.map(row => row.id)).size !== value.responses.length
+    || value.responses.some(row => row.campaign_id !== scope.campaignId)) throw new Error("Response choices are incomplete or belong to another review");
+  return value;
 }

@@ -1,7 +1,7 @@
-// Candidate HTTP handlers. Register a route only when the staff workflow has a real caller.
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { loadCloseLoopEntries } from "@/lib/engagement/close-loop";
 import { loadCampaignAccess } from "@/lib/engagement/api";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { requireProviderBrowserOrigin } from "@/lib/assistant/provider-server";
@@ -16,6 +16,7 @@ const paramsSchema = z.object({ campaignId: z.string().uuid() });
 const selected = synthesisResponseLinkScopeSchema.pick({ reviewId: true, responseId: true, groupId: true });
 const querySchema = z.discriminatedUnion("mode", [
   selected.pick({ reviewId: true }).extend({ mode: z.literal("index") }),
+  selected.pick({ reviewId: true }).extend({ mode: z.literal("responses") }),
   selected.extend({ mode: z.literal("history") }), selected.extend({ mode: z.literal("context") }),
 ]);
 type Context = { params: Promise<{ campaignId: string }> };
@@ -53,6 +54,12 @@ export async function GET(request: NextRequest, context: Context) {
     if (query.data.mode === "index") {
       const index = await loadSynthesisResponseLinkIndex(access.client, scope);
       return index === null ? failure("missing") : NextResponse.json({ index }, { headers });
+    }
+    if (query.data.mode === "responses") {
+      if (await loadSynthesisResponseLinkIndex(access.client, scope) === null) return failure("missing");
+      const responses = await loadCloseLoopEntries(access.client, scope.campaignId);
+      if (responses.error) return failure("unavailable");
+      return NextResponse.json({ ...scope, responseCount: responses.rows.length, responses: responses.rows }, { headers });
     }
     const address = { ...scope, responseId: query.data.responseId, groupId: query.data.groupId };
     if (query.data.mode === "context") {

@@ -1,0 +1,1375 @@
+{
+  "baseCommit": "03fd1364d44b33fb91c181957e5b96d945a55651",
+  "state": "Verified local checkpoint; final commit CI and CI populated upgrade pending. No release claim.",
+  "sourceSha256": {
+    "src/lib/engagement/synthesis-response-links-server.ts": "3ce58f2a3de2e1611051fb927585c370bf4cbd1a3946834917725fa8e733c607",
+    "src/lib/engagement/synthesis-response-context-server.ts": "e4f132094e20805dcc1761e0feff19ffc1c9b03bcd3f2dfc9cf6ebdb23c5db16",
+    "src/lib/engagement/synthesis-response-records-server.ts": "c94c37461751d4f445f306ef55b76fa2861edbdb8f5e927dc7dec1ddd6a8620c",
+    "src/lib/engagement/synthesis-response-write-server.ts": "fc322678e8c868389cb7b8ddd72009ac295b70d7babdd9d5d2f036a484cb60ca",
+    "src/lib/engagement/synthesis-response-link.ts": "5b98f1455a4f8ce9ad266b3e8f88ff502eabe9ccd2692de9b4ba3b27b7ffe07e",
+    "src/lib/engagement/synthesis-response-link-reader.ts": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48",
+    "src/lib/engagement/synthesis-response-link-recovery.ts": "c3d47cbf30091ae783e8dff6d89e53736c18dd279b41f7474848628dacfe4df8",
+    "src/lib/engagement/synthesis-response-index.ts": "0f87637f0a7affd6663c329d9363364b6f4618b11dd0b8293ef446af985183a4",
+    "src/lib/engagement/synthesis-response-index-server.ts": "356507c9a797726a5cde9d73ae1c9a2d0fabcd873d4cb729677a1cfefdf82309",
+    "src/components/engagement/synthesis-response-links-panel.tsx": "8cf22e519f116da897891c388f9a5c336aa61cac081db917ae0db0e7d7703be4",
+    "src/components/engagement/synthesis-review-editor.tsx": "2eb0c4c7f2f85690543bfffaa7119fd4d9a6c7bd59faf730b5456bd67383b2a0",
+    "src/components/engagement/engagement-synthesis-sources.tsx": "5efa466af3815c66014ed5ff123583346cb0badbf361ca81d3c03c6e5820bc90",
+    "supabase/migrations/20261014000029_engagement_synthesis_response_links.sql": "55646552c22f44c2dae78810e01982119cadef1182dd47672719d8d723703743",
+    "src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts": "32439cdf9597ff0a7f59ff8ae978124f9bbcc49779f84d962460906892404a3a",
+    "src/test/migrations/inventory.test.ts": "b80562a0e0be6826eca1f3ead645be57bb23b079cfde0ad055a8a678928e6bec",
+    "src/test/a-column-nothing-reads-is-a-question.test.ts": "f35a5af1e541a4bec0bd227b3396bd63fa528782e9b385dc9988a6650ce5025b",
+    "src/test/engagement-synthesis-response-links-panel.test.tsx": "86c28928f66db7c4712a3edc52d2d912d68812dcef9fff2b7d3560bf8b9fc999"
+  },
+  "mutationExecutions": [
+    {
+      "name": "recovery-baseline",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-recovery.ts",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "valid": true,
+      "restoredSha256": "c3d47cbf30091ae783e8dff6d89e53736c18dd279b41f7474848628dacfe4df8"
+    },
+    {
+      "name": "recovery-harmless",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-recovery.ts",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "valid": true,
+      "restoredSha256": "c3d47cbf30091ae783e8dff6d89e53736c18dd279b41f7474848628dacfe4df8"
+    },
+    {
+      "name": "reader-baseline",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-harmless",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "panel-baseline",
+      "file": "openplan/src/components/engagement/synthesis-response-links-panel.tsx",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "valid": true,
+      "restoredSha256": "bf724cad4ebbbe3cde573f7010f2f81bd6e10b8ade499bde9a4b286e02552b95"
+    },
+    {
+      "name": "panel-harmless",
+      "file": "openplan/src/components/engagement/synthesis-response-links-panel.tsx",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "valid": true,
+      "restoredSha256": "bf724cad4ebbbe3cde573f7010f2f81bd6e10b8ade499bde9a4b286e02552b95"
+    },
+    {
+      "name": "choices-baseline",
+      "file": "openplan/src/lib/engagement/synthesis-response-index.ts",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "valid": true,
+      "restoredSha256": "0f87637f0a7affd6663c329d9363364b6f4618b11dd0b8293ef446af985183a4"
+    },
+    {
+      "name": "choices-harmless",
+      "file": "openplan/src/lib/engagement/synthesis-response-index.ts",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "valid": true,
+      "restoredSha256": "0f87637f0a7affd6663c329d9363364b6f4618b11dd0b8293ef446af985183a4"
+    },
+    {
+      "name": "handler-baseline",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-http.ts",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "valid": true,
+      "restoredSha256": "32439cdf9597ff0a7f59ff8ae978124f9bbcc49779f84d962460906892404a3a"
+    },
+    {
+      "name": "handler-harmless",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-http.ts",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "valid": true,
+      "restoredSha256": "32439cdf9597ff0a7f59ff8ae978124f9bbcc49779f84d962460906892404a3a"
+    },
+    {
+      "name": "integration-baseline",
+      "file": "openplan/src/components/engagement/engagement-synthesis-sources.tsx",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "valid": true,
+      "restoredSha256": "5efa466af3815c66014ed5ff123583346cb0badbf361ca81d3c03c6e5820bc90"
+    },
+    {
+      "name": "integration-harmless",
+      "file": "openplan/src/components/engagement/engagement-synthesis-sources.tsx",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "valid": true,
+      "restoredSha256": "5efa466af3815c66014ed5ff123583346cb0badbf361ca81d3c03c6e5820bc90"
+    },
+    {
+      "name": "recovery-scope-actorId",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-recovery.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses a pending command that changes actorId",
+      "valid": true,
+      "restoredSha256": "c3d47cbf30091ae783e8dff6d89e53736c18dd279b41f7474848628dacfe4df8"
+    },
+    {
+      "name": "recovery-scope-workspaceId",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-recovery.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses a pending command that changes workspaceId",
+      "valid": true,
+      "restoredSha256": "c3d47cbf30091ae783e8dff6d89e53736c18dd279b41f7474848628dacfe4df8"
+    },
+    {
+      "name": "recovery-scope-campaignId",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-recovery.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses a pending command that changes campaignId",
+      "valid": true,
+      "restoredSha256": "c3d47cbf30091ae783e8dff6d89e53736c18dd279b41f7474848628dacfe4df8"
+    },
+    {
+      "name": "recovery-scope-reviewId",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-recovery.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses a pending command that changes reviewId",
+      "valid": true,
+      "restoredSha256": "c3d47cbf30091ae783e8dff6d89e53736c18dd279b41f7474848628dacfe4df8"
+    },
+    {
+      "name": "recovery-draft-responseId",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-recovery.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses a pending command that changes responseId",
+      "valid": true,
+      "restoredSha256": "c3d47cbf30091ae783e8dff6d89e53736c18dd279b41f7474848628dacfe4df8"
+    },
+    {
+      "name": "recovery-draft-groupId",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-recovery.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses a pending command that changes groupId",
+      "valid": true,
+      "restoredSha256": "c3d47cbf30091ae783e8dff6d89e53736c18dd279b41f7474848628dacfe4df8"
+    },
+    {
+      "name": "recovery-draft-reason",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-recovery.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses a pending command that changes reason",
+      "valid": true,
+      "restoredSha256": "c3d47cbf30091ae783e8dff6d89e53736c18dd279b41f7474848628dacfe4df8"
+    },
+    {
+      "name": "recovery-stale-write",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-recovery.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses stale tab edits",
+      "valid": true,
+      "restoredSha256": "c3d47cbf30091ae783e8dff6d89e53736c18dd279b41f7474848628dacfe4df8"
+    },
+    {
+      "name": "recovery-pending-clear",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-recovery.ts",
+      "exitCode": 1,
+      "expectedFailure": "does not replace or clear",
+      "valid": true,
+      "restoredSha256": "c3d47cbf30091ae783e8dff6d89e53736c18dd279b41f7474848628dacfe4df8"
+    },
+    {
+      "name": "recovery-readback",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-recovery.ts",
+      "exitCode": 1,
+      "expectedFailure": "requires working storage and exact readback",
+      "valid": true,
+      "restoredSha256": "c3d47cbf30091ae783e8dff6d89e53736c18dd279b41f7474848628dacfe4df8"
+    },
+    {
+      "name": "recovery-freeze-pending",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-recovery.ts",
+      "exitCode": 1,
+      "expectedFailure": "does not replace or clear",
+      "valid": true,
+      "restoredSha256": "c3d47cbf30091ae783e8dff6d89e53736c18dd279b41f7474848628dacfe4df8"
+    },
+    {
+      "name": "recovery-archive-readback",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-recovery.ts",
+      "exitCode": 1,
+      "expectedFailure": "does not discard active recovery",
+      "valid": true,
+      "restoredSha256": "c3d47cbf30091ae783e8dff6d89e53736c18dd279b41f7474848628dacfe4df8"
+    },
+    {
+      "name": "recovery-archive-race",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-recovery.ts",
+      "exitCode": 1,
+      "expectedFailure": "does not discard active recovery",
+      "valid": true,
+      "restoredSha256": "c3d47cbf30091ae783e8dff6d89e53736c18dd279b41f7474848628dacfe4df8"
+    },
+    {
+      "name": "recovery-archive-scope",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-recovery.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses to archive the latest text",
+      "valid": true,
+      "restoredSha256": "c3d47cbf30091ae783e8dff6d89e53736c18dd279b41f7474848628dacfe4df8"
+    },
+    {
+      "name": "recovery-archive-removal",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-recovery.ts",
+      "exitCode": 1,
+      "expectedFailure": "reports when the active copy",
+      "valid": true,
+      "restoredSha256": "c3d47cbf30091ae783e8dff6d89e53736c18dd279b41f7474848628dacfe4df8"
+    },
+    {
+      "name": "recovery-http-error",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-recovery.ts",
+      "exitCode": 1,
+      "expectedFailure": "retains an unconfirmed command after HTTP",
+      "valid": true,
+      "restoredSha256": "c3d47cbf30091ae783e8dff6d89e53736c18dd279b41f7474848628dacfe4df8"
+    },
+    {
+      "name": "recovery-ack-verification",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-recovery.ts",
+      "exitCode": 1,
+      "expectedFailure": "rejects a forged or corrupt acknowledgement",
+      "valid": true,
+      "restoredSha256": "c3d47cbf30091ae783e8dff6d89e53736c18dd279b41f7474848628dacfe4df8"
+    },
+    {
+      "name": "recovery-retry-id",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-recovery.ts",
+      "exitCode": 1,
+      "expectedFailure": "sends exact bound bytes",
+      "valid": true,
+      "restoredSha256": "c3d47cbf30091ae783e8dff6d89e53736c18dd279b41f7474848628dacfe4df8"
+    },
+    {
+      "name": "recovery-pinned-user",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-recovery.ts",
+      "exitCode": 1,
+      "expectedFailure": "sends exact bound bytes",
+      "valid": true,
+      "restoredSha256": "c3d47cbf30091ae783e8dff6d89e53736c18dd279b41f7474848628dacfe4df8"
+    },
+    {
+      "name": "recovery-missing-command",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-recovery.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses transport when no command is pending",
+      "valid": true,
+      "restoredSha256": "c3d47cbf30091ae783e8dff6d89e53736c18dd279b41f7474848628dacfe4df8"
+    },
+    {
+      "name": "reader-outer-bytes",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "checks outer, review and response hashes",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-review-bytes",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "checks outer, review and response hashes",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-response-bytes",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "checks outer, review and response hashes",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-scope",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses another",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-source-id",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "requires the retained source identity",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-source-sha",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "requires the retained source identity",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-removed-response",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses removed response evidence",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-history-campaign_id",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses removed response evidence",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-history-response_id",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses removed response evidence",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-record-id",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses removed response evidence",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-record-campaign_id",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses removed response evidence",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-approval-operation",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "requires the retained source identity",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-approval-revisionId",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "requires the retained source identity",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-approval-revisionNo",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "requires the retained source identity",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-approval-revisionSha256",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "requires the retained source identity",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-count",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses incomplete counts",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-order",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses skipped numbers",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-predecessor-id",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "checks every event",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-predecessor-sha",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "checks every event",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-withdrawal-bytes",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "rejects withdrawal evidence replacement",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-head-id",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses incomplete counts",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-head-sha",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses incomplete counts",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "choices-scope-campaignId",
+      "file": "openplan/src/lib/engagement/synthesis-response-index.ts",
+      "exitCode": 1,
+      "expectedFailure": "rejects current choices from another campaignId",
+      "valid": true,
+      "restoredSha256": "0f87637f0a7affd6663c329d9363364b6f4618b11dd0b8293ef446af985183a4"
+    },
+    {
+      "name": "choices-scope-workspaceId",
+      "file": "openplan/src/lib/engagement/synthesis-response-index.ts",
+      "exitCode": 1,
+      "expectedFailure": "rejects current choices from another workspaceId",
+      "valid": true,
+      "restoredSha256": "0f87637f0a7affd6663c329d9363364b6f4618b11dd0b8293ef446af985183a4"
+    },
+    {
+      "name": "choices-scope-reviewId",
+      "file": "openplan/src/lib/engagement/synthesis-response-index.ts",
+      "exitCode": 1,
+      "expectedFailure": "rejects current choices from another reviewId",
+      "valid": true,
+      "restoredSha256": "0f87637f0a7affd6663c329d9363364b6f4618b11dd0b8293ef446af985183a4"
+    },
+    {
+      "name": "choices-count",
+      "file": "openplan/src/lib/engagement/synthesis-response-index.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses truncated counts",
+      "valid": true,
+      "restoredSha256": "0f87637f0a7affd6663c329d9363364b6f4618b11dd0b8293ef446af985183a4"
+    },
+    {
+      "name": "choices-duplicate",
+      "file": "openplan/src/lib/engagement/synthesis-response-index.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses truncated counts",
+      "valid": true,
+      "restoredSha256": "0f87637f0a7affd6663c329d9363364b6f4618b11dd0b8293ef446af985183a4"
+    },
+    {
+      "name": "choices-foreign-row",
+      "file": "openplan/src/lib/engagement/synthesis-response-index.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses truncated counts",
+      "valid": true,
+      "restoredSha256": "0f87637f0a7affd6663c329d9363364b6f4618b11dd0b8293ef446af985183a4"
+    },
+    {
+      "name": "handler-choice-error",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-http.ts",
+      "exitCode": 1,
+      "expectedFailure": "loads current response choices",
+      "valid": true,
+      "restoredSha256": "32439cdf9597ff0a7f59ff8ae978124f9bbcc49779f84d962460906892404a3a"
+    },
+    {
+      "name": "handler-choice-missing-review",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-http.ts",
+      "exitCode": 1,
+      "expectedFailure": "loads current response choices",
+      "valid": true,
+      "restoredSha256": "32439cdf9597ff0a7f59ff8ae978124f9bbcc49779f84d962460906892404a3a"
+    },
+    {
+      "name": "panel-late-unmount",
+      "file": "openplan/src/components/engagement/synthesis-response-links-panel.tsx",
+      "exitCode": 1,
+      "expectedFailure": "ignores a late denied read after unmount",
+      "valid": true,
+      "restoredSha256": "bf724cad4ebbbe3cde573f7010f2f81bd6e10b8ade499bde9a4b286e02552b95"
+    },
+    {
+      "name": "panel-stale-selection",
+      "file": "openplan/src/components/engagement/synthesis-response-links-panel.tsx",
+      "exitCode": 1,
+      "expectedFailure": "ignores stale denied evidence",
+      "valid": true,
+      "restoredSha256": "bf724cad4ebbbe3cde573f7010f2f81bd6e10b8ade499bde9a4b286e02552b95"
+    },
+    {
+      "name": "panel-baseline",
+      "file": "openplan/src/components/engagement/synthesis-response-links-panel.tsx",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "valid": true,
+      "restoredSha256": "bf724cad4ebbbe3cde573f7010f2f81bd6e10b8ade499bde9a4b286e02552b95"
+    },
+    {
+      "name": "panel-harmless",
+      "file": "openplan/src/components/engagement/synthesis-response-links-panel.tsx",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "valid": true,
+      "restoredSha256": "bf724cad4ebbbe3cde573f7010f2f81bd6e10b8ade499bde9a4b286e02552b95"
+    },
+    {
+      "name": "integration-baseline",
+      "file": "openplan/src/components/engagement/engagement-synthesis-sources.tsx",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "valid": true,
+      "restoredSha256": "5efa466af3815c66014ed5ff123583346cb0badbf361ca81d3c03c6e5820bc90"
+    },
+    {
+      "name": "integration-harmless",
+      "file": "openplan/src/components/engagement/engagement-synthesis-sources.tsx",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "valid": true,
+      "restoredSha256": "5efa466af3815c66014ed5ff123583346cb0badbf361ca81d3c03c6e5820bc90"
+    },
+    {
+      "name": "panel-late-list",
+      "file": "openplan/src/components/engagement/synthesis-response-links-panel.tsx",
+      "exitCode": 1,
+      "expectedFailure": "ignores a late denied read after unmount",
+      "valid": true,
+      "restoredSha256": "bf724cad4ebbbe3cde573f7010f2f81bd6e10b8ade499bde9a4b286e02552b95"
+    },
+    {
+      "name": "panel-revision-button",
+      "file": "openplan/src/components/engagement/synthesis-response-links-panel.tsx",
+      "exitCode": 1,
+      "expectedFailure": "does not link old revision",
+      "valid": true,
+      "restoredSha256": "bf724cad4ebbbe3cde573f7010f2f81bd6e10b8ade499bde9a4b286e02552b95"
+    },
+    {
+      "name": "panel-unsaved-button",
+      "file": "openplan/src/components/engagement/synthesis-response-links-panel.tsx",
+      "exitCode": 1,
+      "expectedFailure": "does not link unfinished",
+      "valid": true,
+      "restoredSha256": "bf724cad4ebbbe3cde573f7010f2f81bd6e10b8ade499bde9a4b286e02552b95"
+    },
+    {
+      "name": "panel-blocked-editor",
+      "file": "openplan/src/components/engagement/synthesis-response-links-panel.tsx",
+      "exitCode": 1,
+      "expectedFailure": "holds quota-failed text",
+      "valid": true,
+      "restoredSha256": "bf724cad4ebbbe3cde573f7010f2f81bd6e10b8ade499bde9a4b286e02552b95"
+    },
+    {
+      "name": "panel-other-draft",
+      "file": "openplan/src/components/engagement/synthesis-response-links-panel.tsx",
+      "exitCode": 1,
+      "expectedFailure": "keeps another selected link's unfinished reason",
+      "valid": true,
+      "restoredSha256": "bf724cad4ebbbe3cde573f7010f2f81bd6e10b8ade499bde9a4b286e02552b95"
+    },
+    {
+      "name": "panel-page-memory",
+      "file": "openplan/src/components/engagement/synthesis-response-links-panel.tsx",
+      "exitCode": 1,
+      "expectedFailure": "holds quota-failed text",
+      "valid": true,
+      "restoredSha256": "bf724cad4ebbbe3cde573f7010f2f81bd6e10b8ade499bde9a4b286e02552b95"
+    },
+    {
+      "name": "panel-same-context",
+      "file": "openplan/src/components/engagement/synthesis-response-links-panel.tsx",
+      "exitCode": 1,
+      "expectedFailure": "connects choices, exact save",
+      "valid": true,
+      "restoredSha256": "bf724cad4ebbbe3cde573f7010f2f81bd6e10b8ade499bde9a4b286e02552b95"
+    },
+    {
+      "name": "source-held-memory",
+      "file": "openplan/src/components/engagement/engagement-synthesis-sources.tsx",
+      "exitCode": 1,
+      "expectedFailure": "keeps quota-failed response-link reasons",
+      "valid": true,
+      "restoredSha256": "5efa466af3815c66014ed5ff123583346cb0badbf361ca81d3c03c6e5820bc90"
+    },
+    {
+      "name": "source-recovery-notice",
+      "file": "openplan/src/components/engagement/engagement-synthesis-sources.tsx",
+      "exitCode": 1,
+      "expectedFailure": "keeps quota-failed response-link reasons",
+      "valid": true,
+      "restoredSha256": "5efa466af3815c66014ed5ff123583346cb0badbf361ca81d3c03c6e5820bc90"
+    },
+    {
+      "name": "reader-baseline",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-harmless",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-sequence-number",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses skipped numbers",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-unique-request",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "refuses skipped numbers",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-repeated-withdraw",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "rejects withdrawal evidence replacement",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "reader-selected-group",
+      "file": "openplan/src/lib/engagement/synthesis-response-link-reader.ts",
+      "exitCode": 1,
+      "expectedFailure": "requires the retained source identity",
+      "valid": true,
+      "restoredSha256": "0efd0aa1fe9601531afc84ef0b4f545568a36d53e3d9c6f79c6349b2917adb48"
+    },
+    {
+      "name": "panel-baseline",
+      "file": "openplan/src/components/engagement/synthesis-response-links-panel.tsx",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "valid": true,
+      "restoredSha256": "99c8ec0ec01bd7c37f3b92395fa9ec952d8be71601d858746fcb3d9545a86a84"
+    },
+    {
+      "name": "panel-harmless",
+      "file": "openplan/src/components/engagement/synthesis-response-links-panel.tsx",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "valid": true,
+      "restoredSha256": "99c8ec0ec01bd7c37f3b92395fa9ec952d8be71601d858746fcb3d9545a86a84"
+    },
+    {
+      "name": "panel-restored-query",
+      "file": "openplan/src/components/engagement/synthesis-response-links-panel.tsx",
+      "exitCode": 1,
+      "expectedFailure": "holds quota-failed text",
+      "valid": true,
+      "restoredSha256": "99c8ec0ec01bd7c37f3b92395fa9ec952d8be71601d858746fcb3d9545a86a84"
+    }
+  ],
+  "browserJourneys": [
+    {
+      "width": 1440,
+      "completed": true,
+      "runnerSha256": "da08a36419c4b0acf4b506435d33bf0836e0360e5ca022267be7501b8aff7d36",
+      "quotaRecovery": {
+        "failures": 1,
+        "actualFocusEvents": 1
+      },
+      "privateAccessCleared": true,
+      "console": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+        "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+      ],
+      "pageErrors": [],
+      "bounds": {
+        "baseline": [
+          {
+            "text": "Refresh response choices and links",
+            "left": 360,
+            "right": 636.140625,
+            "parentLeft": 347,
+            "parentRight": 1349,
+            "viewport": 1440
+          },
+          {
+            "text": "Inspect response link",
+            "left": 360,
+            "right": 842,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Open link: SYNTHETIC response link browser 1440 ab5679c7-572c-477a-9681-fa3b5f205552 / SYNTHETIC retained category 1440 1789416526489",
+            "left": 360,
+            "right": 1336,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Save updated response link",
+            "left": 360,
+            "right": 583.859375,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Withdraw response link",
+            "left": 591.859375,
+            "right": 787.5,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          }
+        ],
+        "harmless": [
+          {
+            "text": "Refresh response choices and links",
+            "left": 360,
+            "right": 636.140625,
+            "parentLeft": 347,
+            "parentRight": 1349,
+            "viewport": 1440
+          },
+          {
+            "text": "Inspect response link",
+            "left": 360,
+            "right": 842,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Open link: SYNTHETIC response link browser 1440 ab5679c7-572c-477a-9681-fa3b5f205552 / SYNTHETIC retained category 1440 1789416526489",
+            "left": 360,
+            "right": 1336,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Save updated response link",
+            "left": 360,
+            "right": 583.859375,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Withdraw response link",
+            "left": 591.859375,
+            "right": 787.5,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Restore preserved response-link copy",
+            "left": 360,
+            "right": 655.328125,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          }
+        ],
+        "targeted": [
+          {
+            "text": "Refresh response choices and links",
+            "left": 360,
+            "right": 1402,
+            "parentLeft": 347,
+            "parentRight": 1349,
+            "viewport": 1440
+          },
+          {
+            "text": "Inspect response link",
+            "left": 360,
+            "right": 842,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Open link: SYNTHETIC response link browser 1440 ab5679c7-572c-477a-9681-fa3b5f205552 / SYNTHETIC retained category 1440 1789416526489",
+            "left": 360,
+            "right": 1336,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Save updated response link",
+            "left": 360,
+            "right": 583.859375,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Withdraw response link",
+            "left": 591.859375,
+            "right": 787.5,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          },
+          {
+            "text": "Restore preserved response-link copy",
+            "left": 360,
+            "right": 655.328125,
+            "parentLeft": 360,
+            "parentRight": 1336,
+            "viewport": 1440
+          }
+        ]
+      }
+    },
+    {
+      "width": 390,
+      "completed": true,
+      "runnerSha256": "da08a36419c4b0acf4b506435d33bf0836e0360e5ca022267be7501b8aff7d36",
+      "quotaRecovery": {
+        "failures": 1,
+        "actualFocusEvents": 1
+      },
+      "privateAccessCleared": true,
+      "console": [
+        "Failed to load resource: net::ERR_CONNECTION_RESET",
+        "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+        "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+      ],
+      "pageErrors": [],
+      "bounds": {
+        "baseline": [
+          {
+            "text": "Refresh response choices and links",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 62,
+            "parentRight": 328,
+            "viewport": 390
+          },
+          {
+            "text": "Inspect response link",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Open link: SYNTHETIC response link browser 390 836b7ac9-bfd8-4141-b4d2-0f6a61a95dd5 / SYNTHETIC retained category 390 1789416450460",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Save updated response link",
+            "left": 75,
+            "right": 298.859375,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Withdraw response link",
+            "left": 75,
+            "right": 270.640625,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          }
+        ],
+        "harmless": [
+          {
+            "text": "Refresh response choices and links",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 62,
+            "parentRight": 328,
+            "viewport": 390
+          },
+          {
+            "text": "Inspect response link",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Open link: SYNTHETIC response link browser 390 836b7ac9-bfd8-4141-b4d2-0f6a61a95dd5 / SYNTHETIC retained category 390 1789416450460",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Save updated response link",
+            "left": 75,
+            "right": 298.859375,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Withdraw response link",
+            "left": 75,
+            "right": 270.640625,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Restore preserved response-link copy",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          }
+        ],
+        "targeted": [
+          {
+            "text": "Refresh response choices and links",
+            "left": 75,
+            "right": 381,
+            "parentLeft": 62,
+            "parentRight": 328,
+            "viewport": 390
+          },
+          {
+            "text": "Inspect response link",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Open link: SYNTHETIC response link browser 390 836b7ac9-bfd8-4141-b4d2-0f6a61a95dd5 / SYNTHETIC retained category 390 1789416450460",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Save updated response link",
+            "left": 75,
+            "right": 298.859375,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Withdraw response link",
+            "left": 75,
+            "right": 270.640625,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          },
+          {
+            "text": "Restore preserved response-link copy",
+            "left": 75,
+            "right": 315,
+            "parentLeft": 75,
+            "parentRight": 315,
+            "viewport": 390
+          }
+        ]
+      }
+    }
+  ],
+  "installedNative": {
+    "passed": 55,
+    "historicalCandidateSkipped": 122,
+    "missingSchemaControl": "Failed with undefined-function SQLSTATE 42883 before installation."
+  },
+  "upgradeBefore": [
+    {
+      "count": 3135,
+      "table": "engagement_closeloop_entries",
+      "sha256": "e9fd9e2866f6e09ca5cf74924af40b72aec3b464872b7e1194d23071f641422a"
+    },
+    {
+      "count": 3203,
+      "table": "engagement_response_history",
+      "sha256": "4e6145be21f965c82644d175dbb5223772071b72c7260b8570688468efd0cf95"
+    },
+    {
+      "count": 132,
+      "table": "engagement_response_write_receipts",
+      "sha256": "563f0ab90e14c3a280732978c97d297d6abce3be09c5e477640aeec72f7cc47a"
+    },
+    {
+      "count": 8,
+      "table": "engagement_synthesis_approval_events",
+      "sha256": "20025bffdd0e9cf3a4c52d234f548df480e33c42bb7c0d1774fac3812d235543"
+    },
+    {
+      "count": 36,
+      "table": "engagement_synthesis_review_revisions",
+      "sha256": "f4c9ba378e232cc38574f3a7d8dcf59a2234631e090d9306cadc8128e6af08fc"
+    },
+    {
+      "count": 10,
+      "table": "engagement_synthesis_reviews",
+      "sha256": "832254276a71cfdcef7ea69d1696e5a28f3aa43343fdb512328b1a08e209dabc"
+    },
+    {
+      "count": 26,
+      "table": "engagement_synthesis_sources",
+      "sha256": "c4d1ebe467f52280650dc99598d95ec617748102fae9a1fbc744d75122b0c3c0"
+    }
+  ],
+  "upgradeAfter": [
+    {
+      "count": 3135,
+      "table": "engagement_closeloop_entries",
+      "sha256": "e9fd9e2866f6e09ca5cf74924af40b72aec3b464872b7e1194d23071f641422a"
+    },
+    {
+      "count": 3203,
+      "table": "engagement_response_history",
+      "sha256": "4e6145be21f965c82644d175dbb5223772071b72c7260b8570688468efd0cf95"
+    },
+    {
+      "count": 132,
+      "table": "engagement_response_write_receipts",
+      "sha256": "563f0ab90e14c3a280732978c97d297d6abce3be09c5e477640aeec72f7cc47a"
+    },
+    {
+      "count": 8,
+      "table": "engagement_synthesis_approval_events",
+      "sha256": "20025bffdd0e9cf3a4c52d234f548df480e33c42bb7c0d1774fac3812d235543"
+    },
+    {
+      "count": 36,
+      "table": "engagement_synthesis_review_revisions",
+      "sha256": "f4c9ba378e232cc38574f3a7d8dcf59a2234631e090d9306cadc8128e6af08fc"
+    },
+    {
+      "count": 10,
+      "table": "engagement_synthesis_reviews",
+      "sha256": "832254276a71cfdcef7ea69d1696e5a28f3aa43343fdb512328b1a08e209dabc"
+    },
+    {
+      "count": 26,
+      "table": "engagement_synthesis_sources",
+      "sha256": "c4d1ebe467f52280650dc99598d95ec617748102fae9a1fbc744d75122b0c3c0"
+    }
+  ],
+  "localEvidence": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27",
+  "integrationProof": [
+    {
+      "name": "inventory-baseline",
+      "file": "openplan/src/test/migrations/inventory.test.ts",
+      "valid": true,
+      "exitCode": 0,
+      "expectedFailure": null,
+      "restoredSha256": "b80562a0e0be6826eca1f3ead645be57bb23b079cfde0ad055a8a678928e6bec"
+    },
+    {
+      "name": "inventory-harmless",
+      "file": "openplan/src/test/migrations/inventory.test.ts",
+      "valid": true,
+      "exitCode": 0,
+      "expectedFailure": null,
+      "restoredSha256": "b80562a0e0be6826eca1f3ead645be57bb23b079cfde0ad055a8a678928e6bec"
+    },
+    {
+      "name": "sql-readers-baseline",
+      "file": "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "valid": true,
+      "exitCode": 0,
+      "expectedFailure": null,
+      "restoredSha256": "f35a5af1e541a4bec0bd227b3396bd63fa528782e9b385dc9988a6650ce5025b"
+    },
+    {
+      "name": "sql-readers-harmless",
+      "file": "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "valid": true,
+      "exitCode": 0,
+      "expectedFailure": null,
+      "restoredSha256": "f35a5af1e541a4bec0bd227b3396bd63fa528782e9b385dc9988a6650ce5025b"
+    },
+    {
+      "name": "audit-baseline",
+      "file": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts",
+      "valid": true,
+      "exitCode": 0,
+      "expectedFailure": null,
+      "restoredSha256": "32439cdf9597ff0a7f59ff8ae978124f9bbcc49779f84d962460906892404a3a"
+    },
+    {
+      "name": "audit-harmless",
+      "file": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts",
+      "valid": true,
+      "exitCode": 0,
+      "expectedFailure": null,
+      "restoredSha256": "32439cdf9597ff0a7f59ff8ae978124f9bbcc49779f84d962460906892404a3a"
+    },
+    {
+      "name": "copy-baseline",
+      "file": "openplan/src/components/engagement/synthesis-response-links-panel.tsx",
+      "valid": true,
+      "exitCode": 0,
+      "expectedFailure": null,
+      "restoredSha256": "8cf22e519f116da897891c388f9a5c336aa61cac081db917ae0db0e7d7703be4"
+    },
+    {
+      "name": "copy-harmless",
+      "file": "openplan/src/components/engagement/synthesis-response-links-panel.tsx",
+      "valid": true,
+      "exitCode": 0,
+      "expectedFailure": null,
+      "restoredSha256": "8cf22e519f116da897891c388f9a5c336aa61cac081db917ae0db0e7d7703be4"
+    },
+    {
+      "name": "upgrade-baseline",
+      "file": "CHANGELOG.md",
+      "valid": true,
+      "exitCode": 0,
+      "expectedFailure": null,
+      "restoredSha256": "797cef979ff904a8055e3245c254a74a5621b42f3a076356e28c463f1f3ad3f7"
+    },
+    {
+      "name": "upgrade-harmless",
+      "file": "CHANGELOG.md",
+      "valid": true,
+      "exitCode": 0,
+      "expectedFailure": null,
+      "restoredSha256": "797cef979ff904a8055e3245c254a74a5621b42f3a076356e28c463f1f3ad3f7"
+    },
+    {
+      "name": "inventory-events-relations",
+      "file": "openplan/src/test/migrations/inventory.test.ts",
+      "valid": true,
+      "exitCode": 1,
+      "expectedFailure": "reads every relation",
+      "restoredSha256": "b80562a0e0be6826eca1f3ead645be57bb23b079cfde0ad055a8a678928e6bec"
+    },
+    {
+      "name": "inventory-events-tables",
+      "file": "openplan/src/test/migrations/inventory.test.ts",
+      "valid": true,
+      "exitCode": 1,
+      "expectedFailure": "reads every relation",
+      "restoredSha256": "b80562a0e0be6826eca1f3ead645be57bb23b079cfde0ad055a8a678928e6bec"
+    },
+    {
+      "name": "inventory-events-rls",
+      "file": "openplan/src/test/migrations/inventory.test.ts",
+      "valid": true,
+      "exitCode": 1,
+      "expectedFailure": "reads every relation",
+      "restoredSha256": "b80562a0e0be6826eca1f3ead645be57bb23b079cfde0ad055a8a678928e6bec"
+    },
+    {
+      "name": "inventory-members-relations",
+      "file": "openplan/src/test/migrations/inventory.test.ts",
+      "valid": true,
+      "exitCode": 1,
+      "expectedFailure": "reads every relation",
+      "restoredSha256": "b80562a0e0be6826eca1f3ead645be57bb23b079cfde0ad055a8a678928e6bec"
+    },
+    {
+      "name": "inventory-members-tables",
+      "file": "openplan/src/test/migrations/inventory.test.ts",
+      "valid": true,
+      "exitCode": 1,
+      "expectedFailure": "reads every relation",
+      "restoredSha256": "b80562a0e0be6826eca1f3ead645be57bb23b079cfde0ad055a8a678928e6bec"
+    },
+    {
+      "name": "inventory-members-rls",
+      "file": "openplan/src/test/migrations/inventory.test.ts",
+      "valid": true,
+      "exitCode": 1,
+      "expectedFailure": "reads every relation",
+      "restoredSha256": "b80562a0e0be6826eca1f3ead645be57bb23b079cfde0ad055a8a678928e6bec"
+    },
+    {
+      "name": "sql-reader-engagement_synthesis_response_events.event_no",
+      "file": "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "valid": true,
+      "exitCode": 1,
+      "expectedFailure": "finds no unread column",
+      "restoredSha256": "f35a5af1e541a4bec0bd227b3396bd63fa528782e9b385dc9988a6650ce5025b"
+    },
+    {
+      "name": "sql-reader-engagement_synthesis_response_events.event_sha256",
+      "file": "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "valid": true,
+      "exitCode": 1,
+      "expectedFailure": "finds no unread column",
+      "restoredSha256": "f35a5af1e541a4bec0bd227b3396bd63fa528782e9b385dc9988a6650ce5025b"
+    },
+    {
+      "name": "sql-reader-engagement_synthesis_response_events.event_text",
+      "file": "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "valid": true,
+      "exitCode": 1,
+      "expectedFailure": "finds no unread column",
+      "restoredSha256": "f35a5af1e541a4bec0bd227b3396bd63fa528782e9b385dc9988a6650ce5025b"
+    },
+    {
+      "name": "sql-reader-engagement_synthesis_response_events.group_id",
+      "file": "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "valid": true,
+      "exitCode": 1,
+      "expectedFailure": "finds no unread column",
+      "restoredSha256": "f35a5af1e541a4bec0bd227b3396bd63fa528782e9b385dc9988a6650ce5025b"
+    },
+    {
+      "name": "sql-reader-engagement_synthesis_response_events.intent_json",
+      "file": "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "valid": true,
+      "exitCode": 1,
+      "expectedFailure": "finds no unread column",
+      "restoredSha256": "f35a5af1e541a4bec0bd227b3396bd63fa528782e9b385dc9988a6650ce5025b"
+    },
+    {
+      "name": "sql-reader-engagement_synthesis_response_events.predecessor_sha256",
+      "file": "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "valid": true,
+      "exitCode": 1,
+      "expectedFailure": "finds no unread column",
+      "restoredSha256": "f35a5af1e541a4bec0bd227b3396bd63fa528782e9b385dc9988a6650ce5025b"
+    },
+    {
+      "name": "sql-reader-engagement_synthesis_response_events.review_id",
+      "file": "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "valid": true,
+      "exitCode": 1,
+      "expectedFailure": "finds no unread column",
+      "restoredSha256": "f35a5af1e541a4bec0bd227b3396bd63fa528782e9b385dc9988a6650ce5025b"
+    },
+    {
+      "name": "sql-reader-engagement_synthesis_response_members.event_id",
+      "file": "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "valid": true,
+      "exitCode": 1,
+      "expectedFailure": "finds no unread column",
+      "restoredSha256": "f35a5af1e541a4bec0bd227b3396bd63fa528782e9b385dc9988a6650ce5025b"
+    },
+    {
+      "name": "audit-removed",
+      "file": "openplan/src/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route.ts",
+      "valid": true,
+      "exitCode": 1,
+      "expectedFailure": "every non-allowlisted route CALLS",
+      "restoredSha256": "32439cdf9597ff0a7f59ff8ae978124f9bbcc49779f84d962460906892404a3a"
+    },
+    {
+      "name": "copy-regressed",
+      "file": "openplan/src/components/engagement/synthesis-response-links-panel.tsx",
+      "valid": true,
+      "exitCode": 1,
+      "expectedFailure": "uses no term from the ledger",
+      "restoredSha256": "8cf22e519f116da897891c388f9a5c336aa61cac081db917ae0db0e7d7703be4"
+    },
+    {
+      "name": "upgrade-missing",
+      "file": "CHANGELOG.md",
+      "valid": true,
+      "exitCode": 1,
+      "expectedFailure": "the CHANGELOG's Unreleased section names",
+      "restoredSha256": "797cef979ff904a8055e3245c254a74a5621b42f3a076356e28c463f1f3ad3f7"
+    }
+  ],
+  "firstFullGates": {
+    "qa": "5 failed,15913 passed,806 skipped",
+    "shuffled": "same five integration failures;15913 passed,806 skipped",
+    "focusedCorrections": "75 passed",
+    "nativeCatalog": {
+      "rlsTables": 258,
+      "applicationViews": 14,
+      "extensionViewsExcluded": [
+        "geography_columns",
+        "geometry_columns"
+      ]
+    }
+  },
+  "finalLocalGates": {
+    "qa": {
+      "exitCode": 0,
+      "testsPassed": 15918,
+      "skipped": 806,
+      "lint": "passed",
+      "deadcode": "passed",
+      "provider": "passed",
+      "audit": "passed",
+      "productionBuild": "passed"
+    },
+    "shuffled": {
+      "exitCode": 0,
+      "testsPassed": 15918,
+      "skipped": 806
+    },
+    "rls": {
+      "exitCode": 0,
+      "testsPassed": 713,
+      "filesPassed": 67,
+      "historicalCandidateSkipped": 122
+    },
+    "workers": {
+      "exitCode": 0,
+      "suitesPassed": 52,
+      "failed": 0,
+      "notRun": 0
+    }
+  }
+}

@@ -34,7 +34,7 @@ const contextScopeSchema = synthesisResponseLinkScopeSchema.extend({
   schemaVersion: z.literal(1), visibility: z.literal("private"), purpose: z.literal("reviewed_synthesis_response"),
 }).passthrough();
 
-async function verifyHash(text: string, expected: string) {
+export async function verifyResponseLinkText(text: string, expected: string) {
   if (!text.isWellFormed() || text.includes("\0")) throw new Error("Invalid synthesis response text");
   const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
   const actual = Array.from(new Uint8Array(bytes), value => value.toString(16).padStart(2, "0")).join("");
@@ -44,11 +44,11 @@ async function verifyHash(text: string, expected: string) {
 /** Browser acknowledgement verifies bytes and exact intent; the server verifies full source evidence and authority. */
 export async function readSynthesisResponseLinkAcknowledgement(raw: unknown, expected: SynthesisResponseLinkIntent) {
   const intent = synthesisResponseLinkIntentSchema.parse(expected), receipt = receiptSchema.parse(raw);
-  await verifyHash(receipt.event.eventText, receipt.event.eventSha256);
+  await verifyResponseLinkText(receipt.event.eventText, receipt.event.eventSha256);
   const event = synthesisResponseLinkEventSchema.parse(JSON.parse(receipt.event.eventText));
   if (JSON.stringify(event.intent) !== JSON.stringify(intent)) throw new Error("Synthesis response acknowledgement belongs to another command");
   if ((event.eventNo === 1) !== (intent.operation === "link")) throw new Error("Synthesis response event sequence differs");
-  await verifyHash(event.context.contextText, event.context.contextSha256);
+  await verifyResponseLinkText(event.context.contextText, event.context.contextSha256);
   const context = contextScopeSchema.parse(JSON.parse(event.context.contextText));
   if (context.campaignId !== intent.campaignId || context.workspaceId !== intent.workspaceId
     || context.reviewId !== intent.reviewId || context.responseId !== intent.responseId || context.groupId !== intent.groupId) {

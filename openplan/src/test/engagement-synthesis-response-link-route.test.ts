@@ -3,14 +3,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SynthesisResponseLinkError } from "@/lib/engagement/synthesis-response-links-server";
 import { readSynthesisResponseLinkAcknowledgement, synthesisResponseLinkIntentSchema } from "@/lib/engagement/synthesis-response-link";
 import { event, fixture, packet, id } from "./fixtures/engagement/synthesis-response-link";
-const mocks = vi.hoisted(() => ({ getUser: vi.fn(), access: vi.fn(), index: vi.fn(), context: vi.fn(), history: vi.fn(), retain: vi.fn(), info: vi.fn(), error: vi.fn(), service: { rpc: vi.fn() } }));
+const mocks = vi.hoisted(() => ({ getUser: vi.fn(), access: vi.fn(), index: vi.fn(), choices: vi.fn(), context: vi.fn(), history: vi.fn(), retain: vi.fn(), info: vi.fn(), error: vi.fn(), service: { rpc: vi.fn() } }));
 vi.mock("@/lib/supabase/server", () => ({ createClient: async () => ({ auth: { getUser: mocks.getUser } }), createServiceRoleClient: () => mocks.service }));
+vi.mock("@/lib/engagement/close-loop", async original => ({ ...await original<typeof import("@/lib/engagement/close-loop")>(), loadCloseLoopEntries: (...args: unknown[]) => mocks.choices(...args) }));
 vi.mock("@/lib/engagement/api", () => ({ loadCampaignAccess: (...args: unknown[]) => mocks.access(...args) }));
 vi.mock("@/lib/observability/audit", () => ({ createApiAuditLogger: () => ({ info: mocks.info, error: mocks.error }) }));
 vi.mock("@/lib/engagement/synthesis-response-index-server", () => ({ loadSynthesisResponseLinkIndex: (...args: unknown[]) => mocks.index(...args) }));
 vi.mock("@/lib/engagement/synthesis-response-write-server", () => ({ loadSynthesisResponseLinkHistory: (...args: unknown[]) => mocks.history(...args), retainSynthesisResponseLinkCommand: (...args: unknown[]) => mocks.retain(...args) }));
 vi.mock("@/lib/engagement/synthesis-response-links-server", async importOriginal => ({ ...await importOriginal<typeof import("@/lib/engagement/synthesis-response-links-server")>(), loadSynthesisResponseContext: (...args: unknown[]) => mocks.context(...args) }));
-import { GET, POST } from "@/lib/engagement/synthesis-response-link-http";
+import { GET, POST } from "@/app/api/engagement/campaigns/[campaignId]/synthesis/response-links/route";
 const saved = event(fixture()), intent = synthesisResponseLinkIntentSchema.parse(saved.intent), retained = packet(saved);
 const scope = { campaignId: intent.campaignId, workspaceId: intent.workspaceId, reviewId: intent.reviewId };
 const address = { ...scope, responseId: intent.responseId, groupId: intent.groupId };
@@ -25,7 +26,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.getUser.mockResolvedValue({ data: { user: { id: intent.actorId } } });
   mocks.access.mockResolvedValue({ campaign: { workspace_id: scope.workspaceId }, allowed: true, error: null });
-  mocks.index.mockResolvedValue(index); mocks.context.mockResolvedValue({ packet: saved.context, evidence: "private enrichment" });
+  mocks.index.mockResolvedValue(index); mocks.choices.mockResolvedValue({ rows: [JSON.parse(fixture().responseHistory.recordText)], error: null }); mocks.context.mockResolvedValue({ packet: saved.context, evidence: "private enrichment" });
   mocks.history.mockResolvedValue({ scope: address, entries: [head], head });
   mocks.retain.mockResolvedValue({ event: { ...saved, ...retained, evidence: "private enrichment" }, replayed: false });
 });
@@ -49,6 +50,18 @@ describe("private synthesis response link API", () => {
     const empty = await GET(get(), routeContext); expect(empty.status).toBe(200); expect(await empty.json()).toEqual({ index: { ...scope, entryCount: 0, entries: [] } });
     mocks.index.mockResolvedValueOnce(null); expect((await GET(get(), routeContext)).status).toBe(404);
     expect(mocks.history).not.toHaveBeenCalled(); expect(mocks.context).not.toHaveBeenCalled();
+  });
+  it("loads current response choices separately from retained addresses and preserves read failures", async () => {
+    const request = () => get(`mode=responses&reviewId=${scope.reviewId}`);
+    const res = await GET(request(), routeContext); expect(res.status).toBe(200); expect(res.headers.get("cache-control")).toBe("private, no-store");
+    expect(await res.json()).toEqual({ ...scope, responseCount: 1, responses: [JSON.parse(fixture().responseHistory.recordText)] });
+    expect(mocks.choices).toHaveBeenCalledExactlyOnceWith(expect.anything(), scope.campaignId);
+    mocks.choices.mockResolvedValueOnce({ rows: [], error: { message: "SYNTHETIC private failure" } });
+    const failed = await GET(request(), routeContext); expect(failed.status).toBe(503); expect(await failed.text()).not.toContain("SYNTHETIC");
+    mocks.choices.mockClear(); mocks.index.mockResolvedValueOnce(null);
+    expect((await GET(request(), routeContext)).status).toBe(404); expect(mocks.choices).not.toHaveBeenCalled();
+    mocks.choices.mockResolvedValueOnce({ rows: [], error: null });
+    expect(await (await GET(request(), routeContext)).json()).toEqual({ ...scope, responseCount: 0, responses: [] });
   });
   it("returns exact current context and complete history with no enriched fields", async () => {
     const context = await GET(get(selectedQuery("context")), routeContext);

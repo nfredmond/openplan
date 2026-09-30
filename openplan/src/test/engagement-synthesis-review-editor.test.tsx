@@ -5,6 +5,8 @@ import { EngagementSynthesisSources } from "@/components/engagement/engagement-s
 import { applySynthesisReviewChange, createSynthesisReviewContent, synthesisReviewIntentSchema } from "@/lib/engagement/synthesis-review";
 import type { SynthesisReviewRecord } from "@/lib/engagement/synthesis-review-records";
 import { listPreservedReviewCopies, readReviewWorkingCopy } from "@/lib/engagement/synthesis-review-recovery";
+import { fixture as responseLinkFixture } from "./fixtures/engagement/synthesis-response-link";
+import { listPreservedResponseLinkCopies } from "@/lib/engagement/synthesis-response-link-recovery";
 import { makeSourceSnapshot, savedSource, sourceActor, sourceDate, sourceHash, sourceScope } from "./fixtures/engagement/synthesis-source";
 vi.mock("@/lib/supabase/client", () => ({ createClient: () => ({ auth: { onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }) } }) }));
 
@@ -37,6 +39,16 @@ async function server(url: RequestInfo | URL, options?: RequestInit) {
   if (path.pathname.endsWith("/sources")) {
     const meta = { requestId: source.requestId, campaignId: scope.campaignId, workspaceId: scope.workspaceId, createdAt: sourceDate, snapshotSha256: source.snapshotSha256, counts: snapshot.counts, selection: snapshot.selection };
     return json(path.searchParams.has("requestId") ? { ...meta, snapshot } : { campaignId: scope.campaignId, workspaceId: scope.workspaceId, pageSize: 25, entries: [meta], nextCursor: null });
+  }
+  if (path.pathname.endsWith("/response-links")) {
+    if (options?.method === "POST") throw new Error("This review fixture does not simulate response-link writes");
+    const record = records.get(head)!;
+    const responseScope = { campaignId: scope.campaignId, workspaceId: scope.workspaceId, reviewId: record.reviewId };
+    const context = responseLinkFixture(), response = JSON.parse(context.responseHistory.recordText);
+    if (path.searchParams.get("mode") === "index") return json({ index: { ...responseScope, entryCount: 0, entries: [] } });
+    if (path.searchParams.get("mode") === "responses") return json({ ...responseScope, responseCount: 1, responses: [response] });
+    if (path.searchParams.get("mode") === "history") return json({ history: { ...responseScope, responseId: response.id, groupId: path.searchParams.get("groupId"), eventCount: 0, entries: [], headId: null, headSha256: null } });
+    return json({}, 409);
   }
   if (path.pathname.endsWith("/approvals")) {
     if (options?.method === "POST") throw new Error("This review fixture does not simulate approval writes");
@@ -306,6 +318,31 @@ describe("retained staff review editor", () => {
     quota.mockRestore(); fireEvent.click(screen.getByRole("button", { name: "Preserve approval reason and start another" }));
     expect(await screen.findByLabelText("Preserved approval recovery copies")).toHaveTextContent("SYNTHETIC latest approval before source revalidation");
     expect(transport.mock.calls.some(([url, options]) => String(url).includes("/approvals") && options?.method === "POST")).toBe(false);
+  });
+
+  it.each(["focus", "storage"])("keeps quota-failed response-link reasons through real source %s revalidation", async event => {
+    seed(); render(<EngagementSynthesisSources userId={scope.userId} workspaceId={scope.workspaceId} campaignId={scope.campaignId} categories={[]} />);
+    fireEvent.click(await screen.findByRole("button", { name: /Open saved source/ }));
+    fireEvent.click(await screen.findByRole("button", { name: /Open staff review/ }));
+    const response = JSON.parse(responseLinkFixture().responseHistory.recordText);
+    await screen.findByRole("combobox", { name: "Response to link" });
+    fireEvent.change(screen.getByRole("combobox", { name: "Response to link" }), { target: { value: response.id } });
+    fireEvent.change(screen.getByRole("combobox", { name: "Reviewed group" }), { target: { value: original.content.groups[0].id } });
+    fireEvent.click(screen.getByRole("button", { name: "Inspect response link" }));
+    await screen.findByText(/Current approved evidence is unavailable/);
+    const quota = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => { throw new Error("SYNTHETIC response-link quota"); });
+    fireEvent.change(screen.getByRole("textbox", { name: "Reason for this response link" }), { target: { value: "SYNTHETIC latest page-held response-link reason" } });
+    await screen.findByText("SYNTHETIC response-link quota"); quota.mockRestore();
+    fireEvent(window, new Event(event));
+    await screen.findByText("Response-link recovery in this browser needs attention");
+    fireEvent.click(await screen.findByRole("button", { name: /Open staff review/ }));
+    await screen.findByText(/The latest response-link reason could not be stored/);
+    await waitFor(() => expect(screen.getByRole("textbox", { name: "Reason for this response link" })).toHaveValue("SYNTHETIC latest page-held response-link reason"));
+    expect(screen.getByRole("textbox", { name: "Reason for this response link" })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Preserve response-link copy and start another" }));
+    await waitFor(() => expect(screen.getByRole("textbox", { name: "Reason for this response link" })).toBeEnabled());
+    expect(listPreservedResponseLinkCopies(localStorage, { userId: scope.userId, workspaceId: scope.workspaceId, campaignId: scope.campaignId, reviewId })[0].value?.draft?.reason).toBe("SYNTHETIC latest page-held response-link reason");
+    expect(transport.mock.calls.some(([url, options]) => String(url).includes("/response-links") && options?.method === "POST")).toBe(false);
   });
 
 });

@@ -18,6 +18,8 @@ import { resolveLocalDbContainer } from "./helpers/live-catalog";
 import { rollbackSqlConnection } from "./helpers/rollback-sql-connection";
 import { withSynthesisProbeDatabase } from "./helpers/synthesis-probe-database";
 
+// Historical candidate fault probes require an explicitly selected preactivation schema.
+const CANDIDATE_RLS = LIVE_RLS && process.env.OPENPLAN_SYNTHESIS_CANDIDATE_TEST === "1";
 const campaignId = "10c5cdd7-16c6-4b91-b9c0-d2f67598a54f", workspaceId = "d51d566d-28c6-49d2-95d2-3a7a2f0902e1";
 const actorId = "13466ed2-dcb7-4861-a528-68cc5579eea9", sourceId = "d0000000-0000-4000-8000-000000000002";
 const id = (n: number) => `e5000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
@@ -210,7 +212,7 @@ async function scenario(sql = candidate, probe?: (native: NativeProbe) => Promis
   } finally { await database.close(); }
 }
 
-describe.skipIf(!LIVE_RLS)("candidate native synthesis response links", () => {
+describe.skipIf(!CANDIDATE_RLS)("candidate native synthesis response links", () => {
   it("retains complete private links, refreshes, withdrawals and exact retries", () => scenario(), 60_000);
   it("accepts a harmless SQL comment control", () => scenario("-- Harmless candidate control.\n" + candidate), 60_000);
 });
@@ -234,7 +236,7 @@ const faults = [
   ["duplicate withdrawal", "previous.id IS NULL OR previous.operation='withdraw'", "false", "duplicate withdrawal accepted"],
 ] as const;
 
-describe.skipIf(!LIVE_RLS)("candidate native synthesis response fault controls", () => {
+describe.skipIf(!CANDIDATE_RLS)("candidate native synthesis response fault controls", () => {
   it.each(faults)("detects %s", async (_name, before, after, assertion) => {
     expect(candidate.split(before)).toHaveLength(2);
     await expect(scenario(candidate.replace(before, after))).rejects.toThrow(assertion);
@@ -292,15 +294,15 @@ const nativeDdlFaults = [
   ["complete history", alterFunction("public.read_engagement_synthesis_response_links(uuid,uuid,uuid,text)", "AND group_id=p_group)", "AND group_id=p_group AND event_no<3)"), "complete final history differs"],
 ] as const;
 
-describe.skipIf(!LIVE_RLS)("candidate synthesis response access and history fault controls", () => {
+describe.skipIf(!CANDIDATE_RLS)("candidate synthesis response access and history fault controls", () => {
   it.each(nativeDdlFaults)("detects %s", async (_name, ddl, assertion) => {
     await expect(scenario(candidate + "\n" + ddl)).rejects.toThrow(assertion);
   }, 60_000);
 });
 
 const publicCandidate = readFileSync("../docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-public.candidate.sql", "utf8");
-async function publicScenario(sql = publicCandidate, withdraw = false, checkDownloads = false) {
-  await scenario(candidate + "\n" + sql, async ({ database, query, intent, contextText, statement }) => {
+async function publicScenario(sql = publicCandidate, withdraw = false, checkDownloads = false, installed = false) {
+  await scenario((installed ? "" : candidate + "\n") + sql, async ({ database, query, intent, contextText, statement }) => {
     await database.query("SAVEPOINT legacy_response;");
     const legacy = await query(`SELECT public.write_engagement_response('${campaignId}','${id(99)}','create',NULL,NULL,NULL,'{"theme_title":"SYNTHETIC unrelated legacy response","status":"published"}')`);
     expect(legacy.error, "unlinked publication control failed").toBeNull();
@@ -493,7 +495,7 @@ async function publicScenario(sql = publicCandidate, withdraw = false, checkDown
   }, true);
 }
 
-describe.skipIf(!LIVE_RLS)("candidate synthesis response public eligibility", () => {
+describe.skipIf(!CANDIDATE_RLS)("candidate synthesis response public eligibility", () => {
   it("checks complete survey and comment dependencies across publication, public reads and reports", () => publicScenario(), 60_000);
   it("accepts a harmless public evaluator comment", () => publicScenario("-- Harmless public evaluator control.\n" + publicCandidate), 60_000);
 });
@@ -516,7 +518,7 @@ const publicFaults = [
   ["complete dependencies", "IF (SELECT COALESCE(jsonb_agg(source_kind||':'||source_id::text ORDER BY source_kind||':'||source_id::text),'[]'::jsonb)\n    FROM engagement_synthesis_response_members WHERE event_id=link.id)\n   IS DISTINCT FROM (SELECT jsonb_agg(value ORDER BY value) FROM jsonb_array_elements_text(selected->'sourceIds')) THEN RETURN false; END IF;", "", "incomplete dependency index remained eligible"],
 ] as const;
 
-describe.skipIf(!LIVE_RLS)("candidate public dependency fault controls", () => {
+describe.skipIf(!CANDIDATE_RLS)("candidate public dependency fault controls", () => {
   it.each(publicFaults)("detects %s", async (_name, before, after, assertion) => {
     expect(publicCandidate.split(before)).toHaveLength(2);
     await expect(publicScenario(publicCandidate.replace(before, after))).rejects.toThrow(assertion);
@@ -532,7 +534,7 @@ describe.skipIf(!LIVE_RLS)("candidate public dependency fault controls", () => {
 
 
 const withdrawalCandidate = readFileSync("../docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-withdrawal.candidate.sql", "utf8");
-describe.skipIf(!LIVE_RLS)("candidate synthesis stored withdrawal", () => {
+describe.skipIf(!CANDIDATE_RLS)("candidate synthesis stored withdrawal", () => {
   it("retains automatic withdrawal receipts and service actor history across all source kinds", () => publicScenario(publicCandidate + "\n" + withdrawalCandidate, true), 60_000);
   it("accepts a harmless withdrawal comment", () => publicScenario(publicCandidate + "\n-- Harmless withdrawal control.\n" + withdrawalCandidate, true), 60_000);
 });
@@ -555,7 +557,7 @@ const withdrawalFaults = [
   ["request restoration", alterFunction("public.withdraw_ineligible_synthesis_responses(uuid,uuid,text,jsonb,jsonb)", "COALESCE(previous_context,'')", "''"), "comment correction request context not restored"],
   ["withdrawal grant", "GRANT EXECUTE ON FUNCTION public.withdraw_ineligible_synthesis_responses(uuid,uuid,text,jsonb,jsonb) TO service_role;", "direct withdrawal helper permission opened"],
 ] as const;
-describe.skipIf(!LIVE_RLS)("candidate stored withdrawal fault controls", () => {
+describe.skipIf(!CANDIDATE_RLS)("candidate stored withdrawal fault controls", () => {
   it.each(withdrawalFaults)("detects %s", async (_name, sql, assertion) => {
     await expect(publicScenario(publicCandidate + "\n" + withdrawalCandidate + "\n" + sql, true)).rejects.toThrow(assertion);
   }, 60_000);
@@ -572,7 +574,7 @@ async function withdrawalIsolation(isolation: string, sql = withdrawalCandidate)
     expect(result, "fixed snapshot withdrawal was accepted").toEqual([isolation === "READ COMMITTED" ? "accepted" : "25001"]);
   } finally { await database.close(); }
 }
-describe.skipIf(!LIVE_RLS)("candidate stored withdrawal isolation", () => {
+describe.skipIf(!CANDIDATE_RLS)("candidate stored withdrawal isolation", () => {
   it.each(["READ COMMITTED", "REPEATABLE READ", "SERIALIZABLE"])("checks %s", isolation => withdrawalIsolation(isolation), 60_000);
   it("detects a removed fixed snapshot guard", async () => {
     const sql = withdrawalCandidate.replace("IF current_setting('transaction_isolation')<>'read committed' THEN", "IF false THEN");
@@ -620,7 +622,7 @@ async function withdrawalLock(mode: "held" | "unrelated" | "harmless" | "broken"
     });
   } finally { await holder.close(); }
 }
-describe.skipIf(!LIVE_RLS)("candidate stored withdrawal lock", () => {
+describe.skipIf(!CANDIDATE_RLS)("candidate stored withdrawal lock", () => {
   it.each(["held", "unrelated", "harmless"] as const)("uses a real source-change barrier: %s", mode => withdrawalLock(mode), 60_000);
   it("detects a removed withdrawal campaign lock", async () => {
     await expect(withdrawalLock("broken")).rejects.toThrow("held withdrawal lock was ignored");
@@ -628,13 +630,13 @@ describe.skipIf(!LIVE_RLS)("candidate stored withdrawal lock", () => {
 });
 
 
-describe.skipIf(!LIVE_RLS)("candidate retained download eligibility", () => {
+describe.skipIf(!CANDIDATE_RLS)("candidate retained download eligibility", () => {
   it("checks real retained reports against changed approval and source dependencies", () => publicScenario(publicCandidate, false, true), 60_000);
   it("keeps original report bytes while stored withdrawals deny downloads", () => publicScenario(publicCandidate + "\n" + withdrawalCandidate, true, true), 60_000);
 });
 
 
-describe.skipIf(!LIVE_RLS)("candidate committed synthesis database", () => {
+describe.skipIf(!CANDIDATE_RLS)("candidate committed synthesis database", () => {
   it("commits a linked fixture in a disposable schema copy visible to another session", async () => {
     const container = resolveLocalDbContainer();
     await withSynthesisProbeDatabase(container, async target => {
@@ -773,18 +775,18 @@ async function committedRace(kind: RaceSource, order: "publication_first" | "sou
   });
 }
 
-describe.skipIf(!LIVE_RLS)("candidate synthesis concurrent commits", () => {
+describe.skipIf(!CANDIDATE_RLS)("candidate synthesis concurrent commits", () => {
   it.each(["comment", "parent", "answer", "survey_review", "survey_privacy", "approval", "review", "link", "vote"] as const)("handles publication first: %s", kind => committedRace(kind, "publication_first"), 120_000);
   it.each(["comment", "parent", "answer", "survey_review", "survey_privacy", "approval", "review", "link", "vote"] as const)("handles source first: %s", kind => committedRace(kind, "source_first"), 120_000);
 });
 
 
-describe.skipIf(!LIVE_RLS)("candidate synthesis fixed snapshot publication", () => {
+describe.skipIf(!CANDIDATE_RLS)("candidate synthesis fixed snapshot publication", () => {
   it("refuses an older repeatable-read snapshot after a concurrent answer commit", () => committedRace("answer", "source_first", undefined, "REPEATABLE READ"), 120_000);
 });
 
 const raceCandidate = candidate + "\n" + publicCandidate + "\n" + withdrawalCandidate;
-describe.skipIf(!LIVE_RLS)("candidate concurrency fault controls", () => {
+describe.skipIf(!CANDIDATE_RLS)("candidate concurrency fault controls", () => {
   it("accepts a harmless publication comment", () => committedRace("answer", "source_first", raceCandidate + "\n-- Harmless concurrency control.\n", "REPEATABLE READ"), 120_000);
   it.each([
     ["fixed publication snapshot", alterFunction("public.guard_engagement_response_publication()", "NEW.status='published' AND current_setting('transaction_isolation')<>'read committed'", "false"), "source_first", "REPEATABLE READ", "fixed snapshot committed stale publication"],
@@ -813,7 +815,7 @@ async function publicationIsolationControl(isolation: string, status: "draft" | 
     }, true, target);
   });
 }
-describe.skipIf(!LIVE_RLS)("candidate publication isolation controls", () => {
+describe.skipIf(!CANDIDATE_RLS)("candidate publication isolation controls", () => {
   it.each(["READ COMMITTED", "REPEATABLE READ"])("checks publication with no visible links under %s", isolation => publicationIsolationControl(isolation, "published", false), 120_000);
   it("detects a guard limited to visible synthesis links", async () => {
     const fault = alterFunction("public.guard_engagement_response_publication()", "NEW.status='published' AND current_setting('transaction_isolation')<>'read committed'", "NEW.status='published' AND current_setting('transaction_isolation')<>'read committed' AND EXISTS(SELECT 1 FROM engagement_synthesis_response_events WHERE response_id=NEW.id)");
@@ -824,9 +826,9 @@ describe.skipIf(!LIVE_RLS)("candidate publication isolation controls", () => {
 });
 
 
-describe.skipIf(!LIVE_RLS)("candidate application link record readers", () => {
+describe.skipIf(!LIVE_RLS)("native application link record readers", () => {
   it("verifies native retained link, withdrawal and renewed link receipts and history", async () => {
-    await scenario(raceCandidate, async ({ query, intent, contextText, statement }) => {
+    await scenario(CANDIDATE_RLS ? raceCandidate : "", async ({ query, intent, contextText, statement }) => {
       const scope = { campaignId, workspaceId, reviewId, responseId: intent.responseId, groupId: intent.groupId };
       const original = await query(statement(intent, contextText), "service_role"); expect(original.error).toBeNull();
       const first = await readSynthesisResponseLinkReceipt(original.data, synthesisResponseLinkIntentSchema.parse(intent));
@@ -856,9 +858,9 @@ describe.skipIf(!LIVE_RLS)("candidate application link record readers", () => {
 });
 
 
-describe.skipIf(!LIVE_RLS)("candidate application link write recovery", () => {
+describe.skipIf(!LIVE_RLS)("native application link write recovery", () => {
   it("retains exact native context, refreshes, withdraws after removal and denies departed staff recovery", async () => {
-    await scenario(raceCandidate, async ({ database, client, service, query, intent, contextText }) => {
+    await scenario(CANDIDATE_RLS ? raceCandidate : "", async ({ database, client, service, query, intent, contextText }) => {
       const scope = { campaignId, workspaceId, reviewId, responseId: intent.responseId, groupId: intent.groupId };
       const text = "\n" + contextText, command = { intent: { ...intent, expectedContextSha256: hash(text) }, contextText: text };
       const first = await retainSynthesisResponseLink(client, service, actor, command);
@@ -887,7 +889,7 @@ describe.skipIf(!LIVE_RLS)("candidate application link write recovery", () => {
   it("recovers the exact saved native request after a simulated lost acknowledgement", async () => {
     const container = resolveLocalDbContainer();
     await withSynthesisProbeDatabase(container, async target => {
-      await scenario(raceCandidate, async ({ database, query, intent, contextText }) => {
+      await scenario(CANDIDATE_RLS ? raceCandidate : "", async ({ database, query, intent, contextText }) => {
         await database.query("COMMIT;");
         const makeClient = (role: string) => ({ rpc: async (name: string, args: Record<string, unknown>) => {
           const keys = signatures[name]; if (!keys) throw new Error("Unexpected committed application RPC");
@@ -917,9 +919,9 @@ describe.skipIf(!LIVE_RLS)("candidate application link write recovery", () => {
 
 
 const indexCandidate = readFileSync("../docs/reviews/2026-09-27-synthesis-response-links/synthesis-response-index.candidate.sql", "utf8");
-describe.skipIf(!LIVE_RLS)("candidate retained link navigation and compact commands", () => {
+describe.skipIf(!LIVE_RLS)("native retained link navigation and compact commands", () => {
   it("discovers retained links after response and review group removal, including withdrawal and old retry", async () => {
-    await scenario(raceCandidate + indexCandidate, async ({ database, client, service, query, intent }) => {
+    await scenario(CANDIDATE_RLS ? raceCandidate + indexCandidate : "", async ({ database, client, service, query, intent }) => {
       expect(await loadSynthesisResponseLinkIndex(client, address)).toEqual({ ...address, entryCount: 0, entries: [] });
       expect(await loadSynthesisResponseLinkIndex(client, { ...address, reviewId: id(990) })).toBeNull();
       const first = await retainSynthesisResponseLinkCommand(client, service, actor, intent);
@@ -959,4 +961,27 @@ describe.skipIf(!LIVE_RLS)("candidate retained link navigation and compact comma
       await expect(loadSynthesisResponseLinkIndex(client, address)).rejects.toMatchObject({ kind: "forbidden" });
     }, true);
   }, 60_000);
+});
+
+
+// These contracts execute against the installed schema. No candidate DDL supplies missing objects.
+describe.skipIf(!LIVE_RLS || CANDIDATE_RLS)("installed synthesis response links", () => {
+  it("retains complete private links, corrections, withdrawals and exact retries", () => scenario(""), 60_000);
+  it("accepts an installed harmless comment control", () => scenario("-- Harmless installed control.\n"), 60_000);
+  it("checks installed public reads, stored withdrawals and original report custody", () => publicScenario("", true, true, true), 60_000);
+  it("accepts an installed public harmless comment", () => publicScenario("-- Harmless installed public control.\n", true, true, true), 60_000);
+  it.each(nativeDdlFaults)("detects installed %s", async (_name, sql, assertion) => {
+    await expect(scenario(sql)).rejects.toThrow(assertion);
+  }, 60_000);
+  it.each(withdrawalFaults)("detects installed %s", async (_name, sql, assertion) => {
+    await expect(publicScenario(sql, true, false, true)).rejects.toThrow(assertion);
+  }, 60_000);
+  it.each(faults)("detects installed %s", async (_name, before, after, assertion) => {
+    const signature = ["approval head", "approval withdrawal", "selected group"].includes(_name)
+      ? "public.engagement_synthesis_response_current(uuid,uuid,uuid,uuid,text)"
+      : "public.retain_engagement_synthesis_response_link(uuid,uuid,uuid,jsonb,text)";
+    await expect(scenario(alterFunction(signature, before, after))).rejects.toThrow(assertion);
+  }, 60_000);
+  it.each(["publication_first", "source_first"] as const)("serializes installed answer correction: %s", order => committedRace("answer", order, ""), 120_000);
+  it("refuses installed fixed snapshots after a concurrent answer commit", () => committedRace("answer", "source_first", "", "REPEATABLE READ"), 120_000);
 });

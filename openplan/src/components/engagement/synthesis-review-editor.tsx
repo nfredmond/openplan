@@ -6,6 +6,8 @@ import { applySynthesisReviewChange, synthesisReviewIntentSchema, verifySynthesi
 import { synthesisReviewListSchema, synthesisReviewRecordSchema, synthesisReviewRevisionListSchema, type SynthesisReviewRecord } from "@/lib/engagement/synthesis-review-records";
 import { emptyReviewWorkingCopy, freezeReviewRequest, listPreservedReviewCopies, preserveReviewWorkingCopy, readReviewWorkingCopy, sendReviewRequest, writeReviewWorkingCopy, ReviewSaveError,
   type ReviewClientScope, type ReviewDraft, type ReviewWorkingCopy } from "@/lib/engagement/synthesis-review-recovery";
+import { SynthesisResponseLinksPanel } from "./synthesis-response-links-panel";
+import { readResponseLinkWorkingCopy, type ResponseLinkWorkingCopy } from "@/lib/engagement/synthesis-response-link-recovery";
 import { SynthesisApprovalPanel } from "./synthesis-approval-panel";
 import type { ApprovalWorkingCopy } from "@/lib/engagement/synthesis-approval-recovery";
 import type { SynthesisSourceSnapshot } from "@/lib/engagement/synthesis-sources";
@@ -13,7 +15,7 @@ import type { SynthesisSourceSnapshot } from "@/lib/engagement/synthesis-sources
 type SavedReview = SynthesisReviewRecord & { content: SynthesisReviewContent };
 type ReviewPage = z.infer<typeof synthesisReviewListSchema>;
 type RevisionPage = z.infer<typeof synthesisReviewRevisionListSchema>;
-type Props = ReviewClientScope & { snapshot: SynthesisSourceSnapshot; onAccessLost: () => void; recoveryMemory?: { current: ReviewWorkingCopy | null }; approvalMemories?: Map<string, { current: ApprovalWorkingCopy | null }> };
+type Props = ReviewClientScope & { snapshot: SynthesisSourceSnapshot; onAccessLost: () => void; recoveryMemory?: { current: ReviewWorkingCopy | null }; approvalMemories?: Map<string, { current: ApprovalWorkingCopy | null }>; responseLinkMemories?: Map<string, { current: ResponseLinkWorkingCopy | null }> };
 const errorText = (cause: unknown) => cause instanceof Error ? cause.message : "The saved review is unavailable. Keep your recovery copy.";
 
 /** The parent owns campaign authentication; scope changes remount every private editor state. */
@@ -21,7 +23,7 @@ export function SynthesisReviewEditor(props: Props) {
   return <ReviewPanel key={`${props.userId}:${props.workspaceId}:${props.campaignId}:${props.sourceId}`} {...props} />;
 }
 
-function ReviewPanel({ snapshot, onAccessLost, recoveryMemory: sourceMemory, approvalMemories: sourceApprovalMemories, ...scope }: Props) {
+function ReviewPanel({ snapshot, onAccessLost, recoveryMemory: sourceMemory, approvalMemories: sourceApprovalMemories, responseLinkMemories: sourceResponseLinkMemories, ...scope }: Props) {
   const { userId, workspaceId, campaignId, sourceId, sourceSha256 } = scope;
   const localMemory = useRef<ReviewWorkingCopy | null>(null);
   const recoveryMemory = sourceMemory ?? localMemory;
@@ -32,6 +34,22 @@ function ReviewPanel({ snapshot, onAccessLost, recoveryMemory: sourceMemory, app
     let memory = approvalMemories.get(key);
     if (!memory) { memory = { current: null }; approvalMemories.set(key, memory); }
     return memory;
+  }
+  const localResponseLinkMemories = useRef(new Map<string, { current: ResponseLinkWorkingCopy | null }>());
+  const responseLinkMemories = sourceResponseLinkMemories ?? localResponseLinkMemories.current;
+  function responseLinkMemory(review: SavedReview) {
+    const key = `${sourceId}:${sourceSha256}:${review.reviewId}`;
+    let memory = responseLinkMemories.get(key);
+    if (!memory) { memory = { current: null }; responseLinkMemories.set(key, memory); }
+    return memory;
+  }
+  function responseLinkRecoveryLabel(reviewId: string) {
+    try {
+      const unsaved = responseLinkMemories.get(`${sourceId}:${sourceSha256}:${reviewId}`)?.current;
+      if (unsaved?.draft || unsaved?.pending) return "Response-link recovery needs attention";
+      const retained = readResponseLinkWorkingCopy(localStorage, { userId, workspaceId, campaignId, reviewId });
+      return retained.draft || retained.pending ? "Unfinished response link in this browser" : null;
+    } catch { return "Response-link recovery needs attention"; }
   }
   const [working, setWorking] = useState(() => emptyReviewWorkingCopy(scope));
   const workingRef = useRef(working), epoch = useRef(0), reading = useRef(0), listing = useRef(0), sending = useRef(false);
@@ -170,7 +188,7 @@ function ReviewPanel({ snapshot, onAccessLost, recoveryMemory: sourceMemory, app
       }}>Preserve edit and start another correction</Button> : null}
     </div>
     {page?.entries.length === 0 ? <p>No staff reviews have been saved for this source.</p> : null}
-    <ul className="space-y-2">{page?.entries.map(row => <li key={row.reviewId} className="rounded border p-3 space-y-2"><p className="break-words">{row.title} · latest revision {row.revisionNo}</p><Button type="button" className="h-auto min-h-10 max-w-full whitespace-normal" variant="outline" onClick={() => { if (!blocked) update({ ...workingRef.current, activeReviewId: row.reviewId }); void open(row.reviewId); }}>Open staff review {row.reviewId.slice(0, 8)}</Button></li>)}</ul>
+    <ul className="space-y-2">{page?.entries.map(row => <li key={row.reviewId} className="rounded border p-3 space-y-2"><p className="break-words">{row.title} · latest revision {row.revisionNo}</p><p className="text-sm font-medium">{responseLinkRecoveryLabel(row.reviewId)}</p><Button type="button" className="h-auto min-h-10 max-w-full whitespace-normal" variant="outline" onClick={() => { if (!blocked) update({ ...workingRef.current, activeReviewId: row.reviewId }); void open(row.reviewId); }}>Open staff review {row.reviewId.slice(0, 8)}</Button></li>)}</ul>
     {page?.nextCursor ? <Button type="button" className="h-auto min-h-10 max-w-full whitespace-normal" variant="outline" onClick={() => void list(page.nextCursor)}>Load older staff reviews</Button> : null}
     {saved ? <article aria-label="Saved staff review" className="space-y-3 min-w-0">
       <h4 className="font-semibold break-words">{saved.content.title} · revision {saved.revision.revisionNo}</h4>
@@ -185,6 +203,9 @@ function ReviewPanel({ snapshot, onAccessLost, recoveryMemory: sourceMemory, app
         revision={{ campaignId, workspaceId, sourceId, sourceSha256, reviewId: saved.reviewId, preparationSha256: saved.preparationSha256,
           revisionId: saved.revision.requestId, revisionNo: saved.revision.revisionNo, revisionSha256: saved.revision.contentSha256 }}
         memory={approvalMemory(saved)} hasUnsavedReview={Boolean(working.draft || working.pending)} onAccessLost={onAccessLost} />
+      <SynthesisResponseLinksPanel scope={{ userId, workspaceId, campaignId, reviewId: saved.reviewId }}
+        revision={{ id: saved.revision.requestId, number: saved.revision.revisionNo, sha256: saved.revision.contentSha256 }}
+        groups={saved.content.groups} memory={responseLinkMemory(saved)} hasUnsavedReview={Boolean(working.draft || working.pending)} onAccessLost={onAccessLost} />
       <ReviewCorrectionForm key={`${saved.reviewId}:${saved.revision.requestId}`} saved={saved} snapshot={snapshot} draft={draft?.reviewId === saved.reviewId && draft.parentId === saved.revision.requestId ? draft : null}
         disabled={!ready || blocked || busy || Boolean(working.pending) || Boolean(oldRevision) || Boolean(draft && (draft.reviewId !== saved.reviewId || draft.parentId !== saved.revision.requestId))}
         onChange={value => update({ ...workingRef.current, activeReviewId: saved.reviewId, draft: value })} onSave={correct} />
