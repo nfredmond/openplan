@@ -34,7 +34,7 @@ produces no content entities or frames.
 Final full QA and shuffled seed `481939` each pass 16,418 tests with 1,041
 explicit skips across 1,365 passing and 67 skipped files. Lint, TypeScript, the
 Next.js 16.3.8 webpack build and the dependency audit pass; the audit reports zero
-vulnerabilities. Exact-commit GitHub checks follow the push.
+vulnerabilities. Exact main `d7888144` GitHub CI and RLS isolation also pass.
 
 The first related run caught two test-fixture errors: the default target was the
 survey answer, while two assertions expected a comment. Explicit comment targets
@@ -91,3 +91,5 @@ they do not inherit the original requester's execution permission. Continue
 resumable contextual processing, machine proposal retention and explicit staff
 acceptance into a new review revision, with old approvals left on their original
 revision. Add browser journeys when that workflow is connected.
+
+Main `d7888144` completed [CI](https://github.com/nfredmond/openplan/actions/runs/36781702609) and [RLS isolation](https://github.com/nfredmond/openplan/actions/runs/36781702558). Remote full QA passes 16,411 tests with 1,048 skips, and the shuffled job passes. Isolation passes 945 tests with 125 skips across 74 files. Environment-dependent cases account for the seven-test difference from the local unit count.

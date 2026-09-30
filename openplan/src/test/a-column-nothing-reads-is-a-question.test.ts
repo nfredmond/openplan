@@ -73,6 +73,7 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "engagement_synthesis_context_requests.parent_request_id", category: "READ_IN_SQL", reason: "The authenticated context-request reader returns the immutable parent identity separately from the new request and author. Native probes reject changed identity and preserve parent custody." },
   { column: "engagement_synthesis_generation_selections.previous_selection_id", category: "READ_IN_SQL", reason: "Native staff choices compare the expected current predecessor; paginated inventory follows explicit successor links at the retained sequence." },
   { column: "engagement_synthesis_generation_selections.sequence_no", category: "READ_IN_SQL", reason: "Native selections increment the request sequence under its lock; inventory reads use a fixed sequence for stable historical pagination." },
   { column: "engagement_synthesis_generation_attempts.claim_expires_at", category: "READ_IN_SQL", reason: "Native dispatch refuses an expired claim; explicit retry authorization checks whether its predecessor can still be active." },

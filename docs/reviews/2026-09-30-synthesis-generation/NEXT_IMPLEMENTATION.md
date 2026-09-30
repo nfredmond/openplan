@@ -49,3 +49,39 @@ The source records declare campaign context, historical definitions, parent comm
 Retain every segment observation, citation, uncertainty statement and exact source reference through subsequent processing. Part-level coverage proves accounting, not record-level or contextual interpretation. A bounded resource ceiling may leave work explicitly incomplete; it cannot silently discard a long record or prior continuation state. Final staff acceptance must retain machine authorship and dependency checksums, create a new review revision, and preserve approvals on their original revision.
 
 These requirements guide the next implementation. No contextual stage, machine proposal or staff import is implemented by this note.
+
+
+## Context request integration after d7888144
+
+The content builder now retains full source parts and parsed selected outputs in
+exact bounded frames. Main d7888144 passes CI and isolation. The next native
+[context request candidate](CONTEXT_REQUESTS.md) retains a separate current staff
+actor and an immutable parent/selection/result/context/content binding. Its
+checksums are proposed input identities, not a verified execution receipt. The
+old segment scope explicitly refuses these requests with SQLSTATE 0A000.
+
+The application request service now loads the parent through
+`loadSynthesisGenerationHistory` and reconstructs the original source, task plan,
+dependency inventory and content manifests. It preserves the history reader's
+final current-staff permission recheck, then rereads the immutable source through
+its authenticated RPC. The history return type remains unchanged. Only complete
+anchored results with an actual selected contribution can prepare model work.
+The native write rechecks current staff access and retains the new actor.
+The executor must independently repeat reconstruction and compare all requested
+checksums, since the native request RPC accepts proposed hashes. Application
+service fault checks and real authenticated HTTP integration pass. Continue with
+the versioned context plan and executor; request custody grants no model call.
+
+The base request retains provider/source intent under its existing schema. The
+immutable context row identifies the new stage; it cannot be attached to an
+existing segment request. New execution therefore needs a separate versioned
+plan/recipe and native authorization path. The later explicit authorization must
+bind the complete plan header, recipe, resource limits and current new actor. Do
+not remove the old segment guard or replay an old requester JWT. Retain the
+existing dispatch uncertainty, original-response journal and explicit retry rules.
+
+Content frame bytes exclude any recipe and transport envelope. Check complete
+encoded task size and provider context fit independently. Preserve the remaining
+requirement for complete resumable context processing, including long records,
+historical dependencies, conflicting positions and exact final source membership.
+This candidate does not substitute request custody for that implementation.

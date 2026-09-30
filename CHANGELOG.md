@@ -42,6 +42,15 @@ frames. The content checksum binds the source, selected results and target
 context. Incomplete results stay incomplete. This remains memory-resident data
 preparation; it adds no provider execution or staff interface.
 
+The internal context-request command retains a new staff actor and exact parent,
+selection, result and content bindings. Cancellation and exact acknowledgement
+recovery preserve the original request. Apply
+`20261014000037_engagement_synthesis_context_requests.sql` before using it.
+The application service derives these bindings from authenticated retained history
+and reconstructed source content, refusing incomplete inputs before the write.
+The segment executor explicitly refuses these requests. Contextual execution and
+staff controls remain unfinished.
+
 ## 0.65.0 (2026-09-30)
 
 [Verification](docs/reviews/2026-09-30-synthesis-generation/RELEASE_VERIFICATION.md) records the release scope, engineering checks and publication status.

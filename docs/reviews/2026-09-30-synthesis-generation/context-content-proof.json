@@ -1,5 +1,5 @@
 {
-  "state": "Locally verified unreleased internal context content. Exact-commit GitHub checks follow the push.",
+  "state": "Unreleased context content on main d7888144. Exact GitHub CI and RLS pass.",
   "baseCommit": "0b9f37f8e534bae062d1b1836b170ee6f79aad3e",
   "sourceHashes": {
     "openplan/src/lib/engagement/synthesis-generation-context-content.ts": "d464aadea2d58f297c8922d6c25995ffa689a7a1c878a65b5d8a0bc2f553c460",
@@ -722,5 +722,20 @@
     "generation-content-parity.log": "448c3e595968a0e8f538ea714819620ff57d4a4e6bc19f7cda96ebea9db9403d",
     "generation-content-parity-corrected.log": "f2c1e6c2ae9641c635ba3c3add43d22b1b566b01bc6022691f93d43e90a0b334",
     "generation-content-final-docs.log": "d35e18bf01a32e0b1950fc78f0870bc423d72f93f81d850a1bf205b7ca05b2d4"
+  },
+  "landedCommit": "d7888144c9d3c42d5ea0d36f7996f4d3e1e83ae9",
+  "CI": {
+    "run": 36781702609,
+    "conclusion": "success",
+    "qaPassed": 16411,
+    "qaSkipped": 1048,
+    "shuffled": "success"
+  },
+  "RLS": {
+    "run": 36781702558,
+    "conclusion": "success",
+    "passed": 945,
+    "skipped": 125,
+    "filesPassed": 74
   }
 }

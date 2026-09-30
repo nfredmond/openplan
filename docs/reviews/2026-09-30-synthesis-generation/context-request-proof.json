@@ -1,0 +1,370 @@
+{
+  "recordedAt": "2026-09-30T22:38:03.846815+00:00",
+  "baseCommit": "d7888144c9d3c42d5ea0d36f7996f4d3e1e83ae9",
+  "state": "locally verified internal checkpoint; final main CI pending",
+  "sourceSha256": {
+    "openplan/supabase/migrations/20261014000037_engagement_synthesis_context_requests.sql": "c2031af677b78aa6dd2bf061dafa430776a2764784ca567f5df6d6b07d485589",
+    "openplan/src/lib/engagement/synthesis-context-requests-server.ts": "ed5f38674c8e777183422f8332626cb5fb9dd4d908dc9752a94c841393499129",
+    "openplan/src/test/engagement-synthesis-context-requests-server.test.ts": "9814691f490d60860fb76ceb76c47162b03f488102e69c6d0b1568de4bc12dfe",
+    "openplan/src/test/engagement-synthesis-context-requests-rls.test.ts": "6924342111f2497094a3f69b522d66e2dae40ca457d2b7f4b4570c7965b4fdf2",
+    "openplan/src/test/fixtures/engagement/synthesis-context-requests.sql": "5467b934c54e7abaf91344fd722a986fb576dcfe111cabff885bf0ca848e3f4a",
+    "openplan/src/test/engagement-synthesis-generation-worker-live.test.ts": "5eba630c7649319ba16bca0d37debcb75cf4a92d33f4c05730da99310dde301e"
+  },
+  "serviceMutationEvidence": {
+    "initial": [
+      {
+        "name": "harmless-comment",
+        "exit": 0,
+        "passed": 8,
+        "failed": 0,
+        "failures": []
+      },
+      {
+        "name": "receipt-campaign",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "rejects changed receipts even when their altered bytes are rehashed"
+        ]
+      },
+      {
+        "name": "receipt-workspace",
+        "exit": 0,
+        "passed": 8,
+        "failed": 0,
+        "failures": []
+      },
+      {
+        "name": "receipt-request",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "rejects changed receipts even when their altered bytes are rehashed"
+        ]
+      },
+      {
+        "name": "intent-digest",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "rejects changed receipts even when their altered bytes are rehashed"
+        ]
+      },
+      {
+        "name": "context-digest",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "rejects changed receipts even when their altered bytes are rehashed"
+        ]
+      },
+      {
+        "name": "parent-receipt",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "rejects changed receipts even when their altered bytes are rehashed"
+        ]
+      },
+      {
+        "name": "self-parent",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "refuses invalid inputs and unavailable or interrupted history reads"
+        ]
+      },
+      {
+        "name": "history-campaign",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "refuses foreign or changed history before reading another source"
+        ]
+      },
+      {
+        "name": "history-workspace",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "refuses foreign or changed history before reading another source"
+        ]
+      },
+      {
+        "name": "history-request",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "refuses foreign or changed history before reading another source"
+        ]
+      },
+      {
+        "name": "history-job",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "refuses foreign or changed history before reading another source"
+        ]
+      },
+      {
+        "name": "history-sequence",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "refuses foreign or changed history before reading another source"
+        ]
+      },
+      {
+        "name": "complete-status",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "requires complete results and a selected contribution without issuing writes"
+        ]
+      },
+      {
+        "name": "selected-target",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "requires complete results and a selected contribution without issuing writes"
+        ]
+      },
+      {
+        "name": "source-permission",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "keeps permission loss distinct from a saved request and checks interruption"
+        ]
+      },
+      {
+        "name": "source-id",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "reconstructs source, tasks and original selected results before writing"
+        ]
+      },
+      {
+        "name": "source-hash",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "reconstructs source, tasks and original selected results before writing"
+        ]
+      },
+      {
+        "name": "new-actor",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "rejects changed receipts even when their altered bytes are rehashed"
+        ]
+      },
+      {
+        "name": "exact-intent",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "rejects changed receipts even when their altered bytes are rehashed"
+        ]
+      },
+      {
+        "name": "exact-context",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "rejects changed receipts even when their altered bytes are rehashed"
+        ]
+      },
+      {
+        "name": "replay-required",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "rejects changed receipts even when their altered bytes are rehashed"
+        ]
+      },
+      {
+        "name": "abort-checks",
+        "exit": 1,
+        "passed": 6,
+        "failed": 2,
+        "failures": [
+          "keeps permission loss distinct from a saved request and checks interruption",
+          "refuses invalid inputs and unavailable or interrupted history reads"
+        ]
+      },
+      {
+        "name": "requested-content-hash",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "derives all input digests and writes with the current staff client and new actor"
+        ]
+      },
+      {
+        "name": "requested-results-hash",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "derives all input digests and writes with the current staff client and new actor"
+        ]
+      },
+      {
+        "name": "requested-context-hash",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "derives all input digests and writes with the current staff client and new actor"
+        ]
+      }
+    ],
+    "corrected": [
+      {
+        "name": "harmless-comment",
+        "exit": 0,
+        "passed": 8,
+        "failed": 0,
+        "failures": []
+      },
+      {
+        "name": "receipt-workspace",
+        "exit": 1,
+        "passed": 7,
+        "failed": 1,
+        "failures": [
+          "rejects changed receipts even when their altered bytes are rehashed"
+        ]
+      }
+    ],
+    "sourceRestored": true
+  },
+  "upgrade": {
+    "at": "2026-09-30T22:07:11.682262+00:00",
+    "migration": "20261014000037_engagement_synthesis_context_requests.sql",
+    "sha256": "c2031af677b78aa6dd2bf061dafa430776a2764784ca567f5df6d6b07d485589",
+    "before": {
+      "outputs": 582,
+      "attempts": 614,
+      "requests": 138,
+      "selections": 614,
+      "outputCustody": "92e1e23a0c541170e8093ab5d8be6e8a",
+      "requestCustody": "7736bf37bb784589debdd429579eb786",
+      "selectionCustody": "229c39b25caf116b4d15126eb88629ff"
+    },
+    "after": {
+      "outputs": 582,
+      "attempts": 614,
+      "requests": 138,
+      "selections": 614,
+      "outputCustody": "92e1e23a0c541170e8093ab5d8be6e8a",
+      "requestCustody": "7736bf37bb784589debdd429579eb786",
+      "selectionCustody": "229c39b25caf116b4d15126eb88629ff"
+    },
+    "equal": true,
+    "exit": 0
+  },
+  "nativeCandidate": {
+    "passed": 31,
+    "initialPrivilegeSurvivors": 4,
+    "additionalRetainedParentFault": "passed in full isolation suite"
+  },
+  "limits": [
+    "Native direct requests retain proposed hashes; future executor must independently reconstruct complete input.",
+    "Service unit tests mock history and RPC transport; the separate HTTP test uses real native custody and a synthetic local model.",
+    "Cancellation receipt verification, contextual execution, machine proposal import and staff UI remain unfinished.",
+    "Synthetic provider coverage cannot establish interpretation quality, real provider billing or planner usefulness."
+  ],
+  "fullIsolation": {
+    "exit": 0,
+    "passed": 976,
+    "skipped": 125,
+    "filesPassed": 75,
+    "log": "generation-context-request-rls.log"
+  },
+  "httpIntegration": {
+    "passed": 1,
+    "skipped": 11,
+    "log": "generation-context-service-http-initial.log",
+    "model": "local synthetic complete part coverage",
+    "harmlessControlAndTargetFault": [
+      {
+        "name": "harmless-comment",
+        "exit": 0,
+        "passed": 1,
+        "failed": 0
+      },
+      {
+        "name": "incorrect-results-binding",
+        "exit": 1,
+        "passed": 0,
+        "failed": 1
+      }
+    ],
+    "faultBoundary": "Zero requested result checksum fails the assertion against the actual historical result manifest."
+  },
+  "fullQA": {
+    "exit": 0,
+    "passed": 16426,
+    "skipped": 1073,
+    "filesPassed": 1366,
+    "filesSkipped": 68,
+    "productionBuild": "passed",
+    "dependencyVulnerabilities": 0,
+    "log": "generation-context-service-final-qa.log"
+  },
+  "shuffled": {
+    "exit": 0,
+    "seed": 481941,
+    "passed": 16426,
+    "skipped": 1073,
+    "filesPassed": 1366,
+    "filesSkipped": 68,
+    "log": "generation-context-service-final-shuffle.log"
+  },
+  "nativeWorker": {
+    "exit": 0,
+    "passed": 12,
+    "log": "generation-context-service-worker-full.log",
+    "scope": "Real CLI, Auth, PostgreSQL, PostgREST and Kong; synthetic provider only"
+  },
+  "evidenceLogSha256": {
+    "generation-context-service-final-qa.log": "d90793f0d716adff20ef360a56984e94d6074bc8416332af077e3cb2b7330bbb",
+    "generation-context-service-final-shuffle.log": "43555edd0dec2f7c2e2ec65ceae33062763d109ee0f8fd7d481dc1373fc154e4",
+    "generation-context-request-rls.log": "3406ae853539cc383b6bd3c5a001ee53b34e5c087a01b90524ae89e14289c1bb",
+    "generation-context-service-worker-full.log": "bc220215bb07c9447d440243e091b313ca171f99851e6a1079a78a27f730db7d",
+    "generation-context-service-http-initial.log": "0de1e5fc2e94f318b9324c9642acfd92251a968472cd95546dfc04221b7e857d",
+    "generation-context-service-mutations.json": "a9d4c7677491a8b810ca5832944857da9d2664a280c3427954a553e75f2234ca",
+    "generation-context-service-mutations-corrected.json": "782b1e7a40ae11e3eed0bac55dbb5c77982dd65bbdd88189b1e74b4673acc427",
+    "generation-context-service-http-mutations.json": "c32b4f3dcf44999983a0f56617e86aa6964c5f0198b1903f5f23d79f02543270"
+  },
+  "documentationChecks": {
+    "passed": 14,
+    "files": 3
+  }
+}

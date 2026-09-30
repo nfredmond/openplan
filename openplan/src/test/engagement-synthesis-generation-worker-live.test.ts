@@ -14,6 +14,8 @@ import { resolveLocalDbContainer } from "./helpers/live-catalog";
 import { requireContractVerificationStack } from "./helpers/contract-verification-stack";
 import { readSynthesisGenerationSelectedResults, loadSynthesisGenerationHistory } from "@/lib/engagement/synthesis-generation-selected-results-server";
 
+import { createSynthesisContextRequest, readSynthesisContextRequest } from "@/lib/engagement/synthesis-context-requests-server";
+
 const cleanup: Array<() => Promise<void>> = [];
 afterEach(async () => { for (const close of cleanup.splice(0).reverse()) await close(); vi.unstubAllEnvs(); });
 const hash = (text: string) => createHash("sha256").update(text).digest("hex");
@@ -42,7 +44,7 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
       input: statement, encoding: "utf8", stdio: ["pipe", "pipe", "pipe"], timeout: 30000,
     }).trim().split("\n").at(-1)!;
   }
-  async function fixture(options: { mode?: "api_key" | "none"; bytes?: number; loss?: "output" | "dispatch"; cancel?: boolean; allTasks?: boolean } = {}) {
+  async function fixture(options: { mode?: "api_key" | "none"; bytes?: number; loss?: "output" | "dispatch"; cancel?: boolean; allTasks?: boolean; validOutputs?: boolean } = {}) {
     const owner = randomUUID(), custodian = randomUUID(), workspace = randomUUID(), campaign = randomUUID(), sourceId = randomUUID();
     const connection = randomUUID(), revision = randomUUID(), requestId = randomUUID(), authorizationId = randomUUID();
     const root = await mkdtemp(join(tmpdir(), "openplan-synthesis-native-"));
@@ -59,8 +61,16 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     const calls: Array<{ path: string | undefined; authorization: string | undefined; body: Record<string, unknown> }> = [];
     const endpoint = `${await listen(createServer(async (req, res) => {
       const parts: Buffer[] = []; for await (const chunk of req) parts.push(Buffer.from(chunk));
-      calls.push({ path: req.url, authorization: req.headers.authorization, body: JSON.parse(Buffer.concat(parts).toString()) });
-      res.setHeader("content-type", "application/json"); res.end(providerBody);
+      const body = JSON.parse(Buffer.concat(parts).toString());
+      calls.push({ path: req.url, authorization: req.headers.authorization, body });
+      let responseBody = providerBody;
+      if (options.validOutputs) {
+        const task = JSON.parse(body.messages.find((message: { role: string }) => message.role === "user").content);
+        const content = JSON.stringify({ status: "complete", coveredPartIds: task.input.parts.map((part: { id: string }) => part.id),
+          observations: [], uncertainty: "SYNTHETIC coverage only; meaning not interpreted" });
+        responseBody = JSON.stringify({ ...envelope, choices: [{ index: 0, finish_reason: "stop", message: { role: "assistant", content } }] });
+      }
+      res.setHeader("content-type", "application/json"); res.end(responseBody);
     }))}/v1/`;
     sql(`BEGIN;
       INSERT INTO auth.users(id,email) VALUES('${owner}','${owner}@synthetic.invalid'),('${custodian}','${custodian}@synthetic.invalid');
@@ -150,12 +160,45 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
       const client = liveClient(environment.API_URL, environment.ANON_KEY, "synthesis-history-staff");
       const signedIn = await client.auth.signInWithPassword({ email, password });
       if (signedIn.error || !signedIn.data.session) throw new Error("Synthetic history staff could not sign in");
-      return { read: (throughSequence?: number) => loadSynthesisGenerationHistory(client, service,
+      return { client, userId, read: (throughSequence?: number) => loadSynthesisGenerationHistory(client, service,
         { campaignId: campaign, workspaceId: workspace, requestId, throughSequence }, new AbortController().signal),
         revoke: () => sql(`UPDATE workspace_members SET role='viewer' WHERE workspace_id='${workspace}' AND user_id='${userId}'`) };
     }
-    return { run, journal, outputs, calls, deliveries, proxyErrors, providerBody, outputText, key, plan, authorizationId, selectedResults, revokeRequester, staffHistoryClient, owner };
+    return { run, journal, outputs, calls, deliveries, proxyErrors, providerBody, outputText, key, plan, authorizationId, selectedResults, revokeRequester, staffHistoryClient, owner,
+      contextArgs: { campaignId: campaign, workspaceId: workspace, parentRequestId: requestId, intentText: request.intentText as string },
+      cancelParent: () => asOwner(`SELECT cancel_engagement_synthesis_generation_request('${campaign}','${requestId}','${randomUUID()}','SYNTHETIC context continuation')`) };
   }
+
+  it("retains reconstructed context requests through authenticated HTTP after original requester departure", async () => {
+    const f = await fixture({ allTasks: true, validOutputs: true }), staff = await f.staffHistoryClient();
+    const signal = new AbortController().signal, initial = await staff.read();
+    const args = { ...f.contextArgs, requestId: randomUUID(), actorId: staff.userId, throughSequence: 0,
+      targetRecordId: initial.inventory.contributionIds[0], frameByteLimit: 4096 };
+    await expect(createSynthesisContextRequest(staff.client, service, args, signal)).rejects.toThrow("complete retained results");
+    const run = await f.run(true); expect(run.code, run.stderr).toBe(0);
+    f.cancelParent(); f.revokeRequester();
+    const history = await staff.read(); expect(history.inventory.status).toBe("ready_for_record_consolidation");
+    args.throughSequence = history.selections.throughSequence;
+    const created = await createSynthesisContextRequest(staff.client, service, args, signal);
+    expect(created.state.replayed).toBe(false); expect(created.state.request.actorId).toBe(staff.userId);
+    expect(created.state.request.actorId).not.toBe(f.owner);
+    expect(created.binding.segmentResultsManifestSha256).toBe(history.inventory.manifestSha256);
+    expect(created.binding.selectionSequence).toBe(f.plan.entries.length);
+    const replay = await createSynthesisContextRequest(staff.client, service, args, signal);
+    expect(replay.state.replayed).toBe(true); expect(replay.state.request).toEqual(created.state.request);
+    expect(replay.state.context).toEqual(created.state.context);
+    const scope = { campaignId: args.campaignId, workspaceId: args.workspaceId, requestId: args.requestId };
+    const reader = await f.staffHistoryClient();
+    expect((await readSynthesisContextRequest(reader.client, scope, signal)).state.context).toEqual(created.state.context);
+    await expect(createSynthesisContextRequest(reader.client, service, { ...args, actorId: reader.userId }, signal)).rejects.toThrow("save unconfirmed");
+    const preparation = await service.rpc("prepare_engagement_synthesis_generation_plan", { p_request: args.requestId, p_header_text: f.plan.headerText });
+    expect(preparation.error?.code).toBe("0A000");
+    const attempts = checked(await service.from("engagement_synthesis_generation_attempts").select("id").eq("request_id", args.requestId));
+    expect(attempts).toEqual([]); expect(f.calls).toHaveLength(f.plan.entries.length); expect(f.proxyErrors).toEqual([]);
+    reader.revoke(); await expect(readSynthesisContextRequest(reader.client, scope, signal)).rejects.toThrow("unavailable");
+    staff.revoke(); await expect(createSynthesisContextRequest(staff.client, service, args, signal)).rejects.toThrow("history access unavailable");
+    expect(f.calls).toHaveLength(f.plan.entries.length);
+  }, 60000);
 
   it("joins native selections to original worker outputs without authorizing another call", async () => {
     const f = await fixture({ allTasks: true });
