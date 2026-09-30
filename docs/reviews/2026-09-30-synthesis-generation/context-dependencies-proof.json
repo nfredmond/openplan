@@ -1,5 +1,5 @@
 {
-  "state": "Locally verified unreleased context dependency protocol. Exact-commit GitHub checks follow the push.",
+  "state": "Unreleased dependency protocol on main 0b9f37f8. Exact CI and RLS completed successfully.",
   "baseCommit": "a20346a29e12fba9b0dde97fdca62bab3099b59f",
   "sourceHashes": {
     "openplan/src/lib/engagement/synthesis-generation-context.ts": "9a0ebdc1698f2d5f867a4035336aea2aa43bb375a34d627a74094c757aad00da",
@@ -399,5 +399,21 @@
     "Memory-resident graph; no maximum-corpus capacity proof.",
     "Native permission and selected-sequence authority remain with their separate readers and future stage writer.",
     "No browser, semantic quality or representativeness claim."
-  ]
+  ],
+  "landedCommit": "0b9f37f8e534bae062d1b1836b170ee6f79aad3e",
+  "CI": {
+    "run": 36778213805,
+    "conclusion": "success",
+    "qaPassed": 16404,
+    "qaSkipped": 1048,
+    "shufflePassed": 16404,
+    "shuffleSkipped": 1048
+  },
+  "RLS": {
+    "run": 36778213781,
+    "conclusion": "success",
+    "passed": 945,
+    "skipped": 125,
+    "filesPassed": 74
+  }
 }

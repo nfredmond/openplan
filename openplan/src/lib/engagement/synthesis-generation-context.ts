@@ -72,6 +72,7 @@ type Dependency =
   | { kind: "record"; recordId: string; recordKind: z.infer<typeof nodeSchema>["kind"]; sha256: string; utf8Bytes: number; contribution: boolean }
   | { kind: "reference"; recordId: string; targetId: string; retained: boolean }
   | ({ kind: "segment"; recordId: string } & z.infer<typeof segmentSchema>);
+export type SynthesisGenerationContextDependency = Dependency;
 
 // Use an iterative queue so long reply threads and cycles do not exhaust the
 // call stack. Emit every edge, including unavailable targets and cycle edges.

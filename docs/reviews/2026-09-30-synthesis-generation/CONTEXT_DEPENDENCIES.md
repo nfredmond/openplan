@@ -1,6 +1,6 @@
 # Complete context dependency preparation
 
-September 30, 2026. Unreleased implementation after `a20346a2`. Focused tests, TypeScript, lint, the final fault campaign, full QA and shuffled tests pass. Exact-commit GitHub checks follow the push. This is dependency preparation for complete M9b generation, not contextual model execution or staff proposal import.
+September 30, 2026. Unreleased implementation after `a20346a2`. Focused tests, TypeScript, lint, the final fault campaign, full QA and shuffled tests pass. Main `0b9f37f8` also passes exact-commit GitHub CI and RLS isolation. This is dependency preparation for complete M9b generation, not contextual model execution or staff proposal import.
 
 The new protocol reconstructs every source record and selected segment result before building a context inventory. It retains the request, source checksum, record inventory checksum, selected-result inventory checksum and native selection sequence. A sequence alone does not fix later output arrivals. The result checksum changes when a previously missing output arrives, so an earlier context inventory cannot silently acquire that later output.
 
@@ -32,3 +32,5 @@ Continue resumable contextual processing, retained machine proposals and explici
 
 
 The current integration boundaries were checked in the code. `synthesis-generation-worker-load.ts` reconstructs the version-one segment plan before accepting its sealed native header and each task. Migration 34 accepts one fixed segment recipe ID/hash and a segment-plan purpose. `synthesis-generation-api.ts` independently requires that frozen instruction/output schema and sends `synthesis_segment_v1` as the provider response format. Context addresses therefore cannot be passed through this path as if they were segment tasks. Extend the versioned request/plan/recipe handling explicitly, preserving old retry and dispatch behavior, before connecting contextual execution.
+
+Exact main checks completed on September 30. [CI](https://github.com/nfredmond/openplan/actions/runs/36778213805) passes full QA and shuffled tests, each with 16,404 passing and 1,048 skipped tests. [RLS isolation](https://github.com/nfredmond/openplan/actions/runs/36778213781) passes 945 tests with 125 skips across 74 files. The seven-test difference from the local unit count reflects environment-dependent cases, not an interchangeable count.

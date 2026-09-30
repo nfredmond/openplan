@@ -1,0 +1,726 @@
+{
+  "state": "Locally verified unreleased internal context content. Exact-commit GitHub checks follow the push.",
+  "baseCommit": "0b9f37f8e534bae062d1b1836b170ee6f79aad3e",
+  "sourceHashes": {
+    "openplan/src/lib/engagement/synthesis-generation-context-content.ts": "d464aadea2d58f297c8922d6c25995ffa689a7a1c878a65b5d8a0bc2f553c460",
+    "openplan/src/lib/engagement/synthesis-generation-context.ts": "8db2f332d36d35526bbadc920c290c073df52aec627ea690dd5670247e4b50eb",
+    "openplan/src/lib/engagement/synthesis-generation-records.ts": "f5361187cb2ef434370f64fd667825eca8d4d06a696eb1ee1bc4e90f331d82e4",
+    "openplan/src/lib/engagement/synthesis-generation-tasks.ts": "831b8ccaf4995289acd18f9957d74dc41aa8bf418194372992d0ea77d20312d3",
+    "openplan/src/test/engagement-synthesis-generation-context-content.test.ts": "0ea3e12c6e4ae1d69f876fbdc2abdc52c0689e0b89b46d31949f503ab1fc7269"
+  },
+  "checks": {
+    "relatedPassed": 33,
+    "relatedFiles": 4,
+    "initialQA": {
+      "exit": 1,
+      "passed": 16417,
+      "failed": 1,
+      "skipped": 1041,
+      "reason": "301-comment test exceeded unchanged 30-second timeout under full suite"
+    },
+    "contentParity": {
+      "equal": true,
+      "previousMs": 20953.686228,
+      "currentMs": 1738.426614,
+      "manifestSha256": "646137775c8a14632ff52eefce68aa64904a930f5ab4eb7ad770525cd88c25ea",
+      "entities": 2419,
+      "frames": 563
+    },
+    "finalGates": {
+      "startedAt": "2026-09-30T21:39:29.758710+00:00",
+      "wrapperPid": 1533143,
+      "phases": [
+        {
+          "phase": "qa",
+          "startedAt": "2026-09-30T21:39:29.758854+00:00",
+          "log": "generation-content-final-qa.log",
+          "state": "complete",
+          "childPid": 1533151,
+          "childProcessGroup": 1533151,
+          "exit": 0,
+          "finishedAt": "2026-09-30T21:43:52.221455+00:00"
+        },
+        {
+          "phase": "shuffle",
+          "startedAt": "2026-09-30T21:43:52.221715+00:00",
+          "log": "generation-content-final-shuffle.log",
+          "state": "complete",
+          "childPid": 1590355,
+          "childProcessGroup": 1590355,
+          "exit": 0,
+          "finishedAt": "2026-09-30T21:46:10.699741+00:00"
+        }
+      ],
+      "exit": 0,
+      "finishedAt": "2026-09-30T21:46:10.699945+00:00"
+    },
+    "QA": {
+      "exit": 0,
+      "passed": 16418,
+      "skipped": 1041,
+      "filesPassed": 1365,
+      "filesSkipped": 67,
+      "build": "Next.js 16.3.8 webpack passed",
+      "auditVulnerabilities": 0
+    },
+    "shuffle": {
+      "exit": 0,
+      "seed": 481939,
+      "passed": 16418,
+      "skipped": 1041
+    },
+    "documentation": {
+      "exit": 0,
+      "passed": 14,
+      "filesPassed": 3
+    }
+  },
+  "mutations": {
+    "generation-content-mutations": [
+      {
+        "case": "harmless-comment",
+        "control": true,
+        "exit": 0,
+        "status": "survived",
+        "failures": [],
+        "logSha256": "bbddd26aed199c5083b65b745c1861beabd8db1e8c9b13d3f14776ec8f95a934"
+      },
+      {
+        "case": "skip-context-authority",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > rejects changed authorities, self-hashed content, targets, limits and selection anchors"
+        ],
+        "logSha256": "c63bfbf5ef3e864d6cdb0c58bb574ca19e4f353b6497fa33596ad82eb5835431"
+      },
+      {
+        "case": "skip-content-replay",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > rejects changed authorities, self-hashed content, targets, limits and selection anchors"
+        ],
+        "logSha256": "1f0f35250c80170ed20e94743ea53d333ed2bb83cecff1d1e403bebf58eb8275"
+      },
+      {
+        "case": "drop-source-parts",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > retains exact numeric tokens, empty values, escaped keys and malformed original Unicode"
+        ],
+        "logSha256": "6dc633dc84abb92753355d9658a2946cdb7dd4029ba81a44331bcd190933124d"
+      },
+      {
+        "case": "drop-selected-observations",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "956fb1717c461a954e9b07a623c7ed8d14c69d791199cf65f482196c28519d70"
+      },
+      {
+        "case": "drop-uncertainty",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "d90fed15d28b82036819db80fa03c78cf7fdae417db7f53d4f0f0a5d85917f70"
+      },
+      {
+        "case": "drop-citations",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames"
+        ],
+        "logSha256": "07bb5b6abb5f0f37f22e2d0ff79fbbc514f2d6e18f7f522818146a61abfd8647"
+      },
+      {
+        "case": "wrong-original-record",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames"
+        ],
+        "logSha256": "a2fea324b30ff4dca0dc0753e7d99b7a06078c1949748dd340f8cdfde480d6b1"
+      },
+      {
+        "case": "wrong-original-fields",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames"
+        ],
+        "logSha256": "2ff4b9bcca998f12b9f0b0fa0ff4c67fe135b95c5327ed630dd21b1ee31ee22f"
+      },
+      {
+        "case": "empty-selection-work",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > emits no content frames for an empty selection"
+        ],
+        "logSha256": "091cf7b1cfcf8d1aeb0b7287352a0c64c1d239283839ff8f9616995c01f71732"
+      },
+      {
+        "case": "premature-ready",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > preserves incomplete results and binds late arrivals to different content",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > emits no content frames for an empty selection"
+        ],
+        "logSha256": "e3b89d53795cd9c5ee5e60c499cd5036c6d80a8560bc041024f51cea87b6c541"
+      },
+      {
+        "case": "drop-sequence",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > preserves incomplete results and binds late arrivals to different content"
+        ],
+        "logSha256": "637fab03f1445490e9620724c412059300076a02eba6503949e336eede00fd32"
+      },
+      {
+        "case": "inflate-contribution",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > emits no content frames for an empty selection"
+        ],
+        "logSha256": "563d81130ad4bdb982fb0b8473e48ff9382ab5683a6a0ec1af1c0bcbb7c63037"
+      },
+      {
+        "case": "drop-last-fields",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > retains exact numeric tokens, empty values, escaped keys and malformed original Unicode",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "35b5eeb21d4f5f7503bc5cff2c9ccc35279056816c299fb6f27861ca5702ee9a"
+      },
+      {
+        "case": "ignore-byte-limit",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > retains exact numeric tokens, empty values, escaped keys and malformed original Unicode",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "3651cf6cd81af3022e2b2f183d8c8d8b8cb08ee853ffb7b3e25c46fc4fb910b5"
+      },
+      {
+        "case": "count-characters",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "f8d3278de8ca447ce8070b1dc6088389befb8ca2b4f4dc1b2f9e17dc957519c0"
+      },
+      {
+        "case": "split-surrogates",
+        "control": false,
+        "exit": 0,
+        "status": "survived",
+        "failures": [],
+        "logSha256": "4533104404b26403f83c36bc0ae84821d89db4d11bd308e7d9b57cf3c69bc7c3"
+      },
+      {
+        "case": "wrong-child-count",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > retains exact numeric tokens, empty values, escaped keys and malformed original Unicode",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "9fec686ef9939f0b1dbaf1fe7af1be80e6dd03394bc9b88c1d83a3aa5e5f4919"
+      },
+      {
+        "case": "wrong-part-range",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > retains exact numeric tokens, empty values, escaped keys and malformed original Unicode",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "a7785014dda0be1ab172e5a15ef05601f8b6e4e483d65dc6376462823a9fa90d"
+      },
+      {
+        "case": "wrong-field-hash",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > retains exact numeric tokens, empty values, escaped keys and malformed original Unicode",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "9b81ee1ae6ba37ef48445b982966549f368002ee8714473f544dbcf9b8d7d291"
+      },
+      {
+        "case": "wrong-frame-index",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > retains exact numeric tokens, empty values, escaped keys and malformed original Unicode",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "1e6a24396f350385767754f64d3454cd5c58e92f750853971eaa2bdf82d797c3"
+      },
+      {
+        "case": "wrong-entity-hash",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > retains exact numeric tokens, empty values, escaped keys and malformed original Unicode",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "f5f566266184719faf2e8a8e4859459d4d3c3e72be718b061e52b5c63f8a6829"
+      },
+      {
+        "case": "skip-final-flush",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > retains exact numeric tokens, empty values, escaped keys and malformed original Unicode",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "677c96d3750cf93b88670893999e00514093a0239f9c0f0c8075de037a58d2ee"
+      },
+      {
+        "case": "skip-dependency-page",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > includes the last of 301 linked comments, retains cycle and unavailable edges, and counts only contributions"
+        ],
+        "logSha256": "78676e7aecaca9bdeef599ca5a7dc263fb654cc36699930729a35a2a570b6a0f"
+      },
+      {
+        "case": "relax-limit-range",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > rejects changed authorities, self-hashed content, targets, limits and selection anchors"
+        ],
+        "logSha256": "d65b4409572a592b3ca6e6e365c8313d0a87de426e653768377680f46c3febf6"
+      }
+    ],
+    "generation-content-surrogate-mutations": [
+      {
+        "case": "harmless-comment",
+        "control": true,
+        "exit": 0,
+        "status": "survived",
+        "failures": [],
+        "logSha256": "7a37c0375f0be4f2fb6380e084d54436365eb538d12d736ee5199442ca1ab839"
+      },
+      {
+        "case": "force-surrogate-cut",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "441601be9bca69c6096328105332acbcebe78298d21ef869be76a83c744e0113"
+      }
+    ],
+    "generation-content-final-mutations": [
+      {
+        "case": "harmless-comment",
+        "control": true,
+        "exit": 0,
+        "status": "survived",
+        "failures": [],
+        "logSha256": "671bdf0f38406aa6c7a83478190d0e5a72c34568eac61ba377023a3ad595fc5f"
+      },
+      {
+        "case": "skip-context-authority",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > rejects changed authorities, self-hashed content, targets, limits and selection anchors"
+        ],
+        "logSha256": "2963fd88e87036a01719a44f2e6cd534adca136ff6334a817e720d23638bf133"
+      },
+      {
+        "case": "skip-content-replay",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > rejects changed authorities, self-hashed content, targets, limits and selection anchors"
+        ],
+        "logSha256": "baeed50594e619c626b3cad2929b13a177beac78ebde31b30591d59b5c98f56e"
+      },
+      {
+        "case": "drop-source-parts",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > retains exact numeric tokens, empty values, escaped keys and malformed original Unicode"
+        ],
+        "logSha256": "c636c51fdac10d1d634bedfb9e3b9816ab5fd4b6a8a65a5a6712992602d99df8"
+      },
+      {
+        "case": "drop-selected-observations",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "16ddcfc87699134c274bd9f46a490344e22e89c03eaf276f776b64881811bd75"
+      },
+      {
+        "case": "drop-uncertainty",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "40f04c9909b5b9854a6daf1ff3607cc13c12dbc1768bbb1df16073baf9cbe52e"
+      },
+      {
+        "case": "drop-citations",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames"
+        ],
+        "logSha256": "41b48be3ee6591e61501f0ec36f09868c74311ae969baa3ee7d52f30b3146007"
+      },
+      {
+        "case": "wrong-original-record",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames"
+        ],
+        "logSha256": "4b537424018e4f4be254d53ee0d10ac77ece1d2443320c8bbc0df22c2d5107f8"
+      },
+      {
+        "case": "wrong-original-fields",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames"
+        ],
+        "logSha256": "baaef6ef44ecfa5b0c34ddff43f2a8dfe5cc0a745fd846dccb39497947b0b49e"
+      },
+      {
+        "case": "empty-selection-work",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > emits no content frames for an empty selection"
+        ],
+        "logSha256": "4be8429262da6c2e6935538de5a41283105994f4decb66b0a6da236c08677d9e"
+      },
+      {
+        "case": "premature-ready",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > preserves incomplete results and binds late arrivals to different content",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > emits no content frames for an empty selection"
+        ],
+        "logSha256": "290907f3a1ec2de7c734b8240525b81687f827334cff87f532ca53f2d23967e3"
+      },
+      {
+        "case": "drop-sequence",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > preserves incomplete results and binds late arrivals to different content"
+        ],
+        "logSha256": "a0a8c94d27df8123d55297693ea27d26edeec085ae783ac87d86be1a203d10c6"
+      },
+      {
+        "case": "inflate-contribution",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > emits no content frames for an empty selection"
+        ],
+        "logSha256": "8aec204f92c80f9a2f68bd7c40e7d288278926b2bd6d0651e7c4f2000c856354"
+      },
+      {
+        "case": "drop-last-fields",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > retains exact numeric tokens, empty values, escaped keys and malformed original Unicode",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "23ffbb94caa1d026a6f9882ff22847dfdd74cfa8ec0c062f217023e4bdeaeff2"
+      },
+      {
+        "case": "ignore-byte-limit",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > retains exact numeric tokens, empty values, escaped keys and malformed original Unicode",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "d4e88d643c24638ecae48ce4a28e60b72e141d523692938159522c63a1f7b242"
+      },
+      {
+        "case": "count-characters",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "8c55066146607e3c18c917842095c4b056cef7d202620086e947b0d75e4515f4"
+      },
+      {
+        "case": "force-surrogate-cut",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "9f49ddd733bcd4c64e167b08d3aaee8574d9eb9dc89cf05d043c7cdcbfadbaa2"
+      },
+      {
+        "case": "wrong-child-count",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > retains exact numeric tokens, empty values, escaped keys and malformed original Unicode",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "7606ad8cc3f0ff8a947afbb5ea2daeb9de2d6e48bc3822d771de872aed7e3fbf"
+      },
+      {
+        "case": "wrong-part-range",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > retains exact numeric tokens, empty values, escaped keys and malformed original Unicode",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "d0de72dfd8179ae8117e53b930efd8d85412eb40229515e74a5f95ac22be67db"
+      },
+      {
+        "case": "wrong-field-hash",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > retains exact numeric tokens, empty values, escaped keys and malformed original Unicode",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "c4b8825562edfc8ef0385d8fca63f31d0b866a6bf88a334a1aa3251631609849"
+      },
+      {
+        "case": "wrong-frame-index",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > retains exact numeric tokens, empty values, escaped keys and malformed original Unicode",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "80e6495186e56226457eaf8102fafcb8483b8d2eb17a49ac69278f012a0ee5e4"
+      },
+      {
+        "case": "wrong-entity-hash",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > retains exact numeric tokens, empty values, escaped keys and malformed original Unicode",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "77f71023584fe5b82524f41c5a33a2531e3822c50297423c91400c2907f73c05"
+      },
+      {
+        "case": "skip-final-flush",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > retains exact numeric tokens, empty values, escaped keys and malformed original Unicode",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "427bab03563ba01f9049602acef540069a1e57199e9e18ea60882f7e1af30cae"
+      },
+      {
+        "case": "skip-dependency-page",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > includes the last of 301 linked comments, retains cycle and unavailable edges, and counts only contributions"
+        ],
+        "logSha256": "df5a7b7753cf05b9ce7e1a3cfa31b87d3616e8c89eb64d6cec9ee82e557f47fa"
+      },
+      {
+        "case": "relax-limit-range",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > rejects changed authorities, self-hashed content, targets, limits and selection anchors"
+        ],
+        "logSha256": "4e82b7b1e842000a514dedb43a38db10489d405e13b9a64fe418b3ce57dcec87"
+      },
+      {
+        "case": "omit-frame-header",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > retains exact numeric tokens, empty values, escaped keys and malformed original Unicode",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "862ace435c0d446867480ee0771e46b0318339816a7327ca6a1a75122bec735d"
+      },
+      {
+        "case": "omit-separators",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > reconstructs every typed source part, observation, citation and uncertainty through bounded frames",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > retains exact numeric tokens, empty values, escaped keys and malformed original Unicode",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > keeps complete Unicode observations across frame boundaries"
+        ],
+        "logSha256": "1dab789d7b6ffc8540b4d9ba8f59128a025d66e3cb2f1e3ef79bc9fbe8bb68e3"
+      }
+    ],
+    "generation-content-target-mutations": [
+      {
+        "case": "harmless-comment",
+        "control": true,
+        "exit": 0,
+        "status": "survived",
+        "failures": [],
+        "logSha256": "72aff45e98a28605b0ff189784858efb1b5542a56f7d40130e7bc0f4f519541c"
+      },
+      {
+        "case": "ignore-empty-target",
+        "control": false,
+        "exit": 1,
+        "status": "killed",
+        "failures": [
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > emits no content frames for an empty selection",
+          " FAIL  src/test/engagement-synthesis-generation-context-content.test.ts > complete retained synthesis context content > rejects changed authorities, self-hashed content, targets, limits and selection anchors"
+        ],
+        "logSha256": "9a111666d5b4e8d4d2921cf59b13123351f4b57679e8c3fd921df887a56d89cf"
+      }
+    ]
+  },
+  "restoration": {
+    "generation-content-mutations": {
+      "restored": true,
+      "sha256": "df5d4cf4f7feadf4224b528d1eccdb65a8625d5d0f5d11eb7adf7ee4c6cba258"
+    },
+    "generation-content-surrogate-mutations": {
+      "restored": true,
+      "sha256": "df5d4cf4f7feadf4224b528d1eccdb65a8625d5d0f5d11eb7adf7ee4c6cba258"
+    },
+    "generation-content-final-mutations": {
+      "restored": true,
+      "sha256": "d464aadea2d58f297c8922d6c25995ffa689a7a1c878a65b5d8a0bc2f553c460"
+    },
+    "generation-content-target-mutations": {
+      "restored": true,
+      "sha256": "d464aadea2d58f297c8922d6c25995ffa689a7a1c878a65b5d8a0bc2f553c460"
+    }
+  },
+  "limits": [
+    "No contextual provider execution, native writes, browser route or staff interface.",
+    "Sources, selected results, entities and frames remain memory resident.",
+    "Bounded frame bytes do not establish provider token fit, maximum corpus capacity or semantic usefulness.",
+    "Self-hashed caller inputs do not grant access or execution permission.",
+    "Invalid and incomplete selected results remain incomplete; original raw captures stay in their separate retained ledger."
+  ],
+  "logs": {
+    "generation-content-initial.log": "9a28bc860cc5fd04fc6a6d6d84897cfb2996f2b67aefd94d2341ddcd926d8dee",
+    "generation-content-corrected.log": "d336d04fd0740e672bcaef19e027557009a91d42adbc9a38a464c2839ca49477",
+    "generation-content-unicode.log": "800d39d4c9f585f3651214d9d8440962a69774cfaa6f74bca37778da744a37ed",
+    "generation-content-qa.log": "ade0ece3e6bbe055dccf1a7b48905b149bac8512258b6b988470cf0c66c1ac5a",
+    "generation-content-fast-related.log": "8923483034ba0b56a8f69267747ab89880acec896c33def9d6d9a9a90227c183",
+    "generation-content-final-qa.log": "1b37d5ff45de7c18fcf26a462bd40c777ed5ee85f8d13639aca7faa805ef05ef",
+    "generation-content-final-shuffle.log": "ebdfb34632f12c44f07a73d4b87634b70a5b5ad61496e8f828531b89a8807cf6",
+    "generation-content-parity.log": "448c3e595968a0e8f538ea714819620ff57d4a4e6bc19f7cda96ebea9db9403d",
+    "generation-content-parity-corrected.log": "f2c1e6c2ae9641c635ba3c3add43d22b1b566b01bc6022691f93d43e90a0b334",
+    "generation-content-final-docs.log": "d35e18bf01a32e0b1950fc78f0870bc423d72f93f81d850a1bf205b7ca05b2d4"
+  }
+}

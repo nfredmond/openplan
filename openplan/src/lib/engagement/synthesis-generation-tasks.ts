@@ -30,6 +30,7 @@ type TaskInput = {
   references: Array<{ id: string; retained: boolean; includedInTask: false }>;
   rangeUnit: "utf16_code_units"; parts: Part[];
 };
+export type SynthesisGenerationTaskInput = TaskInput;
 export type SynthesisGenerationTask = { index: number; canonical: string; sha256: string; utf8Bytes: number };
 function canonical(input: TaskInput) { return JSON.stringify({ schemaVersion: 1, instructions, input, outputSchema: responseSchema }); }
 function safeEnd(text: string, end: number) {

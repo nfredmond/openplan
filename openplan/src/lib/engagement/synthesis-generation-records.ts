@@ -110,26 +110,32 @@ export function verifySynthesisGenerationRecords(raw: unknown, input: unknown, s
   return expected;
 }
 
-/** Expose complete typed fields so later model tasks need not consume broken JSON fragments. */
+/** Encode complete typed fields with original numeric tokens. This does not establish source authority. */
+export function synthesisGenerationJSONFields(text: string): SynthesisGenerationField[] {
+  const fields: SynthesisGenerationField[] = [];
+  function visit(pointer: string, value: unknown) {
+    if (value instanceof RetainedNumber) fields.push({ pointer, kind: "number", text: value.token });
+    else if (value === null) fields.push({ pointer, kind: "null", text: "null" });
+    else if (typeof value === "string") fields.push({ pointer, kind: "string", text: value });
+    else if (typeof value === "boolean") fields.push({ pointer, kind: "boolean", text: value ? "true" : "false" });
+    else if (Array.isArray(value)) {
+      fields.push({ pointer, kind: "array", childCount: value.length });
+      value.forEach((child, index) => visit(`${pointer}/${index}`, child));
+    } else {
+      const entries = Object.entries(object(value));
+      fields.push({ pointer, kind: "object", childCount: entries.length });
+      for (const [key, child] of entries) visit(`${pointer}/${key.replace(/~/g, "~0").replace(/\//g, "~1")}`, child);
+    }
+  }
+  visit("", parseRetainedJSON(text));
+  return fields;
+}
+
+/** Reconstruct authority before exposing a saved record's typed fields. */
 export function createSynthesisGenerationFields(rawRecords: unknown, input: unknown, saved: unknown, scope: SynthesisSourceScope): SynthesisGenerationFields {
   const verified = verifySynthesisGenerationRecords(rawRecords, input, saved, scope);
   const records = verified.records.map(record => {
-    const fields: SynthesisGenerationField[] = [];
-    function visit(pointer: string, value: unknown) {
-      if (value instanceof RetainedNumber) fields.push({ pointer, kind: "number", text: value.token });
-      else if (value === null) fields.push({ pointer, kind: "null", text: "null" });
-      else if (typeof value === "string") fields.push({ pointer, kind: "string", text: value });
-      else if (typeof value === "boolean") fields.push({ pointer, kind: "boolean", text: value ? "true" : "false" });
-      else if (Array.isArray(value)) {
-        fields.push({ pointer, kind: "array", childCount: value.length });
-        value.forEach((child, index) => visit(`${pointer}/${index}`, child));
-      } else {
-        const entries = Object.entries(object(value));
-        fields.push({ pointer, kind: "object", childCount: entries.length });
-        for (const [key, child] of entries) visit(`${pointer}/${key.replace(/~/g, "~0").replace(/\//g, "~1")}`, child);
-      }
-    }
-    visit("", parseRetainedJSON(record.text));
+    const fields = synthesisGenerationJSONFields(record.text);
     const value = { recordId: record.id, recordSha256: record.sha256, fields };
     return { ...value, fieldsSha256: sha256(JSON.stringify(value)) };
   });

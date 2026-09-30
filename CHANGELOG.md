@@ -36,6 +36,12 @@ parent references and exact replay without adding context records to participant
 counts. These pages contain dependency addresses. Contextual model execution and
 proposal import remain unfinished.
 
+Internal content preparation now carries complete original source parts and
+selected observations, citations and uncertainty through bounded, replayable
+frames. The content checksum binds the source, selected results and target
+context. Incomplete results stay incomplete. This remains memory-resident data
+preparation; it adds no provider execution or staff interface.
+
 ## 0.65.0 (2026-09-30)
 
 [Verification](docs/reviews/2026-09-30-synthesis-generation/RELEASE_VERIFICATION.md) records the release scope, engineering checks and publication status.
