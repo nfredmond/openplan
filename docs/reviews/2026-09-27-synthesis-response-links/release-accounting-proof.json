@@ -1,0 +1,44 @@
+[
+  {
+    "name": "baseline",
+    "exit": 0,
+    "expected": null,
+    "valid": true
+  },
+  {
+    "name": "harmless",
+    "exit": 0,
+    "expected": null,
+    "valid": true
+  },
+  {
+    "name": "wrong-count",
+    "exit": 1,
+    "expected": "migrations at or below",
+    "valid": true
+  },
+  {
+    "name": "missing-file",
+    "exit": 1,
+    "expected": "every release",
+    "valid": true
+  },
+  {
+    "name": "missing-section",
+    "exit": 1,
+    "expected": "must carry a \"## 0.64.0\"",
+    "valid": true
+  },
+  {
+    "name": "missing-operator-disclosure",
+    "exit": 1,
+    "expected": "Every migration in 0.64.0",
+    "valid": true
+  },
+  {
+    "name": "restored",
+    "exit": 0,
+    "expected": null,
+    "valid": true
+  }
+]

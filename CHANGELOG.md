@@ -20,6 +20,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+No unreleased changes.
+
+## 0.64.0 (2026-09-30)
+
 Staff can link an approved synthesis group to a saved response in Engagement
 Analysis, inspect retained originals, refresh corrected evidence and withdraw a
 link. Interrupted saves retain the exact request. Browser recovery copies keep
@@ -35,7 +39,7 @@ paid service is required. Links do not publish responses or grant agency
 approval. Internal PDF, XLSX and ZIP files include the retained chain; public
 copies exclude it. Earlier files remain unchanged after correction. Optional
 generation and the wider M9b workflow remain open.
-This development entry does not declare a release.
+The [release verification](docs/reviews/2026-09-27-synthesis-response-links/RELEASE_VERIFICATION.md) records engineering evidence and publication status.
 
 
 ## 0.63.0 (2026-09-27)

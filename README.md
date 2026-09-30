@@ -1,17 +1,17 @@
 # OpenPlan
 
 OpenPlan is free and open-source transportation and land-use planning software,
-maintained by Nat Ford Planning & Analysis. It brings projects, place-based
+maintained by Nathaniel Redmond. It brings projects, place-based
 evidence, analysis, plans, public engagement, reports and implementation records
 into one application. The source license is Apache-2.0.
 
-The product is under active development. Version 0.44 ships OWP and engagement
-improvements and repairs the local Control updater under the
+The product remains under active development. Tagged releases follow the
 [development release policy](docs/product/DEVELOPMENT_RELEASE_POLICY.md).
-The September 6 acceptance record remains nine of twelve journeys passed and
-three partial; this release does not claim a complete campaign pass or validated
-forecasts. See the [historical outcome record](docs/ops/V044_FINAL_FIRST_WEEK_OUTCOMES_2026-09-06.md)
-and [release verification](docs/reviews/2026-09-07-control-release/VERIFICATION.md).
+The [changelog](CHANGELOG.md) and linked verification records distinguish shipped
+changes from unfinished work. The September 6 assessment remains nine of twelve
+journeys passed and three partial. Later releases do not regrade that assessment
+or establish validated forecasts. See the
+[historical outcome record](docs/ops/V044_FINAL_FIRST_WEEK_OUTCOMES_2026-09-06.md).
 The [v1 contract](docs/product/V1_PRODUCT_CONTRACT.md)
 sets the full destination: core planning practice across all 50 states and DC,
 California as the deepest implementation, and separately validated AequilibraE

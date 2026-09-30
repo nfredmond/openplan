@@ -1,0 +1,68 @@
+[
+  {
+    "name": "baseline",
+    "exit": 0,
+    "expected": null,
+    "valid": true
+  },
+  {
+    "name": "harmless",
+    "exit": 0,
+    "expected": null,
+    "valid": true
+  },
+  {
+    "name": "stale-entry-1",
+    "exit": 1,
+    "expected": "engagement_synthesis_response_events.event_no",
+    "valid": true
+  },
+  {
+    "name": "stale-entry-2",
+    "exit": 1,
+    "expected": "engagement_synthesis_response_events.event_sha256",
+    "valid": true
+  },
+  {
+    "name": "stale-entry-3",
+    "exit": 1,
+    "expected": "engagement_synthesis_response_events.group_id",
+    "valid": true
+  },
+  {
+    "name": "stale-entry-4",
+    "exit": 1,
+    "expected": "engagement_synthesis_response_events.review_id",
+    "valid": true
+  },
+  {
+    "name": "stale-entry-5",
+    "exit": 1,
+    "expected": "engagement_synthesis_approval_events.event_no",
+    "valid": true
+  },
+  {
+    "name": "stale-entry-6",
+    "exit": 1,
+    "expected": "engagement_synthesis_approval_events.event_sha256",
+    "valid": true
+  },
+  {
+    "name": "stale-entry-7",
+    "exit": 1,
+    "expected": "engagement_synthesis_approval_events.review_id",
+    "valid": true
+  },
+  {
+    "name": "stale-entry-8",
+    "exit": 1,
+    "expected": "engagement_synthesis_review_revisions.review_id",
+    "valid": true
+  },
+  {
+    "name": "restored",
+    "exit": 0,
+    "expected": null,
+    "valid": true
+  }
+]
