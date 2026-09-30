@@ -995,6 +995,7 @@ describe.skipIf(!LIVE_RLS || CANDIDATE_RLS)("installed synthesis response links"
 const decisionSynthesisMigration = [
   "20261014000030_engagement_decision_synthesis_history.sql",
   "20261014000031_engagement_decision_resolution_guard.sql",
+  "20261014000032_application_temporary_schema_order.sql",
 ].map(name => readFileSync(`supabase/migrations/${name}`, "utf8")).join("\n");
 const DECISION_SYNTHESIS_CANDIDATE = process.env.OPENPLAN_DECISION_SYNTHESIS_CANDIDATE === "1";
 const decisionSynthesisSetup = DECISION_SYNTHESIS_CANDIDATE ? decisionSynthesisMigration : "";

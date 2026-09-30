@@ -34,6 +34,7 @@ unfinished reasons, including text held on screen after storage refusal.
 - `20261014000029_engagement_synthesis_response_links.sql` adds private retained link events and source membership, complete history and navigation readers, current public-evidence checks, and automatic response withdrawal when linked evidence changes.
 - `20261014000030_engagement_decision_synthesis_history.sql` adds versioned private decision captures of retained synthesis history. Earlier packets and exact retries remain unchanged. Private decision previews, saved history and review files now retain the source, staff review, approval and response chain.
 - `20261014000031_engagement_decision_resolution_guard.sql` preserves cancellation of unresolved decision requests after the synthesis upgrade. Exact saved receipts remain replayable.
+- `20261014000032_application_temporary_schema_order.sql` puts temporary tables after trusted tables for 176 application functions. This closes a demonstrated campaign-access bypass by a native SQL caller with temporary-table privileges. Function bodies and grants remain unchanged.
 
 Apply migrations before building and restarting. No new worker, provider key or
 paid service is required. Links do not publish responses or grant agency

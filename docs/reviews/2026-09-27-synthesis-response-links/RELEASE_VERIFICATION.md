@@ -20,13 +20,14 @@ The worker-generated PDFs use short source destinations and have no extraction
 warnings. Native and application checks preserve earlier packet formats and
 separate missing historical evidence from captured empty history.
 
-Apply migrations 29 through 31 before restarting the application:
+Apply migrations 29 through 32 before restarting the application:
 
 - `20261014000029_engagement_synthesis_response_links.sql`
 - `20261014000030_engagement_decision_synthesis_history.sql`
 - `20261014000031_engagement_decision_resolution_guard.sql`
+- `20261014000032_application_temporary_schema_order.sql`
 
-The release candidate records 350 migrations through migration 31. No database
+The release candidate records 351 migrations through migration 32. No database
 reset, new provider key, new worker or paid service is required. The existing
 Documents export worker prepares queued files. The isolated populated upgrade
 retains counts and checksums; the final populated release-upgrade workflow and
@@ -46,13 +47,41 @@ guard removal. Both defective cases fail with the expected late-request message.
 The installed recovery and decision-link suites pass all 16 tests. The isolated
 upgrade preserves counts and checksums for 3,350 rows across nine named tables.
 These checks cover database behavior and those retained records. They do not
-prove browser navigation or file usability.
+prove browser navigation or file usability. [Combined-upgrade controls](combined-upgrade-proof.json)
+apply migrations 30 through 32 to an owned schema copy containing actual version-one
+packets. Baseline and harmless controls preserve exact receipts and the public
+entry-point identity. Missing cancellation repair and a replaced entry point fail.
+
+## Temporary-table lookup repaired
+
+A native SQL probe found a second boundary absent from the earlier RLS suite.
+An authenticated role with temporary-table privileges could supply a temporary
+`workspace_members` table before calling the synthesis reader. That table
+satisfied the campaign check for an otherwise refused caller. This is a native
+SQL-role result. No HTTP exploit is established.
+
+Migration 32 explicitly puts `pg_temp` after trusted tables for 176 application
+functions using the affected search-path setting. Their bodies, ownership,
+argument types and grants stay unchanged. The
+[lookup proof](trusted-lookup-proof.json) records the failed pre-repair boundary,
+repaired and harmless controls, 176 independently weakened settings and a
+behavior fault that restores the demonstrated bypass. All 22 focused tests pass.
+The isolated upgrade preserves 6,576 rows in ten named tables and the identities,
+bodies and grants of all 176 functions.
+
+The first draft of the behavior fixture called the function before creating its
+conflicting temporary table. A cached relation reference hid the defect. The
+final fixture creates the conflict before its first call. The catalog guard
+covers its explicit inventory, not future functions or every possible body
+branch. Full native checks and browser verification remain necessary.
 
 ## Checks still being completed
 
 Full QA and shuffled tests passed at c5e11856 with 15,951 tests passing and
-821 explicit skips. They are being repeated after the additive repair. Full
-installed RLS, final identified production journeys and final CI remain open. All 52 Python worker
+821 explicit skips. The cancellation-repair checkpoint b45642b8 also passes full QA and shuffled
+tests with 15,951 passes and 822 skips, plus native RLS with 726 passes and 125
+historical candidate skips. These are being repeated after migration 32. Final
+identified production journeys and exact-commit CI remain open. All 52 Python worker
 suites pass at the display checkpoint. The first full QA run found eight stale
 column-audit entries after export field names entered the application source.
 That run has one failure, 15,950 passes and 821 explicit skips.

@@ -1,0 +1,26 @@
+[
+  {
+    "case": "baseline",
+    "exit": 0,
+    "expectedFailure": null,
+    "valid": true
+  },
+  {
+    "case": "harmless-comment",
+    "exit": 0,
+    "expectedFailure": null,
+    "valid": true
+  },
+  {
+    "case": "missing-repair",
+    "exit": 3,
+    "expectedFailure": "Cancelled pre-upgrade request arrived late: expected PT409, observed success",
+    "valid": true
+  },
+  {
+    "case": "replaced-entry-point",
+    "exit": 3,
+    "expectedFailure": "Entry point identity changed",
+    "valid": true
+  }
+]
