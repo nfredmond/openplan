@@ -56,6 +56,15 @@ inputs, preserves preceding response bytes and cumulative notes/uncertainty, and
 stops explicitly when the complete task exceeds its configured byte limit. It
 adds no provider call, native authorization or staff generation interface.
 
+Internal context staging retains original frame text, exact hashes, ordered
+prefixes and completion seals. Interrupted acknowledgements resume the same plan.
+Cancellation prevents new storage while preserving exact retries. A private frame
+table preserves escaped Unicode strings that PostgreSQL cannot decode into its
+normal JSON object fields. Apply
+`20261014000038_engagement_synthesis_context_plans.sql` before using this staging
+service. Storage seals establish byte custody; context authorization, provider
+execution and staff generation remain unfinished.
+
 ## 0.65.0 (2026-09-30)
 
 [Verification](docs/reviews/2026-09-30-synthesis-generation/RELEASE_VERIFICATION.md) records the release scope, engineering checks and publication status.

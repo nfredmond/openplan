@@ -1,0 +1,352 @@
+{
+  "date": "2026-09-30",
+  "baseCommit": "91eec38b8b741aff9e7c7f06ca78142bd2ad707c",
+  "state": "locally verified internal increment; exact main CI pending",
+  "sourceSha256": {
+    "openplan/src/lib/engagement/synthesis-context-plan.ts": "90dd63377fbf8ae77e28a6a083e57b4162aab93e239b2b775de88aadb53d25c1",
+    "openplan/src/lib/engagement/synthesis-context-plan-server.ts": "cfe7cafa8c520bc842e54bab692917e2bb2c74273115b8d49749e7a7950e3264",
+    "openplan/supabase/migrations/20261014000038_engagement_synthesis_context_plans.sql": "830d60f57a056db1372d9eaa3f1dd0e85f3fefbee41759fee0ecfc8697750c71",
+    "openplan/src/test/engagement-synthesis-context-plan.test.ts": "ac73f0a2a601b1b42e831a824cde7ef7e97cad464dbcf149dcbc37c17a2c37ab",
+    "openplan/src/test/engagement-synthesis-context-plans-rls.test.ts": "5431252fee4008863859ad2bba360eb253374db4645c410d72da9d17f025969f",
+    "openplan/src/test/fixtures/engagement/synthesis-context-plans.sql": "980d0b5ba04cff3d2148b14967fbd95570617665bf4e4e4849c1a125f4f115fd",
+    "openplan/src/test/fixtures/engagement/synthesis-context.ts": "897851e98fe2c15b81b87eb57b2d1066a80aa9e5e3a8d1a3f033d16d5fad2be6",
+    "openplan/src/test/engagement-synthesis-generation-worker-live.test.ts": "9d808555b945ec7b5e105a5df43358096b21de58458c24168da4d49e7207f06f"
+  },
+  "unitMutations": [
+    {
+      "name": "comment-control",
+      "control": true,
+      "exit": 0,
+      "expected": true
+    },
+    {
+      "name": "seed-domain",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "chain-index",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "chain-length",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "frame-cumulative-bytes",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "request-state",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "header-text-state",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "header-hash-state",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "prefix-bytes",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "prefix-chain",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "seal-count",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "seal-checksum",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "seal-request",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "seal-header",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "seal-frames",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "seal-bytes",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "seal-tail",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "seal-time",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "batch-count",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "batch-encoded-bytes",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "batch-payload",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "abort-after-ack",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "cancel-loop",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "cancel-seal",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "progress",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    },
+    {
+      "name": "completion",
+      "control": false,
+      "exit": 1,
+      "expected": true
+    }
+  ],
+  "nativeMutations": {
+    "initialPassed": 44,
+    "initialFailed": 2,
+    "initialSurvivors": [
+      "sequence",
+      "overlap"
+    ],
+    "correctedPassed": 47,
+    "additionalRequesterRoleFault": "passed in full isolated suite",
+    "limits": "Structural synthetic frames prove byte custody and refusal, not semantic source reconstruction.",
+    "finalCases": 48
+  },
+  "httpMutations": {
+    "results": [
+      {
+        "name": "control",
+        "exit": 0,
+        "expected": true,
+        "logSha256": "290fa53e986277e4eb045e2e52a6abf745b899838f42ff0ecc3970179c8265b3"
+      },
+      {
+        "name": "wrong-prefix",
+        "exit": 1,
+        "expected": true,
+        "logSha256": "7a37a6cf991171fa49917e6414e2bdc49c5334a5b5a770262d22814bf6476ebf"
+      }
+    ],
+    "sourceRestored": true
+  },
+  "upgrade": {
+    "at": "2026-09-30T23:35:03.074014+00:00",
+    "migration": "20261014000038_engagement_synthesis_context_plans.sql",
+    "sha256": "830d60f57a056db1372d9eaa3f1dd0e85f3fefbee41759fee0ecfc8697750c71",
+    "before": {
+      "engagement_synthesis_context_requests": {
+        "count": 4,
+        "sha256": "9edc8f467a23ff6e4e2a61e5ffca1819369595a814defd1fd0b7ea5cb75d1ac4"
+      },
+      "engagement_synthesis_generation_plans": {
+        "count": 160,
+        "sha256": "4ee29ebda33c8d06ca63dc68ab5a862044d8d6cb5109f0fd6efb38a45b638375"
+      },
+      "engagement_synthesis_generation_outputs": {
+        "count": 784,
+        "sha256": "64a1352d5de59252fe256f4ec1240beb2cf2ef9d15c5eb35f6301eaff97c839e"
+      },
+      "engagement_synthesis_generation_attempts": {
+        "count": 820,
+        "sha256": "180ad67757f24e8f916d120527d19ed7742a3c9d3a024f88c0dd9063ed23787f"
+      },
+      "engagement_synthesis_generation_requests": {
+        "count": 168,
+        "sha256": "64ffb8a42045433f11d5a004e525ad4acb828ca4682a5ec0435182c6c26de5d9"
+      },
+      "engagement_synthesis_generation_plan_seals": {
+        "count": 160,
+        "sha256": "1aaf77296700e7717dec394fa53bf4a3d224e5bdcda04e45227ec22230cc2c67"
+      },
+      "engagement_synthesis_generation_plan_tasks": {
+        "count": 2560,
+        "sha256": "4efead355e2df489e1bdfda59eae9f144a59617a358fb2acbb7e7956d842f943"
+      },
+      "engagement_synthesis_generation_selections": {
+        "count": 820,
+        "sha256": "c78b0fdc87090b9337dc2e26eb32c33d1d4adfd5cc21094f1889eff0aa05c5dd"
+      }
+    },
+    "exit": 0,
+    "after": {
+      "engagement_synthesis_context_requests": {
+        "count": 4,
+        "sha256": "9edc8f467a23ff6e4e2a61e5ffca1819369595a814defd1fd0b7ea5cb75d1ac4"
+      },
+      "engagement_synthesis_generation_plans": {
+        "count": 160,
+        "sha256": "4ee29ebda33c8d06ca63dc68ab5a862044d8d6cb5109f0fd6efb38a45b638375"
+      },
+      "engagement_synthesis_generation_outputs": {
+        "count": 784,
+        "sha256": "64a1352d5de59252fe256f4ec1240beb2cf2ef9d15c5eb35f6301eaff97c839e"
+      },
+      "engagement_synthesis_generation_attempts": {
+        "count": 820,
+        "sha256": "180ad67757f24e8f916d120527d19ed7742a3c9d3a024f88c0dd9063ed23787f"
+      },
+      "engagement_synthesis_generation_requests": {
+        "count": 168,
+        "sha256": "64ffb8a42045433f11d5a004e525ad4acb828ca4682a5ec0435182c6c26de5d9"
+      },
+      "engagement_synthesis_generation_plan_seals": {
+        "count": 160,
+        "sha256": "1aaf77296700e7717dec394fa53bf4a3d224e5bdcda04e45227ec22230cc2c67"
+      },
+      "engagement_synthesis_generation_plan_tasks": {
+        "count": 2560,
+        "sha256": "4efead355e2df489e1bdfda59eae9f144a59617a358fb2acbb7e7956d842f943"
+      },
+      "engagement_synthesis_generation_selections": {
+        "count": 820,
+        "sha256": "c78b0fdc87090b9337dc2e26eb32c33d1d4adfd5cc21094f1889eff0aa05c5dd"
+      }
+    },
+    "equal": true
+  },
+  "fullGates": "Full QA, shuffled tests, native HTTP, isolated RLS and additive upgrade passed",
+  "limits": [
+    "No context execution authorization, retained-frame consumer, provider call or staff interface.",
+    "Native opaque frame syntax and seal do not establish source semantics or authenticity.",
+    "Generic task hash and size describe safe reference text; frame chain and cumulative size describe original frame bytes."
+  ],
+  "evidenceLogSha256": {
+    "generation-context-plan-native-recovered.log": "4cd211a8f98bbc7b54842fa27cbc996a0897fde762dbe0e1b49f3d1ada012ba2",
+    "generation-context-plan-http-control.log": "290fa53e986277e4eb045e2e52a6abf745b899838f42ff0ecc3970179c8265b3",
+    "generation-context-plan-native-corrected-faults.log": "e20e8b5055b18b1e757ab27fb490074b4df0fe445cd56ead680047308ff4d0fe",
+    "generation-context-plan-http-initial.log": "c4c287d9cd59438fd2f085927d5b787d600d021631819930550373ab1a165af2",
+    "generation-context-plan-native-boundaries.log": "4f8e47c2f1fe137b3ea1580c9716126b46af8bd5b553139cbe502f4929f81c34",
+    "generation-context-plan-native-debug.log": "8100f3d99c7fd2bbebbaa0f4edbf3c665d2317bec6f0a8556984cbbf301b1e5d",
+    "generation-context-plan-upgrade.log": "631810160de9913bd065b625d3ed9845bf54bddc7c1cbf58877142cd4d1e751b",
+    "generation-context-plan-types-current.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "generation-context-plan-types-recovered.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "generation-context-plan-native-overlap-corrected.log": "9708a18759e4009dc9dad09bd54265a7ade6550488244c0899ed997870821c65",
+    "generation-context-plan-http-wrong-prefix.log": "7a37a6cf991171fa49917e6414e2bdc49c5334a5b5a770262d22814bf6476ebf",
+    "generation-context-plan-schema-related.log": "6e606b5f62d39b948708e67236a42f8e792088009e455a7be53430f87fe20da3",
+    "generation-context-plan-native-initial.log": "ac0a58a4298cc885ad56fdea7cf1267dd45bf696013bd3940b34f5f23eec8be0",
+    "generation-context-plan-native-final.log": "7af8465903b8aca59ecece97237896b1e774f4d1a72fd44703fd63b9136ee4b4",
+    "generation-context-plan-unit-mutation-driver.log": "df8192819af39ec9fba1c74d1201f794fcdcaa6bc900eedb3d63c69525199cef",
+    "generation-context-plan-native-corrected.log": "4bcf4156e4177aa90bcdecaa36ad54bbfef1f301637d3755bce580340c38c428",
+    "generation-context-plan-native-mutations-initial.log": "1203fa01529320505234b2b41b1db5a1a2a02715581292b43dd4dcb31a4ae08f",
+    "generation-context-plan-types-http.log": "e73c99fbce09e1bb4e8d33b2f2bfcc1e51897da83ef7edfc05ce4bf919250a21",
+    "generation-context-plan-direction.log": "d0af530f3414731d5e51eaf758ccadc54e6cac5c1037f69a91b79601a5a2ee5b",
+    "generation-context-plan-native-guards.log": "f6bfb891dc60056cfc04b1b6da429200c19dbdac58824bdbe69c8025774496a8",
+    "generation-context-plan-types-initial.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "generation-context-plan-unit-initial.log": "418f91fcc6b1dc422969e688f6f465338e2958c9ced7d86964a19aeaf08a0516",
+    "generation-context-plan-final-qa.log": "58090dbe27d7fbed8f364ce581706c71274bdaaa3ac142a4138ab54fc9474035",
+    "generation-context-plan-final-shuffle.log": "228ac4464c58d4d1815fd6caea275da9865d033ea409d0e00c7a75e4a7ece190",
+    "generation-context-plan-schema-corrected.log": "256512a3c7698ae080965ef910387ec3855959a7b03158c6adfd198a3ccbe3ae",
+    "generation-context-plan-documentation.log": "eb0723344aedbdcc0ab137fd8f42f5d6cc01bee26c61a898c5a5f4a967c51e36",
+    "generation-context-plan-full-rls.log": "d3c028e044521e08ba03873a8f33fb05e13eda6943cfb09c146336057c74c19b",
+    "generation-context-plan-documentation-final.log": "7f0eb8f857a1ce70519e2a26cfd797ca41ab477d97ca45ed334bd56ea5f78042",
+    "generation-context-plan-documentation-final-corrected.log": "84770111690b2bcfa9c83e80dc4df86adff43c1357e787d0e00e5d1cf0c969c2"
+  },
+  "fullQA": {
+    "exit": 0,
+    "passed": 16451,
+    "skipped": 1121,
+    "filesPassed": 1368,
+    "filesSkipped": 69,
+    "productionBuild": "passed",
+    "dependencyVulnerabilities": 0
+  },
+  "shuffled": {
+    "exit": 0,
+    "seed": 481943,
+    "passed": 16451,
+    "skipped": 1121,
+    "filesPassed": 1368,
+    "filesSkipped": 69
+  },
+  "schemaRelated": {
+    "passed": 59,
+    "files": 4
+  },
+  "documentation": {
+    "exit": 0,
+    "passed": 19,
+    "files": 3,
+    "finalPassed": 19,
+    "finalFiles": 3,
+    "initialFinalInvocationError": "npm exec --prefix did not change the working directory; the root invocation failed to locate package scripts. Corrected package-directory run passed without source edits."
+  },
+  "fullRLS": {
+    "exit": 0,
+    "passed": 1025,
+    "skipped": 125,
+    "filesPassed": 76,
+    "stack": "openplan-restore-target-2026091050",
+    "includesContextStagingCases": 48,
+    "includesNativeWorkerCases": 12
+  }
+}

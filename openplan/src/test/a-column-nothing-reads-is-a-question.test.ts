@@ -74,6 +74,10 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   reason: string;
 }> = [
   { column: "engagement_synthesis_context_requests.parent_request_id", category: "READ_IN_SQL", reason: "The authenticated context-request reader returns the immutable parent identity separately from the new request and author. Native probes reject changed identity and preserve parent custody." },
+  { column: "engagement_synthesis_context_frames.frame_index", category: "READ_IN_SQL", reason: "Native context staging locates each retained original by request and frame index before accepting an exact batch retry." },
+  { column: "engagement_synthesis_context_frames.frame_text", category: "READ_IN_SQL", reason: "Native context staging compares exact original text on retry. The separate immutable table preserves strings that PostgreSQL JSON field decoding rejects." },
+  { column: "engagement_synthesis_context_frames.frame_sha256", category: "WRITE_ONLY", reason: "Generated checksum of retained original frame text. Native HTTP evidence reads and checks it; a context executor that consumes retained frames remains unfinished." },
+  { column: "engagement_synthesis_context_frames.frame_bytes", category: "WRITE_ONLY", reason: "Generated UTF-8 size of retained original frame text. Native HTTP evidence checks it; the future context executor still needs a retained-frame reader." },
   { column: "engagement_synthesis_generation_selections.previous_selection_id", category: "READ_IN_SQL", reason: "Native staff choices compare the expected current predecessor; paginated inventory follows explicit successor links at the retained sequence." },
   { column: "engagement_synthesis_generation_selections.sequence_no", category: "READ_IN_SQL", reason: "Native selections increment the request sequence under its lock; inventory reads use a fixed sequence for stable historical pagination." },
   { column: "engagement_synthesis_generation_attempts.claim_expires_at", category: "READ_IN_SQL", reason: "Native dispatch refuses an expired claim; explicit retry authorization checks whether its predecessor can still be active." },

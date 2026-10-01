@@ -15,6 +15,10 @@ import { requireContractVerificationStack } from "./helpers/contract-verificatio
 import { readSynthesisGenerationSelectedResults, loadSynthesisGenerationHistory } from "@/lib/engagement/synthesis-generation-selected-results-server";
 
 import { createSynthesisContextRequest, readSynthesisContextRequest } from "@/lib/engagement/synthesis-context-requests-server";
+import { retainSynthesisContextPlan } from "@/lib/engagement/synthesis-context-plan-server";
+import { createSynthesisGenerationInput } from "@/lib/engagement/synthesis-generation-input";
+import { createSynthesisGenerationRecords } from "@/lib/engagement/synthesis-generation-records";
+import { createSynthesisGenerationContext } from "@/lib/engagement/synthesis-generation-context";
 
 const cleanup: Array<() => Promise<void>> = [];
 afterEach(async () => { for (const close of cleanup.splice(0).reverse()) await close(); vi.unstubAllEnvs(); });
@@ -67,7 +71,7 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
       if (options.validOutputs) {
         const task = JSON.parse(body.messages.find((message: { role: string }) => message.role === "user").content);
         const content = JSON.stringify({ status: "complete", coveredPartIds: task.input.parts.map((part: { id: string }) => part.id),
-          observations: [], uncertainty: "SYNTHETIC coverage only; meaning not interpreted" });
+          observations: [], uncertainty: "SYNTHETIC coverage only; meaning not interpreted\u0000\ud800 é 😀" });
         responseBody = JSON.stringify({ ...envelope, choices: [{ index: 0, finish_reason: "stop", message: { role: "assistant", content } }] });
       }
       res.setHeader("content-type", "application/json"); res.end(responseBody);
@@ -164,7 +168,7 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
         { campaignId: campaign, workspaceId: workspace, requestId, throughSequence }, new AbortController().signal),
         revoke: () => sql(`UPDATE workspace_members SET role='viewer' WHERE workspace_id='${workspace}' AND user_id='${userId}'`) };
     }
-    return { run, journal, outputs, calls, deliveries, proxyErrors, providerBody, outputText, key, plan, authorizationId, selectedResults, revokeRequester, staffHistoryClient, owner,
+    return { run, journal, outputs, calls, deliveries, proxyErrors, providerBody, outputText, key, plan, authorizationId, selectedResults, revokeRequester, staffHistoryClient, owner, saved,
       contextArgs: { campaignId: campaign, workspaceId: workspace, parentRequestId: requestId, intentText: request.intentText as string },
       cancelParent: () => asOwner(`SELECT cancel_engagement_synthesis_generation_request('${campaign}','${requestId}','${randomUUID()}','SYNTHETIC context continuation')`) };
   }
@@ -193,10 +197,49 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     await expect(createSynthesisContextRequest(reader.client, service, { ...args, actorId: reader.userId }, signal)).rejects.toThrow("save unconfirmed");
     const preparation = await service.rpc("prepare_engagement_synthesis_generation_plan", { p_request: args.requestId, p_header_text: f.plan.headerText });
     expect(preparation.error?.code).toBe("0A000");
+    const sourceScope = { requestId: history.inventory.source.requestId, campaignId: args.campaignId, workspaceId: args.workspaceId };
+    const input = createSynthesisGenerationInput(f.saved, sourceScope), records = createSynthesisGenerationRecords(input, f.saved, sourceScope);
+    const reconstruction = { job: history.inventory.job, selections: history.selections.selections, results: history.inventory.results,
+      saved: f.saved, input, records, plan: history.selections.plan.taskPlan, scope: sourceScope, taskByteLimit: history.selections.plan.taskPlan.taskByteLimit };
+    const context = createSynthesisGenerationContext(history.inventory, reconstruction, args.throughSequence);
+    const stagingArgs: Parameters<typeof retainSynthesisContextPlan>[1] = [created.state, scope,
+      [context, history.inventory, reconstruction, args.throughSequence, args.targetRecordId, args.frameByteLimit]];
+    let dropped = false, stageCalls = 0;
+    const proxyErrors: string[] = [];
+    const target = await listen(createServer(async (req, res) => {
+      try {
+        const parts: Buffer[] = []; for await (const chunk of req) parts.push(Buffer.from(chunk));
+        const headers = new Headers();
+        for (const [name, value] of Object.entries(req.headers)) if (typeof value === "string" && !["host", "connection", "content-length", "transfer-encoding"].includes(name)) headers.set(name, value);
+        const response = await fetch(`${environment.API_URL}${req.url}`, { method: req.method, headers, body: Buffer.concat(parts), redirect: "manual" });
+        const body = Buffer.from(await response.arrayBuffer());
+        if (req.url?.endsWith("/stage_engagement_synthesis_context_frames")) {
+          stageCalls++;
+          if (response.ok && !dropped) { dropped = true; res.destroy(); return; }
+        }
+        res.statusCode = response.status;
+        for (const [name, value] of response.headers) if (!["connection", "content-length", "transfer-encoding", "content-encoding"].includes(name)) res.setHeader(name, value);
+        res.end(body);
+      } catch (error) { proxyErrors.push(String(error)); res.statusCode = 502; res.end("Synthetic context proxy failed"); }
+    }));
+    const stagingService = liveClient(target, environment.SERVICE_ROLE_KEY, "synthesis-context-staging");
+    await expect(retainSynthesisContextPlan(stagingService, stagingArgs, signal)).rejects.toThrow("acknowledgement unavailable");
+    expect(dropped).toBe(true); expect(stageCalls).toBe(1);
+    const staged = await retainSynthesisContextPlan(stagingService, stagingArgs, signal);
+    expect(staged.state.seal).not.toBeNull(); expect(stageCalls).toBe(1); expect(proxyErrors).toEqual([]);
+    const frames = checked(await service.from("engagement_synthesis_context_frames").select("frame_index,frame_text,frame_sha256,frame_bytes")
+      .eq("request_id", args.requestId).order("frame_index"));
+    expect(frames).toEqual(staged.plan.entries.map(frame => ({ frame_index: frame.index, frame_text: frame.canonical, frame_sha256: frame.sha256, frame_bytes: frame.utf8Bytes })));
+    expect(frames!.some(frame => frame.frame_text.includes("\\u0000") && frame.frame_text.includes("\\ud800"))).toBe(true);
+    checked(await staff.client.rpc("cancel_engagement_synthesis_generation_request", { p_campaign: args.campaignId,
+      p_request: args.requestId, p_cancellation: randomUUID(), p_reason: "SYNTHETIC context staging cancellation" }));
+    const cancelled = await retainSynthesisContextPlan(stagingService, stagingArgs, signal);
+    expect(cancelled.state.cancelled).toBe(true); expect(cancelled.state.seal).toEqual(staged.state.seal); expect(stageCalls).toBe(1);
     const attempts = checked(await service.from("engagement_synthesis_generation_attempts").select("id").eq("request_id", args.requestId));
     expect(attempts).toEqual([]); expect(f.calls).toHaveLength(f.plan.entries.length); expect(f.proxyErrors).toEqual([]);
     reader.revoke(); await expect(readSynthesisContextRequest(reader.client, scope, signal)).rejects.toThrow("unavailable");
     staff.revoke(); await expect(createSynthesisContextRequest(staff.client, service, args, signal)).rejects.toThrow("history access unavailable");
+    await expect(retainSynthesisContextPlan(stagingService, stagingArgs, signal)).rejects.toThrow("acknowledgement unavailable");
     expect(f.calls).toHaveLength(f.plan.entries.length);
   }, 60000);
 

@@ -500,5 +500,21 @@
     "generation-context-continuation-mutations.json": "1957bd6e64561163b396a3ff838164943afa21f793e6d29b3db0cf2314e4ce8f",
     "generation-context-continuation-mutations-corrected.json": "055bd3d9f8ea0346da2ab44b37389e3138b45a963e207adc4153dde7aca401cf",
     "generation-context-recipe-mutations.json": "b14f8d47f2a4f0ad634874b39d8463742e5e5be9b1df6e476a4d7b83d61c023b"
-  }
+  },
+  "finalCI": [
+    {
+      "name": "CI",
+      "run": 36789251288,
+      "commit": "91eec38b8b741aff9e7c7f06ca78142bd2ad707c",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "RLS Isolation",
+      "run": 36789251307,
+      "commit": "91eec38b8b741aff9e7c7f06ca78142bd2ad707c",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ]
 }

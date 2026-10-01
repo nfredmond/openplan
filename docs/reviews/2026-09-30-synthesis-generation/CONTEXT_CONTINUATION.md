@@ -42,7 +42,9 @@ synthesis, meaningful interpretation or representative participation.
 The related suites pass 43 tests across four files, including 18 continuation
 cases. TypeScript and changed-file lint pass. Full QA and shuffled tests each
 pass 16,444 tests, with 1,073 skipped. The production build passes and the
-dependency audit reports zero vulnerabilities. Final main CI is pending.
+dependency audit reports zero vulnerabilities. Main `91eec38b` passes both
+[CI](https://github.com/nfredmond/openplan/actions/runs/36789251288) and
+[RLS isolation](https://github.com/nfredmond/openplan/actions/runs/36789251307).
 [Recorded verification](context-continuation-proof.json) preserves source hashes,
 initial survivors, corrected probes and final local evidence.
 
@@ -98,3 +100,7 @@ actual continuation-task hash and an anchored predecessor output to the static
 frame identity. Later selection changes must not silently replace that
 predecessor or invalidate the retained original. These are implementation
 requirements, not implemented database behavior.
+
+The subsequent [native staging candidate](CONTEXT_STAGING.md) implements retained
+frame preparation. Authorization and context dispatch remain open. The storage
+investigation above records the requirements before that implementation.

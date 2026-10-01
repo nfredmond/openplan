@@ -507,10 +507,12 @@ const EXPECTED = {
   // Migration 35 adds five private immutable execution tables, without policies.
   // 20261014000037 adds one private context-request table. The isolated
   // catalog confirms one ordinary RLS-enabled table and zero policies.
-  relations: 283,
-  tables: 269,
+  // Migration 38 adds one private original-frame table. Installed catalog:
+  // 270 RLS-enabled application tables, 14 views, no additional policies.
+  relations: 284,
+  tables: 270,
   views: 14,
-  rlsEnabledTables: 269,
+  rlsEnabledTables: 270,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
