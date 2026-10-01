@@ -1,8 +1,9 @@
 # v0.66.0 context execution release candidate
 
-September 30, 2026. Candidate package version is 0.66.0. Published and installed
-v0.65.0 remains unchanged. This document does not declare publication. The final
-release commit, passing exact-commit CI and tag still need to be recorded.
+September 30, 2026 candidate evidence, retained with its original gate chronology.
+[Publication](CONTEXT_CLI_PUBLICATION.md) records the subsequent v0.66.0 tag,
+passing exact-commit CI and local handoff. Pending statements below describe
+the candidate before those final checks; the publication record supersedes them.
 
 ## Release scope
 

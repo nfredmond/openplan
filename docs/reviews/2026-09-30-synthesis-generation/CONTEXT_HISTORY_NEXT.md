@@ -1,0 +1,17 @@
+# Context history investigation after bc47c0ce
+
+Read-only inspection of release commit `bc47c0ce`. This is an implementation dependency within M9b, not a new roadmap or completed capability.
+
+The context worker verifies selected predecessor outputs in `synthesis-context-worker-job.ts`, but stops before the requested task. It cannot read the completed final frame as historical staff evidence. It also calls `loadSynthesisContextWorkerInputs`, whose current-plan RPC requires the original requester to remain staff. Historical staff inspection must not call this execution gate or fabricate a fresh grant.
+
+The existing authenticated `read_engagement_synthesis_generation_selection_history` RPC in migration 36 already uses current campaign staff scope and returns generic retained selection receipts. Its SQL does not depend on the segment recipe. Reuse needs a native context test before claiming support. The TypeScript segment selection reader reconstructs a segment plan, so it cannot be reused unchanged for context frames.
+
+`readSynthesisContextRequest` supplies an authenticated context identity. `loadSynthesisGenerationHistory` can reconstruct its fixed parent selection sequence. Rebuild the complete original source, parent outputs, dependency content and context plan from these retained records. Compare stored frame references, bytes, header and seal. Keep missing preparation distinct from missing output. Repeat current-staff access before returning private data.
+
+Replay selected context captures using the frozen continuation processor, with exact authorization, dynamic task, dispatch receipt, original provider response and predecessor selection/capture/result identities. Reading retained custody must not renew execution or retrieve active credentials. Cleared selections, absent captures, unobserved calls, invalid provider results and broken predecessor chains remain explicit. A later selection can make a successor disagree with its original predecessor without corrupting the retained successor. Do not rewrite that history to report a complete chain.
+
+Bind every output manifest to the anchored child sequence and exact native capture hashes. Parent request plus sequence alone is insufficient because an output can arrive later. Preserve cancellation as retained state. Current staff authorship remains distinct from original requester, machine author and subsequent accepting reviewer.
+
+Only a fully replayed chain can supply record context to thematic generation. This reader alone does not create themes, representative interpretation, a proposal, staff import or a browser workflow. Follow it with final thematic processing, retained machine proposals, explicit import to a new review revision, and Analysis controls. Existing approvals stay attached to their original revision. Long cumulative context can hit the configured byte ceiling; no source, minority position or uncertainty may be dropped to manufacture completion.
+
+Required checks include authenticated native context reads after original-requester revocation, denial for viewer/outsider/wrong campaign, final-access revocation during service reads, cursor changes, late output arrival, exact Unicode capture bytes, different selected predecessor, dispatch/capture disagreement and explicit incomplete states. Every changed guard receives a harmless control and its targeted fault. Mocked reads assert exact projections. These checks cannot establish interpretation quality, live provider billing or physical power-loss recovery.

@@ -24,7 +24,7 @@ No changes recorded.
 
 ## 0.66.0 (2026-09-30)
 
-[Verification](docs/reviews/2026-09-30-synthesis-generation/CONTEXT_CLI_RELEASE.md) records release scope, checks and publication status.
+[Verification](docs/reviews/2026-09-30-synthesis-generation/CONTEXT_CLI_RELEASE.md) records release scope and candidate checks. [Publication](docs/reviews/2026-09-30-synthesis-generation/CONTEXT_CLI_PUBLICATION.md) records final checks, tagging and local handoff.
 
 Internal synthesis readers join selected attempts to their original provider
 responses, task records and execution receipts. Current campaign staff can inspect

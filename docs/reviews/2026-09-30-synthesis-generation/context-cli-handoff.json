@@ -1,0 +1,139 @@
+{
+  "installed": {
+    "observedAt": "2026-10-01T04:02:38.471608+00:00",
+    "phase": "ready",
+    "commit": "bc47c0ce580ee24f1a3808978535f52218e796d4",
+    "previousCommit": "734052b5b8ad682f868570a2ab1bee260effc658",
+    "buildId": "3f44rqfYZO-zBnQ97o-C7",
+    "nextVersion": "16.3.8",
+    "database": {
+      "migrationCount": 358,
+      "pending": [],
+      "backupSha256": "cd0cfa55b91107491fee77355957d6874b16874324cb4696e4251c3e0577a3a9",
+      "backupBytes": 51881267,
+      "appliedBefore": 354,
+      "appliedVersions": [
+        "20261014000036",
+        "20261014000037",
+        "20261014000038",
+        "20261014000039"
+      ],
+      "retainedTableFingerprintsUnchanged": true,
+      "comparedTables": 20,
+      "comparedRows": 3134,
+      "synthesisTablesEmpty": true
+    },
+    "retainedRuntimeExists": true
+  },
+  "browser": [
+    {
+      "completed": true,
+      "console": [],
+      "pageErrors": [],
+      "purpose": "Read-only demo navigation, not a rerun of isolated synthesis and response writes.",
+      "identity": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-10-01T04:02:48.504Z",
+        "deployment": {
+          "commit": "bc47c0ce580e",
+          "version": "0.66.0"
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "buildId": "3f44rqfYZO-zBnQ97o-C7",
+      "nextVersion": "16.3.8",
+      "heading": "Engagement",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "overflow": false,
+      "screenshotInspected": true,
+      "privateScreenshotSha256": "4c7a84b2095a25e4e297fccc35d75e7ceb498ee0dfbc60ec722a9ba7748cc43a",
+      "privateResultSha256": "78264b4819ae7b21ccb68b46679fd36825c32ccfc5140a1cbe37901f1f3a6a7e"
+    },
+    {
+      "completed": true,
+      "console": [],
+      "pageErrors": [],
+      "purpose": "Read-only demo navigation, not a rerun of isolated synthesis and response writes.",
+      "identity": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-10-01T04:02:59.311Z",
+        "deployment": {
+          "commit": "bc47c0ce580e",
+          "version": "0.66.0"
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "buildId": "3f44rqfYZO-zBnQ97o-C7",
+      "nextVersion": "16.3.8",
+      "heading": "Engagement",
+      "viewport": {
+        "width": 390,
+        "height": 1000
+      },
+      "overflow": false,
+      "screenshotInspected": true,
+      "privateScreenshotSha256": "f3b8ba3ecae3210184e8862462a0c2b2edfd6547b50c0ccf887f71aade3daf8d",
+      "privateResultSha256": "e4db0bbdfd97a9e008460d7f81997a43b35085c6ad45b616dc92f5a8d5626885"
+    }
+  ],
+  "controls": {
+    "cases": [
+      {
+        "case": "harmless",
+        "width": 390,
+        "exitCode": 0,
+        "expectedFailure": null,
+        "expectedOutcomeObserved": true,
+        "evidenceSha256": "93d6416722fddd584e657bbb4217666cbe6bf6f733692b8ec9f94e9bf93cc59e"
+      },
+      {
+        "case": "overflow-fault",
+        "width": 390,
+        "exitCode": 1,
+        "expectedFailure": "true !== false",
+        "expectedOutcomeObserved": true,
+        "evidenceSha256": "7b7caa1dd9e61b12f9700762bf224d52cd8a587987b9ff01ef4b2be3c8718dbe"
+      },
+      {
+        "case": "wrong-commit",
+        "width": 1440,
+        "exitCode": 1,
+        "expectedFailure": "Unexpected installed commit",
+        "expectedOutcomeObserved": true,
+        "evidenceSha256": "f347f3f25871e69ea1b28849abf266cc377f4950172a6fa8a3fcdb71d76d0d12"
+      },
+      {
+        "case": "wrong-version",
+        "width": 1440,
+        "exitCode": 1,
+        "expectedFailure": "Unexpected installed version",
+        "expectedOutcomeObserved": true,
+        "evidenceSha256": "b13c072076c4fc466ad06676e374011c8d74012091797ac9b73e9b400e7d6d2d"
+      }
+    ],
+    "blindCategory": "Read-only navigation, identity and page overflow checks do not exercise context execution, screen readers, interpretation quality or practitioner usefulness."
+  },
+  "privateEvidence": {
+    "v066-demo-before.json": "ca3203293e13da15e4bc8292aefd34d4fea4b007c086477b8d6eb9e8cc0eabff",
+    "v066-demo-after.json": "c9350c7c629d3327055bbbbf396fecc357966cd255d2db09060e169e2ad30b89",
+    "v066-demo-smoke.cjs": "16cfdfe8f063524f75908931f142abdc3077b29be40d456ac334f36c02e65a88",
+    "v066-demo-smoke-controls.json": "52a4d2d77a0040bc906664c6db45aa1d658f863562781f7a0df454c3eb701a60"
+  },
+  "limits": [
+    "Existing synthesis tables are empty in this demo; populated synthetic custody is exercised in separate isolated and CI upgrade tests.",
+    "The compared 3134 existing rows cover 20 selected tables, not every table or every agency database.",
+    "Browser checks cover read-only sign-in and Engagement navigation, not context execution or staff proposal import.",
+    "Backup readability and fingerprints do not establish a complete restore or physical power-loss recovery."
+  ]
+}
