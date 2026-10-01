@@ -2,7 +2,7 @@
 import { randomUUID } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { readSynthesisGenerationSelectedResults, loadSynthesisGenerationHistory } from "@/lib/engagement/synthesis-generation-selected-results-server";
+import { readSynthesisGenerationSelectedResults, loadSynthesisGenerationHistory, readSynthesisContextParentResults } from "@/lib/engagement/synthesis-generation-selected-results-server";
 import { createSynthesisGenerationApiResult } from "@/lib/engagement/synthesis-generation-api-result";
 import { verifySynthesisGenerationApiDispatchReceipt, verifySynthesisGenerationApiDispatch } from "@/lib/engagement/synthesis-generation-api";
 import { createSynthesisGenerationResult, type SynthesisGenerationAttemptBinding } from "@/lib/engagement/synthesis-generation-results";
@@ -56,7 +56,7 @@ async function fixture() {
     additionalRows.set(`engagement_synthesis_generation_outputs:${otherId}`, { attempt_id: otherId, capture_text: result.canonical, capture_sha256: result.sha256 });
   }
   const trace: Array<{ table: string; columns: string; filters: Record<string, unknown>; signal?: AbortSignal }> = [];
-  const options = { failTable: "", failSelections: false, emptySelections: false, abortOn: "" };
+  const options = { failTable: "", failSelections: false, emptySelections: false, abortOn: "", contextRequestId: "" };
   const from = vi.fn((table: string) => {
     const entry = { table, columns: "", filters: {} as Record<string, unknown>, signal: undefined as AbortSignal | undefined }; trace.push(entry);
     const finish = async () => { if (options.abortOn === table) f.controller.abort(); return { data: additionalRows.get(`${table}:${entry.filters.id ?? entry.filters.attempt_id}`) ?? rows[table], error: options.failTable === table ? { code: "SYNTHETIC" } : null }; };
@@ -64,7 +64,7 @@ async function fixture() {
       abortSignal(signal: AbortSignal) { entry.signal = signal; return query; }, single: finish, maybeSingle: finish }; return query;
   });
   const rpc = vi.fn((name: string) => {
-    expect(name).toBe("read_engagement_synthesis_generation_selections");
+    expect(name).toBe(options.contextRequestId ? "read_engagement_synthesis_context_parent_selections" : "read_engagement_synthesis_generation_selections");
     const result = Promise.resolve({ data: { schemaVersion: 1, requestId: request.id, throughSequence: options.emptySelections ? 0 : selections.length,
       afterTaskIndex: -1, hasMore: false, entries: options.emptySelections ? [] : selections.map(value => { const receiptText = JSON.stringify(value); return { receiptText, receiptSha256: hash(receiptText) }; }) },
       error: options.failSelections ? { code: "42501" } : null });
@@ -96,6 +96,30 @@ async function fixture() {
 }
 
 describe("native selected synthesis output custody", () => {
+  it("loads context parent originals through child authority with exact projections", async () => {
+    const f = await fixture(); f.options.contextRequestId = randomUUID();
+    const result = await readSynthesisContextParentResults(f.service, f.options.contextRequestId,
+      { ...f.args, throughSequence: f.plan.entries.length }, f.controller.signal);
+    expect(result.inventory.status).toBe("ready_for_record_consolidation");
+    expect(result.inventory.interpretation).toBe("not_assessed");
+    expect(result.inventory.results[0]).toEqual({ canonical: f.rows.engagement_synthesis_generation_outputs!.capture_text,
+      sha256: f.rows.engagement_synthesis_generation_outputs!.capture_sha256 });
+    expect(f.rpc).toHaveBeenCalledExactlyOnceWith("read_engagement_synthesis_context_parent_selections", {
+      p_request: f.options.contextRequestId, p_after_task_index: -1, p_limit: 128,
+    });
+    const native = f.trace.filter(r => ["engagement_synthesis_generation_attempts", "engagement_synthesis_generation_dispatches", "engagement_synthesis_generation_outputs"].includes(r.table));
+    expect(native.slice(0, 3).map(({ signal: _signal, ...r }) => r)).toEqual([
+      { table: "engagement_synthesis_generation_attempts", columns: "id,authorization_id,request_id,task_index,previous_attempt_id,worker_id,binding_text", filters: { id: f.attemptId } },
+      { table: "engagement_synthesis_generation_dispatches", columns: "attempt_id,expires_at,receipt_text,receipt_sha256", filters: { attempt_id: f.attemptId } },
+      { table: "engagement_synthesis_generation_outputs", columns: "attempt_id,capture_text,capture_sha256", filters: { attempt_id: f.attemptId } },
+    ]);
+    expect(f.providerCalls).toHaveLength(0); expect(f.historyRpc).not.toHaveBeenCalled();
+  });
+  it("refuses context parent outputs after the child selection read is denied", async () => {
+    const f = await fixture(); f.options.contextRequestId = randomUUID(); f.options.failSelections = true;
+    await expect(readSynthesisContextParentResults(f.service, f.options.contextRequestId, f.args, f.controller.signal)).rejects.toThrow("inventory unavailable");
+    expect(f.from).not.toHaveBeenCalled();
+  });
   it("loads historical authority and source through the authenticated client and rechecks access", async () => {
     const f = await fixture(), result = await f.history();
     expect(result.requesterId).toBe(f.args.actorId); expect(result.inventory.status).toBe("ready_for_record_consolidation");

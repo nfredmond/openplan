@@ -509,10 +509,12 @@ const EXPECTED = {
   // catalog confirms one ordinary RLS-enabled table and zero policies.
   // Migration 38 adds one private original-frame table. Installed catalog:
   // 270 RLS-enabled application tables, 14 views, no additional policies.
-  relations: 284,
-  tables: 270,
+  // Migration 39 adds one private original context-attempt input table.
+  // Installed isolated catalog has 271 RLS tables and the same 14 views.
+  relations: 285,
+  tables: 271,
   views: 14,
-  rlsEnabledTables: 270,
+  rlsEnabledTables: 271,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

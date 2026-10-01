@@ -24,46 +24,43 @@ Internal synthesis readers join selected attempts to their original provider
 responses, task records and execution receipts. Current campaign staff can inspect
 retained choices after cancellation or the original requester's departure, using
 their own authenticated access. Explicit sequence anchors preserve earlier choices.
-These reads do not renew execution permission or make provider calls. Complete
-context consolidation, machine-draft import and the staff generation interface
-remain unfinished. Apply
+These reads do not renew execution permission or make provider calls. Apply
 `20261014000036_engagement_synthesis_generation_history.sql` before using the
 new authenticated history command.
 
-Internal context preparation now binds every retained record and selected result
-to a fixed dependency inventory. Bounded pages preserve reply cycles, unavailable
-parent references and exact replay without adding context records to participant
-counts. These pages contain dependency addresses. Contextual model execution and
-proposal import remain unfinished.
+Context preparation binds every retained source record and selected result to a
+fixed dependency inventory. It preserves complete original source parts, selected
+observations, citations and uncertainty through bounded frames, including reply
+cycles and unavailable parent references. Dependency records do not inflate
+participant counts. Incomplete results stay incomplete.
 
-Internal content preparation now carries complete original source parts and
-selected observations, citations and uncertainty through bounded, replayable
-frames. The content checksum binds the source, selected results and target
-context. Incomplete results stay incomplete. This remains memory-resident data
-preparation; it adds no provider execution or staff interface.
-
-The internal context-request command retains a new staff actor and exact parent,
+The internal context-request command retains the new staff actor and exact parent,
 selection, result and content bindings. Cancellation and exact acknowledgement
-recovery preserve the original request. Apply
+recovery preserve the original request. The service reconstructs these bindings
+from authenticated retained history and refuses incomplete inputs. Apply
 `20261014000037_engagement_synthesis_context_requests.sql` before using it.
-The application service derives these bindings from authenticated retained history
-and reconstructed source content, refusing incomplete inputs before the write.
-The segment executor explicitly refuses these requests. Contextual execution and
-staff controls remain unfinished.
 
-The internal context continuation protocol reconstructs its plan from retained
-inputs, preserves preceding response bytes and cumulative notes/uncertainty, and
-stops explicitly when the complete task exceeds its configured byte limit. It
-adds no provider call, native authorization or staff generation interface.
+Context staging retains original frame text, ordered prefixes and completion seals.
+Interrupted acknowledgements resume the same plan. A private frame table preserves
+escaped Unicode strings that PostgreSQL cannot decode into normal JSON fields.
+Cancellation prevents new storage while preserving exact retries. Apply
+`20261014000038_engagement_synthesis_context_plans.sql` before using this service.
+A storage seal establishes byte custody, without authorizing a provider call.
 
-Internal context staging retains original frame text, exact hashes, ordered
-prefixes and completion seals. Interrupted acknowledgements resume the same plan.
-Cancellation prevents new storage while preserving exact retries. A private frame
-table preserves escaped Unicode strings that PostgreSQL cannot decode into its
-normal JSON object fields. Apply
-`20261014000038_engagement_synthesis_context_plans.sql` before using this staging
-service. Storage seals establish byte custody; context authorization, provider
-execution and staff generation remain unfinished.
+Internal context execution reconstructs every retained source frame and selected
+predecessor response before claiming the next task. It preserves cumulative notes
+and uncertainty and stops when the complete task exceeds its configured byte
+limit. The shared worker records context mode in its private journal, dispatches
+each attempt once and recovers original responses after interrupted
+acknowledgements. An unknown dispatch remains unobserved. Apply
+`20261014000039_engagement_synthesis_context_execution.sql` before using these
+commands. Its private immutable table retains exact dynamic task bytes and
+predecessor references. Native authorization checks current access, provider
+configuration, resource limits and the complete selected predecessor chain.
+
+The context CLI scheduler, proposal import and staff generation interface remain
+unfinished. Synthetic-provider checks establish custody and recovery, not the
+usefulness or accuracy of a generated interpretation.
 
 ## 0.65.0 (2026-09-30)
 

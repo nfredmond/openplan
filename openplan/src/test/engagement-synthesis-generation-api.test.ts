@@ -5,7 +5,9 @@ import type { AddressInfo } from "node:net";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { prepareProviderApiRevision } from "@/lib/integrations/provider-api-credentials";
 import { createSynthesisGenerationPlan } from "@/lib/engagement/synthesis-generation-plan";
-import { createSynthesisGenerationApiAttempt, type SynthesisGenerationApiObservation } from "@/lib/engagement/synthesis-generation-api";
+import { createSynthesisGenerationApiAttempt, createSynthesisContextApiAttempt, type SynthesisGenerationApiObservation } from "@/lib/engagement/synthesis-generation-api";
+import { createSynthesisContextContinuation } from "@/lib/engagement/synthesis-context-continuation";
+import { contextInputFixture } from "./fixtures/engagement/synthesis-context";
 import { verifySynthesisGenerationApiResult } from "@/lib/engagement/synthesis-generation-api-result";
 import { type SynthesisGenerationAttemptBinding } from "@/lib/engagement/synthesis-generation-results";
 import { makeSourceSnapshot, savedSource, sourceScope } from "./fixtures/engagement/synthesis-source";
@@ -59,6 +61,48 @@ async function fixture(authMode: "api_key" | "none" = "api_key", reply?: (res: S
     reseal: () => { dispatch.receiptText = JSON.stringify(receipt); dispatch.receiptSha256 = sha(dispatch.receiptText); } };
 }
 describe("one native-dispatched synthesis API attempt", () => {
+  async function contextFixture() {
+    const f = await fixture(), context = contextInputFixture();
+    const continuation = createSynthesisContextContinuation(context.request, context.scope, context.args), next = continuation.next();
+    if (next.status !== "ready") throw new Error("SYNTHETIC context task unavailable");
+    f.args.taskCanonical = next.task.canonical;
+    Object.assign(f.args.binding, { jobId: context.scope.requestId, planSha256: continuation.headerSha256, taskSha256: next.task.sha256 });
+    f.reseal(); return f;
+  }
+  it("sends the frozen context task once and retains its original response", async () => {
+    const f = await contextFixture(), invoke = createSynthesisContextApiAttempt(f.args), result = await invoke();
+    const task = JSON.parse(f.args.taskCanonical);
+    expect(f.calls).toHaveLength(1);
+    expect(JSON.parse(f.calls[0].body)).toEqual({ model: f.args.binding.modelId, max_tokens: f.receipt.maxOutputTokens,
+      messages: [{ role: "system", content: task.instructions }, { role: "user", content: f.args.taskCanonical }],
+      response_format: { type: "json_schema", json_schema: { name: "synthesis_context_v1", strict: true, schema: task.outputSchema } } });
+    expect(f.observations).toHaveLength(1);
+    expect(verifySynthesisGenerationApiResult(f.args.binding, result, { dispatchSha256: f.args.dispatch.receiptSha256,
+      responseByteLimit: f.receipt.responseByteLimit }).capture.outputText).toBe("SYNTHETIC\n\u0000\ud800🌉");
+    await expect(invoke()).rejects.toThrow("already consumed"); expect(f.calls).toHaveLength(1);
+  });
+  it("keeps segment and context recipes separate", async () => {
+    const segment = await fixture(), context = await contextFixture();
+    expect(() => createSynthesisContextApiAttempt(segment.args)).toThrow("recipe differs");
+    expect(() => createSynthesisGenerationApiAttempt(context.args)).toThrow("recipe differs");
+    expect(segment.calls).toHaveLength(0); expect(context.calls).toHaveLength(0);
+  });
+  it.each(["purpose", "requestId", "headerSha256"])("refuses rehashed context input identity %s", async field => {
+    const f = await contextFixture(), task = JSON.parse(f.args.taskCanonical);
+    task.input[field] = "SYNTHETIC different identity"; f.args.taskCanonical = JSON.stringify(task);
+    f.args.binding.taskSha256 = sha(f.args.taskCanonical); f.reseal();
+    expect(() => createSynthesisContextApiAttempt(f.args)).toThrow("context identity differs"); expect(f.calls).toHaveLength(0);
+  });
+  it.each(["instructions", "outputSchema"])("refuses a rehashed context recipe change %s", async field => {
+    const f = await contextFixture(), task = JSON.parse(f.args.taskCanonical);
+    task[field] = field === "instructions" ? "SYNTHETIC different recipe" : { type: "string" };
+    f.args.taskCanonical = JSON.stringify(task); f.args.binding.taskSha256 = sha(f.args.taskCanonical); f.reseal();
+    expect(() => createSynthesisContextApiAttempt(f.args)).toThrow("recipe differs"); expect(f.calls).toHaveLength(0);
+  });
+  it("refuses a recovered context dispatch as new call permission", async () => {
+    const f = await contextFixture(); f.args.dispatch.authorizedNow = false;
+    expect(() => createSynthesisContextApiAttempt(f.args)).toThrow(); expect(f.calls).toHaveLength(0);
+  });
   for (const authMode of ["api_key", "none"] as const) it(`sends exact retained task bytes with ${authMode} credentials`, async () => {
     const f = await fixture(authMode), invoke = createSynthesisGenerationApiAttempt(f.args);
     const result = await invoke();

@@ -1,0 +1,1345 @@
+{
+  "recordedAt": "2026-10-01T01:52:31.775672+00:00",
+  "baseCommit": "bf9f0b8998dce072d45ccaa95470cfab4ca40474",
+  "state": "Verified internal context execution checkpoint. Local QA, shuffle, full isolated RLS, workers and additive upgrade pass. Exact checkpoint CI remains pending. Published v0.65.0 unchanged.",
+  "sourceSha256": {
+    "openplan/src/lib/engagement/synthesis-context-worker-job.ts": "b6fd9472b92b88fa7733873bd96bc084054e501f5f6cba85921d96db05c17cde",
+    "openplan/src/lib/engagement/synthesis-context-worker-load.ts": "99111f085d02db0ff4408e1411c4a1923dbd5bf680003fd4dd91f605db79a1e4",
+    "openplan/src/test/engagement-synthesis-context-execution-rls.test.ts": "b2366475cb986c6fc16ed4207aa6f2bd87613a2975589e7929f392b90faf9f59",
+    "openplan/src/test/engagement-synthesis-context-worker-job.test.ts": "9dbde829c0e57431fbbf913dc673552f41c39461d7e5d192be0b0317e8506480",
+    "openplan/src/test/engagement-synthesis-context-worker-load.test.ts": "004b40d50b24de5ce14b42c36dc970ba8ad00331c11d66ef9f2ac67a03c98328",
+    "openplan/src/test/engagement-synthesis-context-worker.test.ts": "db60da0dd8c7835433029ef9ad6c3d157d79da8f352f03638940701d9410cda7",
+    "openplan/src/test/fixtures/engagement/synthesis-context-execution-worker.ts": "e4c69129a3e87d6058a5ef77ede9a08e65cdd9fb2f06c278aa2bcca198b4140b",
+    "openplan/src/test/fixtures/engagement/synthesis-context-execution.sql": "0d075143d539718f88b181102889e70f01400be3c9f682d14b80279ba6d4bc6e",
+    "openplan/src/test/fixtures/engagement/synthesis-context-job.ts": "dc1c5211d05e1f5003fec08815cbfd97a1e96599b3a3f7f663f0a1932a778301",
+    "openplan/src/test/fixtures/engagement/synthesis-context-parent-selections.sql": "0d02a3d0f8cf483e25967c3256933d2f47c4bb48e8605f501dc25420b53fe108",
+    "openplan/src/test/fixtures/engagement/synthesis-context-worker.ts": "7ea1b8220b7ba9a7af9ebeb205f33bbd46a5fdb2779d62525159ddb7ec573274",
+    "openplan/supabase/migrations/20261014000039_engagement_synthesis_context_execution.sql": "f9c4ae01a55d972652f4d5cacfbf636be5fb957c9a1895bd00afb9d86ce44e08",
+    "openplan/package.json": "4b573a8fec91c4a610684c5b88632e59366abc1e65a7dd7ce49b2eda2deda4b5",
+    "openplan/src/lib/engagement/synthesis-generation-api.ts": "bc5867f7a4ceef390de0c1fc00f2f555d7babef84653d07d52222681ce92129a",
+    "openplan/src/lib/engagement/synthesis-generation-selected-results-server.ts": "0ab4667d902d97beeca1de0aba1d3d77e45253a014012c1e46b16ee63ad1a4e2",
+    "openplan/src/lib/engagement/synthesis-generation-selections-server.ts": "fb9fe26bd91f44b602d56ef252957b6f9af008b4f282469564ba3d701aaba6c9",
+    "openplan/src/lib/engagement/synthesis-generation-worker-load.ts": "8d9db6833f2d39b8b0110f4d71fdf4a467ffe82db4a853b44cee668025bf17ea",
+    "openplan/src/lib/engagement/synthesis-generation-worker.ts": "0cf4b2b4b9c3da375f7776f44751934f98b806b43bf7f06f62b56da0b4d577de",
+    "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts": "4d086d3787ac575fa98e28de6f03e14885e5c23d5cab60c655af5ab5f3bbda49",
+    "openplan/src/test/engagement-synthesis-generation-api.test.ts": "8997ed875e86bd31fa02a6d47cd7fc75487a34e8a5357a0d8c15913c124bc52d",
+    "openplan/src/test/engagement-synthesis-generation-selected-results-server.test.ts": "44c2e428c89e7cabd82f2786d3d238e2614e67b89e0a8cd5bc3fe5fe3f1be847",
+    "openplan/src/test/engagement-synthesis-generation-selections-server.test.ts": "33fd87cef54b16e15dec722982f969326c35ec24a0238194366fa7b8072edb67",
+    "openplan/src/test/engagement-synthesis-generation-worker-live.test.ts": "5feff28959ea31ac7c6dac4b9843e127f114cf25c1beea88d9c549a7f1a3ab16",
+    "openplan/src/test/fixtures/application-trusted-search-paths.json": "ecebe0d2500d049d5af4d06112968b921339825086a8fe1376480b6fff5b6654",
+    "openplan/src/test/migrations/inventory.test.ts": "d706fcabf91b0d00f5d53b3c240b0f86ffb8832b804f3927b43fa73a1c413cdc"
+  },
+  "inputMutations": {
+    "cases": [
+      {
+        "name": "control",
+        "edits": [
+          "Rebuild the complete context"
+        ],
+        "exit": 0,
+        "expectedFailure": false,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-control.log"
+      },
+      {
+        "name": "guard-1",
+        "edits": [
+          "row.id !== requestId"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-1.log"
+      },
+      {
+        "name": "guard-2",
+        "edits": [
+          "context.request_id !== requestId"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-2.log"
+      },
+      {
+        "name": "guard-3",
+        "edits": [
+          "verified.intent.sourceId !== row.source_id"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-3.log"
+      },
+      {
+        "name": "guard-4",
+        "edits": [
+          "verified.intent.configurationRevisionId !== row.configuration_revision_id"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-4.log"
+      },
+      {
+        "name": "guard-5",
+        "edits": [
+          "parent.id !== context.parent_request_id"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-5.log"
+      },
+      {
+        "name": "guard-6",
+        "edits": [
+          "parent.campaign_id !== row.campaign_id"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-6.log"
+      },
+      {
+        "name": "guard-7",
+        "edits": [
+          "parent.workspace_id !== row.workspace_id"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-7.log"
+      },
+      {
+        "name": "guard-8",
+        "edits": [
+          "parent.source_id !== row.source_id"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-8.log"
+      },
+      {
+        "name": "guard-9",
+        "edits": [
+          "frame.request_id !== requestId"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-9.log"
+      },
+      {
+        "name": "guard-10",
+        "edits": [
+          "frame.frame_index !== expected.index"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-10.log"
+      },
+      {
+        "name": "guard-11",
+        "edits": [
+          "frame.frame_sha256 !== expected.sha256"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-11.log"
+      },
+      {
+        "name": "guard-12",
+        "edits": [
+          "frame.frame_bytes !== expected.utf8Bytes"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-12.log"
+      },
+      {
+        "name": "guard-13",
+        "edits": [
+          "task.request_id !== requestId"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-13.log"
+      },
+      {
+        "name": "guard-14",
+        "edits": [
+          "task.task_index !== expected.index"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-14.log"
+      },
+      {
+        "name": "guard-15",
+        "edits": [
+          "digest(task.task_text) !== task.task_sha256"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-15.log"
+      },
+      {
+        "name": "guard-16",
+        "edits": [
+          "Buffer.byteLength(task.task_text, \"utf8\") !== task.task_bytes"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-16.log"
+      },
+      {
+        "name": "guard-17",
+        "edits": [
+          "task.cumulative_bytes !== expected.cumulativeBytes"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-17.log"
+      },
+      {
+        "name": "guard-18",
+        "edits": [
+          "task.chain_sha256 !== expected.chainSha256"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-18.log"
+      },
+      {
+        "name": "guard-19",
+        "edits": [
+          "reference.frameIndex !== expected.index"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-19.log"
+      },
+      {
+        "name": "guard-20",
+        "edits": [
+          "reference.frameSha256 !== expected.sha256"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-20.log"
+      },
+      {
+        "name": "guard-21",
+        "edits": [
+          "reference.frameBytes !== expected.utf8Bytes"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-21.log"
+      },
+      {
+        "name": "guard-22",
+        "edits": [
+          "reference.contextManifestSha256 !== plan.header.contextManifestSha256"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-22.log"
+      },
+      {
+        "name": "guard-23",
+        "edits": [
+          "reference.targetRecordId !== plan.header.targetRecordId"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-23.log"
+      },
+      {
+        "name": "guard-24",
+        "edits": [
+          "!state.seal"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-24.log"
+      },
+      {
+        "name": "guard-25",
+        "edits": [
+          "state.cancelled"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-guard-25.log"
+      },
+      {
+        "name": "self-hashed-frame",
+        "edits": [
+          "frame.frame_text !== expected.canonical",
+          "frame.frame_sha256 !== expected.sha256"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-self-hashed-frame.log"
+      },
+      {
+        "name": "row-error",
+        "edits": [
+          "if (response.error) throw new Error(\"Context worker retained inputs unavailable\")"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-row-error.log"
+      },
+      {
+        "name": "scope-error",
+        "edits": [
+          "if (response.error) throw new Error(\"Context worker current scope unavailable\")"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-scope-error.log"
+      },
+      {
+        "name": "abort",
+        "edits": [
+          "signal.throwIfAborted();"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-abort.log"
+      },
+      {
+        "name": "frames",
+        "edits": [
+          "for (const expected of plan.entries)"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-worker-input-mutation-frames.log"
+      }
+    ],
+    "sourceRestored": true,
+    "sha256": "99111f085d02db0ff4408e1411c4a1923dbd5bf680003fd4dd91f605db79a1e4"
+  },
+  "apiMutations": {
+    "cases": [
+      {
+        "name": "control",
+        "exit": 0,
+        "expectedFailure": false,
+        "validOutcome": true,
+        "log": "generation-context-api-mutation-control.log"
+      },
+      {
+        "name": "context-route",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-api-mutation-context-route.log"
+      },
+      {
+        "name": "recipe-instructions",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-api-mutation-recipe-instructions.log"
+      },
+      {
+        "name": "recipe-schema",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-api-mutation-recipe-schema.log"
+      },
+      {
+        "name": "context-purpose",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-api-mutation-context-purpose.log"
+      },
+      {
+        "name": "context-request",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-api-mutation-context-request.log"
+      },
+      {
+        "name": "context-header",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-api-mutation-context-header.log"
+      },
+      {
+        "name": "schema-label",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-api-mutation-schema-label.log"
+      },
+      {
+        "name": "fresh-permission",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-api-mutation-fresh-permission.log"
+      },
+      {
+        "name": "one-time-call",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-api-mutation-one-time-call.log"
+      }
+    ],
+    "sourceRestored": true,
+    "sha256": "bc5867f7a4ceef390de0c1fc00f2f555d7babef84653d07d52222681ce92129a"
+  },
+  "relatedTests": {
+    "exit": 0,
+    "passed": 301,
+    "files": 8,
+    "inputLoaderCases": 34,
+    "apiCases": 39
+  },
+  "nativeTests": {
+    "exit": 0,
+    "passed": 43,
+    "migrationLoadedOnlyInsideRollback": false,
+    "stack": "openplan-restore-target-2026091050",
+    "migrationInstalledInIsolatedStack": true
+  },
+  "typescript": "passed",
+  "focusedLint": "passed",
+  "initialFailures": [
+    "Parent-reader fixture tried to demote the final owner; ownership transfer now precedes reader revocation test.",
+    "Original-frame replacement changed no text; fixture now finds and replaces an actual retained string.",
+    "Predecessor expiry mutation survived because a later frame rejected its changed dependency; corrected probe uses the last predecessor.",
+    "Migration39 missing from Unreleased changelog; corrected after release-ordering failure.",
+    "Schema mutation initially selected policy-count test rather than relation-count test; corrected selection catches added table.",
+    "Final changelog check first ran from repository root and loaded no tests; rerun from application package passed all six release-ordering cases."
+  ],
+  "limits": [
+    "Exact final checkpoint CI and populated previous-release upgrade are pending; local additive upgrade preserved all eleven retained tables.",
+    "Context worker has no CLI selector or sequential context scheduler yet.",
+    "No staff proposal import or new browser workflow.",
+    "Synthetic provider evidence proves structural custody and recovery, not interpretation usefulness, billing or physical power-loss recovery."
+  ],
+  "evidenceLogSha256": {
+    "generation-context-api-initial.log": "bb2ef53804fe4055f931fcc4ea4081e55cf6a4a5e2f6d5934d0fa287e42a3311",
+    "generation-context-api-mutation-context-header.log": "db7103abac455e56891f0101bb7fc1fa8d557cca5603b240d38b8f92d5095b77",
+    "generation-context-api-mutation-context-purpose.log": "e7abf37b047ea35f17a15ff7c8308b051c6e0ef320ab1bd2c78b33aeea9629ef",
+    "generation-context-api-mutation-context-request.log": "b956534de1db230a94a9ef0c94dccee7872ff622932586ef950e487d1e6e9939",
+    "generation-context-api-mutation-context-route.log": "5192f5fbb05d3fdae8ea71fee983f5f2215889dbe3ded5d5a8654843156a8895",
+    "generation-context-api-mutation-control.log": "62ed272ec3555bb0980161701b4b80dc57997c86ec5b894f027b280ab052461e",
+    "generation-context-api-mutation-driver.log": "ecefc05a565dde37bcbcfd903784cc7156d4b066a11a010bd588a88dde1dcb5b",
+    "generation-context-api-mutation-fresh-permission.log": "0bc7396c5a088dc11f701841e936598087d4351c36e056179b5c3a9122b8190b",
+    "generation-context-api-mutation-one-time-call.log": "2e6601e8d7f5cb32d04f7c26875c6648f7fc73a9cc2a57d19b9ce218cf910847",
+    "generation-context-api-mutation-recipe-instructions.log": "b9050314c79c69bd4d9836ea4406e2f222c5c52a48484a19ae5193d0d0992d2c",
+    "generation-context-api-mutation-recipe-schema.log": "0747798f93fe1b7cf644c80eb04f773ebf13058380443b9c468e5b7ecb816b69",
+    "generation-context-api-mutation-schema-label.log": "765315e566a3257175e7a979a2da656dced7a24ff1db3080b6c4bac103f42c1d",
+    "generation-context-parent-native-corrected.log": "64ae7a083a8be0c6741b3bd8121d09ee3b2e0a7ed13dc89b1786d9f20ddec3cb",
+    "generation-context-parent-native-initial.log": "f4b025f709e933b5176939bc1fb044ac7fbd0156a81d4bc6774cea5768d8d2c1",
+    "generation-context-worker-input-mutation-abort.log": "98d0f5e269935cabb5e07103cdb43b6fd9e7feca65dbb7575d58f076e2d0fcdf",
+    "generation-context-worker-input-mutation-control.log": "c887e2afdbdc61834b248f5d20f191d1f50a7cc502f0e6c6ac9b8f40a3a1b1ad",
+    "generation-context-worker-input-mutation-driver.log": "a1bdaf0c595b82690de5b38cecafd7beced8cdf881a6ba6ece4d9e984635e34e",
+    "generation-context-worker-input-mutation-frames.log": "1569f546f088769c38df694a2db8ee2f1cc7ded8d28d098e58c273b7af430ad1",
+    "generation-context-worker-input-mutation-guard-1.log": "05b25e3cd41da2e457ef7efd4a5d4b2ae082c7b0749bb113a844b52337705789",
+    "generation-context-worker-input-mutation-guard-10.log": "32dcdb6ac849d0238fd5c71be30b550426899c0c0062b63173c06f641cc2b94e",
+    "generation-context-worker-input-mutation-guard-11.log": "64a31e5a25904896ba51411f25914fb767d251d8b7e3e467aa7b7308c0439482",
+    "generation-context-worker-input-mutation-guard-12.log": "2c07ce981e91f1bdbdb09f7f3f3b123d84339089c86652d1bc397e28fac91048",
+    "generation-context-worker-input-mutation-guard-13.log": "9b62e726b3a3d352effba372a1c4eb170394104d67f033d63a807acca70d695b",
+    "generation-context-worker-input-mutation-guard-14.log": "e755ecd212085902adc534d13aed96a7e60235b8b5293478e82385bcc1cb2892",
+    "generation-context-worker-input-mutation-guard-15.log": "9aebb29e59b6d5c12ee8a0caa39a0af2a7cec10f6ab9ea2501f12d1dfaf70dee",
+    "generation-context-worker-input-mutation-guard-16.log": "88fbfbc6a91a03adf48140e9810245ed322a2c45c91798042965b0180511b3b3",
+    "generation-context-worker-input-mutation-guard-17.log": "9d7d0c9b39c61c306006f6b73a5016824949e2f31a2fb0e31af1ce23e9e5636c",
+    "generation-context-worker-input-mutation-guard-18.log": "41ce5607e05d5f5c6ce3a57b853f2c192755b198b3f8c565a554672f382a23f4",
+    "generation-context-worker-input-mutation-guard-19.log": "54be5fad47c21b4f39ddc28deda5379643a8dc2025b5e6f3347d1cd2f37ff683",
+    "generation-context-worker-input-mutation-guard-2.log": "4d77542c70c6c644a41b7169e98c1d1b00fcc43ea0057c0e702240dc999c7ef3",
+    "generation-context-worker-input-mutation-guard-20.log": "1fe4b9f3e9f327c863cc9e81237e166df0263f0e1bcc9db68e9d010523f306c3",
+    "generation-context-worker-input-mutation-guard-21.log": "c9d5f23babe77601b058b0b96d84d0c4fcfa88bbbcba3234b8daec8ca894cb0c",
+    "generation-context-worker-input-mutation-guard-22.log": "ad91e8f293b48948a4d4cf2475a9781af88a6bfbfd1f518e8b816aa9b90fa6e9",
+    "generation-context-worker-input-mutation-guard-23.log": "09147b893eab406afb57bce2c4e2e8f715286ddcf17b0c5d0e92a4af5c283bed",
+    "generation-context-worker-input-mutation-guard-24.log": "823ad98b7af9e2044a0c13cb3a41bd380f647afb5111b8a861b9976a6b031258",
+    "generation-context-worker-input-mutation-guard-25.log": "b3dcfa190b34f9e744265b9e23a97d38f5d2e42a27b1513ea48a0a7d78caba95",
+    "generation-context-worker-input-mutation-guard-3.log": "55217bc00026379607e40e51deb2683065578f2c5a5b534c601fe69494a4c18e",
+    "generation-context-worker-input-mutation-guard-4.log": "c8f71ff5e7505d4bbbe127d0b072afcf56c70c3235255aa69a49eccd5c4c0237",
+    "generation-context-worker-input-mutation-guard-5.log": "14cbd4384c09ad2221bbff35e2287995cd162cfbfbf8ad79e768b163674560b1",
+    "generation-context-worker-input-mutation-guard-6.log": "71d9ea5381e44c73aac8cc22d1dc63f969ad5a83199a1ec6ced0672ba2d7d6aa",
+    "generation-context-worker-input-mutation-guard-7.log": "f772110016089bac11cdf40b8faf13743e23a30fcb387ae9df923cbd68620886",
+    "generation-context-worker-input-mutation-guard-8.log": "ab17adfcf8c3a87811d49dd6b7716bc0cc89d41bfb31860bf0f4fb8d8bd9333f",
+    "generation-context-worker-input-mutation-guard-9.log": "1951080f17343763a4b42247c6207bcfbcd2018f725e0358a4d0ab80a504ea89",
+    "generation-context-worker-input-mutation-row-error.log": "bd4d99c7d65954e1d9a479796c20159d1f85c64c23c5ab3b3c31c795e6b6cd01",
+    "generation-context-worker-input-mutation-scope-error.log": "8959d2c4daa25510dcc469eede604152a55ca8ba576ef1a41f8eb401fff0794c",
+    "generation-context-worker-input-mutation-self-hashed-frame.log": "af8f0e89301d900c9ba2dc753212b3916c709f981265e48b16ad5457914c23ce",
+    "generation-context-worker-inputs-corrected.log": "8047b1674e60c308fc4e30bbe07044656901cfd402174e58befb88d1a51eab28",
+    "generation-context-worker-inputs-initial.log": "b8c7d13106077dc32724be20d6183b779c11ba1e3266281bc191f4f3449e276e",
+    "generation-context-worker-inputs-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "generation-context-worker-lint-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "generation-context-worker-related.log": "c7bcfd092f351d7920124a49036db60dd1fe1c1d86ec13e8da063241b697188a",
+    "generation-context-worker-types-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "generation-context-shared-worker-mutation-claim-pins.log": "c1414ca08b7002099119b786d2e539a64e79c636794c70d8cdc0c7516c93eea4",
+    "generation-context-shared-worker-mutation-context-status.log": "f9b1d075b37f712d62864beea625ee23bbbc9a4856250178d3669bc63d184a2e",
+    "generation-context-shared-worker-mutation-unknown-mode.log": "a9fd31a6629a75c2695895986419c1842ccbf802691315aac528319a72ab1e23",
+    "generation-context-shared-worker-mutation-context-dispatch.log": "f37a916c94bda1cfc3efd21aa232bfa6cccad16c1542d8f69f2686a070a1c729",
+    "generation-context-shared-worker-mutation-context-claim.log": "33f9eb14aff757195c11fba0191df040b1172726dae92b87a678166df1ce36c0",
+    "generation-context-shared-worker-mutation-temporary-mode.log": "efc3348fe879f2e3b8ecc419f86922f79b77622f6799a41310ddecaf383083d0",
+    "generation-context-shared-worker-mutation-control.log": "94989504d75673e47ded6e347049f62929b496521ca6cbeac85c69b1b1337c6e",
+    "generation-context-shared-worker-mutation-identity-mode.log": "ca08f408eb9ffe7da8412ae7f04fa598d626cf2358d222a031dd98b51d63b29b",
+    "generation-context-shared-worker-mutation-context-api.log": "2f222ab0d4c38c46c838273ab09e2ab4457024e0109a3a69ccbe2fbebc4a9ede",
+    "generation-context-shared-worker-mutation-prepared-mode.log": "d6439d02bfb5ffd95d77d5f38b0f9f9c2aa6e75f588eaddac20066825544ad55",
+    "generation-context-shared-worker-mutation-pending-mode.log": "b0e4b0cc9a3d49d295733fab4c517ba564761613d2829edd0665d454e5365698",
+    "generation-context-shared-worker-mutation-status-denial.log": "ecb403c6c123d18071c79b03488dd3bb287391934f72e50f1394afa282b8832b",
+    "generation-context-shared-worker-mutation-context-loader.log": "7e16eebcfa35ef23478adeeffe745a6851e36db85b7e05816d9e676940e82394",
+    "generation-context-schema-mutation-control.log": "b4106dad1e4a759d32895ab860dd9889d3248803f5ba013f5d0439858d38f87a",
+    "generation-context-schema-corrected-mutation-control.log": "17d616cb12863ef24a4675ace6d86ff3542b100a1a28ddc048db8f58f47d401f",
+    "generation-context-schema-corrected-mutation-inventory.log": "ce813c1050a5f1b197a61e22b443ebb6087ac8a86ab2d94d8bc1051a31f01136",
+    "generation-context-schema-corrected-mutation-unread-column.log": "4e6a7f72f7ea56931d4b267f465425aa6ff3a4228bd6b0c1f040da27f3b58609",
+    "generation-context-schema-mutation-inventory.log": "7dd24d644eff8c92eaac9a6603a643ec84d84fce4243e34509605236e17c8f82",
+    "generation-context-job-mutation-selection-sequence.log": "ccdb0aa4425ac0804f79eace93ae2f4b3efe0a4e7518ae5a6c53a8647cd70979",
+    "generation-context-job-corrected-mutation-grant-deadline.log": "bec5acecdafba1abac728fb012220401c6cdfd5d0234b65235102be69f2e4892",
+    "generation-context-job-corrected-mutation-grant-bytes.log": "f8c116fcaab721bc04c9bdc511e55eea568c5cd957dbce4cb9498bfb5c66547e",
+    "generation-context-job-mutation-predecessor-capture.log": "05fd90a933cd4f5e5f87c0e8e601860ecf44d27cae4545d6fc2f4e54d85b8b8f",
+    "generation-context-job-mutation-grant-scope.log": "3c1a3c63f7898037068135c07e224988547ca0a4369b2b7fa9d4e9e640e4c0c4",
+    "generation-context-job-mutation-input-hash.log": "6f2f7af70ad2cc1f3e2b310304ad690625b4215e463795853ccf9caa405dcb53",
+    "generation-context-job-mutation-dispatch-attempt.log": "b1a24c028a6fbc4eba32aa31e44adb38d9040eb041f7ea5e2c9a7810a3b2df15",
+    "generation-context-job-mutation-predecessor-attempt.log": "ea90cde117d9750003035fe0c4ec545ce1ca3e3e0a4ebc29ca9c99f48bdc0ddb",
+    "generation-context-job-corrected-mutation-output-attempt.log": "620a49eced72771c976c9a6f60247b150d43cb79e80a0a5df0e436d417b812f7",
+    "generation-context-job-mutation-selection-actor.log": "bd4f7c4b5aa76c8141b0c69dc1d235a05ffa1331dea81aa84f7e04d17f0515e7",
+    "generation-context-job-mutation-grant-hash.log": "e564588a8abe96c211161c233f3dd86bed9ff5280588193f421d1638b0b5dc08",
+    "generation-context-job-corrected-mutation-control.log": "7b525d2091cd04de97d88d506bfe40fc7b873fbc1c2094b18038f430cea3b67c",
+    "generation-context-job-mutation-receipt-hash.log": "58cfd8d0cef36c69802d153bd714986dcbff883b1192404996de38d58c9e7dff",
+    "generation-context-job-mutation-input-task.log": "9c6f323b151ec9c2a99feb7edc33e02209d7b6b12c60ea1e2df05b0864c22bad",
+    "generation-context-job-mutation-attempt-binding.log": "cdece4913d109e0a44c6d5b0ae1bbe20f692d28719725521a12b53e0dcee8f0b",
+    "generation-context-job-mutation-predecessor-selection.log": "05255ec3545b7017aeae4b9402dc70507c82e8ca2d0619613b8c5e7c3776330d",
+    "generation-context-job-mutation-input-bytes.log": "23e9f4d9448e8ae903fff699c9fbd999b8e528c0b15861f0a03925f6cefc9786",
+    "generation-context-job-corrected-mutation-initial-origin.log": "7e19a71e995eb33073fa4b9c3358c6b0b3fae85f6d226b75ee2391ffbe49c50c",
+    "generation-context-job-mutation-driver.log": "74344c60418c27f39475236e9d0402e67d5d6edfb4cb04e70b7afaadeb8a45f9",
+    "generation-context-job-corrected-mutation-read-error.log": "28d55737c42cbeff0f0ba98da47d1034b6021d95472599c160065fd2d106cc16",
+    "generation-context-job-corrected-mutation-staff-origin.log": "e4e1d0b51df7f4c814991beed97864865fcb20f0219661443a87eed3b3577182",
+    "generation-context-job-corrected-mutation-grant-current.log": "d3a49699a7488bb19c4f78548382d6f073cda8f7097ceac6ded652f575c967a5",
+    "generation-context-job-mutation-page-sequence.log": "bcf7cad0809dd53ef1675d8989b46a79a2efc682f35a1765d07f0b7f7cbab8cb",
+    "generation-context-job-corrected-mutation-selection-error.log": "85dac978b613c67688d40d7ccaf4c18c9f93053f58fce578227c042d95ac10a0",
+    "generation-context-job-corrected-mutation-abort.log": "dbd01adf8a737327b05aba8900fafeb19b6eff1f734a95d456cc540d9809a7e6",
+    "generation-context-job-mutation-selection-history.log": "09cb655a6bb6cd95e3facdb2b41cceb3c47e61ea7e6c023080b75d311d638bc7",
+    "generation-context-job-mutation-receipt-bytes.log": "2a3081b992b435b7c9dd50f50786e5667005c01655138076519888701d0ee142",
+    "generation-context-job-corrected-mutation-grant-tokens.log": "71da0242c27153d317222c3586eb8f9bf0309705c680602ec4693e9af5b2cbd4",
+    "generation-context-job-mutation-grant-budget.log": "5dfe91cd41a643b23d68b34d15f7fd3fb6736f78cec0429a7570ec091220353e",
+    "generation-context-job-mutation-grant-deadline.log": "0b9190dd1d6d4f43cb13887246bbffd3136c324c26069c9812bf5dc5e3691b53",
+    "generation-context-job-mutation-page-cursor.log": "1be55e7028f2ffdfcfca40bfeb91f4f806b1f2fc26b2999527f886fff65b80f7",
+    "generation-context-job-mutation-retry-predecessor.log": "e7e6e5bd0c80a54f6810f95c0424f69c406e81ed93fbe36c7338c4e852f80cc0",
+    "generation-context-job-mutation-grant-id.log": "9bc055958b71966e4323d0fe3bc68f763b96dc4eb2d52a09b7b27fbc9a1dbd28",
+    "generation-context-job-corrected-mutation-driver.log": "dc448415ce72e3a200c31566ef10b6f762b525e45365f3c896cb862994c1836a",
+    "generation-context-job-mutation-page-request.log": "89220b0772a4b8e2a45588f0e2dcfef1cc0cb8d16b9054b2368f30afccff0408",
+    "generation-context-job-mutation-selection-request.log": "e4452f3abe5cc20f362d437214de125fcdfede388deee8dba44c6a33433ef0ef",
+    "generation-context-job-mutation-selection-frame.log": "c4f39c9f0947f19c5c8b148f78b7c5ec82e05a27da91cd71d1c954d4b2d564ef",
+    "generation-context-job-mutation-dispatch-expiry.log": "a96e3b875103be2583d8e81a6cb41862bf123a090a199b57cca314afe6de78f9",
+    "generation-context-job-mutation-attempt-frame.log": "8f5611b0a308f5f9b1b753bab492c09909352c0f7ea6c88a0c21e2a687175967",
+    "generation-context-job-mutation-control.log": "0d131fe597c1d28ce6a9e108437795f424a7af9cae32693b511e6ed13f9291a4",
+    "generation-context-job-mutation-predecessor-result.log": "34b9b60cdd2d635a658b15d36f2af5e33feb344efd5046671f2ec958fc4a5b29",
+    "generation-context-job-mutation-selection-duplicate.log": "a752256fdf4c4444c8b4d906f4e238a2acf94df0c54251702616430e07239f6f",
+    "generation-context-job-mutation-input-attempt.log": "3c10e4ad6427128ad0bcf67945dae52909ee0f8d8fc5f19c4de82493318def45",
+    "generation-context-worker-native-http-initial.log": "6cc34871d72f781e574e1b45db00c45a1172436366edff17366db8a37e1eff70",
+    "generation-context-recovered-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "generation-context-recovered-focused.log": "5f168c7faa2147740084c95f1f0bb73bfc7567ecbfe20e654a710ed8da34783d",
+    "generation-context-installed-schema.log": "27def9cb5896d43046ab6daa70ea32e7b79cce6958ea03397de46782067f113f",
+    "generation-context-execution-upgrade.log": "f001b6cafce0ac5452cb508f3141e8ea646616c91ee3ad1c46a8b128dca07b80",
+    "generation-context-execution-qa.log": "0933a04490c630559723d0f86d9e0e486119c7f76946b400d87b3d97defcce0e",
+    "generation-context-execution-shuffle.log": "c08117fbe0cdd1f646db47f200806743b48e46671d652f9cf166eadcc11bfe3b",
+    "generation-context-execution-workers.log": "5eca6f224809213bbc783cbc34393471e5519fcbddaa63eb26766fe38225cb74",
+    "generation-context-changelog-final.log": "d474376fa88c75f7d73d192400fdbb1721c1533d1d1779a5129e5fb1faaa1f1a",
+    "generation-context-changelog-final-package.log": "438d3514d342ed8b7986c6a6f481e01b9d6bdc8c310dab3712f5178450a6df96",
+    "generation-context-execution-rls.log": "535eb4a89256622b000bc5cb6cee75d5adaa048aa44f50fa15be2b0337679551"
+  },
+  "nativeHttp": {
+    "passed": 1,
+    "skipped": 12,
+    "log": "generation-context-worker-native-http-initial.log",
+    "durationSeconds": 139.65
+  },
+  "sharedWorkerMutations": {
+    "cases": [
+      {
+        "name": "control",
+        "exit": 0,
+        "expectedFailure": false,
+        "validOutcome": true,
+        "log": "generation-context-shared-worker-mutation-control.log"
+      },
+      {
+        "name": "pending-mode",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-shared-worker-mutation-pending-mode.log"
+      },
+      {
+        "name": "temporary-mode",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-shared-worker-mutation-temporary-mode.log"
+      },
+      {
+        "name": "prepared-mode",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-shared-worker-mutation-prepared-mode.log"
+      },
+      {
+        "name": "identity-mode",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-shared-worker-mutation-identity-mode.log"
+      },
+      {
+        "name": "unknown-mode",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-shared-worker-mutation-unknown-mode.log"
+      },
+      {
+        "name": "context-loader",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-shared-worker-mutation-context-loader.log"
+      },
+      {
+        "name": "context-claim",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-shared-worker-mutation-context-claim.log"
+      },
+      {
+        "name": "claim-pins",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-shared-worker-mutation-claim-pins.log"
+      },
+      {
+        "name": "context-dispatch",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-shared-worker-mutation-context-dispatch.log"
+      },
+      {
+        "name": "context-status",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-shared-worker-mutation-context-status.log"
+      },
+      {
+        "name": "context-api",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-shared-worker-mutation-context-api.log"
+      },
+      {
+        "name": "status-denial",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-shared-worker-mutation-status-denial.log"
+      }
+    ],
+    "sourceRestored": true,
+    "sha256": "0cf4b2b4b9c3da375f7776f44751934f98b806b43bf7f06f62b56da0b4d577de"
+  },
+  "schemaMutationsInitial": {
+    "cases": [
+      {
+        "name": "control",
+        "exit": 0,
+        "expectedFailure": false,
+        "validOutcome": true,
+        "log": "generation-context-schema-mutation-control.log"
+      },
+      {
+        "name": "inventory",
+        "exit": 0,
+        "expectedFailure": true,
+        "validOutcome": false,
+        "log": "generation-context-schema-mutation-inventory.log"
+      }
+    ],
+    "sourceRestored": true,
+    "sha256": "f9c4ae01a55d972652f4d5cacfbf636be5fb957c9a1895bd00afb9d86ce44e08"
+  },
+  "schemaMutationsCorrected": {
+    "cases": [
+      {
+        "name": "control",
+        "exit": 0,
+        "expectedFailure": false,
+        "validOutcome": true,
+        "log": "generation-context-schema-corrected-mutation-control.log"
+      },
+      {
+        "name": "inventory",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-schema-corrected-mutation-inventory.log"
+      },
+      {
+        "name": "unread-column",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-schema-corrected-mutation-unread-column.log"
+      }
+    ],
+    "sourceRestored": true,
+    "sha256": "f9c4ae01a55d972652f4d5cacfbf636be5fb957c9a1895bd00afb9d86ce44e08"
+  },
+  "focusedChecks": {
+    "passed": 97,
+    "files": 4
+  },
+  "installedSchemaChecks": {
+    "passed": 55,
+    "files": 3
+  },
+  "jobMutationsInitial": {
+    "cases": [
+      {
+        "name": "control",
+        "edits": [
+          "Replay each selected predecessor"
+        ],
+        "testPattern": null,
+        "exit": 0,
+        "expectedFailure": false,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-control.log"
+      },
+      {
+        "name": "grant-id",
+        "edits": [
+          "row.id !== authorizationId"
+        ],
+        "testPattern": "inconsistent returned engagement_synthesis_generation_authorizations id",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-grant-id.log"
+      },
+      {
+        "name": "grant-hash",
+        "edits": [
+          "digest(row.intent_text) !== row.intent_sha256"
+        ],
+        "testPattern": "changed grant checksum",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-grant-hash.log"
+      },
+      {
+        "name": "grant-scope",
+        "edits": [
+          "row.request_id !== scope.requestId"
+        ],
+        "testPattern": "authorized for a different request",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-grant-scope.log"
+      },
+      {
+        "name": "grant-budget",
+        "edits": [
+          "authorization.maxAttempts > plan.entries.length"
+        ],
+        "testPattern": "invalid current grant maxAttempts",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-grant-budget.log"
+      },
+      {
+        "name": "page-request",
+        "edits": [
+          "page.requestId !== scope.requestId"
+        ],
+        "testPattern": "foreign page requestId",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-page-request.log"
+      },
+      {
+        "name": "page-cursor",
+        "edits": [
+          "page.afterTaskIndex !== index - 1"
+        ],
+        "testPattern": "foreign page afterTaskIndex",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-page-cursor.log"
+      },
+      {
+        "name": "page-sequence",
+        "edits": [
+          "throughSequence !== null && page.throughSequence !== throughSequence"
+        ],
+        "testPattern": "selection inventory changeSequence",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-page-sequence.log"
+      },
+      {
+        "name": "receipt-bytes",
+        "edits": [
+          "Buffer.byteLength(original.receiptText, \"utf8\") > 32768"
+        ],
+        "testPattern": "UTF8 bytes",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-receipt-bytes.log"
+      },
+      {
+        "name": "receipt-hash",
+        "edits": [
+          "digest(original.receiptText) !== original.receiptSha256"
+        ],
+        "testPattern": "selection inventory corruptChecksum",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-receipt-hash.log"
+      },
+      {
+        "name": "selection-request",
+        "edits": [
+          "selected.requestId !== scope.requestId"
+        ],
+        "testPattern": "selected receipt requestId",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-selection-request.log"
+      },
+      {
+        "name": "selection-frame",
+        "edits": [
+          "selected.taskIndex !== index"
+        ],
+        "testPattern": "selected receipt taskIndex",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-selection-frame.log"
+      },
+      {
+        "name": "selection-actor",
+        "edits": [
+          "selected.actorId !== request.request.actorId"
+        ],
+        "testPattern": "selected receipt actorId",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-selection-actor.log"
+      },
+      {
+        "name": "selection-sequence",
+        "edits": [
+          "selected.sequence > throughSequence"
+        ],
+        "testPattern": "selected receipt sequence",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-selection-sequence.log"
+      },
+      {
+        "name": "selection-duplicate",
+        "edits": [
+          "seenSelections.has(selected.id)"
+        ],
+        "testPattern": "repeated selection identities",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-selection-duplicate.log"
+      },
+      {
+        "name": "selection-history",
+        "edits": [
+          "selected.previousSelectionId !== null"
+        ],
+        "testPattern": "selected receipt previousSelectionId",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-selection-history.log"
+      },
+      {
+        "name": "attempt-frame",
+        "edits": [
+          "attempt.task_index !== index"
+        ],
+        "testPattern": "returned engagement_synthesis_generation_attempts task_index",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-attempt-frame.log"
+      },
+      {
+        "name": "retry-predecessor",
+        "edits": [
+          "attempt.previous_attempt_id !== checked.intent.retryOfAttemptId"
+        ],
+        "testPattern": "returned engagement_synthesis_generation_attempts previous_attempt_id",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-retry-predecessor.log"
+      },
+      {
+        "name": "attempt-binding",
+        "edits": [
+          "!isDeepStrictEqual(JSON.parse(attempt.binding_text), checked.job.binding)"
+        ],
+        "testPattern": "changed dynamic attempt binding",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-attempt-binding.log"
+      },
+      {
+        "name": "input-attempt",
+        "edits": [
+          "input.attempt_id !== attempt.id"
+        ],
+        "testPattern": "returned engagement_synthesis_context_attempt_inputs attempt_id",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-input-attempt.log"
+      },
+      {
+        "name": "input-task",
+        "edits": [
+          "input.task_text !== next.task.canonical"
+        ],
+        "testPattern": "input drift task_text",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-input-task.log"
+      },
+      {
+        "name": "input-hash",
+        "edits": [
+          "input.task_sha256 !== next.task.sha256"
+        ],
+        "testPattern": "input drift task_sha256",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-input-hash.log"
+      },
+      {
+        "name": "input-bytes",
+        "edits": [
+          "input.task_bytes !== next.task.utf8Bytes"
+        ],
+        "testPattern": "input drift task_bytes",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-input-bytes.log"
+      },
+      {
+        "name": "predecessor-attempt",
+        "edits": [
+          "input.predecessor_attempt_id !== (predecessor?.attemptId ?? null)"
+        ],
+        "testPattern": "input drift predecessor_attempt_id",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-predecessor-attempt.log"
+      },
+      {
+        "name": "predecessor-selection",
+        "edits": [
+          "input.predecessor_selection_id !== (predecessor?.selectionId ?? null)"
+        ],
+        "testPattern": "input drift predecessor_selection_id|new choice of an unchanged",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-predecessor-selection.log"
+      },
+      {
+        "name": "predecessor-capture",
+        "edits": [
+          "input.predecessor_capture_sha256 !== (predecessor?.captureSha256 ?? null)"
+        ],
+        "testPattern": "input drift predecessor_capture_sha256",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-predecessor-capture.log"
+      },
+      {
+        "name": "predecessor-result",
+        "edits": [
+          "input.previous_result_sha256 !== next.previousResultSha256"
+        ],
+        "testPattern": "input drift previous_result_sha256",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-predecessor-result.log"
+      },
+      {
+        "name": "dispatch-attempt",
+        "edits": [
+          "dispatch.attempt_id !== attempt.id"
+        ],
+        "testPattern": "returned engagement_synthesis_generation_dispatches attempt_id",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-dispatch-attempt.log"
+      },
+      {
+        "name": "dispatch-expiry",
+        "edits": [
+          "Date.parse(dispatch.expires_at) !== Date.parse(verified.receipt.expiresAt)"
+        ],
+        "testPattern": "returned engagement_synthesis_generation_dispatches expires_at",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-mutation-dispatch-expiry.log"
+      },
+      {
+        "name": "grant-deadline",
+        "edits": [
+          "Date.parse(verified.receipt.expiresAt) > Date.parse(checked.intent.expiresAt)"
+        ],
+        "testPattern": "dispatch beyond its grant expiresAt",
+        "exit": 0,
+        "expectedFailure": true,
+        "validOutcome": false,
+        "log": "generation-context-job-mutation-grant-deadline.log"
+      }
+    ],
+    "sourceRestored": true,
+    "sha256": "b6fd9472b92b88fa7733873bd96bc084054e501f5f6cba85921d96db05c17cde"
+  },
+  "jobMutationsCorrected": {
+    "cases": [
+      {
+        "name": "control",
+        "edits": [
+          "Replay each selected predecessor"
+        ],
+        "testPattern": null,
+        "exit": 0,
+        "expectedFailure": false,
+        "validOutcome": true,
+        "log": "generation-context-job-corrected-mutation-control.log"
+      },
+      {
+        "name": "grant-deadline",
+        "edits": [
+          "Date.parse(verified.receipt.expiresAt) > Date.parse(checked.intent.expiresAt)"
+        ],
+        "testPattern": "dispatch beyond its grant expiresAt",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-corrected-mutation-grant-deadline.log"
+      },
+      {
+        "name": "grant-tokens",
+        "edits": [
+          "verified.receipt.maxOutputTokens !== checked.intent.maxOutputTokens"
+        ],
+        "testPattern": "dispatch beyond its grant maxOutputTokens",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-corrected-mutation-grant-tokens.log"
+      },
+      {
+        "name": "grant-bytes",
+        "edits": [
+          "verified.receipt.responseByteLimit !== checked.intent.responseByteLimit"
+        ],
+        "testPattern": "dispatch beyond its grant responseByteLimit",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-corrected-mutation-grant-bytes.log"
+      },
+      {
+        "name": "output-attempt",
+        "edits": [
+          "output.attempt_id !== attempt.id"
+        ],
+        "testPattern": "returned engagement_synthesis_generation_outputs attempt_id",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-corrected-mutation-output-attempt.log"
+      },
+      {
+        "name": "grant-current",
+        "edits": [
+          "Date.parse(checked.intent.expiresAt) <= Date.now()"
+        ],
+        "testPattern": "invalid current grant expiresAt",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-corrected-mutation-grant-current.log"
+      },
+      {
+        "name": "staff-origin",
+        "edits": [
+          ": selected.authorizationId !== null)"
+        ],
+        "testPattern": "falsely attributed",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-corrected-mutation-staff-origin.log"
+      },
+      {
+        "name": "initial-origin",
+        "edits": [
+          "selected.authorizationId === null",
+          "(selected.origin === \"authorization\" && attempt.authorization_id !== selected.authorizationId)"
+        ],
+        "testPattern": "selected receipt authorizationId",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-corrected-mutation-initial-origin.log"
+      },
+      {
+        "name": "read-error",
+        "edits": [
+          "if (response.error) throw new Error(\"Context worker execution history unavailable\")"
+        ],
+        "testPattern": "failed native",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-corrected-mutation-read-error.log"
+      },
+      {
+        "name": "selection-error",
+        "edits": [
+          "if (response.error) throw new Error(\"Context worker predecessor selection unavailable\")"
+        ],
+        "testPattern": "denied selections",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-corrected-mutation-selection-error.log"
+      },
+      {
+        "name": "abort",
+        "edits": [
+          "signal.throwIfAborted();"
+        ],
+        "testPattern": "denied selections",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-job-corrected-mutation-abort.log"
+      }
+    ],
+    "sourceRestored": true,
+    "sha256": "b6fd9472b92b88fa7733873bd96bc084054e501f5f6cba85921d96db05c17cde"
+  },
+  "additiveUpgrade": {
+    "at": "2026-10-01T01:11:31.845873+00:00",
+    "migration": "20261014000039_engagement_synthesis_context_execution.sql",
+    "sha256": "f9c4ae01a55d972652f4d5cacfbf636be5fb957c9a1895bd00afb9d86ce44e08",
+    "stack": "/home/nathaniel/.local/state/openplan/openplan-restore-target-2026091050",
+    "before": {
+      "engagement_synthesis_context_frames": {
+        "count": 372,
+        "sha256": "b6563cf96c61931192c4e7c6414cbbada93b14e2174514b820d310b10e0773a1"
+      },
+      "engagement_synthesis_context_requests": {
+        "count": 8,
+        "sha256": "bc4e1382ac9b47063c9082a6c9c5e9d2824e604f4aea208059bd40556b9fa914"
+      },
+      "engagement_synthesis_generation_plans": {
+        "count": 179,
+        "sha256": "55803e28884b6709e52a82ad31061960bd226721bdd13660bd0aea4f5a380f88"
+      },
+      "engagement_synthesis_generation_outputs": {
+        "count": 917,
+        "sha256": "7bcf0c1b6e789b78799eaddcbd5a61fadc68d9f62e646a7cc60d12197c4c202d"
+      },
+      "engagement_synthesis_generation_attempts": {
+        "count": 955,
+        "sha256": "98b8e39b7059cad430ace7e7e6aa94232048ffb5c3ac53bae63b70e8ee158bb2"
+      },
+      "engagement_synthesis_generation_requests": {
+        "count": 187,
+        "sha256": "f6c00ed199e970fccdaee97e8b6d3b49eb8a503ced74f8bbd477d7e9451f6933"
+      },
+      "engagement_synthesis_generation_dispatches": {
+        "count": 955,
+        "sha256": "ba5911f0902fd8a43080362a92de1fd72894eca669e09a9180bbb7c9d403392c"
+      },
+      "engagement_synthesis_generation_plan_seals": {
+        "count": 178,
+        "sha256": "53e72e0ee9ffe19afd0a583f2f85ed829155f1158fa1a045f417facb7ac2204f"
+      },
+      "engagement_synthesis_generation_plan_tasks": {
+        "count": 3172,
+        "sha256": "0b8c9de550607274ee3c123bf1c8aa2f8b7ee41447f2f41fd9ea019862dd2a8f"
+      },
+      "engagement_synthesis_generation_selections": {
+        "count": 955,
+        "sha256": "194e2e15f30cbd24f251f3b3ea9278c98df272237329336aa2dbdf7b76f322ec"
+      },
+      "engagement_synthesis_generation_authorizations": {
+        "count": 175,
+        "sha256": "3c30025c7ed8fd1fb95864dc34df84f7e8d0c726b926ee1c73c0725a16de95d0"
+      }
+    },
+    "state": "additive migration complete",
+    "after": {
+      "engagement_synthesis_context_frames": {
+        "count": 372,
+        "sha256": "b6563cf96c61931192c4e7c6414cbbada93b14e2174514b820d310b10e0773a1"
+      },
+      "engagement_synthesis_context_requests": {
+        "count": 8,
+        "sha256": "bc4e1382ac9b47063c9082a6c9c5e9d2824e604f4aea208059bd40556b9fa914"
+      },
+      "engagement_synthesis_generation_plans": {
+        "count": 179,
+        "sha256": "55803e28884b6709e52a82ad31061960bd226721bdd13660bd0aea4f5a380f88"
+      },
+      "engagement_synthesis_generation_outputs": {
+        "count": 917,
+        "sha256": "7bcf0c1b6e789b78799eaddcbd5a61fadc68d9f62e646a7cc60d12197c4c202d"
+      },
+      "engagement_synthesis_generation_attempts": {
+        "count": 955,
+        "sha256": "98b8e39b7059cad430ace7e7e6aa94232048ffb5c3ac53bae63b70e8ee158bb2"
+      },
+      "engagement_synthesis_generation_requests": {
+        "count": 187,
+        "sha256": "f6c00ed199e970fccdaee97e8b6d3b49eb8a503ced74f8bbd477d7e9451f6933"
+      },
+      "engagement_synthesis_generation_dispatches": {
+        "count": 955,
+        "sha256": "ba5911f0902fd8a43080362a92de1fd72894eca669e09a9180bbb7c9d403392c"
+      },
+      "engagement_synthesis_generation_plan_seals": {
+        "count": 178,
+        "sha256": "53e72e0ee9ffe19afd0a583f2f85ed829155f1158fa1a045f417facb7ac2204f"
+      },
+      "engagement_synthesis_generation_plan_tasks": {
+        "count": 3172,
+        "sha256": "0b8c9de550607274ee3c123bf1c8aa2f8b7ee41447f2f41fd9ea019862dd2a8f"
+      },
+      "engagement_synthesis_generation_selections": {
+        "count": 955,
+        "sha256": "194e2e15f30cbd24f251f3b3ea9278c98df272237329336aa2dbdf7b76f322ec"
+      },
+      "engagement_synthesis_generation_authorizations": {
+        "count": 175,
+        "sha256": "3c30025c7ed8fd1fb95864dc34df84f7e8d0c726b926ee1c73c0725a16de95d0"
+      }
+    },
+    "equal": true,
+    "finishedAt": "2026-10-01T01:13:35.912171+00:00",
+    "exit": 0
+  },
+  "qa": {
+    "exit": 0,
+    "passed": 16563,
+    "skipped": 1165,
+    "filesPassed": 1371,
+    "filesSkipped": 70,
+    "build": "passed",
+    "dependencyVulnerabilities": 0,
+    "log": "generation-context-execution-qa.log"
+  },
+  "shuffle": {
+    "exit": 0,
+    "seed": 650939,
+    "passed": 16563,
+    "skipped": 1165,
+    "filesPassed": 1371,
+    "filesSkipped": 70,
+    "log": "generation-context-execution-shuffle.log"
+  },
+  "workers": {
+    "exit": 0,
+    "passedSuites": 52,
+    "failed": 0,
+    "notRun": 0,
+    "log": "generation-context-execution-workers.log"
+  },
+  "changelogFinalCheck": {
+    "passed": 6,
+    "files": 1,
+    "exit": 0,
+    "log": "generation-context-changelog-final-package.log"
+  },
+  "fullRLS": {
+    "exit": 0,
+    "passed": 1069,
+    "skipped": 125,
+    "filesPassed": 77,
+    "durationSeconds": 1705.96,
+    "log": "generation-context-execution-rls.log"
+  }
+}

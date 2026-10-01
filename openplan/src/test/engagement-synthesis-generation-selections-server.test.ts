@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { describe, expect, it, vi } from "vitest";
-import { readSynthesisGenerationSelections, readSynthesisGenerationHistoricalSelections } from "@/lib/engagement/synthesis-generation-selections-server";
+import { readSynthesisGenerationSelections, readSynthesisGenerationHistoricalSelections, readSynthesisContextParentSelections } from "@/lib/engagement/synthesis-generation-selections-server";
 import { createSynthesisGenerationPlan } from "@/lib/engagement/synthesis-generation-plan";
 import { makeSourceSnapshot, savedSource, sourceScope, sourceHash } from "./fixtures/engagement/synthesis-source";
 
@@ -27,6 +27,35 @@ function fixture(pages: unknown[] = [page()], error: unknown = null) {
   return { service: { rpc } as unknown as Pick<SupabaseClient, "rpc">, rpc, abortSignal };
 }
 describe("retained synthesis selection inventory", () => {
+  const childId = "f0000000-0000-4000-8000-000000000010";
+  it("reads the context parent's fixed snapshot through child authority across pages", async () => {
+    const f = fixture([page({ entries: [receipt(0)], hasMore: true }), page({ afterTaskIndex: 0, entries: [receipt(1)] })]);
+    const result = await readSynthesisContextParentSelections(f.service, childId, { ...args, throughSequence: 2 });
+    expect(result.requestId).toBe(request.id); expect(result.throughSequence).toBe(2);
+    expect(result.entries.map(entry => entry.receipt.actorId)).toEqual([actorId, actorId]);
+    expect(result.entries.map(entry => entry.receiptText)).toEqual([receipt(0).receiptText, receipt(1).receiptText]);
+    expect(f.rpc.mock.calls).toEqual([
+      ["read_engagement_synthesis_context_parent_selections", { p_request: childId, p_after_task_index: -1, p_limit: 128 }],
+      ["read_engagement_synthesis_context_parent_selections", { p_request: childId, p_after_task_index: 0, p_limit: 128 }],
+    ]);
+    expect(f.abortSignal).toHaveBeenCalledTimes(2);
+  });
+  it("refuses an invalid child identity before reading parent selections", async () => {
+    const f = fixture();
+    await expect(readSynthesisContextParentSelections(f.service, "invalid", args)).rejects.toThrow();
+    expect(f.rpc).not.toHaveBeenCalled();
+  });
+  it.each([{ requestId: childId }, { throughSequence: 3 }])("rejects a different context parent snapshot %j", async patch => {
+    const f = fixture([page(patch)]);
+    await expect(readSynthesisContextParentSelections(f.service, childId, { ...args, throughSequence: 2 })).rejects.toThrow("selections differ");
+  });
+  it("keeps context parent access failure and interruption unavailable", async () => {
+    const denied = fixture([page()], { code: "42501" });
+    await expect(readSynthesisContextParentSelections(denied.service, childId, args)).rejects.toThrow("inventory unavailable");
+    const aborted = fixture();
+    await expect(readSynthesisContextParentSelections(aborted.service, childId, args, AbortSignal.abort())).rejects.toMatchObject({ name: "AbortError" });
+    expect(aborted.rpc).not.toHaveBeenCalled();
+  });
   it("replays an explicit earlier sequence instead of reading current choices", async () => {
     const f = fixture([page({ throughSequence: 1, entries: [receipt(0)] })]);
     const result = await readSynthesisGenerationSelections(f.service, { ...args, throughSequence: 1 });

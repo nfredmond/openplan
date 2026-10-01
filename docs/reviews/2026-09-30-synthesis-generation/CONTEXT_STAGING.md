@@ -69,7 +69,10 @@ Full QA and shuffled tests each pass 16,451 tests, with 1,121 skipped.
 The production build passes and the dependency audit reports no vulnerabilities.
 The complete isolated RLS suite passes 1,025 tests across 76 files, with 125
 skipped, including 48 context-staging cases and 12 native worker cases.
-Exact main CI remains pending for this internal increment.
+Main `bf9f0b8998dce072d45ccaa95470cfab4ca40474` passes
+[CI, including full QA and shuffled tests](https://github.com/nfredmond/openplan/actions/runs/36794587670),
+[RLS isolation](https://github.com/nfredmond/openplan/actions/runs/36794587745)
+and the [populated upgrade check](https://github.com/nfredmond/openplan/actions/runs/36794587672).
 These engineering probes establish neither interpretation quality nor provider
 billing, agency acceptance, browser usability or physical power-loss recovery.
 There is no new staff-visible workflow and no browser acceptance claim. Keep the

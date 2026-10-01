@@ -9,13 +9,15 @@ import { readPrivateJson } from "../../../../workers/planner_agent_connector/con
 import { providerApiWorkerTarget } from "@/lib/assistant/provider-api-worker";
 import { verifyProviderApiResponseReceipt } from "@/lib/assistant/provider-api-response-receipt";
 import { checkedSynthesisWorkerJob, loadSynthesisWorkerJob, loadSynthesisWorkerCredential, synthesisWorkerRequestSignal } from "./synthesis-generation-worker-load";
-import { createSynthesisGenerationApiAttempt, verifySynthesisGenerationApiDispatch } from "./synthesis-generation-api";
+import { createSynthesisGenerationApiAttempt, createSynthesisContextApiAttempt, verifySynthesisGenerationApiDispatch } from "./synthesis-generation-api";
+import { loadSynthesisContextWorkerJob } from "./synthesis-context-worker-job";
 import { createSynthesisGenerationApiResult, verifySynthesisGenerationApiResult } from "./synthesis-generation-api-result";
 import { retainSynthesisGenerationOutput } from "./synthesis-generation-delivery";
 
 const id = z.string().uuid(), hash = z.string().regex(/^[a-f0-9]{64}$/), timestamp = z.string().datetime({ offset: true });
 const natural = z.number().int().nonnegative().safe();
-const base = z.object({ version: z.literal(1), target: z.string(), authorizationId: id, taskIndex: natural, workerId: id, attemptId: id });
+const base = z.object({ version: z.literal(1), target: z.string(), authorizationId: id, taskIndex: natural, workerId: id, attemptId: id,
+  context: z.literal(true).optional() });
 const assigned = base.extend({ job: z.unknown() });
 const dispatched = assigned.extend({ dispatch: z.unknown() });
 const observationSchema = z.object({ receipt: z.unknown(), startedAt: timestamp, finishedAt: timestamp, dispatchSha256: hash }).strict();
@@ -77,14 +79,27 @@ function retainedResult(value: Observed) {
  * The caller schedules other tasks in separate directories. No phase here picks
  * a new attempt after interruption or renews resource authorization.
  */
-export async function runSynthesisGenerationWorkerAttempt(args: {
+type WorkerArgs = {
   service: Service; target: string; directory: string; authorizationId: string; taskIndex: number; signal: AbortSignal;
   generate?: typeof createSynthesisGenerationApiAttempt; statusIntervalMs?: number;
-}): Promise<SynthesisWorkerOutcome> {
+};
+export function runSynthesisGenerationWorkerAttempt(args: WorkerArgs): Promise<SynthesisWorkerOutcome> {
+  return runAttempt(args, false);
+}
+
+/** Context shares original-receipt recovery with segment execution. The journal
+ * records its mode before any claim, including a claim with an unknown receipt.
+ */
+export function runSynthesisContextWorkerAttempt(args: WorkerArgs): Promise<SynthesisWorkerOutcome> {
+  return runAttempt(args, true);
+}
+
+async function runAttempt(args: WorkerArgs, contextual: boolean): Promise<SynthesisWorkerOutcome> {
   const target = providerApiWorkerTarget(args.target), authorizationId = id.parse(args.authorizationId), taskIndex = natural.parse(args.taskIndex);
   const statusIntervalMs = z.number().int().min(10).max(2000).parse(args.statusIntervalMs ?? 2000);
   const lock = await acquireConnectorLock(args.directory), signal = AbortSignal.any([args.signal, lock.signal]);
   const service = args.service;
+  const mode = contextual ? { context: true as const } : {};
   async function persist(value: Journal) {
     lock.signal.throwIfAborted();
     checkedJournal(value);
@@ -115,7 +130,7 @@ export async function runSynthesisGenerationWorkerAttempt(args: {
       if (error instanceof Error && "code" in error && error.code === "ENOENT") pending = null;
       else throw error;
     }
-    if (pending && (pending.target !== target || pending.authorizationId !== authorizationId || pending.taskIndex !== taskIndex)) mismatch();
+    if (pending && (pending.target !== target || pending.authorizationId !== authorizationId || pending.taskIndex !== taskIndex || Boolean(pending.context) !== contextual)) mismatch();
     // A process can stop after syncing a receipt temporary but before renaming
     // it. Recover only checked observations of this same attempt. A partial
     // temporary proves nothing and remains on disk; conflicting originals stop.
@@ -128,7 +143,7 @@ export async function runSynthesisGenerationWorkerAttempt(args: {
       catch (error) { if (error instanceof SyntaxError) continue; throw error; }
       if (candidate.phase !== "observed" && candidate.phase !== "delivered") continue;
       if (candidate.phase === "delivered") retainedResult(candidate);
-      if (candidate.target !== target || candidate.authorizationId !== authorizationId || candidate.taskIndex !== taskIndex ||
+      if (candidate.target !== target || candidate.authorizationId !== authorizationId || candidate.taskIndex !== taskIndex || Boolean(candidate.context) !== contextual ||
         (pending && (candidate.attemptId !== pending.attemptId || candidate.workerId !== pending.workerId))) mismatch();
       if (recovered && (!isDeepStrictEqual(candidate.job, recovered.job) || !isDeepStrictEqual(candidate.dispatch, recovered.dispatch) ||
         !isDeepStrictEqual(candidate.observation, recovered.observation))) throw new Error("Synthesis worker has conflicting retained observations");
@@ -137,20 +152,23 @@ export async function runSynthesisGenerationWorkerAttempt(args: {
     if (recovered && recovered !== pending) { await persist(recovered); pending = recovered; }
     if (pending?.phase === "observed" || pending?.phase === "delivered") return await deliver(pending);
     if (pending && ["dispatching", "running", "unobserved"].includes(pending.phase)) {
-      const unknown: Journal = { version: 1, target, authorizationId, taskIndex, workerId: pending.workerId, attemptId: pending.attemptId,
+      const unknown: Journal = { ...mode, version: 1, target, authorizationId, taskIndex, workerId: pending.workerId, attemptId: pending.attemptId,
         phase: "unobserved", job: "job" in pending ? pending.job : undefined };
       await persist(unknown);
       return { state: "unobserved", attemptId: pending.attemptId };
     }
     if (!pending) {
-      pending = { version: 1, target, authorizationId, taskIndex, workerId: randomUUID(), attemptId: randomUUID(), phase: "prepared" };
+      pending = { ...mode, version: 1, target, authorizationId, taskIndex, workerId: randomUUID(), attemptId: randomUUID(), phase: "prepared" };
       await persist(pending);
     }
-    const identity = { version: 1 as const, target, authorizationId, taskIndex, workerId: pending.workerId, attemptId: pending.attemptId };
+    const identity = { ...mode, version: 1 as const, target, authorizationId, taskIndex, workerId: pending.workerId, attemptId: pending.attemptId };
     if (pending.phase === "prepared") {
-      const job = await loadSynthesisWorkerJob(service, { authorizationId, taskIndex, attemptId: pending.attemptId }, signal);
-      const claim = claimSchema.parse(await rpc("claim_engagement_synthesis_generation_attempt", {
-        p_authorization: authorizationId, p_task_index: taskIndex, p_attempt: pending.attemptId, p_worker: pending.workerId }));
+      const selected = { authorizationId, taskIndex, attemptId: pending.attemptId };
+      const loaded = contextual ? await loadSynthesisContextWorkerJob(service, selected, signal)
+        : { job: await loadSynthesisWorkerJob(service, selected, signal), claim: {} };
+      const { job } = loaded;
+      const claim = claimSchema.parse(await rpc(contextual ? "claim_engagement_synthesis_context_attempt" : "claim_engagement_synthesis_generation_attempt", {
+        p_authorization: authorizationId, p_task_index: taskIndex, p_attempt: pending.attemptId, p_worker: pending.workerId, ...loaded.claim }));
       const { intent } = checkedSynthesisWorkerJob(job);
       if (claim.attemptId !== pending.attemptId || claim.workerId !== pending.workerId || claim.authorizationId !== authorizationId ||
         claim.taskIndex !== taskIndex || !isDeepStrictEqual(JSON.parse(claim.bindingText), job.binding) ||
@@ -162,7 +180,8 @@ export async function runSynthesisGenerationWorkerAttempt(args: {
     const { job } = checkedSynthesisWorkerJob(pending.job);
     const revision = await loadSynthesisWorkerCredential(service, job, signal);
     await persist({ ...identity, phase: "dispatching", job });
-    const dispatch = dispatchAck.parse(await rpc("dispatch_engagement_synthesis_generation_attempt", { p_attempt: identity.attemptId, p_worker: identity.workerId }));
+    const dispatch = dispatchAck.parse(await rpc(contextual ? "dispatch_engagement_synthesis_context_attempt" : "dispatch_engagement_synthesis_generation_attempt",
+      { p_attempt: identity.attemptId, p_worker: identity.workerId }));
     if (!dispatch.authorizedNow) {
       await persist({ ...identity, phase: "unobserved", job });
       return { state: "unobserved", attemptId: identity.attemptId };
@@ -177,7 +196,8 @@ export async function runSynthesisGenerationWorkerAttempt(args: {
       workerId: identity.workerId, authorizationId });
     async function observe() {
       try {
-        const response = await service.rpc("read_engagement_synthesis_generation_execution_status", { p_attempt: identity.attemptId, p_worker: identity.workerId })
+        const response = await service.rpc(contextual ? "read_engagement_synthesis_context_execution_status" : "read_engagement_synthesis_generation_execution_status",
+          { p_attempt: identity.attemptId, p_worker: identity.workerId })
           .abortSignal(synthesisWorkerRequestSignal(AbortSignal.any([runningSignal, watching.signal])));
         if (response.error) mismatch();
         const status = statusSchema.parse(response.data);
@@ -189,7 +209,7 @@ export async function runSynthesisGenerationWorkerAttempt(args: {
     }
     try {
       await observe(); runningSignal.throwIfAborted();
-      const invoke = (args.generate ?? createSynthesisGenerationApiAttempt)({ binding: job.binding, taskCanonical: job.taskCanonical,
+      const invoke = (args.generate ?? (contextual ? createSynthesisContextApiAttempt : createSynthesisGenerationApiAttempt))({ binding: job.binding, taskCanonical: job.taskCanonical,
         dispatch, workerId: identity.workerId, authorizationId, workspaceId: job.workspaceId, connectionId: job.connectionId,
         credentialSha256: job.credentialSha256, revision, signal: runningSignal,
         retainReceipt: async raw => {

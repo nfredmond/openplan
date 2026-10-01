@@ -28,7 +28,9 @@ const fail = (): never => { throw new Error("Retained synthesis selections diffe
 type SelectionArgs = {
   request: unknown; saved: unknown; scope: SynthesisSourceScope; actorId: string; throughSequence?: number;
 };
-async function readSelections(service: Pick<SupabaseClient, "rpc">, args: SelectionArgs, signal?: AbortSignal, historical = false) {
+async function readSelections(service: Pick<SupabaseClient, "rpc">, args: SelectionArgs, signal?: AbortSignal,
+  mode: "current" | "historical" | { contextRequestId: string } = "current",
+) {
   signal?.throwIfAborted();
   const actor = id.parse(args.actorId);
   const plan = createSynthesisGenerationPlan(args.request, args.saved, args.scope);
@@ -37,10 +39,14 @@ async function readSelections(service: Pick<SupabaseClient, "rpc">, args: Select
   let throughSequence: number | null = args.throughSequence === undefined ? null : natural.parse(args.throughSequence), afterTaskIndex = -1;
   for (;;) {
     signal?.throwIfAborted();
-    const { data, error } = await service.rpc(historical ? "read_engagement_synthesis_generation_selection_history" : "read_engagement_synthesis_generation_selections", {
-      ...(historical ? { p_campaign: args.scope.campaignId } : {}),
-      p_request: plan.header.requestId, p_through_sequence: throughSequence, p_after_task_index: afterTaskIndex, p_limit: 128,
-    }).abortSignal(AbortSignal.any([...(signal ? [signal] : []), AbortSignal.timeout(10000)]));
+    const contextRequestId = typeof mode === "object" ? id.parse(mode.contextRequestId) : null;
+    const command = contextRequestId ? "read_engagement_synthesis_context_parent_selections"
+      : mode === "historical" ? "read_engagement_synthesis_generation_selection_history" : "read_engagement_synthesis_generation_selections";
+    const parameters = contextRequestId ? { p_request: contextRequestId, p_after_task_index: afterTaskIndex, p_limit: 128 }
+      : { ...(mode === "historical" ? { p_campaign: args.scope.campaignId } : {}), p_request: plan.header.requestId,
+        p_through_sequence: throughSequence, p_after_task_index: afterTaskIndex, p_limit: 128 };
+    const { data, error } = await service.rpc(command, parameters)
+      .abortSignal(AbortSignal.any([...(signal ? [signal] : []), AbortSignal.timeout(10000)]));
     if (error) throw new Error("Synthesis selection inventory unavailable; reload the retained snapshot");
     const page = pageSchema.parse(data);
     if (page.requestId !== plan.header.requestId || page.afterTaskIndex !== afterTaskIndex ||
@@ -74,5 +80,14 @@ export function readSynthesisGenerationSelections(service: Pick<SupabaseClient, 
  * client. Receipt actors remain the original authors, not the current reader.
  */
 export function readSynthesisGenerationHistoricalSelections(client: Pick<SupabaseClient, "rpc">, args: SelectionArgs, signal?: AbortSignal) {
-  return readSelections(client, args, signal, true);
+  return readSelections(client, args, signal, "historical");
+}
+
+/** The native child scope fixes parent identity and sequence even after the
+ * parent's requester leaves. It does not renew the parent's execution rights.
+ */
+export function readSynthesisContextParentSelections(service: Pick<SupabaseClient, "rpc">,
+  contextRequestId: string, args: SelectionArgs, signal?: AbortSignal,
+) {
+  return readSelections(service, args, signal, { contextRequestId });
 }

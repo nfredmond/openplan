@@ -7,6 +7,7 @@ import { openProviderApiRevisionCredential, providerApiConfigurationSchema,
 import { synthesisGenerationSegmentRecipe } from "./synthesis-generation-recipe";
 import { synthesisGenerationAttemptBindingSchema, type SynthesisGenerationAttemptBinding } from "./synthesis-generation-results";
 import { createSynthesisGenerationApiResult } from "./synthesis-generation-api-result";
+import contextRecipe from "./synthesis-generation-context-v1.json";
 
 const id = z.string().uuid(), hash = z.string().regex(/^[a-f0-9]{64}$/);
 const digest = (value: string) => createHash("sha256").update(value, "utf8").digest("hex");
@@ -56,21 +57,39 @@ export function verifySynthesisGenerationApiDispatch(args: Parameters<typeof ver
  * This adapter checks task bytes, frozen recipe, dispatch and credential identity;
  * it does not independently reconstruct the campaign's retained source.
  */
-export function createSynthesisGenerationApiAttempt(args: {
+export type SynthesisGenerationApiAttemptArgs = {
   binding: SynthesisGenerationAttemptBinding; taskCanonical: string; dispatch: unknown;
   workerId: string; authorizationId: string; workspaceId: string; connectionId: string;
   credentialSha256: string | null; revision: StoredProviderApiRevision & { connectionId: string };
   retainReceipt: (observation: SynthesisGenerationApiObservation) => Promise<void>;
   signal: AbortSignal;
-}) {
+};
+
+export function createSynthesisGenerationApiAttempt(args: SynthesisGenerationApiAttemptArgs) {
+  return createAttempt(args, "segment");
+}
+
+/** Use the separately frozen context recipe through the same receipt-preserving
+ * transport. Only a new native context dispatch can authorize this call.
+ */
+export function createSynthesisContextApiAttempt(args: SynthesisGenerationApiAttemptArgs) {
+  return createAttempt(args, "context");
+}
+
+function createAttempt(args: SynthesisGenerationApiAttemptArgs, stage: "segment" | "context") {
   args.signal.throwIfAborted();
   if (typeof args.retainReceipt !== "function") throw new Error("Synthesis API receipt storage required");
   const { binding, dispatch, receipt } = verifySynthesisGenerationApiDispatch(args);
   if (typeof args.taskCanonical !== "string" || Buffer.byteLength(args.taskCanonical, "utf8") > 1_048_576 ||
     digest(args.taskCanonical) !== binding.taskSha256) throw new Error("Synthesis API task bytes differ");
-  const task = taskSchema.parse(JSON.parse(args.taskCanonical)), recipe = synthesisGenerationSegmentRecipe();
+  const task = taskSchema.parse(JSON.parse(args.taskCanonical));
+  const recipe = stage === "context" ? structuredClone(contextRecipe) : synthesisGenerationSegmentRecipe();
   if (JSON.stringify(task) !== args.taskCanonical || task.instructions !== recipe.instructions ||
     !isDeepStrictEqual(task.outputSchema, recipe.outputSchema)) throw new Error("Synthesis API task recipe differs");
+  if (stage === "context" && (task.input.purpose !== "private_synthesis_context_continuation" ||
+    task.input.requestId !== binding.jobId || task.input.headerSha256 !== binding.planSha256)) {
+    throw new Error("Synthesis API context identity differs");
+  }
   const configuration = providerApiConfigurationSchema.parse(args.revision.configuration);
   if (args.revision.workspaceId !== id.parse(args.workspaceId) || args.revision.connectionId !== id.parse(args.connectionId) ||
     args.revision.revisionId !== binding.configurationRevisionId || args.revision.configurationHash !== binding.configurationHash ||
@@ -82,7 +101,7 @@ export function createSynthesisGenerationApiAttempt(args: {
   let apiKey = openProviderApiRevisionCredential(stored);
   const body = JSON.stringify({ model: binding.modelId, max_tokens: receipt.maxOutputTokens,
     messages: [{ role: "system", content: task.instructions }, { role: "user", content: args.taskCanonical }],
-    response_format: { type: "json_schema", json_schema: { name: "synthesis_segment_v1", strict: true, schema: recipe.outputSchema } },
+    response_format: { type: "json_schema", json_schema: { name: stage === "context" ? "synthesis_context_v1" : "synthesis_segment_v1", strict: true, schema: recipe.outputSchema } },
   });
   const parentSignal = args.signal;
   const retainReceipt = args.retainReceipt;

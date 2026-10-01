@@ -32,6 +32,7 @@ const authorizationIntentSchema = z.object({ schemaVersion: z.literal(1), header
   responseByteLimit: z.number().int().min(4096).max(4194304), expiresAt: z.string().datetime({ offset: true }),
   chargesAcknowledged: z.literal(true), retryTaskIndex: natural.nullable(), retryOfAttemptId: id.nullable(),
 }).strict();
+export { authorizationIntentSchema as synthesisWorkerAuthorizationIntentSchema };
 const synthesisWorkerJobSchema = z.object({ binding: synthesisGenerationAttemptBindingSchema,
   workspaceId: id, campaignId: id, actorId: id, connectionId: id, headerSha256: hash,
   authorizationId: id, authorizationIntentText: z.string().max(4096), authorizationIntentSha256: hash,

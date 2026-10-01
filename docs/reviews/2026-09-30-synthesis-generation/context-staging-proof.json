@@ -348,5 +348,34 @@
     "stack": "openplan-restore-target-2026091050",
     "includesContextStagingCases": 48,
     "includesNativeWorkerCases": 12
+  },
+  "finalMainCI": {
+    "commit": "bf9f0b8998dce072d45ccaa95470cfab4ca40474",
+    "runs": [
+      {
+        "conclusion": "success",
+        "databaseId": 36794587745,
+        "headSha": "bf9f0b8998dce072d45ccaa95470cfab4ca40474",
+        "name": "RLS Isolation",
+        "status": "completed",
+        "url": "https://github.com/nfredmond/openplan/actions/runs/36794587745"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 36794587672,
+        "headSha": "bf9f0b8998dce072d45ccaa95470cfab4ca40474",
+        "name": "Upgrade Path",
+        "status": "completed",
+        "url": "https://github.com/nfredmond/openplan/actions/runs/36794587672"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 36794587670,
+        "headSha": "bf9f0b8998dce072d45ccaa95470cfab4ca40474",
+        "name": "CI",
+        "status": "completed",
+        "url": "https://github.com/nfredmond/openplan/actions/runs/36794587670"
+      }
+    ]
   }
 }

@@ -8,7 +8,7 @@ import { createSynthesisGenerationRecords } from "./synthesis-generation-records
 import { synthesisGenerationRequestIntentSchema } from "./synthesis-generation-plan";
 import { assembleSynthesisGenerationResults, synthesisGenerationAttemptBindingSchema,
   type SynthesisGenerationResult } from "./synthesis-generation-results";
-import { readSynthesisGenerationSelections, readSynthesisGenerationHistoricalSelections } from "./synthesis-generation-selections-server";
+import { readSynthesisGenerationSelections, readSynthesisGenerationHistoricalSelections, readSynthesisContextParentSelections } from "./synthesis-generation-selections-server";
 import { verifySynthesisSource } from "./synthesis-sources-server";
 import { loadSynthesisWorkerAuthorization, synthesisWorkerRequestSignal } from "./synthesis-generation-worker-load";
 
@@ -35,10 +35,9 @@ const differs = (): never => { throw new Error("Selected synthesis output differ
  */
 async function readSelectedResults(service: Pick<SupabaseClient, "from" | "rpc">,
   args: Parameters<typeof readSynthesisGenerationSelections>[1], signal: AbortSignal,
-  historicalClient?: Pick<SupabaseClient, "rpc">,
+  loadSelections: () => ReturnType<typeof readSynthesisGenerationSelections> = () => readSynthesisGenerationSelections(service, args, signal),
 ) {
-  const selected = historicalClient ? await readSynthesisGenerationHistoricalSelections(historicalClient, args, signal)
-    : await readSynthesisGenerationSelections(service, args, signal);
+  const selected = await loadSelections();
   const results: SynthesisGenerationResult[] = [];
   const executions: Array<{ taskIndex: number; attemptId: string; authorizationId: string;
     dispatchSha256: string | null; outputSha256: string | null }> = [];
@@ -113,6 +112,16 @@ export function readSynthesisGenerationSelectedResults(service: Pick<SupabaseCli
   return readSelectedResults(service, args, signal);
 }
 
+/** Read a fixed parent snapshot through the retained child's native scope.
+ * Original grant, dispatch and provider-response verification remain identical
+ * to segment history. This service read supplies no execution permission.
+ */
+export function readSynthesisContextParentResults(service: Pick<SupabaseClient, "from" | "rpc">,
+  contextRequestId: string, args: Parameters<typeof readSynthesisGenerationSelections>[1], signal: AbortSignal,
+) {
+  return readSelectedResults(service, args, signal, () => readSynthesisContextParentSelections(service, contextRequestId, args, signal));
+}
+
 const historyScopeSchema = z.object({ campaignId: id, workspaceId: id, requestId: id,
   throughSequence: z.number().int().nonnegative().safe().optional() }).strict();
 const historyRequestSchema = z.object({ schemaVersion: z.literal(1), campaignId: id, workspaceId: id,
@@ -149,8 +158,9 @@ export async function loadSynthesisGenerationHistory(client: Pick<SupabaseClient
   signal.throwIfAborted();
   const source = verifySynthesisSource(response.data, sourceScope);
   const saved = { ...sourceScope, snapshotText: source.snapshotText, snapshotSha256: source.snapshotSha256, createdAt: source.createdAt };
-  const result = await readSelectedResults(service, { request: { id: request.id, intentText: request.intentText, intentSha256: request.intentSha256 },
-    saved, scope: sourceScope, actorId: request.actorId, throughSequence: scope.throughSequence }, signal, client);
+  const args = { request: { id: request.id, intentText: request.intentText, intentSha256: request.intentSha256 },
+    saved, scope: sourceScope, actorId: request.actorId, throughSequence: scope.throughSequence };
+  const result = await readSelectedResults(service, args, signal, () => readSynthesisGenerationHistoricalSelections(client, args, signal));
   if (!isDeepStrictEqual(request, await readRequest())) differs();
   return { campaignId: scope.campaignId, workspaceId: scope.workspaceId, requesterId: request.actorId, ...result };
 }
