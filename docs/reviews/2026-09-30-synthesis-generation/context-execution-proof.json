@@ -1,7 +1,7 @@
 {
   "recordedAt": "2026-10-01T01:52:31.775672+00:00",
   "baseCommit": "bf9f0b8998dce072d45ccaa95470cfab4ca40474",
-  "state": "Verified internal context execution checkpoint. Local QA, shuffle, full isolated RLS, workers and additive upgrade pass. Exact checkpoint CI remains pending. Published v0.65.0 unchanged.",
+  "state": "Internal context execution checkpoint landed on main eecdeadd. Local and exact-commit CI, RLS and populated upgrade checks passed. Published v0.65.0 unchanged; follow-on CLI candidate is separate.",
   "sourceSha256": {
     "openplan/src/lib/engagement/synthesis-context-worker-job.ts": "b6fd9472b92b88fa7733873bd96bc084054e501f5f6cba85921d96db05c17cde",
     "openplan/src/lib/engagement/synthesis-context-worker-load.ts": "99111f085d02db0ff4408e1411c4a1923dbd5bf680003fd4dd91f605db79a1e4",
@@ -447,7 +447,7 @@
     "Final changelog check first ran from repository root and loaded no tests; rerun from application package passed all six release-ordering cases."
   ],
   "limits": [
-    "Exact final checkpoint CI and populated previous-release upgrade are pending; local additive upgrade preserved all eleven retained tables.",
+    "Context execution alone has no complete staff generation or proposal-import workflow. See the separate context scheduling candidate for CLI progress.",
     "Context worker has no CLI selector or sequential context scheduler yet.",
     "No staff proposal import or new browser workflow.",
     "Synthetic provider evidence proves structural custody and recovery, not interpretation usefulness, billing or physical power-loss recovery."
@@ -1341,5 +1341,25 @@
     "filesPassed": 77,
     "durationSeconds": 1705.96,
     "log": "generation-context-execution-rls.log"
+  },
+  "mainCommit": "eecdeadda17974254906fd3e504e03bca691f9fe",
+  "mainCI": {
+    "CI": {
+      "run": 36803171400,
+      "status": "success"
+    },
+    "RLS": {
+      "run": 36803171399,
+      "status": "success",
+      "log": "main-eecdeadd-rls-ci.log"
+    },
+    "Upgrade": {
+      "run": 36803171402,
+      "status": "success",
+      "seedCountsBefore": "2:2:1:1:1:1:1",
+      "seedCountsAfter": "2:2:1:1:1:1:1",
+      "log": "main-eecdeadd-upgrade-ci.log"
+    },
+    "checkedAt": "2026-10-01T02:18:31.235007+00:00"
   }
 }

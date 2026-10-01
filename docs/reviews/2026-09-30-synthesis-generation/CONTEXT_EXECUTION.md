@@ -127,8 +127,10 @@ production build. Shuffle seed `650939` also passes 16,563 tests. Both ordinary
 runs skip 1,165 tests, including opt-in live checks. All 52 Python worker suites
 pass. The full isolated database run passes 1,069 tests, with 125 skipped, across
 77 files in 1,705.96 seconds. It includes the native HTTP journey and mutation
-probes. Exact checkpoint CI and its populated previous-release upgrade remain
-pending. Recheck them before any new release. No current result proves
+probes. Exact main `eecdeadd` checks pass: CI `36803171400`, isolation `36803171399`
+and populated upgrade `36803171402`. Upgrade counts remain
+`2:2:1:1:1:1:1` before and after. Follow-on CLI work is recorded separately in
+[dependent context scheduling](CONTEXT_SCHEDULING.md). No current result proves
 interpretation quality, billing, browser usability or physical power-loss
 recovery. Context CLI scheduling, staff proposal import and the complete M9b and
 V1 requirements remain open.

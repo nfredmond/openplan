@@ -2,7 +2,7 @@
 
 <!-- openplan-active-roadmap
 reviewed_commit: e6d25edd
-current_release: v0.65.0
+current_release: v0.66.0
 review_by: 2026-10-05
 paths:
 - AGENTS.md
@@ -47,6 +47,8 @@ Control's UI and local updater repair now have [native-button deployment evidenc
 September 30 v0.65.0 release: [release verification](reviews/2026-09-30-synthesis-generation/RELEASE_VERIFICATION.md) records complete-input preparation and recoverable local execution of explicitly authorized synthesis tasks. The saved coordinator preserves uncertain attempts and original outputs. Local QA, shuffled tests, isolation and identified desktop/390px navigation pass. [Publication](reviews/2026-09-30-synthesis-generation/PUBLICATION.md) records passing exact-commit CI, RLS and populated upgrade checks before tagging. Complete record/context consolidation, machine-draft import, staff generation and the wider M9b workflow remain open. This does not change the queue below or any V1 requirement.
 
 ## Destination and sequencing
+
+The [v0.66.0 context CLI candidate](reviews/2026-09-30-synthesis-generation/CONTEXT_CLI_RELEASE.md) adds dependent context execution and recovery through existing local worker journals. Final release verification remains pending. Staff generation, explicit proposal import and the complete M9b outcome remain open.
 
 The binding destination remains the complete free, open-source operating system for core US planning practice: every planner and organization context, all 50 states and DC, California as the deepest implementation, separate scientifically validated AequilibraE and ActivitySim results for every published use, coherent self-service workflows, human control and durable free operation. There is no deadline or maximum number of interim releases. Days-long modeling is acceptable when needed for accuracy.
 

@@ -17,7 +17,6 @@ import { readSynthesisGenerationSelectedResults, loadSynthesisGenerationHistory 
 import { createSynthesisContextRequest, readSynthesisContextRequest } from "@/lib/engagement/synthesis-context-requests-server";
 import { retainSynthesisContextPlan } from "@/lib/engagement/synthesis-context-plan-server";
 import { createSynthesisContextContinuation } from "@/lib/engagement/synthesis-context-continuation";
-import { runSynthesisContextWorkerAttempt } from "@/lib/engagement/synthesis-generation-worker";
 import { verifySynthesisGenerationApiResult } from "@/lib/engagement/synthesis-generation-api-result";
 import { createSynthesisGenerationInput } from "@/lib/engagement/synthesis-generation-input";
 import { createSynthesisGenerationRecords } from "@/lib/engagement/synthesis-generation-records";
@@ -180,7 +179,7 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
       cancelParent: () => asOwner(`SELECT cancel_engagement_synthesis_generation_request('${campaign}','${requestId}','${randomUUID()}','SYNTHETIC context continuation')`) };
   }
 
-  it("executes every native context frame and recovers an original after a lost output acknowledgement", async () => {
+  it.each(["output", "dispatch"] as const)("recovers native context CLI custody after %s acknowledgement loss", async loss => {
     const f = await fixture({ allTasks: true, validOutputs: true }), staff = await f.staffHistoryClient(), signal = new AbortController().signal;
     const parentRun = await f.run(true); expect(parentRun.code, parentRun.stderr).toBe(0);
     f.cancelParent(); f.revokeRequester();
@@ -212,9 +211,12 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
         const body = Buffer.concat(parts), response = await fetch(`${environment.API_URL}${req.url}`, {
           method: req.method, headers, body: body.length ? body : undefined, redirect: "manual" });
         const bytes = Buffer.from(await response.arrayBuffer());
+        if (loss === "dispatch" && response.ok && !dropped && req.url?.endsWith("/dispatch_engagement_synthesis_context_attempt")) {
+          dropped = true; res.destroy(); return;
+        }
         if (req.url?.endsWith("/retain_engagement_synthesis_generation_output")) {
           deliveries++;
-          if (response.ok && !dropped) { dropped = true; res.destroy(); return; }
+          if (loss === "output" && response.ok && !dropped) { dropped = true; res.destroy(); return; }
         }
         res.statusCode = response.status;
         for (const [name, value] of response.headers) if (!["connection", "content-length", "transfer-encoding", "content-encoding"].includes(name)) res.setHeader(name, value);
@@ -222,19 +224,54 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
       } catch (error) { proxyErrors.push(String(error)); res.statusCode = 502; res.end("SYNTHETIC context execution proxy failed"); }
     }));
     vi.stubEnv("OPENPLAN_AI_LOCAL_ENDPOINTS", JSON.stringify([f.endpoint]));
-    const executionService = liveClient(target, environment.SERVICE_ROLE_KEY, "synthesis-context-execution"), replay = createSynthesisContextContinuation(...stagingArgs);
+    const root = join(f.root, "native-context"), directory = join(root, hash(target), authorizationId);
+    async function runContext(options = ["--all-tasks"], contextual = true) {
+      const child = spawn(process.execPath, ["--conditions=react-server", "--import", "tsx", "scripts/workers/synthesis-generation.ts",
+        "--authorization", authorizationId, ...options, ...(contextual ? ["--context"] : [])], {
+        cwd: process.cwd(), stdio: ["ignore", "pipe", "pipe"], env: { ...process.env, NEXT_PUBLIC_SUPABASE_URL: target,
+          SUPABASE_SERVICE_ROLE_KEY: environment.SERVICE_ROLE_KEY, OPENPLAN_SYNTHESIS_GENERATION_WORK_DIR: root, NODE_DEBUG: "" },
+      });
+      let stderr = "", stdout = "";
+      child.stderr.on("data", chunk => { stderr += String(chunk); }); child.stdout.on("data", chunk => { stdout += String(chunk); });
+      const ended = new Promise<{ code: number | null; stderr: string; stdout: string }>((resolve, reject) => {
+        child.once("error", reject); child.once("close", code => resolve({ code, stderr, stdout }));
+      });
+      cleanup.push(async () => { if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL"); await ended; });
+      return ended;
+    }
+    expect((await runContext(["--all-tasks"], false)).code).toBe(1);
+    expect(f.calls).toHaveLength(f.plan.entries.length);
+    expect((await runContext()).code).toBe(1);
+    expect(dropped).toBe(true);
+    const interrupted = JSON.parse(await readFile(join(directory, "0/pending.json"), "utf8"));
+    expect(interrupted.phase).toBe(loss === "dispatch" ? "dispatching" : "observed");
+    if (loss === "dispatch") {
+      const savedSchedule = await readFile(join(directory, "schedule/pending.json"), "utf8");
+      const unknown = await runContext(); expect(unknown.code, unknown.stderr).toBe(2);
+      expect(unknown.stdout).toContain(`0 outputs retained; 1 dispatches unobserved; ${staged.plan.entries.length - 1} scheduled tasks not processed`);
+      expect(await readFile(join(directory, "schedule/pending.json"), "utf8")).toBe(savedSchedule);
+      expect(JSON.parse(await readFile(join(directory, "0/pending.json"), "utf8")).phase).toBe("unobserved");
+      const attempts = checked(await service.from("engagement_synthesis_generation_attempts").select("id,task_index").eq("request_id", args.requestId));
+      expect(attempts).toEqual([{ id: interrupted.attemptId, task_index: 0 }]);
+      expect(f.calls).toHaveLength(f.plan.entries.length); expect(deliveries).toBe(0); expect(dropped).toBe(true); expect(proxyErrors).toEqual([]);
+      return;
+    }
+    const singleRecovery = await runContext(["--task-index", "0"]);
+    expect(singleRecovery.code, singleRecovery.stderr).toBe(0);
+    const drained = await runContext();
+    expect(drained.code, drained.stderr).toBe(0);
+    expect(drained.stdout).toContain(`${staged.plan.entries.length} outputs retained; 0 dispatches unobserved; 0 scheduled tasks not processed; 0 tasks outside this schedule`);
+    const replay = createSynthesisContextContinuation(...stagingArgs);
     let priorAttempt: string | null = null, priorCapture: string | null = null;
-    const worker = (index: number) => ({ service: executionService, target, authorizationId, taskIndex: index, signal,
-      directory: join(f.root, "native-context", authorizationId, String(index)), statusIntervalMs: 100 });
     for (let index = 0; index < staged.plan.entries.length; index++) {
       const task = replay.next(); if (task.status !== "ready") throw new Error("Native context replay has no ready task");
-      if (index === 0) await expect(runSynthesisContextWorkerAttempt(worker(index))).rejects.toThrow("retain and retry the same capture");
-      const outcome = await runSynthesisContextWorkerAttempt(worker(index)); expect(outcome.state).toBe("delivered");
+      const journal = JSON.parse(await readFile(join(directory, String(index), "pending.json"), "utf8"));
+      expect(journal.phase).toBe("delivered"); expect(journal.context).toBe(true);
+      const outcome = { attemptId: journal.attemptId as string };
       const savedInput = checked(await service.from("engagement_synthesis_context_attempt_inputs").select("task_text,task_sha256,predecessor_attempt_id,predecessor_capture_sha256,previous_result_sha256")
         .eq("attempt_id", outcome.attemptId).single());
       expect(savedInput).toEqual({ task_text: task.task.canonical, task_sha256: task.task.sha256,
         predecessor_attempt_id: priorAttempt, predecessor_capture_sha256: priorCapture, previous_result_sha256: task.previousResultSha256 });
-      const journal = JSON.parse(await readFile(join(worker(index).directory, "pending.json"), "utf8"));
       const output = checked(await service.from("engagement_synthesis_generation_outputs").select("capture_text,capture_sha256").eq("attempt_id", outcome.attemptId).single());
       if (!output) throw new Error("Native context original output is absent");
       const capture = verifySynthesisGenerationApiResult(journal.job.binding, { canonical: output.capture_text, sha256: output.capture_sha256 },
@@ -243,12 +280,15 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
       priorAttempt = outcome.attemptId; priorCapture = output.capture_sha256;
     }
     expect(replay.next()).toMatchObject({ status: "frames_complete", interpretation: "machine_unreviewed" });
-    expect(dropped).toBe(true); expect(deliveries).toBe(staged.plan.entries.length + 1);
+    expect(dropped).toBe(true); expect(deliveries).toBe(staged.plan.entries.length + 2);
     expect(f.calls).toHaveLength(f.plan.entries.length + staged.plan.entries.length); expect(proxyErrors).toEqual([]);
     checked(await staff.client.rpc("cancel_engagement_synthesis_generation_request", { p_campaign: args.campaignId, p_request: args.requestId,
       p_cancellation: randomUUID(), p_reason: "SYNTHETIC completed context custody" }));
     staff.revoke();
-    expect((await runSynthesisContextWorkerAttempt(worker(staged.plan.entries.length - 1))).captureSha256).toBe(priorCapture);
+    const recovered = await runContext(); expect(recovered.code, recovered.stderr).toBe(0);
+    const last = JSON.parse(await readFile(join(directory, String(staged.plan.entries.length - 1), "pending.json"), "utf8"));
+    expect(last.captureSha256).toBe(priorCapture);
+    expect(deliveries).toBe(staged.plan.entries.length * 2 + 2);
     expect(f.calls).toHaveLength(f.plan.entries.length + staged.plan.entries.length);
   }, 300000);
 

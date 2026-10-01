@@ -210,6 +210,51 @@ reconciled through database status. A failed key read, decryption or changed
 selection prevents dispatch. The worker logs states without source words or keys.
 Do not infer publication or translation quality from a completed worker cycle.
 
+### Synthesis execution and context recovery
+
+The internal synthesis worker accepts an existing native resource authorization.
+Run it from `openplan/` with the configured `.env.local`, service credential and
+integration-key secret. Apply migrations through
+`20261014000039_engagement_synthesis_context_execution.sql` before using context
+execution. The staff generation interface and proposal import remain unfinished.
+
+For an independent segment grant:
+
+```bash
+npm run worker:synthesis-generation -- --authorization UUID --all-tasks
+npm run worker:synthesis-generation -- --authorization UUID --task-index 0
+```
+
+For a dependent context grant, append `--context`:
+
+```bash
+npm run worker:synthesis-generation -- --authorization UUID --all-tasks --context
+npm run worker:synthesis-generation -- --authorization UUID --task-index 0 --context
+```
+
+Replace `UUID` with the retained authorization in the configured database.
+The command processes that grant's allowance and explicit retry scope. It does
+not create a grant, select a replacement interpretation or authorize additional
+provider attempts. Context frames replay the preceding selected original outputs
+before preparing another task. Missing, incomplete or changed predecessors stop
+fresh work. A complete task that exceeds its byte allowance is refused intact.
+
+Keep `OPENPLAN_SYNTHESIS_GENERATION_WORK_DIR` on private durable storage. Its
+default is `~/.local/state/openplan/synthesis-generation-worker`, partitioned by
+database target, authorization and task. The full schedule and single-task
+commands use the same task journals. Retry the same command and directory after
+an interrupted acknowledgement. Preserve an unknown dispatch as unobserved;
+context scheduling stops there before any successor. Explicit retry authority and
+a retained result choice govern replacement attempts.
+
+Saved outputs can recover their original database custody after cancellation,
+expiry or staff access loss. Every fresh claim and dispatch checks current
+permission separately. Exit 0 means the saved schedule's outputs have acknowledged
+custody. Exit 2 reports an unobserved dispatch or a partial grant. Exit 1 reports
+an error, interruption or refusal. The summary names scheduled tasks that were
+not processed after an unresolved predecessor. These outcomes do not establish a
+valid interpretation, representative participation, staff approval or publication.
+
 ## Separate inspection from changes
 
 | Action | Operational effect |

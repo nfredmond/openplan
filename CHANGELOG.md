@@ -20,6 +20,12 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+No changes recorded.
+
+## 0.66.0 (2026-09-30)
+
+[Verification](docs/reviews/2026-09-30-synthesis-generation/CONTEXT_CLI_RELEASE.md) records release scope, checks and publication status.
+
 Internal synthesis readers join selected attempts to their original provider
 responses, task records and execution receipts. Current campaign staff can inspect
 retained choices after cancellation or the original requester's departure, using
@@ -58,9 +64,18 @@ commands. Its private immutable table retains exact dynamic task bytes and
 predecessor references. Native authorization checks current access, provider
 configuration, resource limits and the complete selected predecessor chain.
 
-The context CLI scheduler, proposal import and staff generation interface remain
-unfinished. Synthetic-provider checks establish custody and recovery, not the
-usefulness or accuracy of a generated interpretation.
+The local worker now accepts `--context` with `--all-tasks` or `--task-index`.
+It saves the dependent task schedule before processing, respects grant limits and
+reuses the same single-task journals. An unobserved dispatch stops the schedule
+before any successor. Saved output custody can recover after cancellation or
+access loss. The CLI reports scheduled tasks that remain unprocessed. Exit 0
+establishes output custody for the saved schedule, without establishing a valid
+interpretation. See the [runbook](openplan/docs/ops/RUNBOOK.md) for commands and
+recovery behavior.
+
+Proposal import and the staff generation interface remain unfinished. Synthetic
+provider checks establish custody and recovery, without proving interpretation
+quality, representativeness, real provider billing or practitioner usefulness.
 
 ## 0.65.0 (2026-09-30)
 

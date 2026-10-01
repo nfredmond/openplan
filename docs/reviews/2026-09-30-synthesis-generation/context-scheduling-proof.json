@@ -1,0 +1,588 @@
+{
+  "recordedAt": "2026-10-01T02:24:07.302774+00:00",
+  "state": "v0.66 candidate prepared for independent GitHub isolation and upgrade checks. Full local QA passes. Shuffle failed nested runner timeout; local isolation has failures amid measured host network-interface delays. No release.",
+  "baseCommit": "eecdeadda17974254906fd3e504e03bca691f9fe",
+  "sourceSha256": {
+    "openplan/src/lib/engagement/synthesis-context-scheduler.ts": "c676224530dd7527903adc578b8d976b6667085167e6e2955e491e36218bb75c",
+    "openplan/src/lib/engagement/synthesis-context-worker-authority.ts": "a0a544a6ecc9a46ee42d697976eb1fe7b2fa5ea198d123e8c042fd29ef819d32",
+    "openplan/src/test/engagement-synthesis-context-scheduler.test.ts": "936b80a0c38b13f5b319f5330dec7abbd4937b746a810790531ce801f903cdeb",
+    "openplan/src/test/engagement-synthesis-context-worker-authority.test.ts": "9ea1d079dd9e461cf542e770488f9bab91c5e75b788777520d4fbdb807754a24",
+    "openplan/docs/ops/RUNBOOK.md": "1ffd1de91a6febb3516c9fdb8ee6115beaf9480c552739bb300dbc6478403d6f",
+    "openplan/package-lock.json": "3df4d46a7b30582a1c10d9aada52d8a90e8ffb42448ea7a1951520e219e6515b",
+    "openplan/package.json": "100822bb482c86150c06ba097bde5af81277a71740e753596c63ab37ac7a0e3f",
+    "openplan/scripts/workers/synthesis-generation.ts": "421d8427be56a414de0a084f0219c1e2210e24eb1bff4d7c9527f25d0a34e006",
+    "openplan/src/test/engagement-synthesis-generation-worker-live.test.ts": "f63f5a2b0abf8dfaa3d742105e08fceb08216f961fd0c125da93c2dcde63ef7d",
+    "openplan/src/test/engagement-synthesis-generation-worker-process.test.ts": "0d00b20ffb7b65e32515acbdcd77853dbf55833ff46b49e13e325e6a993ac424",
+    "openplan/src/test/migrations/release-ordering.test.ts": "398574d1becfd96a639e51f8f53df1b431543504f171a33e651e067ef8dbe192",
+    "openplan/.env.example": "87b4971709f57949017e3564b2a913c29672231fd2e970350df24a39454a9a54"
+  },
+  "relatedTests": {
+    "passed": 126,
+    "files": 5,
+    "exit": 0,
+    "log": "generation-context-v066-restored-related.log"
+  },
+  "nativeCLI": {
+    "passed": 2,
+    "skipped": 12,
+    "exit": 0,
+    "durationSeconds": 150.47,
+    "log": "generation-context-scheduler-native-cli-both.log"
+  },
+  "typecheck": "passed",
+  "focusedLint": "passed",
+  "directionCheck": "passed with retained review-age reminders",
+  "initialFailures": [
+    "Extra parenthesis prevented the scheduler test fixture from loading; corrected.",
+    "The scheduler inventory mock intercepted parent-history single-row reads without maybeSingle; corrected delegation.",
+    "A temporary broad test-text replacement also referenced the loss parameter in an unrelated staging test; restored before final candidate checks.",
+    "Package bump initially failed the product-direction version-consistency guard; only release markers were aligned, preserving review dates and capability ratings.",
+    "Full QA and shuffle seed660939 each found the runbook setting OPENPLAN_SYNTHESIS_GENERATION_WORK_DIR missing from .env.example. Added the setting and reran all six mechanical documentation checks successfully.",
+    "The full isolated database run exceeded the unchanged 300-second native output-acknowledgement recovery test limit. Its child request retained 103 of 124 frame outputs. The separate lost-dispatch case retained one attempt and no output. Root cause remains under investigation."
+  ],
+  "limits": [
+    "Final candidate QA, shuffle, full isolation and exact release-commit CI are pending. The Python worker run passed all 52 suites.",
+    "CLI scheduling establishes original-output custody, not complete valid interpretation or campaign synthesis.",
+    "New schedule reconstruction and each worker independently protect fresh permission and predecessor identity; historical authority reads alone grant no execution permission.",
+    "No staff generation interface or proposal import. No new browser interface claimed.",
+    "Synthetic model output does not establish usefulness, billing, representativeness or physical power-loss recovery."
+  ],
+  "authorityMutations": {
+    "cases": [
+      {
+        "name": "control",
+        "exit": 0,
+        "expectedFailure": false,
+        "validOutcome": true,
+        "log": "generation-context-schedule-authority-mutation-control.log"
+      },
+      {
+        "name": "grant-id",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-schedule-authority-mutation-grant-id.log"
+      },
+      {
+        "name": "grant-hash",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-schedule-authority-mutation-grant-hash.log"
+      },
+      {
+        "name": "request-id",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-schedule-authority-mutation-request-id.log"
+      },
+      {
+        "name": "context-id",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-schedule-authority-mutation-context-id.log"
+      },
+      {
+        "name": "source-id",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-schedule-authority-mutation-source-id.log"
+      },
+      {
+        "name": "revision-id",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-schedule-authority-mutation-revision-id.log"
+      },
+      {
+        "name": "plan-request",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-schedule-authority-mutation-plan-request.log"
+      },
+      {
+        "name": "plan-hash",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-schedule-authority-mutation-plan-hash.log"
+      },
+      {
+        "name": "header-original",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-schedule-authority-mutation-header-original.log"
+      },
+      {
+        "name": "seal-request",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-schedule-authority-mutation-seal-request.log"
+      },
+      {
+        "name": "seal-hash",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-schedule-authority-mutation-seal-hash.log"
+      },
+      {
+        "name": "grant-header",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-schedule-authority-mutation-grant-header.log"
+      },
+      {
+        "name": "grant-allowance",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-schedule-authority-mutation-grant-allowance.log"
+      },
+      {
+        "name": "retry-pair",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-schedule-authority-mutation-retry-pair.log"
+      },
+      {
+        "name": "retry-index",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-schedule-authority-mutation-retry-index.log"
+      },
+      {
+        "name": "retry-budget",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-schedule-authority-mutation-retry-budget.log"
+      },
+      {
+        "name": "seal-envelope",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-schedule-authority-mutation-seal-envelope.log"
+      },
+      {
+        "name": "read-error",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-schedule-authority-mutation-read-error.log"
+      }
+    ],
+    "sourceRestored": true,
+    "sha256": "f1896a0581bed20058b4821937a8e7884e31a16a619cdc4ff4096f8ca828778e"
+  },
+  "schedulerMutations": {
+    "cases": [
+      {
+        "name": "control",
+        "edits": [
+          "Drain dependent context tasks"
+        ],
+        "exit": 0,
+        "expectedFailure": false,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-control.log"
+      },
+      {
+        "name": "retry-inventory",
+        "edits": [
+          "if (initial.length) differs();"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-retry-inventory.log"
+      },
+      {
+        "name": "own-allowance",
+        "edits": [
+          "own.length > authority.authorization.maxAttempts"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-own-allowance.log"
+      },
+      {
+        "name": "request-id",
+        "edits": [
+          "attempt.request_id !== authority.scope.requestId"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-request-id.log"
+      },
+      {
+        "name": "input-id",
+        "edits": [
+          "input.attempt_id !== attempt.id"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-input-id.log"
+      },
+      {
+        "name": "input-hash",
+        "edits": [
+          "digest(input.task_text) !== input.task_sha256"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-input-hash.log"
+      },
+      {
+        "name": "input-bytes",
+        "edits": [
+          "Buffer.byteLength(input.task_text, \"utf8\") !== input.task_bytes"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-input-bytes.log"
+      },
+      {
+        "name": "input-budget",
+        "edits": [
+          "input.task_bytes > authority.intent.taskByteLimit"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-input-budget.log"
+      },
+      {
+        "name": "binding",
+        "edits": [
+          "!isDeepStrictEqual(JSON.parse(attempt.binding_text), expected)"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-binding.log"
+      },
+      {
+        "name": "fresh-expiry",
+        "edits": [
+          "Date.parse(authority.authorization.expiresAt) <= Date.now()"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-fresh-expiry.log"
+      },
+      {
+        "name": "target",
+        "edits": [
+          "schedule.target !== target"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-target.log"
+      },
+      {
+        "name": "authorization",
+        "edits": [
+          "schedule.authorizationId !== authorizationId"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-authorization.log"
+      },
+      {
+        "name": "request",
+        "edits": [
+          "schedule.requestId !== authority.scope.requestId"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-request.log"
+      },
+      {
+        "name": "header",
+        "edits": [
+          "schedule.headerSha256 !== authority.headerSha256"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-header.log"
+      },
+      {
+        "name": "grant",
+        "edits": [
+          "schedule.authorizationIntentSha256 !== authority.grant.intent_sha256"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-grant.log"
+      },
+      {
+        "name": "indices",
+        "edits": [
+          "!isDeepStrictEqual(schedule.taskIndices, selectedTasks(authority, schedule.initialAttempts))"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-indices.log"
+      },
+      {
+        "name": "stop-unknown",
+        "edits": [
+          "result.state === \"unobserved\""
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-stop-unknown.log"
+      },
+      {
+        "name": "input-error",
+        "edits": [
+          "if (saved.error) throw new Error(\"Context initial attempt input unavailable\");"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-input-error.log"
+      },
+      {
+        "name": "inventory-error",
+        "edits": [
+          "if (response.error) throw new Error(\"Context initial attempt inventory unavailable\");"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-inventory-error.log"
+      },
+      {
+        "name": "frame-range",
+        "edits": [
+          "attempt.task_index >= authority.header.frameCount",
+          "row.taskIndex >= authority.header.frameCount"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-frame-range.log"
+      },
+      {
+        "name": "saved-duplicate",
+        "edits": [
+          "seen.has(row.attemptId)"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-saved-duplicate.log"
+      },
+      {
+        "name": "native-duplicate",
+        "edits": [
+          "seen.has(row.attemptId)",
+          "seen.has(attempt.id)"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-native-duplicate.log"
+      },
+      {
+        "name": "repeated-page",
+        "edits": [
+          "seen.has(row.attemptId)",
+          "seen.has(attempt.id)",
+          "attempt.task_index <= cursor",
+          "row.taskIndex <= previous"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-repeated-page.log"
+      },
+      {
+        "name": "current-inputs",
+        "edits": [
+          "const inputs = await loadSynthesisContextWorkerInputs(args.service, authority.scope.requestId, signal);"
+        ],
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-scheduler-mutation-current-inputs.log"
+      }
+    ],
+    "sourceRestored": true,
+    "sha256": "c676224530dd7527903adc578b8d976b6667085167e6e2955e491e36218bb75c"
+  },
+  "nativeCLIMutations": {
+    "cases": [
+      {
+        "name": "control",
+        "exit": 0,
+        "expectedFailure": false,
+        "validOutcome": true,
+        "log": "generation-context-cli-native-mutation-control.log"
+      },
+      {
+        "name": "context-selector",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-cli-native-mutation-context-selector.log"
+      },
+      {
+        "name": "native-stop",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-cli-native-mutation-native-stop.log"
+      }
+    ],
+    "sourceRestored": true,
+    "sourceSha256": {
+      "scripts/workers/synthesis-generation.ts": "421d8427be56a414de0a084f0219c1e2210e24eb1bff4d7c9527f25d0a34e006",
+      "src/lib/engagement/synthesis-context-scheduler.ts": "c676224530dd7527903adc578b8d976b6667085167e6e2955e491e36218bb75c"
+    }
+  },
+  "releaseOrderingMutations": {
+    "cases": [
+      {
+        "name": "control",
+        "exit": 0,
+        "expectedFailure": false,
+        "validOutcome": true,
+        "log": "generation-context-v066-release-ordering-control.log"
+      },
+      {
+        "name": "migration-count",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "generation-context-v066-release-ordering-migration-count.log"
+      }
+    ],
+    "sourceRestored": true,
+    "sha256": "398574d1becfd96a639e51f8f53df1b431543504f171a33e651e067ef8dbe192"
+  },
+  "evidenceLogSha256": {
+    "generation-context-schedule-authority-mutation-seal-request.log": "1c2b27d9739fceacb6be325a43d80a77a777afeb3d96ca38ee780c90ee929990",
+    "generation-context-schedule-authority-mutation-header-original.log": "12a018ba5a0f0e31c7cd40edf405b6f9cbc25336fed56fd6dba830727fad8d99",
+    "generation-context-schedule-authority-mutation-revision-id.log": "ba427c9ed8d95b2409964e5c1a4b37ab09509fc0808e558e4bbef0788f5f5904",
+    "generation-context-schedule-authority-mutation-read-error.log": "e68763aae8a6126060bffbd34098db95b782e49187fc260e6195aa41691a7a01",
+    "generation-context-schedule-authority-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "generation-context-schedule-authority-mutation-retry-pair.log": "c9bade28c1857856aa2f4fd1ad25d2c3f4406d07b4db49782ce3580e8eb40310",
+    "generation-context-schedule-authority-mutation-control.log": "21bd736cd2cf271fb42a042df96236a490707ac920ec0bf540d0d4333ec1dab5",
+    "generation-context-schedule-authority-mutation-grant-hash.log": "9f91908d74246208d9e02c3db451351ec18109684236e7f06139f95e6f6ee304",
+    "generation-context-schedule-authority-mutation-plan-request.log": "5c8bb01a52919310e01ed5598e905ba6aec572d60928a85f1af0a24e243c5a83",
+    "generation-context-schedule-authority-mutation-seal-envelope.log": "83bf2742657a9299d972312ee43ebfdfdd9e5425a3b76513ec76d7ecfe77d6e2",
+    "generation-context-schedule-authority-mutation-request-id.log": "6c265a078199b372a1d96b8323849c75d1060f832bfbb60a254760c2e2d288ae",
+    "generation-context-schedule-authority-initial.log": "d426602cd446cce9e63e72d6f70957d84c2a090d9a3d14f4a623e084944185bc",
+    "generation-context-schedule-authority-mutation-retry-index.log": "e67698b16c0b2d23dfe5bc640e6b193b3daba7520665b5d592e29f03c68c1af0",
+    "generation-context-schedule-authority-mutation-plan-hash.log": "8500ee5ee4f4d2590b11c66f41df79cd984bb9fd63dd65c04439a73e94c42ef4",
+    "generation-context-schedule-authority-mutation-seal-hash.log": "89ea294825e3b2c6a50b9e7a62e5543b144b5e6c9ca2a36a7b275f2a7668cd34",
+    "generation-context-schedule-authority-mutation-retry-budget.log": "0f89e537c717a0ac6d0c8b8a89c8a02ecd5371787ce80b6406a5a36ac8cb28fd",
+    "generation-context-schedule-authority-mutation-grant-allowance.log": "1487ac1bc7b1c348cc9dc4a4c182ab25a95fce4957c072f68f41acc2dbfaf80e",
+    "generation-context-schedule-authority-mutation-source-id.log": "e07acb353832d882f1a24bc9b9a5ab336a2838c97d1e3b19d85ca63ad815dcf5",
+    "generation-context-schedule-authority-mutation-context-id.log": "88d6af2d8d79910bea88036c840dc6a8708d920ca54871ae1c256f7eb664d8e2",
+    "generation-context-schedule-authority-mutation-grant-id.log": "2b63e36c5aab3684282a507dac20ee189c1ef07585943579df811a3ed6dee925",
+    "generation-context-schedule-authority-mutation-grant-header.log": "869706a22be7c3072cdbd72b8a671b9f8272e03fa2ecb22bedb13d7d3211e1b3",
+    "generation-context-scheduler-mutation-control.log": "c878a5f8ca2e5bfa174651d74d5b5dbb99e8f21b4ed276f89952d9a03b9fee30",
+    "generation-context-scheduler-native-cli-both.log": "0c8e7deb30b1e95b4669071beb311414c9980792ebad3d45a3f577959cdcf378",
+    "generation-context-scheduler-mutation-input-budget.log": "6c6b6abf10f6d9d0d3e95cc3a28a770b2dcb6960d0583ea73e685e2a5b018788",
+    "generation-context-scheduler-mutation-native-duplicate.log": "a2360d1d960df4638362b6fe2b435d16771c7c97aea13de8bf59ca313fd84248",
+    "generation-context-scheduler-mutation-current-inputs.log": "195bba5fdbdb2eb5e0294af6621e4cd19f8d8d0a662e69d2862b1e28c9e8f32f",
+    "generation-context-scheduler-types-corrected.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "generation-context-scheduler-mutation-request.log": "eeb47acd8d5cf58412ed930b47550848c02ba46b3e76fba43639d54e1b71ecb0",
+    "generation-context-scheduler-mutation-input-bytes.log": "311a3bd2eaddfc23aa618392e905d4b8b60d40efad9004779c478e60a92436f1",
+    "generation-context-scheduler-types.log": "71606b1f652f6cf2a5aace494525593ac8b834367b21e3f75dbe5c8c21cae240",
+    "generation-context-scheduler-mutation-retry-inventory.log": "5f6ac96aa5cf62ad0063598399d7db96fbde43c14aa93fe43993bbbf5b467d98",
+    "generation-context-scheduler-fixture-corrected.log": "3f64193b9c077160f3287c3d857039dca2d9283937dbb1ec86c07e0d9cfeb61b",
+    "generation-context-scheduler-mutation-input-id.log": "08d0f21c4303cbbeaa1119530ccf0c2df4abf13fef8c93533355aeb6b5dd8d9c",
+    "generation-context-scheduler-mutation-binding.log": "a7c2ce1f157d26a55b3fe511c12e0d7b854ac19178ce87e797d86aad8acca3dc",
+    "generation-context-scheduler-mutation-stop-unknown.log": "756105c955a9bce3a9dfad2ed1b7a77770f2c4d33f16972ae52ef227cb5f34ce",
+    "generation-context-scheduler-mutation-input-hash.log": "91d027c90b18e8bf32b912806b33c86a02dbb06f6e9478ab94e86d5a01d3d098",
+    "generation-context-scheduler-corrected.log": "4b3464e5dae8436912fcbb121989fdc5484f0ef336785cbcf8e0151072e533b5",
+    "generation-context-scheduler-mutation-inventory-error.log": "4ac41193bca6d052b70dfa1d3bbd9bf676791cba13ebb381b772d4de88f14ec7",
+    "generation-context-scheduler-expanded.log": "156a57bc17fa58870d9cdd9121cbce66ac5234c5405a58442cc47a76dbf70b84",
+    "generation-context-scheduler-initial.log": "573c15c16c2722fbd296aa43fa6c6bb602f317bcafd51ad0512e8cb4a6ee9c05",
+    "generation-context-scheduler-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "generation-context-scheduler-mutation-input-error.log": "d330b71223676a89b64afe754437fb1c490fdab7c88ed555acdfce465135de95",
+    "generation-context-scheduler-mutation-own-allowance.log": "97e3ebc40589f531a0260abc8b76a0cabb96c24435d648a42d91eb11fbde46d1",
+    "generation-context-scheduler-mutation-fresh-expiry.log": "b4f48da44c98281b6f38d10fc1ebeb562b7f521603ddc9fae5b33541dddb977a",
+    "generation-context-scheduler-mutation-header.log": "b0220c567788984c8006f38c905999e76c852446aa80cd9cfb13e02615c3cb5d",
+    "generation-context-scheduler-types-native.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "generation-context-scheduler-mutation-target.log": "ca5f7fdc7849a09ecbe29ab98d2ac385325cfc8dab5394b462b039d43a9126f4",
+    "generation-context-scheduler-mutation-saved-duplicate.log": "b941f0a50944b5ffe8813a5da129afa79215766bb59545db43fda1838b2838b7",
+    "generation-context-scheduler-mutation-authorization.log": "c13fc4380dd69c34879d5474132399d811d499328dfa1d3ab44928b85e8362ae",
+    "generation-context-scheduler-mutation-frame-range.log": "9b977f6848b2d9ad3830bda8022989aafd699eb6614308acf101c021b3c7748e",
+    "generation-context-scheduler-native-cli-initial.log": "0e92d4a9e9162aac053142959460a9e8657fa1357db940db2a170231485a6034",
+    "generation-context-scheduler-mutation-grant.log": "18ab39916d5aa1a10fe8f69c8cf4e7c67083460dea929259125f2cedbf5be5b5",
+    "generation-context-scheduler-mutation-repeated-page.log": "56c25450f923c8a3d7ba1961df1ac5a1d55ebf40504abe65b477e937784201a0",
+    "generation-context-scheduler-mutation-request-id.log": "f884f3689aefd93884dea5909a0f419e92401dc63806d7e9524a99ddfdad540f",
+    "generation-context-scheduler-mutation-indices.log": "9044e487a68a2d8e8e6ee39dd39186b81aad2ec3ebebc61b67e7b68e5361dab9",
+    "generation-context-cli-native-mutation-native-stop.log": "f75c66c98e7ebf1ff2b4ec158622858c9da1aaa40f0aeb05f106433bb3910c8a",
+    "generation-context-cli-native-mutation-control.log": "18e0b6ed4a4c995437072fa634630b039b329cc4ea73377e9b3cf2a5e0741b06",
+    "generation-context-cli-native-mutation-context-selector.log": "01a30cf1e3ef9f33660cf9e4067bbe85cdb5f39ebe95b8a4f837056c6592d286",
+    "generation-context-v066-release-ordering-migration-count.log": "c18b27080563eb135b6ea31816074c2a05bc33d2efa9a3adf2782407a16d6be6",
+    "generation-context-v066-release-ordering-control.log": "c43331441d739cecd39511bdf40d3da3f0c23741e43e7f7f475921bfdfd1ce2c",
+    "generation-context-v066-restored-related.log": "ad495272eac2f1c7582f4c89f0bd306abf53a3c2be8e7b3878b471fe275d77be",
+    "generation-context-v066-direction.log": "ac8e97e9b028924f6312e697d38735e18fc7bdb038ed078ae145c6ee87eb6a54",
+    "generation-context-v066-workers.log": "1374d86206d7f296d6c2806e6b82091f93dbe92bfef57a5f7528ed99432f4c44"
+  },
+  "workers": {
+    "exit": 0,
+    "passedSuites": 52,
+    "failed": 0,
+    "notRun": 0,
+    "log": "generation-context-v066-workers.log"
+  },
+  "recoveryInvestigation": {
+    "requestId": "85af8de1-fad5-47ed-99f4-fb13930c5c50",
+    "frameCount": 124,
+    "attempts": 103,
+    "retainedOutputs": 103,
+    "timeoutMilliseconds": 300000,
+    "fullRlsLog": "generation-context-v066-rls.log",
+    "finding": "The worker continued making progress through the timeout; no frame gap established. Ordinary QA and shuffle ran concurrently. Attribution to contention is unproved.",
+    "docsFocusedLog": "generation-context-v066-docs-restored.log",
+    "docsTestsPassed": 6,
+    "custodyEvidence": {
+      "log": "generation-context-v066-timeout-custody.jsonl",
+      "sha256": "78ff6970266ce2add28c301d238db2ad273cbc4621741c5b0297a7c61b108d6f"
+    },
+    "hostDelay": "Node interface reads blocked in kernel rtnl_dumpit; NetworkManager stack showed USB WiFi initialization waiting on USB control requests. A standalone read took 7.9 seconds. Other runner and native database checks reported timeout failures. No host setting changed, no source or test timeout widened; complete checks remain pending."
+  },
+  "finalQA": {
+    "exitCode": 0,
+    "passed": 16641,
+    "skipped": 1166,
+    "filesPassed": 1373,
+    "filesSkipped": 70,
+    "log": "generation-context-v066-qa-recovery.log",
+    "sha256": "4bfb6e0d51e720014140fc9c9aa85f569494f1a2ef05fe9e52aef22c71b784cd"
+  },
+  "verificationPlan": "Run existing workflow_dispatch isolation and upgrade jobs at the candidate commit without a PR. Land directly on main only after applicable checks pass; inspect main CI before tagging. No workflow, source guard or timeout was weakened."
+}
