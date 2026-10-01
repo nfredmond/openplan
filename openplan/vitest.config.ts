@@ -2,6 +2,11 @@ import { defaultExclude, defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
+const liveRls = process.env.OPENPLAN_RLS_LIVE_TEST === '1';
+// Vitest applies this environment override after fileParallelism has limited
+// the pool. Keep native catalog probes serial even when the caller sets it.
+if (liveRls) process.env.VITEST_MAX_WORKERS = '1';
+
 export default defineConfig({
   plugins: [react()],
   test: {
@@ -11,7 +16,7 @@ export default defineConfig({
     // Live suites temporarily change shared policies and functions. Run files
     // serially so catalog locks cannot deadlock with another suite's fixtures.
     // Concurrency exercised explicitly inside an individual test is unchanged.
-    fileParallelism: process.env.OPENPLAN_RLS_LIVE_TEST !== '1',
+    fileParallelism: !liveRls,
     // Never discover tests inside a nested checkout. A `git worktree` created
     // from this directory instead of the repo root lands at
     // `openplan/.claude/worktrees/<name>/`, and vitest would then run THAT

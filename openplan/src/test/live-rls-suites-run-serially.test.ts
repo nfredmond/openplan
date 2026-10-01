@@ -5,7 +5,7 @@ import { expect, it } from "vitest";
 
 // Exercise the real runner config with two files contending for one owned resource.
 // This sees cross-file overlap, not PostgreSQL's lock order or within-test concurrency.
-it("serializes live database suites while retaining ordinary file parallelism", () => {
+it.each([undefined, "4"])("serializes live suites and preserves ordinary worker settings with override %s", (workers) => {
   const directory = mkdtempSync(path.join(process.cwd(), ".rls-runner-proof-"));
   const lock = path.join(directory, "shared-catalog.lock");
   try {
@@ -20,15 +20,17 @@ it("serializes live database suites while retaining ordinary file parallelism", 
       });
     `);
     const output = execFileSync(process.execPath, ["node_modules/vitest/vitest.mjs", "run", directory, "--maxWorkers=2"], {
-      cwd: process.cwd(), env: { ...process.env, OPENPLAN_RLS_LIVE_TEST: "1" }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], timeout: 15000,
+      cwd: process.cwd(), env: { ...process.env, OPENPLAN_RLS_LIVE_TEST: "1", VITEST_MAX_WORKERS: workers }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], timeout: 15000,
     });
     expect(output).toMatch(/2 passed/);
     const ordinary = execFileSync(process.execPath, ["--input-type=module", "-e", `
       import { loadConfigFromFile } from 'vite';
       const loaded = await loadConfigFromFile({ command: 'serve', mode: 'test' }, 'vitest.config.ts');
       console.log('ordinary-parallel=' + loaded.config.test.fileParallelism);
-    `], { cwd: process.cwd(), env: { ...process.env, OPENPLAN_RLS_LIVE_TEST: "0" }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], timeout: 15000 });
+      console.log('ordinary-workers=' + (process.env.VITEST_MAX_WORKERS ?? 'unset'));
+    `], { cwd: process.cwd(), env: { ...process.env, OPENPLAN_RLS_LIVE_TEST: "0", VITEST_MAX_WORKERS: workers }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], timeout: 15000 });
     expect(ordinary).toContain("ordinary-parallel=true");
+    expect(ordinary).toContain(`ordinary-workers=${workers ?? "unset"}`);
   } finally {
     for (const name of readdirSync(directory)) unlinkSync(path.join(directory, name));
     rmdirSync(directory);

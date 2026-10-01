@@ -69,9 +69,20 @@ found a missing environment example for the synthesis work directory. The
 example now includes it, and all six documentation-reference checks pass.
 The isolated database run reached the unchanged five-minute native output
 recovery limit after retaining 103 of 124 frame outputs. Investigation remains
-open. Corrected full QA passes 16,641 tests with 1,166 skipped, plus lint,
-connector checks, dependency audit and production build. Shuffled and full
-isolated database checks remain pending.
+open. Candidate `9926add0` passes corrected full QA with 16,641 tests and
+1,166 skipped, plus lint, connector checks, dependency audit and production build.
+Later local runs encountered measured kernel delays in network-interface reads.
+These delays do not establish that any application check would otherwise pass.
+
+A separate runner defect was then reproduced after startup recovered. An
+inherited `VITEST_MAX_WORKERS=4` overrides Vitest's serial-file setting. The
+configuration now forces one worker for opted-in live tests and preserves the
+ordinary worker setting. Both focused cases pass. A harmless comment survives;
+removing the live worker limit causes actual cross-file overlap, applying it to
+ordinary tests fails the preserved-setting check, and disabling ordinary file
+parallelism fails its configuration check. The probe does not establish native
+database lock ordering or within-test concurrency. Full gates for this correction
+remain pending.
 The existing GitHub isolation and populated-upgrade workflows will also check
 the candidate without a PR. Local runtime failures remain in the evidence record.
 The final release commit must pass GitHub checks before tagging. No new browser

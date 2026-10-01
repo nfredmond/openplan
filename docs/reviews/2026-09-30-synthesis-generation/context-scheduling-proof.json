@@ -1,6 +1,6 @@
 {
   "recordedAt": "2026-10-01T02:24:07.302774+00:00",
-  "state": "v0.66 candidate prepared for independent GitHub isolation and upgrade checks. Full local QA passes. Shuffle failed nested runner timeout; local isolation has failures amid measured host network-interface delays. No release.",
+  "state": "Candidate 9926add0 is committed and pushed for preliminary isolation and upgrade checks. A subsequent serial-runner guard correction has focused and mutation proof; full final checks remain pending.",
   "baseCommit": "eecdeadda17974254906fd3e504e03bca691f9fe",
   "sourceSha256": {
     "openplan/src/lib/engagement/synthesis-context-scheduler.ts": "c676224530dd7527903adc578b8d976b6667085167e6e2955e491e36218bb75c",
@@ -14,7 +14,9 @@
     "openplan/src/test/engagement-synthesis-generation-worker-live.test.ts": "f63f5a2b0abf8dfaa3d742105e08fceb08216f961fd0c125da93c2dcde63ef7d",
     "openplan/src/test/engagement-synthesis-generation-worker-process.test.ts": "0d00b20ffb7b65e32515acbdcd77853dbf55833ff46b49e13e325e6a993ac424",
     "openplan/src/test/migrations/release-ordering.test.ts": "398574d1becfd96a639e51f8f53df1b431543504f171a33e651e067ef8dbe192",
-    "openplan/.env.example": "87b4971709f57949017e3564b2a913c29672231fd2e970350df24a39454a9a54"
+    "openplan/.env.example": "87b4971709f57949017e3564b2a913c29672231fd2e970350df24a39454a9a54",
+    "openplan/vitest.config.ts": "2af1a9ecbe50bde256b20197cfbff00f34cfc57534a86234c83ee55425cb8da5",
+    "openplan/src/test/live-rls-suites-run-serially.test.ts": "3eed104a133521afc452fa908c17ec3f28f39660589a94939652a68197223695"
   },
   "relatedTests": {
     "passed": 126,
@@ -584,5 +586,53 @@
     "log": "generation-context-v066-qa-recovery.log",
     "sha256": "4bfb6e0d51e720014140fc9c9aa85f569494f1a2ef05fe9e52aef22c71b784cd"
   },
-  "verificationPlan": "Run existing workflow_dispatch isolation and upgrade jobs at the candidate commit without a PR. Land directly on main only after applicable checks pass; inspect main CI before tagging. No workflow, source guard or timeout was weakened."
+  "verificationPlan": "Run existing workflow_dispatch isolation and upgrade jobs at the candidate commit without a PR. Land directly on main only after applicable checks pass; inspect main CI before tagging. No workflow, source guard or timeout was weakened.",
+  "runnerSerialization": {
+    "initialCandidate": "9926add0ddb80fc1670d55a5698bbaeaf0d4aaf6",
+    "baselineTestsPassed": 2,
+    "baselineLog": "generation-context-v066-runner-guard.log",
+    "lint": "passed",
+    "mutations": {
+      "sourceRestoredSha256": "2af1a9ecbe50bde256b20197cfbff00f34cfc57534a86234c83ee55425cb8da5",
+      "cases": [
+        {
+          "case": "control",
+          "exitCode": 0,
+          "expectedFailure": null,
+          "valid": true,
+          "log": "generation-context-v066-runner-mutation-control.log",
+          "sha256": "8330a5633824fbd0db8dca9aedf695b4addea0e9d3df0a702a16a2ffb97e0659"
+        },
+        {
+          "case": "worker-override",
+          "exitCode": 1,
+          "expectedFailure": "EEXIST",
+          "valid": true,
+          "log": "generation-context-v066-runner-mutation-worker-override.log",
+          "sha256": "b0ccf9760953cc1b1317e782f59827a65c1ac39178c01a285f88bdd059867db9"
+        },
+        {
+          "case": "ordinary-worker-setting",
+          "exitCode": 1,
+          "expectedFailure": "ordinary-workers=unset",
+          "valid": true,
+          "log": "generation-context-v066-runner-mutation-ordinary-worker-setting.log",
+          "sha256": "a235dad12b68f8d61cca52f0418bcf93fb556a4be2ce297028e1b54256c3734a"
+        },
+        {
+          "case": "ordinary-parallelism",
+          "exitCode": 1,
+          "expectedFailure": "ordinary-parallel=true",
+          "valid": true,
+          "log": "generation-context-v066-runner-mutation-ordinary-parallelism.log",
+          "sha256": "f7953233272c2fb73f43d05aac52b48db940a734ad610c46b3a602bfe256d8a4"
+        }
+      ],
+      "blindCategory": "Native database lock ordering and within-test concurrency are outside this two-file runner overlap probe."
+    },
+    "initialFailures": [
+      "Inherited VITEST_MAX_WORKERS=4 bypassed serial file execution after Vitest applied its fileParallelism setting. Native two-file lock probe failed EEXIST after host startup delay cleared."
+    ],
+    "currentState": "Guard corrected; full final gates pending."
+  }
 }

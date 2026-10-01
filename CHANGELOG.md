@@ -73,6 +73,9 @@ establishes output custody for the saved schedule, without establishing a valid
 interpretation. See the [runbook](openplan/docs/ops/RUNBOOK.md) for commands and
 recovery behavior.
 
+Live database tests keep one runner worker even when an inherited worker-count
+override requests more. Ordinary tests retain their requested parallelism.
+
 Proposal import and the staff generation interface remain unfinished. Synthetic
 provider checks establish custody and recovery, without proving interpretation
 quality, representativeness, real provider billing or practitioner usefulness.
