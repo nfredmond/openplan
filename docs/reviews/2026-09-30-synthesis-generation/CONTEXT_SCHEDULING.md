@@ -72,14 +72,17 @@ and focused lint pass.
 
 Native mutation controls pass. Disabling context selection fails before dispatch;
 removing the unknown-dispatch stop changes the required partial result into a
-refusal at the next worker. Sources are restored. The candidate still needs restored-source
-related tests and final full QA, shuffled tests, isolated database and applicable
-worker checks before landing. Final release CI must target the actual release
+refusal at the next worker. Restored sources pass 126 related tests. Corrected
+candidate `3ca6fe3e` passes full QA and shuffled seed 660939, each with 16,642
+passed and 1,166 skipped tests. Exact-candidate GitHub isolation passes 1,070
+tests with 125 skipped across 77 files. The full local rerun remains active.
+Final release CI must target the actual release
 commit. The synthetic model provides deterministic structure, without evidence
 of interpretation quality, billing, browser usability or physical power-loss
 recovery. Staff proposal import and the full M9b and V1 requirements remain open.
 
 [Retained proof](context-scheduling-proof.json) records candidate source hashes,
 mutation results and private log hashes. The v0.66.0 worker run passes all
-52 Python suites; full candidate QA, shuffle and isolated database checks remain
-active.
+52 Python suites. Both native CLI recovery cases and the history control/fault
+checks pass again after the initial host delays. GitHub isolation passes; the
+separate local rerun remains active and the original timeout failures are retained.

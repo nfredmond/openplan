@@ -1,6 +1,6 @@
 {
   "recordedAt": "2026-10-01T02:24:07.302774+00:00",
-  "state": "Candidate 9926add0 is committed and pushed for preliminary isolation and upgrade checks. A subsequent serial-runner guard correction has focused and mutation proof; full final checks remain pending.",
+  "state": "Candidate3ca6fe3e passes full QA, shuffle, focused native recovery, history controls, GitHub isolation and populated upgrade. Supplemental full local isolation rerun and exact final main CI remain pending before tagging.",
   "baseCommit": "eecdeadda17974254906fd3e504e03bca691f9fe",
   "sourceSha256": {
     "openplan/src/lib/engagement/synthesis-context-scheduler.ts": "c676224530dd7527903adc578b8d976b6667085167e6e2955e491e36218bb75c",
@@ -43,7 +43,7 @@
     "The full isolated database run exceeded the unchanged 300-second native output-acknowledgement recovery test limit. Its child request retained 103 of 124 frame outputs. The separate lost-dispatch case retained one attempt and no output. Root cause remains under investigation."
   ],
   "limits": [
-    "Final candidate QA, shuffle, full isolation and exact release-commit CI are pending. The Python worker run passed all 52 suites.",
+    "Supplemental full local isolation rerun and exact final main CI remain pending. Corrected QA, shuffle, native recovery/history, full GitHub isolation, populated upgrade and all 52 Python worker suites have passed.",
     "CLI scheduling establishes original-output custody, not complete valid interpretation or campaign synthesis.",
     "New schedule reconstruction and each worker independently protect fresh permission and predecessor identity; historical authority reads alone grant no execution permission.",
     "No staff generation interface or proposal import. No new browser interface claimed.",
@@ -552,7 +552,14 @@
     "generation-context-v066-release-ordering-control.log": "c43331441d739cecd39511bdf40d3da3f0c23741e43e7f7f475921bfdfd1ce2c",
     "generation-context-v066-restored-related.log": "ad495272eac2f1c7582f4c89f0bd306abf53a3c2be8e7b3878b471fe275d77be",
     "generation-context-v066-direction.log": "ac8e97e9b028924f6312e697d38735e18fc7bdb038ed078ae145c6ee87eb6a54",
-    "generation-context-v066-workers.log": "1374d86206d7f296d6c2806e6b82091f93dbe92bfef57a5f7528ed99432f4c44"
+    "generation-context-v066-workers.log": "1374d86206d7f296d6c2806e6b82091f93dbe92bfef57a5f7528ed99432f4c44",
+    "generation-context-v066-qa-serial-guard.log": "ff52fecd21ae543f77da5c3a7f4e6eb6d936631413a273a11a7a05b4cde69a09",
+    "generation-context-v066-shuffle-serial.log": "195e9e7883896058fcf939c8b64b264c317a4ba9b1050ac7cc7af662693d0cba",
+    "generation-context-v066-native-serial.log": "6e6b6f72cebcce7e5aac6775ef8b64c8c2dbd11125e8dfd167f02b0a629bdda3",
+    "generation-context-v066-history-serial.log": "d610b4968d2930db415ffbc8b5bcfe20a44835338f7b0afb9f5f0ac8957eb006",
+    "generation-context-v066-candidate-3ca6-upgrade.log": "7141d89b59d756c1fca437fd03f52770e61fa526dcaf4d3e98d60302bd7db4b9",
+    "generation-context-v066-rls.log": "72625c3a935f52a16595a05f62da03743fa996abdc0252c34633e323b11c750d",
+    "generation-context-v066-candidate-3ca6-rls.log": "72f882332398620f62a048283c3e8c5c1e66a24ad4dc6435feb835950f5f9b62"
   },
   "workers": {
     "exit": 0,
@@ -578,13 +585,15 @@
     "hostDelay": "Node interface reads blocked in kernel rtnl_dumpit; NetworkManager stack showed USB WiFi initialization waiting on USB control requests. A standalone read took 7.9 seconds. Other runner and native database checks reported timeout failures. No host setting changed, no source or test timeout widened; complete checks remain pending."
   },
   "finalQA": {
+    "commit": "3ca6fe3eed0679e064f220eb0acd5b1ce4e20834",
     "exitCode": 0,
-    "passed": 16641,
+    "passed": 16642,
     "skipped": 1166,
     "filesPassed": 1373,
     "filesSkipped": 70,
-    "log": "generation-context-v066-qa-recovery.log",
-    "sha256": "4bfb6e0d51e720014140fc9c9aa85f569494f1a2ef05fe9e52aef22c71b784cd"
+    "workerOverride": 4,
+    "log": "generation-context-v066-qa-serial-guard.log",
+    "sha256": "ff52fecd21ae543f77da5c3a7f4e6eb6d936631413a273a11a7a05b4cde69a09"
   },
   "verificationPlan": "Run existing workflow_dispatch isolation and upgrade jobs at the candidate commit without a PR. Land directly on main only after applicable checks pass; inspect main CI before tagging. No workflow, source guard or timeout was weakened.",
   "runnerSerialization": {
@@ -633,6 +642,90 @@
     "initialFailures": [
       "Inherited VITEST_MAX_WORKERS=4 bypassed serial file execution after Vitest applied its fileParallelism setting. Native two-file lock probe failed EEXIST after host startup delay cleared."
     ],
-    "currentState": "Guard corrected; full final gates pending."
+    "currentState": "Focused and mutation proof, full QA, shuffle and GitHub isolation pass. Supplemental local isolation remains active."
+  },
+  "preRunnerFixQA": {
+    "exitCode": 0,
+    "passed": 16641,
+    "skipped": 1166,
+    "filesPassed": 1373,
+    "filesSkipped": 70,
+    "log": "generation-context-v066-qa-recovery.log",
+    "sha256": "4bfb6e0d51e720014140fc9c9aa85f569494f1a2ef05fe9e52aef22c71b784cd"
+  },
+  "finalShuffle": {
+    "name": "shuffle-serial",
+    "log": "generation-context-v066-shuffle-serial.log",
+    "startedAt": 1790824003.5082207,
+    "pid": 1295984,
+    "exitCode": 0,
+    "finishedAt": 1790824326.7786403,
+    "sha256": "195e9e7883896058fcf939c8b64b264c317a4ba9b1050ac7cc7af662693d0cba",
+    "commit": "3ca6fe3eed0679e064f220eb0acd5b1ce4e20834",
+    "passed": 16642,
+    "skipped": 1166,
+    "filesPassed": 1373,
+    "filesSkipped": 70,
+    "seed": 660939,
+    "maxWorkers": 4
+  },
+  "latestNativeChecks": [
+    {
+      "name": "native-serial",
+      "log": "generation-context-v066-native-serial.log",
+      "startedAt": 1790824326.780664,
+      "pid": 1361464,
+      "exitCode": 0,
+      "finishedAt": 1790824481.5293312,
+      "sha256": "6e6b6f72cebcce7e5aac6775ef8b64c8c2dbd11125e8dfd167f02b0a629bdda3"
+    },
+    {
+      "name": "history-serial",
+      "log": "generation-context-v066-history-serial.log",
+      "startedAt": 1790824481.530344,
+      "pid": 1387816,
+      "exitCode": 0,
+      "finishedAt": 1790824493.8550584,
+      "sha256": "d610b4968d2930db415ffbc8b5bcfe20a44835338f7b0afb9f5f0ac8957eb006"
+    }
+  ],
+  "initialFullIsolation": {
+    "exitCode": 1,
+    "passed": 1062,
+    "failed": 8,
+    "skipped": 125,
+    "filesPassed": 73,
+    "filesFailed": 4,
+    "durationSeconds": 2425.67,
+    "failureKinds": [
+      "one native output recovery timeout300s",
+      "six native fault probe timeouts20s",
+      "one history-order probe timeout120s"
+    ],
+    "log": "generation-context-v066-rls.log",
+    "sha256": "72625c3a935f52a16595a05f62da03743fa996abdc0252c34633e323b11c750d",
+    "boundary": "Measured host RTNL delays overlap this run. These failures are preserved, not regraded."
+  },
+  "candidateCI": {
+    "commit": "3ca6fe3eed0679e064f220eb0acd5b1ce4e20834",
+    "rls": 36808406882,
+    "upgrade": 36808408942,
+    "normalCI": "Not dispatchable; required on final main commit.",
+    "upgradeResult": {
+      "conclusion": "success",
+      "run": 36808408942,
+      "log": "generation-context-v066-candidate-3ca6-upgrade.log",
+      "sha256": "7141d89b59d756c1fca437fd03f52770e61fa526dcaf4d3e98d60302bd7db4b9"
+    },
+    "rlsStatus": "success",
+    "rlsResult": {
+      "run": 36808406882,
+      "commit": "3ca6fe3eed0679e064f220eb0acd5b1ce4e20834",
+      "passed": 1070,
+      "skipped": 125,
+      "filesPassed": 77,
+      "durationSeconds": 1287.92,
+      "log": "generation-context-v066-candidate-3ca6-rls.log"
+    }
   }
 }

@@ -39,7 +39,9 @@ The candidate contains 358 migrations. Preserve database backups, configuration
 and the private synthesis worker directory. Use additive migration up. The
 isolated migration39 upgrade preserved counts and sorted-row hashes across all
 11 existing synthesis tables. Exact main `eecdeadd` also passed the populated
-v0.65.0-to-main upgrade with unchanged seed counts. The final release commit's
+v0.65.0-to-main upgrade with unchanged seed counts. Candidate `3ca6fe3e` also
+passes [populated upgrade 36808408942](https://github.com/nfredmond/openplan/actions/runs/36808408942),
+preserving the seven seeded counts `2:2:1:1:1:1:1`. The final release commit's
 upgrade run remains required.
 
 ## Engineering evidence
@@ -67,9 +69,10 @@ predecessor check remains a separate protection. All mutation sources are restor
 The Python worker run passes all 52 suites. Initial full QA and shuffle both
 found a missing environment example for the synthesis work directory. The
 example now includes it, and all six documentation-reference checks pass.
-The isolated database run reached the unchanged five-minute native output
-recovery limit after retaining 103 of 124 frame outputs. Investigation remains
-open. Candidate `9926add0` passes corrected full QA with 16,641 tests and
+The original isolated database run failed eight tests on their unchanged time
+limits and passed 1,062 tests, with 125 skipped. Its native output-recovery case
+retained 103 of 124 frame outputs before the five-minute limit. Candidate
+`9926add0` passes corrected full QA with 16,641 tests and
 1,166 skipped, plus lint, connector checks, dependency audit and production build.
 Later local runs encountered measured kernel delays in network-interface reads.
 These delays do not establish that any application check would otherwise pass.
@@ -81,10 +84,19 @@ ordinary worker setting. Both focused cases pass. A harmless comment survives;
 removing the live worker limit causes actual cross-file overlap, applying it to
 ordinary tests fails the preserved-setting check, and disabling ordinary file
 parallelism fails its configuration check. The probe does not establish native
-database lock ordering or within-test concurrency. Full gates for this correction
-remain pending.
-The existing GitHub isolation and populated-upgrade workflows will also check
-the candidate without a PR. Local runtime failures remain in the evidence record.
+database lock ordering or within-test concurrency.
+
+Corrected candidate `3ca6fe3e` passes full QA and shuffled seed 660939, each with
+16,642 passed and 1,166 skipped tests across 1,373 passing and 70 skipped files.
+QA also passes lint, connector checks, dependency audit and production build.
+The two native output/dispatch recovery cases pass in 154.46 seconds with the
+original time limits. The history baseline, harmless control and reversed-order
+fault check pass in 12.04 seconds.
+[GitHub isolation 36808406882](https://github.com/nfredmond/openplan/actions/runs/36808406882)
+passes 1,070 tests with 125 skipped across all 77 files on the exact candidate.
+The full local isolation rerun remains active as a separate check on this host.
+The existing GitHub workflows check the candidate without a PR. Original local
+runtime failures remain in the evidence record.
 The final release commit must pass GitHub checks before tagging. No new browser
 interface is claimed by this increment. The local synthetic model proves
 structural custody and recovery; interpretation quality, real provider billing,
