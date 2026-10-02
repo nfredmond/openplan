@@ -18,17 +18,25 @@ const digest = (value: string) => createHash("sha256").update(value, "utf8").dig
 type Scope = z.infer<typeof scopeSchema>;
 type Service = Pick<SupabaseClient, "rpc" | "from">;
 
+/** Parse the shared contribution proof without inventing output bytes. A
+ * metadata page can verify this binding while full custody reads also verify
+ * the original output's bytes. Neither path replaces context reconstruction.
+ */
+export function verifySynthesisThematicInputProof(proofText: string, rawScope: Scope) {
+  const scope = scopeSchema.parse(rawScope), proof = proofSchema.parse(JSON.parse(proofText));
+  if (Buffer.byteLength(proofText, "utf8") > 8192 || proof.requestId !== scope.requestId || proof.targetRecordId !== scope.targetRecordId
+    || proof.campaignId !== scope.campaignId || proof.workspaceId !== scope.workspaceId) throw new Error("Retained thematic input custody differs");
+  return proof;
+}
+
 /** Check retained byte custody. This does not reconstruct original context or
  * authorize execution. Before use in a task, replay originals and compare the
  * entire proof and output, then verify complete source membership and its seal.
  */
 export function verifySynthesisThematicInput(raw: unknown, rawScope: Scope) {
   const scope = scopeSchema.parse(rawScope), record = recordSchema.parse(raw);
-  const proof = proofSchema.parse(JSON.parse(record.proofText));
+  const proof = verifySynthesisThematicInputProof(record.proofText, scope);
   if (record.requestId !== scope.requestId || record.targetRecordId !== scope.targetRecordId
-    || proof.requestId !== scope.requestId || proof.targetRecordId !== scope.targetRecordId
-    || proof.campaignId !== scope.campaignId || proof.workspaceId !== scope.workspaceId
-    || Buffer.byteLength(record.proofText, "utf8") > 8192
     || !record.outputText.isWellFormed() || record.outputText.includes("\0")
     || Buffer.byteLength(record.outputText, "utf8") < 1 || Buffer.byteLength(record.outputText, "utf8") > 4_194_304
     || digest(record.proofText) !== record.proofSha256 || digest(record.outputText) !== record.outputSha256

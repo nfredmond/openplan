@@ -516,10 +516,12 @@ const EXPECTED = {
   // 20261015000006 adds private reconstructed thematic input custody.
   // Installed catalog: 274 application RLS tables and 14 application views.
   // PostGIS spatial_ref_sys and its two metadata views are extension relations.
-  relations: 288,
-  tables: 274,
+  // 20261015000007 adds immutable complete-source thematic input seals.
+  // Installed isolated catalog: 275 application RLS tables and 14 views.
+  relations: 289,
+  tables: 275,
   views: 14,
-  rlsEnabledTables: 274,
+  rlsEnabledTables: 275,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

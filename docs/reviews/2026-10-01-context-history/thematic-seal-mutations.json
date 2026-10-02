@@ -1,0 +1,570 @@
+{
+  "initialApplication": [
+    {
+      "name": "harmless-manifest",
+      "file": "src/lib/engagement/synthesis-thematic-input-manifest.ts",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 0.96,
+      "log": "t3-seal-app-mutation-harmless-manifest.log"
+    },
+    {
+      "name": "harmless-server",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 1.0,
+      "log": "t3-seal-app-mutation-harmless-server.log"
+    },
+    {
+      "name": "harmless-proof",
+      "file": "src/lib/engagement/synthesis-thematic-inputs-server.ts",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 6.41,
+      "log": "t3-seal-app-mutation-harmless-proof.log"
+    },
+    {
+      "name": "metadata-digest",
+      "file": "src/lib/engagement/synthesis-thematic-input-manifest.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 0.99,
+      "log": "t3-seal-app-mutation-metadata-digest.log"
+    },
+    {
+      "name": "metadata-output",
+      "file": "src/lib/engagement/synthesis-thematic-input-manifest.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 0.95,
+      "log": "t3-seal-app-mutation-metadata-output.log"
+    },
+    {
+      "name": "source-binding",
+      "file": "src/lib/engagement/synthesis-thematic-input-manifest.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 0.95,
+      "log": "t3-seal-app-mutation-source-binding.log"
+    },
+    {
+      "name": "empty-source",
+      "file": "src/lib/engagement/synthesis-thematic-input-manifest.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 0.99,
+      "log": "t3-seal-app-mutation-empty-source.log"
+    },
+    {
+      "name": "membership",
+      "file": "src/lib/engagement/synthesis-thematic-input-manifest.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 0.99,
+      "log": "t3-seal-app-mutation-membership.log"
+    },
+    {
+      "name": "unique-context",
+      "file": "src/lib/engagement/synthesis-thematic-input-manifest.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 0.99,
+      "log": "t3-seal-app-mutation-unique-context.log"
+    },
+    {
+      "name": "actor",
+      "file": "src/lib/engagement/synthesis-thematic-input-manifest.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 0.99,
+      "log": "t3-seal-app-mutation-actor.log"
+    },
+    {
+      "name": "intent",
+      "file": "src/lib/engagement/synthesis-thematic-input-manifest.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 0.96,
+      "log": "t3-seal-app-mutation-intent.log"
+    },
+    {
+      "name": "thematic",
+      "file": "src/lib/engagement/synthesis-thematic-input-manifest.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 0.95,
+      "log": "t3-seal-app-mutation-thematic.log"
+    },
+    {
+      "name": "source-id",
+      "file": "src/lib/engagement/synthesis-thematic-input-manifest.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 0.96,
+      "log": "t3-seal-app-mutation-source-id.log"
+    },
+    {
+      "name": "source-hash",
+      "file": "src/lib/engagement/synthesis-thematic-input-manifest.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 0.97,
+      "log": "t3-seal-app-mutation-source-hash.log"
+    },
+    {
+      "name": "seal-manifest-text",
+      "file": "src/lib/engagement/synthesis-thematic-input-manifest.ts",
+      "exitCode": 0,
+      "harmless": false,
+      "expected": false,
+      "seconds": 0.96,
+      "log": "t3-seal-app-mutation-seal-manifest-text.log"
+    },
+    {
+      "name": "seal-manifest-hash",
+      "file": "src/lib/engagement/synthesis-thematic-input-manifest.ts",
+      "exitCode": 0,
+      "harmless": false,
+      "expected": false,
+      "seconds": 0.94,
+      "log": "t3-seal-app-mutation-seal-manifest-hash.log"
+    },
+    {
+      "name": "seal-receipt-digest",
+      "file": "src/lib/engagement/synthesis-thematic-input-manifest.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 0.97,
+      "log": "t3-seal-app-mutation-seal-receipt-digest.log"
+    },
+    {
+      "name": "seal-receipt-limit",
+      "file": "src/lib/engagement/synthesis-thematic-input-manifest.ts",
+      "exitCode": 0,
+      "harmless": false,
+      "expected": false,
+      "seconds": 0.98,
+      "log": "t3-seal-app-mutation-seal-receipt-limit.log"
+    },
+    {
+      "name": "chain-proof",
+      "file": "src/lib/engagement/synthesis-thematic-input-manifest.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 0.97,
+      "log": "t3-seal-app-mutation-chain-proof.log"
+    },
+    {
+      "name": "chain-bytes",
+      "file": "src/lib/engagement/synthesis-thematic-input-manifest.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 0.99,
+      "log": "t3-seal-app-mutation-chain-bytes.log"
+    },
+    {
+      "name": "byte-total",
+      "file": "src/lib/engagement/synthesis-thematic-input-manifest.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 0.96,
+      "log": "t3-seal-app-mutation-byte-total.log"
+    },
+    {
+      "name": "page-request",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 0.98,
+      "log": "t3-seal-app-mutation-page-request.log"
+    },
+    {
+      "name": "page-campaign",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.0,
+      "log": "t3-seal-app-mutation-page-campaign.log"
+    },
+    {
+      "name": "page-workspace",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.01,
+      "log": "t3-seal-app-mutation-page-workspace.log"
+    },
+    {
+      "name": "page-cursor",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.01,
+      "log": "t3-seal-app-mutation-page-cursor.log"
+    },
+    {
+      "name": "page-final-limit",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.01,
+      "log": "t3-seal-app-mutation-page-final-limit.log"
+    },
+    {
+      "name": "page-empty-more",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": false,
+      "seconds": 151.01,
+      "log": "t3-seal-app-mutation-page-empty-more.log"
+    },
+    {
+      "name": "reference-id",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.01,
+      "log": "t3-seal-app-mutation-reference-id.log"
+    },
+    {
+      "name": "reference-hash",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.02,
+      "log": "t3-seal-app-mutation-reference-hash.log"
+    },
+    {
+      "name": "reference-campaign",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.04,
+      "log": "t3-seal-app-mutation-reference-campaign.log"
+    },
+    {
+      "name": "reference-workspace",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.01,
+      "log": "t3-seal-app-mutation-reference-workspace.log"
+    },
+    {
+      "name": "source-row-id",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.0,
+      "log": "t3-seal-app-mutation-source-row-id.log"
+    },
+    {
+      "name": "source-row-campaign",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.02,
+      "log": "t3-seal-app-mutation-source-row-campaign.log"
+    },
+    {
+      "name": "source-row-workspace",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.01,
+      "log": "t3-seal-app-mutation-source-row-workspace.log"
+    },
+    {
+      "name": "source-row-hash",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.01,
+      "log": "t3-seal-app-mutation-source-row-hash.log"
+    },
+    {
+      "name": "source-row-date",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.03,
+      "log": "t3-seal-app-mutation-source-row-date.log"
+    },
+    {
+      "name": "page-order",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.01,
+      "log": "t3-seal-app-mutation-page-order.log"
+    },
+    {
+      "name": "immutable-request",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 0.99,
+      "log": "t3-seal-app-mutation-immutable-request.log"
+    },
+    {
+      "name": "immutable-binding",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.01,
+      "log": "t3-seal-app-mutation-immutable-binding.log"
+    },
+    {
+      "name": "immutable-source",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.03,
+      "log": "t3-seal-app-mutation-immutable-source.log"
+    },
+    {
+      "name": "cancel-history",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.02,
+      "log": "t3-seal-app-mutation-cancel-history.log"
+    },
+    {
+      "name": "seal-history",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 0.98,
+      "log": "t3-seal-app-mutation-seal-history.log"
+    },
+    {
+      "name": "fresh-cancel",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 0.98,
+      "log": "t3-seal-app-mutation-fresh-cancel.log"
+    },
+    {
+      "name": "new-tail",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.0,
+      "log": "t3-seal-app-mutation-new-tail.log"
+    },
+    {
+      "name": "private-source-unavailable",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.02,
+      "log": "t3-seal-app-mutation-private-source-unavailable.log"
+    },
+    {
+      "name": "native-page-unavailable",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.05,
+      "log": "t3-seal-app-mutation-native-page-unavailable.log"
+    },
+    {
+      "name": "seal-save-unconfirmed",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.02,
+      "log": "t3-seal-app-mutation-seal-save-unconfirmed.log"
+    },
+    {
+      "name": "proof-request",
+      "file": "src/lib/engagement/synthesis-thematic-inputs-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 6.47,
+      "log": "t3-seal-app-mutation-proof-request.log"
+    },
+    {
+      "name": "proof-target",
+      "file": "src/lib/engagement/synthesis-thematic-inputs-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 6.51,
+      "log": "t3-seal-app-mutation-proof-target.log"
+    },
+    {
+      "name": "proof-campaign",
+      "file": "src/lib/engagement/synthesis-thematic-inputs-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 6.53,
+      "log": "t3-seal-app-mutation-proof-campaign.log"
+    },
+    {
+      "name": "proof-workspace",
+      "file": "src/lib/engagement/synthesis-thematic-inputs-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 6.7,
+      "log": "t3-seal-app-mutation-proof-workspace.log"
+    },
+    {
+      "name": "proof-limit",
+      "file": "src/lib/engagement/synthesis-thematic-inputs-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 6.54,
+      "log": "t3-seal-app-mutation-proof-limit.log"
+    }
+  ],
+  "correctedApplication": [
+    {
+      "name": "harmless-manifest",
+      "file": "src/lib/engagement/synthesis-thematic-input-manifest.ts",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 0.96,
+      "log": "t3-seal-app-mutation-corrected-harmless-manifest.log"
+    },
+    {
+      "name": "harmless-server",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 0,
+      "harmless": true,
+      "expected": true,
+      "seconds": 1.01,
+      "log": "t3-seal-app-mutation-corrected-harmless-server.log"
+    },
+    {
+      "name": "seal-receipt-limit",
+      "file": "src/lib/engagement/synthesis-thematic-input-manifest.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 0.99,
+      "log": "t3-seal-app-mutation-corrected-seal-receipt-limit.log"
+    },
+    {
+      "name": "page-empty-more",
+      "file": "src/lib/engagement/synthesis-thematic-input-seal-server.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 1.0,
+      "log": "t3-seal-app-mutation-corrected-page-empty-more.log"
+    },
+    {
+      "name": "seal-manifest-exact-binding",
+      "file": "src/lib/engagement/synthesis-thematic-input-manifest.ts",
+      "exitCode": 1,
+      "harmless": false,
+      "expected": true,
+      "seconds": 0.97,
+      "log": "t3-seal-app-mutation-corrected-seal-manifest-exact-binding.log"
+    }
+  ],
+  "nativeProtocol": {
+    "results": [
+      {
+        "name": "control",
+        "exitCode": 0,
+        "expected": true,
+        "log": "t3-thematic-seal-compatibility-control.log"
+      },
+      {
+        "name": "seed-protocol",
+        "exitCode": 1,
+        "expected": true,
+        "log": "t3-thematic-seal-compatibility-seed-protocol.log"
+      }
+    ],
+    "restoredSha256": "54c4f9398a7ebf8ca1de0134b2a851d5e6e4f05285cd185ef7000a895ab2ad87"
+  },
+  "schema": {
+    "cases": [
+      {
+        "name": "control",
+        "exit": 0,
+        "expectedFailure": false,
+        "validOutcome": true,
+        "log": "t3-thematic-seal-schema-mutation-control.log"
+      },
+      {
+        "name": "inventory",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "t3-thematic-seal-schema-mutation-inventory.log"
+      },
+      {
+        "name": "unread-column",
+        "exit": 1,
+        "expectedFailure": true,
+        "validOutcome": true,
+        "log": "t3-thematic-seal-schema-mutation-unread-column.log"
+      }
+    ],
+    "sourceRestored": true,
+    "sha256": "15500a716e2ddae4a52668e84bc6e3f1824a45ae4db5ad3ab1411e1e6e813169"
+  },
+  "sourceHashes": {
+    "src/lib/engagement/synthesis-thematic-input-manifest.ts": "54c4f9398a7ebf8ca1de0134b2a851d5e6e4f05285cd185ef7000a895ab2ad87",
+    "src/lib/engagement/synthesis-thematic-input-seal-server.ts": "bc33573b5900c29ab870bcd411177050319793d99565e2d50dc45eab55651c47",
+    "src/lib/engagement/synthesis-thematic-inputs-server.ts": "939b8d3e5485444c560f48f98ac8a8c57440b30112376c7c6a8828e100a3a53e",
+    "supabase/migrations/20261015000007_engagement_synthesis_thematic_input_seals.sql": "15500a716e2ddae4a52668e84bc6e3f1824a45ae4db5ad3ab1411e1e6e813169"
+  },
+  "boundary": "Internal synthetic custody and native permission evidence. No thematic execution, live HTTP seal journey, browser or semantic acceptance."
+}

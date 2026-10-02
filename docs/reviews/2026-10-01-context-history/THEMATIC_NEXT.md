@@ -112,3 +112,15 @@ reader scoped to one thematic request can share immutable source and anchored
 parent reconstruction across contributions, while rechecking the new requester's
 native authority and exact dependency identities for each one. This optimization
 is still unimplemented and has no large-source performance result here.
+
+## October 2 complete-source custody checkpoint
+
+[The input seal](THEMATIC_SEAL.md) implements the native membership comparison,
+bounded proof inventory and durable hash chain described above. It preserves
+cancellation recovery and prevents fresh input insertion after sealing. This is
+an internal custody checkpoint; the connected proposal workflow remains the
+implementation target. Share verified immutable source and parent reconstruction
+within a request, then implement the versioned thematic recipe, resource
+approval, resumable execution, original proposal storage and explicit staff
+import. Preserve per-contribution native access checks and original-history
+replay when adding that shared reader.

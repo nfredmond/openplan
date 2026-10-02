@@ -73,6 +73,7 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "engagement_synthesis_thematic_input_seals.manifest_text", category: "READ_IN_SQL", reason: "Native seal reads return original manifestText; exact retries compare its bytes and the application reconstructs complete source custody before accepting them." },
   { column: "engagement_synthesis_thematic_inputs.proof_text", category: "READ_IN_SQL", reason: "Native custody reads return proofText; saves compare exact retained proof bytes and the application verifies their scope and digest." },
   { column: "engagement_synthesis_thematic_inputs.proof_sha256", category: "READ_IN_SQL", reason: "Native input records return the generated proofSha256 for application byte verification." },
   { column: "engagement_synthesis_thematic_inputs.output_text", category: "READ_IN_SQL", reason: "Native input records return original outputText without jsonb coercion; exact retries compare its bytes." },

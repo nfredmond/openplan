@@ -48,6 +48,16 @@ commands. This additive private table is not a whole-source seal or execution
 grant. [Custody checks](docs/reviews/2026-10-01-context-history/THEMATIC_CUSTODY.md)
 record the evidence and remaining work.
 
+The internal thematic worker can now seal the complete retained input set. Native
+checks compare every original item and survey-answer identifier, reject missing
+or substituted inputs, and bind the exact proof and output hashes in a fixed
+order. Bounded reads support interrupted preparation; exact seal retries remain
+recoverable after cancellation. Apply
+`20261015000007_engagement_synthesis_thematic_input_seals.sql` before using these
+commands. Execution, proposal storage and staff import remain unfinished.
+[Complete-source custody checks](docs/reviews/2026-10-01-context-history/THEMATIC_SEAL.md)
+record the evidence and limitations.
+
 ## 0.66.0 (2026-09-30)
 
 [Verification](docs/reviews/2026-09-30-synthesis-generation/CONTEXT_CLI_RELEASE.md) records release scope and candidate checks. [Publication](docs/reviews/2026-09-30-synthesis-generation/CONTEXT_CLI_PUBLICATION.md) records final checks, tagging and local handoff.
