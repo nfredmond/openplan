@@ -20,7 +20,7 @@ type HistoryEntry = {
 };
 
 export function synthesisContextJobFixture(priorCount = 2, configuration?: Parameters<typeof synthesisContextWorkerFixture>[0],
-  retainedWorker?: ReturnType<typeof synthesisContextWorkerFixture>) {
+  retainedWorker?: ReturnType<typeof synthesisContextWorkerFixture>, emitNotes = false) {
   const f = retainedWorker ?? synthesisContextWorkerFixture(configuration);
   const args = { authorizationId: randomUUID(), attemptId: randomUUID(), taskIndex: priorCount };
   const grantIntent = { schemaVersion: 1, headerSha256: f.plan.headerSha256, maxAttempts: f.plan.entries.length,
@@ -56,8 +56,11 @@ export function synthesisContextJobFixture(priorCount = 2, configuration?: Param
     const dispatchRow = add("engagement_synthesis_generation_dispatches", { attempt_id: attemptId, expires_at: dispatch.expiresAt,
       receipt_text: JSON.stringify(dispatch), receipt_sha256: hash(JSON.stringify(dispatch)) });
     const prior = task.input.previous ? JSON.parse(task.input.previous.outputText) : { notes: [], uncertainties: [] };
+    const cited = task.input.frame.parts.find((part: { text?: string }) => typeof part.text === "string" && part.text.length);
+    const notes = emitNotes && cited && prior.notes.length === 0 ? [{ id: 0, text: "SYNTHETIC retained note é 中文",
+      citations: [{ partId: cited.id, quote: Array.from(cited.text as string)[0] }], relatedNoteIds: [] }] : prior.notes;
     const output = { status: "complete", coveredPartIds: task.input.frame.parts.map((p: { id: string }) => p.id),
-      notes: prior.notes, uncertainties: [...prior.uncertainties, `SYNTHETIC frame ${index}`] };
+      notes, uncertainties: [...prior.uncertainties, `SYNTHETIC frame ${index}`] };
     const outputRow = add("engagement_synthesis_generation_outputs", { attempt_id: attemptId });
     function recapture(outputText = JSON.stringify(output), finishReason = "stop", statusCode = 200) {
       dispatchRow.receipt_text = JSON.stringify(dispatch); dispatchRow.receipt_sha256 = hash(String(dispatchRow.receipt_text)); dispatchRow.expires_at = dispatch.expiresAt;

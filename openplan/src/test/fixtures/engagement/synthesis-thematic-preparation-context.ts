@@ -11,7 +11,7 @@ import { sourceHash as hash } from "./synthesis-source";
  * Only transport is synthetic; frames, captures, continuation and historical
  * replay use production code. This is not semantic or native permission proof.
  */
-export async function addThematicPreparationContext(f: Awaited<ReturnType<typeof synthesisThematicPreparationFixture>>, targetRecordId: string) {
+export async function addThematicPreparationContext(f: Awaited<ReturnType<typeof synthesisThematicPreparationFixture>>, targetRecordId: string, emitNotes = false) {
   const base = f.f, scope = { ...base.scope, requestId: randomUUID() };
   const contentArgs: typeof base.contentArgs = [...base.contentArgs]; contentArgs[4] = targetRecordId;
   const content = createSynthesisGenerationContextContent(...contentArgs);
@@ -38,7 +38,7 @@ export async function addThematicPreparationContext(f: Awaited<ReturnType<typeof
     seal: { receiptText, receiptSha256: hash(receiptText) } };
   const inner = { ...base.f, scope, request: { ...request, cancellation: null }, content };
   const worker = { ...base, f: inner, plan, contentArgs, state, requestRow, contextRow };
-  const context = synthesisContextHistoryFixture(0, synthesisContextJobFixture(0, undefined, worker)); context.completeHistory();
+  const context = synthesisContextHistoryFixture(0, synthesisContextJobFixture(0, undefined, worker, emitNotes)); context.completeHistory();
   const expected = await loadSynthesisContextHistory(context.client, context.service, scope, context.controller.signal);
   if (expected.manifest.throughSequence === null || expected.manifest.status !== "frames_complete") throw new Error("Synthetic second context is incomplete");
   const choiceText = JSON.stringify({ schemaVersion: 1, targetRecordId, contextRequestId: scope.requestId,

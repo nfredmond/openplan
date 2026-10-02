@@ -93,8 +93,7 @@ export function createSynthesisThematicInputPreparer(service: Service, rawScope:
   };
 }
 
-async function retainPreparedInput(service: Service, scope: Scope,
-  preparation: Awaited<ReturnType<typeof loadSynthesisThematicPreparation>>, signal: AbortSignal) {
+function preparedInputBytes(scope: Scope, preparation: Awaited<ReturnType<typeof loadSynthesisThematicPreparation>>) {
   const { thematic, choice, context } = preparation.delegation;
   const outputText = preparation.history.finalOutputText;
   if (outputText === null) throw new Error("Thematic input requires complete original context output");
@@ -106,6 +105,26 @@ async function retainPreparedInput(service: Service, scope: Scope,
     historyManifestSha256: preparation.history.sha256, finalCaptureSha256: choice.choice.finalCaptureSha256,
     finalResultSha256: choice.choice.finalResultSha256, outputSha256: digest(outputText) });
   const proofText = JSON.stringify(proof);
+  return { proofText, outputText };
+}
+
+/** Compare native custody with fully replayed originals. The caller supplies
+ * authenticated preparation, not an execution grant. Self-hashed substitutes
+ * are refused even when their stored proof and output agree with each other.
+ */
+export function verifySynthesisThematicReplayedInput(raw: unknown, rawScope: Scope,
+  preparation: Awaited<ReturnType<typeof loadSynthesisThematicPreparation>>) {
+  const scope = scopeSchema.parse(rawScope), expected = preparedInputBytes(scope, preparation);
+  const retained = verifySynthesisThematicInput(raw, scope);
+  if (retained.record.proofText !== expected.proofText || retained.record.outputText !== expected.outputText) {
+    throw new Error("Retained thematic input differs from reconstructed originals");
+  }
+  return retained;
+}
+
+async function retainPreparedInput(service: Service, scope: Scope,
+  preparation: Awaited<ReturnType<typeof loadSynthesisThematicPreparation>>, signal: AbortSignal) {
+  const { proofText, outputText } = preparedInputBytes(scope, preparation);
   signal.throwIfAborted();
   const response = await service.rpc("retain_engagement_synthesis_thematic_input", { p_request: scope.requestId,
     p_target: scope.targetRecordId, p_proof_text: proofText, p_output_text: outputText }).abortSignal(synthesisWorkerRequestSignal(signal));

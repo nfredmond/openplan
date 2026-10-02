@@ -130,3 +130,10 @@ and anchored parent reconstruction within one request after a successful replay.
 Each context still reconstructs its original frames and captures under current
 native authority. The versioned thematic recipe, execution and staff import are
 the next connected implementation boundary; this optimization does not close it.
+
+[Complete proposal inputs](THEMATIC_PROPOSAL_INPUTS.md) now reconstruct every
+chosen context under the exact complete-source seal, compare original retained
+bytes and recheck current scope before return. The reader collects evidence in
+memory; durable bounded tasks and the connected execution/import workflow remain
+unfinished. Original source text and historical definitions must remain available
+when constructing those tasks.

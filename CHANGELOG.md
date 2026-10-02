@@ -65,6 +65,13 @@ Cancellation and uncertain acknowledgements retain their existing behavior.
 No new migration is required. [Shared preparation checks](docs/reviews/2026-10-01-context-history/THEMATIC_SHARED_PREPARATION.md)
 record the evidence; thematic execution and staff import remain unfinished.
 
+The internal thematic reader now reconstructs every chosen context under its
+complete-source seal, compares exact retained proofs and original outputs, and
+rechecks current access before returning proposal inputs. Original note text and
+uncertainty remain attached to each contribution. No new migration is required.
+[Proposal input checks](docs/reviews/2026-10-01-context-history/THEMATIC_PROPOSAL_INPUTS.md)
+record the evidence and limits. Task execution and staff import remain unfinished.
+
 ## 0.66.0 (2026-09-30)
 
 [Verification](docs/reviews/2026-09-30-synthesis-generation/CONTEXT_CLI_RELEASE.md) records release scope and candidate checks. [Publication](docs/reviews/2026-09-30-synthesis-generation/CONTEXT_CLI_PUBLICATION.md) records final checks, tagging and local handoff.

@@ -21,6 +21,8 @@ import { loadSynthesisContextHistory } from "@/lib/engagement/synthesis-context-
 import { createSynthesisThematicRequest, readSynthesisThematicRequest } from "@/lib/engagement/synthesis-thematic-requests-server";
 import { loadSynthesisThematicPreparation } from "@/lib/engagement/synthesis-thematic-preparation-server";
 import { createSynthesisThematicInputPreparer, readSynthesisThematicInput, readSynthesisThematicInputHistory } from "@/lib/engagement/synthesis-thematic-inputs-server";
+import { retainSynthesisThematicInputSeal } from "@/lib/engagement/synthesis-thematic-input-seal-server";
+import { loadSynthesisThematicProposalInputs } from "@/lib/engagement/synthesis-thematic-proposal-inputs-server";
 import { readSynthesisThematicChoice, retainSynthesisThematicChoice } from "@/lib/engagement/synthesis-thematic-choices-server";
 import { verifySynthesisGenerationApiResult } from "@/lib/engagement/synthesis-generation-api-result";
 import { createSynthesisGenerationInput } from "@/lib/engagement/synthesis-generation-input";
@@ -332,6 +334,7 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     expect(prepared.delegation.context.state.request.actorId).not.toBe(reader.userId);
     const { targetRecordId: preparationTarget, ...preparationRequest } = preparationScope;
     const prepareInput = createSynthesisThematicInputPreparer(service, preparationRequest);
+    await expect(loadSynthesisThematicProposalInputs(service, preparationRequest, signal)).rejects.toThrow("requires sealed complete-source");
     const savedInput = await prepareInput(preparationTarget, signal);
     expect(savedInput.record.outputText).toBe(retained.finalOutputText);
     expect(savedInput.record.replayed).toBe(false);
@@ -341,10 +344,20 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     expect(savedInput.proof.actorId).toBe(reader.userId);
     const warmInput = await prepareInput(preparationTarget, signal);
     expect(warmInput.record).toEqual({ ...savedInput.record, replayed: true });
+    const inputSeal = await retainSynthesisThematicInputSeal(service, preparationRequest, signal);
+    const proposalInputs = await loadSynthesisThematicProposalInputs(service, preparationRequest, signal);
+    expect(proposalInputs.input.manifestSha256).toBe(inputSeal.plan.manifestSha256);
+    expect(proposalInputs.input.contexts.map(context => context.sourceId)).toEqual([preparationTarget]);
+    expect(proposalInputs.input.contexts[0]).toMatchObject({ historyManifestSha256: retained.sha256,
+      finalCaptureSha256: priorCapture, finalResultSha256: retained.entries.at(-1)!.resultSha256,
+      notes: [], uncertainties: JSON.parse(retained.finalOutputText!).uncertainties });
+    expect(proposalInputs.originals).toEqual([{ targetRecordId: preparationTarget,
+      proofText: savedInput.record.proofText, outputText: retained.finalOutputText }]);
     checked(await reader.client.rpc("cancel_engagement_synthesis_generation_request", { p_campaign: scope.campaignId,
       p_request: thematicArgs.requestId, p_cancellation: randomUUID(), p_reason: "SYNTHETIC thematic input cancellation" }));
     await expect(loadSynthesisThematicPreparation(service, preparationScope, signal)).rejects.toThrow("preparation access unavailable");
     await expect(prepareInput(preparationTarget, signal)).rejects.toThrow("preparation access unavailable");
+    await expect(loadSynthesisThematicProposalInputs(service, preparationRequest, signal)).rejects.toThrow("preparation was cancelled");
     const { replayed: _inputReplayed, ...originalInput } = savedInput.record;
     expect((await readSynthesisThematicInput(service, preparationScope, signal))?.record).toEqual(originalInput);
     expect((await readSynthesisThematicInputHistory(reader.client, preparationScope, signal))?.record).toEqual(originalInput);
@@ -356,6 +369,7 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     expect(f.calls).toHaveLength(f.plan.entries.length + staged.plan.entries.length);
     reader.revoke();
     await expect(prepareInput(preparationTarget, signal)).rejects.toThrow("preparation access unavailable");
+    await expect(loadSynthesisThematicProposalInputs(service, preparationRequest, signal)).rejects.toThrow("inventory unavailable");
     await expect(readSynthesisThematicInput(service, preparationScope, signal)).rejects.toThrow("custody unavailable");
     await expect(readSynthesisThematicInputHistory(reader.client, preparationScope, signal)).rejects.toThrow("input unavailable");
     await expect(loadSynthesisContextHistory(reader.client, service, scope, signal)).rejects.toThrow("Context request unavailable");
