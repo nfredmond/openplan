@@ -482,7 +482,7 @@ export default async function EngagementPage({
           </div>
 
           {/* Status filter bar */}
-          <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-[0.78rem]">
+          <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-compact">
             <Link
               href={engagementTabHref(projectFilterId, null)}
               className={cn("rounded px-2 py-0.5 transition-colors", !statusFilter ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
@@ -580,7 +580,7 @@ export default async function EngagementPage({
                         <p className="module-record-summary line-clamp-2">
                           {campaign.summary || "No summary yet."}
                         </p>
-                        <p className="text-[0.73rem] text-muted-foreground">
+                        <p className="text-label text-muted-foreground">
                           {campaign.project?.name ?? "No project linked"}
                           {campaign.categoryCount > 0 ? ` · ${campaign.categoryCount} categor${campaign.categoryCount === 1 ? "y" : "ies"}` : ""}
                           {campaign.counts.totalItems > 0 ? ` · ${campaign.counts.totalItems} item${campaign.counts.totalItems === 1 ? "" : "s"}` : ""}

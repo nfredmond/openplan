@@ -95,7 +95,7 @@ export function MeasureField({
     <div className="space-y-1.5">
       <label
         htmlFor={htmlFor}
-        className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+        className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground"
       >
         {label}
       </label>

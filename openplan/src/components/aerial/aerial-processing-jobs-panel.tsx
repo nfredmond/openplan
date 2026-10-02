@@ -82,7 +82,7 @@ function ProgressMeter({ percent }: { percent: number }) {
 
 function JobIdentifiers({ job }: { job: AerialProcessingJobRow }) {
   return (
-    <dl className="mt-3 grid gap-x-4 gap-y-1 text-[0.68rem] text-muted-foreground sm:grid-cols-2">
+    <dl className="mt-3 grid gap-x-4 gap-y-1 text-label text-muted-foreground sm:grid-cols-2">
       <div className="flex gap-1.5">
         <dt className="font-medium">Request id</dt>
         <dd className="font-mono break-all">{job.request_id}</dd>
@@ -127,7 +127,7 @@ function ImagerySubmitted({ job }: { job: AerialProcessingJobRow }) {
     <p className="mt-2 text-xs text-muted-foreground">
       <span className="font-medium text-foreground">Imagery submitted:</span> {parts.join(" · ")}
       {host ? (
-        <span className="block text-[0.68rem]">
+        <span className="block text-label">
           Only the host is shown — the imagery link is a signed URL supplied at request time.
         </span>
       ) : null}
@@ -188,7 +188,7 @@ function ArtifactList({
 
   return (
     <div className="mt-3">
-      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+      <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         Outputs the worker reported
       </p>
       <ul className="mt-1.5 space-y-1.5">
@@ -203,10 +203,10 @@ function ArtifactList({
                 <span className="text-muted-foreground">{formatFileSize(entry.sizeBytes)}</span>
               ) : null}
               {entry.contentType ? (
-                <span className="font-mono text-[0.66rem] text-muted-foreground">{entry.contentType}</span>
+                <span className="font-mono text-label text-muted-foreground">{entry.contentType}</span>
               ) : null}
             </div>
-            <p className="mt-1 text-[0.68rem] text-muted-foreground">
+            <p className="mt-1 text-label text-muted-foreground">
               {entry.expired === true ? (
                 <>Worker link expired {formatTimestamp(entry.expiresAt)}.</>
               ) : entry.expired === false ? (
@@ -222,7 +222,7 @@ function ArtifactList({
         ))}
       </ul>
       {reading.unreadableEntryCount > 0 ? (
-        <p className="mt-1.5 text-[0.68rem] text-[color:var(--copper)]">
+        <p className="mt-1.5 text-label text-[color:var(--copper)]">
           {reading.unreadableEntryCount} further output
           {reading.unreadableEntryCount === 1 ? " was" : "s were"} recorded in a shape OpenPlan could not
           read, and {reading.unreadableEntryCount === 1 ? "is" : "are"} not listed above.
@@ -265,7 +265,7 @@ function HeldArtifactDownloads({
       {held.map((record) => (
         <li
           key={record.id}
-          className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-[0.68rem]"
+          className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-label"
         >
           <a
             className="font-medium text-sky-600 underline dark:text-sky-400"
@@ -315,7 +315,7 @@ function CustodyNote({
 }) {
   if (unreadableReason) {
     return (
-      <p className="mt-1.5 text-[0.68rem] text-[color:var(--copper)]">
+      <p className="mt-1.5 text-label text-[color:var(--copper)]">
         OpenPlan could not read its own record of which of these outputs it holds, so whether they
         survive the worker&apos;s links expiring is unestablished — this is not a finding that none are
         held. ({unreadableReason})
@@ -329,7 +329,7 @@ function CustodyNote({
     // No ledger rows: nothing has been taken, so the original sentence is still
     // exactly true for this job.
     return (
-      <p className="mt-1.5 text-[0.68rem] text-muted-foreground">
+      <p className="mt-1.5 text-label text-muted-foreground">
         {AERIAL_PROCESSING_ARTIFACT_CUSTODY_NOTE}
       </p>
     );
@@ -340,8 +340,8 @@ function CustodyNote({
       <p
         className={
           posture.state === "complete"
-            ? "mt-1.5 text-[0.68rem] text-muted-foreground"
-            : "mt-1.5 text-[0.68rem] text-[color:var(--copper)]"
+            ? "mt-1.5 text-label text-muted-foreground"
+            : "mt-1.5 text-label text-[color:var(--copper)]"
         }
       >
         {posture.detail}
@@ -370,7 +370,7 @@ function BenchmarkSummary({ value }: { value: unknown }) {
       <summary className="cursor-pointer text-muted-foreground">
         Worker benchmark summary — vendor JSON, schema owned by the processing platform
       </summary>
-      <pre className="mt-1.5 max-h-64 overflow-auto rounded-[0.4rem] border border-[color:var(--line)] bg-background/60 p-2 text-[0.66rem] leading-relaxed">
+      <pre className="mt-1.5 max-h-64 overflow-auto rounded-[0.4rem] border border-[color:var(--line)] bg-background/60 p-2 text-label leading-relaxed">
         {serialized}
       </pre>
     </details>

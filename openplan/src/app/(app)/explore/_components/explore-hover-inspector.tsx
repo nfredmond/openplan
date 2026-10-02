@@ -199,7 +199,7 @@ export function ExploreHoverInspector({
                           />
                           {item.label}
                         </span>
-                        {isActive ? <span className="text-[10px] uppercase tracking-[0.18em] text-sky-200/80">hovered</span> : null}
+                        {isActive ? <span className="text-label uppercase tracking-[0.12em] text-sky-200/80">hovered</span> : null}
                       </div>
                     );
                   })}

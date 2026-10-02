@@ -44,7 +44,7 @@ export function PlanningContextStrip({
       <div className="flex min-w-0 items-center gap-2">
         <FolderKanban className="h-4 w-4 shrink-0 text-primary" />
         <div className="min-w-0">
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             Active project
           </p>
           <p className="truncate text-sm font-semibold text-foreground">{context.project.name}</p>

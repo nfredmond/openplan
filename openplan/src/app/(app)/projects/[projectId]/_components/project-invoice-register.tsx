@@ -93,7 +93,7 @@ export function ProjectInvoiceRegister({
                     {invoice.notes || `${invoicePostureLabel(invoice)}${invoice.submitted_to ? ` · ${invoice.submitted_to}` : ""}`}
                   </p>
                 </div>
-                <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+                <p className="mt-1.5 text-label text-muted-foreground">
                   {invoice.invoice_date ? `Invoice ${fmtDateTime(invoice.invoice_date)}` : ""}
                   {invoice.due_date ? ` · Due ${fmtDateTime(invoice.due_date)}` : ""}
                   {invoice.fundingAward ? ` · ${invoice.fundingAward.title}` : ""}

@@ -69,7 +69,7 @@ export function CountyRunBehavioralKpisSection({
 
       {!error && isThisRunRejected && !acceptingScreeningGrade ? (
         <div className="mt-5 rounded-[0.75rem] border border-amber-300/50 bg-gradient-to-br from-amber-50/90 to-amber-100/40 px-5 py-4 dark:border-amber-900/70 dark:from-amber-950/30 dark:to-amber-950/10">
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-amber-900/80 dark:text-amber-100/80">
+          <p className="text-label font-semibold uppercase tracking-[0.14em] text-amber-900/80 dark:text-amber-100/80">
             Held back
           </p>
           {/*
@@ -109,13 +109,13 @@ export function CountyRunBehavioralKpisSection({
           <table className="w-full border-collapse text-sm">
             <thead className="bg-muted/40">
               <tr>
-                <th className="px-4 py-2 text-left text-[0.7rem] font-semibold uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-2 text-left text-label font-semibold uppercase tracking-wide text-muted-foreground">
                   KPI
                 </th>
-                <th className="px-4 py-2 text-right text-[0.7rem] font-semibold uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-2 text-right text-label font-semibold uppercase tracking-wide text-muted-foreground">
                   Value
                 </th>
-                <th className="px-4 py-2 text-left text-[0.7rem] font-semibold uppercase tracking-wide text-muted-foreground">
+                <th className="px-4 py-2 text-left text-label font-semibold uppercase tracking-wide text-muted-foreground">
                   Unit
                 </th>
               </tr>

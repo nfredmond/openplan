@@ -346,7 +346,11 @@ function readResolvedPalettes(globalsCss: string): Array<{ name: string; isDark:
   }
   for (const [k, v] of baseLight) baseDark.set(k, v);
   for (const rule of all) {
-    if (rule.selector === ".dark" || rule.selector === ":root.dark")
+    // `.dark` may be one member of a selector list: the always-dark surfaces
+    // share its token block in light mode. Split on top-level commas only, so
+    // the commas inside `:is(...)` do not cut a selector in half.
+    const members = rule.selector.split(/,(?![^()]*\))/).map((member) => member.trim());
+    if (members.includes(".dark") || members.includes(":root.dark"))
       for (const [k, v] of declaredTokens(rule.body)) baseDark.set(k, v);
   }
 

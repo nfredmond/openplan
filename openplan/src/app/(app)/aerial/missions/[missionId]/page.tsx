@@ -329,13 +329,13 @@ export default async function AerialMissionDetailPage({ params, searchParams }: 
     <div className="flex flex-col gap-3">
       <Link
         href="/aerial"
-        className="inline-flex items-center gap-1.5 text-[0.75rem] font-medium text-muted-foreground hover:text-foreground"
+        className="inline-flex items-center gap-1.5 text-label font-medium text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-3 w-3" />
         Back to Aerial Ops
       </Link>
       <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-[0.68rem] uppercase tracking-[0.18em] text-muted-foreground">
+        <div className="flex items-center gap-2 text-label uppercase tracking-[0.12em] text-muted-foreground">
           <PlaneTakeoff className="h-3 w-3" />
           Aerial mission
         </div>

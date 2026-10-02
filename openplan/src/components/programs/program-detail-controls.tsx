@@ -160,7 +160,7 @@ export function ProgramDetailControls({
 
       <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
         <div className="space-y-1.5">
-          <label htmlFor="program-control-title" className="text-[0.82rem] font-semibold">
+          <label htmlFor="program-control-title" className="text-compact font-semibold">
             Title
           </label>
           <Input id="program-control-title" value={title} onChange={(event) => setTitle(event.target.value)} required />
@@ -168,14 +168,14 @@ export function ProgramDetailControls({
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
-            <label htmlFor="program-control-cycle" className="text-[0.82rem] font-semibold">
+            <label htmlFor="program-control-cycle" className="text-compact font-semibold">
               Cycle label
             </label>
             <Input id="program-control-cycle" value={cycleName} onChange={(event) => setCycleName(event.target.value)} required />
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="program-control-sponsor" className="text-[0.82rem] font-semibold">
+            <label htmlFor="program-control-sponsor" className="text-compact font-semibold">
               Sponsor agency
             </label>
             <Input
@@ -189,7 +189,7 @@ export function ProgramDetailControls({
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
-            <label htmlFor="program-control-status" className="text-[0.82rem] font-semibold">
+            <label htmlFor="program-control-status" className="text-compact font-semibold">
               Status
             </label>
             <select
@@ -207,7 +207,7 @@ export function ProgramDetailControls({
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="program-control-type" className="text-[0.82rem] font-semibold">
+            <label htmlFor="program-control-type" className="text-compact font-semibold">
               Program lane
             </label>
             <select
@@ -226,7 +226,7 @@ export function ProgramDetailControls({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="program-control-project" className="text-[0.82rem] font-semibold">
+          <label htmlFor="program-control-project" className="text-compact font-semibold">
             Primary project
           </label>
           <select
@@ -246,7 +246,7 @@ export function ProgramDetailControls({
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
-            <label htmlFor="program-control-fy-start" className="text-[0.82rem] font-semibold">
+            <label htmlFor="program-control-fy-start" className="text-compact font-semibold">
               Fiscal year start
             </label>
             <Input
@@ -260,7 +260,7 @@ export function ProgramDetailControls({
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="program-control-fy-end" className="text-[0.82rem] font-semibold">
+            <label htmlFor="program-control-fy-end" className="text-compact font-semibold">
               Fiscal year end
             </label>
             <Input
@@ -276,7 +276,7 @@ export function ProgramDetailControls({
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
-            <label htmlFor="program-control-nomination" className="text-[0.82rem] font-semibold">
+            <label htmlFor="program-control-nomination" className="text-compact font-semibold">
               Nomination due
             </label>
             <Input
@@ -288,7 +288,7 @@ export function ProgramDetailControls({
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="program-control-adoption" className="text-[0.82rem] font-semibold">
+            <label htmlFor="program-control-adoption" className="text-compact font-semibold">
               Adoption target
             </label>
             <Input
@@ -301,7 +301,7 @@ export function ProgramDetailControls({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="program-control-summary" className="text-[0.82rem] font-semibold">
+          <label htmlFor="program-control-summary" className="text-compact font-semibold">
             Summary
           </label>
           <Textarea
@@ -315,7 +315,7 @@ export function ProgramDetailControls({
 
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-1.5">
-            <label htmlFor="program-control-plans" className="text-[0.82rem] font-semibold">
+            <label htmlFor="program-control-plans" className="text-compact font-semibold">
               Linked plans
             </label>
             <select
@@ -334,7 +334,7 @@ export function ProgramDetailControls({
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="program-control-reports" className="text-[0.82rem] font-semibold">
+            <label htmlFor="program-control-reports" className="text-compact font-semibold">
               Linked reports
             </label>
             <select
@@ -355,7 +355,7 @@ export function ProgramDetailControls({
 
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-1.5">
-            <label htmlFor="program-control-campaigns" className="text-[0.82rem] font-semibold">
+            <label htmlFor="program-control-campaigns" className="text-compact font-semibold">
               Linked engagement campaigns
             </label>
             <select
@@ -374,7 +374,7 @@ export function ProgramDetailControls({
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="program-control-project-links" className="text-[0.82rem] font-semibold">
+            <label htmlFor="program-control-project-links" className="text-compact font-semibold">
               Additional related projects
             </label>
             <select

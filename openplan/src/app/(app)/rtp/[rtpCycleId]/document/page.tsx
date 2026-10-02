@@ -44,10 +44,10 @@ import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
  * `qa-harness/openplan-local-card-nesting-audit.js`.
  */
 const READING_COLUMN = "max-w-[36rem]";
-const READING_PROSE = "text-[1.0625rem] leading-[1.65]";
+const READING_PROSE = "text-reading leading-[1.65]";
 const SECTION_HEADING = "text-[1.5rem] font-semibold leading-snug tracking-tight";
 const ITEM_HEADING = "text-[1.25rem] font-semibold leading-snug tracking-tight";
-const SIDE_HEADING = "text-[1.0625rem] font-semibold leading-snug text-foreground";
+const SIDE_HEADING = "text-reading font-semibold leading-snug text-foreground";
 /** Space above a section ÷ space below its heading ≥ 3, so a heading belongs to what follows it. */
 const SECTION_SPACING = "mt-14";
 
@@ -296,7 +296,7 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
           </Link>
         </div>
 
-        <p className="mt-8 flex items-center gap-2 text-[0.78rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        <p className="mt-8 flex items-center gap-2 text-compact font-semibold uppercase tracking-[0.12em] text-muted-foreground">
           <BookOpenText className="h-3.5 w-3.5" />
           Regional Transportation Plan
         </p>
@@ -500,7 +500,7 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
                 id={slugify(chapter.chapter_key || chapter.title)}
                 className={SECTION_SPACING}
               >
-                <p className="text-[0.78rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="text-compact font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                   Chapter {index + 1} · {titleizeRtpValue(chapter.section_type)}
                 </p>
                 <h2 className={`mt-3 ${SECTION_HEADING}`}>{chapter.title}</h2>

@@ -8,7 +8,6 @@ import { WorkspaceCommandBoard } from "@/components/operations/workspace-command
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { useIsLightMode } from "@/components/theme-provider";
 import { Input } from "@/components/ui/input";
 import {
   type CrashSeverityFilter,
@@ -97,7 +96,6 @@ export function ExploreWorkbench({
 }: ExploreWorkbenchProps) {
   const { mapContainerRef, mapRef, mapReady, mapUnavailableReason } = useExploreMapInstance();
 
-  const isLightMode = useIsLightMode();
   const [workspaceId, setWorkspaceId] = useState("");
   const [queryText, setQueryText] = useState("");
   const [corridorGeojson, setCorridorGeojson] = useState<CorridorGeometry | null>(null);
@@ -697,17 +695,7 @@ export function ExploreWorkbench({
       directly rather than through `inset-0`.
   */
   return (
-    <section
-      /*
-        This shell is painted dark in both modes. In light mode the token-based
-        parts inside it (the tiles, the command board) resolved to light-mode
-        values and drew pale cards with unreadable numbers on the dark rail.
-        Declaring the subtree dark makes every token inside agree with the
-        surface it sits on. In dark mode the page is already dark, so nothing is
-        added and the active palette is left alone.
-      */
-      className={`${isLightMode ? "dark " : ""}analysis-explore-shell grid min-h-[520px] gap-0 overflow-hidden lg:h-full lg:grid-cols-[minmax(0,1fr)_420px] lg:grid-rows-[minmax(0,1fr)]`}
-    >
+    <section className="analysis-explore-shell grid min-h-[520px] gap-0 overflow-hidden lg:h-full lg:grid-cols-[minmax(0,1fr)_420px] lg:grid-rows-[minmax(0,1fr)]">
       <div className="analysis-explore-mapstage relative min-h-[360px] overflow-hidden lg:min-h-0">
         <div ref={mapContainerRef} className="h-full w-full" />
 
@@ -777,13 +765,13 @@ export function ExploreWorkbench({
 
         {!analysisResult && !mapUnavailableReason ? (
           <div className="analysis-explore-map-intro absolute left-4 top-4 z-10 max-w-[min(84%,360px)] text-white sm:left-5 sm:top-5">
-            <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-cyan-300/70">
+            <p className="text-label font-bold uppercase tracking-[0.12em] text-cyan-300/70">
               Corridor Analysis
             </p>
             <h2 className="mt-2 text-xl font-semibold tracking-tight text-white">
               Start with your study area.
             </h2>
-            <p className="mt-1.5 text-[0.82rem] leading-relaxed text-slate-300/80">
+            <p className="mt-1.5 text-compact leading-relaxed text-slate-300/80">
               Search for your county, city, or metro area — or draw it, or upload a boundary file. Then
               frame the planning question and run the analysis.
             </p>

@@ -26,7 +26,7 @@ export function ExploreDisclosureCard({ disclosureItems }: ExploreDisclosureCard
       </CardHeader>
       <CardContent className="space-y-4 px-6 py-5">
         <div className="rounded-[0.5rem] border border-amber-400/18 bg-amber-400/8 p-4">
-          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-amber-200/80">Operator release note</p>
+          <p className="text-label font-semibold uppercase tracking-[0.12em] text-amber-200/80">Operator release note</p>
           <p className="mt-3 text-sm leading-6 text-slate-100/88">
             Treat the cards above as working analysis surfaces, not self-certifying deliverables. Before external use, verify citations, source posture, and equity implications.
           </p>

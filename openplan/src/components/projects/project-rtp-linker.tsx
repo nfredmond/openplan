@@ -252,7 +252,7 @@ export function ProjectRtpLinker({
         <form className="space-y-4 rounded-[0.5rem] border border-border/70 bg-muted/20 p-4" onSubmit={handleAttach}>
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(12rem,0.75fr)]">
             <div className="space-y-1.5">
-              <label htmlFor="project-rtp-cycle" className="text-[0.82rem] font-semibold">
+              <label htmlFor="project-rtp-cycle" className="text-compact font-semibold">
                 RTP cycle
               </label>
               <select
@@ -273,7 +273,7 @@ export function ProjectRtpLinker({
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="project-rtp-role" className="text-[0.82rem] font-semibold">
+              <label htmlFor="project-rtp-role" className="text-compact font-semibold">
                 Portfolio role
               </label>
               <select
@@ -293,9 +293,9 @@ export function ProjectRtpLinker({
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="project-rtp-rationale" className="text-[0.82rem] font-semibold">
+            <label htmlFor="project-rtp-rationale" className="text-compact font-semibold">
               Prioritization rationale
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+              <span className="ml-1.5 text-label font-normal text-muted-foreground">optional</span>
             </label>
             <Textarea
               id="project-rtp-rationale"

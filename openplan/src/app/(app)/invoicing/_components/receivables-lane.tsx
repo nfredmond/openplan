@@ -247,7 +247,7 @@ export async function ReceivablesLane({
       <section className="space-y-4">
         <article className={panelClass()}>
           <div className="space-y-1 border-b border-border/60 pb-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Client invoices</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Client invoices</p>
             <h2 className="text-lg font-semibold tracking-tight text-foreground">Receivable register</h2>
           </div>
           <p className="mt-4 text-sm text-muted-foreground">
@@ -264,7 +264,7 @@ export async function ReceivablesLane({
     <section className="space-y-4">
       <article className={panelClass()}>
         <div className="space-y-1 border-b border-border/60 pb-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Client invoices</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Client invoices</p>
           <h2 className="text-lg font-semibold tracking-tight text-foreground">Receivable register</h2>
         </div>
 
@@ -276,7 +276,7 @@ export async function ReceivablesLane({
           <>
             <div className="mt-4 border border-border/60 bg-background/70">
               <div className="bg-background/70 px-4 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Invoices</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Invoices</p>
                 <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{receivableSummary.totalCount}</p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {receivableSummary.draftCount} draft, {receivableSummary.sentCount} sent, {receivableSummary.paidCount} paid, {receivableSummary.voidCount} void.
@@ -296,7 +296,7 @@ export async function ReceivablesLane({
       <article className={panelClass()}>
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-4">
           <div className="space-y-1">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Clients &amp; engagements</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Clients &amp; engagements</p>
             <h3 className="text-lg font-semibold tracking-tight text-foreground">Who this workspace bills</h3>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -472,7 +472,7 @@ export async function ReceivablesLane({
       <article className={panelClass()}>
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-4">
           <div className="space-y-1">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Time &amp; rates</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Time &amp; rates</p>
             <h3 className="text-lg font-semibold tracking-tight text-foreground">The ledger behind the lines</h3>
           </div>
           {!timeAndRatesUnavailable && unbilledSummary.entryCount > 0 ? (

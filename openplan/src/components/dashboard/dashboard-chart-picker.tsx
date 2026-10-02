@@ -122,7 +122,7 @@ export function DashboardChartPicker({
                       <span className="block text-xs font-semibold text-foreground">
                         {chart.question}
                       </span>
-                      <span className="block text-[0.7rem] leading-5 text-muted-foreground">
+                      <span className="block text-label leading-5 text-muted-foreground">
                         {chart.title}
                       </span>
                     </span>
@@ -135,14 +135,14 @@ export function DashboardChartPicker({
             <button
               type="button"
               onClick={() => onChange([])}
-              className="rounded-lg px-2 py-1 text-[0.7rem] font-semibold text-muted-foreground hover:text-foreground"
+              className="rounded-lg px-2 py-1 text-label font-semibold text-muted-foreground hover:text-foreground"
             >
               Hide all
             </button>
             <button
               type="button"
               onClick={() => onChange([...DEFAULT_DASHBOARD_CHART_IDS])}
-              className="rounded-lg px-2 py-1 text-[0.7rem] font-semibold text-muted-foreground hover:text-foreground"
+              className="rounded-lg px-2 py-1 text-label font-semibold text-muted-foreground hover:text-foreground"
             >
               Show all
             </button>

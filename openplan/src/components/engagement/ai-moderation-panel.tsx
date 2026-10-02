@@ -118,13 +118,13 @@ export function AiModerationPanel({
                   </span>
                 </p>
               </div>
-              <p className="mt-0.5 text-[0.7rem] leading-relaxed text-muted-foreground">{item.moderation.rationale}</p>
+              <p className="mt-0.5 text-label leading-relaxed text-muted-foreground">{item.moderation.rationale}</p>
             </div>
           ))}
         </div>
       )}
 
-      <p className="text-[0.7rem] leading-relaxed text-muted-foreground">{MODERATION_CAVEAT}</p>
+      <p className="text-label leading-relaxed text-muted-foreground">{MODERATION_CAVEAT}</p>
     </div>
   );
 }

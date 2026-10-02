@@ -212,7 +212,7 @@ function OperatorText({
       </Tag>
       {badge ? (
         <span
-          className="ms-1.5 inline-block rounded-full border border-border/70 px-1.5 py-0.5 align-middle text-[0.65rem] font-semibold uppercase tracking-wide text-muted-foreground"
+          className="ms-1.5 inline-block rounded-full border border-border/70 px-1.5 py-0.5 align-middle text-label font-semibold uppercase tracking-wide text-muted-foreground"
           lang={disclosure?.lang ?? translator.locale}
           dir={disclosure?.dir ?? translator.direction}
         >
@@ -677,7 +677,7 @@ export function PublicEngagementPortal({
                 >
                   {translation.text}
                 </p>
-                <p className="mt-1.5 text-[0.7rem] text-muted-foreground">{t("portal.commentTranslationCaveat")}</p>
+                <p className="mt-1.5 text-label text-muted-foreground">{t("portal.commentTranslationCaveat")}</p>
               </div>
             ) : null}
             {translation && ["pending", "failed", "missing", "unconfirmed", "unavailable"].includes(translation.status) ? (

@@ -208,7 +208,7 @@ export function AerialMissionCreator({
           <Radar className="h-4 w-4" />
         </span>
         <div>
-          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Aerial mission</p>
+          <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Aerial mission</p>
           <h3 className="text-sm font-semibold text-foreground">{titleLabel}</h3>
           {description ? <p className="mt-1 text-sm text-muted-foreground">{description}</p> : null}
         </div>

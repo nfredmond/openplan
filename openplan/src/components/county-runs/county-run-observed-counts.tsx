@@ -152,7 +152,7 @@ export function CountyRunObservedCounts({ countyRunId }: { countyRunId: string }
           {path ? <p className="module-note">Saved to {path}</p> : null}
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-[0.78rem]" data-testid="observed-counts-table">
+            <table className="w-full text-left text-compact" data-testid="observed-counts-table">
               <thead>
                 <tr>
                   {table.header.map((column) => (
@@ -201,7 +201,7 @@ export function CountyRunObservedCounts({ countyRunId }: { countyRunId: string }
 
           {showRaw ? (
             <pre
-              className="max-h-64 overflow-auto rounded bg-muted p-3 text-[0.7rem]"
+              className="max-h-64 overflow-auto rounded bg-muted p-3 text-label"
               data-testid="observed-counts-raw"
             >
               {serializeCountyValidationScaffoldCsv(table)}

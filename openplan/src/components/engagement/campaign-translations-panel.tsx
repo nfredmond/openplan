@@ -546,7 +546,7 @@ export function CampaignTranslationsPanel({
       {/* ── The editor ──────────────────────────────────────────────────── */}
       {targetLocales.length === 0 ? null : (
         <div className="mt-6">
-          <p id="translation-language-choice" className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          <p id="translation-language-choice" className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
             Translate into
           </p>
           <div role="group" aria-labelledby="translation-language-choice" className="mt-2 flex flex-wrap gap-2">
@@ -684,7 +684,7 @@ export function CampaignTranslationsPanel({
                         )}
                       </div>
 
-                      <p className="mt-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                      <p className="mt-2 text-xs uppercase tracking-[0.12em] text-muted-foreground">
                         As written ({sourceLanguageName})
                       </p>
                       <p
@@ -710,7 +710,7 @@ export function CampaignTranslationsPanel({
                       ) : null}
 
                       <label
-                        className="mt-3 block text-xs uppercase tracking-[0.16em] text-muted-foreground"
+                        className="mt-3 block text-xs uppercase tracking-[0.12em] text-muted-foreground"
                         htmlFor={`translation-${field.key}`}
                       >
                         In <span lang={locale} dir={direction}>{nativeName}</span> ({englishName})
@@ -732,7 +732,7 @@ export function CampaignTranslationsPanel({
 
                       {entry?.source === "machine" ? (
                         <div className="mt-2 rounded-[0.5rem] border border-amber-500/40 bg-amber-500/10 px-3 py-2">
-                          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                             What a participant reads with it today
                           </p>
                           {machineCaveat ? (

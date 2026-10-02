@@ -225,12 +225,12 @@ export function ModelDetailControls({
       <form className="mt-5 space-y-5" onSubmit={handleSubmit}>
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="rounded-[0.5rem] border border-border/70 bg-background/75 p-3.5">
-            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Anchors</p>
+            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Anchors</p>
             <p className="mt-2 text-lg font-semibold text-foreground">{anchorsCount}/2</p>
             <p className="mt-1 text-sm text-muted-foreground">Primary project and scenario context.</p>
           </div>
           <div className="rounded-[0.5rem] border border-border/70 bg-background/75 p-3.5">
-            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Explicit links</p>
+            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Explicit links</p>
             <p className="mt-2 flex items-center gap-2 text-lg font-semibold text-foreground">
               <Link2 className="h-4 w-4 text-muted-foreground" />
               {linkCount}
@@ -238,7 +238,7 @@ export function ModelDetailControls({
             <p className="mt-1 text-sm text-muted-foreground">Attached provenance, outputs, and related records.</p>
           </div>
           <div className="rounded-[0.5rem] border border-border/70 bg-background/75 p-3.5">
-            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Timestamps</p>
+            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Timestamps</p>
             <p className="mt-2 flex items-center gap-2 text-lg font-semibold text-foreground">
               <Clock3 className="h-4 w-4 text-muted-foreground" />
               {timestampsCount}/2
@@ -265,7 +265,7 @@ export function ModelDetailControls({
 
           <TabsContent value="core" className="pt-4 space-y-4">
             <div className="space-y-1.5">
-              <label htmlFor="model-control-title" className="text-[0.82rem] font-semibold">
+              <label htmlFor="model-control-title" className="text-compact font-semibold">
                 Title
               </label>
               <Input id="model-control-title" value={title} onChange={(event) => setTitle(event.target.value)} required />
@@ -273,7 +273,7 @@ export function ModelDetailControls({
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-1.5">
-                <label htmlFor="model-control-project" className="text-[0.82rem] font-semibold">
+                <label htmlFor="model-control-project" className="text-compact font-semibold">
                   Primary project
                 </label>
                 <select
@@ -292,7 +292,7 @@ export function ModelDetailControls({
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="model-control-scenario" className="text-[0.82rem] font-semibold">
+                <label htmlFor="model-control-scenario" className="text-compact font-semibold">
                   Primary scenario set
                 </label>
                 <select
@@ -313,7 +313,7 @@ export function ModelDetailControls({
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-1.5">
-                <label htmlFor="model-control-family" className="text-[0.82rem] font-semibold">
+                <label htmlFor="model-control-family" className="text-compact font-semibold">
                   Model family
                 </label>
                 <select
@@ -331,7 +331,7 @@ export function ModelDetailControls({
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="model-control-status" className="text-[0.82rem] font-semibold">
+                <label htmlFor="model-control-status" className="text-compact font-semibold">
                   Status
                 </label>
                 <select
@@ -351,7 +351,7 @@ export function ModelDetailControls({
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-1.5">
-                <label htmlFor="model-control-config-version" className="text-[0.82rem] font-semibold">
+                <label htmlFor="model-control-config-version" className="text-compact font-semibold">
                   Config version
                 </label>
                 <Input
@@ -363,7 +363,7 @@ export function ModelDetailControls({
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="model-control-owner" className="text-[0.82rem] font-semibold">
+                <label htmlFor="model-control-owner" className="text-compact font-semibold">
                   Operator
                 </label>
                 <Input
@@ -376,7 +376,7 @@ export function ModelDetailControls({
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="model-control-horizon" className="text-[0.82rem] font-semibold">
+              <label htmlFor="model-control-horizon" className="text-compact font-semibold">
                 Horizon / window
               </label>
               <Input
@@ -388,7 +388,7 @@ export function ModelDetailControls({
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="model-control-summary" className="text-[0.82rem] font-semibold">
+              <label htmlFor="model-control-summary" className="text-compact font-semibold">
                 Summary
               </label>
               <Textarea id="model-control-summary" value={summary} onChange={(event) => setSummary(event.target.value)} />
@@ -411,7 +411,7 @@ export function ModelDetailControls({
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="model-control-assumptions" className="text-[0.82rem] font-semibold">
+              <label htmlFor="model-control-assumptions" className="text-compact font-semibold">
                 Assumptions
               </label>
               <Textarea
@@ -423,13 +423,13 @@ export function ModelDetailControls({
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-1.5">
-                <label htmlFor="model-control-inputs" className="text-[0.82rem] font-semibold">
+                <label htmlFor="model-control-inputs" className="text-compact font-semibold">
                   Inputs
                 </label>
                 <Textarea id="model-control-inputs" value={inputSummary} onChange={(event) => setInputSummary(event.target.value)} />
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="model-control-outputs" className="text-[0.82rem] font-semibold">
+                <label htmlFor="model-control-outputs" className="text-compact font-semibold">
                   Outputs
                 </label>
                 <Textarea id="model-control-outputs" value={outputSummary} onChange={(event) => setOutputSummary(event.target.value)} />
@@ -437,7 +437,7 @@ export function ModelDetailControls({
             </div>
 
             <div className="space-y-1.5">
-              <label htmlFor="model-control-config-json" className="text-[0.82rem] font-semibold">
+              <label htmlFor="model-control-config-json" className="text-compact font-semibold">
                 Config JSON
               </label>
               <Textarea
@@ -459,7 +459,7 @@ export function ModelDetailControls({
 
             <div className="grid gap-4 xl:grid-cols-2">
               <div className="space-y-1.5">
-                <label htmlFor="model-control-scenario-links-search" className="text-[0.82rem] font-semibold">
+                <label htmlFor="model-control-scenario-links-search" className="text-compact font-semibold">
                   Additional scenario links
                 </label>
                 <ChipMultiSelect
@@ -474,7 +474,7 @@ export function ModelDetailControls({
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="model-control-plan-links-search" className="text-[0.82rem] font-semibold">
+                <label htmlFor="model-control-plan-links-search" className="text-compact font-semibold">
                   Plan links
                 </label>
                 <ChipMultiSelect
@@ -490,7 +490,7 @@ export function ModelDetailControls({
 
             <div className="grid gap-4 xl:grid-cols-2">
               <div className="space-y-1.5">
-                <label htmlFor="model-control-report-links-search" className="text-[0.82rem] font-semibold">
+                <label htmlFor="model-control-report-links-search" className="text-compact font-semibold">
                   Report links
                 </label>
                 <ChipMultiSelect
@@ -504,7 +504,7 @@ export function ModelDetailControls({
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="model-control-dataset-links-search" className="text-[0.82rem] font-semibold">
+                <label htmlFor="model-control-dataset-links-search" className="text-compact font-semibold">
                   Dataset links
                 </label>
                 <ChipMultiSelect
@@ -520,7 +520,7 @@ export function ModelDetailControls({
 
             <div className="grid gap-4 xl:grid-cols-2">
               <div className="space-y-1.5">
-                <label htmlFor="model-control-run-links-search" className="text-[0.82rem] font-semibold">
+                <label htmlFor="model-control-run-links-search" className="text-compact font-semibold">
                   Recorded run links
                 </label>
                 <ChipMultiSelect
@@ -534,7 +534,7 @@ export function ModelDetailControls({
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="model-control-project-links-search" className="text-[0.82rem] font-semibold">
+                <label htmlFor="model-control-project-links-search" className="text-compact font-semibold">
                   Related project links
                 </label>
                 <ChipMultiSelect
@@ -560,7 +560,7 @@ export function ModelDetailControls({
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-1.5">
-                <label htmlFor="model-control-validated" className="text-[0.82rem] font-semibold">
+                <label htmlFor="model-control-validated" className="text-compact font-semibold">
                   Last validated
                 </label>
                 <Input
@@ -571,7 +571,7 @@ export function ModelDetailControls({
                 />
               </div>
               <div className="space-y-1.5">
-                <label htmlFor="model-control-last-run" className="text-[0.82rem] font-semibold">
+                <label htmlFor="model-control-last-run" className="text-compact font-semibold">
                   Last run recorded
                 </label>
                 <Input

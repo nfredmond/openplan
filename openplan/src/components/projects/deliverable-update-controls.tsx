@@ -153,7 +153,7 @@ export function DeliverableUpdateControls({
       />
       <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-2">
         <div className="space-y-1">
-          <label htmlFor={budgetFieldId} className="text-[0.72rem] font-medium text-muted-foreground">
+          <label htmlFor={budgetFieldId} className="text-label font-medium text-muted-foreground">
             Budget (not to exceed)
           </label>
           <Input
@@ -172,7 +172,7 @@ export function DeliverableUpdateControls({
           />
         </div>
         <div className="space-y-1">
-          <label htmlFor={percentFieldId} className="text-[0.72rem] font-medium text-muted-foreground">
+          <label htmlFor={percentFieldId} className="text-label font-medium text-muted-foreground">
             Percent complete
           </label>
           <Input

@@ -1109,7 +1109,7 @@ export default async function ModelDetailPage({
                   <p className="module-section-label">Readiness</p>
                   <h2 className="module-section-title">Configuration and traceability checks</h2>
                 </div>
-                <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                   <FileStack className="h-3.5 w-3.5" />
                   {readiness.missingCheckCount} gaps
                 </span>

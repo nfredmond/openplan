@@ -103,7 +103,7 @@ export function CountyRunValidationPrep({ countyRunId }: { countyRunId: string }
           {prep.command ? (
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                   Run this
                 </p>
                 <button
@@ -123,7 +123,7 @@ export function CountyRunValidationPrep({ countyRunId }: { countyRunId: string }
           {prep.automationCommand ? (
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                   Or run it and post the results back
                 </p>
                 <button

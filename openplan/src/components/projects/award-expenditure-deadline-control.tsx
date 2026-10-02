@@ -71,7 +71,7 @@ export function AwardExpenditureDeadlineControl({
 
   if (expenditureDeadlineAt === undefined) {
     return (
-      <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+      <p className="mt-1.5 text-label text-muted-foreground">
         Lapse date not loaded on this view, so nothing here says whether one is recorded.
       </p>
     );
@@ -119,7 +119,7 @@ export function AwardExpenditureDeadlineControl({
 
   return (
     <div className="mt-1.5">
-      <p className="text-[0.73rem] text-muted-foreground">
+      <p className="text-label text-muted-foreground">
         <CalendarClock className="mr-1 inline h-3 w-3" aria-hidden />
         Funds must be spent by{" "}
         {recorded ? (
@@ -131,7 +131,7 @@ export function AwardExpenditureDeadlineControl({
 
       {canWrite ? (
         <div className="mt-1.5 flex flex-wrap items-center gap-2">
-          <label className="flex items-center gap-1.5 text-[0.73rem] text-muted-foreground">
+          <label className="flex items-center gap-1.5 text-label text-muted-foreground">
             Lapse date
             <input
               type="date"
@@ -154,13 +154,13 @@ export function AwardExpenditureDeadlineControl({
             {saving ? "Saving…" : "Save lapse date"}
           </button>
           {state.kind === "saved" ? (
-            <span className="text-[0.73rem] text-muted-foreground">Saved.</span>
+            <span className="text-label text-muted-foreground">Saved.</span>
           ) : null}
         </div>
       ) : null}
 
       {state.kind === "failed" ? (
-        <p role="alert" className="mt-1.5 text-[0.73rem] text-foreground">
+        <p role="alert" className="mt-1.5 text-label text-foreground">
           {state.message}
         </p>
       ) : null}

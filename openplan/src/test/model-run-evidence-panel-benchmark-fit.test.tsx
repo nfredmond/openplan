@@ -93,7 +93,7 @@ describe("ModelRunEvidencePanel benchmark fit block", () => {
     await openEvidence();
 
     const badge = screen.getByText("Fit 50/100");
-    expect(badge.className).toContain("--copper");
+    expect(badge.className).toContain("status-warn");
   });
 
   it("uses a non-warning badge tone at or above 60", async () => {
@@ -106,7 +106,7 @@ describe("ModelRunEvidencePanel benchmark fit block", () => {
     await openEvidence();
 
     const badge = screen.getByText("Fit 82/100");
-    expect(badge.className).not.toContain("--copper");
+    expect(badge.className).not.toContain("status-warn");
   });
 
   it("omits the block entirely when the packet has no benchmark fit", async () => {

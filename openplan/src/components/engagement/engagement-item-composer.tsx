@@ -108,7 +108,7 @@ export function EngagementItemComposer({
       <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
-            <label htmlFor="engagement-item-category" className="text-[0.82rem] font-semibold">
+            <label htmlFor="engagement-item-category" className="text-compact font-semibold">
               Category
             </label>
             <select
@@ -127,7 +127,7 @@ export function EngagementItemComposer({
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="engagement-item-submitter" className="text-[0.82rem] font-semibold">
+            <label htmlFor="engagement-item-submitter" className="text-compact font-semibold">
               Submitter/source label
             </label>
             <Input
@@ -140,9 +140,9 @@ export function EngagementItemComposer({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="engagement-item-title" className="text-[0.82rem] font-semibold">
+          <label htmlFor="engagement-item-title" className="text-compact font-semibold">
             Title
-            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+            <span className="ml-1.5 text-label font-normal text-muted-foreground">optional</span>
           </label>
           <Input
             id="engagement-item-title"
@@ -153,7 +153,7 @@ export function EngagementItemComposer({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="engagement-item-body" className="text-[0.82rem] font-semibold">
+          <label htmlFor="engagement-item-body" className="text-compact font-semibold">
             Body
           </label>
           <Textarea
@@ -168,7 +168,7 @@ export function EngagementItemComposer({
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
-            <label htmlFor="engagement-item-source" className="text-[0.82rem] font-semibold">
+            <label htmlFor="engagement-item-source" className="text-compact font-semibold">
               Source type
             </label>
             <select
@@ -186,7 +186,7 @@ export function EngagementItemComposer({
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="engagement-item-status" className="text-[0.82rem] font-semibold">
+            <label htmlFor="engagement-item-status" className="text-compact font-semibold">
               Status
             </label>
             <select
@@ -205,9 +205,9 @@ export function EngagementItemComposer({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="engagement-item-notes" className="text-[0.82rem] font-semibold">
+          <label htmlFor="engagement-item-notes" className="text-compact font-semibold">
             Moderation notes
-            <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+            <span className="ml-1.5 text-label font-normal text-muted-foreground">optional</span>
           </label>
           <Textarea
             id="engagement-item-notes"
@@ -220,9 +220,9 @@ export function EngagementItemComposer({
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
-            <label htmlFor="engagement-item-latitude" className="text-[0.82rem] font-semibold">
+            <label htmlFor="engagement-item-latitude" className="text-compact font-semibold">
               Latitude
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+              <span className="ml-1.5 text-label font-normal text-muted-foreground">optional</span>
             </label>
             <Input
               id="engagement-item-latitude"
@@ -234,9 +234,9 @@ export function EngagementItemComposer({
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="engagement-item-longitude" className="text-[0.82rem] font-semibold">
+            <label htmlFor="engagement-item-longitude" className="text-compact font-semibold">
               Longitude
-              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+              <span className="ml-1.5 text-label font-normal text-muted-foreground">optional</span>
             </label>
             <Input
               id="engagement-item-longitude"

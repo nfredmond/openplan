@@ -226,7 +226,7 @@ export function EngagementNotificationsInbox({
       </div>
 
       <div id="email-delivery-panel" className="mt-5 rounded-xl border border-border/60 p-3" data-testid="email-delivery-panel">
-        <p className="flex flex-wrap items-center gap-2 text-[0.82rem] font-semibold text-foreground">
+        <p className="flex flex-wrap items-center gap-2 text-compact font-semibold text-foreground">
           <Mail className="h-4 w-4" /> Email delivery
           <Button type="button" variant="outline" size="sm" disabled={delivery.state === "loading"} onClick={() => { setDelivery({ state: "loading" }); setRefresh(value => value + 1); }}>Refresh email status</Button>
         </p>

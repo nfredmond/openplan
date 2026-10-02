@@ -295,7 +295,7 @@ export function GrantsGovLiveSection({ trackedTitles }: { trackedTitles: string[
                         <p className="text-sm font-semibold text-foreground">{opportunity.title}</p>
                         <StatusBadge tone={window.tone}>{window.label}</StatusBadge>
                       </div>
-                      <p className="text-[0.8rem] text-muted-foreground">
+                      <p className="text-compact text-muted-foreground">
                         {opportunity.agencyName ?? "Agency not listed"} ·{" "}
                         {opportunity.number || `grants.gov #${opportunity.id}`}
                         {opportunity.cfdaList.length > 0
@@ -306,7 +306,7 @@ export function GrantsGovLiveSection({ trackedTitles }: { trackedTitles: string[
                         href={opportunity.detailUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 text-[0.8rem] font-semibold text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]"
+                        className="inline-flex items-center gap-1.5 text-compact font-semibold text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]"
                       >
                         Synopsis on grants.gov
                         <ExternalLink className="h-3.5 w-3.5" />

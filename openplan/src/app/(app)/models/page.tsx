@@ -610,13 +610,13 @@ export default async function ModelsPage({
                 Filter by status, project, or model family to find the ones that need attention.
               </p>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
               <FolderKanban className="h-3.5 w-3.5" />
               {modelsReadFailed ? "Total unavailable" : `${models.length} total`}
             </span>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-[0.78rem]">
+          <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-compact">
             <Link href={modelsTabHref(activeFilters, null)} className={cn("rounded px-2 py-0.5 transition-colors", !activeFilters.status ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
               {/* A tab count is a count of records. With the catalog unread there
                   are no records to count, and "(0)" would be a claim. */}
@@ -725,16 +725,16 @@ export default async function ModelsPage({
                       the model_links read. When it failed, "0 reports · 0 runs"
                       and "Missing: Scenario basis" are not facts about this
                       record — they are the shape of the failure. */}
-                  <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+                  <p className="mt-1.5 text-label text-muted-foreground">
                     {model.project?.name ?? "No project"} · {model.config_version ? `Config ${model.config_version}` : "Config pending"} · {linksReadFailed ? "Readiness and links unavailable" : `${model.readiness.ready ? "Ready" : `${model.readiness.missingCheckCount} gap${model.readiness.missingCheckCount === 1 ? "" : "s"}`} · ${model.linkageCounts.reports} reports · ${model.linkageCounts.runs} runs`}
                   </p>
                   {linksReadFailed ? (
-                    <p className="mt-1 text-[0.72rem] text-amber-700 dark:text-amber-300">
+                    <p className="mt-1 text-label text-amber-700 dark:text-amber-300">
                       Model links could not be read, so this record&apos;s readiness gaps and linked
                       reports and runs are unknown rather than absent.
                     </p>
                   ) : model.readiness.missingCheckLabels.length > 0 ? (
-                    <p className="mt-1 text-[0.72rem] text-amber-700 dark:text-amber-300">Missing: {model.readiness.missingCheckLabels.join(", ")}.</p>
+                    <p className="mt-1 text-label text-amber-700 dark:text-amber-300">Missing: {model.readiness.missingCheckLabels.join(", ")}.</p>
                   ) : null}
                 </CartographicSelectionLink>
               ))}

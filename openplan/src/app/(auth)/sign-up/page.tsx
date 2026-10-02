@@ -98,7 +98,7 @@ function SignUpForm() {
   return (
     <section className={frameClassName()}>
       <header className="border-b border-border/60 px-6 py-5 sm:px-7">
-        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Create account</p>
+        <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Create account</p>
         <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight">Create your OpenPlan account.</h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
           Free and open source. Sign up and your workspace is ready immediately — that is where
@@ -184,7 +184,7 @@ function SignUpForm() {
           ) : null}
 
           <div className="flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Choose your workspace right after signing in.</p>
+            <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Choose your workspace right after signing in.</p>
             <Button type="submit" className="sm:min-w-44" disabled={loading}>
               {loading ? "Creating account..." : "Create account"}
             </Button>

@@ -32,7 +32,7 @@ function OverdueChip({ count }: { count: number }) {
   // signals lateness by tone alone is unreadable to anyone who cannot see the
   // difference, and lateness is the one thing this table turns on.
   return (
-    <span className="inline-flex items-center gap-1 rounded bg-red-500/10 px-1.5 py-0.5 text-[0.7rem] font-semibold text-red-700 dark:text-red-300">
+    <span className="inline-flex items-center gap-1 rounded bg-red-500/10 px-1.5 py-0.5 text-label font-semibold text-red-700 dark:text-red-300">
       <AlertTriangle className="h-3 w-3" />
       {count} overdue
     </span>
@@ -85,7 +85,7 @@ export function ProjectPortfolioTable({ summary }: { summary: ProjectPortfolioSu
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[46rem] border-collapse text-sm">
             <thead>
-              <tr className="border-b border-border/70 text-left text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">
+              <tr className="border-b border-border/70 text-left text-label uppercase tracking-[0.12em] text-muted-foreground">
                 <th scope="col" className="py-2 pr-3 font-semibold">Project</th>
                 <th scope="col" className="py-2 pr-3 font-semibold">Phase</th>
                 <th scope="col" className="py-2 pr-3 font-semibold">Next due</th>

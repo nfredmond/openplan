@@ -4,12 +4,18 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { StatusTone } from "@/lib/ui/status";
 
+/*
+  Tones read the fixed status tokens, not the palette accents. Success used to
+  be `--pine` and warning `--copper`, which a palette may set to any hue: under
+  Plum, "success" was violet, and under Cartographic "info" and "warning" were
+  the same orange.
+*/
 const toneClasses: Record<StatusTone, string> = {
   neutral: "border-[color:var(--line)] bg-background text-foreground/72",
-  info: "border-[color:var(--accent)]/30 bg-[color:var(--accent)]/10 text-[color:var(--accent)]",
-  success: "border-[color:var(--pine)]/32 bg-[color:var(--pine)]/10 text-[color:var(--pine)]",
-  warning: "border-[color:var(--copper)]/38 bg-[color:var(--copper)]/12 text-[color:var(--copper)]",
-  danger: "border-destructive/38 bg-destructive/10 text-destructive",
+  info: "border-status-info/35 bg-status-info/12 text-status-info",
+  success: "border-status-ok/35 bg-status-ok/12 text-status-ok",
+  warning: "border-status-warn/38 bg-status-warn/12 text-status-warn",
+  danger: "border-status-urgent/38 bg-status-urgent/12 text-status-urgent",
 };
 
 type StatusBadgeProps = React.ComponentProps<typeof Badge> & {
@@ -20,7 +26,8 @@ export function StatusBadge({ tone = "neutral", className, children, ...props }:
   return (
     <Badge
       variant="outline"
-      className={cn("min-h-8 px-2.5 py-1 text-[0.62rem] tracking-[0.16em]", toneClasses[tone], className)}
+      data-tone={tone}
+      className={cn("min-h-8 px-2.5 py-1 text-label tracking-[0.12em]", toneClasses[tone], className)}
       {...props}
     >
       {children}

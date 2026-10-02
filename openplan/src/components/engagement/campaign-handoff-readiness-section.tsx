@@ -211,7 +211,7 @@ export function CampaignHandoffReadinessSection({
             </div>
 
             <div className="module-note border-sky-300/40 bg-sky-50/70 dark:border-sky-900 dark:bg-sky-950/20">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Map export readiness</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Map export readiness</p>
               <h3 className="mt-2 text-sm font-semibold text-foreground">
                 {counts.exportCoverage.mapReadyItems} approved item{counts.exportCoverage.mapReadyItems === 1 ? "" : "s"} ready for GIS/map export
               </h3>
@@ -238,7 +238,7 @@ export function CampaignHandoffReadinessSection({
               {campaign.submissions_closed_at ? "Intake closed" : campaign.allow_public_submissions ? "Intake may be open" : "Staff-controlled intake"}
             </StatusBadge>
           </div>
-          <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Public-review copy guard</p>
+          <p className="mt-3 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Public-review copy guard</p>
           <h3 className="mt-2 text-sm font-semibold text-foreground">Keep handoff language supervised and source-bound</h3>
           <p className="mt-2 text-sm text-muted-foreground">{publicReviewCopyGuard.summary}</p>
           <p className="mt-2 text-sm text-muted-foreground">{publicReviewCopyGuard.nextCopyAction}</p>

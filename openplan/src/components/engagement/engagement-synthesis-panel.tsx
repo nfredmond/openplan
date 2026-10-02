@@ -116,7 +116,7 @@ export function EngagementSynthesisPanel({ initialSynthesis: synthesis, initialS
                 {flaggedSentences.map((sentence, index) => (
                   <li key={index}>
                     <span className="text-foreground/80">{stripFactCitationTokens(sentence.text)}</span>{" "}
-                    <span className="text-[0.68rem] uppercase tracking-wide">
+                    <span className="text-label uppercase tracking-wide">
                       {sentence.reason === "missing_citation"
                         ? "— no citation"
                         : sentence.reason === "unfaithful_citation"
@@ -129,7 +129,7 @@ export function EngagementSynthesisPanel({ initialSynthesis: synthesis, initialS
             </details>
           ) : null}
 
-          <p className="text-[0.7rem] leading-relaxed text-muted-foreground">Original record caveat: {synthesis.caveat}</p>
+          <p className="text-label leading-relaxed text-muted-foreground">Original record caveat: {synthesis.caveat}</p>
         </div>
       )}
     </div>

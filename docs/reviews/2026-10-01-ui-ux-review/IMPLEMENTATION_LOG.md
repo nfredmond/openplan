@@ -26,3 +26,24 @@ Browser checks ran against a dev server started from the worktree on port 3210 (
 
 - A closed or archived campaign still returns the generic 404 (P4). It needs a read-only results page, which is new behavior and belongs with the portal work in Phase 6.
 - Favicon, PNG social image and scaffold file removal (P10). These wait on the wordmark in Phase 6.
+
+## Phase 1, first batch, October 1, 2026
+
+Checks in the worktree: lint clean, dead-code check exit 0, 16,742 tests passed, production build exit 0. Browser checks on port 3210 from the worktree, dark and light, 1440 and 390 pixels wide.
+
+| Change | How it was checked |
+|---|---|
+| Type floor. Added `text-label` (12px), `text-compact` (13px) and `text-reading` (17px). Moved 624 component uses and 77 stylesheet declarations under 12px onto the floor, and 197 more onto `text-compact`. Wide letter-spacing (0.16em and up) became 0.12em so labels did not grow wider | Chrome: zero text elements under 12px on 15 of 16 sampled pages, down from 89 to 268 per page at 390 pixels. New guard `type-scale-has-a-floor.test.ts` fails when a 9.9px badge is restored |
+| `cn()` knows the new sizes are font sizes | Unit test in the same guard. Without it tailwind-merge drops `text-label` when a colour class follows |
+| Status colours (`--status-ok`, `-warn`, `-urgent`, `-info`) are fixed in both modes and no palette overrides them. The status badge uses them | Three tone tests updated to the new classes; each failed first, so each still detects a tone change. Seen on screen in both modes |
+| Always-dark surfaces (operator card, Corridor Analysis shell, studio panels, public rail, Planner Agent drawer) take dark token values in light mode | Chrome, light mode: the "Next" badge on the grants operator card and the Corridor Analysis rail are readable. `surface-text-stays-legible` was taught to find `.dark` inside a selector list; it failed first with "expected 4 to be greater than or equal to 5" |
+| Input and select borders at 3.2:1 or better | Token change; contrast calculated, not measured in a browser |
+| Light Cartographic accent #c03f1c (was #e45635) and warning text #8a5a00 (was #b78018) | Calculated: white on the accent is 5.29:1, accent on the page background is 4.68:1 |
+| Grid children may shrink below their content | Chrome at 390 pixels, elements pushed past the right edge: grants 648 to 117, one project 391 to 2, one program 295 to 4, one model 325 to 62 |
+| One global reduced-motion rule | Read in source. Not exercised with the setting on |
+
+Known gaps from this batch:
+
+- The generated model charts (`src/lib/models/charts/`) still set 10 and 11px text inside fixed-width SVG. The floor guard does not read SVG attributes. Phase 5 covers charts.
+- The other four palettes were not looked at after the accent and status changes.
+- One hydration warning appears on a model page in light mode. It was not traced, and I did not establish whether it predates this work.

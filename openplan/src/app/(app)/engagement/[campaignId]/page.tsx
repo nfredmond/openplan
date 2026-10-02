@@ -653,7 +653,7 @@ export default async function EngagementCampaignDetailPage({
             </StatusBadge>
             <span className="module-record-chip"><span>Type</span><strong>{titleizeEngagementValue(campaign.engagement_type)}</strong></span>
           </div>
-          <p className="text-[0.73rem] text-muted-foreground">
+          <p className="text-label text-muted-foreground">
             {itemsUnreadable
               ? "Flagged count unavailable — the comments could not be read"
               : counts.statusCounts.flagged > 0

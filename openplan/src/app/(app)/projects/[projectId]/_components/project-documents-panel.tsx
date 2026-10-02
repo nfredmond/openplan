@@ -90,7 +90,7 @@ function entryRow(entry: DocumentLibraryEntry) {
           </h4>
           {entry.detail ? <p className="module-record-summary">{entry.detail}</p> : null}
           {meta.length > 0 ? (
-            <p className="text-[0.73rem] text-muted-foreground">{meta.join(" · ")}</p>
+            <p className="text-label text-muted-foreground">{meta.join(" · ")}</p>
           ) : null}
         </div>
       </div>
@@ -179,7 +179,7 @@ export function ProjectDocumentsPanel({ library, projectId, canGenerateEvidenceB
           ) : null}
           {groups.map(sourceGroupBlock)}
           {failureMessages.length > 0 ? (
-            <p className="text-[0.73rem] text-muted-foreground">{failureMessages.join(" · ")}</p>
+            <p className="text-label text-muted-foreground">{failureMessages.join(" · ")}</p>
           ) : null}
         </div>
       )}

@@ -355,7 +355,7 @@ export function CountyRunsPageClient({
       {!error && items.length > 0 ? (
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Recent runs</p>
+            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Recent runs</p>
             <h2 className="mt-1 text-lg font-semibold tracking-tight text-foreground">County validation runs</h2>
           </div>
           <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">

@@ -500,7 +500,7 @@ function FundingAwardCloseoutRow({
           <div className="mt-3 grid gap-3 md:grid-cols-2">
             <div className="space-y-1.5">
               <label
-                className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground"
                 htmlFor={`reopen-status-${award.id}`}
               >
                 Status it returns to
@@ -529,7 +529,7 @@ function FundingAwardCloseoutRow({
             </div>
             <div className="space-y-1.5">
               <label
-                className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground"
                 htmlFor={`reopen-reason-${award.id}`}
               >
                 Reason (required)
@@ -590,7 +590,7 @@ function FundingAwardCloseoutRow({
 
           <div className="mt-3 space-y-1.5">
             <label
-              className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+              className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground"
               htmlFor={`closeout-note-${award.id}`}
             >
               Close-out note (optional)
@@ -729,7 +729,7 @@ export function FundingAwardCloseoutPanel({
 
   return (
     <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-muted/15 px-3 py-3">
-      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
         Award close-out
       </p>
       <p className="mt-1 text-sm text-muted-foreground">

@@ -145,7 +145,7 @@ export function FundingOpportunityNarrativeDraftPanel({
 
       {draft ? (
         <div className="mt-3 space-y-2">
-          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-foreground/70">
+          <p className="text-label font-semibold uppercase tracking-[0.14em] text-foreground/70">
             {draft.source === "ai" ? "AI draft" : "Draft"}
             {draft.model ? ` · ${draft.model}` : ""} · {formatCreatedAt(draft.created_at)}
           </p>

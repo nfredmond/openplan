@@ -148,10 +148,10 @@ export function TranscribedChapterBlockCard({
       data-testid="transcribed-chapter-block-card"
     >
       <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded border border-border/70 bg-muted/30 px-2 py-0.5 text-[0.7rem] font-medium text-muted-foreground">
+        <span className="rounded border border-border/70 bg-muted/30 px-2 py-0.5 text-label font-medium text-muted-foreground">
           The plan&apos;s own words
         </span>
-        <span className="inline-flex items-center gap-1 text-[0.7rem] text-muted-foreground">
+        <span className="inline-flex items-center gap-1 text-label text-muted-foreground">
           <FileText className="h-3 w-3" aria-hidden="true" />
           {documentHref ? (
             <a href={documentHref} className="underline underline-offset-2">

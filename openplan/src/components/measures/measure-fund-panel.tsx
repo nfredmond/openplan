@@ -237,7 +237,7 @@ export function MeasureFundPanel({
       <div className="mt-4 overflow-x-auto">
         <table className="w-full min-w-[52rem] text-sm">
           <thead>
-            <tr className="border-b border-border/70 text-left text-[0.72rem] uppercase tracking-[0.14em] text-muted-foreground">
+            <tr className="border-b border-border/70 text-left text-label uppercase tracking-[0.14em] text-muted-foreground">
               <th className="py-2 pr-3">Period</th>
               <th className="py-2 pr-3">Fiscal year</th>
               <th className="py-2 pr-3 text-right">Adopted forecast</th>

@@ -163,7 +163,7 @@ export function RtpCycleDetailsEditor({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3 rounded-[0.5rem] border border-border/60 bg-muted/20 p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Edit plan details</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Edit plan details</p>
 
       {error ? (
         <p className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
@@ -280,7 +280,7 @@ export function RtpCycleDetailsEditor({
             onChange={(event) => setAnchorLongitude(event.target.value)}
           />
         </div>
-        <p className="text-[0.7rem] text-muted-foreground sm:col-span-2">
+        <p className="text-label text-muted-foreground sm:col-span-2">
           Clearing both removes this plan&apos;s pin from the shared map.
         </p>
       </div>

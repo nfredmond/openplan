@@ -128,7 +128,7 @@ export function ExploreStudyBriefControls({
                 maxLength={ANALYSIS_QUERY_MAX_CHARS}
               />
             </GuidedFlowRow>
-            <p className="text-[0.78rem] text-muted-foreground">
+            <p className="text-compact text-muted-foreground">
               {String(flow.values.queryText).length} of {ANALYSIS_QUERY_MAX_CHARS} characters used.
             </p>
           </>
@@ -150,7 +150,7 @@ export function ExploreStudyBriefControls({
               ))}
             </select>
             {projects.length === 0 ? (
-              <p className="text-[0.78rem] text-muted-foreground">
+              <p className="text-compact text-muted-foreground">
                 This workspace has no projects yet, so there is nothing to attach it to. The run is
                 still saved here.
               </p>
@@ -274,7 +274,7 @@ export function ExploreStudyBriefControls({
                 Report style: {TEMPLATE_LABEL[reportTemplate]}
               </p>
               {isQueryTooLong ? (
-                <p className="text-[0.72rem] text-destructive">
+                <p className="text-label text-destructive">
                   That question is too long to run. Open the setup and shorten it.
                 </p>
               ) : null}

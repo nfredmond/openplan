@@ -296,7 +296,7 @@ export function ProjectFundingPanel({
 
           <div className="grid gap-4 md:grid-cols-3 mt-5">
             <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Funding lined up</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Funding lined up</p>
               <div className="mt-2">
                 <StatusBadge tone={projectFundingStackTone(fundingStackSummary.pipelineStatus)}>{fundingStackSummary.pipelineLabel}</StatusBadge>
               </div>
@@ -317,7 +317,7 @@ export function ProjectFundingPanel({
               ) : null}
             </div>
             <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Money claimed back</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Money claimed back</p>
               <div className="mt-2">
                 <StatusBadge tone={projectFundingReimbursementTone(fundingStackSummary.reimbursementStatus)}>
                   {fundingStackSummary.reimbursementLabel}
@@ -340,7 +340,7 @@ export function ProjectFundingPanel({
               ) : null}
             </div>
             <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Next obligation</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Next obligation</p>
               <h3 className="mt-2 text-sm font-semibold text-foreground">{nextObligationAward?.title ?? "No obligation date recorded"}</h3>
               <p className="mt-2 text-sm text-muted-foreground">
                 {nextObligationAward
@@ -353,7 +353,7 @@ export function ProjectFundingPanel({
           <div className="mt-5 rounded-[0.75rem] border border-border/70 bg-background/80">
             <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border/60 px-5 py-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Funding profile scan</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Funding profile scan</p>
                 <h3 className="mt-1 text-base font-semibold text-foreground">Target, match, obligation, reimbursement, closeout, and evidence in one row stack</h3>
                 <p className="mt-1 max-w-4xl text-sm text-muted-foreground">
                   This is an operator scan for grant and RTP readiness. It keeps gaps explicit and does not claim legal compliance automation or grant-award prediction.
@@ -369,7 +369,7 @@ export function ProjectFundingPanel({
                 <div key={lane.id} className="grid gap-3 px-5 py-4 md:grid-cols-[0.95fr_0.75fr_1.45fr_1.45fr] md:items-start">
                   <div>
                     <p className="text-sm font-semibold text-foreground">{lane.label}</p>
-                    <p className="mt-1 text-[0.72rem] uppercase tracking-[0.14em] text-muted-foreground">{lane.amount !== null ? fmtCurrency(lane.amount) : "No amount"}</p>
+                    <p className="mt-1 text-label uppercase tracking-[0.14em] text-muted-foreground">{lane.amount !== null ? fmtCurrency(lane.amount) : "No amount"}</p>
                   </div>
                   <div>
                     <StatusBadge tone={projectFundingProfileScanTone(lane.status)}>{lane.statusLabel}</StatusBadge>
@@ -455,7 +455,7 @@ export function ProjectFundingPanel({
                         <p className="module-record-summary">{award.notes || "No award notes recorded yet."}</p>
                       </div>
 
-                      <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+                      <p className="mt-1.5 text-label text-muted-foreground">
                         Awarded {fmtCurrency(award.awarded_amount)} · Match {fmtCurrency(award.match_amount)} · Reimbursed {fmtCurrency(awardInvoiceSummary?.paidNetAmount ?? 0)} · Outstanding {fmtCurrency(awardInvoiceSummary?.outstandingNetAmount ?? 0)} · Obligation {fmtDateTime(award.obligation_due_at)}{award.opportunity?.title ? ` · ${award.opportunity.title}` : ""}
                       </p>
 
@@ -484,7 +484,7 @@ export function ProjectFundingPanel({
                         basis.
                       */}
                       {drawdownLedger ? (
-                        <p className="mt-1 text-[0.73rem] text-muted-foreground">
+                        <p className="mt-1 text-label text-muted-foreground">
                           Claim progress: awarded {drawdownLedger.authorizedAmount !== null ? fmtCurrency(drawdownLedger.authorizedAmount) : "not entered"} · claimed {fmtCurrency(drawdownLedger.claimedGrossToDate)} gross · paid {fmtCurrency(drawdownLedger.paidToDate)} net
                           {drawdownLedger.remainingAuthorized !== null
                             ? drawdownLedger.remainingAuthorized >= 0
@@ -510,7 +510,7 @@ export function ProjectFundingPanel({
                       <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-background/70 px-4 py-4">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <div>
-                            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                               Linked invoice chain
                             </p>
                             <p className="mt-1 text-sm text-muted-foreground">
@@ -629,21 +629,21 @@ export function ProjectFundingPanel({
                       </p>
                     </div>
 
-                    <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+                    <p className="mt-1.5 text-label text-muted-foreground">
                       {fmtCurrency(opportunity.expected_award_amount)} likely · Closes {fmtDateTime(opportunity.closes_at)}{opportunity.agency_name ? ` · ${opportunity.agency_name}` : ""}
                     </p>
 
                     <div className="mt-4 grid gap-3 md:grid-cols-3">
                       <div className="rounded-[0.5rem] border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
-                        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-foreground">Fit notes</p>
+                        <p className="text-label font-semibold uppercase tracking-[0.14em] text-foreground">Fit notes</p>
                         <p className="mt-2">{opportunity.fit_notes || "No fit notes recorded yet."}</p>
                       </div>
                       <div className="rounded-[0.5rem] border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
-                        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-foreground">Readiness notes</p>
+                        <p className="text-label font-semibold uppercase tracking-[0.14em] text-foreground">Readiness notes</p>
                         <p className="mt-2">{opportunity.readiness_notes || "No readiness notes recorded yet."}</p>
                       </div>
                       <div className="rounded-[0.5rem] border border-border/60 bg-background/70 px-4 py-3 text-sm text-muted-foreground">
-                        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-foreground">Decision rationale</p>
+                        <p className="text-label font-semibold uppercase tracking-[0.14em] text-foreground">Decision rationale</p>
                         <p className="mt-2">{opportunity.decision_rationale || "No decision rationale recorded yet."}</p>
                       </div>
                     </div>

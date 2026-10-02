@@ -140,7 +140,7 @@ export function RecentActionActivity({
         <>
           <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
             <div className="module-subpanel">
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                 What still needs a person
               </p>
               <p className="mt-2 text-sm leading-relaxed text-foreground">
@@ -157,7 +157,7 @@ export function RecentActionActivity({
             </div>
             {showNoWritePosture ? (
               <div className="module-subpanel">
-                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                   What this panel does, and does not do
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-foreground">
@@ -179,17 +179,17 @@ export function RecentActionActivity({
                       <div className="module-record-kicker">
                         <StatusBadge tone={getOutcomeTone(execution.outcome)}>{execution.outcome}</StatusBadge>
                         <StatusBadge tone="neutral">{execution.approval}</StatusBadge>
-                        <span className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                        <span className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                           {getTriageReason(execution)}
                         </span>
-                        <span className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                        <span className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                           {formatActionTimestamp(execution.completed_at)}
                         </span>
                       </div>
                       <div className="space-y-1.5">
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <h3 className="module-record-title">{formatActionKind(execution.action_kind)}</h3>
-                          <code className="rounded border border-border/70 bg-muted/15 px-2 py-1 text-[0.72rem] text-foreground/80">
+                          <code className="rounded border border-border/70 bg-muted/15 px-2 py-1 text-label text-foreground/80">
                             {execution.audit_event}
                           </code>
                         </div>

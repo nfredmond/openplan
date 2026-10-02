@@ -109,7 +109,7 @@ export function RtpCycleRegistryTable({
           </div>
           <div className="space-y-3 text-right">
             <div>
-              <p className="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Cycle status</p>
+              <p className="mb-2 text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Cycle status</p>
               <div className="flex flex-wrap justify-end gap-2">
                 {RTP_CYCLE_STATUS_OPTIONS.map((option) => {
                   const active = filtersStatus === option.value;
@@ -135,7 +135,7 @@ export function RtpCycleRegistryTable({
             */}
             {archivedCycleCount > 0 || showArchived ? (
               <div>
-                <p className="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Previous plans</p>
+                <p className="mb-2 text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Previous plans</p>
                 <div className="flex flex-wrap justify-end gap-2">
                   <Link
                     href={registryHref({ archived: !showArchived })}
@@ -149,7 +149,7 @@ export function RtpCycleRegistryTable({
               </div>
             ) : null}
             <div>
-              <p className="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Packet attention</p>
+              <p className="mb-2 text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Packet attention</p>
               <div className="flex flex-wrap justify-end gap-2">
                 {[
                   { value: "all" as const, label: "All", count: allCyclesCount },
@@ -173,7 +173,7 @@ export function RtpCycleRegistryTable({
               </div>
             </div>
             <div>
-              <p className="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Recent queue work</p>
+              <p className="mb-2 text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Recent queue work</p>
               <div className="flex flex-wrap justify-end gap-2">
                 <Link
                   href={registryHref({ recent: false })}
@@ -190,7 +190,7 @@ export function RtpCycleRegistryTable({
               </div>
             </div>
             <div>
-              <p className="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Last queue action</p>
+              <p className="mb-2 text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Last queue action</p>
               <div className="flex flex-wrap justify-end gap-2">
                 {[
                   { value: "all" as const, label: "All actions", count: queueActionScopedCyclesCount },
@@ -217,7 +217,7 @@ export function RtpCycleRegistryTable({
               </div>
             </div>
             <div>
-              <p className="mb-2 text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Queue trace freshness</p>
+              <p className="mb-2 text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Queue trace freshness</p>
               <div className="flex flex-wrap justify-end gap-2">
                 {[
                   { value: "all" as const, label: "All trace states", count: queueTraceStateScopedCyclesCount },
@@ -491,7 +491,7 @@ export function RtpCycleRegistryTable({
                 <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                      <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                         Reimbursement traceability
                       </p>
                       <p className="mt-2 text-sm font-medium">
@@ -552,7 +552,7 @@ export function RtpCycleRegistryTable({
                 <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Packet scan cue</p>
+                      <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Packet scan cue</p>
                       <p className="mt-2 text-sm font-medium">{cycle.packetScanCue.label}</p>
                       <p className="mt-1 text-sm text-muted-foreground">{cycle.packetScanCue.detail}</p>
                     </div>
@@ -563,7 +563,7 @@ export function RtpCycleRegistryTable({
                 <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                      <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                         Operator status
                       </p>
                       <p className="mt-2 text-sm font-medium">{cycle.packetOperatorStatus.label}</p>
@@ -581,7 +581,7 @@ export function RtpCycleRegistryTable({
                     </div>
                   </div>
                   <div className="mt-3 rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-3">
-                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                       Last queue action
                     </p>
                     <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
@@ -601,7 +601,7 @@ export function RtpCycleRegistryTable({
                     </div>
                     <div className="mt-3 flex flex-wrap items-start justify-between gap-3 rounded-[0.5rem] border border-border/50 bg-background px-3 py-3">
                       <div>
-                        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                        <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                           Queue trace freshness
                         </p>
                         <p className="mt-2 text-sm font-medium">{cycle.packetQueueTraceState.label}</p>
@@ -614,7 +614,7 @@ export function RtpCycleRegistryTable({
 
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
                   <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-3">
-                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                       Where it is
                     </p>
                     <p className="mt-2 text-sm font-medium">{cycle.workflow.label}</p>
@@ -622,7 +622,7 @@ export function RtpCycleRegistryTable({
                   </div>
 
                   <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
-                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                       Next actions
                     </p>
                     <ul className="mt-2 space-y-2 text-sm text-muted-foreground">

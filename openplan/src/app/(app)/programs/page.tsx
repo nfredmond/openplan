@@ -854,7 +854,7 @@ export default async function ProgramsPage({
                   </div>
 
                   <div className="mt-3 border-t border-border/70 pt-3">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Next report step
                     </p>
                     <p className="mt-1 text-sm font-semibold text-foreground">

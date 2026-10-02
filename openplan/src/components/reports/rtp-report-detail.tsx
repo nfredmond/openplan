@@ -489,7 +489,7 @@ export function RtpReportDetail({
           <article id="packet-release-review" className="module-section-surface">
             {report.rtp_basis_stale ? (
               <div className="mb-4 rounded-[18px] border border-amber-400/60 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-950/40 dark:text-amber-100">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em]">
+                <p className="text-label font-semibold uppercase tracking-[0.12em]">
                   Basis stale
                 </p>
                 <p className="mt-1 font-semibold">
@@ -522,7 +522,7 @@ export function RtpReportDetail({
               <p className="mt-2 text-xs text-muted-foreground">{packetFreshness.detail}</p>
               {comparisonDigest ? (
                 <div className="mt-4 rounded-xl border border-border/70 bg-background px-3 py-3">
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                     Comparison posture
                   </p>
                   <p className="mt-2 text-sm font-semibold text-foreground">{comparisonDigest.headline}</p>
@@ -532,12 +532,12 @@ export function RtpReportDetail({
               {generationContext.readinessLabel || generationContext.workflowLabel ? (
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
                   <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Generation-time readiness</p>
+                    <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Generation-time readiness</p>
                     <p className="mt-2 text-sm font-semibold text-foreground">{generationContext.readinessLabel ?? "Unknown"}</p>
                     <p className="mt-1 text-xs text-muted-foreground">{generationContext.readinessReason ?? "No readiness reason captured."}</p>
                   </div>
                   <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Generation-time workflow</p>
+                    <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Generation-time workflow</p>
                     <p className="mt-2 text-sm font-semibold text-foreground">{generationContext.workflowLabel ?? "Unknown"}</p>
                     <p className="mt-1 text-xs text-muted-foreground">{generationContext.workflowDetail ?? "No workflow detail captured."}</p>
                   </div>
@@ -546,12 +546,12 @@ export function RtpReportDetail({
               {generationContext.publicReviewLabel || currentContext.publicReviewLabel ? (
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
                   <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Generation-time review loop</p>
+                    <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Generation-time review loop</p>
                     <p className="mt-2 text-sm font-semibold text-foreground">{generationContext.publicReviewLabel ?? "Unknown"}</p>
                     <p className="mt-1 text-xs text-muted-foreground">{generationContext.publicReviewDetail ?? "No public-review summary was captured on this packet artifact."}</p>
                   </div>
                   <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Current review loop</p>
+                    <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Current review loop</p>
                     <p className="mt-2 text-sm font-semibold text-foreground">{currentContext.publicReviewLabel ?? "Unknown"}</p>
                     <p className="mt-1 text-xs text-muted-foreground">{currentContext.publicReviewDetail ?? "No live public-review summary is available for this RTP packet yet."}</p>
                   </div>
@@ -560,12 +560,12 @@ export function RtpReportDetail({
               {generationContext.presetStatusLabel || currentContext.presetStatusLabel ? (
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
                   <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Generated packet layout</p>
+                    <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Generated packet layout</p>
                     <p className="mt-2 text-sm font-semibold text-foreground">{generationContext.presetStatusLabel ?? "Unknown"}</p>
                     <p className="mt-1 text-xs text-muted-foreground">{generationContext.presetDetail ?? "No packet preset alignment captured."}</p>
                   </div>
                   <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Current packet layout</p>
+                    <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Current packet layout</p>
                     <p className="mt-2 text-sm font-semibold text-foreground">{currentContext.presetStatusLabel ?? "Unknown"}</p>
                     <p className="mt-1 text-xs text-muted-foreground">{currentContext.presetDetail ?? "No current packet preset alignment available."}</p>
                   </div>
@@ -574,13 +574,13 @@ export function RtpReportDetail({
               {generationContext.fundingSnapshot || currentContext.fundingSnapshot ? (
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
                   <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Generation-time funding posture</p>
+                    <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Generation-time funding posture</p>
                     <p className="mt-2 text-sm font-semibold text-foreground">{generationContext.fundingSnapshot?.label ?? "Unknown"}</p>
                     <p className="mt-1 text-xs text-muted-foreground">{generationContext.fundingSnapshot?.reason ?? "No RTP funding posture was captured on this artifact."}</p>
                     <p className="mt-2 text-xs text-muted-foreground">{generationContext.fundingSnapshot?.reimbursementLabel ?? "Unknown reimbursement posture"}</p>
                   </div>
                   <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
-                    <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Current funding posture</p>
+                    <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Current funding posture</p>
                     <p className="mt-2 text-sm font-semibold text-foreground">{currentContext.fundingSnapshot?.label ?? "Unknown"}</p>
                     <p className="mt-1 text-xs text-muted-foreground">{currentContext.fundingSnapshot?.reason ?? "No current RTP funding posture is available."}</p>
                     <p className="mt-2 text-xs text-muted-foreground">{currentContext.fundingSnapshot?.reimbursementLabel ?? "Unknown reimbursement posture"}</p>
@@ -589,7 +589,7 @@ export function RtpReportDetail({
               ) : null}
               {grantsFollowThrough ? (
                 <div className="mt-4 rounded-2xl border border-amber-400/30 bg-amber-500/[0.08] px-4 py-4">
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-amber-900/80 dark:text-amber-200/80">
+                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-amber-900/80 dark:text-amber-200/80">
                     Grants follow-through
                   </p>
                   <p className="mt-2 text-sm font-semibold text-foreground">{grantsFollowThrough.title}</p>
@@ -625,22 +625,22 @@ export function RtpReportDetail({
               <p className="mt-3 text-sm text-muted-foreground">{currentContext.publicReviewDetail ?? "No live public-review summary is available for this RTP packet yet."}</p>
               <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                 <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Whole-cycle campaigns</p>
+                  <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Whole-cycle campaigns</p>
                   <p className="mt-2 text-sm font-semibold text-foreground">{currentContext.cycleLevelCampaignCount ?? 0}</p>
                   <p className="mt-1 text-xs text-muted-foreground">Planwide review targets tied directly to this RTP cycle.</p>
                 </div>
                 <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Chapter campaigns</p>
+                  <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Chapter campaigns</p>
                   <p className="mt-2 text-sm font-semibold text-foreground">{currentContext.chapterLevelCampaignCount ?? 0}</p>
                   <p className="mt-1 text-xs text-muted-foreground">Section-specific comment targets feeding the same cycle review loop.</p>
                 </div>
                 <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Ready comments</p>
+                  <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Ready comments</p>
                   <p className="mt-2 text-sm font-semibold text-foreground">{currentContext.readyCommentCount ?? 0}</p>
                   <p className="mt-1 text-xs text-muted-foreground">Approved categorized items ready for packet handoff.</p>
                 </div>
                 <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
-                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Pending comments</p>
+                  <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Pending comments</p>
                   <p className="mt-2 text-sm font-semibold text-foreground">{currentContext.pendingCommentCount ?? 0}</p>
                   <p className="mt-1 text-xs text-muted-foreground">Items still waiting for operator review before review closeout.</p>
                 </div>
@@ -734,7 +734,7 @@ export function RtpReportDetail({
             */}
             <p className="mt-2 text-xs text-muted-foreground">{ROUNDED_MONEY_NOTE_RECONCILES_TO_LEDGER}</p>
             <div className="mt-4 rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4">
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Section composition at generation time</p>
+              <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Section composition at generation time</p>
               <p className="mt-2 text-sm text-muted-foreground">
                 {generationContext.enabledSectionKeys.length > 0
                   ? generationContext.enabledSectionKeys.join(", ")
@@ -742,7 +742,7 @@ export function RtpReportDetail({
               </p>
             </div>
             <div className="mt-4 rounded-[0.5rem] border border-border/70 bg-background px-4 py-4">
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Current source composition</p>
+              <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Current source composition</p>
               <p className="mt-2 text-sm text-muted-foreground">
                 {currentContext.enabledSectionKeys === null
                   ? "This packet's sections could not be read, so its current composition is unknown. That is a failed read, not a finding that no sections are enabled."
@@ -753,12 +753,12 @@ export function RtpReportDetail({
             </div>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4">
-                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Generation-time preset</p>
+                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Generation-time preset</p>
                 <p className="mt-2 text-sm font-semibold text-foreground">{generationContext.presetLabel ?? "Unknown preset"}</p>
                 <p className="mt-1 text-xs text-muted-foreground">{generationContext.presetStatusLabel ?? "Unknown status"}</p>
               </div>
               <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-4">
-                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Current preset posture</p>
+                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Current preset posture</p>
                 <p className="mt-2 text-sm font-semibold text-foreground">{currentContext.presetLabel ?? "Unknown preset"}</p>
                 <p className="mt-1 text-xs text-muted-foreground">{currentContext.presetStatusLabel ?? "Unknown status"}</p>
               </div>
@@ -865,7 +865,7 @@ export function RtpReportDetail({
                   </div>
                 </div>
                 <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4">
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Cycle summary</p>
+                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Cycle summary</p>
                   <p className="mt-3 whitespace-pre-wrap text-sm text-muted-foreground">
                     {cycle.summary?.trim() || "No cycle summary recorded yet."}
                   </p>

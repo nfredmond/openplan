@@ -201,7 +201,7 @@ export function ThemeControls({ className = "" }: { className?: string }) {
                       {entry.label}
                       {isCurrent ? <Check className="h-3 w-3" strokeWidth={2.4} /> : null}
                     </span>
-                    <span className="mt-0.5 block text-[0.68rem] leading-4 text-muted-foreground">
+                    <span className="mt-0.5 block text-label leading-4 text-muted-foreground">
                       {entry.description}
                     </span>
                   </span>

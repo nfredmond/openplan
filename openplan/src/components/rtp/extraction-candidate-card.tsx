@@ -407,7 +407,7 @@ export function ExtractionCandidateCard({
         <div className="flex flex-wrap items-center gap-2">
           <span
             className={[
-              "rounded border px-2 py-0.5 text-[0.7rem] font-medium",
+              "rounded border px-2 py-0.5 text-label font-medium",
               copy.tone === "warning"
                 ? "border-amber-300/70 bg-amber-50/60 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
                 : copy.tone === "info"
@@ -417,7 +417,7 @@ export function ExtractionCandidateCard({
           >
             {copy.label}
           </span>
-          <span className="inline-flex items-center gap-1 text-[0.7rem] text-muted-foreground">
+          <span className="inline-flex items-center gap-1 text-label text-muted-foreground">
             <FileText className="h-3 w-3" aria-hidden="true" />
             {documentHref ? (
               <a href={documentHref} className="underline underline-offset-2">
@@ -471,7 +471,7 @@ export function ExtractionCandidateCard({
                   disabled={busy}
                 />
               )}
-              {field.hint ? <span className="block text-[0.7rem] text-muted-foreground">{field.hint}</span> : null}
+              {field.hint ? <span className="block text-label text-muted-foreground">{field.hint}</span> : null}
             </label>
           ))}
         </div>
@@ -483,7 +483,7 @@ export function ExtractionCandidateCard({
               <dd className="font-medium text-foreground">{field.value}</dd>
               {field.checkedAgainstQuote ? null : (
                 <span
-                  className="rounded border border-amber-300/70 bg-amber-50/60 px-1 text-[0.65rem] text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
+                  className="rounded border border-amber-300/70 bg-amber-50/60 px-1 text-label text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
                   title={UNCHECKED_FIELD_NOTE}
                 >
                   confirm this
@@ -525,7 +525,7 @@ export function ExtractionCandidateCard({
                       </td>
                       <td className="py-1 tabular-nums">
                         {formatComparedValue(field.kind, field.documentValue)}
-                        {field.same ? null : <span className="ml-1 text-[0.65rem] uppercase tracking-wide">differs</span>}
+                        {field.same ? null : <span className="ml-1 text-label uppercase tracking-wide">differs</span>}
                       </td>
                     </tr>
                   ))}
@@ -533,7 +533,7 @@ export function ExtractionCandidateCard({
               </table>
             </div>
           ))}
-          <p className="text-[0.7rem] text-muted-foreground">{candidate.reconciliation.identityNote}</p>
+          <p className="text-label text-muted-foreground">{candidate.reconciliation.identityNote}</p>
         </div>
       ) : null}
 

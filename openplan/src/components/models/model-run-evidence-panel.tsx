@@ -745,7 +745,7 @@ export function ModelRunEvidencePanel({
     <div className="mt-4 min-w-0 max-w-full rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Evidence record</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Evidence record</p>
           <p className="mt-1 text-sm text-muted-foreground">
             {canInspect
               ? "What went into this run and what came out — inputs, sources, results, and caveats. Refresh it after the worker runs again."
@@ -865,7 +865,7 @@ export function ModelRunEvidencePanel({
                 className="rounded-[0.5rem] border border-amber-300/60 bg-amber-50/70 p-4 dark:border-amber-900/50 dark:bg-amber-950/20"
                 data-testid="evidence-run-honesty"
               >
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-900/80 dark:text-amber-200/80">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-900/80 dark:text-amber-200/80">
                   Run honesty &amp; reproducibility
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -933,7 +933,7 @@ export function ModelRunEvidencePanel({
                     className="mt-3 rounded-[14px] border border-amber-300/50 bg-amber-100/40 px-3 py-2.5 dark:border-amber-900/50 dark:bg-amber-950/30"
                     data-testid="evidence-transit-provenance"
                   >
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-900/80 dark:text-amber-200/80">
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-900/80 dark:text-amber-200/80">
                       Transit feed
                     </p>
 
@@ -1214,7 +1214,7 @@ export function ModelRunEvidencePanel({
 
                 <div className="mt-4 grid gap-4 lg:grid-cols-2">
                   <div className="rounded-[0.5rem] border border-border/60 bg-background/90 p-3">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Count source</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Count source</p>
                     <dl className="mt-2 space-y-1.5 text-sm text-muted-foreground">
                       <div className="flex items-start justify-between gap-3">
                         <dt>Dataset</dt>
@@ -1252,7 +1252,7 @@ export function ModelRunEvidencePanel({
                   </div>
 
                   <div className="rounded-[0.5rem] border border-border/60 bg-background/90 p-3">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Gateway traffic source</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Gateway traffic source</p>
                     <dl
                       className="mt-2 grid grid-cols-1 gap-2 text-center sm:grid-cols-3"
                       data-testid="gateway-volume-basis-counts"
@@ -1286,7 +1286,7 @@ export function ModelRunEvidencePanel({
 
                 <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-background/90 p-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Calibration selection</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Calibration selection</p>
                     <StatusBadge tone="warning">Selection evidence only</StatusBadge>
                   </div>
                   <p className="mt-2 text-xs font-medium text-amber-800 dark:text-amber-200">
@@ -1313,7 +1313,7 @@ export function ModelRunEvidencePanel({
 
                 <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-background/90 p-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Independent validation</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Independent validation</p>
                     <StatusBadge tone={independentValidation?.status === "passed" ? "success" : "warning"}>
                       {independentValidation?.status === "passed"
                         ? "Passed"
@@ -1380,14 +1380,14 @@ export function ModelRunEvidencePanel({
 
                   {evidence.inputs.query_text ? (
                     <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-background/90 p-3">
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Query text</p>
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Query text</p>
                       <p className="mt-2 text-sm text-foreground">{evidence.inputs.query_text}</p>
                     </div>
                   ) : null}
 
                   {evidence.employment ? (
                     <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-background/90 p-3" data-testid="evidence-employment-inputs">
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Employment inputs</p>
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Employment inputs</p>
                       <p className="mt-2 text-sm text-foreground">{describeEmploymentProvenance(evidence.employment)}</p>
                       {employmentUsedSyntheticFallback(evidence.employment) ? (
                         <div className="mt-2 flex items-start gap-2">
@@ -1403,7 +1403,7 @@ export function ModelRunEvidencePanel({
                   {evidence.benchmark_fit ? (
                     <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-background/90 p-3" data-testid="evidence-benchmark-fit">
                       <div className="flex items-center justify-between gap-3">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Benchmark fit</p>
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Benchmark fit</p>
                         {typeof evidence.benchmark_fit.fit_score_0_100 === "number" ? (
                           // Tone thresholds on the same rounded value shown in the
                           // label and aligns with the recommendation ladder's
@@ -1469,7 +1469,7 @@ export function ModelRunEvidencePanel({
 
                   {evidence.caveats.length > 0 ? (
                     <div className="mt-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Caveats</p>
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Caveats</p>
                       <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
                         {evidence.caveats.map((caveat) => (
                           <li key={caveat} className="rounded-[14px] border border-amber-300/60 bg-amber-50/70 px-3 py-2 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
@@ -1728,7 +1728,7 @@ export function ModelRunEvidencePanel({
                                 {comparisonSummary.highlights.map((item) => (
                                   <div key={item.key} className="rounded-[0.5rem] border border-border/60 bg-background/90 p-3">
                                     <div className="flex items-start justify-between gap-3">
-                                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{item.label}</p>
+                                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{item.label}</p>
                                       <StatusBadge tone="info">{formatModelRunKpiDelta(item.absoluteDelta, item.unit)}</StatusBadge>
                                     </div>
                                     <div className="mt-3 space-y-1 text-sm">

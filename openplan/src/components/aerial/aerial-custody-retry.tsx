@@ -78,17 +78,17 @@ export function AerialCustodyRetry({
         type="button"
         onClick={() => void retry()}
         disabled={busy}
-        className="rounded-[0.4rem] border border-[color:var(--line)] px-2.5 py-1 text-[0.68rem] font-semibold disabled:opacity-50"
+        className="rounded-[0.4rem] border border-[color:var(--line)] px-2.5 py-1 text-label font-semibold disabled:opacity-50"
       >
         {busy ? "Saving…" : `Try again to save ${recoverableCount} output${recoverableCount === 1 ? "" : "s"}`}
       </button>
       {error ? (
-        <p role="alert" className="mt-1 text-[0.68rem] text-destructive">
+        <p role="alert" className="mt-1 text-label text-destructive">
           {error}
         </p>
       ) : null}
       {done ? (
-        <p role="status" className="mt-1 text-[0.68rem] text-muted-foreground">
+        <p role="status" className="mt-1 text-label text-muted-foreground">
           {done}
         </p>
       ) : null}

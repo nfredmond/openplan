@@ -48,7 +48,7 @@ export function InspectorField({
 }) {
   return (
     <div className={cn("inspector-field flex flex-col gap-1", className)}>
-      <span className="inspector-field-label text-[11px] uppercase tracking-wide text-muted-foreground">
+      <span className="inspector-field-label text-label uppercase tracking-wide text-muted-foreground">
         {label}
       </span>
       <span className="inspector-field-value text-sm text-foreground">{value}</span>
@@ -69,7 +69,7 @@ export function InspectorGroup({
   return (
     <div className={cn("inspector-group flex flex-col gap-2 border-t border-border/50 pt-3 first:border-t-0 first:pt-0", className)}>
       {label ? (
-        <p className="inspector-group-label text-[11px] uppercase tracking-wide text-muted-foreground">
+        <p className="inspector-group-label text-label uppercase tracking-wide text-muted-foreground">
           {label}
         </p>
       ) : null}

@@ -247,7 +247,7 @@ export function ReportStandardDetail({
           <h1 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
             {report.title}
           </h1>
-          <p className="mt-4 max-w-[36rem] text-[1.0625rem] leading-[1.65] text-muted-foreground">
+          <p className="mt-4 max-w-[36rem] text-reading leading-[1.65] text-muted-foreground">
             {report.summary ||
               "No summary yet. Say what this report is for, and OpenPlan can generate it as a web page you can send."}
           </p>
@@ -270,7 +270,7 @@ export function ReportStandardDetail({
               </Link>
             ) : null}
             {report.latest_artifact_kind ? (
-              <span className="text-[0.73rem] text-muted-foreground">
+              <span className="text-label text-muted-foreground">
                 {report.latest_artifact_kind.toUpperCase()}
               </span>
             ) : null}

@@ -62,7 +62,7 @@ export function NarrativeGroundingSummaryLine({
             {flagged.map((sentence, index) => (
               <li key={index} className="text-muted-foreground">
                 <span className="text-foreground/80">{stripFactCitationTokens(sentence.text)}</span>{" "}
-                <span className="text-[0.68rem] uppercase tracking-wide">
+                <span className="text-label uppercase tracking-wide">
                   {sentence.reason === "missing_citation"
                     ? "— no citation"
                     : sentence.reason === "unfaithful_citation"

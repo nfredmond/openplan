@@ -58,7 +58,7 @@ export function AnalysisSequenceStrip({
       <h2 className="text-[1.35rem] font-semibold leading-tight tracking-tight text-foreground">
         Travel modeling is one guided job, in this order
       </h2>
-      <p className="mt-2 max-w-[36rem] text-[1.0625rem] leading-[1.65] text-muted-foreground">
+      <p className="mt-2 max-w-[36rem] text-reading leading-[1.65] text-muted-foreground">
         Use one project, one network, a baseline and build scenario, then run AequilibraE and
         ActivitySim separately. Validate each result and save the comparison without averaging
         disagreement away. Corridor Analysis is not part of this sequence; it remains a separate
@@ -70,26 +70,26 @@ export function AnalysisSequenceStrip({
           const isCurrent = step.id === currentStepId;
           return (
             <li key={step.id} data-testid={`analysis-step-${step.id}`} data-state={step.state}>
-              <p className={`text-[0.8rem] font-semibold uppercase tracking-[0.14em] ${STATE_TONE[step.state]}`}>
+              <p className={`text-compact font-semibold uppercase tracking-[0.14em] ${STATE_TONE[step.state]}`}>
                 <span data-testid={`analysis-step-state-${step.id}`}>{STATE_LABEL[step.state]}</span>
                 {isCurrent ? <span className="ml-2 text-muted-foreground">· you are here</span> : null}
               </p>
-              <h3 className="mt-1 text-[1.0625rem] font-semibold leading-snug text-foreground">
+              <h3 className="mt-1 text-reading font-semibold leading-snug text-foreground">
                 {index + 1}. {step.title}
               </h3>
-              <p className="mt-1 text-[1.0625rem] leading-[1.65] text-muted-foreground">{step.what}</p>
-              <p className="mt-1 text-[1.0625rem] leading-[1.65] text-foreground/80">
+              <p className="mt-1 text-reading leading-[1.65] text-muted-foreground">{step.what}</p>
+              <p className="mt-1 text-reading leading-[1.65] text-foreground/80">
                 {step.standing}
                 {step.waitingOn ? ` Waiting for “${step.waitingOn}” first.` : ""}
               </p>
               {step.id === "claim" ? (
-                <p className="mt-1 text-[1.0625rem] leading-[1.65]">
+                <p className="mt-1 text-reading leading-[1.65]">
                   <Link href={SCREENING_GRADE_HELP_HREF} className="underline underline-offset-2 hover:text-foreground">
                     What that lets you say, and what it does not
                   </Link>
                 </p>
               ) : step.href && step.state === "next" ? (
-                <p className="mt-1 text-[1.0625rem] leading-[1.65]">
+                <p className="mt-1 text-reading leading-[1.65]">
                   <Link
                     href={projectId ? withPlanningContext(step.href, projectId) : step.href}
                     className="underline underline-offset-2 hover:text-foreground"

@@ -73,7 +73,7 @@ export default async function InvoicingPage({
     return (
       <section className="space-y-6">
         <header className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Invoices &amp; Reimbursements</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Invoices &amp; Reimbursements</p>
           <h1 className="text-3xl font-semibold tracking-tight">Invoices &amp; Reimbursements could not be opened</h1>
         </header>
         <StateBlock
@@ -109,7 +109,7 @@ export default async function InvoicingPage({
       <section className="space-y-6">
         <header className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_300px] xl:items-end">
           <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Invoices &amp; Reimbursements</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Invoices &amp; Reimbursements</p>
             <h1 className="text-3xl font-semibold tracking-tight">Choose a workspace</h1>
             <p className="text-sm text-muted-foreground sm:text-base">
               Invoice registers are workspace-specific. This account has access to multiple workspaces, so pick the one whose reimbursement invoices you want to review.
@@ -171,18 +171,18 @@ export default async function InvoicingPage({
     <section className="space-y-6">
       <header className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px] xl:items-end">
         <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Invoices &amp; Reimbursements</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Invoices &amp; Reimbursements</p>
           <h1 className="text-3xl font-semibold tracking-tight">Invoices &amp; Reimbursements</h1>
           <p className="text-sm text-muted-foreground sm:text-base">{DIRECTION_DESCRIPTIONS[direction]}</p>
         </div>
 
         <div className={`${insetClass()} grid gap-px bg-border/80`}>
           <div className="bg-background/70 px-4 py-3 text-sm">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Role</p>
+            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Role</p>
             <p className="mt-1 font-semibold text-foreground">{titleCase(membership.role)}</p>
           </div>
           <div className="bg-background/70 px-4 py-3 text-sm">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Workspace ID</p>
+            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Workspace ID</p>
             <p className="mt-1 font-semibold text-foreground">{formatWorkspaceIdSnippet(workspaceId)}</p>
           </div>
         </div>

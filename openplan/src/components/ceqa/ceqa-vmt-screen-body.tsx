@@ -256,7 +256,7 @@ export function CeqaVmtScreenBody({
   return (
     <div className="mt-5 space-y-4">
       <div className="rounded-[0.75rem] border border-border/70 bg-background/60 px-5 py-4 text-sm">
-        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           KPI inputs (stored)
         </p>
         {screeningInputs.status === "per-capita" ? (

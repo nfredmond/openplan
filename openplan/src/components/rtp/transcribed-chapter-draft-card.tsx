@@ -106,11 +106,11 @@ export function TranscribedChapterDraftCard({
       data-testid="transcribed-chapter-draft-card"
     >
       <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded border border-sky-300/60 bg-sky-50/60 px-2 py-0.5 text-[0.7rem] font-medium text-sky-900 dark:border-sky-900/50 dark:bg-sky-950/30 dark:text-sky-200">
+        <span className="rounded border border-sky-300/60 bg-sky-50/60 px-2 py-0.5 text-label font-medium text-sky-900 dark:border-sky-900/50 dark:bg-sky-950/30 dark:text-sky-200">
           Transcribed — not written by anyone
         </span>
         {described ? (
-          <span className="inline-flex items-center gap-1 text-[0.7rem] text-muted-foreground">
+          <span className="inline-flex items-center gap-1 text-label text-muted-foreground">
             <FileText className="h-3 w-3" aria-hidden="true" />
             {documentHref ? (
               <a href={documentHref} className="underline underline-offset-2">
@@ -121,7 +121,7 @@ export function TranscribedChapterDraftCard({
             )}
           </span>
         ) : null}
-        <span className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">{status}</span>
+        <span className="text-label uppercase tracking-wide text-muted-foreground">{status}</span>
       </div>
 
       {described ? <p className="text-xs text-muted-foreground">{described.detail}</p> : null}
@@ -165,7 +165,7 @@ export function TranscribedChapterDraftCard({
       </div>
 
       {status === "draft" ? (
-        <p className="text-[0.7rem] text-muted-foreground">
+        <p className="text-label text-muted-foreground">
           Accepting records that you have read this and stand behind it. It does not put it in the
           plan — the chapter&apos;s text is what you write in the chapter editor, so copy this in and
           save the chapter when you want it there.

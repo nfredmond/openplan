@@ -269,7 +269,7 @@ export function RtpChapterDraftAssist({
 
       {draft ? (
         <div className="mt-3 space-y-2">
-          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-foreground/70">
+          <p className="text-label font-semibold uppercase tracking-[0.14em] text-foreground/70">
             AI draft{draft.model ? ` · ${draft.model}` : ""}
             {draft.status !== "draft" ? ` · ${draft.status}` : ""}
           </p>

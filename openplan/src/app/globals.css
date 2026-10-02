@@ -5,12 +5,25 @@
 @import "./cartographic.css";
 @import "./workspace-gis.css";
 
-@custom-variant dark (&:is(.dark *));
+/*
+  `dark:` applies in dark mode AND inside a surface that is painted dark in both
+  modes (see "ALWAYS-DARK SURFACES" at the `.dark` token block).
+*/
+@custom-variant dark (&:is(.dark *, .surface-dark *, .module-operator-card *, .analysis-explore-shell *, .analysis-studio-surface *, .public-rail *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
+  /*
+    TYPE SCALE ADDITIONS. `text-label` is the floor: nothing in the product is
+    set smaller than 12px. `text-compact` is dense secondary text. `text-reading`
+    is long-form body text. Each is a size only, so line height stays with the
+    element that uses it.
+  */
+  --text-label: var(--fs-label);
+  --text-compact: var(--fs-compact);
+  --text-reading: var(--fs-reading);
   --font-sans: var(--font-body);
   --font-display: var(--font-display);
   --font-mono: var(--font-mono-sys), "SFMono-Regular", "Menlo", monospace;
@@ -32,6 +45,10 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-status-ok: var(--status-ok);
+  --color-status-warn: var(--status-warn);
+  --color-status-urgent: var(--status-urgent);
+  --color-status-info: var(--status-info);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
@@ -78,6 +95,9 @@
 }
 
 :root {
+  --fs-label: 0.75rem;
+  --fs-compact: 0.8125rem;
+  --fs-reading: 1.0625rem;
   --radius: 0.875rem;
 
   /* D2 Cartographic palette — light / civic parchment */
@@ -94,10 +114,21 @@
   --line: rgba(0, 0, 0, 0.1);
   --panel: rgba(255, 255, 255, 0.94);
   --panel-solid: #ffffff;
-  --accent: #e45635;
+  /* Was #e45635: white on it was 3.70:1 and it was 3.28:1 as link text. */
+  --accent: #c03f1c;
   --accent-2: #1f6b5e;
   --urgent: #c4391f;
-  --warn: #b78018;
+  /*
+    STATUS COLOURS. Fixed in both modes and never overridden by a palette, so
+    "done" is green and "needs attention" is amber whichever palette is chosen.
+    Each passes 4.5:1 as text on its own 12 percent tint.
+  */
+  --status-ok: #1f6a2a;
+  --status-warn: #8a5a00;
+  --status-urgent: #b3301a;
+  --status-info: #1d5fa8;
+  /* Was #b78018, 3.05:1 as text on the page background. */
+  --warn: #8a5a00;
   --ok: #2e7d32;
 
   /* Legacy pre-cartographic aliases — remapped to cartographic equivalents so existing CSS still themes. */
@@ -140,7 +171,8 @@
   --destructive: var(--urgent);
   --destructive-foreground: #ffffff;
   --border: var(--line);
-  --input: var(--line);
+  /* 3.2:1 on the page and 3.6:1 on a panel. `--line` was 1.25:1, so a field had no visible edge. */
+  --input: #8c877f;
   --focus-ring-light: var(--accent-2);
   --focus-ring-dark: #6dc6b5;
   --ring: color-mix(in srgb, var(--accent) 78%, white 22%);
@@ -177,6 +209,19 @@
   --cp-accent-ink-override: #ffffff;
 }
 
+/*
+  ALWAYS-DARK SURFACES.
+
+  Some surfaces are painted dark in both modes: the operator card, the Corridor
+  Analysis shell, the studio panels, the public rail, and anything marked
+  `surface-dark`. In light mode, token-based parts placed inside them (a status
+  badge, a stat tile, a select) used to resolve to LIGHT-mode values and draw
+  dark ink on a dark panel. Listing those surfaces beside `.dark` gives their
+  subtree the dark token values, so whatever sits inside agrees with the
+  surface. In dark mode the rule adds nothing, and the active palette is left
+  alone.
+*/
+:root:not(.dark) :is(.surface-dark, .module-operator-card, .analysis-explore-shell, .analysis-studio-surface, .public-rail),
 .dark {
   /* D2 Cartographic palette — dark / night parchment */
   --bg: #111618;
@@ -195,6 +240,10 @@
   --accent: #ff7a58;
   --accent-2: #6dc6b5;
   --urgent: #ff7166;
+  --status-ok: #7fd08a;
+  --status-warn: #e6bc5c;
+  --status-urgent: #ff8a80;
+  --status-info: #8ab8f0;
   --warn: #e0b350;
   --ok: #6fc27a;
 
@@ -223,7 +272,7 @@
   /* Dark `--urgent` is a light coral; white on it is 2.7:1. Dark ink is 6.7:1. */
   --destructive-foreground: #1a1410;
   --border: var(--line);
-  --input: rgba(255, 255, 255, 0.16);
+  --input: #6f7a80;
   --ring: color-mix(in srgb, var(--accent) 72%, white 28%);
 
   --chart-1: var(--accent-2);
@@ -438,6 +487,18 @@
 
 
 @layer base {
+  /*
+    A GRID CHILD MAY SHRINK BELOW ITS CONTENT.
+
+    A grid item's default minimum width is its content's minimum width, so one
+    wide child (a fixed-width chart, a long unbroken token, a table) widened its
+    whole column past the phone screen and everything in that column was cut off
+    at the right edge. In the base layer, so `min-w-*` utilities still win.
+  */
+  .grid > * {
+    min-width: 0;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }
@@ -561,9 +622,9 @@
   .shell-panel-kicker,
   .shell-section-label {
     display: block;
-    font-size: 0.62rem;
+    font-size: var(--fs-label);
     font-weight: 700;
-    letter-spacing: 0.22em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: rgba(148, 163, 184, 0.88);
   }
@@ -594,7 +655,7 @@
   }
 
   .shell-data-line strong {
-    font-size: 0.86rem;
+    font-size: var(--fs-compact);
     font-weight: 600;
     color: #f8fafc;
     text-transform: none;
@@ -610,9 +671,9 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(255, 255, 255, 0.04);
     padding: 0.55rem 0.8rem;
-    font-size: 0.66rem;
+    font-size: var(--fs-label);
     font-weight: 700;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: #f8fafc;
   }
@@ -807,9 +868,9 @@
     border: 1px solid rgba(34, 197, 94, 0.18);
     background: rgba(34, 197, 94, 0.08);
     padding: 0.38rem 0.75rem;
-    font-size: 0.68rem;
+    font-size: var(--fs-label);
     font-weight: 700;
-    letter-spacing: 0.22em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: #166534;
   }
@@ -955,9 +1016,9 @@
 
   .module-summary-label,
   .module-section-label {
-    font-size: 0.68rem;
+    font-size: var(--fs-label);
     font-weight: 700;
-    letter-spacing: 0.22em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--muted-foreground);
   }
@@ -973,7 +1034,7 @@
 
   .module-summary-detail {
     margin-top: 0.35rem;
-    font-size: 0.8rem;
+    font-size: var(--fs-compact);
     line-height: 1.45;
     color: var(--muted-foreground);
   }
@@ -1014,7 +1075,7 @@
   }
 
   .module-metric-label {
-    font-size: 0.65rem;
+    font-size: var(--fs-label);
     font-weight: 700;
     /* Looser than the 0.22em the section labels use: a six-across column is
        narrow, and 0.22em wraps "Outstanding requests" onto three lines. */
@@ -1084,9 +1145,9 @@
   }
 
   .module-operator-eyebrow {
-    font-size: 0.68rem;
+    font-size: var(--fs-label);
     font-weight: 700;
-    letter-spacing: 0.22em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: rgba(148, 163, 184, 0.9);
   }
@@ -1127,7 +1188,7 @@
   .module-section-subtitle {
     margin-top: 0.2rem;
     max-width: 46rem;
-    font-size: 0.82rem;
+    font-size: var(--fs-compact);
     line-height: 1.5;
     color: var(--muted-foreground);
   }
@@ -1333,9 +1394,9 @@
 
   .module-record-stamp {
     flex-shrink: 0;
-    font-size: 0.66rem;
+    font-size: var(--fs-label);
     font-weight: 700;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--muted-foreground);
   }
@@ -1355,7 +1416,7 @@
     border-left: 2px solid color-mix(in srgb, var(--line) 82%, var(--card) 18%);
     background: color-mix(in srgb, var(--card) 72%, var(--fog) 28%);
     padding: 0.24rem 0.6rem;
-    font-size: 0.64rem;
+    font-size: var(--fs-label);
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -1377,7 +1438,7 @@
     border-left: 2px solid color-mix(in srgb, var(--line) 78%, var(--card) 22%);
     background: color-mix(in srgb, var(--card) 74%, var(--fog) 26%);
     padding: 0.3rem 0.7rem;
-    font-size: 0.66rem;
+    font-size: var(--fs-label);
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -1429,7 +1490,7 @@
   }
 
   .module-filter-label {
-    font-size: 0.72rem;
+    font-size: var(--fs-label);
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -1442,7 +1503,7 @@
     min-width: 1.9rem;
     padding-left: 0.45rem;
     border-left: 1px solid color-mix(in srgb, var(--line) 82%, var(--card) 18%);
-    font-size: 0.72rem;
+    font-size: var(--fs-label);
     font-weight: 700;
     letter-spacing: 0.04em;
     color: var(--foreground);
@@ -1506,9 +1567,9 @@
   }
 
   .module-run-history-bridge-label {
-    font-size: 0.64rem;
+    font-size: var(--fs-label);
     font-weight: 700;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--muted-foreground);
   }
@@ -1522,7 +1583,7 @@
   }
 
   .module-run-history-bridge-meta {
-    font-size: 0.66rem;
+    font-size: var(--fs-label);
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -1530,7 +1591,7 @@
   }
 
   .module-run-history-bridge-copy {
-    font-size: 0.81rem;
+    font-size: var(--fs-compact);
     line-height: 1.58;
     color: var(--muted-foreground);
   }
@@ -1617,7 +1678,7 @@
   }
 
   .module-run-history-sync-label {
-    font-size: 0.64rem;
+    font-size: var(--fs-label);
     font-weight: 700;
     letter-spacing: 0.15em;
     text-transform: uppercase;
@@ -1625,7 +1686,7 @@
   }
 
   .module-run-history-sync-copy {
-    font-size: 0.78rem;
+    font-size: var(--fs-compact);
     line-height: 1.55;
     color: var(--muted-foreground);
   }
@@ -1644,7 +1705,7 @@
 
   .module-run-history-detail-label,
   .module-run-history-state-label {
-    font-size: 0.64rem;
+    font-size: var(--fs-label);
     font-weight: 700;
     letter-spacing: 0.15em;
     text-transform: uppercase;
@@ -1656,7 +1717,7 @@
 
   .module-run-history-detail-copy,
   .module-run-history-state-copy {
-    font-size: 0.79rem;
+    font-size: var(--fs-compact);
     line-height: 1.52;
     color: var(--muted-foreground);
   }
@@ -1938,7 +1999,7 @@
     border: 0;
     background: none;
     padding: 0;
-    font-size: 0.82rem;
+    font-size: var(--fs-compact);
     font-weight: 600;
     line-height: 1.2;
     color: var(--ink);
@@ -2098,7 +2159,7 @@
   }
 
   .analysis-sidepanel-body {
-    font-size: 0.76rem;
+    font-size: var(--fs-compact);
     line-height: 1.5;
     color: rgba(226, 232, 240, 0.78);
   }
@@ -2112,7 +2173,7 @@
     border-radius: 0.375rem;
     background: rgba(2, 8, 15, 0.32);
     padding: 0.16rem 0.5rem;
-    font-size: 0.58rem;
+    font-size: var(--fs-label);
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -2150,7 +2211,7 @@
   }
 
   .analysis-sidepanel-label {
-    font-size: 0.62rem;
+    font-size: var(--fs-label);
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -2159,7 +2220,7 @@
 
   .analysis-sidepanel-value {
     margin-top: 0.35rem;
-    font-size: 0.82rem;
+    font-size: var(--fs-compact);
     font-weight: 600;
     line-height: 1.35;
     color: #f8fafc;
@@ -2198,9 +2259,9 @@
   .analysis-run-pair-board-label,
   .analysis-run-pair-surface-eyebrow,
   .analysis-run-pair-field-label {
-    font-size: 0.62rem;
+    font-size: var(--fs-label);
     font-weight: 700;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: rgba(148, 163, 184, 0.88);
   }
@@ -2220,7 +2281,7 @@
   .analysis-run-pair-bridge-copy,
   .analysis-run-pair-board-copy,
   .analysis-run-pair-surface-body {
-    font-size: 0.76rem;
+    font-size: var(--fs-compact);
     line-height: 1.55;
     color: rgba(226, 232, 240, 0.74);
   }
@@ -2246,7 +2307,7 @@
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(2, 8, 15, 0.28);
     padding: 0.24rem 0.62rem;
-    font-size: 0.58rem;
+    font-size: var(--fs-label);
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -2341,7 +2402,7 @@
 
   .analysis-run-pair-field-value {
     margin-top: 0.34rem;
-    font-size: 0.8rem;
+    font-size: var(--fs-compact);
     font-weight: 600;
     line-height: 1.4;
     color: #f8fafc;
@@ -2370,9 +2431,9 @@
 
   .analysis-run-history-handoff-label,
   .analysis-run-history-handoff-card-label {
-    font-size: 0.62rem;
+    font-size: var(--fs-label);
     font-weight: 700;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: rgba(148, 163, 184, 0.88);
   }
@@ -2380,7 +2441,7 @@
   .analysis-run-history-handoff-copy,
   .analysis-run-history-handoff-card-copy {
     margin-top: 0.3rem;
-    font-size: 0.76rem;
+    font-size: var(--fs-compact);
     line-height: 1.55;
     color: rgba(226, 232, 240, 0.74);
   }
@@ -2493,9 +2554,9 @@
   .analysis-comparison-section-label,
   .analysis-comparison-evidence-group-label,
   .analysis-comparison-headline-label {
-    font-size: 0.62rem;
+    font-size: var(--fs-label);
     font-weight: 700;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
   }
 
@@ -2520,7 +2581,7 @@
   .analysis-comparison-evidence-group-copy,
   .analysis-comparison-support-copy,
   .analysis-comparison-headline-detail {
-    font-size: 0.78rem;
+    font-size: var(--fs-compact);
     line-height: 1.58;
     color: rgba(226, 232, 240, 0.74);
   }
@@ -2633,7 +2694,7 @@
 
   .analysis-comparison-support-label,
   .analysis-comparison-evidence-row-label {
-    font-size: 0.86rem;
+    font-size: var(--fs-compact);
     font-weight: 600;
     line-height: 1.35;
     color: #f8fafc;
@@ -2691,7 +2752,7 @@
   }
 
   .analysis-comparison-evidence-values span {
-    font-size: 0.58rem;
+    font-size: var(--fs-label);
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -2699,7 +2760,7 @@
   }
 
   .analysis-comparison-evidence-values strong {
-    font-size: 0.8rem;
+    font-size: var(--fs-compact);
     line-height: 1.45;
     color: #f8fafc;
     overflow-wrap: anywhere;
@@ -2715,7 +2776,7 @@
   }
 
   .analysis-comparison-evidence-empty p {
-    font-size: 0.8rem;
+    font-size: var(--fs-compact);
     line-height: 1.58;
     color: rgba(226, 232, 240, 0.72);
   }
@@ -2732,7 +2793,7 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(2, 8, 15, 0.66);
     padding: 0 0.85rem;
-    font-size: 0.82rem;
+    font-size: var(--fs-compact);
     color: #f8fafc;
     outline: none;
   }
@@ -2783,9 +2844,9 @@
 
   .analysis-studio-label,
   .analysis-context-summary-label {
-    font-size: 0.64rem;
+    font-size: var(--fs-label);
     font-weight: 700;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: rgba(148, 163, 184, 0.88);
   }
@@ -2801,7 +2862,7 @@
 
   .analysis-studio-description {
     max-width: 40rem;
-    font-size: 0.78rem;
+    font-size: var(--fs-compact);
     line-height: 1.58;
     color: rgba(226, 232, 240, 0.76);
   }
@@ -2817,7 +2878,7 @@
   }
 
   .analysis-studio-note {
-    font-size: 0.72rem;
+    font-size: var(--fs-label);
     line-height: 1.55;
     color: rgba(226, 232, 240, 0.72);
   }
@@ -2842,7 +2903,7 @@
   }
 
   .analysis-studio-inline-meta-label {
-    font-size: 0.62rem;
+    font-size: var(--fs-label);
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -2850,7 +2911,7 @@
   }
 
   .analysis-studio-inline-meta-value {
-    font-size: 0.78rem;
+    font-size: var(--fs-compact);
     line-height: 1.55;
     color: rgba(241, 245, 249, 0.9);
     overflow-wrap: anywhere;
@@ -2860,7 +2921,7 @@
     display: grid;
     gap: 0.38rem;
     padding-left: 1rem;
-    font-size: 0.76rem;
+    font-size: var(--fs-compact);
     line-height: 1.5;
     color: rgba(226, 232, 240, 0.78);
     list-style: disc;
@@ -2887,7 +2948,7 @@
   }
 
   .analysis-context-summary-value {
-    font-size: 0.82rem;
+    font-size: var(--fs-compact);
     font-weight: 600;
     line-height: 1.4;
     color: #f8fafc;
@@ -2985,7 +3046,7 @@
   }
 
   .analysis-workspace-layer__label {
-    font-size: 0.78rem;
+    font-size: var(--fs-compact);
     line-height: 1.4;
     color: rgba(241, 245, 249, 0.92);
     overflow-wrap: anywhere;
@@ -2994,7 +3055,7 @@
   .analysis-workspace-layer__note {
     margin-top: 0.3rem;
     padding-left: 0.6rem;
-    font-size: 0.72rem;
+    font-size: var(--fs-label);
     line-height: 1.55;
     color: rgba(226, 232, 240, 0.72);
   }
@@ -3007,7 +3068,7 @@
 
   .analysis-workspace-layers__notes-summary {
     cursor: pointer;
-    font-size: 0.68rem;
+    font-size: var(--fs-label);
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -3054,9 +3115,9 @@
   }
 
   .analysis-explore-workspace-hover__layer {
-    font-size: 0.64rem;
+    font-size: var(--fs-label);
     font-weight: 700;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: rgba(125, 211, 252, 0.92);
   }
@@ -3073,7 +3134,7 @@
     margin-top: 0.45rem;
     display: grid;
     gap: 0.2rem;
-    font-size: 0.72rem;
+    font-size: var(--fs-label);
     line-height: 1.5;
   }
 
@@ -3175,7 +3236,7 @@
     border-radius: 0.375rem;
     background: rgba(2, 8, 15, 0.3);
     padding: 0.16rem 0.5rem;
-    font-size: 0.58rem;
+    font-size: var(--fs-label);
   }
 
   .analysis-explore-context-surface .module-summary-value {
@@ -3469,9 +3530,9 @@
 .public-fact-label,
 .public-ledger-label,
 .public-rail-kicker {
-  font-size: 0.68rem;
+  font-size: var(--fs-label);
   font-weight: 700;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
@@ -3518,7 +3579,7 @@
   border-inline-start: 2px solid color-mix(in srgb, var(--pine) 46%, white 54%);
   background: color-mix(in srgb, white 74%, var(--fog) 26%);
   padding: 0.75rem 0.85rem;
-  font-size: 0.82rem;
+  font-size: var(--fs-compact);
   font-weight: 600;
   line-height: 1.45;
   color: var(--muted-foreground);
@@ -3629,7 +3690,7 @@
 }
 
 .public-fact-detail {
-  font-size: 0.84rem;
+  font-size: var(--fs-compact);
   line-height: 1.5;
   color: var(--muted-foreground);
 }
@@ -3735,7 +3796,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.84rem;
+  font-size: var(--fs-compact);
   color: rgba(226, 232, 240, 0.72);
 }
 
@@ -3801,9 +3862,9 @@
 .public-ledger-icon {
   width: 2.4rem;
   padding-top: 0.1rem;
-  font-size: 0.72rem;
+  font-size: var(--fs-label);
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted-foreground);
 }
@@ -3820,7 +3881,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0.55rem;
-  font-size: 0.82rem;
+  font-size: var(--fs-compact);
   color: var(--muted-foreground);
 }
 
@@ -3835,7 +3896,7 @@
   padding: 0.2rem 0.6rem;
   border-inline-start: 2px solid color-mix(in srgb, var(--line) 74%, white 26%);
   background: color-mix(in srgb, white 78%, var(--fog) 22%);
-  font-size: 0.68rem;
+  font-size: var(--fs-label);
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -4218,15 +4279,37 @@
 }
 
 /*
-  A DARK SCOPE INSIDE A LIGHT PAGE.
-
-  Putting `.dark` on a subtree re-declares the tokens there, but `color` is
-  inherited as an already-computed value from `<body>`, so anything without its
-  own colour (a bare heading, a native select) kept the light page's dark ink on
-  the dark surface. Re-anchor the inherited ink and the native control scheme at
-  the scope boundary.
+  Native controls inside an always-dark surface follow the dark scheme, and a
+  surface with no colour of its own takes the dark ink. `color` is inherited as
+  an already-computed value from `<body>`, so re-declaring the tokens is not
+  enough for a bare heading or a native select.
 */
-:root:not(.dark) .dark {
-  color: var(--foreground);
+:root:not(.dark) :is(.surface-dark, .module-operator-card, .analysis-explore-shell, .analysis-studio-surface, .public-rail) {
   color-scheme: dark;
+}
+:root:not(.dark) :is(.surface-dark, .analysis-explore-shell) {
+  color: var(--foreground);
+}
+
+/*
+  REDUCED MOTION, ONCE, FOR EVERYTHING.
+
+  Two earlier blocks covered three selectors. This covers every transition,
+  keyframe animation and smooth scroll. A spinner keeps turning, slowly, because
+  a frozen spinner reads as a stalled page.
+*/
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-spin {
+    animation-duration: 2s !important;
+    animation-iteration-count: infinite !important;
+  }
 }

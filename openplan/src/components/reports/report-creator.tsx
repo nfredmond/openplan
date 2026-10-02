@@ -308,7 +308,7 @@ export function ReportCreator({
                       {guidance.recommendedReportId ? (
                         <Link
                           href={`/reports/${guidance.recommendedReportId}`}
-                          className="inline-flex items-center gap-1 rounded-full border border-current/20 bg-background/70 px-3 py-1 text-[0.72rem] font-medium text-current transition-colors hover:border-current/35"
+                          className="inline-flex items-center gap-1 rounded-full border border-current/20 bg-background/70 px-3 py-1 text-label font-medium text-current transition-colors hover:border-current/35"
                         >
                           Open existing report
                         </Link>
@@ -410,17 +410,17 @@ export function ReportCreator({
                 <div className="flex items-center justify-between gap-3">
                   <label
                     htmlFor={flowState.fieldProps("modelingCountyRunId").id}
-                    className="text-[0.82rem] font-semibold"
+                    className="text-compact font-semibold"
                   >
                     Modeling evidence
                   </label>
                   {selectedModelingCountyRun?.claimStatus ? (
-                    <span className="inline-flex items-center gap-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    <span className="inline-flex items-center gap-1 text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       <ShieldCheck className="h-3.5 w-3.5" />
                       {modelingClaimStatusLabel(selectedModelingCountyRun.claimStatus)}
                     </span>
                   ) : (
-                    <span className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    <span className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Optional
                     </span>
                   )}
@@ -456,8 +456,8 @@ export function ReportCreator({
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-[0.82rem] font-semibold">Linked analysis runs</p>
-                  <span className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  <p className="text-compact font-semibold">Linked analysis runs</p>
+                  <span className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                     {flowState.values.runIds.length} selected
                   </span>
                 </div>
@@ -501,7 +501,7 @@ export function ReportCreator({
                             <span className="block text-sm font-medium text-foreground">
                               {run.title}
                             </span>
-                            <span className="block text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">
+                            <span className="block text-label uppercase tracking-[0.12em] text-muted-foreground">
                               {new Date(run.created_at).toLocaleString()}
                             </span>
                           </span>
@@ -559,7 +559,7 @@ export function ReportCreator({
             <FilePlus2 className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
               Create
             </p>
             <h2 className="text-xl font-semibold tracking-tight">New report packet</h2>

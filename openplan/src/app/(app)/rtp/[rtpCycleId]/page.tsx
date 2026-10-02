@@ -839,7 +839,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
           {packetReportsWithComparison.length > 0 ? (
             <div className="mt-4 space-y-3 rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4">
               <div>
-                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                   Existing packet records
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
@@ -944,7 +944,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
             <div className="space-y-3">
               {portfolioPriority.scoredCount > 0 ? (
                 <div className="rounded-[0.5rem] border border-emerald-300/50 bg-emerald-50/50 px-4 py-3 text-sm dark:border-emerald-900/40 dark:bg-emerald-950/20">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-300">
                     Why this portfolio
                   </p>
                   <p className="mt-1 text-muted-foreground">{portfolioPriority.narrative}</p>
@@ -1019,7 +1019,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
             Document tab; the reasoning is recorded at its new site.
           */}
           <div className="rounded-[0.5rem] border border-border/60 bg-muted/30 px-4 py-3 text-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
               {priorityFrameworkDisclosure.headline}
             </p>
             <p className="mt-1 text-muted-foreground">{priorityFrameworkDisclosure.detail}</p>
@@ -1119,7 +1119,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
                           </StatusBadge>
                           <span className="module-record-chip"><span>Section</span><strong>{titleizeRtpValue(chapter.section_type)}</strong></span>
                         </div>
-                        <p className="mt-1 text-[0.73rem] text-muted-foreground">{chapter.required ? "Required" : "Optional"} · {chapterCampaigns.length} campaign{chapterCampaigns.length === 1 ? "" : "s"}</p>
+                        <p className="mt-1 text-label text-muted-foreground">{chapter.required ? "Required" : "Optional"} · {chapterCampaigns.length} campaign{chapterCampaigns.length === 1 ? "" : "s"}</p>
                         <p className="mt-1 text-sm text-muted-foreground">{chapter.guidance?.trim() || "No guidance yet."}</p>
                       </div>
                       <div className="text-right text-xs text-muted-foreground">
@@ -1129,14 +1129,14 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
                     </div>
 
                     <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-3">
-                      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Current shell posture</p>
+                      <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Current shell posture</p>
                       <p className="mt-2 text-sm text-muted-foreground">
                         {chapter.summary?.trim() || "No chapter summary yet. This shell is ready for chapter-level narrative, evidence, and comment threading."}
                       </p>
                     </div>
 
                     <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
-                      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Draft content</p>
+                      <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Draft content</p>
                       {chapter.content_markdown?.trim() ? (
                         <div
                           className="chapter-markdown mt-2 text-sm text-muted-foreground"
@@ -1153,7 +1153,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
 
                     {chapterCampaigns.length > 0 ? (
                       <div className="space-y-2 rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
-                        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Chapter engagement targets</p>
+                        <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Chapter engagement targets</p>
                         {chapterCampaigns.map((campaign) => (
                           <div key={campaign.id} className="rounded-xl border border-border/70 bg-muted/20 px-3 py-3">
                             <div className="flex flex-wrap items-center gap-2">
@@ -1295,7 +1295,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
             <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                     Adoption record proof
                   </p>
                   <p className="mt-2 text-sm font-medium">{adoptionRecordProof.label}</p>

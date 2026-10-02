@@ -755,7 +755,7 @@ export default async function ProgramDetailPage({
               </Link>
             ) : null}
           </div>
-          <p className="text-[0.73rem] text-muted-foreground">
+          <p className="text-label text-muted-foreground">
             {readinessBasisUnreadable
               ? "Readiness is withheld: part of this package's linked basis could not be read, so any verdict here would be computed from counts that are not known to be complete."
               : readiness.label}
@@ -860,7 +860,7 @@ export default async function ProgramDetailPage({
               </div>
 
               <div className="mt-5 rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
-                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Workflow summary</p>
+                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Workflow summary</p>
                 <p className="mt-2 text-base font-semibold text-foreground">{workflow.label}</p>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{workflow.reason}</p>
                 <div className="mt-4 space-y-2">
@@ -897,35 +897,35 @@ export default async function ProgramDetailPage({
 
             <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Funding classification</p>
+                <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Funding classification</p>
                 <p className="mt-1 text-sm font-semibold text-foreground">
                   {formatProgramFundingClassificationLabel(program.funding_classification)}
                 </p>
               </div>
               <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Sponsor</p>
+                <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Sponsor</p>
                 <p className="mt-1 text-sm font-semibold text-foreground">{program.sponsor_agency || "Not set"}</p>
               </div>
               <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Owner</p>
+                <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Owner</p>
                 <p className="mt-1 text-sm font-semibold text-foreground">{program.owner_label || "Unassigned"}</p>
               </div>
               <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Cadence</p>
+                <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Cadence</p>
                 <p className="mt-1 text-sm font-semibold text-foreground">{program.cadence_label || "Not set"}</p>
               </div>
               <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Fiscal window</p>
+                <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Fiscal window</p>
                 <p className="mt-1 text-sm font-semibold text-foreground">
                   {formatFiscalWindow(program.fiscal_year_start, program.fiscal_year_end)}
                 </p>
               </div>
               <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Nomination due</p>
+                <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Nomination due</p>
                 <p className="mt-1 text-sm font-semibold text-foreground">{formatProgramDateTime(program.nomination_due_at)}</p>
               </div>
               <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Adoption target</p>
+                <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Adoption target</p>
                 <p className="mt-1 text-sm font-semibold text-foreground">{formatProgramDateTime(program.adoption_target_at)}</p>
               </div>
             </div>
@@ -1134,17 +1134,17 @@ export default async function ProgramDetailPage({
                   <div className="space-y-3">
                     <div className="grid gap-3 md:grid-cols-3">
                       <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Supporting models</p>
+                        <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Supporting models</p>
                         <p className="mt-1 text-sm font-semibold text-foreground">{supportingModels.length}</p>
                         <p className="mt-1 text-xs text-muted-foreground">{supportingModelReadyCount} fully ready.</p>
                       </div>
                       <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Project context</p>
+                        <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Project context</p>
                         <p className="mt-1 text-sm font-semibold text-foreground">{projectBasedModelCount}</p>
                         <p className="mt-1 text-xs text-muted-foreground">Models anchored to the package project.</p>
                       </div>
                       <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-                        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Linked plan basis</p>
+                        <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Linked plan basis</p>
                         <p className="mt-1 text-sm font-semibold text-foreground">{planBasedModelCount}</p>
                         <p className="mt-1 text-xs text-muted-foreground">Models surfaced through linked plans.</p>
                       </div>

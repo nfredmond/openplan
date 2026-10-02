@@ -124,7 +124,7 @@ export function ExploreCurrentResultCard({
         <div className="rounded-[0.75rem] border border-white/10 bg-[linear-gradient(180deg,rgba(16,28,39,0.94),rgba(11,20,29,0.9))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="max-w-[16rem]">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-cyan-200/76">Current run posture</p>
+              <p className="text-label font-semibold uppercase tracking-[0.12em] text-cyan-200/76">Current run posture</p>
               <p className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-white">
                 {typeof analysisResult.metrics.overallScore === "number" ? analysisResult.metrics.overallScore : "—"}
               </p>
@@ -155,7 +155,7 @@ export function ExploreCurrentResultCard({
                   .join(" ")}
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-[0.64rem] font-semibold uppercase tracking-[0.18em] text-slate-400">{item.label}</p>
+                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-slate-400">{item.label}</p>
                   {item.estimated ? (
                     <StatusBadge tone="warning" title={item.estimatedNote}>
                       Estimated
@@ -178,7 +178,7 @@ export function ExploreCurrentResultCard({
             a planner must not do is carry a screen into a determination.
           */}
           <div className="mt-4 rounded-[0.5rem] border border-amber-300/20 bg-amber-400/[0.06] px-4 py-3">
-            <p className="text-[0.64rem] font-semibold uppercase tracking-[0.18em] text-amber-200/80">
+            <p className="text-label font-semibold uppercase tracking-[0.12em] text-amber-200/80">
               {decisionUse.label}
             </p>
             <p className="mt-2 text-xs leading-5 text-slate-200/85">{decisionUse.detail}</p>
@@ -202,7 +202,7 @@ export function ExploreCurrentResultCard({
             </p>
             {projectId ? (
               <div className="mt-4 border-t border-amber-200/15 pt-4" data-testid="project-effect-answer">
-                <p className="text-[0.64rem] font-semibold uppercase tracking-[0.18em] text-amber-200/80">
+                <p className="text-label font-semibold uppercase tracking-[0.12em] text-amber-200/80">
                   Answer to the project question
                 </p>
                 <dl className="mt-3 grid gap-3 sm:grid-cols-3">
@@ -239,7 +239,7 @@ export function ExploreCurrentResultCard({
         <div className="rounded-[0.5rem] border border-white/8 bg-black/15 p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Output actions</p>
+              <p className="text-label font-semibold uppercase tracking-[0.12em] text-slate-400">Output actions</p>
               <p className="mt-2 text-sm text-slate-300/74">
                 Export the numeric record or geometry package for audit, sharing, or downstream reporting.
               </p>
@@ -258,7 +258,7 @@ export function ExploreCurrentResultCard({
         <div className="rounded-[0.5rem] border border-white/8 bg-white/[0.03] p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Map review context</p>
+              <p className="text-label font-semibold uppercase tracking-[0.12em] text-slate-400">Map review context</p>
               <p className="mt-2 text-sm text-slate-300/74">
                 Captures the current tract, crash, and overlay posture that shaped this visible result surface.
               </p>
@@ -285,14 +285,14 @@ export function ExploreCurrentResultCard({
 
         <div className="grid gap-3">
           <div className="rounded-[0.5rem] border border-white/8 bg-white/[0.03] p-4">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Summary brief</p>
+            <p className="text-label font-semibold uppercase tracking-[0.12em] text-slate-400">Summary brief</p>
             <p className="mt-3 text-sm leading-6 text-slate-100/90">{analysisResult.summary}</p>
           </div>
 
           {analysisResult.aiInterpretation ? (
             <div className="rounded-[0.5rem] border border-cyan-300/16 bg-[linear-gradient(180deg,rgba(14,35,48,0.88),rgba(11,20,29,0.94))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-cyan-200/78">AI interpretation</p>
+                <p className="text-label font-semibold uppercase tracking-[0.12em] text-cyan-200/78">AI interpretation</p>
                 <StatusBadge tone="info">Human review required</StatusBadge>
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-100/88">{analysisResult.aiInterpretation}</p>
@@ -303,7 +303,7 @@ export function ExploreCurrentResultCard({
         <div className="rounded-[0.5rem] border border-white/8 bg-white/[0.03] p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-400">Data source checks</p>
+              <p className="text-label font-semibold uppercase tracking-[0.12em] text-slate-400">Data source checks</p>
               <p className="mt-2 text-sm text-slate-300/74">Review source quality, fallback behavior, and narrative inputs before sharing results.</p>
             </div>
             <StatusBadge tone={sourceReviewCount > 0 ? "warning" : "success"}>

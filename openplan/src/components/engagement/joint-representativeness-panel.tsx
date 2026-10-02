@@ -33,7 +33,7 @@ function SignalCard({
   return (
     <div className="rounded-lg border border-border/60 p-3">
       <p className="text-xs font-semibold text-foreground">{title}</p>
-      <p className="mt-0.5 text-[0.7rem] text-muted-foreground">{subtitle}</p>
+      <p className="mt-0.5 text-label text-muted-foreground">{subtitle}</p>
       <div className="mt-2 space-y-1 text-xs">{children}</div>
     </div>
   );
@@ -135,18 +135,18 @@ export function JointRepresentativenessPanel({
       </div>
 
       <div className="space-y-1">
-        <p className="text-[0.7rem] font-semibold uppercase tracking-wide text-muted-foreground">
+        <p className="text-label font-semibold uppercase tracking-wide text-muted-foreground">
           What this cannot say
         </p>
-        <ul className="space-y-1 text-[0.7rem] leading-relaxed text-muted-foreground">
+        <ul className="space-y-1 text-label leading-relaxed text-muted-foreground">
           {joint.limits.map((limit) => (
             <li key={limit}>• {limit}</li>
           ))}
         </ul>
       </div>
 
-      <p className="text-[0.7rem] leading-relaxed text-muted-foreground">{joint.dimension.rationale}</p>
-      <p className="text-[0.7rem] leading-relaxed text-muted-foreground">{joint.caveat}</p>
+      <p className="text-label leading-relaxed text-muted-foreground">{joint.dimension.rationale}</p>
+      <p className="text-label leading-relaxed text-muted-foreground">{joint.caveat}</p>
     </div>
   );
 }

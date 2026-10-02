@@ -276,7 +276,7 @@ export function ParticipationHeatmapMap({
         ) : null}
       </div>
       {hotspots.features.length > 0 ? (
-        <div className="absolute bottom-3 left-3 flex items-center gap-3 rounded-lg border border-border/60 bg-background/90 px-3 py-1.5 text-[0.7rem] text-muted-foreground shadow-sm backdrop-blur-sm">
+        <div className="absolute bottom-3 left-3 flex items-center gap-3 rounded-lg border border-border/60 bg-background/90 px-3 py-1.5 text-label text-muted-foreground shadow-sm backdrop-blur-sm">
           <span className="flex items-center gap-1">
             <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: "#dc2626", opacity: 0.6 }} />
             Elevated concern

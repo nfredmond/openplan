@@ -377,7 +377,7 @@ export default async function PlansPage({
           </div>
 
           {/* Filter rows */}
-          <div className="mt-4 space-y-2 border-b border-border/60 pb-3 text-[0.78rem]">
+          <div className="mt-4 space-y-2 border-b border-border/60 pb-3 text-compact">
             <div className="flex flex-wrap items-center gap-1">
               <span className="mr-1 text-muted-foreground/70">Status:</span>
               <Link
@@ -472,7 +472,7 @@ title="Your plans could not be read"
                         <p className="module-record-summary line-clamp-2">
                           {plan.summary || "No summary yet."}
                         </p>
-                        <p className="text-[0.73rem] text-muted-foreground">
+                        <p className="text-label text-muted-foreground">
                           {plan.project?.name ?? "No project linked"}
                           {plan.geography_label ? ` · ${plan.geography_label}` : ""}
                           {plan.horizon_year ? ` · ${plan.horizon_year}` : ""}
@@ -494,15 +494,15 @@ title="Your plans could not be read"
                     // "Missing basis: …" would be a fact about the failed read,
                     // not about this plan, and it is exactly the sentence that
                     // sends a planner off to re-link work already linked.
-                    <p className="mt-2.5 border-t border-border/50 pt-2.5 text-[0.73rem] text-muted-foreground">
+                    <p className="mt-2.5 border-t border-border/50 pt-2.5 text-label text-muted-foreground">
                       Readiness withheld — the linked records it is computed from could not be read.
                     </p>
                   ) : plan.readiness.missingCheckLabels.length > 0 ? (
-                    <p className="mt-2.5 border-t border-border/50 pt-2.5 text-[0.73rem] text-muted-foreground">
+                    <p className="mt-2.5 border-t border-border/50 pt-2.5 text-label text-muted-foreground">
                       Missing basis: {plan.readiness.missingCheckLabels.join(", ")}.
                     </p>
                   ) : (
-                    <p className="mt-2.5 border-t border-border/50 pt-2.5 text-[0.73rem] text-muted-foreground">{plan.workflow.reason}</p>
+                    <p className="mt-2.5 border-t border-border/50 pt-2.5 text-label text-muted-foreground">{plan.workflow.reason}</p>
                   )}
                 </CartographicSelectionLink>
               ))}

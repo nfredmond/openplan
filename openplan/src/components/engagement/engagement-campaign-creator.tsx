@@ -135,7 +135,7 @@ export function EngagementCampaignCreator({
                 ))}
               </select>
               {selectedTemplate ? (
-                <div className="rounded-[0.5rem] border border-input bg-muted/40 px-4 py-3 text-[0.78rem] text-muted-foreground">
+                <div className="rounded-[0.5rem] border border-input bg-muted/40 px-4 py-3 text-compact text-muted-foreground">
                   <p>{selectedTemplate.description}</p>
                   <p className="mt-1.5">
                     Creates {selectedTemplate.categories.length} starter categories and{" "}

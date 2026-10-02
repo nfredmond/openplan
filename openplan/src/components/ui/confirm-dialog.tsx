@@ -226,7 +226,7 @@ export function ConfirmDialog({
 
           {request.references && request.references.length > 0 ? (
             <div className="space-y-2 rounded-[0.4rem] border border-border bg-muted/30 px-3 py-2.5">
-              <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 {request.referencesLabel ?? "What refers to it"}
               </p>
               <ul role="list" className="space-y-1.5">

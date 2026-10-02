@@ -133,7 +133,7 @@ function Figure({ heading, figure }: { heading: string; figure: OversightFigure 
       <p className="mt-1 flex flex-wrap items-baseline gap-2">
         <span className="text-2xl font-semibold tabular-nums text-foreground">{figure.amountText}</span>
         {figure.isFloor ? (
-          <span className="rounded-full border border-amber-500/50 px-2 py-0.5 text-[0.7rem] font-medium text-amber-700 dark:text-amber-300">
+          <span className="rounded-full border border-amber-500/50 px-2 py-0.5 text-label font-medium text-amber-700 dark:text-amber-300">
             At least this much
           </span>
         ) : null}
@@ -212,7 +212,7 @@ export default async function PublicMeasureOversightPage({
     return (
       <main className="mx-auto w-full max-w-3xl px-4 py-10 sm:py-14">
         <header className="border-b border-border pb-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
             {MEASURE_OVERSIGHT_COPY.pageEyebrow}
           </p>
           <h1 className="mt-2 text-2xl font-semibold text-foreground sm:text-3xl">
@@ -417,7 +417,7 @@ export default async function PublicMeasureOversightPage({
   return (
     <main className="mx-auto w-full max-w-4xl px-4 py-10 sm:py-14">
       <header className="border-b border-border pb-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
           {MEASURE_OVERSIGHT_COPY.pageEyebrow}
         </p>
         <h1 className="mt-2 text-2xl font-semibold text-foreground sm:text-3xl">{model.title}</h1>
@@ -651,7 +651,7 @@ export default async function PublicMeasureOversightPage({
                     <td className="py-2 pr-3">
                       {row.label}
                       {row.isStaffEntered ? (
-                        <span className="ml-2 rounded-full border border-border px-2 py-0.5 text-[0.7rem] text-muted-foreground">
+                        <span className="ml-2 rounded-full border border-border px-2 py-0.5 text-label text-muted-foreground">
                           {MEASURE_OVERSIGHT_COPY.staffEnteredBadge}
                         </span>
                       ) : null}

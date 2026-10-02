@@ -70,7 +70,7 @@ export function StructuralDiagnosisExplanation({ diagnosis, sha256, downloadHref
         })}
       </dl>
     </details> : <p className="mt-3 text-xs">Detailed comparison facts were not supplied here. Missing facts remain unknown.</p>}
-    <p className="mt-3 break-all font-mono text-[11px]" data-testid="diagnosis-sha256">SHA-256 {sha256 ?? String(diagnosis.diagnosis_sha256 ?? "unknown")}</p>
+    <p className="mt-3 break-all font-mono text-label" data-testid="diagnosis-sha256">SHA-256 {sha256 ?? String(diagnosis.diagnosis_sha256 ?? "unknown")}</p>
     <a download href={downloadHref} className="mt-2 inline-flex text-xs font-semibold underline hover:text-foreground">Download exact structural diagnosis</a>
   </section>;
 }

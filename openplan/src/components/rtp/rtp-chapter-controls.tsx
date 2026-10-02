@@ -83,14 +83,14 @@ export function RtpChapterControls({ rtpCycleId, chapter }: Props) {
 
       <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
         <div className="space-y-1.5">
-          <label htmlFor={`rtp-chapter-title-${chapter.id}`} className="text-[0.82rem] font-semibold">
+          <label htmlFor={`rtp-chapter-title-${chapter.id}`} className="text-compact font-semibold">
             Chapter title
           </label>
           <Input id={`rtp-chapter-title-${chapter.id}`} value={title} onChange={(event) => setTitle(event.target.value)} required />
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor={`rtp-chapter-status-${chapter.id}`} className="text-[0.82rem] font-semibold">
+          <label htmlFor={`rtp-chapter-status-${chapter.id}`} className="text-compact font-semibold">
             Chapter status
           </label>
           <select
@@ -108,7 +108,7 @@ export function RtpChapterControls({ rtpCycleId, chapter }: Props) {
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor={`rtp-chapter-summary-${chapter.id}`} className="text-[0.82rem] font-semibold">
+          <label htmlFor={`rtp-chapter-summary-${chapter.id}`} className="text-compact font-semibold">
             Working summary
           </label>
           <Textarea
@@ -136,10 +136,10 @@ export function RtpChapterControls({ rtpCycleId, chapter }: Props) {
 
         <div className="space-y-1.5">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <label htmlFor={`rtp-chapter-content-${chapter.id}`} className="text-[0.82rem] font-semibold">
+            <label htmlFor={`rtp-chapter-content-${chapter.id}`} className="text-compact font-semibold">
               Draft section content
             </label>
-            <div className="inline-flex overflow-hidden rounded-[0.5rem] border border-border/70 text-[0.72rem] font-medium">
+            <div className="inline-flex overflow-hidden rounded-[0.5rem] border border-border/70 text-label font-medium">
               <button
                 type="button"
                 aria-pressed={contentMode === "edit"}
@@ -189,7 +189,7 @@ export function RtpChapterControls({ rtpCycleId, chapter }: Props) {
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor={`rtp-chapter-guidance-${chapter.id}`} className="text-[0.82rem] font-semibold">
+          <label htmlFor={`rtp-chapter-guidance-${chapter.id}`} className="text-compact font-semibold">
             Editorial guidance
           </label>
           <Textarea

@@ -544,7 +544,7 @@ export function RtpFinancialLedgerEditor({
                 </option>
               ))}
             </select>
-            <p className="text-[0.7rem] text-muted-foreground">
+            <p className="text-label text-muted-foreground">
               Moving a line changes which period&apos;s subtotal it counts towards. A period cannot be removed while
               it still carries lines, so this is how they are cleared out first.
             </p>
@@ -644,7 +644,7 @@ export function RtpFinancialLedgerEditor({
             onSubmit={(event) => handleUpdate(event, line)}
             className="space-y-3 rounded-[0.5rem] border border-border/60 bg-muted/20 p-4"
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Edit ledger line</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Edit ledger line</p>
             {renderScopedError(saveKey)}
             {renderDraftFields(`rtp-ledger-edit-${line.id}`, { allowBandChange: bands.length > 1 })}
             <div className="flex items-center gap-2">
@@ -674,11 +674,11 @@ export function RtpFinancialLedgerEditor({
       >
         <div className="min-w-0 space-y-0.5">
           <p className="text-sm font-semibold text-foreground">{line.sourceName}</p>
-          <p className="text-[0.7rem] text-muted-foreground">
+          <p className="text-label text-muted-foreground">
             {ENTRY_KIND_LABELS[line.entryKind]}
             {line.amountBasisYear ? ` · in ${line.amountBasisYear} dollars` : ""}
           </p>
-          {line.notes ? <p className="text-[0.7rem] text-muted-foreground">{line.notes}</p> : null}
+          {line.notes ? <p className="text-label text-muted-foreground">{line.notes}</p> : null}
           {/*
             THE PAGE THIS FIGURE CAME FROM, beside the figure. Nothing renders
             for a line somebody typed — see `transcriptions` above.
@@ -796,7 +796,7 @@ export function RtpFinancialLedgerEditor({
       ) : null}
 
       {strandedLineCount > 0 ? (
-        <p className="text-[0.7rem] text-muted-foreground">
+        <p className="text-label text-muted-foreground">
           {strandedLineCount} recorded {strandedLineCount === 1 ? "line belongs" : "lines belong"} to a period that is
           not shown here, so {strandedLineCount === 1 ? "it is" : "they are"} not included in the subtotals below.
         </p>
@@ -819,19 +819,19 @@ export function RtpFinancialLedgerEditor({
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="space-y-0.5">
                   <p className="text-sm font-semibold text-foreground">{band.label}</p>
-                  <p className="text-[0.7rem] text-muted-foreground">
+                  <p className="text-label text-muted-foreground">
                     {band.startYear}–{band.endYear}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-right">
-                    <p className="text-[0.7rem] text-muted-foreground">Revenue as entered</p>
+                    <p className="text-label text-muted-foreground">Revenue as entered</p>
                     <p className="text-sm font-semibold tabular-nums text-emerald-700 dark:text-emerald-300">
                       {formatSubtotal(revenueSubtotal, revenueLines.length)}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[0.7rem] text-muted-foreground">Costs as entered</p>
+                    <p className="text-label text-muted-foreground">Costs as entered</p>
                     <p className="text-sm font-semibold tabular-nums text-foreground">
                       {formatSubtotal(costSubtotal, costLines.length)}
                     </p>
@@ -852,7 +852,7 @@ export function RtpFinancialLedgerEditor({
               </div>
 
               {unreadableLineCount > 0 ? (
-                <p className="text-[0.7rem] text-amber-700 dark:text-amber-300">
+                <p className="text-label text-amber-700 dark:text-amber-300">
                   {unreadableLineCount === 1
                     ? "One line in this period has no readable amount, so it is not in either subtotal above."
                     : `${unreadableLineCount} lines in this period have no readable amount, so they are not in either subtotal above.`}{" "}
@@ -862,7 +862,7 @@ export function RtpFinancialLedgerEditor({
 
               <div className="grid gap-4 lg:grid-cols-2">
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-300">
                     Revenue
                   </p>
                   {revenueLines.length === 0 ? (
@@ -873,7 +873,7 @@ export function RtpFinancialLedgerEditor({
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Costs</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Costs</p>
                   {costLines.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
                       No operating, maintenance, or other costs recorded for this period.
@@ -889,7 +889,7 @@ export function RtpFinancialLedgerEditor({
                   onSubmit={(event) => handleCreate(event, band.id)}
                   className="space-y-3 rounded-[0.5rem] border border-border/60 bg-muted/20 p-4"
                 >
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                     Add a line to {band.label}
                   </p>
                   {renderScopedError(addKey)}

@@ -94,7 +94,7 @@ export function TimeEntryComposer({
 
   return (
     <form className="space-y-3 border border-border/60 bg-background/70 px-4 py-4" onSubmit={handleSubmit}>
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Log time</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Log time</p>
 
       <div className="grid gap-3 md:grid-cols-3">
         <div className="space-y-1.5">

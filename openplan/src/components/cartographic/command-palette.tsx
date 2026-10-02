@@ -110,7 +110,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
             aria-label="Jump to a module"
             className="w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground"
           />
-          <span className="rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">esc</span>
+          <span className="rounded border border-border px-1.5 py-0.5 text-label text-muted-foreground">esc</span>
         </div>
 
         <ul className="max-h-80 overflow-auto py-1">

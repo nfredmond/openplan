@@ -172,7 +172,7 @@ export function ProjectDeliveryBoard({
 
         <div className="grid gap-4 md:grid-cols-5 mt-5">
           <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Recommended next action</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Recommended next action</p>
             <div className="mt-2 flex items-center gap-2">
               <StatusBadge tone={projectControlsSummary.recommendedNextAction.tone}>
                 {projectControlsSummary.recommendedNextAction.label}
@@ -193,7 +193,7 @@ export function ProjectDeliveryBoard({
             </div>
           </div>
           <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Next milestone</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Next milestone</p>
             <h3 className="mt-2 text-sm font-semibold text-foreground">{projectControlsSummary.nextMilestone?.title ?? "No upcoming milestone recorded"}</h3>
             <p className="mt-2 text-sm text-muted-foreground">
               {projectControlsSummary.nextMilestone
@@ -211,7 +211,7 @@ export function ProjectDeliveryBoard({
             </div>
           </div>
           <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Next submittal</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Next submittal</p>
             <h3 className="mt-2 text-sm font-semibold text-foreground">{projectControlsSummary.nextSubmittal?.title ?? "No upcoming submittal recorded"}</h3>
             <p className="mt-2 text-sm text-muted-foreground">
               {projectControlsSummary.nextSubmittal
@@ -229,7 +229,7 @@ export function ProjectDeliveryBoard({
             </div>
           </div>
           <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Invoices</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Invoices</p>
             <h3 className="mt-2 text-sm font-semibold text-foreground">{invoiceSummary.totalCount ? `${invoiceSummary.totalCount} invoice record(s)` : invoicesReadFailed ? "Invoice records unavailable" : "No invoice records yet"}</h3>
             <p className="mt-2 text-sm text-muted-foreground">
               {invoiceSummary.totalCount
@@ -244,7 +244,7 @@ export function ProjectDeliveryBoard({
             </div>
           </div>
           <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Deadline queue</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Deadline queue</p>
             <h3 className="mt-2 text-sm font-semibold text-foreground">
               {projectControlsSummary.deadlineSummary.nextDeadline?.title ?? "No control deadlines recorded"}
             </h3>
@@ -286,7 +286,7 @@ export function ProjectDeliveryBoard({
           <div className="mt-5 rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Control deadline queue</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Control deadline queue</p>
                 <p className="mt-2 text-sm text-muted-foreground">
                   The first few dated control items across milestones, submittals, and invoices, ordered by urgency.
                 </p>
@@ -330,7 +330,7 @@ export function ProjectDeliveryBoard({
           <div className="mt-5 rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Attention lanes</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Attention lanes</p>
                 <p className="mt-2 text-sm text-muted-foreground">
                   Fast paths into the control lanes currently creating schedule or payment risk.
                 </p>
@@ -346,7 +346,7 @@ export function ProjectDeliveryBoard({
                   )}
                   className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
                 >
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Report packets</p>
+                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Report packets</p>
                   <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{projectControlsSummary.attentionSummary.reportPackets.count}</p>
                   <p className="mt-1 text-sm text-muted-foreground">Refresh stale packets or generate missing artifacts before delivery review.</p>
                   {recommendedReport ? (
@@ -362,7 +362,7 @@ export function ProjectDeliveryBoard({
                   )}
                   className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
                 >
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Blocked milestones</p>
+                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Blocked milestones</p>
                   <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{projectControlsSummary.attentionSummary.blockedMilestones.count}</p>
                   <p className="mt-1 text-sm text-muted-foreground">Clear milestone blockers before the next delivery move.</p>
                   {firstBlockedMilestone ? (
@@ -378,7 +378,7 @@ export function ProjectDeliveryBoard({
                   )}
                   className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
                 >
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Overdue milestones</p>
+                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Overdue milestones</p>
                   <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{projectControlsSummary.attentionSummary.overdueMilestones.count}</p>
                   <p className="mt-1 text-sm text-muted-foreground">Rebaseline checkpoints that are already behind target.</p>
                   {firstOverdueMilestone ? (
@@ -394,7 +394,7 @@ export function ProjectDeliveryBoard({
                   )}
                   className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
                 >
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Overdue submittals</p>
+                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Overdue submittals</p>
                   <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{projectControlsSummary.attentionSummary.overdueSubmittals.count}</p>
                   <p className="mt-1 text-sm text-muted-foreground">Bring late packets back into explicit review cadence.</p>
                   {firstOverdueSubmittal ? (
@@ -410,7 +410,7 @@ export function ProjectDeliveryBoard({
                   )}
                   className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
                 >
-                  <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Overdue invoices</p>
+                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Overdue invoices</p>
                   <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{projectControlsSummary.attentionSummary.overdueInvoices.count}</p>
                   <p className="mt-1 text-sm text-muted-foreground">Resolve payment or documentation drift in the invoice lane.</p>
                   {firstOverdueInvoice ? (
@@ -479,7 +479,7 @@ export function ProjectDeliveryBoard({
                       </div>
                       <p className="module-record-summary">{milestone.summary || milestone.notes || "No milestone summary yet."}</p>
                     </div>
-                    <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+                    <p className="mt-1.5 text-label text-muted-foreground">
                       {milestone.owner_label ? `${milestone.owner_label}` : ""}
                       {milestone.actual_date ? `${milestone.owner_label ? " · " : ""}Actual ${fmtDateTime(milestone.actual_date)}` : ""}
                     </p>
@@ -555,7 +555,7 @@ export function ProjectDeliveryBoard({
                       </div>
                       <p className="module-record-summary">{submittal.notes || "No submittal notes yet."}</p>
                     </div>
-                    <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+                    <p className="mt-1.5 text-label text-muted-foreground">
                       Cycle {submittal.review_cycle}{submittal.agency_label ? ` · ${submittal.agency_label}` : ""}{submittal.reference_number ? ` · Ref ${submittal.reference_number}` : ""}
                     </p>
                     <div className="mt-3">

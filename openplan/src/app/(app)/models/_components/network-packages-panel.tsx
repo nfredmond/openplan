@@ -146,7 +146,7 @@ export async function NetworkPackagesPanel({ workspaceId }: { workspaceId: strin
             the version it is bound to.
           </p>
         </div>
-        <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
           <Network className="h-3.5 w-3.5" />
           {schemaPending ? "schema pending" : `${packages.length} total`}
         </span>

@@ -254,7 +254,7 @@ export function AerialImageryPanel({
                   >
                     {row.original_filename}
                   </a>
-                  <p className="mt-0.5 text-[0.68rem] text-muted-foreground">
+                  <p className="mt-0.5 text-label text-muted-foreground">
                     {formatFileSize(row.byte_size) ?? `${row.byte_size} bytes`}
                     {" · "}
                     {row.gps_lat !== null && row.gps_lon !== null ? (
@@ -278,7 +278,7 @@ export function AerialImageryPanel({
                   <button
                     type="button"
                     onClick={() => void deletePhoto(row)}
-                    className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[0.68rem] text-destructive hover:bg-destructive/10"
+                    className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-label text-destructive hover:bg-destructive/10"
                     aria-label={`Delete ${row.original_filename}`}
                   >
                     <Trash2 className="h-3 w-3" aria-hidden />

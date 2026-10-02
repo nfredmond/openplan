@@ -54,10 +54,10 @@ export const metadata = {
  * its own words; only the column and the type changed around them.
  */
 const PAGE_COLUMN = "mx-auto w-full max-w-[36rem] px-5 py-10 sm:py-14";
-const PROSE = "text-[1.0625rem] leading-[1.65]";
+const PROSE = "text-reading leading-[1.65]";
 const SECTION_HEADING = "text-[1.5rem] font-semibold leading-snug tracking-tight text-foreground";
 const ITEM_HEADING = "text-[1.25rem] font-semibold leading-snug tracking-tight text-foreground";
-const NOTICE_HEADING = "text-[1.0625rem] font-semibold leading-snug";
+const NOTICE_HEADING = "text-reading font-semibold leading-snug";
 
 type ProjectRef = { id: string; name: string; status: string | null; summary: string | null };
 
@@ -108,7 +108,7 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
     return (
       <main className={PAGE_COLUMN}>
         <header className="border-b border-border pb-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
             Regional Transportation Plan · Public view
           </p>
           <h1 className="mt-2 text-[2rem] font-semibold leading-tight tracking-tight text-foreground">
@@ -275,7 +275,7 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
   return (
     <main className={PAGE_COLUMN}>
       <header className="border-b border-border pb-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
           Regional Transportation Plan · Public view
         </p>
         <h1 className="mt-2 text-[2rem] font-semibold leading-tight tracking-tight text-foreground sm:text-[2.35rem]">

@@ -515,7 +515,7 @@ function ScenarioEntryCard({
 
       <div className="mt-4 grid gap-3 rounded-[0.5rem] border border-border/70 bg-background/75 p-4 lg:grid-cols-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Evidence</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Evidence</p>
           <p className="mt-2 text-sm font-medium">{attachedEvidenceTitle ?? "No run attached"}</p>
           <p className="mt-1 text-sm text-muted-foreground">
             {attachedModelRunAsOption
@@ -526,7 +526,7 @@ function ScenarioEntryCard({
           </p>
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Assumptions</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Assumptions</p>
           <p className="mt-2 text-sm font-medium">
             {assumptions.length > 0 ? `${assumptions.length} explicit assumptions` : "No structured assumptions yet"}
           </p>
@@ -540,7 +540,7 @@ function ScenarioEntryCard({
           </p>
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Audit note</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Audit note</p>
           <p className="mt-2 text-sm font-medium">
             {comparisonReadiness ? comparisonReadiness.label : hasAttachedEvidence ? "Evidence attached" : "Evidence incomplete"}
           </p>
@@ -553,7 +553,7 @@ function ScenarioEntryCard({
       <div className="mt-4 grid gap-3 rounded-[0.5rem] border border-border/70 bg-background/60 p-4 lg:grid-cols-3">
         <div className="space-y-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Operator actions</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Operator actions</p>
             <p className="mt-2 text-sm text-muted-foreground">
               Use the attached evidence in Analysis Studio, launch a new managed run from the linked model lane, or move directly into a report workflow when the comparison is ready.
             </p>
@@ -585,7 +585,7 @@ function ScenarioEntryCard({
 
         <div className="space-y-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Managed execution</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Managed execution</p>
             <p className="mt-2 text-sm text-muted-foreground">
               Launch a fresh run using a model already anchored to this scenario set. The completed run is promoted back into this entry automatically.
             </p>
@@ -594,7 +594,7 @@ function ScenarioEntryCard({
         </div>
 
         <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Report linkage</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Report linkage</p>
           {latestLinkedReport ? (
             <>
               <p className="text-sm font-medium">{latestLinkedReport.title ?? "Untitled report"}</p>

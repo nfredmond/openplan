@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { closeLoopEntrySchema, type CloseLoopEntryRow, type CloseLoopStatus } from "@/lib/engagement/close-loop";
 
-const LABEL_CLASS = "text-[0.82rem] font-semibold text-foreground";
+const LABEL_CLASS = "text-compact font-semibold text-foreground";
 const SELECT_CLASS =
   "flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
 const ERROR_CLASS =
@@ -152,11 +152,11 @@ function CloseLoopCard({ entry, categories, submit, broadcast }: {
           <p className="font-medium text-foreground">{entry.theme_title}</p>
           <div className="grid gap-2 sm:grid-cols-2">
             <div>
-              <p className="text-[0.7rem] font-semibold uppercase tracking-wide text-muted-foreground">You said</p>
+              <p className="text-label font-semibold uppercase tracking-wide text-muted-foreground">You said</p>
               <p className="text-sm text-foreground">{entry.you_said || <span className="text-muted-foreground">—</span>}</p>
             </div>
             <div>
-              <p className="text-[0.7rem] font-semibold uppercase tracking-wide text-muted-foreground">We did</p>
+              <p className="text-label font-semibold uppercase tracking-wide text-muted-foreground">We did</p>
               <p className="text-sm text-foreground">{entry.we_did || <span className="text-muted-foreground">—</span>}</p>
             </div>
           </div>

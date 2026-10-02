@@ -128,7 +128,7 @@ export function ModelRunZoneResolutionPanel({
     <div className="module-subpanel mt-4" data-testid="zone-resolution-panel">
       <div className="flex items-center gap-2">
         <Ruler className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
-        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
           What this zone system can support
         </p>
         {state.status === "measured" ? (
