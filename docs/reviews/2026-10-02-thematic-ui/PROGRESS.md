@@ -7,7 +7,8 @@ the UI changes described here are still being exercised.
 Current checkpoint: full QA passes before the final focus correction. That
 correction separately passes 51 focused tests, a harmless control, five detected
 faults, strict lint and a production build. Production-browser focus and busy-read
-checks remain open, as does confirmation of actual saved browser downloads.
+checks pass after the subsequent bounded-read correction described below.
+Confirmation of actual saved browser downloads remains open.
 This is a development candidate, not a release or completed v1 acceptance.
 
 The current implementation adds private request browsing for a saved source,
@@ -250,3 +251,21 @@ then proves manual recovery retains an unrelated pending save error.
 Production build and identified browser reinspection of this correction remain
 pending at this source checkpoint. Full QA of this final tree is separate from
 the earlier passing gate. Saved browser downloads remain unverified.
+
+The corrected production build exits0, including TypeScript. The served checkout
+identifies as b694c005. At390px, a new focus-triggered preview first returns503,
+then the same GET succeeds200 through bounded retry. Original inspection returns
+without an alert. Explicitly hiding import then refreshing the source/review
+keeps it closed, with all associated reads200 and revision2 still unapproved.
+Desktop1440x900 reinspection also reloads the original preview successfully.
+[Request and screenshot evidence](production-retry-browser.json) retains both
+results. The scoped console observer sees no warnings/errors during these steps;
+this does not establish a clean console before its installation.
+
+Some T3 pointer actions report success without activating the intended control.
+DOM checks prevent inferring completion from those tool replies. Keyboard Enter
+opens the focused import control; a full keyboard journey is not established.
+Activating the original-proposal download still yields no matching file in the
+checked Downloads, T3 data or tmp locations. Actual saved-download acceptance
+remains open. The owned server is stopped before final full QA to avoid build
+contention. No new tag, main merge or complete M9b/v1 claim is made.

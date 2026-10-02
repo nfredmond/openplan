@@ -1,0 +1,921 @@
+{
+  "commit": "b694c0059ec6",
+  "boundary": "Identified local production build on owned port3477 and synthetic retained data. Browser-triggered focus events; original real-navigation journey recorded separately. No semantic, scale, complete keyboard journey or saved-download acceptance.",
+  "screenshots": {
+    "mobileClosure": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-screenshot-thematic-20261002-localhost-muriep1h-12e7dc4b.png",
+    "desktopPreview": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-screenshot-thematic-20261002-localhost-murihjhq-06908b7f.png"
+  },
+  "observation": {
+    "beforeCloseFocus": 46,
+    "beforeDesktopFocus": 96,
+    "beforeFocus": 35,
+    "closeResult": {
+      "alerts": [],
+      "closed": true,
+      "console": [],
+      "reads": [
+        {
+          "at": "2026-10-02T22:02:47.743Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources"
+        },
+        {
+          "at": "2026-10-02T22:02:47.754Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources?requestId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+        },
+        {
+          "at": "2026-10-02T22:02:48.024Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=reviews&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+        },
+        {
+          "at": "2026-10-02T22:02:50.014Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=read&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+        },
+        {
+          "at": "2026-10-02T22:02:50.341Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=index&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+        },
+        {
+          "at": "2026-10-02T22:02:50.344Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=revisions&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+        },
+        {
+          "at": "2026-10-02T22:02:50.360Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=responses&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+        },
+        {
+          "at": "2026-10-02T22:02:52.910Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/approvals?reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+        }
+      ],
+      "review": "SYNTHETIC machine proposal for browser inspection · revision 2"
+    },
+    "console": [],
+    "desktopResult": {
+      "alerts": [],
+      "console": [],
+      "preview": true,
+      "reads": [
+        {
+          "at": "2026-10-02T22:04:59.180Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources?requestId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+        },
+        {
+          "at": "2026-10-02T22:04:59.181Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources"
+        },
+        {
+          "at": "2026-10-02T22:04:59.273Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=reviews&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+        },
+        {
+          "at": "2026-10-02T22:04:59.956Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=read&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+        },
+        {
+          "at": "2026-10-02T22:05:00.077Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=revisions&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+        },
+        {
+          "at": "2026-10-02T22:05:00.127Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=responses&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+        },
+        {
+          "at": "2026-10-02T22:05:00.131Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=index&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+        },
+        {
+          "at": "2026-10-02T22:05:00.132Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=list&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+        },
+        {
+          "at": "2026-10-02T22:05:00.997Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/approvals?reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+        },
+        {
+          "at": "2026-10-02T22:05:01.007Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=preview&requestId=dd741df4-7b58-4313-877e-55490ca40346&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+        }
+      ]
+    },
+    "focusResult": {
+      "alerts": [],
+      "console": [],
+      "preview": true,
+      "reads": [
+        {
+          "at": "2026-10-02T22:02:17.802Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources?requestId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+        },
+        {
+          "at": "2026-10-02T22:02:17.863Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources"
+        },
+        {
+          "at": "2026-10-02T22:02:18.081Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=reviews&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+        },
+        {
+          "at": "2026-10-02T22:02:20.134Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=read&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+        },
+        {
+          "at": "2026-10-02T22:02:20.422Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=revisions&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+        },
+        {
+          "at": "2026-10-02T22:02:20.427Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=index&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+        },
+        {
+          "at": "2026-10-02T22:02:20.454Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=responses&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+        },
+        {
+          "at": "2026-10-02T22:02:20.499Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=list&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+        },
+        {
+          "at": "2026-10-02T22:02:20.518Z",
+          "method": "GET",
+          "status": 503,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=preview&requestId=dd741df4-7b58-4313-877e-55490ca40346&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+        },
+        {
+          "at": "2026-10-02T22:02:23.739Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/approvals?reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+        },
+        {
+          "at": "2026-10-02T22:02:24.053Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=preview&requestId=dd741df4-7b58-4313-877e-55490ca40346&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+        }
+      ]
+    },
+    "reads": [
+      {
+        "at": "2026-10-02T22:00:00.282Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources"
+      },
+      {
+        "at": "2026-10-02T22:00:11.636Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources?requestId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:00:11.772Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=reviews&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:00:12.562Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=read&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:00:12.691Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=revisions&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:00:12.692Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=index&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:00:12.695Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=responses&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:00:13.376Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/approvals?reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:00:24.827Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources?requestId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:00:24.833Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources"
+      },
+      {
+        "at": "2026-10-02T22:00:24.923Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=reviews&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:00:25.697Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=read&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:00:25.823Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=revisions&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:00:25.826Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=index&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:00:25.835Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=responses&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:00:26.476Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/approvals?reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:00:39.998Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources"
+      },
+      {
+        "at": "2026-10-02T22:00:39.999Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources?requestId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:00:40.089Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=reviews&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:00:40.759Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=read&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:00:40.862Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=index&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:00:40.865Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=revisions&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:00:40.869Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=responses&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:00:41.525Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/approvals?reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:01:16.307Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=list&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+      },
+      {
+        "at": "2026-10-02T22:01:32.345Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources?requestId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:01:32.353Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources"
+      },
+      {
+        "at": "2026-10-02T22:01:32.603Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=reviews&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:01:35.030Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=read&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:01:35.371Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=revisions&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:01:35.449Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=index&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:01:35.454Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=responses&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:01:35.455Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=list&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+      },
+      {
+        "at": "2026-10-02T22:01:37.573Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/approvals?reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:02:02.839Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=preview&requestId=dd741df4-7b58-4313-877e-55490ca40346&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+      },
+      {
+        "at": "2026-10-02T22:02:17.802Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources?requestId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:02:17.863Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources"
+      },
+      {
+        "at": "2026-10-02T22:02:18.081Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=reviews&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:02:20.134Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=read&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:02:20.422Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=revisions&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:02:20.427Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=index&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:02:20.454Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=responses&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:02:20.499Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=list&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+      },
+      {
+        "at": "2026-10-02T22:02:20.518Z",
+        "method": "GET",
+        "status": 503,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=preview&requestId=dd741df4-7b58-4313-877e-55490ca40346&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+      },
+      {
+        "at": "2026-10-02T22:02:23.739Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/approvals?reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:02:24.053Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=preview&requestId=dd741df4-7b58-4313-877e-55490ca40346&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+      },
+      {
+        "at": "2026-10-02T22:02:47.743Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources"
+      },
+      {
+        "at": "2026-10-02T22:02:47.754Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources?requestId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:02:48.024Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=reviews&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:02:50.014Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=read&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:02:50.341Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=index&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:02:50.344Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=revisions&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:02:50.360Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=responses&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:02:52.910Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/approvals?reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:03:28.813Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources"
+      },
+      {
+        "at": "2026-10-02T22:03:28.830Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources?requestId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:03:29.269Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=reviews&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:03:31.866Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=read&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:03:32.141Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=revisions&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:03:32.214Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=index&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:03:32.217Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=responses&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:03:34.247Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/approvals?reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:03:54.714Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources?requestId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:03:54.720Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources"
+      },
+      {
+        "at": "2026-10-02T22:03:54.952Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=reviews&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:03:56.854Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=read&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:03:57.109Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=revisions&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:03:57.116Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=index&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:03:57.141Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=responses&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:03:58.844Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/approvals?reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:04:22.519Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=list&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+      },
+      {
+        "at": "2026-10-02T22:04:24.569Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=preview&requestId=dd741df4-7b58-4313-877e-55490ca40346&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+      },
+      {
+        "at": "2026-10-02T22:04:39.036Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources"
+      },
+      {
+        "at": "2026-10-02T22:04:39.038Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources?requestId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:04:39.132Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=reviews&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:04:39.826Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=read&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:04:39.942Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=revisions&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:04:39.950Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=index&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:04:39.953Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=responses&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:04:39.961Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=list&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+      },
+      {
+        "at": "2026-10-02T22:04:39.962Z",
+        "method": "GET",
+        "status": 503,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/approvals?reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:04:40.087Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources"
+      },
+      {
+        "at": "2026-10-02T22:04:40.090Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources?requestId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:04:40.189Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=reviews&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:04:40.384Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources"
+      },
+      {
+        "at": "2026-10-02T22:04:40.385Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources?requestId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:04:40.514Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=reviews&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:04:41.183Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=read&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:04:41.314Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=read&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:04:41.429Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=revisions&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:04:41.434Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=index&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:04:41.439Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=list&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+      },
+      {
+        "at": "2026-10-02T22:04:41.444Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=responses&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:04:41.446Z",
+        "method": "GET",
+        "status": 503,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=preview&requestId=dd741df4-7b58-4313-877e-55490ca40346&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+      },
+      {
+        "at": "2026-10-02T22:04:42.381Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/approvals?reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:04:42.499Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=preview&requestId=dd741df4-7b58-4313-877e-55490ca40346&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+      },
+      {
+        "at": "2026-10-02T22:04:59.180Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources?requestId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:04:59.181Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources"
+      },
+      {
+        "at": "2026-10-02T22:04:59.273Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=reviews&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:04:59.956Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=read&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:05:00.077Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=revisions&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:05:00.127Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=responses&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:05:00.131Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=index&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:05:00.132Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=list&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+      },
+      {
+        "at": "2026-10-02T22:05:00.997Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/approvals?reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:05:01.007Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=preview&requestId=dd741df4-7b58-4313-877e-55490ca40346&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+      },
+      {
+        "at": "2026-10-02T22:05:18.753Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources?requestId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:05:18.754Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/sources"
+      },
+      {
+        "at": "2026-10-02T22:05:18.849Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=reviews&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d"
+      },
+      {
+        "at": "2026-10-02T22:05:19.568Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=read&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:05:19.687Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/reviews?mode=revisions&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:05:19.689Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=index&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:05:19.692Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=list&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+      },
+      {
+        "at": "2026-10-02T22:05:19.694Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/response-links?mode=responses&reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:05:19.699Z",
+        "method": "GET",
+        "status": 503,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=preview&requestId=dd741df4-7b58-4313-877e-55490ca40346&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+      },
+      {
+        "at": "2026-10-02T22:05:20.032Z",
+        "method": "GET",
+        "status": 503,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=preview&requestId=dd741df4-7b58-4313-877e-55490ca40346&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+      },
+      {
+        "at": "2026-10-02T22:05:20.447Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/approvals?reviewId=17b5a959-800f-4774-873d-dfa6a4644c09"
+      },
+      {
+        "at": "2026-10-02T22:05:21.700Z",
+        "method": "GET",
+        "status": 200,
+        "url": "/api/engagement/campaigns/71e5671b-d3df-43aa-ba1c-75dfce09e0d7/synthesis/proposals?mode=preview&requestId=dd741df4-7b58-4313-877e-55490ca40346&sourceId=cc77a4d3-1ed3-431c-b5fb-fb352560e26d&sourceSha256=910cc62338207dc981f6a219778415081e2664c24c06790fdbaa866aa0844526"
+      }
+    ],
+    "startedAt": "2026-10-02T21:59:54.026Z"
+  }
+}

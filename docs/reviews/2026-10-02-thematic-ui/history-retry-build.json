@@ -1,0 +1,7 @@
+{
+  "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-history-retry-production-build.log",
+  "sha256": "90f13bceac59ad2ea639ad15f386752fa01aa22d0b0517468da1dbb4363c5198",
+  "exit": 0,
+  "sourceCommit": "b694c0059ec6",
+  "boundary": "Production build and TypeScript. Full QA is a separate run."
+}
