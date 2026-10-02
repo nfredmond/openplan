@@ -1,0 +1,13 @@
+{
+  "checks": [
+    {
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-history-retry-final-controls.log",
+      "sha256": "8d333e309868f123bc32ff247dcccfe63192bf7a51eddb4d5a2962708594fc5e"
+    },
+    {
+      "log": "/home/nathaniel/.local/state/openplan/approval-resume-2026-09-27/t3-history-retry-lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "boundary": "65 synthetic component/helper checks and strict lint. Native locks, production browser and full QA are separate."
+}

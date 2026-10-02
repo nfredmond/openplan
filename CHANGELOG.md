@@ -20,6 +20,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Transient unavailable synthesis proposal, review and approval reads now use
+bounded authenticated GET retries. Write recovery remains separate; exhausted
+reads keep an explicit unavailable state.
+
 The unreleased Analysis UI now includes discovery and inspection of saved thematic
 proposals, an explicit replacement preview and exact import recovery. Imported
 reviews display their original machine evidence and uncertainty. Apply
