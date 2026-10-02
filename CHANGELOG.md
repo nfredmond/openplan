@@ -20,6 +20,13 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Internal thematic import now creates an exact-parent staff draft from the original
+selected proposal. It retains machine authorship, citations and uncertainty,
+replays imported history, preserves prior approvals and recovers lost replies.
+Additive migration `20261015000010_engagement_synthesis_thematic_import.sql` extends review custody. The connected Analysis
+import controls and browser acceptance remain unfinished. See the
+[import evidence](docs/reviews/2026-10-01-context-history/THEMATIC_IMPORT.md).
+
 Internal thematic history now reconstructs the complete selected proposal under
 current staff permission after earlier requesters depart or cancel their work.
 Original task, dispatch and capture checks preserve incomplete states and machine

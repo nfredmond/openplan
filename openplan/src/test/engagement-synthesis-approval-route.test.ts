@@ -45,7 +45,7 @@ describe("private exact synthesis approval API", () => {
     const retry = await POST(post(), context); expect(retry.status).toBe(200); expect(await retry.json()).toEqual({ event: packet, replayed: true });
     const res = await GET(get(), context); expect(res.status).toBe(200); expect(res.headers.get("cache-control")).toBe("private, no-store");
     expect(await res.json()).toEqual({ current, history });
-    expect(mocks.read).toHaveBeenCalledExactlyOnceWith(expect.anything(), { campaignId: scope.campaignId, workspaceId: scope.workspaceId, reviewId: scope.reviewId });
+    expect(mocks.read).toHaveBeenCalledExactlyOnceWith(expect.anything(), { campaignId: scope.campaignId, workspaceId: scope.workspaceId, reviewId: scope.reviewId }, expect.objectContaining({ rpc: expect.any(Function) }));
     mocks.read.mockResolvedValueOnce(null); expect((await GET(get(), context)).status).toBe(404);
   });
   it("denies missing or changed staff access before reaching private server functions", async () => {

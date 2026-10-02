@@ -67,6 +67,7 @@ async function server(url: RequestInfo | URL, options?: RequestInit) {
       const record = { ...first, reviewId: head, currentRevisionId: head, revision: { ...first.revision, requestId: head, intent } };
       records.set(head, record); return json(receipt(record, false), 201);
     }
+    if (intent.operation !== "correct") throw new Error("The category editor fixture expects a correction");
     const parent = records.get(head)!;
     if (head !== intent.expectedRevisionId) return json({ kind: "conflict" }, 409);
     const contentText = JSON.stringify(applySynthesisReviewChange(JSON.parse(parent.revision.contentText), intent.change, snapshot, scope.sourceSha256));

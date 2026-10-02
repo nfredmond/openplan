@@ -73,7 +73,7 @@ export async function GET(request: NextRequest, context: Context) {
     if (access.response) return access.response;
     const scope = { campaignId: params.data.campaignId, workspaceId: access.workspaceId };
     if (query.data.mode === "read") {
-      const saved = await loadSynthesisReview(access.client, { ...scope, reviewId: query.data.reviewId, revisionId: query.data.revisionId });
+      const saved = await loadSynthesisReview(access.client, { ...scope, reviewId: query.data.reviewId, revisionId: query.data.revisionId }, undefined, createServiceRoleClient());
       if (!saved) return failure("missing");
       const { source: _source, ...review } = saved;
       return NextResponse.json(review, { headers });

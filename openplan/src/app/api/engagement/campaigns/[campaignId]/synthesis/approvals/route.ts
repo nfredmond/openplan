@@ -68,7 +68,7 @@ export async function GET(request: NextRequest, context: Context) {
     if (!params.success || !query.success || new Set(entries.map(([key]) => key)).size !== entries.length) return failure("invalid");
     const access = await accessFor(request, params.data.campaignId);
     if (access.response) return access.response;
-    const state = await loadSynthesisApprovalState(access.client, { campaignId: params.data.campaignId, workspaceId: access.workspaceId, reviewId: query.data.reviewId });
+    const state = await loadSynthesisApprovalState(access.client, { campaignId: params.data.campaignId, workspaceId: access.workspaceId, reviewId: query.data.reviewId }, createServiceRoleClient());
     if (!state) return failure("missing");
     return NextResponse.json({ current: state.current, history: state.packet }, { headers });
   } catch (error) { return failure(errorKind(error)); }

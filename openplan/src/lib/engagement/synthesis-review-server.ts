@@ -5,6 +5,8 @@ import { applySynthesisReviewChange, createSynthesisReviewContent, synthesisRevi
 import { synthesisReviewReceiptSchema, synthesisReviewRecordSchema, type SynthesisReviewRecord } from "./synthesis-review-records";
 import { loadSynthesisSource } from "./synthesis-sources-server";
 
+import { importSynthesisThematicReview, type SynthesisReviewEvidenceService } from "./synthesis-thematic-import-server";
+
 type Client = Pick<SupabaseClient, "rpc">;
 type Scope = { campaignId: string; workspaceId: string; reviewId: string; revisionId?: string };
 const hash = (text: string) => createHash("sha256").update(text, "utf8").digest("hex");
@@ -38,7 +40,8 @@ async function readRecord(client: Client, scope: Scope) {
 
 /** Check the complete lineage against its immutable source, including replaying each retained staff command. */
 export async function loadSynthesisReview(client: Client, scope: Scope,
-  onVerifiedRevision?: (revision: Readonly<Pick<SynthesisReviewRecord["revision"], "requestId" | "revisionNo" | "contentSha256">>) => void) {
+  onVerifiedRevision?: (revision: Readonly<Pick<SynthesisReviewRecord["revision"], "requestId" | "revisionNo" | "contentSha256">>) => void,
+  evidence?: SynthesisReviewEvidenceService) {
   const saved = await readRecord(client, scope);
   if (!saved) return null;
   const source = await loadSynthesisSource(client, { campaignId: scope.campaignId, workspaceId: scope.workspaceId, requestId: saved.sourceId });
@@ -57,6 +60,9 @@ export async function loadSynthesisReview(client: Client, scope: Scope,
   let content = initial.content;
   for (const record of chain.reverse()) {
     if (record.revision.intent.operation === "correct") content = applySynthesisReviewChange(content, record.revision.intent.change, source.snapshot, source.snapshotSha256);
+    if (record.revision.intent.operation === "import_thematic") {
+      content = await importSynthesisThematicReview(client, evidence, scope.campaignId, content, record.revision.intent, source);
+    }
     const retained = verifySynthesisReviewContent(JSON.parse(record.revision.contentText), source.snapshot, source.snapshotSha256);
     if (!isDeepStrictEqual(retained, content)) throw new Error("Saved review content differs from its command");
     onVerifiedRevision?.({ requestId: record.revision.requestId, revisionNo: record.revision.revisionNo, contentSha256: record.revision.contentSha256 });
@@ -73,19 +79,19 @@ function receiptFor(saved: NonNullable<Awaited<ReturnType<typeof loadSynthesisRe
 }
 
 /** Caller authenticates the bound actor; the service-only writer checks membership again inside its transaction. */
-export async function retainSynthesisReview(client: Client, service: Client, campaignId: string, rawIntent: SynthesisReviewIntent) {
+export async function retainSynthesisReview(client: Client, service: SynthesisReviewEvidenceService, campaignId: string, rawIntent: SynthesisReviewIntent) {
   const intent = synthesisReviewIntentSchema.parse(rawIntent);
   const scope = { campaignId, workspaceId: intent.workspaceId, reviewId: intent.operation === "create" ? intent.requestId : intent.reviewId };
   const recover = async () => {
-    const existing = await loadSynthesisReview(client, { ...scope, revisionId: intent.requestId });
+    const existing = await loadSynthesisReview(client, { ...scope, revisionId: intent.requestId }, undefined, service);
     if (!existing) return null;
     if (!isDeepStrictEqual(existing.revision.intent, intent)) throw new SynthesisReviewError("conflict", "This request belongs to a different review command");
     return receiptFor(existing);
   };
   const existing = await recover();
   if (existing) return existing;
-  const parent = intent.operation === "correct" ? await loadSynthesisReview(client, scope) : null;
-  if (intent.operation === "correct" && (!parent || parent.revision.requestId !== intent.expectedRevisionId || parent.revision.contentSha256 !== intent.expectedRevisionSha256)) {
+  const parent = intent.operation !== "create" ? await loadSynthesisReview(client, scope, undefined, service) : null;
+  if (intent.operation !== "create" && (!parent || parent.revision.requestId !== intent.expectedRevisionId || parent.revision.contentSha256 !== intent.expectedRevisionSha256)) {
     const raced = await recover();
     if (raced) return raced;
     throw new SynthesisReviewError("conflict", "Open the current review before correcting it");
@@ -99,6 +105,9 @@ export async function retainSynthesisReview(client: Client, service: Client, cam
   if (intent.operation === "correct" && parent) {
     try { content = applySynthesisReviewChange(parent.content, intent.change, source.snapshot, source.snapshotSha256); }
     catch { throw new SynthesisReviewError("invalid", "Review the correction and source membership"); }
+  }
+  if (intent.operation === "import_thematic" && parent) {
+    content = await importSynthesisThematicReview(client, service, campaignId, parent.content, intent, source);
   }
   const contentText = JSON.stringify(content), preparationText = parent ? null : JSON.stringify(initial.preparation);
   const result = await service.rpc("retain_engagement_synthesis_review", { p_campaign: campaignId, p_actor: intent.actorId, p_workspace: intent.workspaceId,

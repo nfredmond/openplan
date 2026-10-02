@@ -7,6 +7,9 @@ import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { verifyThematicImportNativeGuards } from "./helpers/synthesis-thematic-import-native";
+import { loadSynthesisReview, retainSynthesisReview } from "@/lib/engagement/synthesis-review-server";
+import { loadSynthesisApprovalState, retainSynthesisApproval } from "@/lib/engagement/synthesis-approval-server";
 import { loadSynthesisThematicHistory } from "@/lib/engagement/synthesis-thematic-history-server";
 import { prepareProviderApiRevision } from "@/lib/integrations/provider-api-credentials";
 import { createSynthesisGenerationPlan, synthesisGenerationPlanBatch, verifySynthesisGenerationPlanState } from "@/lib/engagement/synthesis-generation-plan";
@@ -219,6 +222,7 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     let dropped = false, deliveries = 0, thematicFrameDropped = false, thematicOutputDropped = false;
     let thematicFinalIndex = -1, thematicFinalAttempt: string | null = null;
     let revokeThematicReviewer: (() => void) | null = null;
+    let thematicImportReplyDropped = false;
     const proxyErrors: string[] = [];
     const target = await listen(createServer(async (req, res) => {
       try {
@@ -232,6 +236,10 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
         if (response.ok && revokeThematicReviewer && requested.pathname.endsWith("/engagement_synthesis_generation_outputs")
           && requested.searchParams.get("attempt_id") === `eq.${thematicFinalAttempt}`) {
           const revoke = revokeThematicReviewer; revokeThematicReviewer = null; revoke();
+        }
+        if (response.ok && !thematicImportReplyDropped && req.url?.endsWith("/retain_engagement_synthesis_review")
+          && JSON.parse(body.toString()).p_intent.operation === "import_thematic") {
+          thematicImportReplyDropped = true; res.destroy(); return;
         }
         if (response.ok && !thematicFrameDropped && req.url?.endsWith("/stage_engagement_synthesis_thematic_frames")) {
           thematicFrameDropped = true; res.destroy(); return;
@@ -479,6 +487,49 @@ describe.skipIf(!LIVE_RLS)("synthesis worker native HTTP delivery", () => {
     expect(thematicHistory.interpretation).toBe("machine_unreviewed");
     expect(thematicHistory.request.state.cancellation).not.toBeNull();
     expect(f.calls).toHaveLength(completedCallCount);
+    const reviewId = randomUUID(), reviewScope = { campaignId: scope.campaignId, workspaceId: scope.workspaceId, reviewId };
+    const firstReview = await retainSynthesisReview(reviewer.client, service, scope.campaignId, {
+      operation: "create", requestId: reviewId, actorId: reviewer.userId, workspaceId: scope.workspaceId,
+      sourceId: f.saved.requestId, sourceSha256: f.saved.snapshotSha256,
+    });
+    const beforeImport = (await loadSynthesisApprovalState(reviewer.client, reviewScope, service))!;
+    const originalApproval = await retainSynthesisApproval(reviewer.client, service, { ...reviewScope, actorId: reviewer.userId }, {
+      ...beforeImport.current, requestId: randomUUID(), actorId: reviewer.userId, operation: "approve", reason: "SYNTHETIC prior draft approval",
+      predecessorId: null, predecessorSha256: null,
+    });
+    const importIntent = { operation: "import_thematic" as const, requestId: randomUUID(), actorId: reviewer.userId,
+      workspaceId: scope.workspaceId, reviewId, expectedRevisionId: reviewId, expectedRevisionSha256: firstReview.revisionSha256,
+      reason: "SYNTHETIC inspect the complete machine proposal", proposal: { requestId: preparationRequest.requestId,
+        selectionSequence: thematicHistory.manifest.throughSequence!, historyManifestSha256: thematicHistory.sha256,
+        proposalSha256: thematicHistory.proposal!.sha256, finalCaptureSha256: thematicPriorCapture! } };
+    await expect(retainSynthesisReview(reviewer.client, thematicProxy, scope.campaignId, importIntent)).rejects.toMatchObject({ kind: "unavailable" });
+    expect(thematicImportReplyDropped).toBe(true);
+    const importedReceipt = await retainSynthesisReview(reviewer.client, service, scope.campaignId, importIntent);
+    expect(importedReceipt).toMatchObject({ revisionNo: 2, replayed: true });
+    const importedReview = (await loadSynthesisReview(reviewer.client, reviewScope, undefined, service))!;
+    expect(importedReview.content.machineOrigin).toEqual({ interpretation: "machine_unreviewed", reference: importIntent.proposal,
+      proposalText: thematicHistory.proposal!.canonical, historyText: thematicHistory.canonical });
+    const afterImport = (await loadSynthesisApprovalState(reviewer.client, reviewScope, service))!;
+    expect(afterImport.history.head!.eventSha256).toBe(originalApproval.event.eventSha256);
+    expect(afterImport.history.head!.intent.revisionId).toBe(reviewId);
+    expect(afterImport.current.revisionId).toBe(importIntent.requestId);
+    const stale = await service.rpc("retain_engagement_synthesis_review", { p_campaign: scope.campaignId, p_actor: reviewer.userId,
+      p_workspace: scope.workspaceId, p_source: f.saved.requestId, p_source_sha256: f.saved.snapshotSha256, p_preparation_text: null,
+      p_intent: { ...importIntent, requestId: randomUUID() }, p_content_text: JSON.stringify({ ...importedReview.content, title: "SYNTHETIC stale import" }) });
+    expect(stale.error?.code).toBe("PT409");
+    const correction = { operation: "correct" as const, requestId: randomUUID(), actorId: reviewer.userId, workspaceId: scope.workspaceId, reviewId,
+      expectedRevisionId: importIntent.requestId, expectedRevisionSha256: importedReceipt.revisionSha256, reason: "SYNTHETIC wording edit",
+      change: { kind: "notes" as const, title: "SYNTHETIC staff wording", notes: "Preserve every original uncertainty." } };
+    const stripped = { ...importedReview.content }; delete stripped.machineOrigin;
+    const changedOrigin = await service.rpc("retain_engagement_synthesis_review", { p_campaign: scope.campaignId, p_actor: reviewer.userId,
+      p_workspace: scope.workspaceId, p_source: f.saved.requestId, p_source_sha256: f.saved.snapshotSha256, p_preparation_text: null,
+      p_intent: correction, p_content_text: JSON.stringify(stripped) });
+    expect(changedOrigin.error?.code).toBe("22023");
+    expect((await retainSynthesisReview(reviewer.client, service, scope.campaignId, correction)).revisionNo).toBe(3);
+    expect((await loadSynthesisReview(reviewer.client, reviewScope, undefined, service))!.content.machineOrigin).toEqual(importedReview.content.machineOrigin);
+    expect(checked(await service.from("engagement_synthesis_review_revisions").select("id").eq("review_id", reviewId))).toHaveLength(3);
+    expect(f.calls).toHaveLength(completedCallCount);
+    expect(verifyThematicImportNativeGuards(container, importIntent.requestId)).toBe(15);
     let reviewerRevokedDuringRead=false;
     revokeThematicReviewer=()=>{reviewer.revoke();reviewerRevokedDuringRead=true;};
     const afterRevocation=await loadSynthesisThematicHistory(reviewer.client,thematicProxy,preparationRequest,signal).then(()=>null,(error:unknown)=>error);

@@ -38,6 +38,15 @@ describe("staff review browser recovery", () => {
     expect(() => writeReviewWorkingCopy(storage, edited, { ...edited, draft: { ...draft, notes: "SYNTHETIC next edit" } })).toThrow("could not be retained");
     expect(readReviewWorkingCopy(storage, scope)).toEqual(edited);
   });
+  it("keeps a thematic import out of category-editor recovery", () => {
+    const storage = new Store(), empty = emptyReviewWorkingCopy(scope);
+    const intent = { operation: "import_thematic", requestId: correctionId, actorId: sourceActor, workspaceId: scope.workspaceId,
+      reviewId, expectedRevisionId: reviewId, expectedRevisionSha256: "c".repeat(64), reason: "SYNTHETIC import",
+      proposal: { requestId: correctionId, selectionSequence: 1, historyManifestSha256: "a".repeat(64),
+        proposalSha256: "b".repeat(64), finalCaptureSha256: "c".repeat(64) } } as const;
+    expect(() => freezeReviewRequest(storage, empty, intent, 2)).toThrow("category editor cannot recover a thematic import");
+    expect(storage.data.size).toBe(0);
+  });
   it("freezes the parent and refuses changing or clearing an unconfirmed request", () => {
     const storage = new Store(), empty = emptyReviewWorkingCopy(scope), edited = writeReviewWorkingCopy(storage, empty, { ...empty, draft });
     const correct = { operation: "correct" as const, requestId: correctionId, actorId: scope.userId, workspaceId: scope.workspaceId, reviewId,

@@ -8,6 +8,8 @@ import {
   synthesisResponseLinkIntentSchema, SynthesisResponseLinkConflictError, type SynthesisResponseLinkIntent, type SynthesisResponseLinkScope,
 } from "./synthesis-response-records-server";
 
+import type { SynthesisReviewEvidenceService } from "./synthesis-thematic-import-server";
+
 type Client = Pick<SupabaseClient, "rpc">;
 type Actor = { actorId: string; workspaceId: string; campaignId: string };
 const addressSchema = z.object({ campaignId: z.string().uuid(), workspaceId: z.string().uuid(),
@@ -55,7 +57,7 @@ export async function loadSynthesisResponseLinkHistory(client: Client, rawAddres
 }
 
 /** Raw packet callers preserve their submitted context bytes, including noncanonical outer JSON. */
-export async function retainSynthesisResponseLink(client: Client, service: Client, actor: Actor, raw: unknown) {
+export async function retainSynthesisResponseLink(client: Client, service: SynthesisReviewEvidenceService, actor: Actor, raw: unknown) {
   const parsed = writeSchema.safeParse(raw);
   if (!parsed.success) throw new SynthesisResponseLinkError("invalid", "Review the synthesis response link command");
   if ((parsed.data.intent.operation === "withdraw") !== (parsed.data.contextText === null)) {
@@ -65,13 +67,13 @@ export async function retainSynthesisResponseLink(client: Client, service: Clien
 }
 
 /** Compact browser commands recover saved requests before resolving their expected context on the server. */
-export async function retainSynthesisResponseLinkCommand(client: Client, service: Client, actor: Actor, raw: unknown) {
+export async function retainSynthesisResponseLinkCommand(client: Client, service: SynthesisReviewEvidenceService, actor: Actor, raw: unknown) {
   const parsed = synthesisResponseLinkIntentSchema.safeParse(raw);
   if (!parsed.success) throw new SynthesisResponseLinkError("invalid", "Review the synthesis response link command");
   return retainLink(client, service, actor, parsed.data, parsed.data.operation === "withdraw" ? null : undefined);
 }
 
-async function retainLink(client: Client, service: Client, actor: Actor, intent: SynthesisResponseLinkIntent, contextText: string | null | undefined) {
+async function retainLink(client: Client, service: SynthesisReviewEvidenceService, actor: Actor, intent: SynthesisResponseLinkIntent, contextText: string | null | undefined) {
   const scope = address(intent);
   if (intent.actorId !== actor.actorId || intent.workspaceId !== actor.workspaceId || intent.campaignId !== actor.campaignId) {
     throw new SynthesisResponseLinkError("forbidden", "Synthesis response link actor or consultation differs");
@@ -102,7 +104,7 @@ async function retainLink(client: Client, service: Client, actor: Actor, intent:
       } catch { throw new SynthesisResponseLinkError("invalid", "The submitted response evidence could not be verified"); }
     }
     try {
-      const current = await loadSynthesisResponseContext(client, scope);
+      const current = await loadSynthesisResponseContext(client, scope, service);
       if (contextText === undefined) {
         if (current.packet.contextSha256 !== intent.expectedContextSha256) throw new SynthesisResponseLinkError("conflict", "The reviewed response evidence has changed");
         contextText = current.packet.contextText;

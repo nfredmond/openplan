@@ -215,3 +215,15 @@ Check all existing review/approval consumers and use the action registry for any
 agent write, or retain an executable refusal. Coordinate UI ownership before
 connecting the new operation to Analysis. Large-history performance and final-task
 byte limits remain explicit work after this bounded replay checkpoint.
+
+October 2 import continuation: [original thematic import](THEMATIC_IMPORT.md)
+adds the exact-parent retained staff operation and original replay on review reads.
+It preserves the full machine proposal and history text through later corrections.
+Existing approvals remain attached to their old revisions. Finish the receiving
+Analysis workflow with an explicit replacement preview, visible original evidence
+and uncertainty, exact command recovery and identified desktop/390px journeys.
+Coordinate shared UI ownership before editing components. A dedicated import
+working copy is required; the category editor refuses import recovery. Measure
+large-history repeated reads and retained revision size, and preserve full inputs
+when addressing synchronous import and final-task resource limits. No current
+engineering case establishes model quality or closes M9b.

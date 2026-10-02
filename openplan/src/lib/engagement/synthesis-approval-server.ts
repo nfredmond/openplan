@@ -6,6 +6,8 @@ import {
   synthesisApprovalIntentSchema, SynthesisApprovalConflictError, type SynthesisApprovalContext, type SynthesisApprovalIntent, type SynthesisApprovalScope,
 } from "./synthesis-approval";
 
+import type { SynthesisReviewEvidenceService } from "./synthesis-thematic-import-server";
+
 type Client = Pick<SupabaseClient, "rpc">;
 const addressSchema = z.object({ campaignId: z.string().uuid(), workspaceId: z.string().uuid(), reviewId: z.string().uuid() }).strict();
 type Address = z.infer<typeof addressSchema>;
@@ -24,10 +26,10 @@ function scopeFor(intent: SynthesisApprovalIntent): SynthesisApprovalScope {
 }
 
 /** Verify the current review once, then bind every approval to an actually verified immutable revision. */
-export async function loadSynthesisApprovalState(client: Client, address: Address) {
+export async function loadSynthesisApprovalState(client: Client, address: Address, service?: SynthesisReviewEvidenceService) {
   const scopeAddress = addressSchema.parse(address);
   const revisions = new Map<string, { revisionNo: number; contentSha256: string }>();
-  const review = await loadSynthesisReview(client, scopeAddress, revision => revisions.set(revision.requestId, revision));
+  const review = await loadSynthesisReview(client, scopeAddress, revision => revisions.set(revision.requestId, revision), service);
   if (!review) return null;
   const scope: SynthesisApprovalScope = { ...scopeAddress, sourceId: review.sourceId,
     sourceSha256: review.sourceSha256, preparationSha256: review.preparationSha256 };
@@ -60,7 +62,7 @@ export async function loadSynthesisApprovalRequest(client: Client, scope: Synthe
 }
 
 /** Bind route-authenticated identity, recover exact commands first, and let the transaction fence both current heads. */
-export async function retainSynthesisApproval(client: Client, service: Client, actor: Actor, raw: unknown) {
+export async function retainSynthesisApproval(client: Client, service: SynthesisReviewEvidenceService, actor: Actor, raw: unknown) {
   const parsed = synthesisApprovalIntentSchema.safeParse(raw);
   if (!parsed.success) throw new SynthesisApprovalError("invalid", "Review the approval command");
   const intent = parsed.data;
@@ -82,7 +84,7 @@ export async function retainSynthesisApproval(client: Client, service: Client, a
   if (existing) return existing;
   let state: Awaited<ReturnType<typeof loadSynthesisApprovalState>>;
   try {
-    state = await loadSynthesisApprovalState(client, { campaignId: actor.campaignId, workspaceId: actor.workspaceId, reviewId: intent.reviewId });
+    state = await loadSynthesisApprovalState(client, { campaignId: actor.campaignId, workspaceId: actor.workspaceId, reviewId: intent.reviewId }, service);
   } catch (error) {
     if (error instanceof SynthesisApprovalError && error.kind === "conflict") {
       const raced = await recover();

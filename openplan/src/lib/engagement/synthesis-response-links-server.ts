@@ -6,6 +6,8 @@ import { loadSynthesisApprovalState, SynthesisApprovalError } from "./synthesis-
 import { SynthesisReviewError } from "./synthesis-review-server";
 import { readSynthesisResponseContext } from "./synthesis-response-context-server";
 
+import type { SynthesisReviewEvidenceService } from "./synthesis-thematic-import-server";
+
 const uuid = z.string().uuid();
 const addressSchema = z.object({
   campaignId: uuid, workspaceId: uuid, reviewId: uuid, responseId: uuid,
@@ -21,14 +23,14 @@ export class SynthesisResponseLinkError extends Error {
  * enforce access and return complete histories. This preview observes their
  * current heads; the writer must compare those heads again under its locks.
  */
-export async function loadSynthesisResponseContext(client: Pick<SupabaseClient, "rpc">, rawAddress: unknown) {
+export async function loadSynthesisResponseContext(client: Pick<SupabaseClient, "rpc">, rawAddress: unknown, service?: SynthesisReviewEvidenceService) {
   const parsed = addressSchema.safeParse(rawAddress);
   if (!parsed.success) throw new SynthesisResponseLinkError("invalid", "Select a saved review group and response");
   const { groupId, ...scope } = parsed.data;
   try {
     const state = await loadSynthesisApprovalState(client, {
       campaignId: scope.campaignId, workspaceId: scope.workspaceId, reviewId: scope.reviewId,
-    });
+    }, service);
     if (!state) throw new SynthesisResponseLinkError("conflict", "The saved review is unavailable");
     const { review, history, current } = state, approval = history.head;
     if (!approval || approval.intent.operation !== "approve" || approval.intent.revisionId !== current.revisionId
