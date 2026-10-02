@@ -90,3 +90,25 @@ Engineering checks still cannot establish semantic quality or representativeness
 The independent-fixes and UI/UX worktrees remain responsible for their active
 corrections. Coordinate interface ownership before modifying shared UI files,
 and integrate their verified changes before final connected acceptance.
+
+## Retained inputs before a complete seal
+
+[Input custody](THEMATIC_CUSTODY.md) now retains one reconstructed contribution's
+proof and exact original final output. Recovery and staff inspection remain
+separate from fresh preparation. These records do not establish a complete input
+set and do not replace original history replay before execution.
+
+The next native seal must compare actual selected item and answer identifiers
+with retained choices and inputs in both directions. Counts alone cannot catch a
+substituted, duplicate or missing contribution. Use a fixed ordering for prefixed
+source identifiers and a versioned hash chain over exact proof and output hashes.
+Keep the request, intent, thematic binding and source snapshot in the chain seed.
+Exact retries may recover existing sealed bytes; fresh input insertion must stop
+once a seal exists. Missing input remains incomplete, not a smaller ready set.
+
+Read large inventories in bounded pages without returning every original output
+in each page. Reconstruct each chosen original before using its saved proof. A
+reader scoped to one thematic request can share immutable source and anchored
+parent reconstruction across contributions, while rechecking the new requester's
+native authority and exact dependency identities for each one. This optimization
+is still unimplemented and has no large-source performance result here.

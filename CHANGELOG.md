@@ -39,6 +39,15 @@ service authorization commands. Durable input seals and thematic execution remai
 unfinished. [Preparation checks](docs/reviews/2026-10-01-context-history/THEMATIC_PREPARATION.md)
 record this boundary.
 
+The internal thematic worker can retain each reconstructed contribution's exact
+original output and input bindings. Recovery reads and exact retries preserve
+custody after cancellation; fresh writes still require current preparation
+authority. Staff history remains available after the earlier author leaves.
+Apply `20261015000006_engagement_synthesis_thematic_inputs.sql` before using these
+commands. This additive private table is not a whole-source seal or execution
+grant. [Custody checks](docs/reviews/2026-10-01-context-history/THEMATIC_CUSTODY.md)
+record the evidence and remaining work.
+
 ## 0.66.0 (2026-09-30)
 
 [Verification](docs/reviews/2026-09-30-synthesis-generation/CONTEXT_CLI_RELEASE.md) records release scope and candidate checks. [Publication](docs/reviews/2026-09-30-synthesis-generation/CONTEXT_CLI_PUBLICATION.md) records final checks, tagging and local handoff.
