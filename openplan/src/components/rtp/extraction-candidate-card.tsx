@@ -557,7 +557,7 @@ export function ExtractionCandidateCard({
       {warning ? (
         <p className="text-xs text-amber-700 dark:text-amber-300">{warning}</p>
       ) : null}
-      {error ? <p className="text-xs text-red-600 dark:text-red-400">{error}</p> : null}
+      {error ? <p role="alert" className="text-xs text-red-600 dark:text-red-400">{error}</p> : null}
 
       {/*
         THE ORDER OF THE BUTTONS IS THE RECONCILIATION'S ANSWER. For something

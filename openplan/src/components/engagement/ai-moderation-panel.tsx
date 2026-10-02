@@ -82,7 +82,7 @@ export function AiModerationPanel({
         </Button>
       </div>
 
-      {error ? <p className="text-xs text-red-600 dark:text-red-300">{error}</p> : null}
+      {error ? <p role="alert" className="text-xs text-red-600 dark:text-red-300">{error}</p> : null}
       {note ? <p className="text-xs text-muted-foreground">{note}</p> : null}
 
       {/* An assessment this build cannot interpret is an unknown, and saying

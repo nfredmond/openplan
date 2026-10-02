@@ -95,6 +95,24 @@ export function getPublicPortalState(campaign: PublicPortalCampaignLike): Public
     };
   }
 
+  if (campaign.status === "closed") {
+    // The link still answers, with a notice and nothing else. That is not
+    // "publicly reachable" in the sense every reader of this state means (the
+    // campaign's page and its comments), so the flag stays false and the
+    // detail says exactly what a person who opens the link sees.
+    return {
+      shareToken,
+      portalPath,
+      visibility: "staged",
+      label: "Closed · notice only",
+      shortLabel: "Staged",
+      detail:
+        "This campaign is closed. The share link now shows only a notice that the comment period has ended, with no comments or campaign details. Set the campaign to Archived to make the link stop answering.",
+      isPubliclyReachable: false,
+      isAcceptingSubmissions: false,
+    };
+  }
+
   if (campaign.status !== "active") {
     return {
       shareToken,

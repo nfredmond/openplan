@@ -1,19 +1,15 @@
 import { redirect } from "next/navigation";
-import { ArrowRight, CalendarClock, ClipboardList, FolderKanban, ShieldCheck } from "lucide-react";
+import { ArrowRight, CalendarClock, FolderKanban } from "lucide-react";
 import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
-import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
-import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
+import { navLabel } from "@/components/nav/nav-registry";
 import { FundingOpportunityCreator } from "@/components/programs/funding-opportunity-creator";
 import { ProgramCreator } from "@/components/programs/program-creator";
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
+import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState, StateBlock } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
-import {
-  loadWorkspaceOperationsSummaryForWorkspace,
-  type WorkspaceOperationsSupabaseLike,
-} from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import {
@@ -532,10 +528,6 @@ export default async function ProgramsPage({
     (program) => program.packetSummary.attentionCount > 0
   ).length;
 
-  const operationsSummary = await loadWorkspaceOperationsSummaryForWorkspace(
-    supabase as unknown as WorkspaceOperationsSupabaseLike,
-    membership.workspace_id
-  );
   const opportunityPacketRiskCount = fundingOpportunities.filter((opportunity) => {
     if (!opportunity.program_id) return true;
     const packetSummary = packetSummaryByProgramId.get(opportunity.program_id);
@@ -614,271 +606,224 @@ export default async function ProgramsPage({
         </div>
       ) : null}
 
-      <header className="module-header-grid">
-        <article className="module-intro-card">
-          <div className="module-intro-kicker">
-            <ClipboardList className="h-3.5 w-3.5" />
-            Programs module live
+      <PageHeader
+        title={navLabel("/programs")}
+        description="Prepare agency work programs and track funding cycles, submissions and linked projects."
+        actions={
+          // The id stays on this wrapper, which the page owns, so links to
+          // #create-program still land on the button.
+          <div id="create-program" className="scroll-mt-24">
+            <ProgramCreator projects={projectsData ?? []} />
           </div>
-          <div className="module-intro-body">
-            <h1 className="module-intro-title">Programming Cycles</h1>
-            <p className="module-intro-description">
-              Prepare agency work programs and track funding cycles, submissions and linked projects.
+        }
+      >
+        <div className="module-summary-grid cols-3">
+          <div className="module-summary-card">
+            <p className="module-summary-label">Programs</p>
+            <p className="module-summary-value">{programsUnreadable ? "—" : typedPrograms.length}</p>
+            <p className="module-summary-detail">
+              {programsUnreadable
+                ? "The list of programming cycles could not be read, so this number is unknown — it is not zero."
+                : "Programming cycles and packages in this workspace."}
             </p>
           </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Active programs</p>
+            <p className="module-summary-value">{programsUnreadable ? "—" : activeCount}</p>
+            <p className="module-summary-detail">
+              {programsUnreadable
+                ? "Unavailable while the list of programming cycles cannot be read."
+                : `${rtipStipCount} tied to RTIP or STIP cycles.`}
+            </p>
+          </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Ready to submit</p>
+            <p className="module-summary-value">{programsUnreadable || rowBasisUnreadable ? "—" : readyCount}</p>
+            <p className="module-summary-detail">
+              {programsUnreadable || rowBasisUnreadable
+                ? "This is worked out from linked projects and reports this page could not read, so it is unknown — it is not zero."
+                : "Programs with the key information in place, ready to review or submit."}
+            </p>
+          </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Reports needing work</p>
+            <p className="module-summary-value">
+              {programsUnreadable || rowBasisUnreadable ? "—" : packetAttentionProgramCount}
+            </p>
+            <p className="module-summary-detail">
+              {programsUnreadable || rowBasisUnreadable
+                ? "This is worked out from reports this page could not read, so it is unknown — it is not zero."
+                : "Programs whose reports still need to be generated or refreshed."}
+            </p>
+          </div>
+        </div>
+      </PageHeader>
 
-          {/* The module's primary action, in the header rather than wherever the
-              section order puts the form. The full creator stays where it is —
-              this jumps to it. */}
-          <div className="module-intro-actions">
-            <a className="module-intro-action" href="#create-program">
-              New program
-            </a>
+      <article className="module-section-surface">
+        <div className="module-section-header">
+          <div className="module-section-heading">
+            <p className="module-section-label">Your cycles</p>
+            <h2 className="module-section-title">Your programming cycles</h2>
+            <p className="module-section-description">
+              Filter by status, funding type, or linked project, then open a cycle.
+            </p>
           </div>
-
-          <div className="module-summary-grid cols-3">
-            <div className="module-summary-card">
-              <p className="module-summary-label">Programs</p>
-              <p className="module-summary-value">{programsUnreadable ? "—" : typedPrograms.length}</p>
-              <p className="module-summary-detail">
-                {programsUnreadable
-                  ? "The list of programming cycles could not be read, so this number is unknown — it is not zero."
-                  : "Programming cycles and packages in this workspace."}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Active programs</p>
-              <p className="module-summary-value">{programsUnreadable ? "—" : activeCount}</p>
-              <p className="module-summary-detail">
-                {programsUnreadable
-                  ? "Unavailable while the list of programming cycles cannot be read."
-                  : `${rtipStipCount} tied to RTIP or STIP cycles.`}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Ready to submit</p>
-              <p className="module-summary-value">{programsUnreadable || rowBasisUnreadable ? "—" : readyCount}</p>
-              <p className="module-summary-detail">
-                {programsUnreadable || rowBasisUnreadable
-                  ? "This is worked out from linked projects and reports this page could not read, so it is unknown — it is not zero."
-                  : "Programs with the key information in place, ready to review or submit."}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Reports needing work</p>
-              <p className="module-summary-value">
-                {programsUnreadable || rowBasisUnreadable ? "—" : packetAttentionProgramCount}
-              </p>
-              <p className="module-summary-detail">
-                {programsUnreadable || rowBasisUnreadable
-                  ? "This is worked out from reports this page could not read, so it is unknown — it is not zero."
-                  : "Programs whose reports still need to be generated or refreshed."}
-              </p>
-            </div>
-          </div>
-        </article>
-
-        <article className="module-operator-card">
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
-              <ShieldCheck className="h-5 w-5 text-emerald-200" />
-            </span>
-            <div>
-              <p className="module-operator-eyebrow">Programming</p>
-              <h2 className="module-operator-title">Keep funding information clear and easy to review</h2>
-            </div>
-          </div>
-          <p className="module-operator-copy">
-            Keep cycle timing, the sponsoring agency, linked plans, and what you send in together in one place.
-          </p>
-          <div className="module-operator-list">
-            <div className="module-operator-item">Linking a project brings across its plans, reports, and public engagement.</div>
-            <div className="module-operator-item">Extra links hold the context that spans more than one project.</div>
-            <div className="module-operator-item">A missing schedule or report shows up as a stated gap, never a quietly lowered score.</div>
-          </div>
-          <div className="mt-4">
-            <WorkspaceRuntimeCue summary={operationsSummary} />
-          </div>
-        </article>
-      </header>
-
-      <div className="grid gap-6 xl:grid-cols-[0.94fr_1.06fr]">
-        <div id="create-program" className="space-y-6">
-          <ProgramCreator projects={projectsData ?? []} />
-          <WorkspaceCommandBoard
-            summary={operationsSummary}
-            label="Across your workspace"
-            title="What needs attention next"
-            description="The most pressing work anywhere in this workspace, kept in view so it does not get lost while you are in here."
-          />
+          <span className="module-inline-item">
+            <FolderKanban className="h-3.5 w-3.5" />
+            <strong>{programsUnreadable ? "—" : typedPrograms.length}</strong> total
+          </span>
         </div>
 
-        <article className="module-section-surface">
-          <div className="module-section-header">
-            <div className="module-section-heading">
-              <p className="module-section-label">Your cycles</p>
-              <h2 className="module-section-title">Your programming cycles</h2>
-              <p className="module-section-description">
-                Filter by status, funding type, or linked project, then open a cycle.
-              </p>
-            </div>
-            <span className="module-inline-item">
-              <FolderKanban className="h-3.5 w-3.5" />
-              <strong>{programsUnreadable ? "—" : typedPrograms.length}</strong> total
-            </span>
+        {programsUnreadable ? (
+          <div className="mt-5">
+            <StateBlock
+              tone="danger"
+              title="Your programming cycles could not be read"
+              description="This page could not read the programs here, so it cannot list them and cannot say whether any exist. This is not a finding that you have none, and nothing has been deleted. Try again, and if it keeps happening tell whoever installed OpenPlan for your agency."
+            />
           </div>
+        ) : typedPrograms.length === 0 ? (
+          <div className="mt-5">
+            <EmptyState
+              title={emptyProgramCatalogTitle}
+              description={emptyProgramCatalogDescription}
+            />
+          </div>
+        ) : (
+          <div className="mt-5 space-y-4">
+            <ReportPacketCommandQueue
+              title="Reports that need something first"
+              description="The most pressing report work across your programming cycles, ahead of the full list below."
+              items={packetQueuePrograms.slice(0, 5).map((program) => ({
+                key: program.id,
+                href: program.packetSummary.recommendedReport
+                  ? getReportNavigationHref(
+                      program.packetSummary.recommendedReport.id,
+                      program.packetSummary.recommendedReport.packetFreshness.label
+                    )
+                  : `/programs/${program.id}`,
+                title: program.title,
+                subtitle: program.packetSummary.recommendedReport
+                  ? program.packetSummary.recommendedReport.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED
+                    ? `First action: refresh ${program.packetSummary.recommendedReport.title ?? "the report"}`
+                    : program.packetSummary.recommendedReport.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET
+                      ? `First action: generate ${program.packetSummary.recommendedReport.title ?? "the report"}`
+                      : `First action: review ${program.packetSummary.recommendedReport.title ?? "the report"}`
+                  : `First action: create the first report for ${program.title}`,
+                detail: program.packetSummary.recommendedReport
+                  ? program.packetSummary.recommendedReport.packetFreshness.detail
+                  : "No reports are linked yet. Open the program to attach or create the first one.",
+                badges: [
+                  { label: "Reports", value: program.packetSummary.linkedReportCount },
+                  ...(program.packetSummary.attentionCount > 0
+                    ? [{ label: "Attention", value: program.packetSummary.attentionCount }]
+                    : []),
+                ],
+              }))}
+              emptyLabel="No report work is waiting on your programs right now."
+            />
 
-          {programsUnreadable ? (
-            <div className="mt-5">
-              <StateBlock
-                tone="danger"
-                title="Your programming cycles could not be read"
-                description="This page could not read the programs here, so it cannot list them and cannot say whether any exist. This is not a finding that you have none, and nothing has been deleted. Try again, and if it keeps happening tell whoever installed OpenPlan for your agency."
-              />
-            </div>
-          ) : typedPrograms.length === 0 ? (
-            <div className="mt-5">
-              <EmptyState
-                title={emptyProgramCatalogTitle}
-                description={emptyProgramCatalogDescription}
-              />
-            </div>
-          ) : (
-            <div className="mt-5 space-y-4">
-              <ReportPacketCommandQueue
-                title="Reports that need something first"
-                description="The most pressing report work across your programming cycles, ahead of the full list below."
-                items={packetQueuePrograms.slice(0, 5).map((program) => ({
-                  key: program.id,
-                  href: program.packetSummary.recommendedReport
-                    ? getReportNavigationHref(
-                        program.packetSummary.recommendedReport.id,
-                        program.packetSummary.recommendedReport.packetFreshness.label
-                      )
-                    : `/programs/${program.id}`,
+            <div className="module-record-list">
+            {typedPrograms.map((program) => (
+              <CartographicSelectionLink
+                key={program.id}
+                href={`/programs/${program.id}`}
+                className="module-record-row is-interactive group block"
+                selection={{
+                  kind: "report",
                   title: program.title,
-                  subtitle: program.packetSummary.recommendedReport
-                    ? program.packetSummary.recommendedReport.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED
-                      ? `First action: refresh ${program.packetSummary.recommendedReport.title ?? "the report"}`
-                      : program.packetSummary.recommendedReport.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET
-                        ? `First action: generate ${program.packetSummary.recommendedReport.title ?? "the report"}`
-                        : `First action: review ${program.packetSummary.recommendedReport.title ?? "the report"}`
-                    : `First action: create the first report for ${program.title}`,
-                  detail: program.packetSummary.recommendedReport
-                    ? program.packetSummary.recommendedReport.packetFreshness.detail
-                    : "No reports are linked yet. Open the program to attach or create the first one.",
-                  badges: [
-                    { label: "Reports", value: program.packetSummary.linkedReportCount },
-                    ...(program.packetSummary.attentionCount > 0
-                      ? [{ label: "Attention", value: program.packetSummary.attentionCount }]
-                      : []),
-                  ],
-                }))}
-                emptyLabel="No report work is waiting on your programs right now."
-              />
-
-              <div className="module-record-list">
-              {typedPrograms.map((program) => (
-                <CartographicSelectionLink
-                  key={program.id}
-                  href={`/programs/${program.id}`}
-                  className="module-record-row is-interactive group block"
-                  selection={{
-                    kind: "report",
-                    title: program.title,
-                    kicker: `${formatProgramTypeLabel(program.program_type)} · ${formatProgramStatusLabel(program.status)}`,
-                    avatarChar: program.title[0],
-                    meta: [{ label: "readiness", value: program.readiness.label }],
-                  }}
-                >
-                  <div className="module-record-head">
-                    <div className="module-record-main">
-                      <div className="module-record-kicker">
-                        <StatusBadge tone={programStatusTone(program.status)}>
-                          {formatProgramStatusLabel(program.status)}
-                        </StatusBadge>
-                        <StatusBadge tone="info">{formatProgramTypeLabel(program.program_type)}</StatusBadge>
-                        {rowBasisUnreadable ? (
-                          <StatusBadge tone="warning">Readiness unavailable</StatusBadge>
-                        ) : (
-                          <StatusBadge tone={program.readiness.tone}>{program.readiness.label}</StatusBadge>
-                        )}
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <h3 className="module-record-title text-[1.05rem] transition group-hover:text-primary">
-                            {program.title}
-                          </h3>
-                          <p className="module-record-stamp">Updated {formatProgramDateTime(program.updated_at)}</p>
-                        </div>
-                        <p className="module-record-summary line-clamp-2">
-                          {program.summary ||
-                            (rowBasisUnreadable
-                              ? "No summary on file. No verdict is shown here, because the linked projects and reports it is worked out from could not be read — that is missing information, not a bad result."
-                              : program.workflow.reason)}
-                        </p>
-                      </div>
+                  kicker: `${formatProgramTypeLabel(program.program_type)} · ${formatProgramStatusLabel(program.status)}`,
+                  avatarChar: program.title[0],
+                  meta: [{ label: "readiness", value: program.readiness.label }],
+                }}
+              >
+                <div className="module-record-head">
+                  <div className="module-record-main">
+                    <div className="module-record-kicker">
+                      <StatusBadge tone={programStatusTone(program.status)}>
+                        {formatProgramStatusLabel(program.status)}
+                      </StatusBadge>
+                      <StatusBadge tone="info">{formatProgramTypeLabel(program.program_type)}</StatusBadge>
+                      {rowBasisUnreadable ? (
+                        <StatusBadge tone="warning">Readiness unavailable</StatusBadge>
+                      ) : (
+                        <StatusBadge tone={program.readiness.tone}>{program.readiness.label}</StatusBadge>
+                      )}
                     </div>
 
-                    <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
+                    <div className="space-y-1.5">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <h3 className="module-record-title text-[1.05rem] transition group-hover:text-primary">
+                          {program.title}
+                        </h3>
+                        <p className="module-record-stamp">Updated {formatProgramDateTime(program.updated_at)}</p>
+                      </div>
+                      <p className="module-record-summary line-clamp-2">
+                        {program.summary ||
+                          (rowBasisUnreadable
+                            ? "No summary on file. No verdict is shown here, because the linked projects and reports it is worked out from could not be read — that is missing information, not a bad result."
+                            : program.workflow.reason)}
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="module-record-meta">
-                    <span className="module-record-chip">Cycle {program.cycle_name}</span>
-                    <span className="module-record-chip">
-                      {formatProgramFundingClassificationLabel(program.funding_classification)}
-                    </span>
-                    <span className="module-record-chip">Window {formatFiscalWindow(program.fiscal_year_start, program.fiscal_year_end)}</span>
-                    <span className="module-record-chip">Project {program.project?.name ?? "No primary project"}</span>
-                    <span className="module-record-chip">Owner {program.owner_label ?? "Unassigned"}</span>
-                    <span className="module-record-chip">Cadence {program.cadence_label ?? "Not set"}</span>
-                    {rowBasisUnreadable ? (
-                      <span className="module-record-chip">Linkage counts unavailable</span>
-                    ) : (
-                      <>
-                        <span className="module-record-chip">Plans {program.linkageCounts.plans}</span>
-                        <span className="module-record-chip">Reports {program.linkageCounts.reports}</span>
-                        <span className="module-record-chip">Campaigns {program.linkageCounts.engagementCampaigns}</span>
-                      </>
-                    )}
-                    {!rowBasisUnreadable && program.packetSummary.attentionCount > 0 ? (
-                      <span className="module-record-chip">Packet attention {program.packetSummary.attentionCount}</span>
-                    ) : null}
-                    {program.packetSummary.refreshRecommendedCount > 0 ? (
-                      <span className="module-record-chip">Refresh {program.packetSummary.refreshRecommendedCount}</span>
-                    ) : null}
-                    {program.packetSummary.noPacketCount > 0 ? (
-                      <span className="module-record-chip">No packet {program.packetSummary.noPacketCount}</span>
-                    ) : null}
-                  </div>
+                  <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
+                </div>
 
-                  <div className="mt-3 border-t border-border/70 pt-3">
-                    <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      Next report step
-                    </p>
-                    <p className="mt-1 text-sm font-semibold text-foreground">
-                      {program.packetSummary.recommendedReport
-                        ? program.packetSummary.recommendedReport.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED
-                          ? `Refresh ${program.packetSummary.recommendedReport.title ?? "the report"}`
-                          : program.packetSummary.recommendedReport.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET
-                            ? `Generate ${program.packetSummary.recommendedReport.title ?? "the report"}`
-                            : `Review ${program.packetSummary.recommendedReport.title ?? "the report"}`
-                        : "Create the first report"}
-                    </p>
-                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                      {program.packetSummary.recommendedReport
-                        ? program.packetSummary.recommendedReport.packetFreshness.detail
-                        : "No reports linked yet. Open the program to attach or create the first one."}
-                    </p>
-                  </div>
-                </CartographicSelectionLink>
-              ))}
-              </div>
+                <div className="module-record-meta">
+                  <span className="module-record-chip">Cycle {program.cycle_name}</span>
+                  <span className="module-record-chip">
+                    {formatProgramFundingClassificationLabel(program.funding_classification)}
+                  </span>
+                  <span className="module-record-chip">Window {formatFiscalWindow(program.fiscal_year_start, program.fiscal_year_end)}</span>
+                  <span className="module-record-chip">Project {program.project?.name ?? "No primary project"}</span>
+                  <span className="module-record-chip">Owner {program.owner_label ?? "Unassigned"}</span>
+                  <span className="module-record-chip">Cadence {program.cadence_label ?? "Not set"}</span>
+                  {rowBasisUnreadable ? (
+                    <span className="module-record-chip">Linkage counts unavailable</span>
+                  ) : (
+                    <>
+                      <span className="module-record-chip">Plans {program.linkageCounts.plans}</span>
+                      <span className="module-record-chip">Reports {program.linkageCounts.reports}</span>
+                      <span className="module-record-chip">Campaigns {program.linkageCounts.engagementCampaigns}</span>
+                    </>
+                  )}
+                  {!rowBasisUnreadable && program.packetSummary.attentionCount > 0 ? (
+                    <span className="module-record-chip">Packet attention {program.packetSummary.attentionCount}</span>
+                  ) : null}
+                  {program.packetSummary.refreshRecommendedCount > 0 ? (
+                    <span className="module-record-chip">Refresh {program.packetSummary.refreshRecommendedCount}</span>
+                  ) : null}
+                  {program.packetSummary.noPacketCount > 0 ? (
+                    <span className="module-record-chip">No packet {program.packetSummary.noPacketCount}</span>
+                  ) : null}
+                </div>
+
+                <div className="mt-3 border-t border-border/70 pt-3">
+                  <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    Next report step
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-foreground">
+                    {program.packetSummary.recommendedReport
+                      ? program.packetSummary.recommendedReport.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED
+                        ? `Refresh ${program.packetSummary.recommendedReport.title ?? "the report"}`
+                        : program.packetSummary.recommendedReport.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET
+                          ? `Generate ${program.packetSummary.recommendedReport.title ?? "the report"}`
+                          : `Review ${program.packetSummary.recommendedReport.title ?? "the report"}`
+                      : "Create the first report"}
+                  </p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    {program.packetSummary.recommendedReport
+                      ? program.packetSummary.recommendedReport.packetFreshness.detail
+                      : "No reports linked yet. Open the program to attach or create the first one."}
+                  </p>
+                </div>
+              </CartographicSelectionLink>
+            ))}
             </div>
-          )}
-        </article>
-      </div>
+          </div>
+        )}
+      </article>
 
       <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
         <FundingOpportunityCreator

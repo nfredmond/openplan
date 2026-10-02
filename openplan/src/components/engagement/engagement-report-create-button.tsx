@@ -254,7 +254,7 @@ export function EngagementReportCreateButton({
         {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileStack className="h-4 w-4" />}
         Create handoff report
       </Button>
-      {error ? <p className="text-xs text-red-600 dark:text-red-300">{error}</p> : null}
+      {error ? <p role="alert" className="text-xs text-red-600 dark:text-red-300">{error}</p> : null}
     </div>
   );
 }

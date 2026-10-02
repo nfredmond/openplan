@@ -117,7 +117,7 @@ export function RepresentativenessPanel({
         </Button>
       </div>
 
-      {error ? <p className="text-xs text-amber-700 dark:text-amber-300">{error}</p> : null}
+      {error ? <p role="alert" className="text-xs text-amber-700 dark:text-amber-300">{error}</p> : null}
 
       {!result ? (
         <p className="text-xs text-muted-foreground">

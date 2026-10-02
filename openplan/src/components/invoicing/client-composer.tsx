@@ -191,7 +191,7 @@ export function ClientComposer({ workspaceId, canWrite, client = null }: ClientC
       </div>
 
       {error ? (
-        <p className="border-l-2 border-red-400 bg-red-50/80 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/20 dark:text-red-200">
+        <p role="alert" className="border-l-2 border-red-400 bg-red-50/80 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/20 dark:text-red-200">
           {error}
         </p>
       ) : null}

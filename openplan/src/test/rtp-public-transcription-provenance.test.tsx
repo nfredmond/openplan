@@ -89,7 +89,7 @@ vi.mock("@/lib/supabase/server", () => ({
   createServiceRoleClient: () => ({ from: fromMock }),
 }));
 
-import PublicRtpDocumentPage from "@/app/(public)/plan/[shareToken]/document/page";
+import PublicRtpDocumentPage from "@/app/(published)/plan/[shareToken]/document/page";
 
 const SHARE_TOKEN = "public-share-token-1";
 const PLAN_ID = "cycle-1";

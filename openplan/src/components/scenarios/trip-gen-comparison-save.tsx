@@ -123,7 +123,7 @@ export function TripGenComparisonSaveButton({
             Comparison snapshot saved with screening caveats. It now appears under saved comparison snapshots.
           </span>
         ) : error ? (
-          <span className="text-red-600 dark:text-red-300">{error}</span>
+          <span role="alert" className="text-red-600 dark:text-red-300">{error}</span>
         ) : null}
       </p>
     </div>

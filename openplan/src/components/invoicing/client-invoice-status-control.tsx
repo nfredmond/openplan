@@ -110,7 +110,7 @@ export function ClientInvoiceStatusControl({
         </button>
       ) : null}
 
-      {error ? <span className="text-xs text-red-700 dark:text-red-300">{error}</span> : null}
+      {error ? <span role="alert" className="text-xs text-red-700 dark:text-red-300">{error}</span> : null}
       {confirmDialog}
     </div>
   );

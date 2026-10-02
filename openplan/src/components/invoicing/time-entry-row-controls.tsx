@@ -124,7 +124,7 @@ export function TimeEntryRowControls({
         >
           {busy === "delete" ? "Removing…" : "Remove"}
         </button>
-        {error ? <span className="text-xs text-red-700 dark:text-red-200">{error}</span> : null}
+        {error ? <span role="alert" className="text-xs text-red-700 dark:text-red-200">{error}</span> : null}
       </div>
     );
   }
@@ -183,7 +183,7 @@ export function TimeEntryRowControls({
           Cancel
         </button>
       </div>
-      {error ? <p className="text-xs text-red-700 dark:text-red-200">{error}</p> : null}
+      {error ? <p role="alert" className="text-xs text-red-700 dark:text-red-200">{error}</p> : null}
     </div>
   );
 }

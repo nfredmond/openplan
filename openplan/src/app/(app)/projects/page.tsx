@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, Download, FolderKanban, Layers3, Sparkles } from "lucide-react";
+import { ArrowRight, Download, FolderKanban } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
+import { navLabel } from "@/components/nav/nav-registry";
 import { ProjectWorkspaceCreator } from "@/components/projects/project-workspace-creator";
 import {
   ProjectPortfolioImporter,
@@ -28,6 +29,7 @@ import {
   parseStoredEvidenceChainSummary,
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
+import { PageHeader } from "@/components/ui/page-header";
 import { StateBlock } from "@/components/ui/state-block";
 import { ProjectPortfolioTable } from "@/components/projects/project-portfolio-table";
 import { WorkPlanTemplateApplier } from "@/components/projects/work-plan-template-applier";
@@ -578,27 +580,11 @@ export default async function ProjectsPage({
         />
       ) : null}
 
-      <header className="module-header-grid">
-        <article className="module-intro-card">
-          <div className="module-intro-kicker">
-            <Sparkles className="h-3.5 w-3.5" />
-            Project workspace
-          </div>
-          <div className="module-intro-body">
-            <h1 className="module-intro-title">Projects</h1>
-            <p className="module-intro-description">
-              Everything about a project in one place — what it is, what has happened lately, and where it stands —
-              so your team can see at a glance what is moving and what needs attention.
-            </p>
-          </div>
-
-          {/* The module's primary action, in the header rather than wherever the
-              section order puts the form. The full creator stays where it is —
-              this jumps to it. */}
-          <div className="module-intro-actions">
-            <a className="module-intro-action" href="#create-project">
-              New project
-            </a>
+      <PageHeader
+        title={navLabel("/projects")}
+        description="Everything about a project in one place — what it is, what has happened lately, and where it stands — so your team can see at a glance what is moving and what needs attention."
+        actions={
+          <>
             <a
               className="inline-flex min-h-11 items-center rounded-md border border-border bg-background/70 px-4 py-2 text-sm font-semibold text-foreground no-underline transition-colors hover:bg-muted"
               href="#import-project-list"
@@ -613,91 +599,76 @@ export default async function ProjectsPage({
               <Download className="h-4 w-4" />
               Download project workbook
             </a>
+            {/* The id stays on this wrapper, which the page owns, so the empty
+                state's link to #create-project still lands on the button. */}
+            <div id="create-project" className="scroll-mt-24">
+              <ProjectWorkspaceCreator />
+            </div>
+          </>
+        }
+      >
+        <div className="module-summary-grid cols-3">
+          <div className="module-summary-card">
+            <p className="module-summary-label">Projects</p>
+            <p className="module-summary-value">{unknownIfUnread(portfolioCountsUnknown, projects.length)}</p>
+            <p className="module-summary-detail">
+              {portfolioCountsUnknown
+                ? "Unavailable — your projects could not be read, so this is unknown, not zero."
+                : "Projects connected to the rest of your work here."}
+            </p>
           </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Active</p>
+            <p className="module-summary-value">{unknownIfUnread(portfolioCountsUnknown, activeCount)}</p>
+            <p className="module-summary-detail">
+              {portfolioCountsUnknown
+                ? "Unavailable — nothing here was counted, because your projects could not be read. That is unknown, not zero."
+                : "Currently in motion across your portfolio."}
+            </p>
+          </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Plan types</p>
+            <p className="module-summary-value">{unknownIfUnread(portfolioCountsUnknown, planningTypes)}</p>
+            <p className="module-summary-detail">
+              {portfolioCountsUnknown
+                ? "Unavailable — the project list could not be read, so this is not a count of zero."
+                : `Including ${scopingCount} still in scoping.`}
+            </p>
+          </div>
+        </div>
 
-          <div className="module-summary-grid cols-3">
-            <div className="module-summary-card">
-              <p className="module-summary-label">Projects</p>
-              <p className="module-summary-value">{unknownIfUnread(portfolioCountsUnknown, projects.length)}</p>
-              <p className="module-summary-detail">
-                {portfolioCountsUnknown
-                  ? "Unavailable — your projects could not be read, so this is unknown, not zero."
-                  : "Projects connected to the rest of your work here."}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Active</p>
-              <p className="module-summary-value">{unknownIfUnread(portfolioCountsUnknown, activeCount)}</p>
-              <p className="module-summary-detail">
-                {portfolioCountsUnknown
-                  ? "Unavailable — nothing here was counted, because your projects could not be read. That is unknown, not zero."
-                  : "Currently in motion across your portfolio."}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Plan types</p>
-              <p className="module-summary-value">{unknownIfUnread(portfolioCountsUnknown, planningTypes)}</p>
-              <p className="module-summary-detail">
-                {portfolioCountsUnknown
-                  ? "Unavailable — the project list could not be read, so this is not a count of zero."
-                  : `Including ${scopingCount} still in scoping.`}
-              </p>
-            </div>
+        <div className="mt-4 grid gap-2 sm:grid-cols-3">
+          <div className="module-record-chip">
+            <span>Report attention</span>
+            <strong>{unknownIfUnread(reportCountsUnknown, projectsWithReportAttentionCount)}</strong>
           </div>
-
-          <div className="mt-4 grid gap-2 sm:grid-cols-3">
-            <div className="module-record-chip">
-              <span>Report attention</span>
-              <strong>{unknownIfUnread(reportCountsUnknown, projectsWithReportAttentionCount)}</strong>
-            </div>
-            <div className="module-record-chip">
-              <span>Evidence-backed</span>
-              <strong>{unknownIfUnread(reportCountsUnknown, projectsWithEvidenceBackedReportsCount)}</strong>
-            </div>
-            <div className="module-record-chip">
-              <span>Comparison-backed</span>
-              <strong>{unknownIfUnread(reportCountsUnknown, projectsWithComparisonBackedReportsCount)}</strong>
-            </div>
-            <div className="module-record-chip">
-              <span>Governance hold</span>
-              <strong>{unknownIfUnread(reportCountsUnknown, governanceHoldReportCount)}</strong>
-            </div>
-            <div className="module-record-chip">
-              <span>RTP-linked</span>
-              <strong>{unknownIfUnread(rtpCountsUnknown, projectsLinkedToRtpCount)}</strong>
-            </div>
-            {(() => {
-              const aerialCoverageCount = projects.filter((p) => (p.aerialPosture?.missionCount ?? 0) > 0).length;
-              return aerialCoverageCount > 0 ? (
-                <div className="module-record-chip">
-                  <span>Aerial coverage</span>
-                  <strong>{aerialCoverageCount}</strong>
-                </div>
-              ) : null;
-            })()}
+          <div className="module-record-chip">
+            <span>Evidence-backed</span>
+            <strong>{unknownIfUnread(reportCountsUnknown, projectsWithEvidenceBackedReportsCount)}</strong>
           </div>
-        </article>
-
-        <article className="module-operator-card">
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
-              <Layers3 className="h-5 w-5 text-emerald-200" />
-            </span>
-            <div>
-              <p className="module-operator-eyebrow">Portfolio</p>
-              <h2 className="module-operator-title">Projects</h2>
-            </div>
+          <div className="module-record-chip">
+            <span>Comparison-backed</span>
+            <strong>{unknownIfUnread(reportCountsUnknown, projectsWithComparisonBackedReportsCount)}</strong>
           </div>
-          <p className="module-operator-copy">
-            Create projects, review active work, and move into project details from one place.
-          </p>
-          <div className="module-operator-list">
-            <div className="module-operator-item">Track project records, status, and linked work.</div>
-            <div className="module-operator-item">Keep plans, reports, and related decisions connected.</div>
-            <div className="module-operator-item">Open any project to continue the workflow.</div>
+          <div className="module-record-chip">
+            <span>Governance hold</span>
+            <strong>{unknownIfUnread(reportCountsUnknown, governanceHoldReportCount)}</strong>
           </div>
-        </article>
-      </header>
+          <div className="module-record-chip">
+            <span>RTP-linked</span>
+            <strong>{unknownIfUnread(rtpCountsUnknown, projectsLinkedToRtpCount)}</strong>
+          </div>
+          {(() => {
+            const aerialCoverageCount = projects.filter((p) => (p.aerialPosture?.missionCount ?? 0) > 0).length;
+            return aerialCoverageCount > 0 ? (
+              <div className="module-record-chip">
+                <span>Aerial coverage</span>
+                <strong>{aerialCoverageCount}</strong>
+              </div>
+            ) : null;
+          })()}
+        </div>
+      </PageHeader>
 
       <ProjectPortfolioImporter
         workspaceId={workspaceId}
@@ -719,281 +690,275 @@ export default async function ProjectsPage({
         </div>
       )}
 
-      <div className="grid gap-6 xl:grid-cols-[0.94fr_1.06fr]">
-        <div id="create-project">
-          <ProjectWorkspaceCreator />
+      <article className="module-section-surface">
+        <div className="module-section-header">
+          <div className="module-section-heading">
+            <p className="module-section-label">Portfolio</p>
+            <h2 className="module-section-title">Your projects</h2>
+          </div>
+          <span className="module-record-chip">
+            <FolderKanban className="h-3.5 w-3.5" />
+            <span>Total</span>
+            <strong>{projects.length}</strong>
+          </span>
         </div>
 
-        <article className="module-section-surface">
-          <div className="module-section-header">
-            <div className="module-section-heading">
-              <p className="module-section-label">Portfolio</p>
-              <h2 className="module-section-title">Your projects</h2>
-            </div>
-            <span className="module-record-chip">
-              <FolderKanban className="h-3.5 w-3.5" />
-              <span>Total</span>
-              <strong>{projects.length}</strong>
-            </span>
-          </div>
+        {/* Status filter bar */}
+        <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-compact">
+          <Link
+            href="/projects"
+            className={cn(
+              "rounded px-2 py-0.5 transition-colors",
+              !statusFilter ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            All ({projects.length})
+          </Link>
+          {Object.entries(statusCounts)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([status, count]) => (
+              <Link
+                key={status}
+                href={`/projects?status=${status}`}
+                className={cn(
+                  "rounded px-2 py-0.5 transition-colors",
+                  statusFilter === status ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {titleize(status)} ({count})
+              </Link>
+            ))}
+        </div>
 
-          {/* Status filter bar */}
-          <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-compact">
-            <Link
-              href="/projects"
-              className={cn(
-                "rounded px-2 py-0.5 transition-colors",
-                !statusFilter ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              All ({projects.length})
-            </Link>
-            {Object.entries(statusCounts)
-              .sort(([a], [b]) => a.localeCompare(b))
-              .map(([status, count]) => (
-                <Link
-                  key={status}
-                  href={`/projects?status=${status}`}
-                  className={cn(
-                    "rounded px-2 py-0.5 transition-colors",
-                    statusFilter === status ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {titleize(status)} ({count})
-                </Link>
-              ))}
+        {projectsReadFailed ? (
+          /* Never "No project records yet" on a failed read: that sentence
+             tells an agency it has no portfolio, and invites a planner to
+             create a duplicate of a project that already exists. */
+          <div className="module-empty-state mt-5 text-sm">
+            Your projects could not be read, so this list is unavailable rather than empty.
+            This is not a finding that you have no projects. Reload the page; the banner above
+            carries the database&apos;s own message for whoever installed OpenPlan for your agency.
           </div>
-
-          {projectsReadFailed ? (
-            /* Never "No project records yet" on a failed read: that sentence
-               tells an agency it has no portfolio, and invites a planner to
-               create a duplicate of a project that already exists. */
-            <div className="module-empty-state mt-5 text-sm">
-              Your projects could not be read, so this list is unavailable rather than empty.
-              This is not a finding that you have no projects. Reload the page; the banner above
-              carries the database&apos;s own message for whoever installed OpenPlan for your agency.
+        ) : projects.length === 0 ? (
+          <div className="module-empty-state mt-5 text-sm">
+            Projects gives each piece of work your agency delivers — a corridor study, an intersection
+            fix, a trail segment — one place that plans, funding, models, and reports all connect to.
+            Create your first project to start tracking its milestones and money in one place.
+            <div className="mt-3">
+              <a href="#create-project" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
+                Create a project
+              </a>
             </div>
-          ) : projects.length === 0 ? (
-            <div className="module-empty-state mt-5 text-sm">
-              Projects gives each piece of work your agency delivers — a corridor study, an intersection
-              fix, a trail segment — one place that plans, funding, models, and reports all connect to.
-              Create your first project to start tracking its milestones and money in one place.
-              <div className="mt-3">
-                <a href="#create-project" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
-                  Create a project
-                </a>
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="mt-5">
-                <ReportPacketCommandQueue
-                  title="Reports that need something first"
-                  description="The report work to do before anything else, ahead of the full project list below."
-                  items={packetQueueProjects.slice(0, 5).map((project) => {
-                    const report = project.reportSummary.recommendedReport;
-                    const badges: Array<{ label: string; value?: string | number | null }> = [];
-                    if (project.reportSummary.attentionCount > 0) {
-                      badges.push({ label: "Attention", value: project.reportSummary.attentionCount });
-                    }
-                    if (project.reportSummary.comparisonBackedCount > 0) {
-                      badges.push({ label: "Comparison-backed", value: project.reportSummary.comparisonBackedCount });
-                    }
-                    if (project.reportSummary.governanceHoldCount > 0) {
-                      badges.push({ label: "Governance hold", value: project.reportSummary.governanceHoldCount });
-                    }
-                    return {
-                      key: `queue-${project.id}`,
-                      href: report
-                        ? getReportNavigationHref(report.id, report.packetFreshness.label)
-                        : `/projects/${project.id}`,
-                      title: project.name,
-                      subtitle: project.packetCommand.label,
-                      detail: project.packetCommand.detail,
-                      badges,
-                    };
-                  })}
-                  emptyLabel={
-                    reportsReadFailed
-                      ? "This is unavailable — the linked reports could not be read, so it is not a finding that nothing needs doing."
-                      : "No report work is waiting anywhere in your portfolio."
+          </div>
+        ) : (
+          <>
+            <div className="mt-5">
+              <ReportPacketCommandQueue
+                title="Reports that need something first"
+                description="The report work to do before anything else, ahead of the full project list below."
+                items={packetQueueProjects.slice(0, 5).map((project) => {
+                  const report = project.reportSummary.recommendedReport;
+                  const badges: Array<{ label: string; value?: string | number | null }> = [];
+                  if (project.reportSummary.attentionCount > 0) {
+                    badges.push({ label: "Attention", value: project.reportSummary.attentionCount });
                   }
-                />
-              </div>
+                  if (project.reportSummary.comparisonBackedCount > 0) {
+                    badges.push({ label: "Comparison-backed", value: project.reportSummary.comparisonBackedCount });
+                  }
+                  if (project.reportSummary.governanceHoldCount > 0) {
+                    badges.push({ label: "Governance hold", value: project.reportSummary.governanceHoldCount });
+                  }
+                  return {
+                    key: `queue-${project.id}`,
+                    href: report
+                      ? getReportNavigationHref(report.id, report.packetFreshness.label)
+                      : `/projects/${project.id}`,
+                    title: project.name,
+                    subtitle: project.packetCommand.label,
+                    detail: project.packetCommand.detail,
+                    badges,
+                  };
+                })}
+                emptyLabel={
+                  reportsReadFailed
+                    ? "This is unavailable — the linked reports could not be read, so it is not a finding that nothing needs doing."
+                    : "No report work is waiting anywhere in your portfolio."
+                }
+              />
+            </div>
 
-              <div className="mt-4 module-record-list">
-                {filteredProjects.length === 0 ? (
-                  <div className="module-empty-state text-sm">
-                    No projects match the current filter.{" "}
-                    <Link href="/projects" className="text-emerald-700 underline-offset-2 hover:underline">
-                      Clear filter
-                    </Link>
-                  </div>
-                ) : filteredProjects.map((project) => (
-                  <CartographicSelectionLink
-                    key={project.id}
-                    href={`/projects/${project.id}`}
-                    className="module-record-row is-interactive group block"
-                    selection={{
-                      kind: "project",
-                      title: project.name,
-                      kicker: `${titleize(project.plan_type)} · ${titleize(project.delivery_phase)}`,
-                      avatarChar: project.name[0],
-                      meta: [
-                        { label: "status", value: titleize(project.status) },
-                        { label: "reports", value: String(project.reportSummary.totalCount) },
-                        ...(project.reportSummary.attentionCount > 0
-                          ? [{ label: "need attention", value: String(project.reportSummary.attentionCount), tone: "warn" as const }]
-                          : []),
-                        ...(project.rtpSummary.totalCount > 0
-                          ? [{ label: "RTP cycles", value: String(project.rtpSummary.totalCount) }]
-                          : []),
-                        ...(project.aerialPosture && project.aerialPosture.missionCount > 0
-                          ? [{ label: "missions", value: String(project.aerialPosture.missionCount) }]
-                          : []),
-                      ],
-                    }}
-                  >
-                    <div className="module-record-head">
-                      <div className="module-record-main">
-                        <div className="module-record-kicker">
-                          <span className="module-record-chip"><span>Status</span><strong>{titleize(project.status)}</strong></span>
-                          <span className="module-record-chip"><span>Plan</span><strong>{titleize(project.plan_type)}</strong></span>
-                          <span className="module-record-chip"><span>Phase</span><strong>{titleize(project.delivery_phase)}</strong></span>
-                        </div>
-
-                        <div className="space-y-1">
-                          <div className="flex flex-wrap items-start justify-between gap-3">
-                            <h3 className="module-record-title transition group-hover:text-primary">
-                              {project.name}
-                            </h3>
-                            <p className="module-record-stamp shrink-0">Updated {fmtDate(project.updated_at)}</p>
-                          </div>
-                          <p className="module-record-summary line-clamp-2">
-                            {project.summary || "No summary yet."}
-                          </p>
-                        </div>
+            <div className="mt-4 module-record-list">
+              {filteredProjects.length === 0 ? (
+                <div className="module-empty-state text-sm">
+                  No projects match the current filter.{" "}
+                  <Link href="/projects" className="text-emerald-700 underline-offset-2 hover:underline">
+                    Clear filter
+                  </Link>
+                </div>
+              ) : filteredProjects.map((project) => (
+                <CartographicSelectionLink
+                  key={project.id}
+                  href={`/projects/${project.id}`}
+                  className="module-record-row is-interactive group block"
+                  selection={{
+                    kind: "project",
+                    title: project.name,
+                    kicker: `${titleize(project.plan_type)} · ${titleize(project.delivery_phase)}`,
+                    avatarChar: project.name[0],
+                    meta: [
+                      { label: "status", value: titleize(project.status) },
+                      { label: "reports", value: String(project.reportSummary.totalCount) },
+                      ...(project.reportSummary.attentionCount > 0
+                        ? [{ label: "need attention", value: String(project.reportSummary.attentionCount), tone: "warn" as const }]
+                        : []),
+                      ...(project.rtpSummary.totalCount > 0
+                        ? [{ label: "RTP cycles", value: String(project.rtpSummary.totalCount) }]
+                        : []),
+                      ...(project.aerialPosture && project.aerialPosture.missionCount > 0
+                        ? [{ label: "missions", value: String(project.aerialPosture.missionCount) }]
+                        : []),
+                    ],
+                  }}
+                >
+                  <div className="module-record-head">
+                    <div className="module-record-main">
+                      <div className="module-record-kicker">
+                        <span className="module-record-chip"><span>Status</span><strong>{titleize(project.status)}</strong></span>
+                        <span className="module-record-chip"><span>Plan</span><strong>{titleize(project.plan_type)}</strong></span>
+                        <span className="module-record-chip"><span>Phase</span><strong>{titleize(project.delivery_phase)}</strong></span>
                       </div>
 
-                      <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-primary" />
-                    </div>
-
-                    <div className="module-record-meta">
-                      <span className="module-record-chip"><span>Workspace</span><strong>{project.workspace?.name ?? "Unknown"}</strong></span>
-                      <span className="module-record-chip"><span>Created</span><strong>{fmtDate(project.created_at)}</strong></span>
-                      {project.rtpSummary.totalCount > 0 ? (
-                        <span className="module-record-chip"><span>RTP cycles</span><strong>{project.rtpSummary.totalCount}</strong></span>
-                      ) : null}
-                      {project.rtpSummary.constrainedCount > 0 ? (
-                        <span className="module-record-chip"><span>Constrained</span><strong>{project.rtpSummary.constrainedCount}</strong></span>
-                      ) : null}
-                      {/* "—", not 0: the count is unknown when the read failed. */}
-                      <span className="module-record-chip"><span>Reports</span><strong>{reportsReadFailed ? "—" : project.reportSummary.totalCount}</strong></span>
-                      {project.reportSummary.attentionCount > 0 ? (
-                        <span className="module-record-chip"><span>Need attention</span><strong>{project.reportSummary.attentionCount}</strong></span>
-                      ) : null}
-                      {project.reportSummary.evidenceBackedCount > 0 ? (
-                        <span className="module-record-chip"><span>Evidence-backed</span><strong>{project.reportSummary.evidenceBackedCount}</strong></span>
-                      ) : null}
-                      {project.reportSummary.comparisonBackedCount > 0 ? (
-                        <span className="module-record-chip"><span>Comparison-backed</span><strong>{project.reportSummary.comparisonBackedCount}</strong></span>
-                      ) : null}
-                      {project.grantModelingReadiness ? (
-                        <span className="module-record-chip"><span>Grant review</span><strong>{project.grantModelingReadiness.label}</strong></span>
-                      ) : null}
-                      {project.reportSummary.governanceHoldCount > 0 ? (
-                        <span className="module-record-chip"><span>Governance hold</span><strong>{project.reportSummary.governanceHoldCount}</strong></span>
-                      ) : null}
-                      {project.aerialPosture && project.aerialPosture.missionCount > 0 ? (
-                        <span className="module-record-chip">
-                          <span>Aerial</span>
-                          <strong>{project.aerialPosture.missionCount} mission{project.aerialPosture.missionCount === 1 ? "" : "s"}</strong>
-                        </span>
-                      ) : null}
-                      {project.aerialPosture?.verificationReadiness === "ready" ? (
-                        <span className="module-record-chip"><span>Verification</span><strong>Ready</strong></span>
-                      ) : project.aerialPosture?.verificationReadiness === "partial" ? (
-                        <span className="module-record-chip"><span>Verification</span><strong>Partial</strong></span>
-                      ) : null}
-                    </div>
-
-                    <div className="mt-3 border-t border-border/70 pt-3">
-                      <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        What this project needs next
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-foreground">
-                        {project.packetCommand.label}
-                      </p>
-                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                        {project.packetCommand.detail}
-                      </p>
-                      {project.reportSummary.recommendedReport ? (
-                        <>
-                          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                            {getReportPacketActionLabel(
-                              project.reportSummary.recommendedReport.packetFreshness.label
-                            )}
-                          </p>
-                          {project.reportSummary.recommendedReport.evidenceChainDigest ? (
-                            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                              {project.reportSummary.recommendedReport.evidenceChainDigest.headline}
-                              {project.reportSummary.recommendedReport.evidenceChainDigest.blockedGateDetail
-                                ? ` · ${project.reportSummary.recommendedReport.evidenceChainDigest.blockedGateDetail}`
-                                : ""}
-                            </p>
-                          ) : null}
-                          {project.reportSummary.recommendedReport.comparisonDigest ? (
-                            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                              {project.reportSummary.recommendedReport.comparisonDigest.headline}
-                              {` · ${project.reportSummary.recommendedReport.comparisonDigest.detail}`}
-                            </p>
-                          ) : null}
-                          {project.grantModelingEvidence ? (
-                            /* A HAIRLINE, NOT A BOX. This used to be a bordered,
-                               tinted panel inside the project card, inside the
-                               section, inside the page shell — four frames, one more
-                               than the interface has hierarchy to spend. It only
-                               renders for a project that HAS grant modeling evidence,
-                               so an empty workspace never showed it and the browser
-                               audit could not see it. A 1px top rule separates it
-                               without boxing it, and no background tint stands in for
-                               the border. */
-                            <div className="mt-3 border-t border-border/60 pt-2.5">
-                              <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                                Grant release review
-                              </p>
-                              <div className="mt-2 flex flex-wrap gap-1.5">
-                                {project.grantModelingReadiness ? (
-                                  <span className="module-record-chip">{project.grantModelingReadiness.label}</span>
-                                ) : null}
-                                <span className="module-record-chip">
-                                  Suggested {titleize(project.grantModelingSupport.recommendedDecisionState)}
-                                </span>
-                                <span className="module-record-chip">
-                                  Lead packet {project.grantModelingEvidence.leadComparisonReport.packetFreshness.label}
-                                </span>
-                              </div>
-                              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                                {project.grantModelingSupport.recommendedNextActionSummary}
-                              </p>
-                            </div>
-                          ) : null}
-                        </>
-                      ) : (
-                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                          {reportsReadFailed
-                            ? REPORTS_UNREADABLE_DETAIL
-                            : "No reports linked yet. Open the project to write the first one."}
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <h3 className="module-record-title transition group-hover:text-primary">
+                            {project.name}
+                          </h3>
+                          <p className="module-record-stamp shrink-0">Updated {fmtDate(project.updated_at)}</p>
+                        </div>
+                        <p className="module-record-summary line-clamp-2">
+                          {project.summary || "No summary yet."}
                         </p>
-                      )}
+                      </div>
                     </div>
-                  </CartographicSelectionLink>
-                ))}
-              </div>
-            </>
-          )}
-        </article>
-      </div>
+
+                    <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-primary" />
+                  </div>
+
+                  <div className="module-record-meta">
+                    <span className="module-record-chip"><span>Workspace</span><strong>{project.workspace?.name ?? "Unknown"}</strong></span>
+                    <span className="module-record-chip"><span>Created</span><strong>{fmtDate(project.created_at)}</strong></span>
+                    {project.rtpSummary.totalCount > 0 ? (
+                      <span className="module-record-chip"><span>RTP cycles</span><strong>{project.rtpSummary.totalCount}</strong></span>
+                    ) : null}
+                    {project.rtpSummary.constrainedCount > 0 ? (
+                      <span className="module-record-chip"><span>Constrained</span><strong>{project.rtpSummary.constrainedCount}</strong></span>
+                    ) : null}
+                    {/* "—", not 0: the count is unknown when the read failed. */}
+                    <span className="module-record-chip"><span>Reports</span><strong>{reportsReadFailed ? "—" : project.reportSummary.totalCount}</strong></span>
+                    {project.reportSummary.attentionCount > 0 ? (
+                      <span className="module-record-chip"><span>Need attention</span><strong>{project.reportSummary.attentionCount}</strong></span>
+                    ) : null}
+                    {project.reportSummary.evidenceBackedCount > 0 ? (
+                      <span className="module-record-chip"><span>Evidence-backed</span><strong>{project.reportSummary.evidenceBackedCount}</strong></span>
+                    ) : null}
+                    {project.reportSummary.comparisonBackedCount > 0 ? (
+                      <span className="module-record-chip"><span>Comparison-backed</span><strong>{project.reportSummary.comparisonBackedCount}</strong></span>
+                    ) : null}
+                    {project.grantModelingReadiness ? (
+                      <span className="module-record-chip"><span>Grant review</span><strong>{project.grantModelingReadiness.label}</strong></span>
+                    ) : null}
+                    {project.reportSummary.governanceHoldCount > 0 ? (
+                      <span className="module-record-chip"><span>Governance hold</span><strong>{project.reportSummary.governanceHoldCount}</strong></span>
+                    ) : null}
+                    {project.aerialPosture && project.aerialPosture.missionCount > 0 ? (
+                      <span className="module-record-chip">
+                        <span>Aerial</span>
+                        <strong>{project.aerialPosture.missionCount} mission{project.aerialPosture.missionCount === 1 ? "" : "s"}</strong>
+                      </span>
+                    ) : null}
+                    {project.aerialPosture?.verificationReadiness === "ready" ? (
+                      <span className="module-record-chip"><span>Verification</span><strong>Ready</strong></span>
+                    ) : project.aerialPosture?.verificationReadiness === "partial" ? (
+                      <span className="module-record-chip"><span>Verification</span><strong>Partial</strong></span>
+                    ) : null}
+                  </div>
+
+                  <div className="mt-3 border-t border-border/70 pt-3">
+                    <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      What this project needs next
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {project.packetCommand.label}
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      {project.packetCommand.detail}
+                    </p>
+                    {project.reportSummary.recommendedReport ? (
+                      <>
+                        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                          {getReportPacketActionLabel(
+                            project.reportSummary.recommendedReport.packetFreshness.label
+                          )}
+                        </p>
+                        {project.reportSummary.recommendedReport.evidenceChainDigest ? (
+                          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                            {project.reportSummary.recommendedReport.evidenceChainDigest.headline}
+                            {project.reportSummary.recommendedReport.evidenceChainDigest.blockedGateDetail
+                              ? ` · ${project.reportSummary.recommendedReport.evidenceChainDigest.blockedGateDetail}`
+                              : ""}
+                          </p>
+                        ) : null}
+                        {project.reportSummary.recommendedReport.comparisonDigest ? (
+                          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                            {project.reportSummary.recommendedReport.comparisonDigest.headline}
+                            {` · ${project.reportSummary.recommendedReport.comparisonDigest.detail}`}
+                          </p>
+                        ) : null}
+                        {project.grantModelingEvidence ? (
+                          /* A HAIRLINE, NOT A BOX. This used to be a bordered,
+                             tinted panel inside the project card, inside the
+                             section, inside the page shell — four frames, one more
+                             than the interface has hierarchy to spend. It only
+                             renders for a project that HAS grant modeling evidence,
+                             so an empty workspace never showed it and the browser
+                             audit could not see it. A 1px top rule separates it
+                             without boxing it, and no background tint stands in for
+                             the border. */
+                          <div className="mt-3 border-t border-border/60 pt-2.5">
+                            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                              Grant release review
+                            </p>
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {project.grantModelingReadiness ? (
+                                <span className="module-record-chip">{project.grantModelingReadiness.label}</span>
+                              ) : null}
+                              <span className="module-record-chip">
+                                Suggested {titleize(project.grantModelingSupport.recommendedDecisionState)}
+                              </span>
+                              <span className="module-record-chip">
+                                Lead packet {project.grantModelingEvidence.leadComparisonReport.packetFreshness.label}
+                              </span>
+                            </div>
+                            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                              {project.grantModelingSupport.recommendedNextActionSummary}
+                            </p>
+                          </div>
+                        ) : null}
+                      </>
+                    ) : (
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                        {reportsReadFailed
+                          ? REPORTS_UNREADABLE_DETAIL
+                          : "No reports linked yet. Open the project to write the first one."}
+                      </p>
+                    )}
+                  </div>
+                </CartographicSelectionLink>
+              ))}
+            </div>
+          </>
+        )}
+      </article>
     </section>
   );
 }

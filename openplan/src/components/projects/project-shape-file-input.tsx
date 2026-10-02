@@ -397,7 +397,7 @@ export function ProjectShapeFileInput({
         </Button>
         <p className="text-xs text-muted-foreground">{hint}</p>
       </div>
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
     </div>
   );
 }

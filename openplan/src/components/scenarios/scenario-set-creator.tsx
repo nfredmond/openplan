@@ -2,12 +2,10 @@
 
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { FilePlus2, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { EmptyState } from "@/components/ui/state-block";
 import { selectInitialPlanningProjectId } from "@/lib/projects/planning-context";
 import {
   GuidedFlow,
@@ -181,49 +179,45 @@ export function ScenarioSetCreator({
     },
   });
 
-  return (
-    <article className="module-section-surface">
-      <div className="module-section-header">
-        <div className="module-section-heading">
-          <p className="module-section-label">Create</p>
-          <h2 className="module-section-title">New scenario set</h2>
-          <p className="module-section-description">
-            A scenario set is a question and the options you are weighing against it — a baseline
-            and the alternatives beside it, kept together so the comparison is reproducible.
-          </p>
-        </div>
-        <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-amber-500/12 text-amber-700 dark:text-amber-300">
-          <FilePlus2 className="h-5 w-5" />
-        </span>
+  // Only the trigger and the flow. The scenarios page mounts this in its page
+  // header, so "New scenario set" opens the questions directly instead of
+  // scrolling to a card that held a second button. The two disclosures stand
+  // where the button would, because they are the reason there is no button.
+  if (projectsUnreadable) {
+    return (
+      <div className="max-w-sm text-sm leading-6" role="status">
+        <p className="font-semibold text-foreground">Projects could not be read</p>
+        <p className="text-muted-foreground">
+          This workspace&apos;s project list could not be loaded, so no project can be offered here. That is a failed
+          read, not a workspace without projects — do not create a duplicate project on the strength of it.
+        </p>
       </div>
+    );
+  }
 
-      {projectsUnreadable ? (
-        <div className="mt-5">
-          <EmptyState
-            title="Projects could not be read"
-            description="This workspace's project list could not be loaded, so no project can be offered here. That is a failed read, not a workspace without projects — do not create a duplicate project on the strength of it."
-            compact
-          />
-        </div>
-      ) : projects.length === 0 ? (
-        <div className="mt-5">
-          <EmptyState
-            title="No projects available"
-            description="Create a project before opening a scenario set. Scenario sets stay anchored to a real project container."
-            compact
-          />
-        </div>
-      ) : (
-        <>
-          <div className="mt-5">
-            <Button type="button" onClick={flow.open} data-testid="scenario-set-creator-open">
-              <Plus className="mr-1.5 h-4 w-4" />
-              New scenario set
-            </Button>
-          </div>
-          <GuidedFlow flow={flow} />
-        </>
-      )}
-    </article>
+  if (projects.length === 0) {
+    return (
+      <div className="max-w-sm text-sm leading-6" role="status">
+        <p className="font-semibold text-foreground">No projects available</p>
+        <p className="text-muted-foreground">
+          Create a project before opening a scenario set. Scenario sets stay anchored to a real project container.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        className="module-intro-action"
+        onClick={flow.open}
+        data-testid="scenario-set-creator-open"
+      >
+        <Plus className="h-4 w-4" aria-hidden="true" />
+        New scenario set
+      </button>
+      <GuidedFlow flow={flow} />
+    </>
   );
 }

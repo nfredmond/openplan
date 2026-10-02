@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { type FormEvent, useMemo, useState } from "react";
+import { type FormEvent, useId, useMemo, useState } from "react";
 import { RefreshCcw } from "lucide-react";
 import { useCountyRunMutations, useCountyRuns } from "@/lib/hooks/use-county-onramp";
 import {
@@ -63,6 +63,7 @@ export function CountyRunsPageClient({
     initialStudyArea?.place ?? null
   );
   const [runName, setRunName] = useState("");
+  const runNameId = useId();
   // OFF by default, and that is the product's position rather than a UI
   // preference: the uncalibrated screening model is what OpenPlan ships, and a
   // model fitted to counts is a different, disclosed claim that someone chooses
@@ -254,8 +255,9 @@ export function CountyRunsPageClient({
               ) : null}
             </div>
             <div className="space-y-2 md:max-w-sm">
-              <label className="text-sm font-medium text-foreground">Run name</label>
+              <label htmlFor={runNameId} className="text-sm font-medium text-foreground">Run name</label>
               <Input
+                id={runNameId}
                 value={runName}
                 onChange={(e) => setRunName(e.target.value)}
                 placeholder={suggestedRunName || "Named after the county if left blank"}

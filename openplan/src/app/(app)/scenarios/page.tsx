@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, FolderKanban, GitCompareArrows, ShieldCheck } from "lucide-react";
+import { ArrowRight, FolderKanban } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
 import { ScenarioSetCreator } from "@/components/scenarios/scenario-set-creator";
 import { PlanningContextStrip } from "@/components/projects/planning-context-strip";
 import { AnalysisSequenceStrip } from "@/components/models/analysis-sequence-strip";
 import { loadAnalysisSequenceFacts } from "@/components/models/analysis-sequence-facts";
+import { PageHeader } from "@/components/ui/page-header";
+import { navLabel } from "@/components/nav/nav-registry";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
@@ -238,267 +240,229 @@ export default async function ScenariosPage({
         title="Part of this catalog could not be read"
       />
 
-      <header className="module-header-grid">
-        <article className="module-intro-card">
-          <div className="module-intro-kicker">
-            <GitCompareArrows className="h-3.5 w-3.5" />
-            Scenario planning
+      <PageHeader
+        title={navLabel("/scenarios")}
+        description="Compare alternatives, keep a clear baseline, and revisit earlier scenario work when a project changes."
+        actions={
+          // The id stays on this wrapper, which the page owns, so links to
+          // #create-scenario-set from the empty state still land on the button.
+          // The creator's project picker is fed by the same read the filter
+          // name uses. An empty picker after a failed read would tell the
+          // planner this workspace has no projects.
+          <div id="create-scenario-set" className="scroll-mt-24">
+            <ScenarioSetCreator
+              projects={projectsData ?? []}
+              projectsUnreadable={projectsUnreadable}
+              initialProjectId={planningContext.status === "active" ? planningContext.project.id : null}
+            />
           </div>
-          <div className="module-intro-body">
-            <h1 className="module-intro-title">Scenarios</h1>
-            <p className="module-intro-description">
-              Compare alternatives, keep a clear baseline, and revisit earlier scenario work when a project changes.
-            </p>
-            {projectFilterId ? (
-              // Every tile and every row below belongs to one project, so the
-              // scope has to be stated where the reader cannot miss it and be
-              // reversible in one click. Without this the totals read as the
-              // workspace's.
-              <p className="module-intro-description">
-                Showing only scenario sets for {projectFilterName ?? `the project with id ${projectFilterId}`}.{" "}
-                <Link href="/scenarios" className="underline underline-offset-2 hover:text-foreground">
-                  Show every scenario set in this workspace
-                </Link>
-                .
-              </p>
-            ) : null}
-            {projectFilterId && !projectFilterName ? (
-              // Why the project could not be named. A failed read and a project
-              // this workspace does not have produce the same empty catalog, and
-              // only one of them is a statement about the project.
-              <p className="module-intro-description">
-                {projectsError
-                  ? "This workspace's project list could not be read, so the filter above is named by id. An empty catalog below would not mean that project has no scenario sets."
-                  : "No project with that id appears in this workspace's project list, so this filter may match nothing."}
-              </p>
-            ) : null}
-          </div>
-
-          {/* The module's primary action, in the header rather than wherever the
-              section order puts the form. The full creator stays where it is —
-              this jumps to it. */}
-          <div className="module-intro-actions">
-            <a className="module-intro-action" href="#create-scenario-set">
-              New scenario set
-            </a>
-          </div>
-
-          <div className="module-summary-grid cols-3">
-            <div className="module-summary-card">
-              <p className="module-summary-label">Scenario sets</p>
-              <p className="module-summary-value">{scenarioSetsUnreadable ? "—" : scenarioSets.length}</p>
-              <p className="module-summary-detail">
-                {scenarioSetsUnreadable
-                  ? "The scenario-set list could not be read, so this is not a count of zero."
-                  : hasActiveFilters
-                    ? "Matching the current filters."
-                    : "Saved comparisons linked to projects and plans."}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Active</p>
-              <p className="module-summary-value">{scenarioSetsUnreadable ? "—" : activeCount}</p>
-              <p className="module-summary-detail">
-                {scenarioSetsUnreadable
-                  ? "Unavailable for this render."
-                  : "Scenario sets currently being reviewed or compared."}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Alternatives</p>
-              <p className="module-summary-value">
-                {scenarioSetsUnreadable || entriesUnreadable ? "—" : totalAlternatives}
-              </p>
-              <p className="module-summary-detail">
-                {scenarioSetsUnreadable || entriesUnreadable
-                  ? "Entry counts could not be read, so baselines and alternatives cannot be tallied."
-                  : `${withBaselineCount} sets already have a registered baseline.`}
-              </p>
-            </div>
-          </div>
-        </article>
-
-        <article className="module-operator-card">
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
-              <ShieldCheck className="h-5 w-5 text-emerald-200" />
-            </span>
-            <div>
-              <p className="module-operator-eyebrow">Scenarios</p>
-              <h2 className="module-operator-title">Every alternative keeps the run it came from</h2>
-            </div>
-          </div>
-          <p className="module-operator-copy">
-            Each scenario keeps what it is, which analysis run backs it, the assumptions behind it, and whether it is ready to
-            compare. Scenario sets organise the comparison; the analysis itself still happens in the Analysis Studio.
+        }
+      >
+        {projectFilterId ? (
+          // Every tile and every row below belongs to one project, so the
+          // scope has to be stated where the reader cannot miss it and be
+          // reversible in one click. Without this the totals read as the
+          // workspace's.
+          <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+            Showing only scenario sets for {projectFilterName ?? `the project with id ${projectFilterId}`}.{" "}
+            <Link href="/scenarios" className="underline underline-offset-2 hover:text-foreground">
+              Show every scenario set in this workspace
+            </Link>
+            .
           </p>
-          <div className="module-operator-list">
-            <div className="module-operator-item">A scenario set can only have one baseline — the database will not allow a second.</div>
-            <div className="module-operator-item">Attaching a saved run to an alternative keeps the trail back to the project.</div>
-            <div className="module-operator-item">A comparison is only ready when both sides have a run. If one is missing, it says so.</div>
-          </div>
-        </article>
-      </header>
+        ) : null}
+        {projectFilterId && !projectFilterName ? (
+          // Why the project could not be named. A failed read and a project
+          // this workspace does not have produce the same empty catalog, and
+          // only one of them is a statement about the project.
+          <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+            {projectsError
+              ? "This workspace's project list could not be read, so the filter above is named by id. An empty catalog below would not mean that project has no scenario sets."
+              : "No project with that id appears in this workspace's project list, so this filter may match nothing."}
+          </p>
+        ) : null}
 
-      <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-        {/* The creator's project picker is fed by the same read the filter name
-            uses. An empty picker after a failed read would tell the planner this
-            workspace has no projects. */}
-        <div id="create-scenario-set">
-          <ScenarioSetCreator
-            projects={projectsData ?? []}
-            projectsUnreadable={projectsUnreadable}
-            initialProjectId={planningContext.status === "active" ? planningContext.project.id : null}
-          />
+        <div className="module-summary-grid cols-3">
+          <div className="module-summary-card">
+            <p className="module-summary-label">Scenario sets</p>
+            <p className="module-summary-value">{scenarioSetsUnreadable ? "—" : scenarioSets.length}</p>
+            <p className="module-summary-detail">
+              {scenarioSetsUnreadable
+                ? "The scenario-set list could not be read, so this is not a count of zero."
+                : hasActiveFilters
+                  ? "Matching the current filters."
+                  : "Saved comparisons linked to projects and plans."}
+            </p>
+          </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Active</p>
+            <p className="module-summary-value">{scenarioSetsUnreadable ? "—" : activeCount}</p>
+            <p className="module-summary-detail">
+              {scenarioSetsUnreadable
+                ? "Unavailable for this render."
+                : "Scenario sets currently being reviewed or compared."}
+            </p>
+          </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Alternatives</p>
+            <p className="module-summary-value">
+              {scenarioSetsUnreadable || entriesUnreadable ? "—" : totalAlternatives}
+            </p>
+            <p className="module-summary-detail">
+              {scenarioSetsUnreadable || entriesUnreadable
+                ? "Entry counts could not be read, so baselines and alternatives cannot be tallied."
+                : `${withBaselineCount} sets already have a registered baseline.`}
+            </p>
+          </div>
+        </div>
+      </PageHeader>
+
+      <article className="module-section-surface">
+        <div className="module-section-header">
+          <div className="module-section-heading">
+            <p className="module-section-label">Your scenario sets</p>
+            <h2 className="module-section-title">
+              {/* The heading may not claim workspace scope over a project-scoped list. */}
+              {projectFilterId ? "Scenario sets for this project" : "Scenario sets in this workspace"}
+            </h2>
+            <p className="module-section-description">
+              {projectFilterId
+                ? "Filter by status to narrow this project's scenario sets further."
+                : "Filter by status to narrow the catalog to the records that need attention."}
+            </p>
+          </div>
+          <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            <FolderKanban className="h-3.5 w-3.5" />
+            {/* "0 total" beside "this catalog could not be read" is the same
+                lie the empty state was fixed for, wearing a number. */}
+            {scenarioSetsUnreadable ? "Total unreadable" : `${scenarioSets.length} total`}
+          </span>
         </div>
 
-        <article className="module-section-surface">
-          <div className="module-section-header">
-            <div className="module-section-heading">
-              <p className="module-section-label">Your scenario sets</p>
-              <h2 className="module-section-title">
-                {/* The heading may not claim workspace scope over a project-scoped list. */}
-                {projectFilterId ? "Scenario sets for this project" : "Scenario sets in this workspace"}
-              </h2>
-              <p className="module-section-description">
-                {projectFilterId
-                  ? "Filter by status to narrow this project's scenario sets further."
-                  : "Filter by status to narrow the catalog to the records that need attention."}
-              </p>
-            </div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-              <FolderKanban className="h-3.5 w-3.5" />
-              {/* "0 total" beside "this catalog could not be read" is the same
-                  lie the empty state was fixed for, wearing a number. */}
-              {scenarioSetsUnreadable ? "Total unreadable" : `${scenarioSets.length} total`}
-            </span>
-          </div>
-
-          <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-compact">
-            <Link href={scenariosTabHref(projectFilterId, null)} className={cn("rounded px-2 py-0.5 transition-colors", !statusFilter ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
-              {/* Every tab count is derived from the list read. When it failed
-                  they would all read "(0)" — four separate statements that no
-                  scenario set has that status. */}
-              All {scenarioSetsUnreadable ? "" : `(${scenarioSetsInScope.length})`}
+        <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-compact">
+          <Link href={scenariosTabHref(projectFilterId, null)} className={cn("rounded px-2 py-0.5 transition-colors", !statusFilter ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
+            {/* Every tab count is derived from the list read. When it failed
+                they would all read "(0)" — four separate statements that no
+                scenario set has that status. */}
+            All {scenarioSetsUnreadable ? "" : `(${scenarioSetsInScope.length})`}
+          </Link>
+          {SCENARIO_STATUS_FILTER_OPTIONS.map((opt) => (
+            <Link key={opt.value} href={scenariosTabHref(projectFilterId, opt.value)} className={cn("rounded px-2 py-0.5 transition-colors", statusFilter === opt.value ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
+              {opt.label}{" "}
+              {scenarioSetsUnreadable ? "" : `(${scenarioSetsInScope.filter((s) => s.status === opt.value).length})`}
             </Link>
-            {SCENARIO_STATUS_FILTER_OPTIONS.map((opt) => (
-              <Link key={opt.value} href={scenariosTabHref(projectFilterId, opt.value)} className={cn("rounded px-2 py-0.5 transition-colors", statusFilter === opt.value ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
-                {opt.label}{" "}
-                {scenarioSetsUnreadable ? "" : `(${scenarioSetsInScope.filter((s) => s.status === opt.value).length})`}
-              </Link>
-            ))}
-            {hasActiveFilters ? (
-              // The one deliberate way to widen. Every tab above narrows within
-              // the scope the page was opened for; only this leaves it.
-              <Link href="/scenarios" className="ml-auto rounded px-2 py-0.5 text-muted-foreground/70 hover:text-foreground">
-                Clear filters ×
-              </Link>
-            ) : null}
-          </div>
+          ))}
+          {hasActiveFilters ? (
+            // The one deliberate way to widen. Every tab above narrows within
+            // the scope the page was opened for; only this leaves it.
+            <Link href="/scenarios" className="ml-auto rounded px-2 py-0.5 text-muted-foreground/70 hover:text-foreground">
+              Clear filters ×
+            </Link>
+          ) : null}
+        </div>
 
-          {scenarioSetsUnreadable ? (
-            // "No scenario sets yet" is a claim about this workspace. A read
-            // that failed cannot make it.
-            <div className="mt-5">
-              <EmptyState
+        {scenarioSetsUnreadable ? (
+          // "No scenario sets yet" is a claim about this workspace. A read
+          // that failed cannot make it.
+          <div className="mt-5">
+            <EmptyState
 title="Your scenario sets could not be read"
-                description="This list could not be loaded, so nothing is shown below. That is a failed read, not an empty list — do not read it as a statement that no scenario sets exist."
-              />
-            </div>
-          ) : scenarioSets.length === 0 ? (
-            <div className="mt-5">
-              <EmptyState
-                title={hasActiveFilters ? "No scenario sets match these filters" : "No scenario sets yet"}
-                description={
-                  hasActiveFilters
-                    ? `This list is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every scenario set you have — an empty filtered list is not a statement that none exist.`
-                    : "Scenarios lets you compare a baseline against alternatives — with the project, without it, or with a different design — before you recommend one. Create your first scenario set for a project you are studying."
+              description="This list could not be loaded, so nothing is shown below. That is a failed read, not an empty list — do not read it as a statement that no scenario sets exist."
+            />
+          </div>
+        ) : scenarioSets.length === 0 ? (
+          <div className="mt-5">
+            <EmptyState
+              title={hasActiveFilters ? "No scenario sets match these filters" : "No scenario sets yet"}
+              description={
+                hasActiveFilters
+                  ? `This list is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every scenario set you have — an empty filtered list is not a statement that none exist.`
+                  : "Scenarios lets you compare a baseline against alternatives — with the project, without it, or with a different design — before you recommend one. Create your first scenario set for a project you are studying."
+              }
+              action={
+                hasActiveFilters ? undefined : (
+                  <a href="#create-scenario-set" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
+                    Create a scenario set
+                  </a>
+                )
+              }
+            />
+          </div>
+        ) : (
+          <div className="mt-5 module-record-list">
+            {scenarioSets.map((scenarioSet) => (
+              <CartographicSelectionLink
+                key={scenarioSet.id}
+                href={
+                  planningContext.status === "active"
+                    ? withPlanningContext(`/scenarios/${scenarioSet.id}`, planningContext.project.id)
+                    : `/scenarios/${scenarioSet.id}`
                 }
-                action={
-                  hasActiveFilters ? undefined : (
-                    <a href="#create-scenario-set" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
-                      Create a scenario set
-                    </a>
-                  )
-                }
-              />
-            </div>
-          ) : (
-            <div className="mt-5 module-record-list">
-              {scenarioSets.map((scenarioSet) => (
-                <CartographicSelectionLink
-                  key={scenarioSet.id}
-                  href={
-                    planningContext.status === "active"
-                      ? withPlanningContext(`/scenarios/${scenarioSet.id}`, planningContext.project.id)
-                      : `/scenarios/${scenarioSet.id}`
-                  }
-                  className="module-record-row is-interactive group block"
-                  selection={{
-                    kind: "run",
-                    title: scenarioSet.title,
-                    kicker: entriesUnreadable
-                      ? `${titleizeScenarioValue(scenarioSet.status)} · alternatives unreadable`
-                      : `${titleizeScenarioValue(scenarioSet.status)} · ${scenarioSet.counts.alternativeCount} alternatives`,
-                    avatarChar: scenarioSet.title[0],
-                    meta: [
-                      ...(scenarioSet.project?.name ? [{ label: "project", value: scenarioSet.project.name }] : []),
-                      entriesUnreadable
-                        ? { label: "baseline", value: "unreadable", tone: "warn" as const }
-                        : scenarioSet.counts.baselineCount > 0
-                          ? { label: "baseline", value: "set", tone: "ok" as const }
-                          : { label: "baseline", value: "missing", tone: "warn" as const },
-                    ],
-                  }}
-                >
-                  <div className="module-record-head">
-                    <div className="module-record-main">
-                      <div className="module-record-kicker">
-                        <StatusBadge tone={scenarioStatusTone(scenarioSet.status)}>
-                          {titleizeScenarioValue(scenarioSet.status)}
-                        </StatusBadge>
-                        {/* "Baseline missing" is a finding. Only a successful
-                            entries read can support it. */}
-                        <StatusBadge
-                          tone={
-                            entriesUnreadable ? "warning" : scenarioSet.counts.baselineCount > 0 ? "success" : "warning"
-                          }
-                        >
-                          {entriesUnreadable
-                            ? "Baseline unreadable"
-                            : scenarioSet.counts.baselineCount > 0
-                              ? "Baseline set"
-                              : "Baseline missing"}
-                        </StatusBadge>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <h3 className="module-record-title text-[1.05rem] transition group-hover:text-primary">
-                            {scenarioSet.title}
-                          </h3>
-                          <p className="module-record-stamp">Updated {fmtDateTime(scenarioSet.updated_at)}</p>
-                        </div>
-                        <p className="module-record-summary line-clamp-2">
-                          {scenarioSet.summary ||
-                            "No summary yet. Open the scenario set to define the planning question, baseline, and alternatives."}
-                        </p>
-                      </div>
+                className="module-record-row is-interactive group block"
+                selection={{
+                  kind: "run",
+                  title: scenarioSet.title,
+                  kicker: entriesUnreadable
+                    ? `${titleizeScenarioValue(scenarioSet.status)} · alternatives unreadable`
+                    : `${titleizeScenarioValue(scenarioSet.status)} · ${scenarioSet.counts.alternativeCount} alternatives`,
+                  avatarChar: scenarioSet.title[0],
+                  meta: [
+                    ...(scenarioSet.project?.name ? [{ label: "project", value: scenarioSet.project.name }] : []),
+                    entriesUnreadable
+                      ? { label: "baseline", value: "unreadable", tone: "warn" as const }
+                      : scenarioSet.counts.baselineCount > 0
+                        ? { label: "baseline", value: "set", tone: "ok" as const }
+                        : { label: "baseline", value: "missing", tone: "warn" as const },
+                  ],
+                }}
+              >
+                <div className="module-record-head">
+                  <div className="module-record-main">
+                    <div className="module-record-kicker">
+                      <StatusBadge tone={scenarioStatusTone(scenarioSet.status)}>
+                        {titleizeScenarioValue(scenarioSet.status)}
+                      </StatusBadge>
+                      {/* "Baseline missing" is a finding. Only a successful
+                          entries read can support it. */}
+                      <StatusBadge
+                        tone={
+                          entriesUnreadable ? "warning" : scenarioSet.counts.baselineCount > 0 ? "success" : "warning"
+                        }
+                      >
+                        {entriesUnreadable
+                          ? "Baseline unreadable"
+                          : scenarioSet.counts.baselineCount > 0
+                            ? "Baseline set"
+                            : "Baseline missing"}
+                      </StatusBadge>
                     </div>
 
-                    <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
+                    <div className="space-y-1.5">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <h3 className="module-record-title text-[1.05rem] transition group-hover:text-primary">
+                          {scenarioSet.title}
+                        </h3>
+                        <p className="module-record-stamp">Updated {fmtDateTime(scenarioSet.updated_at)}</p>
+                      </div>
+                      <p className="module-record-summary line-clamp-2">
+                        {scenarioSet.summary ||
+                          "No summary yet. Open the scenario set to define the planning question, baseline, and alternatives."}
+                      </p>
+                    </div>
                   </div>
 
-                  <p className="mt-1.5 text-label text-muted-foreground">
-                    {scenarioSet.project?.name ?? "No project"} ·{" "}
-                    {entriesUnreadable ? "alternatives unreadable" : `${scenarioSet.counts.alternativeCount} alternatives`} · {scenarioSet.planning_question ? "Planning question captured" : "Planning question pending"} · Updated {fmtDateTime(scenarioSet.updated_at)}
-                  </p>
-                </CartographicSelectionLink>
-              ))}
-            </div>
-          )}
-        </article>
-      </div>
+                  <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
+                </div>
+
+                <p className="mt-1.5 text-label text-muted-foreground">
+                  {scenarioSet.project?.name ?? "No project"} ·{" "}
+                  {entriesUnreadable ? "alternatives unreadable" : `${scenarioSet.counts.alternativeCount} alternatives`} · {scenarioSet.planning_question ? "Planning question captured" : "Planning question pending"} · Updated {fmtDateTime(scenarioSet.updated_at)}
+                </p>
+              </CartographicSelectionLink>
+            ))}
+          </div>
+        )}
+      </article>
     </section>
   );
 }

@@ -287,7 +287,7 @@ export function TrafficVolumeMap({
       {/* Error state */}
       {error && (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-zinc-900/80">
-          <p className="text-sm text-red-400">{error}</p>
+          <p role="alert" className="text-sm text-red-400">{error}</p>
         </div>
       )}
 

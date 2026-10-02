@@ -6,7 +6,15 @@ import {
   PortalLanguagePicker,
 } from "@/components/engagement/portal-language-picker";
 import { PortalAccessibilityNotice } from "@/components/engagement/portal-accessibility-notice";
-import { loadPublicPortalBundleForShareValue } from "@/lib/engagement/public-portal-data";
+import {
+  loadPublicPortalResultForShareValue,
+  PortalReadUnavailableError,
+  type PublicPortalBundle,
+  type PublicPortalLocaleRequest,
+} from "@/lib/engagement/public-portal-data";
+import type { ResolvedPortalLocale } from "@/lib/engagement/portal-i18n/locales";
+import type { PortalMessageBundle } from "@/lib/engagement/portal-i18n/translator";
+import { ClosedCampaignPage } from "./closed-campaign";
 import { PORTAL_LOCALE_QUERY_PARAM } from "@/lib/engagement/portal-i18n/locales";
 import {
   portalRequestedLocale,
@@ -22,6 +30,30 @@ const requestedLocaleFrom = (searchParams: PageSearchParams | undefined) =>
   portalRequestedLocale(searchParams, PORTAL_LOCALE_QUERY_PARAM);
 const searchStringFrom = portalSearchString;
 
+/**
+ * The campaign behind this address, or the fact that its comment period has
+ * ended. A closed campaign comes back with the reader's language and nothing
+ * from the campaign.
+ *
+ * `null` means no active or closed campaign carries the address, which is a
+ * 404. A lookup that failed is raised, so the route's error page says the page
+ * could not load instead of saying the consultation does not exist.
+ */
+async function loadPortalForPage(
+  shareToken: string,
+  localeRequest: PublicPortalLocaleRequest
+): Promise<
+  | { closed: false; bundle: PublicPortalBundle }
+  | { closed: true; locale: ResolvedPortalLocale; messages: PortalMessageBundle }
+  | null
+> {
+  const result = await loadPublicPortalResultForShareValue(shareToken, localeRequest);
+  if (result.status === "unreadable") throw new PortalReadUnavailableError(result.error.message);
+  if (result.status === "ok") return { closed: false, bundle: result.bundle };
+  if (result.status === "closed") return { closed: true, locale: result.locale, messages: result.messages };
+  return null;
+}
+
 export async function generateMetadata({
   params,
   searchParams,
@@ -33,13 +65,21 @@ export async function generateMetadata({
   const resolvedSearch = searchParams ? await searchParams : undefined;
   // Token OR printable slug — the resolver tries the token column first, and a
   // slug only ever reaches the same active-campaign data the token path serves.
-  const bundle = await loadPublicPortalBundleForShareValue(shareToken, {
+  const loaded = await loadPortalForPage(shareToken, {
     requestedLocale: requestedLocaleFrom(resolvedSearch),
   });
 
-  if (!bundle) {
+  if (!loaded) {
     return { title: "Engagement portal", robots: { index: false, follow: false } };
   }
+  if (loaded.closed) {
+    // No campaign title or description: a closed campaign shows a notice only.
+    return {
+      title: createPortalTranslator(loaded.messages).t("closed.title"),
+      robots: { index: false, follow: false },
+    };
+  }
+  const { bundle } = loaded;
 
   const translator = createPortalTranslator(bundle.messages);
   const title = bundle.campaignText.title.text || "Community engagement";
@@ -104,12 +144,25 @@ export default async function PublicEngagementMapPage({
   const { shareToken } = await params;
   const resolvedSearch = searchParams ? await searchParams : undefined;
 
-  const bundle = await loadPublicPortalBundleForShareValue(shareToken, {
+  const loaded = await loadPortalForPage(shareToken, {
     requestedLocale: requestedLocaleFrom(resolvedSearch),
   });
-  if (!bundle) {
+  if (!loaded) {
     notFound();
   }
+
+  // The comment period has ended: a notice, and nothing from the campaign.
+  if (loaded.closed) {
+    return (
+      <ClosedCampaignPage
+        locale={loaded.locale}
+        messages={loaded.messages}
+        languagePickerPathname={`/engage/${shareToken}`}
+        languagePickerSearch={searchStringFrom(resolvedSearch)}
+      />
+    );
+  }
+  const { bundle } = loaded;
 
   const { campaign, campaignText, locale, messages } = bundle;
   const translator = createPortalTranslator(messages);

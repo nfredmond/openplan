@@ -211,7 +211,7 @@ describe("a page may not discard a read error", () => {
   it("guards the guard — the scan reaches real pages and the pattern still matches", () => {
     const files = pageFiles();
     expect(files.length).toBeGreaterThan(40);
-    expect(files.some((file) => file.endsWith(path.join("(public)", "plan", "[shareToken]", "page.tsx")))).toBe(true);
+    expect(files.some((file) => file.endsWith(path.join("(published)", "plan", "[shareToken]", "page.tsx")))).toBe(true);
 
     // The pattern must match the shape it names, in all three spellings.
     expect(dataOnlyCount(`const { data } = await supabase.from("x").select()`)).toBe(1);
@@ -234,7 +234,7 @@ describe("a page may not discard a read error", () => {
     expect(actual.get("src/app/(embed)/embed/[shareToken]/page.tsx") ?? 0).toBe(0);
     // The public plan page was the last entry on the ratchet. Named explicitly
     // so that emptying KNOWN_DISCARDED can never quietly un-guard it.
-    expect(actual.get("src/app/(public)/plan/[shareToken]/page.tsx") ?? 0).toBe(0);
+    expect(actual.get("src/app/(published)/plan/[shareToken]/page.tsx") ?? 0).toBe(0);
   });
 });
 

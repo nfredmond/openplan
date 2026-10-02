@@ -79,7 +79,7 @@ export function ModelRunEngagementPanel({ modelId, modelRunId }: Props) {
               <Loader2 className="h-3.5 w-3.5 animate-spin" /> Joining engagement to the corridor…
             </p>
           ) : error ? (
-            <p className="text-xs text-red-600 dark:text-red-300">{error}</p>
+            <p role="alert" className="text-xs text-red-600 dark:text-red-300">{error}</p>
           ) : reason === "no_corridor_geometry" ? (
             <p className="text-xs text-muted-foreground">This run has no corridor line to join against.</p>
           ) : !summary || summary.total === 0 ? (

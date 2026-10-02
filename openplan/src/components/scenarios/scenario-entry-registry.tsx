@@ -276,6 +276,7 @@ function ScenarioEntryLaunchButton({
     <div className="space-y-2">
       {models.length > 1 ? (
         <select
+          aria-label="Model"
           className="flex h-9 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
           value={selectedModelId}
           onChange={(event) => setSelectedModelId(event.target.value)}

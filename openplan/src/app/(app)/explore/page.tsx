@@ -169,7 +169,7 @@ export default async function ExplorePage({
 
   return (
     <>
-      <PlanningContextStrip context={planningContext} className="mb-4" />
+      <PlanningContextStrip context={planningContext} className="mx-4 mb-3 mt-3" />
       <ExploreWorkbench
       // Only a place that can seed an area is passed down. `resolveStudyArea`
       // would fall through to the workspace home on its own, so this is not

@@ -8,7 +8,6 @@ const redirectMock = vi.fn((..._args: unknown[]) => {
 });
 const authGetUserMock = vi.fn();
 const loadCurrentWorkspaceMembershipMock = vi.fn();
-const loadWorkspaceOperationsSummaryForWorkspaceMock = vi.fn();
 
 const programsOrderMock = vi.fn();
 const programsEqMock = vi.fn(() => ({ order: programsOrderMock }));
@@ -98,32 +97,12 @@ vi.mock("@/lib/workspaces/current", () => ({
   loadCurrentWorkspaceMembership: (...args: unknown[]) => loadCurrentWorkspaceMembershipMock(...args),
 }));
 
-vi.mock("@/lib/operations/workspace-summary", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/operations/workspace-summary")>(
-    "@/lib/operations/workspace-summary"
-  );
-
-  return {
-    ...actual,
-    loadWorkspaceOperationsSummaryForWorkspace: (...args: unknown[]) =>
-      loadWorkspaceOperationsSummaryForWorkspaceMock(...args),
-  };
-});
-
 vi.mock("@/components/programs/program-creator", () => ({
   ProgramCreator: () => <div data-testid="program-creator" />,
 }));
 
 vi.mock("@/components/programs/funding-opportunity-creator", () => ({
   FundingOpportunityCreator: () => <div data-testid="funding-opportunity-creator" />,
-}));
-
-vi.mock("@/components/operations/workspace-runtime-cue", () => ({
-  WorkspaceRuntimeCue: () => <div data-testid="workspace-runtime-cue" />,
-}));
-
-vi.mock("@/components/operations/workspace-command-board", () => ({
-  WorkspaceCommandBoard: () => <div data-testid="workspace-command-board" />,
 }));
 
 import ProgramsPage from "@/app/(app)/programs/page";
@@ -165,11 +144,6 @@ describe("ProgramsPage", () => {
         id: "workspace-1",
         name: "OpenPlan QA",
       },
-    });
-
-    loadWorkspaceOperationsSummaryForWorkspaceMock.mockResolvedValue({
-      nextCommand: null,
-      nextActions: [],
     });
 
     programsOrderMock.mockResolvedValue({

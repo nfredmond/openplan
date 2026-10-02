@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { TRAVEL_MODEL_WHAT_IT_TAKES } from "@/lib/analysis/what-this-answers";
 import { redirect } from "next/navigation";
-import { ArrowRight, Database, FolderKanban, ShieldCheck } from "lucide-react";
+import { ArrowRight, FolderKanban } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
 import { NetworkPackagesPanel } from "@/app/(app)/models/_components/network-packages-panel";
@@ -10,6 +10,8 @@ import { PlanningContextStrip } from "@/components/projects/planning-context-str
 import { AnalysisSequenceStrip } from "@/components/models/analysis-sequence-strip";
 import { loadAnalysisSequenceFacts } from "@/components/models/analysis-sequence-facts";
 import { ProjectComparisonStarter } from "@/components/models/project-comparison-starter";
+import { PageHeader } from "@/components/ui/page-header";
+import { navLabel } from "@/components/nav/nav-registry";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
@@ -461,287 +463,260 @@ export default async function ModelsPage({
       <PublishedComparableObservationCard study={publishedComparableObservationStudy} />
       <PublishedStructuralDiagnosisCard study={publishedStructuralDiagnosis} />
 
-      <header className="module-header-grid">
-        <article className="module-intro-card">
-          <div className="module-intro-kicker">
-            <Database className="h-3.5 w-3.5" />
-            Models module live
-          </div>
-          <div className="module-intro-body">
-            <h1 className="module-intro-title">Models</h1>
-            <p className="module-intro-description">
-              Keep methods, assumptions, and results connected to the plans and projects they support.
-            </p>
-            {/*
-              WHAT THIS ROUTE COSTS, on arrival rather than partway through. A
-              tester followed the trail here from "how much traffic" and found a
-              multi-step engineering workflow they could not finish in a week.
-              The workflow is not the defect — estimating traffic honestly is
-              expert work — but discovering its shape only after committing to it
-              was. Shares one constant with the sentence on Corridor Analysis
-              that sends people here, so the two ends of that link agree.
-            */}
-            <p className="module-intro-description">{TRAVEL_MODEL_WHAT_IT_TAKES}</p>
-            {activeFilters.projectId ? (
-              // Every tile and every row below belongs to one project, so the
-              // scope has to be stated where the reader cannot miss it and be
-              // reversible in one click. Without this the totals read as the
-              // workspace's.
-              <p className="module-intro-description">
-                Showing only models for {projectFilterName ?? `the project with id ${activeFilters.projectId}`}.{" "}
-                <Link href="/models" className="underline underline-offset-2 hover:text-foreground">
-                  Show every model in this workspace
-                </Link>
-                .
-              </p>
-            ) : null}
-            {activeFilters.projectId && !projectFilterName ? (
-              // Why the project could not be named. A failed read and a project
-              // this workspace does not have produce the same empty catalog, and
-              // only one of them is a statement about the project.
-              <p className="module-intro-description">
-                {projectsError
-                  ? "Your projects could not be read, so the filter above shows an id instead of a name. An empty list below would not mean that project has no models."
-                  : "No project with that id is in your list of projects, so this filter may match nothing."}
-              </p>
-            ) : null}
-            {/* Internal page, so the database's own message stays on it — in the
-                notice's operator disclosure, where it is not the first thing a
-                planner reads. */}
-            <ReadFailureNotice reads={reads} testId="models-read-failures" title="Part of this page could not be read" />
-          </div>
-
-          {/* The module's primary action, in the header rather than wherever the
-              section order puts the form. The full creator stays where it is —
-              this jumps to it. */}
-          <div className="module-intro-actions">
+      <PageHeader
+        title={navLabel("/models")}
+        description="Keep methods, assumptions, and results connected to the plans and projects they support."
+        actions={
+          <>
+            {/* The primary action. A project comparison is the guided way to get
+                a traffic answer, and the picker for it sits at the top of this
+                page. */}
             <a
               className="module-intro-action"
               href={planningContext.status === "active" ? "#project-comparison-starter" : "#choose-project-comparison"}
             >
               {planningContext.status === "active" ? "Continue project comparison" : "Start project comparison"}
             </a>
-          </div>
-
-          <div className="module-summary-grid cols-3">
-            <div className="module-summary-card">
-              <p className="module-summary-label">Models</p>
-              <p className="module-summary-value">{modelsReadFailed ? "—" : models.length}</p>
-              <p className="module-summary-detail">
-                {modelsReadFailed
-                  ? "Your models could not be read, so this is unavailable rather than zero."
-                  : hasActiveFilters
-                    ? "Matching the current filters."
-                    : "The travel models this account keeps."}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Ready for review</p>
-              <p className="module-summary-value">{modelsReadFailed ? "—" : reviewReadyCount}</p>
-              <p className="module-summary-detail">
-                {modelsReadFailed
-                  ? "Unavailable while your models cannot be read."
-                  : "Runs that reached review or approval."}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Linked results</p>
-              <p className="module-summary-value">{modelsReadFailed || linksReadFailed ? "—" : traceableCount}</p>
-              <p className="module-summary-detail">
-                {modelsReadFailed
-                  ? "Unavailable while your models cannot be read."
-                  : linksReadFailed
-                    ? "What each model connects to could not be read, so this is unknown, not zero."
-                    : `${readinessGreenCount} currently pass every check.`}
-              </p>
-            </div>
-          </div>
-        </article>
-
-        <article className="module-operator-card">
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] border border-white/10 bg-white/[0.05]">
-              <ShieldCheck className="h-5 w-5 text-emerald-200" />
-            </span>
-            <div>
-              <p className="module-operator-eyebrow">Modeling</p>
-              <h2 className="module-operator-title">Keep methods and results easy to review</h2>
-            </div>
-          </div>
-          <p className="module-operator-copy">
-            Use this page to keep model descriptions, assumptions, related scenarios, and results organized for planning review.
-          </p>
-          <div className="module-operator-list">
-            <div className="module-operator-item">Link each model to the project or scenario it supports.</div>
-            <div className="module-operator-item">Keep related datasets, reports, and results connected in one place.</div>
-            <div className="module-operator-item">Use filters to see which models are ready to review and which still need work.</div>
-          </div>
-          <Link
-            href={
-              planningContext.status === "active"
-                ? withPlanningContext("/county-runs", planningContext.project.id)
-                : "/county-runs"
-            }
-            className="module-operator-inline-link mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-200 hover:text-emerald-100"
-          >
-            Specialist: county validation setup
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </article>
-      </header>
-
-      <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <div id="create-model">
-        <ModelCreator
-          projects={projectsData ?? []}
-          scenarioSets={scenarioSetsData ?? []}
-          projectsReadFailed={projectsReadFailed}
-          scenarioSetsReadFailed={scenarioSetsReadFailed}
-          initialProjectId={planningContext.status === "active" ? planningContext.project.id : null}
-        />
-        </div>
-
-        <article className="module-section-surface">
-          <div className="module-section-header">
-            <div className="module-section-heading">
-              <p className="module-section-label">Your models</p>
-              <h2 className="module-section-title">Travel models</h2>
-              <p className="module-section-description">
-                Filter by status, project, or model family to find the ones that need attention.
-              </p>
-            </div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-              <FolderKanban className="h-3.5 w-3.5" />
-              {modelsReadFailed ? "Total unavailable" : `${models.length} total`}
-            </span>
-          </div>
-
-          <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-compact">
-            <Link href={modelsTabHref(activeFilters, null)} className={cn("rounded px-2 py-0.5 transition-colors", !activeFilters.status ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
-              {/* A tab count is a count of records. With the catalog unread there
-                  are no records to count, and "(0)" would be a claim. */}
-              {modelsReadFailed ? "All" : `All (${modelsInScope.length})`}
-            </Link>
-            {MODEL_STATUS_OPTIONS.map((opt) => (
-              <Link key={opt.value} href={modelsTabHref(activeFilters, opt.value)} className={cn("rounded px-2 py-0.5 transition-colors", activeFilters.status === opt.value ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
-                {modelsReadFailed
-                  ? opt.label
-                  : `${opt.label} (${modelsInScope.filter((m) => m.status === opt.value).length})`}
-              </Link>
-            ))}
-            {hasActiveFilters ? (
-              // The one deliberate way to widen. Every tab above narrows within
-              // the scope the page was opened for; only this leaves it.
-              <Link href="/models" className="ml-auto rounded px-2 py-0.5 text-muted-foreground/70 hover:text-foreground">
-                Clear filters ×
-              </Link>
-            ) : null}
-          </div>
-
-          {modelsReadFailed && models.length === 0 ? (
-            // NOT the empty state. "No models yet" is a statement about the
-            // workspace; a query that failed cannot make it.
-            //
-            // Gated on the list ALSO being empty so this can only ever replace
-            // nothing. supabase-js nulls `data` on error, so today the two
-            // conditions coincide — but a branch that swaps rows for a notice
-            // is one refactor away from hiding a planner's own models behind a
-            // partial failure, and disclosure must never cost someone the data
-            // that did load.
-            <div
-              className="mt-5 rounded-[0.75rem] border border-destructive/40 bg-destructive/5 px-5 py-4 text-sm text-foreground"
-              data-testid="models-catalog-unreadable"
-              role="alert"
-            >
-              <p className="font-semibold">Your models could not be read.</p>
-              <p className="mt-1.5">
-                Nothing is listed below because the query failed, not because you have no models.
-                Reload the page, and report the message above if it keeps happening.
-              </p>
-            </div>
-          ) : models.length === 0 ? (
-            <div className="mt-5">
-              <EmptyState
-                title={hasActiveFilters ? "No models match these filters" : "No models yet"}
-                description={
-                  hasActiveFilters
-                    ? filteredEmptyDescription
-                    : "Models keeps track of the travel models your agency relies on — which version is current, what each one can honestly support, and how it connects to scenarios and reports. Create your first model to give your runs a home."
-                }
-                action={
-                  hasActiveFilters ? undefined : (
-                    <a href="#create-model" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
-                      Create a model
-                    </a>
-                  )
-                }
+            {/* The id stays on this wrapper, which the page owns, so links to
+                #create-model from the empty state and from the analysis
+                sequence still land on the button. */}
+            <div id="create-model" className="scroll-mt-24">
+              <ModelCreator
+                projects={projectsData ?? []}
+                scenarioSets={scenarioSetsData ?? []}
+                projectsReadFailed={projectsReadFailed}
+                scenarioSetsReadFailed={scenarioSetsReadFailed}
+                initialProjectId={planningContext.status === "active" ? planningContext.project.id : null}
               />
             </div>
-          ) : (
-            <div className="mt-5 module-record-list">
-              {models.map((model) => (
-                <CartographicSelectionLink
-                  key={model.id}
-                  href={
-                    planningContext.status === "active"
-                      ? withPlanningContext(`/models/${model.id}`, planningContext.project.id)
-                      : `/models/${model.id}`
-                  }
-                  className="module-record-row is-interactive group block"
-                  selection={{
-                    kind: "run",
-                    title: model.title,
-                    kicker: `${formatModelFamilyLabel(model.model_family)} · ${formatModelStatusLabel(model.status)}`,
-                    avatarChar: model.title[0],
-                    meta: linksReadFailed
-                      ? [{ label: "checks", value: "unavailable", tone: "warn" as const }]
-                      : model.readiness.missingCheckLabels.length > 0
-                        ? [{ label: "gaps", value: String(model.readiness.missingCheckLabels.length), tone: "warn" as const }]
-                        : [{ label: "status", value: "ready", tone: "ok" as const }],
-                  }}
-                >
-                  <div className="module-record-head">
-                    <div className="module-record-main">
-                      <div className="module-record-kicker">
-                        <StatusBadge tone={modelStatusTone(model.status)}>{formatModelStatusLabel(model.status)}</StatusBadge>
-                        <StatusBadge tone="info">{formatModelFamilyLabel(model.model_family)}</StatusBadge>
-                      </div>
+          </>
+        }
+      >
+        {/*
+          WHAT THIS ROUTE COSTS, on arrival rather than partway through. A
+          tester followed the trail here from "how much traffic" and found a
+          multi-step engineering workflow they could not finish in a week.
+          The workflow is not the defect, because estimating traffic honestly
+          is expert work, but discovering its shape only after committing to it
+          was. Shares one constant with the sentence on Corridor Analysis
+          that sends people here, so the two ends of that link agree.
+        */}
+        <p className="max-w-3xl text-sm leading-6 text-muted-foreground">{TRAVEL_MODEL_WHAT_IT_TAKES}</p>
+        {activeFilters.projectId ? (
+          // Every tile and every row below belongs to one project, so the
+          // scope has to be stated where the reader cannot miss it and be
+          // reversible in one click. Without this the totals read as the
+          // workspace's.
+          <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+            Showing only models for {projectFilterName ?? `the project with id ${activeFilters.projectId}`}.{" "}
+            <Link href="/models" className="underline underline-offset-2 hover:text-foreground">
+              Show every model in this workspace
+            </Link>
+            .
+          </p>
+        ) : null}
+        {activeFilters.projectId && !projectFilterName ? (
+          // Why the project could not be named. A failed read and a project
+          // this workspace does not have produce the same empty catalog, and
+          // only one of them is a statement about the project.
+          <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+            {projectsError
+              ? "Your projects could not be read, so the filter above shows an id instead of a name. An empty list below would not mean that project has no models."
+              : "No project with that id is in your list of projects, so this filter may match nothing."}
+          </p>
+        ) : null}
+        {/* Internal page, so the database's own message stays on it, in the
+            notice's operator disclosure, where it is not the first thing a
+            planner reads. */}
+        <ReadFailureNotice reads={reads} testId="models-read-failures" title="Part of this page could not be read" />
 
-                      <div className="space-y-1.5">
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <h3 className="module-record-title text-[1.05rem] transition group-hover:text-primary">{model.title}</h3>
-                          <p className="module-record-stamp">Updated {formatModelDateTime(model.updated_at)}</p>
-                        </div>
-                        <p className="module-record-summary line-clamp-2">
-                          {model.summary || "No summary yet. Open the model to write down its assumptions, what it was built from, and where its results can be traced."}
-                        </p>
-                      </div>
+        <div className="module-summary-grid cols-3">
+          <div className="module-summary-card">
+            <p className="module-summary-label">Models</p>
+            <p className="module-summary-value">{modelsReadFailed ? "—" : models.length}</p>
+            <p className="module-summary-detail">
+              {modelsReadFailed
+                ? "Your models could not be read, so this is unavailable rather than zero."
+                : hasActiveFilters
+                  ? "Matching the current filters."
+                  : "The travel models this account keeps."}
+            </p>
+          </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Ready for review</p>
+            <p className="module-summary-value">{modelsReadFailed ? "—" : reviewReadyCount}</p>
+            <p className="module-summary-detail">
+              {modelsReadFailed
+                ? "Unavailable while your models cannot be read."
+                : "Runs that reached review or approval."}
+            </p>
+          </div>
+          <div className="module-summary-card">
+            <p className="module-summary-label">Linked results</p>
+            <p className="module-summary-value">{modelsReadFailed || linksReadFailed ? "—" : traceableCount}</p>
+            <p className="module-summary-detail">
+              {modelsReadFailed
+                ? "Unavailable while your models cannot be read."
+                : linksReadFailed
+                  ? "What each model connects to could not be read, so this is unknown, not zero."
+                  : `${readinessGreenCount} currently pass every check.`}
+            </p>
+          </div>
+        </div>
+
+        <Link
+          href={
+            planningContext.status === "active"
+              ? withPlanningContext("/county-runs", planningContext.project.id)
+              : "/county-runs"
+          }
+          className="module-inline-action"
+        >
+          Specialist: county validation setup
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      </PageHeader>
+
+      <article className="module-section-surface">
+        <div className="module-section-header">
+          <div className="module-section-heading">
+            <p className="module-section-label">Your models</p>
+            <h2 className="module-section-title">Travel models</h2>
+            <p className="module-section-description">
+              Filter by status, project, or model family to find the ones that need attention.
+            </p>
+          </div>
+          <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            <FolderKanban className="h-3.5 w-3.5" />
+            {modelsReadFailed ? "Total unavailable" : `${models.length} total`}
+          </span>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-compact">
+          <Link href={modelsTabHref(activeFilters, null)} className={cn("rounded px-2 py-0.5 transition-colors", !activeFilters.status ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
+            {/* A tab count is a count of records. With the catalog unread there
+                are no records to count, and "(0)" would be a claim. */}
+            {modelsReadFailed ? "All" : `All (${modelsInScope.length})`}
+          </Link>
+          {MODEL_STATUS_OPTIONS.map((opt) => (
+            <Link key={opt.value} href={modelsTabHref(activeFilters, opt.value)} className={cn("rounded px-2 py-0.5 transition-colors", activeFilters.status === opt.value ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
+              {modelsReadFailed
+                ? opt.label
+                : `${opt.label} (${modelsInScope.filter((m) => m.status === opt.value).length})`}
+            </Link>
+          ))}
+          {hasActiveFilters ? (
+            // The one deliberate way to widen. Every tab above narrows within
+            // the scope the page was opened for; only this leaves it.
+            <Link href="/models" className="ml-auto rounded px-2 py-0.5 text-muted-foreground/70 hover:text-foreground">
+              Clear filters ×
+            </Link>
+          ) : null}
+        </div>
+
+        {modelsReadFailed && models.length === 0 ? (
+          // NOT the empty state. "No models yet" is a statement about the
+          // workspace; a query that failed cannot make it.
+          //
+          // Gated on the list ALSO being empty so this can only ever replace
+          // nothing. supabase-js nulls `data` on error, so today the two
+          // conditions coincide — but a branch that swaps rows for a notice
+          // is one refactor away from hiding a planner's own models behind a
+          // partial failure, and disclosure must never cost someone the data
+          // that did load.
+          <div
+            className="mt-5 rounded-[0.75rem] border border-destructive/40 bg-destructive/5 px-5 py-4 text-sm text-foreground"
+            data-testid="models-catalog-unreadable"
+            role="alert"
+          >
+            <p className="font-semibold">Your models could not be read.</p>
+            <p className="mt-1.5">
+              Nothing is listed below because the query failed, not because you have no models.
+              Reload the page, and report the message above if it keeps happening.
+            </p>
+          </div>
+        ) : models.length === 0 ? (
+          <div className="mt-5">
+            <EmptyState
+              title={hasActiveFilters ? "No models match these filters" : "No models yet"}
+              description={
+                hasActiveFilters
+                  ? filteredEmptyDescription
+                  : "Models keeps track of the travel models your agency relies on — which version is current, what each one can honestly support, and how it connects to scenarios and reports. Create your first model to give your runs a home."
+              }
+              action={
+                hasActiveFilters ? undefined : (
+                  <a href="#create-model" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
+                    Create a model
+                  </a>
+                )
+              }
+            />
+          </div>
+        ) : (
+          <div className="mt-5 module-record-list">
+            {models.map((model) => (
+              <CartographicSelectionLink
+                key={model.id}
+                href={
+                  planningContext.status === "active"
+                    ? withPlanningContext(`/models/${model.id}`, planningContext.project.id)
+                    : `/models/${model.id}`
+                }
+                className="module-record-row is-interactive group block"
+                selection={{
+                  kind: "run",
+                  title: model.title,
+                  kicker: `${formatModelFamilyLabel(model.model_family)} · ${formatModelStatusLabel(model.status)}`,
+                  avatarChar: model.title[0],
+                  meta: linksReadFailed
+                    ? [{ label: "checks", value: "unavailable", tone: "warn" as const }]
+                    : model.readiness.missingCheckLabels.length > 0
+                      ? [{ label: "gaps", value: String(model.readiness.missingCheckLabels.length), tone: "warn" as const }]
+                      : [{ label: "status", value: "ready", tone: "ok" as const }],
+                }}
+              >
+                <div className="module-record-head">
+                  <div className="module-record-main">
+                    <div className="module-record-kicker">
+                      <StatusBadge tone={modelStatusTone(model.status)}>{formatModelStatusLabel(model.status)}</StatusBadge>
+                      <StatusBadge tone="info">{formatModelFamilyLabel(model.model_family)}</StatusBadge>
                     </div>
 
-                    <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
+                    <div className="space-y-1.5">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <h3 className="module-record-title text-[1.05rem] transition group-hover:text-primary">{model.title}</h3>
+                        <p className="module-record-stamp">Updated {formatModelDateTime(model.updated_at)}</p>
+                      </div>
+                      <p className="module-record-summary line-clamp-2">
+                        {model.summary || "No summary yet. Open the model to write down its assumptions, what it was built from, and where its results can be traced."}
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Readiness and both linkage counts are derived entirely from
-                      the model_links read. When it failed, "0 reports · 0 runs"
-                      and "Missing: Scenario basis" are not facts about this
-                      record — they are the shape of the failure. */}
-                  <p className="mt-1.5 text-label text-muted-foreground">
-                    {model.project?.name ?? "No project"} · {model.config_version ? `Config ${model.config_version}` : "Config pending"} · {linksReadFailed ? "Readiness and links unavailable" : `${model.readiness.ready ? "Ready" : `${model.readiness.missingCheckCount} gap${model.readiness.missingCheckCount === 1 ? "" : "s"}`} · ${model.linkageCounts.reports} reports · ${model.linkageCounts.runs} runs`}
+                  <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
+                </div>
+
+                {/* Readiness and both linkage counts are derived entirely from
+                    the model_links read. When it failed, "0 reports · 0 runs"
+                    and "Missing: Scenario basis" are not facts about this
+                    record — they are the shape of the failure. */}
+                <p className="mt-1.5 text-label text-muted-foreground">
+                  {model.project?.name ?? "No project"} · {model.config_version ? `Config ${model.config_version}` : "Config pending"} · {linksReadFailed ? "Readiness and links unavailable" : `${model.readiness.ready ? "Ready" : `${model.readiness.missingCheckCount} gap${model.readiness.missingCheckCount === 1 ? "" : "s"}`} · ${model.linkageCounts.reports} reports · ${model.linkageCounts.runs} runs`}
+                </p>
+                {linksReadFailed ? (
+                  <p className="mt-1 text-label text-amber-700 dark:text-amber-300">
+                    Model links could not be read, so this record&apos;s readiness gaps and linked
+                    reports and runs are unknown rather than absent.
                   </p>
-                  {linksReadFailed ? (
-                    <p className="mt-1 text-label text-amber-700 dark:text-amber-300">
-                      Model links could not be read, so this record&apos;s readiness gaps and linked
-                      reports and runs are unknown rather than absent.
-                    </p>
-                  ) : model.readiness.missingCheckLabels.length > 0 ? (
-                    <p className="mt-1 text-label text-amber-700 dark:text-amber-300">Missing: {model.readiness.missingCheckLabels.join(", ")}.</p>
-                  ) : null}
-                </CartographicSelectionLink>
-              ))}
-            </div>
-          )}
-        </article>
-      </div>
+                ) : model.readiness.missingCheckLabels.length > 0 ? (
+                  <p className="mt-1 text-label text-amber-700 dark:text-amber-300">Missing: {model.readiness.missingCheckLabels.join(", ")}.</p>
+                ) : null}
+              </CartographicSelectionLink>
+            ))}
+          </div>
+        )}
+      </article>
 
       <NetworkPackagesPanel workspaceId={membership.workspace_id} />
     </section>

@@ -4,6 +4,7 @@ import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { safeNextPath } from "@/lib/auth/callback-destination";
 import { invitationPath } from "@/lib/workspaces/invitation-path";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,9 +28,10 @@ function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTarget = searchParams.get("redirect") ?? "/dashboard";
-  const createdState = searchParams.get("created");
   // Set by /auth/callback when an emailed link could not be redeemed (expired,
   // already used). Without this the user is bounced here with no explanation.
+  // The callback does not say WHICH kind of link failed, a confirmation link or
+  // a password reset link, so the notice below covers both.
   const authError = searchParams.get("auth_error");
   const inviteToken = searchParams.get("invite");
   const signUpHref = useMemo(() => {
@@ -42,6 +44,27 @@ function SignInForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [resendState, setResendState] = useState<"idle" | "sending" | "sent" | "needs-email" | "failed">("idle");
+
+  // The right next step after a failed CONFIRMATION link is a new confirmation
+  // email, not a password reset. The reply is the same whether or not the
+  // address has an account, so this does not reveal who has signed up.
+  async function resendConfirmation() {
+    if (!email.trim()) {
+      setResendState("needs-email");
+      return;
+    }
+    setResendState("sending");
+    const supabase = createClient();
+    const { error: resendError } = await supabase.auth.resend({
+      type: "signup",
+      email: email.trim(),
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeNextPath(redirectTarget))}`,
+      },
+    });
+    setResendState(resendError ? "failed" : "sent");
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -78,9 +101,9 @@ function SignInForm() {
     const nextPath =
       inviteToken && !redirectTarget.startsWith("/invitations/")
         ? invitationPath(inviteToken)
-        : redirectTarget && redirectTarget.startsWith("/")
-          ? redirectTarget
-          : "/dashboard";
+        : // The same same-origin check the auth callback applies to `next`, so
+          // `redirect=//elsewhere.example` cannot send a signed-in person off site.
+          safeNextPath(redirectTarget);
     router.push(nextPath);
     router.refresh();
   }
@@ -96,36 +119,54 @@ function SignInForm() {
       </header>
 
       <div className="space-y-4 px-6 py-5 sm:px-7">
-        {createdState === "1" ? (
-          <article className={noticeClass("info")}>
-            <p className="font-semibold">
-              {inviteToken ? "Account created — next step is the invitation itself." : "Account created — next step is your first workspace."}
-            </p>
-            <ol className="mt-2 list-decimal space-y-1.5 pl-5">
-              <li>Sign in with the email and password you just created.</li>
-              {inviteToken ? (
-                <li>OpenPlan will show you the invitation — what workspace, what role, who sent it — to accept or decline.</li>
-              ) : (
-                <li>Your workspace was created with your account — the dashboard opens straight into it.</li>
-              )}
-            </ol>
-          </article>
-        ) : null}
-
         {authError ? (
           <article className={noticeClass("warning")} role="alert">
-            <p className="font-semibold">That link could not be used.</p>
-            <p className="mt-1.5">{authError}</p>
+            <p className="font-semibold">The link from your email did not work.</p>
             <p className="mt-1.5">
-              <Link href="/forgot-password" className="font-semibold underline underline-offset-4">
-                Request a new reset link
-              </Link>
-              .
+              An emailed link works once and expires after a while. The sign-in service reported: {authError}
             </p>
+            <ul className="mt-2 list-disc space-y-1.5 pl-5">
+              <li>
+                If you were confirming a new account and already opened the link once, your account is confirmed.
+                Sign in below.
+              </li>
+              <li>
+                If your account is not confirmed yet, type your email below and{" "}
+                <button
+                  type="button"
+                  onClick={resendConfirmation}
+                  disabled={resendState === "sending"}
+                  className="font-semibold underline underline-offset-4"
+                >
+                  send a new confirmation email
+                </button>
+                .
+              </li>
+              <li>
+                If you were resetting your password,{" "}
+                <Link href="/forgot-password" className="font-semibold underline underline-offset-4">
+                  request a new reset link
+                </Link>
+                .
+              </li>
+            </ul>
+            {resendState === "needs-email" ? (
+              <p className="mt-2 font-semibold">Type your email in the form below first.</p>
+            ) : null}
+            {resendState === "sent" ? (
+              <p className="mt-2 font-semibold" role="status">
+                If that address has an account waiting for confirmation, a new link is on its way.
+              </p>
+            ) : null}
+            {resendState === "failed" ? (
+              <p className="mt-2 font-semibold">
+                The confirmation email could not be sent. Try again in a few minutes.
+              </p>
+            ) : null}
           </article>
         ) : null}
 
-        {inviteToken && createdState !== "1" ? (
+        {inviteToken ? (
           <article className={noticeClass("info")}>
             <p className="font-semibold">Workspace invitation link detected.</p>
             <p className="mt-1.5">Sign in with the invited work email and OpenPlan will show you the invitation to accept or decline.</p>

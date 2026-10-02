@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
@@ -42,6 +42,24 @@ vi.mock("server-only", () => ({}));
  * module that already had a header action and had built it out of one-off
  * markup — folding it into the shared slot is what keeps this a single pattern
  * instead of two.
+ *
+ * TWO HEADERS, ONE RULE (2026-10-01). Index pages are moving from the two-card
+ * header to the shared `PageHeader`. On a converted page the action is no
+ * longer an anchor that scrolls to a card holding a second button: it is the
+ * creator's own trigger, mounted in the page header, and pressing it opens the
+ * guided flow. Each row of the table states which header it has, and the
+ * assertions for part 2 and part 3 follow that statement:
+ *
+ *   - `intro-card`: the action sits in `.module-intro-card` and, when it names
+ *     a target, is a link whose fragment resolves in the rendered document.
+ *   - `page-header`: the action sits in the `<header>` that holds the page's
+ *     only `<h1>`, is a `<button>`, and one press opens the creator. The old
+ *     `create-…` id must still resolve AND must wrap the button, because other
+ *     links in the app (empty states, mostly) still point at it.
+ *
+ * The creators on converted pages are NOT stubbed. A stub would leave nothing
+ * in the header to press, and "it opens the creator" would be asserted against
+ * a `<div>`.
  *
  * Knowledge Base is deliberately ABSENT, and that is a finding rather than an
  * omission: its upload tabs are already the first thing under its heading, so a
@@ -129,38 +147,18 @@ vi.mock("@/lib/workspaces/current", () => ({
 }));
 
 /*
-  THE CREATOR FORMS ARE STUBBED; THE DIVS THAT CARRY THEIR IDS ARE NOT.
+  ON `intro-card` PAGES THE CREATOR FORMS ARE STUBBED; THE DIVS THAT CARRY THEIR
+  IDS ARE NOT.
 
   Every `id="create-…"` anchor lives on a wrapper the PAGE renders, never inside
   the creator component. Stubbing the forms therefore removes the heavy client
   trees without removing a single link target — if a future change moves an id
   down into a creator, that fragment stops resolving here and this suite says
   so, which is the behavior we want.
+
+  On `page-header` pages the creator IS the header action, so it renders for
+  real. A creator is listed below only while its page is still `intro-card`.
 */
-vi.mock("@/components/projects/project-workspace-creator", () => ({
-  ProjectWorkspaceCreator: () => <div data-testid="project-workspace-creator" />,
-}));
-vi.mock("@/components/reports/report-creator", () => ({
-  ReportCreator: () => <div data-testid="report-creator" />,
-}));
-vi.mock("@/components/plans/plan-creator", () => ({
-  PlanCreator: () => <div data-testid="plan-creator" />,
-}));
-vi.mock("@/components/programs/program-creator", () => ({
-  ProgramCreator: () => <div data-testid="program-creator" />,
-}));
-vi.mock("@/components/engagement/engagement-campaign-creator", () => ({
-  EngagementCampaignCreator: () => <div data-testid="engagement-campaign-creator" />,
-}));
-vi.mock("@/components/models/model-creator", () => ({
-  ModelCreator: () => <div data-testid="model-creator" />,
-}));
-vi.mock("@/components/scenarios/scenario-set-creator", () => ({
-  ScenarioSetCreator: () => <div data-testid="scenario-set-creator" />,
-}));
-vi.mock("@/components/rtp/rtp-cycle-creator", () => ({
-  RtpCycleCreator: () => <div data-testid="rtp-cycle-creator" />,
-}));
 vi.mock("@/app/(app)/models/_components/network-packages-panel", () => ({
   NetworkPackagesPanel: () => <div data-testid="network-packages-panel" />,
 }));
@@ -210,8 +208,17 @@ type ModuleUnderTest = {
   /** The words on the control. */
   label: string;
   /**
-   * The id the action jumps to, or `null` when the action does its work in
-   * place rather than pointing at a form further down.
+   * Which header the page has. `intro-card` is the two-card header whose action
+   * links to a form further down. `page-header` is the shared `PageHeader`,
+   * whose action is the creator's own trigger and opens the guided flow.
+   * `page-header-link` is the shared `PageHeader` with a link as its primary
+   * action, for a page whose first step is elsewhere on the same page.
+   */
+  header: "intro-card" | "page-header" | "page-header-link";
+  /**
+   * On an `intro-card` page, the id the action jumps to, or `null` when the
+   * action does its work in place. On a `page-header` page, the id that wraps
+   * the trigger so links to `#create-…` from elsewhere still land on it.
    */
   reaches: string | null;
   /** Rows this page's loader needs before its header action is usable. */
@@ -270,54 +277,77 @@ const emptyParams = () => Promise.resolve({});
 const MODULES: ModuleUnderTest[] = [
   {
     module: "/projects",
+    header: "page-header",
     label: "New project",
     reaches: "create-project",
     render: () => ProjectsPage({ searchParams: emptyParams() }),
   },
   {
     module: "/reports",
-    label: "Generate a report",
+    header: "page-header",
+    // The creator's own trigger. It makes the report record; generating the
+    // packet happens on the report's page, so "New report" is the true label.
+    label: "New report",
     reaches: "create-report",
+    // A report is always about a project. With none to offer the creator
+    // states that instead of a button, so the pressable control needs one.
+    fixtures: {
+      projects: {
+        data: [{ id: "project-1", workspace_id: "workspace-1", name: "Main Street corridor" }],
+        error: null,
+      },
+    },
     render: () => ReportsPage({ searchParams: emptyParams() }),
   },
   {
     module: "/engagement",
+    header: "page-header",
     label: "New campaign",
     reaches: "create-campaign",
     render: () => EngagementPage({ searchParams: emptyParams() }),
   },
   {
     module: "/plans",
+    header: "page-header",
     label: "New plan",
     reaches: "create-plan",
     render: () => PlansPage({ searchParams: emptyParams() }),
   },
   {
     module: "/models",
+    // The primary action here is a link, not a creator: a project comparison is
+    // the guided path, and its picker is at the top of the same page.
+    header: "page-header-link",
     label: "Start project comparison",
     reaches: "choose-project-comparison",
     render: () => ModelsPage({ searchParams: emptyParams() }),
   },
   {
     module: "/scenarios",
+    header: "page-header",
     label: "New scenario set",
     reaches: "create-scenario-set",
+    // The creator shows no button in a workspace with no projects.
+    fixtures: { projects: { data: [{ id: "project-1", workspace_id: "workspace-1", name: "Main Street" }], error: null } },
     render: () => ScenariosPage({ searchParams: emptyParams() }),
   },
   {
     module: "/programs",
+    header: "page-header",
     label: "New program",
     reaches: "create-program",
     render: () => ProgramsPage({ searchParams: emptyParams() }),
   },
   {
     module: "/rtp",
+    header: "page-header",
     label: "New RTP cycle",
     reaches: "create-rtp-cycle",
     render: () => RtpPage({ searchParams: emptyParams() }),
   },
   {
     module: "/safety",
+    header: "intro-card",
     label: "Retrieve crash data",
     // Acts in place: it starts the retrieval rather than scrolling to a form.
     reaches: null,
@@ -342,7 +372,7 @@ beforeEach(() => {
 });
 
 describe("every module list page offers one primary action in its header", () => {
-  it.each(MODULES)("$module", async ({ label, reaches, fixtures, render: renderPage }) => {
+  it.each(MODULES)("$module", async ({ header, label, reaches, fixtures, render: renderPage }) => {
     for (const [table, result] of Object.entries(fixtures ?? {})) {
       tableResults.set(table, result);
     }
@@ -356,11 +386,21 @@ describe("every module list page offers one primary action in its header", () =>
 
     const [action] = actions;
 
-    // 2. IN THE HEADER CARD, via the shared slot. Walking up from the button
-    //    rather than down from the card, so a slot rendered anywhere else on
-    //    the page fails here instead of passing on the class name alone.
-    expect(action.closest(".module-intro-actions")).not.toBeNull();
-    expect(action.closest(".module-intro-card")).not.toBeNull();
+    // 2. IN THE HEADER. Walking up from the button rather than down from the
+    //    header, so an action rendered anywhere else on the page fails here
+    //    instead of passing on the class name alone.
+    if (header === "page-header" || header === "page-header-link") {
+      // The header is the one that names the page, and a page has one name.
+      const pageHeader = action.closest("header");
+      expect(pageHeader).not.toBeNull();
+      expect(pageHeader?.querySelectorAll("h1")).toHaveLength(1);
+      expect(container.querySelectorAll("h1")).toHaveLength(1);
+      // The two-card header is gone, not kept beside the new one.
+      expect(container.querySelector(".module-intro-card")).toBeNull();
+    } else {
+      expect(action.closest(".module-intro-actions")).not.toBeNull();
+      expect(action.closest(".module-intro-card")).not.toBeNull();
+    }
 
     // 3. A REAL CONTROL — not a clickable div — and keyboard reachable for real
     //    rather than by inspection.
@@ -370,7 +410,27 @@ describe("every module list page offers one primary action in its header", () =>
 
     // 4. IT REACHES ITS TARGET, resolved inside the very document that rendered
     //    the button.
-    if (reaches === null) {
+    if (header === "page-header") {
+      // One press opens the creator. A link to a card that holds a second
+      // button is the two-click design this header replaced.
+      expect(action.tagName).toBe("BUTTON");
+      expect(action.getAttribute("href")).toBeNull();
+      // The old fragment still resolves, and it lands ON the button: links to
+      // it from empty states and other pages must not point at nothing.
+      expect(reaches).not.toBeNull();
+      expect(container.querySelector(`#${reaches}`)).not.toBeNull();
+      expect(action.closest(`#${reaches}`)).not.toBeNull();
+      // Closed until pressed, so the open dialog below is this press's doing.
+      expect(container.querySelector("dialog[open]")).toBeNull();
+      fireEvent.click(action);
+      expect(container.querySelector("dialog[open]")).not.toBeNull();
+    } else if (header === "page-header-link") {
+      // A link, and its target is on this page.
+      expect(action.tagName).toBe("A");
+      expect(reaches).not.toBeNull();
+      expect(action.getAttribute("href")).toBe(`#${reaches}`);
+      expect(container.querySelector(`#${reaches}`)).not.toBeNull();
+    } else if (reaches === null) {
       expect(action.tagName).toBe("BUTTON");
       expect(action.getAttribute("href")).toBeNull();
     } else {

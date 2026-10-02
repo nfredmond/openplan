@@ -24,6 +24,7 @@ import {
 import {
   loadCurrentWorkspaceMembership,
 } from "@/lib/workspaces/current";
+import { RtpCycleCreator } from "@/components/rtp/rtp-cycle-creator";
 import { RtpRegistryOverview } from "./_components/rtp-registry-overview";
 import { RtpCycleRegistryTable } from "./_components/rtp-cycle-registry-table";
 import { RtpRegistryAdvisoryPanel } from "./_components/rtp-registry-advisory-panel";
@@ -912,6 +913,14 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
       ) : null}
 
       <RtpRegistryOverview
+        actions={
+          // The id stays on this wrapper, which the page owns, so links to
+          // #create-rtp-cycle from the registry table's empty state still land
+          // on the button.
+          <div id="create-rtp-cycle" className="scroll-mt-24">
+            <RtpCycleCreator />
+          </div>
+        }
         cycleCount={typedCycles.length}
         draftCount={draftCount}
         publicReviewCount={publicReviewCount}

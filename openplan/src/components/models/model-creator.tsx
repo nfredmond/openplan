@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { useRouter } from "next/navigation";
-import { Database, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -308,31 +308,19 @@ export function ModelCreator({
     },
   });
 
+  // Only the trigger and the flow. The models page mounts this in its page
+  // header, so "New model record" opens the questions directly instead of
+  // scrolling to a card that held a second button.
   return (
-    <article className="module-section-surface">
-      <div className="module-section-header">
-        <div className="module-section-heading">
-          <p className="module-section-label">Create</p>
-          <h2 className="module-section-title">New managed model record</h2>
-          <p className="module-section-description">
-            A model record is the folder everything about one model lives in: what it is for, what
-            it is attached to, and the runs it produces. Four short questions and you are done — you
-            can fill in the rest on its page afterwards.
-          </p>
-        </div>
-        <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-sky-500/12 text-sky-700 dark:text-sky-300">
-          <Database className="h-5 w-5" />
-        </span>
-      </div>
-
-      <div className="mt-5">
-        <Button type="button" onClick={flow.open} data-testid="model-creator-open">
-          <Plus className="mr-1.5 h-4 w-4" />
-          New model record
-        </Button>
-      </div>
-
+    <>
+      {/* The secondary action on its page. Starting a project comparison is the
+          primary one: that is the guided path, and it creates the model record
+          a planner needs along the way. */}
+      <Button type="button" variant="outline" onClick={flow.open} data-testid="model-creator-open">
+        <Plus className="h-4 w-4" aria-hidden="true" />
+        New model record
+      </Button>
       <GuidedFlow flow={flow} />
-    </article>
+    </>
   );
 }

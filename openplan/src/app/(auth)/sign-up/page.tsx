@@ -4,6 +4,8 @@ import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { safeNextPath } from "@/lib/auth/callback-destination";
+import { invitationPath } from "@/lib/workspaces/invitation-path";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -80,18 +82,22 @@ function SignUpForm() {
     // the emailed link is clicked. Detect that and say so, instead of routing to
     // a sign-in screen that tells the user to use a password that won't work
     // yet (the bug on any deployment with confirmations enabled).
-    if (data && data.user && !data.session) {
+    if (!data?.session) {
       setAwaitingConfirmation(true);
       setLoading(false);
       return;
     }
 
-    const params = new URLSearchParams({ created: "1", redirect: redirectTarget });
-    if (inviteToken) {
-      params.set("invite", inviteToken);
-    }
-
-    router.push(`/sign-in?${params.toString()}`);
+    // signUp returned a live session, so the person is already signed in.
+    // Sending them to /sign-in to type the same password again was a second
+    // login for no reason. Go where they were headed: the invitation if they
+    // came from one (creating an account does not accept it), otherwise the
+    // redirect target, checked the same way the auth callback checks `next`.
+    const destination =
+      inviteToken && !redirectTarget.startsWith("/invitations/")
+        ? invitationPath(inviteToken)
+        : safeNextPath(redirectTarget);
+    router.push(destination);
     router.refresh();
   }
 
@@ -125,7 +131,7 @@ function SignUpForm() {
           <article className={noticeClass("info")}>
             <p className="font-semibold">Workspace invitation link detected.</p>
             <p className="mt-1.5">
-              Create the account with the invited work email, then sign in — OpenPlan will show you the invitation to accept or decline.
+              Create the account with the invited work email. OpenPlan then shows you the invitation to accept or decline.
             </p>
           </article>
         ) : null}
@@ -168,12 +174,17 @@ function SignUpForm() {
                 id="password"
                 type="password"
                 autoComplete="new-password"
-                placeholder="Minimum 8 characters"
                 minLength={8}
+                aria-describedby="password-rule"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              {/* The rule stays on screen while the person types. A placeholder
+                  disappears at the first keystroke. */}
+              <p id="password-rule" className="text-sm text-muted-foreground">
+                Use at least 8 characters.
+              </p>
             </div>
           </div>
 
@@ -184,7 +195,7 @@ function SignUpForm() {
           ) : null}
 
           <div className="flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Choose your workspace right after signing in.</p>
+            <p className="text-sm text-muted-foreground">Your workspace is created with your account.</p>
             <Button type="submit" className="sm:min-w-44" disabled={loading}>
               {loading ? "Creating account..." : "Create account"}
             </Button>

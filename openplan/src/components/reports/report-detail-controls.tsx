@@ -695,7 +695,7 @@ export function ReportDetailControls({
         </> : null}
         {/* Error banner */}
         {error ? (
-          <p className="rounded-xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+          <p role="alert" className="rounded-xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
             {error}
           </p>
         ) : null}
@@ -758,8 +758,16 @@ export function ReportDetailControls({
             ) : (
               <span className="inline-flex items-center gap-2">
                 <WandSparkles className="h-4 w-4" />
-                {hasDrift && report.hasGeneratedArtifact ? "Regenerate" : "Generate"}{" "}
-                {artifactFormat === "pdf" ? "PDF" : "HTML"} packet
+                {/* Whole labels, not assembled words: the browser smoke scripts
+                    press this button by name, and the guard that checks those
+                    names against the source can only see a literal. */}
+                {artifactFormat === "pdf"
+                  ? hasDrift && report.hasGeneratedArtifact
+                    ? "Regenerate PDF packet"
+                    : "Generate PDF packet"
+                  : hasDrift && report.hasGeneratedArtifact
+                    ? "Regenerate HTML packet"
+                    : "Generate HTML packet"}
               </span>
             )}
           </Button>

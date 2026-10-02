@@ -95,8 +95,13 @@ import { stripSourceComments } from "./helpers/source-text";
  *
  * The rule to keep: a new route group holding a page a member of the public can
  * open goes in this list in the commit that creates it.
+ *
+ * `(published)` joined on 2026-10-01, in the change that moved the agency's
+ * own pages (plan, measure, published plan, review release) out from under the
+ * marketing navigation. Same hazard as the `(portal)` move: without this entry
+ * the move would have dropped five pages from the corpus.
  */
-const PUBLIC_ROUTE_DIRS = ["src/app/(public)", "src/app/(portal)", "src/app/(embed)"];
+const PUBLIC_ROUTE_DIRS = ["src/app/(public)", "src/app/(portal)", "src/app/(embed)", "src/app/(published)"];
 const API_ROUTE_DIR = "src/app/api";
 
 /** Every `page.tsx` and `layout.tsx` under the public route group. */
@@ -375,14 +380,14 @@ describe("public page claims guardrails", () => {
   it("derives the public surfaces from the route directory rather than a hand-kept list", () => {
     expect(PUBLIC_PAGE_FILES).toContain("src/app/(public)/page.tsx");
     // The four that a hand-kept list had missed for months.
-    expect(PUBLIC_PAGE_FILES).toContain("src/app/(public)/measure/[shareToken]/page.tsx");
+    expect(PUBLIC_PAGE_FILES).toContain("src/app/(published)/measure/[shareToken]/page.tsx");
     // The engagement portal, after its 2026-08-13 move to the (portal) group —
     // and the embeddable widget, which no claim guard had ever read.
     expect(PUBLIC_PAGE_FILES).toContain("src/app/(portal)/engage/[shareToken]/page.tsx");
     expect(PUBLIC_PAGE_FILES).toContain("src/app/(portal)/engage/[shareToken]/about/page.tsx");
     expect(PUBLIC_PAGE_FILES).toContain("src/app/(embed)/embed/[shareToken]/page.tsx");
-    expect(PUBLIC_PAGE_FILES).toContain("src/app/(public)/plan/[shareToken]/page.tsx");
-    expect(PUBLIC_PAGE_FILES).toContain("src/app/(public)/plan/[shareToken]/document/page.tsx");
+    expect(PUBLIC_PAGE_FILES).toContain("src/app/(published)/plan/[shareToken]/page.tsx");
+    expect(PUBLIC_PAGE_FILES).toContain("src/app/(published)/plan/[shareToken]/document/page.tsx");
     expect(PUBLIC_PAGE_FILES.length).toBeGreaterThanOrEqual(10);
 
     // And the copy modules the pages import, which is where the words actually

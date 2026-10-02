@@ -111,7 +111,7 @@ export function ModelRunEquityPanel({ modelId, modelRunId }: Props) {
               <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading equity overlay…
             </p>
           ) : error ? (
-            <p className="text-xs text-red-600 dark:text-red-300">{error}</p>
+            <p role="alert" className="text-xs text-red-600 dark:text-red-300">{error}</p>
           ) : !screen ? (
             <p className="text-xs text-muted-foreground">
               No equity overlay for this run (needs a Census key and a dynamic geography).

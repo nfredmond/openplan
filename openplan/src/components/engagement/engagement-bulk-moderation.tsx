@@ -210,10 +210,10 @@ export function EngagementBulkModeration({
       )}
 
       {error && (
-        <p className="mt-3 text-sm text-destructive">{error}</p>
+        <p role="alert" className="mt-3 text-sm text-destructive">{error}</p>
       )}
       {result && (
-        <p className="mt-3 text-sm text-[color:var(--pine)]">{result}</p>
+        <p role="status" className="mt-3 text-sm text-[color:var(--pine)]">{result}</p>
       )}
     </article>
   );

@@ -187,7 +187,7 @@ export function TranscribedChapterBlockCard({
           Set aside. Nothing was added to any chapter.
         </p>
       ) : null}
-      {error ? <p className="text-xs text-red-600 dark:text-red-400">{error}</p> : null}
+      {error ? <p role="alert" className="text-xs text-red-600 dark:text-red-400">{error}</p> : null}
 
       {canWrite && outcome === null ? (
         <div className="flex flex-wrap items-end gap-2">

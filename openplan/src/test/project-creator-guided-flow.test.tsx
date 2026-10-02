@@ -51,7 +51,10 @@ describe("starting a project", () => {
     expect(screen.queryByLabelText("Project name")).toBeNull();
     // "Workspace" means a tenant everywhere else in the product. A planner who
     // thinks this button makes one expects an empty world and gets a record in
-    // the world they are already in.
+    // the world they are already in. The sentence used to sit under a "Start a
+    // project" card; the creator is only a header button now, so it is said on
+    // the first question, which is the first thing the button shows.
+    fireEvent.click(screen.getByTestId("project-workspace-creator-open"));
     expect(screen.getByText(/It does not create a new workspace/i)).toBeInTheDocument();
   });
 

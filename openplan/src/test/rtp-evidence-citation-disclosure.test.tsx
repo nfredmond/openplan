@@ -99,7 +99,7 @@ vi.mock("@/lib/supabase/server", () => ({
   createServiceRoleClient: () => ({ from: fromMock }),
 }));
 
-import PublicRtpWhyPage from "@/app/(public)/plan/[shareToken]/page";
+import PublicRtpWhyPage from "@/app/(published)/plan/[shareToken]/page";
 import { RtpPriorityScoreEditor } from "@/components/projects/rtp-priority-score-editor";
 
 import { resolveRtpPriorityCriteria } from "@/lib/rtp/priority-frameworks";

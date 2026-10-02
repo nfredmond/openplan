@@ -58,7 +58,7 @@ const whatYouCanDo = [
   {
     title: "Get a first draft of the write-up",
     description:
-      "Turn the analysis and the public comments into draft text you can edit — with the caveats already attached, so nothing quietly becomes more certain than it should on its way into a board packet.",
+      "Turn the analysis and the public comments into draft text you can edit — with the caveats already attached, so nothing quietly becomes more certain than it should on its way into a board packet. AI drafting is optional: it runs on your agency's own AI provider key, and that provider bills you for the usage, not OpenPlan.",
   },
 ];
 
@@ -72,7 +72,7 @@ const whereToStart = [
   },
   {
     href: "/sign-up?source=landing&intent=modeling",
-    label: "About five minutes",
+    label: "Needs a free account",
     title: "Run your first corridor study",
     description:
       "Make a free account, search for anywhere in the United States, and get a scored corridor with the data behind it. Your own city, not a demo county.",
@@ -248,7 +248,7 @@ export default function PublicLandingPage() {
               <h2 className="public-section-title">Pick whichever is closest to your week</h2>
             </div>
             <p className="public-section-description max-w-xl">
-              You can look at a finished example without signing up. The other two need a free account, which takes about a minute.
+              You can look at a finished example without signing up. The other two need a free account.
             </p>
           </div>
 

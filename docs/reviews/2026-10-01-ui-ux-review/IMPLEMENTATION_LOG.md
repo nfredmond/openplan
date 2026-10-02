@@ -105,6 +105,33 @@ Known gaps from this batch:
 - On the model page, an empty state still says "Use the Links tab"; that tab is now inside "Edit model".
 - The footer on public pages still credits Nat Ford Planning.
 
+## Index pages, forms, public pages and Corridor Analysis, October 1 to 2, 2026
+
+Four helper agents worked in the same worktree on separate files; I reviewed each report, reconciled the shared guard, typechecked, and looked at the pages. Checks on the combined tree: typecheck clean, lint clean, dead-code check exit 0, production build exit 0, 16,844 tests passed with one failure fixed afterward (see the smoke-script guard below) and re-run green.
+
+| Change | How it was checked |
+|---|---|
+| `PageHeader` on eight index pages (Projects, Plans, Programming Cycles, Reports, Regional Plan, Travel modeling, Scenarios, Engagement): title equal to the rail label, one sentence, stat tiles under it. The two-card header, its kicker and the static explainer bullets are gone. The "New" button opens the wizard directly. The workspace command board is off the plans, programs and reports index pages | Chrome at 1440 dark on all eight and 390 light on three. `every-module-has-one-primary-header-action` rewritten for the new header with its negative controls re-run (id removed, click handler removed, second primary added, creator moved out of the header, stray intro card: each failed as expected) |
+| Travel modeling keeps "Start project comparison" as its primary action; "New model record" is secondary. A helper had swapped them; I restored it and added a `page-header-link` row kind to the guard, which fails when the link target is broken | Guard run with the href broken: failed; restored: passed |
+| The wizard's own header is a `div`, so it no longer nests a `header` inside the page header | Wizard tests pass |
+| 69 form controls labeled (50 in the land use plan workbench); inline errors in 62 files now carry `role="alert"`, and 9 success lines carry `role="status"` | The helper's related test run; one test query changed from placeholder to label. Not checked with a screen reader, and the workbench's new visible labels were not looked at |
+| Closed campaign: `/engage/<link>` shows only "This comment period has ended" with no campaign content. The first version re-published the title, comments and commenter names; I had it narrowed, because Closed is how staff take a campaign offline and Active with submissions closed already exists for a public read-only state. Staff copy now says what the link shows. Draft, archived and unknown links stay not found | 12 tests, including that the closed read touches only the campaign table for `id, status`. Chrome: a closed test campaign returns the notice, one `h1`, one `main`, no form, and the tab title is the notice |
+| Agency-shared pages (public plan, plan document, measure, published plan, land use review) moved to a `(published)` route group with no OpenPlan marketing navigation and one attribution line. A print block scoped to those pages | Tests repointed and passing. Chrome: a shared plan page has no "Create free workspace" navigation, shows the attribution line, and has one `main`. Not printed |
+| Sign-up with a live session goes straight in; password rule is a visible line; a failed emailed link gets a plain notice with a resend button; `next` uses the shared same-origin check | Auth tests grew from 11 to 20 |
+| Home page says AI drafting uses the agency's own provider key; two unverified time claims removed | Claim guards pass |
+| Corridor Analysis fills the page area edge to edge | Chrome at 1440 dark and light and at 390 |
+| Report generate button labels are whole literals | `qa-harness-route-contract-guard` had been passing only because an explainer sentence happened to contain "Generate HTML packet". Removing that sentence exposed it; the real label is now visible to the guard |
+
+New Spanish strings written by a model and not yet read by a Spanish speaker: `closed.title`, `closed.body`, `survey.otherAnswerLabel`, `survey.mapNoteLabel`, and the revised `portal.nameHint`.
+
+Known gaps from this batch:
+
+- `qa-harness/openplan-prod-rtp-release-review-smoke.js` still expects the command board and the old "Report packets and exports" heading on the plans and reports index pages. It targets the inactive hosted deployment and was not rewritten.
+- Three staff sentences about the public link read slightly off for a closed campaign (publish flow, preview page, the "Portal: Staged" list chip).
+- Aerial was not rebuilt as a map-first page.
+- Closed tabs still mount. Flipping the flag fails 134 tests in 11 page test files that look for content in closed tabs; they need to render the right tab first.
+- The remaining index pages (Grants, Data Hub, Model Validation, Documents, Invoices, Land Use Plans, Aerial, My Work) keep their older headers.
+
 ## What is next
 
 1. Finish record hubs: the same header on campaign, RTP cycle and report pages; closed tabs unmount; the command board leaves the remaining record pages.

@@ -37,10 +37,8 @@ import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { withPlanningContext } from "@/lib/projects/planning-context";
 import { AlertTriangle, Check, FilePlus2, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { EmptyState } from "@/components/ui/state-block";
 import {
   GuidedFlow,
   GuidedFlowRow,
@@ -190,12 +188,15 @@ export function ReportCreator({
   modelingCountyRuns = [],
   reportGuidanceByProject = {},
   initialProjectId,
+  projectsUnreadable = false,
 }: {
   projects: ProjectOption[];
   runs: RunOption[];
   modelingCountyRuns?: ModelingCountyRunOption[];
   reportGuidanceByProject?: Record<string, ProjectReportGuidance>;
   initialProjectId?: string | null;
+  /** The project list failed to load. An empty `projects` then means "unknown", not "none". */
+  projectsUnreadable?: boolean;
 }) {
   const router = useRouter();
   const selectedInitialProjectId = selectInitialPlanningProjectId(projects, initialProjectId, "first");
@@ -551,44 +552,42 @@ export function ReportCreator({
     },
   });
 
-  return (
-    <article className="rounded-[0.75rem] border border-border/70 bg-card/90 p-6 shadow-[0_24px_60px_rgba(4,12,20,0.08)]">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.5rem] bg-amber-500/12 text-amber-700 dark:text-amber-300">
-            <FilePlus2 className="h-5 w-5" />
-          </span>
-          <div>
-            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-              Create
-            </p>
-            <h2 className="text-xl font-semibold tracking-tight">New report packet</h2>
-          </div>
-        </div>
-        {projects.length > 0 ? (
-          <Button type="button" onClick={flow.open}>
-            <FilePlus2 className="mr-1.5 h-4 w-4" />
-            New report
-          </Button>
-        ) : null}
+  // Only the trigger and the flow. The reports page mounts this in its page
+  // header, so "New report" opens the questions directly. A report needs a
+  // project, so when there is none to offer the reason stands where the button
+  // would.
+  if (projectsUnreadable && projects.length === 0) {
+    return (
+      <div className="max-w-sm text-sm leading-6" role="status">
+        <p className="font-semibold text-foreground">Projects could not be read</p>
+        <p className="text-muted-foreground">
+          This workspace&apos;s project list could not be loaded, so a report cannot be started here. That is a failed
+          read, not a workspace without projects.
+        </p>
       </div>
+    );
+  }
 
-      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-        A report packet is one place to put what you decided and what backs it up. Answer three
-        questions and it opens with its sections already set up.
-      </p>
+  if (projects.length === 0) {
+    return (
+      <div className="max-w-sm text-sm leading-6" role="status">
+        <p className="font-semibold text-foreground">No projects available</p>
+        <p className="text-muted-foreground">
+          Create a project before opening a report packet. Reports stay tied to project records and workspace audit
+          history.
+        </p>
+      </div>
+    );
+  }
 
-      {projects.length === 0 ? (
-        <div className="mt-5">
-          <EmptyState
-            title="No projects available"
-            description="Create a project before opening a report packet. Reports stay tied to project records and workspace audit history."
-            compact
-          />
-        </div>
-      ) : null}
+  return (
+    <>
+      <button type="button" className="module-intro-action" onClick={flow.open} data-testid="report-creator-open">
+        <FilePlus2 className="h-4 w-4" aria-hidden="true" />
+        New report
+      </button>
 
       <GuidedFlow flow={flow} />
-    </article>
+    </>
   );
 }

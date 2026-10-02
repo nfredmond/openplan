@@ -2,9 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FilePlus2, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -307,30 +306,21 @@ export function RtpCycleCreator() {
     },
   });
 
+  // Only the trigger and the flow. The RTP registry mounts this in its page
+  // header, so the button opens the questions directly instead of scrolling to
+  // a card that held a second button.
   return (
-    <article className="module-section-surface">
-      <div className="module-section-header">
-        <div className="module-section-heading">
-          <p className="module-section-label">Create</p>
-          <h2 className="module-section-title">New plan cycle</h2>
-          <p className="module-section-description">
-            A plan cycle is one edition of your long-range plan — the area it covers, the years it
-            looks across, and the dates it has to hit.
-          </p>
-        </div>
-        <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-sky-500/12 text-sky-700 dark:text-sky-300">
-          <FilePlus2 className="h-5 w-5" />
-        </span>
-      </div>
-
-      <div className="mt-5">
-        <Button type="button" onClick={flow.open} data-testid="rtp-cycle-creator-open">
-          <Plus className="mr-1.5 h-4 w-4" />
-          New plan cycle
-        </Button>
-      </div>
-
+    <>
+      <button
+        type="button"
+        className="module-intro-action"
+        onClick={flow.open}
+        data-testid="rtp-cycle-creator-open"
+      >
+        <Plus className="h-4 w-4" aria-hidden="true" />
+        New RTP cycle
+      </button>
       <GuidedFlow flow={flow} />
-    </article>
+    </>
   );
 }

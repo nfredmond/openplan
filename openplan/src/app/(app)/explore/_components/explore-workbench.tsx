@@ -8,6 +8,7 @@ import { WorkspaceCommandBoard } from "@/components/operations/workspace-command
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { PageRunsToTheEdge } from "@/components/cartographic/page-runs-to-the-edge";
 import { Input } from "@/components/ui/input";
 import {
   type CrashSeverityFilter,
@@ -696,6 +697,8 @@ export function ExploreWorkbench({
   */
   return (
     <section className="analysis-explore-shell grid min-h-[520px] gap-0 overflow-hidden lg:h-full lg:grid-cols-[minmax(0,1fr)_420px] lg:grid-rows-[minmax(0,1fr)]">
+      {/* Mounted here, not in the page: the page has two return paths. */}
+      <PageRunsToTheEdge />
       <div className="analysis-explore-mapstage relative min-h-[360px] overflow-hidden lg:min-h-0">
         <div ref={mapContainerRef} className="h-full w-full" />
 

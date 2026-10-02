@@ -102,7 +102,7 @@ export function GrantsProgramCatalogSection({
         </div>
       ) : null}
 
-      {error ? <p className="mt-4 text-sm text-destructive">{error}</p> : null}
+      {error ? <p role="alert" className="mt-4 text-sm text-destructive">{error}</p> : null}
 
       <div className="mt-5 divide-y divide-border/60 rounded-2xl border border-border/60 bg-background/70">
         {coverage.programs.map(({ program, bundle }) => {

@@ -849,6 +849,21 @@ export type PublicPortalLocaleRequest = {
  */
 export type PublicPortalLoadResult =
   | { status: "ok"; bundle: PublicPortalBundle }
+  /**
+   * The campaign's status is `closed`: the comment period has ended.
+   *
+   * IT CARRIES NOTHING FROM THE CAMPAIGN. Only the reader's language and
+   * OpenPlan's own copy in it, which is what a page needs to say "this comment
+   * period has ended". `closed` is how staff take a campaign offline, and a
+   * campaign can go from draft to closed without ever being public, so the
+   * title, description, comments and responses must not come back with it.
+   * The product's public but not accepting state is `active` with submissions
+   * closed, and that one keeps its full page.
+   *
+   * Every caller that only understands `ok` (the embed, the two compatibility
+   * wrappers below) keeps treating a closed campaign as not found.
+   */
+  | { status: "closed"; locale: ResolvedPortalLocale; messages: PortalMessageBundle }
   | { status: "absent" }
   | { status: "unreadable"; error: { message: string } };
 
@@ -866,7 +881,7 @@ export type PublicPortalLoadResult =
  *
  * IT IS A STAGING POST, NOT THE DESIGN. The finished shape is both pages calling
  * `loadPublicPortalResult` and rendering a page that names what could not be read
- * and denies the inference, the way `src/app/(public)/plan/[shareToken]/page.tsx`
+ * and denies the inference, the way `src/app/(published)/plan/[shareToken]/page.tsx`
  * does for a plan. Delete this class in that change.
  */
 export class PortalReadUnavailableError extends Error {
@@ -914,7 +929,9 @@ export async function loadPublicPortalResult(
     };
   }
 
-  if (!campaignResult.data) return { status: "absent" };
+  if (!campaignResult.data) {
+    return loadClosedPortalResult(supabase, shareToken, locale, messages);
+  }
 
   const bundle = await buildPublicPortalBundle(
     supabase,
@@ -925,6 +942,51 @@ export async function loadPublicPortalResult(
   );
 
   return { status: "ok", bundle };
+}
+
+/**
+ * Whether a CLOSED campaign carries this token, and nothing else about it.
+ *
+ * WHY IT EXISTS. A resident who opens a printed postcard link after the
+ * campaign closes used to get "We could not find that page". Now the link
+ * answers with a notice that the comment period has ended.
+ *
+ * THE STATUS FILTER IS THE ACCESS CONTROL, as it is on the active read above:
+ * this is a service-role client. It names `closed` and nothing else, so a
+ * `draft` or `archived` campaign still matches no row and stays not found.
+ * `archived` is how an agency makes the link stop answering.
+ *
+ * IT SELECTS `id` AND `status` ONLY, and it never calls
+ * `buildPublicPortalBundle`. No title, description, comment, response or map
+ * layer is read for a closed campaign, so none can reach the page.
+ */
+async function loadClosedPortalResult(
+  supabase: PortalDataClient,
+  shareToken: string,
+  locale: ResolvedPortalLocale,
+  messages: PortalMessageBundle
+): Promise<PublicPortalLoadResult> {
+  const closedResult = await supabase
+    .from("engagement_campaigns")
+    .select("id, status")
+    .eq("share_token", shareToken)
+    .eq("status", "closed")
+    .maybeSingle();
+
+  if (closedResult.error) {
+    return {
+      status: "unreadable",
+      error: { message: closedResult.error.message ?? "no message reported" },
+    };
+  }
+
+  const row = closedResult.data as { id?: string | null; status?: string | null } | null;
+  // Checked again on the row itself. The filter above already decided this;
+  // the second check means a client that ignored the filter cannot turn a
+  // draft into a public notice.
+  if (!row || row.status !== "closed") return { status: "absent" };
+
+  return { status: "closed", locale, messages };
 }
 
 /**
@@ -1300,13 +1362,13 @@ export {
  * ordinary one-word slugs like "downtown" for the sake of a collision the
  * lookup order already settles.
  *
- * THE SLUG PATH ADDS NO REACH. It requires `status = 'active'` itself, and it
- * resolves only to a share token that is then loaded through the SAME
- * token-gated path the public page has always used — so a slug can never serve
- * a draft, a staged campaign, or anything the token path would refuse. A slug
- * on a non-active campaign resolves to nothing, and that is the design: the
- * printable address only works while the consultation is genuinely open to the
- * public.
+ * THE SLUG PATH ADDS NO REACH. It filters on status itself (`active` first,
+ * then `closed`), and it resolves only to a share token that is then loaded
+ * through the SAME token-gated path the public page has always used, so a slug
+ * can never serve a draft, an archived campaign, or anything the token path
+ * would refuse. A slug on a draft or archived campaign resolves to nothing. A
+ * slug on a closed campaign answers with the ended notice and no campaign
+ * content, so the address printed on a postcard still says what happened.
  *
  * SHIP ORDER: apply 20260810000002 before deploying this code. Until the
  * column exists, the slug lookup fails and any /engage/ value that is not a
@@ -1346,9 +1408,31 @@ export async function loadPublicPortalResultForShareValue(
     };
   }
 
-  const token = normalizeShareToken(
-    (slugResult.data as { share_token?: string | null } | null)?.share_token
-  );
+  let slugRow = slugResult.data as { share_token?: string | null } | null;
+
+  if (!slugRow) {
+    // The printed address after the comment period ends. Asked only when no
+    // active campaign carries the slug, and only for `closed`: a draft or an
+    // archived campaign still answers nothing at its printable address. The
+    // token it resolves to is loaded through the token path, which checks the
+    // status again and returns the notice-only `closed` result.
+    const closedSlugResult = await supabase
+      .from("engagement_campaigns")
+      .select("share_token")
+      .eq("public_slug", slug)
+      .eq("status", "closed")
+      .maybeSingle();
+
+    if (closedSlugResult.error) {
+      return {
+        status: "unreadable",
+        error: { message: closedSlugResult.error.message ?? "no message reported" },
+      };
+    }
+    slugRow = closedSlugResult.data as { share_token?: string | null } | null;
+  }
+
+  const token = normalizeShareToken(slugRow?.share_token);
   // A slugged campaign with no token has no public address yet; the readiness
   // checks require a token before sharing, so this is "not published", which
   // to the public is absence.

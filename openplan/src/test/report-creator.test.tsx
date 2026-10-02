@@ -255,4 +255,38 @@ describe("ReportCreator", () => {
     const body = JSON.parse(String(request[1]?.body)) as { modelingCountyRunId?: string };
     expect(body).not.toHaveProperty("modelingCountyRunId");
   });
+
+  /**
+   * The creator is the reports page's header action now: a button and nothing
+   * around it. A report needs a project, so with none to offer there is no
+   * button, and the reason has to stand in its place. The two reasons are
+   * different facts and may not share a sentence.
+   */
+  it("says there are no projects, instead of a button, when the workspace has none", () => {
+    render(<ReportCreator projects={[]} runs={[]} />);
+
+    expect(screen.queryByRole("button", { name: /^new report$/i })).toBeNull();
+    expect(screen.getByText("No projects available")).toBeInTheDocument();
+    expect(screen.getByText(/Create a project before opening a report packet/)).toBeInTheDocument();
+    expect(screen.queryByText("Projects could not be read")).toBeNull();
+  });
+
+  it("does not call a failed project read an empty workspace", () => {
+    render(<ReportCreator projects={[]} runs={[]} projectsUnreadable />);
+
+    expect(screen.queryByRole("button", { name: /^new report$/i })).toBeNull();
+    expect(screen.getByText("Projects could not be read")).toBeInTheDocument();
+    expect(screen.getByText(/That is a failed read, not a workspace without projects/)).toBeInTheDocument();
+    expect(screen.queryByText("No projects available")).toBeNull();
+  });
+
+  it("renders only its trigger while closed, with no card or heading of its own", () => {
+    const { container } = render(
+      <ReportCreator projects={[{ id: "project-1", workspace_id: "workspace-1", name: "Downtown Mobility Plan" }]} runs={[]} />
+    );
+
+    expect(screen.getByTestId("report-creator-open")).toHaveTextContent("New report");
+    expect(container.querySelector("article")).toBeNull();
+    expect(screen.queryByRole("heading")).toBeNull();
+  });
 });

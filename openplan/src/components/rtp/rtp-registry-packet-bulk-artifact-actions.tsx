@@ -81,8 +81,8 @@ export function RtpRegistryPacketBulkArtifactActions({
           {buttonLabel}
         </Button>
 
-        {message ? <p className="text-sm text-emerald-700 dark:text-emerald-300">{message}</p> : null}
-        {error ? <p className="text-sm text-destructive">{error}</p> : null}
+        {message ? <p role="status" className="text-sm text-emerald-700 dark:text-emerald-300">{message}</p> : null}
+        {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
       </div>
     </article>
   );

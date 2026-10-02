@@ -182,7 +182,7 @@ export function RtpReportSectionControls({
         board packet includes here, and reset back to the default for this stage at any time.
       </p>
 
-      {error ? <p className="rounded-xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">{error}</p> : null}
+      {error ? <p role="alert" className="rounded-xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">{error}</p> : null}
 
       <div className="space-y-2">
         {draftSections.map((section, index) => (

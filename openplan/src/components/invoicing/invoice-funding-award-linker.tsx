@@ -198,7 +198,7 @@ export function InvoiceFundingAwardLinker({
             <p className="text-xs text-muted-foreground">No funding awards are available for this invoice’s project yet.</p>
           ) : null}
 
-          {error ? <p className="text-xs text-red-600 dark:text-red-300">{error}</p> : null}
+          {error ? <p role="alert" className="text-xs text-red-600 dark:text-red-300">{error}</p> : null}
         </div>
       </div>
     </div>

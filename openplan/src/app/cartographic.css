@@ -2191,6 +2191,36 @@ body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdr
   }
 }
 
+/*
+  PAGES THAT RUN TO THE EDGE (`PageRunsToTheEdge`).
+
+  A map page with a docked sidebar fills the page area: no padding around it and
+  no frame of its own. The rail and header stay where they are.
+*/
+body[data-page-flush="true"]:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-surface__body {
+  padding: 0;
+  scrollbar-gutter: auto;
+}
+body[data-page-flush="true"] .op-cart-shell .op-cart-surface__body > .analysis-explore-shell {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+@media (min-width: 1024px) {
+  /* The map and its sidebar take whatever height is left under a context
+     strip, and scroll inside themselves, not as a page. */
+  body[data-page-flush="true"]:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdrop)) .op-cart-surface__body {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  body[data-page-flush="true"] .op-cart-shell .op-cart-surface__body > .analysis-explore-shell {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
+  }
+}
+
 /* ---------- The phone "More" sheet: every destination, by name ---------- */
 
 .op-cart-navsheet {

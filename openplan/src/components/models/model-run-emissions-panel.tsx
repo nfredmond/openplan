@@ -82,7 +82,7 @@ export function ModelRunEmissionsPanel({ modelId, modelRunId }: Props) {
               <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading emissions…
             </p>
           ) : error ? (
-            <p className="text-xs text-red-600 dark:text-red-300">{error}</p>
+            <p role="alert" className="text-xs text-red-600 dark:text-red-300">{error}</p>
           ) : !screen ? (
             <p className="text-xs text-muted-foreground">
               No emissions estimate for this run (requires a computed VMT).

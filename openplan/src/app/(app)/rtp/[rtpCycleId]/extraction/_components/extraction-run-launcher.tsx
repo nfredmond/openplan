@@ -141,7 +141,7 @@ export function ExtractionRunLauncher({
       ) : null}
       {summary ? <p className="text-sm text-foreground">{summary}</p> : null}
       {warning ? <p className="text-xs text-amber-700 dark:text-amber-300">{warning}</p> : null}
-      {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
+      {error ? <p role="alert" className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
 
       {unreadable.length > 0 ? (
         <details className="text-xs text-muted-foreground">

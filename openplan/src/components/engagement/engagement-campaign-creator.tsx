@@ -33,8 +33,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { withPlanningContext } from "@/lib/projects/planning-context";
-import { FilePlus2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { StateBlock } from "@/components/ui/state-block";
@@ -273,25 +272,24 @@ export function EngagementCampaignCreator({
     },
   });
 
+  // Only the trigger and the flow. The engagement page mounts this in its page
+  // header, so "New campaign" opens the questions directly instead of scrolling
+  // to a card that held a second button. The partial-template warning stays
+  // here, beside the button that caused it, and outlives the closed sheet.
   return (
-    <article className="module-section-surface">
-      <div className="module-section-header">
-        <div className="module-section-heading">
-          <p className="module-section-label">Create</p>
-          <h2 className="module-section-title">New engagement campaign</h2>
-          <p className="module-section-description">
-            A campaign is one round of asking the public something. Set it up here, then collect
-            comments against it — everything residents send lands in moderation first.
-          </p>
-        </div>
-        <Button type="button" onClick={flow.open}>
-          <FilePlus2 className="mr-1.5 h-4 w-4" />
-          New campaign
-        </Button>
-      </div>
+    <>
+      <button
+        type="button"
+        className="module-intro-action"
+        onClick={flow.open}
+        data-testid="engagement-campaign-creator-open"
+      >
+        <Plus className="h-4 w-4" aria-hidden="true" />
+        New campaign
+      </button>
 
       {partialTemplateNotice ? (
-        <div className="mt-4">
+        <div className="mt-3 max-w-md text-left">
           <StateBlock
             title="The campaign was created — its starter content was not"
             description={partialTemplateNotice}
@@ -302,6 +300,6 @@ export function EngagementCampaignCreator({
       ) : null}
 
       <GuidedFlow flow={flow} />
-    </article>
+    </>
   );
 }

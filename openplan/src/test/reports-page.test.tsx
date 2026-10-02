@@ -9,7 +9,6 @@ const redirectMock = vi.fn((..._args: unknown[]) => {
 });
 const authGetUserMock = vi.fn();
 const loadCurrentWorkspaceMembershipMock = vi.fn();
-const loadWorkspaceOperationsSummaryForWorkspaceMock = vi.fn();
 const reportCreatorMock = vi.hoisted(() => vi.fn());
 
 const reportsOrderMock = vi.fn();
@@ -94,31 +93,11 @@ vi.mock("@/lib/workspaces/current", () => ({
   loadCurrentWorkspaceMembership: (...args: unknown[]) => loadCurrentWorkspaceMembershipMock(...args),
 }));
 
-vi.mock("@/lib/operations/workspace-summary", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/operations/workspace-summary")>(
-    "@/lib/operations/workspace-summary"
-  );
-
-  return {
-    ...actual,
-    loadWorkspaceOperationsSummaryForWorkspace: (...args: unknown[]) =>
-      loadWorkspaceOperationsSummaryForWorkspaceMock(...args),
-  };
-});
-
 vi.mock("@/components/reports/report-creator", () => ({
   ReportCreator: (props: unknown) => {
     reportCreatorMock(props);
     return <div data-testid="report-creator" />;
   },
-}));
-
-vi.mock("@/components/operations/workspace-runtime-cue", () => ({
-  WorkspaceRuntimeCue: () => <div data-testid="workspace-runtime-cue" />,
-}));
-
-vi.mock("@/components/operations/workspace-command-board", () => ({
-  WorkspaceCommandBoard: () => <div data-testid="workspace-command-board" />,
 }));
 
 import ReportsPage from "@/app/(app)/reports/page";
@@ -161,11 +140,6 @@ describe("ReportsPage", () => {
         id: "workspace-1",
         name: "OpenPlan QA",
       },
-    });
-
-    loadWorkspaceOperationsSummaryForWorkspaceMock.mockResolvedValue({
-      nextCommand: null,
-      nextActions: [],
     });
 
     reportsOrderMock.mockResolvedValue({
@@ -705,9 +679,23 @@ describe("ReportsPage", () => {
     expect(screen.getByText(/could not read model runs available as evidence/i)).toBeInTheDocument();
   });
 
+  it("tells the header's creator when the project list failed to load, so it does not say there are none", async () => {
+    projectsOrderMock.mockResolvedValue({
+      data: null,
+      error: { message: "permission denied for table projects" },
+    });
+
+    await renderPage();
+
+    expect(reportCreatorMock).toHaveBeenCalledWith(
+      expect.objectContaining({ projects: [], projectsUnreadable: true })
+    );
+  });
+
   it("stays silent when every read succeeded", async () => {
     await renderPage();
 
     expect(screen.queryByText(/This page could not read/i)).toBeNull();
+    expect(reportCreatorMock).toHaveBeenCalledWith(expect.objectContaining({ projectsUnreadable: false }));
   });
 });

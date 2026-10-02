@@ -141,7 +141,7 @@ export function CountyRunObservedCounts({ countyRunId }: { countyRunId: string }
       </div>
 
       {error ? (
-        <p className="module-empty-state" data-testid="observed-counts-error">
+        <p role="alert" className="module-empty-state" data-testid="observed-counts-error">
           {error}
         </p>
       ) : null}
