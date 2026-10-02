@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { z } from "zod";
+import { readSynthesisHistory } from "@/lib/engagement/synthesis-history-read";
 import { Button } from "@/components/ui/button";
 import { checkSynthesisApprovalIntent, readSynthesisApprovalHistory, synthesisApprovalForRevision,
   type SynthesisApprovalContext, type VerifiedSynthesisApprovalHistory } from "@/lib/engagement/synthesis-approval";
@@ -37,8 +38,9 @@ function ApprovalPanel({ scope, revision, hasUnsavedReview, memory, onAccessLost
     const currentEpoch = epoch.current, sequence = ++reads.current;
     setLoaded(null);
     try {
-      const res = await fetch(`${endpoint}?${new URLSearchParams({ reviewId })}`, { cache: "no-store",
-        headers: { "x-openplan-expected-user": userId, "x-openplan-expected-workspace": workspaceId } });
+      const res = await readSynthesisHistory(`${endpoint}?${new URLSearchParams({ reviewId })}`, {
+        userId, workspaceId, isCurrent: () => currentEpoch === epoch.current && sequence === reads.current,
+      });
       if (currentEpoch !== epoch.current || sequence !== reads.current) return;
       if (res.status === 401 || res.status === 403) { loseAccess(); return; }
       if (!res.ok) throw new Error("Approval history is unavailable. Keep any pending request and retry this read.");

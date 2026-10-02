@@ -40,8 +40,15 @@ async function approve() {
   fireEvent.click(screen.getByRole("button", { name: "Approve revision 1" })); await screen.findByText("Revision 1 is approved.");
 }
 describe("exact revision approval panel", () => {
-  it("clears a recovered history error without clearing a pending save failure", async () => {
+  it("recovers a busy approval read without sending an approval", async () => {
     transport.mockResolvedValueOnce(json({}, 503));
+    render(<SynthesisApprovalPanel {...props()} />); await ready();
+    expect(transport).toHaveBeenCalledTimes(2);
+    expect(events.size).toBe(0); expect(screen.queryByRole("alert")).toBeNull();
+    expect(transport.mock.calls.every(([, init]) => init?.method === "GET")).toBe(true);
+  });
+  it("clears a recovered history error without clearing a pending save failure", async () => {
+    transport.mockResolvedValueOnce(json({}, 503)).mockResolvedValueOnce(json({}, 503)).mockResolvedValueOnce(json({}, 503));
     render(<SynthesisApprovalPanel {...props()} />);
     await screen.findByText("Approval history is unavailable. Keep any pending request and retry this read.");
     expect(screen.getByRole("button", { name: "Approve revision 1" })).toBeDisabled();

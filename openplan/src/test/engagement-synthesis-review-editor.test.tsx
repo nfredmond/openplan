@@ -103,6 +103,17 @@ async function openSeeded() {
 }
 async function waitRevision(number: number) { await screen.findByRole("heading", { name: new RegExp(`revision ${number}$`), level: 4 }); }
 describe("retained staff review editor", () => {
+  it("recovers a busy retained review read without changing its revision", async () => {
+    let attempts = 0;
+    transport.mockImplementation(async (url, init) => {
+      if (String(url).includes("mode=read") && attempts++ === 0) return json({}, 503);
+      return server(url, init);
+    });
+    await openSeeded();
+    expect(attempts).toBe(2); expect(head).toBe(reviewId); expect(records.size).toBe(1);
+    expect(transport.mock.calls.some(([, init]) => init?.method === "POST")).toBe(false);
+    expect(screen.queryByText(/The saved review could not be opened/)).toBeNull();
+  });
   it("opens retained import recovery and blocks a competing correction or approval", async () => {
     seed(); const record = records.get(reviewId)!;
     const importScope = { ...scope, reviewId, preparationSha256: record.preparationSha256 };

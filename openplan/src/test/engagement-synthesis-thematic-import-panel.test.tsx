@@ -49,6 +49,18 @@ async function fixture() {
 }
 
 describe("explicit thematic import panel", () => {
+  it("recovers a busy proposal preview without selecting or importing it", async () => {
+    const x = await fixture(), originalTransport = x.transport.getMockImplementation()!;
+    let attempts = 0;
+    x.transport.mockImplementation(async (url, init) => {
+      if (String(url).includes("mode=preview") && attempts++ === 0) return json({}, 503);
+      return originalTransport(url, init);
+    });
+    render(<SynthesisThematicImportPanel {...x.props} />); await x.inspect();
+    expect(attempts).toBe(2); expect(x.posts).toHaveLength(0);
+    expect(readThematicImportCopy(localStorage, x.props.scope).draft).toBeNull();
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
   it("reopens an unselected inspection after remount only through a fresh authorized read", async () => {
     const x = await fixture(), view = render(<SynthesisThematicImportPanel {...x.props} />);
     await x.inspect();

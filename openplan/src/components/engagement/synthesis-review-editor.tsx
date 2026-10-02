@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
+import { readSynthesisHistory } from "@/lib/engagement/synthesis-history-read";
 import { Button } from "@/components/ui/button";
 import { applySynthesisReviewChange, synthesisReviewIntentSchema, verifySynthesisReviewContent, type SynthesisReviewContent, type SynthesisReviewIntent } from "@/lib/engagement/synthesis-review";
 import { synthesisReviewListSchema, synthesisReviewRecordSchema, synthesisReviewRevisionListSchema, type SynthesisReviewRecord } from "@/lib/engagement/synthesis-review-records";
@@ -85,7 +86,10 @@ function ReviewPanel({ snapshot, onAccessLost, recoveryMemory: sourceMemory, app
   const adopt = (value: ReviewWorkingCopy) => { workingRef.current = value; setWorking(value); };
 
   const read = useCallback(async (query: Record<string, string>) => {
-    const response = await fetch(`${endpoint}?${new URLSearchParams(query)}`, { cache: "no-store", headers: { "x-openplan-expected-user": userId, "x-openplan-expected-workspace": workspaceId } });
+    const current = epoch.current;
+    const response = await readSynthesisHistory(`${endpoint}?${new URLSearchParams(query)}`, {
+      userId, workspaceId, isCurrent: () => current === epoch.current,
+    });
     if (response.status === 401 || response.status === 403) { epoch.current++; setAccessLost(true); onAccessLost(); }
     if (!response.ok) throw new Error(response.status === 404 ? "This review revision has not been confirmed. Keep its request for retry." : "The saved review could not be opened. Any earlier confirmed save remains retained.");
     return response.json() as Promise<unknown>;

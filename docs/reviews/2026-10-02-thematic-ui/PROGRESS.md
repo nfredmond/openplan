@@ -219,3 +219,34 @@ remain unchanged. No release or new main integration is declared.
 The subsequent production build completes successfully. Its first server reports
 an unknown commit and is stopped before acceptance. A committed source checkpoint
 and matching runtime identity will precede production-browser verification.
+
+## Production busy-read recovery
+
+Checkpoint e2b0472f is pushed as draft PR114. The production server is identified
+as that commit from this worktree. The initial source, imported revision and
+approval reads return200. Focus refresh then reconstructs the source and review,
+but proposal preview returns503 while approval history also reconstructs retained
+evidence. [The request record](production-focus-initial.json) preserves this
+failure. It is not solely a development-mode effect.
+
+A shared GET-only reader now retries503 at most twice, after200ms and600ms.
+Each attempt sends the same query, expected account/workspace and no-store policy
+through the existing authorized route. It stops on other statuses, transport
+failure, cancellation or superseded scope. It does not cache evidence or retry
+writes. Native locking and authorization are unchanged. Three attempts can still
+exhaust; the existing unavailable state remains visible instead of inventing a
+result. This bounded recovery does not establish large-history concurrency capacity.
+
+The proposal, review and approval components use this reader. Their65 focused
+checks pass after source restoration; strict lint passes for all eight changed
+source/test files. A harmless control survives and12 targeted faults are detected.
+The [initial run](history-retry-mutations.json) catches three boundaries partly
+by timeout. [Tighter checks](history-retry-tightened-mutations.json) then directly
+observe an unwanted fourth request, extra denied requests and an uncancelled
+wait. The initial approval-error test also fails because one transient503 now
+recovers automatically; it now supplies three failures to exercise exhaustion,
+then proves manual recovery retains an unrelated pending save error.
+
+Production build and identified browser reinspection of this correction remain
+pending at this source checkpoint. Full QA of this final tree is separate from
+the earlier passing gate. Saved browser downloads remain unverified.

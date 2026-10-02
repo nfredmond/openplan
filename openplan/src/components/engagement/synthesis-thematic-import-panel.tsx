@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { readSynthesisHistory } from "@/lib/engagement/synthesis-history-read";
 import { Button } from "@/components/ui/button";
 import type { SynthesisSourceSnapshot } from "@/lib/engagement/synthesis-sources";
 import { ReviewSaveError } from "@/lib/engagement/synthesis-review-recovery";
@@ -34,8 +35,8 @@ export function SynthesisThematicImportPanel({ scope: suppliedScope, snapshot, r
   const endpoint = `/api/engagement/campaigns/${campaignId}/synthesis/proposals`;
   const read = useCallback(async (query: Record<string, string>, signal?: AbortSignal) => {
     const current = epoch.current;
-    const response = await fetch(`${endpoint}?${new URLSearchParams({ ...query, sourceId, sourceSha256 })}`, {
-      cache: "no-store", headers: { "x-openplan-expected-user": userId, "x-openplan-expected-workspace": workspaceId }, signal,
+    const response = await readSynthesisHistory(`${endpoint}?${new URLSearchParams({ ...query, sourceId, sourceSha256 })}`, {
+      userId, workspaceId, signal, isCurrent: () => current === epoch.current,
     });
     if ((response.status === 401 || response.status === 403) && current === epoch.current && !signal?.aborted) { epoch.current++; setPreview(null); setPage(null); onAccessLost(); }
     if (!response.ok) throw new Error("Proposal history could not be read. Keep any saved request and retry after checking access.");
